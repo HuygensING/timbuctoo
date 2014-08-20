@@ -32,11 +32,6 @@ public class TestVRE extends AbstractVRE {
   }
 
   @Override
-  public String getScopeId() {
-    return "test";
-  }
-
-  @Override
   public String getVreId() {
     return "TestVRE";
   }

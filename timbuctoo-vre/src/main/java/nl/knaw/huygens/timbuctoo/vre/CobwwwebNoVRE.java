@@ -33,11 +33,6 @@ public class CobwwwebNoVRE extends AbstractVRE {
   }
 
   @Override
-  public String getScopeId() {
-    return "cwno";
-  }
-
-  @Override
   public String getVreId() {
     return "CobwwwebNo";
   }

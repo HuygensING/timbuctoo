@@ -59,11 +59,6 @@ public class AbstractVRETest {
     instance = new AbstractVRE(indexCollectionMock, resultConverterMock) {
 
       @Override
-      public String getScopeId() {
-        return null;
-      }
-
-      @Override
       public String getVreId() {
         return null;
       }

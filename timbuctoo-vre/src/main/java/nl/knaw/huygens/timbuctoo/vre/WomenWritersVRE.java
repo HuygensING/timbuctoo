@@ -40,11 +40,6 @@ public class WomenWritersVRE extends AbstractVRE {
   }
 
   @Override
-  public String getScopeId() {
-    return "neww";
-  }
-
-  @Override
   public String getVreId() {
     return "WomenWriters";
   }

@@ -32,11 +32,6 @@ public class DutchCaribbeanVRE extends AbstractVRE {
   }
 
   @Override
-  public String getScopeId() {
-    return "dcar";
-  }
-
-  @Override
   public String getVreId() {
     return "DutchCaribbean";
   }

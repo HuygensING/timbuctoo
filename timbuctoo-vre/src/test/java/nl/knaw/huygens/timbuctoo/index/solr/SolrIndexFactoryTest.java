@@ -28,7 +28,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
 import nl.knaw.huygens.facetedsearch.FacetedSearchLibrary;
 import nl.knaw.huygens.facetedsearch.model.parameters.IndexDescription;
 import nl.knaw.huygens.solr.AbstractSolrServer;
@@ -59,9 +58,9 @@ public class SolrIndexFactoryTest {
   private Configuration configurationMock;
   private IndexDescriptionFactory indexDescriptionFactoryMock;
   private AbstractSolrServerBuilder solrServerBuilderMock;
-  private FacetedSearchLibraryFactory facetedSearchLibraryFactoryMock ;
-  
-  private SolrIndexFactory instance ;
+  private FacetedSearchLibraryFactory facetedSearchLibraryFactoryMock;
+
+  private SolrIndexFactory instance;
 
   @Before
   public void setup() {
@@ -85,7 +84,7 @@ public class SolrIndexFactoryTest {
 
     // setup
     String scopeId = "scopeid";
-    VRE vre = newVRE().withScopeId(scopeId).create();
+    VRE vre = newVRE().withVreId(scopeId).create();
 
     Class<? extends DomainEntity> type = Type1.class;
     String indexName = instance.getIndexNameFor(vre, type);
@@ -108,18 +107,18 @@ public class SolrIndexFactoryTest {
 
   @Test
   public void testGetIndexNameForBaseType() {
-    VRE vre = newVRE().withScopeId("scope1").create();
+    VRE vre = newVRE().withVreId("vre1").create();
     Class<? extends DomainEntity> type = ExplicitlyAnnotatedModel.class;
 
-    assertThat(instance.getIndexNameFor(vre, type), equalTo("scope1.explicitlyannotatedmodel"));
+    assertThat(instance.getIndexNameFor(vre, type), equalTo("vre1.explicitlyannotatedmodel"));
   }
 
   @Test
   public void testGetIndexNameForSubType() {
-    VRE vre = newVRE().withScopeId("scope2").create();
+    VRE vre = newVRE().withVreId("vre2").create();
     Class<? extends DomainEntity> type = SubModel.class;
 
-    assertThat(instance.getIndexNameFor(vre, type), equalTo("scope2.explicitlyannotatedmodel"));
+    assertThat(instance.getIndexNameFor(vre, type), equalTo("vre2.explicitlyannotatedmodel"));
   }
 
 }
