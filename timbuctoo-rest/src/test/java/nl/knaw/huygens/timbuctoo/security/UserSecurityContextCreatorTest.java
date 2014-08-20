@@ -41,7 +41,7 @@ import javax.ws.rs.core.SecurityContext;
 import nl.knaw.huygens.security.client.model.HuygensSecurityInformation;
 import nl.knaw.huygens.security.client.model.SecurityInformation;
 import nl.knaw.huygens.timbuctoo.model.User;
-import nl.knaw.huygens.timbuctoo.storage.JsonFileHandler;
+import nl.knaw.huygens.timbuctoo.storage.UserConfigurationHandle;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
@@ -56,11 +56,11 @@ public class UserSecurityContextCreatorTest {
   private static final String DISPLAY_NAME = "displayName";
 
   private UserSecurityContextCreator instance;
-  private JsonFileHandler jsonFileWriter;
+  private UserConfigurationHandle jsonFileWriter;
 
   @Before
   public void setUp() {
-    jsonFileWriter = mock(JsonFileHandler.class);
+    jsonFileWriter = mock(UserConfigurationHandle.class);
     instance = new UserSecurityContextCreator(jsonFileWriter);
   }
 

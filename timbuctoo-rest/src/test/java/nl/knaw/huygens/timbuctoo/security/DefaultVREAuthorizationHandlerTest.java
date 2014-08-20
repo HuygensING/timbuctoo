@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
-import nl.knaw.huygens.timbuctoo.storage.JsonFileHandler;
+import nl.knaw.huygens.timbuctoo.storage.UserConfigurationHandle;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
@@ -26,15 +26,15 @@ public class DefaultVREAuthorizationHandlerTest {
     USER.setId(USER_ID);
   }
 
-  private JsonFileHandler jsonFileHandlerMock;
+  private UserConfigurationHandle userConfigurationHandlerMock;
   private MailSender mailSenderMock;
   private DefaultVREAuthorizationHandler instance;
 
   @Before
   public void setUp() {
-    jsonFileHandlerMock = mock(JsonFileHandler.class);
+    userConfigurationHandlerMock = mock(UserConfigurationHandle.class);
     mailSenderMock = mock(MailSender.class);
-    instance = new DefaultVREAuthorizationHandler(jsonFileHandlerMock, mailSenderMock);
+    instance = new DefaultVREAuthorizationHandler(userConfigurationHandlerMock, mailSenderMock);
   }
 
   @Test
@@ -81,22 +81,22 @@ public class DefaultVREAuthorizationHandlerTest {
 
   private void verifyVREAuthorizationIsSearchedFor(String vreId, String userId) {
     // VREAuthorization are equal when the vreId and userId are equal.
-    verify(jsonFileHandlerMock).findEntity(VREAuthorization.class, new VREAuthorization(VRE_ID, USER_ID));
+    verify(userConfigurationHandlerMock).findEntity(VREAuthorization.class, new VREAuthorization(VRE_ID, USER_ID));
   }
 
   private void findVREAuthorizationFor(String vreId, String userId) {
     VREAuthorization vreAuthorization = new VREAuthorization(VRE_ID, USER_ID);
-    when(jsonFileHandlerMock.findEntity(VREAuthorization.class, vreAuthorization)).thenReturn(vreAuthorization);
+    when(userConfigurationHandlerMock.findEntity(VREAuthorization.class, vreAuthorization)).thenReturn(vreAuthorization);
   }
 
   private void findAnAdminOfVRE(String vreId) {
     VREAuthorization example = new VREAuthorization(VRE_ID, null, ADMIN_ROLE);
     String adminUserId = "test";
     VREAuthorization foundAuthorization = new VREAuthorization(VRE_ID, adminUserId, ADMIN_ROLE);
-    when(jsonFileHandlerMock.findEntity(VREAuthorization.class, example)).thenReturn(foundAuthorization);
+    when(userConfigurationHandlerMock.findEntity(VREAuthorization.class, example)).thenReturn(foundAuthorization);
     User adminUser = new User();
     adminUser.setEmail("test@test.com");
-    when(jsonFileHandlerMock.getEntity(User.class, adminUserId)).thenReturn(adminUser);
+    when(userConfigurationHandlerMock.getEntity(User.class, adminUserId)).thenReturn(adminUser);
   }
 
   private void verifyAnEmailIsSendToAnAdminOfTheVRE() {
@@ -104,6 +104,6 @@ public class DefaultVREAuthorizationHandlerTest {
   }
 
   private void verifyAVREAuthorizationIsCreatedFor(String vreId, String userId, String unverifiedUserRole) throws StorageException, ValidationException {
-    verify(jsonFileHandlerMock).addSystemEntity(VREAuthorization.class, new VREAuthorization(vreId, userId, unverifiedUserRole));
+    verify(userConfigurationHandlerMock).addSystemEntity(VREAuthorization.class, new VREAuthorization(vreId, userId, unverifiedUserRole));
   }
 }
