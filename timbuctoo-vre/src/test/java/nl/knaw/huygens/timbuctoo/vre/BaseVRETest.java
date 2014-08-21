@@ -21,49 +21,47 @@ package nl.knaw.huygens.timbuctoo.vre;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasEntry;
 
 import java.io.IOException;
+import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.model.Person;
-import nl.knaw.huygens.timbuctoo.model.Place;
-import nl.knaw.huygens.timbuctoo.model.User;
-import nl.knaw.huygens.timbuctoo.model.dcar.DCARPerson;
+import nl.knaw.huygens.timbuctoo.model.Language;
+import nl.knaw.huygens.timbuctoo.model.Location;
+import nl.knaw.huygens.timbuctoo.model.base.BaseLanguage;
+import nl.knaw.huygens.timbuctoo.model.base.BaseLocation;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class DutchCaribbeanVRETest {
+public class BaseVRETest {
 
   private static VRE vre;
 
   @BeforeClass
   public static void setupVRE() throws IOException {
-    vre = new DutchCaribbeanVRE();
+    vre = new BaseVRE();
   }
 
   @Test
+  public void testTypeNameMap() {
+    Map<String, String> map = vre.getTypeNameMap();
+    assertThat(map, hasEntry("language", "baselanguage"));
+    assertThat(map, hasEntry("location", "baselocation"));
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
   public void testBaseEntityTypes() {
-    assertTrue(vre.getBaseEntityTypes().contains(Person.class));
-    assertFalse(vre.getBaseEntityTypes().contains(Place.class));
-    assertFalse(vre.getBaseEntityTypes().contains(User.class));
-    assertFalse(vre.getBaseEntityTypes().contains(DCARPerson.class));
+    assertThat(vre.getBaseEntityTypes(), contains(Language.class, Location.class));
   }
 
   @Test
-  public void testTypeAndIdInScope() {
-    assertFalse(vre.inScope(Person.class, "id"));
-    assertFalse(vre.inScope(Place.class, "id"));
-    assertTrue(vre.inScope(DCARPerson.class, "id"));
-  }
-
-  @Test
-  public void testInstanceInScope() {
-    assertFalse(vre.inScope(new Person()));
-    assertFalse(vre.inScope(new Place()));
-    assertTrue(vre.inScope(new DCARPerson()));
+  @SuppressWarnings("unchecked")
+  public void testEntityTypes() {
+    assertThat(vre.getEntityTypes(), contains(BaseLanguage.class, BaseLocation.class));
   }
 
 }

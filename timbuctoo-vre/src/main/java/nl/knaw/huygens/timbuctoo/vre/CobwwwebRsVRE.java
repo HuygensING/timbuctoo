@@ -43,11 +43,6 @@ public class CobwwwebRsVRE extends AbstractVRE {
   }
 
   @Override
-  public String getDomainEntityPrefix() {
-    return "cwrs";
-  }
-
-  @Override
   public List<String> getReceptionNames() {
     return WomenWritersVRE.RECEPTION_NAMES;
   }

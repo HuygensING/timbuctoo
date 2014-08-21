@@ -22,10 +22,14 @@ package nl.knaw.huygens.timbuctoo.vre;
  * #L%
  */
 
+import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
+import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
@@ -47,6 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 public abstract class AbstractVRE implements VRE {
 
@@ -74,11 +79,6 @@ public abstract class AbstractVRE implements VRE {
   }
 
   protected abstract Scope createScope() throws IOException;
-
-  @Override
-  public String getDomainEntityPrefix() {
-    return "";
-  }
 
   @Override
   public List<String> getReceptionNames() {
@@ -113,6 +113,18 @@ public abstract class AbstractVRE implements VRE {
   @Override
   public <T extends DomainEntity> List<T> filter(List<T> entities) {
     return scope.filter(entities);
+  }
+
+  @Override
+  public Map<String, String> getTypeNameMap() {
+    Map<String, String> map = Maps.newHashMap();
+    for (Class<? extends DomainEntity> type : getEntityTypes()) {
+      Class<? extends DomainEntity> baseType = toBaseDomainEntity(type);
+      if (map.put(getInternalName(baseType), getInternalName(type)) != null) {
+        LOG.error("Inconsistent type name map; multiple values for {}", getInternalName(baseType));
+      }
+    }
+    return map;
   }
 
   /******************************************************************************

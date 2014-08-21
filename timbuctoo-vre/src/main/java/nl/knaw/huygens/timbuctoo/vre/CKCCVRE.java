@@ -43,9 +43,4 @@ public class CKCCVRE extends AbstractVRE {
     return "VRE for the 'CKCC' project.";
   }
 
-  @Override
-  public String getDomainEntityPrefix() {
-    return "ckcc";
-  }
-
 }

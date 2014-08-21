@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.vre;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.index.Index;
@@ -51,16 +52,17 @@ public interface VRE extends Scope {
   String getDescription();
 
   /**
-   * Returns the prefix for domain entities to derive their internal name
-   * from the internal name of the primitive domain entities.
-   * NOTE. This solution can be made more general.
-   */
-  String getDomainEntityPrefix();
-
-  /**
    * Returns names of relation types that are considered to be receptions.
    */
   List<String> getReceptionNames();
+
+  /**
+   * Returns a mapping from internal names of primitive domain entities
+   * to internal names of domain entities in the specified VRE.
+   * This map can be used to resolve types in {@code RelationType} to
+   * the corresponding types in this VRE.
+   */
+  Map<String, String> getTypeNameMap();
 
   /**
    * Search the VRE for the items of the type of {@code entity}.
