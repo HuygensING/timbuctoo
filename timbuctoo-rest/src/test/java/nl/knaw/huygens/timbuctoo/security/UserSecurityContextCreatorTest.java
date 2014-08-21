@@ -41,8 +41,8 @@ import javax.ws.rs.core.SecurityContext;
 import nl.knaw.huygens.security.client.model.HuygensSecurityInformation;
 import nl.knaw.huygens.security.client.model.SecurityInformation;
 import nl.knaw.huygens.timbuctoo.model.User;
-import nl.knaw.huygens.timbuctoo.storage.UserConfigurationHandler;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.UserConfigurationHandler;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import org.junit.After;
@@ -113,7 +113,7 @@ public class UserSecurityContextCreatorTest {
   }
 
   private void userIsFoundTheFirstTime(User user, User example) {
-    when(jsonFileWriter.findEntity(User.class, example)).thenReturn(user);
+    when(jsonFileWriter.findUser(example)).thenReturn(user);
   }
 
   private void assertThatContextContainsUser(SecurityContext context, User user) {
@@ -139,15 +139,15 @@ public class UserSecurityContextCreatorTest {
   }
 
   private void userIsFoundTheSecondTime(User user, User example) {
-    when(jsonFileWriter.findEntity(User.class, example)).thenReturn(null, user);
+    when(jsonFileWriter.findUser(example)).thenReturn(null, user);
   }
 
   private void verifyUserIsSaved(User example) throws StorageException, ValidationException {
-    verify(jsonFileWriter, times(1)).addSystemEntity(User.class, example);
+    verify(jsonFileWriter, times(1)).addUser(example);
   }
 
   private void verifyUserSearchedFor(VerificationMode verifictionMode, User example) {
-    verify(jsonFileWriter, verifictionMode).findEntity(User.class, example);
+    verify(jsonFileWriter, verifictionMode).findUser(example);
   }
 
 }

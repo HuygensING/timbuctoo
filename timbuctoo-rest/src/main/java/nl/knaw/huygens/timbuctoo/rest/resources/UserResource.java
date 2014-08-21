@@ -56,8 +56,8 @@ import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.security.UserRoles;
-import nl.knaw.huygens.timbuctoo.storage.UserConfigurationHandler;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.UserConfigurationHandler;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import org.apache.commons.lang.StringUtils;
@@ -85,7 +85,7 @@ public class UserResource extends ResourceBase {
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
   public List<User> getAll(@QueryParam("rows") @DefaultValue("200") int rows, @QueryParam("start") int start) {
-    return userConfigurationHandler.getSystemEntities(User.class).skip(start).getSome(rows);
+    return userConfigurationHandler.getUsers().skip(start).getSome(rows);
   }
 
   @GET
@@ -93,7 +93,7 @@ public class UserResource extends ResourceBase {
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
   public User get(@PathParam(ID_PARAM) String id) {
-    User user = userConfigurationHandler.getEntity(User.class, id);
+    User user = userConfigurationHandler.getUser(id);
     checkNotNull(user, Status.NOT_FOUND, "No User with id %s", id);
     return user;
   }
@@ -103,11 +103,11 @@ public class UserResource extends ResourceBase {
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed({ ADMIN_ROLE, USER_ROLE, UNVERIFIED_USER_ROLE })
   public User getMyUserData(@QueryParam(USER_ID_KEY) String id, @QueryParam("VRE_ID") String vreId) {
-    User user = userConfigurationHandler.getEntity(User.class, id);
+    User user = userConfigurationHandler.getUser(id);
     checkNotNull(user, Status.NOT_FOUND, "No User with id %s", id);
 
     VREAuthorization example = new VREAuthorization(vreId, id);
-    VREAuthorization authorization = userConfigurationHandler.findEntity(VREAuthorization.class, example);
+    VREAuthorization authorization = userConfigurationHandler.findVREAuthorization(example);
 
     user.setVreAuthorization(authorization);
     return user;
@@ -119,7 +119,7 @@ public class UserResource extends ResourceBase {
   @RolesAllowed(ADMIN_ROLE)
   public Response put(@PathParam(ID_PARAM) String id, User user) {
     try {
-      userConfigurationHandler.updateSystemEntity(User.class, user);
+      userConfigurationHandler.updateUser(user);
     } catch (StorageException e) {
       throw new TimbuctooException(Status.NOT_FOUND, "User %s not found", id);
     }
@@ -151,9 +151,9 @@ public class UserResource extends ResourceBase {
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
   public Response delete(@PathParam(ID_PARAM) String id) throws StorageException {
-    User user = userConfigurationHandler.getEntity(User.class, id);
+    User user = userConfigurationHandler.getUser(id);
     checkNotNull(user, Status.NOT_FOUND, "No User with id %s", id);
-    userConfigurationHandler.deleteSystemEntity(user);
+    userConfigurationHandler.deleteUser(user);
     return Response.status(Status.NO_CONTENT).build();
   }
 
@@ -186,7 +186,7 @@ public class UserResource extends ResourceBase {
     checkIfInScope(authorization.getVreId(), userVREId);
 
     String vreId = authorization.getVreId();
-    userConfigurationHandler.addSystemEntity(VREAuthorization.class, authorization);
+    userConfigurationHandler.addVREAuthorization(authorization);
 
     return Response.created(new URI(vreId)).build();
   }
@@ -206,7 +206,7 @@ public class UserResource extends ResourceBase {
     checkNotNull(authorization, Status.BAD_REQUEST, "Missing VREAuthorization");
     checkIfInScope(vreId, userVREId);
     findVREAuthorization(vreId, userId);
-    userConfigurationHandler.updateSystemEntity(VREAuthorization.class, authorization);
+    userConfigurationHandler.updateVREAuthorization(authorization);
   }
 
   @DELETE
@@ -219,7 +219,7 @@ public class UserResource extends ResourceBase {
   ) throws StorageException {
     checkIfInScope(vreId, userVREId);
     VREAuthorization authorization = findVREAuthorization(vreId, userId);
-    userConfigurationHandler.deleteSystemEntity(authorization);
+    userConfigurationHandler.deleteVREAuthorization(authorization);
   }
 
   /**
@@ -237,7 +237,7 @@ public class UserResource extends ResourceBase {
 
   private VREAuthorization findVREAuthorization(String vreId, String userId) {
     VREAuthorization example = new VREAuthorization(vreId, userId);
-    VREAuthorization authorization = userConfigurationHandler.findEntity(VREAuthorization.class, example);
+    VREAuthorization authorization = userConfigurationHandler.findVREAuthorization(example);
     checkNotNull(authorization, Status.NOT_FOUND, "Missing VREAuthorization for userId %s and vreId %s", userId, vreId);
     return authorization;
   }
