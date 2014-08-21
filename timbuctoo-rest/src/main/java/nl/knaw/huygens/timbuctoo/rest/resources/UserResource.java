@@ -56,7 +56,7 @@ import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.security.UserRoles;
-import nl.knaw.huygens.timbuctoo.storage.UserConfigurationHandle;
+import nl.knaw.huygens.timbuctoo.storage.UserConfigurationHandler;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
@@ -72,11 +72,11 @@ public class UserResource extends ResourceBase {
   private static final String VRE_AUTHORIZATION_PATH = VRE_AUTHORIZATION_COLLECTION_PATH + "/{vre: \\w+}";
   private static final String ID_PARAM = "id";
 
-  private final UserConfigurationHandle userConfigurationHandler;
+  private final UserConfigurationHandler userConfigurationHandler;
   private final MailSender mailSender;
 
   @Inject
-  public UserResource(UserConfigurationHandle userConfigurationHandler, MailSender mailSender) {
+  public UserResource(UserConfigurationHandler userConfigurationHandler, MailSender mailSender) {
     this.userConfigurationHandler = userConfigurationHandler;
     this.mailSender = mailSender;
   }

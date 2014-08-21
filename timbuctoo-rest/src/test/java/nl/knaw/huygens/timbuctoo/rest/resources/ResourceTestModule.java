@@ -44,7 +44,7 @@ import nl.knaw.huygens.timbuctoo.search.converters.SearchParametersConverter;
 import nl.knaw.huygens.timbuctoo.security.DefaultVREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.security.VREAuthorizationHandler;
-import nl.knaw.huygens.timbuctoo.storage.UserConfigurationHandle;
+import nl.knaw.huygens.timbuctoo.storage.UserConfigurationHandler;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.inject.Provides;
@@ -82,7 +82,7 @@ class ResourceTestModule extends JerseyServletModule {
   private RelationSearcher relationSearcher;
   private RegularClientSearchResultCreator regularClientSearchResultCreator;
   private RelationClientSearchResultCreator relationClientSearchResultCreator;
-  private UserConfigurationHandle userConfigurationHandler;
+  private UserConfigurationHandler userConfigurationHandler;
 
   public ResourceTestModule() {
     try {
@@ -93,7 +93,7 @@ class ResourceTestModule extends JerseyServletModule {
       jsonProvider = mock(JacksonJsonProvider.class);
       validator = mock(Validator.class);
       mailSender = mock(MailSender.class);
-      userConfigurationHandler = mock(UserConfigurationHandle.class);
+      userConfigurationHandler = mock(UserConfigurationHandler.class);
       securityContextCreator = new UserSecurityContextCreator(userConfigurationHandler);
       authorizationHandler = mock(AuthorizationHandler.class);
       broker = mock(Broker.class);
@@ -252,7 +252,7 @@ class ResourceTestModule extends JerseyServletModule {
 
   @Singleton
   @Provides
-  public UserConfigurationHandle provideJsonFileWriter() {
+  public UserConfigurationHandler provideJsonFileWriter() {
     return userConfigurationHandler;
   }
 

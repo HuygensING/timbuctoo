@@ -27,7 +27,7 @@ import javax.ws.rs.core.SecurityContext;
 import nl.knaw.huygens.security.client.SecurityContextCreator;
 import nl.knaw.huygens.security.client.model.SecurityInformation;
 import nl.knaw.huygens.timbuctoo.model.User;
-import nl.knaw.huygens.timbuctoo.storage.UserConfigurationHandle;
+import nl.knaw.huygens.timbuctoo.storage.UserConfigurationHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,10 +38,10 @@ public class UserSecurityContextCreator implements SecurityContextCreator {
 
   private static final Logger LOG = LoggerFactory.getLogger(UserSecurityContextCreator.class);
 
-  private final UserConfigurationHandle jsonFileWriter;
+  private final UserConfigurationHandler jsonFileWriter;
 
   @Inject
-  public UserSecurityContextCreator(UserConfigurationHandle jsonFileWriter) {
+  public UserSecurityContextCreator(UserConfigurationHandler jsonFileWriter) {
     this.jsonFileWriter = jsonFileWriter;
   }
 

@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage;
 
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
-public class UserConfigurationHandle {
+public class UserConfigurationHandler {
 
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T instance) {
     return null;

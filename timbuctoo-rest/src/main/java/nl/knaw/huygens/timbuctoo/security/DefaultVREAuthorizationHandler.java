@@ -27,7 +27,7 @@ import static nl.knaw.huygens.timbuctoo.security.UserRoles.UNVERIFIED_USER_ROLE;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
-import nl.knaw.huygens.timbuctoo.storage.UserConfigurationHandle;
+import nl.knaw.huygens.timbuctoo.storage.UserConfigurationHandler;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
@@ -45,12 +45,12 @@ public class DefaultVREAuthorizationHandler implements VREAuthorizationHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(DefaultVREAuthorizationHandler.class);
 
-  private final UserConfigurationHandle userConfigurationHandler;
+  private final UserConfigurationHandler userConfigurationHandler;
   private final MailSender mailSender;
 
   @Inject
-  public DefaultVREAuthorizationHandler(UserConfigurationHandle repository, MailSender mailSender) {
-    this.userConfigurationHandler = repository;
+  public DefaultVREAuthorizationHandler(UserConfigurationHandler userConfigurationHandler, MailSender mailSender) {
+    this.userConfigurationHandler = userConfigurationHandler;
     this.mailSender = mailSender;
   }
 

@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
-import nl.knaw.huygens.timbuctoo.storage.UserConfigurationHandle;
+import nl.knaw.huygens.timbuctoo.storage.UserConfigurationHandler;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
@@ -26,13 +26,13 @@ public class DefaultVREAuthorizationHandlerTest {
     USER.setId(USER_ID);
   }
 
-  private UserConfigurationHandle userConfigurationHandlerMock;
+  private UserConfigurationHandler userConfigurationHandlerMock;
   private MailSender mailSenderMock;
   private DefaultVREAuthorizationHandler instance;
 
   @Before
   public void setUp() {
-    userConfigurationHandlerMock = mock(UserConfigurationHandle.class);
+    userConfigurationHandlerMock = mock(UserConfigurationHandler.class);
     mailSenderMock = mock(MailSender.class);
     instance = new DefaultVREAuthorizationHandler(userConfigurationHandlerMock, mailSenderMock);
   }

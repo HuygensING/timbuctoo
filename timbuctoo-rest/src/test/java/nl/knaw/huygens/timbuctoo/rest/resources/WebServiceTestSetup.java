@@ -38,7 +38,7 @@ import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.rest.config.ServletInjectionModelHelper;
 import nl.knaw.huygens.timbuctoo.rest.filters.UserResourceFilterFactory;
 import nl.knaw.huygens.timbuctoo.rest.filters.VREAuthorizationFilterFactory;
-import nl.knaw.huygens.timbuctoo.storage.UserConfigurationHandle;
+import nl.knaw.huygens.timbuctoo.storage.UserConfigurationHandler;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import org.junit.After;
@@ -69,7 +69,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   protected static Injector injector;
 
   protected Repository repository;
-  protected UserConfigurationHandle userConfigurationHandler;
+  protected UserConfigurationHandler userConfigurationHandler;
 
   private static ResourceTestModule resourceTestModule;
 
@@ -86,7 +86,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
 
   @Before
   public void setupJsonFileWriter() {
-    userConfigurationHandler = injector.getInstance(UserConfigurationHandle.class);
+    userConfigurationHandler = injector.getInstance(UserConfigurationHandler.class);
   }
 
   @Before
