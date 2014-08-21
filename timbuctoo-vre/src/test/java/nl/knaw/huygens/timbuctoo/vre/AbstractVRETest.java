@@ -451,6 +451,7 @@ public class AbstractVRETest {
 
   protected void setupScopeGetBaseEntityTypesWith(Class<? extends DomainEntity>... types) {
     Set<Class<? extends DomainEntity>> typeSet = Sets.newHashSet(types);
-    when(scopeMock.getBaseEntityTypes()).thenReturn(typeSet);
+    when(scopeMock.getPrimitiveEntityTypes()).thenReturn(typeSet);
   }
+
 }

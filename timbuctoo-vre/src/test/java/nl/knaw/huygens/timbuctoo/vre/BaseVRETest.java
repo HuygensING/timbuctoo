@@ -21,12 +21,13 @@ package nl.knaw.huygens.timbuctoo.vre;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 
 import java.io.IOException;
-import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Location;
@@ -46,16 +47,15 @@ public class BaseVRETest {
   }
 
   @Test
-  public void testTypeNameMap() {
-    Map<String, String> map = vre.getTypeNameMap();
-    assertThat(map, hasEntry("language", "baselanguage"));
-    assertThat(map, hasEntry("location", "baselocation"));
+  public void testMapPrimitiveTypeName() {
+    assertThat(vre.mapPrimitiveTypeName("language"), is(equalTo("baselanguage")));
+    assertThat(vre.mapPrimitiveTypeName("location"), is(equalTo("baselocation")));
   }
 
   @Test
   @SuppressWarnings("unchecked")
-  public void testBaseEntityTypes() {
-    assertThat(vre.getBaseEntityTypes(), contains(Language.class, Location.class));
+  public void testPrimitiveEntityTypes() {
+    assertThat(vre.getPrimitiveEntityTypes(), contains(Language.class, Location.class));
   }
 
   @Test

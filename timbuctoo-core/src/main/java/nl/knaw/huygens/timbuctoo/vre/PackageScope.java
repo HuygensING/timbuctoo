@@ -73,7 +73,7 @@ class PackageScope implements Scope {
   }
 
   @Override
-  public final Set<Class<? extends DomainEntity>> getBaseEntityTypes() {
+  public final Set<Class<? extends DomainEntity>> getPrimitiveEntityTypes() {
     checkState(builder == null);
     return baseTypes;
   }

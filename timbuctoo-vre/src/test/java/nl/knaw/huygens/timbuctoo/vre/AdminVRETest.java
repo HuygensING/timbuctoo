@@ -45,11 +45,11 @@ public class AdminVRETest {
   }
 
   @Test
-  public void testBaseEntityTypes() {
-    assertTrue(vre.getBaseEntityTypes().contains(Person.class));
-    assertTrue(vre.getBaseEntityTypes().contains(Place.class));
-    assertFalse(vre.getBaseEntityTypes().contains(User.class));
-    assertFalse(vre.getBaseEntityTypes().contains(DCARPerson.class));
+  public void testPrimitiveEntityTypes() {
+    assertTrue(vre.getPrimitiveEntityTypes().contains(Person.class));
+    assertTrue(vre.getPrimitiveEntityTypes().contains(Place.class));
+    assertFalse(vre.getPrimitiveEntityTypes().contains(User.class));
+    assertFalse(vre.getPrimitiveEntityTypes().contains(DCARPerson.class));
   }
 
   @Test

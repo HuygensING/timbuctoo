@@ -35,7 +35,7 @@ public interface Scope {
   /**
    * Returns primitive domain entity types in this scope.
    */
-  Set<Class<? extends DomainEntity>> getBaseEntityTypes();
+  Set<Class<? extends DomainEntity>> getPrimitiveEntityTypes();
 
   /**
    * Returns the entity types in this scope.

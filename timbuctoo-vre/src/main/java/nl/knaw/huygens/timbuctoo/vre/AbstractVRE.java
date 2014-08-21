@@ -58,6 +58,7 @@ public abstract class AbstractVRE implements VRE {
   private static final Logger LOG = LoggerFactory.getLogger(AbstractVRE.class);
 
   private final Scope scope;
+  private final Map<String, String> typeNameMap;
 
   private IndexCollection indexCollection;
 
@@ -72,6 +73,7 @@ public abstract class AbstractVRE implements VRE {
     this.facetedSearchResultConverter = facetedSearchResultConverter;
     try {
       scope = createScope();
+      typeNameMap = createTypeNameMap();
     } catch (IOException e) {
       LOG.error(e.getMessage());
       throw new IllegalStateException("Failed to create scope");
@@ -80,19 +82,35 @@ public abstract class AbstractVRE implements VRE {
 
   protected abstract Scope createScope() throws IOException;
 
-  @Override
-  public List<String> getReceptionNames() {
-    return Collections.emptyList();
+  private Map<String, String> createTypeNameMap() {
+    Map<String, String> map = Maps.newHashMap();
+    for (Class<? extends DomainEntity> type : getEntityTypes()) {
+      Class<? extends DomainEntity> baseType = toBaseDomainEntity(type);
+      if (map.put(getInternalName(baseType), getInternalName(type)) != null) {
+        LOG.error("Inconsistent type name map; multiple values for {}", getInternalName(baseType));
+      }
+    }
+    return map;
   }
 
   @Override
-  public Set<Class<? extends DomainEntity>> getBaseEntityTypes() {
-    return scope.getBaseEntityTypes();
+  public String mapPrimitiveTypeName(String iname) {
+    return typeNameMap.get(iname);
+  }
+
+  @Override
+  public Set<Class<? extends DomainEntity>> getPrimitiveEntityTypes() {
+    return scope.getPrimitiveEntityTypes();
   }
 
   @Override
   public Set<Class<? extends DomainEntity>> getEntityTypes() {
     return scope.getEntityTypes();
+  }
+
+  @Override
+  public List<String> getReceptionNames() {
+    return Collections.emptyList();
   }
 
   @Override
@@ -113,18 +131,6 @@ public abstract class AbstractVRE implements VRE {
   @Override
   public <T extends DomainEntity> List<T> filter(List<T> entities) {
     return scope.filter(entities);
-  }
-
-  @Override
-  public Map<String, String> getTypeNameMap() {
-    Map<String, String> map = Maps.newHashMap();
-    for (Class<? extends DomainEntity> type : getEntityTypes()) {
-      Class<? extends DomainEntity> baseType = toBaseDomainEntity(type);
-      if (map.put(getInternalName(baseType), getInternalName(type)) != null) {
-        LOG.error("Inconsistent type name map; multiple values for {}", getInternalName(baseType));
-      }
-    }
-    return map;
   }
 
   /******************************************************************************
@@ -226,8 +232,7 @@ public abstract class AbstractVRE implements VRE {
 
   @Override
   public void addToIndexStatus(IndexStatus indexStatus) {
-
-    for (Class<? extends DomainEntity> type : getBaseEntityTypes()) {
+    for (Class<? extends DomainEntity> type : getPrimitiveEntityTypes()) {
       Index index = indexCollection.getIndexByType(type);
       try {
         indexStatus.addCount(this, type, index.getCount());
@@ -235,6 +240,6 @@ public abstract class AbstractVRE implements VRE {
         LOG.error("Failed to obtain status: {}", e.getMessage());
       }
     }
-
   }
+
 }

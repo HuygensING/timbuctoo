@@ -26,7 +26,6 @@ import static nl.knaw.huygens.timbuctoo.config.Paths.SYSTEM_PREFIX;
 import static nl.knaw.huygens.timbuctoo.config.Paths.V1_PATH_OPTIONAL;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.ws.rs.GET;
@@ -74,7 +73,6 @@ public class VREResource extends ResourceBase {
     info.setName(vre.getVreId());
     info.setDescription(vre.getDescription());
 
-    Map<String, String> typeNameMap = vre.getTypeNameMap();
     for (String name : vre.getReceptionNames()) {
       RelationType type = repository.getRelationTypeByName(name);
       if (type != null) {
@@ -84,8 +82,8 @@ public class VREResource extends ResourceBase {
         reception.inverseName = type.getInverseName();
         reception.baseSourceType = type.getSourceTypeName();
         reception.baseTargetType = type.getTargetTypeName();
-        reception.derivedSourceType = typeNameMap.get(type.getSourceTypeName());
-        reception.derivedTargetType = typeNameMap.get(type.getTargetTypeName());
+        reception.derivedSourceType = vre.mapPrimitiveTypeName(type.getSourceTypeName());
+        reception.derivedTargetType = vre.mapPrimitiveTypeName(type.getTargetTypeName());
         info.addReception(reception);
       }
     }
