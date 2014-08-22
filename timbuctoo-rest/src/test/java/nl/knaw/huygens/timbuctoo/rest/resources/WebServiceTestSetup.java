@@ -38,7 +38,7 @@ import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.rest.config.ServletInjectionModelHelper;
 import nl.knaw.huygens.timbuctoo.rest.filters.UserResourceFilterFactory;
 import nl.knaw.huygens.timbuctoo.rest.filters.VREAuthorizationFilterFactory;
-import nl.knaw.huygens.timbuctoo.storage.UserConfigurationHandler;
+import nl.knaw.huygens.timbuctoo.security.UserConfigurationHandler;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import org.junit.After;

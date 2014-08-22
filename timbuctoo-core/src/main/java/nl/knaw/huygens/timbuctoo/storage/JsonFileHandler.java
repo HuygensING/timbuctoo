@@ -14,7 +14,12 @@ public class JsonFileHandler {
     // TODO Auto-generated constructor stub
   }
 
-  public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) {
+  public <T extends FileCollection<U>, U extends SystemEntity> void saveCollection(Class<T> type, T collection, String fileName) {
+    // TODO Auto-generated method stub
+
+  }
+
+  public <T> T getCollection(Class<T> type, String fileName) {
     // TODO Auto-generated method stub
     return null;
   }

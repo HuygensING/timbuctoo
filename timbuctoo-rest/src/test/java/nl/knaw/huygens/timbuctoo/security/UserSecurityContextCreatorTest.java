@@ -42,7 +42,6 @@ import nl.knaw.huygens.security.client.model.HuygensSecurityInformation;
 import nl.knaw.huygens.security.client.model.SecurityInformation;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.UserConfigurationHandler;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
 import org.junit.After;
