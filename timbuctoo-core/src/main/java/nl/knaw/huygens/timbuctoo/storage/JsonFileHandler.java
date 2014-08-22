@@ -17,7 +17,7 @@ import com.google.inject.Inject;
  * A class that writes and reads json files.
  */
 public class JsonFileHandler {
-  static final String CONFIG_DIR_KEY = "admin_data";
+  static final String CONFIG_DIR_KEY = "admin_data.directory";
   private ObjectMapper objectMapper;
   private Configuration config;
 
