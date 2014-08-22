@@ -29,6 +29,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
+import nl.knaw.huygens.timbuctoo.storage.IdCreator;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
 import org.mongojack.JacksonDBCollection;
@@ -97,7 +98,7 @@ public class EntityIds {
       // return the new object, create if no object exists:
       Counter counter = counters.findAndModify(query, null, null, false, increment, true, true);
 
-      return String.format("%s%012d", prefixes.get(baseType), counter.next);
+      return IdCreator.create(prefixes.get(baseType), counter.next);
     } catch (MongoException e) {
       throw new StorageException(e);
     }
