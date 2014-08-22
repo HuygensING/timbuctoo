@@ -129,18 +129,20 @@ public class Configuration {
   }
 
   public String getSolrHomeDir() {
-    String path = getSetting("solr.directory");
-    return getBooleanSetting("solr.use_user_home") ? pathInUserHome(path) : path;
+    return getDirectory("solr.directory");
   }
 
   public String pathInUserHome(String path) {
-    path = Character.toString(path.charAt(0)).equals("/") ? path : "/" + path;
-    return System.getProperty("user.home") + path;
+    return concatenatePaths(System.getProperty("user.home"), path);
   }
 
-  public String getDirectory(String string) {
-    // TODO Auto-generated method stub
-    return null;
+  private String concatenatePaths(String part1, String part2) {
+    part2 = Character.toString(part2.charAt(0)).equals("/") ? part2 : "/" + part2;
+    return part1 + part2;
   }
 
+  public String getDirectory(String key) {
+    String path = concatenatePaths(getSetting("home.directory"), getSetting(key));
+    return getBooleanSetting("home.use_user_home") ? pathInUserHome(path) : path;
+  }
 }
