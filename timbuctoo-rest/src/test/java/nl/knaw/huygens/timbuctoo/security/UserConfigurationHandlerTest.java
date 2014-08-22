@@ -6,11 +6,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
+import nl.knaw.huygens.timbuctoo.storage.FileCollection;
 import nl.knaw.huygens.timbuctoo.storage.JsonFileHandler;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
@@ -41,7 +44,7 @@ public class UserConfigurationHandlerTest {
   }
 
   @Test
-  public void addUserShouldGiveUserAnIdAndAddItToTheUserCollection() {
+  public void addUserShouldGiveUserAnIdAndAddItToTheUserCollection() throws StorageException {
     // setup
     Class<UserFileCollection> type = USER_COLLECTION_TYPE;
     User user = new User();
@@ -55,11 +58,37 @@ public class UserConfigurationHandlerTest {
     InOrder inOrder = Mockito.inOrder(jsonFileHandler, users);
     inOrder.verify(jsonFileHandler).getCollection(type, USER_FILE_NAME);
     inOrder.verify(users).add(user);
-    inOrder.verify(jsonFileHandler).saveCollection(type, users, USER_FILE_NAME);
+    inOrder.verify(jsonFileHandler).saveCollection(users, USER_FILE_NAME);
+  }
+
+  @Test(expected = StorageException.class)
+  public void addUserThrowsAStorageExceptionWhenGettingTheCollectionThrowsOne() throws StorageException {
+    // setup
+    User user = new User();
+    setUpGetCollectionThrowsAnException(USER_COLLECTION_TYPE, USER_FILE_NAME);
+
+    // action
+    instance.addUser(user);
+  }
+
+  @Test(expected = StorageException.class)
+  public void addUserThrowsAStorageExceptionWhenSaveCollectionThrowsOne() throws StorageException {
+    // setup
+    User user = new User();
+    UserFileCollection users = setUpUserCollection();
+
+    setUpSaveCollectionThrowsAnException(users, USER_FILE_NAME);
+
+    // action
+    instance.addUser(user);
+
+    // verify
+    verify(users).updateItem(user);
+    verify(jsonFileHandler).saveCollection(users, USER_FILE_NAME);
   }
 
   @Test
-  public void testFindUser() {
+  public void testFindUser() throws StorageException {
     // setup
     User user = new User();
     Class<UserFileCollection> type = USER_COLLECTION_TYPE;
@@ -78,7 +107,21 @@ public class UserConfigurationHandlerTest {
   }
 
   @Test
-  public void getUser() {
+  public void findUserReturnsANewUserWhenJsonFileHandlerThrowsAStoragetException() throws StorageException {
+    // setup
+    User user = new User();
+    doThrow(StorageException.class).when(jsonFileHandler).getCollection(USER_COLLECTION_TYPE, USER_FILE_NAME);
+
+    // action
+    User foundUser = instance.findUser(user);
+
+    // verify
+    assertThat(foundUser, is(notNullValue(User.class)));
+    verify(jsonFileHandler).getCollection(USER_COLLECTION_TYPE, USER_FILE_NAME);
+  }
+
+  @Test
+  public void getUser() throws StorageException {
     UserFileCollection users = setUpUserCollection();
     String userId = "userId";
     when(users.get(userId)).thenReturn(new User());
@@ -93,7 +136,24 @@ public class UserConfigurationHandlerTest {
   }
 
   @Test
-  public void getUsers() {
+  public void getUserReturnsANewUserWhenJsonFileHandlerThrowsAStoragetException() throws StorageException {
+    setUpGetCollectionThrowsAnException(USER_COLLECTION_TYPE, USER_FILE_NAME);
+    String userId = "userId";
+
+    // action
+    User foundUser = instance.getUser(userId);
+
+    // verify
+    assertThat(foundUser, is(notNullValue(User.class)));
+    verify(jsonFileHandler).getCollection(USER_COLLECTION_TYPE, USER_FILE_NAME);
+  }
+
+  private void setUpGetCollectionThrowsAnException(Class<? extends FileCollection<? extends SystemEntity>> type, String fileName) throws StorageException {
+    doThrow(StorageException.class).when(jsonFileHandler).getCollection(type, fileName);
+  }
+
+  @Test
+  public void getUsers() throws StorageException {
     // setup
     StorageIterator<User> storageIterator = StorageIteratorStub.newInstance();
     UserFileCollection users = setUpUserCollection();
@@ -108,6 +168,18 @@ public class UserConfigurationHandlerTest {
   }
 
   @Test
+  public void getUsersReturnsAnEmptyStorageIteratorWhenJsonFileHandlerThrowsAnException() throws StorageException {
+    // setup
+    setUpGetCollectionThrowsAnException(USER_COLLECTION_TYPE, USER_FILE_NAME);
+
+    // action
+    StorageIterator<User> returnedIterator = instance.getUsers();
+
+    // verify
+    assertThat(returnedIterator, is(notNullValue()));
+  }
+
+  @Test
   public void updateUser() throws StorageException {
     // setup
     User user = new User();
@@ -118,7 +190,38 @@ public class UserConfigurationHandlerTest {
 
     // verify
     verify(users).updateItem(user);
-    verify(jsonFileHandler).saveCollection(USER_COLLECTION_TYPE, users, USER_FILE_NAME);
+    verify(jsonFileHandler).saveCollection(users, USER_FILE_NAME);
+  }
+
+  @Test(expected = StorageException.class)
+  public void updateUserThrowsAStorageExceptionWhenGettingTheCollectionThrowsOne() throws StorageException {
+    // setup
+    User user = new User();
+    setUpGetCollectionThrowsAnException(USER_COLLECTION_TYPE, USER_FILE_NAME);
+
+    // action
+    instance.updateUser(user);
+  }
+
+  @Test(expected = StorageException.class)
+  public void updateUserThrowsAStorageExceptionWhenSaveCollectionThrowsOne() throws StorageException {
+    // setup
+    User user = new User();
+    UserFileCollection users = setUpUserCollection();
+
+    setUpSaveCollectionThrowsAnException(users, USER_FILE_NAME);
+
+    // action
+    instance.updateUser(user);
+
+    // verify
+    verify(users).updateItem(user);
+    verify(jsonFileHandler).saveCollection(users, USER_FILE_NAME);
+  }
+
+  private <T extends FileCollection<? extends SystemEntity>> void setUpSaveCollectionThrowsAnException(T collection, String fileName) throws StorageException {
+    doThrow(StorageException.class).when(jsonFileHandler).saveCollection(collection, fileName);
+
   }
 
   @Test
@@ -132,10 +235,36 @@ public class UserConfigurationHandlerTest {
 
     // verify
     verify(users).deleteItem(user);
-    verify(jsonFileHandler).saveCollection(USER_COLLECTION_TYPE, users, USER_FILE_NAME);
+    verify(jsonFileHandler).saveCollection(users, USER_FILE_NAME);
   }
 
-  private UserFileCollection setUpUserCollection() {
+  @Test(expected = StorageException.class)
+  public void deleteUserThrowsAStorageExceptionWhenGettingTheCollectionThrowsOne() throws StorageException {
+    // setup
+    User user = new User();
+    setUpGetCollectionThrowsAnException(USER_COLLECTION_TYPE, USER_FILE_NAME);
+
+    // action
+    instance.deleteUser(user);
+  }
+
+  @Test(expected = StorageException.class)
+  public void deleteUserThrowsAStorageExceptionWhenSaveCollectionThrowsOne() throws StorageException {
+    // setup
+    User user = new User();
+    UserFileCollection users = setUpUserCollection();
+
+    setUpSaveCollectionThrowsAnException(users, USER_FILE_NAME);
+
+    // action
+    instance.deleteUser(user);
+
+    // verify
+    verify(users).updateItem(user);
+    verify(jsonFileHandler).saveCollection(users, USER_FILE_NAME);
+  }
+
+  private UserFileCollection setUpUserCollection() throws StorageException {
     UserFileCollection users = mock(USER_COLLECTION_TYPE);
     when(jsonFileHandler.getCollection(USER_COLLECTION_TYPE, USER_FILE_NAME)).thenReturn(users);
     return users;
@@ -144,7 +273,7 @@ public class UserConfigurationHandlerTest {
   // VREAuthorization tests
 
   @Test
-  public void testAddVREAuthorization() {
+  public void testAddVREAuthorization() throws StorageException {
     // setup
     VREAuthorizationFileCollection vreAuthorizations = setUpVREAuthorizationCollection();
     VREAuthorization authorization = createVREAuthorizationFor(VRE_ID);
@@ -156,11 +285,41 @@ public class UserConfigurationHandlerTest {
     InOrder inOrder = Mockito.inOrder(jsonFileHandler, vreAuthorizations);
     inOrder.verify(jsonFileHandler).getCollection(VRE_AUTH_COLL_TYPE, VRE_FILE_NAME);
     inOrder.verify(vreAuthorizations).add(authorization);
-    inOrder.verify(jsonFileHandler).saveCollection(VRE_AUTH_COLL_TYPE, vreAuthorizations, VRE_FILE_NAME);
+    inOrder.verify(jsonFileHandler).saveCollection(vreAuthorizations, VRE_FILE_NAME);
+  }
+
+  @Test(expected = StorageException.class)
+  public void addVREAuthorizationAStorageExceptionWhenGettingTheCollectionThrowsOne() throws StorageException {
+    // setup
+    VREAuthorization authorization = createVREAuthorizationFor(VRE_ID);
+    setUpGetCollectionThrowsAnException(VRE_AUTH_COLL_TYPE, VRE_FILE_NAME);
+
+    // action
+    instance.addVREAuthorization(authorization);
+
+    // verify
+    verify(jsonFileHandler).getCollection(VRE_AUTH_COLL_TYPE, VRE_FILE_NAME);
+  }
+
+  @Test(expected = StorageException.class)
+  public void addVREAuthorizationAStorageExceptionWhenSavingTheCollectionThrowsOne() throws StorageException {
+    // setup
+    VREAuthorizationFileCollection vreAuthorizations = setUpVREAuthorizationCollection();
+    VREAuthorization authorization = createVREAuthorizationFor(VRE_ID);
+    setUpSaveCollectionThrowsAnException(vreAuthorizations, VRE_FILE_NAME);
+
+    // action
+    instance.addVREAuthorization(authorization);
+
+    // verify
+    InOrder inOrder = Mockito.inOrder(jsonFileHandler, vreAuthorizations);
+    inOrder.verify(jsonFileHandler).getCollection(VRE_AUTH_COLL_TYPE, VRE_FILE_NAME);
+    inOrder.verify(vreAuthorizations).add(authorization);
+    inOrder.verify(jsonFileHandler).saveCollection(vreAuthorizations, VRE_FILE_NAME);
   }
 
   @Test
-  public void testFindVREAuthorization() {
+  public void testFindVREAuthorization() throws StorageException {
     // setup
     VREAuthorization vreAuthorization = createVREAuthorizationFor(VRE_ID);
     VREAuthorizationFileCollection vreAuthorizations = setUpVREAuthorizationCollection();
@@ -176,7 +335,22 @@ public class UserConfigurationHandlerTest {
   }
 
   @Test
-  public void testUpdateVREAuthroization() throws StorageException {
+  public void findVREAuthorizationReturnsANewVREAuthorizationWhenGettingOfTheCollectionThrowsAStorageException() throws StorageException {
+    // setup
+    VREAuthorization vreAuthorization = createVREAuthorizationFor(VRE_ID);
+
+    setUpGetCollectionThrowsAnException(VRE_AUTH_COLL_TYPE, VRE_FILE_NAME);
+
+    // action
+    VREAuthorization foundAuthorization = instance.findVREAuthorization(vreAuthorization);
+
+    // verify
+    assertThat(foundAuthorization, is(notNullValue(VREAuthorization.class)));
+    verify(jsonFileHandler).getCollection(VRE_AUTH_COLL_TYPE, VRE_FILE_NAME);
+  }
+
+  @Test
+  public void testUpdateVREAuthrozation() throws StorageException {
     // setup
     VREAuthorization vreAuthorization = createVREAuthorizationFor(VRE_ID);
     VREAuthorizationFileCollection vreAuthorizations = setUpVREAuthorizationCollection();
@@ -186,11 +360,41 @@ public class UserConfigurationHandlerTest {
 
     // verify
     verify(vreAuthorizations).updateItem(vreAuthorization);
-    verify(jsonFileHandler).saveCollection(VRE_AUTH_COLL_TYPE, vreAuthorizations, VRE_FILE_NAME);
+    verify(jsonFileHandler).saveCollection(vreAuthorizations, VRE_FILE_NAME);
+  }
+
+  @Test(expected = StorageException.class)
+  public void updateVREAuthorizationAStorageExceptionWhenGettingTheCollectionThrowsOne() throws StorageException {
+    // setup
+    VREAuthorization authorization = createVREAuthorizationFor(VRE_ID);
+    setUpGetCollectionThrowsAnException(VRE_AUTH_COLL_TYPE, VRE_FILE_NAME);
+
+    // action
+    instance.updateVREAuthorization(authorization);
+
+    // verify
+    verify(jsonFileHandler).getCollection(VRE_AUTH_COLL_TYPE, VRE_FILE_NAME);
+  }
+
+  @Test(expected = StorageException.class)
+  public void updateVREAuthorizationAStorageExceptionWhenSavingTheCollectionThrowsOne() throws StorageException {
+    // setup
+    VREAuthorizationFileCollection vreAuthorizations = setUpVREAuthorizationCollection();
+    VREAuthorization authorization = createVREAuthorizationFor(VRE_ID);
+    setUpSaveCollectionThrowsAnException(vreAuthorizations, VRE_FILE_NAME);
+
+    // action
+    instance.updateVREAuthorization(authorization);
+
+    // verify
+    InOrder inOrder = Mockito.inOrder(jsonFileHandler, vreAuthorizations);
+    inOrder.verify(jsonFileHandler).getCollection(VRE_AUTH_COLL_TYPE, VRE_FILE_NAME);
+    inOrder.verify(vreAuthorizations).updateItem(authorization);
+    inOrder.verify(jsonFileHandler).saveCollection(vreAuthorizations, VRE_FILE_NAME);
   }
 
   @Test
-  public void testDeleteVREAuthroization() throws StorageException {
+  public void testDeleteVREAuthrozation() throws StorageException {
     // setup
     VREAuthorization vreAuthorization = createVREAuthorizationFor(VRE_ID);
     VREAuthorizationFileCollection vreAuthorizations = setUpVREAuthorizationCollection();
@@ -200,10 +404,40 @@ public class UserConfigurationHandlerTest {
 
     // verify
     verify(vreAuthorizations).deleteItem(vreAuthorization);
-    verify(jsonFileHandler).saveCollection(VRE_AUTH_COLL_TYPE, vreAuthorizations, VRE_FILE_NAME);
+    verify(jsonFileHandler).saveCollection(vreAuthorizations, VRE_FILE_NAME);
   }
 
-  private VREAuthorizationFileCollection setUpVREAuthorizationCollection() {
+  @Test(expected = StorageException.class)
+  public void deleteVREAuthorizationAStorageExceptionWhenGettingTheCollectionThrowsOne() throws StorageException {
+    // setup
+    VREAuthorization authorization = createVREAuthorizationFor(VRE_ID);
+    setUpGetCollectionThrowsAnException(VRE_AUTH_COLL_TYPE, VRE_FILE_NAME);
+
+    // action
+    instance.deleteVREAuthorization(authorization);
+
+    // verify
+    verify(jsonFileHandler).getCollection(VRE_AUTH_COLL_TYPE, VRE_FILE_NAME);
+  }
+
+  @Test(expected = StorageException.class)
+  public void deleteVREAuthorizationAStorageExceptionWhenSavingTheCollectionThrowsOne() throws StorageException {
+    // setup
+    VREAuthorizationFileCollection vreAuthorizations = setUpVREAuthorizationCollection();
+    VREAuthorization authorization = createVREAuthorizationFor(VRE_ID);
+    setUpSaveCollectionThrowsAnException(vreAuthorizations, VRE_FILE_NAME);
+
+    // action
+    instance.addVREAuthorization(authorization);
+
+    // verify
+    InOrder inOrder = Mockito.inOrder(jsonFileHandler, vreAuthorizations);
+    inOrder.verify(jsonFileHandler).getCollection(VRE_AUTH_COLL_TYPE, VRE_FILE_NAME);
+    inOrder.verify(vreAuthorizations).deleteItem(authorization);
+    inOrder.verify(jsonFileHandler).saveCollection(vreAuthorizations, VRE_FILE_NAME);
+  }
+
+  private VREAuthorizationFileCollection setUpVREAuthorizationCollection() throws StorageException {
     VREAuthorizationFileCollection vreAuthorizations = mock(VRE_AUTH_COLL_TYPE);
     when(jsonFileHandler.getCollection(VRE_AUTH_COLL_TYPE, VRE_FILE_NAME)).thenReturn(vreAuthorizations);
     return vreAuthorizations;

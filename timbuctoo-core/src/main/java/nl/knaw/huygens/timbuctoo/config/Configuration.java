@@ -138,4 +138,9 @@ public class Configuration {
     return System.getProperty("user.home") + path;
   }
 
+  public String getDirectory(String string) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 }
