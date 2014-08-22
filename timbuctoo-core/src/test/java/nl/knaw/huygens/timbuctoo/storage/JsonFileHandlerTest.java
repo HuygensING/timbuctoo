@@ -4,7 +4,7 @@ import static nl.knaw.huygens.timbuctoo.storage.JsonFileHandler.CONFIG_DIR_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -100,7 +100,7 @@ public class JsonFileHandlerTest {
     UserFileCollection actualCollection = instance.getCollection(UserFileCollection.class, FILE_NAME);
 
     // verify
-    assertThat(actualCollection, is(notNullValue(COLLECTION_TYPE)));
+    assertThat(actualCollection, is(nullValue(COLLECTION_TYPE)));
 
   }
 
