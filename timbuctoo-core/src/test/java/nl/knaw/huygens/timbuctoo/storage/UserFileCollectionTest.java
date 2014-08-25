@@ -13,192 +13,183 @@ import nl.knaw.huygens.timbuctoo.model.User;
 import org.junit.Before;
 import org.junit.Test;
 
-public class UserFileCollectionTest {
-  private static final String PERSISTENT_ID = "persistentId";
-  private UserFileCollection instance;
+public class UserFileCollectionTest extends FileCollectionTest<User> {
+	private static final String PERSISTENT_ID = "persistentId";
+	private FileCollection<User> instance;
 
-  @Before
-  public void setUp() {
-    instance = new UserFileCollection();
-  }
+	@Before
+	public void setUp() {
+		instance = new UserFileCollection();
+	}
 
-  @Test
-  public void addUserShouldGiveUserAndReturnTheId() {
-    User user = createUserWithPersistentId();
+	@Test
+	public void addUserShouldGiveUserAndReturnTheId() {
+		User user = createUserWithPersistentId();
+		String expectedId = "USER000000000001";
 
-    String expectedId = "USER000000000001";
+		verifyAddReturnsAnIdAndAddsItToTheEntity(user, expectedId);
+	}
 
-    String actualId = instance.add(user);
+	@Test
+	public void addUserIncrementsTheId() {
+		User user1 = createUserWithPersistentId();
+		User user2 = createUserWithPersistentId();
+		User user3 = createUserWithPersistentId();
 
-    assertThat(actualId, is(equalTo(expectedId)));
-    assertThat(user.getId(), is(equalTo(expectedId)));
-  }
+		String expectedId = "USER000000000003";
 
-  @Test
-  public void addUserShouldCreateAnIdHigherThanTheHighest() {
-    User user1 = createUserWithPersistentId();
-    User user2 = createUserWithPersistentId();
-    User user3 = createUserWithPersistentId();
+		verifyAddIncrementsTheId(user1, user2, user3, expectedId);
+	}
 
-    String expectedId = "USER000000000003";
+	private User createUserWithPersistentId() {
+		User user = new User();
+		user.setPersistentId(PERSISTENT_ID);
+		return user;
+	}
 
-    instance.add(user1);
-    instance.add(user2);
-    String actualId = instance.add(user3);
+	@Test
+	public void addUserShouldAddTheUserToItsInnerCollection() {
+		User user = createUserWithPersistentId();
 
-    assertThat(actualId, is(equalTo(expectedId)));
-  }
+		verifyAddAddsTheEntityToItsCollection(user);
+	}
 
-  private User createUserWithPersistentId() {
-    User user = new User();
-    user.setPersistentId(PERSISTENT_ID);
-    return user;
-  }
+	@Test
+	public void theAddedUserCannotBeFoundIfItDidNotContainAPersistentIdButCantBeGet() {
+		User user = new User();
 
-  @Test
-  public void addUserShouldAddTheUserToItsInnerCollection() {
-    User user = createUserWithPersistentId();
+		String id = instance.add(user);
 
-    String id = instance.add(user);
-    User foundUser = instance.get(id);
+		assertThat(instance.findItem(user), is(nullValue(User.class)));
+		assertThat(instance.get(id), is(equalTo(user)));
+	}
 
-    assertThat(foundUser, is(equalTo(user)));
-  }
+	@Test
+	public void findUserShouldSearchTheUserByPersistentId() {
+		User user = createUserWithPersistentId();
 
-  @Test
-  public void theAddedUserCannotBeFoundIfItDidNotContainAPersistentIdButCantBeGet() {
-    User user = new User();
+		instance.add(user);
+		User foundUser = instance.findItem(user);
 
-    String id = instance.add(user);
+		assertThat(foundUser, is(equalTo(user)));
+	}
 
-    assertThat(instance.findItem(user), is(nullValue(User.class)));
-    assertThat(instance.get(id), is(equalTo(user)));
-  }
+	@Test
+	public void findUserReturnsNullIfTheUserParametersHasNoPersistentId() {
+		User user = createUserWithPersistentId();
+		User userToFind = new User();
 
-  @Test
-  public void findUserShouldSearchTheUserByPersistentId() {
-    User user = createUserWithPersistentId();
+		instance.add(user);
+		User foundUser = instance.findItem(userToFind);
 
-    instance.add(user);
-    User foundUser = instance.findItem(user);
+		assertThat(foundUser, is(nullValue(User.class)));
+	}
 
-    assertThat(foundUser, is(equalTo(user)));
-  }
+	@Test
+	public void findUserReturnsNullIfTheUserParametersIsNull() {
+		User user = createUserWithPersistentId();
+		User userToFind = null;
 
-  @Test
-  public void findUserReturnsNullIfTheUserParametersHasNoPersistentId() {
-    User user = createUserWithPersistentId();
-    User userToFind = new User();
+		instance.add(user);
+		User foundUser = instance.findItem(userToFind);
 
-    instance.add(user);
-    User foundUser = instance.findItem(userToFind);
+		assertThat(foundUser, is(nullValue(User.class)));
+	}
 
-    assertThat(foundUser, is(nullValue(User.class)));
-  }
+	@Test
+	public void getAllShouldReturnAStorageIteratorWithAllTheKnownUsers() {
+		// setup
+		User user1 = createUserWithPersistentId();
+		User user2 = createUserWithPersistentId();
+		User user3 = createUserWithPersistentId();
 
-  @Test
-  public void findUserReturnsNullIfTheUserParametersIsNull() {
-    User user = createUserWithPersistentId();
-    User userToFind = null;
+		instance.add(user1);
+		instance.add(user2);
+		instance.add(user3);
 
-    instance.add(user);
-    User foundUser = instance.findItem(userToFind);
+		verifyGetAllReturnsAllTheKnownEntities(containsInAnyOrder(user1, user2, user3));
+	}
 
-    assertThat(foundUser, is(nullValue(User.class)));
-  }
+	@Test
+	public void getAlldReturnsAnEmptyStorageIteratorWhenNoUsersAreKnown() {
 
-  @Test
-  public void getAllShouldReturnAStorageIteratorWithAllTheKnownUsers() {
-    User user1 = createUserWithPersistentId();
-    User user2 = createUserWithPersistentId();
-    User user3 = createUserWithPersistentId();
+		// action
+		StorageIterator<User> users = instance.getAll();
 
-    instance.add(user1);
-    instance.add(user2);
-    instance.add(user3);
+		// verify
+		assertThat(users, is(notNullValue()));
+		assertThat(users.getAll(), is(empty()));
 
-    // action
-    StorageIterator<User> users = instance.getAll();
+	}
 
-    // verify
-    assertThat(users, is(notNullValue()));
-    assertThat(users.getAll(), containsInAnyOrder(user1, user2, user3));
-  }
+	@Test
+	public void updateUserSearchesTheUserByIdAndReplacesTheUserInTheCollection() {
+		// setup
+		User user1 = createUserWithPersistentId();
+		String id = instance.add(user1);
 
-  @Test
-  public void getAlldReturnsAnEmptyStorageIteratorWhenNoUsersAreKnown() {
+		User user2 = createUserWithPersistentId();
+		user2.setId(id);
+		user2.setCommonName("test");
 
-    // action
-    StorageIterator<User> users = instance.getAll();
+		// action
+		instance.updateItem(user2);
 
-    // verify
-    assertThat(users, is(notNullValue()));
-    assertThat(users.getAll(), is(empty()));
-  }
+		// verify
+		assertThat(instance.get(id), is(sameInstance(user2)));
+	}
 
-  @Test
-  public void updateUserSearchesTheUserByIdAndReplacesTheUserInTheCollection() {
-    // setup
-    User user1 = createUserWithPersistentId();
-    String id = instance.add(user1);
+	@Test
+	public void updateUserDoesNothingIfTheUpdateUserHasNoId() {
+		// setup
+		User user1 = createUserWithPersistentId();
+		String id = instance.add(user1);
 
-    User user2 = createUserWithPersistentId();
-    user2.setId(id);
-    user2.setCommonName("test");
+		User user2 = createUserWithPersistentId();
+		user2.setCommonName("test");
 
-    // action
-    instance.updateItem(user2);
+		// action
+		instance.updateItem(user2);
 
-    // verify
-    assertThat(instance.get(id), is(sameInstance(user2)));
-  }
+		// verify
+		assertThat(instance.get(id), is(sameInstance(user1)));
+	}
 
-  @Test
-  public void updateUserDoesNothingIfTheUpdateUserHasNoId() {
-    // setup
-    User user1 = createUserWithPersistentId();
-    String id = instance.add(user1);
+	@Test
+	public void deleteUserSearchesTheUserByIdAndRemovesItFromTheCollection() {
+		// setup
+		User user1 = createUserWithPersistentId();
+		String id = instance.add(user1);
 
-    User user2 = createUserWithPersistentId();
-    user2.setCommonName("test");
+		User user2 = createUserWithPersistentId();
+		user2.setId(id);
+		user2.setCommonName("test");
 
-    // action
-    instance.updateItem(user2);
+		// action
+		instance.deleteItem(user2);
 
-    // verify
-    assertThat(instance.get(id), is(sameInstance(user1)));
-  }
+		// verify
+		assertThat(instance.get(id), is(nullValue(User.class)));
+	}
 
-  @Test
-  public void deleteUserSearchesTheUserByIdAndRemovesItFromTheCollection() {
-    // setup
-    User user1 = createUserWithPersistentId();
-    String id = instance.add(user1);
+	@Test
+	public void deleteUserDoesNothingIfTheUpdateUserHasNoId() {
+		// setup
+		User user1 = createUserWithPersistentId();
+		String id = instance.add(user1);
 
-    User user2 = createUserWithPersistentId();
-    user2.setId(id);
-    user2.setCommonName("test");
+		User user2 = createUserWithPersistentId();
+		user2.setCommonName("test");
 
-    // action
-    instance.deleteItem(user2);
+		// action
+		instance.deleteItem(user2);
 
-    // verify
-    assertThat(instance.get(id), is(nullValue(User.class)));
-  }
+		// verify
+		assertThat(instance.get(id), is(sameInstance(user1)));
+	}
 
-  @Test
-  public void deleteUserDoesNothingIfTheUpdateUserHasNoId() {
-    // setup
-    User user1 = createUserWithPersistentId();
-    String id = instance.add(user1);
-
-    User user2 = createUserWithPersistentId();
-    user2.setCommonName("test");
-
-    // action
-    instance.deleteItem(user2);
-
-    // verify
-    assertThat(instance.get(id), is(sameInstance(user1)));
-  }
+	@Override
+	protected FileCollection<User> getInstance() {
+		return instance;
+	}
 }

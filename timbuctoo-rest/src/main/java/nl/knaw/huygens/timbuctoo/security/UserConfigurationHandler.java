@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.security;
 
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
+import nl.knaw.huygens.timbuctoo.storage.FileCollection;
 import nl.knaw.huygens.timbuctoo.storage.JsonFileHandler;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
@@ -31,7 +32,7 @@ public class UserConfigurationHandler {
   }
 
   public synchronized void addUser(User user) throws StorageException {
-    UserFileCollection users = getUserCollection();
+    FileCollection<User> users = getUserCollection();
     users.add(user);
     jsonFileHandler.saveCollection(users, USER_FILE_NAME);
   }
@@ -80,18 +81,18 @@ public class UserConfigurationHandler {
   }
 
   public synchronized void updateUser(User user) throws StorageException {
-    UserFileCollection userCollection = getUserCollection();
+    FileCollection<User> userCollection = getUserCollection();
     userCollection.updateItem(user);
     jsonFileHandler.saveCollection(userCollection, USER_FILE_NAME);
   }
 
   public synchronized void deleteUser(User user) throws StorageException {
-    UserFileCollection userCollection = getUserCollection();
+    FileCollection<User> userCollection = getUserCollection();
     userCollection.deleteItem(user);
     jsonFileHandler.saveCollection(userCollection, USER_FILE_NAME);
   }
 
-  private UserFileCollection getUserCollection() throws StorageException {
+  private FileCollection<User> getUserCollection() throws StorageException {
     UserFileCollection users = jsonFileHandler.getCollection(UserFileCollection.class, USER_FILE_NAME);
     return users != null ? users : new UserFileCollection();
   }

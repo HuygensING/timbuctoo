@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.storage;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -32,23 +31,10 @@ public class UserFileCollection extends FileCollection<User> {
     return id;
   }
 
-  private String createId(String idPrefix) {
-    return IdCreator.create(idPrefix, getNewNumber(idPrefix, 1));
-  }
-
-  private long getNewNumber(String idPrefix, int i) {
-    LinkedList<String> ids = Lists.newLinkedList(idUserMap.keySet());
-
-    Collections.sort(ids);
-
-    int highestNumber = 0;
-
-    if (!ids.isEmpty()) {
-      String lastId = ids.getLast();
-      highestNumber = Integer.parseInt(lastId.replace(idPrefix, ""));
-    }
-
-    return highestNumber + 1;
+  @Override
+  protected LinkedList<String> getIds() {
+	  LinkedList<String> ids = Lists.newLinkedList(idUserMap.keySet());
+	  return ids;
   }
 
   /**
