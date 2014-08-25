@@ -15,7 +15,7 @@ import org.junit.Test;
 
 public class UserFileCollectionTest extends FileCollectionTest<User> {
 	private static final String PERSISTENT_ID = "persistentId";
-	private FileCollection<User> instance;
+	private UserFileCollection instance;
 
 	@Before
 	public void setUp() {
@@ -92,6 +92,25 @@ public class UserFileCollectionTest extends FileCollectionTest<User> {
 
 		instance.add(user);
 		User foundUser = instance.findItem(userToFind);
+
+		assertThat(foundUser, is(nullValue(User.class)));
+	}
+
+	@Test
+	public void findUserReturnsNullIfTheUserIsNotKnown() {
+		User user = createUserWithPersistentId();
+
+		User foundUser = instance.findItem(user);
+
+		assertThat(foundUser, is(nullValue(User.class)));
+	}
+
+	@Test
+	public void getReturnsNullIfTheIdInsertedIsNull() {
+		User user = createUserWithPersistentId();
+
+		instance.add(user);
+		User foundUser = instance.get(null);
 
 		assertThat(foundUser, is(nullValue(User.class)));
 	}

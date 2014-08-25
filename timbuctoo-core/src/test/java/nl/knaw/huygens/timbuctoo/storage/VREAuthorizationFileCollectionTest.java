@@ -56,8 +56,7 @@ public class VREAuthorizationFileCollectionTest extends FileCollectionTest<VREAu
 		verifyAddAddsTheEntityToItsCollection(authorization);
 	}
 
-	// TODO: Add tests for adding without user id
-	// or VRE id.
+	// TODO: Add tests for adding without user id or VRE id.
 
 	@Test
 	public void addReturnsTheExistingIdIfTheUserAllreadyHasAnAuthroizationForTheVRE() {
@@ -107,6 +106,16 @@ public class VREAuthorizationFileCollectionTest extends FileCollectionTest<VREAu
 		VREAuthorization exampleAuthorization = new VREAuthorization(null, USER_ID);
 
 		assertThat(instance.findItem(exampleAuthorization), is(nullValue(VREAuthorization.class)));
+	}
+
+	@Test
+	public void getReturnsNullIfTheIdIsNull() {
+		setupInstanceWithAuthorization(USER_ID);
+		String nullId = null;
+
+		VREAuthorization vreAuthorization = instance.get(nullId);
+
+		assertThat(vreAuthorization, is(nullValue(VREAuthorization.class)));
 	}
 
 	@Test
