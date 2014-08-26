@@ -116,13 +116,12 @@ You also have to change the `{dir}` in the solr configuration. If the `use_user_
 Go to the root of your git repository and execute the `mvn clean package -P example`. This will generate a war-file in the `timbuctoo-rest/target` Rename this file to `timbuctoo.war` and deploy it on your favourite web server like Apache Tomcat 6 or higher.
 
 #### Deploy the software
-
 When the project is build the module `timbuctoo-solr` contains a *zip-file (tar.gz)* in the target-folder. Extract that file to the directory you named in during the solr configuration and rename the newly created directory to `timbuctoo-solr`. You can do this with `tar -xvf {path to tar.gz} {target path}`
 
 Now you can deploy Timbuctoo to Tomcat. The easiest way is to copy the `war` of the `timbuctoo-rest` module to the `webapps`-directory of Tomcat and rename it to `timbuctoo.war`.
 
 ### Demo pages
-Timbuctoo has a few pages made for demo purposes. The pages are found in the `webapp/static` folder in the `timbuctoo-rest` Maven module. `index.html` shows the content of the database and the different solr indexes. `search.html` demonstrates a simple text  search page. Each `VRE` can search its own objects. Like the `VRE` *DWC* can search on each type defined in the Java package `nl.knaw.huygens.timbuctoo.model.dwcbia`. The same is true for *DutchCarribean*. The *Base* VRE will can search in the `model` root package. These model packages can be found in the `timbuctoo-core` Maven module.
+Timbuctoo has a few pages made for demo purposes. The pages are found in the `webapp/static` folder in the `timbuctoo-rest` Maven module. `index.html` shows the content of the database and the different solr indexes. `search.html` demonstrates a simple text  search page. Each `VRE` can search its own objects. Like the `VRE` *CKCC* can search on each type defined in the Java package `nl.knaw.huygens.timbuctoo.model.ckcc`. The same is true for *DutchCarribean*. The *Base* VRE will can search in the `model` root package. These model packages can be found in the `timbuctoo-core` Maven module.
 
 Another interesting page is `user_info.html` in the `example_vre` subfolder  this demonstrates how to request a secured resource. This page can be reached on `{base_url}/timbuctoo/static/example_vre/user_info.html`.
 
@@ -136,7 +135,22 @@ The demo pages show a small amount of REST resources availlable in Timbuctoo. Ea
 * `{base_url}/timbuctoo/domain/dcararchives/ARCH000000001838 [PUT]` updates a single item
 * `{base_url}/timbuctoo/domain/dcararchives/ARCH000000001838 [DELETE]` removes a single item
 
+To support versioning of the API. The new resources will be prefixed with a version number like:
+ 
+* `{base_url}/v1/timbuctoo/domain/dcararchives/ [GET]` shows the first 200 items of the collections
+
 The resource name of a model can be determined as the lowercase name of the class postfixed with an s.
+
+#### Search api
+
+* {base_url}/timbuctoo/v1/search/ckccpersons [POST] creates a new search request on the CKCCPerson-type.
+* {base_url}/timbuctoo/v1/search/QURY000000000159 [GET] returns the search result.
+
+A search request could be as simple as:
+
+```json
+{"typeString":"ckccperson","term":"Reigersberch","sortParameters":[]}
+```
 
 ### Creating test data
 In the `nl.knaw.huygens.timbuctoo.tools.util` package of the `timbuctoo-tools` module the `PrototypeCreator` gives an overview of how Timbuctoo expects the json be formatted. 
