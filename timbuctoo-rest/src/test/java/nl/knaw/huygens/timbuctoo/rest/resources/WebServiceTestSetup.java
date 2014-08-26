@@ -38,6 +38,7 @@ import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.rest.config.ServletInjectionModelHelper;
 import nl.knaw.huygens.timbuctoo.rest.filters.UserResourceFilterFactory;
 import nl.knaw.huygens.timbuctoo.rest.filters.VREAuthorizationFilterFactory;
+import nl.knaw.huygens.timbuctoo.security.UserConfigurationHandler;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import org.junit.After;
@@ -68,6 +69,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   protected static Injector injector;
 
   protected Repository repository;
+  protected UserConfigurationHandler userConfigurationHandler;
 
   private static ResourceTestModule resourceTestModule;
 
@@ -80,6 +82,11 @@ public abstract class WebServiceTestSetup extends JerseyTest {
     initLogger();
     resourceTestModule = new ResourceTestModule();
     injector = Guice.createInjector(resourceTestModule);
+  }
+
+  @Before
+  public void setupJsonFileWriter() {
+    userConfigurationHandler = injector.getInstance(UserConfigurationHandler.class);
   }
 
   @Before
@@ -110,12 +117,12 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   protected void setupUserWithRoles(String vreId, String userId, String... roles) {
     User user = new User();
     user.setId(userId);
-    when(repository.getEntity(User.class, USER_ID)).thenReturn(user);
-    when(repository.findEntity(User.class, user)).thenReturn(user);
+    when(userConfigurationHandler.getUser(USER_ID)).thenReturn(user);
+    when(userConfigurationHandler.findUser(user)).thenReturn(user);
 
     VREAuthorization example = new VREAuthorization(vreId, userId);
     VREAuthorization authorization = new VREAuthorization(vreId, userId, roles);
-    when(repository.findEntity(VREAuthorization.class, example)).thenReturn(authorization);
+    when(userConfigurationHandler.findVREAuthorization(example)).thenReturn(authorization);
   }
 
   @After

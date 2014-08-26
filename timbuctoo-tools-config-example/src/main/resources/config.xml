@@ -22,6 +22,12 @@
       <owner>Huygens ING</owner>
       <internalname>repository</internalname>
     </project>
+    <home>
+      <!-- The directory that contains all the timbuctoo data directories, 
+      like solr and admin_data -->
+      <directory>{path to config directory}</directory>
+      <use_user_home>false</use_user_home> <!-- is the path in the user home dir -->
+    </home>
     <database>
       <!-- Mongo database -->
       <host>{server}</host>
@@ -30,12 +36,18 @@
       <user>{user name}</user>
       <password>{password}</password>
     </database>
+    <admin_data>
+      <directory>data</directory>
+    </admin_data>
+    <home>
+      <directory>repository</directory>
+      <use_user_home>true</use_user_home>
+    </home>
     <solr>
       <!-- server_type could be LOCAL or REMOTE. When LOCAL is used a "directory" 
         property is expected. When REMOTE is used a "url" property is needed. -->
       <server_type>LOCAL</server_type>
       <commit_within_seconds>10</commit_within_seconds>
-      <use_user_home>true</use_user_home> <!-- does solr use the user home dir -->
       <directory>{dir}</directory> <!-- folder to find solr cores in. -->
       <data_dir>{data_dir}</data_dir> <!-- data folder of solr -->
       <!-- Maximum time before a commit in ms -->

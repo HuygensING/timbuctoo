@@ -29,66 +29,68 @@ import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
-@IDPrefix("VREA")
+@IDPrefix(VREAuthorization.ID_PREFIX)
 public class VREAuthorization extends SystemEntity {
 
-  private String vreId;
-  private String userId;
-  private List<String> roles;
+	public static final String ID_PREFIX = "VREA";
+	private String vreId;
+	private String userId;
+	private List<String> roles;
 
-  public VREAuthorization() {}
+	public VREAuthorization() {
+	}
 
-  public VREAuthorization(String vreId, String userId, String... roles) {
-    setVreId(vreId);
-    setUserId(userId);
-    if (roles != null) {
-      setRoles(Lists.newArrayList(roles));
-    }
-  }
+	public VREAuthorization(String vreId, String userId, String... roles) {
+		setVreId(vreId);
+		setUserId(userId);
+		if (roles != null) {
+			setRoles(Lists.newArrayList(roles));
+		}
+	}
 
-  @Override
-  public String getDisplayName() {
-    return null;
-  }
+	@Override
+	public String getDisplayName() {
+		return null;
+	}
 
-  public String getVreId() {
-    return vreId;
-  }
+	public String getVreId() {
+		return vreId;
+	}
 
-  public void setVreId(String vreId) {
-    this.vreId = vreId;
-  }
+	public void setVreId(String vreId) {
+		this.vreId = vreId;
+	}
 
-  public String getUserId() {
-    return userId;
-  }
+	public String getUserId() {
+		return userId;
+	}
 
-  public void setUserId(String userId) {
-    this.userId = userId;
-  }
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
 
-  public List<String> getRoles() {
-    return roles;
-  }
+	public List<String> getRoles() {
+		return roles;
+	}
 
-  public void setRoles(List<String> roles) {
-    this.roles = roles;
-  }
+	public void setRoles(List<String> roles) {
+		this.roles = roles;
+	}
 
-  @Override
-  public boolean equals(Object obj) {
-    if (!(obj instanceof VREAuthorization)) {
-      return false;
-    }
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof VREAuthorization)) {
+			return false;
+		}
 
-    VREAuthorization other = (VREAuthorization) obj;
+		VREAuthorization other = (VREAuthorization) obj;
 
-    return Objects.equal(other.vreId, vreId) && Objects.equal(other.userId, userId);
-  }
+		return Objects.equal(other.vreId, vreId) && Objects.equal(other.userId, userId);
+	}
 
-  @Override
-  public int hashCode() {
-    return Objects.hashCode(vreId, userId);
-  }
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(vreId, userId);
+	}
 
 }

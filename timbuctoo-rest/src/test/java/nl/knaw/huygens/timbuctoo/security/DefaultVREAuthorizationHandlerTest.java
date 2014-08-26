@@ -7,7 +7,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
@@ -26,15 +25,15 @@ public class DefaultVREAuthorizationHandlerTest {
     USER.setId(USER_ID);
   }
 
-  private Repository repositoryMock;
+  private UserConfigurationHandler userConfigurationHandlerMock;
   private MailSender mailSenderMock;
   private DefaultVREAuthorizationHandler instance;
 
   @Before
   public void setUp() {
-    repositoryMock = mock(Repository.class);
+    userConfigurationHandlerMock = mock(UserConfigurationHandler.class);
     mailSenderMock = mock(MailSender.class);
-    instance = new DefaultVREAuthorizationHandler(repositoryMock, mailSenderMock);
+    instance = new DefaultVREAuthorizationHandler(userConfigurationHandlerMock, mailSenderMock);
   }
 
   @Test
@@ -81,22 +80,22 @@ public class DefaultVREAuthorizationHandlerTest {
 
   private void verifyVREAuthorizationIsSearchedFor(String vreId, String userId) {
     // VREAuthorization are equal when the vreId and userId are equal.
-    verify(repositoryMock).findEntity(VREAuthorization.class, new VREAuthorization(VRE_ID, USER_ID));
+    verify(userConfigurationHandlerMock).findVREAuthorization(new VREAuthorization(VRE_ID, USER_ID));
   }
 
   private void findVREAuthorizationFor(String vreId, String userId) {
     VREAuthorization vreAuthorization = new VREAuthorization(VRE_ID, USER_ID);
-    when(repositoryMock.findEntity(VREAuthorization.class, vreAuthorization)).thenReturn(vreAuthorization);
+    when(userConfigurationHandlerMock.findVREAuthorization(vreAuthorization)).thenReturn(vreAuthorization);
   }
 
   private void findAnAdminOfVRE(String vreId) {
     VREAuthorization example = new VREAuthorization(VRE_ID, null, ADMIN_ROLE);
     String adminUserId = "test";
     VREAuthorization foundAuthorization = new VREAuthorization(VRE_ID, adminUserId, ADMIN_ROLE);
-    when(repositoryMock.findEntity(VREAuthorization.class, example)).thenReturn(foundAuthorization);
+    when(userConfigurationHandlerMock.findVREAuthorization(example)).thenReturn(foundAuthorization);
     User adminUser = new User();
     adminUser.setEmail("test@test.com");
-    when(repositoryMock.getEntity(User.class, adminUserId)).thenReturn(adminUser);
+    when(userConfigurationHandlerMock.getUser(adminUserId)).thenReturn(adminUser);
   }
 
   private void verifyAnEmailIsSendToAnAdminOfTheVRE() {
@@ -104,6 +103,6 @@ public class DefaultVREAuthorizationHandlerTest {
   }
 
   private void verifyAVREAuthorizationIsCreatedFor(String vreId, String userId, String unverifiedUserRole) throws StorageException, ValidationException {
-    verify(repositoryMock).addSystemEntity(VREAuthorization.class, new VREAuthorization(vreId, userId, unverifiedUserRole));
+    verify(userConfigurationHandlerMock).addVREAuthorization(new VREAuthorization(vreId, userId, unverifiedUserRole));
   }
 }

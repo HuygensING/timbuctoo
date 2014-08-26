@@ -1,0 +1,85 @@
+package nl.knaw.huygens.timbuctoo.storage;
+
+import java.util.Collections;
+import java.util.LinkedList;
+
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+
+public abstract class FileCollection<T extends SystemEntity> {
+  /**
+   * Add an entity to the collection and return the id of the entity.
+   * 
+   * @param entity
+   *          the entity to add.
+   * @return the id of the entity.
+   */
+  public abstract String add(T entity);
+
+  /**
+   * Find an entity by example.
+   * 
+   * @param example
+   *          the entity has to match
+   * @return an entity or null if no matches are found.
+   */
+  public abstract T findItem(T example);
+
+  /**
+   * Get item by id.
+   * 
+   * @param id
+   *          id to get the item for
+   * @return the item if found, else null
+   */
+  public abstract T get(String id);
+
+  /**
+   * Get all the items.
+   * 
+   * @return an iterator iterate through the results.
+   */
+  public abstract StorageIterator<T> getAll();
+
+  /**
+   * Get all as array.
+   * @return the collection as an array.
+   */
+  public abstract T[] asArray();
+
+  /**
+   * Updates an existing item, if the item is found
+   * 
+   * @param item
+   *          the item to update.
+   */
+  public abstract void updateItem(T item);
+
+  /**
+   * Delete an item if it exists.
+   * 
+   * @param item
+   *          the item to delete.
+   */
+  public abstract void deleteItem(T item);
+
+  protected abstract LinkedList<String> getIds();
+
+  protected String createId(String idPrefix) {
+    return IdCreator.create(idPrefix, getNewNumber(idPrefix, 1));
+  }
+
+  private long getNewNumber(String idPrefix, int i) {
+    LinkedList<String> ids = getIds();
+
+    Collections.sort(ids);
+
+    int highestNumber = 0;
+
+    if (!ids.isEmpty()) {
+      String lastId = ids.getLast();
+      highestNumber = Integer.parseInt(lastId.replace(idPrefix, ""));
+    }
+
+    return highestNumber + 1;
+  }
+}

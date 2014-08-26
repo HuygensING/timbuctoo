@@ -24,7 +24,6 @@ package nl.knaw.huygens.timbuctoo.security;
 
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.UNVERIFIED_USER_ROLE;
-import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
@@ -45,12 +44,12 @@ public class DefaultVREAuthorizationHandler implements VREAuthorizationHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(DefaultVREAuthorizationHandler.class);
 
-  private final Repository repository;
+  private final UserConfigurationHandler userConfigurationHandler;
   private final MailSender mailSender;
 
   @Inject
-  public DefaultVREAuthorizationHandler(Repository repository, MailSender mailSender) {
-    this.repository = repository;
+  public DefaultVREAuthorizationHandler(UserConfigurationHandler userConfigurationHandler, MailSender mailSender) {
+    this.userConfigurationHandler = userConfigurationHandler;
     this.mailSender = mailSender;
   }
 
@@ -73,13 +72,13 @@ public class DefaultVREAuthorizationHandler implements VREAuthorizationHandler {
 
   private VREAuthorization createVreAuthorization(String vreId, String userId) throws StorageException, ValidationException {
     VREAuthorization authorization = new VREAuthorization(vreId, userId, UNVERIFIED_USER_ROLE);
-    authorization.setId(repository.addSystemEntity(VREAuthorization.class, authorization));
+    authorization.setId(userConfigurationHandler.addVREAuthorization(authorization));
     return authorization;
   }
 
   private VREAuthorization findVreAuthorization(String vreId, String userId) {
     VREAuthorization example = new VREAuthorization(vreId, userId);
-    return repository.findEntity(VREAuthorization.class, example);
+    return userConfigurationHandler.findVREAuthorization(example);
   }
 
   /**
@@ -99,8 +98,8 @@ public class DefaultVREAuthorizationHandler implements VREAuthorizationHandler {
 
   private User getFirstAdminOfVRE(String vreId) {
     VREAuthorization example = new VREAuthorization(vreId, null, ADMIN_ROLE);
-    VREAuthorization authorization = repository.findEntity(VREAuthorization.class, example);
-    return authorization != null ? repository.getEntity(User.class, authorization.getUserId()) : null;
+    VREAuthorization authorization = userConfigurationHandler.findVREAuthorization(example);
+    return authorization != null ? userConfigurationHandler.getUser(authorization.getUserId()) : null;
   }
 
 }

@@ -42,6 +42,7 @@ import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
 import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.search.converters.SearchParametersConverter;
 import nl.knaw.huygens.timbuctoo.security.DefaultVREAuthorizationHandler;
+import nl.knaw.huygens.timbuctoo.security.UserConfigurationHandler;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.security.VREAuthorizationHandler;
 
@@ -81,16 +82,19 @@ class ResourceTestModule extends JerseyServletModule {
   private RelationSearcher relationSearcher;
   private RegularClientSearchResultCreator regularClientSearchResultCreator;
   private RelationClientSearchResultCreator relationClientSearchResultCreator;
+  private UserConfigurationHandler userConfigurationHandler;
 
   public ResourceTestModule() {
     try {
       config = mock(Configuration.class);
       typeRegistry = TypeRegistry.getInstance().init(PACKAGES);
       repository = mock(Repository.class);
+
       jsonProvider = mock(JacksonJsonProvider.class);
       validator = mock(Validator.class);
       mailSender = mock(MailSender.class);
-      securityContextCreator = new UserSecurityContextCreator(repository);
+      userConfigurationHandler = mock(UserConfigurationHandler.class);
+      securityContextCreator = new UserSecurityContextCreator(userConfigurationHandler);
       authorizationHandler = mock(AuthorizationHandler.class);
       broker = mock(Broker.class);
       indexProducer = mock(Producer.class);
@@ -111,7 +115,7 @@ class ResourceTestModule extends JerseyServletModule {
    * This method provides this functionality.
    */
   public void cleanUpMocks() {
-    reset(config, repository, jsonProvider, validator, mailSender, authorizationHandler, broker, indexProducer, persistenceProducer, indexManager, searchRequestValidator,
+    reset(config, repository, userConfigurationHandler, jsonProvider, validator, mailSender, authorizationHandler, broker, indexProducer, persistenceProducer, indexManager, searchRequestValidator,
         searchParametersConverter, relationSearcher, regularClientSearchResultCreator, regularClientSearchResultCreator);
   }
 
@@ -213,7 +217,7 @@ class ResourceTestModule extends JerseyServletModule {
   @Singleton
   @Provides
   public VREAuthorizationHandler provideVreAuthorizationHandler() {
-    return new DefaultVREAuthorizationHandler(repository, mailSender);
+    return new DefaultVREAuthorizationHandler(userConfigurationHandler, mailSender);
   }
 
   @Singleton
@@ -244,6 +248,12 @@ class ResourceTestModule extends JerseyServletModule {
   @Provides
   public RelationClientSearchResultCreator provideRelationClientSearchResultCreator() {
     return relationClientSearchResultCreator;
+  }
+
+  @Singleton
+  @Provides
+  public UserConfigurationHandler provideJsonFileWriter() {
+    return userConfigurationHandler;
   }
 
 }

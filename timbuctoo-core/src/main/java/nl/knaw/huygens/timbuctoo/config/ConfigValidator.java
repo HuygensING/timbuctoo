@@ -24,6 +24,8 @@ package nl.knaw.huygens.timbuctoo.config;
 
 import java.io.File;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Validates the configuration.
  */
@@ -39,10 +41,42 @@ public class ConfigValidator {
   public void validate() {
     error = false;
 
+    validateHomeDir();
     validateSolrDirectory();
+    validateAdminDataDirectory();
 
     if (error) {
       throw new RuntimeException("Configuration error(s)");
+    }
+  }
+
+  private void validateHomeDir() {
+    checkPropertyExists("home.directory");
+  }
+
+  private boolean checkPropertyExists(String key) {
+    String value = config.getSetting(key);
+    if (StringUtils.isBlank(value)) {
+      System.err.printf("Property '%s' does not exist%n", key);
+      error = true;
+      return false;
+    }
+    return true;
+  }
+
+  private void validateAdminDataDirectory() {
+    String key = "admin_data.directory";
+    if (checkPropertyExists(key)) {
+      checkDirectoryExists(key);
+    }
+
+  }
+
+  private void checkDirectoryExists(String key) {
+    File dir = new File(config.getDirectory(key));
+    if (!dir.isDirectory()) {
+      System.err.printf("Directory '%s' of key '%s' does not exist%n", dir.getAbsolutePath(), key);
+      error = true;
     }
   }
 

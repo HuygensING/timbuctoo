@@ -26,7 +26,6 @@ import javax.ws.rs.core.SecurityContext;
 
 import nl.knaw.huygens.security.client.SecurityContextCreator;
 import nl.knaw.huygens.security.client.model.SecurityInformation;
-import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.User;
 
 import org.slf4j.Logger;
@@ -38,11 +37,11 @@ public class UserSecurityContextCreator implements SecurityContextCreator {
 
   private static final Logger LOG = LoggerFactory.getLogger(UserSecurityContextCreator.class);
 
-  private final Repository repository;
+  private final UserConfigurationHandler userConfigurationHandler;
 
   @Inject
-  public UserSecurityContextCreator(Repository repository) {
-    this.repository = repository;
+  public UserSecurityContextCreator(UserConfigurationHandler jsonFileWriter) {
+    this.userConfigurationHandler = jsonFileWriter;
   }
 
   @Override
@@ -53,8 +52,9 @@ public class UserSecurityContextCreator implements SecurityContextCreator {
 
     User example = new User();
     example.setPersistentId(securityInformation.getPersistentID());
+    final User example1 = example;
 
-    User user = findUser(example);
+    User user = userConfigurationHandler.findUser(example1);
 
     if (user == null) {
       example.setDisplayName(securityInformation.getDisplayName());
@@ -79,19 +79,15 @@ public class UserSecurityContextCreator implements SecurityContextCreator {
     user.setOrganisation(securityInformation.getOrganization());
 
     try {
-      repository.addSystemEntity(User.class, user);
+      userConfigurationHandler.addUser(user);
     } catch (Exception e) {
       LOG.error(e.getMessage());
     }
+    final User example = user;
     // This is needed, to be less dependend on the StorageLayer to set the id.
-    returnValue = findUser(user);
+    returnValue = userConfigurationHandler.findUser(example);
 
     return returnValue;
-  }
-
-  private User findUser(final User example) {
-
-    return repository.findEntity(User.class, example);
   }
 
 }
