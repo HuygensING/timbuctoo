@@ -20,6 +20,8 @@ import com.google.common.collect.Lists;
 
 public class UserFileCollectionTest extends FileCollectionTest<User> {
   private static final String PERSISTENT_ID = "persistentId";
+  private static final String PERSISTENT_ID2 = "pid2";
+  private static final String PERSISTENT_ID3 = "pid3";
   private UserFileCollection instance;
 
   @Before
@@ -29,7 +31,7 @@ public class UserFileCollectionTest extends FileCollectionTest<User> {
 
   @Test
   public void addUserShouldGiveUserAndReturnTheId() {
-    User user = createUserWithPersistentId();
+    User user = createUserWithPersistentId(PERSISTENT_ID);
     String expectedId = "USER000000000001";
 
     verifyAddReturnsAnIdAndAddsItToTheEntity(user, expectedId);
@@ -37,30 +39,45 @@ public class UserFileCollectionTest extends FileCollectionTest<User> {
 
   @Test
   public void addUserIncrementsTheId() {
-    User user1 = createUserWithPersistentId();
-    User user2 = createUserWithPersistentId();
-    User user3 = createUserWithPersistentId();
+    User user1 = createUserWithPersistentId(PERSISTENT_ID);
+    User user2 = createUserWithPersistentId(PERSISTENT_ID2);
+    User user3 = createUserWithPersistentId(PERSISTENT_ID3);
 
     String expectedId = "USER000000000003";
 
     verifyAddIncrementsTheId(user1, user2, user3, expectedId);
   }
 
-  private User createUserWithPersistentId() {
+  private User createUserWithPersistentId(String pid) {
     User user = new User();
-    user.setPersistentId(PERSISTENT_ID);
+    user.setPersistentId(pid);
     return user;
   }
 
   @Test
-  public void addUserShouldAddTheUserToItsInnerCollection() {
-    User user = createUserWithPersistentId();
+  public void addAddsTheUserToItsInnerCollection() {
+    User user = createUserWithPersistentId(PERSISTENT_ID);
 
     verifyAddAddsTheEntityToItsCollection(user);
   }
 
   @Test
-  public void theAddedUserCannotBeFoundIfItDidNotContainAPersistentIdButCantBeGet() {
+  public void addUserWithTheSamePersitentIdTwiceReturnsTheSecondTimeJustTheId() {
+    // setup
+    User user1 = createUserWithPersistentId(PERSISTENT_ID);
+    User user2 = createUserWithPersistentId(PERSISTENT_ID);
+
+    // action
+    String firstId = instance.add(user1);
+    String secondId = instance.add(user2);
+
+    // verify
+    assertThat(secondId, is(equalTo(firstId)));
+    assertThat(instance.get(firstId), is(sameInstance(user1)));
+  }
+
+  @Test
+  public void addedUserCannotBeFoundIfItDidNotContainAPersistentIdButCantBeGet() {
     User user = new User();
 
     String id = instance.add(user);
@@ -71,7 +88,7 @@ public class UserFileCollectionTest extends FileCollectionTest<User> {
 
   @Test
   public void findUserShouldSearchTheUserByPersistentId() {
-    User user = createUserWithPersistentId();
+    User user = createUserWithPersistentId(PERSISTENT_ID);
 
     instance.add(user);
     User foundUser = instance.findItem(user);
@@ -81,7 +98,7 @@ public class UserFileCollectionTest extends FileCollectionTest<User> {
 
   @Test
   public void findUserReturnsNullIfTheUserParametersHasNoPersistentId() {
-    User user = createUserWithPersistentId();
+    User user = createUserWithPersistentId(PERSISTENT_ID);
     User userToFind = new User();
 
     instance.add(user);
@@ -92,7 +109,7 @@ public class UserFileCollectionTest extends FileCollectionTest<User> {
 
   @Test
   public void findUserReturnsNullIfTheUserParametersIsNull() {
-    User user = createUserWithPersistentId();
+    User user = createUserWithPersistentId(PERSISTENT_ID);
     User userToFind = null;
 
     instance.add(user);
@@ -103,7 +120,7 @@ public class UserFileCollectionTest extends FileCollectionTest<User> {
 
   @Test
   public void findUserReturnsNullIfTheUserIsNotKnown() {
-    User user = createUserWithPersistentId();
+    User user = createUserWithPersistentId(PERSISTENT_ID);
 
     User foundUser = instance.findItem(user);
 
@@ -112,7 +129,7 @@ public class UserFileCollectionTest extends FileCollectionTest<User> {
 
   @Test
   public void getReturnsNullIfTheIdInsertedIsNull() {
-    User user = createUserWithPersistentId();
+    User user = createUserWithPersistentId(PERSISTENT_ID);
 
     instance.add(user);
     User foundUser = instance.get(null);
@@ -123,15 +140,19 @@ public class UserFileCollectionTest extends FileCollectionTest<User> {
   @Test
   public void getAllShouldReturnAStorageIteratorWithAllTheKnownUsers() {
     // setup
-    User user1 = createUserWithPersistentId();
-    User user2 = createUserWithPersistentId();
-    User user3 = createUserWithPersistentId();
+    User user1 = createUserWithPersistentId(PERSISTENT_ID);
+    User user2 = createUserWithPersistentId(PERSISTENT_ID2);
+    User user3 = createUserWithPersistentId(PERSISTENT_ID3);
 
-    instance.add(user1);
-    instance.add(user2);
-    instance.add(user3);
+    addUsersToInstance(user1, user2, user3);
 
     verifyGetAllReturnsAllTheKnownEntities(containsInAnyOrder(user1, user2, user3));
+  }
+
+  private void addUsersToInstance(User... users) {
+    for (User user : users) {
+      instance.add(user);
+    }
   }
 
   @Test
@@ -149,10 +170,10 @@ public class UserFileCollectionTest extends FileCollectionTest<User> {
   @Test
   public void updateUserSearchesTheUserByIdAndReplacesTheUserInTheCollection() {
     // setup
-    User user1 = createUserWithPersistentId();
+    User user1 = createUserWithPersistentId(PERSISTENT_ID);
     String id = instance.add(user1);
 
-    User user2 = createUserWithPersistentId();
+    User user2 = createUserWithPersistentId(PERSISTENT_ID);
     user2.setId(id);
     user2.setCommonName("test");
 
@@ -166,10 +187,10 @@ public class UserFileCollectionTest extends FileCollectionTest<User> {
   @Test
   public void updateUserDoesNothingIfTheUpdateUserHasNoId() {
     // setup
-    User user1 = createUserWithPersistentId();
+    User user1 = createUserWithPersistentId(PERSISTENT_ID);
     String id = instance.add(user1);
 
-    User user2 = createUserWithPersistentId();
+    User user2 = createUserWithPersistentId(PERSISTENT_ID);
     user2.setCommonName("test");
 
     // action
@@ -182,10 +203,10 @@ public class UserFileCollectionTest extends FileCollectionTest<User> {
   @Test
   public void deleteUserSearchesTheUserByIdAndRemovesItFromTheCollection() {
     // setup
-    User user1 = createUserWithPersistentId();
+    User user1 = createUserWithPersistentId(PERSISTENT_ID);
     String id = instance.add(user1);
 
-    User user2 = createUserWithPersistentId();
+    User user2 = createUserWithPersistentId(PERSISTENT_ID);
     user2.setId(id);
     user2.setCommonName("test");
 
@@ -199,10 +220,10 @@ public class UserFileCollectionTest extends FileCollectionTest<User> {
   @Test
   public void deleteUserDoesNothingIfTheUpdateUserHasNoId() {
     // setup
-    User user1 = createUserWithPersistentId();
+    User user1 = createUserWithPersistentId(PERSISTENT_ID);
     String id = instance.add(user1);
 
-    User user2 = createUserWithPersistentId();
+    User user2 = createUserWithPersistentId(PERSISTENT_ID);
     user2.setCommonName("test");
 
     // action
@@ -215,7 +236,7 @@ public class UserFileCollectionTest extends FileCollectionTest<User> {
   @Test
   public void intializeWithAListOfUsersMakesItPossibleToRetrieveThem() {
     // setup
-    User user1 = createUserWithPersistentId();
+    User user1 = createUserWithPersistentId(PERSISTENT_ID);
     String userId = "test";
     user1.setId(userId);
     List<User> users = Lists.newArrayList(user1);
@@ -231,13 +252,11 @@ public class UserFileCollectionTest extends FileCollectionTest<User> {
   @Test
   public void asArrayContainsAllTheItemsOfTheFileCollection() {
     // setup
-    User user1 = createUserWithPersistentId();
-    User user2 = createUserWithPersistentId();
-    User user3 = createUserWithPersistentId();
+    User user1 = createUserWithPersistentId(PERSISTENT_ID);
+    User user2 = createUserWithPersistentId(PERSISTENT_ID2);
+    User user3 = createUserWithPersistentId(PERSISTENT_ID3);
 
-    instance.add(user1);
-    instance.add(user2);
-    instance.add(user3);
+    addUsersToInstance(user1, user2, user3);
 
     // action
     User[] users = instance.asArray();

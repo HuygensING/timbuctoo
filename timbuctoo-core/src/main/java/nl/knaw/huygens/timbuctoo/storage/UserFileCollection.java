@@ -42,9 +42,16 @@ public class UserFileCollection extends FileCollection<User> {
   public String add(User user) {
     String id = createId(User.ID_PREFIX);
     user.setId(id);
+
+    String persistentId = user.getPersistentId();
+    if (persistentId != null && persistentIdIdMap.containsKey(persistentId)) {
+      return persistentIdIdMap.get(persistentId);
+    }
+
     idUserMap.put(id, user);
-    if (user.getPersistentId() != null) {
-      persistentIdIdMap.put(user.getPersistentId(), id);
+
+    if (persistentId != null) {
+      persistentIdIdMap.put(persistentId, id);
     }
 
     return id;
