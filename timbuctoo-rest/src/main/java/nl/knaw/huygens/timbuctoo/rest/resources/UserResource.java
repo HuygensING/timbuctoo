@@ -146,16 +146,19 @@ public class UserResource extends ResourceBase {
     }
   }
 
-  @DELETE
-  @Path(ID_REGEX)
-  @Produces(MediaType.APPLICATION_JSON)
-  @RolesAllowed(ADMIN_ROLE)
-  public Response delete(@PathParam(ID_PARAM) String id) throws StorageException {
-    User user = userConfigurationHandler.getUser(id);
-    checkNotNull(user, Status.NOT_FOUND, "No User with id %s", id);
-    userConfigurationHandler.deleteUser(user);
-    return Response.status(Status.NO_CONTENT).build();
-  }
+  /*
+   * User delete temporarily not allowed, we need to re-think, this concept.
+   */
+  //  @DELETE
+  //  @Path(ID_REGEX)
+  //  @Produces(MediaType.APPLICATION_JSON)
+  //  @RolesAllowed(ADMIN_ROLE)
+  //  public Response delete(@PathParam(ID_PARAM) String id) throws StorageException {
+  //    User user = userConfigurationHandler.getUser(id);
+  //    checkNotNull(user, Status.NOT_FOUND, "No User with id %s", id);
+  //    userConfigurationHandler.deleteUser(user);
+  //    return Response.status(Status.NO_CONTENT).build();
+  //  }
 
   // VREAuthorization
 

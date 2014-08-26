@@ -50,6 +50,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -302,6 +303,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     assertEquals(Status.UNAUTHORIZED, response.getClientResponseStatus());
   }
 
+  @Ignore("Re enable the test if we have rethought the concept of deleting a user.")
   @Test
   public void testDeleteUser() {
     setUpVREManager(VRE_ID, true);
@@ -313,6 +315,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     assertEquals(Status.NO_CONTENT, response.getClientResponseStatus());
   }
 
+  @Ignore("Re enable the test if we have rethought the concept of deleting a user.")
   @Test
   public void testDeleteUserUserNotFound() {
     setUpVREManager(VRE_ID, true);
@@ -325,6 +328,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     assertEquals(Status.NOT_FOUND, response.getClientResponseStatus());
   }
 
+  @Ignore("Re enable the test if we have rethought the concept of deleting a user.")
   @Test
   public void testDeleteUserNotInRole() {
     setUpVREManager(VRE_ID, true);
@@ -336,6 +340,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     assertEquals(Status.FORBIDDEN, response.getClientResponseStatus());
   }
 
+  @Ignore("Re enable the test if we have rethought the concept of deleting a user.")
   @Test
   public void testDeleteUserNotLoggedIn() {
     setupUserWithRoles(VRE_ID, USER_ID, NO_ROLES);
