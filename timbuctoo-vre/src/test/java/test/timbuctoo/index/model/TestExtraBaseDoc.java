@@ -2,7 +2,7 @@ package test.timbuctoo.index.model;
 
 /*
  * #%L
- * Timbuctoo search
+ * Timbuctoo VRE
  * =======
  * Copyright (C) 2012 - 2014 Huygens ING
  * =======

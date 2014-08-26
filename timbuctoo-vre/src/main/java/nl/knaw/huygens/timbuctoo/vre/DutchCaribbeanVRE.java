@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.vre;
 
 /*
  * #%L
- * Timbuctoo core
+ * Timbuctoo VRE
  * =======
  * Copyright (C) 2012 - 2014 Huygens ING
  * =======

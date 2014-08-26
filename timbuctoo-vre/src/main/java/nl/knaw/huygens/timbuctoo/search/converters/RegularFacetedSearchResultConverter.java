@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.search.converters;
 
 /*
  * #%L
- * Timbuctoo search
+ * Timbuctoo VRE
  * =======
  * Copyright (C) 2012 - 2014 Huygens ING
  * =======

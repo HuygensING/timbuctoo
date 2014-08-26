@@ -4,7 +4,7 @@ import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 
 /*
  * #%L
- * Timbuctoo search
+ * Timbuctoo VRE
  * =======
  * Copyright (C) 2012 - 2014 Huygens ING
  * =======
