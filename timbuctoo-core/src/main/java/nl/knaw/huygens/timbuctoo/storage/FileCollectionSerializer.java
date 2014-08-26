@@ -9,9 +9,10 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 
 public class FileCollectionSerializer extends JsonSerializer<FileCollection<?>> {
 
-	@Override
-	public void serialize(FileCollection<?> value, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException {
-		provider.defaultSerializeValue(value.getAll().getAll(), jgen);
-	}
+  @Override
+  public void serialize(FileCollection<?> value, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException {
+    // array is need to save the type information.
+    provider.defaultSerializeValue(value.asArray(), jgen);
+  }
 
 }
