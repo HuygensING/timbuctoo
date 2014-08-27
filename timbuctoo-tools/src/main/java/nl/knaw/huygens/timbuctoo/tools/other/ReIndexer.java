@@ -35,7 +35,6 @@ import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
-import nl.knaw.huygens.timbuctoo.tools.process.Progress;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang3.time.StopWatch;
@@ -46,7 +45,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 public class ReIndexer {
-  private static final int MILLI_SECONDS_TO_MINUTES = 60000;
+
   public final static Logger LOG = LoggerFactory.getLogger(ReIndexer.class);
 
   public static void main(String[] args) throws ConfigurationException, IndexException, InterruptedException {
@@ -63,13 +62,12 @@ public class ReIndexer {
     indexManager.deleteAllEntities();
 
     try {
-      //      indexSynchronous(repository, indexManager, registry);
       indexAsynchrounous(repository, indexManager, registry);
     } finally {
       repository.close();
       indexManager.close();
       stopWatch.stop();
-      LOG.info("Time used: {} m", (stopWatch.getTime() / (double) MILLI_SECONDS_TO_MINUTES));
+      LOG.info("Time used: {}", stopWatch);
     }
   }
 
@@ -87,31 +85,18 @@ public class ReIndexer {
     countDownLatch.await(); // wait until all tasks are completed
   }
 
-  @SuppressWarnings("unused")
-  private static void indexSynchronous(Repository repository, IndexManager indexManager, TypeRegistry registry) throws IndexException {
-    for (Class<? extends DomainEntity> primitiveType : registry.getPrimitiveDomainEntityTypes()) {
-      Progress progress = new Progress();
-      for (StorageIterator<? extends DomainEntity> iterator = repository.getDomainEntities(primitiveType); iterator.hasNext();) {
-        indexManager.addEntity(primitiveType, iterator.next().getId());
-        progress.step();
-      }
-      progress.done();
-    }
-  }
-
   private static class Indexer implements Runnable {
 
     private final Repository repository;
     private final IndexManager indexManager;
     private final Class<? extends DomainEntity> type;
-    private CountDownLatch countDownLatch;
+    private final CountDownLatch countDownLatch;
 
     public Indexer(Class<? extends DomainEntity> type, Repository repository, IndexManager indexManager, CountDownLatch countDownLatch) {
       this.type = type;
       this.repository = repository;
       this.indexManager = indexManager;
       this.countDownLatch = countDownLatch;
-
     }
 
     @Override
