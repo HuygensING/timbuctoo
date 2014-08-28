@@ -26,6 +26,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Place;
@@ -35,13 +36,16 @@ import nl.knaw.huygens.timbuctoo.model.dcar.DCARPerson;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.google.common.collect.Lists;
+
 public class AdminVRETest {
 
   private static VRE vre;
 
   @BeforeClass
   public static void setupVRE() throws IOException {
-    vre = new AdminVRE();
+    List<String> receptionNames = Lists.newArrayList();
+    vre = new PackageVRE("Admin", "Admin VRE", "timbuctoo.model", receptionNames);
   }
 
   @Test

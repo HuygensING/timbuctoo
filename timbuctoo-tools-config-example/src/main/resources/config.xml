@@ -57,10 +57,21 @@
     <model-packages>
       timbuctoo.model
       timbuctoo.model.base
-      timbuctoo.model.dwcbia
-      timbuctoo.model.ckcc
-      timbuctoo.model.dcar
       timbuctoo.model.test
     </model-packages>
+    <vre-defs>
+      <vre id="Admin">
+        <description>Admin VRE; allows updates of primitives.</description>
+        <model-package>timbuctoo.model</model-package>
+      </vre>
+      <vre id="Base">
+        <description>VRE for base domain entities.</description>
+        <model-package>timbuctoo.model.base</model-package>
+      </vre>
+      <vre id="TestVRE">
+        <description>VRE for testing.</description>
+        <model-package>timbuctoo.model.test</model-package>
+      </vre>
+    </vre-defs>
   </settings>
 </config>

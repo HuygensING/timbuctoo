@@ -28,6 +28,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
 import java.io.IOException;
+import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Location;
@@ -37,13 +38,16 @@ import nl.knaw.huygens.timbuctoo.model.base.BaseLocation;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.google.common.collect.Lists;
+
 public class BaseVRETest {
 
   private static VRE vre;
 
   @BeforeClass
   public static void setupVRE() throws IOException {
-    vre = new BaseVRE();
+    List<String> receptionNames = Lists.newArrayList();
+    vre = new PackageVRE("Base", "VRE for base domain entities.", "timbuctoo.model.base", receptionNames);
   }
 
   @Test

@@ -61,7 +61,6 @@ import nl.knaw.huygens.timbuctoo.tools.importer.DefaultImporter;
 import nl.knaw.huygens.timbuctoo.tools.importer.neww.LocationConcordance;
 import nl.knaw.huygens.timbuctoo.util.Files;
 import nl.knaw.huygens.timbuctoo.util.Text;
-import nl.knaw.huygens.timbuctoo.vre.CKCCVRE;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -104,6 +103,7 @@ public class CKCCImporter extends DefaultImporter {
 
   // ---------------------------------------------------------------------------
 
+  private static final String VRE_ID = "CKCC";
   private static final String[] TEI_EXTENSIONS = { "xml" };
   private static final String ORGANIZATIONS = "CKCC-organizations.xml";
 
@@ -111,7 +111,7 @@ public class CKCCImporter extends DefaultImporter {
   private final LocationConcordance concordance;
 
   public CKCCImporter(Repository repository, IndexManager indexManager, String inputDirName) throws Exception {
-    super(repository, indexManager, CKCCVRE.NAME);
+    super(repository, indexManager, VRE_ID);
 
     inputDir = new File(inputDirName);
     if (inputDir.isDirectory()) {

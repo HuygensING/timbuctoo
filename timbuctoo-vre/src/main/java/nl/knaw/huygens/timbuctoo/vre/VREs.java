@@ -25,6 +25,7 @@ package nl.knaw.huygens.timbuctoo.vre;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.config.Configuration.VREDef;
 import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 
 import org.slf4j.Logger;
@@ -35,38 +36,22 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 /**
- * Provides access to the active VRE's from the configuration,
- * specified as a list of class names in the current package.
+ * Provides access to the configured VRE's.
  */
 @Singleton
 public class VREs implements VRECollection {
 
   private static final Logger LOG = LoggerFactory.getLogger(VREs.class);
 
-  private static final String VRE_CONFIG_KEY = "vres.vre";
-  private static final String PACKAGE_NAME = "nl.knaw.huygens.timbuctoo.vre";
-
   private final List<VRE> vres = Lists.newArrayList();
 
   @Inject
   public VREs(Configuration config, IndexFactory indexFactory) {
-    for (String name : config.getSettingList(VRE_CONFIG_KEY)) {
-      try {
-        String className = PACKAGE_NAME + "." + name;
-        LOG.info("Adding {}", className);
-        Class<?> cls = Class.forName(className);
-        if (VRE.class.isAssignableFrom(cls)) {
-          VRE vre = (VRE) cls.newInstance();
-          vre.initIndexes(indexFactory);
-          vres.add(vre);
-        } else {
-          LOG.error("Invalid VRE name {}", className);
-          throw new RuntimeException("Invalid VRE");
-        }
-      } catch (Exception e) {
-        LOG.error("Failed to initialize VRE: {} - {}", e.getClass().getSimpleName(), e.getMessage());
-        throw new RuntimeException("Invalid VRE");
-      }
+    for (VREDef vreDef : config.getVREDefs()) {
+      LOG.info("Adding {} - {}", vreDef.id, vreDef.description);
+      VRE vre = new PackageVRE(vreDef.id, vreDef.description, vreDef.modelPackage, vreDef.receptions);
+      vre.initIndexes(indexFactory);
+      vres.add(vre);
     }
   }
 
