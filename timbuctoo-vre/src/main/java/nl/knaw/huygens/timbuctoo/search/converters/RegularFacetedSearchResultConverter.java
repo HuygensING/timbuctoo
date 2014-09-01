@@ -32,13 +32,13 @@ import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import com.google.common.collect.Lists;
 
 /**
- * Converts a FacetedSearchResult to a SearchResult, Timbuctoo uses. 
+ * Converts a FacetedSearchResult to a SearchResult as used by Timbuctoo. 
  */
 public class RegularFacetedSearchResultConverter implements FacetedSearchResultConverter {
 
   @Override
   public SearchResult convert(String typeString, FacetedSearchResult facetedSearchResult) {
-    SearchResult searchResult = createSearchResult();
+    SearchResult searchResult = new SearchResult();
 
     searchResult.setFacets(facetedSearchResult.getFacets());
     searchResult.setSort(facetedSearchResult.getSort());
@@ -52,16 +52,10 @@ public class RegularFacetedSearchResultConverter implements FacetedSearchResultC
 
   private List<String> extractIdsFrom(FacetedSearchResult facetedSearchResult) {
     List<String> ids = Lists.newArrayList();
-
     for (Map<String, Object> resultRow : facetedSearchResult.getRawResults()) {
       ids.add(String.valueOf(resultRow.get(SolrFields.DOC_ID)));
     }
-
     return ids;
-  }
-
-  protected SearchResult createSearchResult() {
-    return new SearchResult();
   }
 
 }

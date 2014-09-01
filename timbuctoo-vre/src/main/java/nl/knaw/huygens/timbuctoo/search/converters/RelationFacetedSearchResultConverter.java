@@ -28,6 +28,7 @@ import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 
 public class RelationFacetedSearchResultConverter extends RegularFacetedSearchResultConverter {
+
   private final List<String> sourceSearchIds;
   private final List<String> targetSearchIds;
   private final List<String> relationTypeIds;
