@@ -32,7 +32,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -57,7 +56,7 @@ import test.timbuctoo.index.model.Type1;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-public class AbstractVRETest {
+public class PackageVRETest {
 
   private static final Class<Type1> OTHER_TYPE = Type1.class;
   private static final String ID = "ID";
@@ -68,33 +67,16 @@ public class AbstractVRETest {
   private final Index indexMock = mock(Index.class);
   private final RegularFacetedSearchResultConverter resultConverterMock = mock(RegularFacetedSearchResultConverter.class);
 
-  private AbstractVRE instance;
   private IndexCollection indexCollectionMock;
   private Scope scopeMock;
+  private PackageVRE vre;
 
   @Before
   public void setup() {
     indexCollectionMock = mock(IndexCollection.class);
     scopeMock = mock(Scope.class);
     when(indexCollectionMock.getIndexByType(TYPE)).thenReturn(indexMock);
-
-    instance = new AbstractVRE(indexCollectionMock, resultConverterMock) {
-
-      @Override
-      public String getVreId() {
-        return null;
-      }
-
-      @Override
-      public String getDescription() {
-        return null;
-      }
-
-      @Override
-      protected Scope createScope() throws IOException {
-        return scopeMock;
-      }
-    };
+    vre = new PackageVRE("vreId", "description", scopeMock, indexCollectionMock, resultConverterMock);
   }
 
   @Test
@@ -106,10 +88,9 @@ public class AbstractVRETest {
     when(indexCollectionMock.getAll()).thenReturn(Lists.newArrayList(indexMock1, indexMock2));
 
     // action
-    Collection<Index> indexes = instance.getIndexes();
+    Collection<Index> indexes = vre.getIndexes();
 
     // verify
-    verify(indexCollectionMock).getAll();
     assertThat(indexes, contains(new Index[] { indexMock1, indexMock2 }));
   }
 
@@ -122,7 +103,7 @@ public class AbstractVRETest {
     when(resultConverterMock.convert(TYPE_STRING, facetedSearchResult)).thenReturn(searchResult);
 
     // action
-    SearchResult actualSearchResult = instance.search(TYPE, searchParameters);
+    SearchResult actualSearchResult = vre.search(TYPE, searchParameters);
 
     // verify
     assertThat(actualSearchResult, is(searchResult));
@@ -139,7 +120,7 @@ public class AbstractVRETest {
     when(resultConverterMock.convert(TYPE_STRING, facetedSearchResult)).thenReturn(searchResult);
 
     // action
-    SearchResult actualSearchResult = instance.search(TYPE, searchParameters, resultConverterMock);
+    SearchResult actualSearchResult = vre.search(TYPE, searchParameters, resultConverterMock);
 
     // verify
     assertThat(actualSearchResult, is(searchResult));
@@ -159,7 +140,7 @@ public class AbstractVRETest {
     when(resultConverterMock.convert(TYPE_STRING, facetedSearchResult)).thenReturn(searchResult);
 
     // action
-    SearchResult actualSearchResult = instance.search(TYPE, searchParameters, resultConverterMock, resultProcessorMock1, resultProcessorMock2);
+    SearchResult actualSearchResult = vre.search(TYPE, searchParameters, resultConverterMock, resultProcessorMock1, resultProcessorMock2);
 
     // verify
     assertThat(actualSearchResult, is(searchResult));
@@ -182,7 +163,7 @@ public class AbstractVRETest {
   @Test
   public void deleteFromIndexShouldDelegateTheCallToTheRightIndex() throws IndexException {
     // action
-    instance.deleteFromIndex(TYPE, ID);
+    vre.deleteFromIndex(TYPE, ID);
 
     // verify
     verify(indexMock).deleteById(ID);
@@ -194,7 +175,7 @@ public class AbstractVRETest {
 
     try {
       // action
-      instance.search(TYPE, searchParameters);
+      vre.search(TYPE, searchParameters);
     } finally {
       verify(indexMock).search(searchParameters);
       verifyZeroInteractions(resultConverterMock);
@@ -207,7 +188,7 @@ public class AbstractVRETest {
     doThrow(IndexException.class).when(indexMock).deleteById(ID);
 
     // action
-    instance.deleteFromIndex(TYPE, ID);
+    vre.deleteFromIndex(TYPE, ID);
   }
 
   @Test
@@ -216,7 +197,7 @@ public class AbstractVRETest {
     List<String> ids = Lists.newArrayList(ID, "id2", "id3");
 
     // action
-    instance.deleteFromIndex(TYPE, ids);
+    vre.deleteFromIndex(TYPE, ids);
 
     // verify
     verify(indexMock).deleteById(ids);
@@ -229,7 +210,7 @@ public class AbstractVRETest {
     doThrow(IndexException.class).when(indexMock).deleteById(ids);
 
     // action
-    instance.deleteFromIndex(TYPE, ids);
+    vre.deleteFromIndex(TYPE, ids);
   }
 
   @Test
@@ -241,7 +222,7 @@ public class AbstractVRETest {
     setupIndexIterator(indexMock1, indexMock2);
 
     // action
-    instance.clearIndexes();
+    vre.clearIndexes();
 
     // verify
     verify(indexMock1).clear();
@@ -263,7 +244,7 @@ public class AbstractVRETest {
 
     try {
       // action
-      instance.clearIndexes();
+      vre.clearIndexes();
     } finally {
       // verify
       verify(indexMock1).clear();
@@ -284,7 +265,7 @@ public class AbstractVRETest {
     when(scopeMock.filter(variations)).thenReturn(filteredVariations);
 
     // action
-    instance.addToIndex(TYPE, variations);
+    vre.addToIndex(TYPE, variations);
 
     // verify
     verify(indexMock).add(filteredVariations);
@@ -304,7 +285,7 @@ public class AbstractVRETest {
 
     try {
       // action
-      instance.addToIndex(TYPE, variations);
+      vre.addToIndex(TYPE, variations);
     } finally {
       // verify
       verify(indexMock).add(filteredVariations);
@@ -323,7 +304,7 @@ public class AbstractVRETest {
     when(scopeMock.filter(variations)).thenReturn(filteredVariations);
 
     // action
-    instance.updateIndex(TYPE, variations);
+    vre.updateIndex(TYPE, variations);
 
     // verify
     verify(indexMock).update(filteredVariations);
@@ -343,7 +324,7 @@ public class AbstractVRETest {
 
     try {
       // action
-      instance.updateIndex(TYPE, variations);
+      vre.updateIndex(TYPE, variations);
     } finally {
       // verify
       verify(indexMock).update(filteredVariations);
@@ -359,7 +340,7 @@ public class AbstractVRETest {
     setupIndexIterator(indexMock1, indexMock2);
 
     // action
-    instance.close();
+    vre.close();
 
     // verify
     verify(indexMock1).close();
@@ -376,7 +357,7 @@ public class AbstractVRETest {
     doThrow(IndexException.class).when(indexMock1).close();
 
     // action
-    instance.close();
+    vre.close();
 
     // verify
     verify(indexMock1).close();
@@ -392,7 +373,7 @@ public class AbstractVRETest {
     setupIndexIterator(indexMock1, indexMock2);
 
     // action
-    instance.commitAll();
+    vre.commitAll();
 
     // verify
     verify(indexMock1).commit();
@@ -410,7 +391,7 @@ public class AbstractVRETest {
 
     try {
       // action
-      instance.commitAll();
+      vre.commitAll();
     } finally {
       // verify
       verify(indexMock1).commit();
@@ -438,11 +419,11 @@ public class AbstractVRETest {
     IndexStatus indexStatus = mock(IndexStatus.class);
 
     // action
-    instance.addToIndexStatus(indexStatus);
+    vre.addToIndexStatus(indexStatus);
 
     // verify
-    verify(indexStatus).addCount(instance, TYPE, indexMock1Count);
-    verify(indexStatus).addCount(instance, OTHER_TYPE, indexMock2Count);
+    verify(indexStatus).addCount(vre, TYPE, indexMock1Count);
+    verify(indexStatus).addCount(vre, OTHER_TYPE, indexMock2Count);
   }
 
   @SuppressWarnings("unchecked")
@@ -464,10 +445,10 @@ public class AbstractVRETest {
     IndexStatus indexStatus = mock(IndexStatus.class);
 
     // action
-    instance.addToIndexStatus(indexStatus);
+    vre.addToIndexStatus(indexStatus);
 
     // verify
-    verify(indexStatus).addCount(instance, OTHER_TYPE, indexMock2Count);
+    verify(indexStatus).addCount(vre, OTHER_TYPE, indexMock2Count);
     verifyNoMoreInteractions(indexStatus);
   }
 

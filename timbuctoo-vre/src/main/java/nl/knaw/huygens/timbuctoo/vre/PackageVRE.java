@@ -71,17 +71,24 @@ public class PackageVRE implements VRE {
   private final RegularFacetedSearchResultConverter facetedSearchResultConverter;
 
   public PackageVRE(String vreId, String description, String modelPackage, List<String> receptions) {
-    this(vreId, description, modelPackage, receptions, new IndexCollection(), new RegularFacetedSearchResultConverter());
-  }
-
-  public PackageVRE(String vreId, String description, String modelPackage, List<String> receptions, IndexCollection indexCollection, RegularFacetedSearchResultConverter facetedSearchResultConverter) {
     this.vreId = vreId;
     this.description = description;
     this.receptions = receptions;
+    this.indexCollection = new IndexCollection();
+    this.facetedSearchResultConverter = new RegularFacetedSearchResultConverter();
+    this.scope = createScope(modelPackage);
+    this.typeNameMap = createTypeNameMap();
+  }
+
+  // For testing
+  public PackageVRE(String vreId, String description, Scope scope, IndexCollection indexCollection, RegularFacetedSearchResultConverter facetedSearchResultConverter) {
+    this.vreId = vreId;
+    this.description = description;
+    this.receptions = Lists.newArrayList();
     this.indexCollection = indexCollection;
     this.facetedSearchResultConverter = facetedSearchResultConverter;
-    scope = createScope(modelPackage);
-    typeNameMap = createTypeNameMap();
+    this.scope = scope;
+    this.typeNameMap = createTypeNameMap();
   }
 
   @Override
