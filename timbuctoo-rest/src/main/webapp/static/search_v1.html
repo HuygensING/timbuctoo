@@ -81,6 +81,14 @@ text {
   pointer-events: none;
   text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
 }
+
+#navigation {
+	width: 20%;
+	text-align: center;
+}
+#navigation a{
+	padding: 10px;
+}
 </style>
 
 </head>
@@ -91,7 +99,7 @@ text {
 <form id="formSearch" name="formSearch">
 <p id="error" style="display:none" />
 <h2>Query</h2>
-<table>
+<table id="searchTable">
 <tr>
   <td>VRE</td>
   <td><select id="vreselect"></select></td>
@@ -104,15 +112,6 @@ text {
   <td>Text</td>
   <td><input name="" type="text" size="50" id="searchtext"/></td>
 </tr>
-</table>
-<p><a href="#" onclick="doPost()">Submit query</a></p>
-
-<h2>Results</h2>
-<table>
-<tr>
-  <td>URL</td>
-  <td><input name="" type="text" size="50" id="searchid"/></td>
-</tr>
 <tr>
   <td>Start</td>
   <td><input name="" type="text" size="50" id="start" value="0"/></td>
@@ -121,9 +120,16 @@ text {
   <td>Rows</td>
   <td><input name="" type="text" size="50" id="rows" value="10"/></td>
 </tr>
+<tr>
+  <td>Sort by</td>
+  <td><select id="sortBy"><option/></select></td>
+</tr>
 </table>
-<p><a href="#" onclick="doGet()">Show results</a></p>
+<p><a href="#" onclick="doPost()">Search</a></p>
 
+<div id="navigation">
+</div>
+<h2>Results</h2>
 <div id="results">
 </div>
 </form>
@@ -153,7 +159,7 @@ text {
         'scopeId': $('#searchscope').val(),
         'typeString': $('#searchtype').val(),
         'term': $('#searchtext').val(),
-        'sortParameters': []
+        'sortParameters': createSortParameters()
       }),
       headers : { 
         VRE_ID : $('#vreselect').val()
@@ -163,6 +169,7 @@ text {
         var queryURL = xhr.getResponseHeader('Location') || 'None';
         $('#searchid').val(queryURL);
         errorToken.hide();
+        doGet(queryURL)
       },
       error: function (xhr, status, errorThrown){
         errorToken.text(status + ' : ' + errorThrown);
@@ -170,28 +177,70 @@ text {
       }
     });
   }
+  
+  function createSortParameters(){
+	  var sortParameters = [];
+	  var sortField = $('#sortBy').val();
+	  if(sortField !== "" && sortField !== null){
+		  var sort = { fieldname : sortField, direction : 'asc' };
+		  sortParameters.push(sort);
+	  }
+	  
+	  return sortParameters;
+  }
 
-  function doGet() {
-    var searchUrl = $('#searchid').val();
+  function doGet(url) {
     var start = $('#start').val() || '0';
     var rows = $('#rows').val() || '10';
     jQuery.ajax({
-      url: searchUrl,
+      url: url,
       type: 'GET',
       data: {'start': start, 'rows': rows},
       contentType: 'application/json; charset=utf-8',
       success: function (data) {
-        var html = '<table><tr><th>Name</th><th>Link</th></tr>';
-        $.each(data.refs, function (i, item) {
-          var url = baseUrl + item.path;
-          var path = item.path.replace(/domain\//g, '');
-          html += '<tr><td><a href="' + url + '">' + item.displayName + '</a></td>'
-                + '<td><a href="#" onclick="getGraph(' + "'" + path + "'" + ')">graph</a></td></tr>';
-        });
-        html += '</table>';
-        $('#results').html(html);
+      	buildResultsTable(data);
+      	buildSortfields(data);
+      	createNavigation(data);
       }
     });
+  }
+  
+  function createNavigation(data){
+	  var navigation = $('#navigation');
+	  navigation.empty();
+	  var nextLink = data['_next'];
+	  var prevLink = data['_prev'];
+	
+	  addLink(navigation, '<', prevLink);
+	  addLink(navigation, '>', nextLink);
+  }
+  
+  function addLink(navigation, linkName, url){
+	if( url !== null && url !== '' && url !== undefined){
+	  navigation.append('<a href="#" onClick="doGet(\'' + url + '\')">'+linkName+'</a>');  
+	}	
+  }
+  
+  function buildSortfields(data){
+	  var sortBy = $('#sortBy');
+	  
+	  $.each(data.sortableFields, function(i, item){
+		  if($('#sortBy option[value="'+item+'"]').length == 0){
+		  	sortBy.append('<option value='+ item +'>' + item + '</option>');
+		  }
+	  });
+  }
+  
+  function buildResultsTable(data){
+	 var html = '<table><tr><th>Name</th><th>Link</th></tr>';
+     $.each(data.refs, function (i, item) {
+       var url = baseUrl + item.path;
+       var path = item.path.replace(/domain\//g, '');
+       html += '<tr><td><a href="' + url + '">' + item.displayName + '</a></td>'
+             + '<td><a href="#" onclick="getGraph(' + "'" + path + "'" + ')">graph</a></td></tr>';
+     });
+     html += '</table>';
+     $('#results').html(html);
   }
 
   function getGraph(path) {
@@ -284,8 +333,15 @@ text {
       }
     });
   }
+  
+  function cleanSortBy(){
+	  $('#sortBy').html('<option/>')
+  }
 
   $(document).ready(function() {
+	  $('#vreselect').change(cleanSortBy);
+	  $('#searchtype').change(cleanSortBy);
+	  
     $.ajax({
       url : baseUrl + "system/vres",
       type: 'GET',
