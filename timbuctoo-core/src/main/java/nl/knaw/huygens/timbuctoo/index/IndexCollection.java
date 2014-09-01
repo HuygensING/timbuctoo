@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.index;
 
 /*
  * #%L
- * Timbuctoo VRE
+ * Timbuctoo core
  * =======
  * Copyright (C) 2012 - 2014 Huygens ING
  * =======
@@ -32,23 +32,20 @@ import java.util.Map;
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.util.DefaultingMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Maps;
-
 public class IndexCollection implements Iterable<Index> {
-
-  private static final NoOpIndex NO_OP_INDEX = new NoOpIndex();
 
   private static final Logger LOG = LoggerFactory.getLogger(IndexCollection.class);
 
   private final Map<Class<? extends DomainEntity>, Index> indexMap;
 
   public IndexCollection() {
-    indexMap = Maps.newHashMap();
+    Index defaultIndex = new NoOpIndex();
+    indexMap = DefaultingMap.newHashMap(defaultIndex);
   }
 
   /**
@@ -58,9 +55,7 @@ public class IndexCollection implements Iterable<Index> {
    * @return the index
    */
   public Index getIndexByType(Class<? extends DomainEntity> type) {
-    Class<? extends DomainEntity> baseType = toBaseDomainEntity(type);
-
-    return indexMap.containsKey(baseType) ? indexMap.get(baseType) : NO_OP_INDEX;
+    return indexMap.get(toBaseDomainEntity(type));
   }
 
   /**
@@ -73,29 +68,19 @@ public class IndexCollection implements Iterable<Index> {
   }
 
   /**
-   * A convenience method to create a new instance.
-   * @param indexFactory creates then indexes.
-   * @param vre the VRE to create to indexes for
-   * @return a new instance of IndexCollection
-   */
-  public static IndexCollection create(IndexFactory indexFactory, VRE vre) {
-    IndexCollection indexCollection = new IndexCollection();
-
-    for (Class<? extends DomainEntity> type : vre.getEntityTypes()) {
-      Index index = indexFactory.createIndexFor(vre, type);
-      indexCollection.addIndex(type, index);
-    }
-
-    return indexCollection;
-  }
-
-  /**
    * Get all the indexes of this collection.
    * @return a collection with indexes
    */
   public Collection<Index> getAll() {
     return indexMap.values();
   }
+
+  @Override
+  public Iterator<Index> iterator() {
+    return getAll().iterator();
+  }
+
+  // ---------------------------------------------------------------------------
 
   /**
    * A <a href="http://en.wikipedia.org/wiki/Null_Object_pattern">null object</a> class, 
@@ -139,11 +124,6 @@ public class IndexCollection implements Iterable<Index> {
       LOG.warn("Searching on a non existing index");
       return new FacetedSearchResult();
     }
-  }
-
-  @Override
-  public Iterator<Index> iterator() {
-    return getAll().iterator();
   }
 
 }

@@ -199,13 +199,16 @@ public class PackageVRE implements VRE {
    * @return the index
    */
   private Index getIndexForType(Class<? extends DomainEntity> type) {
-
     return indexCollection.getIndexByType(type);
   }
 
   @Override
   public void initIndexes(IndexFactory indexFactory) {
-    this.indexCollection = IndexCollection.create(indexFactory, this);
+    indexCollection = new IndexCollection();
+    for (Class<? extends DomainEntity> type : getEntityTypes()) {
+      Index index = indexFactory.createIndexFor(this, type);
+      indexCollection.addIndex(type, index);
+    }
   }
 
   @Override
