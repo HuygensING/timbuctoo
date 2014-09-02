@@ -114,6 +114,12 @@ public abstract class DomainEntity extends Entity implements Variable {
     refs.add(ref);
   }
 
+  // TODO eliminate this
+  public void clearRelations() {
+    relationCount = 0;
+    relations.clear();
+  }
+ 
   @JsonProperty(VARIATIONS)
   @JsonIgnore
   public List<String> getVariations() {
@@ -188,6 +194,13 @@ public abstract class DomainEntity extends Entity implements Variable {
   @JsonIgnore
   public Map<String, String> getClientRepresentation() {
     return null;
+  }
+  
+  protected void addItemToRepresentation(Map<String, String> data, String key, String relationName) {
+    List<RelationRef> refs = getRelations(relationName);
+    if (refs.size() != 0) {
+      data.put(key, refs.get(0).getDisplayName());
+    }
   }
 
 }

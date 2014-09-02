@@ -133,13 +133,6 @@ public class WWDocument extends Document {
     this.englishTitle = englishTitle;
   }
 
-  //  - Auteur naam (achternaam, voornamen) --> isCreatedBy --> Person.getName()
-  //  - Auteur gender --> isCreatedBy --> Person.getGender()
-  //  + Titel --> getTitle()
-  //  + Jaar van publicatie --> getDate().getFromYear()
-  //  - Land van publicatie --> hasPublishLocation --> Location.getDisplayName()
-  //  - Taal van publicatie --> hasWorkLanguage --> Language.getDisplayName()
-
   @Override
   public Map<String, String> getClientRepresentation() {
     Map<String, String> data = Maps.newHashMap();
@@ -147,7 +140,10 @@ public class WWDocument extends Document {
     if (getDate() != null) {
       data.put("date", Integer.toString(getDate().getFromYear()));
     }
+    addItemToRepresentation(data, "language", "hasWorkLanguage");
+    addItemToRepresentation(data, "publishLocation", "hasPublishLocation");
+    addItemToRepresentation(data, "createdBy", "isCreatedBy");
     return data;
   }
-
+  
 }

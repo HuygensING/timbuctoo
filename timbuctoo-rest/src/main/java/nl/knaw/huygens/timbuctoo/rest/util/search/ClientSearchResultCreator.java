@@ -66,6 +66,20 @@ public abstract class ClientSearchResultCreator {
     return entities;
   }
 
+  protected <T extends DomainEntity> List<T> retrieveEntitiesWithRelations(Class<T> type, List<String> ids) {
+    // Retrieve one-by-one to retain ordering
+    List<T> entities = Lists.newArrayList();
+    for (String id : ids) {
+      T entity = repository.getEntityWithRelations(type, id);
+      if (entity != null) {
+        entities.add(entity);
+      } else {
+        LOG.error("Failed to retrieve {} - {}", type, id);
+      }
+    }
+    return entities;
+  }
+
   protected void setNextLink(int start, int rows, ClientSearchResult clientSearchResult, int numFound, int end, String queryId) {
     if (end < numFound) {
       String next = hateoasURICreator.createHATEOASURIAsString(start + rows, rows, queryId);

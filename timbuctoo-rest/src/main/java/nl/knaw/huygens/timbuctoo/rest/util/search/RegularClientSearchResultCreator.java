@@ -56,7 +56,7 @@ public class RegularClientSearchResultCreator extends ClientSearchResultCreator 
     int end = normalizedStart + normalizedRows;
 
     List<String> idsToRetrieve = ids.subList(normalizedStart, end);
-    List<T> results = retrieveEntities(type, idsToRetrieve);
+    List<T> results = retrieveEntitiesWithRelations(type, idsToRetrieve);
 
     String queryId = searchResult.getId();
 

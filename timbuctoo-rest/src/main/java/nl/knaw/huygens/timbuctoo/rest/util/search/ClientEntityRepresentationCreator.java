@@ -34,12 +34,14 @@ public class ClientEntityRepresentationCreator {
 
   public ClientEntityRepresentationCreator() {}
 
-  public <T extends DomainEntity> List<ClientEntityRepresentation> createRefs(Class<T> type, List<T> result) {
+  public <T extends DomainEntity> List<ClientEntityRepresentation> createRefs(Class<T> type, List<T> entities) {
     String itype = TypeNames.getInternalName(type);
     String xtype = TypeNames.getExternalName(type);
-    List<ClientEntityRepresentation> list = Lists.newArrayListWithCapacity(result.size());
-    for (DomainEntity entity : result) {
+    List<ClientEntityRepresentation> list = Lists.newArrayListWithCapacity(entities.size());
+    for (DomainEntity entity : entities) {
       list.add(new ClientEntityRepresentation(itype, xtype, entity.getId(), entity.getDisplayName(), entity.getClientRepresentation()));
+      // TODO eliminate this, once results are no longer part of the representation
+      entity.clearRelations();
     }
     return list;
   }

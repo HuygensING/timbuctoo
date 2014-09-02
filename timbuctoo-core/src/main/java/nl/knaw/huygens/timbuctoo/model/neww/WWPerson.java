@@ -203,23 +203,18 @@ public class WWPerson extends Person {
     return ImmutableList.of(new DerivedRelationType("hasPersonLanguage", "isCreatorOf", "hasWorkLanguage"));
   }
 
-  //  - Naam (zowel "Achternaam, voornamen" als displayName?) --> getName()
-  //  - Year of death --> getDeathDate().getFromYear()
-  //  - Year of birth --> getBirthDate().getFromYear()
-  //  - Land van geboorte --> hasBirthPlace --> Location.getDisplayName()
-
   @Override
   public Map<String, String> getClientRepresentation() {
     Map<String, String> data = Maps.newHashMap();
     String name = defaultName().getShortName();
     data.put("name", StringUtils.stripToEmpty(name).isEmpty() ? getTempName() : name);
     if (getBirthDate() != null) {
-      data.put("birth", Integer.toString(getBirthDate().getFromYear()));
+      data.put("birthDate", Integer.toString(getBirthDate().getFromYear()));
     }
     if (getDeathDate() != null) {
-      data.put("death", Integer.toString(getDeathDate().getFromYear()));
+      data.put("deathDate", Integer.toString(getDeathDate().getFromYear()));
     }
-    // relation: hasBirthPlace --> country
+    addItemToRepresentation(data, "birthPlace", "hasBirthPlace");
     return data;
   }
 
