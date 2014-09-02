@@ -23,6 +23,7 @@ package nl.knaw.huygens.timbuctoo.model.neww;
  */
 
 import java.util.List;
+import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.DerivedRelationType;
@@ -34,6 +35,7 @@ import org.apache.commons.lang.StringUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 public class WWPerson extends Person {
 
@@ -199,6 +201,26 @@ public class WWPerson extends Person {
     // adds works of pseudonyms of a person to that person
     // return ImmutableList.of(new DerivedRelationType("isCreatorOf", "hasPseudonym", "isCreatorOf"));
     return ImmutableList.of(new DerivedRelationType("hasPersonLanguage", "isCreatorOf", "hasWorkLanguage"));
+  }
+
+  //  - Naam (zowel "Achternaam, voornamen" als displayName?) --> getName()
+  //  - Year of death --> getDeathDate().getFromYear()
+  //  - Year of birth --> getBirthDate().getFromYear()
+  //  - Land van geboorte --> hasBirthPlace --> Location.getDisplayName()
+
+  @Override
+  public Map<String, String> getClientRepresentation() {
+    Map<String, String> data = Maps.newHashMap();
+    String name = defaultName().getShortName();
+    data.put("name", StringUtils.stripToEmpty(name).isEmpty() ? getTempName() : name);
+    if (getBirthDate() != null) {
+      data.put("birth", Integer.toString(getBirthDate().getFromYear()));
+    }
+    if (getDeathDate() != null) {
+      data.put("death", Integer.toString(getDeathDate().getFromYear()));
+    }
+    // relation: hasBirthPlace --> country
+    return data;
   }
 
   // ---------------------------------------------------------------------------

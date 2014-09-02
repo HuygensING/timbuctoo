@@ -22,6 +22,8 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
+import java.util.Map;
+
 import nl.knaw.huygens.timbuctoo.config.Paths;
 
 import com.google.common.base.Joiner;
@@ -32,12 +34,18 @@ public class ClientEntityRepresentation {
   private final String id;
   private final String path;
   private final String displayName;
+  private final Map<String, String> data;
 
-  public ClientEntityRepresentation(String type, String xtype, String id, String displayName) {
+  public ClientEntityRepresentation(String type, String xtype, String id, String displayName, Map<String, String> data) {
     this.type = type;
     this.id = id;
     this.path = Joiner.on('/').join(Paths.DOMAIN_PREFIX, xtype, id);
     this.displayName = displayName;
+    this.data = data;
+  }
+
+  public ClientEntityRepresentation(String type, String xtype, String id, String displayName) {
+    this(type, xtype, id, displayName, null);
   }
 
   public String getType() {
@@ -54,6 +62,10 @@ public class ClientEntityRepresentation {
 
   public String getDisplayName() {
     return displayName;
+  }
+
+  public Map<String, String> getData() {
+    return data;
   }
 
 }

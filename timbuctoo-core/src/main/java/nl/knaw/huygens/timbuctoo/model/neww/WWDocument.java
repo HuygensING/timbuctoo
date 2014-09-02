@@ -23,6 +23,7 @@ package nl.knaw.huygens.timbuctoo.model.neww;
  */
 
 import java.util.List;
+import java.util.Map;
 
 import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
@@ -32,6 +33,7 @@ import nl.knaw.huygens.timbuctoo.util.Text;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 public class WWDocument extends Document {
 
@@ -129,6 +131,23 @@ public class WWDocument extends Document {
 
   public void setEnglishTitle(String englishTitle) {
     this.englishTitle = englishTitle;
+  }
+
+  //  - Auteur naam (achternaam, voornamen) --> isCreatedBy --> Person.getName()
+  //  - Auteur gender --> isCreatedBy --> Person.getGender()
+  //  + Titel --> getTitle()
+  //  + Jaar van publicatie --> getDate().getFromYear()
+  //  - Land van publicatie --> hasPublishLocation --> Location.getDisplayName()
+  //  - Taal van publicatie --> hasWorkLanguage --> Language.getDisplayName()
+
+  @Override
+  public Map<String, String> getClientRepresentation() {
+    Map<String, String> data = Maps.newHashMap();
+    data.put("title", getTitle());
+    if (getDate() != null) {
+      data.put("date", Integer.toString(getDate().getFromYear()));
+    }
+    return data;
   }
 
 }

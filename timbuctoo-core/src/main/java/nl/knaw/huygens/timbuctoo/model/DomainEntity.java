@@ -181,4 +181,13 @@ public abstract class DomainEntity extends Entity implements Variable {
     return ImmutableList.of();
   }
 
+  /**
+   * Returns a map with key-value pairs to be added to the client representation
+   * of this entity, or {@code null} if there are no such data.
+   */
+  @JsonIgnore
+  public Map<String, String> getClientRepresentation() {
+    return null;
+  }
+
 }

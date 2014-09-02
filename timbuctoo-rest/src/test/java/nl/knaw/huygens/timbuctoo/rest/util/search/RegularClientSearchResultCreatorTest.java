@@ -44,10 +44,12 @@ import test.rest.model.projecta.OtherDomainEntity;
 import com.google.common.collect.Lists;
 
 public class RegularClientSearchResultCreatorTest extends ClientSearchResultCreatorTest {
+
   private static final ArrayList<ClientEntityRepresentation> UNIMPORTANT_REF_LIST = Lists.newArrayList(new ClientEntityRepresentation("test", "test", "test", "test"));
   private static final Class<OtherDomainEntity> TYPE = OtherDomainEntity.class;
   private static final String TERM = "term";
   private static final ArrayList<Facet> FACET_LIST = Lists.newArrayList();
+
   private ClientEntityRepresentationCreator entityRefCreatorMock;
   private SearchResult defaultSearchResult;
   private RegularClientSearchResultCreator instance;
@@ -95,7 +97,6 @@ public class RegularClientSearchResultCreatorTest extends ClientSearchResultCrea
     when(entityRefCreatorMock.createRefs(TYPE, result)).thenReturn(UNIMPORTANT_REF_LIST);
 
     testCreate(TYPE, defaultSearchResult, start, rows, clientSearchResultMatcher);
-
   }
 
   @Test
