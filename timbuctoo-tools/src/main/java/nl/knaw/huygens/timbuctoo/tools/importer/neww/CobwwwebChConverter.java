@@ -62,7 +62,7 @@ import com.google.common.collect.Sets;
 public class CobwwwebChConverter extends CobwwwebConverter {
 
   private static final String VRE_ID = "cwch";
-  private static final String URL = "http://www.arcadia.uzh.ch/repository/";
+  private static final String URL = "http://www.arcadia.uzh.ch/repository";
 
   public static void main(String[] args) throws Exception {
     Pipeline.execute(new CobwwwebChConverter());
@@ -96,10 +96,10 @@ public class CobwwwebChConverter extends CobwwwebConverter {
       convertCollectives();
 
       printBoxedText("Persons");
-      convertPersons();
+      //convertPersons();
 
       printBoxedText("Documents");
-      convertDocuments();
+      //convertDocuments();
 
       printBoxedText("Relations");
       convertRelations();
@@ -125,8 +125,8 @@ public class CobwwwebChConverter extends CobwwwebConverter {
 
     try {
       String xml = getResource(URL, "cooperations");
-      List<String> personIds = parseIdResource(xml, "CooperationId");
-      System.out.println(personIds.size());
+      List<String> ids = parseIdResource(xml, "CooperationId");
+      System.out.println(ids.size());
     } finally {
       out.close();
       progress.done();
@@ -142,7 +142,6 @@ public class CobwwwebChConverter extends CobwwwebConverter {
     try {
       String xml = getResource(URL, "persons");
       List<String> personIds = parseIdResource(xml, "PersonId");
-      System.out.println(personIds.size());
 
       for (String id : personIds) {
         progress.step();
@@ -265,11 +264,13 @@ public class CobwwwebChConverter extends CobwwwebConverter {
 
     try {
       String xml = getResource(URL, "documents");
+      System.out.println(xml);
       List<String> documentIds = parseIdResource(xml, "DocumentId");
 
       for (String id : documentIds) {
         progress.step();
         xml = getResource(URL, "document", id);
+        System.out.println(xml);
         CWCHDocument entity = parseDocumentResource(xml, id);
         jsonConverter.appendTo(out, entity);
         storeReference(id, CWCHDocument.class, id);
@@ -303,16 +304,15 @@ public class CobwwwebChConverter extends CobwwwebConverter {
     public DocumentVisitor(DocumentContext context) {
       super(context);
       setDefaultElementHandler(new DefaultDocumentHandler());
-      addElementHandler(new DocumentIdHandler(), "documentId");
+      addElementHandler(new DocumentIdHandler(), "DocumentId");
       addElementHandler(new DocumentTypeHandler(), "type");
-      addElementHandler(new DocumentTitleHandler(), "title");
-      addElementHandler(new DocumentDescriptionHandler(), "description");
+      addElementHandler(new DocumentTitleHandler(), "Title");
       addElementHandler(new DocumentDateHandler(), "date");
     }
   }
 
   private class DefaultDocumentHandler extends DefaultElementHandler<DocumentContext> {
-    private final Set<String> ignoredNames = Sets.newHashSet("document", "creators", "languages");
+    private final Set<String> ignoredNames = Sets.newHashSet("arcadia", "document", "responseDate", "request", "lastedited");
 
     @Override
     public Traversal enterElement(Element element, DocumentContext context) {
@@ -375,11 +375,12 @@ public class CobwwwebChConverter extends CobwwwebConverter {
 
     try {
       String xml = getResource(URL, "relations");
-      List<String> relationIds = parseIdResource(xml, "relationId");
+      List<String> relationIds = parseIdResource(xml, "RelationId");
+      System.out.println(relationIds.size());
 
       for (String id : relationIds) {
         progress.step();
-        xml = getResource(URL, "relation", id);
+        System.out.println(xml);
         RelationDTO relation = parseRelationResource(xml, id);
 
         jsonConverter.appendTo(out, relation);
@@ -435,16 +436,16 @@ public class CobwwwebChConverter extends CobwwwebConverter {
     public RelationVisitor(RelationContext context) {
       super(context);
       setDefaultElementHandler(new DefaultRelationHandler());
-      addElementHandler(new RelationIdHandler(), "relationId");
+      addElementHandler(new RelationIdHandler(), "RelationId");
       addElementHandler(new RelationLinkHandler(), "Reference");
-      addElementHandler(new RelationTypeHandler(), "type");
-      addElementHandler(new RelationActiveHandler(), "active");
-      addElementHandler(new RelationPassiveHandler(), "passive");
+      addElementHandler(new RelationTypeHandler(), "Type");
+      addElementHandler(new RelationActiveHandler(), "Active");
+      addElementHandler(new RelationPassiveHandler(), "Passive");
     }
   }
 
   private class DefaultRelationHandler extends DefaultElementHandler<RelationContext> {
-    private final Set<String> ignoredNames = Sets.newHashSet("relation");
+    private final Set<String> ignoredNames = Sets.newHashSet("arcadia", "relation", "request", "responseDate");
 
     @Override
     public Traversal enterElement(Element element, RelationContext context) {
@@ -477,9 +478,9 @@ public class CobwwwebChConverter extends CobwwwebConverter {
     public void handleContent(Element element, RelationContext context, String text) {
       if (text.equalsIgnoreCase("translation of")) {
         context.typeName = "hasTranslation";
-      } else if (text.equalsIgnoreCase("edition of")) {
+      } else if (text.equalsIgnoreCase("comments on")) { // OK
         context.typeName = "hasEdition";
-      } else if (text.equalsIgnoreCase("written by")) {
+      } else if (text.equalsIgnoreCase("created by")) { // OK
         context.typeName = "isCreatedBy";
       } else if (text.equalsIgnoreCase("pseudonym")) {
         context.typeName = "isPseudonymOf";
