@@ -518,8 +518,8 @@ public class WomenWritersImporter extends DefaultImporter {
     converted.tempCreator = filterField(object.creator);
     converted.tempLanguage = filterField(object.language);
 
-    if ("work".equalsIgnoreCase(type) && "works".equals(object.original_table) && object.old_id != 0) {
-      converted.tempOldId = Integer.toString(object.old_id);
+    if (object.old_id != 0) {
+      converted.tempOldId = String.format("%s/%d", object.original_table, object.old_id);
     }
 
     return converted.isValid() ? converted : null;
@@ -1118,11 +1118,11 @@ public class WomenWritersImporter extends DefaultImporter {
   // Concordance with CKCC persons
   public Map<String, String> ckccConcordance() {
     Map<String, String> map = Maps.newHashMap();
-    map.put("354", "roemers-visscher.anna.1583-1651");
-    map.put("353", "roemers-visscher.maria-tesselschade.1594-1649");
-    map.put("486", "schurman.anna-maria.1607-1678");
-    map.put("1990", "reigersberch.suzanna.1586-1640");
-    map.put("2199", "reigersberch.maria.1589-1653");
+    map.put("authors/354", "roemers-visscher.anna.1583-1651");
+    map.put("authors/353", "roemers-visscher.maria-tesselschade.1594-1649");
+    map.put("authors/486", "schurman.anna-maria.1607-1678");
+    map.put("authors/1990", "reigersberch.suzanna.1586-1640");
+    map.put("authors/2199", "reigersberch.maria.1589-1653");
     return map;
   }
 
@@ -1176,7 +1176,7 @@ public class WomenWritersImporter extends DefaultImporter {
     XPerson object = objectMapper.readValue(json, XPerson.class);
 
     if (collaboratorIds.contains(object.tempid)) {
-      log("Ignoring generated collaborator %s%n", object.name);
+      log("Ignoring generated collaborator %s: %s%n", object.tempid, object.name);
       return;
     }
 
@@ -1364,8 +1364,8 @@ public class WomenWritersImporter extends DefaultImporter {
       }
     }
 
-    if ("author".equalsIgnoreCase(type) && "authors".equals(object.original_table) && object.old_id != 0) {
-      converted.tempOldId = Integer.toString(object.old_id);
+    if (object.old_id != 0) {
+      converted.tempOldId = String.format("%s/%d", object.original_table, object.old_id);
     }
 
     return converted;

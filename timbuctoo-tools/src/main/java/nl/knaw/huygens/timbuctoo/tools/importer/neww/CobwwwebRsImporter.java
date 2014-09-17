@@ -652,7 +652,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
     public void handleContent(Element element, PersonContext context, String text) {
       if (text.startsWith(NEWW_URL)) {
         log("Reference to NEWW: %s%n", text);
-        context.person.tempNewwId = text.substring(NEWW_URL.length());
+        context.person.tempNewwId = "authors/" + text.substring(NEWW_URL.length());
       } else {
         context.person.addLink(new Link(text));
       }
@@ -837,7 +837,7 @@ public class CobwwwebRsImporter extends CobwwwebImporter {
       log("Reference: %s%n", text);
       if (text.startsWith(NEWW_URL)) {
         log("Reference to NEWW: %s%n", text);
-        context.document.tempNewwId = text.substring(NEWW_URL.length());
+        context.document.tempNewwId = "works/" + text.substring(NEWW_URL.length());
       } else {
         context.document.addLink(new Link(text));
       }
