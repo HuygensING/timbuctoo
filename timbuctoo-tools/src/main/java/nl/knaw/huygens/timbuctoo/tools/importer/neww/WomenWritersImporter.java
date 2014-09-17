@@ -1353,7 +1353,7 @@ public class WomenWritersImporter extends DefaultImporter {
       converted.addType(Person.Type.PSEUDONYM);
       nPseudonym++;
     } else {
-      this.handleError("Illegal type '%s'%n", type);
+      handleError("Illegal type '%s'%n", type);
     }
 
     if (object.url != null) {
@@ -1365,7 +1365,13 @@ public class WomenWritersImporter extends DefaultImporter {
     }
 
     if (object.old_id != 0) {
-      converted.tempOldId = String.format("%s/%d", object.original_table, object.old_id);
+      if ("pseudonym".equalsIgnoreCase(type)) {
+        // Generated pseudonyms have the same id as the person they are derived from.
+        // Make sure external datasets link to the persons, not to the pseudonyms.
+        converted.tempOldId = String.format("%s/%d/pseudonym", object.original_table, object.old_id);
+      } else {
+        converted.tempOldId = String.format("%s/%d", object.original_table, object.old_id);
+      }
     }
 
     return converted;

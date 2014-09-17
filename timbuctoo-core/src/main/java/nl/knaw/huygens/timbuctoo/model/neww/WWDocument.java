@@ -44,7 +44,12 @@ public class WWDocument extends Document {
 
   // --- temporary fields ------------------------------------------------------
 
-  public String tempOldId; // record id in NEWW database
+  /**
+   * Identification of record in NEWW database.
+   * Used by COBWWEB services for linking records.
+   */
+  public String tempOldId;
+
   public String tempCreator;
   public String tempLanguage;
   public String tempOrigin;

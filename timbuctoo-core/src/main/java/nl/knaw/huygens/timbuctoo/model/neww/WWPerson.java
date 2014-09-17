@@ -50,7 +50,12 @@ public class WWPerson extends Person {
 
   // --- temporary fields ------------------------------------------------------
 
-  public String tempOldId; // record id in NEWW database
+  /**
+   * Identification of record in NEWW database.
+   * Used by COBWWEB services for linking records.
+   */
+  public String tempOldId;
+
   public String tempBirthPlace;
   public String tempChildren;
   public String tempCollaborations; // as relation
