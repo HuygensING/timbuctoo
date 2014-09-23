@@ -28,7 +28,7 @@ import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.ClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.rest.resources.HATEOASURICreator;
+import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 
 import org.slf4j.Logger;
@@ -38,7 +38,7 @@ import com.google.common.collect.Lists;
 
 public abstract class ClientSearchResultCreator {
 
-  private static final Logger LOG = LoggerFactory.getLogger(RegularClientSearchResultCreator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ClientSearchResultCreator.class);
 
   protected final Repository repository;
   protected final SortableFieldFinder sortableFieldFinder;

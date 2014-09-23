@@ -31,7 +31,7 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.rest.resources.HATEOASURICreator;
+import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 
 import com.google.common.collect.Lists;

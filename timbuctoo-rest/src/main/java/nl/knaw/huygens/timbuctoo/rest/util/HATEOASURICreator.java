@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.rest.resources;
+package nl.knaw.huygens.timbuctoo.rest.util;
 
 /*
  * #%L
@@ -34,23 +34,19 @@ import nl.knaw.huygens.timbuctoo.config.Configuration;
 import com.google.inject.Inject;
 
 public class HATEOASURICreator {
-  private Configuration config;
+
+  private final String publicUrl;
 
   @Inject
   public HATEOASURICreator(Configuration config) {
-    this.config = config;
+    publicUrl = config.getSetting("public_url");
   }
 
   /**
    * Creates a uri for the search resource.
-   * @param start
-   * @param rows
-   * @param queryId
-   * @return
    */
-  public URI createHATEOASURI(final int start, final int rows, final String queryId) {
-
-    UriBuilder builder = UriBuilder.fromUri(config.getSetting("public_url"));
+  public URI createHATEOASURI(int start, int rows, String queryId) {
+    UriBuilder builder = UriBuilder.fromUri(publicUrl);
     builder.path(V1_PATH);
     builder.path(SEARCH_PATH);
 
@@ -61,12 +57,9 @@ public class HATEOASURICreator {
 
   /**
    * Convenience method for {@code createHATEOASURI}
-   * @param start
-   * @param rows
-   * @param queryId
-   * @return
    */
   public String createHATEOASURIAsString(final int start, final int rows, final String queryId) {
     return createHATEOASURI(start, rows, queryId).toString();
   }
+
 }
