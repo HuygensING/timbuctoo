@@ -24,16 +24,16 @@ package nl.knaw.huygens.timbuctoo.graph;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Stopwatch;
-
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Stopwatch;
 
 /**
  * Creates a reception graph for visualization with d3.js.
@@ -47,10 +47,14 @@ public class ReceptionGraphBuilder {
   private static final Logger LOG = LoggerFactory.getLogger(ReceptionGraphBuilder.class);
 
   private final Repository repository;
+  private final String isCreatedById;
+  private final List<String> receptionTypeIds;
   private final Graph graph;
 
-  public ReceptionGraphBuilder(Repository repository) {
+  public ReceptionGraphBuilder(Repository repository, VRE vre) {
     this.repository = repository;
+    isCreatedById = repository.getRelationTypeByName("isCreatedBy").getId();
+    receptionTypeIds = repository.getRelationTypeIdsByName(vre.getReceptionNames());
     graph = new Graph();
   }
 
@@ -58,41 +62,41 @@ public class ReceptionGraphBuilder {
     return graph;
   }
 
-  public void addPerson(VRE vre, Person person) throws StorageException {
-    Stopwatch stopWatch = Stopwatch.createStarted();
-
+  public void addPerson(Person person, boolean isSubject) throws StorageException {
     String personId = person.getId();
-    //System.out.printf("personId: %s%n", personId);
-    String isCreatedById = repository.getRelationTypeByName("isCreatedBy").getId();
-    //System.out.printf("isCreatedById: %s%n", isCreatedById);
-    List<String> receptionTypeIds = repository.getRelationTypeIdsByName(vre.getReceptionNames());
-    //System.out.printf("receptionTypeIds: %s%n", receptionTypeIds);
 
+    Stopwatch stopwatch = Stopwatch.createStarted();
+    addReceptionsOnPerson(personId, isSubject);
+    LOG.info("Receptions on works: {}", stopwatch);
+
+    stopwatch = Stopwatch.createStarted();
+    addReceptionsOnWorks(personId, isSubject);
+    LOG.info("Receptions on person: {}", stopwatch);
+  }
+
+  private void addReceptionsOnPerson(String personId, boolean isSubject) throws StorageException {
+    addReceptions(personId, personId);
+  }
+
+  private void addReceptionsOnWorks(String personId, boolean isSubject) throws StorageException {
     List<Relation> isCreatorOfRelations = repository.findRelations(null, personId, isCreatedById).getAll();
-    // loop over all works
     for (Relation isCreatorOfRelation : isCreatorOfRelations) {
       String workId = isCreatorOfRelation.getSourceId();
-      //System.out.printf("workId: %s%n", workId);
-      // loop over all reception types
-      for (String receptionTypeId : receptionTypeIds) {
-        List<Relation> receptionRelations = repository.findRelations(workId, null, receptionTypeId).getAll();
-        // loop over all receptions of this type on this work
-        for (Relation receptionRelation : receptionRelations) {
-          String receptionId = receptionRelation.getTargetId();
-          //System.out.printf("receptionId: %s (type %s)%n", receptionId, receptionTypeId);
-          List<Relation> receptionAuthorRelations = repository.findRelations(receptionId, null, isCreatedById).getAll();
-          // loop over all authors of this reception
-          // does it actually occur that there is more than one?
-          for (Relation receptionAuthorRelation : receptionAuthorRelations) {
-            //System.out.printf("sddong: %s%n", receptionAuthorRelation.getTargetId());
-            graph.addWeightToEdge(personId, receptionAuthorRelation.getTargetId(), 1);
-          }
+      addReceptions(personId, workId);
+    }
+  }
+
+  private void addReceptions(String personId, String sourceId) throws StorageException {
+    for (String receptionTypeId : receptionTypeIds) {
+      List<Relation> receptionRelations = repository.findRelations(sourceId, null, receptionTypeId).getAll();
+      for (Relation receptionRelation : receptionRelations) {
+        String receptionId = receptionRelation.getTargetId();
+        List<Relation> receptionAuthorRelations = repository.findRelations(receptionId, null, isCreatedById).getAll();
+        for (Relation receptionAuthorRelation : receptionAuthorRelations) {
+          graph.addWeightToEdge(personId, receptionAuthorRelation.getTargetId(), 1);
         }
       }
     }
-    LOG.info("Time for person {}: {}", personId, stopWatch);
-
-    // TODO add immediate receptions on person
   }
 
 }
