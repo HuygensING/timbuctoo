@@ -22,17 +22,18 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.graph.Graph;
 import nl.knaw.huygens.timbuctoo.graph.ReceptionGraphBuilder;
 import nl.knaw.huygens.timbuctoo.model.Person;
@@ -44,9 +45,6 @@ import com.google.inject.Inject;
 @Path("receptiongraph")
 public class ReceptionGraphResource extends ResourceBase {
 
-  private static final String ID_PARAM = "id";
-  private static final String ID_PATH = "/{id: " + Paths.ID_REGEX + "}";
-
   private final Repository repository;
 
   @Inject
@@ -56,22 +54,32 @@ public class ReceptionGraphResource extends ResourceBase {
 
   // --- API -----------------------------------------------------------
 
+  /**
+   * Returns the reception graph for the person with the specified id,
+   * the receptions being defined by the specified VRE.
+   * If @code isSubject} is {@code true} the receptions on the specified
+   * person are used; otherwise the receptions authored by the specified
+   * person are used.
+   */
   @GET
-  @Path(ID_PATH)
   @Produces({ MediaType.APPLICATION_JSON })
-  public Object getEntity( //
-    @PathParam(ID_PARAM) String personId) //
+  public Object getGraph( //
+      @QueryParam("vreId") String vreId, //
+      @QueryParam("personId") String personId, //
+      @QueryParam("isSubject") @DefaultValue("true") boolean isSubject) //
   {
-    String vreId = "WomenWriters";
+    checkNotNull(vreId, BAD_REQUEST, "No query parameter 'vreId'");
     VRE vre = getValidVRE(vreId);
 
+    checkNotNull(personId, BAD_REQUEST, "No query parameter 'personId'");
     Person person = repository.getEntity(Person.class, personId);
     checkNotNull(person, NOT_FOUND, "No person with id %s", personId);
 
     try {
-      ReceptionGraphBuilder builder = new ReceptionGraphBuilder(repository);
-      builder.addPerson(vre, person);
+      ReceptionGraphBuilder builder = new ReceptionGraphBuilder(repository, vre);
+      builder.addPerson(person, isSubject);
       Graph graph = builder.getGraph();
+      // TODO convert to D3Graph
       System.out.println(graph);
       return graph;
     } catch (Exception e) {
