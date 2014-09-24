@@ -48,6 +48,8 @@ import com.google.inject.Singleton;
 @Singleton
 public class ActiveMQBroker implements Broker {
 
+  private static final String BROKER_NAME_KEY = "messages.broker_name";
+
   private static final Logger LOG = LoggerFactory.getLogger(ActiveMQBroker.class);
 
   private final String url;
@@ -60,7 +62,7 @@ public class ActiveMQBroker implements Broker {
   @Inject
   //TODO factor out the config.
   public ActiveMQBroker(Configuration config, TypeRegistry typeRegistry) {
-    url = "vm://" + BROKER_NAME;
+    url = "vm://" + config.getSetting(BROKER_NAME_KEY) + BROKER_NAME;
     LOG.info("Message broker URL: '{}'", url);
     createBrokerService(config);
     this.typeRegistry = typeRegistry;
