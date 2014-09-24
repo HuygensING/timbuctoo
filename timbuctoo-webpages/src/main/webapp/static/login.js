@@ -1,6 +1,6 @@
 /*
  * #%L
- * Timbuctoo REST api
+ * Timbuctoo web pages
  * =======
  * Copyright (C) 2012 - 2014 Huygens ING
  * =======

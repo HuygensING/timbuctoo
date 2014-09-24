@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.model.neww;
 
 /*
  * #%L
- * Timbuctoo core
+ * Timbuctoo model
  * =======
  * Copyright (C) 2012 - 2014 Huygens ING
  * =======
