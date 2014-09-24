@@ -22,9 +22,13 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+
 import javax.ws.rs.core.Response.Status;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 /**
  * Base class for Timbuctoo resources.
@@ -48,6 +52,10 @@ public class ResourceBase {
   protected <T> T checkNotNull(T reference, Status status, String errorMessageTemplate, Object... errorMessageArgs) {
     checkCondition(reference != null, status, errorMessageTemplate, errorMessageArgs);
     return reference;
+  }
+
+  protected VRE getValidVRE(Repository repository, String id) {
+    return checkNotNull(repository.getVREById(id), NOT_FOUND, "No VRE with id %s", id);
   }
 
 }

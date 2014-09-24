@@ -36,8 +36,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Stopwatch;
 
 /**
- * Creates a reception graph for visualization with d3.js.
- * Such a graph shows how persons react on (the work of) a person.
+ * Creates a reception graph, showing how persons react on (the work of) a person.
  * As such it summarizes two types of path in the data:
  * 1) work-author --> work --> reception --> reception-author
  * 2) work-author --> reception --> reception-author.
@@ -67,11 +66,11 @@ public class ReceptionGraphBuilder {
 
     Stopwatch stopwatch = Stopwatch.createStarted();
     addReceptionsOnPerson(personId, isSubject);
-    LOG.info("Receptions on works: {}", stopwatch);
+    LOG.info("Receptions on person: {}", stopwatch);
 
     stopwatch = Stopwatch.createStarted();
     addReceptionsOnWorks(personId, isSubject);
-    LOG.info("Receptions on person: {}", stopwatch);
+    LOG.info("Receptions on works: {}", stopwatch);
   }
 
   private void addReceptionsOnPerson(String personId, boolean isSubject) throws StorageException {
@@ -79,18 +78,17 @@ public class ReceptionGraphBuilder {
   }
 
   private void addReceptionsOnWorks(String personId, boolean isSubject) throws StorageException {
-    List<Relation> isCreatorOfRelations = repository.findRelations(null, personId, isCreatedById).getAll();
-    for (Relation isCreatorOfRelation : isCreatorOfRelations) {
-      String workId = isCreatorOfRelation.getSourceId();
-      addReceptions(personId, workId);
+    List<Relation> relations = repository.findRelations(null, personId, isCreatedById).getAll();
+    for (Relation relation : relations) {
+      addReceptions(personId, relation.getSourceId());
     }
   }
 
   private void addReceptions(String personId, String sourceId) throws StorageException {
     for (String receptionTypeId : receptionTypeIds) {
-      List<Relation> receptionRelations = repository.findRelations(sourceId, null, receptionTypeId).getAll();
-      for (Relation receptionRelation : receptionRelations) {
-        String receptionId = receptionRelation.getTargetId();
+      List<Relation> receptions = repository.findRelations(sourceId, null, receptionTypeId).getAll();
+      for (Relation reception : receptions) {
+        String receptionId = reception.getTargetId();
         List<Relation> receptionAuthorRelations = repository.findRelations(receptionId, null, isCreatedById).getAll();
         for (Relation receptionAuthorRelation : receptionAuthorRelations) {
           graph.addWeightToEdge(personId, receptionAuthorRelation.getTargetId(), 1);
