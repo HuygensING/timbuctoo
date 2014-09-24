@@ -48,7 +48,7 @@ import com.google.inject.servlet.GuiceServletContextListener;
 /**
  * Creates and manages the injector for the repository servlet.
  */
-public class RepoContextListener extends GuiceServletContextListener {
+public abstract class TimbuctooContextListener extends GuiceServletContextListener {
 
   // ** Note **
   // After stopping Tomcat one gets a message

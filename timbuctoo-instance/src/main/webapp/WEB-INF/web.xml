@@ -27,7 +27,7 @@
   version="3.0">
   <display-name>repository</display-name>
   <listener>
-    <listener-class>nl.knaw.huygens.timbuctoo.rest.RepoContextListener
+    <listener-class>nl.knaw.huygens.repository.rest.RepoContextListener
     </listener-class>
   </listener>
   <listener>

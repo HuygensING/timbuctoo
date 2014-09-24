@@ -17,6 +17,11 @@
   	  <artifactId>timbuctoo-core</artifactId>
       <version>${project.version}</version>
   	</dependency>
+    <dependency>
+      <groupId>nl.knaw.huygens</groupId>
+      <artifactId>timbuctoo-model</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <!-- ## End of project dependencies ## -->
 
     <!-- ## Main dependencies ## -->

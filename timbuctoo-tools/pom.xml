@@ -21,6 +21,11 @@
     </dependency>
     <dependency>
       <groupId>nl.knaw.huygens</groupId>
+      <artifactId>timbuctoo-model</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>nl.knaw.huygens</groupId>
       <artifactId>timbuctoo-vre</artifactId>
       <version>${project.version}</version>
     </dependency>
