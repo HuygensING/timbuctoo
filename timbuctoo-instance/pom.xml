@@ -15,6 +15,15 @@
       <artifactId>timbuctoo-rest</artifactId>
       <version>${project.version}</version>
     </dependency>
+    
+    <!-- The timbuctoo test pages -->
+    <dependency>
+      <groupId>nl.knaw.huygens</groupId>
+      <artifactId>timbuctoo-webpages</artifactId>
+      <version>${project.version}</version>
+      <type>war</type>
+      <scope>runtime</scope>
+    </dependency>
   </dependencies>
   
   <profiles>
