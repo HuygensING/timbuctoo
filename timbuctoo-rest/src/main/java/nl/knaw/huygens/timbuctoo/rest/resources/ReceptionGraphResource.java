@@ -72,7 +72,7 @@ public class ReceptionGraphResource extends ResourceBase {
   @GET
   @Produces({ MediaType.APPLICATION_JSON })
   public Object getGraph( //
-      @QueryParam("vreId") String vreId, //
+      @QueryParam("vreId") String vreId, // TODO make header parameter
       @QueryParam("personId") String personId, //
       @QueryParam("isSubject") @DefaultValue("true") boolean isSubject) //
   {
@@ -81,13 +81,11 @@ public class ReceptionGraphResource extends ResourceBase {
     Class<? extends Person> personType = getPersonType(vre);
 
     checkNotNull(personId, BAD_REQUEST, "No query parameter 'personId'");
-    Person person = repository.getEntity(personType, personId);
-    checkNotNull(person, NOT_FOUND, "No person with id %s", personId);
+    checkCondition(repository.entityExists(personType, personId), NOT_FOUND, "No person with id %s", personId);
 
     try {
       ReceptionGraphBuilder builder = new ReceptionGraphBuilder(repository, vre);
-      builder.addPerson(person, isSubject);
-      Graph graph = builder.getGraph();
+      Graph graph = builder.addPerson(personId, isSubject).getGraph();
       return convertGraph(personType, graph);
     } catch (Exception e) {
       throw new TimbuctooException(INTERNAL_SERVER_ERROR);

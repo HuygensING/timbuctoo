@@ -25,7 +25,6 @@ package nl.knaw.huygens.timbuctoo.graph;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
@@ -61,8 +60,7 @@ public class ReceptionGraphBuilder {
     return graph;
   }
 
-  public void addPerson(Person person, boolean isSubject) throws StorageException {
-    String personId = person.getId();
+  public ReceptionGraphBuilder addPerson(String personId, boolean isSubject) throws StorageException {
     graph.addVertex(personId);
 
     Stopwatch stopwatch = Stopwatch.createStarted();
@@ -72,6 +70,8 @@ public class ReceptionGraphBuilder {
     stopwatch = Stopwatch.createStarted();
     addReceptionsOnWorks(personId, isSubject);
     LOG.info("Receptions on works: {}", stopwatch);
+
+    return this;
   }
 
   private void addReceptionsOnPerson(String personId, boolean isSubject) throws StorageException {
