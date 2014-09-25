@@ -51,6 +51,13 @@ public interface VRE extends Scope {
   String getDescription();
 
   /**
+   * Returns the type of the domain entitiy in this VRE that corresponds to
+   * the specified type of a base domain entitiy,
+   * or {@code null} if no such entity exists.
+   */
+  Class<? extends DomainEntity> mapPrimitiveType(Class<? extends DomainEntity> type);
+
+  /**
    * Returns the internal name of the domain entitiy in this VRE that
    * corresponds to the specified internal name of a base domain entitiy,
    * or {@code null} if no such entity exists.

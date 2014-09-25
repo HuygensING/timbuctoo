@@ -64,7 +64,10 @@ public class PackageVRE implements VRE {
   private final List<String> receptions;
 
   private final Scope scope;
-  private final Map<String, String> typeNameMap;
+  /** Maps primitive types. */
+  private final Map<Class<? extends DomainEntity>, Class<? extends DomainEntity>> typeMap = Maps.newHashMap();
+  /** Maps internal names of primitive types. */
+  private final Map<String, String> nameMap = Maps.newHashMap();
 
   private IndexCollection indexCollection;
 
@@ -77,7 +80,7 @@ public class PackageVRE implements VRE {
     this.indexCollection = new IndexCollection();
     this.facetedSearchResultConverter = new RegularFacetedSearchResultConverter();
     this.scope = createScope(modelPackage);
-    this.typeNameMap = createTypeNameMap();
+    createMaps();
   }
 
   // For testing
@@ -88,7 +91,7 @@ public class PackageVRE implements VRE {
     this.indexCollection = indexCollection;
     this.facetedSearchResultConverter = facetedSearchResultConverter;
     this.scope = scope;
-    this.typeNameMap = createTypeNameMap();
+    createMaps();
   }
 
   @Override
@@ -115,20 +118,26 @@ public class PackageVRE implements VRE {
     }
   }
 
-  private Map<String, String> createTypeNameMap() {
-    Map<String, String> map = Maps.newHashMap();
+  private void createMaps() {
     for (Class<? extends DomainEntity> type : getEntityTypes()) {
       Class<? extends DomainEntity> baseType = toBaseDomainEntity(type);
-      if (map.put(getInternalName(baseType), getInternalName(type)) != null) {
-        LOG.error("Inconsistent type name map; multiple values for {}", getInternalName(baseType));
+      if (typeMap.put(baseType, type) != null) {
+        LOG.error("Inconsistent typeMap; multiple values for {}", baseType.getSimpleName());
+      }
+      if (nameMap.put(getInternalName(baseType), getInternalName(type)) != null) {
+        LOG.error("Inconsistent nameMap; multiple values for {}", baseType.getSimpleName());
       }
     }
-    return map;
+  }
+
+  @Override
+  public Class<? extends DomainEntity> mapPrimitiveType(Class<? extends DomainEntity> type) {
+    return typeMap.get(type);
   }
 
   @Override
   public String mapPrimitiveTypeName(String iname) {
-    return typeNameMap.get(iname);
+    return nameMap.get(iname);
   }
 
   @Override
