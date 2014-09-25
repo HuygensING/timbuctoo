@@ -58,6 +58,10 @@ public class Graph {
     return vertex;
   }
 
+  public void addVertex(String name) {
+    getVertex(name);
+  }
+
   private Edge getEdge(String srce, String dest) {
     Vertex s = getVertex(srce);
     Vertex d = getVertex(dest);

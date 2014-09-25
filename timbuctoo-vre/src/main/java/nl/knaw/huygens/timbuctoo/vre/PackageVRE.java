@@ -131,8 +131,9 @@ public class PackageVRE implements VRE {
   }
 
   @Override
-  public Class<? extends DomainEntity> mapPrimitiveType(Class<? extends DomainEntity> type) {
-    return typeMap.get(type);
+  @SuppressWarnings("unchecked")
+  public <T extends DomainEntity> Class<? extends T> mapPrimitiveType(Class<T> type) {
+    return (Class<? extends T>) typeMap.get(type);
   }
 
   @Override

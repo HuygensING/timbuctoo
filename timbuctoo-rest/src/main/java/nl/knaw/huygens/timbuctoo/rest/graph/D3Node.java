@@ -31,17 +31,15 @@ import com.google.common.collect.Maps;
 
 public class D3Node {
 
-  private static final int LABEL_LENGTH = 40;
+  private static final int LABEL_LENGTH = 100;
 
   /** Unique key for this node. */
   private final String key;
-  private final String type;
   private final String label;
   private final Map<String, Object> data;
 
-  public D3Node(String key, String type, String label) {
+  public D3Node(String key, String label) {
     this.key = Preconditions.checkNotNull(key);
-    this.type = Preconditions.checkNotNull(type);
     this.label = normalizeLabel(label);
     data = Maps.newHashMap();
   }
@@ -58,10 +56,6 @@ public class D3Node {
 
   public String getkey() {
     return key;
-  }
-
-  public String getType() {
-    return type;
   }
 
   public String getLabel() {

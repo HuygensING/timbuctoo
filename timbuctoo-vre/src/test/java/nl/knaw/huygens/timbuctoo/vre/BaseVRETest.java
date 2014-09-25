@@ -51,6 +51,13 @@ public class BaseVRETest {
   }
 
   @Test
+  public void testMapPrimitiveType() {
+    // Hamcrest has problems comparing generic types...
+    assertThat(vre.mapPrimitiveType(Language.class).getName(), is(equalTo(BaseLanguage.class.getName())));
+    assertThat(vre.mapPrimitiveType(Location.class).getName(), is(equalTo(BaseLocation.class.getName())));
+  }
+
+  @Test
   public void testMapPrimitiveTypeName() {
     assertThat(vre.mapPrimitiveTypeName("language"), is(equalTo("baselanguage")));
     assertThat(vre.mapPrimitiveTypeName("location"), is(equalTo("baselocation")));

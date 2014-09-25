@@ -78,32 +78,39 @@ public class ReceptionGraphResource extends ResourceBase {
   {
     checkNotNull(vreId, BAD_REQUEST, "No query parameter 'vreId'");
     VRE vre = getValidVRE(repository, vreId);
+    Class<? extends Person> personType = getPersonType(vre);
 
     checkNotNull(personId, BAD_REQUEST, "No query parameter 'personId'");
-    Person person = repository.getEntity(Person.class, personId);
+    Person person = repository.getEntity(personType, personId);
     checkNotNull(person, NOT_FOUND, "No person with id %s", personId);
 
     try {
       ReceptionGraphBuilder builder = new ReceptionGraphBuilder(repository, vre);
       builder.addPerson(person, isSubject);
       Graph graph = builder.getGraph();
-      return convertGraph(graph);
+      return convertGraph(personType, graph);
     } catch (Exception e) {
       throw new TimbuctooException(INTERNAL_SERVER_ERROR);
     }
   }
 
-  // this is a first attempt
-  // it should give a graph that is displayable
-  // but it doesn't carry the proper data yet
-  private D3Graph convertGraph(Graph graph) {
+  /**
+   * Returns the derived type for {@code Person.class} for the specified {@code VRE},
+   * or {@code Person.class} if no such type exists.
+   */
+  private Class<? extends Person> getPersonType(VRE vre) {
+    Class<? extends Person> type = vre.mapPrimitiveType(Person.class);
+    return (type != null) ? type : Person.class;
+  }
+
+  private <T extends Person> D3Graph convertGraph(Class<T> personType, Graph graph) {
     D3Graph d3Graph = new D3Graph();
 
     Map<String, Integer> map = Maps.newHashMap();
     for (Vertex vertex : graph.getVertices()) {
       String personId = vertex.getName();
-      Person person = repository.getEntity(Person.class, personId);
-      D3Node node = createNode(person);
+      T person = repository.getEntity(personType, personId);
+      D3Node node = createNode(personType, person);
       int index = d3Graph.addNode(node);
       map.put(personId, index);
     }
@@ -118,14 +125,11 @@ public class ReceptionGraphResource extends ResourceBase {
     return d3Graph;
   }
 
-  private <T extends Person> D3Node createNode(T entity) {
-    @SuppressWarnings("unchecked")
-    Class<T> type = (Class<T>) entity.getClass();
-    String key = TypeNames.getExternalName(type) + "/" + entity.getId();
-    String iname = TypeNames.getInternalName(type);
-    String label = entity.getDisplayName();
-    D3Node node = new D3Node(key, iname, label);
-    node.addDataItem("gender", entity.getGender());
+  private <T extends Person> D3Node createNode(Class<T> personType, T person) {
+    String key = TypeNames.getExternalName(personType) + "/" + person.getId();
+    String label = person.getDisplayName();
+    D3Node node = new D3Node(key, label);
+    node.addDataItem("gender", person.getGender());
     return node;
   }
 

@@ -63,6 +63,7 @@ public class ReceptionGraphBuilder {
 
   public void addPerson(Person person, boolean isSubject) throws StorageException {
     String personId = person.getId();
+    graph.addVertex(personId);
 
     Stopwatch stopwatch = Stopwatch.createStarted();
     addReceptionsOnPerson(personId, isSubject);
