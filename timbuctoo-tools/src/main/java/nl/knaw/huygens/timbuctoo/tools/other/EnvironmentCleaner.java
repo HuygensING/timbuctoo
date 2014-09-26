@@ -45,6 +45,13 @@ public class EnvironmentCleaner {
     Stopwatch stopWatch = Stopwatch.createStarted();
 
     Configuration config = new Configuration("config.xml");
+
+    new EnvironmentCleaner().clean(config);
+
+    LOG.info("Time used: {}", stopWatch);
+  }
+
+  public void clean(Configuration config) throws Exception {
     Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
 
     // clean the database
@@ -57,7 +64,6 @@ public class EnvironmentCleaner {
     indexManager.deleteAllEntities();
     indexManager.close();
 
-    LOG.info("Time used: {}", stopWatch);
   }
 
 }

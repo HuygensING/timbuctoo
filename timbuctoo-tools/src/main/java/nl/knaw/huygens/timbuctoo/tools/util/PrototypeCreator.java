@@ -55,28 +55,20 @@ public class PrototypeCreator {
     Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
     TypeRegistry registry = injector.getInstance(TypeRegistry.class);
 
-    new PrototypeCreator(registry).createProtoTypes();
-  }
+    PrototypeCreator creator = new PrototypeCreator();
 
-  private final TypeRegistry registry;
-
-  public PrototypeCreator(TypeRegistry registry) {
-    this.registry = registry;
-  }
-
-  public void createProtoTypes() throws Exception {
     ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
     for (Class<? extends DomainEntity> type : registry.getDomainEntityTypes()) {
       LOG.info("DomainEntity found {}", type.getSimpleName());
       try {
-        LOG.info("instance: \n{}", mapper.writeValueAsString(createInstance(type)));
+        LOG.info("instance: \n{}", mapper.writeValueAsString(creator.createInstance(type)));
       } catch (JsonProcessingException e) {
         e.printStackTrace();
       }
     }
   }
 
-  private <T> T createInstance(Class<T> type) throws InstantiationException, IllegalAccessException {
+  public <T> T createInstance(Class<T> type) throws InstantiationException, IllegalAccessException {
     T instance = type.newInstance();
 
     for (Method method : type.getMethods()) {
