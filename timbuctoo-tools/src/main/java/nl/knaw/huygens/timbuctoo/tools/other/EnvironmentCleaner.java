@@ -46,14 +46,12 @@ public class EnvironmentCleaner {
 
     Configuration config = new Configuration("config.xml");
 
-    new EnvironmentCleaner().clean(config);
+    new EnvironmentCleaner().clean(config, Guice.createInjector(new ToolsInjectionModule(config)));
 
     LOG.info("Time used: {}", stopWatch);
   }
 
-  public void clean(Configuration config) throws Exception {
-    Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
-
+  public void clean(Configuration config, Injector injector) throws Exception {
     // clean the database
     MongoDB mongoDB = new MongoDB(config);
     mongoDB.dropDatabase();
