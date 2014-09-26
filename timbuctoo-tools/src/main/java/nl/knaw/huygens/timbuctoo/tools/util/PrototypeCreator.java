@@ -28,6 +28,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Random;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -48,6 +49,7 @@ import com.google.inject.Injector;
 
 public class PrototypeCreator {
 
+  private static final Random RANDOM = new Random();
   private static final Logger LOG = LoggerFactory.getLogger(PrototypeCreator.class);
 
   public static void main(String[] args) throws Exception {
@@ -109,20 +111,22 @@ public class PrototypeCreator {
   private Object generateValue(Class<?> type, String name) {
     if (Boolean.class.isAssignableFrom(type) || boolean.class.isAssignableFrom(type)) {
       return false;
-    } else if (Integer.class.isAssignableFrom(type) || int.class.isAssignableFrom(type)) {
-      return 42;
-    } else if (Long.class.isAssignableFrom(type) || long.class.isAssignableFrom(type)) {
-      return 42l;
-    } else if (Double.class.isAssignableFrom(type) || double.class.isAssignableFrom(type)) {
-      return Math.random() * 100;
-    } else if (String.class.isAssignableFrom(type)) {
-      return name;
-    } else if (Class.class.isAssignableFrom(type)) {
-      return type;
-    } else if (Datable.class.isAssignableFrom(type)) {
-      return new Datable("20130411");
-    } else if (PersonName.class.isAssignableFrom(type)) {
-      return createName();
+    } else {
+      if (Integer.class.isAssignableFrom(type) || int.class.isAssignableFrom(type)) {
+        return RANDOM.nextInt();
+      } else if (Long.class.isAssignableFrom(type) || long.class.isAssignableFrom(type)) {
+        return RANDOM.nextLong();
+      } else if (Double.class.isAssignableFrom(type) || double.class.isAssignableFrom(type)) {
+        return Math.random() * 100;
+      } else if (String.class.isAssignableFrom(type)) {
+        return createRandomString(name);
+      } else if (Class.class.isAssignableFrom(type)) {
+        return type;
+      } else if (Datable.class.isAssignableFrom(type)) {
+        return new Datable("20130411");
+      } else if (PersonName.class.isAssignableFrom(type)) {
+        return createName();
+      }
     }
 
     try {
@@ -135,6 +139,10 @@ public class PrototypeCreator {
 
     LOG.debug("Returning null for {} of type {}", name, type.getSimpleName());
     return null;
+  }
+
+  private String createRandomString(String name) {
+    return name + Math.random();
   }
 
   private PersonName createName() {
