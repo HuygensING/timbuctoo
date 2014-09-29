@@ -28,6 +28,7 @@
     <module>timbuctoo-model</module>
     <module>timbuctoo-instance</module>
     <module>timbuctoo-webpages</module>
+    <module>timbuctoo-tools-instance</module>
   </modules>
 
   <prerequisites>
