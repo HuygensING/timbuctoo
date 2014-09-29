@@ -22,11 +22,15 @@ package nl.knaw.huygens.timbuctoo.tools.util;
  * #L%
  */
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 import java.util.Random;
 
@@ -123,9 +127,11 @@ public class PrototypeCreator {
       } else if (Class.class.isAssignableFrom(type)) {
         return type;
       } else if (Datable.class.isAssignableFrom(type)) {
-        return new Datable("20130411");
+        return new Datable(createDateString());
       } else if (PersonName.class.isAssignableFrom(type)) {
         return createName();
+      } else if (type.isArray()) {
+        return createArray(type, name);
       }
     }
 
@@ -139,6 +145,23 @@ public class PrototypeCreator {
 
     LOG.debug("Returning null for {} of type {}", name, type.getSimpleName());
     return null;
+  }
+
+  private Object createArray(Class<?> type, String name) {
+    int arraySize = 5;
+    Class<?> componentType = type.getComponentType();
+    Object array = Array.newInstance(componentType, arraySize);
+
+    for (int i = 0; i < arraySize; i++) {
+      Array.set(array, i, generateValue(componentType, name));
+    }
+
+    return array;
+  }
+
+  private String createDateString() {
+    DateFormat format = new SimpleDateFormat("yyyyMMdd");
+    return format.format(new Date());
   }
 
   private String createRandomString(String name) {
