@@ -219,7 +219,7 @@ public class WWPerson extends Person {
     if (getDeathDate() != null) {
       data.put("deathDate", Integer.toString(getDeathDate().getFromYear()));
     }
-    addItemToRepresentation(data, "birthPlace", "hasBirthPlace");
+    addItemToRepresentation(data, "residenceLocation", "hasResidenceLocation");
     return data;
   }
 
