@@ -25,11 +25,14 @@ package nl.knaw.huygens.timbuctoo.config;
 import java.io.File;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Validates the configuration.
  */
 public class ConfigValidator {
+  private static Logger LOG = LoggerFactory.getLogger(ConfigValidator.class);
 
   private final Configuration config;
   private boolean error;
@@ -57,7 +60,7 @@ public class ConfigValidator {
   private boolean checkPropertyExists(String key) {
     String value = config.getSetting(key);
     if (StringUtils.isBlank(value)) {
-      System.err.printf("Property '%s' does not exist%n", key);
+      LOG.error("Property {}' does not exist", key);
       error = true;
       return false;
     }
@@ -75,7 +78,7 @@ public class ConfigValidator {
   private void checkDirectoryExists(String key) {
     File dir = new File(config.getDirectory(key));
     if (!dir.isDirectory()) {
-      System.err.printf("Directory '%s' of key '%s' does not exist%n", dir.getAbsolutePath(), key);
+      LOG.error("Directory '{}' of key '{}' does not exist", dir.getAbsolutePath(), key);
       error = true;
     }
   }
@@ -83,7 +86,7 @@ public class ConfigValidator {
   private void validateSolrDirectory() {
     File dir = new File(config.getSolrHomeDir());
     if (!dir.isDirectory()) {
-      System.err.printf("Solr directory '%s' does not exist%n", dir.getAbsolutePath());
+      LOG.error("Solr directory '{}' does not exist", dir.getAbsolutePath());
       error = true;
     }
   }
