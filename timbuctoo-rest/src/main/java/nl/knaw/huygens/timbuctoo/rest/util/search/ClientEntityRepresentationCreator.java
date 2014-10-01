@@ -39,7 +39,7 @@ public class ClientEntityRepresentationCreator {
     String xtype = TypeNames.getExternalName(type);
     List<ClientEntityRepresentation> list = Lists.newArrayListWithCapacity(entities.size());
     for (DomainEntity entity : entities) {
-      list.add(new ClientEntityRepresentation(itype, xtype, entity.getId(), entity.getDisplayName(), entity.getClientRepresentation()));
+      list.add(new ClientEntityRepresentation(itype, xtype, entity));
       // TODO eliminate this, once results are no longer part of the representation
       entity.clearRelations();
     }

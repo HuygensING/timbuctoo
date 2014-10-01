@@ -25,7 +25,7 @@ package nl.knaw.huygens.timbuctoo.rest.model;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.facetedsearch.model.DefaultFacet;
@@ -36,12 +36,15 @@ import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
 
 import org.junit.Test;
 
+import test.model.BaseDomainEntity;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Lists;
 
 public class RegularClientSearchResultSerializationTest extends ClientSearchResultTest {
-  private String[] keysWhenEmpty = new String[] { "sortableFields", "numFound", "results", "ids", "start", "rows", "term", "facets", "refs" };
-  private String[] keysWhenFilled = new String[] { "sortableFields", "numFound", "results", "ids", "start", "rows", "term", "facets", "refs", "_next", "_prev" };
+
+  private final String[] keysWhenEmpty = new String[] { "sortableFields", "numFound", "results", "ids", "start", "rows", "term", "facets", "refs" };
+  private final String[] keysWhenFilled = new String[] { "sortableFields", "numFound", "results", "ids", "start", "rows", "term", "facets", "refs", "_next", "_prev" };
 
   @Test
   public void testWhenObjectHasAllEmptyProperties() throws JsonProcessingException {
@@ -69,8 +72,7 @@ public class RegularClientSearchResultSerializationTest extends ClientSearchResu
 
   @Override
   protected RegularClientSearchResult createEmptySearchResult() {
-    RegularClientSearchResult searchResult = new RegularClientSearchResult();
-    return searchResult;
+    return new RegularClientSearchResult();
   }
 
   @Override
@@ -93,12 +95,12 @@ public class RegularClientSearchResultSerializationTest extends ClientSearchResu
     return searchResult;
   }
 
-  private ArrayList<ClientEntityRepresentation> createRefList() {
-    ClientEntityRepresentation clientRef = new ClientEntityRepresentation(STRING_PLACEHOLDER, STRING_PLACEHOLDER, STRING_PLACEHOLDER, STRING_PLACEHOLDER);
-    return Lists.newArrayList(clientRef);
+  private List<ClientEntityRepresentation> createRefList() {
+    BaseDomainEntity entity = new BaseDomainEntity("id");
+    return Lists.newArrayList(new ClientEntityRepresentation(STRING_PLACEHOLDER, STRING_PLACEHOLDER, entity));
   }
 
-  private ArrayList<Facet> createFacetList() {
+  private List<Facet> createFacetList() {
     Facet facet = new DefaultFacet(STRING_PLACEHOLDER, STRING_PLACEHOLDER);
     return Lists.newArrayList(facet);
   }

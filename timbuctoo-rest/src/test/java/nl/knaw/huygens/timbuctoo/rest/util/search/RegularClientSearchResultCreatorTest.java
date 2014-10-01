@@ -27,7 +27,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import nl.knaw.huygens.facetedsearch.model.Facet;
@@ -45,10 +44,11 @@ import com.google.common.collect.Lists;
 
 public class RegularClientSearchResultCreatorTest extends ClientSearchResultCreatorTest {
 
-  private static final ArrayList<ClientEntityRepresentation> UNIMPORTANT_REF_LIST = Lists.newArrayList(new ClientEntityRepresentation("test", "test", "test", "test"));
   private static final Class<OtherDomainEntity> TYPE = OtherDomainEntity.class;
+  private static final OtherDomainEntity ENTITY = new OtherDomainEntity("id");
+  private static final List<ClientEntityRepresentation> UNIMPORTANT_REF_LIST = Lists.newArrayList(new ClientEntityRepresentation("test", "test", ENTITY));
   private static final String TERM = "term";
-  private static final ArrayList<Facet> FACET_LIST = Lists.newArrayList();
+  private static final List<Facet> FACET_LIST = Lists.newArrayList();
 
   private ClientEntityRepresentationCreator entityRefCreatorMock;
   private SearchResult defaultSearchResult;
@@ -260,16 +260,16 @@ public class RegularClientSearchResultCreatorTest extends ClientSearchResultCrea
 
   @Test
   public void testCreateWithSearchResultWithoutIds() throws InstantiationException, IllegalAccessException {
-    final int numberOfResultsFound = 0;
+    int numberOfResultsFound = 0;
     int start = 0;
     int rows = 10;
 
-    final int normalizedStart = 0;
-    final int normalizedRows = 0;
-    final List<String> idsToGet = Lists.newArrayList();
+    int normalizedStart = 0;
+    int normalizedRows = 0;
+    List<String> idsToGet = Lists.newArrayList();
     List<OtherDomainEntity> result = setupRepository(TYPE, idsToGet);
 
-    final ArrayList<ClientEntityRepresentation> emptyRefList = Lists.newArrayList();
+    List<ClientEntityRepresentation> emptyRefList = Lists.newArrayList();
     when(entityRefCreatorMock.createRefs(TYPE, result)).thenReturn(emptyRefList);
 
     ClientSearchResultMatcher<RegularClientSearchResult> clientSearchResultMatcher = newRegularClientSearchResultMatcherBuilder() //

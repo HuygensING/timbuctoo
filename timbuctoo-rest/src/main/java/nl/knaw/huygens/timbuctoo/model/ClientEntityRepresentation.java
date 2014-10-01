@@ -36,16 +36,12 @@ public class ClientEntityRepresentation {
   private final String displayName;
   private final Map<String, String> data;
 
-  public ClientEntityRepresentation(String type, String xtype, String id, String displayName, Map<String, String> data) {
+  public ClientEntityRepresentation(String type, String xtype, DomainEntity entity) {
     this.type = type;
-    this.id = id;
-    this.path = Joiner.on('/').join(Paths.DOMAIN_PREFIX, xtype, id);
-    this.displayName = displayName;
-    this.data = data;
-  }
-
-  public ClientEntityRepresentation(String type, String xtype, String id, String displayName) {
-    this(type, xtype, id, displayName, null);
+    id = entity.getId();
+    path = Joiner.on('/').join(Paths.DOMAIN_PREFIX, xtype, id);
+    displayName = entity.getDisplayName();
+    data = entity.getClientRepresentation();
   }
 
   public String getType() {
