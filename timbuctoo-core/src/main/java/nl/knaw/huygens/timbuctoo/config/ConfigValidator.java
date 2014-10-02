@@ -24,7 +24,6 @@ package nl.knaw.huygens.timbuctoo.config;
 
 import java.io.File;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +31,8 @@ import org.slf4j.LoggerFactory;
  * Validates the configuration.
  */
 public class ConfigValidator {
-  private static Logger LOG = LoggerFactory.getLogger(ConfigValidator.class);
+
+  private static final Logger LOG = LoggerFactory.getLogger(ConfigValidator.class);
 
   private final Configuration config;
   private boolean error;
@@ -44,7 +44,7 @@ public class ConfigValidator {
   public void validate() {
     error = false;
 
-    validateHomeDir();
+    checkSettingExists(Configuration.KEY_HOME_DIR);
     validateSolrDirectory();
     validateAdminDataDirectory();
 
@@ -53,42 +53,38 @@ public class ConfigValidator {
     }
   }
 
-  private void validateHomeDir() {
-    checkPropertyExists("home.directory");
-  }
-
-  private boolean checkPropertyExists(String key) {
-    String value = config.getSetting(key);
-    if (StringUtils.isBlank(value)) {
-      LOG.error("Property {}' does not exist", key);
+  /**
+   * Returns {@code true} if the specified condition is satisfied, {@code false} otherwise.
+   */
+  private boolean checkCondition(boolean condition, String errorMessage, Object... arguments) {
+    if (condition) {
+      return true;
+    } else {
+      LOG.error(errorMessage, arguments);
       error = true;
       return false;
     }
-    return true;
+  }
+
+  private boolean checkSettingExists(String key) {
+    return checkCondition(config.hasSetting(key), "Setting '{}' does not exist", key);
   }
 
   private void validateAdminDataDirectory() {
     String key = "admin_data.directory";
-    if (checkPropertyExists(key)) {
+    if (checkSettingExists(key)) {
       checkDirectoryExists(key);
     }
-
   }
 
   private void checkDirectoryExists(String key) {
     File dir = new File(config.getDirectory(key));
-    if (!dir.isDirectory()) {
-      LOG.error("Directory '{}' of key '{}' does not exist", dir.getAbsolutePath(), key);
-      error = true;
-    }
+    checkCondition(dir.isDirectory(), "Directory '{}' of key '{}' does not exist", dir, key);
   }
 
   private void validateSolrDirectory() {
     File dir = new File(config.getSolrHomeDir());
-    if (!dir.isDirectory()) {
-      LOG.error("Solr directory '{}' does not exist", dir.getAbsolutePath());
-      error = true;
-    }
+    checkCondition(dir.isDirectory(), "Solr directory '{}' does not exist", dir);
   }
 
 }
