@@ -50,15 +50,14 @@ public class RelationClientSearchResultSerializationTest extends ClientSearchRes
   }
 
   private ClientSearchResult createFilledSearchResult() {
-    RelationClientSearchResult searchResult = new RelationClientSearchResult();
-    setClientRelationSearchResultProperties(searchResult);
-    searchResult.setRefs(createRefs());
-    return searchResult;
+    RelationClientSearchResult result = new RelationClientSearchResult();
+    setClientRelationSearchResultProperties(result);
+    result.setRefs(createRefs());
+    return result;
   }
 
   private List<ClientRelationRepresentation> createRefs() {
-    ClientRelationRepresentation ref = new ClientRelationRepresentation(ANY_STRING, ANY_STRING, ANY_STRING, ANY_STRING, ANY_STRING, ANY_STRING);
-    return Lists.newArrayList(ref);
+    return Lists.newArrayList(new ClientRelationRepresentation(ANY_STRING, ANY_STRING, ANY_STRING, ANY_STRING, null, null));
   }
 
 }

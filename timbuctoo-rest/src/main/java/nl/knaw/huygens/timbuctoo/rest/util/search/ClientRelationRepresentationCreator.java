@@ -37,10 +37,12 @@ import nl.knaw.huygens.timbuctoo.model.RelationType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 public class ClientRelationRepresentationCreator {
+
   private static final Logger LOG = LoggerFactory.getLogger(ClientRelationRepresentationCreator.class);
 
   private final Repository repository;
@@ -50,16 +52,11 @@ public class ClientRelationRepresentationCreator {
   public ClientRelationRepresentationCreator(Repository repository, TypeRegistry registry) {
     this.repository = repository;
     this.registry = registry;
-
   }
 
   @SuppressWarnings("unchecked")
   public <T extends DomainEntity> List<ClientRelationRepresentation> createRefs(Class<T> type, List<T> result) {
-
-    if (!Relation.class.isAssignableFrom(type)) {
-      throw new RuntimeException("Type " + type + " is not a Relation");
-    }
-
+    Preconditions.checkArgument(Relation.class.isAssignableFrom(type), "Type %s is not a Relation", type);
     return createRelationRefs((Class<? extends Relation>) type, (List<Relation>) result);
   }
 
@@ -74,10 +71,8 @@ public class ClientRelationRepresentationCreator {
       RelationType relationType = repository.getRelationTypeById(relation.getTypeId());
       String relationName = relationType.getRegularName();
       DomainEntity source = retrieveEntity(mapper, relation.getSourceType(), relation.getSourceId());
-      String sourceName = (source != null) ? source.getDisplayName() : "[unknown]";
       DomainEntity target = retrieveEntity(mapper, relation.getTargetType(), relation.getTargetId());
-      String targetName = (target != null) ? target.getDisplayName() : "[unknown]";
-      list.add(new ClientRelationRepresentation(itype, xtype, relation.getId(), relationName, sourceName, targetName));
+      list.add(new ClientRelationRepresentation(itype, xtype, relation.getId(), relationName, source, target));
     }
     return list;
   }
