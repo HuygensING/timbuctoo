@@ -55,12 +55,12 @@ public class RegularClientSearchResultSerializationTest extends ClientSearchResu
   }
 
   private RegularClientSearchResult createFilledSearchResult() {
-    RegularClientSearchResult searchResult = new RegularClientSearchResult();
-    setClientRelationSearchResultProperties(searchResult);
-    searchResult.setRefs(createRefList());
-    searchResult.setFacets(createFacetList());
-    searchResult.setTerm(ANY_STRING);
-    return searchResult;
+    RegularClientSearchResult result = new RegularClientSearchResult();
+    setClientRelationSearchResultProperties(result);
+    result.setRefs(createRefList());
+    result.setFacets(createFacetList());
+    result.setTerm(ANY_STRING);
+    return result;
   }
 
   private List<ClientEntityRepresentation> createRefList() {

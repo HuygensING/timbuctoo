@@ -22,6 +22,8 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
+import java.util.Map;
+
 import nl.knaw.huygens.timbuctoo.config.Paths;
 
 import com.google.common.base.Joiner;
@@ -34,14 +36,29 @@ public class ClientRelationRepresentation {
   private final String relationName;
   private final String sourceName;
   private final String targetName;
+  private final Map<String, String> sourceData;
+  private final Map<String, String> targetData;
 
-  public ClientRelationRepresentation(String type, String xtype, String id, String relationName, String sourceName, String targetName) {
+  public ClientRelationRepresentation(String type, String xtype, String id, String relationName, DomainEntity source, DomainEntity target) {
     this.type = type;
     this.id = id;
     this.path = Joiner.on('/').join(Paths.DOMAIN_PREFIX, xtype, id);
     this.relationName = relationName;
-    this.sourceName = sourceName;
-    this.targetName = targetName;
+
+    if (source != null) {
+      sourceName = source.getDisplayName();
+      sourceData = source.getClientRepresentation();
+    } else {
+      sourceName = "[unknown]";
+      sourceData = null;
+    }
+    if (target != null) {
+      targetName = target.getDisplayName();
+      targetData = target.getClientRepresentation();
+    } else {
+      targetName = "[unknown]";
+      targetData = null;
+    }
   }
 
   public String getType() {
@@ -66,6 +83,14 @@ public class ClientRelationRepresentation {
 
   public String getTargetName() {
     return targetName;
+  }
+
+  public Map<String, String> getSourceData() {
+    return sourceData;
+  }
+
+  public Map<String, String> getTargetData() {
+    return targetData;
   }
 
 }

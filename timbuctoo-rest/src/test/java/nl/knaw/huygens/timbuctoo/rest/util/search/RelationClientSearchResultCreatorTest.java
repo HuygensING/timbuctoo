@@ -27,11 +27,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.ClientRelationRepresentation;
-import nl.knaw.huygens.timbuctoo.model.RelationClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 
 import org.junit.Before;
@@ -42,19 +40,20 @@ import test.rest.model.TestRelation;
 import com.google.common.collect.Lists;
 
 public class RelationClientSearchResultCreatorTest extends ClientSearchResultCreatorTest {
+
   private static final String TYPE_STRING = "testrelation";
-  private static final ArrayList<ClientRelationRepresentation> REFS = Lists.newArrayList(new ClientRelationRepresentation(TYPE_STRING, "xtype", "id", "relationName", "sourceName", "targetName"));
+  private static final List<ClientRelationRepresentation> REFS = Lists.newArrayList(new ClientRelationRepresentation(TYPE_STRING, "xtype", "id", "relationName", null, null));
+
   private RelationClientSearchResultCreator instance;
   private ClientRelationRepresentationCreator clientRelationRepresentationCreatorMock;
 
   @Before
-  public void setUp() {
+  public void setup() {
     initializeRepository();
     initializeHATEOASURICreator();
     initilizeSortableFieldFinder();
 
     clientRelationRepresentationCreatorMock = mock(ClientRelationRepresentationCreator.class);
-
     instance = new RelationClientSearchResultCreator(repositoryMock, sortableFieldFinderMock, hateoasURICreatorMock, clientRelationRepresentationCreatorMock);
   }
 
@@ -267,9 +266,7 @@ public class RelationClientSearchResultCreatorTest extends ClientSearchResultCre
   }
 
   private void testCreate(int start, int rows, Class<TestRelation> type, SearchResult searchResult, RelationClientSearchResultMatcher likeRelationClientResult) {
-    // action
-    RelationClientSearchResult clientSearchResult = instance.create(type, searchResult, start, rows);
-
-    assertThat(clientSearchResult, likeRelationClientResult);
+    assertThat(instance.create(type, searchResult, start, rows), likeRelationClientResult);
   }
+
 }
