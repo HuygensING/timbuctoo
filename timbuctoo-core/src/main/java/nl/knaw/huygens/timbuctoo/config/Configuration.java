@@ -39,7 +39,8 @@ public class Configuration {
 
   public static final String DEFAULT_CONFIG_FILE = "../config.xml";
 
-  private static final String SETTINGS_PREFIX = "settings.";
+  public static final String SETTINGS_PREFIX = "settings.";
+  public static final String KEY_HOME_DIR = "home.directory";
 
   private final XMLConfiguration xmlConfig;
 
@@ -58,6 +59,10 @@ public class Configuration {
       System.err.println("ERROR: unable to load configuration!");
       throw e;
     }
+  }
+
+  public boolean hasSetting(String key) {
+    return StringUtils.isNotBlank(getSetting(key));
   }
 
   public String getSetting(String key) {
@@ -132,7 +137,7 @@ public class Configuration {
   }
 
   public String getDirectory(String key) {
-    String path = concatenatePaths(getSetting("home.directory"), getSetting(key));
+    String path = concatenatePaths(getSetting(KEY_HOME_DIR), getSetting(key));
     return getBooleanSetting("home.use_user_home") ? pathInUserHome(path) : path;
   }
 
