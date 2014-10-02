@@ -79,4 +79,21 @@
       </dependencies>
     </profile>
   </profiles>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.tomcat.maven</groupId>
+        <artifactId>tomcat6-maven-plugin</artifactId>
+        <version>${tomcat6_plugin.version}</version>
+        <configuration>
+          <url>http://localhost:8080/manager</url>
+          <server>localhost</server>
+          <path>/timbuctoo</path>
+          <warDirectory>target/</warDirectory>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  
 </project>
