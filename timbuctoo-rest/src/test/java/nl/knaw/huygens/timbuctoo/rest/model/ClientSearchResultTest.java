@@ -22,13 +22,12 @@ package nl.knaw.huygens.timbuctoo.rest.model;
  * #L%
  */
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.model.ClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-
-import org.junit.Before;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
@@ -36,52 +35,37 @@ import com.google.common.collect.Sets;
 
 public abstract class ClientSearchResultTest {
 
-  private static final int INT_PLACEHOLDER = 10;
-  protected static final String STRING_PLACEHOLDER = "test";
-
-  protected abstract ClientSearchResult createFilledSearchResult();
-
-  protected abstract String[] getKeysWhenFilled();
-
-  protected abstract String[] getKeysWhenEmpty();
-
-  protected abstract ClientSearchResult createEmptySearchResult();
-
-  private ObjectMapper objectMapper;
-
-  @Before
-  public void setUp() {
-    objectMapper = new ObjectMapper();
-  }
+  protected static final int ANY_INT = 42;
+  protected static final String ANY_STRING = "test";
 
   protected void setClientRelationSearchResultProperties(ClientSearchResult searchResult) {
-    searchResult.setIds(Lists.newArrayList(STRING_PLACEHOLDER));
-    searchResult.setNextLink(STRING_PLACEHOLDER);
-    searchResult.setPrevLink(STRING_PLACEHOLDER);
-    searchResult.setNumFound(INT_PLACEHOLDER);
+    searchResult.setIds(Lists.newArrayList(ANY_STRING));
+    searchResult.setNextLink(ANY_STRING);
+    searchResult.setPrevLink(ANY_STRING);
+    searchResult.setNumFound(ANY_INT);
     searchResult.setResults(createResultList());
-    searchResult.setRows(INT_PLACEHOLDER);
-    searchResult.setSortableFields(Sets.newHashSet(STRING_PLACEHOLDER));
-    searchResult.setStart(INT_PLACEHOLDER);
+    searchResult.setRows(ANY_INT);
+    searchResult.setSortableFields(Sets.newHashSet(ANY_STRING));
+    searchResult.setStart(ANY_INT);
   }
 
-  private ArrayList<DomainEntity> createResultList() {
+  private List<DomainEntity> createResultList() {
     DomainEntity entity = new DomainEntity() {
-
       @Override
       public String getDisplayName() {
-        // TODO Auto-generated method stub
         return null;
       }
-
     };
     return Lists.newArrayList(entity);
   }
 
+  @SuppressWarnings("unchecked")
   protected Map<String, Object> createJsonMap(ClientSearchResult searchResult) {
-    @SuppressWarnings("unchecked")
-    Map<String, Object> jsonMap = objectMapper.convertValue(searchResult, Map.class);
-    return jsonMap;
+    return new ObjectMapper().convertValue(searchResult, Map.class);
+  }
+
+  protected Set<String> getKeySet(ClientSearchResult searchResult) {
+    return createJsonMap(searchResult).keySet();
   }
 
 }

@@ -26,7 +26,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
 import java.util.List;
-import java.util.Map;
 
 import nl.knaw.huygens.facetedsearch.model.DefaultFacet;
 import nl.knaw.huygens.facetedsearch.model.Facet;
@@ -43,65 +42,34 @@ import com.google.common.collect.Lists;
 
 public class RegularClientSearchResultSerializationTest extends ClientSearchResultTest {
 
-  private final String[] keysWhenEmpty = new String[] { "sortableFields", "numFound", "results", "ids", "start", "rows", "term", "facets", "refs" };
-  private final String[] keysWhenFilled = new String[] { "sortableFields", "numFound", "results", "ids", "start", "rows", "term", "facets", "refs", "_next", "_prev" };
-
   @Test
   public void testWhenObjectHasAllEmptyProperties() throws JsonProcessingException {
-    // setup
-    ClientSearchResult searchResult = createEmptySearchResult();
-
-    // action
-    Map<String, Object> jsonMap = createJsonMap(searchResult);
-
-    // verify
-    assertThat(jsonMap.keySet(), contains(getKeysWhenEmpty()));
+    ClientSearchResult result = new RegularClientSearchResult();
+    assertThat(getKeySet(result), contains("sortableFields", "numFound", "results", "ids", "start", "rows", "term", "facets", "refs"));
   }
 
   @Test
   public void testPropertiesWhenAllPropertiesContainAValue() {
-    // setup
-    ClientSearchResult searchResult = createFilledSearchResult();
-
-    // action
-    Map<String, Object> jsonMap = createJsonMap(searchResult);
-
-    // verify
-    assertThat(jsonMap.keySet(), contains(getKeysWhenFilled()));
+    ClientSearchResult result = createFilledSearchResult();
+    assertThat(getKeySet(result), contains("sortableFields", "numFound", "results", "ids", "start", "rows", "term", "facets", "refs", "_next", "_prev"));
   }
 
-  @Override
-  protected RegularClientSearchResult createEmptySearchResult() {
-    return new RegularClientSearchResult();
-  }
-
-  @Override
-  protected String[] getKeysWhenEmpty() {
-    return keysWhenEmpty;
-  }
-
-  @Override
-  protected String[] getKeysWhenFilled() {
-    return keysWhenFilled;
-  }
-
-  @Override
-  protected RegularClientSearchResult createFilledSearchResult() {
-    RegularClientSearchResult searchResult = createEmptySearchResult();
+  private RegularClientSearchResult createFilledSearchResult() {
+    RegularClientSearchResult searchResult = new RegularClientSearchResult();
     setClientRelationSearchResultProperties(searchResult);
     searchResult.setRefs(createRefList());
     searchResult.setFacets(createFacetList());
-    searchResult.setTerm(STRING_PLACEHOLDER);
+    searchResult.setTerm(ANY_STRING);
     return searchResult;
   }
 
   private List<ClientEntityRepresentation> createRefList() {
     BaseDomainEntity entity = new BaseDomainEntity("id");
-    return Lists.newArrayList(new ClientEntityRepresentation(STRING_PLACEHOLDER, STRING_PLACEHOLDER, entity));
+    return Lists.newArrayList(new ClientEntityRepresentation(ANY_STRING, ANY_STRING, entity));
   }
 
   private List<Facet> createFacetList() {
-    Facet facet = new DefaultFacet(STRING_PLACEHOLDER, STRING_PLACEHOLDER);
+    Facet facet = new DefaultFacet(ANY_STRING, ANY_STRING);
     return Lists.newArrayList(facet);
   }
 
