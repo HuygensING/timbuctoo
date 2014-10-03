@@ -1,13 +1,17 @@
 package nl.knaw.huygens.timbuctoo.tools.importer.cnw;
 
+import java.util.Map;
+
 import nl.knaw.huygens.tei.DelegatingVisitor;
 import nl.knaw.huygens.tei.Element;
 import nl.knaw.huygens.tei.ElementHandler;
 import nl.knaw.huygens.tei.Traversal;
 import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
 import nl.knaw.huygens.timbuctoo.model.Person;
+import nl.knaw.huygens.timbuctoo.model.cnw.AltName;
 import nl.knaw.huygens.timbuctoo.model.cnw.CNWLink;
 import nl.knaw.huygens.timbuctoo.model.cnw.CNWPerson;
+import nl.knaw.huygens.timbuctoo.model.cnw.CNWRelation;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
@@ -18,12 +22,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 	private static final Logger LOG = LoggerFactory.getLogger(PersonVisitor.class);
+	private Map<String, Map<String, String>> listMaps;
 
-	public PersonVisitor(PersonContext personContext) {
+	public PersonVisitor(PersonContext personContext, Map<String, Map<String, String>> listMaps) {
 		super(personContext);
+		this.listMaps = listMaps;
 		addElementHandler(new PersonHandler(), "persoon");
 
 		addElementHandler(new CNWPersNameHandler(), "persname");
@@ -37,7 +44,7 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 
 		addElementHandler(new KoppelnaamHandler(), "koppelnaam");
 
-		//			addElementHandler(new AltnameHandler(), "altname");
+		//		addElementHandler(new AltnameHandler(), "altname");
 		addElementHandler(new NamesHandler(), "names");
 		addElementHandler(new NametypeHandler(), "nametype");
 
@@ -62,18 +69,20 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 		//			addElementHandler(new OccupationHandler(), "occupation");
 
 		addElementHandler(new NetworkHandler(), "network");
-		addElementHandler(new DomainHandler(), "domain"); // in network, domains
+		addElementHandler(new DomainHandler(), "domain"); // in network
 
-		addElementHandler(new RelativesHandler(), "relatives");
+		addElementHandler(new DomeinHandler(), "domein"); // in  domains
+		addElementHandler(new SubDomainHandler(), "subdomain"); // in network
+
 		addElementHandler(new RelatieHandler(), "relatie");
 		addElementHandler(new ReltypeHandler(), "reltype");
 		addElementHandler(new KoppelnameHandler(), "koppelname");
 
-		addElementHandler(new CharacteristicHandler(), "characteristic");
+		addElementHandler(new CharacteristicHandler(), "karakteristic");
 
 		addElementHandler(new DomainsHandler(), "domains");
 
-		addElementHandler(new ActivitiesHandler(), "activities");
+		addElementHandler(new ActivityHandler(), "act");
 		//			addElementHandler(new PoliticsHandler(), "politics");
 		//			addElementHandler(new OpmPoliticsHandler(), "opm_politics");
 		//			addElementHandler(new LevensbeschouwingHandler(), "levensbeschouwing");
@@ -100,6 +109,7 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 		@Override
 		public Traversal enterElement(Element element, PersonContext context) {
 			context.person = new CNWPerson();
+			context.person.setId(context.pid);
 			return Traversal.NEXT;
 		}
 
@@ -124,7 +134,7 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			LOG.info("person={}", context.person);
+			//			LOG.info("person={}", context.person);
 			return Traversal.NEXT;
 		}
 	}
@@ -219,10 +229,10 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 		}
 	}
 
-	private class ActivitiesHandler extends CaptureHandler<PersonContext> {
+	private class ActivityHandler extends CaptureHandler<PersonContext> {
 		@Override
 		public void handleContent(Element element, PersonContext context, String text) {
-			context.person.setActivities(text);
+			context.person.getMemberships().add(text);
 		}
 	}
 
@@ -257,7 +267,7 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 	private class CharacteristicHandler extends CaptureHandler<PersonContext> {
 		@Override
 		public void handleContent(Element element, PersonContext context, String text) {
-			context.person.setCharacteristics(ImmutableList.copyOf(text.replace("<p>", "").replace("</p>", "").split(", ")));
+			context.person.getCharacteristics().add(denormalized(text, "characteristic"));
 		}
 	}
 
@@ -289,14 +299,33 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 		}
 	}
 
+	private static final String KEYPREFIX = "netwerkverwey_";
+
+	private String denormalized(String text, String string) {
+		return listMaps.get(KEYPREFIX + string).get(text);
+	}
+
 	private class DomainHandler extends CaptureHandler<PersonContext> {
 		@Override
 		public void handleContent(Element element, PersonContext context, String text) {
 			if (element.getParent().hasName("network")) {
-				context.person.getNetworkDomains().add(text);
-			} else if (element.getParent().hasName("domains")) {
-				context.person.getDomains().add(text);
+				context.person.getNetworkDomains().add(denormalized(text, "networks"));
 			}
+		}
+
+	}
+
+	private class DomeinHandler extends CaptureHandler<PersonContext> {
+		@Override
+		public void handleContent(Element element, PersonContext context, String text) {
+			context.person.getDomains().add(denormalized(text, "domains"));
+		}
+	}
+
+	private class SubDomainHandler extends CaptureHandler<PersonContext> {
+		@Override
+		public void handleContent(Element element, PersonContext context, String text) {
+			context.person.getSubDomains().add(denormalized(text, "subdomains"));
 		}
 	}
 
@@ -325,13 +354,6 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 		@Override
 		public void handleContent(Element element, PersonContext context, String text) {
 			context.person.setKoppelnaam(text);
-		}
-	}
-
-	private class KoppelnameHandler extends CaptureHandler<PersonContext> {
-		@Override
-		public void handleContent(Element element, PersonContext context, String text) {
-			//			context.person.setKoppelname(text);
 		}
 	}
 
@@ -374,21 +396,33 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 	private class NameHandler extends CaptureHandler<PersonContext> {
 		@Override
 		public void handleContent(Element element, PersonContext context, String text) {
-			context.person.setName(text);
+			if (element.getParent().hasName("names")) {
+				context.currentAltName.setName(text);
+			} else {
+				context.person.setName(text);
+			}
 		}
 	}
 
-	private class NamesHandler extends CaptureHandler<PersonContext> {
+	private class NamesHandler extends DefaultElementHandler<PersonContext> {
 		@Override
-		public void handleContent(Element element, PersonContext context, String text) {
-			//			context.person.setNames(text);
+		public Traversal enterElement(Element element, PersonContext context) {
+			context.currentAltName = new AltName();
+			return super.enterElement(element, context);
+		}
+
+		@Override
+		public Traversal leaveElement(Element element, PersonContext context) {
+			context.person.getAltNames().add(context.currentAltName);
+			return super.leaveElement(element, context);
 		}
 	}
 
 	private class NametypeHandler extends CaptureHandler<PersonContext> {
+
 		@Override
 		public void handleContent(Element element, PersonContext context, String text) {
-			context.nametype = text;
+			context.currentAltName.setNametype(denormalized(text, "nametype"));
 		}
 	}
 
@@ -430,7 +464,7 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 	private class CountryHandler extends CaptureHandler<PersonContext> {
 		@Override
 		public void handleContent(Element element, PersonContext context, String text) {
-			context.country = text;
+			context.country = denormalized(text, "country");
 		}
 	}
 
@@ -455,24 +489,57 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 		}
 	}
 
-	private class RelatieHandler extends CaptureHandler<PersonContext> {
+	// relations
+	private class RelatieHandler extends DefaultElementHandler<PersonContext> {
 		@Override
-		public void handleContent(Element element, PersonContext context, String text) {
-			//			context.person.setRelatie(text);
+		public Traversal enterElement(Element element, PersonContext context) {
+			context.currentRelation = new CNWRelation();
+			context.currentRelation.setSourceType("person");
+			context.currentRelation.setSourceId(context.pid);
+			return super.enterElement(element, context);
+		}
+
+		@Override
+		public Traversal leaveElement(Element element, PersonContext context) {
+			context.relations.add(context.currentRelation);
+			return super.leaveElement(element, context);
 		}
 	}
 
-	private class RelativesHandler extends CaptureHandler<PersonContext> {
-		@Override
-		public void handleContent(Element element, PersonContext context, String text) {
-			//			context.person.setRelatives(text);
-		}
-	}
+	Map<String, String> reltypeMap = ImmutableMap.<String, String> builder()//
+			.put("broer", "isRelatedTo")//
+			.put("child", "isParentOf")//
+			.put("echtgenoot", "isSpouseOf")//
+			.put("gezel", "isSpouseOf")//
+			.put("grand", "isRelatedTo")//
+			.put("parent", "isParentOf")//
+			.put("verloofd", "isSpouseOf")//
+			.build();
+
+	//	Map<String, String> reltypeMap = ImmutableMap.<String, String> builder()//
+	//			.put("broer", "isSiblingOf")//
+	//			.put("child", "isParentOf")//
+	//			.put("echtgenoot", "isSpouseOf")//
+	//			.put("gezel", "isCompanionOf")//
+	//			.put("grand", "isGrandparentOf")//
+	//			.put("parent", "isParentOf")//
+	//			.put("verloofd", "isEngagedTo")//
+	//			.build();
 
 	private class ReltypeHandler extends CaptureHandler<PersonContext> {
 		@Override
 		public void handleContent(Element element, PersonContext context, String text) {
-			//			context.person.setReltype(text);
+			context.currentRelation.setTypeName(text);
+			context.currentRelation.setTypeType("relationtype");
+			context.currentRelation.setTypeId(reltypeMap.get(text));
+		}
+	}
+
+	private class KoppelnameHandler extends CaptureHandler<PersonContext> {
+		@Override
+		public void handleContent(Element element, PersonContext context, String text) {
+			context.currentRelation.setTargetType("person");
+			context.currentRelation.setTargetId(text);
 		}
 	}
 

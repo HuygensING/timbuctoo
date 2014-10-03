@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.tools.importer;
 
+import com.google.common.base.Objects;
+
 /*
  * #%L
  * Timbuctoo tools
@@ -27,77 +29,111 @@ package nl.knaw.huygens.timbuctoo.tools.importer;
  */
 public class RelationDTO {
 
-  /** The relation type name. */
-  private String typeName;
-  /** The internal name of the source entity. */
-  private String sourceType;
-  /** The field name of the source entity to use as key;
-   * if {@code null} the id supplied by the importer is used. */
-  private String sourceKey;
-  /** The value of the source entity for the specified key. */
-  private String sourceValue;
-  /** The internal name of the target entity. */
-  private String targetType;
-  /** The field name of the target entity to use as key;
-   * if {@code null} the id supplied by the importer is used. */
-  private String targetKey;
-  /** The value of the target entity for the specified key. */
-  private String targetValue;
+	/** The relation type name. */
+	private String typeName;
+	/** The internal name of the source entity. */
+	private String sourceType;
+	/** The field name of the source entity to use as key;
+	 * if {@code null} the id supplied by the importer is used. */
+	private String sourceKey;
+	/** The value of the source entity for the specified key. */
+	private String sourceValue;
+	/** The internal name of the target entity. */
+	private String targetType;
+	/** The field name of the target entity to use as key;
+	 * if {@code null} the id supplied by the importer is used. */
+	private String targetKey;
+	/** The value of the target entity for the specified key. */
+	private String targetValue;
 
-  public String getTypeName() {
-    return typeName;
-  }
+	public String getTypeName() {
+		return typeName;
+	}
 
-  public void setTypeName(String typeName) {
-    this.typeName = typeName;
-  }
+	public void setTypeName(String typeName) {
+		this.typeName = typeName;
+	}
 
-  public String getSourceType() {
-    return sourceType;
-  }
+	public String getSourceType() {
+		return sourceType;
+	}
 
-  public void setSourceType(String sourceType) {
-    this.sourceType = sourceType;
-  }
+	public void setSourceType(String sourceType) {
+		this.sourceType = sourceType;
+	}
 
-  public String getSourceKey() {
-    return sourceKey;
-  }
+	public String getSourceKey() {
+		return sourceKey;
+	}
 
-  public void setSourceKey(String sourceKey) {
-    this.sourceKey = sourceKey;
-  }
+	public void setSourceKey(String sourceKey) {
+		this.sourceKey = sourceKey;
+	}
 
-  public String getSourceValue() {
-    return sourceValue;
-  }
+	public String getSourceValue() {
+		return sourceValue;
+	}
 
-  public void setSourceValue(String sourceValue) {
-    this.sourceValue = sourceValue;
-  }
+	public void setSourceValue(String sourceValue) {
+		this.sourceValue = sourceValue;
+	}
 
-  public String getTargetType() {
-    return targetType;
-  }
+	public String getTargetType() {
+		return targetType;
+	}
 
-  public void setTargetType(String targetType) {
-    this.targetType = targetType;
-  }
+	public void setTargetType(String targetType) {
+		this.targetType = targetType;
+	}
 
-  public String getTargetKey() {
-    return targetKey;
-  }
+	public String getTargetKey() {
+		return targetKey;
+	}
 
-  public void setTargetKey(String targetKey) {
-    this.targetKey = targetKey;
-  }
+	public void setTargetKey(String targetKey) {
+		this.targetKey = targetKey;
+	}
 
-  public String getTargetValue() {
-    return targetValue;
-  }
+	public String getTargetValue() {
+		return targetValue;
+	}
 
-  public void setTargetValue(String targetValue) {
-    this.targetValue = targetValue;
-  }
+	public void setTargetValue(String targetValue) {
+		this.targetValue = targetValue;
+	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof RelationDTO)) {
+			return false;
+		}
+		RelationDTO other = (RelationDTO) obj;
+		return (obj instanceof RelationDTO) //
+				&& Objects.equal(sourceKey, other.getSourceKey())//
+				&& Objects.equal(sourceType, other.getSourceType())//
+				&& Objects.equal(sourceValue, other.getSourceValue())//
+				&& Objects.equal(typeName, other.getTypeName())//
+				&& Objects.equal(targetKey, other.getTargetKey())//
+				&& Objects.equal(targetType, other.getTargetType())//
+				&& Objects.equal(targetValue, other.getTargetValue())//
+		;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(sourceKey, sourceType, sourceValue, typeName, targetKey, targetType, targetValue);
+	}
+	
+	@Override
+	public String toString() {
+		return Objects.toStringHelper(this)//
+				.add("sourceKey",sourceKey)//
+				.add("sourceType",sourceType)//
+				.add("sourceValue",sourceValue)//
+				.add("typeName",typeName)//
+				.add("targetKey",targetKey)//
+				.add("targetType",targetType)//
+				.add("targetValue",targetValue)//
+				.toString();
+	}
 }

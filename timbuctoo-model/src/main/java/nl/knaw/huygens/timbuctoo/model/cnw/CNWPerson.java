@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.model.cnw;
 
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.Person;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -14,15 +15,17 @@ public class CNWPerson extends Person {
 	private String name = "";
 	private String koppelnaam = "";
 	private List<String> networkDomains = Lists.newArrayList();
-	private List<String> characteristics = Lists.newArrayList();//Tekstveld met opsomming, onderdelen in principe gescheiden door komma’s;	Om te zetten naar facet met sorteerbare lijst
+	private List<String> characteristics = Lists.newArrayList();
+	private List<String> subdomains = Lists.newArrayList();
 	private List<String> domains = Lists.newArrayList();
-	private String activities = ""; // Lidmaatschappen : Om te zetten naar facet met sorteerbare lijst
+	private List<String> memberships = Lists.newArrayList(); // Lidmaatschappen : Om te zetten naar facet met sorteerbare lijst
 	private String biodesurl = "";//Bioport url, Link, mogelijkheid tot doorklikken
 	private String dbnlUrl = "";//Link, mogelijkheid tot doorklikken
 	private List<CNWLink> verwijzingen = Lists.newArrayList();
 	private String notities = ""; //Bronvermeldingen, tekstveld; Interface geen facet, wel zichtbaar in pop up (Onderscheid Korte of lange presentatie)
 	private String opmerkingen = ""; //Tekstveld, met vast onderdeel (Afgesloten: XXXX-XX-XX);	Interface geen facet, wel zichtbaar in pop up
 	private String aantekeningen = ""; // KLadblok: Niet zichtbaar voor gebruiker, wel bewaren
+	private List<AltName> altNames = Lists.newArrayList();
 
 	//	private String nametype = "";
 	//	private String woonplaats = "";
@@ -37,12 +40,13 @@ public class CNWPerson extends Person {
 	//	private String cenUrlAfz = "";
 	//	private String cenUrlOntv = "";
 
-	public String getActivities() {
-		return activities;
+	@IndexAnnotation(fieldName = "dynamic_s_membership", canBeEmpty = true, isFaceted = true)
+	public List<String> getMemberships() {
+		return memberships;
 	}
 
-	public void setActivities(String activities) {
-		this.activities = activities;
+	public void setActivities(List<String> activities) {
+		this.memberships = activities;
 	}
 
 	public String getBiodesurl() {
@@ -53,6 +57,7 @@ public class CNWPerson extends Person {
 		this.biodesurl = biodesurl;
 	}
 
+	@IndexAnnotation(fieldName = "dynamic_s_characteristic", canBeEmpty = true, isFaceted = true)
 	public List<String> getCharacteristics() {
 		return characteristics;
 	}
@@ -228,5 +233,17 @@ public class CNWPerson extends Person {
 	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+	}
+
+	public List<AltName> getAltNames() {
+		return altNames;
+	}
+
+	public void setAltNames(List<AltName> altNames) {
+		this.altNames = altNames;
+	}
+
+	public List<String> getSubDomains() {
+		return subdomains;
 	}
 }
