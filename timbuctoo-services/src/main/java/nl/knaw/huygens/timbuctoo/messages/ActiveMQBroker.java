@@ -58,11 +58,13 @@ public class ActiveMQBroker implements Broker {
   private BrokerService brokerService;
   private Map<String, Producer> producers;
   private Map<String, Consumer> consumers;
+  private final String brokerName;
 
   @Inject
   //TODO factor out the config.
   public ActiveMQBroker(Configuration config, TypeRegistry typeRegistry) {
-    url = "vm://" + config.getSetting(BROKER_NAME_KEY) + BROKER_NAME;
+    brokerName = config.getSetting(BROKER_NAME_KEY) + BROKER_NAME;
+    url = "vm://" + brokerName;
     LOG.info("Message broker URL: '{}'", url);
     createBrokerService(config);
     this.typeRegistry = typeRegistry;
@@ -120,7 +122,7 @@ public class ActiveMQBroker implements Broker {
    */
   private void createBrokerService(Configuration config) {
     brokerService = new BrokerService();
-    brokerService.setBrokerName(BROKER_NAME);
+    brokerService.setBrokerName(brokerName);
     brokerService.setPersistent(config.getBooleanSetting(KEY_PERSISTENT, false));
 
     SystemUsage systemManager = new SystemUsage();
