@@ -107,8 +107,8 @@ You also have to change the `{dir}` in the solr configuration. If the `use_user_
 <solr>
   <use_user_home>true</use_user_home> <!-- does solr use the user home dir -->
   <directory>{dir}</directory> <!-- folder to find solr cores in. -->
-  <!-- Maximum time before a commit in ms -->
-  <commit_within>10000</commit_within>
+  <!-- Maximum time before a commit -->
+  <commit_within_seconds>10000</commit_within_seconds>
 </solr>
 ```
     
