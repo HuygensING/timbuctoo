@@ -27,22 +27,22 @@ import static nl.knaw.huygens.timbuctoo.rest.util.RangeHelper.mapToRange;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.model.ClientEntityRepresentation;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 public class RegularClientSearchResultCreator extends ClientSearchResultCreator {
 
-  private final ClientEntityRepresentationCreator entityRefCreator;
-
   @Inject
-  public RegularClientSearchResultCreator(Repository repository, SortableFieldFinder sortableFieldFinder, ClientEntityRepresentationCreator entityRefCreator, HATEOASURICreator hateoasURICreator) {
+  public RegularClientSearchResultCreator(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator) {
     super(repository, sortableFieldFinder, hateoasURICreator);
-    this.entityRefCreator = entityRefCreator;
   }
 
   @Override
@@ -65,16 +65,27 @@ public class RegularClientSearchResultCreator extends ClientSearchResultCreator 
     clientSearchResult.setIds(idsToRetrieve);
     clientSearchResult.setResults(results);
     clientSearchResult.setNumFound(numFound);
-    clientSearchResult.setRefs(entityRefCreator.createRefs(type, results));
+    clientSearchResult.setRefs(createRefs(type, results));
     clientSearchResult.setSortableFields(sortableFieldFinder.findFields(type));
     clientSearchResult.setTerm(searchResult.getTerm());
     clientSearchResult.setFacets(searchResult.getFacets());
 
     setPreviousLink(normalizedStart, rows, clientSearchResult, queryId);
-
     setNextLink(start, rows, clientSearchResult, numFound, end, queryId);
 
     return clientSearchResult;
+  }
+
+  private <T extends DomainEntity> List<ClientEntityRepresentation> createRefs(Class<T> type, List<T> entities) {
+    String itype = TypeNames.getInternalName(type);
+    String xtype = TypeNames.getExternalName(type);
+    List<ClientEntityRepresentation> list = Lists.newArrayListWithCapacity(entities.size());
+    for (DomainEntity entity : entities) {
+      list.add(new ClientEntityRepresentation(itype, xtype, entity));
+      // TODO eliminate this, once results are no longer part of the representation
+      entity.clearRelations();
+    }
+    return list;
   }
 
 }
