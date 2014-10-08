@@ -25,9 +25,9 @@ package nl.knaw.huygens.timbuctoo.rest.util.search;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
+import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 
@@ -36,15 +36,15 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
-public abstract class ClientSearchResultCreator {
+public abstract class SearchResultMapper {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ClientSearchResultCreator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SearchResultMapper.class);
 
   protected final Repository repository;
   protected final SortableFieldFinder sortableFieldFinder;
   protected final HATEOASURICreator hateoasURICreator;
 
-  public ClientSearchResultCreator(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator) {
+  public SearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator) {
     this.repository = repository;
     this.sortableFieldFinder = sortableFieldFinder;
     this.hateoasURICreator = hateoasURICreator;

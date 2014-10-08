@@ -35,20 +35,19 @@ import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 
 import com.google.inject.Inject;
 
-public class RelationClientSearchResultCreator extends ClientSearchResultCreator {
+public class RelationSearchResultMapper extends SearchResultMapper {
 
-  private final ClientRelationRepresentationCreator clientRelationRepresentationCreator;
+  private final RelationMapper relationMapper;
 
   @Inject
-  public RelationClientSearchResultCreator(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator,
-      ClientRelationRepresentationCreator clientRelationRepresentationCreator) {
+  public RelationSearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator, RelationMapper relationMapper) {
     super(repository, sortableFieldFinder, hateoasURICreator);
-    this.clientRelationRepresentationCreator = clientRelationRepresentationCreator;
+    this.relationMapper = relationMapper;
   }
 
   @Override
   public <T extends DomainEntity> RelationSearchResultDTO create(Class<T> type, SearchResult searchResult, int start, int rows) {
-    RelationSearchResultDTO clientSearchResult = new RelationSearchResultDTO();
+    RelationSearchResultDTO dto = new RelationSearchResultDTO();
 
     String queryId = searchResult.getId();
     List<String> ids = getIds(searchResult);
@@ -60,17 +59,17 @@ public class RelationClientSearchResultCreator extends ClientSearchResultCreator
     List<String> idsToRetrieve = ids.subList(normalizedStart, end);
     List<T> results = retrieveEntities(type, idsToRetrieve);
 
-    clientSearchResult.setRows(normalizedRows);
-    clientSearchResult.setStart(normalizedStart);
-    clientSearchResult.setIds(idsToRetrieve);
-    clientSearchResult.setResults(results);
-    clientSearchResult.setNumFound(numFound);
-    clientSearchResult.setRefs(clientRelationRepresentationCreator.createRefs(type, results));
-    clientSearchResult.setSortableFields(sortableFieldFinder.findFields(type));
-    setNextLink(normalizedStart, rows, clientSearchResult, numFound, end, queryId);
-    setPreviousLink(normalizedStart, rows, clientSearchResult, queryId);
+    dto.setRows(normalizedRows);
+    dto.setStart(normalizedStart);
+    dto.setIds(idsToRetrieve);
+    dto.setResults(results);
+    dto.setNumFound(numFound);
+    dto.setRefs(relationMapper.createRefs(type, results));
+    dto.setSortableFields(sortableFieldFinder.findFields(type));
+    setNextLink(normalizedStart, rows, dto, numFound, end, queryId);
+    setPreviousLink(normalizedStart, rows, dto, queryId);
 
-    return clientSearchResult;
+    return dto;
   }
 
 }

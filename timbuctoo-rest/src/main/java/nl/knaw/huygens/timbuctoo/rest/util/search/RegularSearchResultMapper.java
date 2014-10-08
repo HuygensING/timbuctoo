@@ -38,16 +38,16 @@ import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
-public class RegularClientSearchResultCreator extends ClientSearchResultCreator {
+public class RegularSearchResultMapper extends SearchResultMapper {
 
   @Inject
-  public RegularClientSearchResultCreator(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator) {
+  public RegularSearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator) {
     super(repository, sortableFieldFinder, hateoasURICreator);
   }
 
   @Override
   public <T extends DomainEntity> RegularSearchResultDTO create(Class<T> type, SearchResult searchResult, int start, int rows) {
-    RegularSearchResultDTO result = new RegularSearchResultDTO();
+    RegularSearchResultDTO dto = new RegularSearchResultDTO();
 
     List<String> ids = getIds(searchResult);
     int numFound = ids.size();
@@ -60,20 +60,20 @@ public class RegularClientSearchResultCreator extends ClientSearchResultCreator 
 
     String queryId = searchResult.getId();
 
-    result.setRows(normalizedRows);
-    result.setStart(normalizedStart);
-    result.setIds(idsToRetrieve);
-    result.setResults(results);
-    result.setNumFound(numFound);
-    result.setRefs(createRefs(type, results));
-    result.setSortableFields(sortableFieldFinder.findFields(type));
-    result.setTerm(searchResult.getTerm());
-    result.setFacets(searchResult.getFacets());
+    dto.setRows(normalizedRows);
+    dto.setStart(normalizedStart);
+    dto.setIds(idsToRetrieve);
+    dto.setResults(results);
+    dto.setNumFound(numFound);
+    dto.setRefs(createRefs(type, results));
+    dto.setSortableFields(sortableFieldFinder.findFields(type));
+    dto.setTerm(searchResult.getTerm());
+    dto.setFacets(searchResult.getFacets());
 
-    setPreviousLink(normalizedStart, rows, result, queryId);
-    setNextLink(start, rows, result, numFound, end, queryId);
+    setPreviousLink(normalizedStart, rows, dto, queryId);
+    setNextLink(start, rows, dto, numFound, end, queryId);
 
-    return result;
+    return dto;
   }
 
   private <T extends DomainEntity> List<DomainEntityDTO> createRefs(Class<T> type, List<T> entities) {

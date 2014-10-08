@@ -35,8 +35,8 @@ import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.rest.util.search.RegularClientSearchResultCreator;
-import nl.knaw.huygens.timbuctoo.rest.util.search.RelationClientSearchResultCreator;
+import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
+import nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 
@@ -57,8 +57,8 @@ public abstract class SearchResourceTestBase extends WebServiceTestSetup {
   protected static final String ID = "QURY0000000001";
 
   protected SearchRequestValidator searchRequestValidator;
-  protected RegularClientSearchResultCreator regularClientSearchResultCreatorMock;
-  protected RelationClientSearchResultCreator relationClientSearchResultCreatorMock;
+  protected RegularSearchResultMapper regularClientSearchResultCreatorMock;
+  protected RelationSearchResultMapper relationClientSearchResultCreatorMock;
   protected static final String RELATION_SEARCH_RESULT_TYPE = "testrelation";
   protected static final String SEARCH_RESULT_TYPE_STRING = "person";
   protected static final Class<? extends DomainEntity> SEARCH_RESULT_TYPE = Person.class;
@@ -99,8 +99,8 @@ public abstract class SearchResourceTestBase extends WebServiceTestSetup {
 
   @Before
   public void setUpClientSearchResultCreators() {
-    regularClientSearchResultCreatorMock = injector.getInstance(RegularClientSearchResultCreator.class);
-    relationClientSearchResultCreatorMock = injector.getInstance(RelationClientSearchResultCreator.class);
+    regularClientSearchResultCreatorMock = injector.getInstance(RegularSearchResultMapper.class);
+    relationClientSearchResultCreatorMock = injector.getInstance(RelationSearchResultMapper.class);
   }
 
 }

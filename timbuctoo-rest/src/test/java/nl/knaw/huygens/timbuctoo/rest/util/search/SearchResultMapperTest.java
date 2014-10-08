@@ -37,7 +37,7 @@ import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-public class ClientSearchResultCreatorTest {
+public class SearchResultMapperTest {
 
   protected static final String NEXT_LINK = "http://www.test.com/next";
   protected static final String PREV_LINK = "http://www.test.com/prev";
@@ -47,6 +47,7 @@ public class ClientSearchResultCreatorTest {
   protected static final int TEN_RESULTS_FOUND = ID_LIST_WITH_TEN_IDS.size();
   protected static final String QUERY_ID = "queryId";
   protected static final HashSet<String> SORTABLE_FIELDS = Sets.newHashSet();
+
   protected Repository repositoryMock;
   protected SortableFieldFinder sortableFieldFinderMock;
   protected HATEOASURICreator hateoasURICreatorMock;

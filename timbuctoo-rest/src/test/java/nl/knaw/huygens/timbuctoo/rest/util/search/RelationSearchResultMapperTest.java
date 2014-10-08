@@ -39,13 +39,13 @@ import test.rest.model.TestRelation;
 
 import com.google.common.collect.Lists;
 
-public class RelationClientSearchResultCreatorTest extends ClientSearchResultCreatorTest {
+public class RelationSearchResultMapperTest extends SearchResultMapperTest {
 
   private static final String TYPE_STRING = "testrelation";
   private static final List<RelationDTO> REFS = Lists.newArrayList(new RelationDTO(TYPE_STRING, "xtype", "id", "relationName", null, null));
 
-  private RelationClientSearchResultCreator instance;
-  private ClientRelationRepresentationCreator clientRelationRepresentationCreatorMock;
+  private RelationSearchResultMapper instance;
+  private RelationMapper relationMapperMock;
 
   @Before
   public void setup() {
@@ -53,8 +53,8 @@ public class RelationClientSearchResultCreatorTest extends ClientSearchResultCre
     initializeHATEOASURICreator();
     initilizeSortableFieldFinder();
 
-    clientRelationRepresentationCreatorMock = mock(ClientRelationRepresentationCreator.class);
-    instance = new RelationClientSearchResultCreator(repositoryMock, sortableFieldFinderMock, hateoasURICreatorMock, clientRelationRepresentationCreatorMock);
+    relationMapperMock = mock(RelationMapper.class);
+    instance = new RelationSearchResultMapper(repositoryMock, sortableFieldFinderMock, hateoasURICreatorMock, relationMapperMock);
   }
 
   @Test
@@ -80,7 +80,7 @@ public class RelationClientSearchResultCreatorTest extends ClientSearchResultCre
         .withSortableFields(SORTABLE_FIELDS) //
         .build();
 
-    when(clientRelationRepresentationCreatorMock.createRefs(type, result)).thenReturn(REFS);
+    when(relationMapperMock.createRefs(type, result)).thenReturn(REFS);
 
     testCreate(start, rows, type, searchResult, likeRelationClientResult);
   }
@@ -110,7 +110,7 @@ public class RelationClientSearchResultCreatorTest extends ClientSearchResultCre
         .withPrevLink(PREV_LINK) //
         .build();
 
-    when(clientRelationRepresentationCreatorMock.createRefs(type, result)).thenReturn(REFS);
+    when(relationMapperMock.createRefs(type, result)).thenReturn(REFS);
     when(hateoasURICreatorMock.createHATEOASURIAsString(previousStart, rows, QUERY_ID)).thenReturn(PREV_LINK);
 
     testCreate(start, rows, type, searchResult, likeRelationClientResult);
@@ -140,7 +140,7 @@ public class RelationClientSearchResultCreatorTest extends ClientSearchResultCre
         .withSortableFields(SORTABLE_FIELDS) //
         .build();
 
-    when(clientRelationRepresentationCreatorMock.createRefs(type, result)).thenReturn(REFS);
+    when(relationMapperMock.createRefs(type, result)).thenReturn(REFS);
 
     testCreate(start, rows, type, searchResult, likeRelationClientResult);
   }
@@ -170,7 +170,7 @@ public class RelationClientSearchResultCreatorTest extends ClientSearchResultCre
         .withNextLink(NEXT_LINK) //
         .build();
 
-    when(clientRelationRepresentationCreatorMock.createRefs(type, result)).thenReturn(REFS);
+    when(relationMapperMock.createRefs(type, result)).thenReturn(REFS);
     when(hateoasURICreatorMock.createHATEOASURIAsString(nextStart, rows, QUERY_ID)).thenReturn(NEXT_LINK);
 
     testCreate(start, rows, type, searchResult, likeRelationClientResult);
@@ -200,7 +200,7 @@ public class RelationClientSearchResultCreatorTest extends ClientSearchResultCre
         .withSortableFields(SORTABLE_FIELDS) //
         .build();
 
-    when(clientRelationRepresentationCreatorMock.createRefs(type, result)).thenReturn(REFS);
+    when(relationMapperMock.createRefs(type, result)).thenReturn(REFS);
 
     testCreate(start, rows, type, searchResult, likeRelationClientResult);
   }
@@ -232,7 +232,7 @@ public class RelationClientSearchResultCreatorTest extends ClientSearchResultCre
         .build();
 
     int prevStart = 0;
-    when(clientRelationRepresentationCreatorMock.createRefs(type, result)).thenReturn(REFS);
+    when(relationMapperMock.createRefs(type, result)).thenReturn(REFS);
     when(hateoasURICreatorMock.createHATEOASURIAsString(prevStart, rows, QUERY_ID)).thenReturn(PREV_LINK);
 
     testCreate(start, rows, type, searchResult, likeRelationClientResult);

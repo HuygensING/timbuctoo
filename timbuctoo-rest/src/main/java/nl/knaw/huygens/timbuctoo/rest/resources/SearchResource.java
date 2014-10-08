@@ -50,8 +50,8 @@ import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
-import nl.knaw.huygens.timbuctoo.rest.util.search.RegularClientSearchResultCreator;
-import nl.knaw.huygens.timbuctoo.rest.util.search.RelationClientSearchResultCreator;
+import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
+import nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
 import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.search.converters.SearchParametersConverter;
@@ -85,9 +85,9 @@ public class SearchResource extends ResourceBase {
   @Inject
   private RelationSearcher relationSearcher;
   @Inject
-  private RegularClientSearchResultCreator regularSearchResultCreator;
+  private RegularSearchResultMapper regularSearchResultCreator;
   @Inject
-  private RelationClientSearchResultCreator relationSearchResultCreator;
+  private RelationSearchResultMapper relationSearchResultCreator;
 
   @POST
   @APIDesc("Searches the Solr index")

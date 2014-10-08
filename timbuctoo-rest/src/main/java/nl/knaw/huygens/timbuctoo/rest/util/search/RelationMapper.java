@@ -29,9 +29,9 @@ import nl.knaw.huygens.timbuctoo.config.EntityMapper;
 import nl.knaw.huygens.timbuctoo.config.EntityMappers;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.RelationDTO;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.RelationDTO;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 
 import org.slf4j.Logger;
@@ -41,15 +41,15 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
-public class ClientRelationRepresentationCreator {
+public class RelationMapper {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ClientRelationRepresentationCreator.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RelationMapper.class);
 
   private final Repository repository;
   private final TypeRegistry registry;
 
   @Inject
-  public ClientRelationRepresentationCreator(Repository repository, TypeRegistry registry) {
+  public RelationMapper(Repository repository, TypeRegistry registry) {
     this.repository = repository;
     this.registry = registry;
   }

@@ -36,8 +36,8 @@ import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
-import nl.knaw.huygens.timbuctoo.rest.util.search.RegularClientSearchResultCreator;
-import nl.knaw.huygens.timbuctoo.rest.util.search.RelationClientSearchResultCreator;
+import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
+import nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
 import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.search.converters.SearchParametersConverter;
@@ -80,8 +80,8 @@ class ResourceTestModule extends JerseyServletModule {
   private SearchRequestValidator searchRequestValidator;
   private SearchParametersConverter searchParametersConverter;
   private RelationSearcher relationSearcher;
-  private RegularClientSearchResultCreator regularClientSearchResultCreator;
-  private RelationClientSearchResultCreator relationClientSearchResultCreator;
+  private RegularSearchResultMapper regularClientSearchResultCreator;
+  private RelationSearchResultMapper relationClientSearchResultCreator;
   private UserConfigurationHandler userConfigurationHandler;
 
   public ResourceTestModule() {
@@ -103,8 +103,8 @@ class ResourceTestModule extends JerseyServletModule {
       searchRequestValidator = mock(SearchRequestValidator.class);
       searchParametersConverter = mock(SearchParametersConverter.class);
       relationSearcher = mock(RelationSearcher.class);
-      regularClientSearchResultCreator = mock(RegularClientSearchResultCreator.class);
-      relationClientSearchResultCreator = mock(RelationClientSearchResultCreator.class);
+      regularClientSearchResultCreator = mock(RegularSearchResultMapper.class);
+      relationClientSearchResultCreator = mock(RelationSearchResultMapper.class);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -240,13 +240,13 @@ class ResourceTestModule extends JerseyServletModule {
 
   @Singleton
   @Provides
-  public RegularClientSearchResultCreator provideRegularClientSearchResultBuilder() {
+  public RegularSearchResultMapper provideRegularClientSearchResultBuilder() {
     return regularClientSearchResultCreator;
   }
 
   @Singleton
   @Provides
-  public RelationClientSearchResultCreator provideRelationClientSearchResultCreator() {
+  public RelationSearchResultMapper provideRelationClientSearchResultCreator() {
     return relationClientSearchResultCreator;
   }
 

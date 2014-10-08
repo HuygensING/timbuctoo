@@ -56,9 +56,9 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
-import nl.knaw.huygens.timbuctoo.rest.util.search.ClientSearchResultCreator;
-import nl.knaw.huygens.timbuctoo.rest.util.search.RegularClientSearchResultCreator;
-import nl.knaw.huygens.timbuctoo.rest.util.search.RelationClientSearchResultCreator;
+import nl.knaw.huygens.timbuctoo.rest.util.search.SearchResultMapper;
+import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
+import nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
 import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
@@ -90,9 +90,9 @@ public class SearchResourceV1 extends ResourceBase {
   @Inject
   private RelationSearcher relationSearcher;
   @Inject
-  private RegularClientSearchResultCreator regularSearchResultCreator;
+  private RegularSearchResultMapper regularSearchResultCreator;
   @Inject
-  private RelationClientSearchResultCreator relationSearchResultCreator;
+  private RelationSearchResultMapper relationSearchResultCreator;
 
   @POST
   @Path("/" + ENTITY_PATH)
@@ -140,7 +140,7 @@ public class SearchResourceV1 extends ResourceBase {
     return Response.ok(clientSearchResult).build();
   }
 
-  private ClientSearchResultCreator getClientSearchResultCreator(Class<? extends DomainEntity> type) {
+  private SearchResultMapper getClientSearchResultCreator(Class<? extends DomainEntity> type) {
     return Relation.class.isAssignableFrom(type) ? relationSearchResultCreator : regularSearchResultCreator;
   }
 
