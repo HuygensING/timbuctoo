@@ -28,7 +28,7 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 
 import com.google.common.base.Joiner;
 
-public class ClientRelationRepresentation {
+public class RelationDTO {
 
   private final String type;
   private final String id;
@@ -39,7 +39,7 @@ public class ClientRelationRepresentation {
   private final Map<String, String> sourceData;
   private final Map<String, String> targetData;
 
-  public ClientRelationRepresentation(String type, String xtype, String id, String relationName, DomainEntity source, DomainEntity target) {
+  public RelationDTO(String type, String xtype, String id, String relationName, DomainEntity source, DomainEntity target) {
     this.type = type;
     this.id = id;
     this.path = Joiner.on('/').join(Paths.DOMAIN_PREFIX, xtype, id);

@@ -28,13 +28,13 @@ import java.util.Set;
 import nl.knaw.huygens.facetedsearch.model.Facet;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
-import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
+import nl.knaw.huygens.timbuctoo.model.RegularSearchResultDTO;
 
 import org.hamcrest.Description;
 
 import com.google.common.base.Objects;
 
-public class RegularClientSearchResultMatcher extends ClientSearchResultMatcher<RegularClientSearchResult> {
+public class RegularClientSearchResultMatcher extends ClientSearchResultMatcher<RegularSearchResultDTO> {
 
   private final String term;
   private final List<Facet> facets;
@@ -78,7 +78,7 @@ public class RegularClientSearchResultMatcher extends ClientSearchResultMatcher<
   }
 
   @Override
-  protected void describeMismatchSafely(RegularClientSearchResult item, Description mismatchdescription) {
+  protected void describeMismatchSafely(RegularSearchResultDTO item, Description mismatchdescription) {
     mismatchdescription.appendText("RegularClientSearchResult with \n");
 
     addToDescription(mismatchdescription, "term", item.getTerm());
@@ -95,7 +95,7 @@ public class RegularClientSearchResultMatcher extends ClientSearchResultMatcher<
   }
 
   @Override
-  protected boolean matchesSafely(RegularClientSearchResult item) {
+  protected boolean matchesSafely(RegularSearchResultDTO item) {
     boolean isEqual = super.matchesSafely(item);
     isEqual &= Objects.equal(term, item.getTerm());
     isEqual &= Objects.equal(facets, item.getFacets());

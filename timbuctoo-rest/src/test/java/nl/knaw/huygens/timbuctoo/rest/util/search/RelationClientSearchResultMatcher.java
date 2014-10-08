@@ -25,20 +25,20 @@ package nl.knaw.huygens.timbuctoo.rest.util.search;
 import java.util.List;
 import java.util.Set;
 
-import nl.knaw.huygens.timbuctoo.model.ClientRelationRepresentation;
+import nl.knaw.huygens.timbuctoo.model.RelationDTO;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.RelationClientSearchResult;
+import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
 
 import org.hamcrest.Description;
 
 import com.google.common.base.Objects;
 
-public class RelationClientSearchResultMatcher extends ClientSearchResultMatcher<RelationClientSearchResult> {
+public class RelationClientSearchResultMatcher extends ClientSearchResultMatcher<RelationSearchResultDTO> {
 
-  private final List<ClientRelationRepresentation> refs;
+  private final List<RelationDTO> refs;
 
   private RelationClientSearchResultMatcher(int numFound, List<String> ids, List<? extends DomainEntity> results, int start, int rows, Set<String> sortableFields, String nextLink, String prevLink,
-      List<ClientRelationRepresentation> refs) {
+      List<RelationDTO> refs) {
     super(numFound, ids, results, start, rows, sortableFields, nextLink, prevLink);
     this.refs = refs;
   }
@@ -59,7 +59,7 @@ public class RelationClientSearchResultMatcher extends ClientSearchResultMatcher
   }
 
   @Override
-  protected void describeMismatchSafely(RelationClientSearchResult item, Description mismatchDescription) {
+  protected void describeMismatchSafely(RelationSearchResultDTO item, Description mismatchDescription) {
     mismatchDescription.appendText("RelationClientSearchResult with \n");
 
     addToDescription(mismatchDescription, "numFound", item.getNumFound());
@@ -74,7 +74,7 @@ public class RelationClientSearchResultMatcher extends ClientSearchResultMatcher
   }
 
   @Override
-  protected boolean matchesSafely(RelationClientSearchResult item) {
+  protected boolean matchesSafely(RelationSearchResultDTO item) {
     boolean isEqual = super.matchesSafely(item);
     isEqual &= Objects.equal(refs, item.getRefs());
 
@@ -89,7 +89,7 @@ public class RelationClientSearchResultMatcher extends ClientSearchResultMatcher
 
     private int numFound;
     private List<String> ids;
-    private List<ClientRelationRepresentation> refs;
+    private List<RelationDTO> refs;
     private List<? extends DomainEntity> results;
     private int start;
     private int rows;
@@ -107,7 +107,7 @@ public class RelationClientSearchResultMatcher extends ClientSearchResultMatcher
       return this;
     }
 
-    public RelationClientSearchResultMatcherBuilder withRefs(List<ClientRelationRepresentation> refs) {
+    public RelationClientSearchResultMatcherBuilder withRefs(List<RelationDTO> refs) {
       this.refs = refs;
       return this;
     }

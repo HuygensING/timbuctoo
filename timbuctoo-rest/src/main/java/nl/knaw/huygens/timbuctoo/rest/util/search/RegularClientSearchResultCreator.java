@@ -30,7 +30,7 @@ import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
-import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
+import nl.knaw.huygens.timbuctoo.model.RegularSearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
@@ -46,8 +46,8 @@ public class RegularClientSearchResultCreator extends ClientSearchResultCreator 
   }
 
   @Override
-  public <T extends DomainEntity> RegularClientSearchResult create(Class<T> type, SearchResult searchResult, int start, int rows) {
-    RegularClientSearchResult result = new RegularClientSearchResult();
+  public <T extends DomainEntity> RegularSearchResultDTO create(Class<T> type, SearchResult searchResult, int start, int rows) {
+    RegularSearchResultDTO result = new RegularSearchResultDTO();
 
     List<String> ids = getIds(searchResult);
     int numFound = ids.size();

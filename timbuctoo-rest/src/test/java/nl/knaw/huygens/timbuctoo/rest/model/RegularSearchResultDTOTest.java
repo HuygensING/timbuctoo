@@ -29,9 +29,9 @@ import java.util.List;
 
 import nl.knaw.huygens.facetedsearch.model.DefaultFacet;
 import nl.knaw.huygens.facetedsearch.model.Facet;
-import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
-import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
+import nl.knaw.huygens.timbuctoo.model.RegularSearchResultDTO;
+import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 
 import org.junit.Test;
 
@@ -40,27 +40,27 @@ import test.model.BaseDomainEntity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Lists;
 
-public class RegularClientSearchResultSerializationTest extends SearchResultDTOTest {
+public class RegularSearchResultDTOTest extends SearchResultDTOTest {
 
   @Test
   public void testWhenObjectHasAllEmptyProperties() throws JsonProcessingException {
-    SearchResultDTO result = new RegularClientSearchResult();
-    assertThat(getKeySet(result), contains("sortableFields", "numFound", "results", "ids", "start", "rows", "term", "facets", "refs"));
+    SearchResultDTO dto = new RegularSearchResultDTO();
+    assertThat(getKeySet(dto), contains("sortableFields", "numFound", "results", "ids", "start", "rows", "term", "facets", "refs"));
   }
 
   @Test
   public void testPropertiesWhenAllPropertiesContainAValue() {
-    SearchResultDTO result = createFilledSearchResult();
-    assertThat(getKeySet(result), contains("sortableFields", "numFound", "results", "ids", "start", "rows", "term", "facets", "refs", "_next", "_prev"));
+    SearchResultDTO dto = createFilledDTO();
+    assertThat(getKeySet(dto), contains("sortableFields", "numFound", "results", "ids", "start", "rows", "term", "facets", "refs", "_next", "_prev"));
   }
 
-  private RegularClientSearchResult createFilledSearchResult() {
-    RegularClientSearchResult result = new RegularClientSearchResult();
-    setSearchResultDTOProperties(result);
-    result.setRefs(createRefList());
-    result.setFacets(createFacetList());
-    result.setTerm(ANY_STRING);
-    return result;
+  private RegularSearchResultDTO createFilledDTO() {
+    RegularSearchResultDTO dto = new RegularSearchResultDTO();
+    setSearchResultDTOProperties(dto);
+    dto.setRefs(createRefList());
+    dto.setFacets(createFacetList());
+    dto.setTerm(ANY_STRING);
+    return dto;
   }
 
   private List<DomainEntityDTO> createRefList() {

@@ -29,7 +29,7 @@ import nl.knaw.huygens.timbuctoo.config.EntityMapper;
 import nl.knaw.huygens.timbuctoo.config.EntityMappers;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.ClientRelationRepresentation;
+import nl.knaw.huygens.timbuctoo.model.RelationDTO;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
@@ -55,24 +55,24 @@ public class ClientRelationRepresentationCreator {
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends DomainEntity> List<ClientRelationRepresentation> createRefs(Class<T> type, List<T> result) {
+  public <T extends DomainEntity> List<RelationDTO> createRefs(Class<T> type, List<T> result) {
     Preconditions.checkArgument(Relation.class.isAssignableFrom(type), "Type %s is not a Relation", type);
     return createRelationRefs((Class<? extends Relation>) type, (List<Relation>) result);
   }
 
-  private List<ClientRelationRepresentation> createRelationRefs(Class<? extends Relation> type, List<Relation> relations) {
+  private List<RelationDTO> createRelationRefs(Class<? extends Relation> type, List<Relation> relations) {
     EntityMappers entityMappers = new EntityMappers(registry.getDomainEntityTypes());
     EntityMapper mapper = entityMappers.getEntityMapper(type);
 
     String itype = TypeNames.getInternalName(type);
     String xtype = TypeNames.getExternalName(type);
-    List<ClientRelationRepresentation> list = Lists.newArrayListWithCapacity(relations.size());
+    List<RelationDTO> list = Lists.newArrayListWithCapacity(relations.size());
     for (Relation relation : relations) {
       RelationType relationType = repository.getRelationTypeById(relation.getTypeId());
       String relationName = relationType.getRegularName();
       DomainEntity source = retrieveEntity(mapper, relation.getSourceType(), relation.getSourceId());
       DomainEntity target = retrieveEntity(mapper, relation.getTargetType(), relation.getTargetId());
-      list.add(new ClientRelationRepresentation(itype, xtype, relation.getId(), relationName, source, target));
+      list.add(new RelationDTO(itype, xtype, relation.getId(), relationName, source, target));
     }
     return list;
   }

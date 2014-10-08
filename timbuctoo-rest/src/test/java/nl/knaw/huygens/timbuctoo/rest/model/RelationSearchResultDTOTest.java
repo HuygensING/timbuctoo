@@ -27,37 +27,37 @@ import static org.hamcrest.Matchers.contains;
 
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.model.ClientRelationRepresentation;
+import nl.knaw.huygens.timbuctoo.model.RelationDTO;
+import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
-import nl.knaw.huygens.timbuctoo.model.RelationClientSearchResult;
 
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
-public class RelationClientSearchResultSerializationTest extends SearchResultDTOTest {
+public class RelationSearchResultDTOTest extends SearchResultDTOTest {
 
   @Test
-  public void testWhenObjectHasAllEmptyProperties()  {
-    SearchResultDTO result = new RelationClientSearchResult();
-    assertThat(getKeySet(result), contains("sortableFields", "numFound", "results", "ids", "start", "rows", "refs"));
+  public void testWhenObjectHasAllEmptyProperties() {
+    SearchResultDTO dto = new RelationSearchResultDTO();
+    assertThat(getKeySet(dto), contains("sortableFields", "numFound", "results", "ids", "start", "rows", "refs"));
   }
 
   @Test
   public void testPropertiesWhenAllPropertiesContainAValue() {
-    SearchResultDTO result = createFilledSearchResult();
-    assertThat(getKeySet(result), contains("sortableFields", "numFound", "results", "ids", "start", "rows", "refs", "_next", "_prev"));
+    SearchResultDTO dto = createFilledDTO();
+    assertThat(getKeySet(dto), contains("sortableFields", "numFound", "results", "ids", "start", "rows", "refs", "_next", "_prev"));
   }
 
-  private SearchResultDTO createFilledSearchResult() {
-    RelationClientSearchResult result = new RelationClientSearchResult();
-    setSearchResultDTOProperties(result);
-    result.setRefs(createRefs());
-    return result;
+  private SearchResultDTO createFilledDTO() {
+    RelationSearchResultDTO dto = new RelationSearchResultDTO();
+    setSearchResultDTOProperties(dto);
+    dto.setRefs(createRefs());
+    return dto;
   }
 
-  private List<ClientRelationRepresentation> createRefs() {
-    return Lists.newArrayList(new ClientRelationRepresentation(ANY_STRING, ANY_STRING, ANY_STRING, ANY_STRING, null, null));
+  private List<RelationDTO> createRefs() {
+    return Lists.newArrayList(new RelationDTO(ANY_STRING, ANY_STRING, ANY_STRING, ANY_STRING, null, null));
   }
 
 }

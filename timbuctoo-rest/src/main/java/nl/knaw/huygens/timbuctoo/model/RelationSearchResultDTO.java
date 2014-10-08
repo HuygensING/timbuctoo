@@ -24,15 +24,15 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import java.util.List;
 
-public class RelationClientSearchResult extends SearchResultDTO {
+public class RelationSearchResultDTO extends SearchResultDTO {
 
-  private List<ClientRelationRepresentation> refs;
+  private List<RelationDTO> refs;
 
-  public List<ClientRelationRepresentation> getRefs() {
+  public List<RelationDTO> getRefs() {
     return refs;
   }
 
-  public void setRefs(List<ClientRelationRepresentation> refs) {
+  public void setRefs(List<RelationDTO> refs) {
     this.refs = refs;
   }
 

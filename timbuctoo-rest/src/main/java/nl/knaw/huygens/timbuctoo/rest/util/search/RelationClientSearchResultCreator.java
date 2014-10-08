@@ -28,7 +28,7 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.RelationClientSearchResult;
+import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
@@ -47,8 +47,8 @@ public class RelationClientSearchResultCreator extends ClientSearchResultCreator
   }
 
   @Override
-  public <T extends DomainEntity> RelationClientSearchResult create(Class<T> type, SearchResult searchResult, int start, int rows) {
-    RelationClientSearchResult clientSearchResult = new RelationClientSearchResult();
+  public <T extends DomainEntity> RelationSearchResultDTO create(Class<T> type, SearchResult searchResult, int start, int rows) {
+    RelationSearchResultDTO clientSearchResult = new RelationSearchResultDTO();
 
     String queryId = searchResult.getId();
     List<String> ids = getIds(searchResult);

@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.model.ClientRelationRepresentation;
+import nl.knaw.huygens.timbuctoo.model.RelationDTO;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 
 import org.junit.Before;
@@ -42,7 +42,7 @@ import com.google.common.collect.Lists;
 public class RelationClientSearchResultCreatorTest extends ClientSearchResultCreatorTest {
 
   private static final String TYPE_STRING = "testrelation";
-  private static final List<ClientRelationRepresentation> REFS = Lists.newArrayList(new ClientRelationRepresentation(TYPE_STRING, "xtype", "id", "relationName", null, null));
+  private static final List<RelationDTO> REFS = Lists.newArrayList(new RelationDTO(TYPE_STRING, "xtype", "id", "relationName", null, null));
 
   private RelationClientSearchResultCreator instance;
   private ClientRelationRepresentationCreator clientRelationRepresentationCreatorMock;
@@ -250,7 +250,7 @@ public class RelationClientSearchResultCreatorTest extends ClientSearchResultCre
 
     final List<String> idsToGet = Lists.newArrayList();
     List<TestRelation> result = setupRepository(type, idsToGet);
-    final List<ClientRelationRepresentation> emptyRefList = Lists.newArrayList();
+    final List<RelationDTO> emptyRefList = Lists.newArrayList();
 
     RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
         .withIds(idsToGet) //
