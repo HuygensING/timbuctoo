@@ -26,7 +26,7 @@ import java.util.List;
 
 import nl.knaw.huygens.facetedsearch.model.Facet;
 
-public class RegularClientSearchResult extends ClientSearchResult {
+public class RegularClientSearchResult extends SearchResultDTO {
 
   private String term;
   private List<Facet> facets;

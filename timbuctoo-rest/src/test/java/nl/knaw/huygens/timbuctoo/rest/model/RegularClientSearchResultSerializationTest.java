@@ -29,7 +29,7 @@ import java.util.List;
 
 import nl.knaw.huygens.facetedsearch.model.DefaultFacet;
 import nl.knaw.huygens.facetedsearch.model.Facet;
-import nl.knaw.huygens.timbuctoo.model.ClientSearchResult;
+import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
 import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
 
@@ -40,23 +40,23 @@ import test.model.BaseDomainEntity;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Lists;
 
-public class RegularClientSearchResultSerializationTest extends ClientSearchResultTest {
+public class RegularClientSearchResultSerializationTest extends SearchResultDTOTest {
 
   @Test
   public void testWhenObjectHasAllEmptyProperties() throws JsonProcessingException {
-    ClientSearchResult result = new RegularClientSearchResult();
+    SearchResultDTO result = new RegularClientSearchResult();
     assertThat(getKeySet(result), contains("sortableFields", "numFound", "results", "ids", "start", "rows", "term", "facets", "refs"));
   }
 
   @Test
   public void testPropertiesWhenAllPropertiesContainAValue() {
-    ClientSearchResult result = createFilledSearchResult();
+    SearchResultDTO result = createFilledSearchResult();
     assertThat(getKeySet(result), contains("sortableFields", "numFound", "results", "ids", "start", "rows", "term", "facets", "refs", "_next", "_prev"));
   }
 
   private RegularClientSearchResult createFilledSearchResult() {
     RegularClientSearchResult result = new RegularClientSearchResult();
-    setClientRelationSearchResultProperties(result);
+    setSearchResultDTOProperties(result);
     result.setRefs(createRefList());
     result.setFacets(createFacetList());
     result.setTerm(ANY_STRING);

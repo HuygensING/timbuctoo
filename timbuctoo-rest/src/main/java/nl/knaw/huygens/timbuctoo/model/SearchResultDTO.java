@@ -29,7 +29,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public abstract class ClientSearchResult {
+public abstract class SearchResultDTO {
 
   private static final String PREV_KEY = "_prev";
   private static final String NEXT_KEY = "_next";
@@ -41,10 +41,6 @@ public abstract class ClientSearchResult {
   private int rows;
   private String nextLink;
   private String prevLink;
-
-  public ClientSearchResult() {
-    super();
-  }
 
   public List<String> getIds() {
     return ids;

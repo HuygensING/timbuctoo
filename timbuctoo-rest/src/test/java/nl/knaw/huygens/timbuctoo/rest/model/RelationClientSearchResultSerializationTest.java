@@ -28,30 +28,30 @@ import static org.hamcrest.Matchers.contains;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.ClientRelationRepresentation;
-import nl.knaw.huygens.timbuctoo.model.ClientSearchResult;
+import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.RelationClientSearchResult;
 
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
 
-public class RelationClientSearchResultSerializationTest extends ClientSearchResultTest {
+public class RelationClientSearchResultSerializationTest extends SearchResultDTOTest {
 
   @Test
   public void testWhenObjectHasAllEmptyProperties()  {
-    ClientSearchResult result = new RelationClientSearchResult();
+    SearchResultDTO result = new RelationClientSearchResult();
     assertThat(getKeySet(result), contains("sortableFields", "numFound", "results", "ids", "start", "rows", "refs"));
   }
 
   @Test
   public void testPropertiesWhenAllPropertiesContainAValue() {
-    ClientSearchResult result = createFilledSearchResult();
+    SearchResultDTO result = createFilledSearchResult();
     assertThat(getKeySet(result), contains("sortableFields", "numFound", "results", "ids", "start", "rows", "refs", "_next", "_prev"));
   }
 
-  private ClientSearchResult createFilledSearchResult() {
+  private SearchResultDTO createFilledSearchResult() {
     RelationClientSearchResult result = new RelationClientSearchResult();
-    setClientRelationSearchResultProperties(result);
+    setSearchResultDTOProperties(result);
     result.setRefs(createRefs());
     return result;
   }

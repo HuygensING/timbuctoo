@@ -25,7 +25,7 @@ package nl.knaw.huygens.timbuctoo.rest.util.search;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.model.ClientSearchResult;
+import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
@@ -50,7 +50,7 @@ public abstract class ClientSearchResultCreator {
     this.hateoasURICreator = hateoasURICreator;
   }
 
-  public abstract <T extends DomainEntity> ClientSearchResult create(Class<T> type, SearchResult searchResult, int start, int rows);
+  public abstract <T extends DomainEntity> SearchResultDTO create(Class<T> type, SearchResult searchResult, int start, int rows);
 
   protected <T extends DomainEntity> List<T> retrieveEntities(Class<T> type, List<String> ids) {
     // Retrieve one-by-one to retain ordering
@@ -80,14 +80,14 @@ public abstract class ClientSearchResultCreator {
     return entities;
   }
 
-  protected void setNextLink(int start, int rows, ClientSearchResult clientSearchResult, int numFound, int end, String queryId) {
+  protected void setNextLink(int start, int rows, SearchResultDTO clientSearchResult, int numFound, int end, String queryId) {
     if (end < numFound) {
       String next = hateoasURICreator.createHATEOASURIAsString(start + rows, rows, queryId);
       clientSearchResult.setNextLink(next);
     }
   }
 
-  protected void setPreviousLink(int start, int rows, ClientSearchResult clientSearchResult, String queryId) {
+  protected void setPreviousLink(int start, int rows, SearchResultDTO clientSearchResult, String queryId) {
     if (start > 0) {
       int prevStart = Math.max(start - rows, 0);
       String prev = hateoasURICreator.createHATEOASURIAsString(prevStart, rows, queryId);

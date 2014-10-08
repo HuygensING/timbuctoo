@@ -24,7 +24,7 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import java.util.List;
 
-public class RelationClientSearchResult extends ClientSearchResult {
+public class RelationClientSearchResult extends SearchResultDTO {
 
   private List<ClientRelationRepresentation> refs;
 

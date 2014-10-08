@@ -25,7 +25,7 @@ package nl.knaw.huygens.timbuctoo.rest.util.search;
 import java.util.List;
 import java.util.Set;
 
-import nl.knaw.huygens.timbuctoo.model.ClientSearchResult;
+import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import org.hamcrest.Description;
@@ -33,7 +33,7 @@ import org.hamcrest.TypeSafeMatcher;
 
 import com.google.common.base.Objects;
 
-public abstract class ClientSearchResultMatcher<T extends ClientSearchResult> extends TypeSafeMatcher<T> {
+public abstract class ClientSearchResultMatcher<T extends SearchResultDTO> extends TypeSafeMatcher<T> {
 
   protected final Set<String> sortableFields;
   protected final int numFound;

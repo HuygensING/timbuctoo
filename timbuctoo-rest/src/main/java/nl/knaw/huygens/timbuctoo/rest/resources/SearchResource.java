@@ -46,7 +46,7 @@ import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.ClientSearchResult;
+import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
@@ -133,7 +133,7 @@ public class SearchResource extends ResourceBase {
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
 
-    ClientSearchResult clientSearchResult = regularSearchResultCreator.create(type, result, start, rows);
+    SearchResultDTO clientSearchResult = regularSearchResultCreator.create(type, result, start, rows);
     return Response.ok(clientSearchResult).build();
   }
 
@@ -187,7 +187,7 @@ public class SearchResource extends ResourceBase {
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
 
-    ClientSearchResult clientSearchResult = relationSearchResultCreator.create(type, result, start, rows);
+    SearchResultDTO clientSearchResult = relationSearchResultCreator.create(type, result, start, rows);
     return Response.ok(clientSearchResult).build();
   }
 

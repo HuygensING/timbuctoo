@@ -26,27 +26,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import nl.knaw.huygens.timbuctoo.model.ClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-public abstract class ClientSearchResultTest {
+public abstract class SearchResultDTOTest {
 
   protected static final int ANY_INT = 42;
   protected static final String ANY_STRING = "test";
 
-  protected void setClientRelationSearchResultProperties(ClientSearchResult searchResult) {
-    searchResult.setIds(Lists.newArrayList(ANY_STRING));
-    searchResult.setNextLink(ANY_STRING);
-    searchResult.setPrevLink(ANY_STRING);
-    searchResult.setNumFound(ANY_INT);
-    searchResult.setResults(createResultList());
-    searchResult.setRows(ANY_INT);
-    searchResult.setSortableFields(Sets.newHashSet(ANY_STRING));
-    searchResult.setStart(ANY_INT);
+  protected void setSearchResultDTOProperties(SearchResultDTO dto) {
+    dto.setIds(Lists.newArrayList(ANY_STRING));
+    dto.setNextLink(ANY_STRING);
+    dto.setPrevLink(ANY_STRING);
+    dto.setNumFound(ANY_INT);
+    dto.setResults(createResultList());
+    dto.setRows(ANY_INT);
+    dto.setSortableFields(Sets.newHashSet(ANY_STRING));
+    dto.setStart(ANY_INT);
   }
 
   private List<DomainEntity> createResultList() {
@@ -60,12 +60,12 @@ public abstract class ClientSearchResultTest {
   }
 
   @SuppressWarnings("unchecked")
-  protected Map<String, Object> createJsonMap(ClientSearchResult searchResult) {
-    return new ObjectMapper().convertValue(searchResult, Map.class);
+  protected Map<String, Object> createJsonMap(SearchResultDTO dto) {
+    return new ObjectMapper().convertValue(dto, Map.class);
   }
 
-  protected Set<String> getKeySet(ClientSearchResult searchResult) {
-    return createJsonMap(searchResult).keySet();
+  protected Set<String> getKeySet(SearchResultDTO dto) {
+    return createJsonMap(dto).keySet();
   }
 
 }
