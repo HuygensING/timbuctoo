@@ -85,9 +85,9 @@ public class SearchResource extends ResourceBase {
   @Inject
   private RelationSearcher relationSearcher;
   @Inject
-  private RegularSearchResultMapper regularSearchResultCreator;
+  private RegularSearchResultMapper regularSearchResultMapper;
   @Inject
-  private RelationSearchResultMapper relationSearchResultCreator;
+  private RelationSearchResultMapper relationSearchResultMapper;
 
   @POST
   @APIDesc("Searches the Solr index")
@@ -133,8 +133,8 @@ public class SearchResource extends ResourceBase {
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
 
-    SearchResultDTO clientSearchResult = regularSearchResultCreator.create(type, result, start, rows);
-    return Response.ok(clientSearchResult).build();
+    SearchResultDTO dto = regularSearchResultMapper.create(type, result, start, rows);
+    return Response.ok(dto).build();
   }
 
   private SearchResult getSearchResult(String id) {
@@ -187,8 +187,8 @@ public class SearchResource extends ResourceBase {
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
 
-    SearchResultDTO clientSearchResult = relationSearchResultCreator.create(type, result, start, rows);
-    return Response.ok(clientSearchResult).build();
+    SearchResultDTO dto = relationSearchResultMapper.create(type, result, start, rows);
+    return Response.ok(dto).build();
   }
 
 }
