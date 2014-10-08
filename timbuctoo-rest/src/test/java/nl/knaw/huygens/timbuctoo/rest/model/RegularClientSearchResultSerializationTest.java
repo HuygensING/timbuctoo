@@ -29,8 +29,8 @@ import java.util.List;
 
 import nl.knaw.huygens.facetedsearch.model.DefaultFacet;
 import nl.knaw.huygens.facetedsearch.model.Facet;
-import nl.knaw.huygens.timbuctoo.model.ClientEntityRepresentation;
 import nl.knaw.huygens.timbuctoo.model.ClientSearchResult;
+import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
 import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
 
 import org.junit.Test;
@@ -63,9 +63,9 @@ public class RegularClientSearchResultSerializationTest extends ClientSearchResu
     return result;
   }
 
-  private List<ClientEntityRepresentation> createRefList() {
+  private List<DomainEntityDTO> createRefList() {
     BaseDomainEntity entity = new BaseDomainEntity("id");
-    return Lists.newArrayList(new ClientEntityRepresentation(ANY_STRING, ANY_STRING, entity));
+    return Lists.newArrayList(new DomainEntityDTO(ANY_STRING, ANY_STRING, entity));
   }
 
   private List<Facet> createFacetList() {

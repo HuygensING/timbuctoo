@@ -30,7 +30,7 @@ public class RegularClientSearchResult extends ClientSearchResult {
 
   private String term;
   private List<Facet> facets;
-  private List<ClientEntityRepresentation> refs;
+  private List<DomainEntityDTO> refs;
 
   public String getTerm() {
     return term;
@@ -40,11 +40,11 @@ public class RegularClientSearchResult extends ClientSearchResult {
     return facets;
   }
 
-  public List<ClientEntityRepresentation> getRefs() {
+  public List<DomainEntityDTO> getRefs() {
     return refs;
   }
 
-  public void setRefs(List<ClientEntityRepresentation> refs) {
+  public void setRefs(List<DomainEntityDTO> refs) {
     this.refs = refs;
   }
 

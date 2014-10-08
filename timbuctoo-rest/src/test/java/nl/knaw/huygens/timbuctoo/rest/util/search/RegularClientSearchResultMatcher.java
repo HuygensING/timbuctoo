@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Set;
 
 import nl.knaw.huygens.facetedsearch.model.Facet;
-import nl.knaw.huygens.timbuctoo.model.ClientEntityRepresentation;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
 import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
 
 import org.hamcrest.Description;
@@ -36,16 +36,16 @@ import com.google.common.base.Objects;
 
 public class RegularClientSearchResultMatcher extends ClientSearchResultMatcher<RegularClientSearchResult> {
 
-  private String term;
-  private List<Facet> facets;
-  private List<ClientEntityRepresentation> refs;
+  private final String term;
+  private final List<Facet> facets;
+  private final List<DomainEntityDTO> refs;
 
   private RegularClientSearchResultMatcher( //
       String term, //
       List<Facet> facets, //
       int numFound, //
       List<String> ids, //
-      List<ClientEntityRepresentation> refs, //
+      List<DomainEntityDTO> refs, //
       List<? extends DomainEntity> results, //
       int start, //
       int rows, //
@@ -113,7 +113,7 @@ public class RegularClientSearchResultMatcher extends ClientSearchResultMatcher<
     private List<Facet> facets;
     private int numFound;
     private List<String> ids;
-    private List<ClientEntityRepresentation> refs;
+    private List<DomainEntityDTO> refs;
     private List<? extends DomainEntity> results;
     private int start;
     private int rows;
@@ -141,7 +141,7 @@ public class RegularClientSearchResultMatcher extends ClientSearchResultMatcher<
       return this;
     }
 
-    public RegularClientSearchResultMatcherBuilder withRefs(List<ClientEntityRepresentation> refs) {
+    public RegularClientSearchResultMatcherBuilder withRefs(List<DomainEntityDTO> refs) {
       this.refs = refs;
       return this;
     }
