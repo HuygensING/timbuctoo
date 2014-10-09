@@ -47,6 +47,7 @@ public class RelationBuilder<T extends Relation> {
   protected String sourceId;
   protected String targetType;
   protected String targetId;
+  protected String pid;
 
   protected RelationBuilder(Class<T> type) {
     this.type = type;
@@ -106,6 +107,11 @@ public class RelationBuilder<T extends Relation> {
     return this;
   }
 
+  public RelationBuilder<T> withPid(String pid) {
+    this.pid = pid;
+    return this;
+  }
+
   public T build() {
     T relation = newInstance();
     relation.setId(id);
@@ -115,6 +121,7 @@ public class RelationBuilder<T extends Relation> {
     relation.setSourceType(sourceType);
     relation.setTargetId(targetId);
     relation.setTargetType(targetType);
+    relation.setPid(pid);
     return relation;
   }
 

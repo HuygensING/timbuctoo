@@ -66,6 +66,7 @@ import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
@@ -151,7 +152,7 @@ public class DomainEntityResource extends ResourceBase {
     } catch (ValidationException e) {
       throw new TimbuctooException(BAD_REQUEST, "Invalid entity; %s", e.getMessage());
     }
-    notifyChange(ActionType.ADD, type, id);
+    notifyChange(ActionType.ADD, type, input, id);
 
     return Response.created(new URI(id)).build();
   }
@@ -212,7 +213,7 @@ public class DomainEntityResource extends ResourceBase {
     try {
       Change change = new Change(userId, vreId);
       repository.updateDomainEntity((Class<T>) type, (T) input, change);
-      notifyChange(ActionType.MOD, type, id);
+      notifyChange(ActionType.MOD, type, entity, id);
     } catch (UpdateException e) {
       throw new TimbuctooException(Status.CONFLICT, "Entity %s with id %s already updated", type.getSimpleName(), id);
     } catch (StorageException e) {
@@ -269,7 +270,7 @@ public class DomainEntityResource extends ResourceBase {
 
     try {
       repository.deleteDomainEntity(entity);
-      notifyChange(ActionType.DEL, type, id);
+      notifyChange(ActionType.DEL, type, entity, id);
       return Response.status(Status.NO_CONTENT).build();
     } catch (StorageException e) {
       throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
@@ -284,7 +285,7 @@ public class DomainEntityResource extends ResourceBase {
   /**
    * Notify other software components of a change in the data.
    */
-  private void notifyChange(ActionType actionType, Class<? extends DomainEntity> type, String id) {
+  private void notifyChange(ActionType actionType, Class<? extends DomainEntity> type, DomainEntity entity, String id) {
     switch (actionType) {
       case ADD:
       case MOD:
@@ -298,6 +299,17 @@ public class DomainEntityResource extends ResourceBase {
         LOG.error("Unexpected action {}", actionType);
         break;
     }
+
+    // TODO improve this solution
+    if (Relation.class.isAssignableFrom(type)) {
+      Relation relation = (Relation) entity;
+      updateIndex(relation.getSourceType(), relation.getSourceId());
+      updateIndex(relation.getTargetType(), relation.getTargetId());
+    }
+  }
+  
+  private void updateIndex(String iname, String id) {
+    sendIndexMessage(ActionType.MOD, typeRegistry.getDomainEntityType(iname), id);
   }
 
   private void sendIndexMessage(ActionType actionType, Class<? extends DomainEntity> type, String id) {
