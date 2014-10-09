@@ -33,11 +33,14 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 import org.junit.Before;
 import org.junit.Test;
 
-import test.rest.model.TestDomainEntity;
+import test.rest.model.TestSystemEntity;
+import test.rest.model.projecta.ProjectADomainEntity;
 
 public class PersistenceWrapperTest {
 
-  private static final Class<TestDomainEntity> DEFAULT_TYPE = TestDomainEntity.class;
+  private static final String URL_WITH_ENDING_SLASH = "http://test.nl/";
+  private static final Class<ProjectADomainEntity> DEFAULT_DOMAIN_TYPE = ProjectADomainEntity.class;
+  private static final Class<TestSystemEntity> DEFAULT_SYSTEM_TYPE = TestSystemEntity.class;
   private PersistenceManager persistenceManager;
 
   @Before
@@ -50,35 +53,50 @@ public class PersistenceWrapperTest {
   }
 
   @Test
-  public void testPersistObjectSucces() throws PersistenceException {
-    PersistenceWrapper persistenceWrapper = createInstance("http://test.nl");
-    persistenceWrapper.persistObject(DEFAULT_TYPE, "1234");
-    verify(persistenceManager).persistURL("http://test.nl/" + Paths.DOMAIN_PREFIX + "/testdomainentities/1234");
+  public void testPersistDomainEntitySuccess() throws PersistenceException {
+    PersistenceWrapper persistenceWrapper = createInstanceWithoutEndingSlash();
+    persistenceWrapper.persistObject(DEFAULT_DOMAIN_TYPE, "1234");
+    verifyADomainEntityIsPersisted("/basedomainentities/1234");
+  }
+
+  private void verifyADomainEntityIsPersisted(String entityPath) throws PersistenceException {
+    verify(persistenceManager).persistURL(URL_WITH_ENDING_SLASH + Paths.DOMAIN_PREFIX + entityPath);
+  }
+
+  private PersistenceWrapper createInstanceWithoutEndingSlash() {
+    return createInstance("http://test.nl");
   }
 
   @Test
-  public void testPersistObjectWithRevision() throws PersistenceException {
-    PersistenceWrapper persistenceWrapper = createInstance("http://test.nl");
-    persistenceWrapper.persistObject(DEFAULT_TYPE, "1234", 12);
-    verify(persistenceManager).persistURL("http://test.nl/" + Paths.DOMAIN_PREFIX + "/testdomainentities/1234?rev=12");
+  public void testPersistSystemEntitySuccess() throws PersistenceException {
+    PersistenceWrapper persistenceWrapper = createInstanceWithoutEndingSlash();
+    persistenceWrapper.persistObject(DEFAULT_SYSTEM_TYPE, "1234");
+    verify(persistenceManager).persistURL(URL_WITH_ENDING_SLASH + Paths.SYSTEM_PREFIX + "/testsystementities/1234");
+  }
+
+  @Test
+  public void testPersistDomainEntityWithRevision() throws PersistenceException {
+    PersistenceWrapper persistenceWrapper = createInstanceWithoutEndingSlash();
+    persistenceWrapper.persistObject(DEFAULT_DOMAIN_TYPE, "1234", 12);
+    verifyADomainEntityIsPersisted("/basedomainentities/1234?rev=12");
   }
 
   @Test
   public void testPersistObjectSuccesUrlEndOnSlash() throws PersistenceException {
-    PersistenceWrapper persistenceWrapper = createInstance("http://test.nl/");
-    persistenceWrapper.persistObject(DEFAULT_TYPE, "1234");
-    verify(persistenceManager).persistURL("http://test.nl/" + Paths.DOMAIN_PREFIX + "/testdomainentities/1234");
+    PersistenceWrapper persistenceWrapper = createInstance(URL_WITH_ENDING_SLASH);
+    persistenceWrapper.persistObject(DEFAULT_DOMAIN_TYPE, "1234");
+    verifyADomainEntityIsPersisted("/basedomainentities/1234");
   }
 
   @Test(expected = PersistenceException.class)
   public void testPersistObjectException() throws PersistenceException {
     when(persistenceManager.persistURL(anyString())).thenThrow(new PersistenceException("error"));
-    PersistenceWrapper persistenceWrapper = createInstance("http://test.nl/");
-    persistenceWrapper.persistObject(DEFAULT_TYPE, "1234");
+    PersistenceWrapper persistenceWrapper = createInstance(URL_WITH_ENDING_SLASH);
+    persistenceWrapper.persistObject(DEFAULT_DOMAIN_TYPE, "1234");
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void testPersistentWrapperBaseUrlIsEmpty() throws PersistenceException {
+  public void testNewPersistentWrapperBaseUrlIsEmpty() throws PersistenceException {
     new PersistenceWrapper("", persistenceManager);
   }
 

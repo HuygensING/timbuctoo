@@ -22,6 +22,7 @@ package test.rest.model;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.annotations.EntityTypeName;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
@@ -30,6 +31,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @IDPrefix("TSYS")
+@EntityTypeName("testsystementities")
 public class TestSystemEntity extends SystemEntity {
 
   private String name;

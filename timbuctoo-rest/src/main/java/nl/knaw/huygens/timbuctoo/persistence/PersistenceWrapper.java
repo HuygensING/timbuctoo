@@ -26,6 +26,7 @@ import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.apache.commons.lang.StringUtils;
@@ -81,8 +82,21 @@ public class PersistenceWrapper {
   }
 
   private String createURL(Class<? extends Entity> type, String id) {
-    String collection = TypeNames.getExternalName(type);
-    return Joiner.on('/').join(baseUrl, Paths.DOMAIN_PREFIX, collection, id);
+    String collection = getCollectionName(type);
+    return Joiner.on('/').join(baseUrl, getPrefix(type), collection, id);
+  }
+
+  private String getPrefix(Class<? extends Entity> type) {
+    return TypeRegistry.isDomainEntity(type) ? Paths.DOMAIN_PREFIX : Paths.SYSTEM_PREFIX;
+  }
+
+  private String getCollectionName(Class<? extends Entity> type) {
+    Class<? extends Entity> typeForCollectionName = type;
+    if (TypeRegistry.isDomainEntity(type)) {
+      typeForCollectionName = TypeRegistry.toBaseDomainEntity(TypeRegistry.toDomainEntity(type));
+    }
+
+    return TypeNames.getExternalName(typeForCollectionName);
   }
 
   private String createURL(Class<? extends Entity> type, String id, int revision) {
