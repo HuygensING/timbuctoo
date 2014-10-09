@@ -226,7 +226,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
     storage.getRevision(BaseDomainEntity.class, DEFAULT_ID, revision);
 
-    DBObject query = queries.selectById(DEFAULT_ID);
+    DBObject query = queries.getRevisionFromVersionCollection(DEFAULT_ID, revision);
     DBObject projection = queries.getRevisionProjection(revision);
     verify(dbCollection).findOne(query, projection);
   }
