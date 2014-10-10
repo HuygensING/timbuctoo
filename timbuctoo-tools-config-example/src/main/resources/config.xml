@@ -53,6 +53,14 @@
       <data_dir>{data_dir}</data_dir> <!-- data folder of solr -->
     </solr>
     <!-- Used to determine which packages contain the domain model classes. -->
+    <handle>
+      <!-- persistency server -->
+      <enabled>false</enabled>
+      <cipher>{cipher to use when the private key is encrypted}</cipher>
+      <naming_authority>0.NA</naming_authority>
+      <prefix>{prefix}</prefix>
+      <private_key_file>{path to the private key}</private_key_file>
+    </handle>
     <model-packages>
       timbuctoo.model
       timbuctoo.model.base
@@ -72,5 +80,8 @@
         <model-package>timbuctoo.model.test</model-package>
       </vre>
     </vre-defs>
+    <!-- The base url the application can be reached. When a proxy is used 
+      this should be the address of the proxy. -->
+    <public_url>http://localhost:8080/timbuctoo</public_url>
   </settings>
 </config>
