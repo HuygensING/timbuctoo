@@ -22,6 +22,9 @@ package nl.knaw.huygens.timbuctoo.tools.config;
  * #L%
  */
 
+import nl.knaw.huygens.persistence.PersistenceManager;
+import nl.knaw.huygens.persistence.PersistenceManagerCreationException;
+import nl.knaw.huygens.persistence.PersistenceManagerFactory;
 import nl.knaw.huygens.solr.AbstractSolrServerBuilder;
 import nl.knaw.huygens.solr.AbstractSolrServerBuilderProvider;
 import nl.knaw.huygens.timbuctoo.config.BasicInjectionModule;
@@ -37,6 +40,8 @@ import org.apache.commons.configuration.ConfigurationException;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
 
 /**
  * A class to make it possible to use Guice @see http://code.google.com/p/google-guice.
@@ -61,4 +66,11 @@ public class ToolsInjectionModule extends BasicInjectionModule {
     bind(AbstractSolrServerBuilder.class).toProvider(AbstractSolrServerBuilderProvider.class);
   }
 
+  @Provides
+  @Singleton
+  PersistenceManager providePersistenceManager() throws PersistenceManagerCreationException {
+    PersistenceManager persistenceManager = PersistenceManagerFactory.newPersistenceManager(config.getBooleanSetting("handle.enabled", true), config.getSetting("handle.cipher"),
+        config.getSetting("handle.naming_authority"), config.getSetting("handle.prefix"), config.pathInUserHome(config.getSetting("handle.private_key_file")));
+    return persistenceManager;
+  }
 }
