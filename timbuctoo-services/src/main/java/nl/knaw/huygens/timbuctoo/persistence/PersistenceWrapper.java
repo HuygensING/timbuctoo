@@ -103,9 +103,10 @@ public class PersistenceWrapper {
     return createURL(type, id) + "?rev=" + revision;
   }
 
-  public void updatePID(String pidToUpdate, Class<? extends Entity> type, String id, int revision) {
-    // TODO Auto-generated method stub
+  public void updatePID(String pidToUpdate, Class<? extends Entity> type, String id, int revision) throws PersistenceException {
+    String url = createURL(type, id, revision);
 
+    manager.modifyURLForPersistentId(pidToUpdate, url);
   }
 
 }

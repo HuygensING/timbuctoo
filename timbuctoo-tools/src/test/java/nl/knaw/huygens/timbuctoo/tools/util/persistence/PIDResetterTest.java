@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.tools.util.persistence;
 
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -9,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
+import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
@@ -38,7 +40,7 @@ public class PIDResetterTest {
   }
 
   @Test
-  public void resetsThePIDOfEveryVersionOfTheEntity() {
+  public void resetsThePIDOfEveryVersionOfTheEntity() throws PersistenceException {
     // setup
     setupRepository(2, 2, 2);
 
@@ -74,7 +76,7 @@ public class PIDResetterTest {
   }
 
   @Test
-  public void ignoresRevisionsWithoutPID() {
+  public void ignoresRevisionsWithoutPID() throws PersistenceException {
     setupRepository(2, 2, 1);
 
     // action
@@ -82,5 +84,23 @@ public class PIDResetterTest {
 
     // verify
     verify(persistenceWrapperMock, times(2)).updatePID(anyString(), Matchers.<Class<? extends Entity>> any(), anyString(), anyInt());
+  }
+
+  @Test
+  public void continuesWhenThePersistenceWrapperThrowsAnException() throws PersistenceException {
+    // setup
+    setupRepository(2, 2, 2);
+
+    persistenceManagerThrowsExceptionWithFirstCall();
+
+    // action
+    pidResetter.resetPIDsFor(TYPE);
+
+    //verify
+    verify(persistenceWrapperMock, times(4)).updatePID(anyString(), Matchers.<Class<? extends Entity>> any(), anyString(), anyInt());
+  }
+
+  private void persistenceManagerThrowsExceptionWithFirstCall() throws PersistenceException {
+    doThrow(PersistenceException.class).doNothing().when(persistenceWrapperMock).updatePID(anyString(), Matchers.<Class<? extends Entity>> any(), anyString(), anyInt());
   }
 }

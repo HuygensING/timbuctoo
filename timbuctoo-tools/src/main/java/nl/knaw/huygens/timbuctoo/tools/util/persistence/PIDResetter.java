@@ -1,9 +1,13 @@
 package nl.knaw.huygens.timbuctoo.tools.util.persistence;
 
+import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Resets the persistence identifiers to point to the updated url's.
@@ -11,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 public class PIDResetter {
   private Repository repository;
   private PersistenceWrapper persistenceWrapper;
+  private static final Logger LOG = LoggerFactory.getLogger(PIDResetter.class);
 
   public static void main(String[] args) {
 
@@ -28,7 +33,13 @@ public class PIDResetter {
         String pid = getPID(version);
 
         if (pid != null) {
-          persistenceWrapper.updatePID(pid, type, version.getId(), version.getRev());
+          String id = version.getId();
+          int revision = version.getRev();
+          try {
+            persistenceWrapper.updatePID(pid, type, id, revision);
+          } catch (PersistenceException e) {
+            LOG.error("PID \"{}\" of type \"{}\" with id \"{}\" and revision \"{}\"", pid, type, id, revision);
+          }
         }
       }
     }
