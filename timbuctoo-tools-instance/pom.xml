@@ -120,6 +120,10 @@
               <name>reindex</name>
               <mainClass>nl.knaw.huygens.timbuctoo.tools.other.ReIndexer</mainClass>
             </program>
+              <program>
+              <name>resetpids</name>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.util.persistence.PIDResetter</mainClass>
+            </program>
             <program>
               <name>transformedDataImport</name>
               <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.TransformedDataImporter</mainClass>
