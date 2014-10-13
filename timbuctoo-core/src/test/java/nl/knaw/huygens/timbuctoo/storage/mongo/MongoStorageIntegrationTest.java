@@ -49,7 +49,6 @@ public class MongoStorageIntegrationTest {
     MongoDB mongoDB = new MongoDB(mongo, mongo.getDB("test"));
 
     TypeRegistry registry = TypeRegistry.getInstance();
-    registry.init("test.model");
     instance = new MongoStorage(mongoDB, new EntityIds(registry, mongoDB), new EntityInducer(), new EntityReducer(registry));
   }
 

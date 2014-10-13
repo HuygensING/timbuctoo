@@ -25,11 +25,13 @@ package test.variation.model;
 import java.util.List;
 import java.util.Set;
 
+import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Sets;
 
+@IDPrefix("TSEPC")
 public class TestSystemEntityPrimitiveCollections extends SystemEntity {
 
   private List<String> testStringList;
