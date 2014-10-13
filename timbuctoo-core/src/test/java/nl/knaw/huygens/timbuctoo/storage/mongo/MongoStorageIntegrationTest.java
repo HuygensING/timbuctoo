@@ -33,6 +33,7 @@ import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.process.runtime.Network;
 
 public class MongoStorageIntegrationTest {
+  private static final String GENERAL_TEST_DOC_VALUE = "test";
   private static final Class<ProjectADomainEntity> DOMAIN_TYPE = ProjectADomainEntity.class;
   private static final Change DEFAULT_CHANGE = new Change();
   private static final MongodStarter starter = MongodStarter.getDefaultInstance();
@@ -50,7 +51,7 @@ public class MongoStorageIntegrationTest {
     mongod = mongodExe.start();
     mongo = new MongoClient("localhost", 12345);
 
-    MongoDB mongoDB = new MongoDB(mongo, mongo.getDB("test"));
+    MongoDB mongoDB = new MongoDB(mongo, mongo.getDB(GENERAL_TEST_DOC_VALUE));
 
     TypeRegistry registry = TypeRegistry.getInstance();
     instance = new MongoStorage(mongoDB, new EntityIds(registry, mongoDB), new EntityInducer(), new EntityReducer(registry));
@@ -64,22 +65,19 @@ public class MongoStorageIntegrationTest {
 
   @Test
   public void writeDomainEntityShouldAddAnItemToTheDatabase() throws StorageException {
-    ProjectADomainEntity entity = createEntityWithGeneralTestDocValue("test");
-
     // action
-    String id = instance.addDomainEntity(DOMAIN_TYPE, entity, DEFAULT_CHANGE);
+    String id = addProjectADomainEntityToDatabase(GENERAL_TEST_DOC_VALUE);
 
     // verify
     ProjectADomainEntity foundItem = instance.getItem(DOMAIN_TYPE, id);
     assertThat(foundItem, isNotNullProjectADomainEntity());
-    assertThat(foundItem.generalTestDocValue, is(equalTo(entity.generalTestDocValue)));
+    assertThat(foundItem.generalTestDocValue, is(equalTo(GENERAL_TEST_DOC_VALUE)));
   }
 
   @Test
   public void setPIDFillsThePIDpropertyAndAddsTheVersionToVersionCollection() throws StorageException {
     // setup
-    ProjectADomainEntity entity = createEntityWithGeneralTestDocValue("test");
-    String id = instance.addDomainEntity(DOMAIN_TYPE, entity, DEFAULT_CHANGE);
+    String id = addProjectADomainEntityToDatabase(GENERAL_TEST_DOC_VALUE);
 
     // action
     String pid = "randomPID";
@@ -93,6 +91,12 @@ public class MongoStorageIntegrationTest {
     assertThat(instance.getRevision(ProjectADomainEntity.class, id, 1), isNotNullProjectADomainEntity());
   }
 
+  private String addProjectADomainEntityToDatabase(String generalTestDocValue) throws StorageException {
+    ProjectADomainEntity entity = createEntityWithGeneralTestDocValue(generalTestDocValue);
+    String id = instance.addDomainEntity(DOMAIN_TYPE, entity, DEFAULT_CHANGE);
+    return id;
+  }
+
   private Matcher<ProjectADomainEntity> isNotNullProjectADomainEntity() {
     return is(notNullValue(ProjectADomainEntity.class));
   }
@@ -101,5 +105,19 @@ public class MongoStorageIntegrationTest {
     ProjectADomainEntity entity = new ProjectADomainEntity();
     entity.generalTestDocValue = generalTestDocValue;
     return entity;
+  }
+
+  @Test
+  public void findByExampleReturnsTheFoundEntity() throws StorageException {
+    // setup
+    addProjectADomainEntityToDatabase(GENERAL_TEST_DOC_VALUE);
+
+    ProjectADomainEntity example = createEntityWithGeneralTestDocValue(GENERAL_TEST_DOC_VALUE);
+
+    // action
+    ProjectADomainEntity foundEntity = instance.findItem(ProjectADomainEntity.class, example);
+
+    // verify
+    assertThat(foundEntity, is(notNullValue(ProjectADomainEntity.class)));
   }
 }
