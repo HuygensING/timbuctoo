@@ -22,11 +22,13 @@ package test.model;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
 import com.google.common.base.Objects;
 
+@IDPrefix("DSE")
 public class DatableSystemEntity extends SystemEntity {
 
   private Datable testDatable;

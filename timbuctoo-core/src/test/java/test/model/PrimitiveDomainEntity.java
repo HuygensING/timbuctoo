@@ -22,8 +22,10 @@ package test.model;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
+@IDPrefix("PDE")
 public class PrimitiveDomainEntity extends DomainEntity {
 
   @Override

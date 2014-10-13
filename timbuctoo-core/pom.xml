@@ -76,6 +76,13 @@
       </exclusions>
     </dependency>
     <!-- ## End of main dependencies ## -->
+    <!-- ## Test dependencies ## -->
+    <dependency>
+      <groupId>de.flapdoodle.embed</groupId>
+      <artifactId>de.flapdoodle.embed.mongo</artifactId>
+      <version>1.46.1</version>
+    </dependency>
+    <!-- ## End of test dependencies ## -->
   </dependencies>
 
 </project>
