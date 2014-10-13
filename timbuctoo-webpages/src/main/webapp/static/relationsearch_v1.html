@@ -147,7 +147,7 @@
   function doPost2() {
   var errorToken = $('#error');
     jQuery.ajax({
-      url: searchUrl + '/' + $('#searchtype1').val() + 's',
+      url: searchUrl + '/' + $('#searchtype2').val() + 's',
       type: 'POST',
       data: JSON.stringify({
         'typeString': $('#searchtype2').val(),
@@ -232,7 +232,7 @@
 	  }
 	});
 
-    $('#searchtype1').val('wwdocument');
+    $('#searchtype1').val('wwperson');
     $('#searchtext1').val('Zuylen');
     $('#searchid1').val('');
 
