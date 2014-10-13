@@ -53,9 +53,11 @@ import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
+import nl.knaw.huygens.timbuctoo.rest.providers.CSVProvider;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
@@ -120,8 +122,8 @@ public class SearchResourceV1 extends ResourceBase {
 
   @GET
   @Path("/{id: " + SearchResult.ID_PREFIX + "\\d+}")
-  @APIDesc("Returns (paged) search results")
   @Produces({ MediaType.APPLICATION_JSON })
+  @APIDesc("Returns (paged) search results")
   public Response get( //
       @PathParam("id") String queryId, //
       @QueryParam("start") @DefaultValue("0") final int start, //
@@ -137,6 +139,22 @@ public class SearchResourceV1 extends ResourceBase {
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
 
     SearchResultDTO dto = getSearchResultMapper(type).create(type, result, start, rows);
+    return Response.ok(dto).build();
+  }
+
+  @GET
+  @Path("/{id: " + SearchResult.ID_PREFIX + "\\d+}/csv")
+  @Produces({ CSVProvider.TEXT_CSV })
+  public Response getRelationSearchResultAsCSV(@PathParam("id") String queryId) {
+    SearchResult result = getSearchResult(queryId);
+    checkNotNull(result, NOT_FOUND, "No SearchResult with id %s", queryId);
+
+    String typeString = result.getSearchType();
+    Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
+    checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
+    checkCondition(Relation.class.isAssignableFrom(type), BAD_REQUEST, "Not a relation type: %s", typeString);
+
+    RelationSearchResultDTO dto = relationSearchResultMapper.create(type, result, 0, Integer.MAX_VALUE);
     return Response.ok(dto).build();
   }
 
