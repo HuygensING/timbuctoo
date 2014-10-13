@@ -24,7 +24,6 @@ package nl.knaw.huygens.timbuctoo.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
 
 import org.junit.Test;
 
@@ -33,23 +32,28 @@ public class TextTest {
   private static final String WHITE = "\t\n \u00A0";
 
   @Test
+  public void testNormalizeNull() {
+    assertThat(Text.normalizeWhitespace(null), equalTo(""));
+  }
+
+  @Test
   public void testNormalizeNoWhitespace() {
-    assertThat(Text.normalizeWhitespace("abc"), is(equalTo("abc")));
+    assertThat(Text.normalizeWhitespace("abc"), equalTo("abc"));
   }
 
   @Test
   public void testNormalizeLeadingWhitespace() {
-    assertThat(Text.normalizeWhitespace(WHITE + "abc"), is(equalTo("abc")));
+    assertThat(Text.normalizeWhitespace(WHITE + "abc"), equalTo("abc"));
   }
 
   @Test
   public void testNormalizeTrailingWhitespace() {
-    assertThat(Text.normalizeWhitespace("abc" + WHITE), is(equalTo("abc")));
+    assertThat(Text.normalizeWhitespace("abc" + WHITE), equalTo("abc"));
   }
 
   @Test
   public void testNormalizeEmbeddedWhitespace() {
-    assertThat(Text.normalizeWhitespace("abc" + WHITE + "def"), is(equalTo("abc def")));
+    assertThat(Text.normalizeWhitespace("abc" + WHITE + "def"), equalTo("abc def"));
   }
 
 }
