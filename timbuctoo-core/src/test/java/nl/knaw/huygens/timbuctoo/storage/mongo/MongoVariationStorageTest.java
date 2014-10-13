@@ -45,7 +45,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import test.variation.model.BaseDomainEntity;
+import test.variation.model.BaseVariationDomainEntity;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
@@ -100,7 +100,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetAllIdsWithoutPIDOfType() throws Exception {
-    DBObject query = queries.selectVariationWithoutPID(BaseDomainEntity.class);
+    DBObject query = queries.selectVariationWithoutPID(BaseVariationDomainEntity.class);
 
     String id1 = "TSD0000000001";
     DBObject dbObject = createDBJsonNode(createSimpleMap("_id", id1));
@@ -108,7 +108,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     DBCursor cursor = createDBCursorWithOneValue(dbObject);
     when(dbCollection.find(query, returnIdField)).thenReturn(cursor);
 
-    List<String> ids = storage.getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
+    List<String> ids = storage.getAllIdsWithoutPIDOfType(BaseVariationDomainEntity.class);
 
     assertEquals(1, ids.size());
     assertTrue(ids.contains(id1));
@@ -116,7 +116,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetAllIdsWithoutPIDOfTypeMultipleFound() throws Exception {
-    DBObject query = queries.selectVariationWithoutPID(BaseDomainEntity.class);
+    DBObject query = queries.selectVariationWithoutPID(BaseVariationDomainEntity.class);
 
     String id1 = DEFAULT_ID;
     DBObject dbObject1 = createDBJsonNode(createSimpleMap("_id", id1));
@@ -131,7 +131,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
     when(dbCollection.find(query, returnIdField)).thenReturn(cursor);
 
-    List<String> ids = storage.getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
+    List<String> ids = storage.getAllIdsWithoutPIDOfType(BaseVariationDomainEntity.class);
 
     assertEquals(3, ids.size());
     assertTrue(ids.contains(id1));
@@ -141,43 +141,43 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetAllIdsWithoutPIDOfTypeNoneFound() throws Exception {
-    DBObject query = queries.selectVariationWithoutPID(BaseDomainEntity.class);
+    DBObject query = queries.selectVariationWithoutPID(BaseVariationDomainEntity.class);
     DBCursor cursor = createCursorWithoutValues();
     when(dbCollection.find(query, returnIdField)).thenReturn(cursor);
 
-    List<String> ids = storage.getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
+    List<String> ids = storage.getAllIdsWithoutPIDOfType(BaseVariationDomainEntity.class);
 
     assertTrue(ids.isEmpty());
   }
 
   @Test(expected = StorageException.class)
   public void testGetAllIdsWithoutPIDFindThrowsException() throws Exception {
-    DBObject query = queries.selectVariationWithoutPID(BaseDomainEntity.class);
+    DBObject query = queries.selectVariationWithoutPID(BaseVariationDomainEntity.class);
     doThrow(MongoException.class).when(dbCollection).find(query, returnIdField);
 
-    storage.getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
+    storage.getAllIdsWithoutPIDOfType(BaseVariationDomainEntity.class);
   }
 
   @Test(expected = StorageException.class)
   public void testGetAllIdsWithoutPIDCursorNextThrowsException() throws Exception {
-    DBObject query = queries.selectVariationWithoutPID(BaseDomainEntity.class);
+    DBObject query = queries.selectVariationWithoutPID(BaseVariationDomainEntity.class);
     DBCursor cursor = mock(DBCursor.class);
     when(cursor.hasNext()).thenReturn(true);
     doThrow(MongoException.class).when(cursor).next();
     when(dbCollection.find(query, returnIdField)).thenReturn(cursor);
 
-    storage.getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
+    storage.getAllIdsWithoutPIDOfType(BaseVariationDomainEntity.class);
   }
 
   @Test(expected = StorageException.class)
   public void testGetAllIdsWithoutPIDCursorHasNextThrowsException() throws Exception {
-    DBObject query = queries.selectVariationWithoutPID(BaseDomainEntity.class);
+    DBObject query = queries.selectVariationWithoutPID(BaseVariationDomainEntity.class);
     DBCursor cursor = mock(DBCursor.class);
     doThrow(MongoException.class).when(cursor).hasNext();
 
     when(dbCollection.find(query, returnIdField)).thenReturn(cursor);
 
-    storage.getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
+    storage.getAllIdsWithoutPIDOfType(BaseVariationDomainEntity.class);
   }
 
   @Test

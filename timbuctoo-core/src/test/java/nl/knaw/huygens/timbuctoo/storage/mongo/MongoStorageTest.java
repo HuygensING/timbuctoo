@@ -39,7 +39,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import test.variation.model.BaseDomainEntity;
+import test.variation.model.BaseVariationDomainEntity;
 import test.variation.model.TestSystemEntity;
 import test.variation.model.projecta.ProjectADomainEntity;
 
@@ -135,7 +135,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
   public void testDeleteNonPersistent() throws Exception {
     List<String> ids = Lists.newArrayList("TCD000000001", "TCD000000003", "TCD000000005");
 
-    storage.deleteNonPersistent(BaseDomainEntity.class, ids);
+    storage.deleteNonPersistent(BaseVariationDomainEntity.class, ids);
 
     DBObject query = queries.selectNonPersistent(ids);
     verify(mongoDB).remove(dbCollection, query);
@@ -156,7 +156,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetItemForDomainEntity() throws Exception {
-    storage.getItem(BaseDomainEntity.class, DEFAULT_ID);
+    storage.getItem(BaseVariationDomainEntity.class, DEFAULT_ID);
 
     DBObject query = queries.selectById(DEFAULT_ID);
     verify(mongoDB).findOne(dbCollection, query);
@@ -175,7 +175,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetPrimitiveDomainEntities() throws Exception {
-    storage.getDomainEntities(BaseDomainEntity.class);
+    storage.getDomainEntities(BaseVariationDomainEntity.class);
 
     DBObject query = queries.selectAll();
     verify(mongoDB).find(dbCollection, query);
@@ -211,7 +211,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetAllVariationsWithoutRelations() throws Exception {
-    storage.getAllVariations(BaseDomainEntity.class, DEFAULT_ID);
+    storage.getAllVariations(BaseVariationDomainEntity.class, DEFAULT_ID);
 
     DBObject query = queries.selectById(DEFAULT_ID);
     verify(mongoDB).findOne(dbCollection, query);
@@ -224,7 +224,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
   public void testGetRevision() throws Exception {
     int revision = 42;
 
-    storage.getRevision(BaseDomainEntity.class, DEFAULT_ID, revision);
+    storage.getRevision(BaseVariationDomainEntity.class, DEFAULT_ID, revision);
 
     DBObject query = queries.getRevisionFromVersionCollection(DEFAULT_ID, revision);
     DBObject projection = queries.getRevisionProjection(revision);
@@ -235,7 +235,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetAllRevisions() throws Exception {
-    storage.getAllRevisions(BaseDomainEntity.class, DEFAULT_ID);
+    storage.getAllRevisions(BaseVariationDomainEntity.class, DEFAULT_ID);
 
     DBObject query = queries.selectById(DEFAULT_ID);
     verify(mongoDB).findOne(dbCollection, query);

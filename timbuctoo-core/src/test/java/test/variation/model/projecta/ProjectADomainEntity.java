@@ -22,11 +22,11 @@ package test.variation.model.projecta;
  * #L%
  */
 
-import test.variation.model.BaseDomainEntity;
+import test.variation.model.BaseVariationDomainEntity;
 
 import com.google.common.base.Objects;
 
-public class ProjectADomainEntity extends BaseDomainEntity {
+public class ProjectADomainEntity extends BaseVariationDomainEntity {
 
   public String projectAGeneralTestDocValue;
 

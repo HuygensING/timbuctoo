@@ -30,7 +30,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import test.model.projecta.SubADomainEntity;
-import test.variation.model.BaseDomainEntity;
+import test.variation.model.BaseVariationDomainEntity;
 import test.variation.model.TestSystemEntity;
 import test.variation.model.TestSystemEntityPrimitive;
 
@@ -88,7 +88,7 @@ public class ReferenceTest {
 
   @Test
   public void testIsOfTypeSubType() {
-    Reference ref1 = new Reference(BaseDomainEntity.class, "id1");
+    Reference ref1 = new Reference(BaseVariationDomainEntity.class, "id1");
 
     assertFalse(ref1.refersToType(SubADomainEntity.class));
   }
@@ -97,14 +97,14 @@ public class ReferenceTest {
   public void testIsOfTypeSupeType() {
     Reference ref1 = new Reference(SubADomainEntity.class, "id1");
 
-    assertFalse(ref1.refersToType(BaseDomainEntity.class));
+    assertFalse(ref1.refersToType(BaseVariationDomainEntity.class));
   }
 
   @Test
   public void testIsOfTypeOtherType() {
     Reference ref1 = new Reference(TestSystemEntity.class, "id1");
 
-    assertFalse(ref1.refersToType(BaseDomainEntity.class));
+    assertFalse(ref1.refersToType(BaseVariationDomainEntity.class));
   }
 
 }

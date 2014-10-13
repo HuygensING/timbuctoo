@@ -25,6 +25,7 @@ package test.variation.model;
 import java.util.List;
 import java.util.Set;
 
+import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Role;
@@ -33,18 +34,19 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import com.google.common.collect.Sets;
 
-public class BaseDomainEntity extends DomainEntity {
+@IDPrefix("BVDE")
+public class BaseVariationDomainEntity extends DomainEntity {
 
   public String name;
   public String generalTestDocValue;
 
-  public BaseDomainEntity() {}
+  public BaseVariationDomainEntity() {}
 
-  public BaseDomainEntity(String id) {
+  public BaseVariationDomainEntity(String id) {
     setId(id);
   }
 
-  public BaseDomainEntity(String id, String name) {
+  public BaseVariationDomainEntity(String id, String name) {
     setId(id);
     this.name = name;
   }
@@ -58,11 +60,11 @@ public class BaseDomainEntity extends DomainEntity {
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof BaseDomainEntity)) {
+    if (!(obj instanceof BaseVariationDomainEntity)) {
       return false;
     }
 
-    BaseDomainEntity other = (BaseDomainEntity) obj;
+    BaseVariationDomainEntity other = (BaseVariationDomainEntity) obj;
 
     boolean isEqual = true;
 

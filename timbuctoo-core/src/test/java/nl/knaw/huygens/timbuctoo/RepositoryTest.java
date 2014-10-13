@@ -53,7 +53,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import test.variation.model.BaseDomainEntity;
+import test.variation.model.BaseVariationDomainEntity;
 import test.variation.model.TestSystemEntity;
 import test.variation.model.projecta.ProjectADomainEntity;
 
@@ -85,14 +85,14 @@ public class RepositoryTest {
 
   @Test
   public void testEntityExists() throws Exception {
-    repository.entityExists(BaseDomainEntity.class, "id");
-    verify(storageMock).entityExists(BaseDomainEntity.class, "id");
+    repository.entityExists(BaseVariationDomainEntity.class, "id");
+    verify(storageMock).entityExists(BaseVariationDomainEntity.class, "id");
   }
 
   @Test
   public void testGetEntity() throws Exception {
-    repository.getEntity(BaseDomainEntity.class, "id");
-    verify(storageMock).getItem(BaseDomainEntity.class, "id");
+    repository.getEntity(BaseVariationDomainEntity.class, "id");
+    verify(storageMock).getItem(BaseVariationDomainEntity.class, "id");
   }
 
   @Test
@@ -112,16 +112,16 @@ public class RepositoryTest {
   @Test
   public void testGetAllVariations() throws Exception {
     // setup
-    BaseDomainEntity entityMock1 = mock(BaseDomainEntity.class);
-    BaseDomainEntity entityMock2 = mock(BaseDomainEntity.class);
-    List<BaseDomainEntity> variations = Lists.newArrayList(entityMock1, entityMock2);
+    BaseVariationDomainEntity entityMock1 = mock(BaseVariationDomainEntity.class);
+    BaseVariationDomainEntity entityMock2 = mock(BaseVariationDomainEntity.class);
+    List<BaseVariationDomainEntity> variations = Lists.newArrayList(entityMock1, entityMock2);
 
-    Class<BaseDomainEntity> type = BaseDomainEntity.class;
+    Class<BaseVariationDomainEntity> type = BaseVariationDomainEntity.class;
     String id = "id";
     when(storageMock.getAllVariations(type, id)).thenReturn(variations);
 
     // action
-    List<BaseDomainEntity> actualVariations = repository.getAllVariations(type, id);
+    List<BaseVariationDomainEntity> actualVariations = repository.getAllVariations(type, id);
 
     // verify
     verify(storageMock).getAllVariations(type, id);
@@ -132,13 +132,13 @@ public class RepositoryTest {
   @Test
   public void testGetEntityWithRelations() throws Exception {
     // setup
-    BaseDomainEntity entityMock1 = mock(BaseDomainEntity.class);
-    Class<BaseDomainEntity> type = BaseDomainEntity.class;
+    BaseVariationDomainEntity entityMock1 = mock(BaseVariationDomainEntity.class);
+    Class<BaseVariationDomainEntity> type = BaseVariationDomainEntity.class;
     String id = "id";
     when(storageMock.getItem(type, id)).thenReturn(entityMock1);
 
     // action
-    BaseDomainEntity entity = repository.getEntityWithRelations(type, id);
+    BaseVariationDomainEntity entity = repository.getEntityWithRelations(type, id);
 
     // verify
     verify(storageMock).getItem(type, id);
@@ -148,30 +148,30 @@ public class RepositoryTest {
   @Test
   public void testGetEntityWithRelationsWhenEntityIsNull() throws Exception {
     // setup
-    Class<BaseDomainEntity> type = BaseDomainEntity.class;
+    Class<BaseVariationDomainEntity> type = BaseVariationDomainEntity.class;
     String id = "id";
     when(storageMock.getItem(type, id)).thenReturn(null);
 
     // action
-    BaseDomainEntity entity = repository.getEntityWithRelations(type, id);
+    BaseVariationDomainEntity entity = repository.getEntityWithRelations(type, id);
 
     // verify
     verify(storageMock).getItem(type, id);
-    assertThat(entity, is(nullValue(BaseDomainEntity.class)));
+    assertThat(entity, is(nullValue(BaseVariationDomainEntity.class)));
   }
 
   @Ignore
   @Test
   public void testGetRevisionWithRelations() throws Exception {
     // setup
-    BaseDomainEntity entityMock1 = mock(BaseDomainEntity.class);
-    Class<BaseDomainEntity> type = BaseDomainEntity.class;
+    BaseVariationDomainEntity entityMock1 = mock(BaseVariationDomainEntity.class);
+    Class<BaseVariationDomainEntity> type = BaseVariationDomainEntity.class;
     String id = "id";
     int revision = 13;
     when(storageMock.getRevision(type, id, revision)).thenReturn(entityMock1);
 
     // action
-    BaseDomainEntity entity = repository.getRevisionWithRelations(type, id, revision);
+    BaseVariationDomainEntity entity = repository.getRevisionWithRelations(type, id, revision);
 
     // verify
     verify(storageMock).getRevision(type, id, revision);
@@ -181,17 +181,17 @@ public class RepositoryTest {
   @Test
   public void testGetRevisionWithRelationsRevisionIsNull() throws Exception {
     // setup
-    Class<BaseDomainEntity> type = BaseDomainEntity.class;
+    Class<BaseVariationDomainEntity> type = BaseVariationDomainEntity.class;
     String id = "id";
     int revision = 13;
     when(storageMock.getRevision(type, id, revision)).thenReturn(null);
 
     // action
-    BaseDomainEntity entity = repository.getRevisionWithRelations(type, id, revision);
+    BaseVariationDomainEntity entity = repository.getRevisionWithRelations(type, id, revision);
 
     // verify
     verify(storageMock).getRevision(type, id, revision);
-    assertThat(entity, is(nullValue(BaseDomainEntity.class)));
+    assertThat(entity, is(nullValue(BaseVariationDomainEntity.class)));
   }
 
   @Test
@@ -202,8 +202,8 @@ public class RepositoryTest {
 
   @Test
   public void testGetPrimitiveDomainEntities() throws Exception {
-    repository.getDomainEntities(BaseDomainEntity.class);
-    verify(storageMock).getDomainEntities(BaseDomainEntity.class);
+    repository.getDomainEntities(BaseVariationDomainEntity.class);
+    verify(storageMock).getDomainEntities(BaseVariationDomainEntity.class);
   }
 
   @Test
@@ -214,8 +214,8 @@ public class RepositoryTest {
 
   @Test
   public void testGetVersions() throws Exception {
-    repository.getVersions(BaseDomainEntity.class, "id");
-    verify(storageMock).getAllRevisions(BaseDomainEntity.class, "id");
+    repository.getVersions(BaseVariationDomainEntity.class, "id");
+    verify(storageMock).getAllRevisions(BaseVariationDomainEntity.class, "id");
   }
 
   @Test
@@ -228,8 +228,8 @@ public class RepositoryTest {
 
   @Test(expected = ValidationException.class)
   public void testAddPrimitiveDomainEntity() throws Exception {
-    BaseDomainEntity entity = new BaseDomainEntity();
-    repository.addDomainEntity(BaseDomainEntity.class, entity, change);
+    BaseVariationDomainEntity entity = new BaseVariationDomainEntity();
+    repository.addDomainEntity(BaseVariationDomainEntity.class, entity, change);
   }
 
   @Test
@@ -249,9 +249,9 @@ public class RepositoryTest {
 
   @Test
   public void testUpdatePrimitiveDomainEntity() throws Exception {
-    BaseDomainEntity entity = new BaseDomainEntity("id");
-    repository.updateDomainEntity(BaseDomainEntity.class, entity, change);
-    verify(storageMock).updateDomainEntity(BaseDomainEntity.class, entity, change);
+    BaseVariationDomainEntity entity = new BaseVariationDomainEntity("id");
+    repository.updateDomainEntity(BaseVariationDomainEntity.class, entity, change);
+    verify(storageMock).updateDomainEntity(BaseVariationDomainEntity.class, entity, change);
   }
 
   @Test
@@ -270,10 +270,10 @@ public class RepositoryTest {
 
   @Test
   public void testDeleteDomainEntity() throws Exception {
-    BaseDomainEntity entity = new BaseDomainEntity("id");
+    BaseVariationDomainEntity entity = new BaseVariationDomainEntity("id");
     entity.setModified(change);
     repository.deleteDomainEntity(entity);
-    verify(storageMock).deleteDomainEntity(BaseDomainEntity.class, "id", change);
+    verify(storageMock).deleteDomainEntity(BaseVariationDomainEntity.class, "id", change);
   }
 
   @Test
@@ -291,21 +291,21 @@ public class RepositoryTest {
 
   @Test
   public void testSetPID() throws Exception {
-    repository.setPID(BaseDomainEntity.class, "id", "pid");
-    verify(storageMock).setPID(BaseDomainEntity.class, "id", "pid");
+    repository.setPID(BaseVariationDomainEntity.class, "id", "pid");
+    verify(storageMock).setPID(BaseVariationDomainEntity.class, "id", "pid");
   }
 
   @Test
   public void testDeleteNonPersistent() throws Exception {
     ArrayList<String> ids = Lists.newArrayList("id1", "id2", "id3");
-    repository.deleteNonPersistent(BaseDomainEntity.class, ids);
-    verify(storageMock).deleteNonPersistent(BaseDomainEntity.class, ids);
+    repository.deleteNonPersistent(BaseVariationDomainEntity.class, ids);
+    verify(storageMock).deleteNonPersistent(BaseVariationDomainEntity.class, ids);
   }
 
   @Test
   public void testGetAllIdsWithoutPID() throws Exception {
-    repository.getAllIdsWithoutPID(BaseDomainEntity.class);
-    verify(storageMock).getAllIdsWithoutPIDOfType(BaseDomainEntity.class);
+    repository.getAllIdsWithoutPID(BaseVariationDomainEntity.class);
+    verify(storageMock).getAllIdsWithoutPIDOfType(BaseVariationDomainEntity.class);
   }
 
   @Test
