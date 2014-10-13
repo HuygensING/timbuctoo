@@ -223,6 +223,11 @@ public class WWPerson extends Person {
     return data;
   }
 
+  @JsonIgnore
+  public static List<String> getClientRepresentationKeys() {
+    return Lists.newArrayList("name", "birthDate", "deathDate", "residenceLocation");
+  }
+
   // ---------------------------------------------------------------------------
 
   // Not an enumerated type because of serialization problems.

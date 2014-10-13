@@ -150,5 +150,10 @@ public class WWDocument extends Document {
     addItemToRepresentation(data, "createdBy", "isCreatedBy");
     return data;
   }
-  
+
+  @JsonIgnore
+  public static List<String> getClientRepresentationKeys() {
+    return Lists.newArrayList("title", "date", "language", "publishLocation", "createdBy");
+  }
+
 }
