@@ -27,6 +27,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.util.Text;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -151,9 +153,9 @@ public class Configuration {
     List<VREDef> vreDefs = Lists.newArrayList();
     for (HierarchicalConfiguration cfg : xmlConfig.configurationsAt(SETTINGS_PREFIX + "vre-defs.vre")) {
       VREDef vreDef = new VREDef();
-      vreDef.id = cfg.getString("[@id]");
-      vreDef.description = cfg.getString("description");
-      vreDef.modelPackage = cfg.getString("model-package");
+      vreDef.id = getString(cfg, "[@id]");
+      vreDef.description = getString(cfg, "description");
+      vreDef.modelPackage = getString(cfg, "model-package");
       vreDef.receptions = Lists.newArrayList();
       for (Object item : cfg.getList("receptions.reception")) {
         vreDef.receptions.add(item.toString());
@@ -161,6 +163,10 @@ public class Configuration {
       vreDefs.add(vreDef);
     }
     return vreDefs;
+  }
+
+  private String getString(HierarchicalConfiguration cfg, String key) {
+    return Text.normalizeWhitespace(cfg.getString(key));
   }
 
   public static class VREDef {

@@ -1,7 +1,5 @@
 package nl.knaw.huygens.timbuctoo.util;
 
-import java.lang.Character.UnicodeBlock;
-
 /*
  * #%L
  * Timbuctoo core
@@ -24,6 +22,8 @@ import java.lang.Character.UnicodeBlock;
  * #L%
  */
 
+import java.lang.Character.UnicodeBlock;
+
 public class Text {
 
   /**
@@ -36,6 +36,14 @@ public class Text {
       }
       builder.append(text);
     }
+  }
+
+  /**
+   * Normalizes whitespace in the specified text: replaces runs of whitespace
+   * characters by a single space and strips whitespace from its start and end.
+   */
+  public static String normalizeWhitespace(String text) {
+    return (text == null) ? "" : text.replaceAll("[\\s\\u00A0]+", " ").trim();
   }
 
   // --- Cyrillic --------------------------------------------------------------
