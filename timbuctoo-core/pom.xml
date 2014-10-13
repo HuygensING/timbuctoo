@@ -18,6 +18,16 @@
       <groupId>nl.knaw.huygens</groupId>
       <artifactId>facetedsearch-tools-model</artifactId>
       <version>${faceted.search.tools.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j</artifactId>
+          <groupId>log4j</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>slf4j-log4j12</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- Apache validation -->
