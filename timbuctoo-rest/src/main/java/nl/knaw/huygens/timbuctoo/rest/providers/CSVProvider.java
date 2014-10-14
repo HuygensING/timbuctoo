@@ -39,8 +39,6 @@ import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.RelationDTO;
 import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
-import nl.knaw.huygens.timbuctoo.model.neww.WWDocument;
-import nl.knaw.huygens.timbuctoo.model.neww.WWPerson;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,9 +86,8 @@ public class CSVProvider implements MessageBodyWriter<RelationSearchResultDTO> {
   }
 
   @Override
-  public void writeTo(RelationSearchResultDTO dto, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws IOException {
-    List<String> sourceKeys = null;
-    List<String> targetKeys = null;
+  public void writeTo(RelationSearchResultDTO dto, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out)
+      throws IOException {
 
     List<RelationDTO> refs = dto.getRefs();
     if (refs != null && refs.size() > 0) {
@@ -102,50 +99,39 @@ public class CSVProvider implements MessageBodyWriter<RelationSearchResultDTO> {
         return;
       }
       String sourceTypeName = relationType.getSourceTypeName();
-      if ("person".equals(sourceTypeName)) {
-        sourceKeys = WWPerson.getClientRepresentationKeys();
-        targetKeys = WWDocument.getClientRepresentationKeys();
-      }
-      else if ("document".equals(sourceTypeName)) {
-        sourceKeys = WWDocument.getClientRepresentationKeys();
-        targetKeys = sourceKeys;
-      } else {
+      if (!"person".equals(sourceTypeName) && !"document".equals(sourceTypeName)) {
         LOG.error("Illegal source type of relation: {}", sourceTypeName);
         LOG.error("Allowed values are: 'person' and 'document'");
         return;
       }
 
+      // header
       StringBuilder builder = new StringBuilder();
       builder.append("relationType");
-      appendTo(builder, "src-", sourceKeys);
-      appendTo(builder, "dst-", targetKeys);
+      appendKeysTo(builder, first.getSourceData(), "src-");
+      appendKeysTo(builder, first.getTargetData(), "dst-");
       writeLine(out, builder);
-    }
 
-    for (RelationDTO ref : refs) {
-      String name = ref.getRelationName();
-      // verify that this matches the proper type
-      StringBuilder builder = new StringBuilder();
-      builder.append(name);
-      appendTo(builder, ref.getSourceData(), sourceKeys);
-      appendTo(builder, ref.getTargetData(), targetKeys);
-      writeLine(out, builder);
+      // content
+      for (RelationDTO ref : refs) {
+        builder = new StringBuilder();
+        builder.append(ref.getRelationName());
+        appendValuesTo(builder, ref.getSourceData());
+        appendValuesTo(builder, ref.getTargetData());
+        writeLine(out, builder);
+      }
     }
   }
 
-  private void appendTo(StringBuilder builder, String prefix, List<String> keys) {
-    for (String key : keys) {
-      builder.append(SEPARATOR).append(prefix).append(key);
+  private void appendKeysTo(StringBuilder builder, Map<String, String> data, String prefix) {
+    for (Map.Entry<String, String> entry : data.entrySet()) {
+      builder.append(SEPARATOR).append(prefix).append(entry.getKey());
     }
   }
 
-  private void appendTo(StringBuilder builder, Map<String,String> data, List<String> keys) {
-    for (String key : keys) {
-      builder.append(SEPARATOR);
-      String value = data.get(key);
-      if (data.get(key) != null) {
-        builder.append(value);
-      } 
+  private void appendValuesTo(StringBuilder builder, Map<String, String> data) {
+    for (Map.Entry<String, String> entry : data.entrySet()) {
+      builder.append(SEPARATOR).append(entry.getValue().replace(SEPARATOR, '.'));
     }
   }
 

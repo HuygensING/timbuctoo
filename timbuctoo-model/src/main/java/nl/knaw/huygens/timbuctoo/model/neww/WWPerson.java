@@ -210,22 +210,14 @@ public class WWPerson extends Person {
 
   @Override
   public Map<String, String> getClientRepresentation() {
-    Map<String, String> data = Maps.newHashMap();
+    Map<String, String> data = Maps.newTreeMap();
     String name = defaultName().getShortName();
-    data.put("name", StringUtils.stripToEmpty(name).isEmpty() ? getTempName() : name);
-    if (getBirthDate() != null) {
-      data.put("birthDate", Integer.toString(getBirthDate().getFromYear()));
-    }
-    if (getDeathDate() != null) {
-      data.put("deathDate", Integer.toString(getDeathDate().getFromYear()));
-    }
-    addItemToRepresentation(data, "residenceLocation", "hasResidenceLocation");
+    addItemToRepresentation(data, "name", StringUtils.stripToEmpty(name).isEmpty() ? getTempName() : name);
+    addItemToRepresentation(data, "gender", getGender());
+    addItemToRepresentation(data, "birthDate", getBirthDate() != null ? getBirthDate().getFromYear() : null);
+    addItemToRepresentation(data, "deathDate", getDeathDate() != null ? getDeathDate().getFromYear() : null);
+    addRelationToRepresentation(data, "residenceLocation", "hasResidenceLocation");
     return data;
-  }
-
-  @JsonIgnore
-  public static List<String> getClientRepresentationKeys() {
-    return Lists.newArrayList("name", "birthDate", "deathDate", "residenceLocation");
   }
 
   // ---------------------------------------------------------------------------

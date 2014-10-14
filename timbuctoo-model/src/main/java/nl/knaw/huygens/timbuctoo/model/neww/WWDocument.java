@@ -140,20 +140,13 @@ public class WWDocument extends Document {
 
   @Override
   public Map<String, String> getClientRepresentation() {
-    Map<String, String> data = Maps.newHashMap();
-    data.put("title", getTitle());
-    if (getDate() != null) {
-      data.put("date", Integer.toString(getDate().getFromYear()));
-    }
-    addItemToRepresentation(data, "language", "hasWorkLanguage");
-    addItemToRepresentation(data, "publishLocation", "hasPublishLocation");
-    addItemToRepresentation(data, "createdBy", "isCreatedBy");
+    Map<String, String> data = Maps.newTreeMap();
+    addItemToRepresentation(data, "title", getTitle());
+    addItemToRepresentation(data, "date", getDate() != null ? getDate().getFromYear() : null);
+    addRelationToRepresentation(data, "language", "hasWorkLanguage");
+    addRelationToRepresentation(data, "publishLocation", "hasPublishLocation");
+    addRelationToRepresentation(data, "createdBy", "isCreatedBy");
     return data;
-  }
-
-  @JsonIgnore
-  public static List<String> getClientRepresentationKeys() {
-    return Lists.newArrayList("title", "date", "language", "publishLocation", "createdBy");
   }
 
 }

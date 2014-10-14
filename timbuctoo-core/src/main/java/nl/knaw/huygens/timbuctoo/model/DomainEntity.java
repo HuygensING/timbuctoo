@@ -119,7 +119,7 @@ public abstract class DomainEntity extends Entity implements Variable {
     relationCount = 0;
     relations.clear();
   }
- 
+
   @JsonProperty(VARIATIONS)
   @JsonIgnore
   public List<String> getVariations() {
@@ -188,19 +188,22 @@ public abstract class DomainEntity extends Entity implements Variable {
   }
 
   /**
-   * Returns a map with key-value pairs to be added to the client representation
-   * of this entity, or {@code null} if there are no such data.
+   * Returns a map with key-value pairs, sorted by key, to be added to the client
+   * representation of this entity, or {@code null} if there are no such data.
    */
   @JsonIgnore
   public Map<String, String> getClientRepresentation() {
     return null;
   }
-  
-  protected void addItemToRepresentation(Map<String, String> data, String key, String relationName) {
+
+  protected void addRelationToRepresentation(Map<String, String> data, String key, String relationName) {
     List<RelationRef> refs = getRelations(relationName);
-    if (refs.size() != 0) {
-      data.put(key, refs.get(0).getDisplayName());
-    }
+    String value = refs.isEmpty() ? null : refs.get(0).getDisplayName();
+    addItemToRepresentation(data, key, value);
+  }
+
+  protected void addItemToRepresentation(Map<String, String> data, String key, Object value) {
+    data.put(key, (value != null) ? value.toString() : "");
   }
 
 }
