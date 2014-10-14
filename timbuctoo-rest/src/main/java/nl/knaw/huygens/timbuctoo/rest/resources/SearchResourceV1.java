@@ -51,15 +51,17 @@ import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.ClientSearchResult;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
+import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
-import nl.knaw.huygens.timbuctoo.rest.util.search.ClientSearchResultCreator;
-import nl.knaw.huygens.timbuctoo.rest.util.search.RegularClientSearchResultCreator;
-import nl.knaw.huygens.timbuctoo.rest.util.search.RelationClientSearchResultCreator;
+import nl.knaw.huygens.timbuctoo.rest.providers.CSVProvider;
+import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
+import nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
+import nl.knaw.huygens.timbuctoo.rest.util.search.SearchResultMapper;
 import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
@@ -90,9 +92,9 @@ public class SearchResourceV1 extends ResourceBase {
   @Inject
   private RelationSearcher relationSearcher;
   @Inject
-  private RegularClientSearchResultCreator regularSearchResultCreator;
+  private RegularSearchResultMapper regularSearchResultMapper;
   @Inject
-  private RelationClientSearchResultCreator relationSearchResultCreator;
+  private RelationSearchResultMapper relationSearchResultMapper;
 
   @POST
   @Path("/" + ENTITY_PATH)
@@ -120,8 +122,8 @@ public class SearchResourceV1 extends ResourceBase {
 
   @GET
   @Path("/{id: " + SearchResult.ID_PREFIX + "\\d+}")
-  @APIDesc("Returns (paged) search results")
   @Produces({ MediaType.APPLICATION_JSON })
+  @APIDesc("Returns (paged) search results")
   public Response get( //
       @PathParam("id") String queryId, //
       @QueryParam("start") @DefaultValue("0") final int start, //
@@ -136,12 +138,28 @@ public class SearchResourceV1 extends ResourceBase {
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
 
-    ClientSearchResult clientSearchResult = getClientSearchResultCreator(type).create(type, result, start, rows);
-    return Response.ok(clientSearchResult).build();
+    SearchResultDTO dto = getSearchResultMapper(type).create(type, result, start, rows);
+    return Response.ok(dto).build();
   }
 
-  private ClientSearchResultCreator getClientSearchResultCreator(Class<? extends DomainEntity> type) {
-    return Relation.class.isAssignableFrom(type) ? relationSearchResultCreator : regularSearchResultCreator;
+  @GET
+  @Path("/{id: " + SearchResult.ID_PREFIX + "\\d+}/csv")
+  @Produces({ CSVProvider.TEXT_CSV })
+  public Response getRelationSearchResultAsCSV(@PathParam("id") String queryId) {
+    SearchResult result = getSearchResult(queryId);
+    checkNotNull(result, NOT_FOUND, "No SearchResult with id %s", queryId);
+
+    String typeString = result.getSearchType();
+    Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
+    checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
+    checkCondition(Relation.class.isAssignableFrom(type), BAD_REQUEST, "Not a relation type: %s", typeString);
+
+    RelationSearchResultDTO dto = relationSearchResultMapper.create(type, result, 0, Integer.MAX_VALUE);
+    return Response.ok(dto).build();
+  }
+
+  private SearchResultMapper getSearchResultMapper(Class<? extends DomainEntity> type) {
+    return Relation.class.isAssignableFrom(type) ? relationSearchResultMapper : regularSearchResultMapper;
   }
 
   private URI createHATEOASURI(String queryId) {
@@ -149,7 +167,6 @@ public class SearchResourceV1 extends ResourceBase {
     builder.path(V1_PATH);
     builder.path(SEARCH_PATH);
     builder.path(queryId);
-
     return builder.build();
   }
 
@@ -169,9 +186,7 @@ public class SearchResourceV1 extends ResourceBase {
   public Response relationPost(@HeaderParam("VRE_ID") String vreId, RelationSearchParameters params, @PathParam(RELATION_PARAM) String relationTypeString) {
 
     Class<? extends DomainEntity> relationType = registry.getTypeForXName(relationTypeString);
-
     searchRequestValidator.validateRelationRequest(vreId, relationTypeString, params);
-
     VRE vre = repository.getVREById(vreId);
 
     // Process

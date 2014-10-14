@@ -26,19 +26,19 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import test.variation.model.BaseDomainEntity;
+import test.variation.model.BaseVariationDomainEntity;
 import test.variation.model.VTestSystemEntity;
 
 public class TypeNamesTest {
 
   @Test
   public void testGetInternalName() {
-    assertEquals("basedomainentity", TypeNames.getInternalName(BaseDomainEntity.class));
+    assertEquals("basevariationdomainentity", TypeNames.getInternalName(BaseVariationDomainEntity.class));
   }
 
   @Test
   public void testGetExternalName() {
-    assertEquals("basedomainentitys", TypeNames.getExternalName(BaseDomainEntity.class));
+    assertEquals("basevariationdomainentitys", TypeNames.getExternalName(BaseVariationDomainEntity.class));
   }
 
   @Test

@@ -46,12 +46,12 @@ import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.ClientSearchResult;
+import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
-import nl.knaw.huygens.timbuctoo.rest.util.search.RegularClientSearchResultCreator;
-import nl.knaw.huygens.timbuctoo.rest.util.search.RelationClientSearchResultCreator;
+import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
+import nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
 import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.search.converters.SearchParametersConverter;
@@ -85,9 +85,9 @@ public class SearchResource extends ResourceBase {
   @Inject
   private RelationSearcher relationSearcher;
   @Inject
-  private RegularClientSearchResultCreator regularSearchResultCreator;
+  private RegularSearchResultMapper regularSearchResultMapper;
   @Inject
-  private RelationClientSearchResultCreator relationSearchResultCreator;
+  private RelationSearchResultMapper relationSearchResultMapper;
 
   @POST
   @APIDesc("Searches the Solr index")
@@ -133,8 +133,8 @@ public class SearchResource extends ResourceBase {
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
 
-    ClientSearchResult clientSearchResult = regularSearchResultCreator.create(type, result, start, rows);
-    return Response.ok(clientSearchResult).build();
+    SearchResultDTO dto = regularSearchResultMapper.create(type, result, start, rows);
+    return Response.ok(dto).build();
   }
 
   private SearchResult getSearchResult(String id) {
@@ -187,8 +187,8 @@ public class SearchResource extends ResourceBase {
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
 
-    ClientSearchResult clientSearchResult = relationSearchResultCreator.create(type, result, start, rows);
-    return Response.ok(clientSearchResult).build();
+    SearchResultDTO dto = relationSearchResultMapper.create(type, result, start, rows);
+    return Response.ok(dto).build();
   }
 
 }

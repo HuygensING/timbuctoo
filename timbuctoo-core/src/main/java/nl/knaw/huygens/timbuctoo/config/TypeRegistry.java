@@ -345,8 +345,7 @@ public class TypeRegistry {
   /**
    * Forces the typecast of the specified class to a system entity type token.
    */
-  @VisibleForTesting
-  static <T extends SystemEntity> Class<T> toSystemEntity(Class<?> cls) throws ClassCastException {
+  public static <T extends SystemEntity> Class<T> toSystemEntity(Class<?> cls) throws ClassCastException {
     if (isSystemEntity(cls)) {
       @SuppressWarnings("unchecked")
       Class<T> result = (Class<T>) cls;

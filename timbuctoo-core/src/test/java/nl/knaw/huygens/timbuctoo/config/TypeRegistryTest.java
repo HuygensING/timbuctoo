@@ -45,7 +45,7 @@ import test.model.PrimitiveDomainEntity;
 import test.model.projecta.OtherADomainEntity;
 import test.model.projecta.SubADomainEntity;
 import test.model.projectb.SubBDomainEntity;
-import test.variation.model.BaseDomainEntity;
+import test.variation.model.BaseVariationDomainEntity;
 import test.variation.model.NewTestRole;
 import test.variation.model.TestRole;
 import test.variation.model.TestSystemEntity;
@@ -115,24 +115,24 @@ public class TypeRegistryTest {
   @Test
   public void testGetTypeForIName() throws ModelException {
     registry.init(MODEL_PACKAGE);
-    assertEquals(BaseDomainEntity.class, registry.getDomainEntityType("basedomainentity"));
+    assertEquals(BaseVariationDomainEntity.class, registry.getDomainEntityType("basevariationdomainentity"));
     assertEquals(VTestSystemEntity.class, registry.getSystemEntityType("vtestsystementity"));
   }
 
   @Test
   public void testGetTypeForXName() throws ModelException {
     registry.init(MODEL_PACKAGE);
-    assertEquals(BaseDomainEntity.class, registry.getTypeForXName("basedomainentitys"));
+    assertEquals(BaseVariationDomainEntity.class, registry.getTypeForXName("basevariationdomainentitys"));
   }
 
   @Test
   public void testGetBaseClassFromCollectionClass() {
-    assertEquals(BaseDomainEntity.class, TypeRegistry.getBaseClass(BaseDomainEntity.class));
+    assertEquals(BaseVariationDomainEntity.class, TypeRegistry.getBaseClass(BaseVariationDomainEntity.class));
   }
 
   @Test
   public void testGetBaseClassForProjectSpecificClass() {
-    assertEquals(BaseDomainEntity.class, TypeRegistry.getBaseClass(ProjectADomainEntity.class));
+    assertEquals(BaseVariationDomainEntity.class, TypeRegistry.getBaseClass(ProjectADomainEntity.class));
   }
 
   @Test
@@ -200,8 +200,8 @@ public class TypeRegistryTest {
 
   @Test
   public void testToBaseDomainEntity() {
-    assertEquals(BaseDomainEntity.class, TypeRegistry.toBaseDomainEntity(BaseDomainEntity.class));
-    assertEquals(BaseDomainEntity.class, TypeRegistry.toBaseDomainEntity(ProjectADomainEntity.class));
+    assertEquals(BaseVariationDomainEntity.class, TypeRegistry.toBaseDomainEntity(BaseVariationDomainEntity.class));
+    assertEquals(BaseVariationDomainEntity.class, TypeRegistry.toBaseDomainEntity(ProjectADomainEntity.class));
   }
 
   @Test
@@ -218,7 +218,7 @@ public class TypeRegistryTest {
   public void testGetAllowedRolesForModelPackage() throws ModelException {
     registry.init(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
     assertEquals(0, registry.getAllowedRolesFor(TestSystemEntity.class).size());
-    Set<Class<? extends Role>> roles = registry.getAllowedRolesFor(BaseDomainEntity.class);
+    Set<Class<? extends Role>> roles = registry.getAllowedRolesFor(BaseVariationDomainEntity.class);
     assertEquals(2, roles.size());
     assertTrue(roles.contains(TestRole.class));
     assertTrue(roles.contains(NewTestRole.class));

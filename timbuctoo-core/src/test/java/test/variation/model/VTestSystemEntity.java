@@ -23,8 +23,10 @@ package test.variation.model;
  */
 
 import nl.knaw.huygens.timbuctoo.annotations.EntityTypeName;
+import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
+@IDPrefix("VTSE")
 @EntityTypeName("mysystementity")
 public class VTestSystemEntity extends SystemEntity {
 

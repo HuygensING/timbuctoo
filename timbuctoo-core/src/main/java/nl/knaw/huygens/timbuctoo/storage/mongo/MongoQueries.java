@@ -53,6 +53,13 @@ public class MongoQueries {
     return new BasicDBObject("_id", id);
   }
 
+  public DBObject getRevisionFromVersionCollection(String id, int revision) {
+    DBObject query = selectById(id);
+    query.putAll(getRevisionProjection(revision));
+
+    return query;
+  }
+
   /**
    * Create a query to find an {@code Entity} in a regular collection.
    * @param id the id of the {@code Entity}.

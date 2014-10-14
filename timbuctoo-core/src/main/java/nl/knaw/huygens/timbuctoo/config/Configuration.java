@@ -27,6 +27,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.util.Text;
+
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
@@ -39,7 +41,8 @@ public class Configuration {
 
   public static final String DEFAULT_CONFIG_FILE = "../config.xml";
 
-  private static final String SETTINGS_PREFIX = "settings.";
+  public static final String SETTINGS_PREFIX = "settings.";
+  public static final String KEY_HOME_DIR = "home.directory";
 
   private final XMLConfiguration xmlConfig;
 
@@ -58,6 +61,10 @@ public class Configuration {
       System.err.println("ERROR: unable to load configuration!");
       throw e;
     }
+  }
+
+  public boolean hasSetting(String key) {
+    return StringUtils.isNotBlank(getSetting(key));
   }
 
   public String getSetting(String key) {
@@ -132,7 +139,7 @@ public class Configuration {
   }
 
   public String getDirectory(String key) {
-    String path = concatenatePaths(getSetting("home.directory"), getSetting(key));
+    String path = concatenatePaths(getSetting(KEY_HOME_DIR), getSetting(key));
     return getBooleanSetting("home.use_user_home") ? pathInUserHome(path) : path;
   }
 
@@ -146,9 +153,9 @@ public class Configuration {
     List<VREDef> vreDefs = Lists.newArrayList();
     for (HierarchicalConfiguration cfg : xmlConfig.configurationsAt(SETTINGS_PREFIX + "vre-defs.vre")) {
       VREDef vreDef = new VREDef();
-      vreDef.id = cfg.getString("[@id]");
-      vreDef.description = cfg.getString("description");
-      vreDef.modelPackage = cfg.getString("model-package");
+      vreDef.id = getString(cfg, "[@id]");
+      vreDef.description = getString(cfg, "description");
+      vreDef.modelPackage = getString(cfg, "model-package");
       vreDef.receptions = Lists.newArrayList();
       for (Object item : cfg.getList("receptions.reception")) {
         vreDef.receptions.add(item.toString());
@@ -156,6 +163,10 @@ public class Configuration {
       vreDefs.add(vreDef);
     }
     return vreDefs;
+  }
+
+  private String getString(HierarchicalConfiguration cfg, String key) {
+    return Text.normalizeWhitespace(cfg.getString(key));
   }
 
   public static class VREDef {

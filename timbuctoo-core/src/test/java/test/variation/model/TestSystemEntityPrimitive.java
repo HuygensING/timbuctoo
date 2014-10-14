@@ -22,8 +22,10 @@ package test.variation.model;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
+@IDPrefix("TSEP")
 public class TestSystemEntityPrimitive extends SystemEntity {
 
   private int testInt;

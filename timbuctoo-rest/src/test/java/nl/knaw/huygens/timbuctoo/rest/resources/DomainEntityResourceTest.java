@@ -38,6 +38,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static nl.knaw.huygens.timbuctoo.config.TypeNames.getExternalName;
 
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -52,11 +53,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 
 import nl.knaw.huygens.timbuctoo.config.Paths;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
@@ -69,6 +72,7 @@ import org.mockito.Mockito;
 import test.rest.model.BaseDomainEntity;
 import test.rest.model.projecta.OtherDomainEntity;
 import test.rest.model.projecta.ProjectADomainEntity;
+import test.rest.model.projecta.ProjectARelation;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -178,6 +182,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     List<ProjectADomainEntity> actualList = clientResponse.getEntity(genericType);
     assertEquals(expectedList.size(), actualList.size());
   }
+
+  // --- PUT -------------------------------------------------------------------
 
   @Test
   public void testPutAsUser() throws Exception {
@@ -389,6 +395,49 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
+  public void testPutRelation() throws Exception {
+    Class<ProjectARelation> type = ProjectARelation.class;
+    String id = "RELA000000000001";
+    String sourceType = TypeNames.getInternalName(BaseDomainEntity.class);
+    String sourceId = "TEST000000000001";
+    String targetType = TypeNames.getInternalName(BaseDomainEntity.class);
+    String targetId = "TEST000000000002";
+
+    setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
+
+    VRE vre = mock(VRE.class);
+    when(vre.inScope(type, id)).thenReturn(true);
+    makeVREAvailable(vre, VRE_ID);
+
+    ProjectARelation entity = RelationBuilder.newInstance(type) //
+        .withId(id) //
+        .withSourceType(sourceType) //
+        .withSourceId(sourceId) //
+        .withTargetType(targetType) //
+        .withTargetId(targetId) //
+        .withPid("65262031-c5c2-44f9-b90e-11f9fc7736cf") //
+        .build();
+    when(repository.getEntity(type, id)).thenReturn(entity);
+    whenJsonProviderReadFromThenReturn(entity);
+
+    ClientResponse response = createResource(null, getExternalName(type), id) //
+        .type(MediaType.APPLICATION_JSON_TYPE) //
+        .header("Authorization", AUTHORIZATION) //
+        .header(VRE_ID_KEY, VRE_ID)
+        .put(ClientResponse.class, entity);
+
+    assertThat(response.getClientResponseStatus(), equalTo(ClientResponse.Status.NO_CONTENT));
+    // handling of the relation entity itself
+    verify(getProducer(PERSISTENCE_PRODUCER), times(1)).send(ActionType.MOD, type, id);
+    verify(getProducer(INDEX_PRODUCER), times(1)).send(ActionType.MOD, type, id);
+    // handling of source and target entities of the relation
+    verify(getProducer(INDEX_PRODUCER), times(1)).send(ActionType.MOD, BaseDomainEntity.class, sourceId);
+    verify(getProducer(INDEX_PRODUCER), times(1)).send(ActionType.MOD, BaseDomainEntity.class, targetId);
+  }
+
+  // --- POST ------------------------------------------------------------------
+
+  @Test
   public void testPostAsUser() throws Exception {
     testPost(USER_ROLE);
   }
@@ -473,6 +522,50 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     assertEquals(ClientResponse.Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
   }
+
+  @Test
+  public void testPostRelation() throws Exception {
+    Class<ProjectARelation> type = ProjectARelation.class;
+    String id = "RELA000000000001";
+    String sourceType = TypeNames.getInternalName(BaseDomainEntity.class);
+    String sourceId = "TEST000000000001";
+    String targetType = TypeNames.getInternalName(BaseDomainEntity.class);
+    String targetId = "TEST000000000002";
+
+    setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
+
+    VRE vre = mock(VRE.class);
+    when(vre.inScope(type)).thenReturn(true);
+    makeVREAvailable(vre, VRE_ID);
+
+    ProjectARelation entity = RelationBuilder.newInstance(type) //
+        .withId(id) //
+        .withSourceType(sourceType) //
+        .withSourceId(sourceId) //
+        .withTargetType(targetType) //
+        .withTargetId(targetId) //
+        .build();
+    when(repository.addDomainEntity(Matchers.<Class<ProjectARelation>> any(), any(type), any(Change.class))).thenReturn(id);
+    whenJsonProviderReadFromThenReturn(entity);
+
+    ClientResponse response = createResource(null, getExternalName(type)) //
+        .type(MediaType.APPLICATION_JSON_TYPE) //
+        .header("Authorization", AUTHORIZATION) //
+        .header(VRE_ID_KEY, VRE_ID) //
+        .post(ClientResponse.class, entity);
+
+    assertThat(response.getClientResponseStatus(), equalTo(ClientResponse.Status.CREATED));
+    String path = Paths.DOMAIN_PREFIX + "/" + getExternalName(type) + "/" + id;
+    assertThat(response.getHeaders().getFirst("Location"), containsString(path));
+    // handling of the relation entity itself
+    verify(getProducer(PERSISTENCE_PRODUCER), times(1)).send(ActionType.ADD, type, id);
+    verify(getProducer(INDEX_PRODUCER), times(1)).send(ActionType.ADD, type, id);
+    // handling of source and target entities of the relation
+    verify(getProducer(INDEX_PRODUCER), times(1)).send(ActionType.MOD, BaseDomainEntity.class, sourceId);
+    verify(getProducer(INDEX_PRODUCER), times(1)).send(ActionType.MOD, BaseDomainEntity.class, targetId);
+  }
+
+  // ---------------------------------------------------------------------------
 
   @Test
   public void testDeleteAsUser() throws Exception {

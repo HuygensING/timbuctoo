@@ -24,6 +24,7 @@ package test.variation.model;
 
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -32,6 +33,7 @@ import nl.knaw.huygens.timbuctoo.model.Reference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 
+@IDPrefix("DEWIA")
 public class DomainEntityWithIndexAnnotations extends DomainEntity {
 
   protected List<Reference> variations = Lists.newArrayList();

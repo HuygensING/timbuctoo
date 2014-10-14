@@ -45,8 +45,13 @@ public class EnvironmentCleaner {
     Stopwatch stopWatch = Stopwatch.createStarted();
 
     Configuration config = new Configuration("config.xml");
-    Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
 
+    new EnvironmentCleaner().clean(config, Guice.createInjector(new ToolsInjectionModule(config)));
+
+    LOG.info("Time used: {}", stopWatch);
+  }
+
+  public void clean(Configuration config, Injector injector) throws Exception {
     // clean the database
     MongoDB mongoDB = new MongoDB(config);
     mongoDB.dropDatabase();
@@ -57,7 +62,6 @@ public class EnvironmentCleaner {
     indexManager.deleteAllEntities();
     indexManager.close();
 
-    LOG.info("Time used: {}", stopWatch);
   }
 
 }

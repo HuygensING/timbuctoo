@@ -48,7 +48,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mongojack.internal.stream.JacksonDBObject;
 
-import test.variation.model.BaseDomainEntity;
+import test.variation.model.BaseVariationDomainEntity;
 import test.variation.model.TestConcreteDoc;
 import test.variation.model.TestSystemEntity;
 import test.variation.model.projecta.ProjectADomainEntity;
@@ -170,14 +170,14 @@ public class CombinedMongoStorageTest {
     when(anyCollection.findOne(new BasicDBObject("_id", DEFAULT_ID))).thenReturn(dbObject);
 
     Change change = new Change("test", "test");
-    storage.deleteDomainEntity(BaseDomainEntity.class, DEFAULT_ID, change);
+    storage.deleteDomainEntity(BaseVariationDomainEntity.class, DEFAULT_ID, change);
 
     verify(mongoDB).update(any(DBCollection.class), any(DBObject.class), any(DBObject.class));
   }
 
   @Test(expected = StorageException.class)
   public void testDeleteItemNonExistent() throws Exception {
-    storage.deleteDomainEntity(BaseDomainEntity.class, DEFAULT_ID, null);
+    storage.deleteDomainEntity(BaseVariationDomainEntity.class, DEFAULT_ID, null);
   }
 
   @Test

@@ -69,8 +69,9 @@ class LocalSolrServer {
     solrHomeDir = config.getSolrHomeDir();
     LOG.info("Solr home directory: {}", solrHomeDir);
 
-    commitWithin = config.getIntSetting("solr.commit_within", 10 * 1000);
-    LOG.info("Maximum time before a commit: {} seconds", commitWithin / 1000);
+    int commitWithinSeconds = config.getIntSetting("solr.commit_within_seconds", 10);
+    LOG.info("Maximum time before a commit: {} seconds", commitWithinSeconds);
+    commitWithin = 1000 * commitWithinSeconds;
 
     @SuppressWarnings("unused")
     File configFile = new File(new File(solrHomeDir, "conf"), "solr.xml");

@@ -50,9 +50,9 @@ import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.RegularClientSearchResult;
+import nl.knaw.huygens.timbuctoo.model.RegularSearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.model.RelationClientSearchResult;
+import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
@@ -173,7 +173,7 @@ public class SearchResourceTest extends SearchResourceTestBase {
     SearchResult searchResult = new SearchResult();
     searchResult.setSearchType(SEARCH_RESULT_TYPE_STRING);
 
-    RegularClientSearchResult clientSearchResult = new RegularClientSearchResult();
+    RegularSearchResultDTO clientSearchResult = new RegularSearchResultDTO();
 
     final int defaultStart = 0;
     final int defaultRows = 10;
@@ -187,8 +187,8 @@ public class SearchResourceTest extends SearchResourceTestBase {
     // verify
     assertThat(response.getClientResponseStatus(), equalTo(Status.OK));
 
-    RegularClientSearchResult actualResult = response.getEntity(RegularClientSearchResult.class);
-    assertThat(actualResult, notNullValue(RegularClientSearchResult.class));
+    RegularSearchResultDTO actualResult = response.getEntity(RegularSearchResultDTO.class);
+    assertThat(actualResult, notNullValue(RegularSearchResultDTO.class));
 
     verify(repository).getEntity(SearchResult.class, ID);
     verify(regularClientSearchResultCreatorMock).create(SEARCH_RESULT_TYPE, searchResult, defaultStart, defaultRows);
@@ -204,7 +204,7 @@ public class SearchResourceTest extends SearchResourceTestBase {
     SearchResult searchResult = new SearchResult();
     searchResult.setSearchType(SEARCH_RESULT_TYPE_STRING);
 
-    RegularClientSearchResult clientSearchResult = new RegularClientSearchResult();
+    RegularSearchResultDTO clientSearchResult = new RegularSearchResultDTO();
 
     MultivaluedMap<String, String> queryParameters = new MultivaluedMapImpl();
     queryParameters.add("start", "20");
@@ -219,8 +219,8 @@ public class SearchResourceTest extends SearchResourceTestBase {
     // verify
     assertThat(clientResponse.getClientResponseStatus(), equalTo(Status.OK));
 
-    RegularClientSearchResult actualResult = clientResponse.getEntity(RegularClientSearchResult.class);
-    assertThat(actualResult, notNullValue(RegularClientSearchResult.class));
+    RegularSearchResultDTO actualResult = clientResponse.getEntity(RegularSearchResultDTO.class);
+    assertThat(actualResult, notNullValue(RegularSearchResultDTO.class));
 
     verify(repository).getEntity(SearchResult.class, ID);
     verify(regularClientSearchResultCreatorMock).create(SEARCH_RESULT_TYPE, searchResult, startIndex, numberOfRows);
@@ -232,7 +232,7 @@ public class SearchResourceTest extends SearchResourceTestBase {
     SearchResult searchResult = new SearchResult();
     searchResult.setSearchType(RELATION_SEARCH_RESULT_TYPE);
 
-    RelationClientSearchResult clientSearchResult = new RelationClientSearchResult();
+    RelationSearchResultDTO clientSearchResult = new RelationSearchResultDTO();
 
     final int defaultStart = 0;
     final int defaultRows = 10;
@@ -246,8 +246,8 @@ public class SearchResourceTest extends SearchResourceTestBase {
     // verify
     assertThat(response.getClientResponseStatus(), equalTo(Status.OK));
 
-    RegularClientSearchResult actualResult = response.getEntity(RegularClientSearchResult.class);
-    assertThat(actualResult, notNullValue(RegularClientSearchResult.class));
+    RegularSearchResultDTO actualResult = response.getEntity(RegularSearchResultDTO.class);
+    assertThat(actualResult, notNullValue(RegularSearchResultDTO.class));
 
     verify(repository).getEntity(SearchResult.class, ID);
     verify(relationClientSearchResultCreatorMock).create(TEST_RELATION_TYPE, searchResult, defaultStart, defaultRows);

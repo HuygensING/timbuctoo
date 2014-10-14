@@ -22,11 +22,13 @@ package test.variation.model;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+@IDPrefix("TCD")
 public class TestConcreteDoc extends DomainEntity {
 
   public String name;

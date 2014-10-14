@@ -1,0 +1,99 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>nl.knaw.huygens</groupId>
+    <artifactId>timbuctoo</artifactId>
+    <version>2.6.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>timbuctoo-instance</artifactId>
+  <name>Repository instance</name>
+  <packaging>war</packaging>
+
+  <dependencies>
+    <dependency>
+      <groupId>nl.knaw.huygens</groupId>
+      <artifactId>timbuctoo-rest</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    
+    <!-- The timbuctoo test pages -->
+    <dependency>
+      <groupId>nl.knaw.huygens</groupId>
+      <artifactId>timbuctoo-webpages</artifactId>
+      <version>${project.version}</version>
+      <type>war</type>
+      <scope>runtime</scope>
+    </dependency>
+  </dependencies>
+  
+  <profiles>
+    <profile>
+      <id>dev</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>nl.knaw.huygens</groupId>
+          <artifactId>timbuctoo-war-config-dev</artifactId>
+          <version>${timbuctoo.config.version}</version>
+          <type>war</type>
+          <scope>runtime</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>test</id>
+      <dependencies>
+        <dependency>
+          <groupId>nl.knaw.huygens</groupId>
+          <artifactId>timbuctoo-war-config-test</artifactId>
+          <version>${timbuctoo.config.version}</version>
+          <type>war</type>
+          <scope>runtime</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>prod</id>
+      <dependencies>
+        <dependency>
+          <groupId>nl.knaw.huygens</groupId>
+          <artifactId>timbuctoo-war-config-prod</artifactId>
+          <version>${timbuctoo.config.version}</version>
+          <type>war</type>
+          <scope>runtime</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>example</id>
+      <dependencies>
+        <dependency>
+          <groupId>nl.knaw.huygens</groupId>
+          <artifactId>timbuctoo-war-config-example</artifactId>
+          <version>${project.version}</version>
+          <type>war</type>
+          <scope>runtime</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.tomcat.maven</groupId>
+        <artifactId>tomcat6-maven-plugin</artifactId>
+        <version>${tomcat6_plugin.version}</version>
+        <configuration>
+          <url>http://localhost:8080/manager</url>
+          <server>localhost</server>
+          <path>/timbuctoo</path>
+          <warDirectory>target/</warDirectory>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  
+</project>

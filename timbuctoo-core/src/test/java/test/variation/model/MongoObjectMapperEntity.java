@@ -33,7 +33,7 @@ import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@IDPrefix("TSTD")
+@IDPrefix("MOME")
 public class MongoObjectMapperEntity extends SystemEntity {
 
   private List<String> primitiveTestCollection;

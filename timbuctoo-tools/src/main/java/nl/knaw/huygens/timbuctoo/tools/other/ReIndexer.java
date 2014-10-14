@@ -58,11 +58,8 @@ public class ReIndexer {
     Repository repository = injector.getInstance(Repository.class);
     IndexManager indexManager = injector.getInstance(IndexManager.class);
 
-    LOG.info("Clearing index");
-    indexManager.deleteAllEntities();
-
     try {
-      indexAsynchrounous(repository, indexManager, registry);
+      new ReIndexer().indexAsynchrounous(repository, indexManager, registry);
     } finally {
       repository.close();
       indexManager.close();
@@ -71,7 +68,9 @@ public class ReIndexer {
     }
   }
 
-  private static void indexAsynchrounous(Repository repository, IndexManager indexManager, TypeRegistry registry) throws InterruptedException {
+  public void indexAsynchrounous(Repository repository, IndexManager indexManager, TypeRegistry registry) throws InterruptedException, IndexException {
+    LOG.info("Clearing index");
+    indexManager.deleteAllEntities();
     int numberOfTasks = registry.getPrimitiveDomainEntityTypes().size();
     CountDownLatch countDownLatch = new CountDownLatch(numberOfTasks);
     ExecutorService executor = Executors.newFixedThreadPool(numberOfTasks);
@@ -85,7 +84,7 @@ public class ReIndexer {
     countDownLatch.await(); // wait until all tasks are completed
   }
 
-  private static class Indexer implements Runnable {
+  protected static class Indexer implements Runnable {
 
     private final Repository repository;
     private final IndexManager indexManager;
