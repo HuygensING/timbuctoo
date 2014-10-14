@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -25,6 +26,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import test.variation.model.BaseVariationDomainEntity;
+import test.variation.model.TestSystemEntity;
 import test.variation.model.projecta.ProjectADomainEntity;
 
 import com.mongodb.MongoClient;
@@ -38,7 +40,8 @@ import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.process.runtime.Network;
 
 public class MongoStorageIntegrationTest {
-  private static final String GENERAL_TEST_DOC_VALUE = "test";
+  private static final Class<TestSystemEntity> SYSTEM_TYPE = TestSystemEntity.class;
+  private static final String GENERAL_STRING_VALUE = "test";
   private static final Class<ProjectADomainEntity> DOMAIN_TYPE = ProjectADomainEntity.class;
   private static final Change DEFAULT_CHANGE = new Change();
   private static final MongodStarter starter = MongodStarter.getDefaultInstance();
@@ -56,7 +59,7 @@ public class MongoStorageIntegrationTest {
     mongod = mongodExe.start();
     mongo = new MongoClient("localhost", 12345);
 
-    MongoDB mongoDB = new MongoDB(mongo, mongo.getDB(GENERAL_TEST_DOC_VALUE));
+    MongoDB mongoDB = new MongoDB(mongo, mongo.getDB(GENERAL_STRING_VALUE));
 
     TypeRegistry registry = TypeRegistry.getInstance();
     instance = new MongoStorage(mongoDB, new EntityIds(registry, mongoDB), new EntityInducer(), new EntityReducer(registry));
@@ -75,44 +78,42 @@ public class MongoStorageIntegrationTest {
   @Test
   public void addDomainEntityShouldAddAnItemToTheDatabase() throws StorageException {
     // action
-    String id = addProjectADomainEntityToDatabase(GENERAL_TEST_DOC_VALUE);
+    String id = addProjectADomainEntityToDatabase(GENERAL_STRING_VALUE);
 
     // verify
     BaseVariationDomainEntity foundItem = instance.getItem(BaseVariationDomainEntity.class, id);
     assertThat(foundItem, is(notNullValue(BaseVariationDomainEntity.class)));
-    assertThat(foundItem.generalTestDocValue, is(equalTo(GENERAL_TEST_DOC_VALUE)));
+    assertThat(foundItem.generalTestDocValue, is(equalTo(GENERAL_STRING_VALUE)));
   }
 
   @Test
   public void addDomainEntityShouldAddPrimitiveVariationTheDatabase() throws StorageException {
     // action
-    String id = addProjectADomainEntityToDatabase(GENERAL_TEST_DOC_VALUE);
+    String id = addProjectADomainEntityToDatabase(GENERAL_STRING_VALUE);
 
     // verify
     ProjectADomainEntity foundItem = instance.getItem(DOMAIN_TYPE, id);
     assertThat(foundItem, isNotNullProjectADomainEntity());
-    assertThat(foundItem.generalTestDocValue, is(equalTo(GENERAL_TEST_DOC_VALUE)));
+    assertThat(foundItem.generalTestDocValue, is(equalTo(GENERAL_STRING_VALUE)));
   }
 
   @Test
   public void updateDomainEntityShouldUpdateTheItemAndIncreaseTheRevision() throws UpdateException, StorageException {
     // setup
-    ProjectADomainEntity entity = createEntityWithGeneralTestDocValue(GENERAL_TEST_DOC_VALUE);
-
-    String id = instance.addDomainEntity(DOMAIN_TYPE, entity, DEFAULT_CHANGE); // creating revision 1
-
-    entity.setId(id);
+    String id = addProjectADomainEntityToDatabase(GENERAL_STRING_VALUE);
     String otherGeneralTestDocValue = "otherGeneralTestDocValue";
-    entity.generalTestDocValue = otherGeneralTestDocValue;
+
+    ProjectADomainEntity entityToUpdate = instance.getItem(DOMAIN_TYPE, id);
+    entityToUpdate.generalTestDocValue = otherGeneralTestDocValue;
 
     // action
-    instance.updateDomainEntity(DOMAIN_TYPE, entity, DEFAULT_CHANGE);
+    instance.updateDomainEntity(DOMAIN_TYPE, entityToUpdate, DEFAULT_CHANGE);
 
     // verify
-    ProjectADomainEntity foundEntity = instance.getItem(DOMAIN_TYPE, id);
-    assertThat(foundEntity, isNotNullProjectADomainEntity());
-    assertThat(foundEntity.generalTestDocValue, is(equalTo(otherGeneralTestDocValue)));
-    assertThat(foundEntity.getRev(), is(equalTo(2)));
+    ProjectADomainEntity updatedEntity = instance.getItem(DOMAIN_TYPE, id);
+    assertThat(updatedEntity, isNotNullProjectADomainEntity());
+    assertThat(updatedEntity.generalTestDocValue, is(equalTo(otherGeneralTestDocValue)));
+    assertThat(updatedEntity.getRev(), is(equalTo(2)));
   }
 
   @Test
@@ -120,7 +121,7 @@ public class MongoStorageIntegrationTest {
     // setup
     int numberOfEntities = 3;
     for (int i = 0; i < numberOfEntities; i++) {
-      addProjectADomainEntityToDatabase(GENERAL_TEST_DOC_VALUE);
+      addProjectADomainEntityToDatabase(GENERAL_STRING_VALUE);
     }
 
     // action
@@ -139,7 +140,7 @@ public class MongoStorageIntegrationTest {
   @Test
   public void setPIDFillsThePIDpropertyAndAddsTheVersionToVersionCollection() throws StorageException {
     // setup
-    String id = addProjectADomainEntityToDatabase(GENERAL_TEST_DOC_VALUE);
+    String id = addProjectADomainEntityToDatabase(GENERAL_STRING_VALUE);
 
     // action
     String pid = "randomPID";
@@ -172,15 +173,90 @@ public class MongoStorageIntegrationTest {
   @Test
   public void findByExampleReturnsTheFoundEntity() throws StorageException {
     // setup
-    addProjectADomainEntityToDatabase(GENERAL_TEST_DOC_VALUE);
+    addProjectADomainEntityToDatabase(GENERAL_STRING_VALUE);
 
-    ProjectADomainEntity example = createEntityWithGeneralTestDocValue(GENERAL_TEST_DOC_VALUE);
+    ProjectADomainEntity example = createEntityWithGeneralTestDocValue(GENERAL_STRING_VALUE);
 
     // action
     ProjectADomainEntity foundEntity = instance.findItem(ProjectADomainEntity.class, example);
 
     // verify
     assertThat(foundEntity, is(notNullValue(ProjectADomainEntity.class)));
+
   }
 
+  /**************************************************************************************
+   * SystemEntity 
+   **************************************************************************************/
+
+  @Test
+  public void addSystemEntityShouldAddTheEntityToTheDatabase() throws StorageException {
+    String id = addSystemEntityWithNameToTheDatabase(GENERAL_STRING_VALUE);
+
+    // verify
+    TestSystemEntity foundEntity = instance.getItem(SYSTEM_TYPE, id);
+    assertThat(foundEntity, isNotNullSystemType());
+    assertThat(foundEntity.getName(), is(equalTo(GENERAL_STRING_VALUE)));
+  }
+
+  @Test
+  public void updateSystemEntityShouldChangeTheEntity() throws StorageException {
+    // setup
+    String id = addSystemEntityWithNameToTheDatabase(GENERAL_STRING_VALUE);
+
+    TestSystemEntity entityToUpdate = instance.getItem(SYSTEM_TYPE, id);
+    String newName = "newName";
+    entityToUpdate.setName(newName);
+
+    // action
+    instance.updateSystemEntity(SYSTEM_TYPE, entityToUpdate);
+
+    // verify
+    TestSystemEntity updatedEntity = instance.getItem(SYSTEM_TYPE, id);
+
+    assertThat(updatedEntity, isNotNullSystemType());
+    assertThat(updatedEntity.getName(), is(equalTo(newName)));
+  }
+
+  @Test
+  public void deleteRemovesTheEntityFromTheDatabase() throws StorageException {
+    // setup
+    String id = addSystemEntityWithNameToTheDatabase(GENERAL_STRING_VALUE);
+
+    // check if the entity is saved
+    assertThat(instance.getItem(SYSTEM_TYPE, id), isNotNullSystemType());
+
+    // action
+    instance.deleteSystemEntity(SYSTEM_TYPE, id);
+
+    // verify
+    assertThat(instance.getItem(SYSTEM_TYPE, id), is(nullValue(SYSTEM_TYPE)));
+  }
+
+  @Test
+  public void getSystemEntitiesReturnsAStorageIteratorWithAllTheEntities() throws StorageException {
+    // setup
+    int numberOfEntities = 3;
+    for (int i = 0; i < numberOfEntities; i++) {
+      addSystemEntityWithNameToTheDatabase(GENERAL_STRING_VALUE);
+    }
+
+    // action
+    StorageIterator<TestSystemEntity> iterator = instance.getSystemEntities(SYSTEM_TYPE);
+
+    // verify
+    assertThat(iterator.size(), is(equalTo(numberOfEntities)));
+
+  }
+
+  private String addSystemEntityWithNameToTheDatabase(String name) throws StorageException {
+    TestSystemEntity entity = new TestSystemEntity();
+    entity.setName(name);
+
+    return instance.addSystemEntity(SYSTEM_TYPE, entity);
+  }
+
+  private Matcher<TestSystemEntity> isNotNullSystemType() {
+    return is(notNullValue(SYSTEM_TYPE));
+  }
 }
