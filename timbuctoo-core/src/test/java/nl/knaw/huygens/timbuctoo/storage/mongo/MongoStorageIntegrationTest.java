@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -14,10 +15,13 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
 import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import test.variation.model.projecta.ProjectADomainEntity;
@@ -64,7 +68,7 @@ public class MongoStorageIntegrationTest {
   }
 
   @Test
-  public void writeDomainEntityShouldAddAnItemToTheDatabase() throws StorageException {
+  public void addDomainEntityShouldAddAnItemToTheDatabase() throws StorageException {
     // action
     String id = addProjectADomainEntityToDatabase(GENERAL_TEST_DOC_VALUE);
 
@@ -72,6 +76,48 @@ public class MongoStorageIntegrationTest {
     ProjectADomainEntity foundItem = instance.getItem(DOMAIN_TYPE, id);
     assertThat(foundItem, isNotNullProjectADomainEntity());
     assertThat(foundItem.generalTestDocValue, is(equalTo(GENERAL_TEST_DOC_VALUE)));
+  }
+
+  @Test
+  public void updateDomainEntityShouldUpdateTheItemAndIncreaseTheRevision() throws UpdateException, StorageException {
+    // setup
+    ProjectADomainEntity entity = createEntityWithGeneralTestDocValue(GENERAL_TEST_DOC_VALUE);
+
+    String id = instance.addDomainEntity(DOMAIN_TYPE, entity, DEFAULT_CHANGE); // creating revision 1
+
+    entity.setId(id);
+    String otherGeneralTestDocValue = "otherGeneralTestDocValue";
+    entity.generalTestDocValue = otherGeneralTestDocValue;
+
+    // action
+    instance.updateDomainEntity(DOMAIN_TYPE, entity, DEFAULT_CHANGE);
+
+    // verify
+    ProjectADomainEntity foundEntity = instance.getItem(DOMAIN_TYPE, id);
+    assertThat(foundEntity, isNotNullProjectADomainEntity());
+    assertThat(foundEntity.generalTestDocValue, is(equalTo(otherGeneralTestDocValue)));
+    assertThat(foundEntity.getRev(), is(equalTo(2)));
+  }
+
+  @Test
+  public void getDomainEntitiesReturnsAnIteratorForAllDomainEntitiesInTheDatabase() throws StorageException {
+    // setup
+    int numberOfEntities = 3;
+    for (int i = 0; i < numberOfEntities; i++) {
+      addProjectADomainEntityToDatabase(GENERAL_TEST_DOC_VALUE);
+    }
+
+    // action
+    StorageIterator<ProjectADomainEntity> allProjectADomainEntities = instance.getDomainEntities(DOMAIN_TYPE);
+
+    // verify
+    assertThat(allProjectADomainEntities.size(), is(equalTo(numberOfEntities)));
+  }
+
+  @Ignore("The concept of deleting domain entities should still be discussed")
+  @Test
+  public void deleteDomainEntity() {
+    fail("Yet to be implemented.");
   }
 
   @Test
