@@ -24,6 +24,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import test.variation.model.BaseVariationDomainEntity;
 import test.variation.model.projecta.ProjectADomainEntity;
 
 import com.mongodb.MongoClient;
@@ -67,8 +68,23 @@ public class MongoStorageIntegrationTest {
     mongodExe.stop();
   }
 
+  /**************************************************************************************
+   * DomainEntity 
+   **************************************************************************************/
+
   @Test
   public void addDomainEntityShouldAddAnItemToTheDatabase() throws StorageException {
+    // action
+    String id = addProjectADomainEntityToDatabase(GENERAL_TEST_DOC_VALUE);
+
+    // verify
+    BaseVariationDomainEntity foundItem = instance.getItem(BaseVariationDomainEntity.class, id);
+    assertThat(foundItem, is(notNullValue(BaseVariationDomainEntity.class)));
+    assertThat(foundItem.generalTestDocValue, is(equalTo(GENERAL_TEST_DOC_VALUE)));
+  }
+
+  @Test
+  public void addDomainEntityShouldAddPrimitiveVariationTheDatabase() throws StorageException {
     // action
     String id = addProjectADomainEntityToDatabase(GENERAL_TEST_DOC_VALUE);
 
@@ -166,4 +182,5 @@ public class MongoStorageIntegrationTest {
     // verify
     assertThat(foundEntity, is(notNullValue(ProjectADomainEntity.class)));
   }
+
 }
