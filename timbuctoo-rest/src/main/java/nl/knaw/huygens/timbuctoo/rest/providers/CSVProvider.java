@@ -107,16 +107,16 @@ public class CSVProvider implements MessageBodyWriter<RelationSearchResultDTO> {
 
       // header
       StringBuilder builder = new StringBuilder();
-      builder.append("relationType");
       appendKeysTo(builder, first.getSourceData(), "src-");
+      appendTo(builder, "relationType");
       appendKeysTo(builder, first.getTargetData(), "dst-");
       writeLine(out, builder);
 
       // content
       for (RelationDTO ref : refs) {
         builder = new StringBuilder();
-        builder.append(ref.getRelationName());
         appendValuesTo(builder, ref.getSourceData());
+        appendTo(builder, ref.getRelationName());
         appendValuesTo(builder, ref.getTargetData());
         writeLine(out, builder);
       }
@@ -125,14 +125,21 @@ public class CSVProvider implements MessageBodyWriter<RelationSearchResultDTO> {
 
   private void appendKeysTo(StringBuilder builder, Map<String, String> data, String prefix) {
     for (Map.Entry<String, String> entry : data.entrySet()) {
-      builder.append(SEPARATOR).append(prefix).append(entry.getKey());
+      appendTo(builder, prefix + entry.getKey());
     }
   }
 
   private void appendValuesTo(StringBuilder builder, Map<String, String> data) {
     for (Map.Entry<String, String> entry : data.entrySet()) {
-      builder.append(SEPARATOR).append(entry.getValue().replace(SEPARATOR, '.'));
+      appendTo(builder, entry.getValue().replace(SEPARATOR, '.'));
     }
+  }
+
+  private void appendTo(StringBuilder builder, String text) {
+    if (builder.length() > 0) {
+      builder.append(SEPARATOR);
+    }
+    builder.append(text);
   }
 
   private void writeLine(OutputStream out, StringBuilder builder) throws IOException {
