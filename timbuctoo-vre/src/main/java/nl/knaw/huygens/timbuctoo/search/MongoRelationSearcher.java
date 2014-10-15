@@ -45,9 +45,10 @@ import com.google.inject.Singleton;
 @Singleton
 public class MongoRelationSearcher extends RelationSearcher {
 
+  private static final Logger LOG = LoggerFactory.getLogger(MongoRelationSearcher.class);
+
   private final CollectionConverter collectionConverter;
   private final RelationSearchResultCreator relationSearchResultCreator;
-  static final Logger LOG = LoggerFactory.getLogger(MongoRelationSearcher.class);
 
   @Inject
   public MongoRelationSearcher(Repository repository, CollectionConverter collectionConverter, RelationSearchResultCreator relationSearchResultCreator) {
@@ -86,7 +87,8 @@ public class MongoRelationSearcher extends RelationSearcher {
     StopWatch searchResultCreationStopWatch = new StopWatch();
     searchResultCreationStopWatch.start();
 
-    SearchResult searchResult = relationSearchResultCreator.create(filteredRelations, sourceIds, targetIds, relationTypeIds, relationSearchParameters.getTypeString());
+    String typeString = relationSearchParameters.getTypeString();
+    SearchResult searchResult = relationSearchResultCreator.create(vre.getVreId(), typeString, filteredRelations, sourceIds, targetIds, relationTypeIds);
 
     searchResultCreationStopWatch.stop();
     logStopWatchTimeInSeconds(searchResultCreationStopWatch, "search result creation");

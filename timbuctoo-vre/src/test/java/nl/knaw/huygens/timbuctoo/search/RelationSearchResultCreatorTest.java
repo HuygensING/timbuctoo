@@ -41,6 +41,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 public class RelationSearchResultCreatorTest {
+
+  private static final String VRE_ID = "vreId";
+  private static final String TYPE_STRING = "test";
+
   @SuppressWarnings("unchecked")
   @Test
   public void testCreate() {
@@ -50,7 +54,6 @@ public class RelationSearchResultCreatorTest {
     List<String> sourceIds = Lists.newArrayList();
     List<String> targetIds = Lists.newArrayList();
     List<String> relationTypeIds = Lists.newArrayList();
-    String typeString = "test";
 
     String relId1 = "id1";
     String relId2 = "id2";
@@ -66,7 +69,7 @@ public class RelationSearchResultCreatorTest {
     };
 
     // action
-    SearchResult actualSearchResult = instance.create(relations, sourceIds, targetIds, relationTypeIds, typeString);
+    SearchResult actualSearchResult = instance.create(VRE_ID, TYPE_STRING, relations, sourceIds, targetIds, relationTypeIds);
 
     // verify
     assertThat(actualSearchResult, equalTo(searchResultMock));
@@ -83,7 +86,7 @@ public class RelationSearchResultCreatorTest {
     relation.setId(id);
     // to satisfy Relation.equals
     relation.setSourceId("" + Math.random());
-
     return relation;
   }
+
 }

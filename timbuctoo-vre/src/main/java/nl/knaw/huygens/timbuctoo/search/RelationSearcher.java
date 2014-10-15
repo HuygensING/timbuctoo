@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 public abstract class RelationSearcher {
 
   private static final Logger LOG = LoggerFactory.getLogger(RelationSearcher.class);
+
   protected final Repository repository;
 
   public RelationSearcher(Repository repository) {

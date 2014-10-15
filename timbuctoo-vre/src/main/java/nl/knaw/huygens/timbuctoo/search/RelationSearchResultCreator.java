@@ -40,10 +40,11 @@ public class RelationSearchResultCreator {
 
   private static Logger LOG = LoggerFactory.getLogger(RelationSearchResultCreator.class);
 
-  public SearchResult create(Set<Relation> filteredRelations, List<String> sourceIds, List<String> targetIds, List<String> relationTypeIds, String typeString) {
+  public SearchResult create(String vreId, String typeString, Set<Relation> filteredRelations, List<String> sourceIds, List<String> targetIds, List<String> relationTypeIds) {
 
     SearchResult result = createSearchResult();
     result.setRelationSearch(true);
+    result.setVreId(vreId);
     result.setSearchType(typeString);
     result.setSourceIds(sourceIds);
     result.setTargetIds(targetIds);
