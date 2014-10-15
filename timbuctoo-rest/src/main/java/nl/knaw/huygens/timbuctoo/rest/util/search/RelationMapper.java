@@ -73,6 +73,8 @@ public class RelationMapper {
       DomainEntity source = retrieveEntity(mapper, relation.getSourceType(), relation.getSourceId());
       DomainEntity target = retrieveEntity(mapper, relation.getTargetType(), relation.getTargetId());
       list.add(new RelationDTO(itype, xtype, relation.getId(), relationName, source, target));
+      source.clearRelations();
+      target.clearRelations();
     }
     return list;
   }
@@ -84,7 +86,7 @@ public class RelationMapper {
       return null;
     }
     Class<? extends DomainEntity> mappedType = (mapper != null) ? mapper.map(type) : type;
-    return repository.getEntity(mappedType, typeId);
+    return repository.getEntityWithRelations(mappedType, typeId);
   }
 
 }
