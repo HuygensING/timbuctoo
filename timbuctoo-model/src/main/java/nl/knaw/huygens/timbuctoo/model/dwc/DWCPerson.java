@@ -67,7 +67,7 @@ public class DWCPerson extends Person {
   }
 
   public void setGender(String gender) {
-    System.err.println("gender: " + Gender.valueOf(gender) + " (" + Gender.valueOf(gender).getClass() + ")");
+    //    System.err.println("gender: " + Gender.valueOf(gender) + " (" + Gender.valueOf(gender).getClass() + ")");
     setGender(Gender.valueOf(gender));
   }
 
