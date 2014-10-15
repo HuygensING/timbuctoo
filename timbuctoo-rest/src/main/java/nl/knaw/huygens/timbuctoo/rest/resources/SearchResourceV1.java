@@ -100,7 +100,11 @@ public class SearchResourceV1 extends ResourceBase {
   @Path("/" + ENTITY_PATH)
   @APIDesc("Searches the Solr index")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response regularPost(SearchParametersV1 searchParams, @PathParam(ENTITY_PARAM) String typeString, @HeaderParam("VRE_ID") String vreId) {
+  public Response regularPost( //
+      @HeaderParam("VRE_ID") String vreId, //
+      @PathParam(ENTITY_PARAM) String typeString, //
+      SearchParametersV1 searchParams //
+  ) {
 
     searchRequestValidator.validate(vreId, typeString, searchParams);
 
@@ -114,6 +118,30 @@ public class SearchResourceV1 extends ResourceBase {
       return Response.created(createHATEOASURI(queryId)).build();
     } catch (SearchValidationException e) {
       throw new TimbuctooException(BAD_REQUEST, "Search request not valid: %s", e.getMessage());
+    } catch (Exception e) {
+      LOG.error(e.getMessage(), e);
+      throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
+    }
+  }
+
+  @POST
+  @Path("/" + RELATION_SEARCH_PREFIX)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Response relationPost( //
+      @HeaderParam("VRE_ID") String vreId, //
+      @PathParam(RELATION_PARAM) String relationTypeString, //
+      RelationSearchParameters params //
+  ) {
+
+    Class<? extends DomainEntity> relationType = registry.getTypeForXName(relationTypeString);
+    searchRequestValidator.validateRelationRequest(vreId, relationTypeString, params);
+    VRE vre = repository.getVREById(vreId);
+
+    // Process
+    try {
+      SearchResult result = relationSearcher.search(vre, relationType, params);
+      String queryId = saveSearchResult(result);
+      return Response.created(createHATEOASURI(queryId)).build();
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
       throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
@@ -176,28 +204,6 @@ public class SearchResourceV1 extends ResourceBase {
 
   private String saveSearchResult(SearchResult result) throws StorageException, ValidationException {
     return repository.addSystemEntity(SearchResult.class, result);
-  }
-
-  // ---------------------------------------------------------------------------
-
-  @POST
-  @Path("/" + RELATION_SEARCH_PREFIX)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public Response relationPost(@HeaderParam("VRE_ID") String vreId, RelationSearchParameters params, @PathParam(RELATION_PARAM) String relationTypeString) {
-
-    Class<? extends DomainEntity> relationType = registry.getTypeForXName(relationTypeString);
-    searchRequestValidator.validateRelationRequest(vreId, relationTypeString, params);
-    VRE vre = repository.getVREById(vreId);
-
-    // Process
-    try {
-      SearchResult result = relationSearcher.search(vre, relationType, params);
-      String queryId = saveSearchResult(result);
-      return Response.created(createHATEOASURI(queryId)).build();
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
-    }
   }
 
 }
