@@ -71,7 +71,7 @@ public class SolrIndexFactory implements IndexFactory {
         .build(indexDescription);
     FacetedSearchLibrary facetedSearchLibrary = facetedSearchLibraryFactory.create(abstractSolrServer);
 
-    return new SolrIndex(name, solrDocumentCreator, abstractSolrServer, facetedSearchLibrary);
+    return new SolrIndex(name, indexDescription, solrDocumentCreator, abstractSolrServer, facetedSearchLibrary);
   }
 
   @VisibleForTesting

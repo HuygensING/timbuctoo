@@ -42,10 +42,10 @@ import nl.knaw.huygens.facetedsearch.FacetedSearchLibrary;
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.NoSuchFieldInIndexException;
 import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
+import nl.knaw.huygens.facetedsearch.model.parameters.FacetField;
+import nl.knaw.huygens.facetedsearch.model.parameters.IndexDescription;
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
-import nl.knaw.huygens.timbuctoo.index.solr.SolrIndex;
-import nl.knaw.huygens.timbuctoo.index.solr.SolrInputDocumentCreator;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
@@ -71,6 +71,7 @@ public class SolrIndexTest {
   private SolrInputDocumentCreator documentCreatorMock;
   private FacetedSearchLibrary facetedSearchLibraryMock;
   private SolrIndex instance;
+  private IndexDescription indexDescriptionMock;
 
   @Before
   public void setUp() {
@@ -79,8 +80,9 @@ public class SolrIndexTest {
     solrInputDocumentMock = mock(SolrInputDocument.class);
     documentCreatorMock = mock(SolrInputDocumentCreator.class);
     facetedSearchLibraryMock = mock(FacetedSearchLibrary.class);
+    indexDescriptionMock = mock(IndexDescription.class);
 
-    instance = new SolrIndex("indexName", documentCreatorMock, solrServerMock, facetedSearchLibraryMock);
+    instance = new SolrIndex("indexName", indexDescriptionMock, documentCreatorMock, solrServerMock, facetedSearchLibraryMock);
   }
 
   @Test
@@ -464,19 +466,44 @@ public class SolrIndexTest {
   }
 
   @Test
-  public void testSearch() throws NoSuchFieldInIndexException, FacetedSearchException, SearchException, SearchValidationException {
+  public void searchReturnsTheSearchResult() throws NoSuchFieldInIndexException, FacetedSearchException, SearchException, SearchValidationException {
     // setup
-    DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
+    DefaultFacetedSearchParameters searchParametersMock = mock(DefaultFacetedSearchParameters.class);
     FacetedSearchResult facetedSearchResult = new FacetedSearchResult();
+    List<String> facetFields = Lists.newArrayList("test", "test2");
 
     // when
-    when(facetedSearchLibraryMock.search(searchParameters)).thenReturn(facetedSearchResult);
+    when(searchParametersMock.getFacetFields()).thenReturn(facetFields);
+    when(facetedSearchLibraryMock.search(searchParametersMock)).thenReturn(facetedSearchResult);
 
     // action
-    FacetedSearchResult actualSearchResult = instance.search(searchParameters);
+    FacetedSearchResult actualSearchResult = instance.search(searchParametersMock);
 
     // verify
-    verify(facetedSearchLibraryMock).search(searchParameters);
+    verify(facetedSearchLibraryMock).search(searchParametersMock);
+    verify(searchParametersMock).getFacetFields();
+    verifyNoMoreInteractions(searchParametersMock);
+
+    assertThat(actualSearchResult, is(facetedSearchResult));
+  }
+
+  @Test
+  public void searchAddsTheFacetFieldToReturnIfNoneAreDefined() throws NoSuchFieldInIndexException, FacetedSearchException, SearchException, SearchValidationException {
+    // setup
+    DefaultFacetedSearchParameters searchParametersMock = mock(DefaultFacetedSearchParameters.class);
+    FacetedSearchResult facetedSearchResult = new FacetedSearchResult();
+    List<FacetField> facetFields = Lists.newArrayList(new FacetField("test"), new FacetField("test2"));
+
+    // when
+    when(facetedSearchLibraryMock.search(searchParametersMock)).thenReturn(facetedSearchResult);
+    when(indexDescriptionMock.getFacetFields()).thenReturn(facetFields);
+
+    // action
+    FacetedSearchResult actualSearchResult = instance.search(searchParametersMock);
+
+    // verify
+    verify(facetedSearchLibraryMock).search(searchParametersMock);
+    verify(searchParametersMock).setFacetFields(facetFields);
 
     assertThat(actualSearchResult, is(facetedSearchResult));
   }

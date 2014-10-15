@@ -52,7 +52,7 @@ public class SolrIndexFactoryTest {
   private static final String DATA_DIR = "data/";
 
   private AbstractSolrServer solrServerMock;
-  private IndexDescription facetDefinitions;
+  private IndexDescription indexDescription;
   private FacetedSearchLibrary facetedSearchLibraryMock;
   private SolrInputDocumentCreator solrInputDocumentCreatorMock;
   private Configuration configurationMock;
@@ -65,7 +65,7 @@ public class SolrIndexFactoryTest {
   @Before
   public void setup() {
     solrServerMock = mock(AbstractSolrServer.class);
-    facetDefinitions = mock(IndexDescription.class);
+    indexDescription = mock(IndexDescription.class);
     facetedSearchLibraryMock = mock(FacetedSearchLibrary.class);
     solrInputDocumentCreatorMock = mock(SolrInputDocumentCreator.class);
     configurationMock = mock(Configuration.class);
@@ -89,11 +89,11 @@ public class SolrIndexFactoryTest {
     Class<? extends DomainEntity> type = Type1.class;
     String indexName = instance.getIndexNameFor(vre, type);
 
-    Index expectedSolrIndex = new SolrIndex(indexName, solrInputDocumentCreatorMock, solrServerMock, facetedSearchLibraryMock);
+    Index expectedSolrIndex = new SolrIndex(indexName, indexDescription, solrInputDocumentCreatorMock, solrServerMock, facetedSearchLibraryMock);
 
-    when(indexDescriptionFactoryMock.create(type)).thenReturn(facetDefinitions);
+    when(indexDescriptionFactoryMock.create(type)).thenReturn(indexDescription);
     when(solrServerBuilderMock.setCoreName(indexName)).thenReturn(solrServerBuilderMock);
-    when(solrServerBuilderMock.build(facetDefinitions)).thenReturn(solrServerMock);
+    when(solrServerBuilderMock.build(indexDescription)).thenReturn(solrServerMock);
     when(configurationMock.getSetting(SOLR_DATA_DIR_CONFIG_PROP)).thenReturn(DATA_DIR);
     when(solrServerBuilderMock.addProperty(CoreDescriptor.CORE_DATADIR, DATA_DIR + "/" + indexName.replace('.', '/'))).thenReturn(solrServerBuilderMock);
     when(facetedSearchLibraryFactoryMock.create(solrServerMock)).thenReturn(facetedSearchLibraryMock);
