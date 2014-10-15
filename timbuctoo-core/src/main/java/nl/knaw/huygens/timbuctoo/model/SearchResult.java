@@ -29,7 +29,6 @@ import nl.knaw.huygens.facetedsearch.model.Facet;
 import nl.knaw.huygens.facetedsearch.model.parameters.SortParameter;
 import nl.knaw.huygens.timbuctoo.annotations.EntityTypeName;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
-import nl.knaw.huygens.timbuctoo.facet.FacetCount;
 
 @IDPrefix(SearchResult.ID_PREFIX)
 @EntityTypeName("search")
@@ -40,11 +39,8 @@ public class SearchResult extends SystemEntity implements Persistent {
 
   public static final String DATE_FIELD = "date";
 
-  private boolean relationSearch;
-  private List<String> sourceIds;
-  private List<String> targetIds;
-  private List<String> relationTypeIds;
-
+  private String vreId;
+  /** Internal name of entity searched for. */
   private String searchType;
   private List<String> ids;
   private String term;
@@ -52,17 +48,13 @@ public class SearchResult extends SystemEntity implements Persistent {
   private Date date;
   private List<Facet> facets;
 
+  private boolean relationSearch;
+  private List<String> sourceIds;
+  private List<String> targetIds;
+  private List<String> relationTypeIds;
+
   public SearchResult() {
     relationSearch = false;
-  }
-
-  public SearchResult(List<String> ids, String type, String term, List<SortParameter> sort, Date date) {
-    relationSearch = false;
-    this.ids = ids;
-    this.term = term;
-    this.sort = sort;
-    this.date = date;
-    searchType = type;
   }
 
   @Override
@@ -70,41 +62,13 @@ public class SearchResult extends SystemEntity implements Persistent {
     return "Search " + getId();
   }
 
-  // -- relation search --------------------------------------------------------
-
-  public boolean isRelationSearch() {
-    return relationSearch;
+  public String getVreId() {
+    return vreId;
   }
 
-  public void setRelationSearch(boolean relationSearch) {
-    this.relationSearch = relationSearch;
+  public void setVreId(String vreId) {
+    this.vreId = vreId;
   }
-
-  public List<String> getSourceIds() {
-    return sourceIds;
-  }
-
-  public void setSourceIds(List<String> ids) {
-    sourceIds = ids;
-  }
-
-  public List<String> getTargetIds() {
-    return targetIds;
-  }
-
-  public void setTargetIds(List<String> ids) {
-    targetIds = ids;
-  }
-
-  public List<String> getRelationTypeIds() {
-    return relationTypeIds;
-  }
-
-  public void setRelationTypeIds(List<String> ids) {
-    relationTypeIds = ids;
-  }
-
-  // ---------------------------------------------------------------------------
 
   public String getSearchType() {
     return searchType;
@@ -145,7 +109,7 @@ public class SearchResult extends SystemEntity implements Persistent {
   public void setDate(Date date) {
     this.date = date;
   }
-  
+
   public List<Facet> getFacets() {
     return facets;
   }
@@ -154,10 +118,38 @@ public class SearchResult extends SystemEntity implements Persistent {
     this.facets = facets;
   }
 
-  // TODO: Tempory method, should be changed when the OldSearchManager is replaced.
-  public void setFacetCount(List<FacetCount> facets2) {
-    // TODO Auto-generated method stub
+  // -- relation search --------------------------------------------------------
 
+  public boolean isRelationSearch() {
+    return relationSearch;
+  }
+
+  public void setRelationSearch(boolean relationSearch) {
+    this.relationSearch = relationSearch;
+  }
+
+  public List<String> getSourceIds() {
+    return sourceIds;
+  }
+
+  public void setSourceIds(List<String> ids) {
+    sourceIds = ids;
+  }
+
+  public List<String> getTargetIds() {
+    return targetIds;
+  }
+
+  public void setTargetIds(List<String> ids) {
+    targetIds = ids;
+  }
+
+  public List<String> getRelationTypeIds() {
+    return relationTypeIds;
+  }
+
+  public void setRelationTypeIds(List<String> ids) {
+    relationTypeIds = ids;
   }
 
 }
