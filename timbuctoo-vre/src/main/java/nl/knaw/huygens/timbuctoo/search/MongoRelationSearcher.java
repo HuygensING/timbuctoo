@@ -35,8 +35,6 @@ import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import org.apache.commons.lang3.time.StopWatch;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Predicate;
 import com.google.inject.Inject;
@@ -44,8 +42,6 @@ import com.google.inject.Singleton;
 
 @Singleton
 public class MongoRelationSearcher extends RelationSearcher {
-
-  private static final Logger LOG = LoggerFactory.getLogger(MongoRelationSearcher.class);
 
   private final CollectionConverter collectionConverter;
   private final RelationSearchResultCreator relationSearchResultCreator;
@@ -58,11 +54,10 @@ public class MongoRelationSearcher extends RelationSearcher {
   }
 
   @Override
-  public SearchResult search(VRE vre, Class<? extends DomainEntity> relationType, RelationSearchParameters relationSearchParameters) throws SearchException {
-    List<String> sourceIds = getSearchResultIds(relationSearchParameters.getSourceSearchId());
-    List<String> targetIds = getSearchResultIds(relationSearchParameters.getTargetSearchId());
-
-    List<String> relationTypeIds = getRelationTypes(relationSearchParameters.getRelationTypeIds(), vre);
+  public SearchResult search(VRE vre, Class<? extends DomainEntity> relationType, RelationSearchParameters parameters) throws SearchException {
+    List<String> sourceIds = getSearchResultIds(parameters.getSourceSearchId());
+    List<String> targetIds = getSearchResultIds(parameters.getTargetSearchId());
+    List<String> relationTypeIds = getRelationTypes(parameters.getRelationTypeIds(), vre);
 
     // retrieve the relations
     StopWatch relationRetrievelStopWatch = new StopWatch();
@@ -70,8 +65,7 @@ public class MongoRelationSearcher extends RelationSearcher {
 
     FilterableSet<Relation> filterableRelations = getRelationsAsFilterableSet(relationTypeIds);
 
-    relationRetrievelStopWatch.stop();
-    logStopWatchTimeInSeconds(relationRetrievelStopWatch, "relation retrieval duration");
+    logUsedTime(relationRetrievelStopWatch, "relation retrieval duration");
 
     //Start filtering
     StopWatch filterStopWatch = new StopWatch();
@@ -80,18 +74,16 @@ public class MongoRelationSearcher extends RelationSearcher {
     Predicate<Relation> predicate = new RelationSourceTargetPredicate<Relation>(sourceIds, targetIds);
     Set<Relation> filteredRelations = filterableRelations.filter(predicate);
 
-    filterStopWatch.stop();
-    logStopWatchTimeInSeconds(filterStopWatch, "filter duration");
+    logUsedTime(filterStopWatch, "filter duration");
 
     //Create the search result
     StopWatch searchResultCreationStopWatch = new StopWatch();
     searchResultCreationStopWatch.start();
 
-    String typeString = relationSearchParameters.getTypeString();
+    String typeString = parameters.getTypeString();
     SearchResult searchResult = relationSearchResultCreator.create(vre.getVreId(), typeString, filteredRelations, sourceIds, targetIds, relationTypeIds);
 
-    searchResultCreationStopWatch.stop();
-    logStopWatchTimeInSeconds(searchResultCreationStopWatch, "search result creation");
+    logUsedTime(searchResultCreationStopWatch, "search result creation");
 
     return searchResult;
   }

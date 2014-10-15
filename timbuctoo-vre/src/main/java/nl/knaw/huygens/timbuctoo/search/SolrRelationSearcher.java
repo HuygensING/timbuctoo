@@ -63,8 +63,7 @@ public class SolrRelationSearcher extends RelationSearcher {
     List<String> sourceSearchIds = getSearchIds(relationSearchParameters.getSourceSearchId());
     List<String> targetSearchIds = getSearchIds(relationSearchParameters.getTargetSearchId());
 
-    getIdsStopWatch.stop();
-    logStopWatchTimeInSeconds(getIdsStopWatch, "get ids");
+    logUsedTime(getIdsStopWatch, "get ids");
 
     StopWatch convertSearchParametersStopWatch = new StopWatch();
     convertSearchParametersStopWatch.start();
@@ -72,8 +71,7 @@ public class SolrRelationSearcher extends RelationSearcher {
     SearchParametersV1 searchParametersV1 = relationSearchParametersConverter.toSearchParametersV1(relationSearchParameters);
     searchParametersV1.getQueryOptimizer().setRows(1000000); // TODO find a better way to get all the found solr entries.
 
-    convertSearchParametersStopWatch.stop();
-    logStopWatchTimeInSeconds(convertSearchParametersStopWatch, "convert parameters");
+    logUsedTime(convertSearchParametersStopWatch, "convert parameters");
 
     StopWatch getEntityStopWatch = new StopWatch();
     getEntityStopWatch.start();
@@ -81,8 +79,7 @@ public class SolrRelationSearcher extends RelationSearcher {
     String typeString = relationSearchParameters.getTypeString();
     Class<? extends DomainEntity> type = typeRegistry.getDomainEntityType(typeString);
 
-    getEntityStopWatch.stop();
-    logStopWatchTimeInSeconds(getEntityStopWatch, "get entity");
+    logUsedTime(getEntityStopWatch, "get entity");
 
     StopWatch searchStopWatch = new StopWatch();
     searchStopWatch.start();
@@ -90,20 +87,7 @@ public class SolrRelationSearcher extends RelationSearcher {
     SearchResult searchResult = vre.search(type, searchParametersV1, createFacetedSearchResultConverter(sourceSearchIds, targetSearchIds, relationSearchParameters.getRelationTypeIds()),
         createRelationFacetedSearchResultFilter(sourceSearchIds, targetSearchIds));
 
-    searchStopWatch.stop();
-    logStopWatchTimeInSeconds(searchStopWatch, "search");
-
-    StopWatch filterStopWatch = new StopWatch();
-    filterStopWatch.start();
-
-    filterStopWatch.stop();
-    logStopWatchTimeInSeconds(filterStopWatch, "filter");
-
-    StopWatch convertSearchResultStopWatch = new StopWatch();
-    convertSearchResultStopWatch.start();
-
-    convertSearchResultStopWatch.stop();
-    logStopWatchTimeInSeconds(convertSearchResultStopWatch, "convert search result");
+    logUsedTime(searchStopWatch, "search");
 
     return searchResult;
   }
@@ -118,7 +102,6 @@ public class SolrRelationSearcher extends RelationSearcher {
 
   private List<String> getSearchIds(String id) {
     SearchResult result = repository.getEntity(SearchResult.class, id);
-
     return result.getIds();
   }
 
@@ -127,4 +110,5 @@ public class SolrRelationSearcher extends RelationSearcher {
       relationSearchParameters.setRelationTypeIds(repository.getRelationTypeIdsByName(vre.getReceptionNames()));
     }
   }
+
 }

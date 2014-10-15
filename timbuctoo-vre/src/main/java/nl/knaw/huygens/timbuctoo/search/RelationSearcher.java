@@ -48,7 +48,8 @@ public abstract class RelationSearcher {
 
   public abstract SearchResult search(VRE vre, Class<? extends DomainEntity> relationType, RelationSearchParameters relationSearchParameters) throws SearchException, SearchValidationException;
 
-  protected void logStopWatchTimeInSeconds(StopWatch stopWatch, String eventDescription) {
+  protected void logUsedTime(StopWatch stopWatch, String eventDescription) {
+    stopWatch.stop();
     LOG.info(String.format("%s: %.3f seconds", eventDescription, (double) stopWatch.getTime() / 1000));
   }
 
