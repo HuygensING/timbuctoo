@@ -12,10 +12,9 @@ public class DWCPerson extends Person {
   private String preposition;
   private String intraposition;
   private String postposition;
-
-  // birth_date en death_date omzetten naar Datable
-  private String religion;
+  private String religion; // Zou een (relation) naar een Keyword kunnen worden?
   private String origin_db;
+  private String data_line;
 
   public String getImportant() {
     return important;
@@ -85,6 +84,14 @@ public class DWCPerson extends Person {
 
   public void setOrigin_db(String origin_db) {
     this.origin_db = origin_db;
+  }
+
+  public String getData_line() {
+    return data_line;
+  }
+
+  public void setData_line(String data_line) {
+    this.data_line = data_line;
   }
 
 }
