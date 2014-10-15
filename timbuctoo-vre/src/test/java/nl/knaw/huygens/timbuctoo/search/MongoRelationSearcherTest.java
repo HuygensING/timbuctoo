@@ -50,26 +50,29 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 public class MongoRelationSearcherTest {
+
   private static final Class<SearchResult> SEARCH_RESULT_TYPE = SearchResult.class;
   private static final Class<Relation> RELATION_VARIATION = Relation.class;
+  private static final String VRE_ID = "vreId";
+  private static final String TYPE_STRING = "relationSubType";
+
   @Mock
   private FilterableSet<Relation> filterableRelationsMock;
   private VRE vreMock;
   private Repository repositoryMock;
   private CollectionConverter collectionConverterMock;
-  private String sourceSearchId = "sourceSearchId";
-  private String targetSearchId = "targetSearchId";
-  private List<String> relationTypeIds = Lists.newArrayList("id1", "id2", "id3");;
+  private final String sourceSearchId = "sourceSearchId";
+  private final String targetSearchId = "targetSearchId";
+  private final List<String> relationTypeIds = Lists.newArrayList("id1", "id2", "id3");;
   List<Relation> foundRelations = null;
   List<String> sourceIds = null;
   List<String> targetIds = null;
-  private SearchResult sourceSearchResult = new SearchResult();
-  private SearchResult targetSearchResult = new SearchResult();
-  private Set<Relation> filteredRelations = Sets.newHashSet();
-  private SearchResult relationSearchResult = new SearchResult();
+  private final SearchResult sourceSearchResult = new SearchResult();
+  private final SearchResult targetSearchResult = new SearchResult();
+  private final Set<Relation> filteredRelations = Sets.newHashSet();
+  private final SearchResult relationSearchResult = new SearchResult();
   private RelationSearchResultCreator relationSearchResultCreatorMock;
   private MongoRelationSearcher instance;
-  private String typeString = "relationSubType";
 
   @Before
   public void setup() throws Exception {
@@ -83,12 +86,13 @@ public class MongoRelationSearcherTest {
     sourceSearchResult.setIds(sourceIds);
     targetSearchResult.setIds(targetIds);
 
+    when(vreMock.getVreId()).thenReturn(VRE_ID);
     when(repositoryMock.getRelationsByType(RELATION_VARIATION, relationTypeIds)).thenReturn(foundRelations);
     when(repositoryMock.getEntity(SEARCH_RESULT_TYPE, sourceSearchId)).thenReturn(sourceSearchResult);
     when(repositoryMock.getEntity(SEARCH_RESULT_TYPE, targetSearchId)).thenReturn(targetSearchResult);
     when(collectionConverterMock.toFilterableSet(foundRelations)).thenReturn(filterableRelationsMock);
     when(filterableRelationsMock.filter(Mockito.<RelationSourceTargetPredicate<Relation>> any())).thenReturn(filteredRelations);
-    when(relationSearchResultCreatorMock.create(filteredRelations, sourceIds, targetIds, relationTypeIds, typeString)).thenReturn(relationSearchResult);
+    when(relationSearchResultCreatorMock.create(VRE_ID, TYPE_STRING, filteredRelations, sourceIds, targetIds, relationTypeIds)).thenReturn(relationSearchResult);
 
     instance = new MongoRelationSearcher(repositoryMock, collectionConverterMock, relationSearchResultCreatorMock);
   }
@@ -97,10 +101,10 @@ public class MongoRelationSearcherTest {
   public void testSearchWithRelationTypes() throws Exception {
     // setup
     RelationSearchParameters params = new RelationSearchParameters();
+    params.setTypeString(TYPE_STRING);
     params.setRelationTypeIds(relationTypeIds);
     params.setSourceSearchId(sourceSearchId);
     params.setTargetSearchId(targetSearchId);
-    params.setTypeString(typeString);
 
     // action 
     SearchResult actualResult = instance.search(vreMock, Relation.class, params);
@@ -110,7 +114,7 @@ public class MongoRelationSearcherTest {
     verify(repositoryMock).getEntity(SEARCH_RESULT_TYPE, sourceSearchId);
     verify(repositoryMock).getEntity(SEARCH_RESULT_TYPE, targetSearchId);
     verify(filterableRelationsMock).filter(Mockito.<RelationSourceTargetPredicate<Relation>> any());
-    verify(relationSearchResultCreatorMock).create(filteredRelations, sourceIds, targetIds, relationTypeIds, typeString);
+    verify(relationSearchResultCreatorMock).create(VRE_ID, TYPE_STRING, filteredRelations, sourceIds, targetIds, relationTypeIds);
     assertThat(actualResult, equalTo(relationSearchResult));
   }
 
@@ -120,7 +124,7 @@ public class MongoRelationSearcherTest {
     RelationSearchParameters params = new RelationSearchParameters();
     params.setSourceSearchId(sourceSearchId);
     params.setTargetSearchId(targetSearchId);
-    params.setTypeString(typeString);
+    params.setTypeString(TYPE_STRING);
 
     List<String> relationTypeNames = Lists.newArrayList();
 
@@ -136,7 +140,7 @@ public class MongoRelationSearcherTest {
     verify(repositoryMock).getEntity(SEARCH_RESULT_TYPE, sourceSearchId);
     verify(repositoryMock).getEntity(SEARCH_RESULT_TYPE, targetSearchId);
     verify(filterableRelationsMock).filter(Mockito.<RelationSourceTargetPredicate<Relation>> any());
-    verify(relationSearchResultCreatorMock).create(filteredRelations, sourceIds, targetIds, relationTypeIds, typeString);
+    verify(relationSearchResultCreatorMock).create(VRE_ID, TYPE_STRING, filteredRelations, sourceIds, targetIds, relationTypeIds);
     assertThat(actualResult, equalTo(relationSearchResult));
   }
 
@@ -151,6 +155,6 @@ public class MongoRelationSearcherTest {
 
     // action 
     instance.search(vreMock, Relation.class, params);
-
   }
+
 }
