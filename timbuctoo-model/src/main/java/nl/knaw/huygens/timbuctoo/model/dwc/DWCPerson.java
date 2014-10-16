@@ -1,18 +1,11 @@
 package nl.knaw.huygens.timbuctoo.model.dwc;
 
 import nl.knaw.huygens.timbuctoo.model.Person;
-import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent;
 
 public class DWCPerson extends Person {
 
   private String important;
-  // later name omzetten naar PersonName
-  private String family_name;
-  private String given_name;
-  private String preposition;
-  private String intraposition;
-  private String postposition;
-  private String religion; // Zou een (relation) naar een Keyword kunnen worden?
+  private String religion; // Zou een (relation) naar een Keyword kunnen worden? Nee!!!
   private String origin_db;
   private String data_line;
   private String scientist_bio;
@@ -25,49 +18,7 @@ public class DWCPerson extends Person {
     this.important = important;
   }
 
-  public String getFamily_name() {
-    return family_name;
-  }
-
-  public void setFamily_name(String family_name) {
-    new PersonNameComponent(PersonNameComponent.Type.getInstance("surname"), family_name);
-    this.family_name = family_name;
-  }
-
-  public String getGiven_name() {
-    return given_name;
-  }
-
-  public void setGiven_name(String given_name) {
-    this.given_name = given_name;
-  }
-
-  public String getPreposition() {
-    return preposition;
-  }
-
-  public void setPreposition(String preposition) {
-    this.preposition = preposition;
-  }
-
-  public String getIntraposition() {
-    return intraposition;
-  }
-
-  public void setIntraposition(String intraposition) {
-    this.intraposition = intraposition;
-  }
-
-  public String getPostposition() {
-    return postposition;
-  }
-
-  public void setPostposition(String postposition) {
-    this.postposition = postposition;
-  }
-
   public void setGender(String gender) {
-    //    System.err.println("gender: " + Gender.valueOf(gender) + " (" + Gender.valueOf(gender).getClass() + ")");
     setGender(Gender.valueOf(gender));
   }
 
