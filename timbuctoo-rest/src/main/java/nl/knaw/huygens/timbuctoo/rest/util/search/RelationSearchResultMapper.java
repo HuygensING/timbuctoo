@@ -32,6 +32,7 @@ import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import com.google.inject.Inject;
 
@@ -50,6 +51,7 @@ public class RelationSearchResultMapper extends SearchResultMapper {
     RelationSearchResultDTO dto = new RelationSearchResultDTO();
 
     String queryId = searchResult.getId();
+    VRE vre = repository.getVREById(searchResult.getVreId());
     List<String> ids = getIds(searchResult);
     int numFound = ids.size();
     int normalizedStart = mapToRange(start, 0, numFound);
@@ -64,7 +66,7 @@ public class RelationSearchResultMapper extends SearchResultMapper {
     dto.setIds(idsToRetrieve);
     dto.setResults(results);
     dto.setNumFound(numFound);
-    dto.setRefs(relationMapper.createRefs(type, results));
+    dto.setRefs(relationMapper.createRefs(vre, type, results));
     dto.setSortableFields(sortableFieldFinder.findFields(type));
     setNextLink(normalizedStart, rows, dto, numFound, end, queryId);
     setPreviousLink(normalizedStart, rows, dto, queryId);

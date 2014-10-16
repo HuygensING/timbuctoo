@@ -33,6 +33,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationDTO;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,12 +56,12 @@ public class RelationMapper {
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends DomainEntity> List<RelationDTO> createRefs(Class<T> type, List<T> result) {
+  public <T extends DomainEntity> List<RelationDTO> createRefs(VRE vre, Class<T> type, List<T> result) {
     Preconditions.checkArgument(Relation.class.isAssignableFrom(type), "Type %s is not a Relation", type);
-    return createRelationRefs((Class<? extends Relation>) type, (List<Relation>) result);
+    return createRelationRefs(vre, (Class<? extends Relation>) type, (List<Relation>) result);
   }
 
-  private List<RelationDTO> createRelationRefs(Class<? extends Relation> type, List<Relation> relations) {
+  private List<RelationDTO> createRelationRefs(VRE vre, Class<? extends Relation> type, List<Relation> relations) {
     EntityMappers entityMappers = new EntityMappers(registry.getDomainEntityTypes());
     EntityMapper mapper = entityMappers.getEntityMapper(type);
 

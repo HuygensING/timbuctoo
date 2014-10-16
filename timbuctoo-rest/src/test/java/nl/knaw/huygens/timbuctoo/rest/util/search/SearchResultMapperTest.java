@@ -33,27 +33,33 @@ import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 public class SearchResultMapperTest {
 
+  protected static final String VRE_ID = "vreId";
+  protected static final String QUERY_ID = "queryId";
   protected static final String NEXT_LINK = "http://www.test.com/next";
   protected static final String PREV_LINK = "http://www.test.com/prev";
   protected static final String NULL_PREV_LINK = null;
   protected static final String NULL_NEXT_LINK = null;
   protected static final ArrayList<String> ID_LIST_WITH_TEN_IDS = Lists.newArrayList("id1", "id2", "id3", "id4", "id5", "id6", "id7", "id8", "id9", "id10");
   protected static final int TEN_RESULTS_FOUND = ID_LIST_WITH_TEN_IDS.size();
-  protected static final String QUERY_ID = "queryId";
   protected static final HashSet<String> SORTABLE_FIELDS = Sets.newHashSet();
 
+  protected VRE vreMock;
   protected Repository repositoryMock;
   protected SortableFieldFinder sortableFieldFinderMock;
   protected HATEOASURICreator hateoasURICreatorMock;
 
   public void initializeRepository() {
+    vreMock = mock(VRE.class);
+    doReturn(VRE_ID).when(vreMock).getVreId();
     repositoryMock = mock(Repository.class);
+    doReturn(vreMock).when(repositoryMock).getVREById(VRE_ID);
   }
 
   public void initializeHATEOASURICreator() {
@@ -66,16 +72,12 @@ public class SearchResultMapperTest {
 
   protected <T extends DomainEntity> List<T> setupRepository(Class<T> type, List<String> idList) throws InstantiationException, IllegalAccessException {
     List<T> domainEntities = Lists.newArrayList();
-
     for (String id : idList) {
-
-      final T domainEntity = type.newInstance();
+      T domainEntity = type.newInstance();
       domainEntities.add(domainEntity);
       doReturn(domainEntity).when(repositoryMock).getEntity(type, id);
     }
-
     return domainEntities;
-
   }
 
 }

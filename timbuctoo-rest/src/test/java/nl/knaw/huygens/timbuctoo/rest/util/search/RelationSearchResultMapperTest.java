@@ -59,16 +59,14 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
 
   @Test
   public void testCreateStartIsZero() throws InstantiationException, IllegalAccessException {
-    // setup
     int start = 0;
     int rows = 10;
 
     Class<TestRelation> type = TestRelation.class;
-    SearchResult searchResult = new SearchResult();
+    SearchResult searchResult = newSearchResult(QUERY_ID, VRE_ID);
     searchResult.setIds(ID_LIST_WITH_TEN_IDS);
-    searchResult.setId(QUERY_ID);
 
-    final List<String> idsToGet = ID_LIST_WITH_TEN_IDS;
+    List<String> idsToGet = ID_LIST_WITH_TEN_IDS;
     List<TestRelation> result = setupRepository(type, idsToGet);
     RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
         .withIds(idsToGet) //
@@ -80,24 +78,22 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
         .withSortableFields(SORTABLE_FIELDS) //
         .build();
 
-    when(relationMapperMock.createRefs(type, result)).thenReturn(REFS);
+    when(relationMapperMock.createRefs(vreMock, type, result)).thenReturn(REFS);
 
     testCreate(start, rows, type, searchResult, likeRelationClientResult);
   }
 
   @Test
   public void testCreateStartIsGreaterThanZero() throws InstantiationException, IllegalAccessException {
-    // setup
     int start = 1;
     int previousStart = 0;
     int rows = 9;
 
     Class<TestRelation> type = TestRelation.class;
-    SearchResult searchResult = new SearchResult();
+    SearchResult searchResult = newSearchResult(QUERY_ID, VRE_ID);
     searchResult.setIds(ID_LIST_WITH_TEN_IDS);
-    searchResult.setId(QUERY_ID);
 
-    final List<String> idsToGet = ID_LIST_WITH_TEN_IDS.subList(1, 10);
+    List<String> idsToGet = ID_LIST_WITH_TEN_IDS.subList(1, 10);
     List<TestRelation> result = setupRepository(type, idsToGet);
     RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
         .withIds(idsToGet) //
@@ -110,7 +106,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
         .withPrevLink(PREV_LINK) //
         .build();
 
-    when(relationMapperMock.createRefs(type, result)).thenReturn(REFS);
+    when(relationMapperMock.createRefs(vreMock, type, result)).thenReturn(REFS);
     when(hateoasURICreatorMock.createHATEOASURIAsString(previousStart, rows, QUERY_ID)).thenReturn(PREV_LINK);
 
     testCreate(start, rows, type, searchResult, likeRelationClientResult);
@@ -118,17 +114,15 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
 
   @Test
   public void testCreateStartIsSmallerThanZero() throws InstantiationException, IllegalAccessException {
-    // setup
     int start = -1;
     int normalizedStart = 0;
     int rows = 10;
 
     Class<TestRelation> type = TestRelation.class;
-    SearchResult searchResult = new SearchResult();
+    SearchResult searchResult = newSearchResult(QUERY_ID, VRE_ID);
     searchResult.setIds(ID_LIST_WITH_TEN_IDS);
-    searchResult.setId(QUERY_ID);
 
-    final List<String> idsToGet = ID_LIST_WITH_TEN_IDS;
+    List<String> idsToGet = ID_LIST_WITH_TEN_IDS;
     List<TestRelation> result = setupRepository(type, idsToGet);
     RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
         .withIds(idsToGet) //
@@ -140,24 +134,22 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
         .withSortableFields(SORTABLE_FIELDS) //
         .build();
 
-    when(relationMapperMock.createRefs(type, result)).thenReturn(REFS);
+    when(relationMapperMock.createRefs(vreMock, type, result)).thenReturn(REFS);
 
     testCreate(start, rows, type, searchResult, likeRelationClientResult);
   }
 
   @Test
   public void testCreateStartAndRowsIsSmallerThatMax() throws InstantiationException, IllegalAccessException {
-    // setup
     int start = 0;
     int nextStart = 5;
     int rows = 5;
 
     Class<TestRelation> type = TestRelation.class;
-    SearchResult searchResult = new SearchResult();
+    SearchResult searchResult = newSearchResult(QUERY_ID, VRE_ID);
     searchResult.setIds(ID_LIST_WITH_TEN_IDS);
-    searchResult.setId(QUERY_ID);
 
-    final List<String> idsToGet = ID_LIST_WITH_TEN_IDS.subList(0, 5);
+    List<String> idsToGet = ID_LIST_WITH_TEN_IDS.subList(0, 5);
     List<TestRelation> result = setupRepository(type, idsToGet);
     RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
         .withIds(idsToGet) //
@@ -170,7 +162,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
         .withNextLink(NEXT_LINK) //
         .build();
 
-    when(relationMapperMock.createRefs(type, result)).thenReturn(REFS);
+    when(relationMapperMock.createRefs(vreMock, type, result)).thenReturn(REFS);
     when(hateoasURICreatorMock.createHATEOASURIAsString(nextStart, rows, QUERY_ID)).thenReturn(NEXT_LINK);
 
     testCreate(start, rows, type, searchResult, likeRelationClientResult);
@@ -178,17 +170,15 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
 
   @Test
   public void testCreateWithRowsMoreThanMax() throws InstantiationException, IllegalAccessException {
-    // setup
     int start = 0;
     int rows = 15;
     int normalizedRows = 10;
 
     Class<TestRelation> type = TestRelation.class;
-    SearchResult searchResult = new SearchResult();
+    SearchResult searchResult = newSearchResult(QUERY_ID, VRE_ID);
     searchResult.setIds(ID_LIST_WITH_TEN_IDS);
-    searchResult.setId(QUERY_ID);
 
-    final List<String> idsToGet = ID_LIST_WITH_TEN_IDS;
+    List<String> idsToGet = ID_LIST_WITH_TEN_IDS;
     List<TestRelation> result = setupRepository(type, idsToGet);
     RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
         .withIds(idsToGet) //
@@ -200,25 +190,23 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
         .withSortableFields(SORTABLE_FIELDS) //
         .build();
 
-    when(relationMapperMock.createRefs(type, result)).thenReturn(REFS);
+    when(relationMapperMock.createRefs(vreMock, type, result)).thenReturn(REFS);
 
     testCreate(start, rows, type, searchResult, likeRelationClientResult);
   }
 
   @Test
   public void testCreateStartGreaterThanNumFound() throws InstantiationException, IllegalAccessException {
-    // setup
     int start = 11;
     int rows = 10;
     int normalizedStart = 10;
     int normalizedRows = 0;
 
     Class<TestRelation> type = TestRelation.class;
-    SearchResult searchResult = new SearchResult();
+    SearchResult searchResult = newSearchResult(QUERY_ID, VRE_ID);
     searchResult.setIds(ID_LIST_WITH_TEN_IDS);
-    searchResult.setId(QUERY_ID);
 
-    final List<String> idsToGet = ID_LIST_WITH_TEN_IDS.subList(normalizedStart, 10);
+    List<String> idsToGet = ID_LIST_WITH_TEN_IDS.subList(normalizedStart, 10);
     List<TestRelation> result = setupRepository(type, idsToGet);
     RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
         .withIds(idsToGet) //
@@ -232,7 +220,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
         .build();
 
     int prevStart = 0;
-    when(relationMapperMock.createRefs(type, result)).thenReturn(REFS);
+    when(relationMapperMock.createRefs(vreMock, type, result)).thenReturn(REFS);
     when(hateoasURICreatorMock.createHATEOASURIAsString(prevStart, rows, QUERY_ID)).thenReturn(PREV_LINK);
 
     testCreate(start, rows, type, searchResult, likeRelationClientResult);
@@ -240,17 +228,15 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
 
   @Test
   public void testCreateWithSearchResultWithoutIds() throws InstantiationException, IllegalAccessException {
-    // setup
     int start = 0;
     int rows = 0;
 
     Class<TestRelation> type = TestRelation.class;
-    SearchResult searchResult = new SearchResult();
-    searchResult.setId(QUERY_ID);
+    SearchResult searchResult = newSearchResult(QUERY_ID, VRE_ID);
 
-    final List<String> idsToGet = Lists.newArrayList();
+    List<String> idsToGet = Lists.newArrayList();
     List<TestRelation> result = setupRepository(type, idsToGet);
-    final List<RelationDTO> emptyRefList = Lists.newArrayList();
+    List<RelationDTO> emptyRefList = Lists.newArrayList();
 
     RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
         .withIds(idsToGet) //
@@ -263,6 +249,13 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
         .build();
 
     testCreate(start, rows, type, searchResult, likeRelationClientResult);
+  }
+
+  private SearchResult newSearchResult(String id, String vreId) {
+    SearchResult result = new SearchResult();
+    result.setId(id);
+    result.setVreId(vreId);
+    return result;
   }
 
   private void testCreate(int start, int rows, Class<TestRelation> type, SearchResult searchResult, RelationClientSearchResultMatcher likeRelationClientResult) {
