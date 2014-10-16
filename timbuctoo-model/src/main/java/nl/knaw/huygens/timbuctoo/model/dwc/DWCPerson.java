@@ -15,6 +15,7 @@ public class DWCPerson extends Person {
   private String religion; // Zou een (relation) naar een Keyword kunnen worden?
   private String origin_db;
   private String data_line;
+  private String scientist_bio;
 
   public String getImportant() {
     return important;
@@ -92,6 +93,14 @@ public class DWCPerson extends Person {
 
   public void setData_line(String data_line) {
     this.data_line = data_line;
+  }
+
+  public String getScientist_bio() {
+    return scientist_bio;
+  }
+
+  public void setScientist_bio(String scientist_bio) {
+    this.scientist_bio = scientist_bio;
   }
 
 }
