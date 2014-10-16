@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.model.dwc;
 import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.util.PlaceName;
 
-public class DWCPlace extends Location {
+public class DWCLocation extends Location {
 
   private String country;
   private String remarks;
