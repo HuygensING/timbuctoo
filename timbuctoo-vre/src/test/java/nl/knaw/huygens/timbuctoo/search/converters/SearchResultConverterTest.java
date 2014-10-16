@@ -22,6 +22,9 @@ package nl.knaw.huygens.timbuctoo.search.converters;
  * #L%
  */
 
+import static nl.knaw.huygens.timbuctoo.search.converters.SearchResultMatcher.likeSearchResult;
+import static org.hamcrest.MatcherAssert.assertThat;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,23 +33,26 @@ import nl.knaw.huygens.facetedsearch.model.Facet;
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.SortParameter;
 import nl.knaw.huygens.solr.SolrFields;
+import nl.knaw.huygens.timbuctoo.model.SearchResult;
 
 import org.junit.Before;
+import org.junit.Test;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-public abstract class FacetedSearchResultConverterTestBase {
+public class SearchResultConverterTest {
 
-  protected static final ArrayList<String> IDS = Lists.newArrayList("id1", "id2", "id3");
-  protected static final String SEARCH_TERM = "searchTerm";
-  protected static final String TYPE_STRING = "typeString";
-  protected static final List<Facet> FACETS = Lists.newArrayList();
-  protected static final List<SortParameter> SORT = Lists.newArrayList();
+  private static final ArrayList<String> IDS = Lists.newArrayList("id1", "id2", "id3");
+  private static final String SEARCH_TERM = "searchTerm";
+  private static final String TYPE_STRING = "typeString";
+  private static final List<Facet> FACETS = Lists.newArrayList();
+  private static final List<SortParameter> SORT = Lists.newArrayList();
+
   private List<Map<String, Object>> rawResult;
-  protected FacetedSearchResult facetedSearchResult;
+  private FacetedSearchResult facetedSearchResult;
 
-  protected FacetedSearchResult createFacetedSearch(List<Facet> facets, List<SortParameter> sort, String term, List<Map<String, Object>> rawResult) {
+  private FacetedSearchResult createFacetedSearch(List<Facet> facets, List<SortParameter> sort, String term, List<Map<String, Object>> rawResult) {
     FacetedSearchResult facetedSearchResult = new FacetedSearchResult();
     facetedSearchResult.setRawResults(rawResult);
     facetedSearchResult.setFacets(facets);
@@ -55,21 +61,17 @@ public abstract class FacetedSearchResultConverterTestBase {
     return facetedSearchResult;
   }
 
-  protected List<Map<String, Object>> createRawResultListForIds(List<String> ids) {
+  private List<Map<String, Object>> createRawResultListForIds(List<String> ids) {
     List<Map<String, Object>> list = Lists.newArrayList();
-
     for (String id : ids) {
       list.add(createRawResultMapForId(id));
     }
-
     return list;
   }
 
-  protected Map<String, Object> createRawResultMapForId(String id) {
+  private Map<String, Object> createRawResultMapForId(String id) {
     Map<String, Object> map = Maps.newHashMap();
-
     map.put(SolrFields.DOC_ID, id);
-
     return map;
   }
 
@@ -77,6 +79,13 @@ public abstract class FacetedSearchResultConverterTestBase {
   public void setUp() {
     rawResult = createRawResultListForIds(IDS);
     facetedSearchResult = createFacetedSearch(FACETS, SORT, SEARCH_TERM, rawResult);
+  }
+
+  @Test
+  public void testConvert() {
+    SearchResultConverter instance = new SearchResultConverter();
+    SearchResult actualSearchResult = instance.convert(TYPE_STRING, facetedSearchResult);
+    assertThat(actualSearchResult, likeSearchResult(TYPE_STRING, IDS, SEARCH_TERM, SORT, FACETS));
   }
 
 }

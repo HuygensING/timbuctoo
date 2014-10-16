@@ -43,7 +43,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultProcessor;
 import nl.knaw.huygens.timbuctoo.search.FullTextSearchFieldFinder;
-import nl.knaw.huygens.timbuctoo.search.converters.RegularFacetedSearchResultConverter;
+import nl.knaw.huygens.timbuctoo.search.converters.SearchResultConverter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,25 +70,25 @@ public class PackageVRE implements VRE {
 
   private IndexCollection indexCollection;
 
-  private final RegularFacetedSearchResultConverter facetedSearchResultConverter;
+  private final SearchResultConverter searchResultConverter;
 
   public PackageVRE(String vreId, String description, String modelPackage, List<String> receptions) {
     this.vreId = vreId;
     this.description = description;
     this.receptions = receptions;
     this.indexCollection = new IndexCollection();
-    this.facetedSearchResultConverter = new RegularFacetedSearchResultConverter();
+    this.searchResultConverter = new SearchResultConverter();
     this.scope = createScope(modelPackage);
     createMaps();
   }
 
   // For testing
-  public PackageVRE(String vreId, String description, Scope scope, IndexCollection indexCollection, RegularFacetedSearchResultConverter facetedSearchResultConverter) {
+  public PackageVRE(String vreId, String description, Scope scope, IndexCollection indexCollection, SearchResultConverter searchResultConverter) {
     this.vreId = vreId;
     this.description = description;
     this.receptions = Lists.newArrayList();
     this.indexCollection = indexCollection;
-    this.facetedSearchResultConverter = facetedSearchResultConverter;
+    this.searchResultConverter = searchResultConverter;
     this.scope = scope;
     createMaps();
   }
@@ -186,7 +186,7 @@ public class PackageVRE implements VRE {
     for (FacetedSearchResultProcessor processor : processors) {
       processor.process(facetedSearchResult);
     }
-    return facetedSearchResultConverter.convert(TypeNames.getInternalName(type), facetedSearchResult);
+    return searchResultConverter.convert(TypeNames.getInternalName(type), facetedSearchResult);
   }
 
   protected <T extends FacetedSearchParameters<T>> void prepareSearchParameters(Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) {
