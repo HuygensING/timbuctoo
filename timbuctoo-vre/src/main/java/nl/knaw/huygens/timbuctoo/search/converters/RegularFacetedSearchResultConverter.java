@@ -34,9 +34,8 @@ import com.google.common.collect.Lists;
 /**
  * Converts a FacetedSearchResult to a SearchResult as used by Timbuctoo. 
  */
-public class RegularFacetedSearchResultConverter implements FacetedSearchResultConverter {
+public class RegularFacetedSearchResultConverter {
 
-  @Override
   public SearchResult convert(String typeString, FacetedSearchResult facetedSearchResult) {
     SearchResult searchResult = new SearchResult();
 

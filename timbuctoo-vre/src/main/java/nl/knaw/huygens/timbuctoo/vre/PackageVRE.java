@@ -43,7 +43,6 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultProcessor;
 import nl.knaw.huygens.timbuctoo.search.FullTextSearchFieldFinder;
-import nl.knaw.huygens.timbuctoo.search.converters.FacetedSearchResultConverter;
 import nl.knaw.huygens.timbuctoo.search.converters.RegularFacetedSearchResultConverter;
 
 import org.slf4j.Logger;
@@ -176,24 +175,17 @@ public class PackageVRE implements VRE {
    ******************************************************************************/
 
   @Override
-  public <T extends FacetedSearchParameters<T>> SearchResult search(Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws SearchException, SearchValidationException {
+  public <T extends FacetedSearchParameters<T>> SearchResult search( //
+      Class<? extends DomainEntity> type, //
+      FacetedSearchParameters<T> parameters, //
+      FacetedSearchResultProcessor... processors //
+  ) throws SearchException, SearchValidationException {
 
-    return this.search(type, searchParameters, facetedSearchResultConverter);
-  }
-
-  @Override
-  public <T extends FacetedSearchParameters<T>> SearchResult search(Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters,
-      FacetedSearchResultConverter facetedSearchResultConverter, FacetedSearchResultProcessor... resultProcessors) throws SearchException, SearchValidationException {
-    prepareSearchParameters(type, searchParameters);
-
-    Index index = this.getIndexForType(type);
-
-    FacetedSearchResult facetedSearchResult = index.search(searchParameters);
-
-    for (FacetedSearchResultProcessor processor : resultProcessors) {
+    prepareSearchParameters(type, parameters);
+    FacetedSearchResult facetedSearchResult = getIndexForType(type).search(parameters);
+    for (FacetedSearchResultProcessor processor : processors) {
       processor.process(facetedSearchResult);
     }
-
     return facetedSearchResultConverter.convert(TypeNames.getInternalName(type), facetedSearchResult);
   }
 

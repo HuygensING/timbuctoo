@@ -30,13 +30,10 @@ import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.search.converters.RelationFacetedSearchResultConverter;
 import nl.knaw.huygens.timbuctoo.search.converters.RelationSearchParametersConverter;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
-
-import org.apache.commons.lang3.time.StopWatch;
 
 import com.google.inject.Inject;
 
@@ -55,45 +52,27 @@ public class SolrRelationSearcher extends RelationSearcher {
   }
 
   @Override
-  public SearchResult search(VRE vre, Class<? extends DomainEntity> relationType, RelationSearchParameters relationSearchParameters) throws SearchException, SearchValidationException {
-    StopWatch getIdsStopWatch = new StopWatch();
-    getIdsStopWatch.start();
+  public SearchResult search(VRE vre, Class<? extends DomainEntity> relationType, RelationSearchParameters parameters) throws SearchException, SearchValidationException {
+    addRelationTypeIds(vre, parameters);
+    List<String> sourceSearchIds = getSearchIds(parameters.getSourceSearchId());
+    List<String> targetSearchIds = getSearchIds(parameters.getTargetSearchId());
+    List<String> relationTypeIds = parameters.getRelationTypeIds();
 
-    addRelationTypeIds(vre, relationSearchParameters);
-    List<String> sourceSearchIds = getSearchIds(relationSearchParameters.getSourceSearchId());
-    List<String> targetSearchIds = getSearchIds(relationSearchParameters.getTargetSearchId());
+    SearchParametersV1 parametersV1 = relationSearchParametersConverter.toSearchParametersV1(parameters);
+    parametersV1.getQueryOptimizer().setRows(1000000); // TODO find a better way to get all the found solr entries.
 
-    logUsedTime(getIdsStopWatch, "get ids");
-
-    StopWatch convertSearchParametersStopWatch = new StopWatch();
-    convertSearchParametersStopWatch.start();
-
-    SearchParametersV1 searchParametersV1 = relationSearchParametersConverter.toSearchParametersV1(relationSearchParameters);
-    searchParametersV1.getQueryOptimizer().setRows(1000000); // TODO find a better way to get all the found solr entries.
-
-    logUsedTime(convertSearchParametersStopWatch, "convert parameters");
-
-    StopWatch getEntityStopWatch = new StopWatch();
-    getEntityStopWatch.start();
-
-    String typeString = relationSearchParameters.getTypeString();
+    String typeString = parameters.getTypeString();
     Class<? extends DomainEntity> type = typeRegistry.getDomainEntityType(typeString);
 
-    logUsedTime(getEntityStopWatch, "get entity");
+    SearchResult searchResult = vre.search(type, parametersV1, createRelationFacetedSearchResultFilter(sourceSearchIds, targetSearchIds));
 
-    StopWatch searchStopWatch = new StopWatch();
-    searchStopWatch.start();
-
-    SearchResult searchResult = vre.search(type, searchParametersV1, createFacetedSearchResultConverter(sourceSearchIds, targetSearchIds, relationSearchParameters.getRelationTypeIds()),
-        createRelationFacetedSearchResultFilter(sourceSearchIds, targetSearchIds));
-
-    logUsedTime(searchStopWatch, "search");
+    searchResult.setVreId(vre.getVreId());
+    searchResult.setRelationSearch(true);
+    searchResult.setSourceIds(sourceSearchIds);
+    searchResult.setTargetIds(targetSearchIds);
+    searchResult.setRelationTypeIds(relationTypeIds);
 
     return searchResult;
-  }
-
-  protected RelationFacetedSearchResultConverter createFacetedSearchResultConverter(List<String> sourceSearchIds, List<String> targetSearchIds, List<String> relationTypeIds) {
-    return new RelationFacetedSearchResultConverter(sourceSearchIds, targetSearchIds, relationTypeIds);
   }
 
   protected RelationFacetedSearchResultFilter createRelationFacetedSearchResultFilter(List<String> sourceIds, List<String> targetIds) {
