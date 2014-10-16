@@ -4,7 +4,7 @@ import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
 
-public class DWCPublication extends Document {
+public class DWCDocument extends Document {
 
   private String summary;
   private String page_numbers;
