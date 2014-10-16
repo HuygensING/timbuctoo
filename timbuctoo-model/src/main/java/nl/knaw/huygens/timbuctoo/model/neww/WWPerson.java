@@ -137,6 +137,7 @@ public class WWPerson extends Person {
     this.nationality = nationality;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_notes", canBeEmpty = true)
   public String getNotes() {
     return notes;
   }
