@@ -120,7 +120,7 @@ public class PackageVRETest {
     when(resultConverterMock.convert(TYPE_STRING, facetedSearchResult)).thenReturn(searchResult);
 
     // action
-    SearchResult actualSearchResult = vre.search(TYPE, searchParameters, resultConverterMock);
+    SearchResult actualSearchResult = vre.search(TYPE, searchParameters);
 
     // verify
     assertThat(actualSearchResult, is(searchResult));
@@ -140,7 +140,7 @@ public class PackageVRETest {
     when(resultConverterMock.convert(TYPE_STRING, facetedSearchResult)).thenReturn(searchResult);
 
     // action
-    SearchResult actualSearchResult = vre.search(TYPE, searchParameters, resultConverterMock, resultProcessorMock1, resultProcessorMock2);
+    SearchResult actualSearchResult = vre.search(TYPE, searchParameters, resultProcessorMock1, resultProcessorMock2);
 
     // verify
     assertThat(actualSearchResult, is(searchResult));

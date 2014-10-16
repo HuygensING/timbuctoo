@@ -11,7 +11,6 @@ import nl.knaw.huygens.timbuctoo.index.IndexStatus;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultProcessor;
-import nl.knaw.huygens.timbuctoo.search.converters.FacetedSearchResultConverter;
 
 /*
  * #%L
@@ -72,26 +71,17 @@ public interface VRE extends Scope {
   /**
    * Search the VRE for the items of the type of {@code entity}.
    * @param type the type to search.
-   * @param searchParameters the parameters the entity has to comply to.
+   * @param parameters the parameters the entity has to comply to.
+   * @param processors zero or more to process the faceted search result prior to converting it
    * @return the search result
    * @throws SearchException when the search request could not be processed.
    * @throws SearchValidationException when the searchParameters are not valid.
    */
-  // TODO Do we want a wrapper arround FacetedSearchParameters, so we have no references to the faceted search tools library?
-  <T extends FacetedSearchParameters<T>> SearchResult search(Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters) throws SearchException, SearchValidationException;
-
-  /**
-   * Search the VRE for the items of the type of {@code entity}.
-   * @param type the type to search.
-   * @param searchParameters the parameters the entity has to comply to.
-   * @param facetedSearchResultConverter convert the faceted search result in a special way 
-   * @param facetedSearchResultProcessors zero or more to process the faceted search result prior to converting it
-   * @return the search result
-   * @throws SearchException when the search request could not be processed.
-   * @throws SearchValidationException when the searchParameters are not valid.
-   */
-  <T extends FacetedSearchParameters<T>> SearchResult search(Class<? extends DomainEntity> type, FacetedSearchParameters<T> searchParameters,
-      FacetedSearchResultConverter facetedSearchResultConverter, FacetedSearchResultProcessor... facetedSearchResultProcessors) throws SearchException, SearchValidationException;
+  <T extends FacetedSearchParameters<T>> SearchResult search( //
+      Class<? extends DomainEntity> type, //
+      FacetedSearchParameters<T> parameters, //
+      FacetedSearchResultProcessor... processors //
+  ) throws SearchException, SearchValidationException;
 
   /**
    * Creates the indexes for types of the VRE.

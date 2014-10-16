@@ -32,13 +32,9 @@ public class RegularFacetedSearchResultConverterTest extends FacetedSearchResult
 
   @Test
   public void testConvert() {
-    // setup
-    FacetedSearchResultConverter instance = new RegularFacetedSearchResultConverter();
-
-    // action
+    RegularFacetedSearchResultConverter instance = new RegularFacetedSearchResultConverter();
     SearchResult actualSearchResult = instance.convert(TYPE_STRING, facetedSearchResult);
-
-    // verify
     assertThat(actualSearchResult, likeSearchResult(TYPE_STRING, IDS, SEARCH_TERM, SORT, FACETS));
   }
+
 }
