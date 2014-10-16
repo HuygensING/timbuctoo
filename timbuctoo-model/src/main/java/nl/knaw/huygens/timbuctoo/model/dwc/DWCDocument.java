@@ -6,21 +6,12 @@ import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
 public class DWCDocument extends Document {
 
-  private String summary;
   private String page_numbers;
   private String canonical_url;
   private String filename;
 
   public void setDocumentType(String type) {
     setDocumentType(DocumentType.valueOf(type));
-  }
-
-  public String getSummary() {
-    return summary;
-  }
-
-  public void setSummary(String summary) {
-    this.summary = summary;
   }
 
   public String getYear() {
