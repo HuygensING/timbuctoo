@@ -182,6 +182,29 @@ public class WWPerson extends Person {
     return getRelations().get("hasResidenceLocation");
   }
 
+  // a facet that allows searching all the locations related to person.
+  @IndexAnnotation(fieldName = "dynamic_s_relatedLocations", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  public List<RelationRef> getRelatedLocations() {
+    List<RelationRef> relatedLocations = Lists.newArrayList();
+
+    List<RelationRef> residenceLocations = getResidenceLocation();
+    if (residenceLocations != null) {
+      relatedLocations.addAll(residenceLocations);
+    }
+
+    List<RelationRef> birthPlaces = getBirthPlace();
+    if (birthPlaces != null) {
+      relatedLocations.addAll(birthPlaces);
+    }
+
+    List<RelationRef> deathPlaces = getDeathPlace();
+    if (deathPlaces != null) {
+      relatedLocations.addAll(deathPlaces);
+    }
+
+    return relatedLocations;
+  }
+
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_language", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getPrimaryLanguages() {
