@@ -143,6 +143,7 @@ public class WWDocument extends Document {
     Map<String, String> data = Maps.newTreeMap();
     addItemToRepresentation(data, "title", getTitle());
     addItemToRepresentation(data, "date", getDate() != null ? getDate().getFromYear() : null);
+    addRelationToRepresentation(data, "genre", "hasGenre");
     addRelationToRepresentation(data, "language", "hasWorkLanguage");
     addRelationToRepresentation(data, "publishLocation", "hasPublishLocation");
     addRelationToRepresentation(data, "createdBy", "isCreatedBy");
