@@ -52,6 +52,7 @@ public abstract class DomainEntity extends Entity implements Variable {
   private String pid; // the persistent identifier.
   private boolean deleted;
   private int relationCount;
+  private final Map<String, String> properties = Maps.newHashMap();
   private final Map<String, List<RelationRef>> relations = Maps.newHashMap();
   private List<String> variations = Lists.newArrayList();
   private List<Role> roles = Lists.newArrayList();
@@ -80,6 +81,38 @@ public abstract class DomainEntity extends Entity implements Variable {
   @JsonProperty(DELETED)
   public void setDeleted(boolean deleted) {
     this.deleted = deleted;
+  }
+
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Returns the definition of properties that are added dynamically
+   * to this entity (on demand).
+   */
+  @JsonIgnore
+  public List<DerivedProperty> getDerivedProperties() {
+    return ImmutableList.of();
+  }
+
+  @JsonProperty("@properties")
+  public Map<String, String> getProperties() {
+    return properties;
+  }
+
+  @JsonIgnore
+  public String getProperty(String name) {
+    return properties.get(name);
+  }
+
+  public void addProperty(String name, String value) {
+    properties.put(name, value);
+  }
+
+  // ---------------------------------------------------------------------------
+
+  @JsonIgnore
+  public List<DerivedRelationType> getDerivedRelationTypes() {
+    return ImmutableList.of();
   }
 
   @JsonProperty("@relations")
@@ -119,6 +152,8 @@ public abstract class DomainEntity extends Entity implements Variable {
     relationCount = 0;
     relations.clear();
   }
+
+  // ---------------------------------------------------------------------------
 
   @JsonProperty(VARIATIONS)
   @JsonIgnore
@@ -180,11 +215,6 @@ public abstract class DomainEntity extends Entity implements Variable {
     if (!BusinessRules.allowDomainEntityAdd(getClass())) {
       throw new ValidationException("Not allowed to add " + getClass());
     }
-  }
-
-  @JsonIgnore
-  public List<DerivedRelationType> getDerivedRelationTypes() {
-    return ImmutableList.of();
   }
 
   /**
