@@ -24,7 +24,10 @@ package nl.knaw.huygens.timbuctoo.search.converters;
 
 import static nl.knaw.huygens.timbuctoo.model.Relation.TYPE_ID_FACET_NAME;
 
+import java.util.ArrayList;
+
 import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetParameter;
+import nl.knaw.huygens.facetedsearch.model.parameters.FacetField;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetParameter;
 import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
@@ -35,7 +38,9 @@ public class RelationSearchParametersConverter {
 
   public SearchParametersV1 toSearchParametersV1(RelationSearchParameters relationSearchParameters) {
     FacetParameter parameter = new DefaultFacetParameter(TYPE_ID_FACET_NAME, relationSearchParameters.getRelationTypeIds());
-    return new SearchParametersV1().setFacetParameters(Lists.newArrayList(parameter));
+    ArrayList<FacetField> facetFields = Lists.newArrayList(new FacetField(TYPE_ID_FACET_NAME));
+
+    return new SearchParametersV1().setFacetParameters(Lists.newArrayList(parameter)).setFacetFields(facetFields);
   }
 
 }

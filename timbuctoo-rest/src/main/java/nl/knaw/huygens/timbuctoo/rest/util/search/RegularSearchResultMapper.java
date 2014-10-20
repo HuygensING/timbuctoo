@@ -33,6 +33,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
 import nl.knaw.huygens.timbuctoo.model.RegularSearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
+import nl.knaw.huygens.timbuctoo.search.FullTextSearchFieldFinder;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 
 import com.google.common.collect.Lists;
@@ -40,9 +41,12 @@ import com.google.inject.Inject;
 
 public class RegularSearchResultMapper extends SearchResultMapper {
 
+  private FullTextSearchFieldFinder fullTextSearchFieldFinder;
+
   @Inject
-  public RegularSearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator) {
+  public RegularSearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator, FullTextSearchFieldFinder fullTextSearchFieldFinder) {
     super(repository, sortableFieldFinder, hateoasURICreator);
+    this.fullTextSearchFieldFinder = fullTextSearchFieldFinder;
   }
 
   @Override
@@ -69,6 +73,7 @@ public class RegularSearchResultMapper extends SearchResultMapper {
     dto.setSortableFields(sortableFieldFinder.findFields(type));
     dto.setTerm(searchResult.getTerm());
     dto.setFacets(searchResult.getFacets());
+    dto.setFullTextSearchFields(Lists.newArrayList(fullTextSearchFieldFinder.findFields(type)));
 
     setPreviousLink(normalizedStart, rows, dto, queryId);
     setNextLink(start, rows, dto, numFound, end, queryId);

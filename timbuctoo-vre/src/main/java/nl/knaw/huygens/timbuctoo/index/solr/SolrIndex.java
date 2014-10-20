@@ -30,6 +30,7 @@ import nl.knaw.huygens.facetedsearch.FacetedSearchLibrary;
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.NoSuchFieldInIndexException;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
+import nl.knaw.huygens.facetedsearch.model.parameters.IndexDescription;
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
@@ -52,6 +53,7 @@ public class SolrIndex implements Index {
   private final AbstractSolrServer solrServer;
   private final String name;
   private final FacetedSearchLibrary facetedSearchLibrary;
+  private final IndexDescription indexDescription;
 
   static {
     COUNT_QUERY = new SolrQuery();
@@ -59,8 +61,9 @@ public class SolrIndex implements Index {
     COUNT_QUERY.setRows(0);
   }
 
-  public SolrIndex(String name, SolrInputDocumentCreator solrDocumentCreator, AbstractSolrServer solrServer, FacetedSearchLibrary facetedSearchLibrary) {
+  public SolrIndex(String name, IndexDescription indexDescription, SolrInputDocumentCreator solrDocumentCreator, AbstractSolrServer solrServer, FacetedSearchLibrary facetedSearchLibrary) {
     this.name = name;
+    this.indexDescription = indexDescription;
     this.solrDocumentCreator = solrDocumentCreator;
     this.solrServer = solrServer;
     this.facetedSearchLibrary = facetedSearchLibrary;
@@ -180,6 +183,11 @@ public class SolrIndex implements Index {
   @Override
   public <T extends FacetedSearchParameters<T>> FacetedSearchResult search(FacetedSearchParameters<T> searchParameters) throws SearchException, SearchValidationException {
     try {
+      List<String> facetFields = searchParameters.getFacetFields();
+      if (facetFields == null || facetFields.isEmpty()) {
+        searchParameters.setFacetFields(indexDescription.getFacetFields());
+      }
+
       return facetedSearchLibrary.search(searchParameters);
     } catch (NoSuchFieldInIndexException e) {
       throw new SearchValidationException(e);
@@ -199,7 +207,8 @@ public class SolrIndex implements Index {
     return new EqualsBuilder().append(name, other.name)//
         .append(solrDocumentCreator, other.solrDocumentCreator)//
         .append(facetedSearchLibrary, other.facetedSearchLibrary)//
-        .append(solrServer, other.solrServer).isEquals();
+        .append(solrServer, other.solrServer)//
+        .append(indexDescription, other.indexDescription).isEquals();
   }
 
   @Override
@@ -207,6 +216,7 @@ public class SolrIndex implements Index {
     return new HashCodeBuilder().append(name)//
         .append(solrDocumentCreator)//
         .append(facetedSearchLibrary)//
-        .append(solrServer).toHashCode();
+        .append(solrServer)//
+        .append(indexDescription).toHashCode();
   }
 }

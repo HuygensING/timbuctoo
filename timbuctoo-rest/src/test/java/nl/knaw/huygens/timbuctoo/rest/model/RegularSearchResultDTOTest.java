@@ -23,7 +23,7 @@ package nl.knaw.huygens.timbuctoo.rest.model;
  */
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 
 import java.util.List;
 
@@ -45,13 +45,13 @@ public class RegularSearchResultDTOTest extends SearchResultDTOTest {
   @Test
   public void testWhenObjectHasAllEmptyProperties() throws JsonProcessingException {
     SearchResultDTO dto = new RegularSearchResultDTO();
-    assertThat(getKeySet(dto), contains("sortableFields", "numFound", "results", "ids", "start", "rows", "term", "facets", "refs"));
+    assertThat(getKeySet(dto), containsInAnyOrder("sortableFields", "numFound", "results", "ids", "start", "rows", "term", "facets", "refs", "fullTextSearchFields"));
   }
 
   @Test
   public void testPropertiesWhenAllPropertiesContainAValue() {
     SearchResultDTO dto = createFilledDTO();
-    assertThat(getKeySet(dto), contains("sortableFields", "numFound", "results", "ids", "start", "rows", "term", "facets", "refs", "_next", "_prev"));
+    assertThat(getKeySet(dto), containsInAnyOrder("sortableFields", "numFound", "results", "ids", "start", "rows", "term", "facets", "refs", "fullTextSearchFields", "_next", "_prev"));
   }
 
   private RegularSearchResultDTO createFilledDTO() {

@@ -22,6 +22,7 @@ package nl.knaw.huygens.timbuctoo.search.converters;
  * #L%
  */
 
+import static nl.knaw.huygens.timbuctoo.model.Relation.TYPE_ID_FACET_NAME;
 import static nl.knaw.huygens.timbuctoo.search.converters.DefaultFacetParameterMatcher.likeFacetParameter;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -31,7 +32,6 @@ import java.util.ArrayList;
 
 import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
-import nl.knaw.huygens.timbuctoo.model.Relation;
 
 import org.junit.Test;
 
@@ -53,6 +53,7 @@ public class RelationSearchParametersConverterTest {
 
     // verify
     assertNotNull(searchParameters);
-    assertThat(searchParameters.getFacetValues(), contains(likeFacetParameter(Relation.TYPE_ID_FACET_NAME, relationTypeIds)));
+    assertThat(searchParameters.getFacetValues(), contains(likeFacetParameter(TYPE_ID_FACET_NAME, relationTypeIds)));
+    assertThat(searchParameters.getFacetFields(), contains(TYPE_ID_FACET_NAME));
   }
 }
