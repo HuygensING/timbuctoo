@@ -22,8 +22,6 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-import java.lang.reflect.InvocationTargetException;
-
 /**
  * Defines a property of an entity that is actually a property of
  * an entity related with that entity. 
@@ -50,10 +48,6 @@ public class DerivedProperty {
 
   public String getAccessor() {
     return accessor;
-  }
-
-  public <T extends DomainEntity> Object getValueFor(Class<T> type, T entity) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
-    return type.getMethod(accessor).invoke(entity);
   }
 
 }

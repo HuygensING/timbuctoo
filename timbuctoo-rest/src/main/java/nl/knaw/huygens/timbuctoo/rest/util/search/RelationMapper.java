@@ -72,7 +72,9 @@ public class RelationMapper {
       RelationType relationType = repository.getRelationTypeById(relation.getTypeId(), true);
       String relationName = relationType.getRegularName();
       DomainEntity source = retrieveEntity(mapper, relation.getSourceType(), relation.getSourceId());
+      repository.addDerivedProperties(vre, source);
       DomainEntity target = retrieveEntity(mapper, relation.getTargetType(), relation.getTargetId());
+      repository.addDerivedProperties(vre, target);
       list.add(new RelationDTO(itype, xtype, relation.getId(), relationName, source, target));
       source.clearRelations();
       target.clearRelations();

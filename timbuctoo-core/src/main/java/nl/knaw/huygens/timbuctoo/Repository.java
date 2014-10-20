@@ -35,6 +35,7 @@ import nl.knaw.huygens.timbuctoo.config.EntityMapper;
 import nl.knaw.huygens.timbuctoo.config.EntityMappers;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DerivedProperty;
 import nl.knaw.huygens.timbuctoo.model.DerivedRelationType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -550,6 +551,27 @@ public class Repository {
           RelationRef ref = relationRefCreator.newReadOnlyRelationRef(iname, xname, id, document.getDisplayName());
           entity.addRelation(derivedTypeName, ref);
         }
+      }
+    }
+  }
+
+  public <T extends DomainEntity> void addDerivedProperties(VRE vre, T entity) {
+    for (DerivedProperty property : entity.getDerivedProperties()) {
+      try {
+        String relationName = property.getRelationName();
+        RelationType relationType = getRelationTypeByName(relationName, true);
+        boolean regular = relationType.getRegularName().equals(relationName);
+        List<Relation> list = findRelations(entity.getId(), relationType.getId(), regular);
+        if (!list.isEmpty()) {
+          Relation relation = list.get(0);
+          String iname = regular ? relation.getTargetType() : relation.getSourceType();
+          Class<? extends DomainEntity> type = vre.mapPrimitiveType(registry.getDomainEntityType(iname));
+          String id = regular ? relation.getTargetId() : relation.getSourceId();
+          Object value = type.getMethod(property.getAccessor()).invoke(getEntity(type, id));
+          entity.addProperty(property.getPropertyName(), value.toString());
+        }
+      } catch (Exception e) {
+        // ?
       }
     }
   }
