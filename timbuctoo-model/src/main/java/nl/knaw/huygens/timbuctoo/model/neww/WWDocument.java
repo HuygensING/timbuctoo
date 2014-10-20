@@ -27,11 +27,13 @@ import java.util.Map;
 
 import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.model.DerivedProperty;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.RelationRef;
 import nl.knaw.huygens.timbuctoo.util.Text;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -136,6 +138,16 @@ public class WWDocument extends Document {
 
   public void setEnglishTitle(String englishTitle) {
     this.englishTitle = englishTitle;
+  }
+
+  // ---------------------------------------------------------------------------
+  
+  private static final DerivedProperty AUTHOR_GENDER = new DerivedProperty("authorGender", "isCreatedBy", "getGender");
+  private static final List<DerivedProperty> DERIVED_PROPERTIES = ImmutableList.of(AUTHOR_GENDER);
+
+  @Override
+  public List<DerivedProperty> getDerivedProperties() {
+    return DERIVED_PROPERTIES;
   }
 
   @Override

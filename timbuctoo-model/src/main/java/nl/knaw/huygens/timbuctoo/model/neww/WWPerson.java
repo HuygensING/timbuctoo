@@ -224,12 +224,14 @@ public class WWPerson extends Person {
     return getRelations("hasReligion");
   }
 
+  // ---------------------------------------------------------------------------
+
+  private static final DerivedRelationType PERSON_LANGUAGE = new DerivedRelationType("hasPersonLanguage", "isCreatorOf", "hasWorkLanguage");
+  private static final List<DerivedRelationType> DERIVED_RELATION_TYPES = ImmutableList.of(PERSON_LANGUAGE);
+
   @Override
-  @JsonIgnore
   public List<DerivedRelationType> getDerivedRelationTypes() {
-    // adds works of pseudonyms of a person to that person
-    // return ImmutableList.of(new DerivedRelationType("isCreatorOf", "hasPseudonym", "isCreatorOf"));
-    return ImmutableList.of(new DerivedRelationType("hasPersonLanguage", "isCreatorOf", "hasWorkLanguage"));
+    return DERIVED_RELATION_TYPES;
   }
 
   @Override

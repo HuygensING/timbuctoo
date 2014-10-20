@@ -485,8 +485,7 @@ public class Repository {
       @SuppressWarnings("unchecked")
       Class<? extends Relation> mappedType = (Class<? extends Relation>) mapper.map(Relation.class);
       for (Relation relation : getRelationsByEntityId(entityId, limit, mappedType)) {
-        RelationType relType = getRelationTypeById(relation.getTypeId());
-        checkState(relType != null, "Failed to retrieve relation type");
+        RelationType relType = getRelationTypeById(relation.getTypeId(), true);
         if (relation.hasSourceId(entityId)) {
           RelationRef ref = newRelationRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev());
           entity.addRelation(relType.getRegularName(), ref);
