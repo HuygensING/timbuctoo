@@ -31,6 +31,7 @@ public class RegularSearchResultDTO extends SearchResultDTO {
   private String term;
   private List<Facet> facets;
   private List<DomainEntityDTO> refs;
+  private List<String> fullTextSearchFields;
 
   public String getTerm() {
     return term;
@@ -54,6 +55,14 @@ public class RegularSearchResultDTO extends SearchResultDTO {
 
   public void setTerm(String term) {
     this.term = term;
+  }
+
+  public List<String> getFullTextSearchFields() {
+    return fullTextSearchFields;
+  }
+
+  public void setFullTextSearchFields(List<String> fullTextSearchFields) {
+    this.fullTextSearchFields = fullTextSearchFields;
   }
 
 }
