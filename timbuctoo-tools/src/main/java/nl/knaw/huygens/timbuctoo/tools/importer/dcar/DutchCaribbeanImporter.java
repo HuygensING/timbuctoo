@@ -227,13 +227,8 @@ public class DutchCaribbeanImporter extends DefaultImporter {
   }
 
   private Reference retrieveRelationType(String name) {
-    RelationType type = repository.getRelationTypeByName(name);
-    if (type != null) {
-      return new Reference(RelationType.class, type.getId());
-    } else {
-      LOG.error("Failed to retrieve relation type {}", name);
-      throw new IllegalStateException("Initialization error");
-    }
+    RelationType type = repository.getRelationTypeByName(name, true);
+    return new Reference(RelationType.class, type.getId());
   }
 
   private void addRegularRelations(Reference sourceRef, Reference relTypeRef, Map<String, Reference> map, String[] keys) {

@@ -51,7 +51,7 @@ public class ReceptionGraphBuilder {
 
   public ReceptionGraphBuilder(Repository repository, VRE vre) {
     this.repository = repository;
-    isCreatedById = repository.getRelationTypeByName("isCreatedBy").getId();
+    isCreatedById = repository.getRelationTypeByName("isCreatedBy", true).getId();
     receptionTypeIds = repository.getRelationTypeIdsByName(vre.getReceptionNames());
     graph = new Graph();
   }

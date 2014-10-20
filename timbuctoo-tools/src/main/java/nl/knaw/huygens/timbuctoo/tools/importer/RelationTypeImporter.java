@@ -79,7 +79,7 @@ public class RelationTypeImporter extends CSVImporter {
     entity.setDerived(Boolean.parseBoolean(items[6]));
 
     String name = entity.getRegularName();
-    if (repository != null && repository.getRelationTypeByName(name) == null) {
+    if (repository != null && repository.getRelationTypeByName(name, false) == null) {
       repository.addSystemEntity(RelationType.class, entity);
     }
     names.add(name);

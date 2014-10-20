@@ -51,7 +51,7 @@ public class RelationTypesTest {
   public void testGetByIdWhenExceptionOccurs() throws Exception {
     when(storageMock.getItem(RelationType.class, ID)).thenThrow(new StorageException());
 
-    assertNull(instance.getById(ID));
+    assertNull(instance.getById(ID, false));
     verify(storageMock).getItem(RelationType.class, ID);
   }
 
@@ -59,7 +59,7 @@ public class RelationTypesTest {
   public void testGetByIdWhenItemIsUnknown() throws Exception {
     when(storageMock.getItem(RelationType.class, ID)).thenReturn(null);
 
-    assertNull(instance.getById(ID));
+    assertNull(instance.getById(ID, false));
     verify(storageMock).getItem(RelationType.class, ID);
   }
 
@@ -68,7 +68,7 @@ public class RelationTypesTest {
     RelationType type = new RelationType();
     when(storageMock.getItem(RelationType.class, ID)).thenReturn(type);
 
-    assertEquals(type, instance.getById(ID));
+    assertEquals(type, instance.getById(ID, false));
     verify(storageMock).getItem(RelationType.class, ID);
   }
 
@@ -77,8 +77,8 @@ public class RelationTypesTest {
     RelationType type = new RelationType();
     when(storageMock.getItem(RelationType.class, ID)).thenReturn(type);
 
-    assertEquals(type, instance.getById(ID));
-    assertEquals(type, instance.getById(ID));
+    assertEquals(type, instance.getById(ID, false));
+    assertEquals(type, instance.getById(ID, false));
     verify(storageMock, times(1)).getItem(RelationType.class, ID);
   }
 
@@ -86,7 +86,7 @@ public class RelationTypesTest {
   public void testGetByNameWhenExceptionOccurs() throws Exception {
     when(storageMock.findItemByProperty(RelationType.class, REGULAR_NAME_PROPERTY, NAME)).thenThrow(new StorageException());
 
-    assertNull(instance.getByName(NAME));
+    assertNull(instance.getByName(NAME, false));
     verify(storageMock).findItemByProperty(RelationType.class, REGULAR_NAME_PROPERTY, NAME);
   }
 
@@ -95,7 +95,7 @@ public class RelationTypesTest {
     when(storageMock.findItemByProperty(RelationType.class, REGULAR_NAME_PROPERTY, NAME)).thenReturn(null);
     when(storageMock.findItemByProperty(RelationType.class, INVERSE_NAME_PROPERTY, NAME)).thenReturn(null);
 
-    assertNull(instance.getByName(NAME));
+    assertNull(instance.getByName(NAME, false));
     verify(storageMock).findItemByProperty(RelationType.class, REGULAR_NAME_PROPERTY, NAME);
     verify(storageMock).findItemByProperty(RelationType.class, INVERSE_NAME_PROPERTY, NAME);
   }
@@ -105,7 +105,7 @@ public class RelationTypesTest {
     RelationType type = new RelationType();
     when(storageMock.findItemByProperty(RelationType.class, REGULAR_NAME_PROPERTY, NAME)).thenReturn(type);
 
-    assertEquals(type, instance.getByName(NAME));
+    assertEquals(type, instance.getByName(NAME, false));
     verify(storageMock).findItemByProperty(RelationType.class, REGULAR_NAME_PROPERTY, NAME);
   }
 
@@ -115,7 +115,7 @@ public class RelationTypesTest {
     when(storageMock.findItemByProperty(RelationType.class, REGULAR_NAME_PROPERTY, NAME)).thenReturn(null);
     when(storageMock.findItemByProperty(RelationType.class, INVERSE_NAME_PROPERTY, NAME)).thenReturn(type);
 
-    assertEquals(type, instance.getByName(NAME));
+    assertEquals(type, instance.getByName(NAME, false));
     verify(storageMock).findItemByProperty(RelationType.class, REGULAR_NAME_PROPERTY, NAME);
     verify(storageMock).findItemByProperty(RelationType.class, INVERSE_NAME_PROPERTY, NAME);
   }
@@ -125,9 +125,10 @@ public class RelationTypesTest {
     RelationType type = new RelationType();
     when(storageMock.findItemByProperty(RelationType.class, REGULAR_NAME_PROPERTY, NAME)).thenReturn(type);
 
-    assertEquals(type, instance.getByName(NAME));
-    assertEquals(type, instance.getByName(NAME));
+    assertEquals(type, instance.getByName(NAME, false));
+    assertEquals(type, instance.getByName(NAME, false));
 
     verify(storageMock, times(1)).findItemByProperty(RelationType.class, REGULAR_NAME_PROPERTY, NAME);
   }
+
 }

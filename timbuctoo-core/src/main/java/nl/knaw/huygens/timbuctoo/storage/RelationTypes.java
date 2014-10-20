@@ -41,7 +41,6 @@ import com.google.common.collect.Lists;
 public class RelationTypes {
 
   static final String INVERSE_NAME_PROPERTY = "inverseName";
-
   static final String REGULAR_NAME_PROPERTY = "regularName";
 
   private static final Logger LOG = LoggerFactory.getLogger(RelationTypes.class);
@@ -97,27 +96,29 @@ public class RelationTypes {
   }
 
   /**
-   * Returns the relation type with the specified id,
-   * or {@code null} if no such relation type exists.
+   * Returns the relation type with the specified id.
    */
-  public RelationType getById(String id) {
+  public RelationType getById(String id, boolean required) {
     try {
       return idCache.get(id);
     } catch (ExecutionException e) {
-      LOG.debug("No relation type with id {}", id);
+      if (required) {
+        throw new IllegalStateException("No relation type with id " + id);
+      }
       return null;
     }
   }
 
   /**
-   * Returns the relation type with the specified name,
-   * or {@code null} if no such relation type exists.
+   * Returns the relation type with the specified name.
    */
-  public RelationType getByName(String name) {
+  public RelationType getByName(String name, boolean required) {
     try {
       return nameCache.get(name);
     } catch (ExecutionException e) {
-      LOG.debug("No relation type with name {}", name);
+      if (required) {
+        throw new IllegalStateException("No relation type with name " + name);
+      }
       return null;
     }
   }

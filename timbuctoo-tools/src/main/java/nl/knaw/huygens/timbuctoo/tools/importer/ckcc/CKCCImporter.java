@@ -427,7 +427,7 @@ public class CKCCImporter extends DefaultImporter {
         throw new ValidationException("Lines must have at least %d items", FIELDS);
       }
       Reference typeRef = relationTypes.get(items[0]);
-      RelationType relationType = repository.getRelationTypeById(typeRef.getId());
+      RelationType relationType = repository.getRelationTypeById(typeRef.getId(), true);
       Reference sourceRef = getReference(relationType.getSourceTypeName(), items[1]);
       Reference targetRef = getReference(relationType.getTargetTypeName(), items[2]);
       if (typeRef != null && sourceRef != null && targetRef != null) {
@@ -483,10 +483,10 @@ public class CKCCImporter extends DefaultImporter {
 
     public LetterImporter() {
       super(new PrintWriter(System.err));
-      isCreatedById = repository.getRelationTypeByName("isCreatedBy").getId();
-      hasRecipientId = repository.getRelationTypeByName("hasRecipient").getId();
-      hasSenderLocationId = repository.getRelationTypeByName("hasSenderLocation").getId();
-      hasRecipientLocationId = repository.getRelationTypeByName("hasRecipientLocation").getId();
+      isCreatedById = repository.getRelationTypeByName("isCreatedBy", true).getId();
+      hasRecipientId = repository.getRelationTypeByName("hasRecipient", true).getId();
+      hasSenderLocationId = repository.getRelationTypeByName("hasSenderLocation", true).getId();
+      hasRecipientLocationId = repository.getRelationTypeByName("hasRecipientLocation", true).getId();
     }
 
     @Override

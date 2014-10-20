@@ -399,19 +399,28 @@ public class Repository {
   }
 
   /**
-   * Returns the relation type with the specified id,
-   * or {@code null} if no such relation type exists.
+   * Returns the relation type with the specified id.
    */
+  public RelationType getRelationTypeById(String id, boolean required) {
+    return relationTypes.getById(id, required);
+  }
+
+  @Deprecated
   public RelationType getRelationTypeById(String id) {
-    return relationTypes.getById(id);
+    return relationTypes.getById(id, false);
   }
 
   /**
    * Returns the relation type with the specified name, regular or inverse,
    * or {@code null} if no such relation type exists.
    */
+  public RelationType getRelationTypeByName(String name, boolean required) {
+    return relationTypes.getByName(name, required);
+  }
+
+  @Deprecated
   public RelationType getRelationTypeByName(String name) {
-    return relationTypes.getByName(name);
+    return relationTypes.getByName(name, false);
   }
 
   // --- relations -------------------------------------------------------------

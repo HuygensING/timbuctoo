@@ -66,7 +66,7 @@ public class GraphBuilder {
       int index = addNodeToGraph(entity);
 
       for (Relation relation : repository.getRelationsByEntityId(entityId, 200)) {
-        RelationType relationType = repository.getRelationTypeById(relation.getTypeId());
+        RelationType relationType = repository.getRelationTypeById(relation.getTypeId(), true);
         String name = relationType.getRegularName();
         if (relation.hasSourceId(entityId)) {
           DomainEntity other = getEntity(relation.getTargetType(), relation.getTargetId());

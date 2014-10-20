@@ -175,7 +175,7 @@ public class JsonImporter extends CSVImporter {
     private <T extends Relation> void handleRelation(Class<T> type, String line) throws Exception {
       RelationDTO dto = mapper.readValue(line, RelationDTO.class);
 
-      RelationType relationType = repository.getRelationTypeByName(dto.getTypeName());
+      RelationType relationType = repository.getRelationTypeByName(dto.getTypeName(), true);
       Reference typeRef = new Reference(type, relationType.getId());
       Reference sourceRef = resolveEntity(dto.getSourceType(), dto.getSourceKey(), dto.getSourceValue());
       Reference targetRef = resolveEntity(dto.getTargetType(), dto.getTargetKey(), dto.getTargetValue());

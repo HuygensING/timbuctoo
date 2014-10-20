@@ -67,7 +67,7 @@ public class RelationTest {
 
     RelationType relationType = new RelationType();
     relationType.setSymmetric(symmetric);
-    when(repository.getRelationTypeById("typeId")).thenReturn(relationType);
+    when(repository.getRelationTypeById("typeId", false)).thenReturn(relationType);
 
     relation.normalize(repository);
     return relation;

@@ -318,16 +318,16 @@ public class RepositoryTest {
   @Test
   public void testGetRelationTypeWhenItemIsUnknown() throws Exception {
     String id = "id";
-    when(relationTypesMock.getById(id)).thenReturn(null);
-    assertNull(repository.getRelationTypeById(id));
+    when(relationTypesMock.getById(id, false)).thenReturn(null);
+    assertNull(repository.getRelationTypeById(id, false));
   }
 
   @Test
   public void testGetRelationTypeWhenItemIsNotInCache() throws Exception {
     String id = "id";
     RelationType type = new RelationType();
-    when(relationTypesMock.getById(id)).thenReturn(type);
-    assertEquals(type, repository.getRelationTypeById(id));
+    when(relationTypesMock.getById(id, false)).thenReturn(type);
+    assertEquals(type, repository.getRelationTypeById(id, false));
   }
 
   @Test

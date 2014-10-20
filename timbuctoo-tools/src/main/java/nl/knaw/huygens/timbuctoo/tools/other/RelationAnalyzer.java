@@ -50,7 +50,7 @@ public class RelationAnalyzer {
         @Override
         public boolean handle(Token token) {
           String id = token.getText();
-          RelationType type = repository.getRelationTypeById(id);
+          RelationType type = repository.getRelationTypeById(id, true);
           System.out.printf("%s %-25s %6d%n", id, type.getRegularName(), token.getCount());
           return true;
         }
