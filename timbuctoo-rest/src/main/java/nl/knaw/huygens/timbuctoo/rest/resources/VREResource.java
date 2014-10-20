@@ -74,7 +74,7 @@ public class VREResource extends ResourceBase {
     info.setDescription(vre.getDescription());
 
     for (String name : vre.getReceptionNames()) {
-      RelationType type = repository.getRelationTypeByName(name);
+      RelationType type = repository.getRelationTypeByName(name, false);
       if (type != null) {
         Reception reception = new Reception();
         reception.typeId = type.getId();

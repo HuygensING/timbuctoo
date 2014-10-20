@@ -22,6 +22,7 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -82,12 +83,11 @@ public class AddRelationsTestHelper {
     verify(relationRefCreator).newRelationRef(entityMapper, ref, relation.getId(), relation.isAccepted(), relation.getRev());
   }
 
-  public static Repository setupRepositoryWithRelationsForEntity(String entityId, Relation... relations) throws StorageException {
+  public static Repository setupRepositoryWithRelations(String entityId, Relation... relations) throws StorageException {
     Repository repositoryMock = mock(Repository.class);
     doReturn(Lists.newArrayList(relations)).when(repositoryMock).getRelationsByEntityId(entityId, RELATION_LIMIT, RELATION_TYPE);
-    when(repositoryMock.getRelationTypeById(anyString())).thenReturn(mock(RelationType.class));
-    when(repositoryMock.getRelationTypeById(anyString())).thenReturn(mock(RelationType.class));
-
+    when(repositoryMock.getRelationTypeById(anyString(), anyBoolean())).thenReturn(mock(RelationType.class));
+    when(repositoryMock.getRelationTypeById(anyString(), anyBoolean())).thenReturn(mock(RelationType.class));
     return repositoryMock;
   }
 

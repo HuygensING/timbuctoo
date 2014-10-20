@@ -399,28 +399,19 @@ public class Repository {
   }
 
   /**
-   * Returns the relation type with the specified id.
+   * Retrieves the relation type with the specified id.
+   * @throws IllegalStateException when the relation type is required and does not exist.
    */
-  public RelationType getRelationTypeById(String id, boolean required) {
+  public RelationType getRelationTypeById(String id, boolean required) throws IllegalStateException {
     return relationTypes.getById(id, required);
   }
 
-  @Deprecated
-  public RelationType getRelationTypeById(String id) {
-    return relationTypes.getById(id, false);
-  }
-
   /**
-   * Returns the relation type with the specified name, regular or inverse,
-   * or {@code null} if no such relation type exists.
+   * Retrieves the relation type with the specified name, regular or inverse.
+   * @throws IllegalStateException when the relation type is required and does not exist.
    */
-  public RelationType getRelationTypeByName(String name, boolean required) {
+  public RelationType getRelationTypeByName(String name, boolean required) throws IllegalStateException {
     return relationTypes.getByName(name, required);
-  }
-
-  @Deprecated
-  public RelationType getRelationTypeByName(String name) {
-    return relationTypes.getByName(name, false);
   }
 
   // --- relations -------------------------------------------------------------
@@ -535,7 +526,7 @@ public class Repository {
     for (DerivedRelationType drtype : entity.getDerivedRelationTypes()) {
       Set<String> ids = Sets.newHashSet();
 
-      RelationType relationType = getRelationTypeByName(drtype.getSecundaryTypeName());
+      RelationType relationType = getRelationTypeByName(drtype.getSecundaryTypeName(), true);
       boolean regular = relationType.getRegularName().equals(drtype.getSecundaryTypeName());
       for (RelationRef ref : entity.getRelations(drtype.getPrimaryTypeName())) {
         for (Relation relation : findRelations(ref.getId(), relationType.getId(), regular)) {
@@ -545,7 +536,7 @@ public class Repository {
 
       // TODO extract method
       String derivedTypeName = drtype.getDerivedTypeName();
-      relationType = getRelationTypeByName(derivedTypeName);
+      relationType = getRelationTypeByName(derivedTypeName, true);
       regular = relationType.getRegularName().equals(derivedTypeName);
       String iname = regular ? relationType.getTargetTypeName() : relationType.getSourceTypeName();
       Class<? extends DomainEntity> type = registry.getDomainEntityType(iname);

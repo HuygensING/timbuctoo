@@ -96,7 +96,7 @@ public class RelationTypes {
   }
 
   /**
-   * Returns the relation type with the specified id.
+   * Retrieves the relation type with the specified id.
    */
   public RelationType getById(String id, boolean required) {
     try {
@@ -110,7 +110,7 @@ public class RelationTypes {
   }
 
   /**
-   * Returns the relation type with the specified name.
+   * Retrieves the relation type with the specified name.
    */
   public RelationType getByName(String name, boolean required) {
     try {

@@ -93,7 +93,7 @@ public class CSVProvider implements MessageBodyWriter<RelationSearchResultDTO> {
     if (refs != null && refs.size() > 0) {
       RelationDTO first = refs.get(0);
       String name = first.getRelationName();
-      RelationType relationType = repository.getRelationTypeByName(name);
+      RelationType relationType = repository.getRelationTypeByName(name, false);
       if (relationType == null) {
         LOG.error("No relation type with name {}", name);
         return;

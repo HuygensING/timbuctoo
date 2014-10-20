@@ -123,7 +123,7 @@ public class SearchRequestValidator {
 
   private void areValidRelationTypes(List<String> relationTypeIds) {
     for (String relationTypeId : relationTypeIds) {
-      checkNotNull(repository.getRelationTypeById(relationTypeId), BAD_REQUEST, "Relation type with id %s does not exist", relationTypeId);
+      checkNotNull(repository.getRelationTypeById(relationTypeId, false), BAD_REQUEST, "Relation type with id %s does not exist", relationTypeId);
     }
   }
 
