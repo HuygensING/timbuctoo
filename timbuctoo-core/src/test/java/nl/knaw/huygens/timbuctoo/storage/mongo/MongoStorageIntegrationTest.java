@@ -6,22 +6,13 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.fail;
-
-import java.io.IOException;
-import java.net.UnknownHostException;
-
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
-import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
 import org.hamcrest.Matcher;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -29,46 +20,18 @@ import test.variation.model.BaseVariationDomainEntity;
 import test.variation.model.TestSystemEntity;
 import test.variation.model.projecta.ProjectADomainEntity;
 
-import com.mongodb.MongoClient;
-
-import de.flapdoodle.embed.mongo.MongodExecutable;
-import de.flapdoodle.embed.mongo.MongodProcess;
-import de.flapdoodle.embed.mongo.MongodStarter;
-import de.flapdoodle.embed.mongo.config.MongodConfigBuilder;
-import de.flapdoodle.embed.mongo.config.Net;
-import de.flapdoodle.embed.mongo.distribution.Version;
-import de.flapdoodle.embed.process.runtime.Network;
-
-public class MongoStorageIntegrationTest {
+public class MongoStorageIntegrationTest extends DBIntegrationTest {
   private static final Class<TestSystemEntity> SYSTEM_TYPE = TestSystemEntity.class;
-  private static final String GENERAL_STRING_VALUE = "test";
+  static final String GENERAL_STRING_VALUE = "test";
   private static final Class<ProjectADomainEntity> DOMAIN_TYPE = ProjectADomainEntity.class;
   private static final Change DEFAULT_CHANGE = new Change();
-  private static final MongodStarter starter = MongodStarter.getDefaultInstance();
-  private MongodExecutable mongodExe;
-  private MongodProcess mongod;
-  private MongoClient mongo;
-  private MongoStorage instance;
+  MongoStorage instance;
 
-  @Before
-  public void setUp() throws UnknownHostException, IOException, ModelException {
-    mongodExe = starter.prepare(new MongodConfigBuilder().version(Version.Main.PRODUCTION)//
-        .net(new Net(12345, Network.localhostIsIPv6()))//
-        .build());
+  @Override
+  public void setUp() throws Exception {
+    super.setUp();
 
-    mongod = mongodExe.start();
-    mongo = new MongoClient("localhost", 12345);
-
-    MongoDB mongoDB = new MongoDB(mongo, mongo.getDB(GENERAL_STRING_VALUE));
-
-    TypeRegistry registry = TypeRegistry.getInstance();
-    instance = new MongoStorage(mongoDB, new EntityIds(registry, mongoDB), new EntityInducer(), new EntityReducer(registry));
-  }
-
-  @After
-  public void tearDown() {
-    mongod.stop();
-    mongodExe.stop();
+    instance = createMongoStorage(TypeRegistry.getInstance());
   }
 
   /**************************************************************************************
