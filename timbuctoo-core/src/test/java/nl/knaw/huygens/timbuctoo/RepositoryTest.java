@@ -286,7 +286,7 @@ public class RepositoryTest {
   public void testDeleteSearchResultsBefore() throws Exception {
     Date date = new Date();
     repository.deleteSearchResultsBefore(date);
-    verify(storageMock).deleteByDate(SearchResult.class, "date", date);
+    verify(storageMock).deleteByModifiedDate(SearchResult.class, date);
   }
 
   @Test

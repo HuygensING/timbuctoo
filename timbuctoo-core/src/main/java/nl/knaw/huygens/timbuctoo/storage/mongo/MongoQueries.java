@@ -45,6 +45,9 @@ import com.mongodb.DBObject;
  */
 public class MongoQueries {
 
+  //last changed date field
+  public static final String MODIFIED_DATE_FIELD = "^modified.timeStamp";
+
   public DBObject selectAll() {
     return new BasicDBObject();
   }
@@ -99,9 +102,8 @@ public class MongoQueries {
     return new BasicDBObject(properties);
   }
 
-  public DBObject selectByDate(Class<?> type, String dateField, Date dateValue) {
-    String key = propertyName(type, dateField);
-    return new BasicDBObject(key, new BasicDBObject("$lt", dateValue.getTime()));
+  public DBObject selectByModifiedDate(Date dateValue) {
+    return new BasicDBObject(MODIFIED_DATE_FIELD, new BasicDBObject("$lt", dateValue.getTime()));
   }
 
   public DBObject selectVariation(Class<? extends DomainEntity> type) {

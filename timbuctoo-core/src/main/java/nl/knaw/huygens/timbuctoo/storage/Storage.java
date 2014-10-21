@@ -94,7 +94,7 @@ public interface Storage {
    * that is older than the specified date.
    * @return The number of entities removed.
    */
-  <T extends SystemEntity> int deleteByDate(Class<T> type, String dateField, Date dateValue) throws StorageException;
+  <T extends SystemEntity> int deleteByModifiedDate(Class<T> type, Date dateValue) throws StorageException;
 
   <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws StorageException;
 

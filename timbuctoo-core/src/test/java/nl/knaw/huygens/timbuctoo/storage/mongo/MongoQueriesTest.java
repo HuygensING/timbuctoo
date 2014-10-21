@@ -24,8 +24,10 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 
+import java.util.Date;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
@@ -100,5 +102,19 @@ public class MongoQueriesTest {
      * one before and after the string and converts multiple whitespaces to a single space.
      */
     assertThat(actual.replaceAll(" ", ""), equalTo(expected.replaceAll(" ", "")));
+  }
+
+  @Test
+  public void testSelectByModifiedDate() {
+    // setup
+    Date dateValue = new Date();
+    String expectedQuery = String.format("{\"^modified.timeStamp\":{\"$lt\":%d}}", dateValue.getTime());
+
+    // action
+    DBObject query = queries.selectByModifiedDate(dateValue);
+
+    // verify
+    assertThat(query.toString().replaceAll(" ", ""), is(equalTo(expectedQuery.replaceAll(" ", ""))));
+
   }
 }

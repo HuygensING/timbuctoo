@@ -391,8 +391,8 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends SystemEntity> int deleteByDate(Class<T> type, String dateField, Date dateValue) throws StorageException {
-    DBObject query = queries.selectByDate(type, dateField, dateValue);
+  public <T extends SystemEntity> int deleteByModifiedDate(Class<T> type, Date dateValue) throws StorageException {
+    DBObject query = queries.selectByModifiedDate(dateValue);
     return mongoDB.remove(getDBCollection(type), query);
   }
 

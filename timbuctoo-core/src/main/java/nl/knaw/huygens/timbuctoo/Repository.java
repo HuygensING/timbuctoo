@@ -247,7 +247,7 @@ public class Repository {
   }
 
   public int deleteSearchResultsBefore(Date date) throws StorageException {
-    return storage.deleteByDate(SearchResult.class, SearchResult.DATE_FIELD, date);
+    return storage.deleteByModifiedDate(SearchResult.class, date);
   }
 
   // ---------------------------------------------------------------------------

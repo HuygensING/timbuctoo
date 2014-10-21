@@ -37,8 +37,6 @@ public class SearchResult extends SystemEntity implements Persistent {
   // Unique definition of prefix; also used in SearchResource
   public static final String ID_PREFIX = "QURY";
 
-  public static final String DATE_FIELD = "date";
-
   private String vreId;
   /** Internal name of entity searched for. */
   private String searchType;

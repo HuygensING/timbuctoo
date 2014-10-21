@@ -121,9 +121,9 @@ public class MongoStorageTest extends MongoStorageTestBase {
   public void testRemoveByDate() throws Exception {
     Date date = new Date();
 
-    storage.deleteByDate(TestSystemEntity.class, "date", date);
+    storage.deleteByModifiedDate(TestSystemEntity.class, date);
 
-    DBObject query = queries.selectByDate(TestSystemEntity.class, "date", date);
+    DBObject query = queries.selectByModifiedDate(date);
     verify(mongoDB).remove(dbCollection, query);
   }
 
