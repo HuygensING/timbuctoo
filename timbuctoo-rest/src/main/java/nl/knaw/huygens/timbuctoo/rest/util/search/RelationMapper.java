@@ -23,6 +23,7 @@ package nl.knaw.huygens.timbuctoo.rest.util.search;
  */
 
 import java.util.List;
+import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
@@ -35,17 +36,22 @@ import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
+/**
+ * Maps a list of homogeneous relations, i.e. with source type and target type
+ * the same for all relations, to a list of {@code RelationDTO}s.
+ */
 public class RelationMapper {
 
   private final Repository repository;
   private final TypeRegistry registry;
 
   @Inject
-  public RelationMapper(Repository repository, TypeRegistry registry) {
+  public RelationMapper(Repository repository) {
     this.repository = repository;
-    this.registry = registry;
+    registry = repository.getTypeRegistry();
   }
 
   @SuppressWarnings("unchecked")
@@ -62,11 +68,22 @@ public class RelationMapper {
       Class<? extends DomainEntity> sourceType = getMappedType(vre, relations.get(0).getSourceType());
       Class<? extends DomainEntity> targetType = getMappedType(vre, relations.get(0).getTargetType());
 
+      // Cache source entities: in a reception search we know they are likely to occur
+      // multiple times, but we don't know the order in which they will be present.
+      Map<String, DomainEntity> sources = Maps.newHashMap();
+
       for (Relation relation : relations) {
         RelationType relationType = repository.getRelationTypeById(relation.getTypeId(), true);
         String relationName = relationType.getRegularName();
-        DomainEntity source = repository.getEntityWithRelations(sourceType, relation.getSourceId());
-        repository.addDerivedProperties(vre, source);
+
+        String sourceId = relation.getSourceId();
+        DomainEntity source = sources.get(sourceId);
+        if (source == null) {
+          source = repository.getEntityWithRelations(sourceType, sourceId);
+          repository.addDerivedProperties(vre, source);
+          sources.put(sourceId, source);
+        }
+
         DomainEntity target = repository.getEntityWithRelations(targetType, relation.getTargetId());
         repository.addDerivedProperties(vre, target);
         list.add(new RelationDTO(itype, xtype, relation.getId(), relationName, source, target));
