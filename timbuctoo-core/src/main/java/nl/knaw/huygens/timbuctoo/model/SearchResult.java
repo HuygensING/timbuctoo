@@ -22,7 +22,6 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-import java.util.Date;
 import java.util.List;
 
 import nl.knaw.huygens.facetedsearch.model.Facet;
@@ -43,7 +42,6 @@ public class SearchResult extends SystemEntity implements Persistent {
   private List<String> ids;
   private String term;
   private List<SortParameter> sort;
-  private Date date;
   private List<Facet> facets;
 
   private boolean relationSearch;
@@ -98,14 +96,6 @@ public class SearchResult extends SystemEntity implements Persistent {
 
   public void setSort(List<SortParameter> sort) {
     this.sort = sort;
-  }
-
-  public Date getDate() {
-    return date;
-  }
-
-  public void setDate(Date date) {
-    this.date = date;
   }
 
   public List<Facet> getFacets() {

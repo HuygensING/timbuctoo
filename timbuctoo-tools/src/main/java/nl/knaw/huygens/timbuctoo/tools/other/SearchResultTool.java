@@ -27,11 +27,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Date;
 
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.config.BasicInjectionModule;
-import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.util.UTCUtils;
 
 import org.apache.commons.cli.CommandLine;
@@ -42,7 +42,6 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import org.apache.commons.configuration.ConfigurationException;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 /**
@@ -89,11 +88,12 @@ public class SearchResultTool {
   // -------------------------------------------------------------------
 
   private final Repository repository;
+  private final IndexManager indexManager;
 
   public SearchResultTool() throws ConfigurationException {
-    Configuration config = new Configuration("config.xml");
-    Injector injector = Guice.createInjector(new BasicInjectionModule(config));
+    Injector injector = ToolsInjectionModule.createInjector();
     repository = injector.getInstance(Repository.class);
+    indexManager = injector.getInstance(IndexManager.class);
   }
 
   private void execute(boolean verbose, boolean delete, Date date) {
@@ -113,18 +113,21 @@ public class SearchResultTool {
     } catch (StorageException e) {
       System.out.printf("Error: %s%n", e.getMessage());
     } finally {
+      indexManager.close();
       repository.close();
     }
   }
 
   private void displayStatus(boolean verbose) {
     StorageIterator<SearchResult> iterator = repository.getSystemEntities(SearchResult.class);
-    System.out.printf("Search results in storage: %5d%n", iterator.size());
+    System.out.printf("%nSearch results: %d%n", iterator.size());
     while (verbose && iterator.hasNext()) {
       SearchResult result = iterator.next();
-      String text = UTCUtils.dateToString(result.getDate());
-      System.out.printf(">> %s%n", text);
+      result.getModified().getTimeStamp();
+      Date date = new Date(result.getModified().getTimeStamp());
+      System.out.println(UTCUtils.dateToString(date));
     }
+    System.out.println();
     iterator.close();
   }
 
