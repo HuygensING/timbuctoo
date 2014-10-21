@@ -571,7 +571,7 @@ public class Repository {
           entity.addProperty(property.getPropertyName(), value.toString());
         }
       } catch (Exception e) {
-        // ?
+        LOG.error("Failed to add derived property: {}", e.getMessage());
       }
     }
   }
