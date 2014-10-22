@@ -69,7 +69,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
     List<String> idsToGet = ID_LIST_WITH_TEN_IDS;
     List<TestRelation> result = setupRepository(type, idsToGet);
     RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
-        .withIds(idsToGet) //
+        .withIds(ID_LIST_WITH_TEN_IDS) //
         .withNumFound(TEN_RESULTS_FOUND) //
         .withRefs(REFS) //
         .withResults(result) //
@@ -96,7 +96,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
     List<String> idsToGet = ID_LIST_WITH_TEN_IDS.subList(1, 10);
     List<TestRelation> result = setupRepository(type, idsToGet);
     RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
-        .withIds(idsToGet) //
+        .withIds(ID_LIST_WITH_TEN_IDS) //
         .withNumFound(TEN_RESULTS_FOUND) //
         .withRefs(REFS) //
         .withResults(result) //
@@ -125,7 +125,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
     List<String> idsToGet = ID_LIST_WITH_TEN_IDS;
     List<TestRelation> result = setupRepository(type, idsToGet);
     RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
-        .withIds(idsToGet) //
+        .withIds(ID_LIST_WITH_TEN_IDS) //
         .withNumFound(TEN_RESULTS_FOUND) //
         .withRefs(REFS) //
         .withResults(result) //
@@ -152,7 +152,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
     List<String> idsToGet = ID_LIST_WITH_TEN_IDS.subList(0, 5);
     List<TestRelation> result = setupRepository(type, idsToGet);
     RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
-        .withIds(idsToGet) //
+        .withIds(ID_LIST_WITH_TEN_IDS) //
         .withNumFound(TEN_RESULTS_FOUND) //
         .withRefs(REFS) //
         .withResults(result) //
@@ -209,7 +209,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
     List<String> idsToGet = ID_LIST_WITH_TEN_IDS.subList(normalizedStart, 10);
     List<TestRelation> result = setupRepository(type, idsToGet);
     RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
-        .withIds(idsToGet) //
+        .withIds(ID_LIST_WITH_TEN_IDS) //
         .withNumFound(TEN_RESULTS_FOUND) //
         .withRefs(REFS) //
         .withResults(result) //

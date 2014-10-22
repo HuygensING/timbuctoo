@@ -41,7 +41,7 @@ import com.google.inject.Inject;
 
 public class RegularSearchResultMapper extends SearchResultMapper {
 
-  private FullTextSearchFieldFinder fullTextSearchFieldFinder;
+  private final FullTextSearchFieldFinder fullTextSearchFieldFinder;
 
   @Inject
   public RegularSearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator, FullTextSearchFieldFinder fullTextSearchFieldFinder) {
@@ -66,7 +66,7 @@ public class RegularSearchResultMapper extends SearchResultMapper {
 
     dto.setRows(normalizedRows);
     dto.setStart(normalizedStart);
-    dto.setIds(idsToRetrieve);
+    dto.setIds(ids);
     dto.setResults(results);
     dto.setNumFound(numFound);
     dto.setRefs(createRefs(type, results));
