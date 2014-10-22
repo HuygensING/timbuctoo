@@ -44,7 +44,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -395,12 +394,6 @@ public class TypeRegistry {
       return result;
     }
     throw new ClassCastException(type.getName() + " is not a role");
-  }
-
-  public boolean isFromSameProject(Class<? extends DomainEntity> class1, Class<? extends DomainEntity> class2) {
-    String package1 = class1.getPackage().getName();
-    String package2 = class2.getPackage().getName();
-    return Objects.equal(package1, package2);
   }
 
 }

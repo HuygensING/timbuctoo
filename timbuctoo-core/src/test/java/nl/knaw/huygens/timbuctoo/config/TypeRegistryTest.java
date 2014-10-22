@@ -40,11 +40,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import test.model.OtherPrimitiveDomainEntity;
-import test.model.PrimitiveDomainEntity;
-import test.model.projecta.OtherADomainEntity;
-import test.model.projecta.SubADomainEntity;
-import test.model.projectb.SubBDomainEntity;
 import test.variation.model.BaseVariationDomainEntity;
 import test.variation.model.NewTestRole;
 import test.variation.model.TestRole;
@@ -231,26 +226,6 @@ public class TypeRegistryTest {
     assertEquals(2, roles.size());
     assertTrue(roles.contains(ProjectATestRole.class));
     assertTrue(roles.contains(ProjectANewTestRole.class));
-  }
-
-  @Test
-  public void testIsFromSameProject() {
-    assertTrue(registry.isFromSameProject(SubADomainEntity.class, OtherADomainEntity.class));
-  }
-
-  @Test
-  public void testIsFromSameProjectPrimitives() {
-    assertTrue(registry.isFromSameProject(OtherPrimitiveDomainEntity.class, PrimitiveDomainEntity.class));
-  }
-
-  @Test
-  public void testIsFromSameProjectDifferentProjects() {
-    assertFalse(registry.isFromSameProject(SubADomainEntity.class, SubBDomainEntity.class));
-  }
-
-  @Test
-  public void testIsFromSameProjectAndPrimitve() {
-    assertFalse(registry.isFromSameProject(SubADomainEntity.class, PrimitiveDomainEntity.class));
   }
 
   // -------------------------------------------------------------------
