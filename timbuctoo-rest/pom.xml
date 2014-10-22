@@ -192,6 +192,13 @@
       <version>1.4.7</version>
     </dependency>
 
+    <!-- Handling of Microsft Office files -->
+    <dependency>
+      <groupId>org.apache.poi</groupId>
+      <artifactId>poi</artifactId>
+      <version>${poi.version}</version>
+    </dependency>
+
     <!-- ## End of main libraries ## -->
 
     <!-- ## Build helper libraries ## -->
