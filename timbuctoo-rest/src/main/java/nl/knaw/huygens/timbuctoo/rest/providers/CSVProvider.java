@@ -61,7 +61,7 @@ public class CSVProvider implements MessageBodyWriter<RelationSearchResultDTO> {
   public static final String TEXT_CSV = "text/csv";
   public static final MediaType TEXT_CSV_TYPE = new MediaType("text", "csv");
 
-  public static final char SEPARATOR = ';';
+  public static final char SEPARATOR = '\t';
 
   /** Length cannot be determined in advance. */
   private static final long UNKNOWN_LENGTH = -1;
@@ -131,7 +131,8 @@ public class CSVProvider implements MessageBodyWriter<RelationSearchResultDTO> {
 
   private void appendValuesTo(StringBuilder builder, Map<String, String> data) {
     for (Map.Entry<String, String> entry : data.entrySet()) {
-      appendTo(builder, entry.getValue().replace(SEPARATOR, '.'));
+      appendTo(builder, entry.getValue());
+      // appendTo(builder, entry.getValue().replace(SEPARATOR, '.'));
     }
   }
 
