@@ -58,6 +58,7 @@ import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.rest.providers.CSVProvider;
+import nl.knaw.huygens.timbuctoo.rest.providers.XLSProvider;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
@@ -174,6 +175,22 @@ public class SearchResourceV1 extends ResourceBase {
   @Path("/{id: " + SearchResult.ID_PREFIX + "\\d+}/csv")
   @Produces({ CSVProvider.TEXT_CSV })
   public Response getRelationSearchResultAsCSV(@PathParam("id") String queryId) {
+    SearchResult result = getSearchResult(queryId);
+    checkNotNull(result, NOT_FOUND, "No SearchResult with id %s", queryId);
+
+    String typeString = result.getSearchType();
+    Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
+    checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
+    checkCondition(Relation.class.isAssignableFrom(type), BAD_REQUEST, "Not a relation type: %s", typeString);
+
+    RelationSearchResultDTO dto = relationSearchResultMapper.create(type, result, 0, Integer.MAX_VALUE);
+    return Response.ok(dto).build();
+  }
+
+  @GET
+  @Path("/{id: " + SearchResult.ID_PREFIX + "\\d+}/xls")
+  @Produces({ XLSProvider.EXCEL_TYPE_STRING })
+  public Response getRelationSearchResultAsXLS(@PathParam("id") String queryId) {
     SearchResult result = getSearchResult(queryId);
     checkNotNull(result, NOT_FOUND, "No SearchResult with id %s", queryId);
 
