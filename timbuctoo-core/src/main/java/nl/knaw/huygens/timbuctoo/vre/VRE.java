@@ -50,9 +50,17 @@ public interface VRE extends Scope {
   String getDescription();
 
   /**
-   * Returns the type of the domain entitiy in this VRE that corresponds
-   * to the specified internal name of a base domain entitiy,
-   * or {@code null} if no such entity exists.
+   * Maps the internal name of a primitive domain entity to the corresponding
+   * domain entity type in this VRE. This is an internal name as used in the
+   * definition of relations.
+   *
+   * @param iname the internal type name to map.
+   * @param required indicates whether there must be a corresponding domain
+   *     entity type or not.
+   * @return the corresponding domain entity type, or {@code null} if no such
+   *     exists and {@code required} is {@code false}.
+   * @throws IllegalStateException thrown when no corresponding domain entity
+   *     type exists and {@code required} is {@code true}.
    */
   Class<? extends DomainEntity> mapTypeName(String iname, boolean required) throws IllegalStateException;
 
