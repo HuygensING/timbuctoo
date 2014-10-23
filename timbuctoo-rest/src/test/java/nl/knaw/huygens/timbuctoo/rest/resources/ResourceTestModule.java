@@ -41,6 +41,7 @@ import nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
 import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.search.converters.SearchParametersConverter;
+import nl.knaw.huygens.timbuctoo.security.BasicAuthenticationHandler;
 import nl.knaw.huygens.timbuctoo.security.DefaultVREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.security.UserConfigurationHandler;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
@@ -83,6 +84,7 @@ class ResourceTestModule extends JerseyServletModule {
   private RegularSearchResultMapper regularClientSearchResultCreator;
   private RelationSearchResultMapper relationClientSearchResultCreator;
   private UserConfigurationHandler userConfigurationHandler;
+  private BasicAuthenticationHandler basicAuthenticationHandler;
 
   public ResourceTestModule() {
     try {
@@ -105,6 +107,7 @@ class ResourceTestModule extends JerseyServletModule {
       relationSearcher = mock(RelationSearcher.class);
       regularClientSearchResultCreator = mock(RegularSearchResultMapper.class);
       relationClientSearchResultCreator = mock(RelationSearchResultMapper.class);
+      basicAuthenticationHandler = mock(BasicAuthenticationHandler.class);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -116,7 +119,7 @@ class ResourceTestModule extends JerseyServletModule {
    */
   public void cleanUpMocks() {
     reset(config, repository, userConfigurationHandler, jsonProvider, validator, mailSender, authorizationHandler, broker, indexProducer, persistenceProducer, indexManager, searchRequestValidator,
-        searchParametersConverter, relationSearcher, regularClientSearchResultCreator, regularClientSearchResultCreator);
+        searchParametersConverter, relationSearcher, regularClientSearchResultCreator, regularClientSearchResultCreator, basicAuthenticationHandler);
   }
 
   @Override
@@ -256,4 +259,9 @@ class ResourceTestModule extends JerseyServletModule {
     return userConfigurationHandler;
   }
 
+  @Singleton
+  @Provides
+  public BasicAuthenticationHandler provideAuthenticationHandler() {
+    return basicAuthenticationHandler;
+  }
 }

@@ -30,6 +30,7 @@ public class CustomHeaders {
 
   public static final String VRE_ID_KEY = "VRE_ID";
   public static final String VRE_KEY = "VRE";
+  public static final String TOKEN_HEADER = "X_AUTH_TOKEN";
 
   private CustomHeaders() {
     throw new AssertionError("Non-instantiable class");
