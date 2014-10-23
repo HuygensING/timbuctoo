@@ -37,6 +37,7 @@ import javax.ws.rs.core.Response.Status;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 
@@ -82,12 +83,16 @@ public class VREResource extends ResourceBase {
         reception.inverseName = type.getInverseName();
         reception.baseSourceType = type.getSourceTypeName();
         reception.baseTargetType = type.getTargetTypeName();
-        reception.derivedSourceType = vre.mapPrimitiveTypeName(type.getSourceTypeName());
-        reception.derivedTargetType = vre.mapPrimitiveTypeName(type.getTargetTypeName());
+        reception.derivedSourceType = mapTypeName(vre, type.getSourceTypeName());
+        reception.derivedTargetType = mapTypeName(vre, type.getTargetTypeName());
         info.addReception(reception);
       }
     }
     return info;
+  }
+
+  private String mapTypeName(VRE vre, String iname) {
+    return TypeNames.getInternalName(vre.mapTypeName(iname, true));
   }
 
   // ---------------------------------------------------------------------------

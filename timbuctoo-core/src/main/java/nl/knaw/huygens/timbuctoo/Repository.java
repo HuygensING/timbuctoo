@@ -73,8 +73,7 @@ public class Repository {
 
   private static final Logger LOG = LoggerFactory.getLogger(Repository.class);
 
-  /** Maximum number of relations added to an entity. */
-  static final int DEFAULT_RELATION_LIMIT = 1000;
+  private static final boolean REQUIRED = true;
 
   private final TypeRegistry registry;
   private final Storage storage;
@@ -477,7 +476,7 @@ public class Repository {
       @SuppressWarnings("unchecked")
       Class<? extends Relation> mappedType = (Class<? extends Relation>) mapper.map(Relation.class);
       for (Relation relation : getRelationsByEntityId(entityId, limit, mappedType)) {
-        RelationType relType = getRelationTypeById(relation.getTypeId(), true);
+        RelationType relType = getRelationTypeById(relation.getTypeId(), REQUIRED);
         if (relation.hasSourceId(entityId)) {
           RelationRef ref = newRelationRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev());
           entity.addRelation(relType.getRegularName(), ref);
@@ -527,7 +526,7 @@ public class Repository {
     for (DerivedRelationType drtype : entity.getDerivedRelationTypes()) {
       Set<String> ids = Sets.newHashSet();
 
-      RelationType relationType = getRelationTypeByName(drtype.getSecundaryTypeName(), true);
+      RelationType relationType = getRelationTypeByName(drtype.getSecundaryTypeName(), REQUIRED);
       boolean regular = relationType.getRegularName().equals(drtype.getSecundaryTypeName());
       for (RelationRef ref : entity.getRelations(drtype.getPrimaryTypeName())) {
         for (Relation relation : findRelations(ref.getId(), relationType.getId(), regular)) {
@@ -537,7 +536,7 @@ public class Repository {
 
       // TODO extract method
       String derivedTypeName = drtype.getDerivedTypeName();
-      relationType = getRelationTypeByName(derivedTypeName, true);
+      relationType = getRelationTypeByName(derivedTypeName, REQUIRED);
       regular = relationType.getRegularName().equals(derivedTypeName);
       String iname = regular ? relationType.getTargetTypeName() : relationType.getSourceTypeName();
       Class<? extends DomainEntity> type = registry.getDomainEntityType(iname);
@@ -559,13 +558,13 @@ public class Repository {
     for (DerivedProperty property : entity.getDerivedProperties()) {
       try {
         String relationName = property.getRelationName();
-        RelationType relationType = getRelationTypeByName(relationName, true);
+        RelationType relationType = getRelationTypeByName(relationName, REQUIRED);
         boolean regular = relationType.getRegularName().equals(relationName);
         List<Relation> list = findRelations(entity.getId(), relationType.getId(), regular);
         if (!list.isEmpty()) {
           Relation relation = list.get(0);
           String iname = regular ? relation.getTargetType() : relation.getSourceType();
-          Class<? extends DomainEntity> type = vre.mapPrimitiveType(registry.getDomainEntityType(iname));
+          Class<? extends DomainEntity> type = vre.mapTypeName(iname, REQUIRED);
           String id = regular ? relation.getTargetId() : relation.getSourceId();
           Object value = type.getMethod(property.getAccessor()).invoke(getEntity(type, id));
           entity.addProperty(property.getPropertyName(), value.toString());

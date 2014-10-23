@@ -50,18 +50,11 @@ public interface VRE extends Scope {
   String getDescription();
 
   /**
-   * Returns the type of the domain entitiy in this VRE that corresponds to
-   * the specified type of a base domain entitiy,
+   * Returns the type of the domain entitiy in this VRE that corresponds
+   * to the specified internal name of a base domain entitiy,
    * or {@code null} if no such entity exists.
    */
-  <T extends DomainEntity> Class<? extends T> mapPrimitiveType(Class<T> type);
-
-  /**
-   * Returns the internal name of the domain entitiy in this VRE that
-   * corresponds to the specified internal name of a base domain entitiy,
-   * or {@code null} if no such entity exists.
-   */
-  String mapPrimitiveTypeName(String iname);
+  Class<? extends DomainEntity> mapTypeName(String iname, boolean required) throws IllegalStateException;
 
   /**
    * Returns names of relation types that are considered to be receptions.

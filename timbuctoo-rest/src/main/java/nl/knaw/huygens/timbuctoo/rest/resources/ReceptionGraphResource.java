@@ -97,7 +97,8 @@ public class ReceptionGraphResource extends ResourceBase {
    * or {@code Person.class} if no such type exists.
    */
   private Class<? extends Person> getPersonType(VRE vre) {
-    Class<? extends Person> type = vre.mapPrimitiveType(Person.class);
+    @SuppressWarnings("unchecked")
+	Class<? extends Person> type = (Class<? extends Person>) vre.mapTypeName("person", false);
     return (type != null) ? type : Person.class;
   }
 

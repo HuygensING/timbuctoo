@@ -23,9 +23,8 @@ package nl.knaw.huygens.timbuctoo.vre;
  */
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
 
 import java.io.IOException;
 import java.util.List;
@@ -35,6 +34,7 @@ import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLanguage;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLocation;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -47,32 +47,39 @@ public class BaseVRETest {
   @BeforeClass
   public static void setupVRE() throws IOException {
     List<String> receptionNames = Lists.newArrayList();
-    vre = new PackageVRE("Base", "VRE for base domain entities.", "timbuctoo.model.base", receptionNames);
+    vre = new PackageVRE("id", "Base VRE", "timbuctoo.model.base", receptionNames);
+  }
+
+  @AfterClass
+  public static void cleanup() {
+    vre = null;
   }
 
   @Test
   public void testMapPrimitiveType() {
-    // Hamcrest has problems comparing generic types...
-    assertThat(vre.mapPrimitiveType(Language.class).getName(), is(equalTo(BaseLanguage.class.getName())));
-    assertThat(vre.mapPrimitiveType(Location.class).getName(), is(equalTo(BaseLocation.class.getName())));
-  }
-
-  @Test
-  public void testMapPrimitiveTypeName() {
-    assertThat(vre.mapPrimitiveTypeName("language"), is(equalTo("baselanguage")));
-    assertThat(vre.mapPrimitiveTypeName("location"), is(equalTo("baselocation")));
+    assertEqualTypes(vre.mapTypeName("language", true), BaseLanguage.class);
+    assertEqualTypes(vre.mapTypeName("location", true), BaseLocation.class);
   }
 
   @Test
   @SuppressWarnings("unchecked")
   public void testPrimitiveEntityTypes() {
-    assertThat(vre.getPrimitiveEntityTypes(), contains(Language.class, Location.class));
+    assertThat(vre.getPrimitiveEntityTypes(), containsInAnyOrder(Language.class, Location.class));
   }
 
   @Test
   @SuppressWarnings("unchecked")
   public void testEntityTypes() {
-    assertThat(vre.getEntityTypes(), contains(BaseLanguage.class, BaseLocation.class));
+    assertThat(vre.getEntityTypes(), containsInAnyOrder(BaseLanguage.class, BaseLocation.class));
+  }
+
+  private void assertEqualTypes(Class<?> type1, Class<?> type2) {
+    // Hamcrest has problems comparing generic types...
+    assertThat(toString(type1), equalTo(toString(type2)));
+  }
+
+  private String toString(Class<?> type) {
+    return (type != null) ? type.getName() : "null";
   }
 
 }

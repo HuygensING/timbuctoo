@@ -27,7 +27,6 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationDTO;
@@ -46,12 +45,10 @@ import com.google.inject.Inject;
 public class RelationMapper {
 
   private final Repository repository;
-  private final TypeRegistry registry;
 
   @Inject
   public RelationMapper(Repository repository) {
     this.repository = repository;
-    registry = repository.getTypeRegistry();
   }
 
   @SuppressWarnings("unchecked")
@@ -65,8 +62,8 @@ public class RelationMapper {
     if (!relations.isEmpty()) {
       String itype = TypeNames.getInternalName(type);
       String xtype = TypeNames.getExternalName(type);
-      Class<? extends DomainEntity> sourceType = getMappedType(vre, relations.get(0).getSourceType());
-      Class<? extends DomainEntity> targetType = getMappedType(vre, relations.get(0).getTargetType());
+      Class<? extends DomainEntity> sourceType = vre.mapTypeName(relations.get(0).getSourceType(), true);
+      Class<? extends DomainEntity> targetType = vre.mapTypeName(relations.get(0).getTargetType(), true);
 
       // Cache source entities: in a reception search we know they are likely to occur
       // multiple times, but we don't know the order in which they will be present.
@@ -90,15 +87,6 @@ public class RelationMapper {
       }
     }
     return list;
-  }
-
-  private Class<? extends DomainEntity> getMappedType(VRE vre, String typeName) {
-    Class<? extends DomainEntity> type = registry.getDomainEntityType(typeName);
-    if (type == null) {
-      throw new IllegalStateException("Not a domain entity: " + typeName);
-    }
-    Class<? extends DomainEntity> mappedType = vre.mapPrimitiveType(type);
-    return (mappedType != null) ? mappedType : type;
   }
 
 }

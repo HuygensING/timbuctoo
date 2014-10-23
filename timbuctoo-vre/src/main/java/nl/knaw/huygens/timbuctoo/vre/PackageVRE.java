@@ -63,10 +63,8 @@ public class PackageVRE implements VRE {
   private final List<String> receptions;
 
   private final Scope scope;
-  /** Maps primitive types. */
-  private final Map<Class<? extends DomainEntity>, Class<? extends DomainEntity>> typeMap = Maps.newHashMap();
-  /** Maps internal names of primitive types. */
-  private final Map<String, String> nameMap = Maps.newHashMap();
+  /** Maps internal names of primitive types to this VRE. */
+  private final Map<String, Class<? extends DomainEntity>> typeMap;
 
   private IndexCollection indexCollection;
 
@@ -79,7 +77,7 @@ public class PackageVRE implements VRE {
     this.indexCollection = new IndexCollection();
     this.searchResultConverter = new SearchResultConverter();
     this.scope = createScope(modelPackage);
-    createMaps();
+    this.typeMap = createTypeMap();
   }
 
   // For testing
@@ -90,7 +88,7 @@ public class PackageVRE implements VRE {
     this.indexCollection = indexCollection;
     this.searchResultConverter = searchResultConverter;
     this.scope = scope;
-    createMaps();
+    this.typeMap = createTypeMap();
   }
 
   @Override
@@ -117,27 +115,25 @@ public class PackageVRE implements VRE {
     }
   }
 
-  private void createMaps() {
+  private Map<String, Class<? extends DomainEntity>> createTypeMap() {
+    Map<String, Class<? extends DomainEntity>> map = Maps.newHashMap();
     for (Class<? extends DomainEntity> type : getEntityTypes()) {
       Class<? extends DomainEntity> baseType = toBaseDomainEntity(type);
-      if (typeMap.put(baseType, type) != null) {
-        LOG.error("Inconsistent typeMap; multiple values for {}", baseType.getSimpleName());
-      }
-      if (nameMap.put(getInternalName(baseType), getInternalName(type)) != null) {
-        LOG.error("Inconsistent nameMap; multiple values for {}", baseType.getSimpleName());
+      if (map.put(getInternalName(baseType), type) != null) {
+        LOG.error("Inconsistent type map; duplicate value for {}", baseType.getSimpleName());
       }
     }
+    return map;
   }
 
   @Override
-  @SuppressWarnings("unchecked")
-  public <T extends DomainEntity> Class<? extends T> mapPrimitiveType(Class<T> type) {
-    return (Class<? extends T>) typeMap.get(type);
-  }
-
-  @Override
-  public String mapPrimitiveTypeName(String iname) {
-    return nameMap.get(iname);
+  public Class<? extends DomainEntity> mapTypeName(String iname, boolean required) throws IllegalStateException {
+    Class<? extends DomainEntity> type = typeMap.get(iname);
+    if (type == null && required) {
+      LOG.error("No entity with type name {} in VRE {}", iname, vreId);
+      throw new IllegalStateException("No entity with type name " + iname);
+    }
+    return type;
   }
 
   @Override
