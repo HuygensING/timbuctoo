@@ -42,6 +42,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -139,6 +140,11 @@ public class JsonFileHandlerTest {
   @Test(expected = StorageException.class)
   public void testGetCollectionObjectMapperThrowsIOException() throws Exception {
     testGetCollectionObjectMapperThrowsAnException(IOException.class);
+  }
+
+  @Test(expected = StorageException.class)
+  public void testGetCollectionObjectMapperThrowsJsonParseException() throws Exception {
+    testGetCollectionObjectMapperThrowsAnException(JsonParseException.class);
   }
 
   private void testGetCollectionObjectMapperThrowsAnException(Class<? extends Exception> exceptionToThrow) throws Exception {
