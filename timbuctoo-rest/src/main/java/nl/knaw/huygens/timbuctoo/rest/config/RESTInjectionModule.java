@@ -28,8 +28,8 @@ import javax.validation.Validator;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.persistence.PersistenceManagerCreationException;
 import nl.knaw.huygens.persistence.PersistenceManagerFactory;
-import nl.knaw.huygens.security.client.AuthorizationHandler;
-import nl.knaw.huygens.security.client.HuygensAuthorizationHandler;
+import nl.knaw.huygens.security.client.AuthenticationHandler;
+import nl.knaw.huygens.security.client.HuygensAuthenticationHandler;
 import nl.knaw.huygens.security.client.SecurityContextCreator;
 import nl.knaw.huygens.solr.AbstractSolrServerBuilder;
 import nl.knaw.huygens.solr.AbstractSolrServerBuilderProvider;
@@ -46,7 +46,7 @@ import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.search.SolrRelationSearcher;
 import nl.knaw.huygens.timbuctoo.security.DefaultVREAuthorizationHandler;
-import nl.knaw.huygens.timbuctoo.security.ExampleAuthorizationHandler;
+import nl.knaw.huygens.timbuctoo.security.ExampleAuthenticationHandler;
 import nl.knaw.huygens.timbuctoo.security.ExampleVREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.security.SecurityType;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
@@ -93,13 +93,13 @@ public class RESTInjectionModule extends BasicInjectionModule {
 
   @Provides
   @Singleton
-  AuthorizationHandler provideAuthorizationHandler() {
+  AuthenticationHandler provideAuthorizationHandler() {
     if (SecurityType.DEFAULT.equals(securityType)) {
       Client client = new Client();
-      return new HuygensAuthorizationHandler(client, config.getSetting("security.hss.url"), config.getSetting("security.hss.credentials"));
+      return new HuygensAuthenticationHandler(client, config.getSetting("security.hss.url"), config.getSetting("security.hss.credentials"));
     }
 
-    return new ExampleAuthorizationHandler();
+    return new ExampleAuthenticationHandler();
   }
 
   @Provides
