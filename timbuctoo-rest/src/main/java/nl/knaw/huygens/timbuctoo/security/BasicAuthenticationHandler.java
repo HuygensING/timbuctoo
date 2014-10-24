@@ -4,11 +4,14 @@ import nl.knaw.huygens.security.client.UnauthorizedException;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.google.inject.Inject;
+
 public class BasicAuthenticationHandler {
 
   private final LocalAuthenticator localAuthenticator;
   private final LocalLoggedInUsers localLoggedInUsers;
 
+  @Inject
   public BasicAuthenticationHandler(LocalAuthenticator localAuthenticator, LocalLoggedInUsers localLoggedInUsers) {
     this.localAuthenticator = localAuthenticator;
     this.localLoggedInUsers = localLoggedInUsers;
