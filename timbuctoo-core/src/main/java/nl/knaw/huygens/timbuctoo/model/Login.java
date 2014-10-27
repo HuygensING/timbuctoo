@@ -1,5 +1,8 @@
 package nl.knaw.huygens.timbuctoo.model;
 
+import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
+
+@IDPrefix("LOGI")
 public class Login extends SystemEntity {
 
   private String userPid;
