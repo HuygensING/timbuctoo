@@ -98,16 +98,16 @@ public class CobwwwebChConverter extends CobwwwebConverter {
       relationTypeNames = importer.getNames();
 
       printBoxedText("Collectives");
-      // convertCollectives();
+      convertCollectives();
 
       printBoxedText("Persons");
-      // convertPersons();
+      convertPersons();
 
       printBoxedText("Documents");
       convertDocuments();
 
       printBoxedText("Relations");
-      // convertRelations();
+      convertRelations();
     } finally {
       displayErrorSummary();
       closeLog();
@@ -517,13 +517,11 @@ public class CobwwwebChConverter extends CobwwwebConverter {
     try {
       String xml = getResource(URL, "relations");
       List<String> relationIds = parseIdResource(xml, "RelationId");
-      System.out.println(relationIds.size());
 
       for (String id : relationIds) {
         progress.step();
-        System.out.println(xml);
+        xml = getResource(URL, "relation", id);
         RelationDTO relation = parseRelationResource(xml, id);
-
         jsonConverter.appendTo(out, relation);
       }
     } finally {
@@ -533,7 +531,7 @@ public class CobwwwebChConverter extends CobwwwebConverter {
   }
 
   private RelationDTO parseRelationResource(String xml, String id) {
-    RelationContext context = new RelationContext(id);
+    RelationContext context = new RelationContext(xml, id);
     parseXml(xml, new RelationVisitor(context));
 
     Reference typeRef = getRelationTypeReference(context.typeName);
@@ -559,12 +557,14 @@ public class CobwwwebChConverter extends CobwwwebConverter {
   }
 
   private class RelationContext extends XmlContext {
-    public String id;
+    private String xml;
+    private String id;
     public String typeName = "";
     public String sourceId = "";
     public String targetId = "";
 
-    public RelationContext(String id) {
+    public RelationContext(String xml, String id) {
+      this.xml = xml;
       this.id = id;
     }
 
@@ -573,12 +573,20 @@ public class CobwwwebChConverter extends CobwwwebConverter {
     }
   }
 
+  /*
+   * <relation>
+   *   <RelationId>rime-872-created-by-donne-174</RelationId>
+   *   <Type>created by</Type>
+   *   <Active>rime-872</Active>
+   *   <Passive>donne-174</Passive>
+   * </relation>
+   */
+
   private class RelationVisitor extends DelegatingVisitor<RelationContext> {
     public RelationVisitor(RelationContext context) {
       super(context);
       setDefaultElementHandler(new DefaultRelationHandler());
       addElementHandler(new RelationIdHandler(), "RelationId");
-      addElementHandler(new RelationLinkHandler(), "Reference");
       addElementHandler(new RelationTypeHandler(), "Type");
       addElementHandler(new RelationActiveHandler(), "Active");
       addElementHandler(new RelationPassiveHandler(), "Passive");
@@ -602,32 +610,22 @@ public class CobwwwebChConverter extends CobwwwebConverter {
     @Override
     public void handleContent(Element element, RelationContext context, String text) {
       if (!context.id.equals(text)) {
-        context.error("ID mismatch: %s", text);
+        context.error("ID mismatch. Found: '%s'. Expected: '%s'", text, context.id);
       }
-    }
-  }
-
-  private class RelationLinkHandler extends CaptureHandler<RelationContext> {
-    @Override
-    public void handleContent(Element element, RelationContext context, String text) {
-      context.error("Unexpected reference: %s", text);
     }
   }
 
   private class RelationTypeHandler extends CaptureHandler<RelationContext> {
     @Override
     public void handleContent(Element element, RelationContext context, String text) {
-      if (text.equalsIgnoreCase("translation of")) {
-        context.typeName = "hasTranslation";
-      } else if (text.equalsIgnoreCase("comments on")) { // OK
-        context.typeName = "hasEdition";
-      } else if (text.equalsIgnoreCase("created by")) { // OK
+      if (text.equalsIgnoreCase("created by")) {
         context.typeName = "isCreatedBy";
-      } else if (text.equalsIgnoreCase("pseudonym")) {
-        context.typeName = "isPseudonymOf";
+      } else if (text.equalsIgnoreCase("member of")) {
+          context.typeName = "isMemberOf";
+      } else if (text.equalsIgnoreCase("comments on")) {
+          context.typeName = "isPersonCommentedOnIn"; // isWorkCommentedOnIn?
       } else {
-        context.error("Unexpected relation type: '%s'", text);
-        System.exit(0);
+        context.error("Unexpected element: %s%nxml: %s", text, context.xml);
       }
     }
   }
