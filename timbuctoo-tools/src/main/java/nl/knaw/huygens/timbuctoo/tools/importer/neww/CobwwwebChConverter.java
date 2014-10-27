@@ -33,6 +33,7 @@ import nl.knaw.huygens.tei.Traversal;
 import nl.knaw.huygens.tei.XmlContext;
 import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.Collective;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
@@ -43,6 +44,8 @@ import nl.knaw.huygens.timbuctoo.model.cwch.CWCHDocument;
 import nl.knaw.huygens.timbuctoo.model.cwch.CWCHPerson;
 import nl.knaw.huygens.timbuctoo.model.cwno.CWNORelation;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.model.util.Link;
+import nl.knaw.huygens.timbuctoo.model.util.Period;
 import nl.knaw.huygens.timbuctoo.tools.importer.CaptureHandler;
 import nl.knaw.huygens.timbuctoo.tools.importer.RelationDTO;
 import nl.knaw.huygens.timbuctoo.tools.importer.RelationTypeImporter;
@@ -96,13 +99,13 @@ public class CobwwwebChConverter extends CobwwwebConverter {
       convertCollectives();
 
       printBoxedText("Persons");
-      //convertPersons();
+      // convertPersons();
 
       printBoxedText("Documents");
-      //convertDocuments();
+      // convertDocuments();
 
       printBoxedText("Relations");
-      convertRelations();
+      // convertRelations();
     } finally {
       displayErrorSummary();
       closeLog();
@@ -119,6 +122,18 @@ public class CobwwwebChConverter extends CobwwwebConverter {
 
   // --- collectives -----------------------------------------------------------
 
+  /*
+   * <cooperation>
+   *   <CooperationId>colonia-0</CooperationId>
+   *   <Type>Academy</Type>
+   *   <Names>Arcadia</Names>
+   *   <StartDate>1690</StartDate>
+   *   <Location>Roma</Location>
+   *   <Reference/>
+   *   <lastedited>2014-08-04T10:50:14Z</lastedited>
+   * </cooperation>
+   */
+
   private void convertCollectives() throws Exception {
     Progress progress = new Progress();
     PrintWriter out = createPrintWriter(CWCHCollective.class);
@@ -127,9 +142,115 @@ public class CobwwwebChConverter extends CobwwwebConverter {
       String xml = getResource(URL, "cooperations");
       List<String> ids = parseIdResource(xml, "CooperationId");
       System.out.println(ids.size());
+      for (String id : ids) {
+        progress.step();
+        xml = getResource(URL, "cooperation", id);
+        CWCHCollective entity = parseCollectiveResource(xml, id);
+        jsonConverter.appendTo(out, entity);
+        storeReference(id, CWCHCollective.class, id);
+      }
     } finally {
       out.close();
       progress.done();
+    }
+  }
+
+  private CWCHCollective parseCollectiveResource(String xml, String id) {
+    CollectiveContext context = new CollectiveContext(xml, id);
+    parseXml(xml, new CollectiveVisitor(context));
+    return context.entity;
+  }
+
+  private class CollectiveContext extends XmlContext {
+    public String xml;
+    public String id;
+    public CWCHCollective entity = new CWCHCollective();
+
+    public CollectiveContext(String xml, String id) {
+      this.xml = xml;
+      this.id = id;
+    }
+
+    public void error(String format, Object... args) {
+      log("[%s] %s%n", id, String.format(format, args));
+    }
+  }
+
+  private class CollectiveVisitor extends DelegatingVisitor<CollectiveContext> {
+    public CollectiveVisitor(CollectiveContext context) {
+      super(context);
+      setDefaultElementHandler(new DefaultCollectiveHandler());
+      addElementHandler(new CollectiveIdHandler(), "CooperationId");
+      addElementHandler(new CollectiveLinkHandler(), "Reference");
+      addElementHandler(new CollectiveLocationHandler(), "Location");
+      addElementHandler(new CollectiveNamesHandler(), "Names");
+      addElementHandler(new CollectiveStartDateHandler(), "StartDate");
+      addElementHandler(new CollectiveTypeHandler(), "Type");
+    }
+  }
+
+  private class DefaultCollectiveHandler extends DefaultElementHandler<CollectiveContext> {
+    private final Set<String> ignoredNames = Sets.newHashSet("arcadia", "cooperation", "lastedited", "request", "responseDate");
+
+    @Override
+    public Traversal enterElement(Element element, CollectiveContext context) {
+      String name = element.getName();
+      if (!ignoredNames.contains(name)) {
+        context.error("Unexpected element: %s%nxml: %s", name, context.xml);
+      }
+      return Traversal.NEXT;
+    }
+  }
+
+  private class CollectiveIdHandler extends CaptureHandler<CollectiveContext> {
+    @Override
+    public void handleContent(Element element, CollectiveContext context, String text) {
+      if (!context.id.equals(text)) {
+        context.error("ID mismatch: %s", text);
+      }
+    }
+  }
+
+  private class CollectiveLinkHandler extends CaptureHandler<CollectiveContext> {
+    // Collectives do not occur as collection in the old Women Writers database.
+    // So references, if any, can be treated as simple links.
+
+    @Override
+    public void handleContent(Element element, CollectiveContext context, String text) {
+      context.entity.addLink(new Link(text));
+    }
+  }
+
+  private class CollectiveLocationHandler extends CaptureHandler<CollectiveContext> {
+    @Override
+    public void handleContent(Element element, CollectiveContext context, String text) {
+      context.entity.tempLocation = text;
+    }
+  }
+
+  private class CollectiveNamesHandler extends CaptureHandler<CollectiveContext> {
+    @Override
+    public void handleContent(Element element, CollectiveContext context, String text) {
+       context.entity.setName(text);
+    }
+  }
+
+  private class CollectiveStartDateHandler extends CaptureHandler<CollectiveContext> {
+    @Override
+    public void handleContent(Element element, CollectiveContext context, String text) {
+       Period period = new Period(text, null);
+       context.entity.setPeriod(period);
+    }
+  }
+
+  private class CollectiveTypeHandler extends CaptureHandler<CollectiveContext> {
+    @Override
+    public void handleContent(Element element, CollectiveContext context, String text) {
+      String normalized = Collective.Type.normalize(text);
+      if (normalized.equals(Collective.Type.UNKNOWN)) {
+        context.error("Unknown type: %s", text);
+      }
+      context.entity.setType(normalized);
     }
   }
 
