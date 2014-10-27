@@ -29,6 +29,7 @@ import java.util.Set;
 
 import nl.knaw.huygens.tei.DelegatingVisitor;
 import nl.knaw.huygens.tei.Element;
+import nl.knaw.huygens.tei.ElementHandler;
 import nl.knaw.huygens.tei.Traversal;
 import nl.knaw.huygens.tei.XmlContext;
 import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
@@ -46,6 +47,8 @@ import nl.knaw.huygens.timbuctoo.model.cwno.CWNORelation;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.Period;
+import nl.knaw.huygens.timbuctoo.model.util.PersonName;
+import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent;
 import nl.knaw.huygens.timbuctoo.tools.importer.CaptureHandler;
 import nl.knaw.huygens.timbuctoo.tools.importer.RelationDTO;
 import nl.knaw.huygens.timbuctoo.tools.importer.RelationTypeImporter;
@@ -96,10 +99,10 @@ public class CobwwwebChConverter extends CobwwwebConverter {
       relationTypeNames = importer.getNames();
 
       printBoxedText("Collectives");
-      convertCollectives();
+      // convertCollectives();
 
       printBoxedText("Persons");
-      // convertPersons();
+      convertPersons();
 
       printBoxedText("Documents");
       // convertDocuments();
@@ -121,18 +124,6 @@ public class CobwwwebChConverter extends CobwwwebConverter {
   }
 
   // --- collectives -----------------------------------------------------------
-
-  /*
-   * <cooperation>
-   *   <CooperationId>colonia-0</CooperationId>
-   *   <Type>Academy</Type>
-   *   <Names>Arcadia</Names>
-   *   <StartDate>1690</StartDate>
-   *   <Location>Roma</Location>
-   *   <Reference/>
-   *   <lastedited>2014-08-04T10:50:14Z</lastedited>
-   * </cooperation>
-   */
 
   private void convertCollectives() throws Exception {
     Progress progress = new Progress();
@@ -162,8 +153,8 @@ public class CobwwwebChConverter extends CobwwwebConverter {
   }
 
   private class CollectiveContext extends XmlContext {
-    public String xml;
-    public String id;
+    private String xml;
+    private String id;
     public CWCHCollective entity = new CWCHCollective();
 
     public CollectiveContext(String xml, String id) {
@@ -175,6 +166,18 @@ public class CobwwwebChConverter extends CobwwwebConverter {
       log("[%s] %s%n", id, String.format(format, args));
     }
   }
+
+  /*
+   * <cooperation>
+   *   <CooperationId>colonia-0</CooperationId>
+   *   <Type>Academy</Type>
+   *   <Names>Arcadia</Names>
+   *   <StartDate>1690</StartDate>
+   *   <Location>Roma</Location>
+   *   <Reference/>
+   *   <lastedited>2014-08-04T10:50:14Z</lastedited>
+   * </cooperation>
+   */
 
   private class CollectiveVisitor extends DelegatingVisitor<CollectiveContext> {
     public CollectiveVisitor(CollectiveContext context) {
@@ -212,9 +215,6 @@ public class CobwwwebChConverter extends CobwwwebConverter {
   }
 
   private class CollectiveLinkHandler extends CaptureHandler<CollectiveContext> {
-    // Collectives do not occur as collection in the old Women Writers database.
-    // So references, if any, can be treated as simple links.
-
     @Override
     public void handleContent(Element element, CollectiveContext context, String text) {
       context.entity.addLink(new Link(text));
@@ -255,7 +255,7 @@ public class CobwwwebChConverter extends CobwwwebConverter {
   }
 
   // --- persons ---------------------------------------------------------------
-
+  
   private void convertPersons() throws Exception {
     Progress progress = new Progress();
     PrintWriter out = createPrintWriter(CWCHPerson.class);
@@ -278,44 +278,61 @@ public class CobwwwebChConverter extends CobwwwebConverter {
   }
 
   private CWCHPerson parsePersonResource(String xml, String id) {
-    PersonContext context = new PersonContext(id);
+    PersonContext context = new PersonContext(xml, id);
     parseXml(xml, new PersonVisitor(context));
-    return context.person;
+    return context.entity;
   }
 
   private class PersonContext extends XmlContext {
-    public String id;
-    public CWCHPerson person = new CWCHPerson();
+    private String xml;
+    private String id;
+    public PersonName personName;
+    public CWCHPerson entity = new CWCHPerson();
 
-    public PersonContext(String id) {
+    public PersonContext(String xml, String id) {
+      this.xml = xml;
       this.id = id;
     }
 
     public void error(String format, Object... args) {
-      log("[%s] %s%n", id, String.format(format, args));
-    }
+        log("[%s] %s%n", id, String.format(format, args));
+      }
   }
+
+  /*
+   * <person>
+   *   <PersonId>donne-1</PersonId>
+   *   <Names>
+   *     <surname>Accarigi</surname>
+   *     <forename>Livia</forename>
+   *     <addname>Delinda Calcidica</addname>
+   *   </Names>
+   *   <gender>2</gender>
+   *   <Reference/>
+   *   <lastedited>2014-08-04T10:50:46Z</lastedited>
+   * </person>
+   */
 
   private class PersonVisitor extends DelegatingVisitor<PersonContext> {
     public PersonVisitor(PersonContext context) {
       super(context);
       setDefaultElementHandler(new DefaultPersonHandler());
-      addElementHandler(new PersonIdHandler(), "personId");
-      addElementHandler(new PersonTypeHandler(), "type");
+      addElementHandler(new PersonIdHandler(), "PersonId");
+      addElementHandler(new PersonLinkHandler(), "Reference");
       addElementHandler(new GenderHandler(), "gender");
-      addElementHandler(new DateOfBirthHandler(), "dateOfBirth");
-      addElementHandler(new DateOfDeathHandler(), "dateOfDeath");
+      addElementHandler(new NameHandler(), "Names");
+      addElementHandler(new NameComponentHandler(), "addname", "forename", "surname");
     }
   }
 
   private class DefaultPersonHandler extends DefaultElementHandler<PersonContext> {
-    private final Set<String> ignoredNames = Sets.newHashSet("person", "names", "languages");
+    private final Set<String> ignoredNames = Sets.newHashSet("arcadia", "lastedited", "Names", "person", "request", "responseDate");
 
     @Override
     public Traversal enterElement(Element element, PersonContext context) {
       String name = element.getName();
       if (!ignoredNames.contains(name)) {
-        context.error("Unexpected element: %s", name);
+        context.error("Unexpected element: %s%nxml: %s", name, context.xml);
       }
       return Traversal.NEXT;
     }
@@ -324,25 +341,17 @@ public class CobwwwebChConverter extends CobwwwebConverter {
   private class PersonIdHandler extends CaptureHandler<PersonContext> {
     @Override
     public void handleContent(Element element, PersonContext context, String text) {
-      context.person.setId(text);
+      context.entity.setId(text);
       if (!context.id.equals(text)) {
         context.error("ID mismatch: %s", text);
       }
     }
   }
 
-  private class PersonTypeHandler extends CaptureHandler<PersonContext> {
+  private class PersonLinkHandler extends CaptureHandler<PersonContext> {
     @Override
     public void handleContent(Element element, PersonContext context, String text) {
-      if (text.equalsIgnoreCase(Person.Type.ARCHETYPE)) {
-        context.person.addType(Person.Type.ARCHETYPE);
-      } else if (text.equalsIgnoreCase(Person.Type.AUTHOR)) {
-        context.person.addType(Person.Type.AUTHOR);
-      } else if (text.equalsIgnoreCase(Person.Type.PSEUDONYM)) {
-        context.person.addType(Person.Type.PSEUDONYM);
-      } else {
-        context.error("Unknown type: %s", text);
-      }
+      context.entity.addLink(new Link(text));
     }
   }
 
@@ -350,30 +359,53 @@ public class CobwwwebChConverter extends CobwwwebConverter {
     @Override
     public void handleContent(Element element, PersonContext context, String text) {
       if (text.equals("1")) {
-        context.person.setGender(Person.Gender.MALE);
+        context.entity.setGender(Person.Gender.MALE);
       } else if (text.equals("2")) {
-        context.person.setGender(Person.Gender.FEMALE);
+        context.entity.setGender(Person.Gender.FEMALE);
       } else if (text.equals("9")) {
-        context.person.setGender(Person.Gender.NOT_APPLICABLE);
+        context.entity.setGender(Person.Gender.NOT_APPLICABLE);
       } else {
-        context.person.setGender(Person.Gender.UNKNOWN);
+        context.entity.setGender(Person.Gender.UNKNOWN);
       }
     }
   }
 
-  private class DateOfBirthHandler extends CaptureHandler<PersonContext> {
+  private class NameHandler implements ElementHandler<PersonContext> {
     @Override
-    public void handleContent(Element element, PersonContext context, String text) {
-      Datable datable = new Datable(text);
-      context.person.setBirthDate(datable);
+    public Traversal enterElement(Element element, PersonContext context) {
+      context.personName = new PersonName();
+      return Traversal.NEXT;
+    }
+
+    @Override
+    public Traversal leaveElement(Element element, PersonContext context) {
+      if (context.personName.getComponents().size() != 0) {
+        context.entity.addName(context.personName);
+      }
+      return Traversal.NEXT;
     }
   }
 
-  private class DateOfDeathHandler extends CaptureHandler<PersonContext> {
+  private class NameComponentHandler implements ElementHandler<PersonContext> {
     @Override
-    public void handleContent(Element element, PersonContext context, String text) {
-      Datable datable = new Datable(text);
-      context.person.setDeathDate(datable);
+    public Traversal enterElement(Element element, PersonContext context) {
+      context.openLayer();
+      return Traversal.NEXT;
+    }
+
+    @Override
+    public Traversal leaveElement(Element element, PersonContext context) {
+      String text = context.closeLayer();
+      if (element.hasName("forename")) {
+        context.personName.addNameComponent(PersonNameComponent.Type.FORENAME, text);
+      } else if (element.hasName("surname")) {
+          context.personName.addNameComponent(PersonNameComponent.Type.SURNAME, text);
+      } else if (element.hasName("addname")) {
+          context.personName.addNameComponent(PersonNameComponent.Type.ADD_NAME, text);
+      } else {
+        context.error("Unknown component: %s", element.getName());
+      }
+      return Traversal.NEXT;
     }
   }
 
