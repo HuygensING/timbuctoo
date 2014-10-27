@@ -1,57 +1,68 @@
 package nl.knaw.huygens.timbuctoo.storage;
 
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.Login;
 
+import com.google.common.collect.Maps;
+
 public class LoginCollection extends FileCollection<Login> {
+
+  Map<String, Login> authStringLoginMap;
+
+  public LoginCollection(List<Login> logins) {
+    initialize(logins);
+  }
+
+  private void initialize(List<Login> logins) {
+    authStringLoginMap = Maps.newConcurrentMap();
+    for (Login login : logins) {
+      authStringLoginMap.put(login.getAuthString(), login);
+    }
+  }
 
   @Override
   public String add(Login entity) {
-    // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException("Not yet implemented");
   }
 
   @Override
   public Login findItem(Login example) {
-    // TODO Auto-generated method stub
-    return null;
+    return authStringLoginMap.get(example.getAuthString());
   }
 
   @Override
   public Login get(String id) {
-    // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException("Not yet implemented");
   }
 
   @Override
   public StorageIterator<Login> getAll() {
-    // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException("Not yet implemented");
   }
 
   @Override
   public Login[] asArray() {
-    // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException("Not yet implemented");
   }
 
   @Override
   public void updateItem(Login item) {
-    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Not yet implemented");
 
   }
 
   @Override
   public void deleteItem(Login item) {
-    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Not yet implemented");
 
   }
 
   @Override
   protected LinkedList<String> getIds() {
-    // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException("Not yet implemented");
   }
 
 }
