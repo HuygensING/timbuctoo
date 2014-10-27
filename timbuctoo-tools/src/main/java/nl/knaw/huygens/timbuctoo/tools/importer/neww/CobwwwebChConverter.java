@@ -35,7 +35,6 @@ import nl.knaw.huygens.tei.XmlContext;
 import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Collective;
-import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Reference;
@@ -44,7 +43,6 @@ import nl.knaw.huygens.timbuctoo.model.cwch.CWCHCollective;
 import nl.knaw.huygens.timbuctoo.model.cwch.CWCHDocument;
 import nl.knaw.huygens.timbuctoo.model.cwch.CWCHPerson;
 import nl.knaw.huygens.timbuctoo.model.cwno.CWNORelation;
-import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.Period;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
@@ -54,6 +52,7 @@ import nl.knaw.huygens.timbuctoo.tools.importer.RelationDTO;
 import nl.knaw.huygens.timbuctoo.tools.importer.RelationTypeImporter;
 import nl.knaw.huygens.timbuctoo.tools.process.Pipeline;
 import nl.knaw.huygens.timbuctoo.tools.process.Progress;
+import nl.knaw.huygens.timbuctoo.util.Text;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -102,10 +101,10 @@ public class CobwwwebChConverter extends CobwwwebConverter {
       // convertCollectives();
 
       printBoxedText("Persons");
-      convertPersons();
+      // convertPersons();
 
       printBoxedText("Documents");
-      // convertDocuments();
+      convertDocuments();
 
       printBoxedText("Relations");
       // convertRelations();
@@ -417,13 +416,11 @@ public class CobwwwebChConverter extends CobwwwebConverter {
 
     try {
       String xml = getResource(URL, "documents");
-      System.out.println(xml);
       List<String> documentIds = parseIdResource(xml, "DocumentId");
 
       for (String id : documentIds) {
         progress.step();
         xml = getResource(URL, "document", id);
-        System.out.println(xml);
         CWCHDocument entity = parseDocumentResource(xml, id);
         jsonConverter.appendTo(out, entity);
         storeReference(id, CWCHDocument.class, id);
@@ -435,16 +432,18 @@ public class CobwwwebChConverter extends CobwwwebConverter {
   }
 
   private CWCHDocument parseDocumentResource(String xml, String id) {
-    DocumentContext context = new DocumentContext(id);
+    DocumentContext context = new DocumentContext(xml, id);
     parseXml(xml, new DocumentVisitor(context));
-    return context.document;
+    return context.entity;
   }
 
   private class DocumentContext extends XmlContext {
-    public String id;
-    public CWCHDocument document = new CWCHDocument();
+    private String xml;
+    private String id;
+    public CWCHDocument entity = new CWCHDocument();
 
-    public DocumentContext(String id) {
+    public DocumentContext(String xml, String id) {
+      this.xml = xml;
       this.id = id;
     }
 
@@ -453,14 +452,22 @@ public class CobwwwebChConverter extends CobwwwebConverter {
     }
   }
 
+  /*
+   * <document>
+   *   <DocumentId>rime-872</DocumentId>
+   *   <Title>All'Italia</Title>
+   *   <Reference/>
+   *   <lastedited>2014-08-04T10:50:14Z</lastedited>
+   * </document>
+   */
+
   private class DocumentVisitor extends DelegatingVisitor<DocumentContext> {
     public DocumentVisitor(DocumentContext context) {
       super(context);
       setDefaultElementHandler(new DefaultDocumentHandler());
       addElementHandler(new DocumentIdHandler(), "DocumentId");
-      addElementHandler(new DocumentTypeHandler(), "type");
+      addElementHandler(new DocumentLinkHandler(), "Reference");
       addElementHandler(new DocumentTitleHandler(), "Title");
-      addElementHandler(new DocumentDateHandler(), "date");
     }
   }
 
@@ -471,7 +478,7 @@ public class CobwwwebChConverter extends CobwwwebConverter {
     public Traversal enterElement(Element element, DocumentContext context) {
       String name = element.getName();
       if (!ignoredNames.contains(name)) {
-        context.error("Unexpected element: %s", name);
+        context.error("Unexpected element: %s%nxml: %s", name, context.xml);
       }
       return Traversal.NEXT;
     }
@@ -480,43 +487,24 @@ public class CobwwwebChConverter extends CobwwwebConverter {
   private class DocumentIdHandler extends CaptureHandler<DocumentContext> {
     @Override
     public void handleContent(Element element, DocumentContext context, String text) {
-      context.document.setId(text);
+      context.entity.setId(text);
       if (!context.id.equals(text)) {
         context.error("ID mismatch: %s", text);
       }
     }
   }
 
-  private class DocumentTypeHandler extends CaptureHandler<DocumentContext> {
+  private class DocumentLinkHandler extends CaptureHandler<DocumentContext> {
     @Override
     public void handleContent(Element element, DocumentContext context, String text) {
-      if (text.equalsIgnoreCase(Document.DocumentType.WORK.name())) {
-        context.document.setDocumentType(Document.DocumentType.WORK);
-      } else {
-        context.error("Unknown type: %s", text);
-      }
+      context.entity.addLink(new Link(text));
     }
   }
 
   private class DocumentTitleHandler extends CaptureHandler<DocumentContext> {
     @Override
     public void handleContent(Element element, DocumentContext context, String text) {
-      context.document.setTitle(text);
-    }
-  }
-
-  private class DocumentDescriptionHandler extends CaptureHandler<DocumentContext> {
-    @Override
-    public void handleContent(Element element, DocumentContext context, String text) {
-      context.document.setDescription(text);
-    }
-  }
-
-  private class DocumentDateHandler extends CaptureHandler<DocumentContext> {
-    @Override
-    public void handleContent(Element element, DocumentContext context, String text) {
-      Datable datable = new Datable(text);
-      context.document.setDate(datable);
+      context.entity.setTitle(Text.normalizeWhitespace(text));
     }
   }
 
