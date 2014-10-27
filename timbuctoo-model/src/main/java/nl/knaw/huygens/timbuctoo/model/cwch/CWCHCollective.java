@@ -24,4 +24,10 @@ package nl.knaw.huygens.timbuctoo.model.cwch;
 
 import nl.knaw.huygens.timbuctoo.model.Collective;
 
-public class CWCHCollective extends Collective {}
+public class CWCHCollective extends Collective {
+
+  // --- temporary fields ------------------------------------------------------
+
+  public String tempLocation;
+
+}
