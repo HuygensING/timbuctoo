@@ -34,8 +34,6 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 
-import org.apache.commons.lang3.time.StopWatch;
-
 import com.google.common.base.Predicate;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -44,48 +42,38 @@ import com.google.inject.Singleton;
 public class MongoRelationSearcher extends RelationSearcher {
 
   private final CollectionConverter collectionConverter;
-  private final RelationSearchResultCreator relationSearchResultCreator;
+  private final RelationSearchResultCreator searchResultCreator;
 
   @Inject
-  public MongoRelationSearcher(Repository repository, CollectionConverter collectionConverter, RelationSearchResultCreator relationSearchResultCreator) {
+  public MongoRelationSearcher(Repository repository, CollectionConverter collectionConverter, RelationSearchResultCreator searchResultCreator) {
     super(repository);
     this.collectionConverter = collectionConverter;
-    this.relationSearchResultCreator = relationSearchResultCreator;
+    this.searchResultCreator = searchResultCreator;
   }
 
   @Override
   public SearchResult search(VRE vre, Class<? extends DomainEntity> relationType, RelationSearchParameters parameters) throws SearchException {
-    List<String> sourceIds = getSearchResultIds(parameters.getSourceSearchId());
-    List<String> targetIds = getSearchResultIds(parameters.getTargetSearchId());
+
+    SearchResult sourceResult = repository.getEntity(SearchResult.class, parameters.getSourceSearchId());
+    // String sourceType = sourceResult.getSearchType();
+    List<String> sourceIds = sourceResult.getIds();
+
+    SearchResult targetResult = repository.getEntity(SearchResult.class, parameters.getTargetSearchId());
+    // String targetType = targetResult.getSearchType();
+    List<String> targetIds = targetResult.getIds();
+
     List<String> relationTypeIds = getRelationTypes(parameters.getRelationTypeIds(), vre);
 
-    // retrieve the relations
-    StopWatch relationRetrievelStopWatch = new StopWatch();
-    relationRetrievelStopWatch.start();
+    // Retrieve the relations
+    FilterableSet<Relation> relations = getRelationsAsFilterableSet(relationTypeIds);
 
-    FilterableSet<Relation> filterableRelations = getRelationsAsFilterableSet(relationTypeIds);
-
-    logUsedTime(relationRetrievelStopWatch, "relation retrieval duration");
-
-    //Start filtering
-    StopWatch filterStopWatch = new StopWatch();
-    filterStopWatch.start();
-
+    // Start filtering
     Predicate<Relation> predicate = new RelationSourceTargetPredicate<Relation>(sourceIds, targetIds);
-    Set<Relation> filteredRelations = filterableRelations.filter(predicate);
+    Set<Relation> filteredRelations = relations.filter(predicate);
 
-    logUsedTime(filterStopWatch, "filter duration");
-
-    //Create the search result
-    StopWatch searchResultCreationStopWatch = new StopWatch();
-    searchResultCreationStopWatch.start();
-
+    // Create the search result
     String typeString = parameters.getTypeString();
-    SearchResult searchResult = relationSearchResultCreator.create(vre.getVreId(), typeString, filteredRelations, sourceIds, targetIds, relationTypeIds);
-
-    logUsedTime(searchResultCreationStopWatch, "search result creation");
-
-    return searchResult;
+    return searchResultCreator.create(vre.getVreId(), typeString, filteredRelations, sourceIds, targetIds, relationTypeIds);
   }
 
   private FilterableSet<Relation> getRelationsAsFilterableSet(List<String> relationTypeIds) throws SearchException {
@@ -96,11 +84,6 @@ public class MongoRelationSearcher extends RelationSearcher {
       throw new SearchException(e);
     }
     return collectionConverter.toFilterableSet(relations);
-  }
-
-  private List<String> getSearchResultIds(String searchId) {
-    SearchResult sourceSearch = repository.getEntity(SearchResult.class, searchId);
-    return sourceSearch.getIds();
   }
 
 }
