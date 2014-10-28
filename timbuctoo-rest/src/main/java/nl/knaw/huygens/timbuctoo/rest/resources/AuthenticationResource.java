@@ -8,6 +8,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
 import nl.knaw.huygens.security.client.UnauthorizedException;
+import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders;
 import nl.knaw.huygens.timbuctoo.security.BasicAuthenticationHandler;
 
@@ -28,9 +29,9 @@ public class AuthenticationResource {
 
       return Response.noContent().header(CustomHeaders.TOKEN_HEADER, token).build();
     } catch (IllegalArgumentException ex) {
-      return Response.status(Response.Status.BAD_REQUEST).build();
+      throw new TimbuctooException(Response.Status.BAD_REQUEST, "%s", ex.getMessage());
     } catch (UnauthorizedException ex) {
-      return Response.status(Response.Status.UNAUTHORIZED).build();
+      throw new TimbuctooException(Response.Status.UNAUTHORIZED, "%s", ex.getMessage());
     }
   }
 }
