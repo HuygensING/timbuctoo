@@ -38,23 +38,16 @@ import test.variation.model.projecta.ProjectADomainEntity;
 import com.google.common.collect.Lists;
 
 public class PackageScopeTest {
-  // mock
-  DomainEntity inscopeEntity = new DomainEntityWithIndexAnnotations();
-  DomainEntity outOfScopeEnitty = new ProjectADomainEntity();
 
   @Test
   public void testFilter() throws IOException {
     PackageScope instance = new PackageScope("test.variation.model");
 
-    List<DomainEntity> entities = Lists.newArrayList();
-    entities.add(inscopeEntity);
-    entities.add(outOfScopeEnitty);
+    DomainEntity inScope = new DomainEntityWithIndexAnnotations();
+    DomainEntity outOfScope = new ProjectADomainEntity();
+    List<DomainEntity> entities = Lists.newArrayList(inScope, outOfScope);
 
-    // action
-    List<DomainEntity> filteredResult = instance.filter(entities);
-
-    // verify
-    assertThat(filteredResult, contains(inscopeEntity));
-
+    assertThat(instance.filter(entities), contains(inScope));
   }
+
 }
