@@ -37,8 +37,16 @@ public class RegularSearchResultDTO extends SearchResultDTO {
     return term;
   }
 
+  public void setTerm(String term) {
+    this.term = term;
+  }
+
   public List<Facet> getFacets() {
     return facets;
+  }
+
+  public void setFacets(List<Facet> facets) {
+    this.facets = facets;
   }
 
   public List<DomainEntityDTO> getRefs() {
@@ -49,20 +57,12 @@ public class RegularSearchResultDTO extends SearchResultDTO {
     this.refs = refs;
   }
 
-  public void setFacets(List<Facet> facets) {
-    this.facets = facets;
-  }
-
-  public void setTerm(String term) {
-    this.term = term;
-  }
-
   public List<String> getFullTextSearchFields() {
     return fullTextSearchFields;
   }
 
-  public void setFullTextSearchFields(List<String> fullTextSearchFields) {
-    this.fullTextSearchFields = fullTextSearchFields;
+  public void setFullTextSearchFields(List<String> fields) {
+    this.fullTextSearchFields = fields;
   }
 
 }

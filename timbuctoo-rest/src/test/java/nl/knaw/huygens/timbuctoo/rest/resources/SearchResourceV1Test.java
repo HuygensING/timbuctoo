@@ -79,6 +79,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
   private static final String TYPE_STRING = "persons";
   protected static final String RELATION_TYPE_STRING = "testrelations";
   private static final String RELATION_SEARCH_RESULT_TYPE = "testrelation";
+
   private void setupPublicUrl(String url) {
     when(injector.getInstance(Configuration.class).getSetting("public_url")).thenReturn(url);
   }
@@ -178,7 +179,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     final int defaultRows = 10;
 
     when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
-    when(regularClientSearchResultCreatorMock.create(SEARCH_RESULT_TYPE, searchResult, defaultStart, defaultRows)).thenReturn(clientSearchResult);
+    when(regularSearchResultMapperMock.create(SEARCH_RESULT_TYPE, searchResult, defaultStart, defaultRows)).thenReturn(clientSearchResult);
 
     // action
     ClientResponse response = searchResourceBuilder(ID).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
@@ -190,7 +191,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     assertThat(actualResult, notNullValue(RegularSearchResultDTO.class));
 
     verify(repository).getEntity(SearchResult.class, ID);
-    verify(regularClientSearchResultCreatorMock).create(SEARCH_RESULT_TYPE, searchResult, defaultStart, defaultRows);
+    verify(regularSearchResultMapperMock).create(SEARCH_RESULT_TYPE, searchResult, defaultStart, defaultRows);
 
   }
 
@@ -210,7 +211,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     queryParameters.add("rows", "20");
 
     when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
-    when(regularClientSearchResultCreatorMock.create(SEARCH_RESULT_TYPE, searchResult, startIndex, numberOfRows)).thenReturn(clientSearchResult);
+    when(regularSearchResultMapperMock.create(SEARCH_RESULT_TYPE, searchResult, startIndex, numberOfRows)).thenReturn(clientSearchResult);
 
     // action
     ClientResponse clientResponse = searchResource(ID).queryParams(queryParameters).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
@@ -222,7 +223,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     assertThat(actualResult, notNullValue(RegularSearchResultDTO.class));
 
     verify(repository).getEntity(SearchResult.class, ID);
-    verify(regularClientSearchResultCreatorMock).create(SEARCH_RESULT_TYPE, searchResult, startIndex, numberOfRows);
+    verify(regularSearchResultMapperMock).create(SEARCH_RESULT_TYPE, searchResult, startIndex, numberOfRows);
   }
 
   @Test
@@ -237,7 +238,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     final int defaultRows = 10;
 
     when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
-    when(relationClientSearchResultCreatorMock.create(TEST_RELATION_TYPE, searchResult, defaultStart, defaultRows)).thenReturn(clientSearchResult);
+    when(relationSearchResultMapperMock.create(TEST_RELATION_TYPE, searchResult, defaultStart, defaultRows)).thenReturn(clientSearchResult);
 
     // action
     ClientResponse response = searchResourceBuilder(ID).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
@@ -245,11 +246,11 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     // verify
     assertThat(response.getClientResponseStatus(), equalTo(Status.OK));
 
-    RegularSearchResultDTO actualResult = response.getEntity(RegularSearchResultDTO.class);
-    assertThat(actualResult, notNullValue(RegularSearchResultDTO.class));
+    RelationSearchResultDTO actualResult = response.getEntity(RelationSearchResultDTO.class);
+    assertThat(actualResult, notNullValue(RelationSearchResultDTO.class));
 
     verify(repository).getEntity(SearchResult.class, ID);
-    verify(relationClientSearchResultCreatorMock).create(TEST_RELATION_TYPE, searchResult, defaultStart, defaultRows);
+    verify(relationSearchResultMapperMock).create(TEST_RELATION_TYPE, searchResult, defaultStart, defaultRows);
   }
 
   @Test

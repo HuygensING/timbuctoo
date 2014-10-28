@@ -55,18 +55,14 @@ public abstract class SearchResourceTestBase extends WebServiceTestSetup {
   protected static final String TERM = "dynamic_t_name:Huygens";
   protected static final String LOCATION_HEADER = "Location";
   protected static final String ID = "QURY0000000001";
-
-  protected SearchRequestValidator searchRequestValidator;
-  protected RegularSearchResultMapper regularClientSearchResultCreatorMock;
-  protected RelationSearchResultMapper relationClientSearchResultCreatorMock;
   protected static final String RELATION_SEARCH_RESULT_TYPE = "testrelation";
   protected static final String SEARCH_RESULT_TYPE_STRING = "person";
   protected static final Class<? extends DomainEntity> SEARCH_RESULT_TYPE = Person.class;
   protected static final Class<TestRelation> TEST_RELATION_TYPE = TestRelation.class;
 
-  public SearchResourceTestBase() {
-    super();
-  }
+  protected SearchRequestValidator searchRequestValidator;
+  protected RegularSearchResultMapper regularSearchResultMapperMock;
+  protected RelationSearchResultMapper relationSearchResultMapperMock;
 
   @Before
   public void setUpSearchRequestValidator() {
@@ -99,8 +95,8 @@ public abstract class SearchResourceTestBase extends WebServiceTestSetup {
 
   @Before
   public void setUpClientSearchResultCreators() {
-    regularClientSearchResultCreatorMock = injector.getInstance(RegularSearchResultMapper.class);
-    relationClientSearchResultCreatorMock = injector.getInstance(RelationSearchResultMapper.class);
+    regularSearchResultMapperMock = injector.getInstance(RegularSearchResultMapper.class);
+    relationSearchResultMapperMock = injector.getInstance(RelationSearchResultMapper.class);
   }
 
 }

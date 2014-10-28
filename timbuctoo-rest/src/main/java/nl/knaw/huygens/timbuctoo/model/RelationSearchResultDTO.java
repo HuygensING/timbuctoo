@@ -26,7 +26,27 @@ import java.util.List;
 
 public class RelationSearchResultDTO extends SearchResultDTO {
 
+  /** Internal name of source entity type. */
+  private String sourceType;
+  /** Internal name of target entity type. */
+  private String targetType;
   private List<RelationDTO> refs;
+
+  public String getSourceType() {
+    return sourceType;
+  }
+
+  public void setSourceType(String sourceType) {
+    this.sourceType = sourceType;
+  }
+
+  public String getTargetType() {
+    return targetType;
+  }
+
+  public void setTargetType(String targetType) {
+    this.targetType = targetType;
+  }
 
   public List<RelationDTO> getRefs() {
     return refs;
