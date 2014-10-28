@@ -9,11 +9,14 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Inject;
+
 public class LocalAuthenticator {
   private static final Logger LOG = LoggerFactory.getLogger(LocalAuthenticator.class);
   static final String LOGIN_COLLECTION_FILE_NAME = "logins.json";
   private final JsonFileHandler jsonFileHandler;
 
+  @Inject
   public LocalAuthenticator(JsonFileHandler jsonFileHandler) {
     this.jsonFileHandler = jsonFileHandler;
   }
