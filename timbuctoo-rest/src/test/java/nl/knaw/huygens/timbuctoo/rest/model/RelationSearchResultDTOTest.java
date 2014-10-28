@@ -52,6 +52,8 @@ public class RelationSearchResultDTOTest extends SearchResultDTOTest {
   private SearchResultDTO createFilledDTO() {
     RelationSearchResultDTO dto = new RelationSearchResultDTO();
     setSearchResultDTOProperties(dto);
+    dto.setSourceType(ANY_STRING);
+    dto.setTargetType(ANY_STRING);
     dto.setRefs(createRefs());
     return dto;
   }
