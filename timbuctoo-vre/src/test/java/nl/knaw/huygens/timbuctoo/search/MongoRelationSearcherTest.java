@@ -55,6 +55,8 @@ public class MongoRelationSearcherTest {
   private static final Class<Relation> RELATION_VARIATION = Relation.class;
   private static final String VRE_ID = "vreId";
   private static final String TYPE_STRING = "relationSubType";
+  private static final String SOURCE_TYPE = "sourceType";
+  private static final String TARGET_TYPE = "targetType";
 
   @Mock
   private FilterableSet<Relation> filterableRelationsMock;
@@ -64,11 +66,11 @@ public class MongoRelationSearcherTest {
   private final String sourceSearchId = "sourceSearchId";
   private final String targetSearchId = "targetSearchId";
   private final List<String> relationTypeIds = Lists.newArrayList("id1", "id2", "id3");;
-  List<Relation> foundRelations = null;
-  List<String> sourceIds = null;
-  List<String> targetIds = null;
-  private final SearchResult sourceSearchResult = new SearchResult();
-  private final SearchResult targetSearchResult = new SearchResult();
+  private final List<Relation> foundRelations = null;
+  private final List<String> sourceIds = null;
+  private final List<String> targetIds = null;
+  private SearchResult sourceSearchResult;
+  private SearchResult targetSearchResult;
   private final Set<Relation> filteredRelations = Sets.newHashSet();
   private final SearchResult relationSearchResult = new SearchResult();
   private RelationSearchResultCreator relationSearchResultCreatorMock;
@@ -83,7 +85,12 @@ public class MongoRelationSearcherTest {
     collectionConverterMock = mock(CollectionConverter.class);
     relationSearchResultCreatorMock = mock(RelationSearchResultCreator.class);
 
+    sourceSearchResult = new SearchResult();
+    sourceSearchResult.setSearchType(SOURCE_TYPE);
     sourceSearchResult.setIds(sourceIds);
+
+    targetSearchResult = new SearchResult();
+    targetSearchResult.setSearchType(TARGET_TYPE);
     targetSearchResult.setIds(targetIds);
 
     when(vreMock.getVreId()).thenReturn(VRE_ID);
@@ -92,7 +99,7 @@ public class MongoRelationSearcherTest {
     when(repositoryMock.getEntity(SEARCH_RESULT_TYPE, targetSearchId)).thenReturn(targetSearchResult);
     when(collectionConverterMock.toFilterableSet(foundRelations)).thenReturn(filterableRelationsMock);
     when(filterableRelationsMock.filter(Mockito.<RelationSourceTargetPredicate<Relation>> any())).thenReturn(filteredRelations);
-    when(relationSearchResultCreatorMock.create(VRE_ID, TYPE_STRING, filteredRelations, sourceIds, targetIds, relationTypeIds)).thenReturn(relationSearchResult);
+    when(relationSearchResultCreatorMock.create(VRE_ID, TYPE_STRING, filteredRelations, SOURCE_TYPE, sourceIds, TARGET_TYPE, targetIds, relationTypeIds)).thenReturn(relationSearchResult);
 
     instance = new MongoRelationSearcher(repositoryMock, collectionConverterMock, relationSearchResultCreatorMock);
   }
@@ -114,7 +121,7 @@ public class MongoRelationSearcherTest {
     verify(repositoryMock).getEntity(SEARCH_RESULT_TYPE, sourceSearchId);
     verify(repositoryMock).getEntity(SEARCH_RESULT_TYPE, targetSearchId);
     verify(filterableRelationsMock).filter(Mockito.<RelationSourceTargetPredicate<Relation>> any());
-    verify(relationSearchResultCreatorMock).create(VRE_ID, TYPE_STRING, filteredRelations, sourceIds, targetIds, relationTypeIds);
+    verify(relationSearchResultCreatorMock).create(VRE_ID, TYPE_STRING, filteredRelations, SOURCE_TYPE, sourceIds, TARGET_TYPE, targetIds, relationTypeIds);
     assertThat(actualResult, equalTo(relationSearchResult));
   }
 
@@ -140,7 +147,7 @@ public class MongoRelationSearcherTest {
     verify(repositoryMock).getEntity(SEARCH_RESULT_TYPE, sourceSearchId);
     verify(repositoryMock).getEntity(SEARCH_RESULT_TYPE, targetSearchId);
     verify(filterableRelationsMock).filter(Mockito.<RelationSourceTargetPredicate<Relation>> any());
-    verify(relationSearchResultCreatorMock).create(VRE_ID, TYPE_STRING, filteredRelations, sourceIds, targetIds, relationTypeIds);
+    verify(relationSearchResultCreatorMock).create(VRE_ID, TYPE_STRING, filteredRelations, SOURCE_TYPE, sourceIds, TARGET_TYPE, targetIds, relationTypeIds);
     assertThat(actualResult, equalTo(relationSearchResult));
   }
 

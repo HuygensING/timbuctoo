@@ -55,11 +55,11 @@ public class MongoRelationSearcher extends RelationSearcher {
   public SearchResult search(VRE vre, Class<? extends DomainEntity> relationType, RelationSearchParameters parameters) throws SearchException {
 
     SearchResult sourceResult = repository.getEntity(SearchResult.class, parameters.getSourceSearchId());
-    // String sourceType = sourceResult.getSearchType();
+    String sourceType = sourceResult.getSearchType();
     List<String> sourceIds = sourceResult.getIds();
 
     SearchResult targetResult = repository.getEntity(SearchResult.class, parameters.getTargetSearchId());
-    // String targetType = targetResult.getSearchType();
+    String targetType = targetResult.getSearchType();
     List<String> targetIds = targetResult.getIds();
 
     List<String> relationTypeIds = getRelationTypes(parameters.getRelationTypeIds(), vre);
@@ -73,7 +73,7 @@ public class MongoRelationSearcher extends RelationSearcher {
 
     // Create the search result
     String typeString = parameters.getTypeString();
-    return searchResultCreator.create(vre.getVreId(), typeString, filteredRelations, sourceIds, targetIds, relationTypeIds);
+    return searchResultCreator.create(vre.getVreId(), typeString, filteredRelations, sourceType, sourceIds, targetType, targetIds, relationTypeIds);
   }
 
   private FilterableSet<Relation> getRelationsAsFilterableSet(List<String> relationTypeIds) throws SearchException {
