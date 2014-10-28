@@ -184,7 +184,9 @@ public class SearchResourceV1 extends ResourceBase {
     checkCondition(Relation.class.isAssignableFrom(type), BAD_REQUEST, "Not a relation type: %s", typeString);
 
     RelationSearchResultDTO dto = relationSearchResultMapper.create(type, result, 0, Integer.MAX_VALUE);
-    return Response.ok(dto).build();
+    return Response.ok(dto) //
+        .header("Content-Disposition", "attachment; filename=" + queryId + ".csv") //
+        .build();
   }
 
   @GET
@@ -200,7 +202,9 @@ public class SearchResourceV1 extends ResourceBase {
     checkCondition(Relation.class.isAssignableFrom(type), BAD_REQUEST, "Not a relation type: %s", typeString);
 
     RelationSearchResultDTO dto = relationSearchResultMapper.create(type, result, 0, Integer.MAX_VALUE);
-    return Response.ok(dto).build();
+    return Response.ok(dto) //
+        .header("Content-Disposition", "attachment; filename=" + queryId + ".xls") //
+        .build();
   }
 
   private SearchResultMapper getSearchResultMapper(Class<? extends DomainEntity> type) {
