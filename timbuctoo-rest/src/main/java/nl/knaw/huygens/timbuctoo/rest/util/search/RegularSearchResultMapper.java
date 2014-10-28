@@ -67,7 +67,6 @@ public class RegularSearchResultMapper extends SearchResultMapper {
     dto.setRows(normalizedRows);
     dto.setStart(normalizedStart);
     dto.setIds(ids);
-    dto.setResults(results);
     dto.setNumFound(numFound);
     dto.setRefs(createRefs(type, results));
     dto.setSortableFields(sortableFieldFinder.findFields(type));

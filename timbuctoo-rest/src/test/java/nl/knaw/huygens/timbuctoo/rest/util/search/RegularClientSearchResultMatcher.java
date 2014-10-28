@@ -86,7 +86,6 @@ public class RegularClientSearchResultMatcher extends ClientSearchResultMatcher<
     addToDescription(mismatchdescription, "numFound", item.getNumFound());
     addToDescription(mismatchdescription, "ids", item.getIds());
     addToDescription(mismatchdescription, "refs", item.getRefs());
-    addToDescription(mismatchdescription, "results", item.getResults());
     addToDescription(mismatchdescription, "start", item.getStart());
     addToDescription(mismatchdescription, "rows", item.getRows());
     addToDescription(mismatchdescription, "sortableFields", item.getSortableFields());

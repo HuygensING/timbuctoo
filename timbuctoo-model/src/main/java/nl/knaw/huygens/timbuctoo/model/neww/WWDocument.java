@@ -141,7 +141,7 @@ public class WWDocument extends Document {
   }
 
   // ---------------------------------------------------------------------------
-  
+
   private static final DerivedProperty AUTHOR_GENDER = new DerivedProperty("authorGender", "isCreatedBy", "getGender");
   private static final List<DerivedProperty> DERIVED_PROPERTIES = ImmutableList.of(AUTHOR_GENDER);
 
@@ -153,6 +153,7 @@ public class WWDocument extends Document {
   @Override
   public Map<String, String> getClientRepresentation() {
     Map<String, String> data = Maps.newTreeMap();
+    addItemToRepresentation(data, "id", getId());
     addItemToRepresentation(data, "title", getTitle());
     addItemToRepresentation(data, "type", getDocumentType());
     addItemToRepresentation(data, "date", getDate() != null ? getDate().getFromYear() : null);
