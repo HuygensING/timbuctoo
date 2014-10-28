@@ -45,7 +45,9 @@ public class SearchResult extends SystemEntity implements Persistent {
   private List<Facet> facets;
 
   private boolean relationSearch;
+  private String sourceType;
   private List<String> sourceIds;
+  private String targetType;
   private List<String> targetIds;
   private List<String> relationTypeIds;
 
@@ -116,12 +118,28 @@ public class SearchResult extends SystemEntity implements Persistent {
     this.relationSearch = relationSearch;
   }
 
+  public String getSourceType() {
+    return sourceType;
+  }
+
+  public void setSourceType(String sourceType) {
+    this.sourceType = sourceType;
+  }
+
   public List<String> getSourceIds() {
     return sourceIds;
   }
 
   public void setSourceIds(List<String> ids) {
     sourceIds = ids;
+  }
+
+  public String getTargetType() {
+    return targetType;
+  }
+
+  public void setTargetType(String targetType) {
+    this.targetType = targetType;
   }
 
   public List<String> getTargetIds() {

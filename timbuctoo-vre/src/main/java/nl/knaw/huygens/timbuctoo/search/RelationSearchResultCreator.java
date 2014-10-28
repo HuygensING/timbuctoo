@@ -34,17 +34,20 @@ import com.google.inject.Singleton;
 @Singleton
 public class RelationSearchResultCreator {
 
-  public SearchResult create(String vreId, String typeString, Set<Relation> filteredRelations, List<String> sourceIds, List<String> targetIds, List<String> relationTypeIds) {
+  public SearchResult create(String vreId, String typeString, Set<Relation> relations, String sourceType, List<String> sourceIds, String targetType, List<String> targetIds,
+      List<String> relationTypeIds) {
 
     SearchResult result = createSearchResult();
     result.setRelationSearch(true);
     result.setVreId(vreId);
     result.setSearchType(typeString);
+    result.setSourceType(sourceType);
     result.setSourceIds(sourceIds);
+    result.setTargetType(targetType);
     result.setTargetIds(targetIds);
     result.setRelationTypeIds(relationTypeIds);
 
-    result.setIds(getRelationIds(filteredRelations));
+    result.setIds(getRelationIds(relations));
 
     return result;
   }

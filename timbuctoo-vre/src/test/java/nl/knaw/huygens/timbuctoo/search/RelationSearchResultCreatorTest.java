@@ -51,7 +51,9 @@ public class RelationSearchResultCreatorTest {
     // setup
     final SearchResult searchResultMock = mock(SearchResult.class);
 
+    String sourceType = "sourceType";
     List<String> sourceIds = Lists.newArrayList();
+    String targetType = "targetType";
     List<String> targetIds = Lists.newArrayList();
     List<String> relationTypeIds = Lists.newArrayList();
 
@@ -69,16 +71,17 @@ public class RelationSearchResultCreatorTest {
     };
 
     // action
-    SearchResult actualSearchResult = instance.create(VRE_ID, TYPE_STRING, relations, sourceIds, targetIds, relationTypeIds);
+    SearchResult actualSearchResult = instance.create(VRE_ID, TYPE_STRING, relations, sourceType, sourceIds, targetType, targetIds, relationTypeIds);
 
     // verify
     assertThat(actualSearchResult, equalTo(searchResultMock));
+    verify(searchResultMock).setSourceType(sourceType);
     verify(searchResultMock).setSourceIds(sourceIds);
+    verify(searchResultMock).setTargetType(targetType);
     verify(searchResultMock).setTargetIds(targetIds);
     verify(searchResultMock).setIds((List<String>) argThat(containsInAnyOrder(relId1, relId2)));
     verify(searchResultMock).setRelationSearch(true);
     verify(searchResultMock).setRelationTypeIds(relationTypeIds);
-
   }
 
   private Relation createRelation(String id) {
