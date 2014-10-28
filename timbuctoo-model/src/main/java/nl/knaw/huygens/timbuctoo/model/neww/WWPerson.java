@@ -131,7 +131,8 @@ public class WWPerson extends Person {
 
   @Override
   public String getIndexedName() {
-    return super.getIndexedName() != null ? super.getIndexedName() : getTempName();
+    String name = super.getIndexedName();
+    return (name != null) ? name : getTempName();
   }
 
   public String getNationality() {
