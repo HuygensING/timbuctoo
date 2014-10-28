@@ -32,13 +32,7 @@ import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 
-import org.apache.commons.lang3.time.StopWatch;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public abstract class RelationSearcher {
-
-  private static final Logger LOG = LoggerFactory.getLogger(RelationSearcher.class);
 
   protected final Repository repository;
 
@@ -47,11 +41,6 @@ public abstract class RelationSearcher {
   }
 
   public abstract SearchResult search(VRE vre, Class<? extends DomainEntity> relationType, RelationSearchParameters relationSearchParameters) throws SearchException, SearchValidationException;
-
-  protected void logUsedTime(StopWatch stopWatch, String eventDescription) {
-    stopWatch.stop();
-    LOG.info(String.format("%s: %.3f seconds", eventDescription, (double) stopWatch.getTime() / 1000));
-  }
 
   protected List<String> getRelationTypes(List<String> relationTypeIds, VRE vre) {
     if (relationTypeIds != null && !relationTypeIds.isEmpty()) {
