@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.model.Login;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 @JsonSerialize(using = FileCollectionSerializer.class)
@@ -16,6 +17,10 @@ import com.google.common.collect.Maps;
 public class LoginCollection extends FileCollection<Login> {
 
   Map<String, Login> authStringLoginMap;
+
+  public LoginCollection() {
+    this(Lists.<Login> newArrayList());
+  }
 
   public LoginCollection(List<Login> logins) {
     initialize(logins);

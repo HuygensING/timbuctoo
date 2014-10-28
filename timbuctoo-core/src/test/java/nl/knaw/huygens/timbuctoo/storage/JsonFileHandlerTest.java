@@ -24,9 +24,10 @@ package nl.knaw.huygens.timbuctoo.storage;
 
 import static nl.knaw.huygens.timbuctoo.storage.JsonFileHandler.CONFIG_DIR_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.emptyCollectionOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -115,7 +116,7 @@ public class JsonFileHandlerTest {
   }
 
   @Test
-  public void testGetCollectionWhenTheCollectionIsNotFound() throws Exception {
+  public void testGetCollectionWhenTheCollectionIsNotFoundReturnsAnEmptyCollection() throws Exception {
     // setup
     doThrow(FileNotFoundException.class).when(objectMapper).readValue(FILE, COLLECTION_TYPE);
 
@@ -123,8 +124,8 @@ public class JsonFileHandlerTest {
     UserFileCollection actualCollection = instance.getCollection(UserFileCollection.class, FILE_NAME);
 
     // verify
-    assertThat(actualCollection, is(nullValue(COLLECTION_TYPE)));
-
+    assertThat(actualCollection, is(notNullValue(UserFileCollection.class)));
+    assertThat(actualCollection.getIds(), emptyCollectionOf(String.class));
   }
 
   @Test(expected = StorageException.class)

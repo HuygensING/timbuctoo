@@ -84,7 +84,13 @@ public class JsonFileHandler {
     } catch (JsonMappingException e) {
       throw new StorageException(e);
     } catch (FileNotFoundException e) {
-      return null;
+      try {
+        return type.newInstance();
+      } catch (InstantiationException e1) {
+        throw new StorageException(e1);
+      } catch (IllegalAccessException e1) {
+        throw new StorageException(e1);
+      }
     } catch (IOException e) {
       throw new StorageException(e);
     }
