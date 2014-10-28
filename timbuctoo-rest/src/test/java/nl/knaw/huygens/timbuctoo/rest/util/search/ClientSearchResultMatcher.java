@@ -25,8 +25,8 @@ package nl.knaw.huygens.timbuctoo.rest.util.search;
 import java.util.List;
 import java.util.Set;
 
-import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
@@ -72,7 +72,6 @@ public abstract class ClientSearchResultMatcher<T extends SearchResultDTO> exten
     boolean isEqual = Objects.equal(sortableFields, item.getSortableFields());
     isEqual &= Objects.equal(numFound, item.getNumFound());
     isEqual &= Objects.equal(ids, item.getIds());
-    isEqual &= Objects.equal(results, item.getResults());
     isEqual &= Objects.equal(start, item.getStart());
     isEqual &= Objects.equal(rows, item.getRows());
     isEqual &= Objects.equal(sortableFields, item.getSortableFields());

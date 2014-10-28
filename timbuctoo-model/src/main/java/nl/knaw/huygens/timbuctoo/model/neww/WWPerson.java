@@ -240,6 +240,7 @@ public class WWPerson extends Person {
   @Override
   public Map<String, String> getClientRepresentation() {
     Map<String, String> data = Maps.newTreeMap();
+    addItemToRepresentation(data, "id", getId());
     String name = defaultName().getShortName();
     addItemToRepresentation(data, "name", StringUtils.stripToEmpty(name).isEmpty() ? getTempName() : name);
     addItemToRepresentation(data, "gender", getGender());

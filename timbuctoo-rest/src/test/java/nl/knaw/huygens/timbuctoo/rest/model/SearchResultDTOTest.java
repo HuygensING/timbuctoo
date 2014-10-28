@@ -22,11 +22,9 @@ package nl.knaw.huygens.timbuctoo.rest.model;
  * #L%
  */
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -43,20 +41,9 @@ public abstract class SearchResultDTOTest {
     dto.setNextLink(ANY_STRING);
     dto.setPrevLink(ANY_STRING);
     dto.setNumFound(ANY_INT);
-    dto.setResults(createResultList());
     dto.setRows(ANY_INT);
     dto.setSortableFields(Sets.newHashSet(ANY_STRING));
     dto.setStart(ANY_INT);
-  }
-
-  private List<DomainEntity> createResultList() {
-    DomainEntity entity = new DomainEntity() {
-      @Override
-      public String getDisplayName() {
-        return null;
-      }
-    };
-    return Lists.newArrayList(entity);
   }
 
   @SuppressWarnings("unchecked")

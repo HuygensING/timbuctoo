@@ -25,8 +25,8 @@ package nl.knaw.huygens.timbuctoo.rest.util.search;
 import java.util.List;
 import java.util.Set;
 
-import nl.knaw.huygens.timbuctoo.model.RelationDTO;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.RelationDTO;
 import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
 
 import org.hamcrest.Description;
@@ -65,7 +65,6 @@ public class RelationClientSearchResultMatcher extends ClientSearchResultMatcher
     addToDescription(mismatchDescription, "numFound", item.getNumFound());
     addToDescription(mismatchDescription, "ids", item.getIds());
     addToDescription(mismatchDescription, "refs", item.getRefs());
-    addToDescription(mismatchDescription, "results", item.getResults());
     addToDescription(mismatchDescription, "start", item.getStart());
     addToDescription(mismatchDescription, "rows", item.getRows());
     addToDescription(mismatchDescription, "sortableFields", item.getSortableFields());
@@ -77,7 +76,6 @@ public class RelationClientSearchResultMatcher extends ClientSearchResultMatcher
   protected boolean matchesSafely(RelationSearchResultDTO item) {
     boolean isEqual = super.matchesSafely(item);
     isEqual &= Objects.equal(refs, item.getRefs());
-
     return isEqual;
   }
 
