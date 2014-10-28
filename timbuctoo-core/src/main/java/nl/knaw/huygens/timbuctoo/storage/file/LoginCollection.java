@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage;
+package nl.knaw.huygens.timbuctoo.storage.file;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.Login;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;

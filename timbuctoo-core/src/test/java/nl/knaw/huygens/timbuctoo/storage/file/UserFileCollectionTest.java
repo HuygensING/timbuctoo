@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage;
+package nl.knaw.huygens.timbuctoo.storage.file;
 
 /*
  * #%L
@@ -34,6 +34,9 @@ import static org.hamcrest.Matchers.sameInstance;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.User;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+import nl.knaw.huygens.timbuctoo.storage.file.FileCollection;
+import nl.knaw.huygens.timbuctoo.storage.file.UserFileCollection;
 
 import org.junit.Before;
 import org.junit.Test;

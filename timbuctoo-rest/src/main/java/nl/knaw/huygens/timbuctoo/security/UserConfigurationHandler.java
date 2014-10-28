@@ -24,13 +24,13 @@ package nl.knaw.huygens.timbuctoo.security;
 
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
-import nl.knaw.huygens.timbuctoo.storage.FileCollection;
-import nl.knaw.huygens.timbuctoo.storage.JsonFileHandler;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
-import nl.knaw.huygens.timbuctoo.storage.UserFileCollection;
-import nl.knaw.huygens.timbuctoo.storage.VREAuthorizationFileCollection;
+import nl.knaw.huygens.timbuctoo.storage.file.FileCollection;
+import nl.knaw.huygens.timbuctoo.storage.file.JsonFileHandler;
+import nl.knaw.huygens.timbuctoo.storage.file.UserFileCollection;
+import nl.knaw.huygens.timbuctoo.storage.file.VREAuthorizationFileCollection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

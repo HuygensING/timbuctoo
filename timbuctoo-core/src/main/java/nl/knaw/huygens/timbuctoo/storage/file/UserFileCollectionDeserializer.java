@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage;
+package nl.knaw.huygens.timbuctoo.storage.file;
 
 /*
  * #%L
@@ -23,18 +23,21 @@ package nl.knaw.huygens.timbuctoo.storage;
  */
 
 import java.io.IOException;
+import java.util.List;
 
-import com.fasterxml.jackson.core.JsonGenerator;
+import nl.knaw.huygens.timbuctoo.model.User;
+
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 
-public class FileCollectionSerializer extends JsonSerializer<FileCollection<?>> {
+public class UserFileCollectionDeserializer extends JsonDeserializer<UserFileCollection> {
 
   @Override
-  public void serialize(FileCollection<?> value, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException {
-    // array is need to save the type information.
-    provider.defaultSerializeValue(value.asArray(), jgen);
+  public UserFileCollection deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+    List<User> users = jp.readValueAs(new TypeReference<List<User>>() {});
+    return new UserFileCollection(users);
   }
-
 }

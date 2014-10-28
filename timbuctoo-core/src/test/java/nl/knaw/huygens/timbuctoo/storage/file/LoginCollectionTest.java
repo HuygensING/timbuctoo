@@ -1,10 +1,11 @@
-package nl.knaw.huygens.timbuctoo.storage;
+package nl.knaw.huygens.timbuctoo.storage.file;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItemInArray;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import nl.knaw.huygens.timbuctoo.model.Login;
+import nl.knaw.huygens.timbuctoo.storage.file.LoginCollection;
 
 import org.junit.Test;
 

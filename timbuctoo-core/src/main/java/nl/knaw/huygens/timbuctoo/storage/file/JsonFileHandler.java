@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage;
+package nl.knaw.huygens.timbuctoo.storage.file;
 
 /*
  * #%L
@@ -28,6 +28,7 @@ import java.io.IOException;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonParseException;

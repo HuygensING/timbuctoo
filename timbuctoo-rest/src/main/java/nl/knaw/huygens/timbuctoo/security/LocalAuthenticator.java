@@ -2,9 +2,9 @@ package nl.knaw.huygens.timbuctoo.security;
 
 import nl.knaw.huygens.security.client.UnauthorizedException;
 import nl.knaw.huygens.timbuctoo.model.Login;
-import nl.knaw.huygens.timbuctoo.storage.JsonFileHandler;
-import nl.knaw.huygens.timbuctoo.storage.LoginCollection;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.file.JsonFileHandler;
+import nl.knaw.huygens.timbuctoo.storage.file.LoginCollection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

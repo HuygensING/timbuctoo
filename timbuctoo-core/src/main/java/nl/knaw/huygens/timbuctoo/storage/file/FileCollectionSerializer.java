@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage;
+package nl.knaw.huygens.timbuctoo.storage.file;
 
 /*
  * #%L
@@ -23,22 +23,18 @@ package nl.knaw.huygens.timbuctoo.storage;
  */
 
 import java.io.IOException;
-import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
-
-import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 
-public class VREAuthorizationFileCollectionDeserializer extends JsonDeserializer<VREAuthorizationFileCollection> {
+public class FileCollectionSerializer extends JsonSerializer<FileCollection<?>> {
 
   @Override
-  public VREAuthorizationFileCollection deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-    List<VREAuthorization> authorizations = jp.readValueAs(new TypeReference<List<VREAuthorization>>() {});
-
-    return new VREAuthorizationFileCollection(authorizations);
+  public void serialize(FileCollection<?> value, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException {
+    // array is need to save the type information.
+    provider.defaultSerializeValue(value.asArray(), jgen);
   }
+
 }

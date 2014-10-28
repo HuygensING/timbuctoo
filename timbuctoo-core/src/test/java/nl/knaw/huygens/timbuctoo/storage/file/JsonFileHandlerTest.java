@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage;
+package nl.knaw.huygens.timbuctoo.storage.file;
 
 /*
  * #%L
@@ -22,7 +22,7 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.storage.JsonFileHandler.CONFIG_DIR_KEY;
+import static nl.knaw.huygens.timbuctoo.storage.file.JsonFileHandler.CONFIG_DIR_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.emptyCollectionOf;
 import static org.hamcrest.Matchers.equalTo;
@@ -38,6 +38,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.file.JsonFileHandler;
+import nl.knaw.huygens.timbuctoo.storage.file.UserFileCollection;
 
 import org.junit.Before;
 import org.junit.Test;
