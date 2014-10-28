@@ -66,6 +66,8 @@ public class RelationSearchResultMapper extends SearchResultMapper {
     dto.setIds(ids);
     dto.setResults(results);
     dto.setNumFound(numFound);
+    dto.setSourceType(searchResult.getSourceType());
+    dto.setTargetType(searchResult.getTargetType());
     dto.setRefs(relationMapper.createRefs(vre, type, results));
     dto.setSortableFields(sortableFieldFinder.findFields(type));
     setNextLink(normalizedStart, rows, dto, numFound, end, queryId);
