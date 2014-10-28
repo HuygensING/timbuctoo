@@ -129,6 +129,11 @@ public class WWPerson extends Person {
     this.livedIn = livedIn;
   }
 
+  @Override
+  public String getIndexedName() {
+    return super.getIndexedName() != null ? super.getIndexedName() : getTempName();
+  }
+
   public String getNationality() {
     return nationality;
   }
@@ -154,8 +159,6 @@ public class WWPerson extends Person {
     this.personalSituation = personalSituation;
   }
 
-  // Indexed for curation phase only
-  @IndexAnnotation(fieldName = "dynamic_t_tempname", canBeEmpty = true)
   public String getTempName() {
     return tempName;
   }
