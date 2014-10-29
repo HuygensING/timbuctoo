@@ -3,9 +3,12 @@ package nl.knaw.huygens.timbuctoo.security;
 import java.util.Map;
 import java.util.UUID;
 
+import nl.knaw.huygens.security.client.AuthenticationHandler;
+import nl.knaw.huygens.security.client.model.SecurityInformation;
+
 import com.google.common.collect.Maps;
 
-public class LocalLoggedInUsers {
+public class LocalLoggedInUsers implements AuthenticationHandler {
   static final String LOCAL_SESSION_KEY_PREFIX = "Timbuctoo";
   private final Map<String, String> sessionKeyPidMap;
 
@@ -33,6 +36,12 @@ public class LocalLoggedInUsers {
    */
   public synchronized String get(String sessionKey) {
     return sessionKeyPidMap.get(sessionKey);
+  }
+
+  @Override
+  public SecurityInformation getSecurityInformation(String sessionId) {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }
