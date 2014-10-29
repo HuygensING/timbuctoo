@@ -45,13 +45,13 @@ public class RegularSearchResultDTOTest extends SearchResultDTOTest {
   @Test
   public void testWhenObjectHasAllEmptyProperties() throws JsonProcessingException {
     SearchResultDTO dto = new RegularSearchResultDTO();
-    assertThat(getKeySet(dto), containsInAnyOrder("sortableFields", "numFound", "ids", "start", "rows", "term", "facets", "refs", "fullTextSearchFields"));
+    assertThat(getKeySet(dto), containsInAnyOrder("sortableFields", "numFound", "results", "ids", "start", "rows", "term", "facets", "refs", "fullTextSearchFields"));
   }
 
   @Test
   public void testPropertiesWhenAllPropertiesContainAValue() {
     SearchResultDTO dto = createFilledDTO();
-    assertThat(getKeySet(dto), containsInAnyOrder("sortableFields", "numFound", "ids", "start", "rows", "term", "facets", "refs", "fullTextSearchFields", "_next", "_prev"));
+    assertThat(getKeySet(dto), containsInAnyOrder("sortableFields", "numFound", "results", "ids", "start", "rows", "term", "facets", "refs", "fullTextSearchFields", "_next", "_prev"));
   }
 
   private RegularSearchResultDTO createFilledDTO() {

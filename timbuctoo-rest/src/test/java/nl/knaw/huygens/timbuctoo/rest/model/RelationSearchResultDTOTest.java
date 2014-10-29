@@ -40,13 +40,13 @@ public class RelationSearchResultDTOTest extends SearchResultDTOTest {
   @Test
   public void testWhenObjectHasAllEmptyProperties() {
     SearchResultDTO dto = new RelationSearchResultDTO();
-    assertThat(getKeySet(dto), contains("sortableFields", "numFound", "ids", "start", "rows", "sourceType", "targetType", "refs"));
+    assertThat(getKeySet(dto), contains("sortableFields", "numFound", "results", "ids", "start", "rows", "sourceType", "targetType", "refs"));
   }
 
   @Test
   public void testPropertiesWhenAllPropertiesContainAValue() {
     SearchResultDTO dto = createFilledDTO();
-    assertThat(getKeySet(dto), contains("sortableFields", "numFound", "ids", "start", "rows", "sourceType", "targetType", "refs", "_next", "_prev"));
+    assertThat(getKeySet(dto), contains("sortableFields", "numFound", "results", "ids", "start", "rows", "sourceType", "targetType", "refs", "_next", "_prev"));
   }
 
   private SearchResultDTO createFilledDTO() {

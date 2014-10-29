@@ -36,6 +36,7 @@ public abstract class SearchResultDTO {
 
   private Set<String> sortableFields;
   private int numFound;
+  private List<? extends DomainEntity> results;
   private List<String> ids;
   private int start;
   private int rows;
@@ -48,6 +49,16 @@ public abstract class SearchResultDTO {
 
   public void setIds(List<String> ids) {
     this.ids = ids;
+  }
+
+  @Deprecated
+  public List<? extends DomainEntity> getResults() {
+    return results;
+  }
+
+  @Deprecated
+  public void setResults(List<? extends DomainEntity> results) {
+    this.results = results;
   }
 
   public int getNumFound() {
