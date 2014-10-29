@@ -20,7 +20,7 @@ public class BasicAuthenticationHandler {
   /**
    * Creates the authentication token if the user is known.
    * @param authenticationString a base64 encoded string that contains user name and pass word.
-   * @return the authentication token is the user is known.
+   * @return the authentication token if the user is known.
    * @throws IllegalArgumentException when {@code authenticationString} is not {@code HTTP_BASIC}.
    * @throws UnAuthorizedException when the user name and password combination is unknown.
    */
