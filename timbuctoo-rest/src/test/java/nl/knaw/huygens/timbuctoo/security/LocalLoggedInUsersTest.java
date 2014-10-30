@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.security;
 
-import static nl.knaw.huygens.timbuctoo.security.LocalAuthenticator.LOGIN_COLLECTION_FILE_NAME;
 import static nl.knaw.huygens.timbuctoo.security.LocalLoggedInUsers.LOCAL_SESSION_KEY_PREFIX;
+import static nl.knaw.huygens.timbuctoo.storage.file.LoginCollection.LOGIN_COLLECTION_FILE_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;

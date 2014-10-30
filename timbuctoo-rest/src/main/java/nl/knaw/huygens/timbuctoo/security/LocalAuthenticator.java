@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.security;
 
+import static nl.knaw.huygens.timbuctoo.storage.file.LoginCollection.LOGIN_COLLECTION_FILE_NAME;
 import nl.knaw.huygens.security.client.UnauthorizedException;
 import nl.knaw.huygens.timbuctoo.model.Login;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
@@ -13,7 +14,6 @@ import com.google.inject.Inject;
 
 public class LocalAuthenticator {
   private static final Logger LOG = LoggerFactory.getLogger(LocalAuthenticator.class);
-  static final String LOGIN_COLLECTION_FILE_NAME = "logins.json";
   private final JsonFileHandler jsonFileHandler;
 
   @Inject

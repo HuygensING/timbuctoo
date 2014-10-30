@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.security;
 
-import static nl.knaw.huygens.timbuctoo.security.LocalAuthenticator.LOGIN_COLLECTION_FILE_NAME;
+import static nl.knaw.huygens.timbuctoo.storage.file.LoginCollection.LOGIN_COLLECTION_FILE_NAME;
 
 import java.util.Map;
 import java.util.UUID;

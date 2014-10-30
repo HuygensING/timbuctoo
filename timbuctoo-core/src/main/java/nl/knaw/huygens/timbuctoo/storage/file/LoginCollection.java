@@ -20,6 +20,7 @@ import com.google.common.collect.Maps;
 @JsonDeserialize(using = LoginCollectionDeserializer.class)
 public class LoginCollection extends FileCollection<Login> {
 
+  public static final String LOGIN_COLLECTION_FILE_NAME = "logins.json";
   private final Map<String, String> authStringIdMap;
   private final Map<String, Login> idLoginMap;
   private final Map<String, String> userPidIdMap;

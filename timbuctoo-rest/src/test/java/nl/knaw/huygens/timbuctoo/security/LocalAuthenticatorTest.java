@@ -40,7 +40,7 @@ public class LocalAuthenticatorTest {
     value.setAuthString(NORMALIZED_AUTH_STRING);
 
     // when
-    when(jsonFileHandlerMock.getCollection(LoginCollection.class, LocalAuthenticator.LOGIN_COLLECTION_FILE_NAME))//
+    when(jsonFileHandlerMock.getCollection(LoginCollection.class, LoginCollection.LOGIN_COLLECTION_FILE_NAME))//
         .thenReturn(loginCollectionMock);
     when(loginCollectionMock.findItem(argThat(loginWithAuthString(NORMALIZED_AUTH_STRING))))//
         .thenReturn(value);
@@ -55,7 +55,7 @@ public class LocalAuthenticatorTest {
   @Test(expected = UnauthorizedException.class)
   public void authenticateThrowsAnUnauthorizedExceptionWhenTheUserIsNotKnown() throws Exception {
     // when
-    when(jsonFileHandlerMock.getCollection(LoginCollection.class, LocalAuthenticator.LOGIN_COLLECTION_FILE_NAME))//
+    when(jsonFileHandlerMock.getCollection(LoginCollection.class, LoginCollection.LOGIN_COLLECTION_FILE_NAME))//
         .thenReturn(loginCollectionMock);
     when(loginCollectionMock.findItem(argThat(loginWithAuthString(NORMALIZED_AUTH_STRING))))//
         .thenReturn(null);
@@ -67,7 +67,7 @@ public class LocalAuthenticatorTest {
   @Test(expected = UnauthorizedException.class)
   public void authenticateThrowsAnUnauthroizedExceptionWhenTheLoginFileCannotBeRead() throws StorageException, UnauthorizedException {
     // when
-    doThrow(StorageException.class).when(jsonFileHandlerMock).getCollection(LoginCollection.class, LocalAuthenticator.LOGIN_COLLECTION_FILE_NAME);
+    doThrow(StorageException.class).when(jsonFileHandlerMock).getCollection(LoginCollection.class, LoginCollection.LOGIN_COLLECTION_FILE_NAME);
 
     // action
     instance.authenticate(NORMALIZED_AUTH_STRING);
