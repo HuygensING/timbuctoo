@@ -2,6 +2,8 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @IDPrefix(Login.ID_PREFIX)
 public class Login extends SystemEntity {
 
@@ -63,6 +65,7 @@ public class Login extends SystemEntity {
     this.surname = surname;
   }
 
+  @JsonIgnore
   public String getCommonName() {
     return String.format("%s %s", givenName, surname);
   }
