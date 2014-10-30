@@ -30,9 +30,7 @@ import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
@@ -40,7 +38,9 @@ import com.google.inject.Inject;
  * A class that writes and reads json files.
  */
 public class JsonFileHandler {
+
   static final String CONFIG_DIR_KEY = "admin_data.directory";
+
   private ObjectMapper objectMapper;
   private Configuration config;
 
@@ -53,9 +53,7 @@ public class JsonFileHandler {
   public <T extends FileCollection<? extends SystemEntity>> void saveCollection(T collection, String fileName) throws StorageException {
     try {
       objectMapper.writeValue(getFile(fileName), collection);
-    } catch (JsonGenerationException e) {
-      throw new StorageException(e);
-    } catch (JsonMappingException e) {
+    } catch (JsonProcessingException e) {
       throw new StorageException(e);
     } catch (IOException e) {
       throw new StorageException(e);
@@ -80,9 +78,7 @@ public class JsonFileHandler {
   public <T extends FileCollection<? extends SystemEntity>> T getCollection(Class<T> type, String fileName) throws StorageException {
     try {
       return objectMapper.readValue(getFile(fileName), type);
-    } catch (JsonParseException e) {
-      throw new StorageException(e);
-    } catch (JsonMappingException e) {
+    } catch (JsonProcessingException e) {
       throw new StorageException(e);
     } catch (FileNotFoundException e) {
       try {
@@ -96,4 +92,5 @@ public class JsonFileHandler {
       throw new StorageException(e);
     }
   }
+
 }

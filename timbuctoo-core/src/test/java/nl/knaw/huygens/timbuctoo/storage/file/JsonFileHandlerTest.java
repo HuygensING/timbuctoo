@@ -39,23 +39,21 @@ import java.io.IOException;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.file.JsonFileHandler;
-import nl.knaw.huygens.timbuctoo.storage.file.UserFileCollection;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JsonFileHandlerTest {
+
   private static final String CONFIG_DIR = "configDir";
   private static final String FILE_NAME = "test";
   private static final File FILE = new File(createFilePath(CONFIG_DIR, FILE_NAME));
   private static final UserFileCollection COLLECTION = new UserFileCollection();
   private static final Class<UserFileCollection> COLLECTION_TYPE = UserFileCollection.class;
+
   private JsonFileHandler instance;
   private ObjectMapper objectMapper;
   private Configuration config;
@@ -79,31 +77,15 @@ public class JsonFileHandlerTest {
   }
 
   @Test(expected = StorageException.class)
-  public void testSaveCollectionObjectMapperThrowsJsonGenerationException() throws Exception {
-    testSaveCollectionObjectMapperThrowsAnException(JsonGenerationException.class);
-  }
-
-  @Test(expected = StorageException.class)
-  public void testSaveCollectionObjectMapperThrowsJsonMappingException() throws Exception {
-    testSaveCollectionObjectMapperThrowsAnException(JsonMappingException.class);
+  public void testSaveCollectionObjectMapperThrowsJsonProcessingException() throws Exception {
+    doThrow(JsonProcessingException.class).when(objectMapper).writeValue(FILE, COLLECTION);
+    instance.saveCollection(COLLECTION, FILE_NAME);
   }
 
   @Test(expected = StorageException.class)
   public void testSaveCollectionObjectMapperThrowsIOException() throws Exception {
-    testSaveCollectionObjectMapperThrowsAnException(IOException.class);
-  }
-
-  private void testSaveCollectionObjectMapperThrowsAnException(Class<? extends Exception> exceptionToThrow) throws Exception {
-    // setup
-    doThrow(exceptionToThrow).when(objectMapper).writeValue(FILE, COLLECTION);
-
-    try {
-      // action
-      instance.saveCollection(COLLECTION, FILE_NAME);
-    } finally {
-      // verify
-      verify(objectMapper).writeValue(FILE, COLLECTION);
-    }
+    doThrow(IOException.class).when(objectMapper).writeValue(FILE, COLLECTION);
+    instance.saveCollection(COLLECTION, FILE_NAME);
   }
 
   @Test
@@ -132,35 +114,19 @@ public class JsonFileHandlerTest {
   }
 
   @Test(expected = StorageException.class)
-  public void testGetCollectionObjectMapperThrowsJsonGenerationException() throws Exception {
-    testGetCollectionObjectMapperThrowsAnException(JsonGenerationException.class);
-  }
-
-  @Test(expected = StorageException.class)
-  public void testGetCollectionObjectMapperThrowsJsonMappingException() throws Exception {
-    testGetCollectionObjectMapperThrowsAnException(JsonMappingException.class);
+  public void testGetCollectionObjectMapperThrowsJsonProcessingException() throws Exception {
+    doThrow(JsonProcessingException.class).when(objectMapper).readValue(FILE, COLLECTION_TYPE);
+    instance.getCollection(UserFileCollection.class, FILE_NAME);
   }
 
   @Test(expected = StorageException.class)
   public void testGetCollectionObjectMapperThrowsIOException() throws Exception {
-    testGetCollectionObjectMapperThrowsAnException(IOException.class);
-  }
-
-  @Test(expected = StorageException.class)
-  public void testGetCollectionObjectMapperThrowsJsonParseException() throws Exception {
-    testGetCollectionObjectMapperThrowsAnException(JsonParseException.class);
-  }
-
-  private void testGetCollectionObjectMapperThrowsAnException(Class<? extends Exception> exceptionToThrow) throws Exception {
-    // setup
-    doThrow(exceptionToThrow).when(objectMapper).readValue(FILE, COLLECTION_TYPE);
-
-    // action
+    doThrow(IOException.class).when(objectMapper).readValue(FILE, COLLECTION_TYPE);
     instance.getCollection(UserFileCollection.class, FILE_NAME);
-
   }
 
   private static String createFilePath(String dir, String fileName) {
     return String.format("%s%s%s", dir, File.separator, fileName);
   }
+
 }
