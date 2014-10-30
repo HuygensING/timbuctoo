@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
+import com.google.inject.Inject;
 
 public class LocalLoggedInUsers implements AuthenticationHandler {
   private static final Logger LOG = LoggerFactory.getLogger(LocalLoggedInUsers.class);
@@ -26,6 +27,7 @@ public class LocalLoggedInUsers implements AuthenticationHandler {
   private final JsonFileHandler jsonFileHandler;
   private final LoginConverter loginConverter;
 
+  @Inject
   public LocalLoggedInUsers(JsonFileHandler jsonFileHandler, LoginConverter loginConverter) {
     this.jsonFileHandler = jsonFileHandler;
     this.loginConverter = loginConverter;

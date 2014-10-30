@@ -49,6 +49,7 @@ import nl.knaw.huygens.timbuctoo.security.DefaultVREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.security.ExampleAuthenticationHandler;
 import nl.knaw.huygens.timbuctoo.security.ExampleVREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.security.SecurityType;
+import nl.knaw.huygens.timbuctoo.security.TimbuctooAuthenticationHandler;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.security.VREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
@@ -80,6 +81,12 @@ public class RESTInjectionModule extends BasicInjectionModule {
     bind(IndexManager.class).to(IndexFacade.class);
     bind(RelationSearcher.class).to(SolrRelationSearcher.class);
 
+    if (SecurityType.DEFAULT.equals(securityType)) {
+      bind(AuthenticationHandler.class).to(TimbuctooAuthenticationHandler.class);
+    } else {
+      bind(AuthenticationHandler.class).to(ExampleAuthenticationHandler.class);
+    }
+
     configureTheAuthorizationHandler();
   }
 
@@ -93,13 +100,10 @@ public class RESTInjectionModule extends BasicInjectionModule {
 
   @Provides
   @Singleton
-  AuthenticationHandler provideAuthorizationHandler() {
-    if (SecurityType.DEFAULT.equals(securityType)) {
-      Client client = new Client();
-      return new HuygensAuthenticationHandler(client, config.getSetting("security.hss.url"), config.getSetting("security.hss.credentials"));
-    }
+  HuygensAuthenticationHandler provideAuthenticationHandler() {
+    Client client = new Client();
+    return new HuygensAuthenticationHandler(client, config.getSetting("security.hss.url"), config.getSetting("security.hss.credentials"));
 
-    return new ExampleAuthenticationHandler();
   }
 
   @Provides

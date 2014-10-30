@@ -8,12 +8,15 @@ import nl.knaw.huygens.security.client.model.SecurityInformation;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.google.inject.Inject;
+
 public class TimbuctooAuthenticationHandler implements AuthenticationHandler {
 
   private final LocalLoggedInUsers localLoggedInUsers;
   // The AuthenticationHandler for the security server.
   private final HuygensAuthenticationHandler huygensAuthenticationHandler;
 
+  @Inject
   public TimbuctooAuthenticationHandler(LocalLoggedInUsers localLoggedInUsers, HuygensAuthenticationHandler huygensAuthenticationHandler) {
     this.localLoggedInUsers = localLoggedInUsers;
     this.huygensAuthenticationHandler = huygensAuthenticationHandler;
