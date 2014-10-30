@@ -20,23 +20,27 @@ import com.google.common.collect.Maps;
 @JsonDeserialize(using = LoginCollectionDeserializer.class)
 public class LoginCollection extends FileCollection<Login> {
 
-  Map<String, String> authStringIdMap;
-  Map<String, Login> idLoginMap;
+  private final Map<String, String> authStringIdMap;
+  private final Map<String, Login> idLoginMap;
+  private final Map<String, String> userPidIdMap;
 
   public LoginCollection() {
     this(Lists.<Login> newArrayList());
   }
 
   public LoginCollection(List<Login> logins) {
+    authStringIdMap = Maps.newConcurrentMap();
+    idLoginMap = Maps.newConcurrentMap();
+    userPidIdMap = Maps.newConcurrentMap();
     initialize(logins);
   }
 
   private void initialize(List<Login> logins) {
-    authStringIdMap = Maps.newConcurrentMap();
-    idLoginMap = Maps.newConcurrentMap();
     for (Login login : logins) {
-      idLoginMap.put(login.getId(), login);
-      authStringIdMap.put(login.getAuthString(), login.getId());
+      String id = login.getId();
+      idLoginMap.put(id, login);
+      authStringIdMap.put(login.getAuthString(), id);
+      userPidIdMap.put(login.getUserPid(), id);
     }
   }
 
@@ -56,13 +60,23 @@ public class LoginCollection extends FileCollection<Login> {
     entity.setId(id);
 
     authStringIdMap.put(authString, id);
+    userPidIdMap.put(entity.getUserPid(), id);
 
     return id;
   }
 
   @Override
   public Login findItem(Login example) {
-    String id = authStringIdMap.get(example.getAuthString());
+    String authString = example.getAuthString();
+    String userPid = example.getUserPid();
+    String id = null;
+
+    if (!StringUtils.isBlank(authString)) {
+      id = authStringIdMap.get(authString);
+    } else if (!StringUtils.isBlank(userPid)) {
+      id = userPidIdMap.get(userPid);
+    }
+
     return id != null ? idLoginMap.get(id) : null;
   }
 
