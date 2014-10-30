@@ -22,6 +22,9 @@ package nl.knaw.huygens.timbuctoo.tools.importer;
  * #L%
  */
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.isPrimitiveDomainEntity;
+
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -155,17 +157,21 @@ public abstract class DefaultImporter {
     }
   }
 
-  protected <T extends DomainEntity> T updateProjectDomainEntity(Class<T> type, T entity) {
-    if (TypeRegistry.isPrimitiveDomainEntity(type)) {
-      handleError("Unexpected update of primitive domain entity %s", type.getSimpleName());
-      return null;
-    }
+  protected <T extends DomainEntity> void updatePrimitiveDomainEntity(Class<T> type, T entity) {
+    checkArgument(isPrimitiveDomainEntity(type), "Not a primitive domain entity: %s", type);
     try {
       repository.updateDomainEntity(type, entity, change);
-      return entity;
     } catch (StorageException e) {
       handleError("Failed to update %s; %s", entity.getDisplayName(), e.getMessage());
-      return null;
+    } 
+  }
+
+  protected <T extends DomainEntity> void updateProjectDomainEntity(Class<T> type, T entity) {
+    checkArgument(!isPrimitiveDomainEntity(type), "Not a project domain entity: %s", type);
+    try {
+      repository.updateDomainEntity(type, entity, change);
+    } catch (StorageException e) {
+      handleError("Failed to update %s; %s", entity.getDisplayName(), e.getMessage());
     }
   }
 

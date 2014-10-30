@@ -1,7 +1,5 @@
 package nl.knaw.huygens.timbuctoo.model.base;
 
-import nl.knaw.huygens.timbuctoo.model.Location;
-
 /*
  * #%L
  * Timbuctoo core
@@ -23,6 +21,8 @@ import nl.knaw.huygens.timbuctoo.model.Location;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
+import nl.knaw.huygens.timbuctoo.model.Location;
 
 /**
  * Used for importing in base VRE.
