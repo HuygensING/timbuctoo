@@ -7,6 +7,9 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.Login;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -17,7 +20,8 @@ import com.google.common.collect.Maps;
 @JsonDeserialize(using = LoginCollectionDeserializer.class)
 public class LoginCollection extends FileCollection<Login> {
 
-  Map<String, Login> authStringLoginMap;
+  Map<String, String> authStringIdMap;
+  Map<String, Login> idLoginMap;
 
   public LoginCollection() {
     this(Lists.<Login> newArrayList());
@@ -28,30 +32,48 @@ public class LoginCollection extends FileCollection<Login> {
   }
 
   private void initialize(List<Login> logins) {
-    authStringLoginMap = Maps.newConcurrentMap();
+    authStringIdMap = Maps.newConcurrentMap();
+    idLoginMap = Maps.newConcurrentMap();
     for (Login login : logins) {
-      authStringLoginMap.put(login.getAuthString(), login);
+      idLoginMap.put(login.getId(), login);
+      authStringIdMap.put(login.getAuthString(), login.getId());
     }
   }
 
   @Override
   public String add(Login entity) {
-    throw new UnsupportedOperationException("Not yet implemented");
+    String authString = entity.getAuthString();
+    if (StringUtils.isBlank(authString)) {
+      throw new IllegalArgumentException("Authentication string cannot be empty.");
+    }
+
+    if (authStringIdMap.containsKey(authString)) {
+      return authStringIdMap.get(authString);
+    }
+
+    String id = createId(Login.ID_PREFIX);
+    idLoginMap.put(id, entity);
+    entity.setId(id);
+
+    authStringIdMap.put(authString, id);
+
+    return id;
   }
 
   @Override
   public Login findItem(Login example) {
-    return authStringLoginMap.get(example.getAuthString());
+    String id = authStringIdMap.get(example.getAuthString());
+    return id != null ? idLoginMap.get(id) : null;
   }
 
   @Override
   public Login get(String id) {
-    throw new UnsupportedOperationException("Not yet implemented");
+    return idLoginMap.get(id);
   }
 
   @Override
   public StorageIterator<Login> getAll() {
-    throw new UnsupportedOperationException("Not yet implemented");
+    return StorageIteratorStub.newInstance(Lists.newArrayList(idLoginMap.values()));
   }
 
   @Override
@@ -60,7 +82,7 @@ public class LoginCollection extends FileCollection<Login> {
   }
 
   private Collection<Login> getItems() {
-    return authStringLoginMap.values();
+    return idLoginMap.values();
   }
 
   @Override
@@ -77,7 +99,7 @@ public class LoginCollection extends FileCollection<Login> {
 
   @Override
   protected LinkedList<String> getIds() {
-    throw new UnsupportedOperationException("Not yet implemented");
+    return Lists.newLinkedList(idLoginMap.keySet());
   }
 
 }

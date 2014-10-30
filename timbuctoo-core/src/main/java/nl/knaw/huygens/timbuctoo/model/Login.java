@@ -2,9 +2,10 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 
-@IDPrefix("LOGI")
+@IDPrefix(Login.ID_PREFIX)
 public class Login extends SystemEntity {
 
+  public static final String ID_PREFIX = "LOGI";
   private String userPid;
   private String authString;
 
