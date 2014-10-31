@@ -9,7 +9,7 @@ public class Login extends SystemEntity {
 
   public static final String ID_PREFIX = "LOGI";
   private String userPid;
-  private String authString;
+  private String password;
   private String givenName;
   private String surname;
   private String emailAddress;
@@ -24,7 +24,7 @@ public class Login extends SystemEntity {
   public Login(String userPid, String userName, String password, String givenName, String surname, String emailAddress, String organization, byte[] salt) {
     this.userPid = userPid;
     this.userName = userName;
-    this.authString = password;
+    this.password = password;
     this.givenName = givenName;
     this.surname = surname;
     this.emailAddress = emailAddress;
@@ -45,12 +45,12 @@ public class Login extends SystemEntity {
     return userPid;
   }
 
-  public String getAuthString() {
-    return authString;
+  public String getPassword() {
+    return password;
   }
 
-  public void setAuthString(String authString) {
-    this.authString = authString;
+  public void setPassword(String authString) {
+    this.password = authString;
   }
 
   public String getGivenName() {

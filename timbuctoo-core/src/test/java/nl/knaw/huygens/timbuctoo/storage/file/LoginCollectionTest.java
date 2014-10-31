@@ -17,8 +17,8 @@ public class LoginCollectionTest extends FileCollectionTest<Login> {
   private static final String ID = "test";
   private static final String DIFFERENT_USER_PID = "differentUserPid";
   private static final String USER_PID = "userPid";
-  private static final String AUTH_STRING = ID;
-  private static final String DIFFERENT_AUTH_STRING = "differentAuthString";
+  private static final String USER_NAME = ID;
+  private static final String DIFFERENT_USER_NAME = "differentAuthString";
   private LoginCollection instance;
 
   @Before
@@ -28,13 +28,13 @@ public class LoginCollectionTest extends FileCollectionTest<Login> {
 
   @Test
   public void addAddsTheEntityToItsCollection() {
-    Login login = createLoginWithAuthStringAndUserPid(AUTH_STRING, USER_PID);
+    Login login = createLoginWithUserNameAndUserPid(USER_NAME, USER_PID);
     verifyAddAddsTheEntityToItsCollection(login);
   }
 
   @Test
   public void addReturnsAnIdAndAddsItToTheEntity() {
-    Login login = createLoginWithAuthStringAndUserPid(AUTH_STRING, USER_PID);
+    Login login = createLoginWithUserNameAndUserPid(USER_NAME, USER_PID);
     String expectedId = "LOGI000000000001";
 
     verifyAddReturnsAnIdAndAddsItToTheEntity(login, expectedId);
@@ -49,8 +49,8 @@ public class LoginCollectionTest extends FileCollectionTest<Login> {
   @Test
   public void addDoesNotAddASecondItemWithTheSameAuthStringItReturnsTheExistingId() {
     // setup
-    Login firstLogin = createLoginWithAuthStringAndUserPid(AUTH_STRING, USER_PID);
-    Login secondLogin = createLoginWithAuthStringAndUserPid(AUTH_STRING, DIFFERENT_USER_PID);
+    Login firstLogin = createLoginWithUserNameAndUserPid(USER_NAME, USER_PID);
+    Login secondLogin = createLoginWithUserNameAndUserPid(USER_NAME, DIFFERENT_USER_PID);
 
     // action
     String firstId = instance.add(firstLogin);
@@ -62,9 +62,9 @@ public class LoginCollectionTest extends FileCollectionTest<Login> {
 
   @Test
   public void addIncrementsTheId() {
-    Login entity1 = createLoginWithAuthStringAndUserPid(AUTH_STRING, USER_PID);
-    Login entity2 = createLoginWithAuthStringAndUserPid(DIFFERENT_AUTH_STRING, DIFFERENT_USER_PID);
-    Login entity3 = createLoginWithAuthStringAndUserPid("anotherAuthString", USER_PID);
+    Login entity1 = createLoginWithUserNameAndUserPid(USER_NAME, USER_PID);
+    Login entity2 = createLoginWithUserNameAndUserPid(DIFFERENT_USER_NAME, DIFFERENT_USER_PID);
+    Login entity3 = createLoginWithUserNameAndUserPid("anotherAuthString", USER_PID);
     String expectedId = "LOGI000000000003";
 
     verifyAddIncrementsTheId(entity1, entity2, entity3, expectedId);
@@ -73,13 +73,13 @@ public class LoginCollectionTest extends FileCollectionTest<Login> {
   @Test
   public void findReturnsTheLoginFoundByTheAuthString() {
     // setup
-    Login login = createLoginWithAuthStringAndUserPid(AUTH_STRING, USER_PID);
-    Login otherLogin = createLoginWithAuthStringAndUserPid(DIFFERENT_AUTH_STRING, DIFFERENT_USER_PID);
+    Login login = createLoginWithUserNameAndUserPid(USER_NAME, USER_PID);
+    Login otherLogin = createLoginWithUserNameAndUserPid(DIFFERENT_USER_NAME, DIFFERENT_USER_PID);
 
     instance.add(login);
     instance.add(otherLogin);
 
-    Login example = createLoginWithAuthStringAndUserPid(AUTH_STRING, USER_PID);
+    Login example = createLoginWithUserNameAndUserPid(USER_NAME, USER_PID);
 
     // action
     Login actualLogin = instance.findItem(example);
@@ -91,7 +91,7 @@ public class LoginCollectionTest extends FileCollectionTest<Login> {
   @Test
   public void findSearchesByUserPidIfTheAuthStringIsEmpty() {
     // setup
-    Login login = createLoginWithAuthStringAndUserPid(AUTH_STRING, USER_PID);
+    Login login = createLoginWithUserNameAndUserPid(USER_NAME, USER_PID);
 
     instance.add(login);
 
@@ -106,11 +106,10 @@ public class LoginCollectionTest extends FileCollectionTest<Login> {
   }
 
   @Test
-  public void findReturnsNullIfBothTheAuthStringAndUserPidAreNull() {
+  public void findReturnsNullIfBothTheUAndUserPidAreNull() {
     Login login = new Login();
-    String userPid = USER_PID;
-    login.setUserPid(userPid);
-    login.setAuthString(AUTH_STRING);
+    login.setUserPid(USER_PID);
+    login.setUserName(USER_NAME);
 
     instance.add(login);
 
@@ -123,9 +122,9 @@ public class LoginCollectionTest extends FileCollectionTest<Login> {
     assertThat(foundLogin, is(nullValue(Login.class)));
   }
 
-  private Login createLoginWithAuthStringAndUserPid(String authString, String userPid) {
+  private Login createLoginWithUserNameAndUserPid(String userName, String userPid) {
     Login login = new Login();
-    login.setAuthString(authString);
+    login.setUserName(userName);
     login.setUserPid(userPid);
     return login;
   }
@@ -133,11 +132,11 @@ public class LoginCollectionTest extends FileCollectionTest<Login> {
   @Test
   public void findReturnsNullIfNoLoginInTheCollectionExistsWhithTheAuthString() {
     // setup
-    Login login = createLoginWithAuthStringAndUserPid(DIFFERENT_AUTH_STRING, DIFFERENT_USER_PID);
+    Login login = createLoginWithUserNameAndUserPid(DIFFERENT_USER_NAME, DIFFERENT_USER_PID);
     instance.add(login);
 
     Login example = new Login();
-    example.setAuthString(AUTH_STRING);
+    example.setUserName(USER_NAME);
 
     // action
     Login actualLogin = instance.findItem(example);
@@ -149,8 +148,8 @@ public class LoginCollectionTest extends FileCollectionTest<Login> {
   @Test
   public void asArrayReturnsAllTheValuesRepresentedInAnArray() {
     // setup
-    Login login = createLoginWithAuthStringAndUserPid(AUTH_STRING, USER_PID);
-    Login otherLogin = createLoginWithAuthStringAndUserPid(DIFFERENT_AUTH_STRING, DIFFERENT_USER_PID);
+    Login login = createLoginWithUserNameAndUserPid(USER_NAME, USER_PID);
+    Login otherLogin = createLoginWithUserNameAndUserPid(DIFFERENT_USER_NAME, DIFFERENT_USER_PID);
 
     instance.add(login);
     instance.add(otherLogin);
@@ -171,10 +170,10 @@ public class LoginCollectionTest extends FileCollectionTest<Login> {
   @Test
   public void intializeWithLoginsAddsTheLoginsToTheCollection() {
     // setup
-    Login login = createLoginWithAuthStringAndUserPid(AUTH_STRING, USER_PID);
+    Login login = createLoginWithUserNameAndUserPid(USER_NAME, USER_PID);
     login.setId(ID);
 
-    Login otherLogin = createLoginWithAuthStringAndUserPid(DIFFERENT_AUTH_STRING, DIFFERENT_USER_PID);
+    Login otherLogin = createLoginWithUserNameAndUserPid(DIFFERENT_USER_NAME, DIFFERENT_USER_PID);
     otherLogin.setId(DIFFERENT_ID);
 
     // action

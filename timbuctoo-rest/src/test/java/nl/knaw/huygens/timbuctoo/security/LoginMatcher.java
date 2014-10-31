@@ -19,12 +19,12 @@ public class LoginMatcher extends TypeSafeMatcher<Login> {
   @Override
   protected void describeMismatchSafely(Login item, Description mismatchDescription) {
     mismatchDescription.appendText("Login with authString: ")//
-        .appendValue(item.getAuthString());
+        .appendValue(item.getPassword());
   }
 
   @Override
   protected boolean matchesSafely(Login item) {
-    return StringUtils.equals(authString, item.getAuthString());
+    return StringUtils.equals(authString, item.getPassword());
   }
 
   private LoginMatcher(String authString) {

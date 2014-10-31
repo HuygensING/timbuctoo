@@ -21,7 +21,7 @@ import com.google.common.collect.Maps;
 public class LoginCollection extends FileCollection<Login> {
 
   public static final String LOGIN_COLLECTION_FILE_NAME = "logins.json";
-  private final Map<String, String> authStringIdMap;
+  private final Map<String, String> userNameIdMap;
   private final Map<String, Login> idLoginMap;
   private final Map<String, String> userPidIdMap;
 
@@ -30,7 +30,7 @@ public class LoginCollection extends FileCollection<Login> {
   }
 
   public LoginCollection(List<Login> logins) {
-    authStringIdMap = Maps.newConcurrentMap();
+    userNameIdMap = Maps.newConcurrentMap();
     idLoginMap = Maps.newConcurrentMap();
     userPidIdMap = Maps.newConcurrentMap();
     initialize(logins);
@@ -40,27 +40,27 @@ public class LoginCollection extends FileCollection<Login> {
     for (Login login : logins) {
       String id = login.getId();
       idLoginMap.put(id, login);
-      authStringIdMap.put(login.getAuthString(), id);
+      userNameIdMap.put(login.getUserName(), id);
       userPidIdMap.put(login.getUserPid(), id);
     }
   }
 
   @Override
   public String add(Login entity) {
-    String authString = entity.getAuthString();
+    String authString = entity.getUserName();
     if (StringUtils.isBlank(authString)) {
-      throw new IllegalArgumentException("Authentication string cannot be empty.");
+      throw new IllegalArgumentException("User name string cannot be empty.");
     }
 
-    if (authStringIdMap.containsKey(authString)) {
-      return authStringIdMap.get(authString);
+    if (userNameIdMap.containsKey(authString)) {
+      return userNameIdMap.get(authString);
     }
 
     String id = createId(Login.ID_PREFIX);
     idLoginMap.put(id, entity);
     entity.setId(id);
 
-    authStringIdMap.put(authString, id);
+    userNameIdMap.put(authString, id);
     userPidIdMap.put(entity.getUserPid(), id);
 
     return id;
@@ -68,12 +68,12 @@ public class LoginCollection extends FileCollection<Login> {
 
   @Override
   public Login findItem(Login example) {
-    String authString = example.getAuthString();
+    String userName = example.getUserName();
     String userPid = example.getUserPid();
     String id = null;
 
-    if (!StringUtils.isBlank(authString)) {
-      id = authStringIdMap.get(authString);
+    if (!StringUtils.isBlank(userName)) {
+      id = userNameIdMap.get(userName);
     } else if (!StringUtils.isBlank(userPid)) {
       id = userPidIdMap.get(userPid);
     }

@@ -25,7 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class LocalLoggedInUsersTest {
-  private static final String AUTHENTICATION_STRING = "test";
+  private static final String USER_NAME = "test";
   private static final String LOGIN_ID = "loginId";
   private static final String PERSISTENT_ID = "persistentId";
   private LocalLoggedInUsers instance;
@@ -65,7 +65,7 @@ public class LocalLoggedInUsersTest {
     Login login = new Login();
     login.setId(LOGIN_ID);
     login.setUserPid(PERSISTENT_ID);
-    login.setAuthString(AUTHENTICATION_STRING);
+    login.setUserName(USER_NAME);
     loginCollection.add(login);
 
     String sessionKey = instance.add(PERSISTENT_ID);

@@ -37,7 +37,7 @@ public class LocalAuthenticatorTest {
     // setup
     Login value = new Login();
     value.setUserPid(USER_PID);
-    value.setAuthString(NORMALIZED_AUTH_STRING);
+    value.setPassword(NORMALIZED_AUTH_STRING);
 
     // when
     when(jsonFileHandlerMock.getCollection(LoginCollection.class, LoginCollection.LOGIN_COLLECTION_FILE_NAME))//

@@ -23,7 +23,7 @@ public class LocalAuthenticator {
 
   public String authenticate(String normalizedAuthString) throws UnauthorizedException {
     Login example = new Login();
-    example.setAuthString(normalizedAuthString);
+    example.setPassword(normalizedAuthString);
 
     try {
       LoginCollection loginCollection = jsonFileHandler.getCollection(LoginCollection.class, LOGIN_COLLECTION_FILE_NAME);
