@@ -4,13 +4,12 @@ import static nl.knaw.huygens.timbuctoo.security.LoginMatcher.loginWithUserName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.security.NoSuchAlgorithmException;
-
 import nl.knaw.huygens.security.client.UnauthorizedException;
 import nl.knaw.huygens.timbuctoo.model.Login;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
@@ -19,44 +18,51 @@ import nl.knaw.huygens.timbuctoo.storage.file.LoginCollection;
 
 import org.apache.xml.security.utils.Base64;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.Matchers;
 
 public class LocalAuthenticatorTest {
 
+  private static final String ENCRYPTED_PASSWORD = "encryptedPassword";
   private static final String AUTH_STRING = Base64.encode("userName:password".getBytes());
   private static final String USER_NAME = "userName";
   private static final String USER_PID = "userPid";
-  private static String password = "password";
-  private static String otherPassword = "otherPassword";
+  private static final String PASSWORD = "password";
+  private static final String OTHER_ENCRYPTED_PASSWORD = "otherPassword";
   private static final byte[] SALT = "salt".getBytes();
   private LoginCollection loginCollectionMock;
   private LocalAuthenticator instance;
   private JsonFileHandler jsonFileHandlerMock;
-  private static PasswordEncrypter passwordEncrypter;
-
-  @BeforeClass
-  public static void generatePasswords() throws NoSuchAlgorithmException {
-    passwordEncrypter = new PasswordEncrypter();
-    password = passwordEncrypter.encryptPassword("password", SALT);
-    otherPassword = passwordEncrypter.encryptPassword("otherPassword", SALT);
-  }
+  private static PasswordEncrypter passwordEncrypterMock;
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
     loginCollectionMock = mock(LoginCollection.class);
     jsonFileHandlerMock = mock(JsonFileHandler.class);
-    instance = new LocalAuthenticator(jsonFileHandlerMock, passwordEncrypter);
+    passwordEncrypterMock = setupPasswordEncrypterMock();
+    instance = new LocalAuthenticator(jsonFileHandlerMock, passwordEncrypterMock);
+  }
+
+  private PasswordEncrypter setupPasswordEncrypterMock() {
+    PasswordEncrypter passwordEncrypterMock = mock(PasswordEncrypter.class);
+
+    when(passwordEncrypterMock.encryptPassword(PASSWORD, SALT)).thenReturn(ENCRYPTED_PASSWORD);
+
+    return passwordEncrypterMock;
+  }
+
+  private void setupJsonFileHandler() throws StorageException {
+    when(jsonFileHandlerMock.getCollection(LoginCollection.class, LoginCollection.LOGIN_COLLECTION_FILE_NAME))//
+        .thenReturn(loginCollectionMock);
   }
 
   @Test
   public void authenticateReturnsTheUserPidWhenTheUserNameAndPasswordExist() throws Exception {
     // setup
-    Login login = createLogin(USER_PID, USER_NAME, password, SALT);
+    Login login = createLogin(USER_PID, USER_NAME, ENCRYPTED_PASSWORD, SALT);
 
     // when
-    when(jsonFileHandlerMock.getCollection(LoginCollection.class, LoginCollection.LOGIN_COLLECTION_FILE_NAME))//
-        .thenReturn(loginCollectionMock);
+    setupJsonFileHandler();
     when(loginCollectionMock.findItem(argThat(loginWithUserName(USER_NAME))))//
         .thenReturn(login);
 
@@ -79,35 +85,50 @@ public class LocalAuthenticatorTest {
 
   @Test(expected = UnauthorizedException.class)
   public void authenticateThrowsAnUnauthorizedExceptionWhenTheAuthenticationStringIsEmpty() throws Exception {
-    instance.authenticate("");
+    setupJsonFileHandler();
+    try {
+      // action
+      instance.authenticate(AUTH_STRING);
+    } finally {
+      //verify
+      verify(passwordEncrypterMock).encryptPassword(anyString(), Matchers.<byte[]> any());
+    }
   }
 
   @Test(expected = UnauthorizedException.class)
   public void authenticateThrowsAnUnauthorizedExceptionWhenThePasswordIsNotEqual() throws Exception {
     // setup
-    Login value = createLogin(USER_PID, USER_NAME, otherPassword, SALT);
+    Login value = createLogin(USER_PID, USER_NAME, OTHER_ENCRYPTED_PASSWORD, SALT);
 
     // when
-    when(jsonFileHandlerMock.getCollection(LoginCollection.class, LoginCollection.LOGIN_COLLECTION_FILE_NAME))//
-        .thenReturn(loginCollectionMock);
+    setupJsonFileHandler();
     when(loginCollectionMock.findItem(argThat(loginWithUserName(USER_NAME))))//
         .thenReturn(value);
 
-    // action
-    instance.authenticate(AUTH_STRING);
+    try {
+      // action
+      instance.authenticate(AUTH_STRING);
+    } finally {
+      //verify
+      verify(passwordEncrypterMock).encryptPassword(anyString(), Matchers.<byte[]> any());
+    }
 
   }
 
   @Test(expected = UnauthorizedException.class)
   public void authenticateThrowsAnUnauthorizedExceptionWhenTheUserIsNotKnown() throws Exception {
     // when
-    when(jsonFileHandlerMock.getCollection(LoginCollection.class, LoginCollection.LOGIN_COLLECTION_FILE_NAME))//
-        .thenReturn(loginCollectionMock);
+    setupJsonFileHandler();
     when(loginCollectionMock.findItem(argThat(loginWithUserName(USER_NAME))))//
         .thenReturn(null);
 
-    // action
-    instance.authenticate(AUTH_STRING);
+    try {
+      // action
+      instance.authenticate(AUTH_STRING);
+    } finally {
+      //verify
+      verify(passwordEncrypterMock).encryptPassword(anyString(), Matchers.<byte[]> any());
+    }
   }
 
   @Test(expected = UnauthorizedException.class)
@@ -115,7 +136,12 @@ public class LocalAuthenticatorTest {
     // when
     doThrow(StorageException.class).when(jsonFileHandlerMock).getCollection(LoginCollection.class, LoginCollection.LOGIN_COLLECTION_FILE_NAME);
 
-    // action
-    instance.authenticate(USER_NAME);
+    try {
+      // action
+      instance.authenticate(AUTH_STRING);
+    } finally {
+      //verify
+      verify(passwordEncrypterMock).encryptPassword(anyString(), Matchers.<byte[]> any());
+    }
   }
 }

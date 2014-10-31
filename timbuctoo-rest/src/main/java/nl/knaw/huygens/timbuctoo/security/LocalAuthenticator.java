@@ -15,7 +15,11 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Objects;
 import com.google.inject.Inject;
 
+// class inspired by https://www.owasp.org/index.php/Hashing_Java
+
 public class LocalAuthenticator {
+  // used when the authString is empty.
+  private static final String SUBSTITUTE_AUTH_STRING = "xxxxxxxxxxxxxxxxxxxxxx:xxxxxxxxxxxxxxxxxxxxxxxxxx";
   private static final Logger LOG = LoggerFactory.getLogger(LocalAuthenticator.class);
   private final JsonFileHandler jsonFileHandler;
   private final PasswordEncrypter passwordEncrypter;
@@ -33,52 +37,70 @@ public class LocalAuthenticator {
    * @throws UnauthorizedException when the user name and password combination is unknown.
    */
   public String authenticate(String authString) throws UnauthorizedException {
-    if (StringUtils.isBlank(authString)) {
-      throw new UnauthorizedException("User name and password are unknown.");
-    }
 
-    Login example = new Login();
     String decodedAuthString = decodeAuthString(authString);
     String userName = getUserName(decodedAuthString);
+    String password = getPassword(decodedAuthString);
 
+    Login example = new Login();
     example.setUserName(userName);
+
+    Login login = null;
+    boolean userIsKnown = false;
 
     try {
       LoginCollection loginCollection = jsonFileHandler.getCollection(LoginCollection.class, LOGIN_COLLECTION_FILE_NAME);
 
-      Login login = loginCollection.findItem(example);
+      login = loginCollection.findItem(example);
 
-      if (login != null) {
-        String password = encryptPassword(decodedAuthString, login.getSalt());
-
-        if (Objects.equal(password, login.getPassword())) {
-          return login.getUserPid();
-        }
-
-      }
     } catch (StorageException e) {
       LOG.error("{} cannot be read: {}", LOGIN_COLLECTION_FILE_NAME, e);
+    }
+
+    if (login == null) {
+      login = new Login();
+      login.setSalt(new byte[] {});
+    } else {
+      userIsKnown = true;
+    }
+
+    String encryptedPassword = encryptPassword(password, login.getSalt());
+
+    if (userIsKnown && Objects.equal(encryptedPassword, login.getPassword())) {
+      return login.getUserPid();
     }
 
     throw new UnauthorizedException("User name and password are unknown.");
   }
 
-  private String encryptPassword(String decodedAuthString, byte[] salt) {
-    return passwordEncrypter.encryptPassword(getPassword(decodedAuthString), salt);
-  }
-
-  private String getPassword(String decodedAuthString) {
-    // TODO: if decodedAuthString is empty generate a randomString.
-    return decodedAuthString.split(":")[1];
+  private String encryptPassword(String password, byte[] salt) {
+    return passwordEncrypter.encryptPassword(password, salt);
   }
 
   private String decodeAuthString(String authString) {
-    // TODO: if authString is null return an empty String.
+    if (StringUtils.isBlank(authString)) {
+      return SUBSTITUTE_AUTH_STRING;
+    }
+
     return new String(Base64.decodeBase64(authString.getBytes()));
   }
 
   private String getUserName(String decodedAuthString) {
-    // TODO: if decodedAuthString is empty generate a randomString.
-    return decodedAuthString.split(":")[0];
+    if (isValidAuthString(decodedAuthString)) {
+      return decodedAuthString.split(":")[0];
+    }
+
+    return "";
+  }
+
+  private boolean isValidAuthString(String decodedAuthString) {
+    return decodedAuthString.split(":").length > 1;
+  }
+
+  private String getPassword(String decodedAuthString) {
+    if (isValidAuthString(decodedAuthString)) {
+      return decodedAuthString.split(":")[1];
+    }
+    return "";
   }
 }
