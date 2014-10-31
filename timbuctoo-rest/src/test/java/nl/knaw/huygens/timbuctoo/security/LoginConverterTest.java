@@ -13,14 +13,16 @@ public class LoginConverterTest {
   public void toSecurityInformationCreatesAPrincipalAndAddsItToANewSecurityInformation() {
     // setup
     String userPid = "userPid";
-    String authString = "authString";
+    String userName = "userName";
+    String password = "password";
     String givenName = "givenName";
     String surname = "surname";
     String emailAddress = "test@test.com";
     String organization = "organization";
     String commonName = "givenName surname";
+    byte[] salt = "salt".getBytes();
 
-    Login login = new Login(userPid, authString, givenName, surname, emailAddress, organization);
+    Login login = new Login(userPid, userName, password, givenName, surname, emailAddress, organization, salt);
 
     LoginConverter instance = new LoginConverter();
 
@@ -31,5 +33,4 @@ public class LoginConverterTest {
     assertThat(information, is(securityInformationWith(userPid, givenName, surname, emailAddress, organization, commonName)));
 
   }
-
 }

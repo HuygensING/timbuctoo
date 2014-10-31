@@ -14,18 +14,22 @@ public class Login extends SystemEntity {
   private String surname;
   private String emailAddress;
   private String organization;
+  private byte[] salt;
+  private String userName;
 
   public Login() {
 
   }
 
-  public Login(String userPid, String authString, String givenName, String surname, String emailAddress, String organization) {
+  public Login(String userPid, String userName, String password, String givenName, String surname, String emailAddress, String organization, byte[] salt) {
     this.userPid = userPid;
-    this.authString = authString;
+    this.userName = userName;
+    this.authString = password;
     this.givenName = givenName;
     this.surname = surname;
     this.emailAddress = emailAddress;
     this.organization = organization;
+    this.salt = salt;
   }
 
   @Override
@@ -84,6 +88,22 @@ public class Login extends SystemEntity {
 
   public void setOrganization(String organization) {
     this.organization = organization;
+  }
+
+  public byte[] getSalt() {
+    return salt;
+  }
+
+  public void setSalt(byte[] salt) {
+    this.salt = salt;
+  }
+
+  public String getUserName() {
+    return userName;
+  }
+
+  public void setUserName(String userName) {
+    this.userName = userName;
   }
 
 }

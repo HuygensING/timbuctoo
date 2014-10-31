@@ -5,6 +5,7 @@ import static nl.knaw.huygens.timbuctoo.storage.file.LoginCollection.LOGIN_COLLE
 import java.io.PrintWriter;
 
 import nl.knaw.huygens.timbuctoo.model.Login;
+import nl.knaw.huygens.timbuctoo.security.PasswordEncrypter;
 import nl.knaw.huygens.timbuctoo.storage.file.JsonFileHandler;
 import nl.knaw.huygens.timbuctoo.storage.file.LoginCollection;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
@@ -21,11 +22,12 @@ public class LocalLoginImporter extends CSVImporter {
     Injector injector = ToolsInjectionModule.createInjector();
 
     JsonFileHandler jsonFileHandler = injector.getInstance(JsonFileHandler.class);
+    PasswordEncrypter passwordEncrypter = injector.getInstance(PasswordEncrypter.class);
 
-    LocalLoginImporter localLoginCreator = new LocalLoginImporter(jsonFileHandler);
+    LocalLoginImporter localLoginCreator = new LocalLoginImporter(jsonFileHandler, passwordEncrypter);
 
     if (args.length > 0) {
-      localLoginCreator.handleFile(args[0], 6, false);
+      localLoginCreator.handleFile(args[0], 7, false);
     } else {
       System.out.println("Please provide an input file as first argument.");
     }
@@ -33,10 +35,12 @@ public class LocalLoginImporter extends CSVImporter {
 
   private LoginCollection collection;
   private JsonFileHandler jsonFileHandler;
+  private PasswordEncrypter passwordEncrypter;
 
-  public LocalLoginImporter(JsonFileHandler jsonFileHandler) throws Exception {
+  public LocalLoginImporter(JsonFileHandler jsonFileHandler, PasswordEncrypter passwordEncrypter) throws Exception {
     super(new PrintWriter(System.out));
     this.jsonFileHandler = jsonFileHandler;
+    this.passwordEncrypter = passwordEncrypter;
     collection = jsonFileHandler.getCollection(LoginCollection.class, LOGIN_COLLECTION_FILE_NAME);
 
   }
@@ -49,7 +53,19 @@ public class LocalLoginImporter extends CSVImporter {
 
   @Override
   protected void handleLine(String[] items) throws Exception {
-    Login login = new Login(items[0], items[1], items[2], items[3], items[4], items[5]);
+    String userPid = items[0];
+    String userName = items[1];
+    String password = items[2];
+    String givenName = items[3];
+    String surname = items[4];
+    String emailAddress = items[5];
+    String organization = items[6];
+
+    byte[] salt = passwordEncrypter.createSalt();
+    String encryptedPassword = passwordEncrypter.encryptPassword(password, salt);
+
+    Login login = new Login(userPid, userName, encryptedPassword, givenName, surname, emailAddress, organization, salt);
     addLogin(login);
   }
+
 }
