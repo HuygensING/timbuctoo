@@ -50,60 +50,60 @@ public class JsonFileHandlerTest {
 
   private static final String CONFIG_DIR = "configDir";
   private static final String FILE_NAME = "test";
-  private static final File FILE = new File(createFilePath(CONFIG_DIR, FILE_NAME));
-  private static final UserFileCollection COLLECTION = new UserFileCollection();
   private static final Class<UserFileCollection> COLLECTION_TYPE = UserFileCollection.class;
 
   private JsonFileHandler instance;
   private ObjectMapper objectMapper;
-  private Configuration config;
+  private UserFileCollection collection;
+  private File file;
 
   @Before
-  public void setUp() {
-    config = mock(Configuration.class);
+  public void setup() {
+    Configuration config = mock(Configuration.class);
+    when(config.getDirectory(CONFIG_DIR_KEY)).thenReturn(CONFIG_DIR);
     objectMapper = mock(ObjectMapper.class);
     instance = new JsonFileHandler(config, objectMapper);
-
-    when(config.getDirectory(CONFIG_DIR_KEY)).thenReturn(CONFIG_DIR);
+    collection = new UserFileCollection();
+    file = new File(new File(CONFIG_DIR), FILE_NAME);
   }
 
   @Test
   public void testSaveCollection() throws Exception {
     // action
-    instance.saveCollection(COLLECTION, FILE_NAME);
+    instance.saveCollection(collection, FILE_NAME);
 
     // verify
-    verify(objectMapper).writeValue(FILE, COLLECTION);
+    verify(objectMapper).writeValue(file, collection);
   }
 
   @Test(expected = StorageException.class)
   public void testSaveCollectionObjectMapperThrowsJsonProcessingException() throws Exception {
-    doThrow(JsonProcessingException.class).when(objectMapper).writeValue(FILE, COLLECTION);
-    instance.saveCollection(COLLECTION, FILE_NAME);
+    doThrow(JsonProcessingException.class).when(objectMapper).writeValue(file, collection);
+    instance.saveCollection(collection, FILE_NAME);
   }
 
   @Test(expected = StorageException.class)
   public void testSaveCollectionObjectMapperThrowsIOException() throws Exception {
-    doThrow(IOException.class).when(objectMapper).writeValue(FILE, COLLECTION);
-    instance.saveCollection(COLLECTION, FILE_NAME);
+    doThrow(IOException.class).when(objectMapper).writeValue(file, collection);
+    instance.saveCollection(collection, FILE_NAME);
   }
 
   @Test
   public void testGetCollectionWhenTheCollectionIsFound() throws Exception {
     // setup
-    when(objectMapper.readValue(FILE, COLLECTION_TYPE)).thenReturn(COLLECTION);
+    when(objectMapper.readValue(file, COLLECTION_TYPE)).thenReturn(collection);
 
     // action
     UserFileCollection actualCollection = instance.getCollection(COLLECTION_TYPE, FILE_NAME);
 
     // verify
-    assertThat(actualCollection, is(equalTo(COLLECTION)));
+    assertThat(actualCollection, is(equalTo(collection)));
   }
 
   @Test
   public void testGetCollectionWhenTheCollectionIsNotFoundReturnsAnEmptyCollection() throws Exception {
     // setup
-    doThrow(FileNotFoundException.class).when(objectMapper).readValue(FILE, COLLECTION_TYPE);
+    doThrow(FileNotFoundException.class).when(objectMapper).readValue(file, COLLECTION_TYPE);
 
     // action
     UserFileCollection actualCollection = instance.getCollection(UserFileCollection.class, FILE_NAME);
@@ -115,18 +115,14 @@ public class JsonFileHandlerTest {
 
   @Test(expected = StorageException.class)
   public void testGetCollectionObjectMapperThrowsJsonProcessingException() throws Exception {
-    doThrow(JsonProcessingException.class).when(objectMapper).readValue(FILE, COLLECTION_TYPE);
+    doThrow(JsonProcessingException.class).when(objectMapper).readValue(file, COLLECTION_TYPE);
     instance.getCollection(UserFileCollection.class, FILE_NAME);
   }
 
   @Test(expected = StorageException.class)
   public void testGetCollectionObjectMapperThrowsIOException() throws Exception {
-    doThrow(IOException.class).when(objectMapper).readValue(FILE, COLLECTION_TYPE);
+    doThrow(IOException.class).when(objectMapper).readValue(file, COLLECTION_TYPE);
     instance.getCollection(UserFileCollection.class, FILE_NAME);
-  }
-
-  private static String createFilePath(String dir, String fileName) {
-    return String.format("%s%s%s", dir, File.separator, fileName);
   }
 
 }

@@ -41,13 +41,13 @@ public class JsonFileHandler {
 
   static final String CONFIG_DIR_KEY = "admin_data.directory";
 
-  private ObjectMapper objectMapper;
-  private Configuration config;
+  private final ObjectMapper objectMapper;
+  private final File directory;
 
   @Inject
   public JsonFileHandler(Configuration config, ObjectMapper objectMapper) {
-    this.config = config;
     this.objectMapper = objectMapper;
+    directory = new File(config.getDirectory(CONFIG_DIR_KEY));
   }
 
   public <T extends FileCollection<? extends SystemEntity>> void saveCollection(T collection, String fileName) throws StorageException {
@@ -61,11 +61,7 @@ public class JsonFileHandler {
   }
 
   private File getFile(String fileName) {
-    return new File(createPath(fileName));
-  }
-
-  private String createPath(String fileName) {
-    return String.format("%s%s%s", config.getDirectory(CONFIG_DIR_KEY), File.separator, fileName);
+    return new File(directory, fileName);
   }
 
   /**
