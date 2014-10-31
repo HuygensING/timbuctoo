@@ -126,7 +126,7 @@ public class CNWConverter extends DefaultConverter {
 				Visitor visitor = new PersonVisitor(personContext, listMaps);
 				Document.createFromXml(xml).accept(visitor);
 				CNWPerson person = personContext.person;
-				LOG.info("person={}", person);
+//				LOG.info("person={}", person);
 				relations.addAll(personContext.relations);
 				//				pid2koppelnaam.put(person.getId(), person.getKoppelnaam());
 				koppelnaam2pid.put(person.getKoppelnaam(), person.getId());
@@ -138,7 +138,7 @@ public class CNWConverter extends DefaultConverter {
 			for (CNWRelation cnwRelation : relations) {
 				boolean append = true;
 				String targetId = cnwRelation.getTargetId();
-				if ("child".equals(cnwRelation.getTypeName())) {
+				if ("child".equals(cnwRelation.getTypeName())|| "klein".equals(cnwRelation.getTypeName())) {
 					String childId = cnwRelation.getSourceId();
 					String parentId = targetId;
 					String sourceRefId = koppelnaam2pid.get(parentId);
