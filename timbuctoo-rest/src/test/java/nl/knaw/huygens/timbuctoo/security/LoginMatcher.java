@@ -8,32 +8,32 @@ import org.hamcrest.TypeSafeMatcher;
 
 public class LoginMatcher extends TypeSafeMatcher<Login> {
 
-  private final String authString;
+  private final String userName;
 
   @Override
   public void describeTo(Description description) {
-    description.appendText("Login with authString: ")//
-        .appendValue(authString);
+    description.appendText("Login with userName: ")//
+        .appendValue(userName);
   }
 
   @Override
   protected void describeMismatchSafely(Login item, Description mismatchDescription) {
-    mismatchDescription.appendText("Login with authString: ")//
+    mismatchDescription.appendText("Login with userName: ")//
         .appendValue(item.getPassword());
   }
 
   @Override
   protected boolean matchesSafely(Login item) {
-    return StringUtils.equals(authString, item.getPassword());
+    return StringUtils.equals(userName, item.getUserName());
   }
 
-  private LoginMatcher(String authString) {
-    this.authString = authString;
+  private LoginMatcher(String userName) {
+    this.userName = userName;
 
   }
 
-  public static LoginMatcher loginWithAuthString(String authString) {
-    return new LoginMatcher(authString);
+  public static LoginMatcher loginWithUserName(String userName) {
+    return new LoginMatcher(userName);
 
   }
 
