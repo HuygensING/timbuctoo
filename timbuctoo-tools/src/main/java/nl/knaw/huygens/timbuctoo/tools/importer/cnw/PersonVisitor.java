@@ -507,11 +507,12 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 	}
 
 	Map<String, String> reltypeMap = ImmutableMap.<String, String> builder()//
-			.put("broer", "isRelatedTo")//
+			.put("broer", "isSiblingOf")//
 			.put("child", "isParentOf")//
 			.put("echtgenoot", "isSpouseOf")//
 			.put("gezel", "isSpouseOf")//
-			.put("grand", "isRelatedTo")//
+			.put("grand", "isGrandparentOf")//
+			.put("klein", "isGrandparentOf")//
 			.put("parent", "isParentOf")//
 			.put("verloofd", "isSpouseOf")//
 			.build();
