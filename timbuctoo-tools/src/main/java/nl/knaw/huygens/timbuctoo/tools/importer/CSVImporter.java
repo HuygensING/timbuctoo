@@ -117,7 +117,11 @@ public abstract class CSVImporter {
    */
   protected boolean acceptLine(String[] items) {
     // Note: CSVReader converts an empty line to a single, empty item...
-    return (items.length != 0) && !items[0].isEmpty() && !items[0].startsWith("--");
+    return (items.length != 0) && !items[0].isEmpty() && !isComment(items);
+  }
+
+  private boolean isComment(String[] items) {
+    return items[0].startsWith("--");
   }
 
   /**
