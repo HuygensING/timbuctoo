@@ -19,7 +19,9 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
+@Singleton
 public class LocalLoggedInUsers implements AuthenticationHandler {
   private static final Logger LOG = LoggerFactory.getLogger(LocalLoggedInUsers.class);
   static final String LOCAL_SESSION_KEY_PREFIX = "Timbuctoo";
