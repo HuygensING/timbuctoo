@@ -22,6 +22,8 @@ package nl.knaw.huygens.timbuctoo.model.util;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.model.Location.LocationType;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class PlaceName {
@@ -36,8 +38,88 @@ public class PlaceName {
   public PlaceName() {}
 
   @JsonIgnore
-  public String getLongName() {
+  public String getDisplayName(LocationType type) {
     StringBuilder builder = new StringBuilder();
+    switch (type) {
+      case DISTRICT:
+        handleDistrict(builder);
+        break;
+      case SETTLEMENT:
+        handleSettlement(builder);
+        break;
+      case REGION:
+        handleRegionName(builder);
+        break;
+      case COUNTRY:
+        handleCountry(builder);
+        break;
+      case BLOC:
+        handleBloc(builder);
+        break;
+      default:
+        handleMediumName(builder);
+        break;
+    }
+    return builder.toString();
+  }
+
+  @JsonIgnore
+  public String getMediumName() {
+    StringBuilder builder = new StringBuilder();
+    handleMediumName(builder);
+    return builder.toString();
+  }
+
+  private void handleDistrict(StringBuilder builder) {
+    if (district != null) {
+      builder.append(district);
+      if (settlement != null) {
+        builder.append(", ");
+        handleSettlement(builder);
+      }
+    }
+  }
+
+  private void handleSettlement(StringBuilder builder) {
+    if (settlement != null) {
+      builder.append(settlement).append(" (");
+      if (region != null) {
+        builder.append(region).append(", ");
+      }
+      if (countryCode != null) {
+        builder.append(countryCode);
+      } else if (country != null) {
+        builder.append(country);
+      }
+      builder.append(")");
+    }
+  }
+
+  private void handleRegionName(StringBuilder builder) {
+    if (region != null) {
+      builder.append(region).append(" (region");
+      if (countryCode != null) {
+        builder.append(", ").append(countryCode);
+      } else if (country != null) {
+        builder.append(", ").append(country);
+      }
+      builder.append(")");
+    }
+  }
+
+  private void handleCountry(StringBuilder builder) {
+    if (country != null) {
+      builder.append(country);
+    }
+  }
+
+  private void handleBloc(StringBuilder builder) {
+    if (bloc != null) {
+      builder.append(bloc);
+    }
+  }
+
+  private void handleMediumName(StringBuilder builder) {
     if (district != null) {
       builder.append(district).append(", ");
     }
@@ -57,8 +139,9 @@ public class PlaceName {
     if (builder.length() == 0 && bloc != null) {
       builder.append(bloc);
     }
-    return builder.toString();
   }
+
+  // ---------------------------------------------------------------------------
 
   public String getDistrict() {
     return district;

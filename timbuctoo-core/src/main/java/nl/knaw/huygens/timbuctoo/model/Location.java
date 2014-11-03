@@ -67,7 +67,7 @@ public class Location extends DomainEntity {
     if (names.defLang != null) {
       PlaceName placeName = names.map.get(names.defLang);
       if (placeName != null) {
-        return placeName.getLongName();
+        return placeName.getDisplayName(locationType);
       }
     }
     return "undefined";
@@ -78,7 +78,7 @@ public class Location extends DomainEntity {
   public String getIndexedName() {
     StringBuilder builder = new StringBuilder();
     for (PlaceName name : names.map.values()) {
-      builder.append(' ').append(name.getLongName());
+      builder.append(' ').append(name.getDisplayName(locationType));
     }
     return builder.toString();
   }
