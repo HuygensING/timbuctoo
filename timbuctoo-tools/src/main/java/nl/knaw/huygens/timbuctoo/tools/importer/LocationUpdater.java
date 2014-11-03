@@ -71,7 +71,11 @@ public class LocationUpdater extends DefaultImporter {
     try {
       LocationUpdater updater = new LocationUpdater(repository, indexManager, vreId);
       updater.handleFile(new File(directory, "baselocation-update.json"), false);
-      updater.displayErrorSummary();
+      int errors = updater.displayErrorSummary();
+      if (errors == 0) {
+        updater.handleFile(new File(directory, "baselocation-update.json"), true);
+        updater.displayStatus();
+      }
     } finally {
       indexManager.close();
       repository.close();
@@ -82,7 +86,7 @@ public class LocationUpdater extends DefaultImporter {
   // ---------------------------------------------------------------------------
 
   private final ObjectMapper mapper;
-  private Set<String> urns;
+  private final Set<String> urns;
   private int numberOld;
   private int numberNew;
 
@@ -93,7 +97,8 @@ public class LocationUpdater extends DefaultImporter {
   }
 
   public <T extends DomainEntity> void handleFile(File file, boolean update) throws Exception {
-    printBoxedText("File: " + file.getName());
+    printBoxedText("File: " + file.getName() + "; update: " + update);
+    urns.clear();
     numberOld = 0;
     numberNew = 0;
 
@@ -115,24 +120,27 @@ public class LocationUpdater extends DefaultImporter {
   private <T extends DomainEntity> void handleEntity(String line, boolean update) throws Exception {
     try {
       BaseLocation location = mapper.readValue(line, BaseLocation.class);
-      verify(location);
-      String urn = location.getUrn();
-      List<Location> entities = repository.getEntitiesByProperty(Location.class, Location.URN, urn).getAll();
-      if (entities.isEmpty()) {
-        numberNew++;
-        if (update) {
-          addDomainEntity(BaseLocation.class, location);
+      if (verify(location)) {
+        String urn = location.getUrn();
+        List<Location> entities = repository.getEntitiesByProperty(Location.class, Location.URN, urn).getAll();
+        if (entities.isEmpty()) {
+          numberNew++;
+          if (update) {
+            String storedId = addDomainEntity(BaseLocation.class, location);
+            indexManager.addEntity(BaseLocation.class, storedId);
+          }
+        } else if (entities.size() == 1) {
+          numberOld++;
+          Location entity = entities.get(0);
+          location.setId(entity.getId());
+          location.setRev(entity.getRev());
+          if (update) {
+            updatePrimitiveDomainEntity(Location.class, location);
+            indexManager.updateEntity(BaseLocation.class, location.getId());
+          }
+        } else {
+          handleError("There are %d locations with urn %s", entities.size(), urn);
         }
-      } else if (entities.size() == 1) {
-        numberOld++;
-        Location entity = entities.get(0);
-        location.setId(entity.getId());
-        location.setRev(entity.getRev());
-        if (update) {
-          updatePrimitiveDomainEntity(Location.class, location);
-        }
-      } else {
-        handleError("There are %d locations with urn %s", entities.size(), urn);
       }
     } catch (Exception e) {
       LOG.error("{}: {}",e.getMessage(), line);
@@ -140,25 +148,27 @@ public class LocationUpdater extends DefaultImporter {
     }
   }
 
-  private void verify(BaseLocation location) {
+  private boolean verify(BaseLocation location) {
     String urn = location.getUrn();
     if (!urns.add(urn)) {
       handleError("Duplicate urn %s", urn);
-      return;
+      return false;
     }
     String language = location.getDefLang();
     if (language == null) {
       handleError("No default language for %s", urn);
-      return;
+      return false;
     }
     PlaceName name = location.getNames().get(language);
     if (name == null) {
       handleError("No place name with language %s for %s", language, urn);
-      return;
+      return false;
     }
     if (!urn.startsWith(getPlaceNameType(name))) {
       handleError("Urn %s starts with wrong prefix", urn);
+      return false;
     }
+    return true;
   }
 
   private String getPlaceNameType(PlaceName name) {

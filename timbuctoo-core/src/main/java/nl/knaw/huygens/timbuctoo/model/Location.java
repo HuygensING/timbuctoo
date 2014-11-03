@@ -37,6 +37,10 @@ public class Location extends DomainEntity {
 
   public static final String URN = "^urn";
 
+  public static enum LocationType {
+    UNKNOWN, DISTRICT, SETTLEMENT, REGION, COUNTRY, BLOC
+  }
+
   // Container class, for entity reducer
   private static class Names {
     public String defLang;
@@ -46,13 +50,15 @@ public class Location extends DomainEntity {
     }
   }
 
-  /** URN for making concordances. */
-  private String urn;
+  private LocationType locationType;
   private Names names;
   private String latitude;
   private String longitude;
+  /** URN for making concordances. */
+  private String urn;
 
   public Location() {
+    setLocationType(null);
     names = new Names();
   }
 
@@ -77,14 +83,15 @@ public class Location extends DomainEntity {
     return builder.toString();
   }
 
-  @JsonProperty(URN)
-  public String getUrn() {
-    return urn;
+  @JsonProperty("^locationType")
+  @IndexAnnotation(fieldName = "dynamic_s_location_type", canBeEmpty = true, isFaceted = true)
+  public LocationType getLocationType() {
+    return locationType;
   }
 
-  @JsonProperty(URN)
-  public void setUrn(String urn) {
-    this.urn = urn;
+  @JsonProperty("^locationType")
+  public void setLocationType(LocationType type) {
+    locationType = (type == null) ? LocationType.UNKNOWN : type;
   }
 
   @JsonProperty("^defLang")
@@ -126,5 +133,15 @@ public class Location extends DomainEntity {
   public void setLongitude(String longitude) {
     this.longitude = longitude;
   };
+
+  @JsonProperty(URN)
+  public String getUrn() {
+    return urn;
+  }
+
+  @JsonProperty(URN)
+  public void setUrn(String urn) {
+    this.urn = urn;
+  }
 
 }

@@ -97,10 +97,11 @@ public abstract class DefaultImporter {
     }
   }
 
-  protected void displayErrorSummary() {
+  protected int displayErrorSummary() {
     if (errors > 0) {
       System.out.printf("%n## Error count = %d%n", errors);
     }
+    return errors;
   }
 
   // --- Import log ------------------------------------------------------------
