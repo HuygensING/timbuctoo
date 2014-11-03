@@ -26,14 +26,15 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
 import java.util.List;
+import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLocation;
+import nl.knaw.huygens.timbuctoo.model.util.PlaceName;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
-import nl.knaw.huygens.timbuctoo.tools.process.Progress;
 import nl.knaw.huygens.timbuctoo.util.Files;
 
 import org.apache.commons.io.LineIterator;
@@ -42,6 +43,8 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 import com.google.inject.Injector;
 
 public class LocationUpdater extends DefaultImporter {
@@ -67,9 +70,8 @@ public class LocationUpdater extends DefaultImporter {
 
     try {
       LocationUpdater updater = new LocationUpdater(repository, indexManager, vreId);
-      updater.handleFile(new File(directory, "baselocation.json"));
+      updater.handleFile(new File(directory, "baselocation-update.json"), false);
       updater.displayErrorSummary();
-      updater.displayStatus();
     } finally {
       indexManager.close();
       repository.close();
@@ -80,44 +82,98 @@ public class LocationUpdater extends DefaultImporter {
   // ---------------------------------------------------------------------------
 
   private final ObjectMapper mapper;
+  private Set<String> urns;
+  private int numberOld;
+  private int numberNew;
 
   public LocationUpdater(Repository repository, IndexManager indexManager, String vreId) {
     super(repository,  indexManager,  vreId);
     mapper = new ObjectMapper();
+    urns = Sets.newHashSet();
   }
 
-  public <T extends DomainEntity> void handleFile(File file) throws Exception {
+  public <T extends DomainEntity> void handleFile(File file, boolean update) throws Exception {
     printBoxedText("File: " + file.getName());
+    numberOld = 0;
+    numberNew = 0;
 
-    Progress progress = new Progress();
     LineIterator iterator = Files.getLineIterator(file);
     try {
       while (iterator.hasNext()) {
         String line = iterator.nextLine().trim();
         if (!line.isEmpty()) {
-          progress.step();
-          handleEntity(line);
+          handleEntity(line, update);
         }
       }
     } finally {
       LineIterator.closeQuietly(iterator);
-      progress.done();
+      System.out.printf("Number of old locations: %5d%n", numberOld);
+      System.out.printf("Number of new locations: %5d%n", numberNew);
     }
   }
 
-  private <T extends DomainEntity> void handleEntity(String line) throws Exception {
-    BaseLocation location = mapper.readValue(line, BaseLocation.class);
+  private <T extends DomainEntity> void handleEntity(String line, boolean update) throws Exception {
+    try {
+      BaseLocation location = mapper.readValue(line, BaseLocation.class);
+      verify(location);
+      String urn = location.getUrn();
+      List<Location> entities = repository.getEntitiesByProperty(Location.class, Location.URN, urn).getAll();
+      if (entities.isEmpty()) {
+        numberNew++;
+        if (update) {
+          addDomainEntity(BaseLocation.class, location);
+        }
+      } else if (entities.size() == 1) {
+        numberOld++;
+        Location entity = entities.get(0);
+        location.setId(entity.getId());
+        location.setRev(entity.getRev());
+        if (update) {
+          updatePrimitiveDomainEntity(Location.class, location);
+        }
+      } else {
+        handleError("There are %d locations with urn %s", entities.size(), urn);
+      }
+    } catch (Exception e) {
+      LOG.error("{}: {}",e.getMessage(), line);
+      System.exit(-1);
+    }
+  }
+
+  private void verify(BaseLocation location) {
     String urn = location.getUrn();
-    List<Location> entities = repository.getEntitiesByProperty(Location.class, Location.URN, urn).getAll();
-    if (entities.isEmpty()) {
-      addDomainEntity(BaseLocation.class, location);
-    } else if (entities.size() == 1) {
-      Location entity = entities.get(0);
-      location.setId(entity.getId());
-      location.setRev(entity.getRev());
-      updatePrimitiveDomainEntity(Location.class, location);
+    if (!urns.add(urn)) {
+      handleError("Duplicate urn %s", urn);
+      return;
+    }
+    String language = location.getDefLang();
+    if (language == null) {
+      handleError("No default language for %s", urn);
+      return;
+    }
+    PlaceName name = location.getNames().get(language);
+    if (name == null) {
+      handleError("No place name with language %s for %s", language, urn);
+      return;
+    }
+    if (!urn.startsWith(getPlaceNameType(name))) {
+      handleError("Urn %s starts with wrong prefix", urn);
+    }
+  }
+
+  private String getPlaceNameType(PlaceName name) {
+    if (!Strings.isNullOrEmpty(name.getDistrict())) {
+      return "di";
+    } else if (!Strings.isNullOrEmpty(name.getSettlement())) {
+      return "se";
+    } else if (!Strings.isNullOrEmpty(name.getRegion())) {
+      return "re";
+    } else if (!Strings.isNullOrEmpty(name.getCountry())) {
+      return "co";
+    } else if (!Strings.isNullOrEmpty(name.getBloc())) {
+      return "bl";
     } else {
-      LOG.error("There are {} locations with urn {}", entities.size(), urn);
+      return "?";
     }
   }
 
