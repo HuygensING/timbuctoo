@@ -184,7 +184,7 @@ public class WWPerson extends Person {
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_residence", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getResidenceLocation() {
-    return getRelations().get("hasResidenceLocation");
+    return getRelations("hasResidenceLocation");
   }
 
   // a facet that allows searching all the locations related to person.

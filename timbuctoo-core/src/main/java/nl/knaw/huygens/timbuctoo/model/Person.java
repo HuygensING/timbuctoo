@@ -228,13 +228,13 @@ public class Person extends DomainEntity {
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_birthplace", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getBirthPlace() {
-    return getRelations().get("hasBirthPlace");
+    return getRelations("hasBirthPlace");
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_deathplace", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getDeathPlace() {
-    return getRelations().get("hasDeathPlace");
+    return getRelations("hasDeathPlace");
   }
 
   // ---------------------------------------------------------------------------
