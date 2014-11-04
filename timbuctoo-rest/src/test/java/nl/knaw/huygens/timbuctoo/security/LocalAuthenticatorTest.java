@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.security;
 
 import static nl.knaw.huygens.timbuctoo.security.LoginMatcher.loginWithUserName;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
@@ -67,10 +66,10 @@ public class LocalAuthenticatorTest {
         .thenReturn(login);
 
     // action
-    String actualUserPid = instance.authenticate(AUTH_STRING);
+    Login actualLogin = instance.authenticate(AUTH_STRING);
 
     // verify
-    assertThat(actualUserPid, is(equalTo(USER_PID)));
+    assertThat(actualLogin, is(login));
   }
 
   private Login createLogin(String userPid, String userName, String password, byte[] salt) {

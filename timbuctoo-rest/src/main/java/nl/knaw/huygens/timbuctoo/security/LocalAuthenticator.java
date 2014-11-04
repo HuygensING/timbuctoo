@@ -36,7 +36,7 @@ public class LocalAuthenticator {
    * @return the persistentId of the user.
    * @throws UnauthorizedException when the user name and password combination is unknown.
    */
-  public String authenticate(String authString) throws UnauthorizedException {
+  public Login authenticate(String authString) throws UnauthorizedException {
 
     String decodedAuthString = decodeAuthString(authString);
     String userName = getUserName(decodedAuthString);
@@ -67,7 +67,7 @@ public class LocalAuthenticator {
     String encryptedPassword = encryptPassword(password, login.getSalt());
 
     if (userIsKnown && Objects.equal(encryptedPassword, login.getPassword())) {
-      return login.getUserPid();
+      return login;
     }
 
     throw new UnauthorizedException("User name and password are unknown.");

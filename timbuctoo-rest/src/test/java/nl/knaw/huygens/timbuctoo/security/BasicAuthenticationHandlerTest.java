@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import nl.knaw.huygens.security.client.UnauthorizedException;
+import nl.knaw.huygens.timbuctoo.model.Login;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,9 +32,11 @@ public class BasicAuthenticationHandlerTest {
     // setup
     String persistentId = "local12345324";
     String authToken = "authToken";
+    Login login = new Login();
+    login.setUserPid(persistentId);
 
     // when
-    when(localAuthenticatorMock.authenticate(NORMALIZED_AUTH_STRING)).thenReturn(persistentId);
+    when(localAuthenticatorMock.authenticate(NORMALIZED_AUTH_STRING)).thenReturn(login);
     when(localLoggedInUsersMock.add(persistentId)).thenReturn(authToken);
 
     // action 

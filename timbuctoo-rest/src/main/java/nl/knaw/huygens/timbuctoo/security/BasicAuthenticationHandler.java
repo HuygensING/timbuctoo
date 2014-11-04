@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.security;
 
 import nl.knaw.huygens.security.client.UnauthorizedException;
+import nl.knaw.huygens.timbuctoo.model.Login;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -27,7 +28,8 @@ public class BasicAuthenticationHandler {
   public String authenticate(String authenticationString) throws UnauthorizedException {
     String normalizedAuthString = normalize(authenticationString);
 
-    String persistentId = localAuthenticator.authenticate(normalizedAuthString);
+    Login login = localAuthenticator.authenticate(normalizedAuthString);
+    String persistentId = login.getUserPid();
     String authorizationToken = localLoggedInUsers.add(persistentId);
 
     return authorizationToken;
