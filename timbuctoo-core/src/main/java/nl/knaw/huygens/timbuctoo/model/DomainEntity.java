@@ -26,12 +26,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.JsonViews;
 import nl.knaw.huygens.timbuctoo.config.BusinessRules;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.util.Text;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -39,6 +41,7 @@ import com.fasterxml.jackson.annotation.JsonView;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 public abstract class DomainEntity extends Entity implements Variable {
 
@@ -228,8 +231,21 @@ public abstract class DomainEntity extends Entity implements Variable {
 
   protected void addRelationToRepresentation(Map<String, String> data, String key, String relationName) {
     List<RelationRef> refs = getRelations(relationName);
-    String value = refs.isEmpty() ? null : refs.get(0).getDisplayName();
-    addItemToRepresentation(data, key, value);
+    if (refs.size() == 0) {
+      addItemToRepresentation(data, key, null);
+    } else if (refs.size() == 1) {
+      addItemToRepresentation(data, key, refs.get(0).getDisplayName());
+    } else {
+      Set<String> values = Sets.newTreeSet();
+      for (RelationRef ref : refs) {
+        values.add(ref.getDisplayName());
+      }
+      StringBuilder builder = new StringBuilder();
+      for (String value : values) {
+        Text.appendTo(builder, value, ";");
+      }
+      addItemToRepresentation(data, key, builder);
+    }
   }
 
   protected void addItemToRepresentation(Map<String, String> data, String key, Object value) {
