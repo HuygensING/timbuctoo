@@ -56,7 +56,7 @@ public abstract class DomainEntity extends Entity implements Variable {
   private boolean deleted;
   private int relationCount;
   private final Map<String, String> properties = Maps.newHashMap();
-  private final Map<String, List<RelationRef>> relations = Maps.newHashMap();
+  private final Map<String, Set<RelationRef>> relations = Maps.newHashMap();
   private List<String> variations = Lists.newArrayList();
   private List<Role> roles = Lists.newArrayList();
 
@@ -118,15 +118,18 @@ public abstract class DomainEntity extends Entity implements Variable {
     return ImmutableList.of();
   }
 
+  /**
+   * Returns all relations of this entity.
+   */
   @JsonProperty("@relations")
-  public Map<String, List<RelationRef>> getRelations() {
+  public Map<String, Set<RelationRef>> getRelations() {
     return relations;
   }
 
   @JsonIgnore
   public List<RelationRef> getRelations(String name) {
-    List<RelationRef> list = relations.get(name);
-    return (list != null) ? list : NO_RELATIONS;
+    Set<RelationRef> refs = relations.get(name);
+    return (refs != null) ? Lists.newArrayList(refs) : NO_RELATIONS;
   }
 
   @JsonProperty("@relationCount")
@@ -142,9 +145,9 @@ public abstract class DomainEntity extends Entity implements Variable {
 
   public void addRelation(String name, RelationRef ref) {
     relationCount++;
-    List<RelationRef> refs = relations.get(name);
+    Set<RelationRef> refs = relations.get(name);
     if (refs == null) {
-      refs = Lists.newArrayList();
+      refs = Sets.newTreeSet();
       relations.put(name, refs);
     }
     refs.add(ref);
