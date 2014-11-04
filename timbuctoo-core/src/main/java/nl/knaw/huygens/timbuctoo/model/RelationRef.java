@@ -24,13 +24,15 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import nl.knaw.huygens.timbuctoo.config.Paths;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.google.common.base.Joiner;
 
 /**
  * A reference to a relation, to be used in other entities.
  * The reference is partially denormalized by including the display name.
  */
-public class RelationRef {
+public class RelationRef implements Comparable<RelationRef> {
 
   private String type;
   private String id;
@@ -47,8 +49,8 @@ public class RelationRef {
     this.type = type;
     this.id = id;
     this.path = Joiner.on('/').join(Paths.DOMAIN_PREFIX, xtype, id);
-    this.displayName = displayName;
     this.rev = rev;
+    setDisplayName(displayName);
     setRelationId(relationId);
     setAccepted(accepted);
   }
@@ -81,8 +83,8 @@ public class RelationRef {
     return displayName;
   }
 
-  public void setDisplayName(String displayName) {
-    this.displayName = displayName;
+  public void setDisplayName(String name) {
+    displayName = StringUtils.trimToEmpty(name);
   }
 
   public String getRelationId() {
@@ -103,6 +105,11 @@ public class RelationRef {
 
   public int getRev() {
     return rev;
+  }
+
+  @Override
+  public int compareTo(RelationRef other) {
+    return displayName.compareTo(other.displayName);
   }
 
   @Override
