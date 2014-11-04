@@ -102,13 +102,18 @@ public class ReIndexer {
     public void run() {
       String typeName = TypeNames.getInternalName(type);
       LOG.info("Start indexing for {}.", typeName);
-      for (StorageIterator<? extends DomainEntity> iterator = repository.getDomainEntities(type); iterator.hasNext();) {
-        try {
+      try {
+        for (StorageIterator<? extends DomainEntity> iterator = repository.getDomainEntities(type); iterator.hasNext();) {
           indexManager.addEntity(type, iterator.next().getId());
-        } catch (IndexException e) {
-          LOG.error("Error indexing for {}.", typeName);
-          LOG.debug("Error: {}", e);
         }
+      } catch (RuntimeException e) {
+        LOG.error("Error indexing for {}.", typeName);
+        LOG.debug("Error: {}", e);
+        countDownLatch.countDown();
+        throw e;
+      } catch (IndexException e) {
+        LOG.error("Error indexing for {}.", typeName);
+        LOG.debug("Error: {}", e);
       }
       LOG.info("End indexing for {}.", typeName);
       countDownLatch.countDown();
