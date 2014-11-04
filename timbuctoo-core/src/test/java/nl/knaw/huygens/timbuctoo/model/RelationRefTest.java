@@ -30,8 +30,20 @@ import org.junit.Test;
 public class RelationRefTest {
 
   @Test
+  public void testDisplayName() {
+    RelationRef ref = new RelationRef("type", "xtype", "id", null, "relationId", true, 0);
+    assertEquals("", ref.getDisplayName());
+
+    ref.setDisplayName("name");
+    assertEquals("name", ref.getDisplayName());
+
+    ref.setDisplayName(null);
+    assertEquals("", ref.getDisplayName());
+  }
+
+  @Test
   public void testPath() {
-    RelationRef ref = new RelationRef("type", "xtype", "id", "displayName", "relationId", true, 0);
+    RelationRef ref = new RelationRef("type", "xtype", "id", "name", "relationId", true, 0);
 
     assertEquals("domain/xtype/id", ref.getPath());
   }
