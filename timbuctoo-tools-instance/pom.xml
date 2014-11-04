@@ -128,6 +128,10 @@
               <name>transformedDataImport</name>
               <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.TransformedDataImporter</mainClass>
             </program>
+            <program>
+              <name>locationUpdater</name>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.LocationUpdater</mainClass>
+            </program>
           </programs>
         </configuration>
       </plugin>
