@@ -73,7 +73,7 @@ public class ReIndexer {
     indexManager.deleteAllEntities();
     int numberOfTasks = registry.getPrimitiveDomainEntityTypes().size();
     CountDownLatch countDownLatch = new CountDownLatch(numberOfTasks);
-    ExecutorService executor = Executors.newFixedThreadPool(numberOfTasks);
+    ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
     for (Class<? extends DomainEntity> primitiveType : registry.getPrimitiveDomainEntityTypes()) {
       LOG.info("Task started");
