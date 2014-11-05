@@ -39,11 +39,10 @@ import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 // @see http://wiki.fasterxml.com/JacksonPolymorphicDeserialization
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
 @JsonTypeIdResolver(value = TimbuctooTypeIdResolver.class)
-public abstract class Role implements Variable {
+public abstract class Role {
 
   private List<Reference> variationRefs;
 
-  @Override
   @JsonProperty("@variationRefs")
   //Should ignore the variationRefs during deserialization.
   @JsonIgnoreProperties(ignoreUnknown = true)
