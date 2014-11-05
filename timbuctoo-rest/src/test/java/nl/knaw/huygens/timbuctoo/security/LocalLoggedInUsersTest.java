@@ -4,7 +4,9 @@ import static nl.knaw.huygens.timbuctoo.security.LocalLoggedInUsers.LOCAL_SESSIO
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.security.Principal;
@@ -17,15 +19,22 @@ import nl.knaw.huygens.timbuctoo.model.Login;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import com.google.common.cache.Cache;
 
 public class LocalLoggedInUsersTest {
   private LocalLoggedInUsers instance;
   private LoginConverter loginConverterMock;
+  @Mock
+  private Cache<String, Login> cacheMock;
 
   @Before
   public void setUp() {
+    MockitoAnnotations.initMocks(this);
     loginConverterMock = mock(LoginConverter.class);
-    instance = new LocalLoggedInUsers(loginConverterMock);
+    instance = new LocalLoggedInUsers(loginConverterMock, cacheMock);
   }
 
   @Test
@@ -36,8 +45,7 @@ public class LocalLoggedInUsersTest {
     String sessionKey = instance.add(login);
 
     // verify
-    Login retrievedLogin = instance.get(sessionKey);
-    assertThat(retrievedLogin, is(login));
+    verify(cacheMock).put(sessionKey, login);
   }
 
   @Test
@@ -53,8 +61,10 @@ public class LocalLoggedInUsersTest {
   public void getSecurityInformationReturnsTheSecurityInformationWithTheUserPID() throws Exception {
     // setup
     Login login = new Login();
+    String sessionKey = "anyString";
 
-    String sessionKey = instance.add(login);
+    // when
+    when(cacheMock.getIfPresent(anyString())).thenReturn(login);
 
     SecurityInformation securityInformation = createSecurityInformation();
 
@@ -133,8 +143,12 @@ public class LocalLoggedInUsersTest {
     // setup
     String unknownSessionKey = "unknownSessionKey";
 
-    // action
-    instance.getSecurityInformation(unknownSessionKey);
+    try {
+      // action
+      instance.getSecurityInformation(unknownSessionKey);
+    } finally {
+      verify(cacheMock).getIfPresent(unknownSessionKey);
+    }
   }
 
 }
