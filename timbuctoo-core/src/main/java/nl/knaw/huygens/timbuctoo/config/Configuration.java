@@ -41,7 +41,7 @@ public class Configuration {
 
   public static final String DEFAULT_CONFIG_FILE = "../config.xml";
 
-  public static final String SETTINGS_PREFIX = "settings.";
+  private static final String SETTINGS_PREFIX = "settings.";
   public static final String KEY_HOME_DIR = "home.directory";
 
   private final XMLConfiguration xmlConfig;
