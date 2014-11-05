@@ -30,14 +30,12 @@ public class BasicAuthenticationHandlerTest {
   @Test
   public void authenticateReturnsAnAuthenticationTokenAndRegistersTheUserAsLoggedInIfTheAuthenticationStringIsOk() throws Exception {
     // setup
-    String persistentId = "local12345324";
     String authToken = "authToken";
     Login login = new Login();
-    login.setUserPid(persistentId);
 
     // when
     when(localAuthenticatorMock.authenticate(NORMALIZED_AUTH_STRING)).thenReturn(login);
-    when(localLoggedInUsersMock.add(persistentId)).thenReturn(authToken);
+    when(localLoggedInUsersMock.add(login)).thenReturn(authToken);
 
     // action 
     String actualAuthToken = instance.authenticate(AUTH_STRING);

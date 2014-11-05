@@ -29,8 +29,7 @@ public class BasicAuthenticationHandler {
     String normalizedAuthString = normalize(authenticationString);
 
     Login login = localAuthenticator.authenticate(normalizedAuthString);
-    String persistentId = login.getUserPid();
-    String authorizationToken = localLoggedInUsers.add(persistentId);
+    String authorizationToken = localLoggedInUsers.add(login);
 
     return authorizationToken;
   }
