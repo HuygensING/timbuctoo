@@ -39,6 +39,10 @@
     <admin_data>
       <directory>data</directory>
     </admin_data>
+    <login>
+      <expirationTime>8</expirationTime>
+      <timeUnit>HOURS</timeUnit> <!-- see http://docs.oracle.com/javase/6/docs/api/java/util/concurrent/TimeUnit.html -->
+    </login>
     <solr>
       <!-- server_type could be LOCAL or REMOTE. When LOCAL is used a "directory" 
         property is expected. When REMOTE is used a "url" property is needed. -->
@@ -95,11 +99,6 @@
       <prefix>{prefix}</prefix>
       <private_key_file>{path to the private key}</private_key_file>
     </handle>
-    <paths>
-      <source>data/source</source>
-      <json>data/json</json>
-      <web>../web</web>
-    </paths>
     <!-- Used to determine which packages contain the domain model classes. -->
     <model-packages>
       timbuctoo.model

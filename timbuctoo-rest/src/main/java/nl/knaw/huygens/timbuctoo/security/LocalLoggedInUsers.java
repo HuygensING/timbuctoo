@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.security.client.UnauthorizedException;
 import nl.knaw.huygens.security.client.model.SecurityInformation;
+import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.model.Login;
 
 import com.google.common.cache.Cache;
@@ -15,19 +16,19 @@ import com.google.inject.Singleton;
 
 @Singleton
 public class LocalLoggedInUsers implements AuthenticationHandler {
-  private static final TimeUnit EXPIRY_TIME_UNIT = TimeUnit.HOURS;
-  private static final int EXPIRY_TIME = 8;
   static final String LOCAL_SESSION_KEY_PREFIX = "Timbuctoo";
   private final LoginConverter loginConverter;
   private final Cache<String, Login> sessionCache;
 
   @Inject
-  public LocalLoggedInUsers(LoginConverter loginConverter) {
-    this(loginConverter, createCache());
+  public LocalLoggedInUsers(LoginConverter loginConverter, Configuration config) {
+    this(loginConverter, createCache(config));
   }
 
-  private static Cache<String, Login> createCache() {
-    return CacheBuilder.newBuilder().expireAfterAccess(EXPIRY_TIME, EXPIRY_TIME_UNIT).build();
+  private static Cache<String, Login> createCache(Configuration config) {
+    int duration = config.getIntSetting(Configuration.EXPIRATION_DURATION_KEY);
+    TimeUnit timeUnit = TimeUnit.valueOf(config.getSetting(Configuration.EXPIRATION_TIME_UNIT_KEY));
+    return CacheBuilder.newBuilder().expireAfterAccess(duration, timeUnit).build();
   }
 
   LocalLoggedInUsers(LoginConverter loginConverterMock, Cache<String, Login> sessionCache) {

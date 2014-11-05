@@ -23,6 +23,7 @@ package nl.knaw.huygens.timbuctoo.config;
  */
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,7 @@ public class ConfigValidator {
     checkSettingExists(Configuration.KEY_HOME_DIR);
     validateSolrDirectory();
     validateAdminDataDirectory();
+    validateLoginSettings();
 
     if (error) {
       throw new RuntimeException("Configuration error(s)");
@@ -87,4 +89,37 @@ public class ConfigValidator {
     checkCondition(dir.isDirectory(), "Solr directory '{}' does not exist", dir);
   }
 
+  private void validateLoginSettings() {
+    validateDuration();
+    validateTimeUnit();
+
+  }
+
+  private void validateTimeUnit() {
+    if (checkSettingExists(Configuration.EXPIRATION_TIME_UNIT_KEY)) {
+      String value = config.getSetting(Configuration.EXPIRATION_TIME_UNIT_KEY);
+
+      checkCondition(isValidTimeUnit(value), "{} is not a valid value for {}. (One of {} is allowed)",//
+          value, //
+          Configuration.EXPIRATION_TIME_UNIT_KEY, //
+          TimeUnit.values());
+    }
+  }
+
+  private boolean isValidTimeUnit(String value) {
+    for (TimeUnit timeUnit : TimeUnit.values()) {
+      if (timeUnit.toString().equalsIgnoreCase(value)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private void validateDuration() {
+    if (checkSettingExists(Configuration.EXPIRATION_DURATION_KEY)) {
+      int value = config.getIntSetting(Configuration.EXPIRATION_DURATION_KEY);
+      checkCondition(value > 0, "{} Has not a valid int value", Configuration.EXPIRATION_DURATION_KEY);
+    }
+
+  }
 }
