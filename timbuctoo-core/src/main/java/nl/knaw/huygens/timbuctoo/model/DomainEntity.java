@@ -43,7 +43,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-public abstract class DomainEntity extends Entity implements Variable {
+public abstract class DomainEntity extends Entity {
 
   private static final List<RelationRef> NO_RELATIONS = ImmutableList.of();
 
@@ -192,7 +192,6 @@ public abstract class DomainEntity extends Entity implements Variable {
     return variations.contains(TypeNames.getInternalName(type));
   }
 
-  @Override
   @JsonProperty("@variationRefs")
   public List<Reference> getVariationRefs() {
     List<Reference> refs = Lists.newArrayListWithCapacity(variations.size());

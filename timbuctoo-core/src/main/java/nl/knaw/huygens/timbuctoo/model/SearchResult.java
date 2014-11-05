@@ -31,7 +31,7 @@ import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 
 @IDPrefix(SearchResult.ID_PREFIX)
 @EntityTypeName("search")
-public class SearchResult extends SystemEntity implements Persistent {
+public class SearchResult extends SystemEntity {
 
   // Unique definition of prefix; also used in SearchResource
   public static final String ID_PREFIX = "QURY";
