@@ -59,7 +59,7 @@ public class EntityInducer {
   /**
    * Converts a system entity to a Json tree.
    */
-  public <T extends SystemEntity> JsonNode induceSystemEntity(Class<T> type, T entity) {
+  public <T extends SystemEntity> JsonNode convertSystemEntityForAdd(Class<T> type, T entity) {
     checkArgument(BusinessRules.allowSystemEntityAdd(type));
 
     Map<String, Field> fieldMap = fieldMapper.getCompositeFieldMap(type, type, Entity.class);
@@ -69,7 +69,7 @@ public class EntityInducer {
   /**
    * Converts a system entity to a Json tree and combines it with an existing Json tree.
    */
-  public <T extends SystemEntity> JsonNode induceSystemEntity(Class<T> type, T entity, ObjectNode tree) {
+  public <T extends SystemEntity> JsonNode convertSystemEntityForUpdate(Class<T> type, T entity, ObjectNode tree) {
     Map<String, Field> fieldMap = fieldMapper.getSimpleFieldMap(type, type);
     return updateJsonTree(tree, entity, fieldMap);
   }
@@ -77,7 +77,7 @@ public class EntityInducer {
   /**
    * Converts a domain entity to a Json tree.
    */
-  public <T extends DomainEntity> JsonNode induceDomainEntity(Class<T> type, T entity) {
+  public <T extends DomainEntity> JsonNode convertDomainEntityForAdd(Class<T> type, T entity) {
     checkArgument(BusinessRules.allowDomainEntityAdd(type));
 
     Map<String, Field> fieldMap = fieldMapper.getCompositeFieldMap(type, type, Entity.class);
@@ -104,7 +104,7 @@ public class EntityInducer {
    * Note that this method only handles the variant that correspondeds with the specified type,
    * either a primitive domain entity or a project domain entity.
    */
-  public <T extends DomainEntity> JsonNode induceDomainEntity(Class<T> type, T entity, ObjectNode tree) {
+  public <T extends DomainEntity> JsonNode convertDomainEntityForUpdate(Class<T> type, T entity, ObjectNode tree) {
     Class<?> stopType = TypeRegistry.toBaseDomainEntity(type);
     Map<String, Field> fieldMap = fieldMapper.getCompositeFieldMap(type, type, stopType);
     tree = updateJsonTree(tree, entity, fieldMap);
