@@ -23,7 +23,6 @@ package nl.knaw.huygens.timbuctoo.config;
  */
 
 import java.io.File;
-import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,20 +34,20 @@ public class ConfigValidator {
 
   private static final Logger LOG = LoggerFactory.getLogger(ConfigValidator.class);
 
-  private final Configuration config;
+  protected final Configuration config;
   private boolean error;
 
   public ConfigValidator(Configuration config) {
     this.config = config;
   }
 
-  public void validate() {
+  /**
+   * Validate the configuration. Override the {@code validateSettings} method to add more settings to validate.
+   */
+  public final void validate() {
     error = false;
 
-    checkSettingExists(Configuration.KEY_HOME_DIR);
-    validateSolrDirectory();
-    validateAdminDataDirectory();
-    validateLoginSettings();
+    validateSettings();
 
     if (error) {
       throw new RuntimeException("Configuration error(s)");
@@ -56,9 +55,18 @@ public class ConfigValidator {
   }
 
   /**
+   * A method that validates the settings needed to be validated.
+   */
+  protected void validateSettings() {
+    checkSettingExists(Configuration.KEY_HOME_DIR);
+    validateSolrDirectory();
+    validateAdminDataDirectory();
+  }
+
+  /**
    * Returns {@code true} if the specified condition is satisfied, {@code false} otherwise.
    */
-  private boolean checkCondition(boolean condition, String errorMessage, Object... arguments) {
+  protected boolean checkCondition(boolean condition, String errorMessage, Object... arguments) {
     if (condition) {
       return true;
     } else {
@@ -68,7 +76,7 @@ public class ConfigValidator {
     }
   }
 
-  private boolean checkSettingExists(String key) {
+  protected boolean checkSettingExists(String key) {
     return checkCondition(config.hasSetting(key), "Setting '{}' does not exist", key);
   }
 
@@ -89,37 +97,4 @@ public class ConfigValidator {
     checkCondition(dir.isDirectory(), "Solr directory '{}' does not exist", dir);
   }
 
-  private void validateLoginSettings() {
-    validateDuration();
-    validateTimeUnit();
-
-  }
-
-  private void validateTimeUnit() {
-    if (checkSettingExists(Configuration.EXPIRATION_TIME_UNIT_KEY)) {
-      String value = config.getSetting(Configuration.EXPIRATION_TIME_UNIT_KEY);
-
-      checkCondition(isValidTimeUnit(value), "{} is not a valid value for {}. (One of {} is allowed)",//
-          value, //
-          Configuration.EXPIRATION_TIME_UNIT_KEY, //
-          TimeUnit.values());
-    }
-  }
-
-  private boolean isValidTimeUnit(String value) {
-    for (TimeUnit timeUnit : TimeUnit.values()) {
-      if (timeUnit.toString().equalsIgnoreCase(value)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private void validateDuration() {
-    if (checkSettingExists(Configuration.EXPIRATION_DURATION_KEY)) {
-      int value = config.getIntSetting(Configuration.EXPIRATION_DURATION_KEY);
-      checkCondition(value > 0, "{} Has not a valid int value", Configuration.EXPIRATION_DURATION_KEY);
-    }
-
-  }
 }

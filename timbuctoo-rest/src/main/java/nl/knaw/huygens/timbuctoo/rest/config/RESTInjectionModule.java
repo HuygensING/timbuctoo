@@ -98,6 +98,11 @@ public class RESTInjectionModule extends BasicInjectionModule {
     }
   }
 
+  @Override
+  protected void validateConfig(Configuration config) {
+    new RestConfigValidator(config).validate();
+  }
+
   @Provides
   @Singleton
   HuygensAuthenticationHandler provideAuthenticationHandler() {
