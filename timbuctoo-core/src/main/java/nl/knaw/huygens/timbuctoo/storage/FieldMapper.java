@@ -49,6 +49,9 @@ public class FieldMapper {
   /** Separator between parts of a key, as character. */
   public static final char SEPARATOR_CHAR = ':';
 
+  /** Prefix of properties that are not (de)serialzied. */
+  public static final char VIRTUAL_PROPERTY_PREFIX = '@';
+
   /** Returns the name of a property from its parts. */
   public static String propertyName(String prefix, String field) {
     checkArgument(field != null && field.length() != 0);
@@ -67,6 +70,10 @@ public class FieldMapper {
   }
 
   // -------------------------------------------------------------------
+
+  private boolean isVirtualProperty(String name) {
+    return !name.isEmpty() && (name.charAt(0) == VIRTUAL_PROPERTY_PREFIX);
+  }
 
   /**
    * Validates the property names in the class of the specified type
@@ -96,7 +103,7 @@ public class FieldMapper {
     for (Field field : viewType.getDeclaredFields()) {
       if (isProperty(field)) {
         String fieldName = getFieldName(viewType, field);
-        if (fieldName.indexOf('@') < 0) { // exclude virtual properties
+        if (!isVirtualProperty(fieldName)) {
           map.put(propertyName(prefix, fieldName), field);
         }
       }
@@ -128,23 +135,6 @@ public class FieldMapper {
   }
 
   // -------------------------------------------------------------------
-
-  /**
-   * Generates a mapping of the declared fields of the specified type
-   * to a property name with a specified prefix type.
-   */
-  public Map<String, String> getFieldMap(Class<?> prefixType, Class<?> type) {
-    Map<String, String> map = Maps.newHashMap();
-    for (Field field : type.getDeclaredFields()) {
-      if (isProperty(field)) {
-        String fieldName = getFieldName(type, field);
-        if (fieldName.indexOf('@') < 0) { // exclude virtual properties
-          map.put(field.getName(), propertyName(prefixType, fieldName));
-        }
-      }
-    }
-    return map;
-  }
 
   /**
    * Indicates whether a field qualifies as property.

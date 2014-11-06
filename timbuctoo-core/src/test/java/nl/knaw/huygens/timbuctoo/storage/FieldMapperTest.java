@@ -26,12 +26,8 @@ import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.SEPARATOR;
 import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-
-import java.util.Map;
-
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
@@ -95,24 +91,6 @@ public class FieldMapperTest {
     assertThat(propertyName(Person.class, "^x"), equalTo("^x"));
     assertThat(propertyName(Person.class, "@x"), equalTo("@x"));
     assertThat(propertyName(Person.class, "xx"), equalTo("person" + SEPARATOR + "xx"));
-  }
-
-  private static class Foo {}
-
-  @Test
-  public void testGetFieldMap() {
-    Map<String, String> map = fieldMapper.getFieldMap(Foo.class, TYPE);
-
-    assertThat(map, hasEntry("primitiveTestCollection", propertyName(Foo.class, "primitiveTestCollection")));
-    assertThat(map, hasEntry("nonPrimitiveTestCollection", propertyName(Foo.class, "nonPrimitiveTestCollection")));
-    assertThat(map, hasEntry("name", propertyName(Foo.class, "name")));
-    assertThat(map, hasEntry("testValue1", propertyName(Foo.class, "testValue1")));
-    assertThat(map, hasEntry("testValue2", propertyName(Foo.class, "testValue2")));
-    assertThat(map, hasEntry("annotatedProperty", propertyName(Foo.class, "propAnnotated")));
-    assertThat(map, hasEntry("propWithAnnotatedAccessors", propertyName(Foo.class, "pwaa")));
-    assertThat(map, hasEntry("type", propertyName(Foo.class, "type")));
-    assertThat(map, hasEntry("date", propertyName(Foo.class, "date")));
-    assertThat(map, hasEntry("personName", propertyName(Foo.class, "personName")));
   }
 
   @Test
