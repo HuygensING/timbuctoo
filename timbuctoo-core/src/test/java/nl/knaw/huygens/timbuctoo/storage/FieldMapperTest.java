@@ -34,6 +34,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.User;
@@ -42,6 +43,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import test.variation.model.MongoObjectMapperEntity;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class FieldMapperTest {
 
@@ -157,6 +160,99 @@ public class FieldMapperTest {
   @Test(expected = NullPointerException.class)
   public void testGetTypeNameOfFieldNameNull() {
     fieldMapper.getTypeNameOfFieldName(null);
+  }
+
+  // ---------------------------------------------------------------------------
+
+  @Test(expected = ModelException.class)
+  public void testInvalidProperty() throws ModelException {
+    fieldMapper.validatePropertyNames(ClassWithInvalidProperty.class);
+  }
+
+  static class ClassWithInvalidProperty {
+    private String proper_ty;
+
+    public String getProper_ty() {
+      return proper_ty;
+    }
+
+    public void setProper_ty(String proper_ty) {
+      this.proper_ty = proper_ty;
+    }
+  }
+
+  @Test
+  public void testVariantProperty() throws ModelException {
+    fieldMapper.validatePropertyNames(ClassVariantProperty.class);
+  }
+
+  static class ClassVariantProperty {
+    private String property;
+
+    public String getProperty() {
+      return property;
+    }
+
+    public void setProperty(String property) {
+      this.property = property;
+    }
+  }
+
+  @Test
+  public void testInternalProperty() throws ModelException {
+    fieldMapper.validatePropertyNames(ClassWithInternalProperty.class);
+  }
+
+  static class ClassWithInternalProperty {
+    private String property;
+
+    @JsonProperty("_property")
+    public String getProperty() {
+      return property;
+    }
+
+    @JsonProperty("_property")
+    public void setProperty(String property) {
+      this.property = property;
+    }
+  }
+
+  @Test
+  public void testSharedProperty() throws ModelException {
+    fieldMapper.validatePropertyNames(ClassWithSharedProperty.class);
+  }
+
+  static class ClassWithSharedProperty {
+    private String property;
+
+    @JsonProperty("^property")
+    public String getProperty() {
+      return property;
+    }
+
+    @JsonProperty("^property")
+    public void setProperty(String property) {
+      this.property = property;
+    }
+  }
+
+  @Test
+  public void testVirtualProperty() throws ModelException {
+    fieldMapper.validatePropertyNames(ClassWithVirtualProperty.class);
+  }
+
+  static class ClassWithVirtualProperty {
+    private String property;
+
+    @JsonProperty("@property")
+    public String getProperty() {
+      return property;
+    }
+
+    @JsonProperty("@property")
+    public void setProperty(String property) {
+      this.property = property;
+    }
   }
 
 }

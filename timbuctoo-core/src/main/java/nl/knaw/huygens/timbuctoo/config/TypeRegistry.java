@@ -37,6 +37,7 @@ import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 import nl.knaw.huygens.timbuctoo.util.ClassComparator;
 
 import org.apache.commons.lang.StringUtils;
@@ -195,6 +196,7 @@ public class TypeRegistry {
   // ---------------------------------------------------------------------------
 
   private <T extends SystemEntity> void registerSystemEntity(Class<T> type) throws ModelException {
+    new FieldMapper().validatePropertyNames(type);
     systemEntities.add(type);
 
     String iname = TypeNames.getInternalName(type);
@@ -205,6 +207,7 @@ public class TypeRegistry {
   }
 
   private <T extends DomainEntity> void registerDomainEntity(Class<T> type) throws ModelException {
+    new FieldMapper().validatePropertyNames(type);
     domainEntities.add(type);
 
     String iname = TypeNames.getInternalName(type);
@@ -223,6 +226,7 @@ public class TypeRegistry {
   }
 
   private <T extends Role> void registerRole(Class<T> role) throws ModelException {
+    new FieldMapper().validatePropertyNames(role);
     String iname = TypeNames.getInternalName(role);
     if (role2iname.containsValue(iname)) {
       throw new ModelException("Duplicate internal type name %s", iname);
