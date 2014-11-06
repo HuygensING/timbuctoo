@@ -5,7 +5,10 @@ import static nl.knaw.huygens.timbuctoo.storage.file.LoginCollection.LOGIN_COLLE
 import java.io.PrintWriter;
 
 import nl.knaw.huygens.timbuctoo.model.Login;
+import nl.knaw.huygens.timbuctoo.model.User;
+import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.security.PasswordEncrypter;
+import nl.knaw.huygens.timbuctoo.security.UserConfigurationHandler;
 import nl.knaw.huygens.timbuctoo.storage.file.JsonFileHandler;
 import nl.knaw.huygens.timbuctoo.storage.file.LoginCollection;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
@@ -23,32 +26,28 @@ public class LocalLoginImporter extends CSVImporter {
 
     JsonFileHandler jsonFileHandler = injector.getInstance(JsonFileHandler.class);
     PasswordEncrypter passwordEncrypter = injector.getInstance(PasswordEncrypter.class);
+    UserConfigurationHandler userConfigurationHandler = injector.getInstance(UserConfigurationHandler.class);
 
-    LocalLoginImporter localLoginCreator = new LocalLoginImporter(jsonFileHandler, passwordEncrypter);
+    LocalLoginImporter localLoginCreator = new LocalLoginImporter(jsonFileHandler, passwordEncrypter, userConfigurationHandler);
 
     if (args.length > 0) {
-      localLoginCreator.handleFile(args[0], 7, false);
+      localLoginCreator.handleFile(args[0], 9, false);
     } else {
       System.out.println("Please provide an input file as first argument.");
     }
   }
 
-  private LoginCollection collection;
-  private JsonFileHandler jsonFileHandler;
-  private PasswordEncrypter passwordEncrypter;
+  private final LoginCollection loginCollection;
+  private final JsonFileHandler jsonFileHandler;
+  private final PasswordEncrypter passwordEncrypter;
+  private final UserConfigurationHandler userConfigurationHandler;
 
-  public LocalLoginImporter(JsonFileHandler jsonFileHandler, PasswordEncrypter passwordEncrypter) throws Exception {
+  public LocalLoginImporter(JsonFileHandler jsonFileHandler, PasswordEncrypter passwordEncrypter, UserConfigurationHandler userConfigurationHandler) throws Exception {
     super(new PrintWriter(System.out));
     this.jsonFileHandler = jsonFileHandler;
     this.passwordEncrypter = passwordEncrypter;
-    collection = jsonFileHandler.getCollection(LoginCollection.class, LOGIN_COLLECTION_FILE_NAME);
-
-  }
-
-  private void addLogin(Login login) throws Exception {
-    LOG.info("Add login for \"{}\"", login.getCommonName());
-    collection.add(login);
-    jsonFileHandler.saveCollection(collection, LOGIN_COLLECTION_FILE_NAME);
+    this.userConfigurationHandler = userConfigurationHandler;
+    loginCollection = jsonFileHandler.getCollection(LoginCollection.class, LOGIN_COLLECTION_FILE_NAME);
   }
 
   @Override
@@ -60,12 +59,49 @@ public class LocalLoginImporter extends CSVImporter {
     String surname = items[4];
     String emailAddress = items[5];
     String organization = items[6];
+    String vreId = items[7];
+    String vreRole = items[8];
 
-    byte[] salt = passwordEncrypter.createSalt();
-    String encryptedPassword = passwordEncrypter.encryptPassword(password, salt);
+    addLogin(userPid, userName, password, givenName, surname, emailAddress, organization);
 
-    Login login = new Login(userPid, userName, encryptedPassword, givenName, surname, emailAddress, organization, salt);
-    addLogin(login);
+    String userId = addUser(userPid, emailAddress, givenName, surname, organization);
+
+    addVREAuthorization(vreId, userId, vreRole);
+
+    String commonName = createCommonName(givenName, surname);
+    LOG.info("Added login and user for \"{}\"", commonName);
+    LOG.info("Added VREAuthorization for user \"{}\" and vre \"{}\" with role \"{}\"", commonName, vreId, vreRole);
+
   }
 
+  private void addLogin(String userPid, String userName, String password, String givenName, String surname, String emailAddress, String organization) throws Exception {
+    byte[] salt = passwordEncrypter.createSalt();
+    String encryptedPassword = passwordEncrypter.encryptPassword(password, salt);
+    Login login = new Login(userPid, userName, encryptedPassword, givenName, surname, emailAddress, organization, salt);
+
+    loginCollection.add(login);
+    jsonFileHandler.saveCollection(loginCollection, LOGIN_COLLECTION_FILE_NAME);
+  }
+
+  private void addVREAuthorization(String vreId, String userId, String vreRole) throws Exception {
+    VREAuthorization vreAuthorization = new VREAuthorization(vreId, userId, vreRole);
+
+    userConfigurationHandler.addVREAuthorization(vreAuthorization);
+  }
+
+  private String addUser(String userPid, String emailAddress, String givenName, String surname, String organization) throws Exception {
+    User user = new User();
+    user.setPersistentId(userPid);
+    user.setEmail(emailAddress);
+    user.setFirstName(givenName);
+    user.setLastName(surname);
+    user.setCommonName(createCommonName(givenName, surname));
+    user.setOrganisation(organization);
+
+    return userConfigurationHandler.addUser(user);
+  }
+
+  private String createCommonName(String givenName, String surname) {
+    return String.format("%s %s", givenName, surname);
+  }
 }

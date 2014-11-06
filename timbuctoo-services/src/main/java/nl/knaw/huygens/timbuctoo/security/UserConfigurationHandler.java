@@ -55,10 +55,12 @@ public class UserConfigurationHandler {
     return String.format("%s.json", authorization.getVreId());
   }
 
-  public synchronized void addUser(User user) throws StorageException {
+  public synchronized String addUser(User user) throws StorageException {
     FileCollection<User> users = getUserCollection();
-    users.add(user);
+    String userId = users.add(user);
     jsonFileHandler.saveCollection(users, USER_FILE_NAME);
+
+    return userId;
   }
 
   /**
