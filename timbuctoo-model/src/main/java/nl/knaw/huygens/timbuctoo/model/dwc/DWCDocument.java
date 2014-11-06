@@ -6,8 +6,8 @@ import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
 public class DWCDocument extends Document {
 
-  private String page_numbers;
-  private String canonical_url;
+  private String pageNumbers;
+  private String canonicalUrl;
   private String filename;
 
   public void setDocumentType(String type) {
@@ -22,20 +22,20 @@ public class DWCDocument extends Document {
     setDate(new Datable(year));
   }
 
-  public String getPage_numbers() {
-    return page_numbers;
+  public String getPageNumbers() {
+    return pageNumbers;
   }
 
-  public void setPage_numbers(String page_numbers) {
-    this.page_numbers = page_numbers;
+  public void setPageNumbers(String page_numbers) {
+    this.pageNumbers = page_numbers;
   }
 
-  public String getCanonical_url() {
-    return canonical_url;
+  public String getCanonicalUrl() {
+    return canonicalUrl;
   }
 
-  public void setCanonical_url(String canonical_url) {
-    this.canonical_url = canonical_url;
+  public void setCanonicalUrl(String canonical_url) {
+    this.canonicalUrl = canonical_url;
   }
 
   public String getFilename() {
