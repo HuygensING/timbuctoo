@@ -106,7 +106,7 @@ public class EntityInducerReducerTest {
   public void testSystemEntity() throws Exception {
     TestSystemEntity initial = new TestSystemEntity(ID, "v1", "v2", null);
 
-    JsonNode tree = inducer.induceSystemEntity(TestSystemEntity.class, initial);
+    JsonNode tree = inducer.convertSystemEntityForAdd(TestSystemEntity.class, initial);
     TestSystemEntity reduced = reducer.reduceVariation(TestSystemEntity.class, tree);
 
     validateSystemEntityProperties(initial, reduced);
@@ -123,7 +123,7 @@ public class EntityInducerReducerTest {
     initial.addVariation(BaseDomainEntity.class);
     initial.addVariation(DomainEntityWithReferences.class);
 
-    JsonNode tree = inducer.induceDomainEntity(DomainEntityWithReferences.class, initial);
+    JsonNode tree = inducer.convertDomainEntityForAdd(DomainEntityWithReferences.class, initial);
     DomainEntityWithReferences reduced = reducer.reduceVariation(DomainEntityWithReferences.class, tree);
 
     validateBaseDomainEntityProperties(initial, reduced);
@@ -140,7 +140,7 @@ public class EntityInducerReducerTest {
     initial.addVariation(BaseDomainEntity.class);
     initial.addVariation(DomainEntityWithMiscTypes.class);
 
-    JsonNode tree = inducer.induceDomainEntity(DomainEntityWithMiscTypes.class, initial);
+    JsonNode tree = inducer.convertDomainEntityForAdd(DomainEntityWithMiscTypes.class, initial);
     DomainEntityWithMiscTypes reduced = reducer.reduceVariation(DomainEntityWithMiscTypes.class, tree);
 
     validateBaseDomainEntityProperties(initial, reduced);
@@ -157,7 +157,7 @@ public class EntityInducerReducerTest {
     initial.addVariation(BaseDomainEntity.class);
     initial.addVariation(DomainEntityWithMiscTypes.class);
 
-    JsonNode tree = inducer.induceDomainEntity(DomainEntityWithMiscTypes.class, initial);
+    JsonNode tree = inducer.convertDomainEntityForAdd(DomainEntityWithMiscTypes.class, initial);
     DomainEntityWithMiscTypes reduced = reducer.reduceVariation(DomainEntityWithMiscTypes.class, tree);
 
     validateBaseDomainEntityProperties(initial, reduced);

@@ -108,13 +108,13 @@ public class EntityInducerTest {
   public void induceSystemEntityAsPrimitive() throws Exception {
     TestSystemEntity entity = new TestSystemEntity(ID, "v1", "v2", null);
     JsonNode expected = newSystemEntityTree(ID, "v1", "v2", null);
-    assertEquals(expected, inducer.induceSystemEntity(TestSystemEntity.class, entity));
+    assertEquals(expected, inducer.convertSystemEntityForAdd(TestSystemEntity.class, entity));
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void induceSystemEntityAsSystemEntity() throws Exception {
     TestSystemEntity entity = new TestSystemEntity(ID, "v1", "v2");
-    inducer.induceSystemEntity(SystemEntity.class, entity);
+    inducer.convertSystemEntityForAdd(SystemEntity.class, entity);
   }
 
   // --- new primitive domain entitiy ----------------------------------
@@ -122,13 +122,13 @@ public class EntityInducerTest {
   @Test(expected = IllegalArgumentException.class)
   public void inducePrimitiveDomainEntityAsPrimitive() throws Exception {
     BaseDomainEntity entity = new BaseDomainEntity(ID, PID, "v1", "v2");
-    inducer.induceDomainEntity(BaseDomainEntity.class, entity);
+    inducer.convertDomainEntityForAdd(BaseDomainEntity.class, entity);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void inducePrimitiveDomainEntityAsDomainEntity() throws Exception {
     BaseDomainEntity entity = new BaseDomainEntity(ID, PID, "v1", "v2");
-    inducer.induceDomainEntity(DomainEntity.class, entity);
+    inducer.convertDomainEntityForAdd(DomainEntity.class, entity);
   }
 
   // --- new project domain entitiy ------------------------------------
@@ -136,14 +136,14 @@ public class EntityInducerTest {
   @Test(expected = IllegalArgumentException.class)
   public void induceDerivedDomainEntityAsPrimitive() throws Exception {
     SubADomainEntity entity = new SubADomainEntity(ID, PID, "v1", "v2", "va");
-    inducer.induceDomainEntity(BaseDomainEntity.class, entity);
+    inducer.convertDomainEntityForAdd(BaseDomainEntity.class, entity);
   }
 
   @Test
   public void induceDerivedDomainEntityAsDerived() throws Exception {
     SubADomainEntity entity = new SubADomainEntity(ID, PID, "v1", "v2", "va");
     JsonNode expected = newSubADomainEntityTree(ID, PID, "v1", "v2", "v1", "v2", "va");
-    assertEquals(expected, inducer.induceDomainEntity(SubADomainEntity.class, entity));
+    assertEquals(expected, inducer.convertDomainEntityForAdd(SubADomainEntity.class, entity));
   }
 
   @Test
@@ -157,7 +157,7 @@ public class EntityInducerTest {
     map.put(propertyName(TestRoleA1.class, "propertyA1"), "pa1");
     JsonNode expected = mapper.valueToTree(map);
 
-    assertEquals(expected, inducer.induceDomainEntity(SubADomainEntity.class, entity));
+    assertEquals(expected, inducer.convertDomainEntityForAdd(SubADomainEntity.class, entity));
   }
 
   // --- old system entity ---------------------------------------------
@@ -167,7 +167,7 @@ public class EntityInducerTest {
     TestSystemEntity entity = new TestSystemEntity(ID, "updated", null, null);
     ObjectNode oldTree = newSystemEntityTree(ID, "v1", "v2", null);
     ObjectNode newTree = newSystemEntityTree(ID, "updated", null, null);
-    assertEquals(newTree, inducer.induceSystemEntity(TestSystemEntity.class, entity, oldTree));
+    assertEquals(newTree, inducer.convertSystemEntityForUpdate(TestSystemEntity.class, entity, oldTree));
   }
 
   @Test
@@ -175,7 +175,7 @@ public class EntityInducerTest {
     TestSystemEntity entity = new TestSystemEntity(ID, "updated", null, null);
     ObjectNode oldTree = newSystemEntityTree(ID, "v1", "v2", null);
     ObjectNode newTree = newSystemEntityTree(ID, "v1", "v2", null);
-    assertEquals(newTree, inducer.induceSystemEntity(SystemEntity.class, entity, oldTree));
+    assertEquals(newTree, inducer.convertSystemEntityForUpdate(SystemEntity.class, entity, oldTree));
   }
 
   // --- old domain entity ---------------------------------------------
@@ -205,7 +205,7 @@ public class EntityInducerTest {
     newMap.put(propertyName(SubADomainEntity.class, "valuea"), "xva");
     ObjectNode newTree = mapper.valueToTree(newMap);
 
-    assertEquals(newTree, inducer.induceDomainEntity(SubADomainEntity.class, entity, oldTree));
+    assertEquals(newTree, inducer.convertDomainEntityForUpdate(SubADomainEntity.class, entity, oldTree));
   }
 
   @Test
@@ -234,7 +234,7 @@ public class EntityInducerTest {
     newMap.put(propertyName(SubADomainEntity.class, "valuea"), "va");
     ObjectNode newTree = mapper.valueToTree(newMap);
 
-    assertEquals(newTree, inducer.induceDomainEntity(BaseDomainEntity.class, entity, oldTree));
+    assertEquals(newTree, inducer.convertDomainEntityForUpdate(BaseDomainEntity.class, entity, oldTree));
   }
 
   @Test
@@ -263,7 +263,7 @@ public class EntityInducerTest {
     newMap.put(propertyName(SubADomainEntity.class, "valuea"), "va");
     ObjectNode newTree = mapper.valueToTree(newMap);
 
-    assertEquals(newTree, inducer.induceDomainEntity(DomainEntity.class, entity, oldTree));
+    assertEquals(newTree, inducer.convertDomainEntityForUpdate(DomainEntity.class, entity, oldTree));
   }
 
   @Test
@@ -294,7 +294,7 @@ public class EntityInducerTest {
     newMap.put(propertyName(SubBDomainEntity.class, "valueb"), "xb");
     ObjectNode newTree = mapper.valueToTree(newMap);
 
-    assertEquals(newTree, inducer.induceDomainEntity(SubBDomainEntity.class, entity, oldTree));
+    assertEquals(newTree, inducer.convertDomainEntityForUpdate(SubBDomainEntity.class, entity, oldTree));
   }
 
   @Test
@@ -332,7 +332,7 @@ public class EntityInducerTest {
     newMap.put(propertyName(TestRoleA2.class, "propertyA2"), "pA2");
     ObjectNode newTree = mapper.valueToTree(newMap);
 
-    assertEquals(newTree, inducer.induceDomainEntity(SubADomainEntity.class, entity, oldTree));
+    assertEquals(newTree, inducer.convertDomainEntityForUpdate(SubADomainEntity.class, entity, oldTree));
   }
 
   // --- specific cases ------------------------------------------------
@@ -352,7 +352,7 @@ public class EntityInducerTest {
     map.put("^uniqueReference", uniqueReference);
     JsonNode expected = mapper.valueToTree(map);
 
-    assertEquals(expected, inducer.induceDomainEntity(DomainEntityWithReferences.class, entity));
+    assertEquals(expected, inducer.convertDomainEntityForAdd(DomainEntityWithReferences.class, entity));
   }
 
 }

@@ -240,7 +240,7 @@ public class MongoStorage implements Storage {
     entity.setCreated(change);
     entity.setModified(change);
 
-    JsonNode tree = inducer.induceSystemEntity(type, entity);
+    JsonNode tree = inducer.convertSystemEntityForAdd(type, entity);
     mongoDB.insert(getDBCollection(type), id, toDBObject(tree));
 
     return id;
@@ -261,7 +261,7 @@ public class MongoStorage implements Storage {
     entity.addVariation(toBaseDomainEntity(type));
     entity.addVariation(type);
 
-    JsonNode tree = inducer.induceDomainEntity(type, entity);
+    JsonNode tree = inducer.convertDomainEntityForAdd(type, entity);
     mongoDB.insert(getDBCollection(type), id, toDBObject(tree));
 
     return id;
@@ -281,7 +281,7 @@ public class MongoStorage implements Storage {
     systemEntity.setModified(change);
 
     inducer.adminSystemEntity(systemEntity, (ObjectNode) tree);
-    inducer.induceSystemEntity(type, entity, (ObjectNode) tree);
+    inducer.convertSystemEntityForUpdate(type, entity, (ObjectNode) tree);
 
     mongoDB.update(getDBCollection(type), query, toDBObject(tree));
   }
@@ -301,7 +301,7 @@ public class MongoStorage implements Storage {
     domainEntity.addVariation(type);
 
     inducer.adminDomainEntity(domainEntity, (ObjectNode) tree);
-    inducer.induceDomainEntity(type, entity, (ObjectNode) tree);
+    inducer.convertDomainEntityForUpdate(type, entity, (ObjectNode) tree);
 
     mongoDB.update(getDBCollection(type), query, toDBObject(tree));
   }
