@@ -28,8 +28,8 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.Person;
-import nl.knaw.huygens.timbuctoo.model.Place;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARPerson;
 
@@ -50,30 +50,30 @@ public class AdminVRETest {
 
   @Test
   public void testPrimitiveEntityTypes() {
+    assertTrue(vre.getPrimitiveEntityTypes().contains(Location.class));
     assertTrue(vre.getPrimitiveEntityTypes().contains(Person.class));
-    assertTrue(vre.getPrimitiveEntityTypes().contains(Place.class));
     assertFalse(vre.getPrimitiveEntityTypes().contains(User.class));
     assertFalse(vre.getPrimitiveEntityTypes().contains(DCARPerson.class));
   }
 
   @Test
   public void testTypeAndIdInScope() {
+    assertTrue(vre.inScope(Location.class, "id"));
     assertTrue(vre.inScope(Person.class, "id"));
-    assertTrue(vre.inScope(Place.class, "id"));
     assertFalse(vre.inScope(DCARPerson.class, "id"));
   }
 
   @Test
   public void testInstanceInScope() {
+    assertTrue(vre.inScope(new Location()));
     assertTrue(vre.inScope(new Person()));
-    assertTrue(vre.inScope(new Place()));
     assertFalse(vre.inScope(new DCARPerson()));
   }
 
   @Test
   public void testTypeInScope() {
+    assertTrue(vre.inScope(Location.class));
     assertTrue(vre.inScope(Person.class));
-    assertTrue(vre.inScope(Place.class));
     assertFalse(vre.inScope(DCARPerson.class));
   }
 
