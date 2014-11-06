@@ -6,9 +6,9 @@ public class DWCPerson extends Person {
 
   private String important;
   private String religion; // Zou een (relation) naar een Keyword kunnen worden? Nee!!!
-  private String origin_db;
-  private String data_line;
-  private String scientist_bio;
+  private String originDb;
+  private String dataLine;
+  private String scientistBio;
 
   public String getImportant() {
     return important;
@@ -30,28 +30,28 @@ public class DWCPerson extends Person {
     this.religion = religion;
   }
 
-  public String getOrigin_db() {
-    return origin_db;
+  public String getOriginDb() {
+    return originDb;
   }
 
-  public void setOrigin_db(String origin_db) {
-    this.origin_db = origin_db;
+  public void setOriginDb(String origin_db) {
+    this.originDb = origin_db;
   }
 
-  public String getData_line() {
-    return data_line;
+  public String getDataLine() {
+    return dataLine;
   }
 
-  public void setData_line(String data_line) {
-    this.data_line = data_line;
+  public void setDataLine(String data_line) {
+    this.dataLine = data_line;
   }
 
-  public String getScientist_bio() {
-    return scientist_bio;
+  public String getScientistBio() {
+    return scientistBio;
   }
 
-  public void setScientist_bio(String scientist_bio) {
-    this.scientist_bio = scientist_bio;
+  public void setScientistBio(String scientist_bio) {
+    this.scientistBio = scientist_bio;
   }
 
 }
