@@ -73,14 +73,13 @@ public class FieldMapper {
    * and throws a {@code ModelException} if an invalid name is found.
    * 
    * Allowed names are standard Java identifiers without an underscore
-   * characters optionally prefixed with a "_", "^" or "@".
+   * character, optionally prefixed with a "_", "^" or "@".
    */
   public void validatePropertyNames(Class<?> type) throws ModelException {
     Pattern pattern = Pattern.compile("[\\_\\^\\@]?[a-zA-Z][a-zA-Z0-9]*");
     for (Field field : type.getDeclaredFields()) {
       if (isProperty(field)) {
         String name = getFieldName(type, field);
-        System.out.println(name);
         if (!pattern.matcher(name).matches()) {
           throw new ModelException("Invalid property name %s of %s", name, type);
         }
