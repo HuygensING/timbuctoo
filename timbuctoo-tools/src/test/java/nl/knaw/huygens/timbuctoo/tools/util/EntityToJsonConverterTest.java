@@ -44,7 +44,7 @@ public class EntityToJsonConverterTest {
   @org.junit.BeforeClass
   public static void setupRegistry() throws ModelException {
     // needed for type resolver
-    TypeRegistry.getInstance().init("timbuctoo.model.*");
+    TypeRegistry.getInstance().init("timbuctoo.model timbuctoo.model.base");
   }
 
   @org.junit.Test

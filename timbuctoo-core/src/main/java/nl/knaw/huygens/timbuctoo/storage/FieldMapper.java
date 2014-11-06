@@ -29,8 +29,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.model.ModelException;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Maps;
@@ -65,6 +67,26 @@ public class FieldMapper {
   }
 
   // -------------------------------------------------------------------
+
+  /**
+   * Validates the property names in the class of the specified type
+   * and throws a {@code ModelException} if an invalid name is found.
+   * 
+   * Allowed names are standard Java identifiers without an underscore
+   * characters optionally prefixed with a "_", "^" or "@".
+   */
+  public void validatePropertyNames(Class<?> type) throws ModelException {
+    Pattern pattern = Pattern.compile("[\\_\\^\\@]?[a-zA-Z][a-zA-Z0-9]*");
+    for (Field field : type.getDeclaredFields()) {
+      if (isProperty(field)) {
+        String name = getFieldName(type, field);
+        System.out.println(name);
+        if (!pattern.matcher(name).matches()) {
+          throw new ModelException("Invalid property name %s of %s", name, type);
+        }
+      }
+    }
+  }
 
   /**
    * Adds declared fields of the specified view type to the field map,
