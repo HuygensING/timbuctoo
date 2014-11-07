@@ -34,19 +34,20 @@ public class ConfigValidator {
 
   private static final Logger LOG = LoggerFactory.getLogger(ConfigValidator.class);
 
-  private final Configuration config;
+  protected final Configuration config;
   private boolean error;
 
   public ConfigValidator(Configuration config) {
     this.config = config;
   }
 
-  public void validate() {
+  /**
+   * Validate the configuration. Override the {@code validateSettings} method to add more settings to validate.
+   */
+  public final void validate() {
     error = false;
 
-    checkSettingExists(Configuration.KEY_HOME_DIR);
-    validateSolrDirectory();
-    validateAdminDataDirectory();
+    validateSettings();
 
     if (error) {
       throw new RuntimeException("Configuration error(s)");
@@ -54,9 +55,18 @@ public class ConfigValidator {
   }
 
   /**
+   * A method that validates the settings needed to be validated.
+   */
+  protected void validateSettings() {
+    checkSettingExists(Configuration.KEY_HOME_DIR);
+    validateSolrDirectory();
+    validateAdminDataDirectory();
+  }
+
+  /**
    * Returns {@code true} if the specified condition is satisfied, {@code false} otherwise.
    */
-  private boolean checkCondition(boolean condition, String errorMessage, Object... arguments) {
+  protected boolean checkCondition(boolean condition, String errorMessage, Object... arguments) {
     if (condition) {
       return true;
     } else {
@@ -66,7 +76,7 @@ public class ConfigValidator {
     }
   }
 
-  private boolean checkSettingExists(String key) {
+  protected boolean checkSettingExists(String key) {
     return checkCondition(config.hasSetting(key), "Setting '{}' does not exist", key);
   }
 

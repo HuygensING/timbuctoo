@@ -25,31 +25,135 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>User_info</title>
 <link href="../css/static-html.css" rel="stylesheet" type="text/css" />
+<style type="text/css">
+	#localLogin {
+		background-color: #CC0000;
+	}
+</style>
 </head>
 <body>
-	<h1 id="title">user data</h1>
-	<table id="data" border="1">
-		<tr>
-			<th>key</th>
-			<th>value</th>
-		</tr>
-	</table>
+	<div id="login">
+		<button id="federatedLogin">Federated login</button>
+		<div id="localLogin" >
+			<p id="exception"></p>
+			<p>User: <input name="user" type="text" /></p>
+			<p>Password: <input name="password" type="password" /></p> 
+			<button id="localLoginButton">Login</button>
+		</div>
+	</div>
+	
+	<div id="userInfo">
+		<h1 id="title">user data</h1>
+		<div>
+			<select id="vreselect"></select>
+			<input id="userInformationButton" type="button" value="Get user information">
+		</div>
+		<table id="data" border="1">
+			<tr>
+				<th>key</th>
+				<th>value</th>
+			</tr>
+		</table>
+	</div>
 
 	<script type="text/javascript"
 		src="http://code.jquery.com/jquery-1.9.1.js"></script>
 	<script type="text/javascript" src="../config.js"></script>
 	<script type="text/javascript">
 	$(document).ready(function(){
-		var accessToken = getParameterByName('hsid');		
-	    if (accessToken.length < 1) {
-	    	login();
+		setLoginOptions();
+		
+		var accessToken = getParameterByName('hsid');
+		
+		if (accessToken.length < 1) {
+	    	$('#userInfo').hide();
+	    	$('#login').show();
 	    }
 	    else{
+	    	$('#userInfo').show();
+	    	$('#login').hide();
+	    }
+		
+	    function setLoginOptions(){
+	    	var remoteLoginForm = $('#remoteLogin');
+	    	remoteLoginForm.attr('action', window.config.securityUri);
+	    	var wl = window.location;
+		    var hsURL = wl.origin + wl.pathname;
+	    	
+	    	var hsUrlEl = $('<input>').attr({
+		    	name: 'hsurl', value: hsURL, type: 'hidden'
+		    });
+	    	
+	    	remoteLoginForm.append(hsUrlEl);
+	    	
+	    }
+		
+		function getParameterByName(name) {
+		    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+		    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+		        results = regex.exec(location.search);
+		    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+		}
+		
+		function login(){	
+			var wl = window.location;
+		    var hsURL = wl.origin + wl.pathname;
+		    var loginURL = window.config.securityUri;
+		    
+		    var form = $('<form>');
+		    form.attr({
+		    	method: 'POST',
+		    	action: loginURL
+		    });
+		    
+		    hsUrlEl = $('<input>').attr({
+		    	name: 'hsurl', value: hsURL, type: 'hidden'
+		    });
+		    form.append(hsUrlEl);
+		    $('body').append(form);
+		    form.submit();
+		}
+		
+		function localLogin(){
+			var user = $('[name="user"]').val();
+			var password = $('[name="password"]').val();
+					
 			$.ajax({
-				url: 'http://' + window.config.serverUri + '/system/users/me',
+				type: 'POST',
+				url: window.config.serverUri + '/authenticate',
+				headers:{
+					Authorization: 'Basic ' + utf8ToB64(user+':'+password)
+				},
+				error: function(data){
+					$('#exception').append('login exception:' + data.responseText);
+				},
+				success: function(data, status, request){
+					$('#exception').empty();
+					var token = request.getResponseHeader('X_AUTH_TOKEN');
+									
+					// simulate working of security server
+					window.location = window.location +'?hsid='+token
+				},
+				complete: function(){
+					$('#localLogin input').val('');
+				}
+					
+			});
+		}
+			
+		function utf8ToB64( str ) {
+			return window.btoa(str);
+		}
+		
+		
+		function getUserInformation(){
+			var accessToken = getParameterByName('hsid');
+			
+			$.ajax({
+				url: window.config.serverUri + '/system/users/me',
 				headers:{
 					Authorization: accessToken,
-					VRE_ID: "TestVRE"
+					VRE_ID: $('#vreselect').val()
 				},
 				error: function(data){
 					if(data.status===401){
@@ -58,6 +162,7 @@
 				},			
 				success:function(data){
 					var table = $('#data');
+					table.empty();
 					$.each(data, function(key, value){
 						var tr = null;
 						if(value instanceof Object){
@@ -83,36 +188,32 @@
 				},
 				type: 'GET'
 			});
-	    }
-		
-		function login(){	
-			var wl = window.location;
-		    var hsURL = wl.origin + wl.pathname;
-		    var loginURL = window.config.securityUri;
-		    
-		    console.log('securityUri: ', window.config.securityUri);
-		    
-		    var form = $('<form>');
-		    form.attr({
-		    	method: 'POST',
-		    	action: loginURL
-		    });
-		    
-		    hsUrlEl = $('<input>').attr({
-		    	name: 'hsurl', value: hsURL, type: 'hidden'
-		    });
-		    form.append(hsUrlEl);
-		    $('body').append(form);
-		    form.submit();
 		}
+		// setup vres
+		$.ajax({
+		    url : window.config.serverUri + "/system/vres",
+		    type: 'GET',
+		    success: function(data) {
+		      var vreSelect = $('#vreselect');  
+		      $.each(data, function(i, item) {
+		        var option = $('<option>');
+		        option.attr('value', item);
+		        option.append(item);
+		        vreSelect.append(option);
+		      })
+			}
+		});
 		
-		function getParameterByName(name) {
-		    name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
-		    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
-		        results = regex.exec(location.search);
-		    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-		}
+		$('#federatedLogin').click(login);
+		$('#localLoginButton').click(localLogin);
+		$('#userInformationButton').click(getUserInformation);
 	});
+	
+	
+	
+	
+	
+	
 </script>
 </body>
 </html>

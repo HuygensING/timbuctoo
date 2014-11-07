@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage;
+package nl.knaw.huygens.timbuctoo.storage.file;
 
 /*
  * #%L
@@ -28,10 +28,9 @@ import java.io.IOException;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 
@@ -39,22 +38,22 @@ import com.google.inject.Inject;
  * A class that writes and reads json files.
  */
 public class JsonFileHandler {
+
   static final String CONFIG_DIR_KEY = "admin_data.directory";
-  private ObjectMapper objectMapper;
-  private Configuration config;
+
+  private final ObjectMapper objectMapper;
+  private final File directory;
 
   @Inject
   public JsonFileHandler(Configuration config, ObjectMapper objectMapper) {
-    this.config = config;
     this.objectMapper = objectMapper;
+    directory = new File(config.getDirectory(CONFIG_DIR_KEY));
   }
 
   public <T extends FileCollection<? extends SystemEntity>> void saveCollection(T collection, String fileName) throws StorageException {
     try {
       objectMapper.writeValue(getFile(fileName), collection);
-    } catch (JsonGenerationException e) {
-      throw new StorageException(e);
-    } catch (JsonMappingException e) {
+    } catch (JsonProcessingException e) {
       throw new StorageException(e);
     } catch (IOException e) {
       throw new StorageException(e);
@@ -62,11 +61,7 @@ public class JsonFileHandler {
   }
 
   private File getFile(String fileName) {
-    return new File(createPath(fileName));
-  }
-
-  private String createPath(String fileName) {
-    return String.format("%s%s%s", config.getDirectory(CONFIG_DIR_KEY), File.separator, fileName);
+    return new File(directory, fileName);
   }
 
   /**
@@ -79,14 +74,19 @@ public class JsonFileHandler {
   public <T extends FileCollection<? extends SystemEntity>> T getCollection(Class<T> type, String fileName) throws StorageException {
     try {
       return objectMapper.readValue(getFile(fileName), type);
-    } catch (JsonParseException e) {
-      throw new StorageException(e);
-    } catch (JsonMappingException e) {
+    } catch (JsonProcessingException e) {
       throw new StorageException(e);
     } catch (FileNotFoundException e) {
-      return null;
+      try {
+        return type.newInstance();
+      } catch (InstantiationException e1) {
+        throw new StorageException(e1);
+      } catch (IllegalAccessException e1) {
+        throw new StorageException(e1);
+      }
     } catch (IOException e) {
       throw new StorageException(e);
     }
   }
+
 }

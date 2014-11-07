@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 
 import java.security.Principal;
 
-import nl.knaw.huygens.security.client.AuthorizationHandler;
+import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.security.client.UnauthorizedException;
 import nl.knaw.huygens.security.client.filters.SecurityResourceFilterFactory;
 import nl.knaw.huygens.security.client.model.HuygensSecurityInformation;
@@ -110,7 +110,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
     securityInformation.setDisplayName("test");
     securityInformation.setPrincipal(mock(Principal.class));
 
-    AuthorizationHandler authorizationHandler = injector.getInstance(AuthorizationHandler.class);
+    AuthenticationHandler authorizationHandler = injector.getInstance(AuthenticationHandler.class);
     when(authorizationHandler.getSecurityInformation(anyString())).thenReturn(securityInformation);
   }
 
@@ -167,7 +167,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   @SuppressWarnings("unchecked")
   protected void setUserNotLoggedIn() {
     try {
-      AuthorizationHandler authorizationHandler = injector.getInstance(AuthorizationHandler.class);
+      AuthenticationHandler authorizationHandler = injector.getInstance(AuthenticationHandler.class);
       when(authorizationHandler.getSecurityInformation(anyString())).thenThrow(UnauthorizedException.class);
     } catch (UnauthorizedException ex) {
       //Do nothing

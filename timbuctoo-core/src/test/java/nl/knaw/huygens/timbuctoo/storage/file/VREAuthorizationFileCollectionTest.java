@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage;
+package nl.knaw.huygens.timbuctoo.storage.file;
 
 /*
  * #%L
@@ -36,6 +36,9 @@ import static org.junit.Assert.fail;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+import nl.knaw.huygens.timbuctoo.storage.file.FileCollection;
+import nl.knaw.huygens.timbuctoo.storage.file.VREAuthorizationFileCollection;
 
 import org.junit.Before;
 import org.junit.Ignore;

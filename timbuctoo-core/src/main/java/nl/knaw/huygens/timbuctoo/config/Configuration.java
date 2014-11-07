@@ -41,8 +41,10 @@ public class Configuration {
 
   public static final String DEFAULT_CONFIG_FILE = "../config.xml";
 
-  public static final String SETTINGS_PREFIX = "settings.";
+  private static final String SETTINGS_PREFIX = "settings.";
   public static final String KEY_HOME_DIR = "home.directory";
+  public static final String EXPIRATION_DURATION_KEY = "login.expirationTime";
+  public static final String EXPIRATION_TIME_UNIT_KEY = "login.timeUnit";
 
   private final XMLConfiguration xmlConfig;
 

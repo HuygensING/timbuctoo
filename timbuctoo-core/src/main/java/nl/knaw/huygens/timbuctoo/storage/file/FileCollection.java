@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage;
+package nl.knaw.huygens.timbuctoo.storage.file;
 
 /*
  * #%L
@@ -26,6 +26,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import nl.knaw.huygens.timbuctoo.storage.IdCreator;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
 public abstract class FileCollection<T extends SystemEntity> {
   /**

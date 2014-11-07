@@ -25,25 +25,23 @@ package nl.knaw.huygens.timbuctoo.security;
 import java.security.Principal;
 import java.util.EnumSet;
 
-import nl.knaw.huygens.security.client.AuthorizationHandler;
+import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.security.client.UnauthorizedException;
 import nl.knaw.huygens.security.client.model.HuygensSecurityInformation;
 import nl.knaw.huygens.security.client.model.SecurityInformation;
 import nl.knaw.huygens.security.core.model.Affiliation;
 
-public class ExampleAuthorizationHandler implements AuthorizationHandler {
+public class ExampleAuthenticationHandler implements AuthenticationHandler {
 
   @Override
   public SecurityInformation getSecurityInformation(String sessionId) throws UnauthorizedException {
 
-    if("admin".equals(sessionId)){
+    if ("admin".equals(sessionId)) {
       return createAdmin();
-    }
-    else if("user".equals(sessionId)){
+    } else if ("user".equals(sessionId)) {
       return createUser();
     }
-    
-    
+
     throw new UnauthorizedException();
   }
 
