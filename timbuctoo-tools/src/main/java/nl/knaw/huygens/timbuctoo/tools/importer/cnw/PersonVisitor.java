@@ -325,7 +325,10 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 	private class SubDomainHandler extends CaptureHandler<PersonContext> {
 		@Override
 		public void handleContent(Element element, PersonContext context, String text) {
-			context.person.getSubDomains().add(denormalized(text, "subdomains"));
+			String denormalized = denormalized(text, "subdomains");
+			if (denormalized != null) {
+				context.person.getSubDomains().add(denormalized);
+			}
 		}
 	}
 
