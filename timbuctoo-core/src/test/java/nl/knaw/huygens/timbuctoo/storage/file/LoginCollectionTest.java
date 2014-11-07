@@ -13,12 +13,14 @@ import org.junit.Test;
 import com.google.common.collect.Lists;
 
 public class LoginCollectionTest extends FileCollectionTest<Login> {
+
   private static final String DIFFERENT_ID = "test2";
   private static final String ID = "test";
   private static final String DIFFERENT_USER_PID = "differentUserPid";
   private static final String USER_PID = "userPid";
   private static final String USER_NAME = ID;
   private static final String DIFFERENT_USER_NAME = "differentAuthString";
+
   private LoginCollection instance;
 
   @Before
@@ -182,4 +184,5 @@ public class LoginCollectionTest extends FileCollectionTest<Login> {
     // verify
     assertThat(loginCollection.getAll().size(), is(equalTo(2)));
   }
+
 }

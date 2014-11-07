@@ -1,5 +1,27 @@
 package nl.knaw.huygens.timbuctoo.storage.file;
 
+/*
+ * #%L
+ * Timbuctoo core
+ * =======
+ * Copyright (C) 2012 - 2014 Huygens ING
+ * =======
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,6 +43,7 @@ import com.google.common.collect.Maps;
 public class LoginCollection extends FileCollection<Login> {
 
   public static final String LOGIN_COLLECTION_FILE_NAME = "logins.json";
+
   private final Map<String, String> userNameIdMap;
   private final Map<String, Login> idLoginMap;
   private final Map<String, String> userPidIdMap;
@@ -103,13 +126,11 @@ public class LoginCollection extends FileCollection<Login> {
   @Override
   public void updateItem(Login item) {
     throw new UnsupportedOperationException("Not yet implemented");
-
   }
 
   @Override
   public void deleteItem(Login item) {
     throw new UnsupportedOperationException("Not yet implemented");
-
   }
 
   @Override

@@ -39,15 +39,15 @@ import com.google.common.collect.Maps;
 @JsonDeserialize(using = UserFileCollectionDeserializer.class)
 public class UserFileCollection extends FileCollection<User> {
 
-  Map<String, User> idUserMap;
-  Map<String, String> persistentIdIdMap;
+  private final Map<String, User> idUserMap;
+  private final Map<String, String> persistentIdIdMap;
 
   public UserFileCollection() {
     this(Lists.<User> newArrayList());
   }
 
   public UserFileCollection(List<User> users) {
-    // I'm not sure if this is needed, better save than sorry.
+    // I'm not sure if this is needed, better safe than sorry.
     idUserMap = Maps.newConcurrentMap();
     persistentIdIdMap = Maps.newConcurrentMap();
     initialize(users);
@@ -59,7 +59,6 @@ public class UserFileCollection extends FileCollection<User> {
       idUserMap.put(id, user);
       persistentIdIdMap.put(user.getPersistentId(), id);
     }
-
   }
 
   @Override
@@ -83,8 +82,7 @@ public class UserFileCollection extends FileCollection<User> {
 
   @Override
   protected LinkedList<String> getIds() {
-    LinkedList<String> ids = Lists.newLinkedList(idUserMap.keySet());
-    return ids;
+    return Lists.newLinkedList(idUserMap.keySet());
   }
 
   /**
@@ -117,8 +115,6 @@ public class UserFileCollection extends FileCollection<User> {
   @Override
   public void updateItem(User item) {
     if (item.getId() != null) {
-      idUserMap.remove(item.getId());
-
       idUserMap.put(item.getId(), item);
     }
   }
@@ -128,11 +124,11 @@ public class UserFileCollection extends FileCollection<User> {
     if (item.getId() != null) {
       idUserMap.remove(item.getId());
     }
-
   }
 
   @Override
   public User[] asArray() {
     return idUserMap.values().toArray(new User[] {});
   }
+
 }

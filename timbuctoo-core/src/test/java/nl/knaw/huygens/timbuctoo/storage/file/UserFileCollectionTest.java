@@ -44,9 +44,11 @@ import org.junit.Test;
 import com.google.common.collect.Lists;
 
 public class UserFileCollectionTest extends FileCollectionTest<User> {
+
   private static final String PERSISTENT_ID = "persistentId";
   private static final String PERSISTENT_ID2 = "pid2";
   private static final String PERSISTENT_ID3 = "pid3";
+
   private UserFileCollection instance;
 
   @Before
@@ -189,7 +191,6 @@ public class UserFileCollectionTest extends FileCollectionTest<User> {
     // verify
     assertThat(users, is(notNullValue()));
     assertThat(users.getAll(), is(empty()));
-
   }
 
   @Test
@@ -293,4 +294,5 @@ public class UserFileCollectionTest extends FileCollectionTest<User> {
   protected FileCollection<User> getInstance() {
     return instance;
   }
+
 }

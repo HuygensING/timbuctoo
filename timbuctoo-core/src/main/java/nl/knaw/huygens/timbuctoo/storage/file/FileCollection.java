@@ -30,6 +30,7 @@ import nl.knaw.huygens.timbuctoo.storage.IdCreator;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
 public abstract class FileCollection<T extends SystemEntity> {
+
   /**
    * Add an entity to the collection and return the id of the entity.
    * 
@@ -106,4 +107,5 @@ public abstract class FileCollection<T extends SystemEntity> {
 
     return highestNumber + 1;
   }
+
 }

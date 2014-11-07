@@ -38,7 +38,7 @@ public class VREAuthorizationFileCollectionDeserializer extends JsonDeserializer
   @Override
   public VREAuthorizationFileCollection deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
     List<VREAuthorization> authorizations = jp.readValueAs(new TypeReference<List<VREAuthorization>>() {});
-
     return new VREAuthorizationFileCollection(authorizations);
   }
+
 }

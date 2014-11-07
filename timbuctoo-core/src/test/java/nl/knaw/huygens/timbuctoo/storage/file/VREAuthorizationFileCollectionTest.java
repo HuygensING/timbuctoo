@@ -47,10 +47,12 @@ import org.junit.Test;
 import com.google.common.collect.Lists;
 
 public class VREAuthorizationFileCollectionTest extends FileCollectionTest<VREAuthorization> {
+
   private static final String USER_ID = "USER000000000001";
   private static final String VRE_ID = "vreId";
   private static final String USER_ID2 = "USER000000000002";
   private static final String USER_ID1 = "USER000000000003";
+
   private VREAuthorizationFileCollection instance;
 
   @Before
@@ -279,4 +281,5 @@ public class VREAuthorizationFileCollectionTest extends FileCollectionTest<VREAu
   protected FileCollection<VREAuthorization> getInstance() {
     return instance;
   }
+
 }

@@ -40,4 +40,5 @@ public class UserFileCollectionDeserializer extends JsonDeserializer<UserFileCol
     List<User> users = jp.readValueAs(new TypeReference<List<User>>() {});
     return new UserFileCollection(users);
   }
+
 }

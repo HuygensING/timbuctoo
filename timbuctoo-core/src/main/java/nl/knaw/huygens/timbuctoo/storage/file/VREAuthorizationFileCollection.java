@@ -38,8 +38,9 @@ import com.google.common.collect.Maps;
 @JsonSerialize(using = FileCollectionSerializer.class)
 @JsonDeserialize(using = VREAuthorizationFileCollectionDeserializer.class)
 public class VREAuthorizationFileCollection extends FileCollection<VREAuthorization> {
-  private Map<String, VREAuthorization> idAuthorizationMap;
-  private Map<String, String> vreIdUserIdIdMap;
+
+  private final Map<String, VREAuthorization> idAuthorizationMap;
+  private final Map<String, String> vreIdUserIdIdMap;
 
   public VREAuthorizationFileCollection() {
     this(Lists.<VREAuthorization> newArrayList());
@@ -83,7 +84,6 @@ public class VREAuthorizationFileCollection extends FileCollection<VREAuthorizat
   @Override
   public VREAuthorization findItem(VREAuthorization example) {
     String id = findIdForAuthorization(example);
-
     return this.get(id);
   }
 
@@ -103,16 +103,13 @@ public class VREAuthorizationFileCollection extends FileCollection<VREAuthorizat
 
     if (id != null) {
       item.setId(id); // make sure the item has the right id
-      idAuthorizationMap.remove(id);
       idAuthorizationMap.put(id, item);
     }
-
   }
 
   private String findIdForAuthorization(VREAuthorization item) {
     String vreIdUserId = createVREIdUserIdIndexEntry(item);
-    String id = vreIdUserIdIdMap.get(vreIdUserId);
-    return id;
+    return vreIdUserIdIdMap.get(vreIdUserId);
   }
 
   @Override
@@ -123,7 +120,6 @@ public class VREAuthorizationFileCollection extends FileCollection<VREAuthorizat
     if (id != null) {
       idAuthorizationMap.remove(id);
     }
-
   }
 
   @Override
