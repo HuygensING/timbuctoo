@@ -23,7 +23,6 @@ package nl.knaw.huygens.timbuctoo.storage;
  */
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -52,64 +51,6 @@ public class FieldMapper {
   /** Prefix of properties that are not (de)serialzied. */
   public static final char VIRTUAL_PROPERTY_PREFIX = '@';
 
-  /** Returns the name of a property from its parts. */
-  public static String propertyName(String prefix, String field) {
-    checkArgument(field != null && field.length() != 0);
-
-    StringBuilder builder = new StringBuilder();
-    if (Character.isLetter(field.charAt(0))) {
-      builder.append(prefix).append(SEPARATOR_CHAR);
-    }
-    builder.append(field);
-    return builder.toString();
-  }
-
-  /** Returns the name of a property from its parts. */
-  public static String propertyName(Class<?> type, String field) {
-    return propertyName(TypeNames.getInternalName(type), field);
-  }
-
-  // -------------------------------------------------------------------
-
-  private boolean isVirtualProperty(String name) {
-    return !name.isEmpty() && (name.charAt(0) == VIRTUAL_PROPERTY_PREFIX);
-  }
-
-  /**
-   * Validates the property names in the class of the specified type
-   * and throws a {@code ModelException} if an invalid name is found.
-   * 
-   * Allowed names are standard Java identifiers without an underscore
-   * character, optionally prefixed with a "_", "^" or "@".
-   */
-  public void validatePropertyNames(Class<?> type) throws ModelException {
-    Pattern pattern = Pattern.compile("[\\_\\^\\@]?[a-zA-Z][a-zA-Z0-9]*");
-    for (Field field : type.getDeclaredFields()) {
-      if (isProperty(field)) {
-        String name = getFieldName(type, field);
-        if (!pattern.matcher(name).matches()) {
-          throw new ModelException("Invalid property name %s of %s", name, type);
-        }
-      }
-    }
-  }
-
-  /**
-   * Adds declared fields of the specified view type to the field map,
-   * using as keys the corresponding property names.
-   */
-  public void addToFieldMap(Class<?> prefixType, Class<?> viewType, Map<String, Field> map) {
-    String prefix = TypeNames.getInternalName(prefixType);
-    for (Field field : viewType.getDeclaredFields()) {
-      if (isProperty(field)) {
-        String fieldName = getFieldName(viewType, field);
-        if (!isVirtualProperty(fieldName)) {
-          map.put(propertyName(prefix, fieldName), field);
-        }
-      }
-    }
-  }
-
   /**
    * Returns a field map for the specified view type with the specified prefix.
    */
@@ -134,13 +75,58 @@ public class FieldMapper {
     return map;
   }
 
-  // -------------------------------------------------------------------
+  /**
+   * Adds declared fields of the specified view type to the field map,
+   * using as keys the corresponding property names.
+   */
+  public void addToFieldMap(Class<?> prefixType, Class<?> viewType, Map<String, Field> map) {
+    String prefix = TypeNames.getInternalName(prefixType);
+    for (Field field : viewType.getDeclaredFields()) {
+      if (isProperty(field)) {
+        String fieldName = getFieldName(viewType, field);
+        if (!isVirtualProperty(fieldName)) {
+          map.put(propertyName(prefix, fieldName), field);
+        }
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+
+  /** Returns the name of a property from its parts. */
+  public static String propertyName(String prefix, String field) {
+    checkArgument(field != null && field.length() != 0);
+
+    StringBuilder builder = new StringBuilder();
+    if (Character.isLetter(field.charAt(0))) {
+      builder.append(prefix).append(SEPARATOR_CHAR);
+    }
+    builder.append(field);
+    return builder.toString();
+  }
+
+  /** Returns the name of a property from its parts. */
+  public static String propertyName(Class<?> type, String field) {
+    return propertyName(TypeNames.getInternalName(type), field);
+  }
 
   /**
-   * Indicates whether a field qualifies as property.
+   * Validates the property names in the class of the specified type
+   * and throws a {@code ModelException} if an invalid name is found.
+   * 
+   * Allowed names are standard Java identifiers without an underscore
+   * character, optionally prefixed with a "_", "^" or "@".
    */
-  private boolean isProperty(Field field) {
-    return (field.getModifiers() & (Modifier.STATIC | Modifier.TRANSIENT)) == 0;
+  public void validatePropertyNames(Class<?> type) throws ModelException {
+    Pattern pattern = Pattern.compile("[\\_\\^\\@]?[a-zA-Z][a-zA-Z0-9]*");
+    for (Field field : type.getDeclaredFields()) {
+      if (isProperty(field)) {
+        String name = getFieldName(type, field);
+        if (!pattern.matcher(name).matches()) {
+          throw new ModelException("Invalid property name %s of %s", name, type);
+        }
+      }
+    }
   }
 
   /**
@@ -160,6 +146,19 @@ public class FieldMapper {
     }
 
     return field.getName();
+  }
+
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Indicates whether a field qualifies as property.
+   */
+  private boolean isProperty(Field field) {
+    return (field.getModifiers() & (Modifier.STATIC | Modifier.TRANSIENT)) == 0;
+  }
+
+  private boolean isVirtualProperty(String name) {
+    return !name.isEmpty() && (name.charAt(0) == VIRTUAL_PROPERTY_PREFIX);
   }
 
   /**

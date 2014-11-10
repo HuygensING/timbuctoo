@@ -33,9 +33,10 @@ import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 import com.google.common.collect.Lists;
 
 public class TypeFacade {
+
   private final Class<?> type;
-  private FieldMapper fieldMapper;
-  private TypeNameGenerator typeNameGenerator;
+  private final FieldMapper fieldMapper;
+  private final TypeNameGenerator typeNameGenerator;
 
   public TypeFacade(Class<?> type) {
     this(type, new FieldMapper(), new TypeNameGenerator());
@@ -48,8 +49,7 @@ public class TypeFacade {
   }
 
   public String getFieldName(Field field) {
-
-    return this.fieldMapper.getFieldName(type, field);
+    return fieldMapper.getFieldName(type, field);
   }
 
   public FieldType getFieldType(Field field) {
@@ -61,10 +61,9 @@ public class TypeFacade {
       return FieldType.POOR_MANS_ENUM;
     } else if (!isStaticField(field)) {
       return FieldType.DEFAULT;
+    } else {
+      return FieldType.UNKNOWN;
     }
-
-    return FieldType.UNKNOWN;
-
   }
 
   public enum FieldType {
@@ -72,14 +71,13 @@ public class TypeFacade {
   }
 
   public String getTypeNameOfField(Field field) {
-    StringBuilder typeNameBuilder = new StringBuilder();
+    StringBuilder builder = new StringBuilder();
     if (isOfInnerClassType(field)) {
-      typeNameBuilder.append(type.getSimpleName());
-      typeNameBuilder.append(".");
+      builder.append(type.getSimpleName());
+      builder.append(".");
     }
-    typeNameBuilder.append(typeNameGenerator.getTypeName(field));
-
-    return typeNameBuilder.toString();
+    builder.append(typeNameGenerator.getTypeName(field));
+    return builder.toString();
   }
 
   private boolean isOfInnerClassType(Field field) {
@@ -93,13 +91,11 @@ public class TypeFacade {
 
     boolean isEnum = false;
     for (Type paramType : ((ParameterizedType) field.getGenericType()).getActualTypeArguments()) {
-
       if (paramType instanceof Class<?>) {
         isEnum |= isEnumValueField(field, (Class<?>) paramType);
       }
     }
     return isEnum;
-
   }
 
   private boolean isConstantField(Field field) {
@@ -138,11 +134,9 @@ public class TypeFacade {
 
   private List<Class<?>> getInnerClasses(Class<?> type) {
     List<Class<?>> classes = Lists.newArrayList(type.getDeclaredClasses());
-
     if (!Object.class.equals(type.getSuperclass())) {
       classes.addAll(getInnerClasses(type.getSuperclass()));
     }
-
     return classes;
   }
 

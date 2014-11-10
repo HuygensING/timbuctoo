@@ -40,12 +40,7 @@ public class TypeFacadeTest {
 
   private void testGetFieldTypeForFieldOfClass(Class<?> type, Field field, FieldType expectedType) {
     TypeFacade instance = aTypeFacade(type).build();
-
-    // action
-    FieldType actualFieldType = instance.getFieldType(field);
-
-    // verify
-    assertThat(actualFieldType, equalTo(expectedType));
+    assertThat(instance.getFieldType(field), equalTo(expectedType));
   }
 
   @Test
@@ -130,7 +125,6 @@ public class TypeFacadeTest {
 
     // verify
     verify(fieldMapperMock).getFieldName(classWithSimpleField, simpleField);
-
   }
 
   @Test
@@ -171,4 +165,5 @@ public class TypeFacadeTest {
     verify(typeNameGeneratorMock).getTypeName(innerClassTypeField);
     assertThat(actualTypeName, equalTo("ClassWithTypeOfInnerClass.InnerType"));
   }
+
 }
