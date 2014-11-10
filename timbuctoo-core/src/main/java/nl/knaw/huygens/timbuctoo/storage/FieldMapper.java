@@ -144,25 +144,6 @@ public class FieldMapper {
   }
 
   /**
-   * Checks if there is variation possible for this field.
-   */
-  public boolean isFieldWithVariation(String fieldName) {
-    return fieldName.contains(SEPARATOR);
-  }
-
-  /**
-   * A method to retrieve the name of the type the field belongs to.
-   * @param fieldName the field to retrieve the type name from.
-   * @return the type name or {@code null} if the field does not belong to a type.
-   * @throws NullPointerException is thrown if {@code fieldName} is {@code null}.
-   */
-  public String getTypeNameOfFieldName(String fieldName) {
-    checkNotNull(fieldName);
-    int pos = fieldName.indexOf(SEPARATOR_CHAR);
-    return (pos < 0) ? null : fieldName.substring(0, pos);
-  }
-
-  /**
    * Gets the name of the specified field in the specified class, without a prefix.
    * It uses the name specified in {@code JsonProperty} annotations on the field
    * itself or the getter corresponding to the field (in that order).

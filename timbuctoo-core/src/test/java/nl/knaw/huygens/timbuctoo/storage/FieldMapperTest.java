@@ -26,8 +26,6 @@ import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.SEPARATOR;
 import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
@@ -121,23 +119,6 @@ public class FieldMapperTest {
   @Test
   public void testGetFieldNameForSystemEntity() throws Exception {
     assertThat(fieldMapper.getFieldName(SystemEntity.class, Entity.class.getDeclaredField("id")), equalTo("_id"));
-  }
-
-  @Test
-  public void testGetTypeNameOfFieldNameWithSeparator() {
-    String fieldName = propertyName("test", "testField");
-    assertThat(fieldMapper.getTypeNameOfFieldName(fieldName), equalTo("test"));
-  }
-
-  @Test
-  public void testGetTypeNameOfFieldNameWithoutSeparator() {
-    String fieldName = "testField";
-    assertThat(fieldMapper.getTypeNameOfFieldName(fieldName), is(nullValue()));
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void testGetTypeNameOfFieldNameNull() {
-    fieldMapper.getTypeNameOfFieldName(null);
   }
 
   // ---------------------------------------------------------------------------
