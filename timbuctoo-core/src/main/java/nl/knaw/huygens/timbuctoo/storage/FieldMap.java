@@ -27,20 +27,21 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Map;
+import java.util.HashMap;
 import java.util.regex.Pattern;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Maps;
 
 /**
  * A class that contains all the information about how the class fields are mapped 
  * to the fields in the database.
  */
-public class FieldMap {
+public class FieldMap extends HashMap<String, Field> {
+
+  private static final long serialVersionUID = 1L;
 
   /** Separator between parts of a property name, as string. */
   public static final String SEPARATOR = ":";
@@ -52,40 +53,41 @@ public class FieldMap {
   public static final char VIRTUAL_PROPERTY_PREFIX = '@';
 
   /**
-   * Returns a field map for the specified view type with the specified prefix.
+   * Constructs an empty field map.
    */
-  public Map<String, Field> getSimpleFieldMap(Class<?> prefixType, Class<?> viewType) {
-    Map<String, Field> map = Maps.newHashMap();
-    addToFieldMap(prefixType, viewType, map);
-    return map;
+  public FieldMap() {}
+
+  /**
+   * Constructs a field map for the specified view type with the specified prefix.
+   */
+  public FieldMap(Class<?> prefixType, Class<?> viewType) {
+    addToFieldMap(prefixType, viewType);
   }
 
   /**
-   * Returns a composite field map for all types starting with ViewType up to and
+   * Constructs a composite field map for all types starting with viewType up to and
    * including the stoptype. To get a non-empty map stopType must be a superclass
    * of viewType.
    */
-  public Map<String, Field> getCompositeFieldMap(Class<?> prefixType, Class<?> viewType, Class<?> stopType) {
-    Map<String, Field> map = Maps.newHashMap();
+  public FieldMap(Class<?> prefixType, Class<?> viewType, Class<?> stopType) {
     Class<?> type = viewType;
     while (stopType.isAssignableFrom(type)) {
-      addToFieldMap(prefixType, type, map);
+      addToFieldMap(prefixType, type);
       type = type.getSuperclass();
     }
-    return map;
   }
 
   /**
    * Adds declared fields of the specified view type to the field map,
    * using as keys the corresponding property names.
    */
-  public void addToFieldMap(Class<?> prefixType, Class<?> viewType, Map<String, Field> map) {
+  public void addToFieldMap(Class<?> prefixType, Class<?> viewType) {
     String prefix = TypeNames.getInternalName(prefixType);
     for (Field field : viewType.getDeclaredFields()) {
       if (isProperty(field)) {
         String fieldName = getFieldName(viewType, field);
         if (!isVirtualProperty(fieldName)) {
-          map.put(propertyName(prefix, fieldName), field);
+          put(propertyName(prefix, fieldName), field);
         }
       }
     }

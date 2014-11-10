@@ -24,10 +24,8 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static nl.knaw.huygens.timbuctoo.storage.FieldMap.propertyName;
 
-import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -97,7 +95,7 @@ public class MongoQueries {
    * Generates a query based on the non-null values of an entity.
    */
   public <T extends Entity> DBObject selectByProperties(Class<? super T> type, T entity) {
-    Map<String, Field> fieldMap = new FieldMap().getCompositeFieldMap(type, type, type);
+    FieldMap fieldMap = new FieldMap(type, type, type);
     PropertyMap properties = new PropertyMap(entity, fieldMap);
     return new BasicDBObject(properties);
   }

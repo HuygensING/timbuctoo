@@ -41,7 +41,7 @@ public class PropertyMap extends TreeMap<String, Object> {
 
   public PropertyMap() {}
 
-  public PropertyMap(Object object, Map<String, Field> fieldMap) {
+  public PropertyMap(Object object, FieldMap fieldMap) {
     if (object != null && fieldMap != null) {
       for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
         try {

@@ -65,13 +65,11 @@ public class EntityReducer {
 
   private final TypeRegistry typeRegistry;
   private final ObjectMapper jsonMapper;
-  private final FieldMap fieldMapper;
 
   @Inject
   public EntityReducer(TypeRegistry registry) {
     typeRegistry = registry;
     jsonMapper = new ObjectMapper();
-    fieldMapper = new FieldMap();
   }
 
   public <T extends Entity> T reduceVariation(Class<T> type, JsonNode tree) throws StorageException {
@@ -174,7 +172,7 @@ public class EntityReducer {
     try {
       T object = newInstance(type);
 
-      Map<String, Field> fieldMap = fieldMapper.getCompositeFieldMap(viewType, viewType, stopType);
+      FieldMap fieldMap = new FieldMap(viewType, viewType, stopType);
       for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
         String key = entry.getKey();
         JsonNode node = tree.findValue(key);

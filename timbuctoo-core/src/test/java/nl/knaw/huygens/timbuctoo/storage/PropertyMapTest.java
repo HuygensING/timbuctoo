@@ -25,7 +25,6 @@ package nl.knaw.huygens.timbuctoo.storage;
 import static nl.knaw.huygens.timbuctoo.storage.FieldMap.propertyName;
 import static org.junit.Assert.assertEquals;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
@@ -60,11 +59,11 @@ public class PropertyMapTest {
   private static final String TEST_VALUE1 = "testValue1";
   private static final String NAME = "name";
 
-  private Map<String, Field> fieldMap;
+  private FieldMap fieldMap;
 
   @Before
   public void setup() {
-    fieldMap = new FieldMap().getSimpleFieldMap(TYPE, TYPE);
+    fieldMap = new FieldMap(TYPE, TYPE);
   }
 
   private MongoObjectMapperEntity createMongoObjectMapperEntity(String name, String testValue1, String testValue2, String annotatedProperty, String propWithAnnotatedAccessors) {
