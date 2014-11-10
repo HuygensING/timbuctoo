@@ -23,7 +23,10 @@ package nl.knaw.huygens.timbuctoo.storage;
  */
 
 import static nl.knaw.huygens.timbuctoo.storage.FieldMap.propertyName;
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 
 import java.util.List;
 import java.util.Map;
@@ -76,18 +79,16 @@ public class PropertyMapTest {
     return entity;
   }
 
-  // -------------------------------------------------------------------
-
   @Test
   public void testPropertyMapForNullObject() {
     PropertyMap properties = new PropertyMap(null, fieldMap);
-    assertEquals(0, properties.size());
+    assertThat(properties.keySet(), empty());
   }
 
   @Test
   public void testPropertyMapForNullFieldMap() {
     PropertyMap properties = new PropertyMap(new MongoObjectMapperEntity(), null);
-    assertEquals(0, properties.size());
+    assertThat(properties.keySet(), empty());
   }
 
   @Test
@@ -101,7 +102,7 @@ public class PropertyMapTest {
     map.put(PROP_ANNOTATED_KEY, ANNOTATED_PROPERTY);
     map.put(PWAA_KEY, PROP_WITH_ANNOTATED_ACCESSORS);
 
-    assertEquals(map, new PropertyMap(entity, fieldMap));
+    assertThat(new PropertyMap(entity, fieldMap), equalTo(map));
   }
 
   @Test
@@ -113,7 +114,7 @@ public class PropertyMapTest {
     map.put(TEST_VALUE1_KEY, TEST_VALUE1);
     map.put(TEST_VALUE2_KEY, TEST_VALUE2);
 
-    assertEquals(map, new PropertyMap(entity, fieldMap));
+    assertThat(new PropertyMap(entity, fieldMap), equalTo(map));
   }
 
   @Test
@@ -125,7 +126,7 @@ public class PropertyMapTest {
     Map<String, Object> map = Maps.newHashMap();
     map.put(propertyName(TYPE, "primitiveTestCollection"), list);
 
-    assertEquals(map, new PropertyMap(entity, fieldMap));
+    assertThat(new PropertyMap(entity, fieldMap), equalTo(map));
   }
 
   @Test
@@ -134,8 +135,7 @@ public class PropertyMapTest {
     entity.setId(ID);
     entity.setNonPrimitiveTestCollection(Lists.newArrayList(entity));
 
-    PropertyMap properties = new PropertyMap(entity, fieldMap);
-    assertEquals(1, properties.size());
+    assertThat(new PropertyMap(entity, fieldMap).keySet(), hasSize(1));
   }
 
   @Test
@@ -146,7 +146,7 @@ public class PropertyMapTest {
     Map<String, Object> map = Maps.newHashMap();
     map.put(propertyName(TYPE, "type"), TYPE);
 
-    assertEquals(map, new PropertyMap(entity, fieldMap));
+    assertThat(new PropertyMap(entity, fieldMap), equalTo(map));
   }
 
   @Test
@@ -157,7 +157,7 @@ public class PropertyMapTest {
     Map<String, Object> map = Maps.newHashMap();
     map.put(propertyName(TYPE, "date"), "20031011");
 
-    assertEquals(map, new PropertyMap(entity, fieldMap));
+    assertThat(new PropertyMap(entity, fieldMap), equalTo(map));
   }
 
   @Test
@@ -171,7 +171,7 @@ public class PropertyMapTest {
     Map<String, Object> map = Maps.newLinkedHashMap();
     map.put(propertyName(TYPE, "personName"), personName);
 
-    assertEquals(map, new PropertyMap(entity, fieldMap));
+    assertThat(new PropertyMap(entity, fieldMap), equalTo(map));
   }
 
 }

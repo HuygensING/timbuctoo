@@ -61,7 +61,7 @@ public class FieldMap extends HashMap<String, Field> {
    * Constructs a field map for the specified view type with the specified prefix.
    */
   public FieldMap(Class<?> prefixType, Class<?> viewType) {
-    addToFieldMap(prefixType, viewType);
+    addFields(prefixType, viewType);
   }
 
   /**
@@ -72,7 +72,7 @@ public class FieldMap extends HashMap<String, Field> {
   public FieldMap(Class<?> prefixType, Class<?> viewType, Class<?> stopType) {
     Class<?> type = viewType;
     while (stopType.isAssignableFrom(type)) {
-      addToFieldMap(prefixType, type);
+      addFields(prefixType, type);
       type = type.getSuperclass();
     }
   }
@@ -81,7 +81,7 @@ public class FieldMap extends HashMap<String, Field> {
    * Adds declared fields of the specified view type to the field map,
    * using as keys the corresponding property names.
    */
-  public void addToFieldMap(Class<?> prefixType, Class<?> viewType) {
+  public void addFields(Class<?> prefixType, Class<?> viewType) {
     String prefix = TypeNames.getInternalName(prefixType);
     for (Field field : viewType.getDeclaredFields()) {
       if (isProperty(field)) {
