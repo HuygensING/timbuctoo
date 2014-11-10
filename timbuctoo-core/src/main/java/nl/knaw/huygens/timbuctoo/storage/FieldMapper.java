@@ -134,7 +134,7 @@ public class FieldMapper {
    * It uses the name specified in {@code JsonProperty} annotations on the field
    * itself or the getter corresponding to the field (in that order).
    */
-  public String getFieldName(Class<?> type, Field field) {
+  public static String getFieldName(Class<?> type, Field field) {
     JsonProperty annotation = field.getAnnotation(JsonProperty.class);
     if (annotation != null) {
       return annotation.value();
@@ -153,11 +153,11 @@ public class FieldMapper {
   /**
    * Indicates whether a field qualifies as property.
    */
-  private boolean isProperty(Field field) {
+  private static boolean isProperty(Field field) {
     return (field.getModifiers() & (Modifier.STATIC | Modifier.TRANSIENT)) == 0;
   }
 
-  private boolean isVirtualProperty(String name) {
+  private static boolean isVirtualProperty(String name) {
     return !name.isEmpty() && (name.charAt(0) == VIRTUAL_PROPERTY_PREFIX);
   }
 
@@ -165,7 +165,7 @@ public class FieldMapper {
    * Searches for a public method in the specified class or its superclasses
    * and -interfaces that matches the specified name and has no parameters.
    */
-  private Method getMethodByName(Class<?> type, String methodName) {
+  private static Method getMethodByName(Class<?> type, String methodName) {
     try {
       // TODO decide: use type.getDeclaredMethod(methodName)?
       return type.getMethod(methodName);
@@ -177,7 +177,7 @@ public class FieldMapper {
   private static final String GET_ACCESSOR = "get";
   private static final String IS_ACCESSOR = "is"; // get accesor for booleans.
 
-  private String getMethodName(Field field) {
+  private static String getMethodName(Field field) {
     char[] fieldNameChars = field.getName().toCharArray();
 
     fieldNameChars[0] = Character.toUpperCase(fieldNameChars[0]);
@@ -186,7 +186,7 @@ public class FieldMapper {
     return accessor.concat(String.valueOf(fieldNameChars));
   }
 
-  private boolean isBoolean(Class<?> cls) {
+  private static boolean isBoolean(Class<?> cls) {
     return cls == boolean.class || cls == Boolean.class;
   }
 

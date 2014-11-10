@@ -22,7 +22,6 @@ package nl.knaw.huygens.timbuctoo.tools.util.metadata;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.tools.util.metadata.TypeFacadeBuilder.aTypeFacade;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.mock;
@@ -31,7 +30,6 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 
-import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
 import nl.knaw.huygens.timbuctoo.tools.util.metadata.TypeFacade.FieldType;
 
 import org.junit.Test;
@@ -39,7 +37,7 @@ import org.junit.Test;
 public class TypeFacadeTest {
 
   private void testGetFieldTypeForFieldOfClass(Class<?> type, Field field, FieldType expectedType) {
-    TypeFacade instance = aTypeFacade(type).build();
+    TypeFacade instance = new TypeFacade(type);
     assertThat(instance.getFieldType(field), equalTo(expectedType));
   }
 
@@ -111,30 +109,12 @@ public class TypeFacadeTest {
   }
 
   @Test
-  public void testGetFieldName() throws SecurityException, NoSuchFieldException {
-    // setup
-    Class<?> classWithSimpleField = MetaDataGeneratorTestData.TestModel.class;
-    Field simpleField = classWithSimpleField.getDeclaredField("testString");
-
-    FieldMapper fieldMapperMock = mock(FieldMapper.class);
-
-    TypeFacade instance = aTypeFacade(classWithSimpleField).withFieldMapper(fieldMapperMock).build();
-
-    // action
-    instance.getFieldName(simpleField);
-
-    // verify
-    verify(fieldMapperMock).getFieldName(classWithSimpleField, simpleField);
-  }
-
-  @Test
   public void testGetTypeName() throws SecurityException, NoSuchFieldException {
     // setup
     Class<?> classWithSimpleField = MetaDataGeneratorTestData.TestModel.class;
     Field simpleField = classWithSimpleField.getDeclaredField("testString");
     TypeNameGenerator typeNameGeneratorMock = mock(TypeNameGenerator.class);
-
-    TypeFacade instance = aTypeFacade(classWithSimpleField).withTypeNameGenerator(typeNameGeneratorMock).build();
+    TypeFacade instance = new TypeFacade(classWithSimpleField, typeNameGeneratorMock);
 
     // when
     String expectedTypeName = "String";
@@ -153,8 +133,7 @@ public class TypeFacadeTest {
     Class<?> classWithTypeOfInnterClass = MetaDataGeneratorTestData.ClassWithTypeOfInnerClass.class;
     Field innerClassTypeField = classWithTypeOfInnterClass.getDeclaredField("testClass");
     TypeNameGenerator typeNameGeneratorMock = mock(TypeNameGenerator.class);
-
-    TypeFacade instance = aTypeFacade(classWithTypeOfInnterClass).withTypeNameGenerator(typeNameGeneratorMock).build();
+    TypeFacade instance = new TypeFacade(classWithTypeOfInnterClass, typeNameGeneratorMock);
 
     // when
     when(typeNameGeneratorMock.getTypeName(innerClassTypeField)).thenReturn("InnerType");

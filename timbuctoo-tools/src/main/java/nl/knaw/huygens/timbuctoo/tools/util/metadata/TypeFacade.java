@@ -35,21 +35,19 @@ import com.google.common.collect.Lists;
 public class TypeFacade {
 
   private final Class<?> type;
-  private final FieldMapper fieldMapper;
   private final TypeNameGenerator typeNameGenerator;
 
   public TypeFacade(Class<?> type) {
-    this(type, new FieldMapper(), new TypeNameGenerator());
+    this(type, new TypeNameGenerator());
   }
 
-  public TypeFacade(Class<?> type, FieldMapper fieldMapper, TypeNameGenerator typeNameGenerator) {
+  public TypeFacade(Class<?> type, TypeNameGenerator typeNameGenerator) {
     this.type = type;
-    this.fieldMapper = fieldMapper;
     this.typeNameGenerator = typeNameGenerator;
   }
 
   public String getFieldName(Field field) {
-    return fieldMapper.getFieldName(type, field);
+    return FieldMapper.getFieldName(type, field);
   }
 
   public FieldType getFieldType(Field field) {
