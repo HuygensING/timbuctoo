@@ -40,7 +40,7 @@ import com.google.common.collect.Maps;
  * A class that contains all the information about how the class fields are mapped 
  * to the fields in the database.
  */
-public class FieldMapper {
+public class FieldMap {
 
   /** Separator between parts of a property name, as string. */
   public static final String SEPARATOR = ":";

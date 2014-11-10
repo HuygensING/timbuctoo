@@ -22,7 +22,7 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
+import static nl.knaw.huygens.timbuctoo.storage.FieldMap.propertyName;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;

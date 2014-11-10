@@ -22,8 +22,8 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.SEPARATOR;
-import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
+import static nl.knaw.huygens.timbuctoo.storage.FieldMap.SEPARATOR;
+import static nl.knaw.huygens.timbuctoo.storage.FieldMap.propertyName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -40,7 +40,7 @@ import test.variation.model.MongoObjectMapperEntity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class FieldMapperTest {
+public class FieldMapTest {
 
   private static final Class<? extends Entity> TYPE = MongoObjectMapperEntity.class;
 
@@ -86,39 +86,39 @@ public class FieldMapperTest {
 
   @Test
   public void testGetFieldNameSimpleField() throws Exception {
-    assertThat(FieldMapper.getFieldName(TYPE, TYPE.getDeclaredField("name")), equalTo("name"));
+    assertThat(FieldMap.getFieldName(TYPE, TYPE.getDeclaredField("name")), equalTo("name"));
   }
 
   @Test
   public void testGetFieldNameForFieldWithAnnotation() throws Exception {
-    assertThat(FieldMapper.getFieldName(TYPE, TYPE.getDeclaredField("annotatedProperty")), equalTo("propAnnotated"));
+    assertThat(FieldMap.getFieldName(TYPE, TYPE.getDeclaredField("annotatedProperty")), equalTo("propAnnotated"));
   }
 
   @Test
   public void testGetFieldNameFieldForAccessorWithAnnotation() throws Exception {
-    assertThat(FieldMapper.getFieldName(TYPE, TYPE.getDeclaredField("propWithAnnotatedAccessors")), equalTo("pwaa"));
+    assertThat(FieldMap.getFieldName(TYPE, TYPE.getDeclaredField("propWithAnnotatedAccessors")), equalTo("pwaa"));
   }
 
   @Test
   public void testGetFieldNameForEntity() throws Exception {
-    assertThat(FieldMapper.getFieldName(Entity.class, Entity.class.getDeclaredField("id")), equalTo("_id"));
+    assertThat(FieldMap.getFieldName(Entity.class, Entity.class.getDeclaredField("id")), equalTo("_id"));
   }
 
   @Test
   public void testGetFieldNameForDomainEntity() throws Exception {
-    assertThat(FieldMapper.getFieldName(DomainEntity.class, Entity.class.getDeclaredField("id")), equalTo("_id"));
+    assertThat(FieldMap.getFieldName(DomainEntity.class, Entity.class.getDeclaredField("id")), equalTo("_id"));
   }
 
   @Test
   public void testGetFieldNameForSystemEntity() throws Exception {
-    assertThat(FieldMapper.getFieldName(SystemEntity.class, Entity.class.getDeclaredField("id")), equalTo("_id"));
+    assertThat(FieldMap.getFieldName(SystemEntity.class, Entity.class.getDeclaredField("id")), equalTo("_id"));
   }
 
   // ---------------------------------------------------------------------------
 
   @Test(expected = ModelException.class)
   public void testInvalidProperty() throws ModelException {
-    FieldMapper.validatePropertyNames(ClassWithInvalidProperty.class);
+    FieldMap.validatePropertyNames(ClassWithInvalidProperty.class);
   }
 
   static class ClassWithInvalidProperty {
@@ -135,7 +135,7 @@ public class FieldMapperTest {
 
   @Test
   public void testVariantProperty() throws ModelException {
-    FieldMapper.validatePropertyNames(ClassVariantProperty.class);
+    FieldMap.validatePropertyNames(ClassVariantProperty.class);
   }
 
   static class ClassVariantProperty {
@@ -152,7 +152,7 @@ public class FieldMapperTest {
 
   @Test
   public void testInternalProperty() throws ModelException {
-    FieldMapper.validatePropertyNames(ClassWithInternalProperty.class);
+    FieldMap.validatePropertyNames(ClassWithInternalProperty.class);
   }
 
   static class ClassWithInternalProperty {
@@ -171,7 +171,7 @@ public class FieldMapperTest {
 
   @Test
   public void testSharedProperty() throws ModelException {
-    FieldMapper.validatePropertyNames(ClassWithSharedProperty.class);
+    FieldMap.validatePropertyNames(ClassWithSharedProperty.class);
   }
 
   static class ClassWithSharedProperty {
@@ -190,7 +190,7 @@ public class FieldMapperTest {
 
   @Test
   public void testVirtualProperty() throws ModelException {
-    FieldMapper.validatePropertyNames(ClassWithVirtualProperty.class);
+    FieldMap.validatePropertyNames(ClassWithVirtualProperty.class);
   }
 
   static class ClassWithVirtualProperty {

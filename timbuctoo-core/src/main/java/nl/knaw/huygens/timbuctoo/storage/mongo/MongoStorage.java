@@ -24,7 +24,7 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
 import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
-import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
+import static nl.knaw.huygens.timbuctoo.storage.FieldMap.propertyName;
 
 import java.util.Collections;
 import java.util.Date;

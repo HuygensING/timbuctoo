@@ -22,7 +22,7 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.storage.FieldMapper.propertyName;
+import static nl.knaw.huygens.timbuctoo.storage.FieldMap.propertyName;
 import static org.junit.Assert.assertEquals;
 
 import java.lang.reflect.Field;
@@ -64,7 +64,7 @@ public class PropertyMapTest {
 
   @Before
   public void setup() {
-    fieldMap = new FieldMapper().getSimpleFieldMap(TYPE, TYPE);
+    fieldMap = new FieldMap().getSimpleFieldMap(TYPE, TYPE);
   }
 
   private MongoObjectMapperEntity createMongoObjectMapperEntity(String name, String testValue1, String testValue2, String annotatedProperty, String propWithAnnotatedAccessors) {

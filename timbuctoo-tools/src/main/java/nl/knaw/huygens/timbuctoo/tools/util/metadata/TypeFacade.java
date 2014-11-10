@@ -28,7 +28,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
+import nl.knaw.huygens.timbuctoo.storage.FieldMap;
 
 import com.google.common.collect.Lists;
 
@@ -47,7 +47,7 @@ public class TypeFacade {
   }
 
   public String getFieldName(Field field) {
-    return FieldMapper.getFieldName(type, field);
+    return FieldMap.getFieldName(type, field);
   }
 
   public FieldType getFieldType(Field field) {

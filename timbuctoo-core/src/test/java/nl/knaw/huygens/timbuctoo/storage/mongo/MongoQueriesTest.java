@@ -30,7 +30,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.Date;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.storage.FieldMapper;
+import nl.knaw.huygens.timbuctoo.storage.FieldMap;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -70,7 +70,7 @@ public class MongoQueriesTest {
   @Test
   public void testSelectByProperty() {
     Map<String, Object> expected = Maps.newHashMap();
-    expected.put(FieldMapper.propertyName(BaseDomainEntity.class, "value1"), "testValue");
+    expected.put(FieldMap.propertyName(BaseDomainEntity.class, "value1"), "testValue");
 
     DBObject query = queries.selectByProperty(BaseDomainEntity.class, "value1", "testValue");
     assertEquals(expected, query.toMap());
@@ -82,8 +82,8 @@ public class MongoQueriesTest {
     DBObject query = queries.selectByProperties(TestSystemEntity.class, entity);
 
     Map<String, Object> expected = Maps.newHashMap();
-    expected.put(FieldMapper.propertyName(TestSystemEntity.class, "value1"), "v1");
-    expected.put(FieldMapper.propertyName(TestSystemEntity.class, "value2"), "v2");
+    expected.put(FieldMap.propertyName(TestSystemEntity.class, "value1"), "v1");
+    expected.put(FieldMap.propertyName(TestSystemEntity.class, "value2"), "v2");
 
     assertEquals(expected, query.toMap());
   }

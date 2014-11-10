@@ -47,12 +47,12 @@ public class EntityInducer {
 
   private static final Logger LOG = LoggerFactory.getLogger(EntityInducer.class);
 
-  private final FieldMapper fieldMapper;
+  private final FieldMap fieldMapper;
   private final ObjectMapper jsonMapper;
 
   @Inject
   public EntityInducer() {
-    fieldMapper = new FieldMapper();
+    fieldMapper = new FieldMap();
     jsonMapper = new ObjectMapper();
   }
 
