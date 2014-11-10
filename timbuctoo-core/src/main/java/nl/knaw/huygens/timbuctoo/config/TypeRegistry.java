@@ -196,7 +196,7 @@ public class TypeRegistry {
   // ---------------------------------------------------------------------------
 
   private <T extends SystemEntity> void registerSystemEntity(Class<T> type) throws ModelException {
-    new FieldMapper().validatePropertyNames(type);
+    FieldMapper.validatePropertyNames(type);
     systemEntities.add(type);
 
     String iname = TypeNames.getInternalName(type);
@@ -207,7 +207,7 @@ public class TypeRegistry {
   }
 
   private <T extends DomainEntity> void registerDomainEntity(Class<T> type) throws ModelException {
-    new FieldMapper().validatePropertyNames(type);
+    FieldMapper.validatePropertyNames(type);
     domainEntities.add(type);
 
     String iname = TypeNames.getInternalName(type);
@@ -226,7 +226,7 @@ public class TypeRegistry {
   }
 
   private <T extends Role> void registerRole(Class<T> role) throws ModelException {
-    new FieldMapper().validatePropertyNames(role);
+    FieldMapper.validatePropertyNames(role);
     String iname = TypeNames.getInternalName(role);
     if (role2iname.containsValue(iname)) {
       throw new ModelException("Duplicate internal type name %s", iname);

@@ -44,13 +44,6 @@ public class FieldMapperTest {
 
   private static final Class<? extends Entity> TYPE = MongoObjectMapperEntity.class;
 
-  private FieldMapper fieldMapper;
-
-  @Before
-  public void setup() {
-    fieldMapper = new FieldMapper();
-  }
-
   @Test
   public void testPropertyNameForEntity() {
     assertThat(propertyName(Entity.class, "_x"), equalTo("_x"));
@@ -125,7 +118,7 @@ public class FieldMapperTest {
 
   @Test(expected = ModelException.class)
   public void testInvalidProperty() throws ModelException {
-    fieldMapper.validatePropertyNames(ClassWithInvalidProperty.class);
+    FieldMapper.validatePropertyNames(ClassWithInvalidProperty.class);
   }
 
   static class ClassWithInvalidProperty {
@@ -142,7 +135,7 @@ public class FieldMapperTest {
 
   @Test
   public void testVariantProperty() throws ModelException {
-    fieldMapper.validatePropertyNames(ClassVariantProperty.class);
+    FieldMapper.validatePropertyNames(ClassVariantProperty.class);
   }
 
   static class ClassVariantProperty {
@@ -159,7 +152,7 @@ public class FieldMapperTest {
 
   @Test
   public void testInternalProperty() throws ModelException {
-    fieldMapper.validatePropertyNames(ClassWithInternalProperty.class);
+    FieldMapper.validatePropertyNames(ClassWithInternalProperty.class);
   }
 
   static class ClassWithInternalProperty {
@@ -178,7 +171,7 @@ public class FieldMapperTest {
 
   @Test
   public void testSharedProperty() throws ModelException {
-    fieldMapper.validatePropertyNames(ClassWithSharedProperty.class);
+    FieldMapper.validatePropertyNames(ClassWithSharedProperty.class);
   }
 
   static class ClassWithSharedProperty {
@@ -197,7 +190,7 @@ public class FieldMapperTest {
 
   @Test
   public void testVirtualProperty() throws ModelException {
-    fieldMapper.validatePropertyNames(ClassWithVirtualProperty.class);
+    FieldMapper.validatePropertyNames(ClassWithVirtualProperty.class);
   }
 
   static class ClassWithVirtualProperty {

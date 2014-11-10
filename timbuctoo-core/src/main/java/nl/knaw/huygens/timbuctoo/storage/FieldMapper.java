@@ -117,7 +117,7 @@ public class FieldMapper {
    * Allowed names are standard Java identifiers without an underscore
    * character, optionally prefixed with a "_", "^" or "@".
    */
-  public void validatePropertyNames(Class<?> type) throws ModelException {
+  public static void validatePropertyNames(Class<?> type) throws ModelException {
     Pattern pattern = Pattern.compile("[\\_\\^\\@]?[a-zA-Z][a-zA-Z0-9]*");
     for (Field field : type.getDeclaredFields()) {
       if (isProperty(field)) {
