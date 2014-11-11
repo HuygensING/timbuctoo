@@ -209,7 +209,25 @@ public class EntityInducerTest {
   }
 
   @Test
-  // A similar test failed with old inducer [#1909]
+  public void updateOfProjectMustNotAffectSharedProperties() throws Exception {
+    // tree to be updated
+    Map<String, Object> oldMap = newDomainEntityMap(ID, PID);
+    oldMap.put(propertyName(BaseDomainEntity.class, "^sharedValue"), "vs");
+    ObjectNode oldTree = mapper.valueToTree(oldMap);
+
+    // entity to update with
+    SubADomainEntity entity = new SubADomainEntity(ID, PID);
+    entity.setSharedValue("xvs");
+
+    // expected tree after update
+    Map<String, Object> newMap = newDomainEntityMap(ID, PID);
+    newMap.put(propertyName(BaseDomainEntity.class, "^sharedValue"), "vs");
+    ObjectNode newTree = mapper.valueToTree(newMap);
+
+    assertEquals(newTree, inducer.convertDomainEntityForUpdate(SubADomainEntity.class, entity, oldTree));
+  }
+
+  @Test
   public void updateOfPrimitiveMustNotAffectProject() throws Exception {
     // tree to be updated
     Map<String, Object> oldMap = newDomainEntityMap(ID, PID);
@@ -232,6 +250,26 @@ public class EntityInducerTest {
     newMap.put(propertyName(SubADomainEntity.class, "value1"), "v1");
     newMap.put(propertyName(SubADomainEntity.class, "value2"), "v2");
     newMap.put(propertyName(SubADomainEntity.class, "valuea"), "va");
+    ObjectNode newTree = mapper.valueToTree(newMap);
+
+    assertEquals(newTree, inducer.convertDomainEntityForUpdate(BaseDomainEntity.class, entity, oldTree));
+  }
+
+  @Test
+  public void updateOfPrimitiveMustAffectSharedProperties() throws Exception {
+    // tree to be updated
+    Map<String, Object> oldMap = newDomainEntityMap(ID, PID);
+    oldMap.put(propertyName(BaseDomainEntity.class, "^sharedValue"), "vs");
+    ObjectNode oldTree = mapper.valueToTree(oldMap);
+
+    // entity to update with
+    BaseDomainEntity entity = new BaseDomainEntity(ID);
+    entity.setPid(null); // ignored
+    entity.setSharedValue("xvs");
+
+    // expected tree after update
+    Map<String, Object> newMap = newDomainEntityMap(ID, PID);
+    newMap.put(propertyName(BaseDomainEntity.class, "^sharedValue"), "xvs");
     ObjectNode newTree = mapper.valueToTree(newMap);
 
     assertEquals(newTree, inducer.convertDomainEntityForUpdate(BaseDomainEntity.class, entity, oldTree));

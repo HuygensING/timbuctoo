@@ -33,7 +33,6 @@ import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.User;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import test.variation.model.MongoObjectMapperEntity;

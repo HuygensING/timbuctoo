@@ -97,13 +97,17 @@ public class EntityInducer {
 
   /**
    * Converts a domain entity to a Json tree and combines it with an existing Json tree.
-   * Note that this method only handles the variant that correspondeds with the specified type,
+   * Note that this method only handles the variant that correspondeds with {@code type},
    * either a primitive domain entity or a project domain entity.
    */
   public <T extends DomainEntity> JsonNode convertDomainEntityForUpdate(Class<T> type, T entity, ObjectNode tree) {
     Class<?> stopType = TypeRegistry.toBaseDomainEntity(type);
     FieldMap fieldMap = new FieldMap(type, type, stopType);
-    tree = updateJsonTree(tree, entity, fieldMap);
+    if (type == stopType) {
+      tree = updateJsonTree(tree, entity, fieldMap);
+    } else {
+      tree = updateJsonTree(tree, entity, fieldMap.removeSharedFields());
+    }
 
     for (Role role : entity.getRoles()) {
       Class<?> roleType = role.getClass();

@@ -28,6 +28,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
@@ -91,6 +92,18 @@ public class FieldMap extends HashMap<String, Field> {
         }
       }
     }
+  }
+
+  // this is a temporary solution: it is more efficient not to include
+  // the shared fields in the first place!
+  public FieldMap removeSharedFields() {
+    FieldMap map = new FieldMap();
+    for (Map.Entry<String, Field> entry : entrySet()) {
+      if (Character.isLetter(entry.getKey().charAt(0))) {
+        map.put(entry.getKey(), entry.getValue());
+      }
+    }
+    return map;
   }
 
   // ---------------------------------------------------------------------------
