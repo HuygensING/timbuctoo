@@ -95,23 +95,6 @@ public class FieldMap extends HashMap<String, Field> {
 
   // ---------------------------------------------------------------------------
 
-  /** Returns the name of a property from its parts. */
-  public static String propertyName(String prefix, String field) {
-    checkArgument(field != null && field.length() != 0);
-
-    StringBuilder builder = new StringBuilder();
-    if (Character.isLetter(field.charAt(0))) {
-      builder.append(prefix).append(SEPARATOR_CHAR);
-    }
-    builder.append(field);
-    return builder.toString();
-  }
-
-  /** Returns the name of a property from its parts. */
-  public static String propertyName(Class<?> type, String field) {
-    return propertyName(TypeNames.getInternalName(type), field);
-  }
-
   /**
    * Validates the property names in the class of the specified type
    * and throws a {@code ModelException} if an invalid name is found.
@@ -129,6 +112,23 @@ public class FieldMap extends HashMap<String, Field> {
         }
       }
     }
+  }
+
+  /** Returns the name of a property from its parts. */
+  public static String propertyName(String prefix, String field) {
+    checkArgument(field != null && field.length() != 0);
+
+    StringBuilder builder = new StringBuilder();
+    if (Character.isLetter(field.charAt(0))) {
+      builder.append(prefix).append(SEPARATOR_CHAR);
+    }
+    builder.append(field);
+    return builder.toString();
+  }
+
+  /** Returns the name of a property from its parts. */
+  public static String propertyName(Class<?> type, String field) {
+    return propertyName(TypeNames.getInternalName(type), field);
   }
 
   /**

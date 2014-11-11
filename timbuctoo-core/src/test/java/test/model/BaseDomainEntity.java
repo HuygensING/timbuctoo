@@ -25,6 +25,8 @@ package test.model;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * A domain entity for test purposes, in particular for handling cases
  * where properties are set and modified. The type of these properties
@@ -32,6 +34,9 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
  */
 @IDPrefix("TDOM")
 public class BaseDomainEntity extends DomainEntity {
+
+  @JsonProperty("^sharedValue")
+  private String sharedValue;
 
   private String value1;
   private String value2;
@@ -54,20 +59,28 @@ public class BaseDomainEntity extends DomainEntity {
     return null;
   }
 
+  public String getSharedValue() {
+    return sharedValue;
+  }
+
+  public void setSharedValue(String value) {
+    sharedValue = value;
+  }
+
   public String getValue1() {
     return value1;
   }
 
-  public void setValue1(String value1) {
-    this.value1 = value1;
+  public void setValue1(String value) {
+    value1 = value;
   }
 
   public String getValue2() {
     return value2;
   }
 
-  public void setValue2(String value2) {
-    this.value2 = value2;
+  public void setValue2(String value) {
+    value2 = value;
   }
 
 }
