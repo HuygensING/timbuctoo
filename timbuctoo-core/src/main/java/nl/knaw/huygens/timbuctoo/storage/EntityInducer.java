@@ -58,7 +58,7 @@ public class EntityInducer {
   public <T extends SystemEntity> JsonNode convertSystemEntityForAdd(Class<T> type, T entity) {
     checkArgument(BusinessRules.allowSystemEntityAdd(type));
 
-    FieldMap fieldMap = new FieldMap(type, type, Entity.class);
+    FieldMap fieldMap = new FieldMap(type, Entity.class);
     return createJsonTree(entity, fieldMap);
   }
 
@@ -66,7 +66,7 @@ public class EntityInducer {
    * Converts a system entity to a Json tree and combines it with an existing Json tree.
    */
   public <T extends SystemEntity> JsonNode convertSystemEntityForUpdate(Class<T> type, T entity, ObjectNode tree) {
-    FieldMap fieldMap = new FieldMap(type, type);
+    FieldMap fieldMap = new FieldMap(type);
     return updateJsonTree(tree, entity, fieldMap);
   }
 
@@ -76,14 +76,14 @@ public class EntityInducer {
   public <T extends DomainEntity> JsonNode convertDomainEntityForAdd(Class<T> type, T entity) {
     checkArgument(BusinessRules.allowDomainEntityAdd(type));
 
-    FieldMap fieldMap = new FieldMap(type, type, Entity.class);
+    FieldMap fieldMap = new FieldMap(type, Entity.class);
     fieldMap.addFields(type.getSuperclass(), type.getSuperclass());
     ObjectNode tree = createJsonTree(entity, fieldMap);
 
     for (Role role : entity.getRoles()) {
       Class<? extends Role> roleType = role.getClass();
       if (BusinessRules.allowRoleAdd(roleType)) {
-        fieldMap = new FieldMap(roleType, roleType, Role.class);
+        fieldMap = new FieldMap(roleType, Role.class);
         fieldMap.addFields(roleType.getSuperclass(), roleType.getSuperclass());
         tree = updateJsonTree(tree, role, fieldMap);
       } else {
@@ -102,7 +102,7 @@ public class EntityInducer {
    */
   public <T extends DomainEntity> JsonNode convertDomainEntityForUpdate(Class<T> type, T entity, ObjectNode tree) {
     Class<?> stopType = TypeRegistry.toBaseDomainEntity(type);
-    FieldMap fieldMap = new FieldMap(type, type, stopType);
+    FieldMap fieldMap = new FieldMap(type, stopType);
     if (type == stopType) {
       tree = updateJsonTree(tree, entity, fieldMap);
     } else {
@@ -112,7 +112,7 @@ public class EntityInducer {
     for (Role role : entity.getRoles()) {
       Class<?> roleType = role.getClass();
       Class<?> baseType = (roleType.getSuperclass() == Role.class) ? roleType : roleType.getSuperclass();
-      fieldMap = new FieldMap(roleType, roleType, baseType);
+      fieldMap = new FieldMap(roleType, baseType);
       tree = updateJsonTree(tree, role, fieldMap);
     }
 
@@ -120,12 +120,12 @@ public class EntityInducer {
   }
 
   public JsonNode adminSystemEntity(SystemEntity entity, ObjectNode tree) {
-    FieldMap fieldMap = new FieldMap(SystemEntity.class, SystemEntity.class, Entity.class);
+    FieldMap fieldMap = new FieldMap(SystemEntity.class, Entity.class);
     return updateJsonTree(tree, entity, fieldMap);
   }
 
   public JsonNode adminDomainEntity(DomainEntity entity, ObjectNode tree) {
-    FieldMap fieldMap = new FieldMap(DomainEntity.class, DomainEntity.class, Entity.class);
+    FieldMap fieldMap = new FieldMap(DomainEntity.class, Entity.class);
     return updateJsonTree(tree, entity, fieldMap);
   }
 

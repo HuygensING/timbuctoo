@@ -66,7 +66,7 @@ public class PropertyMapTest {
 
   @Before
   public void setup() {
-    fieldMap = new FieldMap(TYPE, TYPE);
+    fieldMap = new FieldMap(TYPE);
   }
 
   private MongoObjectMapperEntity createMongoObjectMapperEntity(String name, String testValue1, String testValue2, String annotatedProperty, String propWithAnnotatedAccessors) {

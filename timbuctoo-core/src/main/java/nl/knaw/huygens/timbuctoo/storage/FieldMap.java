@@ -59,19 +59,19 @@ public class FieldMap extends HashMap<String, Field> {
   public FieldMap() {}
 
   /**
-   * Constructs a field map for the specified view type with the specified prefix.
+   * Constructs a field map for the specified {@code type}.
    */
-  public FieldMap(Class<?> prefixType, Class<?> viewType) {
-    addFields(prefixType, viewType);
+  public FieldMap(Class<?> type) {
+    addFields(type, type);
   }
 
   /**
-   * Constructs a composite field map for all types starting with viewType up to and
-   * including the stoptype. To get a non-empty map stopType must be a superclass
-   * of viewType.
+   * Constructs a composite field map for all types starting with {@code type}
+   * up to and including {@code stopType}.
+   * To get a non-empty map {@code stopType} must be a superclass of {@code type}.
    */
-  public FieldMap(Class<?> prefixType, Class<?> viewType, Class<?> stopType) {
-    Class<?> type = viewType;
+  public FieldMap(Class<?> type, Class<?> stopType) {
+    Class<?> prefixType = type;
     while (stopType.isAssignableFrom(type)) {
       addFields(prefixType, type);
       type = type.getSuperclass();
@@ -79,14 +79,14 @@ public class FieldMap extends HashMap<String, Field> {
   }
 
   /**
-   * Adds declared fields of the specified view type to the field map,
+   * Adds declared fields of the specified {@code type} to the field map,
    * using as keys the corresponding property names.
    */
-  public void addFields(Class<?> prefixType, Class<?> viewType) {
+  public void addFields(Class<?> prefixType, Class<?> type) {
     String prefix = TypeNames.getInternalName(prefixType);
-    for (Field field : viewType.getDeclaredFields()) {
+    for (Field field : type.getDeclaredFields()) {
       if (isProperty(field)) {
-        String fieldName = getFieldName(viewType, field);
+        String fieldName = getFieldName(type, field);
         if (!isVirtualProperty(fieldName)) {
           put(propertyName(prefix, fieldName), field);
         }

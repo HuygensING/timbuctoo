@@ -95,7 +95,7 @@ public class MongoQueries {
    * Generates a query based on the non-null values of an entity.
    */
   public <T extends Entity> DBObject selectByProperties(Class<? super T> type, T entity) {
-    FieldMap fieldMap = new FieldMap(type, type, type);
+    FieldMap fieldMap = new FieldMap(type);
     PropertyMap properties = new PropertyMap(entity, fieldMap);
     return new BasicDBObject(properties);
   }
