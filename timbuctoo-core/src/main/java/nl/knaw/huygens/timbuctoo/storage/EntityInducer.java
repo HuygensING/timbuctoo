@@ -77,14 +77,17 @@ public class EntityInducer {
     checkArgument(BusinessRules.allowDomainEntityAdd(type));
 
     FieldMap fieldMap = new FieldMap(type, Entity.class);
-    fieldMap.addFields(type.getSuperclass(), type.getSuperclass());
     ObjectNode tree = createJsonTree(entity, fieldMap);
+
+    fieldMap = new FieldMap(type.getSuperclass());
+    tree = updateJsonTree(tree, entity, fieldMap);
 
     for (Role role : entity.getRoles()) {
       Class<? extends Role> roleType = role.getClass();
       if (BusinessRules.allowRoleAdd(roleType)) {
         fieldMap = new FieldMap(roleType, Role.class);
-        fieldMap.addFields(roleType.getSuperclass(), roleType.getSuperclass());
+        tree = updateJsonTree(tree, role, fieldMap);
+        fieldMap = new FieldMap(roleType.getSuperclass());
         tree = updateJsonTree(tree, role, fieldMap);
       } else {
         LOG.error("Not allowed to add {}", roleType);

@@ -75,11 +75,11 @@ public class EntityReducer {
   public <T extends Entity> T reduceVariation(Class<T> type, JsonNode tree) throws StorageException {
     checkNotNull(tree);
     if (TypeRegistry.isSystemEntity(type)) {
-      return reduceObject(tree, null, type, type, Entity.class);
+      return reduceObject(tree, null, type, type);
     } else {
       Set<String> prefixes = getPrefixes(tree);
       Class<?> viewType = variationExists(tree, type) ? type : type.getSuperclass();
-      return reduceObject(tree, prefixes, type, viewType, Entity.class);
+      return reduceObject(tree, prefixes, type, viewType);
     }
   }
 
@@ -100,7 +100,7 @@ public class EntityReducer {
         String variation = node.textValue();
         Class<? extends DomainEntity> varType = typeRegistry.getDomainEntityType(variation);
         if (varType != null && type.isAssignableFrom(varType)) {
-          T entity = type.cast(reduceObject(tree, prefixes, varType, varType, Entity.class));
+          T entity = type.cast(reduceObject(tree, prefixes, varType, varType));
           entities.add(entity);
         } else {
           LOG.error("Not a variation of {}: {}", type, variation);
@@ -168,10 +168,11 @@ public class EntityReducer {
    * this method returns a {@code BaseLanguage} entity with values of the {@code Language}
    * variation and default values of the fields that are defined in {@code BaseLanguage}.
    */
-  private <T> T reduceObject(JsonNode tree, Set<String> prefixes, Class<T> type, Class<?> viewType, Class<?> stopType) throws StorageException {
+  private <T> T reduceObject(JsonNode tree, Set<String> prefixes, Class<T> type, Class<?> viewType) throws StorageException {
     try {
       T object = newInstance(type);
 
+      Class<?> stopType = TypeRegistry.isEntity(viewType) ? Entity.class : Role.class;
       FieldMap fieldMap = new FieldMap(viewType, stopType);
       for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
         String key = entry.getKey();
@@ -190,7 +191,7 @@ public class EntityReducer {
         DomainEntity entity = DomainEntity.class.cast(object);
         for (Class<? extends Role> role : typeRegistry.getAllowedRolesFor(type)) {
           if (prefixes.contains(TypeNames.getInternalName(role))) {
-            entity.addRole(reduceObject(tree, prefixes, role, role, Role.class));
+            entity.addRole(reduceObject(tree, prefixes, role, role));
           }
         }
       }

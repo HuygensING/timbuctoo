@@ -82,7 +82,7 @@ public class FieldMap extends HashMap<String, Field> {
    * Adds declared fields of the specified {@code type} to the field map,
    * using as keys the corresponding property names.
    */
-  public void addFields(Class<?> prefixType, Class<?> type) {
+  private void addFields(Class<?> prefixType, Class<?> type) {
     String prefix = TypeNames.getInternalName(prefixType);
     for (Field field : type.getDeclaredFields()) {
       if (isProperty(field)) {
