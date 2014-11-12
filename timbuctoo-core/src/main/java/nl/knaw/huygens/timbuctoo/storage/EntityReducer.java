@@ -221,7 +221,6 @@ public class EntityReducer {
    */
   private void setValue(Object object, Field field, Object value) {
     try {
-      field.setAccessible(true);
       field.set(object, value);
     } catch (IllegalArgumentException e) {
       throw new RuntimeException(e);

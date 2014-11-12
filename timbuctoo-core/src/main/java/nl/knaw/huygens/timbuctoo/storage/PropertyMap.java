@@ -46,7 +46,6 @@ public class PropertyMap extends TreeMap<String, Object> {
       for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
         try {
           Field field = entry.getValue();
-          field.setAccessible(true);
           Object value = convertToSerializable(field.getType(), field.get(object));
           if (value != null) {
             put(entry.getKey(), value);

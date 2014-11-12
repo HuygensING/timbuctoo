@@ -45,17 +45,21 @@ import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 @JsonTypeIdResolver(value = TimbuctooTypeIdResolver.class)
 public abstract class Entity {
 
-  public static final String ID = "_id";
-
   @NotNull
   @Pattern(regexp = Paths.ID_REGEX)
+  @JsonProperty("_id")
   private String id;
 
   /** Revison number; also used for integrity of updates. */
+  @JsonProperty("^rev")
   private int rev;
+
   /** Provides info about creation. */
+  @JsonProperty("^created")
   private Change created;
+
   /** Provides info about last update. */
+  @JsonProperty("^modified")
   private Change modified;
 
   /**
@@ -65,46 +69,38 @@ public abstract class Entity {
   @IndexAnnotation(fieldName = "desc")
   public abstract String getDisplayName();
 
-  @JsonProperty(ID)
   @IndexAnnotation(fieldName = "id")
   public String getId() {
     return id;
   }
 
-  @JsonProperty(ID)
   public void setId(String id) {
     this.id = id;
   }
 
-  @JsonProperty("^rev")
   @JsonView(JsonViews.NoExportView.class)
   public int getRev() {
     return rev;
   }
 
-  @JsonProperty("^rev")
   public void setRev(int rev) {
     this.rev = rev;
   }
 
-  @JsonProperty("^created")
   @JsonView(JsonViews.NoExportView.class)
   public Change getCreated() {
     return created;
   }
 
-  @JsonProperty("^created")
   public void setCreated(Change created) {
     this.created = created;
   }
 
-  @JsonProperty("^modified")
   @JsonView(JsonViews.NoExportView.class)
   public Change getModified() {
     return modified;
   }
 
-  @JsonProperty("^modified")
   public void setModified(Change modified) {
     this.modified = modified;
   }
@@ -112,13 +108,11 @@ public abstract class Entity {
   /**
    * Normalize this entity; should be called before validation.
    */
-  public void normalize(Repository repository) {
-  }
+  public void normalize(Repository repository) {}
 
   /**
    * Validation targeted at dependencies between entities.
    */
-  public void validateForAdd(Repository repository) throws ValidationException {
-  }
+  public void validateForAdd(Repository repository) throws ValidationException {}
 
 }

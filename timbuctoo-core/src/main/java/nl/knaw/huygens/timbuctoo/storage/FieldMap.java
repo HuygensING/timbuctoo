@@ -23,7 +23,9 @@ package nl.knaw.huygens.timbuctoo.storage;
  */
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
 
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -31,7 +33,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -62,7 +63,7 @@ public class FieldMap extends HashMap<String, Field> {
    * Constructs a field map for the specified {@code type}.
    */
   public FieldMap(Class<?> type) {
-    addFields(type, type);
+    addFields(type, getInternalName(type));
   }
 
   /**
@@ -71,9 +72,9 @@ public class FieldMap extends HashMap<String, Field> {
    * To get a non-empty map {@code stopType} must be a superclass of {@code type}.
    */
   public FieldMap(Class<?> type, Class<?> stopType) {
-    Class<?> prefixType = type;
+    String prefix = getInternalName(type);
     while (stopType.isAssignableFrom(type)) {
-      addFields(prefixType, type);
+      addFields(type, prefix);
       type = type.getSuperclass();
     }
   }
@@ -81,10 +82,14 @@ public class FieldMap extends HashMap<String, Field> {
   /**
    * Adds declared fields of the specified {@code type} to the field map,
    * using as keys the corresponding property names.
+   * For efficiency all fields are made accessible here,
+   * so there's no need to do this when they are used.
    */
-  private void addFields(Class<?> prefixType, Class<?> type) {
-    String prefix = TypeNames.getInternalName(prefixType);
-    for (Field field : type.getDeclaredFields()) {
+  private void addFields(Class<?> type, String prefix) {
+    Field[] fields = type.getDeclaredFields();
+    AccessibleObject.setAccessible(fields, true);
+
+    for (Field field : fields) {
       if (isProperty(field)) {
         String fieldName = getFieldName(type, field);
         if (!isVirtualProperty(fieldName)) {
@@ -141,7 +146,7 @@ public class FieldMap extends HashMap<String, Field> {
 
   /** Returns the name of a property from its parts. */
   public static String propertyName(Class<?> type, String field) {
-    return propertyName(TypeNames.getInternalName(type), field);
+    return propertyName(getInternalName(type), field);
   }
 
   /**
