@@ -34,7 +34,6 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
@@ -172,8 +171,7 @@ public class EntityReducer {
     try {
       T object = newInstance(type);
 
-      Class<?> stopType = TypeRegistry.isEntity(viewType) ? Entity.class : Role.class;
-      FieldMap fieldMap = new FieldMap(viewType, stopType);
+      FieldMap fieldMap = new FieldMap(viewType, Entity.class);
       for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
         String key = entry.getKey();
         JsonNode node = tree.findValue(key);
@@ -184,15 +182,6 @@ public class EntityReducer {
           LOG.debug("Assigned: {} := {}", field.getName(), value);
         } else {
           LOG.debug("No value for property {}", key);
-        }
-      }
-
-      if (TypeRegistry.isDomainEntity(type)) {
-        DomainEntity entity = DomainEntity.class.cast(object);
-        for (Class<? extends Role> role : typeRegistry.getAllowedRolesFor(type)) {
-          if (prefixes.contains(TypeNames.getInternalName(role))) {
-            entity.addRole(reduceObject(tree, prefixes, role, role));
-          }
         }
       }
 

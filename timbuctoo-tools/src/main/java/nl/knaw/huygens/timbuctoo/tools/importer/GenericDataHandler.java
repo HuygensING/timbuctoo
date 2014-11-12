@@ -32,7 +32,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
@@ -51,11 +50,11 @@ public abstract class GenericDataHandler {
 
   private Map<String, List<String>> objectMapping;
 
-  public <T extends DomainEntity> void importData(String configFile, Class<T> type, List<Class<? extends Role>> allowedRoles, Change change) throws Exception {
+  public <T extends DomainEntity> void importData(String configFile, Class<T> type, Change change) throws Exception {
     System.out.printf("%n=== Import documents of type '%s'%n", type.getSimpleName());
 
     readMapping(configFile);
-    GenericResultSetConverter<T> converter = new GenericResultSetConverter<T>(type, objectMapping, allowedRoles);
+    GenericResultSetConverter<T> converter = new GenericResultSetConverter<T>(type, objectMapping);
     SQLImporter importer = new SQLImporter(connectionString, userName, password);
     List<T> objects = importer.executeQuery(query, converter);
 

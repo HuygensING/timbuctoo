@@ -57,8 +57,6 @@ public class ProjectADomainEntity extends BaseDomainEntity {
     sb.append(generalTestDocValue);
     sb.append("\nid: ");
     sb.append(getId());
-    sb.append("\nroles: ");
-    sb.append(getRoles());
     sb.append("\npid: ");
     sb.append(getPid());
     sb.append("\nprojectAGeneralTestDocValue: ");

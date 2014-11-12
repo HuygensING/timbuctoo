@@ -64,9 +64,6 @@ public class TimbuctooTypeIdResolver implements TypeIdResolver {
     if (token == null) {
       token = typeRegistry.getDomainEntityType(id);
     }
-    if (token == null) {
-      token = typeRegistry.getRoleForIName(id);
-    }
     return TypeFactory.defaultInstance().uncheckedSimpleType(token);
   }
 

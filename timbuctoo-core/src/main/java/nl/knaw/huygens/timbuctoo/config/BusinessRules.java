@@ -23,7 +23,6 @@ package nl.knaw.huygens.timbuctoo.config;
  */
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 /**
@@ -51,15 +50,6 @@ public class BusinessRules {
   }
 
   /**
-   * Timbuctoo only accepts primitive roles,
-   * immediate subclasses of {@code Role},
-   * and immediate subclasses of primitive roles.
-   */
-  public static boolean isValidRole(Class<?> cls) {
-    return superclass(cls, Role.class, 2);
-  }
-
-  /**
    * Can a system entity with the specfied type be added to the data store.
    */
   public static boolean allowSystemEntityAdd(Class<?> type) {
@@ -71,13 +61,6 @@ public class BusinessRules {
    */
   public static boolean allowDomainEntityAdd(Class<?> type) {
     return type != null && type.getSuperclass() != null && type.getSuperclass().getSuperclass() == DomainEntity.class;
-  }
-
-  /**
-   * Can a role with the specfied type be added, as part of a domain entity, to the data store.
-   */
-  public static boolean allowRoleAdd(Class<?> type) {
-    return type != null && type.getSuperclass() != null && type.getSuperclass().getSuperclass() == Role.class;
   }
 
   // -------------------------------------------------------------------

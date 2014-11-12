@@ -30,19 +30,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import javax.management.relation.Role;
+
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 
 /**
@@ -51,16 +50,14 @@ import com.google.common.collect.Lists;
  */
 public class GenericResultSetConverter<T extends DomainEntity> {
 
-  private Map<String, List<String>> propertyMapping;
-  private Class<T> type;
-  private List<Class<? extends Role>> allowedRoles;
+  private final Map<String, List<String>> propertyMapping;
+  private final Class<T> type;
 
-  public GenericResultSetConverter(Class<T> type, Map<String, List<String>> propertyMapping, List<Class<? extends Role>> allowedRoles) {
+  public GenericResultSetConverter(Class<T> type, Map<String, List<String>> propertyMapping) {
     checkNotNull(propertyMapping);
     checkNotNull(type);
     this.propertyMapping = propertyMapping;
     this.type = type;
-    this.allowedRoles = allowedRoles;
   }
 
   public List<T> convert(ResultSet resultSet) throws SQLException, InstantiationException, IllegalAccessException, NoSuchMethodException, SecurityException, IllegalArgumentException,
@@ -77,38 +74,6 @@ public class GenericResultSetConverter<T extends DomainEntity> {
     }
 
     return returnValue;
-  }
-
-  /**
-   * This method converts the {@code resultSet} into {@code List} of {@code Roles}. 
-   * @param resultSet the {@code ResultSet} to get the data from.
-   * @return a {@code List} of {@code Roles}
-   * @throws IllegalArgumentException
-   * @throws SQLException
-   * @throws InstantiationException
-   * @throws IllegalAccessException
-   */
-  private List<Role> getRoles(ResultSet resultSet) throws IllegalArgumentException, SQLException, InstantiationException, IllegalAccessException {
-    List<Role> roles = Lists.newArrayList();
-
-    if (allowedRoles != null) {
-      for (final Class<? extends Role> roleClass : allowedRoles) {
-
-        Predicate<String> startsWith = new Predicate<String>() {
-          @Override
-          public boolean apply(String input) {
-            return input.startsWith(roleClass.getSimpleName());
-          }
-        };
-
-        if (contains(propertyMapping.keySet(), startsWith)) {
-          roles.add(createInstance(roleClass, resultSet));
-        }
-
-      }
-    }
-
-    return roles;
   }
 
   /**
@@ -129,15 +94,9 @@ public class GenericResultSetConverter<T extends DomainEntity> {
 
     for (Field field : fields) {
       String fieldName = getFieldName(type, field);
-
-      if ("roles".equals(fieldName) && allowedRoles != null) {
+      if (propertyMapping.containsKey(fieldName)) {
         field.setAccessible(true);
-        field.set(instance, getRoles(resultSet));
-      } else if (propertyMapping.containsKey(fieldName)) {
-        field.setAccessible(true);
-
         Object fieldValue = getFieldValue(resultSet, propertyMapping.get(fieldName), field.getType());
-
         field.set(instance, fieldValue);
       }
     }
@@ -151,16 +110,6 @@ public class GenericResultSetConverter<T extends DomainEntity> {
       return type.getSimpleName() + "." + field.getName();
     }
     return field.getName();
-  }
-
-  private <U> boolean contains(Collection<U> set, Predicate<U> predicate) {
-    for (U u : set) {
-      if (predicate.apply(u)) {
-        return true;
-      }
-    }
-
-    return false;
   }
 
   private <U> void getAllFields(List<Field> fieldList, Class<U> type) {

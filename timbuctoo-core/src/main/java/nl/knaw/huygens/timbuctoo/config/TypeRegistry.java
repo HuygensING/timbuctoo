@@ -26,7 +26,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,8 +33,6 @@ import java.util.Set;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
-import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.storage.FieldMap;
 import nl.knaw.huygens.timbuctoo.util.ClassComparator;
@@ -44,7 +41,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -103,11 +99,6 @@ public class TypeRegistry {
 
   private final Map<String, String> iname2xname = Maps.newHashMap();
 
-  private final Map<Class<? extends Role>, String> role2iname = Maps.newHashMap();
-  private final Map<String, Class<? extends Role>> iname2role = Maps.newHashMap();
-
-  private final Map<Class<? extends Entity>, Set<Class<? extends Role>>> allowedRoles = Maps.newHashMap();
-
   private TypeRegistry() {}
 
   // This is a shared resource, so changes must be synchronized
@@ -130,9 +121,6 @@ public class TypeRegistry {
     iname2DomainType.clear();
     xname2type.clear();
     iname2xname.clear();
-    role2iname.clear();
-    iname2role.clear();
-    allowedRoles.clear();
   }
 
   private ClassPath getClassPath() {
@@ -144,7 +132,6 @@ public class TypeRegistry {
   }
 
   private void registerPackage(ClassPath classPath, String packageName) throws ModelException {
-    Set<Class<? extends Role>> roles = Sets.newHashSet();
     for (ClassInfo info : getClassInfoSet(classPath, packageName)) {
       Class<?> type = info.load();
       if (shouldNotRegister(type)) {
@@ -162,20 +149,9 @@ public class TypeRegistry {
         if (BusinessRules.isValidDomainEntity(type)) {
           Class<? extends DomainEntity> entityType = toDomainEntity(type);
           registerDomainEntity(entityType);
-          if (!Relation.class.isAssignableFrom(entityType)) {
-            allowedRoles.put(entityType, roles);
-          }
           LOG.debug("Registered domain entity {}", type.getName());
         } else {
           throw new ModelException("%s is not a direct sub class of DomainEntity or a sub class of a direct sub class of DomainEntity.", type.getSimpleName());
-        }
-      } else if (isRole(type)) {
-        if (BusinessRules.isValidRole(type)) {
-          Class<? extends Role> roleType = toRole(type);
-          registerRole(roleType);
-          roles.add(roleType);
-        } else {
-          throw new ModelException("%s is not a direct sub class of Role or a sub class of a direct sub class of Role.", type.getSimpleName());
         }
       }
     }
@@ -223,16 +199,6 @@ public class TypeRegistry {
     xname2type.put(xname, type);
 
     iname2xname.put(iname, xname);
-  }
-
-  private <T extends Role> void registerRole(Class<T> role) throws ModelException {
-    FieldMap.validatePropertyNames(role);
-    String iname = TypeNames.getInternalName(role);
-    if (role2iname.containsValue(iname)) {
-      throw new ModelException("Duplicate internal type name %s", iname);
-    }
-    role2iname.put(role, iname);
-    iname2role.put(iname, role);
   }
 
   // --- public api ------------------------------------------------------------
@@ -288,14 +254,6 @@ public class TypeRegistry {
   }
 
   /**
-   * Returns the type token for the specified internal role name,
-   * or {@code null} if there is no such token.
-   */
-  public Class<? extends Role> getRoleForIName(String iname) {
-    return iname2role.get(iname);
-  }
-
-  /**
    * Returns the type token for the specified external type name,
    * or {@code null} if there is no such token.
    */
@@ -309,18 +267,6 @@ public class TypeRegistry {
    */
   public String getXNameForIName(String iname) {
     return iname2xname.get(iname);
-  }
-
-  /**
-   * Returns the types of the roles that may be assigned to an entity.
-   */
-  public Set<Class<? extends Role>> getAllowedRolesFor(Class<?> type) {
-    Set<Class<? extends Role>> roles = allowedRoles.get(type);
-    if (roles != null) {
-      return roles;
-    } else {
-      return Collections.emptySet();
-    }
   }
 
   // --- static utilities ------------------------------------------------------
@@ -339,10 +285,6 @@ public class TypeRegistry {
 
   public static boolean isPrimitiveDomainEntity(Class<?> cls) {
     return cls != null && cls.getSuperclass() == DomainEntity.class;
-  }
-
-  public static boolean isRole(Class<?> cls) {
-    return cls == null ? false : Role.class.isAssignableFrom(cls);
   }
 
   /**
@@ -388,16 +330,6 @@ public class TypeRegistry {
       type = (Class<? extends Entity>) type.getSuperclass();
     }
     return lastType;
-  }
-
-  @VisibleForTesting
-  static <T extends Role> Class<T> toRole(Class<?> type) {
-    if (isRole(type)) {
-      @SuppressWarnings("unchecked")
-      Class<T> result = (Class<T>) type;
-      return result;
-    }
-    throw new ClassCastException(type.getName() + " is not a role");
   }
 
 }

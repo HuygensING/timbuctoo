@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 
-import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
 import org.slf4j.Logger;
@@ -70,15 +69,10 @@ public class PropertyMap extends TreeMap<String, Object> {
       Collection<?> collection = Collection.class.cast(value);
       if (collection.isEmpty()) {
         return null;
-      } else {
-        // Roles are explicitly handled by inducer and reducer
-        Class<?> elementType = collection.iterator().next().getClass();
-        return (Role.class.isAssignableFrom(elementType)) ? null : value;
       }
-    } else {
-      // Assume Jackson can handle it
-      return value;
     }
+    // Assume Jackson can handle it
+    return value;
   }
 
 }

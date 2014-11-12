@@ -30,11 +30,7 @@ import nl.knaw.huygens.timbuctoo.config.BusinessRules;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,8 +38,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 
 public class EntityInducer {
-
-  private static final Logger LOG = LoggerFactory.getLogger(EntityInducer.class);
 
   private final ObjectMapper jsonMapper;
 
@@ -82,19 +76,6 @@ public class EntityInducer {
     fieldMap = new FieldMap(type.getSuperclass());
     tree = updateJsonTree(tree, entity, fieldMap);
 
-    for (Role role : entity.getRoles()) {
-      Class<? extends Role> roleType = role.getClass();
-      if (BusinessRules.allowRoleAdd(roleType)) {
-        fieldMap = new FieldMap(roleType, Role.class);
-        tree = updateJsonTree(tree, role, fieldMap);
-        fieldMap = new FieldMap(roleType.getSuperclass());
-        tree = updateJsonTree(tree, role, fieldMap);
-      } else {
-        LOG.error("Not allowed to add {}", roleType);
-        throw new IllegalStateException("Not allowed to add role");
-      }
-    }
-
     return tree;
   }
 
@@ -107,19 +88,10 @@ public class EntityInducer {
     Class<?> stopType = TypeRegistry.toBaseDomainEntity(type);
     FieldMap fieldMap = new FieldMap(type, stopType);
     if (type == stopType) {
-      tree = updateJsonTree(tree, entity, fieldMap);
+      return updateJsonTree(tree, entity, fieldMap);
     } else {
-      tree = updateJsonTree(tree, entity, fieldMap.removeSharedFields());
+      return updateJsonTree(tree, entity, fieldMap.removeSharedFields());
     }
-
-    for (Role role : entity.getRoles()) {
-      Class<?> roleType = role.getClass();
-      Class<?> baseType = (roleType.getSuperclass() == Role.class) ? roleType : roleType.getSuperclass();
-      fieldMap = new FieldMap(roleType, baseType);
-      tree = updateJsonTree(tree, role, fieldMap);
-    }
-
-    return tree;
   }
 
   public JsonNode adminSystemEntity(SystemEntity entity, ObjectNode tree) {

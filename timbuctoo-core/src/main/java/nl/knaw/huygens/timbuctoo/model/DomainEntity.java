@@ -22,8 +22,6 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,7 +47,6 @@ public abstract class DomainEntity extends Entity {
 
   public static final String PID = "^pid";
   public static final String DELETED = "^deleted";
-  public static final String ROLES = "^roles";
   public static final String VARIATIONS = "^variations";
 
   private String pid; // the persistent identifier.
@@ -58,7 +55,6 @@ public abstract class DomainEntity extends Entity {
   private final Map<String, String> properties = Maps.newHashMap();
   private final Map<String, Set<RelationRef>> relations = Maps.newHashMap();
   private List<String> variations = Lists.newArrayList();
-  private List<Role> roles = Lists.newArrayList();
 
   public DomainEntity() {
     relationCount = 0;
@@ -199,20 +195,6 @@ public abstract class DomainEntity extends Entity {
       refs.add(new Reference(variation, getId()));
     }
     return refs;
-  }
-
-  @JsonProperty(ROLES)
-  public List<Role> getRoles() {
-    return roles;
-  }
-
-  @JsonProperty(ROLES)
-  public void setRoles(List<Role> roles) {
-    this.roles = checkNotNull(roles);
-  }
-
-  public void addRole(Role role) {
-    roles.add(role);
   }
 
   @Override

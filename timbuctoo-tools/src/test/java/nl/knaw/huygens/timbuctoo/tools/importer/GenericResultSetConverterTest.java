@@ -33,9 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import junit.framework.Assert;
-import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
-import nl.knaw.huygens.timbuctoo.tools.importer.GenericResultSetConverter;
 
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -65,7 +63,7 @@ public class GenericResultSetConverterTest {
 
     Class<EntityWithStringField> type = EntityWithStringField.class;
 
-    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(type, mapping, null);
+    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(type, mapping);
 
     Map<String, String> resultSetMap = new HashMap<String, String>();
     resultSetMap.put("test", "testValue");
@@ -86,7 +84,7 @@ public class GenericResultSetConverterTest {
 
     Class<EntityWithStringField> type = EntityWithStringField.class;
 
-    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(type, mapping, null);
+    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(type, mapping);
 
     Map<String, String> resultSetMap = new HashMap<String, String>();
     resultSetMap.put("test1", "testValue1");
@@ -109,7 +107,7 @@ public class GenericResultSetConverterTest {
 
     Class<EntityWithDatableField> type = EntityWithDatableField.class;
 
-    GenericResultSetConverter<EntityWithDatableField> instance = new GenericResultSetConverter<EntityWithDatableField>(type, mapping, null);
+    GenericResultSetConverter<EntityWithDatableField> instance = new GenericResultSetConverter<EntityWithDatableField>(type, mapping);
 
     String databableValue = "20130305";
     Map<String, String> resultSetMap = new HashMap<String, String>();
@@ -134,7 +132,7 @@ public class GenericResultSetConverterTest {
 
     Class<EntityWithStringField> type = EntityWithStringField.class;
 
-    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(type, mapping, null);
+    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(type, mapping);
 
     Map<String, String> resultSetMap = new HashMap<String, String>();
     resultSetMap.put("test", "testValue");
@@ -154,7 +152,7 @@ public class GenericResultSetConverterTest {
 
     Class<EntityWithStringField> type = EntityWithStringField.class;
 
-    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(type, mapping, null);
+    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(type, mapping);
 
     Map<String, String> resultSetMap = new HashMap<String, String>();
     resultSetMap.put("test", "testValue");
@@ -176,7 +174,7 @@ public class GenericResultSetConverterTest {
 
     Class<EntityWithStringField> type = EntityWithStringField.class;
 
-    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(type, mapping, null);
+    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(type, mapping);
 
     Map<String, String> resultSetMap = new HashMap<String, String>();
     resultSetMap.put("test", "testValue");
@@ -196,7 +194,7 @@ public class GenericResultSetConverterTest {
 
     Class<SubEntityExtension> type = SubEntityExtension.class;
 
-    GenericResultSetConverter<SubEntityExtension> instance = new GenericResultSetConverter<SubEntityExtension>(type, mapping, null);
+    GenericResultSetConverter<SubEntityExtension> instance = new GenericResultSetConverter<SubEntityExtension>(type, mapping);
 
     Map<String, String> resultSetMap = new HashMap<String, String>();
     resultSetMap.put("test", "testValue");
@@ -220,16 +218,11 @@ public class GenericResultSetConverterTest {
 
     EntityWithStringField entityWithStringField = new EntityWithStringField();
     entityWithStringField.setTest("testValue");
-    ImportTestRole testRole = new ImportTestRole();
-    testRole.setRoleTest("anotherTestValue");
-    entityWithStringField.addRole(testRole);
     expected.add(entityWithStringField);
 
     Class<EntityWithStringField> type = EntityWithStringField.class;
-    List<Class<? extends Role>> allowedRoles = Lists.newArrayList();
-    allowedRoles.add(ImportTestRole.class);
 
-    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(type, mapping, allowedRoles);
+    GenericResultSetConverter<EntityWithStringField> instance = new GenericResultSetConverter<EntityWithStringField>(type, mapping);
 
     Map<String, String> resultSetMap = new HashMap<String, String>();
     String testValue = "testValue";
@@ -242,4 +235,5 @@ public class GenericResultSetConverterTest {
 
     assertEquals(expected, actual);
   }
+
 }

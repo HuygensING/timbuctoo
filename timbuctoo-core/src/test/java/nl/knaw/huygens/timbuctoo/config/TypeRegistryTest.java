@@ -26,13 +26,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-
-import java.util.Set;
-
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
-import nl.knaw.huygens.timbuctoo.model.Role;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import org.junit.Before;
@@ -41,21 +37,14 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import test.variation.model.BaseVariationDomainEntity;
-import test.variation.model.NewTestRole;
-import test.variation.model.TestRole;
-import test.variation.model.TestSystemEntity;
 import test.variation.model.VTestSystemEntity;
 import test.variation.model.projecta.ProjectADomainEntity;
-import test.variation.model.projecta.ProjectANewTestRole;
-import test.variation.model.projecta.ProjectATestRole;
 
 public class TypeRegistryTest {
 
-  private static final String PROJECT_A_MODEL = "test.variation.model.projecta";
   private static final String MODEL_PACKAGE = "test.variation.model";
   private static final String PACKAGE_WITH_INVALID_SYSTEM_ENTITY = " test.different.model.with_invalid_system_entity";
   private static final String PACKAGE_WITH_INVALID_DOMAIN_ENTITY = " test.different.model.with_invalid_domain_entity";
-  private static final String PACKAGE_WITH_INVALID_ROLE = " test.different.model.with_invalid_role";
 
   @Rule
   public ExpectedException exception = ExpectedException.none();
@@ -89,13 +78,6 @@ public class TypeRegistryTest {
     exception.expect(ModelException.class);
     exception.expectMessage("InvalidDomainEntity is not a direct sub class of DomainEntity or a sub class of a direct sub class of DomainEntity.");
     registry.init(PACKAGE_WITH_INVALID_DOMAIN_ENTITY);
-  }
-
-  @Test
-  public void testPackageWithInvalidRole() throws ModelException {
-    exception.expect(ModelException.class);
-    exception.expectMessage("InvalidRole is not a direct sub class of Role or a sub class of a direct sub class of Role.");
-    registry.init(PACKAGE_WITH_INVALID_ROLE);
   }
 
   @Test
@@ -165,14 +147,6 @@ public class TypeRegistryTest {
     assertTrue(TypeRegistry.isDomainEntity(DomainEntity.class));
   }
 
-  @Test
-  public void testIsRole() {
-    assertFalse(TypeRegistry.isRole((Class<?>) null));
-    assertTrue(TypeRegistry.isRole(TestRole.class));
-    assertTrue(TypeRegistry.isRole(ProjectATestRole.class));
-    assertFalse(TypeRegistry.isRole(AnEntity.class));
-  }
-
   @Test(expected = ClassCastException.class)
   public void testToSystemEntityFails() {
     TypeRegistry.toSystemEntity(ADomainEntity.class);
@@ -197,35 +171,6 @@ public class TypeRegistryTest {
   public void testToBaseDomainEntity() {
     assertEquals(BaseVariationDomainEntity.class, TypeRegistry.toBaseDomainEntity(BaseVariationDomainEntity.class));
     assertEquals(BaseVariationDomainEntity.class, TypeRegistry.toBaseDomainEntity(ProjectADomainEntity.class));
-  }
-
-  @Test
-  public void testToRole() {
-    assertTrue(TypeRegistry.isRole(TypeRegistry.toRole(TestRole.class)));
-  }
-
-  @Test(expected = ClassCastException.class)
-  public void testToRoleFail() {
-    TypeRegistry.toRole(ADomainEntity.class);
-  }
-
-  @Test
-  public void testGetAllowedRolesForModelPackage() throws ModelException {
-    registry.init(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-    assertEquals(0, registry.getAllowedRolesFor(TestSystemEntity.class).size());
-    Set<Class<? extends Role>> roles = registry.getAllowedRolesFor(BaseVariationDomainEntity.class);
-    assertEquals(2, roles.size());
-    assertTrue(roles.contains(TestRole.class));
-    assertTrue(roles.contains(NewTestRole.class));
-  }
-
-  @Test
-  public void testGetAllowedRolesForProjectPackage() throws ModelException {
-    registry.init(MODEL_PACKAGE + " " + PROJECT_A_MODEL);
-    Set<Class<? extends Role>> roles = registry.getAllowedRolesFor(ProjectADomainEntity.class);
-    assertEquals(2, roles.size());
-    assertTrue(roles.contains(ProjectATestRole.class));
-    assertTrue(roles.contains(ProjectANewTestRole.class));
   }
 
   // -------------------------------------------------------------------
