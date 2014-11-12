@@ -169,52 +169,20 @@ public class EntityReducer {
    */
   private <T> T reduceObject(JsonNode tree, Set<String> prefixes, Class<T> type, Class<?> viewType) throws StorageException {
     try {
-      T object = newInstance(type);
-
+      T object = type.newInstance();
       FieldMap fieldMap = new FieldMap(viewType, Entity.class);
       for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
-        String key = entry.getKey();
-        JsonNode node = tree.findValue(key);
+        JsonNode node = tree.findValue(entry.getKey());
         if (node != null) {
           Field field = entry.getValue();
           Object value = convertJsonNodeToValue(field.getType(), node);
-          setValue(object, field, value);
-          LOG.debug("Assigned: {} := {}", field.getName(), value);
-        } else {
-          LOG.debug("No value for property {}", key);
+          field.set(object, value);
         }
       }
-
       return object;
     } catch (Exception e) {
-      // TODO improve error handling
+      LOG.error("Error while reducing object of type {}: {}", type, e.getMessage());
       throw new StorageException(e);
-    }
-  }
-
-  /**
-   * Encapsulates creation of an object.
-   */
-  private <T> T newInstance(Class<T> type) {
-    try {
-      return type.newInstance();
-    } catch (InstantiationException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  /**
-   * Encapsulates assigning of a value to the field of an object.
-   */
-  private void setValue(Object object, Field field, Object value) {
-    try {
-      field.set(object, value);
-    } catch (IllegalArgumentException e) {
-      throw new RuntimeException(e);
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
     }
   }
 
