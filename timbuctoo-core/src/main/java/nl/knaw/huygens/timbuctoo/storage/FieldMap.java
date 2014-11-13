@@ -128,7 +128,7 @@ public class FieldMap extends HashMap<String, Field> {
    * character, optionally prefixed with a "_", "^" or "@".
    */
   public static void validatePropertyNames(Class<?> type) throws ModelException {
-    Pattern pattern = Pattern.compile("[\\_\\^\\@]?[a-zA-Z][a-zA-Z0-9]*");
+    Pattern pattern = Pattern.compile("[\\_\\^\\@]?[a-zA-Z][a-zA-Z_0-9]*");
     for (Field field : type.getDeclaredFields()) {
       if (isProperty(field)) {
         String name = getFieldName(type, field);

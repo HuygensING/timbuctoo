@@ -121,14 +121,15 @@ public class FieldMapTest {
   }
 
   static class ClassWithInvalidProperty {
-    private String proper_ty;
+    @JsonProperty("proper@ty")
+    private String property;
 
-    public String getProper_ty() {
-      return proper_ty;
+    public String getProperty() {
+      return property;
     }
 
-    public void setProper_ty(String proper_ty) {
-      this.proper_ty = proper_ty;
+    public void setProperty(String property) {
+      this.property = property;
     }
   }
 
