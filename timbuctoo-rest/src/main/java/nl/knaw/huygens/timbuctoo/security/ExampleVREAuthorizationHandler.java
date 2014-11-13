@@ -22,49 +22,63 @@ package nl.knaw.huygens.timbuctoo.security;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.model.User;
+import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
-import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.model.User;
-import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
-
+/**
+ * @Deprecated Use local login instead.
+ */
+@Deprecated
 public class ExampleVREAuthorizationHandler implements VREAuthorizationHandler {
+
   private static final Logger LOG = LoggerFactory.getLogger(ExampleVREAuthorizationHandler.class);
 
-  private final Repository repository;
+  private final UserConfigurationHandler userConfigurationHandler;
 
   @Inject
-  public ExampleVREAuthorizationHandler(Repository repository) {
-    this.repository = repository;
+  public ExampleVREAuthorizationHandler(UserConfigurationHandler userConfigurationHandler) {
+    this.userConfigurationHandler = userConfigurationHandler;
   }
 
   @Override
   public VREAuthorization getVREAuthorization(String vreId, User user) {
+    String userId = user.getId();
     String persistentId = user.getPersistentId();
 
-    VREAuthorization example = new VREAuthorization(vreId, user.getId());
-    VREAuthorization vreAuthorization = repository.findEntity(VREAuthorization.class, example);
-
-    if (vreAuthorization == null) {
-      vreAuthorization = example;
-      if ("Admin".equals(persistentId)) {
-        vreAuthorization.setRoles(Lists.newArrayList(UserRoles.ADMIN_ROLE));
-      } else if ("User".equals(persistentId)) {
-        vreAuthorization.setRoles(Lists.newArrayList(UserRoles.USER_ROLE));
+    try {
+      VREAuthorization vreAuthorization = findVreAuthorization(vreId, userId);
+      if (vreAuthorization == null) {
+        vreAuthorization = createVreAuthorization(vreId, userId, persistentId);
       }
-
-      try {
-        vreAuthorization.setId(repository.addSystemEntity(VREAuthorization.class, vreAuthorization));
-      } catch (Exception e) {
-        LOG.error("Creating VREAuthorization for user {} and VRE {} throws exception {}", user.getCommonName(), vreId, e);
-      }
+      return vreAuthorization;
+    } catch (Exception e) {
+      LOG.error("Creating VREAuthorization for user {} and VRE {} throws exception {}", user.getCommonName(), vreId, e);
+      return null;
     }
+  }
 
-    return vreAuthorization;
+  private VREAuthorization createVreAuthorization(String vreId, String userId, String persistentId) throws StorageException, ValidationException {
+    VREAuthorization authorization = new VREAuthorization(vreId, userId);
+    if ("Admin".equals(persistentId)) {
+      authorization.setRoles(Lists.newArrayList(UserRoles.ADMIN_ROLE));
+    } else if ("User".equals(persistentId)) {
+      authorization.setRoles(Lists.newArrayList(UserRoles.USER_ROLE));
+    }
+    authorization.setId(userConfigurationHandler.addVREAuthorization(authorization));
+    return authorization;
+  }
+
+  private VREAuthorization findVreAuthorization(String vreId, String userId) {
+    VREAuthorization example = new VREAuthorization(vreId, userId);
+    return userConfigurationHandler.findVREAuthorization(example);
   }
 
 }
