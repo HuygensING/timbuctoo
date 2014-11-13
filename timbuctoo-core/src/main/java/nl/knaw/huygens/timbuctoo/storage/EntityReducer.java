@@ -28,7 +28,6 @@ import java.lang.reflect.Field;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -46,7 +45,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
 /**
@@ -74,11 +72,10 @@ public class EntityReducer {
   public <T extends Entity> T reduceVariation(Class<T> type, JsonNode tree) throws StorageException {
     checkNotNull(tree);
     if (TypeRegistry.isSystemEntity(type)) {
-      return reduceObject(tree, null, type, type);
+      return reduceObject(tree, type, type);
     } else {
-      Set<String> prefixes = getPrefixes(tree);
       Class<?> viewType = variationExists(tree, type) ? type : type.getSuperclass();
-      return reduceObject(tree, prefixes, type, viewType);
+      return reduceObject(tree, type, viewType);
     }
   }
 
@@ -94,12 +91,11 @@ public class EntityReducer {
 
     JsonNode variations = tree.findValue(DomainEntity.VARIATIONS);
     if (variations != null) {
-      Set<String> prefixes = getPrefixes(tree);
       for (JsonNode node : ImmutableList.copyOf(variations.elements())) {
         String variation = node.textValue();
         Class<? extends DomainEntity> varType = typeRegistry.getDomainEntityType(variation);
         if (varType != null && type.isAssignableFrom(varType)) {
-          T entity = type.cast(reduceObject(tree, prefixes, varType, varType));
+          T entity = type.cast(reduceObject(tree, varType, varType));
           entities.add(entity);
         } else {
           LOG.error("Not a variation of {}: {}", type, variation);
@@ -144,30 +140,13 @@ public class EntityReducer {
   }
 
   /**
-   * Returns the prefixes of the fields in the specified Json tree.
-   * These prefixes correpond with the names of entities and roles.
-   */
-  private Set<String> getPrefixes(JsonNode tree) {
-    Set<String> prefixes = Sets.newTreeSet();
-    Iterator<String> iterator = tree.fieldNames();
-    while (iterator.hasNext()) {
-      String name = iterator.next();
-      int pos = name.indexOf(FieldMap.SEPARATOR_CHAR);
-      if (pos > 0) {
-        prefixes.add(name.substring(0, pos));
-      }
-    }
-    return prefixes;
-  }
-
-  /**
    * Extracts the entity of the specified {@code type} from the specified Json tree.
    * The view type controls the variation that is actually stored in the entity.
    * For example, if the type is {@code BaseLanguage} and the view type is {@code Language}
    * this method returns a {@code BaseLanguage} entity with values of the {@code Language}
    * variation and default values of the fields that are defined in {@code BaseLanguage}.
    */
-  private <T> T reduceObject(JsonNode tree, Set<String> prefixes, Class<T> type, Class<?> viewType) throws StorageException {
+  private <T> T reduceObject(JsonNode tree, Class<T> type, Class<?> viewType) throws StorageException {
     try {
       T object = type.newInstance();
       FieldMap fieldMap = FieldMap.getInstance(viewType, Entity.class);
