@@ -314,19 +314,6 @@ public class Repository {
     }
   }
 
-  /**
-   * Returns a single entity matching the non-null fields of
-   * the specified entity, or null if no such entity exists.
-   */
-  public <T extends Entity> T findEntity(Class<T> type, T example) {
-    try {
-      return storage.findItem(type, example);
-    } catch (StorageException e) {
-      logError("findEntity with example", type, e);
-      return null;
-    }
-  }
-
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) {
     try {
       List<T> variations = storage.getAllVariations(type, id);

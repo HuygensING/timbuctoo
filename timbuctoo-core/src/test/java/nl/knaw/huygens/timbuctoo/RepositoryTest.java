@@ -101,13 +101,6 @@ public class RepositoryTest {
     verify(storageMock).findItemByProperty(TestSystemEntity.class, "field", "value");
   }
 
-  @Test
-  public void testFindEntity() throws Exception {
-    TestSystemEntity entity = new TestSystemEntity();
-    repository.findEntity(TestSystemEntity.class, entity);
-    verify(storageMock).findItem(TestSystemEntity.class, entity);
-  }
-
   @Ignore
   @Test
   public void testGetAllVariations() throws Exception {

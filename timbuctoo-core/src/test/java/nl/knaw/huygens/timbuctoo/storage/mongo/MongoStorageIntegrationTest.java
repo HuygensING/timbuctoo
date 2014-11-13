@@ -133,21 +133,6 @@ public class MongoStorageIntegrationTest extends DBIntegrationTest {
     return entity;
   }
 
-  @Test
-  public void findByExampleReturnsTheFoundEntity() throws StorageException {
-    // setup
-    addProjectADomainEntityToDatabase(GENERAL_STRING_VALUE);
-
-    ProjectADomainEntity example = createEntityWithGeneralTestDocValue(GENERAL_STRING_VALUE);
-
-    // action
-    ProjectADomainEntity foundEntity = instance.findItem(ProjectADomainEntity.class, example);
-
-    // verify
-    assertThat(foundEntity, is(notNullValue(ProjectADomainEntity.class)));
-
-  }
-
   /**************************************************************************************
    * SystemEntity 
    **************************************************************************************/

@@ -141,11 +141,6 @@ public interface Storage {
   <T extends Entity> T findItemByProperty(Class<T> type, String field, String value) throws StorageException;
 
   /**
-   * Find an entity which has the non-null properties of the example object.
-   */
-  <T extends Entity> T findItem(Class<T> type, T example) throws StorageException;
-
-  /**
    * Returns a list of all variations of the specified <em>primitive</em> entity.
    * Returns an empty list when the combination of the {@code type} and {@code id} is not found.
    */

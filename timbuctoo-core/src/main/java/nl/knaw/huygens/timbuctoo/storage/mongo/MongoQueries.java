@@ -29,9 +29,7 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.storage.PropertyMap;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
@@ -88,14 +86,6 @@ public class MongoQueries {
 
   public DBObject selectByProperty(Class<?> type, String field, List<String> relationTypeIds) {
     return new BasicDBObject(propertyName(type, field), new BasicDBObject("$in", relationTypeIds));
-  }
-
-  /**
-   * Generates a query based on the non-null values of an entity.
-   */
-  public <T extends Entity> DBObject selectByProperties(Class<? super T> type, T entity) {
-    PropertyMap properties = new PropertyMap(entity, type);
-    return new BasicDBObject(properties);
   }
 
   public DBObject selectByModifiedDate(Date dateValue) {

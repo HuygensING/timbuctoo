@@ -189,19 +189,6 @@ public class MongoStorageTest extends MongoStorageTestBase {
     verify(mongoDB).find(dbCollection, query);
   }
 
-  // findItem
-
-  @Test
-  public void testFindItem() throws Exception {
-    TestSystemEntity example = new TestSystemEntity().withName("doc1");
-
-    storage.findItem(TestSystemEntity.class, example);
-
-    DBObject query = queries.selectByProperty(TestSystemEntity.class, "name", "doc1");
-    verify(mongoDB).findOne(dbCollection, query);
-    // TODO verify call to EntityReducer
-  }
-
   // getAllVariations
 
   @Test(expected = IllegalArgumentException.class)

@@ -373,12 +373,6 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends Entity> T findItem(Class<T> type, T example) throws StorageException {
-    DBObject query = queries.selectByProperties(type, example);
-    return getItem(type, query);
-  }
-
-  @Override
   public <T extends SystemEntity> int deleteSystemEntity(Class<T> type, String id) throws StorageException {
     DBObject query = queries.selectById(id);
     return mongoDB.remove(getDBCollection(type), query);
