@@ -66,7 +66,7 @@ public class PropertyMapTest {
 
   @Before
   public void setup() {
-    fieldMap = new FieldMap(TYPE);
+    fieldMap = FieldMap.getInstance(TYPE);
   }
 
   private MongoObjectMapperEntity createMongoObjectMapperEntity(String name, String testValue1, String testValue2, String annotatedProperty, String propWithAnnotatedAccessors) {
@@ -82,12 +82,6 @@ public class PropertyMapTest {
   @Test
   public void testPropertyMapForNullObject() {
     PropertyMap properties = new PropertyMap(null, fieldMap);
-    assertThat(properties.keySet(), empty());
-  }
-
-  @Test
-  public void testPropertyMapForNullFieldMap() {
-    PropertyMap properties = new PropertyMap(new MongoObjectMapperEntity(), null);
     assertThat(properties.keySet(), empty());
   }
 

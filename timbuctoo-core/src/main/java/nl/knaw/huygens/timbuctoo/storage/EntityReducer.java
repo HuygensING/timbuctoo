@@ -170,7 +170,7 @@ public class EntityReducer {
   private <T> T reduceObject(JsonNode tree, Set<String> prefixes, Class<T> type, Class<?> viewType) throws StorageException {
     try {
       T object = type.newInstance();
-      FieldMap fieldMap = new FieldMap(viewType, Entity.class);
+      FieldMap fieldMap = FieldMap.getInstance(viewType, Entity.class);
       for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
         JsonNode node = tree.findValue(entry.getKey());
         if (node != null) {

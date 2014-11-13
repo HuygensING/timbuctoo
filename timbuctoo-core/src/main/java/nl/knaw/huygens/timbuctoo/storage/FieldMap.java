@@ -55,23 +55,30 @@ public class FieldMap extends HashMap<String, Field> {
   public static final char VIRTUAL_PROPERTY_PREFIX = '@';
 
   /**
-   * Constructs an empty field map.
+   * Returns a field map for the specified {@code type}.
    */
-  public FieldMap() {}
-
-  /**
-   * Constructs a field map for the specified {@code type}.
-   */
-  public FieldMap(Class<?> type) {
-    addFields(type, getInternalName(type));
+  public static FieldMap getInstance(Class<?> type) {
+    return new FieldMap(type);
   }
 
   /**
-   * Constructs a composite field map for all types starting with {@code type}
+   * Returns a composite field map for all types starting with {@code type}
    * up to and including {@code stopType}.
    * To get a non-empty map {@code stopType} must be a superclass of {@code type}.
    */
-  public FieldMap(Class<?> type, Class<?> stopType) {
+  public static FieldMap getInstance(Class<?> type, Class<?> stopType) {
+    return new FieldMap(type, stopType);
+  }
+
+  // ---------------------------------------------------------------------------
+
+  private FieldMap() {}
+
+  private FieldMap(Class<?> type) {
+    addFields(type, getInternalName(type));
+  }
+
+  private FieldMap(Class<?> type, Class<?> stopType) {
     String prefix = getInternalName(type);
     while (stopType.isAssignableFrom(type)) {
       addFields(type, prefix);

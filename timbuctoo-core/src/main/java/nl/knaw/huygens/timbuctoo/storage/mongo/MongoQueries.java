@@ -31,7 +31,6 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.storage.FieldMap;
 import nl.knaw.huygens.timbuctoo.storage.PropertyMap;
 
 import com.mongodb.BasicDBList;
@@ -95,8 +94,7 @@ public class MongoQueries {
    * Generates a query based on the non-null values of an entity.
    */
   public <T extends Entity> DBObject selectByProperties(Class<? super T> type, T entity) {
-    FieldMap fieldMap = new FieldMap(type);
-    PropertyMap properties = new PropertyMap(entity, fieldMap);
+    PropertyMap properties = new PropertyMap(entity, type);
     return new BasicDBObject(properties);
   }
 

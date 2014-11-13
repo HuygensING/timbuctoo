@@ -52,7 +52,7 @@ public class EntityInducer {
   public <T extends SystemEntity> JsonNode convertSystemEntityForAdd(Class<T> type, T entity) {
     checkArgument(BusinessRules.allowSystemEntityAdd(type));
 
-    FieldMap fieldMap = new FieldMap(type, Entity.class);
+    FieldMap fieldMap = FieldMap.getInstance(type, Entity.class);
     return createJsonTree(entity, fieldMap);
   }
 
@@ -60,7 +60,7 @@ public class EntityInducer {
    * Converts a system entity to a Json tree and combines it with an existing Json tree.
    */
   public <T extends SystemEntity> JsonNode convertSystemEntityForUpdate(Class<T> type, T entity, ObjectNode tree) {
-    FieldMap fieldMap = new FieldMap(type);
+    FieldMap fieldMap = FieldMap.getInstance(type);
     return updateJsonTree(tree, entity, fieldMap);
   }
 
@@ -70,10 +70,10 @@ public class EntityInducer {
   public <T extends DomainEntity> JsonNode convertDomainEntityForAdd(Class<T> type, T entity) {
     checkArgument(BusinessRules.allowDomainEntityAdd(type));
 
-    FieldMap fieldMap = new FieldMap(type, Entity.class);
+    FieldMap fieldMap = FieldMap.getInstance(type, Entity.class);
     ObjectNode tree = createJsonTree(entity, fieldMap);
 
-    fieldMap = new FieldMap(type.getSuperclass());
+    fieldMap = FieldMap.getInstance(type.getSuperclass());
     tree = updateJsonTree(tree, entity, fieldMap);
 
     return tree;
@@ -86,21 +86,22 @@ public class EntityInducer {
    */
   public <T extends DomainEntity> JsonNode convertDomainEntityForUpdate(Class<T> type, T entity, ObjectNode tree) {
     Class<?> stopType = TypeRegistry.toBaseDomainEntity(type);
-    FieldMap fieldMap = new FieldMap(type, stopType);
     if (type == stopType) {
+      FieldMap fieldMap = FieldMap.getInstance(type);
       return updateJsonTree(tree, entity, fieldMap);
     } else {
+      FieldMap fieldMap = FieldMap.getInstance(type, stopType);
       return updateJsonTree(tree, entity, fieldMap.removeSharedFields());
     }
   }
 
   public JsonNode adminSystemEntity(SystemEntity entity, ObjectNode tree) {
-    FieldMap fieldMap = new FieldMap(SystemEntity.class, Entity.class);
+    FieldMap fieldMap = FieldMap.getInstance(SystemEntity.class, Entity.class);
     return updateJsonTree(tree, entity, fieldMap);
   }
 
   public JsonNode adminDomainEntity(DomainEntity entity, ObjectNode tree) {
-    FieldMap fieldMap = new FieldMap(DomainEntity.class, Entity.class);
+    FieldMap fieldMap = FieldMap.getInstance(DomainEntity.class, Entity.class);
     return updateJsonTree(tree, entity, fieldMap);
   }
 

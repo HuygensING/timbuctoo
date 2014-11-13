@@ -40,6 +40,10 @@ public class PropertyMap extends TreeMap<String, Object> {
 
   public PropertyMap() {}
 
+  public PropertyMap(Object object, Class<?> type) {
+    this(object, FieldMap.getInstance(type));
+  }
+
   public PropertyMap(Object object, FieldMap fieldMap) {
     if (object != null && fieldMap != null) {
       for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
