@@ -27,6 +27,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.BusinessRules;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -53,7 +54,7 @@ public class EntityInducer {
     checkArgument(BusinessRules.allowSystemEntityAdd(type));
 
     FieldMap fieldMap = FieldMap.getInstance(type, Entity.class);
-    return createJsonTree(entity, fieldMap);
+    return createJsonTree(entity, type, fieldMap);
   }
 
   /**
@@ -61,7 +62,7 @@ public class EntityInducer {
    */
   public <T extends SystemEntity> JsonNode convertSystemEntityForUpdate(Class<T> type, T entity, ObjectNode tree) {
     FieldMap fieldMap = FieldMap.getInstance(type);
-    return updateJsonTree(tree, entity, fieldMap);
+    return updateJsonTree(tree, entity, type, fieldMap);
   }
 
   /**
@@ -71,10 +72,11 @@ public class EntityInducer {
     checkArgument(BusinessRules.allowDomainEntityAdd(type));
 
     FieldMap fieldMap = FieldMap.getInstance(type, Entity.class);
-    ObjectNode tree = createJsonTree(entity, fieldMap);
+    ObjectNode tree = createJsonTree(entity, type, fieldMap);
 
-    fieldMap = FieldMap.getInstance(type.getSuperclass());
-    tree = updateJsonTree(tree, entity, fieldMap);
+    Class<?> baseType = type.getSuperclass();
+    fieldMap = FieldMap.getInstance(baseType);
+    tree = updateJsonTree(tree, entity, baseType, fieldMap);
 
     return tree;
   }
@@ -88,21 +90,21 @@ public class EntityInducer {
     Class<?> stopType = TypeRegistry.toBaseDomainEntity(type);
     if (type == stopType) {
       FieldMap fieldMap = FieldMap.getInstance(type);
-      return updateJsonTree(tree, entity, fieldMap);
+      return updateJsonTree(tree, entity, type, fieldMap);
     } else {
       FieldMap fieldMap = FieldMap.getInstance(type, stopType);
-      return updateJsonTree(tree, entity, fieldMap.removeSharedFields());
+      return updateJsonTree(tree, entity, type, fieldMap.removeSharedFields());
     }
   }
 
   public JsonNode adminSystemEntity(SystemEntity entity, ObjectNode tree) {
     FieldMap fieldMap = FieldMap.getInstance(SystemEntity.class, Entity.class);
-    return updateJsonTree(tree, entity, fieldMap);
+    return updateJsonTree(tree, entity, SystemEntity.class, fieldMap);
   }
 
   public JsonNode adminDomainEntity(DomainEntity entity, ObjectNode tree) {
     FieldMap fieldMap = FieldMap.getInstance(DomainEntity.class, Entity.class);
-    return updateJsonTree(tree, entity, fieldMap);
+    return updateJsonTree(tree, entity, DomainEntity.class, fieldMap);
   }
 
   // -------------------------------------------------------------------
@@ -110,24 +112,26 @@ public class EntityInducer {
   /**
    * Updates a Json tree given an object and a field map.
    */
-  private ObjectNode updateJsonTree(ObjectNode tree, Object object, FieldMap fieldMap) {
-    ObjectNode newTree = createJsonTree(object, fieldMap);
-    return merge(tree, newTree, fieldMap.keySet());
+  private ObjectNode updateJsonTree(ObjectNode tree, Object object, Class<?> viewType, FieldMap fieldMap) {
+    ObjectNode newTree = createJsonTree(object, viewType, fieldMap);
+    return merge(tree, newTree, viewType, fieldMap.keySet());
   }
 
   /**
    * Creates a Json tree given an object and a field map.
    */
-  private ObjectNode createJsonTree(Object object, FieldMap fieldMap) {
-    Properties properties = new Properties(object, fieldMap);
+  private ObjectNode createJsonTree(Object object, Class<?> viewType, FieldMap fieldMap) {
+    Properties properties = new Properties(object, viewType, fieldMap);
     return jsonMapper.valueToTree(properties);
   }
 
   /**
    * Merges into a tree the values corresponding to the specified keys of the new tree.
    */
-  private ObjectNode merge(ObjectNode tree, ObjectNode newTree, Set<String> keys) {
-    for (String key : keys) {
+  private ObjectNode merge(ObjectNode tree, ObjectNode newTree, Class<?> type, Set<String> fieldNames) {
+    String iname = TypeNames.getInternalName(type);
+    for (String fieldName : fieldNames) {
+      String key = Properties.propertyName(iname, fieldName);
       JsonNode newValue = newTree.get(key);
       if (newValue != null) {
         tree.put(key, newValue);

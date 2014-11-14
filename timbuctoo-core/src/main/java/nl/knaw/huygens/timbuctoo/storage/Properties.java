@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
@@ -69,17 +70,19 @@ public class Properties extends TreeMap<String, Object> {
   public Properties() {}
 
   public Properties(Object object, Class<?> type) {
-    this(object, FieldMap.getInstance(type));
+    this(object, type, FieldMap.getInstance(type));
   }
 
-  public Properties(Object object, FieldMap fieldMap) {
+  public Properties(Object object, Class<?> type, FieldMap fieldMap) {
     if (object != null) {
+      String iname = TypeNames.getInternalName(type);
       for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
         try {
           Field field = entry.getValue();
           Object value = convertToSerializable(field.getType(), field.get(object));
           if (value != null) {
-            put(entry.getKey(), value);
+            String name = propertyName(iname, entry.getKey());
+            put(name, value);
           }
         } catch (Exception e) {
           LOG.error("Error for field '{}'", entry.getValue());

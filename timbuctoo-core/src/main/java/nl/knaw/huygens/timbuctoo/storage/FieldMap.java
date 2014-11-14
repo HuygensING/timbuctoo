@@ -37,15 +37,14 @@ import nl.knaw.huygens.timbuctoo.model.ModelException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * A class that contains all the information about how the class fields are mapped 
- * to the fields in the database.
+ * Contains a mapping of field names, without prefixes, of entities.
  */
 public class FieldMap extends HashMap<String, Field> {
 
   private static final long serialVersionUID = 1L;
 
   /** Prefix of properties that are not (de)serialzied. */
-  public static final char VIRTUAL_PROPERTY_PREFIX = '@';
+  private static final char VIRTUAL_PROPERTY_PREFIX = '@';
 
   /**
    * Returns a field map for the specified {@code type}.
@@ -90,10 +89,10 @@ public class FieldMap extends HashMap<String, Field> {
     AccessibleObject.setAccessible(fields, true);
 
     for (Field field : fields) {
-      if (isProperty(field)) {
+      if (isPropertyField(field)) {
         String fieldName = getFieldName(type, field);
         if (!isVirtualProperty(fieldName)) {
-          put(Properties.propertyName(prefix, fieldName), field);
+          put(fieldName, field);
         }
       }
     }
@@ -123,7 +122,7 @@ public class FieldMap extends HashMap<String, Field> {
   public static void validatePropertyNames(Class<?> type) throws ModelException {
     Pattern pattern = Pattern.compile("[\\_\\^\\@]?[a-zA-Z][a-zA-Z_0-9]*");
     for (Field field : type.getDeclaredFields()) {
-      if (isProperty(field)) {
+      if (isPropertyField(field)) {
         String name = getFieldName(type, field);
         if (!pattern.matcher(name).matches()) {
           throw new ModelException("Invalid property name %s of %s", name, type);
@@ -156,7 +155,7 @@ public class FieldMap extends HashMap<String, Field> {
   /**
    * Indicates whether a field qualifies as property.
    */
-  private static boolean isProperty(Field field) {
+  private static boolean isPropertyField(Field field) {
     return (field.getModifiers() & (Modifier.STATIC | Modifier.TRANSIENT)) == 0;
   }
 

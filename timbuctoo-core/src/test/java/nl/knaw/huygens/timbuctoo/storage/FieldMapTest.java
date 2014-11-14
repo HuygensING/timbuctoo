@@ -32,6 +32,7 @@ import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
@@ -54,14 +55,20 @@ public class FieldMapTest {
     Set<String> names = FieldMap.getInstance(DomainEntity.class).keySet();
     assertThat(names, containsInAnyOrder("^pid", "^deleted", "^variations"));
     assertThat(names, not(contains("@properties")));
-    assertThat(names, not(contains("@relationCount")));
     assertThat(names, not(contains("@relations")));
+    assertThat(names, not(contains("@relationCount")));
   }
 
   @Test
   public void testCombinedDomainEntityFields() {
     Set<String> names = FieldMap.getInstance(DomainEntity.class, Entity.class).keySet();
     assertThat(names, containsInAnyOrder("_id", "^rev", "^created", "^modified", "^pid", "^deleted", "^variations"));
+  }
+
+  @Test
+  public void testLanguageFields() {
+    Set<String> names = FieldMap.getInstance(Language.class).keySet();
+    assertThat(names, containsInAnyOrder("^code", "name", "core"));
   }
 
   // ---------------------------------------------------------------------------
