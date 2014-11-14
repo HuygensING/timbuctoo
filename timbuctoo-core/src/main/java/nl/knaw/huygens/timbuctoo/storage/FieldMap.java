@@ -22,7 +22,6 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
 
 import java.lang.reflect.AccessibleObject;
@@ -44,12 +43,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class FieldMap extends HashMap<String, Field> {
 
   private static final long serialVersionUID = 1L;
-
-  /** Separator between parts of a property name, as string. */
-  public static final String SEPARATOR = ":";
-
-  /** Separator between parts of a key, as character. */
-  public static final char SEPARATOR_CHAR = ':';
 
   /** Prefix of properties that are not (de)serialzied. */
   public static final char VIRTUAL_PROPERTY_PREFIX = '@';
@@ -100,7 +93,7 @@ public class FieldMap extends HashMap<String, Field> {
       if (isProperty(field)) {
         String fieldName = getFieldName(type, field);
         if (!isVirtualProperty(fieldName)) {
-          put(propertyName(prefix, fieldName), field);
+          put(Properties.propertyName(prefix, fieldName), field);
         }
       }
     }
@@ -137,23 +130,6 @@ public class FieldMap extends HashMap<String, Field> {
         }
       }
     }
-  }
-
-  /** Returns the name of a property from its parts. */
-  public static String propertyName(String prefix, String field) {
-    checkArgument(field != null && field.length() != 0);
-
-    StringBuilder builder = new StringBuilder();
-    if (Character.isLetter(field.charAt(0))) {
-      builder.append(prefix).append(SEPARATOR_CHAR);
-    }
-    builder.append(field);
-    return builder.toString();
-  }
-
-  /** Returns the name of a property from its parts. */
-  public static String propertyName(Class<?> type, String field) {
-    return propertyName(getInternalName(type), field);
   }
 
   /**

@@ -22,7 +22,7 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.storage.FieldMap.propertyName;
+import static nl.knaw.huygens.timbuctoo.storage.Properties.propertyName;
 
 import java.util.Date;
 import java.util.List;

@@ -22,6 +22,9 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
+
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Map;
@@ -33,6 +36,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Properties extends TreeMap<String, Object> {
+
+  /** Separator between parts of a property name. */
+  public static final String SEPARATOR = ":";
+
+  /**
+   * Returns the name of a property from its parts.
+   */
+  public static String propertyName(Class<?> type, String field) {
+    return propertyName(getInternalName(type), field);
+  }
+
+  /**
+   * Returns the name of a property from its parts.
+   */
+  public static String propertyName(String prefix, String field) {
+    checkArgument(field != null && field.length() != 0);
+    return Character.isLetter(field.charAt(0)) ? prefix + SEPARATOR + field : field;
+  }
+
+  // ---------------------------------------------------------------------------
 
   private static final long serialVersionUID = 1L;
 
