@@ -22,16 +22,13 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.storage.FieldMap.SEPARATOR;
-import static nl.knaw.huygens.timbuctoo.storage.FieldMap.propertyName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
-import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
-import nl.knaw.huygens.timbuctoo.model.User;
 
 import org.junit.Test;
 
@@ -42,46 +39,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class FieldMapTest {
 
   private static final Class<? extends Entity> TYPE = MongoObjectMapperEntity.class;
-
-  @Test
-  public void testPropertyNameForEntity() {
-    assertThat(propertyName(Entity.class, "_x"), equalTo("_x"));
-    assertThat(propertyName(Entity.class, "^x"), equalTo("^x"));
-    assertThat(propertyName(Entity.class, "@x"), equalTo("@x"));
-    assertThat(propertyName(Entity.class, "xx"), equalTo("entity" + SEPARATOR + "xx"));
-  }
-
-  @Test
-  public void testPropertyNameForSystemEntity() {
-    assertThat(propertyName(SystemEntity.class, "_x"), equalTo("_x"));
-    assertThat(propertyName(SystemEntity.class, "^x"), equalTo("^x"));
-    assertThat(propertyName(SystemEntity.class, "@x"), equalTo("@x"));
-    assertThat(propertyName(SystemEntity.class, "xx"), equalTo("systementity" + SEPARATOR + "xx"));
-  }
-
-  @Test
-  public void testPropertyNameForDomainEntity() {
-    assertThat(propertyName(DomainEntity.class, "_x"), equalTo("_x"));
-    assertThat(propertyName(DomainEntity.class, "^x"), equalTo("^x"));
-    assertThat(propertyName(DomainEntity.class, "@x"), equalTo("@x"));
-    assertThat(propertyName(DomainEntity.class, "xx"), equalTo("domainentity" + SEPARATOR + "xx"));
-  }
-
-  @Test
-  public void testPropertyNameForUser() {
-    assertThat(propertyName(User.class, "_x"), equalTo("_x"));
-    assertThat(propertyName(User.class, "^x"), equalTo("^x"));
-    assertThat(propertyName(User.class, "@x"), equalTo("@x"));
-    assertThat(propertyName(User.class, "xx"), equalTo("user" + SEPARATOR + "xx"));
-  }
-
-  @Test
-  public void testPropertyNameForPerson() {
-    assertThat(propertyName(Person.class, "_x"), equalTo("_x"));
-    assertThat(propertyName(Person.class, "^x"), equalTo("^x"));
-    assertThat(propertyName(Person.class, "@x"), equalTo("@x"));
-    assertThat(propertyName(Person.class, "xx"), equalTo("person" + SEPARATOR + "xx"));
-  }
 
   @Test
   public void testGetFieldNameSimpleField() throws Exception {
