@@ -31,6 +31,7 @@ import static org.hamcrest.Matchers.hasSize;
 import java.util.List;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
@@ -44,7 +45,7 @@ import com.google.common.collect.Maps;
 
 public class PropertiesTest {
 
-  private static final Class<?> TYPE = MongoObjectMapperEntity.class;
+  private static final Class<? extends Entity> TYPE = MongoObjectMapperEntity.class;
 
   // keys
   private static final String PWAA_KEY = propertyName(TYPE, "pwaa");

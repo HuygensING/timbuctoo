@@ -22,7 +22,6 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
 
 import java.lang.reflect.Field;
@@ -30,6 +29,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
 import org.slf4j.Logger;
@@ -41,18 +41,23 @@ public class Properties extends TreeMap<String, Object> {
   public static final String SEPARATOR = ":";
 
   /**
-   * Returns the name of a property from its parts.
+   * Creates the property name for a field of an entity.
+   * @param type the type token of the entity.
+   * @param fieldName the name of the field; must not be null or empty.
+   * @return The property name.
    */
-  public static String propertyName(Class<?> type, String field) {
-    return propertyName(getInternalName(type), field);
+  public static String propertyName(Class<? extends Entity> type, String fieldName) {
+    return propertyName(getInternalName(type), fieldName);
   }
 
   /**
-   * Returns the name of a property from its parts.
+   * Creates the property name for a field of an entity.
+   * @param iname the internal name of the entity.
+   * @param fieldName the name of the field; must not be null or empty.
+   * @return The property name.
    */
-  public static String propertyName(String prefix, String field) {
-    checkArgument(field != null && field.length() != 0);
-    return Character.isLetter(field.charAt(0)) ? prefix + SEPARATOR + field : field;
+  public static String propertyName(String iname, String fieldName) {
+    return Character.isLetter(fieldName.charAt(0)) ? iname + SEPARATOR + fieldName : fieldName;
   }
 
   // ---------------------------------------------------------------------------

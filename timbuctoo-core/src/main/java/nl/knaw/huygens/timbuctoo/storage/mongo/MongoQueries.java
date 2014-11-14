@@ -29,6 +29,7 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 
 import com.mongodb.BasicDBList;
@@ -80,11 +81,11 @@ public class MongoQueries {
     return new BasicDBObject("versions", new BasicDBObject("$elemMatch", new BasicDBObject("^rev", revision)));
   }
 
-  public DBObject selectByProperty(Class<?> type, String field, Object value) {
+  public DBObject selectByProperty(Class<? extends Entity> type, String field, Object value) {
     return new BasicDBObject(propertyName(type, field), value);
   }
 
-  public DBObject selectByProperty(Class<?> type, String field, List<String> relationTypeIds) {
+  public DBObject selectByProperty(Class<? extends Entity> type, String field, List<String> relationTypeIds) {
     return new BasicDBObject(propertyName(type, field), new BasicDBObject("$in", relationTypeIds));
   }
 
