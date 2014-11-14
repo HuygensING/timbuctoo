@@ -32,19 +32,19 @@ import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PropertyMap extends TreeMap<String, Object> {
+public class Properties extends TreeMap<String, Object> {
 
   private static final long serialVersionUID = 1L;
 
-  private static final Logger LOG = LoggerFactory.getLogger(PropertyMap.class);
+  private static final Logger LOG = LoggerFactory.getLogger(Properties.class);
 
-  public PropertyMap() {}
+  public Properties() {}
 
-  public PropertyMap(Object object, Class<?> type) {
+  public Properties(Object object, Class<?> type) {
     this(object, FieldMap.getInstance(type));
   }
 
-  public PropertyMap(Object object, FieldMap fieldMap) {
+  public Properties(Object object, FieldMap fieldMap) {
     if (object != null) {
       for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
         try {

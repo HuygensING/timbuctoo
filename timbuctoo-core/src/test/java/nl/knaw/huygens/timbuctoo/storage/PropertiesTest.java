@@ -42,7 +42,7 @@ import test.variation.model.MongoObjectMapperEntity;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-public class PropertyMapTest {
+public class PropertiesTest {
 
   private static final Class<?> TYPE = MongoObjectMapperEntity.class;
 
@@ -73,7 +73,7 @@ public class PropertyMapTest {
 
   @Test
   public void testPropertyMapForNullObject() {
-    PropertyMap properties = new PropertyMap(null, TYPE);
+    Properties properties = new Properties(null, TYPE);
     assertThat(properties.keySet(), empty());
   }
 
@@ -88,7 +88,7 @@ public class PropertyMapTest {
     map.put(PROP_ANNOTATED_KEY, ANNOTATED_PROPERTY);
     map.put(PWAA_KEY, PROP_WITH_ANNOTATED_ACCESSORS);
 
-    assertThat(new PropertyMap(entity, TYPE), equalTo(map));
+    assertThat(new Properties(entity, TYPE), equalTo(map));
   }
 
   @Test
@@ -100,7 +100,7 @@ public class PropertyMapTest {
     map.put(TEST_VALUE1_KEY, TEST_VALUE1);
     map.put(TEST_VALUE2_KEY, TEST_VALUE2);
 
-    assertThat(new PropertyMap(entity, TYPE), equalTo(map));
+    assertThat(new Properties(entity, TYPE), equalTo(map));
   }
 
   @Test
@@ -112,7 +112,7 @@ public class PropertyMapTest {
     Map<String, Object> map = Maps.newHashMap();
     map.put(propertyName(TYPE, "primitiveTestCollection"), list);
 
-    assertThat(new PropertyMap(entity, TYPE), equalTo(map));
+    assertThat(new Properties(entity, TYPE), equalTo(map));
   }
 
   @Test
@@ -121,7 +121,7 @@ public class PropertyMapTest {
     entity.setId(ID);
     entity.setNonPrimitiveTestCollection(Lists.newArrayList(entity));
 
-    assertThat(new PropertyMap(entity, TYPE).keySet(), hasSize(1));
+    assertThat(new Properties(entity, TYPE).keySet(), hasSize(1));
   }
 
   @Test
@@ -132,7 +132,7 @@ public class PropertyMapTest {
     Map<String, Object> map = Maps.newHashMap();
     map.put(propertyName(TYPE, "type"), TYPE);
 
-    assertThat(new PropertyMap(entity, TYPE), equalTo(map));
+    assertThat(new Properties(entity, TYPE), equalTo(map));
   }
 
   @Test
@@ -143,7 +143,7 @@ public class PropertyMapTest {
     Map<String, Object> map = Maps.newHashMap();
     map.put(propertyName(TYPE, "date"), "20031011");
 
-    assertThat(new PropertyMap(entity, TYPE), equalTo(map));
+    assertThat(new Properties(entity, TYPE), equalTo(map));
   }
 
   @Test
@@ -157,7 +157,7 @@ public class PropertyMapTest {
     Map<String, Object> map = Maps.newLinkedHashMap();
     map.put(propertyName(TYPE, "personName"), personName);
 
-    assertThat(new PropertyMap(entity, TYPE), equalTo(map));
+    assertThat(new Properties(entity, TYPE), equalTo(map));
   }
 
 }

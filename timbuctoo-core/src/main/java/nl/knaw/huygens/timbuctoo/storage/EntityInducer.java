@@ -119,7 +119,7 @@ public class EntityInducer {
    * Creates a Json tree given an object and a field map.
    */
   private ObjectNode createJsonTree(Object object, FieldMap fieldMap) {
-    PropertyMap properties = new PropertyMap(object, fieldMap);
+    Properties properties = new Properties(object, fieldMap);
     return jsonMapper.valueToTree(properties);
   }
 
