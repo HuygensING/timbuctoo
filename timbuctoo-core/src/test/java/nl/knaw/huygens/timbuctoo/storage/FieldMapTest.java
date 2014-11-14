@@ -23,7 +23,12 @@ package nl.knaw.huygens.timbuctoo.storage;
  */
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+
+import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -38,6 +43,29 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class FieldMapTest {
 
+  @Test
+  public void testEntityFields() {
+    Set<String> names = FieldMap.getInstance(Entity.class).keySet();
+    assertThat(names, containsInAnyOrder("_id", "^rev", "^created", "^modified"));
+  }
+
+  @Test
+  public void testSimpleDomainEntityFields() {
+    Set<String> names = FieldMap.getInstance(DomainEntity.class).keySet();
+    assertThat(names, containsInAnyOrder("^pid", "^deleted", "^variations"));
+    assertThat(names, not(contains("@properties")));
+    assertThat(names, not(contains("@relationCount")));
+    assertThat(names, not(contains("@relations")));
+  }
+
+  @Test
+  public void testCombinedDomainEntityFields() {
+    Set<String> names = FieldMap.getInstance(DomainEntity.class, Entity.class).keySet();
+    assertThat(names, containsInAnyOrder("_id", "^rev", "^created", "^modified", "^pid", "^deleted", "^variations"));
+  }
+
+  // ---------------------------------------------------------------------------
+  
   private static final Class<? extends Entity> TYPE = MongoObjectMapperEntity.class;
 
   @Test
