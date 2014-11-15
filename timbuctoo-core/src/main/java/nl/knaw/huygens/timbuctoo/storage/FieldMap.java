@@ -32,9 +32,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 
 /**
  * Contains a mapping of field names, without prefixes, of entities.
@@ -54,13 +58,28 @@ public class FieldMap extends HashMap<String, Field> {
   }
 
   /**
-   * Returns a composite field map for all types starting with {@code type}
+   * Returns a combined field map for all types starting with {@code type}
    * up to and including {@code stopType}.
-   * To get a non-empty map {@code stopType} must be a superclass of {@code type}.
    */
-  public static FieldMap getInstance(Class<?> type, Class<?> stopType) {
+  public static FieldMap getCombinedInstance(Class<?> type, Class<?> stopType) {
     return new FieldMap(type, stopType);
   }
+
+  /**
+   * Returns a combined field map for all types starting with {@code type}
+   * up to and including {@code Entity.class}.
+   */
+  public static FieldMap getCombinedInstance(Class<?> type) {
+    return cache.getUnchecked(type);
+  }
+
+  private static LoadingCache<Class<?>, FieldMap> cache = CacheBuilder.newBuilder() //
+    .build(new CacheLoader<Class<?>, FieldMap>() {
+      @Override
+      public FieldMap load(Class<?> type) {
+        return new FieldMap(type, Entity.class);
+      }
+    });
 
   // ---------------------------------------------------------------------------
 

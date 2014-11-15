@@ -61,7 +61,7 @@ public class FieldMapTest {
 
   @Test
   public void testCombinedDomainEntityFields() {
-    Set<String> names = FieldMap.getInstance(DomainEntity.class, Entity.class).keySet();
+    Set<String> names = FieldMap.getCombinedInstance(DomainEntity.class, Entity.class).keySet();
     assertThat(names, containsInAnyOrder("_id", "^rev", "^created", "^modified", "^pid", "^deleted", "^variations"));
   }
 

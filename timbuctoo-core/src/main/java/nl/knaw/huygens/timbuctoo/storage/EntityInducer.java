@@ -30,7 +30,6 @@ import nl.knaw.huygens.timbuctoo.config.BusinessRules;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -53,7 +52,7 @@ public class EntityInducer {
   public <T extends SystemEntity> JsonNode convertSystemEntityForAdd(Class<T> type, T entity) {
     checkArgument(BusinessRules.allowSystemEntityAdd(type));
 
-    FieldMap fieldMap = FieldMap.getInstance(type, Entity.class);
+    FieldMap fieldMap = FieldMap.getCombinedInstance(type);
     return createJsonTree(entity, type, fieldMap);
   }
 
@@ -71,7 +70,7 @@ public class EntityInducer {
   public <T extends DomainEntity> JsonNode convertDomainEntityForAdd(Class<T> type, T entity) {
     checkArgument(BusinessRules.allowDomainEntityAdd(type));
 
-    FieldMap fieldMap = FieldMap.getInstance(type, Entity.class);
+    FieldMap fieldMap = FieldMap.getCombinedInstance(type);
     ObjectNode tree = createJsonTree(entity, type, fieldMap);
 
     Class<?> baseType = type.getSuperclass();
@@ -92,18 +91,18 @@ public class EntityInducer {
       FieldMap fieldMap = FieldMap.getInstance(type);
       return updateJsonTree(tree, entity, type, fieldMap);
     } else {
-      FieldMap fieldMap = FieldMap.getInstance(type, stopType);
+      FieldMap fieldMap = FieldMap.getCombinedInstance(type, stopType);
       return updateJsonTree(tree, entity, type, fieldMap.removeSharedFields());
     }
   }
 
   public JsonNode adminSystemEntity(SystemEntity entity, ObjectNode tree) {
-    FieldMap fieldMap = FieldMap.getInstance(SystemEntity.class, Entity.class);
+    FieldMap fieldMap = FieldMap.getCombinedInstance(SystemEntity.class);
     return updateJsonTree(tree, entity, SystemEntity.class, fieldMap);
   }
 
   public JsonNode adminDomainEntity(DomainEntity entity, ObjectNode tree) {
-    FieldMap fieldMap = FieldMap.getInstance(DomainEntity.class, Entity.class);
+    FieldMap fieldMap = FieldMap.getCombinedInstance(DomainEntity.class);
     return updateJsonTree(tree, entity, DomainEntity.class, fieldMap);
   }
 

@@ -151,7 +151,7 @@ public class EntityReducer {
     try {
       T object = type.newInstance();
       String iname = TypeNames.getInternalName(viewType);
-      FieldMap fields = FieldMap.getInstance(viewType, Entity.class);
+      FieldMap fields = FieldMap.getCombinedInstance(viewType);
       for (Map.Entry<String, Field> entry : fields.entrySet()) {
         String key = propertyName(iname, entry.getKey());
         JsonNode node = tree.findValue(key);
