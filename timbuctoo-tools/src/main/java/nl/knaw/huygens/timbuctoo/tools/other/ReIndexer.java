@@ -27,7 +27,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
@@ -36,48 +35,45 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.lang3.time.StopWatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Guice;
+import com.google.common.base.Stopwatch;
 import com.google.inject.Injector;
 
 public class ReIndexer {
 
-  public final static Logger LOG = LoggerFactory.getLogger(ReIndexer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(ReIndexer.class);
 
-  public static void main(String[] args) throws ConfigurationException, IndexException, InterruptedException {
-    StopWatch stopWatch = new StopWatch();
-    stopWatch.start();
-    Configuration config = new Configuration("config.xml");
-    Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
+  public static void main(String[] args) throws Exception {
+    Stopwatch stopwatch = Stopwatch.createStarted();
 
-    TypeRegistry registry = injector.getInstance(TypeRegistry.class);
+    Injector injector = ToolsInjectionModule.createInjector();
     Repository repository = injector.getInstance(Repository.class);
     IndexManager indexManager = injector.getInstance(IndexManager.class);
 
     try {
-      new ReIndexer().indexAsynchrounous(repository, indexManager, registry);
+      new ReIndexer().indexAsynchrounous(repository, indexManager);
     } finally {
       repository.close();
       indexManager.close();
-      stopWatch.stop();
-      LOG.info("Time used: {}", stopWatch);
+      LOG.info("Time used: {}", stopwatch);
     }
   }
 
-  public void indexAsynchrounous(Repository repository, IndexManager indexManager, TypeRegistry registry) throws InterruptedException, IndexException {
+  public void indexAsynchrounous(Repository repository, IndexManager indexManager) throws InterruptedException, IndexException {
     LOG.info("Clearing index");
     indexManager.deleteAllEntities();
-    int numberOfTasks = registry.getPrimitiveDomainEntityTypes().size();
-    CountDownLatch countDownLatch = new CountDownLatch(numberOfTasks);
-    ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
-    for (Class<? extends DomainEntity> primitiveType : registry.getPrimitiveDomainEntityTypes()) {
-      LOG.info("Task started");
-      Runnable indexer = new Indexer(primitiveType, repository, indexManager, countDownLatch);
+    TypeRegistry registry = repository.getTypeRegistry();
+    int numberOfTasks = registry.getPrimitiveDomainEntityTypes().size();
+    int numberOfProcessors = Runtime.getRuntime().availableProcessors();
+    LOG.info("Indexing {} collections, using {} processes", numberOfTasks, numberOfProcessors);
+
+    CountDownLatch countDownLatch = new CountDownLatch(numberOfTasks);
+    ExecutorService executor = Executors.newFixedThreadPool(numberOfProcessors);
+    for (Class<? extends DomainEntity> type : registry.getPrimitiveDomainEntityTypes()) {
+      Runnable indexer = new Indexer(type, repository, indexManager, countDownLatch);
       executor.execute(indexer);
     }
     executor.shutdown();
@@ -103,9 +99,11 @@ public class ReIndexer {
       String typeName = TypeNames.getInternalName(type);
       LOG.info("Start indexing for {}.", typeName);
       try {
-        for (StorageIterator<? extends DomainEntity> iterator = repository.getDomainEntities(type); iterator.hasNext();) {
+        StorageIterator<? extends DomainEntity> iterator = repository.getDomainEntities(type);
+        while (iterator.hasNext()) {
           indexManager.addEntity(type, iterator.next().getId());
         }
+        iterator.close();
       } catch (RuntimeException e) {
         LOG.error("Error indexing for {}.", typeName);
         LOG.debug("Error: {}", e);
@@ -117,7 +115,7 @@ public class ReIndexer {
       }
       LOG.info("End indexing for {}.", typeName);
       countDownLatch.countDown();
-      LOG.info("Threads active: {}", countDownLatch.getCount());
+      LOG.info("Incomplete tasks: {}", countDownLatch.getCount());
     }
   }
 
