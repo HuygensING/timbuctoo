@@ -42,6 +42,7 @@ import nl.knaw.huygens.timbuctoo.security.UserConfigurationHandler;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -49,6 +50,8 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.container.filter.LoggingFilter;
 import com.sun.jersey.api.container.filter.RolesAllowedResourceFilterFactory;
 import com.sun.jersey.api.core.PackagesResourceConfig;
@@ -57,7 +60,7 @@ import com.sun.jersey.test.framework.AppDescriptor;
 import com.sun.jersey.test.framework.JerseyTest;
 import com.sun.jersey.test.framework.WebAppDescriptor;
 
-/* abstract class names should not end with Test, 
+/* Abstract class names should not end with Test, 
  * because the build script tries to execute all the classes with a Test suffix. 
  */
 public abstract class WebServiceTestSetup extends JerseyTest {
@@ -172,6 +175,15 @@ public abstract class WebServiceTestSetup extends JerseyTest {
     } catch (UnauthorizedException ex) {
       //Do nothing
     }
+  }
+
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Verifies that the reponse has the expected status.
+   */
+  protected void verifyResponseStatus(ClientResponse response, Status expectedStatus) {
+    Assert.assertEquals(expectedStatus, response.getStatusInfo());
   }
 
 }
