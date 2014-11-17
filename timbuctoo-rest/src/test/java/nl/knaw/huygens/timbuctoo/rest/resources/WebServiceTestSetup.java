@@ -51,6 +51,7 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.container.filter.LoggingFilter;
 import com.sun.jersey.api.container.filter.RolesAllowedResourceFilterFactory;
@@ -178,7 +179,12 @@ public abstract class WebServiceTestSetup extends JerseyTest {
     }
   }
 
-  // ---------------------------------------------------------------------------
+  protected WebResource addPathToWebResource(WebResource resource, String... pathElements) {
+    for (String pathElement : pathElements) {
+      resource = resource.path(pathElement);
+    }
+    return resource;
+  }
 
   /**
    * Verifies that the reponse has the expected status.

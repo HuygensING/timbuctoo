@@ -46,6 +46,7 @@ import javax.ws.rs.core.Response;
 import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.RegularSearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -83,11 +84,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
 
   @Override
   protected WebResource searchResource(String... pathElements) {
-    WebResource resource = resource().path(V1_PREFIX).path("search");
-    for (String pathElement : pathElements) {
-      resource = resource.path(pathElement);
-    }
-    return resource;
+    return addPathToWebResource(resource().path(Paths.V1_PATH).path("search"), pathElements);
   }
 
   @Test

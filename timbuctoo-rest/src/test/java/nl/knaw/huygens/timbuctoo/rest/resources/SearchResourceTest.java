@@ -77,9 +77,14 @@ public class SearchResourceTest extends SearchResourceTestBase {
   private static final String TYPE_STRING = "person";
   protected static final String RELATION_TYPE_STRING = "testrelation";
 
+  @Override
+  protected WebResource searchResource(String... pathElements) {
+    return addPathToWebResource(resource().path("search"), pathElements);
+  }
+
   @Test
   public void testPostSuccess() throws Exception {
-    final SearchParametersV1 searchParametersV1Mock = mock(SearchParametersV1.class);
+    SearchParametersV1 searchParametersV1Mock = mock(SearchParametersV1.class);
     VRE vreMock = setUpVREManager(true, true);
     // setup
     SearchParameters searchParameters = new SearchParameters();
@@ -155,15 +160,6 @@ public class SearchResourceTest extends SearchResourceTestBase {
     verify(vreMock).search(Matchers.<Class<? extends DomainEntity>> any(), any(SearchParametersV1.class));
   }
 
-  @Override
-  protected WebResource searchResource(String... pathElements) {
-    WebResource resource = resource().path("search");
-    for (String pathElement : pathElements) {
-      resource = resource.path(pathElement);
-    }
-    return resource;
-  }
-
   @Test
   public void testGetSuccess() {
     // setup
@@ -172,14 +168,16 @@ public class SearchResourceTest extends SearchResourceTestBase {
 
     RegularSearchResultDTO clientSearchResult = new RegularSearchResultDTO();
 
-    final int defaultStart = 0;
-    final int defaultRows = 10;
+    int defaultStart = 0;
+    int defaultRows = 10;
 
     when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
     when(regularSearchResultMapperMock.create(SEARCH_RESULT_TYPE, searchResult, defaultStart, defaultRows)).thenReturn(clientSearchResult);
 
     // action
-    ClientResponse response = searchResourceBuilder(ID).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+    ClientResponse response = searchResourceBuilder(ID) //
+        .accept(MediaType.APPLICATION_JSON_TYPE) //
+        .get(ClientResponse.class);
 
     // verify
     verifyResponseStatus(response, Status.OK);
@@ -234,8 +232,8 @@ public class SearchResourceTest extends SearchResourceTestBase {
 
     RelationSearchResultDTO clientSearchResult = new RelationSearchResultDTO();
 
-    final int defaultStart = 0;
-    final int defaultRows = 10;
+    int defaultStart = 0;
+    int defaultRows = 10;
 
     when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
     when(relationSearchResultMapperMock.create(TEST_RELATION_TYPE, searchResult, defaultStart, defaultRows)).thenReturn(clientSearchResult);
@@ -301,8 +299,8 @@ public class SearchResourceTest extends SearchResourceTestBase {
     RelationSearchParameters parameters = new RelationSearchParameters();
     parameters.setTypeString(RELATION_TYPE_STRING);
 
-    final VRE vreMock = mock(VRE.class);
-    final SearchResult searchResultMock = mock(SearchResult.class);
+    VRE vreMock = mock(VRE.class);
+    SearchResult searchResultMock = mock(SearchResult.class);
 
     RelationSearcher relationSearcher = injector.getInstance(RelationSearcher.class);
 
@@ -347,8 +345,8 @@ public class SearchResourceTest extends SearchResourceTestBase {
     RelationSearchParameters parameters = new RelationSearchParameters();
     parameters.setTypeString(RELATION_TYPE_STRING);
 
-    final VRE vreMock = mock(VRE.class);
-    final SearchResult searchResultMock = mock(SearchResult.class);
+    VRE vreMock = mock(VRE.class);
+    SearchResult searchResultMock = mock(SearchResult.class);
 
     RelationSearcher relationSearcher = injector.getInstance(RelationSearcher.class);
     parameters.setTypeString(RELATION_TYPE_STRING);
