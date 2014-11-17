@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.model.cnw;
 
 import java.util.List;
+import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.Person;
@@ -9,15 +10,18 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public class CNWPerson extends Person {
 
 	private String name = "";
 	private String koppelnaam = "";
 	private List<String> networkDomains = Lists.newArrayList();
-	private List<String> characteristics = Lists.newArrayList();
-	private List<String> subdomains = Lists.newArrayList();
+
 	private List<String> domains = Lists.newArrayList();
+	private List<String> subdomains = Lists.newArrayList();
+	private List<String> characteristics = Lists.newArrayList();
+
 	private List<String> memberships = Lists.newArrayList(); // Lidmaatschappen : Om te zetten naar facet met sorteerbare lijst
 	private String biodesurl = "";//Bioport url, Link, mogelijkheid tot doorklikken
 	private String dbnlUrl = "";//Link, mogelijkheid tot doorklikken
@@ -57,15 +61,6 @@ public class CNWPerson extends Person {
 		this.biodesurl = biodesurl;
 	}
 
-	@IndexAnnotation(fieldName = "dynamic_s_characteristic", canBeEmpty = true, isFaceted = true)
-	public List<String> getCharacteristics() {
-		return characteristics;
-	}
-
-	public void setCharacteristics(List<String> characteristicList) {
-		this.characteristics = characteristicList;
-	}
-
 	public String getDbnlUrl() {
 		return dbnlUrl;
 	}
@@ -74,20 +69,40 @@ public class CNWPerson extends Person {
 		this.dbnlUrl = dbnlUrl;
 	}
 
-	public List<String> getDomains() {
-		return domains;
-	}
-
 	public void setDomains(List<String> domains) {
 		this.domains = domains;
 	}
 
-	public String getKoppelnaam() {
-		return koppelnaam;
+	@IndexAnnotation(fieldName = "dynamic_s_domain", canBeEmpty = false, isFaceted = true)
+	public List<String> getDomains() {
+		return domains;
+	}
+
+	public void setSubDomains(List<String> subdomains) {
+		this.subdomains = subdomains;
+	}
+
+	@IndexAnnotation(fieldName = "dynamic_s_subdomain", canBeEmpty = true, isFaceted = true)
+	public List<String> getSubDomains() {
+		return subdomains;
+	}
+
+	public void setCharacteristics(List<String> characteristicList) {
+		this.characteristics = characteristicList;
+	}
+
+	@IndexAnnotation(fieldName = "dynamic_s_characteristic", canBeEmpty = false, isFaceted = true)
+	public List<String> getCharacteristics() {
+		return characteristics;
 	}
 
 	public void setKoppelnaam(String koppelnaam) {
 		this.koppelnaam = koppelnaam;
+	}
+
+	@IndexAnnotation(fieldName = "dynamic_s_koppelnaam", canBeEmpty = false, isFaceted = false)
+	public String getKoppelnaam() {
+		return koppelnaam;
 	}
 
 	public String getName() {
@@ -130,12 +145,13 @@ public class CNWPerson extends Person {
 		this.verwijzingen = verwijzingen;
 	}
 
-	public List<String> getNetworkDomains() {
-		return networkDomains;
-	}
-
 	public void setNetworkDomains(List<String> networkDomains) {
 		this.networkDomains = networkDomains;
+	}
+
+	@IndexAnnotation(fieldName = "dynamic_s_networkdomain", canBeEmpty = false, isFaceted = true)
+	public List<String> getNetworkDomains() {
+		return networkDomains;
 	}
 
 	//	public String getDbngUrl() {
@@ -243,7 +259,4 @@ public class CNWPerson extends Person {
 		this.altNames = altNames;
 	}
 
-	public List<String> getSubDomains() {
-		return subdomains;
-	}
 }
