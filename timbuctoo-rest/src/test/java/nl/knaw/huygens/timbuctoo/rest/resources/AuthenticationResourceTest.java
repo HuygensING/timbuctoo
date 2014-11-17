@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.client.WebResource;
 
 public class AuthenticationResourceTest extends WebServiceTestSetup {
@@ -38,7 +39,7 @@ public class AuthenticationResourceTest extends WebServiceTestSetup {
     ClientResponse response = doAuthenticationRequest();
 
     // verify
-    assertThat(response.getClientResponseStatus(), is(ClientResponse.Status.NO_CONTENT));
+    verifyResponseStatus(response, Status.NO_CONTENT);
     assertThat(response.getHeaders().get(CustomHeaders.TOKEN_HEADER).get(0), is(equalTo(token)));
   }
 
@@ -50,8 +51,7 @@ public class AuthenticationResourceTest extends WebServiceTestSetup {
     ClientResponse response = doAuthenticationRequest();
 
     // verify
-    assertThat(response.getClientResponseStatus(), is(ClientResponse.Status.UNAUTHORIZED));
-
+    verifyResponseStatus(response, Status.UNAUTHORIZED);
   }
 
   @Test
@@ -63,7 +63,7 @@ public class AuthenticationResourceTest extends WebServiceTestSetup {
     ClientResponse response = doAuthenticationRequest();
 
     // verify
-    assertThat(response.getClientResponseStatus(), is(ClientResponse.Status.BAD_REQUEST));
+    verifyResponseStatus(response, Status.BAD_REQUEST);
   }
 
   private ClientResponse doAuthenticationRequest() {
@@ -75,4 +75,5 @@ public class AuthenticationResourceTest extends WebServiceTestSetup {
   private WebResource authenticationResource() {
     return resource().path("authenticate");
   }
+
 }
