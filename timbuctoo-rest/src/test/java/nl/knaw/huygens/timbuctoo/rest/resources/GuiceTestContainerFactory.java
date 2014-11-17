@@ -48,7 +48,6 @@ public class GuiceTestContainerFactory implements TestContainerFactory {
     this.injector = injector;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public Class<LowLevelAppDescriptor> supports() {
     return LowLevelAppDescriptor.class;

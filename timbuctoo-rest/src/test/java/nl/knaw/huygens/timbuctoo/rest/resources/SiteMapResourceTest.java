@@ -23,27 +23,31 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  */
 
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
-import static org.junit.Assert.assertEquals;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 
 import org.junit.Test;
 
 import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.ClientResponse.Status;
 
 public class SiteMapResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetSitemap() {
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
-    ClientResponse response = resource().path(Paths.SYSTEM_PREFIX).path("api").get(ClientResponse.class);
-    assertEquals(ClientResponse.Status.OK, response.getClientResponseStatus());
+
+    ClientResponse response = resource().path(Paths.SYSTEM_PREFIX).path("api") //
+        .get(ClientResponse.class);
+    verifyResponseStatus(response, Status.OK);
   }
 
   @Test
   public void testGetSitemapV1() {
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
-    ClientResponse response = resource().path(Paths.V1_PATH).path(Paths.SYSTEM_PREFIX).path("api").get(ClientResponse.class);
-    assertEquals(ClientResponse.Status.OK, response.getClientResponseStatus());
+
+    ClientResponse response = resource().path(Paths.V1_PATH).path(Paths.SYSTEM_PREFIX).path("api") //
+        .get(ClientResponse.class);
+    verifyResponseStatus(response, Status.OK);
   }
 
 }

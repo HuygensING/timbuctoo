@@ -22,9 +22,6 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
-import static com.sun.jersey.api.client.ClientResponse.Status.BAD_REQUEST;
-import static com.sun.jersey.api.client.ClientResponse.Status.CREATED;
-import static com.sun.jersey.api.client.ClientResponse.Status.INTERNAL_SERVER_ERROR;
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -77,7 +74,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
   private static final Class<Class<? extends Relation>> RELATION_TYPE = new GenericType<Class<? extends Relation>>() {}.getRawClass();
   private static final String V1_PREFIX = "v1";
   private static final String TYPE_STRING = "persons";
-  protected static final String RELATION_TYPE_STRING = "testrelations";
+  private static final String RELATION_TYPE_STRING = "testrelations";
   private static final String RELATION_SEARCH_RESULT_TYPE = "testrelation";
 
   private void setupPublicUrl(String url) {
@@ -104,11 +101,13 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
 
     setupPublicUrl(resource().getURI().toString());
 
-    String expected = getExpectedURL(ID);
-    ClientResponse response = searchResourceBuilder(TYPE_STRING).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
-    String actual = response.getHeaders().getFirst(LOCATION_HEADER);
+    ClientResponse response = searchResourceBuilder(TYPE_STRING) //
+        .header(VRE_ID_KEY, VRE_ID) //
+        .post(ClientResponse.class, params);
+    verifyResponseStatus(response, Status.CREATED);
 
-    assertEquals(Status.CREATED, response.getClientResponseStatus());
+    String expected = getExpectedURL(ID);
+    String actual = response.getHeaders().getFirst(LOCATION_HEADER);
     assertEquals(expected, actual);
     verify(repository).getVREById(anyString());
     verifyVRESearchIsCalled(vreMock);
@@ -120,17 +119,15 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
 
   @Test
   public void testPostRequestInvalid() {
-    // setup
-    SearchParametersV1 SearchParametersV1 = new SearchParametersV1();
+    SearchParametersV1 parameters = new SearchParametersV1();
     doThrow(new TimbuctooException(Response.Status.BAD_REQUEST, "Error")).when(searchRequestValidator).validate(anyString(), anyString(), any(SearchParametersV1.class));
 
-    // action
-    ClientResponse response = searchResourceBuilder(TYPE_STRING).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, SearchParametersV1);
+    ClientResponse response = searchResourceBuilder(TYPE_STRING) //
+        .header(VRE_ID_KEY, VRE_ID) //
+        .post(ClientResponse.class, parameters);
+    verifyResponseStatus(response, Status.BAD_REQUEST);
 
-    // verify
-    assertThat(response.getClientResponseStatus(), equalTo(Status.BAD_REQUEST));
     verifyZeroInteractions(repository);
-
   }
 
   @Test
@@ -140,9 +137,11 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     SearchParametersV1 params = new SearchParametersV1().setTerm(TERM);
     doThrow(Exception.class).when(vreMock).search(Matchers.<Class<? extends DomainEntity>> any(), any(SearchParametersV1.class));
 
-    ClientResponse response = searchResourceBuilder(TYPE_STRING).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
+    ClientResponse response = searchResourceBuilder(TYPE_STRING) //
+        .header(VRE_ID_KEY, VRE_ID) //
+        .post(ClientResponse.class, params);
+    verifyResponseStatus(response, Status.INTERNAL_SERVER_ERROR);
 
-    assertEquals(Status.INTERNAL_SERVER_ERROR, response.getClientResponseStatus());
     verify(repository, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
     verifyVRESearchIsCalled(vreMock);
   }
@@ -160,44 +159,42 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     setSearchResult(vreMock, searchResult);
     doThrow(IOException.class).when(repository).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
 
-    ClientResponse response = searchResourceBuilder(TYPE_STRING).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, params);
+    ClientResponse response = searchResourceBuilder(TYPE_STRING) //
+        .header(VRE_ID_KEY, VRE_ID) //
+        .post(ClientResponse.class, params);
+    verifyResponseStatus(response, Status.INTERNAL_SERVER_ERROR);
 
-    assertEquals(Status.INTERNAL_SERVER_ERROR, response.getClientResponseStatus());
     verify(repository).getVREById(anyString());
     verifyVRESearchIsCalled(vreMock);
   }
 
   @Test
   public void testGetSuccess() {
-    // setup
     SearchResult searchResult = new SearchResult();
     searchResult.setSearchType(SEARCH_RESULT_TYPE_STRING);
 
     RegularSearchResultDTO clientSearchResult = new RegularSearchResultDTO();
 
-    final int defaultStart = 0;
-    final int defaultRows = 10;
+    int defaultStart = 0;
+    int defaultRows = 10;
 
     when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
     when(regularSearchResultMapperMock.create(SEARCH_RESULT_TYPE, searchResult, defaultStart, defaultRows)).thenReturn(clientSearchResult);
 
-    // action
-    ClientResponse response = searchResourceBuilder(ID).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
-
-    // verify
-    assertThat(response.getClientResponseStatus(), equalTo(Status.OK));
+    ClientResponse response = searchResourceBuilder(ID) //
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .get(ClientResponse.class);
+    verifyResponseStatus(response, Status.OK);
 
     RegularSearchResultDTO actualResult = response.getEntity(RegularSearchResultDTO.class);
     assertThat(actualResult, notNullValue(RegularSearchResultDTO.class));
 
     verify(repository).getEntity(SearchResult.class, ID);
     verify(regularSearchResultMapperMock).create(SEARCH_RESULT_TYPE, searchResult, defaultStart, defaultRows);
-
   }
 
   @Test
   public void testGetSuccessWithStartAndRows() {
-    // setup
     int startIndex = 20;
     int numberOfRows = 20;
 
@@ -213,11 +210,12 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
     when(regularSearchResultMapperMock.create(SEARCH_RESULT_TYPE, searchResult, startIndex, numberOfRows)).thenReturn(clientSearchResult);
 
-    // action
-    ClientResponse clientResponse = searchResource(ID).queryParams(queryParameters).type(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
-
-    // verify
-    assertThat(clientResponse.getClientResponseStatus(), equalTo(Status.OK));
+    ClientResponse clientResponse = searchResource(ID) //
+        .queryParams(queryParameters) //
+        .type(MediaType.APPLICATION_JSON_TYPE) //
+        .accept(MediaType.APPLICATION_JSON_TYPE) //
+        .get(ClientResponse.class);
+    verifyResponseStatus(clientResponse, Status.OK);
 
     RegularSearchResultDTO actualResult = clientResponse.getEntity(RegularSearchResultDTO.class);
     assertThat(actualResult, notNullValue(RegularSearchResultDTO.class));
@@ -228,23 +226,21 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
 
   @Test
   public void testGetRelationSearch() {
-    // setup
     SearchResult searchResult = new SearchResult();
     searchResult.setSearchType(RELATION_SEARCH_RESULT_TYPE);
 
     RelationSearchResultDTO clientSearchResult = new RelationSearchResultDTO();
 
-    final int defaultStart = 0;
-    final int defaultRows = 10;
+    int defaultStart = 0;
+    int defaultRows = 10;
 
     when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
     when(relationSearchResultMapperMock.create(TEST_RELATION_TYPE, searchResult, defaultStart, defaultRows)).thenReturn(clientSearchResult);
 
-    // action
-    ClientResponse response = searchResourceBuilder(ID).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
-
-    // verify
-    assertThat(response.getClientResponseStatus(), equalTo(Status.OK));
+    ClientResponse response = searchResourceBuilder(ID) //
+        .accept(MediaType.APPLICATION_JSON_TYPE) //
+        .get(ClientResponse.class);
+    verifyResponseStatus(response, Status.OK);
 
     RelationSearchResultDTO actualResult = response.getEntity(RelationSearchResultDTO.class);
     assertThat(actualResult, notNullValue(RelationSearchResultDTO.class));
@@ -255,32 +251,34 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
 
   @Test
   public void testGetNoId() {
-    ClientResponse response = searchResourceBuilder().accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
-
-    assertEquals(Status.METHOD_NOT_ALLOWED, response.getClientResponseStatus());
+    ClientResponse response = searchResourceBuilder() //
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .get(ClientResponse.class);
+    verifyResponseStatus(response, Status.METHOD_NOT_ALLOWED);
   }
 
   @Test
   public void testGetUnknownId() {
     when(repository.getEntity(SearchResult.class, ID)).thenReturn(null);
 
-    ClientResponse response = searchResourceBuilder(ID).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
-
-    assertEquals(Status.NOT_FOUND, response.getClientResponseStatus());
+    ClientResponse response = searchResourceBuilder(ID)
+        .accept(MediaType.APPLICATION_JSON_TYPE)
+        .get(ClientResponse.class);
+    verifyResponseStatus(response, Status.NOT_FOUND);
   }
 
   @Test
   public void testGetSearchTypeUnknown() {
     SearchResult searchResult = new SearchResult();
     searchResult.setId(ID);
-    String unknownType = "unknown";
-    searchResult.setSearchType(unknownType);
+    searchResult.setSearchType("unknown");
 
     when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
 
-    ClientResponse response = searchResourceBuilder(ID).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
-
-    assertEquals(Status.BAD_REQUEST, response.getClientResponseStatus());
+    ClientResponse response = searchResourceBuilder(ID) //
+        .accept(MediaType.APPLICATION_JSON_TYPE) //
+        .get(ClientResponse.class);
+    verifyResponseStatus(response, Status.BAD_REQUEST);
   }
 
   /*
@@ -291,95 +289,82 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
 
   @Test
   public void aSuccessfulRelationSearchPostShouldResponseWithStatusCodeCreatedandALocationHeader() throws SearchException, SearchValidationException, StorageException, ValidationException {
-    // setup
+    RelationSearcher searcher = injector.getInstance(RelationSearcher.class);
+    RelationSearchParameters parameters = new RelationSearchParameters();
     setupPublicUrl(resource().getURI().toString());
-    String expectedLocationHeader = getRelationSearchURL(ID);
-
-    RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
-
-    final VRE vreMock = mock(VRE.class);
-    final SearchResult searchResultMock = mock(SearchResult.class);
-
-    RelationSearcher relationSearcher = injector.getInstance(RelationSearcher.class);
+    VRE vreMock = mock(VRE.class);
+    SearchResult searchResultMock = mock(SearchResult.class);
 
     when(repository.getVREById(VRE_ID)).thenReturn(vreMock);
-    when(relationSearcher.search(any(VRE.class), isNotNull(new GenericType<Class<? extends DomainEntity>>() {}.getRawClass()), any(RelationSearchParameters.class))).thenReturn(searchResultMock);
+    when(searcher.search(any(VRE.class), isNotNull(new GenericType<Class<? extends DomainEntity>>() {}.getRawClass()), any(RelationSearchParameters.class))).thenReturn(searchResultMock);
     when(repository.addSystemEntity(SearchResult.class, searchResultMock)).thenReturn(ID);
 
-    // action
-    ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
+    ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING) //
+        .header(VRE_ID_KEY, VRE_ID) //
+        .post(ClientResponse.class, parameters);
+    verifyResponseStatus(response, Status.CREATED);
 
-    // verify
-    assertThat(response.getClientResponseStatus(), equalTo(CREATED));
-    assertThat(response.getLocation().toString(), equalTo(expectedLocationHeader));
-
+    assertThat(response.getLocation().toString(), equalTo(getRelationSearchURL(ID)));
     verify(searchRequestValidator).validateRelationRequest(anyString(), anyString(), any(RelationSearchParameters.class));
-    verify(relationSearcher).search(isNotNull(VRE.class), isNotNull(RELATION_TYPE), isNotNull(RelationSearchParameters.class));
+    verify(searcher).search(isNotNull(VRE.class), isNotNull(RELATION_TYPE), isNotNull(RelationSearchParameters.class));
     verify(repository).addSystemEntity(SearchResult.class, searchResultMock);
-
   }
 
   @Test
   public void anInvalidSearchRequestPostShouldRespondWithABadRequestStatus() throws StorageException, ValidationException {
-    // setup
-    RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
-
-    RelationSearcher relationSearcher = injector.getInstance(RelationSearcher.class);
-
+    RelationSearcher searcher = injector.getInstance(RelationSearcher.class);
+    RelationSearchParameters parameters = new RelationSearchParameters();
     doThrow(new TimbuctooException(Response.Status.BAD_REQUEST, "Error")).when(searchRequestValidator).validateRelationRequest(anyString(), anyString(), any(RelationSearchParameters.class));
 
-    // action
-    ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING).type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
+    ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING) //
+        .type(MediaType.APPLICATION_JSON) //
+        .header(VRE_ID_KEY, VRE_ID) //
+        .post(ClientResponse.class, parameters);
+    verifyResponseStatus(response, Status.BAD_REQUEST);
 
-    // verify
-    assertThat(response.getClientResponseStatus(), equalTo(BAD_REQUEST));
-    verifyZeroInteractions(repository, relationSearcher);
+    verifyZeroInteractions(repository, searcher);
   }
 
   @Test
   public void whenTheRepositoryCannotStoreTheRelationSearchResultAnInternalServerErrorShouldBeReturned() throws StorageException, ValidationException, Exception {
-    // setup
-    RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
+    RelationSearcher searcher = injector.getInstance(RelationSearcher.class);
+    RelationSearchParameters parameters = new RelationSearchParameters();
 
-    final VRE vreMock = mock(VRE.class);
-    final SearchResult searchResultMock = mock(SearchResult.class);
-
-    RelationSearcher relationSearcher = injector.getInstance(RelationSearcher.class);
+    VRE vreMock = mock(VRE.class);
+    SearchResult searchResultMock = mock(SearchResult.class);
 
     when(repository.getVREById(VRE_ID)).thenReturn(vreMock);
-    when(relationSearcher.search(any(VRE.class), isNotNull(RELATION_TYPE), any(RelationSearchParameters.class))).thenReturn(searchResultMock);
+    when(searcher.search(any(VRE.class), isNotNull(RELATION_TYPE), any(RelationSearchParameters.class))).thenReturn(searchResultMock);
     doThrow(Exception.class).when(repository).addSystemEntity(SearchResult.class, searchResultMock);
 
-    // action
-    ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING).type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
-
-    // verify
-    assertThat(response.getClientResponseStatus(), equalTo(INTERNAL_SERVER_ERROR));
+    ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING) //
+        .type(MediaType.APPLICATION_JSON) //
+        .header(VRE_ID_KEY, VRE_ID) //
+        .post(ClientResponse.class, parameters);
+    verifyResponseStatus(response, Status.INTERNAL_SERVER_ERROR);
 
     verify(searchRequestValidator).validateRelationRequest(anyString(), anyString(), any(RelationSearchParameters.class));
-    verify(relationSearcher).search(any(VRE.class), isNotNull(RELATION_TYPE), any(RelationSearchParameters.class));
+    verify(searcher).search(any(VRE.class), isNotNull(RELATION_TYPE), any(RelationSearchParameters.class));
     verify(repository).addSystemEntity(SearchResult.class, searchResultMock);
   }
 
   @Test
   public void whenTheRelationSearcherThrowsAnSearchExceptionAnInternalServerErrorShouldBeReturned() throws StorageException, ValidationException, Exception {
-    // setup
-    RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
+    RelationSearcher searcher = injector.getInstance(RelationSearcher.class);
+    RelationSearchParameters parameters = new RelationSearchParameters();
 
-    final VRE vreMock = mock(VRE.class);
-    RelationSearcher relationSearcher = injector.getInstance(RelationSearcher.class);
-
+    VRE vreMock = mock(VRE.class);
     when(repository.getVREById(VRE_ID)).thenReturn(vreMock);
-    doThrow(SearchException.class).when(relationSearcher).search(any(VRE.class), isNotNull(RELATION_TYPE), any(RelationSearchParameters.class));
+    doThrow(SearchException.class).when(searcher).search(any(VRE.class), isNotNull(RELATION_TYPE), any(RelationSearchParameters.class));
 
-    // action
-    ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING).type(MediaType.APPLICATION_JSON).header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, relationSearchParameters);
-
-    // verify
-    assertThat(response.getClientResponseStatus(), equalTo(INTERNAL_SERVER_ERROR));
+    ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING) //
+        .type(MediaType.APPLICATION_JSON) //
+        .header(VRE_ID_KEY, VRE_ID) //
+        .post(ClientResponse.class, parameters);
+    verifyResponseStatus(response, Status.INTERNAL_SERVER_ERROR);
 
     verify(searchRequestValidator).validateRelationRequest(anyString(), anyString(), any(RelationSearchParameters.class));
-    verify(relationSearcher).search(any(VRE.class), isNotNull(RELATION_TYPE), any(RelationSearchParameters.class));
+    verify(searcher).search(any(VRE.class), isNotNull(RELATION_TYPE), any(RelationSearchParameters.class));
   }
 
   private String getRelationSearchURL(String id) {
