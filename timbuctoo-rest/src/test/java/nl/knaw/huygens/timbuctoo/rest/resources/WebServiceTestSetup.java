@@ -60,14 +60,15 @@ import com.sun.jersey.test.framework.AppDescriptor;
 import com.sun.jersey.test.framework.JerseyTest;
 import com.sun.jersey.test.framework.WebAppDescriptor;
 
-/* Abstract class names should not end with Test, 
+/*
+ * Abstract class names should not end with Test, 
  * because the build script tries to execute all the classes with a Test suffix. 
  */
 public abstract class WebServiceTestSetup extends JerseyTest {
 
   protected static final String USER_ID = "USER000000001";
   protected static final String VRE_ID = "vreID";
-  protected static final String AUTHORIZATION = "bearer 12333322abef";
+  protected static final String CREDENTIALS = "bearer 12333322abef";
 
   protected static Injector injector;
 

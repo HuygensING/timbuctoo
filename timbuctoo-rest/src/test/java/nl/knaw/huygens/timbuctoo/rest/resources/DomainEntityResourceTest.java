@@ -22,6 +22,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
+import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 import static nl.knaw.huygens.timbuctoo.config.TypeNames.getExternalName;
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.REVISION_KEY;
@@ -206,7 +207,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header("Authorization", AUTHORIZATION) //
+        .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     verifyResponseStatus(response, Status.NO_CONTENT);
@@ -231,7 +232,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header("Authorization", AUTHORIZATION) //
+        .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     verifyResponseStatus(response, Status.FORBIDDEN);
@@ -253,7 +254,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header("Authorization", AUTHORIZATION) //
+        .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     verifyResponseStatus(response, Status.FORBIDDEN);
@@ -274,7 +275,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     whenJsonProviderReadFromThenReturn(entity);
 
     Validator validator = injector.getInstance(Validator.class);
-    // Mockito could not mock the ConstraintViolation, it entered an infinit loop.
+    // Mockito could not mock the ConstraintViolation, it entered an infinite loop.
     ConstraintViolation<ProjectADomainEntity> violation = new ConstraintViolation<ProjectADomainEntity>() {
 
       @Override
@@ -322,7 +323,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header("Authorization", AUTHORIZATION) //
+        .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     verifyResponseStatus(response, Status.BAD_REQUEST);
@@ -345,7 +346,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE, id) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header("Authorization", AUTHORIZATION) //
+        .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     verifyResponseStatus(response, Status.NOT_FOUND);
@@ -365,7 +366,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = createResource(null, "unknown", DEFAULT_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header("Authorization", AUTHORIZATION) //
+        .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     verifyResponseStatus(response, Status.NOT_FOUND);
@@ -385,7 +386,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = createResource(null, "otherdomainentities", DEFAULT_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header("Authorization", AUTHORIZATION) //
+        .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     verifyResponseStatus(response, Status.BAD_REQUEST);
@@ -405,7 +406,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = createResource(null, "otherdomainentities", DEFAULT_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header("Authorization", AUTHORIZATION) //
+        .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     verifyResponseStatus(response, Status.BAD_REQUEST);
@@ -419,7 +420,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = createResource(null, "otherdomainentities") //
         .type(MediaType.APPLICATION_JSON_TYPE)
-        .header("Authorization", AUTHORIZATION)
+        .header(AUTHORIZATION, CREDENTIALS)
         .header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     verifyResponseStatus(response, Status.METHOD_NOT_ALLOWED);
@@ -455,7 +456,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = createResource(null, getExternalName(type), id) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header("Authorization", AUTHORIZATION) //
+        .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     verifyResponseStatus(response, Status.NO_CONTENT);
@@ -493,7 +494,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header("Authorization", AUTHORIZATION) //
+        .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID)
         .post(ClientResponse.class, entity);
     verifyResponseStatus(response, Status.CREATED);
@@ -518,7 +519,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header("Authorization", AUTHORIZATION) //
+        .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID)
         .post(ClientResponse.class, entity);
     verifyResponseStatus(response, Status.FORBIDDEN);
@@ -535,7 +536,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = createResource(null, "unknown", "all") //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header("Authorization", AUTHORIZATION) //
+        .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID)
         .post(ClientResponse.class, entity);
     verifyResponseStatus(response, Status.NOT_FOUND);
@@ -554,7 +555,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = createResource(null, "otherdomainentities") //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header("Authorization", AUTHORIZATION) //
+        .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID)
         .post(ClientResponse.class, entity);
     verifyResponseStatus(response, Status.BAD_REQUEST);
@@ -568,7 +569,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = createResource(null, "otherentitys", DEFAULT_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header("Authorization", AUTHORIZATION) //
+        .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID)
         .post(ClientResponse.class, entity);
     verifyResponseStatus(response, Status.METHOD_NOT_ALLOWED);
@@ -603,7 +604,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = createResource(null, getExternalName(type)) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header("Authorization", AUTHORIZATION) //
+        .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID) //
         .post(ClientResponse.class, entity);
     verifyResponseStatus(response, Status.CREATED);
@@ -643,7 +644,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = createResource(null, BASEADOMAINENTITIES_RESOURCE, DEFAULT_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header("Authorization", AUTHORIZATION) //
+        .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID)
         .delete(ClientResponse.class);
     verifyResponseStatus(response, Status.NO_CONTENT);
@@ -662,7 +663,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header("Authorization", AUTHORIZATION) //
+        .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID)
         .delete(ClientResponse.class);
     verifyResponseStatus(response, Status.BAD_REQUEST);
@@ -680,7 +681,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = createResource(null, BASEADOMAINENTITIES_RESOURCE, DEFAULT_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header("Authorization", AUTHORIZATION) //
+        .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID)
         .delete(ClientResponse.class);
     verifyResponseStatus(response, Status.FORBIDDEN);
@@ -697,7 +698,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = createResource(null, BASEADOMAINENTITIES_RESOURCE, DEFAULT_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header("Authorization", AUTHORIZATION) //
+        .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID)
         .delete(ClientResponse.class);
     verifyResponseStatus(response, Status.NOT_FOUND);
@@ -713,7 +714,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = createResource(null, "unknownEntities", DEFAULT_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header("Authorization", AUTHORIZATION) //
+        .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID)
         .delete(ClientResponse.class);
     verifyResponseStatus(response, Status.NOT_FOUND);
@@ -725,7 +726,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testDeleteCollection() throws Exception {
     ClientResponse response = createResource(null, BASEADOMAINENTITIES_RESOURCE) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header("Authorization", AUTHORIZATION) //
+        .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID)
         .delete(ClientResponse.class);
     verifyResponseStatus(response, Status.METHOD_NOT_ALLOWED);
@@ -764,7 +765,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header("Authorization", AUTHORIZATION) //
+        .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID)
         .put(ClientResponse.class, entity);
     verifyResponseStatus(response, Status.FORBIDDEN);
@@ -780,8 +781,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     setUserNotLoggedIn();
 
     ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE, DEFAULT_ID) //
-        .header(VRE_ID_KEY, VRE_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
+        .header(VRE_ID_KEY, VRE_ID) //
         .put(ClientResponse.class, entity);
     verifyResponseStatus(response, Status.UNAUTHORIZED);
 
@@ -796,9 +797,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE) //
-        .header(VRE_ID_KEY, VRE_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header("Authorization", AUTHORIZATION)
+        .header(AUTHORIZATION, CREDENTIALS)
         .header(VRE_ID_KEY, VRE_ID) //
         .post(ClientResponse.class, entity);
     verifyResponseStatus(response, Status.FORBIDDEN);
@@ -814,8 +814,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     setUserNotLoggedIn();
 
     ClientResponse response = createResource(null, PROJECTADOMAINENTITIES_RESOURCE) //
-        .header(VRE_ID_KEY, VRE_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
+        .header(VRE_ID_KEY, VRE_ID) //
         .post(ClientResponse.class, entity);
     verifyResponseStatus(response, Status.UNAUTHORIZED);
 
@@ -841,8 +841,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     ClientResponse response = createResource(null, BASEADOMAINENTITIES_RESOURCE, DEFAULT_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header(VRE_ID_KEY, VRE_ID) //
-        .header("Authorization", AUTHORIZATION)
+        .header(AUTHORIZATION, CREDENTIALS)
         .header(VRE_ID_KEY, VRE_ID) //
         .delete(ClientResponse.class);
     verifyResponseStatus(response, Status.FORBIDDEN);
@@ -933,7 +932,10 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   private ClientResponse doPutPIDRequest(String collectionName) {
-    return createResource(null, collectionName, "pid").header(VRE_ID_KEY, VRE_ID).header("Authorization", AUTHORIZATION).put(ClientResponse.class);
+    return createResource(null, collectionName, "pid") //
+        .header(AUTHORIZATION, CREDENTIALS) //
+        .header(VRE_ID_KEY, VRE_ID) //
+        .put(ClientResponse.class);
   }
 
   // --- V1 Tests --------------------------------------------------------------
