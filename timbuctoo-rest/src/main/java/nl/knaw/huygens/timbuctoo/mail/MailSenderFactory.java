@@ -22,8 +22,6 @@ package nl.knaw.huygens.timbuctoo.mail;
  * #L%
  */
 
-import com.google.inject.Inject;
-
 public class MailSenderFactory {
 
   private final boolean enabled;
@@ -31,7 +29,6 @@ public class MailSenderFactory {
   private final String port;
   private final String fromAddress;
 
-  @Inject
   public MailSenderFactory(boolean isMailEnabled, String host, String port, String fromAddress) {
     enabled = isMailEnabled;
     this.host = host;

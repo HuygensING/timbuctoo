@@ -60,6 +60,7 @@ import com.google.inject.Singleton;
 import com.sun.jersey.api.client.Client;
 
 public class RESTInjectionModule extends BasicInjectionModule {
+
   private final SecurityType securityType;
 
   public RESTInjectionModule(Configuration config) {
@@ -69,7 +70,6 @@ public class RESTInjectionModule extends BasicInjectionModule {
 
   @Override
   protected void configure() {
-
     super.configure();
 
     bind(AbstractSolrServerBuilder.class).toProvider(AbstractSolrServerBuilderProvider.class);
@@ -83,17 +83,9 @@ public class RESTInjectionModule extends BasicInjectionModule {
 
     if (SecurityType.DEFAULT.equals(securityType)) {
       bind(AuthenticationHandler.class).to(TimbuctooAuthenticationHandler.class);
-    } else {
-      bind(AuthenticationHandler.class).to(ExampleAuthenticationHandler.class);
-    }
-
-    configureTheAuthorizationHandler();
-  }
-
-  private void configureTheAuthorizationHandler() {
-    if (SecurityType.DEFAULT.equals(securityType)) {
       bind(VREAuthorizationHandler.class).to(DefaultVREAuthorizationHandler.class);
     } else {
+      bind(AuthenticationHandler.class).to(ExampleAuthenticationHandler.class);
       bind(VREAuthorizationHandler.class).to(ExampleVREAuthorizationHandler.class);
     }
   }
@@ -108,7 +100,6 @@ public class RESTInjectionModule extends BasicInjectionModule {
   HuygensAuthenticationHandler provideAuthenticationHandler() {
     Client client = new Client();
     return new HuygensAuthenticationHandler(client, config.getSetting("security.hss.url"), config.getSetting("security.hss.credentials"));
-
   }
 
   @Provides
@@ -130,4 +121,5 @@ public class RESTInjectionModule extends BasicInjectionModule {
         config.getSetting("handle.naming_authority"), config.getSetting("handle.prefix"), config.pathInUserHome(config.getSetting("handle.private_key_file")));
     return persistenceManager;
   }
+
 }

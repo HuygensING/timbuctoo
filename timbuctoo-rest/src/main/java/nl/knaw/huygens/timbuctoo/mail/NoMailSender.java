@@ -22,7 +22,7 @@ package nl.knaw.huygens.timbuctoo.mail;
  * #L%
  */
 
-public class NoMailSender implements MailSender {
+class NoMailSender implements MailSender {
 
   @Override
   public void sendMail(String recipient, String subject, String content) {}

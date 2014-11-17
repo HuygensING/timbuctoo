@@ -37,10 +37,7 @@ import javax.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
-public class MailSenderImpl implements MailSender {
+class MailSenderImpl implements MailSender {
 
   private static final String CONTENT_CHAR_SET = "utf-8";
   private static final String TRANSPORT_TYPE = "smtp";
@@ -52,18 +49,14 @@ public class MailSenderImpl implements MailSender {
   private String fromAddress;
   private Session session;
 
-  @Inject
-  public MailSenderImpl(@Named("mail.host")
-  String host, @Named("mail.port")
-  String port, @Named("mail.from_address")
-  String fromAddress) {
+  public MailSenderImpl(String host, String port, String fromAddress) {
     this.fromAddress = fromAddress;
 
-    Properties emailProperties = new Properties();
-    emailProperties.setProperty(HOST_PROPERTY, host);
-    emailProperties.setProperty(POST_PROPERTY, port);
+    Properties properties = new Properties();
+    properties.setProperty(HOST_PROPERTY, host);
+    properties.setProperty(POST_PROPERTY, port);
 
-    session = Session.getInstance(emailProperties);
+    session = Session.getInstance(properties);
   }
 
   @Override

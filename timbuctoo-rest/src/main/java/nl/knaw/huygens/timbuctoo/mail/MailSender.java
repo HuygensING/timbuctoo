@@ -30,6 +30,6 @@ public interface MailSender {
    * @param subject
    * @param content
    */
-  public abstract void sendMail(String recipient, String subject, String content);
+  void sendMail(String recipient, String subject, String content);
 
 }
