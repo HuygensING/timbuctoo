@@ -71,7 +71,7 @@
       <artifactId>opencsv</artifactId>
       <version>2.3</version>
     </dependency>
-    <!-- ## End of main libraries ## -->
+    
 
     <dependency>
       <groupId>com.github.jlgrock.javascript-framework</groupId>
@@ -86,6 +86,14 @@
       <artifactId>jersey-client</artifactId>
       <version>${jersey.version}</version>
     </dependency>
+    
+    <!-- OAIPMH client -->
+    <dependency>
+      <groupId>nl.knaw.huygens.oaipmh</groupId>
+      <artifactId>oaipmh-client-java</artifactId>
+      <version>${oaipmh.version}</version>
+    </dependency>
+    
     <!-- VisiTEI -->
     <dependency>
       <groupId>nl.knaw.huygens</groupId>
@@ -93,6 +101,6 @@
       <version>0.4.2-SNAPSHOT</version>
     </dependency>
   </dependencies>
-
+  <!-- ## End of main libraries ## -->
   
 </project>
