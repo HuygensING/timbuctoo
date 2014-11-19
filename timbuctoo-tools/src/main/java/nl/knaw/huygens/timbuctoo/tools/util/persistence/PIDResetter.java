@@ -27,7 +27,7 @@ public class PIDResetter {
 
   public static void main(String[] args) throws ConfigurationException {
     Configuration config = new Configuration("config.xml");
-    Injector injector = Guice.createInjector(new ToolsInjectionModule(config));
+    Injector injector = Guice.createInjector(new ToolsInjectionModule(config, true));
 
     TypeRegistry registry = injector.getInstance(TypeRegistry.class);
     Repository repository = injector.getInstance(Repository.class);

@@ -22,6 +22,7 @@ package nl.knaw.huygens.timbuctoo.tools.config;
  * #L%
  */
 
+import nl.knaw.huygens.oaipmh.OaiPmhRestClient;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.persistence.PersistenceManagerCreationException;
 import nl.knaw.huygens.persistence.PersistenceManagerFactory;
@@ -29,14 +30,20 @@ import nl.knaw.huygens.solr.AbstractSolrServerBuilder;
 import nl.knaw.huygens.solr.AbstractSolrServerBuilderProvider;
 import nl.knaw.huygens.timbuctoo.config.BasicInjectionModule;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexFacade;
 import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.index.NoOpIndex;
 import nl.knaw.huygens.timbuctoo.index.solr.SolrIndexFactory;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 import nl.knaw.huygens.timbuctoo.vre.VREs;
 
 import org.apache.commons.configuration.ConfigurationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -47,23 +54,47 @@ import com.google.inject.Singleton;
  * A class to make it possible to use Guice @see http://code.google.com/p/google-guice.
  */
 public class ToolsInjectionModule extends BasicInjectionModule {
+  public static final String OAI_URL = "http://127.0.0.1:9998"; //TODO make configurable
+  private boolean useSolr;
 
   public static Injector createInjector() throws ConfigurationException {
-    Configuration config = new Configuration("config.xml");
-    return Guice.createInjector(new ToolsInjectionModule(config));
+    Configuration config = getConfiguration();
+    return Guice.createInjector(new ToolsInjectionModule(config, true));
   }
 
-  public ToolsInjectionModule(Configuration config) {
+  public static Injector createInjectorWithoutSolr() throws ConfigurationException {
+    Configuration config = getConfiguration();
+    return Guice.createInjector(new ToolsInjectionModule(config, false));
+  }
+
+  private static Configuration getConfiguration() throws ConfigurationException {
+    Configuration config = new Configuration("config.xml");
+    return config;
+  }
+
+  public ToolsInjectionModule(Configuration config, boolean useSolr) {
     super(config);
+    this.useSolr = useSolr;
   }
 
   @Override
   protected void configure() {
     super.configure();
     bind(IndexManager.class).to(IndexFacade.class);
-    bind(IndexFactory.class).to(SolrIndexFactory.class);
+    if (useSolr) {
+      bind(IndexFactory.class).to(SolrIndexFactory.class);
+
+    } else {
+      bind(IndexFactory.class).to(NoOpIndexFactory.class);
+    }
     bind(VRECollection.class).to(VREs.class);
     bind(AbstractSolrServerBuilder.class).toProvider(AbstractSolrServerBuilderProvider.class);
+  }
+
+  @Singleton
+  @Provides
+  public OaiPmhRestClient providesOaiPmhRestClient() {
+    return new OaiPmhRestClient(OAI_URL);
   }
 
   @Provides
@@ -72,5 +103,16 @@ public class ToolsInjectionModule extends BasicInjectionModule {
     PersistenceManager persistenceManager = PersistenceManagerFactory.newPersistenceManager(config.getBooleanSetting("handle.enabled", true), config.getSetting("handle.cipher"),
         config.getSetting("handle.naming_authority"), config.getSetting("handle.prefix"), config.pathInUserHome(config.getSetting("handle.private_key_file")));
     return persistenceManager;
+  }
+
+  static class NoOpIndexFactory implements IndexFactory {
+    private static final Logger LOG = LoggerFactory.getLogger(NoOpIndexFactory.class);
+
+    @Override
+    public Index createIndexFor(VRE vre, Class<? extends DomainEntity> type) {
+      LOG.info("Creating a no op index for vre \"{}\" and type \"{}\"", vre.getVreId(), type.getSimpleName());
+      return new NoOpIndex();
+    }
+
   }
 }

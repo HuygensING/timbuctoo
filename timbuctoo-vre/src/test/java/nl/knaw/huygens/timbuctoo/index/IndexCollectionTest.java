@@ -28,7 +28,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.mock;
-import nl.knaw.huygens.timbuctoo.index.IndexCollection.NoOpIndex;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import org.junit.Before;

@@ -26,20 +26,12 @@ import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
-import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.util.DefaultingMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class IndexCollection implements Iterable<Index> {
-
-  private static final Logger LOG = LoggerFactory.getLogger(IndexCollection.class);
 
   private final Map<Class<? extends DomainEntity>, Index> indexMap;
 
@@ -82,48 +74,5 @@ public class IndexCollection implements Iterable<Index> {
 
   // ---------------------------------------------------------------------------
 
-  /**
-   * A <a href="http://en.wikipedia.org/wiki/Null_Object_pattern">null object</a> class, 
-   * for missing indexes. 
-   */
-  static class NoOpIndex implements Index {
-
-    @Override
-    public void add(List<? extends DomainEntity> variations) {}
-
-    @Override
-    public void update(List<? extends DomainEntity> variations) throws IndexException {}
-
-    @Override
-    public void deleteById(String id) {}
-
-    @Override
-    public void deleteById(List<String> ids) {}
-
-    @Override
-    public void clear() {}
-
-    @Override
-    public long getCount() {
-      return 0;
-    }
-
-    @Override
-    public void commit() {}
-
-    @Override
-    public void close() {}
-
-    @Override
-    public String getName() {
-      return null;
-    }
-
-    @Override
-    public <T extends FacetedSearchParameters<T>> FacetedSearchResult search(FacetedSearchParameters<T> searchParamaters) {
-      LOG.warn("Searching on a non existing index");
-      return new FacetedSearchResult();
-    }
-  }
 
 }
