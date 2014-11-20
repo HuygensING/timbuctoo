@@ -132,6 +132,10 @@
               <name>locationUpdater</name>
               <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.LocationUpdater</mainClass>
             </program>
+            <program>
+              <name>newwOAIPMHCreator</name>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.oaipmh.neww.WWOAIPMHTool</mainClass>
+            </program>
           </programs>
         </configuration>
       </plugin>
