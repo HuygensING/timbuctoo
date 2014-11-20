@@ -30,6 +30,8 @@ import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.DerivedProperty;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.RelationRef;
+import nl.knaw.huygens.timbuctoo.oaipmh.DublinCoreMetadataField;
+import nl.knaw.huygens.timbuctoo.oaipmh.OAIDublinCoreField;
 import nl.knaw.huygens.timbuctoo.util.Text;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -163,6 +165,31 @@ public class WWDocument extends Document {
     addRelationToRepresentation(data, "createdBy", "isCreatedBy");
     addItemToRepresentation(data, "authorGender", getProperty("authorGender"));
     return data;
+  }
+
+  // ---------------------------------------------------------------------------
+  @JsonIgnore
+  @OAIDublinCoreField(dublinCoreField = DublinCoreMetadataField.TITLE)
+  public String getCMDITitle() {
+    return getTitle();
+  }
+
+  @JsonIgnore
+  @OAIDublinCoreField(dublinCoreField = DublinCoreMetadataField.DESCRIPTION)
+  public String getCMDIDescription() {
+    StringBuilder sb = new StringBuilder();
+
+    List<RelationRef> origins = getOrigins();
+    if (origins != null) {
+      for (RelationRef ref : origins) {
+        sb.append(ref.getDisplayName());
+        sb.append(" ");
+      }
+    }
+
+    sb.append(getDocumentType());
+
+    return sb.toString();
   }
 
 }

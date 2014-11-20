@@ -29,6 +29,8 @@ import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.DerivedRelationType;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.RelationRef;
+import nl.knaw.huygens.timbuctoo.oaipmh.DublinCoreMetadataField;
+import nl.knaw.huygens.timbuctoo.oaipmh.OAIDublinCoreField;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -129,6 +131,7 @@ public class WWPerson extends Person {
     this.livedIn = livedIn;
   }
 
+  @OAIDublinCoreField(dublinCoreField = DublinCoreMetadataField.TITLE)
   @Override
   public String getIndexedName() {
     String name = super.getIndexedName();
@@ -208,6 +211,19 @@ public class WWPerson extends Person {
     }
 
     return relatedLocations;
+  }
+
+  @JsonIgnore
+  @OAIDublinCoreField(dublinCoreField = DublinCoreMetadataField.DESCRIPTION)
+  public String getCountries() {
+    StringBuilder sb = new StringBuilder();
+
+    for (RelationRef relLocation : getRelatedLocations()) {
+      sb.append(relLocation.getDisplayName());
+      sb.append(" ");
+    }
+
+    return sb.toString();
   }
 
   @JsonIgnore
