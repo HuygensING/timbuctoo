@@ -10,13 +10,14 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Date;
 
-import jersey.repackaged.com.google.common.collect.Lists;
 import nl.knaw.huygens.oaipmh.OaiPmhRestClient;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
+
+import com.google.common.collect.Lists;
 
 public class OAIRecordCreatorTest {
 

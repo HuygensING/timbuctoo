@@ -2,11 +2,11 @@ package nl.knaw.huygens.hamcrest;
 
 import java.util.List;
 
-import jersey.repackaged.com.google.common.collect.Lists;
-
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.hamcrest.internal.ReflectiveTypeFinder;
+
+import com.google.common.collect.Lists;
 
 public class CompositeMatcher<T> extends TypeSafeMatcher<T> {
 

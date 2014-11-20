@@ -2,10 +2,11 @@ package nl.knaw.huygens.timbuctoo.tools.oaipmh;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.stringContainsInOrder;
-import jersey.repackaged.com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.tools.oaipmh.projecta.ProjectATestDomainEntity;
 
 import org.junit.Test;
+
+import com.google.common.collect.Lists;
 
 public class DublinCoreIdentifierCreatorTest {
 

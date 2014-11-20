@@ -6,8 +6,6 @@ import static nl.knaw.huygens.timbuctoo.tools.oaipmh.VREIdUtils.simplifyVREId;
 import java.util.List;
 import java.util.Set;
 
-import jersey.repackaged.com.google.common.collect.Lists;
-import jersey.repackaged.com.google.common.collect.Sets;
 import nl.knaw.huygens.oaipmh.MyOAISet;
 import nl.knaw.huygens.oaipmh.OaiPmhRestClient;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -19,6 +17,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
 public class SetSpecGenerator {

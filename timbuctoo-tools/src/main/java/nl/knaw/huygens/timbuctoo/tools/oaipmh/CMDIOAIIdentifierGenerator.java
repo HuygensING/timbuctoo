@@ -4,10 +4,11 @@ import static nl.knaw.huygens.timbuctoo.tools.oaipmh.VREIdUtils.simplifyVREId;
 
 import java.util.ArrayList;
 
-import jersey.repackaged.com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import org.apache.commons.lang3.StringUtils;
+
+import com.google.common.collect.Lists;
 
 public class CMDIOAIIdentifierGenerator {
   static final String PREFIX = "oai:oaipmh.huygens.knaw.nl"; // arbitrary chosen prefix used by all CMDI-records

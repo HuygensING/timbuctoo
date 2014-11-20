@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import jersey.repackaged.com.google.common.collect.Lists;
 import nl.knaw.huygens.oaipmh.MyOAISet;
 import nl.knaw.huygens.oaipmh.OaiPmhRestClient;
 import nl.knaw.huygens.timbuctoo.tools.oaipmh.projecta.ProjectATestDomainEntity;
@@ -19,6 +18,8 @@ import nl.knaw.huygens.timbuctoo.tools.oaipmh.projecta.ProjectATestDomainEntity;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.google.common.collect.Lists;
 
 public class SetSpecGeneratorTest {
   private static final String SET_NAME = "ebnm testdomainentity";
