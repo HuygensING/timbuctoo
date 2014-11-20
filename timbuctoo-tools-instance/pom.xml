@@ -136,6 +136,10 @@
               <name>newwOAIPMHCreator</name>
               <mainClass>nl.knaw.huygens.timbuctoo.tools.oaipmh.neww.WWOAIPMHTool</mainClass>
             </program>
+            <program>
+              <name>localUserImporter</name>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.LocalUserImporter</mainClass>
+            </program>
           </programs>
         </configuration>
       </plugin>

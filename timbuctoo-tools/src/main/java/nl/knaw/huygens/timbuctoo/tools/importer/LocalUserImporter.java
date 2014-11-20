@@ -18,17 +18,17 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Injector;
 
-public class LocalLoginImporter extends CSVImporter {
+public class LocalUserImporter extends CSVImporter {
   private static final Logger LOG = LoggerFactory.getLogger("LocalLoginImporter");
 
   public static void main(String[] args) throws Exception {
-    Injector injector = ToolsInjectionModule.createInjector();
+    Injector injector = ToolsInjectionModule.createInjectorWithoutSolr();
 
     JsonFileHandler jsonFileHandler = injector.getInstance(JsonFileHandler.class);
     PasswordEncrypter passwordEncrypter = injector.getInstance(PasswordEncrypter.class);
     UserConfigurationHandler userConfigurationHandler = injector.getInstance(UserConfigurationHandler.class);
 
-    LocalLoginImporter localLoginCreator = new LocalLoginImporter(jsonFileHandler, passwordEncrypter, userConfigurationHandler);
+    LocalUserImporter localLoginCreator = new LocalUserImporter(jsonFileHandler, passwordEncrypter, userConfigurationHandler);
 
     if (args.length > 0) {
       localLoginCreator.handleFile(args[0], 9, false);
@@ -42,7 +42,7 @@ public class LocalLoginImporter extends CSVImporter {
   private final PasswordEncrypter passwordEncrypter;
   private final UserConfigurationHandler userConfigurationHandler;
 
-  public LocalLoginImporter(JsonFileHandler jsonFileHandler, PasswordEncrypter passwordEncrypter, UserConfigurationHandler userConfigurationHandler) throws Exception {
+  public LocalUserImporter(JsonFileHandler jsonFileHandler, PasswordEncrypter passwordEncrypter, UserConfigurationHandler userConfigurationHandler) throws Exception {
     super(new PrintWriter(System.out));
     this.jsonFileHandler = jsonFileHandler;
     this.passwordEncrypter = passwordEncrypter;
