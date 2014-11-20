@@ -327,7 +327,7 @@ public class Repository {
     }
   }
 
-  private <T extends DomainEntity> void addRelationsToEntity(T entity) throws StorageException {
+  public <T extends DomainEntity> void addRelationsToEntity(T entity) throws StorageException {
     // entity.addRelations(this, DEFAULT_RELATION_LIMIT, entityMappers, relationRefCreator);
     addRelationsTo(entity, 1000, entityMappers);
   }

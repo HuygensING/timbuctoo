@@ -32,9 +32,9 @@ public class WWOAIPMHTool {
 
     try {
       createOAIRecordForThreeEntities(WWDocument.class, frontEndURL, VRE_ID, oaiRecordCreator, repo);
-      //createOAIRecordForAllEntities(WWDocument.class, frontEndURL, vreId, oaiRecordCreator, repo);
       createOAIRecordForThreeEntities(WWPerson.class, frontEndURL, VRE_ID, oaiRecordCreator, repo);
-      //createOAIRecordForAllEntities(WWPerson.class, frontEndURL, vreId, oaiRecordCreator, repo);
+      //      createOAIRecordForAllEntities(WWDocument.class, frontEndURL, VRE_ID, oaiRecordCreator, repo);
+      //      createOAIRecordForAllEntities(WWPerson.class, frontEndURL, VRE_ID, oaiRecordCreator, repo);
     } finally {
       repo.close();
     }
@@ -45,16 +45,19 @@ public class WWOAIPMHTool {
     return StringUtils.contains(oaiUrl, "localhost:9998");
   }
 
-  private static <T extends DomainEntity> void createOAIRecordForThreeEntities(Class<T> type, String frontEndURL, String vreId, OAIRecordCreator oaiRecordCreator, Repository repo) {
+  private static <T extends DomainEntity> void createOAIRecordForThreeEntities(Class<T> type, String frontEndURL, String vreId, OAIRecordCreator oaiRecordCreator, Repository repo) throws Exception {
     for (T entity : repo.getDomainEntities(type).getSome(3)) {
+      repo.addRelationsToEntity(entity);
       createOAIRecord(frontEndURL, vreId, oaiRecordCreator, entity);
     }
 
   }
 
-  private static <T extends DomainEntity> void createOAIRecordForAllEntities(Class<T> type, String frontEndURL, String vreId, OAIRecordCreator oaiRecordCreator, Repository repo) {
+  private static <T extends DomainEntity> void createOAIRecordForAllEntities(Class<T> type, String frontEndURL, String vreId, OAIRecordCreator oaiRecordCreator, Repository repo) throws Exception {
     for (StorageIterator<T> iterator = repo.getDomainEntities(type); iterator.hasNext();) {
       T domainEntity = iterator.next();
+
+      repo.addRelationsToEntity(domainEntity);
 
       createOAIRecord(frontEndURL, vreId, oaiRecordCreator, domainEntity);
     }
