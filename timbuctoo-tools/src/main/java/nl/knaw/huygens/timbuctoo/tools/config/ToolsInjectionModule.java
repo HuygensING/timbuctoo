@@ -54,16 +54,16 @@ import com.google.inject.Singleton;
  * A class to make it possible to use Guice @see http://code.google.com/p/google-guice.
  */
 public class ToolsInjectionModule extends BasicInjectionModule {
-  public static final String OAI_URL = "http://127.0.0.1:9998"; //TODO make configurable
   private boolean useSolr;
+  private static Configuration config;
 
   public static Injector createInjector() throws ConfigurationException {
-    Configuration config = getConfiguration();
+    config = getConfiguration();
     return Guice.createInjector(new ToolsInjectionModule(config, true));
   }
 
   public static Injector createInjectorWithoutSolr() throws ConfigurationException {
-    Configuration config = getConfiguration();
+    config = getConfiguration();
     return Guice.createInjector(new ToolsInjectionModule(config, false));
   }
 
@@ -94,7 +94,7 @@ public class ToolsInjectionModule extends BasicInjectionModule {
   @Singleton
   @Provides
   public OaiPmhRestClient providesOaiPmhRestClient() {
-    return new OaiPmhRestClient(OAI_URL);
+    return new OaiPmhRestClient(config.getSetting("oai-url"));
   }
 
   @Provides

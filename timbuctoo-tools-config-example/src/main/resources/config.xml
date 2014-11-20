@@ -66,6 +66,8 @@
       timbuctoo.model.base
       timbuctoo.model.test
     </model-packages>
+    <!-- Url to the oai pmh server -->
+    <oai-url>http://127.0.0.1:9998</oai-url>
     <vre-defs>
       <vre id="Admin">
         <description>Admin VRE; allows updates of primitives.</description>

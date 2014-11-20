@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.tools.oaipmh.neww;
 
-import static nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule.OAI_URL;
 import static nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule.createInjectorWithoutSolr;
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.neww.WWDocument;
 import nl.knaw.huygens.timbuctoo.model.neww.WWPerson;
@@ -16,11 +16,15 @@ import com.google.inject.Injector;
 
 public class WWOAIPMHTool {
   private final static Logger LOG = LoggerFactory.getLogger(WWOAIPMHTool.class);
+  private static String oaiUrl;
 
   public static void main(String args[]) throws Exception {
     String frontEndURL = "http://www.example.com";
     String vreId = "WomenWriters";
     Injector injector = createInjectorWithoutSolr();
+
+    Configuration config = injector.getInstance(Configuration.class);
+    oaiUrl = config.getSetting("oai-url");
 
     OAIRecordCreator oaiRecordCreator = injector.getInstance(OAIRecordCreator.class);
     Repository repo = injector.getInstance(Repository.class);
@@ -52,6 +56,6 @@ public class WWOAIPMHTool {
 
   private static void createOAIRecord(String frontEndURL, String vreId, OAIRecordCreator oaiRecordCreator, DomainEntity entity) {
     LOG.info("create meta data for \"{}\" with id \"{}\"", entity.getClass(), entity.getId());
-    oaiRecordCreator.create(entity, vreId, frontEndURL, OAI_URL);
+    oaiRecordCreator.create(entity, vreId, frontEndURL, oaiUrl);
   }
 }
