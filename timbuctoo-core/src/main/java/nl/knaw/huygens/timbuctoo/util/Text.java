@@ -29,12 +29,15 @@ public class Text {
   /**
    * Conditionally appends a text to a string builder.
    */
-  public static void appendTo(StringBuilder builder, String text, String separator) {
-    if (text != null && text.length() > 0) {
-      if (builder.length() > 0) {
-        builder.append(separator);
+  public static void appendTo(StringBuilder builder, Object value, String separator) {
+    if (value != null) {
+      String stringValue = value.toString();
+      if (stringValue.length() > 0) {
+        if (builder.length() > 0) {
+          builder.append(separator);
+        }
+        builder.append(stringValue);
       }
-      builder.append(text);
     }
   }
 

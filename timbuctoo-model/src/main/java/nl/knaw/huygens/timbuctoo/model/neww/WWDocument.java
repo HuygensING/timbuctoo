@@ -182,12 +182,11 @@ public class WWDocument extends Document {
     List<RelationRef> origins = getOrigins();
     if (origins != null) {
       for (RelationRef ref : origins) {
-        sb.append(ref.getDisplayName());
-        sb.append(" ");
+        Text.appendTo(sb, ref.getDisplayName(), " ");
       }
     }
 
-    sb.append(getDocumentType());
+    Text.appendTo(sb, getDocumentType(), " ");
 
     return sb.toString();
   }

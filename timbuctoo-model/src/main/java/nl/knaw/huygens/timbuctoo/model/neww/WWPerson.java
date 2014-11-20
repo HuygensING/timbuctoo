@@ -31,6 +31,7 @@ import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.RelationRef;
 import nl.knaw.huygens.timbuctoo.oaipmh.DublinCoreMetadataField;
 import nl.knaw.huygens.timbuctoo.oaipmh.OAIDublinCoreField;
+import nl.knaw.huygens.timbuctoo.util.Text;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -219,8 +220,7 @@ public class WWPerson extends Person {
     StringBuilder sb = new StringBuilder();
 
     for (RelationRef relLocation : getRelatedLocations()) {
-      sb.append(relLocation.getDisplayName());
-      sb.append(" ");
+      Text.appendTo(sb, relLocation.getDisplayName(), " ");
     }
 
     return sb.toString();
