@@ -78,6 +78,12 @@
       <artifactId>source-overlay-maven-plugin</artifactId>
       <version>1.16.1</version>
       <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j</artifactId>
+          <groupId>log4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- Jersey -->
@@ -92,6 +98,16 @@
       <groupId>nl.knaw.huygens.oaipmh</groupId>
       <artifactId>oaipmh-client-java</artifactId>
       <version>${oaipmh.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>log4j</artifactId>
+          <groupId>log4j</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>slf4j-log4j12</artifactId>
+          <groupId>org.slf4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     
     <!-- VisiTEI -->
