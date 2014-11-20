@@ -33,7 +33,7 @@ import nl.knaw.huygens.timbuctoo.oaipmh.DublinCoreMetadataField;
 import nl.knaw.huygens.timbuctoo.oaipmh.OAIDublinCoreField;
 import nl.knaw.huygens.timbuctoo.util.Text;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
@@ -136,7 +136,7 @@ public class WWPerson extends Person {
   @Override
   public String getIndexedName() {
     String name = super.getIndexedName();
-    return (name != null) ? name : getTempName();
+    return (!StringUtils.isBlank(name)) ? name : getTempName();
   }
 
   public String getNationality() {
