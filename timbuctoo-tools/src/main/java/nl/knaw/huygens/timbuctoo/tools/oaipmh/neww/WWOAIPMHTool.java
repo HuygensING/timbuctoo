@@ -31,10 +31,10 @@ public class WWOAIPMHTool {
     Repository repo = injector.getInstance(Repository.class);
 
     try {
-      createOAIRecordForThreeEntities(WWDocument.class, frontEndURL, VRE_ID, oaiRecordCreator, repo);
-      createOAIRecordForThreeEntities(WWPerson.class, frontEndURL, VRE_ID, oaiRecordCreator, repo);
-      //      createOAIRecordForAllEntities(WWDocument.class, frontEndURL, VRE_ID, oaiRecordCreator, repo);
-      //      createOAIRecordForAllEntities(WWPerson.class, frontEndURL, VRE_ID, oaiRecordCreator, repo);
+      //      createOAIRecordForThreeEntities(WWDocument.class, frontEndURL, VRE_ID, oaiRecordCreator, repo);
+      //      createOAIRecordForThreeEntities(WWPerson.class, frontEndURL, VRE_ID, oaiRecordCreator, repo);
+      createOAIRecordForAllEntities(WWDocument.class, frontEndURL, VRE_ID, oaiRecordCreator, repo);
+      createOAIRecordForAllEntities(WWPerson.class, frontEndURL, VRE_ID, oaiRecordCreator, repo);
     } finally {
       repo.close();
     }
