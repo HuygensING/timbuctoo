@@ -10,7 +10,6 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Date;
 
-import nl.knaw.huygens.oaipmh.OaiPmhRestClient;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 
 import org.junit.Before;

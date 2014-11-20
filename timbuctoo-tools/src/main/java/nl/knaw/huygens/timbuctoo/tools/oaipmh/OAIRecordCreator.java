@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.List;
 
 import nl.knaw.huygens.oaipmh.OAIRecord;
-import nl.knaw.huygens.oaipmh.OaiPmhRestClient;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 

@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Set;
 
 import nl.knaw.huygens.oaipmh.MyOAISet;
-import nl.knaw.huygens.oaipmh.OaiPmhRestClient;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.search.FilterableSet;
 

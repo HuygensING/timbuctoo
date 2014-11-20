@@ -22,7 +22,6 @@ package nl.knaw.huygens.timbuctoo.tools.config;
  * #L%
  */
 
-import nl.knaw.huygens.oaipmh.OaiPmhRestClient;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.persistence.PersistenceManagerCreationException;
 import nl.knaw.huygens.persistence.PersistenceManagerFactory;
@@ -37,6 +36,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.index.NoOpIndex;
 import nl.knaw.huygens.timbuctoo.index.solr.SolrIndexFactory;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.tools.oaipmh.OaiPmhRestClient;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 import nl.knaw.huygens.timbuctoo.vre.VREs;

@@ -12,7 +12,6 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 
 import nl.knaw.huygens.oaipmh.MyOAISet;
-import nl.knaw.huygens.oaipmh.OaiPmhRestClient;
 import nl.knaw.huygens.timbuctoo.tools.oaipmh.projecta.ProjectATestDomainEntity;
 
 import org.apache.commons.lang3.StringUtils;
