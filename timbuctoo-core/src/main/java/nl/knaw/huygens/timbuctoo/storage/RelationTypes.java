@@ -34,10 +34,13 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 /**
  * Provides for access to stored relation types.
  */
+@Singleton
 public class RelationTypes {
 
   static final String INVERSE_NAME_PROPERTY = "inverseName";
@@ -53,6 +56,7 @@ public class RelationTypes {
   /** Caches relation types by name. */
   private LoadingCache<String, RelationType> nameCache;
 
+  @Inject
   public RelationTypes(Storage storage) {
     this.storage = storage;
     setupIdCache();

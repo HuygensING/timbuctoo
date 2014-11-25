@@ -84,14 +84,15 @@ public class Repository {
   private final RelationAdder relationAdder;
 
   @Inject
-  public Repository(TypeRegistry registry, Storage storage, VRECollection vreCollection, RelationRefCreator relationRefCreator, RelationAdder relationAdder) throws StorageException {
+  public Repository(TypeRegistry registry, Storage storage, VRECollection vreCollection, RelationRefCreator relationRefCreator, RelationAdder relationAdder, RelationTypes relationTypes)
+      throws StorageException {
     this.registry = registry;
     this.storage = storage;
     this.relationRefCreator = relationRefCreator;
     this.relationAdder = relationAdder;
+    this.relationTypes = relationTypes;
     entityMappers = new EntityMappers(registry.getDomainEntityTypes());
     createIndexes();
-    relationTypes = new RelationTypes(storage);
     vreMap = initVREMap(vreCollection);
   }
 
