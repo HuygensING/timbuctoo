@@ -70,7 +70,7 @@ public abstract class DefaultImporter {
     this.repository = Preconditions.checkNotNull(repository);
     this.indexManager = Preconditions.checkNotNull(indexManager);
     encodingFixer = new EncodingFixer();
-    change = new Change("importer", vreId);
+    change = new Change(Constants.IMPORT_USER, vreId);
   }
 
   /**
@@ -164,7 +164,7 @@ public abstract class DefaultImporter {
       repository.updateDomainEntity(type, entity, change);
     } catch (StorageException e) {
       handleError("Failed to update %s; %s", entity.getDisplayName(), e.getMessage());
-    } 
+    }
   }
 
   protected <T extends DomainEntity> void updateProjectDomainEntity(Class<T> type, T entity) {

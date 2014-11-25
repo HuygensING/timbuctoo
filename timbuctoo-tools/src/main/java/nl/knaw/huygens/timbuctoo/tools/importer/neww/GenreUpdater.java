@@ -33,6 +33,7 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.importer.CSVImporter;
+import nl.knaw.huygens.timbuctoo.tools.importer.Constants;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -61,7 +62,7 @@ public class GenreUpdater extends CSVImporter {
       Injector injector = ToolsInjectionModule.createInjector();
       repository = injector.getInstance(Repository.class);
       indexManager = injector.getInstance(IndexManager.class);
-      Change change = new Change("importer", "neww");
+      Change change = new Change(Constants.IMPORT_USER, "neww");
 
       GenreUpdater importer = new GenreUpdater(repository, change);
       importer.handleFile(new File(directory, "genre-update.csv"), 2, false);
