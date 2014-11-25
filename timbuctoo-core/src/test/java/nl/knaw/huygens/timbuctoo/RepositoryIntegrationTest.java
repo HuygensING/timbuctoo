@@ -25,6 +25,7 @@ import org.junit.Test;
 public class RepositoryIntegrationTest extends DBIntegrationTest {
   private static final Class<SearchResult> SEARCH_RESULT_TYPE = SearchResult.class;
   private Repository instance;
+  private RelationAdder relationAdder = new RelationAdder();
 
   @Override
   public void setUp() throws Exception {
@@ -33,7 +34,7 @@ public class RepositoryIntegrationTest extends DBIntegrationTest {
     TypeRegistry registry = TypeRegistry.getInstance();
     Storage storage = createMongoStorage(registry);
 
-    instance = new Repository(registry, storage, mock(VRECollection.class), new RelationRefCreator(registry, storage));
+    instance = new Repository(registry, storage, mock(VRECollection.class), new RelationRefCreator(registry, storage), relationAdder);
   }
 
   @Test

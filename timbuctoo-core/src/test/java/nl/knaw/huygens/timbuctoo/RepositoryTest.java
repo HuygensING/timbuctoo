@@ -69,6 +69,7 @@ public class RepositoryTest {
   private RelationTypes relationTypesMock;
   private EntityMappers entityMappersMock;
   private RelationRefCreator relationRefCreatorMock;
+  private RelationAdder relationAdder = new RelationAdder();
 
   @Before
   public void setup() throws Exception {
@@ -79,7 +80,7 @@ public class RepositoryTest {
     entityMappersMock = mock(EntityMappers.class);
     relationRefCreatorMock = mock(RelationRefCreator.class);
 
-    repository = new Repository(registryMock, storageMock, vreCollectionMock, relationTypesMock, entityMappersMock, relationRefCreatorMock);
+    repository = new Repository(registryMock, storageMock, vreCollectionMock, relationTypesMock, entityMappersMock, relationRefCreatorMock, relationAdder);
     change = new Change("userId", "vreId");
   }
 
