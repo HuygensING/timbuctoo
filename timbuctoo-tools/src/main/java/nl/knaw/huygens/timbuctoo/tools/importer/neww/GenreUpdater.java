@@ -50,11 +50,14 @@ public class GenreUpdater extends CSVImporter {
 
   private static final Logger LOG = LoggerFactory.getLogger(GenreUpdater.class);
 
+  private static final String DEFAULT_DIR_NAME = "../../timbuctoo-testdata/src/main/resources/neww/";
+  private static final String GENRE_FILE_NAME = "genre-update.csv";
+
   public static void main(String[] args) throws Exception {
     Stopwatch stopWatch = Stopwatch.createStarted();
 
     // Handle commandline arguments
-    String directory = (args.length > 0) ? args[0] : "../../timbuctoo-testdata/src/main/resources/neww/";
+    String directory = (args.length > 0) ? args[0] : DEFAULT_DIR_NAME;
 
     Repository repository = null;
     IndexManager indexManager = null;
@@ -65,7 +68,7 @@ public class GenreUpdater extends CSVImporter {
       Change change = new Change(Constants.IMPORT_USER, "neww");
 
       GenreUpdater importer = new GenreUpdater(repository, change);
-      importer.handleFile(new File(directory, "genre-update.csv"), 2, false);
+      importer.handleFile(new File(directory, GENRE_FILE_NAME), 2, false);
     } finally {
       if (indexManager != null) {
         indexManager.close();
@@ -79,7 +82,7 @@ public class GenreUpdater extends CSVImporter {
 
   // -------------------------------------------------------------------
 
-  private static final String TYPE = "genre";
+  private static final String TYPE_NAME = "genre";
 
   private final Repository repository;
   private final Change change;
@@ -94,7 +97,7 @@ public class GenreUpdater extends CSVImporter {
 
   @Override
   protected void initialize() throws Exception {
-    for (WWKeyword keyword : repository.getEntitiesByProperty(WWKeyword.class, "type", TYPE).getAll()) {
+    for (WWKeyword keyword : repository.getEntitiesByProperty(WWKeyword.class, "type", TYPE_NAME).getAll()) {
       if (map.put(keyword.getValue(), keyword) != null) {
         LOG.warn("Storage contains a duplicate keyword '{}'", keyword.getValue());
       }
@@ -117,7 +120,7 @@ public class GenreUpdater extends CSVImporter {
         LOG.error("Skipped '{}' (duplicate)", newValue);
       } else {
         WWKeyword keyword = new WWKeyword();
-        keyword.setType(TYPE);
+        keyword.setType(TYPE_NAME);
         keyword.setValue(newValue);
         repository.addDomainEntity(WWKeyword.class, keyword, change);
         LOG.info("Added   '{}'", newValue);

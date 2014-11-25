@@ -117,6 +117,10 @@
               </jvmSettings>
             </program>
             <program>
+              <name>newwGenreUpdate</name>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.neww.GenreUpdater</mainClass>
+            </program>
+            <program>
               <name>reindex</name>
               <mainClass>nl.knaw.huygens.timbuctoo.tools.other.ReIndexer</mainClass>
             </program>
