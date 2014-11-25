@@ -40,7 +40,6 @@ import nl.knaw.huygens.timbuctoo.model.DerivedRelationType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Language;
-import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationRef;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
@@ -465,28 +464,15 @@ public class Repository {
       for (Relation relation : getRelationsByEntityId(entityId, limit, mappedType)) {
         RelationType relType = getRelationTypeById(relation.getTypeId(), REQUIRED);
         if (relation.hasSourceId(entityId)) {
-          RelationRef ref = newRelationRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev());
+          RelationRef ref = relationRefCreator.newRelationRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev());
           entity.addRelation(relType.getRegularName(), ref);
         } else if (relation.hasTargetId(entityId)) {
-          RelationRef ref = newRelationRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted(), relation.getRev());
+          RelationRef ref = relationRefCreator.newRelationRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted(), relation.getRev());
           entity.addRelation(relType.getInverseName(), ref);
         }
       }
       addDerivedRelations(entity, mapper);
     }
-  }
-
-  // Relations are defined between primitive domain entities
-  // Map to a domain entity in the package from which an entity is requested
-  public RelationRef newRelationRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev) throws StorageException {
-    String iname = reference.getType();
-    Class<? extends DomainEntity> type = registry.getDomainEntityType(iname);
-    type = mapper.map(type);
-    iname = TypeNames.getInternalName(type);
-    String xname = registry.getXNameForIName(iname);
-    DomainEntity entity = storage.getItem(type, reference.getId());
-
-    return new RelationRef(iname, xname, reference.getId(), entity.getDisplayName(), relationId, accepted, rev);
   }
 
   public StorageIterator<Relation> findRelations(String sourceId, String targetId, String relationTypeId) throws StorageException {
