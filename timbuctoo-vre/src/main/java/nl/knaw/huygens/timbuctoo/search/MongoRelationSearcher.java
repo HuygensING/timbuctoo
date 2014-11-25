@@ -38,7 +38,13 @@ import com.google.common.base.Predicate;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+// TODO: When this class will be removed remove the 'getRelationsByType'-method in Repository as well.
+/**
+ * 
+ * @deprecated use SolrRelationSearcher instead
+ */
 @Singleton
+@Deprecated
 public class MongoRelationSearcher extends RelationSearcher {
 
   private final CollectionConverter collectionConverter;

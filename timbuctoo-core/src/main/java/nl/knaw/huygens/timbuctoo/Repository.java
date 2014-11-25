@@ -422,7 +422,7 @@ public class Repository {
     return storage.getRelationsByEntityId(Relation.class, id).getSome(limit);
   }
 
-  public List<? extends Relation> getRelationsByEntityId(String entityId, int limit, Class<? extends Relation> type) throws StorageException {
+  private List<? extends Relation> getRelationsByEntityId(String entityId, int limit, Class<? extends Relation> type) throws StorageException {
     return storage.getRelationsByEntityId(type, entityId).getSome(limit);
   }
 
@@ -432,7 +432,9 @@ public class Repository {
    * @param relationTypeIds the relation type should be in this collection.
    * @return a collection with the found relations.
    * @throws StorageException 
+   * @deprecated will be removed when the MongoRelationSearcher will be removed. 
    */
+  @Deprecated
   public <T extends Relation> List<T> getRelationsByType(Class<T> variation, List<String> relationTypeIds) throws StorageException {
     return storage.getRelationsByType(variation, relationTypeIds);
   }
@@ -483,7 +485,7 @@ public class Repository {
    * Returns all relations for the entity with the specified id with the specified relation type id.
    * If {@code regular} is true the entity must be the source entity, else it must be the target entity.
    */
-  public List<Relation> findRelations(String entityId, String relationTypeId, boolean regular) throws StorageException {
+  private List<Relation> findRelations(String entityId, String relationTypeId, boolean regular) throws StorageException {
     if (regular) {
       return storage.findRelations(Relation.class, entityId, null, relationTypeId).getAll();
     } else {
@@ -495,7 +497,7 @@ public class Repository {
    * Adds derived relations for the specified entity.
    * Makes sure each relation is added only once.
    */
-  protected <T extends DomainEntity> void addDerivedRelations(T entity, EntityMapper mapper) throws StorageException {
+  private <T extends DomainEntity> void addDerivedRelations(T entity, EntityMapper mapper) throws StorageException {
     for (DerivedRelationType drtype : entity.getDerivedRelationTypes()) {
       Set<String> ids = Sets.newHashSet();
 
