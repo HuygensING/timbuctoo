@@ -36,11 +36,11 @@ public enum EDTFPattern {
   // year, approximate: 2004~
   YEAR_A("^\\d{4}\\~$"),
 
-  // some year between 2000 and 2099: 20??
+  // some year between 2000 and 2009: 200?
   YEAR_RANGE_Q1("^\\d{3}\\?$"),
   // some year between 2000 and 2099: 20??
   YEAR_RANGE_Q2("^\\d{2}\\?{2}$"),
-  // some year between 2000 and 2099: 20??
+  // some year between 2000 and 2999: 2???
   YEAR_RANGE_Q3("^\\d{1}\\?{3}$"),
 
   // year month, hyphenated : 2004-06
