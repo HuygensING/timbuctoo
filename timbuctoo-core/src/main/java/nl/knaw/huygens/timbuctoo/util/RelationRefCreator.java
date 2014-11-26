@@ -51,29 +51,28 @@ public class RelationRefCreator {
   // Map to a domain entity in the package from which an entity is requested
   RelationRef newRelationRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev, String relationName) throws StorageException {
     String iname = reference.getType();
-
     Class<? extends DomainEntity> type = registry.getDomainEntityType(iname);
     Class<? extends DomainEntity> mappedType = mapper.map(type);
+
     String mappedIName = TypeNames.getInternalName(mappedType);
     String xname = registry.getXNameForIName(mappedIName);
-    DomainEntity entity = storage.getItem(mappedType, reference.getId());
 
-    return new RelationRef(mappedIName, xname, reference.getId(), entity.getDisplayName(), relationId, accepted, rev, relationName);
+    DomainEntity relatedEntity = storage.getItem(mappedType, reference.getId());
+
+    return new RelationRef(mappedIName, xname, reference.getId(), relatedEntity.getDisplayName(), relationId, accepted, rev, relationName);
   }
 
-  public RelationRef newReadOnlyRelationRef(String type, String xType, String id, String displayName, String relationName) {
-    return new RelationRef(type, xType, id, displayName, null, true, 0, relationName);
-  }
-
-  public <T extends DomainEntity> void addRelation(T entity, EntityMapper mapper, Relation relation, RelationType relType) throws StorageException {
-    String entityId = entity.getId();
+  public <T extends DomainEntity> void addRelation(T entityToAddTo, EntityMapper mapper, Relation relation, RelationType relType) throws StorageException {
+    String entityId = entityToAddTo.getId();
     RelationRef ref = null;
+
     if (relation.hasSourceId(entityId)) {
       ref = newRelationRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev(), relType.getRegularName());
     } else if (relation.hasTargetId(entityId)) {
       ref = newRelationRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted(), relation.getRev(), relType.getInverseName());
     }
-    entity.addRelation(ref);
+
+    entityToAddTo.addRelation(ref);
   }
 
 }
