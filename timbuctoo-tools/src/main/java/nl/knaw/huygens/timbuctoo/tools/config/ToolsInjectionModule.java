@@ -106,12 +106,13 @@ public class ToolsInjectionModule extends BasicInjectionModule {
   }
 
   static class NoOpIndexFactory implements IndexFactory {
+    private static final NoOpIndex NO_OP_INDEX = new NoOpIndex();
     private static final Logger LOG = LoggerFactory.getLogger(NoOpIndexFactory.class);
 
     @Override
     public Index createIndexFor(VRE vre, Class<? extends DomainEntity> type) {
       LOG.info("Creating a no op index for vre \"{}\" and type \"{}\"", vre.getVreId(), type.getSimpleName());
-      return new NoOpIndex();
+      return NO_OP_INDEX;
     }
 
   }
