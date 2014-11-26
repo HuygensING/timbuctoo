@@ -99,7 +99,9 @@ public class RESTInjectionModule extends BasicInjectionModule {
   @Singleton
   HuygensAuthenticationHandler provideAuthenticationHandler() {
     Client client = new Client();
-    return new HuygensAuthenticationHandler(client, config.getSetting("security.hss.url"), config.getSetting("security.hss.credentials"));
+    String url = config.getSetting("security.hss.url");
+    String credentials = config.getSetting("security.hss.credentials");
+    return new HuygensAuthenticationHandler(client, url, credentials);
   }
 
   @Provides
@@ -111,15 +113,22 @@ public class RESTInjectionModule extends BasicInjectionModule {
   @Provides
   @Singleton
   MailSender provideMailSender() {
-    return new MailSenderFactory(config.getBooleanSetting("mail.enabled"), config.getSetting("mail.host"), config.getSetting("mail.port"), config.getSetting("mail.from_address")).create();
+    boolean enabled = config.getBooleanSetting("mail.enabled");
+    String host = config.getSetting("mail.host");
+    String port = config.getSetting("mail.port");
+    String fromAddress = config.getSetting("mail.from_address");
+    return new MailSenderFactory(enabled, host, port, fromAddress).create();
   }
 
   @Provides
   @Singleton
   PersistenceManager providePersistenceManager() throws PersistenceManagerCreationException {
-    PersistenceManager persistenceManager = PersistenceManagerFactory.newPersistenceManager(config.getBooleanSetting("handle.enabled", true), config.getSetting("handle.cipher"),
-        config.getSetting("handle.naming_authority"), config.getSetting("handle.prefix"), config.pathInUserHome(config.getSetting("handle.private_key_file")));
-    return persistenceManager;
+    boolean enabled = config.getBooleanSetting("handle.enabled", true);
+    String cipher = config.getSetting("handle.cipher");
+    String authority = config.getSetting("handle.naming_authority");
+    String prefix = config.getSetting("handle.prefix");
+    String pathToPrivateKey = config.pathInUserHome(config.getSetting("handle.private_key_file"));
+    return PersistenceManagerFactory.newPersistenceManager(enabled, cipher, authority, prefix, pathToPrivateKey);
   }
 
 }
