@@ -139,7 +139,8 @@ public abstract class DomainEntity extends Entity {
     this.relationCount = relationCount;
   }
 
-  public void addRelation(String name, RelationRef ref) {
+  public void addRelation(RelationRef ref) {
+    String name = ref.getRelationName();
     relationCount++;
     Set<RelationRef> refs = relations.get(name);
     if (refs == null) {

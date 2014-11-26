@@ -41,18 +41,21 @@ public class RelationRef implements Comparable<RelationRef> {
   private String relationId;
   private boolean accepted;
   private int rev;
+  private String relationName;
 
   // For deserialization...
   public RelationRef() {}
 
-  public RelationRef(String type, String xtype, String id, String displayName, String relationId, boolean accepted, int rev) {
+  public RelationRef(String type, String xtype, String id, String displayName, String relationId, boolean accepted, int rev, String relationName) {
     this.type = type;
     this.id = id;
+    this.relationName = relationName;
     this.path = Joiner.on('/').join(Paths.DOMAIN_PREFIX, xtype, id);
     this.rev = rev;
     setDisplayName(displayName);
     setRelationId(relationId);
     setAccepted(accepted);
+
   }
 
   public String getType() {
@@ -133,6 +136,14 @@ public class RelationRef implements Comparable<RelationRef> {
   @Override
   public String toString() {
     return String.format("{%s,%s}", type, id);
+  }
+
+  public void setRelationName(String relationName) {
+    this.relationName = relationName;
+  }
+
+  public String getRelationName() {
+    return relationName;
   }
 
 }

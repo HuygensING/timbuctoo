@@ -27,6 +27,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationRef;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
@@ -47,7 +48,7 @@ public class RelationRefCreator {
 
   // Relations are defined between primitive domain entities
   // Map to a domain entity in the package from which an entity is requested
-  public RelationRef newRelationRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev) throws StorageException {
+  public RelationRef newRelationRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev, String relationName) throws StorageException {
     String iname = reference.getType();
 
     Class<? extends DomainEntity> type = registry.getDomainEntityType(iname);
@@ -56,11 +57,15 @@ public class RelationRefCreator {
     String xname = registry.getXNameForIName(mappedIName);
     DomainEntity entity = storage.getItem(mappedType, reference.getId());
 
-    return new RelationRef(mappedIName, xname, reference.getId(), entity.getDisplayName(), relationId, accepted, rev);
+    return new RelationRef(mappedIName, xname, reference.getId(), entity.getDisplayName(), relationId, accepted, rev, relationName);
   }
 
-  public RelationRef newReadOnlyRelationRef(String type, String xType, String id, String displayName) {
-    return new RelationRef(type, xType, id, displayName, null, true, 0);
+  public RelationRef newReadOnlyRelationRef(String type, String xType, String id, String displayName, String relationName) {
+    return new RelationRef(type, xType, id, displayName, null, true, 0, relationName);
   }
 
+  public RelationRef newRelationRef(EntityMapper mapper, Relation relation) {
+    // TODO Auto-generated method stub
+    return null;
+  }
 }

@@ -81,15 +81,15 @@ public class Repository {
   private final Map<String, VRE> vreMap;
 
   private final RelationRefCreator relationRefCreator;
-  private final RelationAdder relationAdder;
+  private final RelationRefCreatorFactory relationRefCreatorFactory;
 
   @Inject
-  public Repository(TypeRegistry registry, Storage storage, VRECollection vreCollection, RelationRefCreator relationRefCreator, RelationAdder relationAdder, RelationTypes relationTypes)
-      throws StorageException {
+  public Repository(TypeRegistry registry, Storage storage, VRECollection vreCollection, RelationRefCreator relationRefCreator, RelationRefCreatorFactory relationRefCreatorFactory,
+      RelationTypes relationTypes) throws StorageException {
     this.registry = registry;
     this.storage = storage;
     this.relationRefCreator = relationRefCreator;
-    this.relationAdder = relationAdder;
+    this.relationRefCreatorFactory = relationRefCreatorFactory;
     this.relationTypes = relationTypes;
     entityMappers = new EntityMappers(registry.getDomainEntityTypes());
     createIndexes();
@@ -97,12 +97,12 @@ public class Repository {
   }
 
   Repository(TypeRegistry registry, Storage storage, VRECollection vreCollection, RelationTypes relationTypes, EntityMappers entityMappers, RelationRefCreator relationRefCreator,
-      RelationAdder relationAdder) throws StorageException {
+      RelationRefCreatorFactory relationAdder) throws StorageException {
     this.registry = registry;
     this.storage = storage;
     this.entityMappers = entityMappers;
     this.relationRefCreator = relationRefCreator;
-    this.relationAdder = relationAdder;
+    this.relationRefCreatorFactory = relationAdder;
     createIndexes();
     this.relationTypes = relationTypes;
     vreMap = initVREMap(vreCollection);
@@ -469,12 +469,15 @@ public class Repository {
       Class<? extends Relation> mappedType = (Class<? extends Relation>) mapper.map(Relation.class);
       for (Relation relation : getRelationsByEntityId(entityId, limit, mappedType)) {
         RelationType relType = getRelationTypeById(relation.getTypeId(), REQUIRED);
+
         if (relation.hasSourceId(entityId)) {
-          RelationRef ref = relationRefCreator.newRelationRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev());
-          entity.addRelation(relType.getRegularName(), ref);
+          String relationName = relType.getRegularName();
+          RelationRef ref = relationRefCreator.newRelationRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev(), relationName);
+          entity.addRelation(ref);
         } else if (relation.hasTargetId(entityId)) {
-          RelationRef ref = relationRefCreator.newRelationRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted(), relation.getRev());
-          entity.addRelation(relType.getInverseName(), ref);
+          String relationName = relType.getInverseName();
+          RelationRef ref = relationRefCreator.newRelationRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted(), relation.getRev(), relationName);
+          entity.addRelation(ref);
         }
       }
       addDerivedRelations(entity, mapper);
@@ -526,8 +529,8 @@ public class Repository {
       for (String id : ids) {
         DomainEntity document = getEntity(type, id);
         if (document != null) {
-          RelationRef ref = relationRefCreator.newReadOnlyRelationRef(iname, xname, id, document.getDisplayName());
-          entity.addRelation(derivedTypeName, ref);
+          RelationRef ref = relationRefCreator.newReadOnlyRelationRef(iname, xname, id, document.getDisplayName(), derivedTypeName);
+          entity.addRelation(ref);
         }
       }
     }

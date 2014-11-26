@@ -51,6 +51,7 @@ public class RelationRefCreatorTest {
   private static final int REVISION = 0;
   private static final boolean ACCEPTED = true;
   private static final String RELATION_ID = "relationId";
+  private static final String RELATION_NAME = "relName";
   private TypeRegistry registryMock;
   private Storage storageMock;
   private EntityMapper mapperMock;
@@ -70,17 +71,21 @@ public class RelationRefCreatorTest {
   @Test
   public void newRelationRefCreatesANewRelationRef() throws StorageException {
     // setup
-    RelationRef expectedRef = createExpectedRelation(RELATION_ID, ACCEPTED, REVISION, REFERENCE_ID, MAPPED_TYPE, EXTERNAL_NAME);
+    RelationRef expectedRef = createExpectedRelation(RELATION_ID, ACCEPTED, REVISION, REFERENCE_ID, MAPPED_TYPE, EXTERNAL_NAME, RELATION_NAME);
     DomainEntity referencedEntity = createReferencedEntity();
 
     doReturn(referencedEntity).when(storageMock).getItem(MAPPED_TYPE, REFERENCE_ID);
 
     // action
-    RelationRef actualRef = relationRefCreator.newRelationRef(mapperMock, reference, RELATION_ID, ACCEPTED, REVISION);
+    RelationRef actualRef = newRelationRef();
 
     // verify
     verify(storageMock).getItem(MAPPED_TYPE, REFERENCE_ID);
     assertThat(actualRef, equalTo(expectedRef));
+  }
+
+  private RelationRef newRelationRef() throws StorageException {
+    return relationRefCreator.newRelationRef(mapperMock, reference, RELATION_ID, ACCEPTED, REVISION, RELATION_NAME);
   }
 
   @Test(expected = StorageException.class)
@@ -88,7 +93,7 @@ public class RelationRefCreatorTest {
     // setup
     doThrow(StorageException.class).when(storageMock).getItem(MAPPED_TYPE, REFERENCE_ID);
 
-    relationRefCreator.newRelationRef(mapperMock, reference, RELATION_ID, ACCEPTED, REVISION);
+    newRelationRef();
   }
 
   private void setupMapperMock() {
@@ -120,8 +125,8 @@ public class RelationRefCreatorTest {
     return reference;
   }
 
-  private RelationRef createExpectedRelation(String relationId, boolean accepted, int rev, String referenceId, Class<? extends DomainEntity> mappedType, String externalName) {
-    return new RelationRef(TypeNames.getInternalName(mappedType), externalName, referenceId, null, relationId, accepted, rev);
+  private RelationRef createExpectedRelation(String relationId, boolean accepted, int rev, String referenceId, Class<? extends DomainEntity> mappedType, String externalName, String relationName) {
+    return new RelationRef(TypeNames.getInternalName(mappedType), externalName, referenceId, null, relationId, accepted, rev, relationName);
   }
 
 }

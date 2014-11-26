@@ -26,7 +26,7 @@ import org.junit.Test;
 public class RepositoryIntegrationTest extends DBIntegrationTest {
   private static final Class<SearchResult> SEARCH_RESULT_TYPE = SearchResult.class;
   private Repository instance;
-  private RelationAdder relationAdder = new RelationAdder();
+  private RelationRefCreatorFactory relationAdder = new RelationRefCreatorFactory();
 
   @Override
   public void setUp() throws Exception {

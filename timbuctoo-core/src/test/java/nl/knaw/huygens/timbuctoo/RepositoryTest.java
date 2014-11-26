@@ -69,7 +69,7 @@ public class RepositoryTest {
   private RelationTypes relationTypesMock;
   private EntityMappers entityMappersMock;
   private RelationRefCreator relationRefCreatorMock;
-  private RelationAdder relationAdder = new RelationAdder();
+  private RelationRefCreatorFactory relationAdder = new RelationRefCreatorFactory();
 
   @Before
   public void setup() throws Exception {
