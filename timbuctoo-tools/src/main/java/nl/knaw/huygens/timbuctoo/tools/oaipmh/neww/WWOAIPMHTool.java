@@ -42,7 +42,7 @@ public class WWOAIPMHTool {
 
   private static boolean isProduction(String oaiUrl) {
 
-    return StringUtils.contains(oaiUrl, "localhost:9998");
+    return !StringUtils.contains(oaiUrl, "localhost:9998");
   }
 
   private static <T extends DomainEntity> void createOAIRecordForThreeEntities(Class<T> type, String frontEndURL, String vreId, OAIRecordCreator oaiRecordCreator, Repository repo) throws Exception {
