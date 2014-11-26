@@ -47,6 +47,7 @@ import nl.knaw.huygens.timbuctoo.storage.RelationTypes;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.util.RelationRefCreator;
+import nl.knaw.huygens.timbuctoo.util.RelationRefCreatorFactory;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import org.junit.Before;

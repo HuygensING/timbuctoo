@@ -55,6 +55,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageStatus;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.util.KV;
 import nl.knaw.huygens.timbuctoo.util.RelationRefCreator;
+import nl.knaw.huygens.timbuctoo.util.RelationRefCreatorFactory;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
