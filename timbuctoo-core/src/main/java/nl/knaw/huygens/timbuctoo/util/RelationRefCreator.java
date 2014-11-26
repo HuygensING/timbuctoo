@@ -29,6 +29,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationRef;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
@@ -64,8 +65,15 @@ public class RelationRefCreator {
     return new RelationRef(type, xType, id, displayName, null, true, 0, relationName);
   }
 
-  public RelationRef newRelationRef(EntityMapper mapper, Relation relation) {
-    // TODO Auto-generated method stub
-    return null;
+  public <T extends DomainEntity> void addReleation(T entity, EntityMapper mapper, Relation relation, RelationType relType) throws StorageException {
+    String entityId = entity.getId();
+    RelationRef ref = null;
+    if (relation.hasSourceId(entityId)) {
+      ref = newRelationRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev(), relType.getRegularName());
+    } else if (relation.hasTargetId(entityId)) {
+      ref = newRelationRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted(), relation.getRev(), relType.getInverseName());
+    }
+    entity.addRelation(ref);
   }
+
 }

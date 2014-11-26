@@ -470,15 +470,7 @@ public class Repository {
       for (Relation relation : getRelationsByEntityId(entityId, limit, mappedType)) {
         RelationType relType = getRelationTypeById(relation.getTypeId(), REQUIRED);
 
-        if (relation.hasSourceId(entityId)) {
-          String relationName = relType.getRegularName();
-          RelationRef ref = relationRefCreator.newRelationRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev(), relationName);
-          entity.addRelation(ref);
-        } else if (relation.hasTargetId(entityId)) {
-          String relationName = relType.getInverseName();
-          RelationRef ref = relationRefCreator.newRelationRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted(), relation.getRev(), relationName);
-          entity.addRelation(ref);
-        }
+        relationRefCreator.addReleation(entity, mapper, relation, relType);
       }
       addDerivedRelations(entity, mapper);
     }
