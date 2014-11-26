@@ -26,6 +26,7 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 
 import org.apache.commons.lang.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Joiner;
 
 /**
@@ -41,6 +42,7 @@ public class RelationRef implements Comparable<RelationRef> {
   private String relationId;
   private boolean accepted;
   private int rev;
+  @JsonIgnore
   private String relationName;
 
   // For deserialization...
