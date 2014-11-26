@@ -65,6 +65,15 @@ public class RelationBuilder<T extends Relation> {
     return this;
   }
 
+  public RelationBuilder<T> withRelationType(RelationType relationType) {
+    this.typeId = relationType.getId();
+    this.targetType = relationType.getTargetTypeName();
+    this.sourceType = relationType.getSourceTypeName();
+    this.typeType = TYPE_TYPE;
+
+    return this;
+  }
+
   public RelationBuilder<T> withRelationTypeType(String type) {
     typeType = type;
     return this;
@@ -134,4 +143,3 @@ public class RelationBuilder<T extends Relation> {
   }
 
 }
-
