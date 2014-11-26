@@ -65,7 +65,7 @@ public class RelationRefCreator {
     return new RelationRef(type, xType, id, displayName, null, true, 0, relationName);
   }
 
-  public <T extends DomainEntity> void addReleation(T entity, EntityMapper mapper, Relation relation, RelationType relType) throws StorageException {
+  public <T extends DomainEntity> void addRelation(T entity, EntityMapper mapper, Relation relation, RelationType relType) throws StorageException {
     String entityId = entity.getId();
     RelationRef ref = null;
     if (relation.hasSourceId(entityId)) {
