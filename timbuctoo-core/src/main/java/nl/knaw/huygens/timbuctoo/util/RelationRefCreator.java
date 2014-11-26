@@ -49,7 +49,7 @@ public class RelationRefCreator {
 
   // Relations are defined between primitive domain entities
   // Map to a domain entity in the package from which an entity is requested
-  public RelationRef newRelationRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev, String relationName) throws StorageException {
+  RelationRef newRelationRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev, String relationName) throws StorageException {
     String iname = reference.getType();
 
     Class<? extends DomainEntity> type = registry.getDomainEntityType(iname);
