@@ -81,15 +81,12 @@ public class Repository {
   private final RelationTypes relationTypes;
   private final Map<String, VRE> vreMap;
 
-  private final RelationRefCreator relationRefCreator;
   private final RelationRefCreatorFactory relationRefCreatorFactory;
 
   @Inject
-  public Repository(TypeRegistry registry, Storage storage, VRECollection vreCollection, RelationRefCreator relationRefCreator, RelationRefCreatorFactory relationRefCreatorFactory,
-      RelationTypes relationTypes) throws StorageException {
+  public Repository(TypeRegistry registry, Storage storage, VRECollection vreCollection, RelationRefCreatorFactory relationRefCreatorFactory, RelationTypes relationTypes) throws StorageException {
     this.registry = registry;
     this.storage = storage;
-    this.relationRefCreator = relationRefCreator;
     this.relationRefCreatorFactory = relationRefCreatorFactory;
     this.relationTypes = relationTypes;
     entityMappers = new EntityMappers(registry.getDomainEntityTypes());
@@ -97,12 +94,11 @@ public class Repository {
     vreMap = initVREMap(vreCollection);
   }
 
-  Repository(TypeRegistry registry, Storage storage, VRECollection vreCollection, RelationTypes relationTypes, EntityMappers entityMappers, RelationRefCreator relationRefCreator,
-      RelationRefCreatorFactory relationAdder) throws StorageException {
+  Repository(TypeRegistry registry, Storage storage, VRECollection vreCollection, RelationTypes relationTypes, EntityMappers entityMappers, RelationRefCreatorFactory relationAdder)
+      throws StorageException {
     this.registry = registry;
     this.storage = storage;
     this.entityMappers = entityMappers;
-    this.relationRefCreator = relationRefCreator;
     this.relationRefCreatorFactory = relationAdder;
     createIndexes();
     this.relationTypes = relationTypes;
@@ -468,12 +464,14 @@ public class Repository {
       checkState(mapper != null, "No EntityMapper for type %s", entityType);
       @SuppressWarnings("unchecked")
       Class<? extends Relation> mappedType = (Class<? extends Relation>) mapper.map(Relation.class);
+      RelationRefCreator relationRefCreator = relationRefCreatorFactory.create(mappedType);
+
       for (Relation relation : getRelationsByEntityId(entityId, limit, mappedType)) {
         RelationType relType = getRelationTypeById(relation.getTypeId(), REQUIRED);
 
         relationRefCreator.addRelation(entity, mapper, relation, relType);
       }
-      addDerivedRelations(entity, mapper);
+      addDerivedRelations(entity, mapper, relationRefCreator);
     }
   }
 
@@ -496,8 +494,9 @@ public class Repository {
   /**
    * Adds derived relations for the specified entity.
    * Makes sure each relation is added only once.
+   * @param relationRefCreator TODO
    */
-  private <T extends DomainEntity> void addDerivedRelations(T entity, EntityMapper mapper) throws StorageException {
+  private <T extends DomainEntity> void addDerivedRelations(T entity, EntityMapper mapper, RelationRefCreator relationRefCreator) throws StorageException {
     for (DerivedRelationType drtype : entity.getDerivedRelationTypes()) {
       Set<String> ids = Sets.newHashSet();
 
