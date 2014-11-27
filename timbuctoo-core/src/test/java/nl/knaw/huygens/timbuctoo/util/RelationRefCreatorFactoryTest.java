@@ -5,9 +5,8 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.mock;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.storage.Storage;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -16,17 +15,16 @@ import test.util.CustomRelationRefCreator;
 import test.util.TestRelationWithRefCreatorAnnotation;
 import test.util.TestRelationWithoutRefCreatorAnnotation;
 
+import com.google.inject.Injector;
+
 public class RelationRefCreatorFactoryTest {
-  private Storage storageMock;
-  private TypeRegistry registryMock;
   private RelationRefCreatorFactory instance;
+  private Injector injectorMock;
 
   @Before
   public void setUp() {
-    storageMock = mock(Storage.class);
-    registryMock = mock(TypeRegistry.class);
-
-    instance = new RelationRefCreatorFactory(registryMock, storageMock);
+    injectorMock = mock(Injector.class);
+    instance = new RelationRefCreatorFactory(injectorMock);
   }
 
   @Test
@@ -34,7 +32,15 @@ public class RelationRefCreatorFactoryTest {
     verifyRelationHasRelationRefCreator(TestRelationWithRefCreatorAnnotation.class, CustomRelationRefCreator.class);
   }
 
+  @Test
+  public void createReturnsADefaultRelationRefCreatorWhenNoAnnotationIsFound() {
+    verifyRelationHasRelationRefCreator(TestRelationWithoutRefCreatorAnnotation.class, RelationRefCreator.class);
+  }
+
   private void verifyRelationHasRelationRefCreator(Class<? extends Relation> relationType, Class<? extends RelationRefCreator> relationRefCreatorType) {
+    // setup
+    setupInjector(relationRefCreatorType);
+
     // action
     RelationRefCreator relationRefCreator = instance.create(relationType);
 
@@ -43,8 +49,7 @@ public class RelationRefCreatorFactoryTest {
     assertThat(relationRefCreator, is(instanceOf(relationRefCreatorType)));
   }
 
-  @Test
-  public void createReturnsADefaultRelationRefCreatorWhenNoAnnotationIsFound() {
-    verifyRelationHasRelationRefCreator(TestRelationWithoutRefCreatorAnnotation.class, RelationRefCreator.class);
+  private <T extends RelationRefCreator> void setupInjector(Class<T> relationRefCreatorType) {
+    when(injectorMock.getInstance(relationRefCreatorType)).thenReturn(mock(relationRefCreatorType));
   }
 }

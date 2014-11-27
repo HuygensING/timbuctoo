@@ -41,6 +41,9 @@ public class RelationRefCreator {
   private final TypeRegistry registry;
   private final Storage storage;
 
+  /**
+   * @Inject if you subclass this type make sure this annotation is added to the constructor 
+   */
   @Inject
   public RelationRefCreator(TypeRegistry registry, Storage storage) {
     this.registry = registry;
@@ -49,7 +52,7 @@ public class RelationRefCreator {
 
   // Relations are defined between primitive domain entities
   // Map to a domain entity in the package from which an entity is requested
-  RelationRef newRelationRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev, String relationName) throws StorageException {
+  protected RelationRef newRelationRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev, String relationName) throws StorageException {
     String iname = reference.getType();
     Class<? extends DomainEntity> type = registry.getDomainEntityType(iname);
     Class<? extends DomainEntity> mappedType = mapper.map(type);
