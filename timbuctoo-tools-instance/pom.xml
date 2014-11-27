@@ -141,6 +141,10 @@
               <mainClass>nl.knaw.huygens.timbuctoo.tools.oaipmh.neww.WWOAIPMHTool</mainClass>
             </program>
             <program>
+              <name>newwOAIPMHPersonRemover</name>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.oaipmh.neww.WWOAIPMHPersonRemover</mainClass>
+            </program>
+            <program>
               <name>localUserImporter</name>
               <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.LocalUserImporter</mainClass>
             </program>
