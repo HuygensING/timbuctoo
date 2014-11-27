@@ -27,7 +27,9 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationRef;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
@@ -39,6 +41,9 @@ public class RelationRefCreator {
   private final TypeRegistry registry;
   private final Storage storage;
 
+  /**
+   * @Inject if you subclass this type make sure this annotation is added to the constructor 
+   */
   @Inject
   public RelationRefCreator(TypeRegistry registry, Storage storage) {
     this.registry = registry;
@@ -47,20 +52,30 @@ public class RelationRefCreator {
 
   // Relations are defined between primitive domain entities
   // Map to a domain entity in the package from which an entity is requested
-  public RelationRef newRelationRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev) throws StorageException {
+  protected RelationRef newRelationRef(EntityMapper mapper, Reference reference, String relationId, boolean accepted, int rev, String relationName) throws StorageException {
     String iname = reference.getType();
-
     Class<? extends DomainEntity> type = registry.getDomainEntityType(iname);
     Class<? extends DomainEntity> mappedType = mapper.map(type);
+
     String mappedIName = TypeNames.getInternalName(mappedType);
     String xname = registry.getXNameForIName(mappedIName);
-    DomainEntity entity = storage.getItem(mappedType, reference.getId());
 
-    return new RelationRef(mappedIName, xname, reference.getId(), entity.getDisplayName(), relationId, accepted, rev);
+    DomainEntity relatedEntity = storage.getItem(mappedType, reference.getId());
+
+    return new RelationRef(mappedIName, xname, reference.getId(), relatedEntity.getDisplayName(), relationId, accepted, rev, relationName);
   }
 
-  public RelationRef newReadOnlyRelationRef(String type, String xType, String id, String displayName) {
-    return new RelationRef(type, xType, id, displayName, null, true, 0);
+  public <T extends DomainEntity> void addRelation(T entityToAddTo, EntityMapper mapper, Relation relation, RelationType relType) throws StorageException {
+    String entityId = entityToAddTo.getId();
+    RelationRef ref = null;
+
+    if (relation.hasSourceId(entityId)) {
+      ref = newRelationRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev(), relType.getRegularName());
+    } else if (relation.hasTargetId(entityId)) {
+      ref = newRelationRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted(), relation.getRev(), relType.getInverseName());
+    }
+
+    entityToAddTo.addRelation(ref);
   }
 
 }

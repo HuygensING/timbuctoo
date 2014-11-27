@@ -33,7 +33,6 @@ import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.EntityMapper;
 import nl.knaw.huygens.timbuctoo.config.EntityMappers;
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DerivedProperty;
 import nl.knaw.huygens.timbuctoo.model.DerivedRelationType;
@@ -46,6 +45,7 @@ import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
 import nl.knaw.huygens.timbuctoo.storage.RelationTypes;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
@@ -55,6 +55,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageStatus;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.util.KV;
 import nl.knaw.huygens.timbuctoo.util.RelationRefCreator;
+import nl.knaw.huygens.timbuctoo.util.RelationRefCreatorFactory;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
@@ -80,25 +81,25 @@ public class Repository {
   private final RelationTypes relationTypes;
   private final Map<String, VRE> vreMap;
 
-  private final RelationRefCreator relationRefCreator;
+  private final RelationRefCreatorFactory relationRefCreatorFactory;
 
   @Inject
-  public Repository(TypeRegistry registry, Storage storage, VRECollection vreCollection, RelationRefCreator relationRefCreator) throws StorageException {
+  public Repository(TypeRegistry registry, Storage storage, VRECollection vreCollection, RelationRefCreatorFactory relationRefCreatorFactory, RelationTypes relationTypes) throws StorageException {
     this.registry = registry;
     this.storage = storage;
-    this.relationRefCreator = relationRefCreator;
+    this.relationRefCreatorFactory = relationRefCreatorFactory;
+    this.relationTypes = relationTypes;
     entityMappers = new EntityMappers(registry.getDomainEntityTypes());
     createIndexes();
-    relationTypes = new RelationTypes(storage);
     vreMap = initVREMap(vreCollection);
   }
 
-  Repository(TypeRegistry registry, Storage storage, VRECollection vreCollection, RelationTypes relationTypes, EntityMappers entityMappers, RelationRefCreator relationRefCreator)
+  Repository(TypeRegistry registry, Storage storage, VRECollection vreCollection, RelationTypes relationTypes, EntityMappers entityMappers, RelationRefCreatorFactory relationAdder)
       throws StorageException {
     this.registry = registry;
     this.storage = storage;
     this.entityMappers = entityMappers;
-    this.relationRefCreator = relationRefCreator;
+    this.relationRefCreatorFactory = relationAdder;
     createIndexes();
     this.relationTypes = relationTypes;
     vreMap = initVREMap(vreCollection);
@@ -422,7 +423,7 @@ public class Repository {
     return storage.getRelationsByEntityId(Relation.class, id).getSome(limit);
   }
 
-  public List<? extends Relation> getRelationsByEntityId(String entityId, int limit, Class<? extends Relation> type) throws StorageException {
+  private List<? extends Relation> getRelationsByEntityId(String entityId, int limit, Class<? extends Relation> type) throws StorageException {
     return storage.getRelationsByEntityId(type, entityId).getSome(limit);
   }
 
@@ -432,7 +433,9 @@ public class Repository {
    * @param relationTypeIds the relation type should be in this collection.
    * @return a collection with the found relations.
    * @throws StorageException 
+   * @deprecated will be removed when the MongoRelationSearcher will be removed. 
    */
+  @Deprecated
   public <T extends Relation> List<T> getRelationsByType(Class<T> variation, List<String> relationTypeIds) throws StorageException {
     return storage.getRelationsByType(variation, relationTypeIds);
   }
@@ -461,17 +464,14 @@ public class Repository {
       checkState(mapper != null, "No EntityMapper for type %s", entityType);
       @SuppressWarnings("unchecked")
       Class<? extends Relation> mappedType = (Class<? extends Relation>) mapper.map(Relation.class);
+      RelationRefCreator relationRefCreator = relationRefCreatorFactory.create(mappedType);
+
       for (Relation relation : getRelationsByEntityId(entityId, limit, mappedType)) {
         RelationType relType = getRelationTypeById(relation.getTypeId(), REQUIRED);
-        if (relation.hasSourceId(entityId)) {
-          RelationRef ref = relationRefCreator.newRelationRef(mapper, relation.getTargetRef(), relation.getId(), relation.isAccepted(), relation.getRev());
-          entity.addRelation(relType.getRegularName(), ref);
-        } else if (relation.hasTargetId(entityId)) {
-          RelationRef ref = relationRefCreator.newRelationRef(mapper, relation.getSourceRef(), relation.getId(), relation.isAccepted(), relation.getRev());
-          entity.addRelation(relType.getInverseName(), ref);
-        }
+
+        relationRefCreator.addRelation(entity, mapper, relation, relType);
       }
-      addDerivedRelations(entity, mapper);
+      addDerivedRelations(entity, mapper, relationRefCreator);
     }
   }
 
@@ -483,7 +483,7 @@ public class Repository {
    * Returns all relations for the entity with the specified id with the specified relation type id.
    * If {@code regular} is true the entity must be the source entity, else it must be the target entity.
    */
-  public List<Relation> findRelations(String entityId, String relationTypeId, boolean regular) throws StorageException {
+  private List<Relation> findRelations(String entityId, String relationTypeId, boolean regular) throws StorageException {
     if (regular) {
       return storage.findRelations(Relation.class, entityId, null, relationTypeId).getAll();
     } else {
@@ -494,8 +494,9 @@ public class Repository {
   /**
    * Adds derived relations for the specified entity.
    * Makes sure each relation is added only once.
+   * @param relationRefCreator TODO
    */
-  protected <T extends DomainEntity> void addDerivedRelations(T entity, EntityMapper mapper) throws StorageException {
+  private <T extends DomainEntity> void addDerivedRelations(T entity, EntityMapper mapper, RelationRefCreator relationRefCreator) throws StorageException {
     for (DerivedRelationType drtype : entity.getDerivedRelationTypes()) {
       Set<String> ids = Sets.newHashSet();
 
@@ -511,20 +512,35 @@ public class Repository {
       String derivedTypeName = drtype.getDerivedTypeName();
       relationType = getRelationTypeByName(derivedTypeName, REQUIRED);
       regular = relationType.getRegularName().equals(derivedTypeName);
-      String iname = regular ? relationType.getTargetTypeName() : relationType.getSourceTypeName();
-      Class<? extends DomainEntity> type = registry.getDomainEntityType(iname);
-      type = mapper.map(type);
-      iname = TypeNames.getInternalName(type);
-      String xname = registry.getXNameForIName(iname);
+
+      @SuppressWarnings("unchecked")
+      Class<? extends Relation> projectRelationClass = (Class<? extends Relation>) mapper.map(Relation.class);
 
       for (String id : ids) {
-        DomainEntity document = getEntity(type, id);
-        if (document != null) {
-          RelationRef ref = relationRefCreator.newReadOnlyRelationRef(iname, xname, id, document.getDisplayName());
-          entity.addRelation(derivedTypeName, ref);
-        }
+        Relation relation = createDerivedRelation(relationType, projectRelationClass, entity, id);
+        relationRefCreator.addRelation(entity, mapper, relation, relationType);
       }
     }
+  }
+
+  private Relation createDerivedRelation(RelationType relationType, Class<? extends Relation> projectRelationClass, DomainEntity entity, String relatedId) {
+    RelationBuilder<? extends Relation> relationBuilder = RelationBuilder.newInstance(projectRelationClass);
+    relationBuilder.withRelationType(relationType);
+
+    String entityId = entity.getId();
+    if (isEntitySourceType(relationType, entity)) {
+      relationBuilder.withSourceId(entityId);
+      relationBuilder.withTargetId(relatedId);
+    } else {
+      relationBuilder.withTargetId(entityId);
+      relationBuilder.withSourceId(relatedId);
+    }
+
+    return relationBuilder.build();
+  }
+
+  private boolean isEntitySourceType(RelationType relationType, DomainEntity entity) {
+    return registry.getDomainEntityType(relationType.getSourceTypeName()).isAssignableFrom(entity.getClass());
   }
 
   public <T extends DomainEntity> void addDerivedProperties(VRE vre, T entity) {

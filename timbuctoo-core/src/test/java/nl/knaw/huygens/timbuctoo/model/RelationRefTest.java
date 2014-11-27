@@ -29,13 +29,22 @@ import org.junit.Test;
 
 public class RelationRefTest {
 
+  private static final String RELATION_NAME = "relName";
+  private static final int REVISION = 0;
+  private static final boolean ACCEPTED = true;
+  private static final String RELATION_ID = "relationId";
+  private static final String NAME = "name";
+  private static final String ID = "id";
+  private static final String XTYPE = "xtype";
+  private static final String TYPE = "type";
+
   @Test
   public void testDisplayName() {
-    RelationRef ref = new RelationRef("type", "xtype", "id", null, "relationId", true, 0);
+    RelationRef ref = new RelationRef(TYPE, XTYPE, ID, null, RELATION_ID, ACCEPTED, REVISION, RELATION_NAME);
     assertEquals("", ref.getDisplayName());
 
-    ref.setDisplayName("name");
-    assertEquals("name", ref.getDisplayName());
+    ref.setDisplayName(NAME);
+    assertEquals(NAME, ref.getDisplayName());
 
     ref.setDisplayName(null);
     assertEquals("", ref.getDisplayName());
@@ -43,15 +52,15 @@ public class RelationRefTest {
 
   @Test
   public void testPath() {
-    RelationRef ref = new RelationRef("type", "xtype", "id", "name", "relationId", true, 0);
+    RelationRef ref = new RelationRef(TYPE, XTYPE, ID, NAME, RELATION_ID, ACCEPTED, 0, RELATION_NAME);
 
     assertEquals("domain/xtype/id", ref.getPath());
   }
 
   @Test
-  public void testCompareTo() {
-    RelationRef ref1 = new RelationRef("type", "xtype", "id", "name1", "relationId", true, 0);
-    RelationRef ref2 = new RelationRef("type", "xtype", "id", "name2", "relationId", true, 0);
+  public void testCompareToWithDifferentNames() {
+    RelationRef ref1 = new RelationRef(TYPE, XTYPE, ID, "name1", RELATION_ID, ACCEPTED, 0, RELATION_NAME);
+    RelationRef ref2 = new RelationRef(TYPE, XTYPE, ID, "name2", RELATION_ID, ACCEPTED, 0, RELATION_NAME);
 
     assertTrue(ref1.compareTo(ref1) == 0);
     assertTrue(ref1.compareTo(ref2) < 0);
