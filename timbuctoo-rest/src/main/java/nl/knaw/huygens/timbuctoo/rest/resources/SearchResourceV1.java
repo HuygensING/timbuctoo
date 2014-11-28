@@ -28,7 +28,8 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.SEARCH_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.V1_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.V1_OR_V2_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.VERSION_PARAM;
 
 import java.net.URI;
 
@@ -74,7 +75,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
-@Path(V1_PATH + "/" + SEARCH_PATH)
+@Path(V1_OR_V2_PATH + SEARCH_PATH)
 public class SearchResourceV1 extends ResourceBase {
 
   private static final String RELATION_PARAM = "relationType";
@@ -102,6 +103,7 @@ public class SearchResourceV1 extends ResourceBase {
   @APIDesc("Searches the Solr index")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response regularPost( //
+      @PathParam(VERSION_PARAM) String version, //
       @HeaderParam("VRE_ID") String vreId, //
       @PathParam(ENTITY_PARAM) String typeString, //
       SearchParametersV1 searchParams //
@@ -116,7 +118,7 @@ public class SearchResourceV1 extends ResourceBase {
     try {
       SearchResult result = vre.search(type, searchParams);
       String queryId = saveSearchResult(result);
-      return Response.created(createHATEOASURI(queryId)).build();
+      return Response.created(createHATEOASURI(queryId, version)).build();
     } catch (SearchValidationException e) {
       throw new TimbuctooException(BAD_REQUEST, "Search request not valid: %s", e.getMessage());
     } catch (Exception e) {
@@ -129,6 +131,7 @@ public class SearchResourceV1 extends ResourceBase {
   @Path("/" + RELATION_SEARCH_PREFIX)
   @Consumes(MediaType.APPLICATION_JSON)
   public Response relationPost( //
+      @PathParam(VERSION_PARAM) String version, //
       @HeaderParam("VRE_ID") String vreId, //
       @PathParam(RELATION_PARAM) String relationTypeString, //
       RelationSearchParameters params //
@@ -142,7 +145,7 @@ public class SearchResourceV1 extends ResourceBase {
     try {
       SearchResult result = relationSearcher.search(vre, relationType, params);
       String queryId = saveSearchResult(result);
-      return Response.created(createHATEOASURI(queryId)).build();
+      return Response.created(createHATEOASURI(queryId, version)).build();
     } catch (Exception e) {
       LOG.error(e.getMessage(), e);
       throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
@@ -211,9 +214,9 @@ public class SearchResourceV1 extends ResourceBase {
     return Relation.class.isAssignableFrom(type) ? relationSearchResultMapper : regularSearchResultMapper;
   }
 
-  private URI createHATEOASURI(String queryId) {
+  private URI createHATEOASURI(String queryId, String apiVersion) {
     UriBuilder builder = UriBuilder.fromUri(config.getSetting("public_url"));
-    builder.path(V1_PATH);
+    builder.path(apiVersion);
     builder.path(SEARCH_PATH);
     builder.path(queryId);
     return builder.build();

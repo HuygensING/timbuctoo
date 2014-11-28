@@ -50,12 +50,12 @@ public class Paths {
    * When the version 1 path is optional. Contains a slash. 
    * Regex is only allowed for variables, so we assign it apiVersion.
    */
-  public static final String V1_PATH_OPTIONAL = "{ apiVersion: (v1/)? }";
-  //public static final String V1_OR_V2_PATH_OPTIONAL = "{ apiVersion: (v1/)? }";
-  public static final String VERSION_PATH_OPTIONAL = "{ apiVersion: (v[0-2]/)? }";
+  public static final String VERSION_PARAM = "apiVersion";
+  public static final String V1_PATH_OPTIONAL = "{ " + VERSION_PARAM + ": (v1/)? }";
+  public static final String V1_OR_V2_PATH = "{ " + VERSION_PARAM + ": (v[1-2]/) }";
+  public static final String VERSION_PATH_OPTIONAL = "{" + VERSION_PARAM + ": (v[0-2]/)? }";
 
   public static final String ENTITY_PARAM = "entityName";
-
   public static final String ENTITY_PATH = "{" + ENTITY_PARAM + ": " + ENTITY_REGEX + "}";
 
   private Paths() {
