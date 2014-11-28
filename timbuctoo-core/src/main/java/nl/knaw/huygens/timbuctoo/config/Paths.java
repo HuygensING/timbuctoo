@@ -42,11 +42,14 @@ public class Paths {
   public static final String USER_PATH = "users";
   /** The path for api version 1 */
   public static final String V1_PATH = "v1";
+  public static final String V2_PATH = "v2";
   /** 
    * When the version 1 path is optional. Contains a slash. 
    * Regex is only allowed for variables, so we assign it apiVersion.
    */
   public static final String V1_PATH_OPTIONAL = "{ apiVersion: (v1/)? }";
+  //public static final String V1_OR_V2_PATH_OPTIONAL = "{ apiVersion: (v1/)? }";
+  public static final String VERSION_PATH_OPTIONAL = "{ apiVersion: (v[0-2]/)? }";
 
   public static final String ENTITY_PARAM = "entityName";
 

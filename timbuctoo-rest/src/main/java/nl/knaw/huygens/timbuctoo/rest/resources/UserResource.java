@@ -24,7 +24,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
 
 import static nl.knaw.huygens.timbuctoo.config.Paths.SYSTEM_PREFIX;
 import static nl.knaw.huygens.timbuctoo.config.Paths.USER_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.V1_PATH_OPTIONAL;
+import static nl.knaw.huygens.timbuctoo.config.Paths.VERSION_PATH_OPTIONAL;
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.USER_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
@@ -64,7 +64,7 @@ import org.apache.commons.lang.StringUtils;
 
 import com.google.inject.Inject;
 
-@Path(V1_PATH_OPTIONAL + SYSTEM_PREFIX + "/" + USER_PATH)
+@Path(VERSION_PATH_OPTIONAL + SYSTEM_PREFIX + "/" + USER_PATH)
 public class UserResource extends ResourceBase {
 
   private static final String ID_REGEX = "/{id:" + User.ID_PREFIX + "\\d+}";
