@@ -62,11 +62,11 @@ import com.sun.jersey.api.client.WebResource;
 public class UserResourceTest extends WebServiceTestSetup {
 
   private static final String OTHER_VRE_ID = "OtherVREId";
-  private static final String VREAUTHORIZATIONS_PATH = "vreauthorizations";
-  private static final String OTHER_USER_ID = "USER000000002";
+  protected static final String VREAUTHORIZATIONS_PATH = "vreauthorizations";
+  protected static final String OTHER_USER_ID = "USER000000002";
   private static final String[] NO_ROLES = new String[0];
 
-  private WebResource createResource(String... pathElements) {
+  protected WebResource createResource(String... pathElements) {
     WebResource resource = resource();
 
     resource = resource.path(getAPIVersion());
@@ -78,6 +78,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     return resource;
   }
 
+  @Override
   protected String getAPIVersion() {
     return "";
   }
@@ -739,7 +740,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     verifyResponseStatus(response, Status.UNAUTHORIZED);
   }
 
-  private User createUser(String id, String firstName, String lastName) {
+  protected User createUser(String id, String firstName, String lastName) {
     User user = new User();
     user.setId(id);
     user.setFirstName(firstName);

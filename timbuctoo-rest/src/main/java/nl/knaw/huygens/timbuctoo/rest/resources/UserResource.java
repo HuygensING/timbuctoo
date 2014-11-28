@@ -24,7 +24,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
 
 import static nl.knaw.huygens.timbuctoo.config.Paths.SYSTEM_PREFIX;
 import static nl.knaw.huygens.timbuctoo.config.Paths.USER_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.VERSION_PATH_OPTIONAL;
+import static nl.knaw.huygens.timbuctoo.config.Paths.V1_PATH_OPTIONAL;
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.USER_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
@@ -64,15 +64,15 @@ import org.apache.commons.lang.StringUtils;
 
 import com.google.inject.Inject;
 
-@Path(VERSION_PATH_OPTIONAL + SYSTEM_PREFIX + "/" + USER_PATH)
+@Path(V1_PATH_OPTIONAL + SYSTEM_PREFIX + "/" + USER_PATH)
 public class UserResource extends ResourceBase {
 
-  private static final String ID_REGEX = "/{id:" + User.ID_PREFIX + "\\d+}";
-  private static final String VRE_AUTHORIZATION_COLLECTION_PATH = ID_REGEX + "/vreauthorizations";
-  private static final String VRE_AUTHORIZATION_PATH = VRE_AUTHORIZATION_COLLECTION_PATH + "/{vre: \\w+}";
-  private static final String ID_PARAM = "id";
+  protected static final String ID_REGEX = "/{id:" + User.ID_PREFIX + "\\d+}";
+  protected static final String VRE_AUTHORIZATION_COLLECTION_PATH = ID_REGEX + "/vreauthorizations";
+  protected static final String VRE_AUTHORIZATION_PATH = VRE_AUTHORIZATION_COLLECTION_PATH + "/{vre: \\w+}";
+  protected static final String ID_PARAM = "id";
 
-  private final UserConfigurationHandler userConfigurationHandler;
+  protected final UserConfigurationHandler userConfigurationHandler;
   private final MailSender mailSender;
 
   @Inject
@@ -129,7 +129,7 @@ public class UserResource extends ResourceBase {
     return Response.status(Status.NO_CONTENT).build();
   }
 
-  private void sendEmail(User user) {
+  protected void sendEmail(User user) {
     StringBuilder contentbuilder = new StringBuilder("Beste ");
     contentbuilder.append(user.getFirstName());
     contentbuilder.append(",\n");
@@ -199,7 +199,7 @@ public class UserResource extends ResourceBase {
   @Produces(MediaType.APPLICATION_JSON)
   @Consumes(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
-  public void putVREAUthorization(//
+  public Response putVREAUthorization(//
       @PathParam("id") String userId,//
       @PathParam("vre") String vreId,//
       @HeaderParam(VRE_ID_KEY) String userVREId,//
@@ -210,6 +210,8 @@ public class UserResource extends ResourceBase {
     checkIfInScope(vreId, userVREId);
     findVREAuthorization(vreId, userId);
     userConfigurationHandler.updateVREAuthorization(authorization);
+
+    return Response.noContent().build();
   }
 
   @DELETE
@@ -232,13 +234,13 @@ public class UserResource extends ResourceBase {
    * @param userVREId the id of the VRE the user is currently logged in to.
    * @throws a {@link TimbuctooException} with a {@code FORBIDDEN} status.
    */
-  private void checkIfInScope(String vreId, String userVREId) {
+  protected void checkIfInScope(String vreId, String userVREId) {
     if (!StringUtils.equals(vreId, userVREId)) {
       throw new TimbuctooException(Status.FORBIDDEN, "VRE %s has no permission to edit VREAuthorizations of VRE %s", userVREId, vreId);
     }
   }
 
-  private VREAuthorization findVREAuthorization(String vreId, String userId) {
+  protected VREAuthorization findVREAuthorization(String vreId, String userId) {
     VREAuthorization example = new VREAuthorization(vreId, userId);
     VREAuthorization authorization = userConfigurationHandler.findVREAuthorization(example);
     checkNotNull(authorization, Status.NOT_FOUND, "Missing VREAuthorization for userId %s and vreId %s", userId, vreId);
