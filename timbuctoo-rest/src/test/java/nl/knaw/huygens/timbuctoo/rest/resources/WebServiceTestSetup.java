@@ -51,8 +51,8 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.ClientResponse.Status;
+import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.container.filter.LoggingFilter;
 import com.sun.jersey.api.container.filter.RolesAllowedResourceFilterFactory;
 import com.sun.jersey.api.core.PackagesResourceConfig;
@@ -97,6 +97,13 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   @Before
   public void setupRepository() {
     repository = injector.getInstance(Repository.class);
+  }
+
+  /**
+   * Return the version of the api to test.
+   */
+  protected String getAPIVersion() {
+    return "";
   }
 
   /**

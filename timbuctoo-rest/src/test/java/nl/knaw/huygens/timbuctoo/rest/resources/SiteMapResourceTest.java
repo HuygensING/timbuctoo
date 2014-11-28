@@ -33,21 +33,16 @@ import com.sun.jersey.api.client.ClientResponse.Status;
 public class SiteMapResourceTest extends WebServiceTestSetup {
 
   @Test
-  public void testGetSitemap() {
-    setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
-
-    ClientResponse response = resource().path(Paths.SYSTEM_PREFIX).path("api") //
-        .get(ClientResponse.class);
-    verifyResponseStatus(response, Status.OK);
-  }
-
-  @Test
   public void testGetSitemapV1() {
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
 
-    ClientResponse response = resource().path(Paths.V1_PATH).path(Paths.SYSTEM_PREFIX).path("api") //
-        .get(ClientResponse.class);
+    ClientResponse response = apiResource();
     verifyResponseStatus(response, Status.OK);
+  }
+
+  protected ClientResponse apiResource() {
+    return resource().path(getAPIVersion()).path(Paths.SYSTEM_PREFIX).path("api") //
+        .get(ClientResponse.class);
   }
 
 }

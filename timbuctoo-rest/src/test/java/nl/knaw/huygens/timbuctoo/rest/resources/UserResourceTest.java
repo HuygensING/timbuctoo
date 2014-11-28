@@ -66,16 +66,20 @@ public class UserResourceTest extends WebServiceTestSetup {
   private static final String OTHER_USER_ID = "USER000000002";
   private static final String[] NO_ROLES = new String[0];
 
-  private WebResource createResource(String version, String... pathElements) {
+  private WebResource createResource(String... pathElements) {
     WebResource resource = resource();
-    if (version != null) {
-      resource = resource.path(version);
-    }
+
+    resource = resource.path(getAPIVersion());
+
     resource = resource.path(Paths.SYSTEM_PREFIX).path("users");
     for (String pathElement : pathElements) {
       resource = resource.path(pathElement);
     }
     return resource;
+  }
+
+  protected String getAPIVersion() {
+    return "";
   }
 
   @Test
@@ -87,7 +91,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     when(userConfigurationHandler.getUsers()).thenReturn(iterator);
 
     GenericType<List<User>> genericType = new GenericType<List<User>>() {};
-    List<User> users = createResource(null) //
+    List<User> users = createResource() //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
         .get(genericType);
@@ -100,7 +104,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     setUpVREManager(VRE_ID, true);
     setupUserWithRoles(VRE_ID, USER_ID, NO_ROLES);
 
-    ClientResponse response = createResource(null) //
+    ClientResponse response = createResource() //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
         .get(ClientResponse.class);
@@ -111,7 +115,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   public void testGetAllUsersNotLoggedIn() {
     setUserNotLoggedIn();
 
-    ClientResponse response = createResource(null) //
+    ClientResponse response = createResource() //
         .get(ClientResponse.class);
     verifyResponseStatus(response, Status.UNAUTHORIZED);
   }
@@ -124,7 +128,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     User expected = createUser(USER_ID, "test", "test");
     when(userConfigurationHandler.getUser(USER_ID)).thenReturn(expected);
 
-    User actual = createResource(null, USER_ID) //
+    User actual = createResource(USER_ID) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
         .get(User.class);
@@ -141,7 +145,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
     when(userConfigurationHandler.getUser(USER_ID)).thenReturn(null);
 
-    ClientResponse response = createResource(null, USER_ID) //
+    ClientResponse response = createResource(USER_ID) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
         .get(ClientResponse.class);
@@ -156,7 +160,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     User expected = createUser(USER_ID, "test", "test");
     when(userConfigurationHandler.getUser(USER_ID)).thenReturn(expected);
 
-    User actual = createResource(null, "me") //
+    User actual = createResource("me") //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
         .get(User.class);
@@ -174,7 +178,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     User expected = createUser(USER_ID, "test", "test");
     when(userConfigurationHandler.getUser(USER_ID)).thenReturn(expected);
 
-    User actual = createResource(null, "me") //
+    User actual = createResource("me") //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
         .get(User.class);
@@ -207,7 +211,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     when(userConfigurationHandler.findVREAuthorization(adminExample)).thenReturn(adminAuth);
     when(userConfigurationHandler.getUser(adminId)).thenReturn(admin);
 
-    ClientResponse response = createResource(null, "me") //
+    ClientResponse response = createResource("me") //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
         .get(ClientResponse.class);
@@ -224,7 +228,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   public void testGetUserAsUser() {
     setupUserWithRoles(VRE_ID, OTHER_USER_ID, USER_ROLE);
 
-    ClientResponse response = createResource(null, USER_ID) //
+    ClientResponse response = createResource(USER_ID) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
         .get(ClientResponse.class);
@@ -235,7 +239,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   public void testGetUserNotLoggedIn() {
     setUserNotLoggedIn();
 
-    ClientResponse response = createResource(null, USER_ID) //
+    ClientResponse response = createResource(USER_ID) //
         .get(ClientResponse.class);
     verifyResponseStatus(response, Status.UNAUTHORIZED);
   }
@@ -254,7 +258,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
     when(userConfigurationHandler.getUser(USER_ID)).thenReturn(original);
 
-    ClientResponse response = createResource(null, USER_ID) //
+    ClientResponse response = createResource(USER_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
@@ -279,7 +283,7 @@ public class UserResourceTest extends WebServiceTestSetup {
       }
     }).when(userConfigurationHandler).updateUser(any(User.class));
 
-    ClientResponse response = createResource(null, USER_ID) //
+    ClientResponse response = createResource(USER_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
@@ -295,7 +299,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     User user = createUser(USER_ID, "firstName", "lastName");
     when(userConfigurationHandler.getUser(USER_ID)).thenReturn(null);
 
-    ClientResponse response = createResource(null, USER_ID) //
+    ClientResponse response = createResource(USER_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
@@ -311,7 +315,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
     setUserNotLoggedIn();
 
-    ClientResponse response = createResource(null, USER_ID) //
+    ClientResponse response = createResource(USER_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
         .put(ClientResponse.class, user);
     verifyResponseStatus(response, Status.UNAUTHORIZED);
@@ -323,7 +327,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     setUpVREManager(VRE_ID, true);
     setupUserWithRoles(VRE_ID, USER_ID, ADMIN_ROLE);
 
-    ClientResponse response = createResource(null, USER_ID) //
+    ClientResponse response = createResource(USER_ID) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
         .delete(ClientResponse.class);
@@ -337,7 +341,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     setupUserWithRoles(VRE_ID, USER_ID, ADMIN_ROLE);
     when(userConfigurationHandler.getUser(USER_ID)).thenReturn(null);
 
-    ClientResponse response = createResource(null, USER_ID) //
+    ClientResponse response = createResource(USER_ID) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
         .delete(ClientResponse.class);
@@ -350,7 +354,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     setUpVREManager(VRE_ID, true);
     setupUserWithRoles(VRE_ID, USER_ID, NO_ROLES);
 
-    ClientResponse response = createResource(null, USER_ID) //
+    ClientResponse response = createResource(USER_ID) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
         .delete(ClientResponse.class);
@@ -363,7 +367,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     setupUserWithRoles(VRE_ID, USER_ID, NO_ROLES);
     setUserNotLoggedIn();
 
-    ClientResponse response = createResource(null, USER_ID) //
+    ClientResponse response = createResource(USER_ID) //
         .delete(ClientResponse.class);
     verifyResponseStatus(response, Status.UNAUTHORIZED);
   }
@@ -377,7 +381,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     VREAuthorization expected = new VREAuthorization(VRE_ID, USER_ID, USER_ROLE);
     when(userConfigurationHandler.findVREAuthorization(example)).thenReturn(expected);
 
-    ClientResponse response = createResource(null, USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
+    ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
         .get(ClientResponse.class);
@@ -390,7 +394,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   public void testGetVREAuthorizationAsUser() {
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
 
-    ClientResponse response = createResource(null, USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
+    ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
         .get(ClientResponse.class);
@@ -402,7 +406,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
     setUserNotLoggedIn();
 
-    ClientResponse response = createResource(null, USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
+    ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
         .get(ClientResponse.class);
@@ -417,7 +421,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     VREAuthorization example = new VREAuthorization(VRE_ID, USER_ID);
     when(userConfigurationHandler.findVREAuthorization(example)).thenReturn(null);
 
-    ClientResponse response = createResource(null, USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
+    ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
         .get(ClientResponse.class);
@@ -429,7 +433,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     setUpVREManager(OTHER_VRE_ID, true);
     setupUserWithRoles(OTHER_VRE_ID, OTHER_USER_ID, ADMIN_ROLE);
 
-    ClientResponse response = createResource(null, USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
+    ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", OTHER_VRE_ID) //
         .get(ClientResponse.class);
@@ -443,7 +447,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
     VREAuthorization authorization = new VREAuthorization(VRE_ID, USER_ID, USER_ROLE);
 
-    WebResource resource = createResource(null, USER_ID, VREAUTHORIZATIONS_PATH);
+    WebResource resource = createResource(USER_ID, VREAUTHORIZATIONS_PATH);
     String uri = resource.getURI().toString();
     ClientResponse response = resource.type(MediaType.APPLICATION_JSON_TYPE) //
         .header(AUTHORIZATION, CREDENTIALS) //
@@ -460,7 +464,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   public void testPostVREAuthorizationAsUser() throws Exception {
     setupUserWithRoles(VRE_ID, OTHER_USER_ID, USER_ROLE);
 
-    ClientResponse response = createResource(null, USER_ID, VREAUTHORIZATIONS_PATH) //
+    ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
         .post(ClientResponse.class);
@@ -473,7 +477,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   public void testPostVREAuthorizationNotLoggedIn() throws Exception {
     setUserNotLoggedIn();
 
-    ClientResponse response = createResource(null, USER_ID, VREAUTHORIZATIONS_PATH) //
+    ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
         .post(ClientResponse.class);
@@ -487,7 +491,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     setUpVREManager(VRE_ID, true);
     setupUserWithRoles(VRE_ID, OTHER_USER_ID, ADMIN_ROLE);
 
-    ClientResponse response = createResource(null, USER_ID, VREAUTHORIZATIONS_PATH) //
+    ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
@@ -503,7 +507,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     setupUserWithRoles(OTHER_VRE_ID, OTHER_USER_ID, ADMIN_ROLE);
     VREAuthorization authorization = new VREAuthorization(VRE_ID, USER_ID, USER_ROLE);
 
-    ClientResponse response = createResource(null, USER_ID, VREAUTHORIZATIONS_PATH) //
+    ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", OTHER_VRE_ID) //
@@ -522,7 +526,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     VREAuthorization authorization = new VREAuthorization(VRE_ID, USER_ID, USER_ROLE);
     when(userConfigurationHandler.findVREAuthorization(example)).thenReturn(authorization);
 
-    ClientResponse response = createResource(null, USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
+    ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
@@ -538,7 +542,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     setupUserWithRoles(VRE_ID, OTHER_USER_ID, USER_ROLE);
     VREAuthorization authorization = new VREAuthorization(VRE_ID, USER_ID, USER_ROLE);
 
-    ClientResponse response = createResource(null, USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
+    ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
@@ -554,7 +558,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     setUserNotLoggedIn();
     VREAuthorization authorization = new VREAuthorization(VRE_ID, USER_ID, USER_ROLE);
 
-    ClientResponse response = createResource(null, USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
+    ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
@@ -569,7 +573,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     setUpVREManager(VRE_ID, true);
     setupUserWithRoles(VRE_ID, OTHER_USER_ID, ADMIN_ROLE);
 
-    ClientResponse response = createResource(null, USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
+    ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
@@ -585,7 +589,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     setupUserWithRoles(VRE_ID, OTHER_USER_ID, ADMIN_ROLE);
     VREAuthorization authorization = new VREAuthorization(VRE_ID, USER_ID, USER_ROLE);
 
-    ClientResponse response = createResource(null, USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
+    ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
@@ -604,7 +608,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     VREAuthorization authorization = new VREAuthorization(VRE_ID, USER_ID, USER_ROLE);
     when(userConfigurationHandler.findVREAuthorization(example)).thenReturn(authorization);
 
-    ClientResponse response = createResource(null, USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
+    ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", OTHER_VRE_ID) //
@@ -623,7 +627,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     VREAuthorization authorization = new VREAuthorization(VRE_ID, USER_ID, USER_ROLE);
     when(userConfigurationHandler.findVREAuthorization(example)).thenReturn(authorization);
 
-    ClientResponse response = createResource(null, USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
+    ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
@@ -638,7 +642,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     setUpVREManager(VRE_ID, true);
     setupUserWithRoles(VRE_ID, OTHER_USER_ID, USER_ROLE);
 
-    ClientResponse response = createResource(null, USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
+    ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
@@ -653,7 +657,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     setUpVREManager(VRE_ID, true);
     setUserNotLoggedIn();
 
-    ClientResponse response = createResource(null, USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
+    ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
@@ -671,7 +675,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     VREAuthorization example = new VREAuthorization(VRE_ID, USER_ID);
     when(userConfigurationHandler.findVREAuthorization(example)).thenReturn(null);
 
-    ClientResponse response = createResource(null, USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
+    ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
@@ -686,7 +690,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     setUpVREManager(OTHER_VRE_ID, true);
     setupUserWithRoles(OTHER_VRE_ID, OTHER_USER_ID, ADMIN_ROLE);
 
-    ClientResponse response = createResource(null, USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
+    ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", OTHER_VRE_ID) //
@@ -701,7 +705,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     setUpVREManager(VRE_ID, true);
     setupUserWithRoles(VRE_ID, USER_ID, ADMIN_ROLE);
 
-    ClientResponse response = createResource(null, "roles") //
+    ClientResponse response = createResource("roles") //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
         .get(ClientResponse.class);
@@ -716,7 +720,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     setUpVREManager(VRE_ID, true);
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
 
-    ClientResponse response = createResource(null, "roles") //
+    ClientResponse response = createResource("roles") //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
         .get(ClientResponse.class);
@@ -728,7 +732,7 @@ public class UserResourceTest extends WebServiceTestSetup {
     setUpVREManager(VRE_ID, true);
     setUserNotLoggedIn();
 
-    ClientResponse response = createResource(null, "roles") //
+    ClientResponse response = createResource("roles") //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header("VRE_ID", VRE_ID) //
         .get(ClientResponse.class);
@@ -741,28 +745,6 @@ public class UserResourceTest extends WebServiceTestSetup {
     user.setFirstName(firstName);
     user.setLastName(lastName);
     return user;
-  }
-
-  /************************************************************************************************
-   * V1 Test
-   ***********************************************************************************************/
-
-  @Test
-  public void testGetMyUserDataAsUserV1() {
-    setUpVREManager(VRE_ID, true);
-    setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
-
-    User expected = createUser(USER_ID, "test", "test");
-    when(userConfigurationHandler.getUser(USER_ID)).thenReturn(expected);
-
-    User actual = createResource(Paths.V1_PATH, "me") //
-        .header(AUTHORIZATION, CREDENTIALS) //
-        .header("VRE_ID", VRE_ID) //
-        .get(User.class);
-
-    assertEquals(expected.getId(), actual.getId());
-    assertEquals(expected.getFirstName(), actual.getFirstName());
-    assertEquals(expected.getLastName(), actual.getLastName());
   }
 
 }

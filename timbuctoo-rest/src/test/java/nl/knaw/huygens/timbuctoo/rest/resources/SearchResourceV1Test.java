@@ -73,7 +73,6 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
 public class SearchResourceV1Test extends SearchResourceTestBase {
 
   private static final Class<Class<? extends Relation>> RELATION_TYPE = new GenericType<Class<? extends Relation>>() {}.getRawClass();
-  private static final String V1_PREFIX = "v1";
   private static final String TYPE_STRING = "persons";
   private static final String RELATION_TYPE_STRING = "testrelations";
   private static final String RELATION_SEARCH_RESULT_TYPE = "testrelation";
@@ -84,7 +83,14 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
 
   @Override
   protected WebResource searchResource(String... pathElements) {
-    return addPathToWebResource(resource().path(Paths.V1_PATH).path("search"), pathElements);
+    return addPathToWebResource(resource().path(getAPIVersion()).path("search"), pathElements);
+  }
+
+  /**
+   * Return the version of the api to test.
+   */
+  protected String getAPIVersion() {
+    return Paths.V1_PATH;
   }
 
   @Test
@@ -111,7 +117,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
   }
 
   protected String getExpectedURL(String id) {
-    return String.format("%s%s/search/%s", resource().getURI().toString(), V1_PREFIX, id);
+    return String.format("%s%s/search/%s", resource().getURI().toString(), getAPIVersion(), id);
   }
 
   @Test
@@ -179,8 +185,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     when(regularSearchResultMapperMock.create(SEARCH_RESULT_TYPE, searchResult, defaultStart, defaultRows)).thenReturn(clientSearchResult);
 
     ClientResponse response = searchResourceBuilder(ID) //
-        .accept(MediaType.APPLICATION_JSON_TYPE)
-        .get(ClientResponse.class);
+        .accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
     verifyResponseStatus(response, Status.OK);
 
     RegularSearchResultDTO actualResult = response.getEntity(RegularSearchResultDTO.class);
@@ -249,8 +254,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
   @Test
   public void testGetNoId() {
     ClientResponse response = searchResourceBuilder() //
-        .accept(MediaType.APPLICATION_JSON_TYPE)
-        .get(ClientResponse.class);
+        .accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
     verifyResponseStatus(response, Status.METHOD_NOT_ALLOWED);
   }
 
@@ -258,9 +262,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
   public void testGetUnknownId() {
     when(repository.getEntity(SearchResult.class, ID)).thenReturn(null);
 
-    ClientResponse response = searchResourceBuilder(ID)
-        .accept(MediaType.APPLICATION_JSON_TYPE)
-        .get(ClientResponse.class);
+    ClientResponse response = searchResourceBuilder(ID).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
     verifyResponseStatus(response, Status.NOT_FOUND);
   }
 
@@ -368,7 +370,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     return String.format(//
         "%s%s/search/%s", //
         resource().getURI().toString(), //
-        V1_PREFIX, //
+        getAPIVersion(), //
         id);
   }
 
