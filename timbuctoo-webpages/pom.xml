@@ -3,7 +3,7 @@
   <parent>
     <groupId>nl.knaw.huygens</groupId>
     <artifactId>timbuctoo</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.0-SNAPSHOT</version>
   </parent>
   <artifactId>timbuctoo-webpages</artifactId>
   <name>Timbuctoo web pages</name>
