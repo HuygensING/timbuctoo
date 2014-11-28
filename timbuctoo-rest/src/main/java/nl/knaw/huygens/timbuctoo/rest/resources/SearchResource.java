@@ -25,6 +25,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 
 import java.net.URI;
 
@@ -46,9 +47,9 @@ import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
+import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultMapper;
@@ -92,7 +93,7 @@ public class SearchResource extends ResourceBase {
   @POST
   @APIDesc("Searches the Solr index")
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response regularPost(SearchParameters searchParams, @HeaderParam("VRE_ID") String vreId) {
+  public Response regularPost(SearchParameters searchParams, @HeaderParam(VRE_ID_KEY) String vreId) {
 
     SearchParametersV1 searchParamsV1 = searchParametersConverter.toV1(searchParams);
 
@@ -150,7 +151,7 @@ public class SearchResource extends ResourceBase {
   @POST
   @Path("/" + RELATION_SEARCH_PREFIX)
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response relationPost(@HeaderParam("VRE_ID") String vreId, RelationSearchParameters params) {
+  public Response relationPost(@HeaderParam(VRE_ID_KEY) String vreId, RelationSearchParameters params) {
 
     final String typeString = params.getTypeString();
     Class<? extends DomainEntity> relationType = registry.getDomainEntityType(typeString);

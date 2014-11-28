@@ -102,7 +102,7 @@ public class UserResource extends ResourceBase {
   @Path("/me")
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed({ ADMIN_ROLE, USER_ROLE, UNVERIFIED_USER_ROLE })
-  public User getMyUserData(@QueryParam(USER_ID_KEY) String id, @QueryParam("VRE_ID") String vreId) {
+  public User getMyUserData(@QueryParam(USER_ID_KEY) String id, @QueryParam(VRE_ID_KEY) String vreId) {
     User user = userConfigurationHandler.getUser(id);
     checkNotNull(user, Status.NOT_FOUND, "No User with id %s", id);
 

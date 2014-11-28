@@ -30,6 +30,7 @@ import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.SEARCH_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.V1_OR_V2_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.VERSION_PARAM;
+import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 
 import java.net.URI;
 
@@ -104,7 +105,7 @@ public class SearchResourceV1 extends ResourceBase {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response regularPost( //
       @PathParam(VERSION_PARAM) String version, //
-      @HeaderParam("VRE_ID") String vreId, //
+      @HeaderParam(VRE_ID_KEY) String vreId, //
       @PathParam(ENTITY_PARAM) String typeString, //
       SearchParametersV1 searchParams //
   ) {
@@ -132,7 +133,7 @@ public class SearchResourceV1 extends ResourceBase {
   @Consumes(MediaType.APPLICATION_JSON)
   public Response relationPost( //
       @PathParam(VERSION_PARAM) String version, //
-      @HeaderParam("VRE_ID") String vreId, //
+      @HeaderParam(VRE_ID_KEY) String vreId, //
       @PathParam(RELATION_PARAM) String relationTypeString, //
       RelationSearchParameters params //
   ) {
