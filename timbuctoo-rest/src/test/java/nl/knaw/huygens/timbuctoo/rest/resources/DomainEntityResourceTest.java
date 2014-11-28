@@ -85,17 +85,17 @@ import com.sun.jersey.api.client.WebResource;
 
 public class DomainEntityResourceTest extends WebServiceTestSetup {
 
-  private static final Class<ProjectADomainEntity> DEFAULT_TYPE = ProjectADomainEntity.class;
-  private static final String DEFAULT_RESOURCE = TypeNames.getExternalName(DEFAULT_TYPE);
+  protected static final Class<ProjectADomainEntity> DEFAULT_TYPE = ProjectADomainEntity.class;
+  protected static final String DEFAULT_RESOURCE = TypeNames.getExternalName(DEFAULT_TYPE);
 
-  private static final Class<BaseDomainEntity> BASE_TYPE = BaseDomainEntity.class;
+  protected static final Class<BaseDomainEntity> BASE_TYPE = BaseDomainEntity.class;
   private static final String BASE_RESOURCE = TypeNames.getExternalName(BASE_TYPE);
 
-  private static final String PERSISTENCE_PRODUCER = "persistenceProducer";
-  private static final String INDEX_PRODUCER = "indexProducer";
-  private static final String DEFAULT_ID = "TEST000000000001";
+  protected static final String PERSISTENCE_PRODUCER = "persistenceProducer";
+  protected static final String INDEX_PRODUCER = "indexProducer";
+  protected static final String DEFAULT_ID = "TEST000000000001";
 
-  private WebResource createResource(String... pathElements) {
+  protected WebResource createResource(String... pathElements) {
     return addPathToWebResource(resource().path(getAPIVersion()).path(Paths.DOMAIN_PREFIX), pathElements);
   }
 
@@ -106,12 +106,12 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     when(broker.getProducer(DomainEntityResource.PERSIST_MSG_PRODUCER, Broker.PERSIST_QUEUE)).thenReturn(getProducer(PERSISTENCE_PRODUCER));
   }
 
-  private Producer getProducer(String name) {
+  protected Producer getProducer(String name) {
     return injector.getInstance(Key.get(Producer.class, Names.named(name)));
   }
 
   @SuppressWarnings("unchecked")
-  private void whenJsonProviderReadFromThenReturn(Object value) throws Exception {
+  protected void whenJsonProviderReadFromThenReturn(Object value) throws Exception {
     when(getJsonProvider().readFrom(any(Class.class), any(Type.class), any(Annotation[].class), any(MediaType.class), any(MultivaluedMap.class), any(InputStream.class))).thenReturn(value);
   }
 

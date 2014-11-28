@@ -91,8 +91,9 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
   @PUT
   @Path(ID_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
+  @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed({ USER_ROLE, ADMIN_ROLE })
-  public <T extends DomainEntity> void put( //
+  public <T extends DomainEntity> Response put( //
       @PathParam(ENTITY_PARAM) String entityName, //
       @PathParam(ID_PARAM) String id, //
       DomainEntity input, //
@@ -100,6 +101,8 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
       @QueryParam(USER_ID_KEY) String userId//
   ) {
     super.put(entityName, id, input, vreId, userId);
+
+    return Response.ok(repository.getEntity(typeRegistry.getTypeForXName(entityName), id)).build();
   }
 
   @Override

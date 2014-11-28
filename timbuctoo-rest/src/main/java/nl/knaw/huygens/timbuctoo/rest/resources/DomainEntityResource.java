@@ -91,9 +91,9 @@ public class DomainEntityResource extends ResourceBase {
 
   private static final Logger LOG = LoggerFactory.getLogger(DomainEntityResource.class);
 
-  private final TypeRegistry typeRegistry;
-  private final Repository repository;
-  private final Broker broker;
+  protected final TypeRegistry typeRegistry;
+  protected final Repository repository;
+  protected final Broker broker;
 
   @Inject
   public DomainEntityResource(TypeRegistry registry, Repository repository, Broker broker) {
@@ -190,7 +190,7 @@ public class DomainEntityResource extends ResourceBase {
   @Path(ID_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
   @RolesAllowed({ USER_ROLE, ADMIN_ROLE })
-  public <T extends DomainEntity> void put( //
+  public <T extends DomainEntity> Response put( //
       @PathParam(ENTITY_PARAM) String entityName, //
       @PathParam(ID_PARAM) String id, //
       DomainEntity input, //
@@ -217,6 +217,7 @@ public class DomainEntityResource extends ResourceBase {
     } catch (StorageException e) {
       throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
     }
+    return Response.noContent().build();
   }
 
   @PUT
