@@ -25,6 +25,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static nl.knaw.huygens.timbuctoo.config.Paths.VERSION_PATH_OPTIONAL;
 
 import java.util.Map;
 
@@ -50,7 +51,7 @@ import nl.knaw.huygens.timbuctoo.vre.VRE;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 
-@Path("receptiongraph")
+@Path(VERSION_PATH_OPTIONAL + "receptiongraph")
 public class ReceptionGraphResource extends ResourceBase {
 
   private final Repository repository;
@@ -98,7 +99,7 @@ public class ReceptionGraphResource extends ResourceBase {
    */
   private Class<? extends Person> getPersonType(VRE vre) {
     @SuppressWarnings("unchecked")
-	Class<? extends Person> type = (Class<? extends Person>) vre.mapTypeName("person", false);
+    Class<? extends Person> type = (Class<? extends Person>) vre.mapTypeName("person", false);
     return (type != null) ? type : Person.class;
   }
 

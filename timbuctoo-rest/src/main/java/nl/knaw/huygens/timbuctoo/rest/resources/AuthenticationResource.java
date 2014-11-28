@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rest.resources;
 
+import static nl.knaw.huygens.timbuctoo.config.Paths.VERSION_PATH_OPTIONAL;
+
 import javax.inject.Inject;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -12,7 +14,7 @@ import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders;
 import nl.knaw.huygens.timbuctoo.security.BasicAuthenticationHandler;
 
-@Path("authenticate")
+@Path(VERSION_PATH_OPTIONAL + "authenticate")
 public class AuthenticationResource {
 
   private final BasicAuthenticationHandler authenticationHandler;

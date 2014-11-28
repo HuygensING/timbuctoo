@@ -23,7 +23,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  */
 
 import static nl.knaw.huygens.timbuctoo.config.Paths.SYSTEM_PREFIX;
-import static nl.knaw.huygens.timbuctoo.config.Paths.V1_PATH_OPTIONAL;
+import static nl.knaw.huygens.timbuctoo.config.Paths.VERSION_PATH_OPTIONAL;
 
 import java.util.List;
 import java.util.Set;
@@ -45,7 +45,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
-@Path(V1_PATH_OPTIONAL + SYSTEM_PREFIX + "/vres")
+@Path(VERSION_PATH_OPTIONAL + SYSTEM_PREFIX + "/vres")
 public class VREResource extends ResourceBase {
 
   @Inject

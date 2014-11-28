@@ -23,7 +23,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  */
 
 import static nl.knaw.huygens.timbuctoo.config.Paths.SYSTEM_PREFIX;
-import static nl.knaw.huygens.timbuctoo.config.Paths.V1_PATH_OPTIONAL;
+import static nl.knaw.huygens.timbuctoo.config.Paths.VERSION_PATH_OPTIONAL;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -37,7 +37,7 @@ import nl.knaw.huygens.timbuctoo.rest.util.Status;
 
 import com.google.inject.Inject;
 
-@Path(V1_PATH_OPTIONAL + SYSTEM_PREFIX + "/status")
+@Path(VERSION_PATH_OPTIONAL + SYSTEM_PREFIX + "/status")
 public class StatusResource {
 
   private final Repository repository;

@@ -22,6 +22,9 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
+import static nl.knaw.huygens.timbuctoo.config.Paths.SYSTEM_PREFIX;
+import static nl.knaw.huygens.timbuctoo.config.Paths.VERSION_PATH_OPTIONAL;
+
 import java.util.List;
 
 import javax.ws.rs.GET;
@@ -33,7 +36,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -46,7 +48,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
-@Path(Paths.SYSTEM_PREFIX + "/relationtypes")
+@Path(VERSION_PATH_OPTIONAL + SYSTEM_PREFIX + "/relationtypes")
 public class RelationTypeResource extends ResourceBase {
 
   private static final String ID_PARAM = "id";

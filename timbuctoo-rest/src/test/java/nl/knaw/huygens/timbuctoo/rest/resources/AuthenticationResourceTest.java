@@ -73,7 +73,7 @@ public class AuthenticationResourceTest extends WebServiceTestSetup {
   }
 
   private WebResource authenticationResource() {
-    return resource().path("authenticate");
+    return resource().path(getAPIVersion()).path("authenticate");
   }
 
 }

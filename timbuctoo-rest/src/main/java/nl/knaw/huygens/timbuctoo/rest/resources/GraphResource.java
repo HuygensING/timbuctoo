@@ -24,6 +24,8 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
 
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.VERSION_PATH_OPTIONAL;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -65,7 +67,7 @@ import com.google.inject.Inject;
  *   ]
  * }
  */
-@Path("graph/{" + GraphResource.ENTITY_PARAM + ": " + Paths.ENTITY_REGEX + "}")
+@Path(VERSION_PATH_OPTIONAL + "graph/" + ENTITY_PATH)
 public class GraphResource extends ResourceBase {
 
   public static final String ENTITY_PARAM = "entityName";
@@ -88,9 +90,9 @@ public class GraphResource extends ResourceBase {
   @Path(ID_PATH)
   @Produces({ MediaType.APPLICATION_JSON })
   public Object getEntity( //
-    @PathParam(ENTITY_PARAM) String entityName, //
-    @PathParam(ID_PARAM) String id, //
-    @QueryParam("depth") @DefaultValue("1") int depth) //
+      @PathParam(ENTITY_PARAM) String entityName, //
+      @PathParam(ID_PARAM) String id, //
+      @QueryParam("depth") @DefaultValue("1") int depth) //
   {
     Class<? extends DomainEntity> type = registry.getTypeForXName(entityName);
     checkNotNull(type, NOT_FOUND, "No domain entity collection %s", entityName);
