@@ -29,7 +29,9 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static nl.knaw.huygens.timbuctoo.config.Paths.DOMAIN_PREFIX;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.ID_REGEX;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ID_PARAM;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ID_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.PID_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.V1_PATH_OPTIONAL;
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.REVISION_KEY;
@@ -88,10 +90,6 @@ import com.google.inject.Inject;
 public class DomainEntityResource extends ResourceBase {
 
   private static final Logger LOG = LoggerFactory.getLogger(DomainEntityResource.class);
-
-  private static final String ID_PARAM = "id";
-  private static final String ID_PATH = "/{id: " + ID_REGEX + "}";
-  private static final String PID_PATH = "/pid";
 
   private final TypeRegistry typeRegistry;
   private final Repository repository;
@@ -307,7 +305,7 @@ public class DomainEntityResource extends ResourceBase {
       updateIndex(relation.getTargetType(), relation.getTargetId());
     }
   }
-  
+
   private void updateIndex(String iname, String id) {
     sendIndexMessage(ActionType.MOD, typeRegistry.getDomainEntityType(iname), id);
   }
