@@ -49,7 +49,8 @@ public class CORSFilter implements ContainerResponseFilter {
         resp.header("Access-Control-Allow-Headers", reqHead);
       }
 
-      //Needed so the VRE can access the Location when an object  is created.
+      // Needed so the VRE can access the Location when an object  is created.
+      // X_AUTH_TOKEN needed for local login.
       resp.header("Access-Control-Expose-Headers", "Location, Link, X_AUTH_TOKEN");
 
       response.setResponse(resp.build());
