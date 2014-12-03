@@ -40,6 +40,7 @@ import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
+import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
 import org.junit.AfterClass;
@@ -146,18 +147,22 @@ public class CombinedMongoStorageTest {
 
   @Test
   public void testUpdateDomainEntity() throws Exception {
+    // setup
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
-
     JsonNode jsonNode = mapper.createObjectNode();
     DBObject dbObject = new JacksonDBObject<JsonNode>(jsonNode, JsonNode.class);
+
+    when(mongoDB.exist(any(DBCollection.class), any(DBObject.class))).thenReturn(true);
     when(anyCollection.findOne(any(DBObject.class))).thenReturn(dbObject);
 
+    // action
     storage.updateDomainEntity(ProjectADomainEntity.class, entity, new Change());
 
+    // verify
     verify(mongoDB).update(any(DBCollection.class), any(DBObject.class), any(DBObject.class));
   }
 
-  @Test(expected = StorageException.class)
+  @Test(expected = NoSuchEntityException.class)
   public void testUpdateDomainEntityForMissingEntity() throws Exception {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
 

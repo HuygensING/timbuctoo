@@ -72,6 +72,7 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
+import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
@@ -212,6 +213,8 @@ public class DomainEntityResource extends ResourceBase {
       Change change = new Change(userId, vreId);
       repository.updateDomainEntity((Class<T>) type, (T) input, change);
       notifyChange(ActionType.MOD, type, entity, id);
+    } catch (NoSuchEntityException e) {
+      throw new TimbuctooException(NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
     } catch (UpdateException e) {
       throw new TimbuctooException(Status.CONFLICT, "Entity %s with id %s already updated", type.getSimpleName(), id);
     } catch (StorageException e) {
@@ -271,6 +274,8 @@ public class DomainEntityResource extends ResourceBase {
       repository.deleteDomainEntity(entity);
       notifyChange(ActionType.DEL, type, entity, id);
       return Response.status(Status.NO_CONTENT).build();
+    } catch (NoSuchEntityException e) {
+      throw new TimbuctooException(NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
     } catch (StorageException e) {
       throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
     }

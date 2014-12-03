@@ -39,6 +39,7 @@ import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
+import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
@@ -173,8 +174,8 @@ public class MongoStorage implements Storage {
   private JsonNode getExisting(Class<? extends Entity> type, DBObject query) throws StorageException {
     DBObject dbObject = getDBCollection(type).findOne(query);
     if (dbObject == null) {
-      LOG.error("No match for query {}", query);
-      throw new StorageException("No match");
+      LOG.error("No match for query \"%s\"", query);
+      throw new NoSuchEntityException("No match for query", query);
     }
     return toJsonNode(dbObject);
   }
@@ -272,6 +273,9 @@ public class MongoStorage implements Storage {
     Change change = Change.newInternalInstance();
     String id = entity.getId();
     int revision = entity.getRev();
+
+    checkIfEntityExists(type, id, revision);
+
     DBObject query = queries.selectByIdAndRevision(id, revision);
 
     JsonNode tree = getExisting(type, query);
@@ -290,6 +294,9 @@ public class MongoStorage implements Storage {
   public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws UpdateException, StorageException {
     String id = entity.getId();
     int revision = entity.getRev();
+
+    checkIfEntityExists(type, id, revision);
+
     DBObject query = queries.selectByIdAndRevision(id, revision);
 
     JsonNode tree = getExisting(type, query);
@@ -304,6 +311,29 @@ public class MongoStorage implements Storage {
     inducer.convertDomainEntityForUpdate(type, entity, (ObjectNode) tree);
 
     mongoDB.update(getDBCollection(type), query, toDBObject(tree));
+  }
+
+  /**
+   * A method that checks if the entity is present in the database.
+   * @param type the type of the entity
+   * @param id the id of the entity
+   * @param revision the revision of the entity
+   * @throws StorageException when one of the query executions fails.
+   * @throws NoSuchEntityException when the entity is not available at all.
+   * @throws UpdateException when the requested version is not available.
+   */
+  private <T extends Entity> void checkIfEntityExists(Class<T> type, String id, int revision) throws StorageException, NoSuchEntityException, UpdateException {
+    if (!revisionExists(type, id, revision)) {
+      if (!entityExists(type, id)) {
+        throw new NoSuchEntityException("\"%s\" with id \"%s\" does not exist.", type.getSimpleName(), id);
+      }
+      throw new UpdateException(String.format("\"%s\" with id \"%s\" and revision \"%s\" could not be updated.", type.getSimpleName(), id, "" + revision));
+    }
+  }
+
+  private <T extends Entity> boolean revisionExists(Class<T> type, String id, int revision) throws StorageException {
+    DBObject query = queries.selectByIdAndRevision(id, revision);
+    return mongoDB.exist(getDBCollection(type), query);
   }
 
   @Override
