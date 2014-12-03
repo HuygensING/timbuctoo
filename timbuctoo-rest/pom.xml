@@ -236,6 +236,14 @@
     <!-- ## End of build helper libraries ## -->
 
     <!-- ## Test libraries ## -->
+     <!-- Timbuctoo test services -->
+    <dependency>
+      <groupId>nl.knaw.huygens</groupId>
+      <artifactId>timbuctoo-test-services</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    
     <!-- Jersey test framework -->
     <dependency>
       <groupId>com.sun.jersey.jersey-test-framework</groupId>

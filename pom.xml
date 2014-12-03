@@ -29,6 +29,7 @@
     <module>timbuctoo-instance</module>
     <module>timbuctoo-webpages</module>
     <module>timbuctoo-tools-instance</module>
+    <module>timbuctoo-test-services</module>
   </modules>
 
   <prerequisites>
