@@ -33,6 +33,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -60,8 +61,10 @@ import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
+import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
+import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import org.junit.Before;
@@ -324,6 +327,56 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     verifyResponseStatus(response, Status.BAD_REQUEST);
 
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+  }
+
+  @Test
+  public void testPutWhenRepositoryThrowsAnUpdateException() throws Exception {
+    setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
+
+    VRE vre = mock(VRE.class);
+    when(vre.inScope(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(true);
+    makeVREAvailable(vre, VRE_ID);
+
+    ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
+    entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
+
+    when(repository.getEntity(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
+    doThrow(UpdateException.class).when(repository).updateDomainEntity(Matchers.<Class<ProjectADomainEntity>> any(), any(ProjectADomainEntity.class), any(Change.class));
+    whenJsonProviderReadFromThenReturn(entity);
+
+    ClientResponse response = createResource(DEFAULT_RESOURCE, DEFAULT_ID) //
+        .type(MediaType.APPLICATION_JSON_TYPE) //
+        .header(AUTHORIZATION, CREDENTIALS) //
+        .header(VRE_ID_KEY, VRE_ID).put(ClientResponse.class, entity);
+    verifyResponseStatus(response, Status.CONFLICT);
+
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(ActionType.MOD, DEFAULT_TYPE, DEFAULT_ID);
+    verify(getProducer(INDEX_PRODUCER), never()).send(ActionType.MOD, DEFAULT_TYPE, DEFAULT_ID);
+  }
+
+  @Test
+  public void testPutWhenRepositoryThrowsAnNoSuchEnityException() throws Exception {
+    setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
+
+    VRE vre = mock(VRE.class);
+    when(vre.inScope(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(true);
+    makeVREAvailable(vre, VRE_ID);
+
+    ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
+    entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
+
+    when(repository.getEntity(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
+    doThrow(NoSuchEntityException.class).when(repository).updateDomainEntity(Matchers.<Class<ProjectADomainEntity>> any(), any(ProjectADomainEntity.class), any(Change.class));
+    whenJsonProviderReadFromThenReturn(entity);
+
+    ClientResponse response = createResource(DEFAULT_RESOURCE, DEFAULT_ID) //
+        .type(MediaType.APPLICATION_JSON_TYPE) //
+        .header(AUTHORIZATION, CREDENTIALS) //
+        .header(VRE_ID_KEY, VRE_ID).put(ClientResponse.class, entity);
+    verifyResponseStatus(response, Status.NOT_FOUND);
+
+    verify(getProducer(PERSISTENCE_PRODUCER), never()).send(ActionType.MOD, DEFAULT_TYPE, DEFAULT_ID);
+    verify(getProducer(INDEX_PRODUCER), never()).send(ActionType.MOD, DEFAULT_TYPE, DEFAULT_ID);
   }
 
   @Test
