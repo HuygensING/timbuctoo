@@ -36,7 +36,6 @@ import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.Archive;
 import nl.knaw.huygens.timbuctoo.model.RelationRef;
-import nl.knaw.huygens.timbuctoo.model.util.PeriodHelper;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;

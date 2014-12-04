@@ -1,8 +1,8 @@
-package nl.knaw.huygens.timbuctoo.model.util;
+package nl.knaw.huygens.timbuctoo.model.dcar;
 
 /*
  * #%L
- * Timbuctoo core
+ * Timbuctoo model
  * =======
  * Copyright (C) 2012 - 2014 Huygens ING
  * =======
@@ -26,14 +26,13 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * A helper class, that helps to build a period.
- * @author martijnm
+ * The format is specific for the Dutch Caribbean project.
  */
-public class PeriodHelper {
+class PeriodHelper {
 
   /**
    * @param beginDate should be a year
    * @param endDate should be a year
-   * @return
    */
   public static String createPeriod(String beginDate, String endDate) {
     beginDate = StringUtils.isBlank(beginDate) ? endDate : beginDate;

@@ -1,8 +1,8 @@
-package nl.knaw.huygens.timbuctoo.model.util;
+package nl.knaw.huygens.timbuctoo.model.dcar;
 
 /*
  * #%L
- * Timbuctoo core
+ * Timbuctoo model
  * =======
  * Copyright (C) 2012 - 2014 Huygens ING
  * =======
@@ -22,59 +22,67 @@ package nl.knaw.huygens.timbuctoo.model.util;
  * #L%
  */
 
-import static org.junit.Assert.assertEquals;
+import static nl.knaw.huygens.timbuctoo.model.dcar.PeriodHelper.createPeriod;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 
 import org.junit.Test;
 
 public class PeriodHelperTest {
 
+  private static final String SEPARATOR = " - ";
+
   @Test
   public void createPeriodTwoYears() {
-    assertEquals("2001 - 3001", PeriodHelper.createPeriod("2001", "3001"));
+    assertThat(createPeriod("2001", "3001"), is(equalTo("2001" + SEPARATOR + "3001")));
   }
 
   @Test
   public void createPeriodBeginNull() {
-    assertEquals("3001 - 3001", PeriodHelper.createPeriod(null, "3001"));
+    assertThat(createPeriod(null, "3001"), is(equalTo("3001" + SEPARATOR + "3001")));
   }
 
   @Test
   public void createPeriodBeginEmpty() {
-    assertEquals("3001 - 3001", PeriodHelper.createPeriod("", "3001"));
+    assertThat(createPeriod("", "3001"), is(equalTo("3001" + SEPARATOR + "3001")));
   }
 
   @Test
   public void createPeriodBeginWhiteSpace() {
-    assertEquals("3001 - 3001", PeriodHelper.createPeriod(" ", "3001"));
+    assertThat(createPeriod(" ", "3001"), is(equalTo("3001" + SEPARATOR + "3001")));
   }
 
   @Test
   public void createPeriodEndNull() {
-    assertEquals("2001 - 2001", PeriodHelper.createPeriod("2001", null));
+    assertThat(createPeriod("2001", null), is(equalTo("2001" + SEPARATOR + "2001")));
   }
 
   @Test
   public void createPeriodEndEmpty() {
-    assertEquals("2001 - 2001", PeriodHelper.createPeriod("2001", ""));
+    assertThat(createPeriod("2001", ""), is(equalTo("2001" + SEPARATOR + "2001")));
   }
 
   @Test
   public void createPeriodEndWhiteSpace() {
-    assertEquals("2001 - 2001", PeriodHelper.createPeriod("2001", " "));
+    assertThat(createPeriod("2001", " "), is(equalTo("2001" + SEPARATOR + "2001")));
   }
 
   @Test
   public void createPeriodBothNull() {
-    assertEquals(null, PeriodHelper.createPeriod(null, null));
+    assertThat(createPeriod(null, null), is(nullValue()));
   }
 
   @Test
   public void createPeriodBothEmptyString() {
-    assertEquals(null, PeriodHelper.createPeriod("", ""));
+    assertThat(createPeriod("", ""), is(nullValue()));
   }
 
   @Test
   public void createPeriodBothWiteSpace() {
-    assertEquals(null, PeriodHelper.createPeriod(" ", " "));
+    assertThat(createPeriod(" ", " "), is(nullValue()));
   }
+
 }
