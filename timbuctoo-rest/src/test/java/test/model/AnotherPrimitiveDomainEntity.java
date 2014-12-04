@@ -27,7 +27,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 public class AnotherPrimitiveDomainEntity extends DomainEntity {
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     return null;
   }
 

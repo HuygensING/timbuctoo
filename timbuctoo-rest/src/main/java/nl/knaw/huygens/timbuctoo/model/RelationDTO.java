@@ -46,14 +46,14 @@ public class RelationDTO {
     this.relationName = relationName;
 
     if (source != null) {
-      sourceName = source.getDisplayName();
+      sourceName = source.getIdentificationName();
       sourceData = source.getClientRepresentation();
     } else {
       sourceName = "[unknown]";
       sourceData = null;
     }
     if (target != null) {
-      targetName = target.getDisplayName();
+      targetName = target.getIdentificationName();
       targetData = target.getClientRepresentation();
     } else {
       targetName = "[unknown]";

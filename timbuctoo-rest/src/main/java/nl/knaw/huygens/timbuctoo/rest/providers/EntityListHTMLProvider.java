@@ -119,7 +119,7 @@ public class EntityListHTMLProvider implements MessageBodyWriter<List<? extends 
   }
 
   private String getDocTitle(Entity doc) {
-    String name = doc.getDisplayName();
+    String name = doc.getIdentificationName();
     return (name != null) ? StringEscapeUtils.escapeHtml(name) : "";
   }
 

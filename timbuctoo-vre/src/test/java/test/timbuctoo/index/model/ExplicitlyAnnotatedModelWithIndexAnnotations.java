@@ -39,7 +39,7 @@ public class ExplicitlyAnnotatedModelWithIndexAnnotations extends DomainEntity {
   @Override
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")
-  public String getDisplayName() {
+  public String getIdentificationName() {
     return null;
   }
 

@@ -102,7 +102,7 @@ public class GraphBuilder {
     Class<T> type = (Class<T>) entity.getClass();
     String key = TypeNames.getExternalName(type) + "/" + entity.getId();
     String iname = TypeNames.getInternalName(type);
-    String label = entity.getDisplayName();
+    String label = entity.getIdentificationName();
     return new D3Node(key, iname, label);
   }
 

@@ -127,7 +127,7 @@ public class ReceptionGraphResource extends ResourceBase {
 
   private <T extends Person> D3Node createNode(Class<T> personType, T person) {
     String key = TypeNames.getExternalName(personType) + "/" + person.getId();
-    String label = person.getDisplayName();
+    String label = person.getIdentificationName();
     D3Node node = new D3Node(key, label);
     node.addDataItem("gender", person.getGender());
     return node;

@@ -31,7 +31,7 @@ import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 public class VTestSystemEntity extends SystemEntity {
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     return null;
   }
 

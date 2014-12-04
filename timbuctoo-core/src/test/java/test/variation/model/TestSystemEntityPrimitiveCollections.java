@@ -54,7 +54,7 @@ public class TestSystemEntityPrimitiveCollections extends SystemEntity {
   }
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     // TODO Auto-generated method stub
     return null;
   }

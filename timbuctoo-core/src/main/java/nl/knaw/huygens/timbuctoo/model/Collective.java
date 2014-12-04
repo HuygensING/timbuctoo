@@ -49,7 +49,7 @@ public class Collective extends DomainEntity {
   }
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     return getName();
   }
 

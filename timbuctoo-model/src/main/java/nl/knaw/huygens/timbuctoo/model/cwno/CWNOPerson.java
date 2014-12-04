@@ -41,7 +41,7 @@ public class CWNOPerson extends Person {
   // ---------------------------------------------------------------------------
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     String name = defaultName().getShortName();
     if (name.isEmpty() && tempNames.size() > 0) {
       name = "[TEMP] " + tempNames.get(0);

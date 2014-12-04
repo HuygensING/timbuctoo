@@ -57,7 +57,7 @@ public class TestSystemEntity extends SystemEntity {
   @Override
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")
-  public String getDisplayName() {
+  public String getIdentificationName() {
     return name;
   }
 

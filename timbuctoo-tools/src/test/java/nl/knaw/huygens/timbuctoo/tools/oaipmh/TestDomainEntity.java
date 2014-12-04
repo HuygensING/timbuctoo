@@ -9,7 +9,7 @@ public class TestDomainEntity extends DomainEntity {
   private String title;
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     // TODO Auto-generated method stub
     return null;
   }

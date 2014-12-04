@@ -42,7 +42,7 @@ public class CWRSPerson extends Person {
   // ---------------------------------------------------------------------------
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     return defaultName().getShortName();
   }
 

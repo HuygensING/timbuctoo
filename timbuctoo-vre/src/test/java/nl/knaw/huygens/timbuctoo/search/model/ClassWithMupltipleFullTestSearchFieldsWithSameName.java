@@ -34,7 +34,7 @@ public class ClassWithMupltipleFullTestSearchFieldsWithSameName extends DomainEn
   @Override
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")
-  public String getDisplayName() {
+  public String getIdentificationName() {
     // TODO Auto-generated method stub
     return null;
   }

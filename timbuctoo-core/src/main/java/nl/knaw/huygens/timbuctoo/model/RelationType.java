@@ -60,7 +60,7 @@ public class RelationType extends SystemEntity {
   }
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     return regularName;
   }
 

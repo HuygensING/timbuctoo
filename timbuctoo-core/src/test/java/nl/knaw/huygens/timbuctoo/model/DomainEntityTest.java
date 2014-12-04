@@ -38,7 +38,7 @@ public class DomainEntityTest {
   public void setup() {
     entity = new DomainEntity() {
       @Override
-      public String getDisplayName() {
+      public String getIdentificationName() {
         return null;
       }
     };

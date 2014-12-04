@@ -153,7 +153,7 @@ public abstract class DefaultImporter {
       repository.addDomainEntity(type, entity, change);
       return entity.getId();
     } catch (Exception e) {
-      handleError("Failed to add %s; %s", entity.getDisplayName(), e.getMessage());
+      handleError("Failed to add %s; %s", entity.getIdentificationName(), e.getMessage());
       return null;
     }
   }
@@ -163,7 +163,7 @@ public abstract class DefaultImporter {
     try {
       repository.updateDomainEntity(type, entity, change);
     } catch (StorageException e) {
-      handleError("Failed to update %s; %s", entity.getDisplayName(), e.getMessage());
+      handleError("Failed to update %s; %s", entity.getIdentificationName(), e.getMessage());
     }
   }
 
@@ -172,7 +172,7 @@ public abstract class DefaultImporter {
     try {
       repository.updateDomainEntity(type, entity, change);
     } catch (StorageException e) {
-      handleError("Failed to update %s; %s", entity.getDisplayName(), e.getMessage());
+      handleError("Failed to update %s; %s", entity.getIdentificationName(), e.getMessage());
     }
   }
 

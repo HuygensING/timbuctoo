@@ -104,7 +104,7 @@ public class DCARLegislation extends Legislation {
   }
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     return getTitleEng();
   }
 

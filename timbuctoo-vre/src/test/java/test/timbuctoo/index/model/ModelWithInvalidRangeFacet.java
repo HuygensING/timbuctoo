@@ -30,7 +30,7 @@ public class ModelWithInvalidRangeFacet extends DomainEntity {
   private String invalidRangeFacet;
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     return null;
   }
 

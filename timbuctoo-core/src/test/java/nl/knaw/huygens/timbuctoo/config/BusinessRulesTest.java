@@ -73,7 +73,7 @@ public class BusinessRulesTest {
 
   private static class Level1SystemEntity extends SystemEntity {
     @Override
-    public String getDisplayName() {
+    public String getIdentificationName() {
       return null;
     }
   }
@@ -82,7 +82,7 @@ public class BusinessRulesTest {
 
   private static class Level1DomainEntity extends DomainEntity {
     @Override
-    public String getDisplayName() {
+    public String getIdentificationName() {
       return null;
     }
   }

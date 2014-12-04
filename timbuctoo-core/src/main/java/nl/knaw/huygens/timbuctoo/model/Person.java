@@ -77,7 +77,7 @@ public class Person extends DomainEntity {
   }
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     return defaultName().getShortName() + period();
   }
 

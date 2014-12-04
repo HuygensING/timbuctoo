@@ -78,9 +78,8 @@ public class User extends SystemEntity {
     this.email = email;
   }
 
-  @Override
   public String getDisplayName() {
-    return displayName;
+    return displayName != null ? displayName : commonName;
   }
 
   public void setDisplayName(String displayName) {
@@ -135,6 +134,11 @@ public class User extends SystemEntity {
 
   public void setOrganisation(String organisation) {
     this.organisation = organisation;
+  }
+
+  @Override
+  public String getIdentificationName() {
+    return getDisplayName();
   }
 
 }

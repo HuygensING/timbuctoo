@@ -50,7 +50,7 @@ public class BaseDomainEntity extends DomainEntity {
   }
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     return null;
   }
 

@@ -81,7 +81,7 @@ public class WWPerson extends Person {
   }
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     String name = defaultName().getShortName();
     return StringUtils.stripToEmpty(name).isEmpty() ? "[TEMP] " + tempName : name;
   }

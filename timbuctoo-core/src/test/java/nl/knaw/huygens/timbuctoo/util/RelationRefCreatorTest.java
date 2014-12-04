@@ -110,7 +110,7 @@ public class RelationRefCreatorTest {
     DomainEntity referencedEntity = new DomainEntity() {
 
       @Override
-      public String getDisplayName() {
+      public String getIdentificationName() {
         return null;
       }
     };

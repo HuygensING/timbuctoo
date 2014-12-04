@@ -33,7 +33,7 @@ public class Login extends SystemEntity {
   }
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     return getCommonName();
   }
 

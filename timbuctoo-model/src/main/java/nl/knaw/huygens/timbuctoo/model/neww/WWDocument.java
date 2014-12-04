@@ -66,7 +66,7 @@ public class WWDocument extends Document {
   }
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     StringBuilder builder = new StringBuilder();
     for (RelationRef ref : getRelations("isCreatedBy")) {
       Text.appendTo(builder, ref.getDisplayName(), "; ");

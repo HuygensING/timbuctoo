@@ -32,7 +32,7 @@ public class Keyword extends DomainEntity {
   private String value;
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     return value;
   };
 

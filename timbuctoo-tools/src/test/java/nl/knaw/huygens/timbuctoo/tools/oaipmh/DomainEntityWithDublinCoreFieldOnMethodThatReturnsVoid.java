@@ -7,7 +7,7 @@ import nl.knaw.huygens.timbuctoo.oaipmh.OAIDublinCoreField;
 public class DomainEntityWithDublinCoreFieldOnMethodThatReturnsVoid extends DomainEntity {
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     // TODO Auto-generated method stub
     return null;
   }

@@ -67,7 +67,7 @@ public abstract class Entity {
    */
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")
-  public abstract String getDisplayName();
+  public abstract String getIdentificationName();
 
   @IndexAnnotation(fieldName = "id")
   public String getId() {

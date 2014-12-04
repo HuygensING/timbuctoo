@@ -63,7 +63,7 @@ public class Location extends DomainEntity {
   }
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     if (names.defLang != null) {
       PlaceName placeName = names.map.get(names.defLang);
       if (placeName != null) {

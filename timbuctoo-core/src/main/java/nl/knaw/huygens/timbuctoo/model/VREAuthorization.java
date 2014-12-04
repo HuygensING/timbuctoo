@@ -49,7 +49,7 @@ public class VREAuthorization extends SystemEntity {
 	}
 
 	@Override
-	public String getDisplayName() {
+	public String getIdentificationName() {
 		return null;
 	}
 

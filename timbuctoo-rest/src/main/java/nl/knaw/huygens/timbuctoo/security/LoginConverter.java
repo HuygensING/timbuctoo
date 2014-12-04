@@ -11,7 +11,7 @@ public class LoginConverter {
 
     HuygensPrincipal principal = new HuygensPrincipal();
     principal.setCommonName(login.getCommonName());
-    principal.setDisplayName(login.getDisplayName());
+    principal.setDisplayName(login.getIdentificationName());
     principal.setEmailAddress(login.getEmailAddress());
     principal.setGivenName(login.getGivenName());
     principal.setOrganization(login.getOrganization());

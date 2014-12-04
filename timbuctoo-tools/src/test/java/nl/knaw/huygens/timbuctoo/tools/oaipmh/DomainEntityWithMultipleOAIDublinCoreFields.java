@@ -10,7 +10,7 @@ public class DomainEntityWithMultipleOAIDublinCoreFields extends DomainEntity {
   private String subject;
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     // TODO Auto-generated method stub
     return null;
   }

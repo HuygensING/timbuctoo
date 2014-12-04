@@ -40,7 +40,7 @@ public class DomainEntityDTO {
     this.type = type;
     id = entity.getId();
     path = Joiner.on('/').join(Paths.DOMAIN_PREFIX, xtype, id);
-    displayName = entity.getDisplayName();
+    displayName = entity.getIdentificationName();
     data = entity.getClientRepresentation();
   }
 

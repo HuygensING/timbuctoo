@@ -67,7 +67,7 @@ public class UserSecurityContextCreator implements SecurityContextCreator {
   }
 
   private User createUser(User user, SecurityInformation securityInformation) {
-    LOG.debug("Create new user: " + user.getDisplayName());
+    LOG.debug("Create new user: " + user.getIdentificationName());
     User returnValue = null;
 
     user.setCommonName(securityInformation.getCommonName());

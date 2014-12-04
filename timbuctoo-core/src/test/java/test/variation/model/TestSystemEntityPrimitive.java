@@ -93,7 +93,7 @@ public class TestSystemEntityPrimitive extends SystemEntity {
   }
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     // TODO Auto-generated method stub
     return null;
   }

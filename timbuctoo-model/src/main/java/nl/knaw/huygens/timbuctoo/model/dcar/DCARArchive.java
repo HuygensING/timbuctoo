@@ -116,7 +116,7 @@ public class DCARArchive extends Archive {
   }
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     return getTitleEng();
   }
 

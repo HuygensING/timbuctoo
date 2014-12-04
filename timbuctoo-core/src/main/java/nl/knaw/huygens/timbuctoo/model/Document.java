@@ -82,7 +82,7 @@ public class Document extends DomainEntity {
   }
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     return getTitle();
   }
 

@@ -48,6 +48,7 @@ import test.timbuctoo.index.model.TestExtraBaseDoc;
 
 public class SolrInputDocGeneratorTest {
 
+  private static final String GET_DISPLAY_NAME = "getIdentificationName";
   private int id = 0;
 
   private Entity createEntity(String displayName) {
@@ -58,7 +59,7 @@ public class SolrInputDocGeneratorTest {
   private Entity createEntity(final String displayName, String id) {
     TestExtraBaseDoc entity = new TestExtraBaseDoc() {
       @Override
-      public String getDisplayName() {
+      public String getIdentificationName() {
         return displayName;
       }
     };
@@ -130,7 +131,7 @@ public class SolrInputDocGeneratorTest {
     Entity entity = createEntity(expected);
     SolrInputDocGenerator generator = new SolrInputDocGenerator(entity);
 
-    processMethod(entity, generator, "getDisplayName", false, "desc", FacetType.LIST);
+    processMethod(entity, generator, GET_DISPLAY_NAME, false, "desc", FacetType.LIST);
 
     SolrInputDocument solrInputDocument = generator.getResult();
     SolrInputField field = solrInputDocument.getField("desc");
@@ -201,7 +202,7 @@ public class SolrInputDocGeneratorTest {
     Entity entity = createEntity(description);
     SolrInputDocGenerator generator = new SolrInputDocGenerator(entity);
 
-    processMethod(entity, generator, "getDisplayName", false, "desc", FacetType.LIST);
+    processMethod(entity, generator, GET_DISPLAY_NAME, false, "desc", FacetType.LIST);
 
     SolrInputDocument solrInputDocument = generator.getResult();
     SolrInputField field = solrInputDocument.getField("desc");
@@ -215,7 +216,7 @@ public class SolrInputDocGeneratorTest {
     Entity entity = createEntity(null);
     SolrInputDocGenerator generator = new SolrInputDocGenerator(entity);
 
-    processMethod(entity, generator, "getDisplayName", true, "desc", FacetType.LIST);
+    processMethod(entity, generator, GET_DISPLAY_NAME, true, "desc", FacetType.LIST);
 
     SolrInputDocument solrInputDocument = generator.getResult();
     SolrInputField field = solrInputDocument.getField("desc");
@@ -228,13 +229,13 @@ public class SolrInputDocGeneratorTest {
     String descriptionDoc1 = "doc1";
     Entity entity1 = createEntity(descriptionDoc1);
     SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(entity1);
-    processMethod(entity1, doc1Generator, "getDisplayName", false, "desc", FacetType.LIST);
+    processMethod(entity1, doc1Generator, GET_DISPLAY_NAME, false, "desc", FacetType.LIST);
     SolrInputDocument inputDoc1 = doc1Generator.getResult();
 
     String descriptionDoc2 = "doc2";
     Entity entity2 = createEntity(descriptionDoc2, entity1.getId());
     SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(entity2, inputDoc1);
-    processMethod(entity2, doc2Generator, "getDisplayName", false, "desc", FacetType.LIST);
+    processMethod(entity2, doc2Generator, GET_DISPLAY_NAME, false, "desc", FacetType.LIST);
     SolrInputDocument inputDoc2 = doc1Generator.getResult();
 
     SolrInputField descriptionField = inputDoc2.getField("desc");
@@ -250,12 +251,12 @@ public class SolrInputDocGeneratorTest {
     String descriptionDoc1 = "doc1";
     Entity entity1 = createEntity(descriptionDoc1);
     SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(entity1);
-    processMethod(entity1, doc1Generator, "getDisplayName", false, "desc", FacetType.LIST);
+    processMethod(entity1, doc1Generator, GET_DISPLAY_NAME, false, "desc", FacetType.LIST);
     SolrInputDocument inputDoc1 = doc1Generator.getResult();
 
     Entity entity2 = createEntity(null, entity1.getId());
     SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(entity2, inputDoc1);
-    processMethod(entity2, doc2Generator, "getDisplayName", false, "desc", FacetType.LIST);
+    processMethod(entity2, doc2Generator, GET_DISPLAY_NAME, false, "desc", FacetType.LIST);
     SolrInputDocument inputDoc2 = doc1Generator.getResult();
 
     SolrInputField descriptionField = inputDoc2.getField("desc");
@@ -269,12 +270,12 @@ public class SolrInputDocGeneratorTest {
   public void testGetResultMultipleDocumentsWithEmptyFieldsThatShouldBeIndexedAllEmpty() throws NoSuchMethodException {
     Entity entity1 = createEntity(null);
     SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(entity1);
-    processMethod(entity1, doc1Generator, "getDisplayName", false, "desc", FacetType.LIST);
+    processMethod(entity1, doc1Generator, GET_DISPLAY_NAME, false, "desc", FacetType.LIST);
     SolrInputDocument inputDoc1 = doc1Generator.getResult();
 
     Entity entity2 = createEntity(null, entity1.getId());
     SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(entity2, inputDoc1);
-    processMethod(entity2, doc2Generator, "getDisplayName", false, "desc", FacetType.LIST);
+    processMethod(entity2, doc2Generator, GET_DISPLAY_NAME, false, "desc", FacetType.LIST);
     SolrInputDocument inputDoc2 = doc1Generator.getResult();
 
     SolrInputField descriptionField = inputDoc2.getField("desc");
@@ -288,12 +289,12 @@ public class SolrInputDocGeneratorTest {
   public void testGetResultMultipleDocumentsWithEmptyFieldsThatShouldNotBeIndexed() throws NoSuchMethodException {
     Entity entity1 = createEntity(null);
     SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(entity1);
-    processMethod(entity1, doc1Generator, "getDisplayName", true, "desc", FacetType.LIST);
+    processMethod(entity1, doc1Generator, GET_DISPLAY_NAME, true, "desc", FacetType.LIST);
     SolrInputDocument inputDoc1 = doc1Generator.getResult();
 
     Entity entity2 = createEntity(null, entity1.getId());
     SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(entity2, inputDoc1);
-    processMethod(entity2, doc2Generator, "getDisplayName", true, "desc", FacetType.LIST);
+    processMethod(entity2, doc2Generator, GET_DISPLAY_NAME, true, "desc", FacetType.LIST);
     SolrInputDocument inputDoc2 = doc1Generator.getResult();
 
     SolrInputField descriptionField = inputDoc2.getField("desc");
@@ -306,12 +307,12 @@ public class SolrInputDocGeneratorTest {
     String description = "doc";
     Entity entity1 = createEntity(description);
     SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(entity1);
-    processMethod(entity1, doc1Generator, "getDisplayName", false, "desc", FacetType.LIST);
+    processMethod(entity1, doc1Generator, GET_DISPLAY_NAME, false, "desc", FacetType.LIST);
     SolrInputDocument inputDoc1 = doc1Generator.getResult();
 
     Entity entity2 = createEntity(description, entity1.getId());
     SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(entity2, inputDoc1);
-    processMethod(entity2, doc2Generator, "getDisplayName", false, "desc", FacetType.LIST);
+    processMethod(entity2, doc2Generator, GET_DISPLAY_NAME, false, "desc", FacetType.LIST);
     SolrInputDocument inputDoc2 = doc1Generator.getResult();
 
     SolrInputField descriptionField = inputDoc2.getField("desc");
@@ -344,19 +345,19 @@ public class SolrInputDocGeneratorTest {
   public void testGetResultMultipleDocumentsSortingField() throws NoSuchMethodException {
     Entity entity1 = createEntity("doc1");
     SolrInputDocGenerator doc1Generator = new SolrInputDocGenerator(entity1);
-    processMethod(entity1, doc1Generator, "getDisplayName", false, "dynamic_sort_desc", FacetType.LIST);
+    processMethod(entity1, doc1Generator, GET_DISPLAY_NAME, false, "dynamic_sort_desc", FacetType.LIST);
     SolrInputDocument inputDoc1 = doc1Generator.getResult();
 
     Entity entity2 = createEntity("doc2", entity1.getId());
     SolrInputDocGenerator doc2Generator = new SolrInputDocGenerator(entity2, inputDoc1);
-    processMethod(entity2, doc2Generator, "getDisplayName", false, "dynamic_sort_desc", FacetType.LIST);
+    processMethod(entity2, doc2Generator, GET_DISPLAY_NAME, false, "dynamic_sort_desc", FacetType.LIST);
     SolrInputDocument inputDoc2 = doc1Generator.getResult();
 
     SolrInputField descriptionField = inputDoc2.getField("dynamic_sort_desc");
     Collection<Object> actualIds = descriptionField.getValues();
 
     assertEquals(1, actualIds.size());
-    assertTrue(actualIds.contains(entity1.getDisplayName()));
+    assertTrue(actualIds.contains(entity1.getIdentificationName()));
   }
 
 }

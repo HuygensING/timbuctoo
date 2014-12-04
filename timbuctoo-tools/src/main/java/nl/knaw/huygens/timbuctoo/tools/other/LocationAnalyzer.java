@@ -39,7 +39,7 @@ public class LocationAnalyzer {
       StorageIterator<Location> iterator = repository.getDomainEntities(Location.class);
       while (iterator.hasNext()) {
         Location location = iterator.next();
-        System.out.println(location.getDisplayName());
+        System.out.println(location.getIdentificationName());
       }
       iterator.close();
     } finally {

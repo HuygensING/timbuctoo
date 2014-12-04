@@ -32,7 +32,7 @@ public class ModelWithOverriddenIndexAnnotation extends DomainEntity {
   @Override
   @JsonIgnore
   @IndexAnnotation(fieldName = "description")
-  public String getDisplayName() {
+  public String getIdentificationName() {
     return null;
   }
 

@@ -28,7 +28,7 @@ import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 public class Archiver extends DomainEntity {
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     return String.format("Archiver - %s", getId());
   }
 

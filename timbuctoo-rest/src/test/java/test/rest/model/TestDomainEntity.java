@@ -45,7 +45,7 @@ public class TestDomainEntity extends DomainEntity {
   }
 
   @IndexAnnotation(fieldName = "desc")
-  public String getDisplayName() {
+  public String getIdentificationName() {
     return null;
   }
 

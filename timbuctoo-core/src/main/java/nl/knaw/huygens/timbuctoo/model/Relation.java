@@ -66,7 +66,7 @@ public class Relation extends DomainEntity {
   }
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     return String.format("(%s: {%s,%s} --> {%s,%s})", typeId, sourceType, sourceId, targetType, targetId);
   }
 

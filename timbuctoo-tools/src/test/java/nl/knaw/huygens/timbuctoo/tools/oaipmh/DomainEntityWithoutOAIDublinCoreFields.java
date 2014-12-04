@@ -6,7 +6,7 @@ public class DomainEntityWithoutOAIDublinCoreFields extends DomainEntity {
   private String test;
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     // TODO Auto-generated method stub
     return null;
   }

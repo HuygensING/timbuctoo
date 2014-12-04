@@ -66,7 +66,7 @@ public class EntityHTMLProvider implements MessageBodyWriter<Entity> {
 
   @Override
   public void writeTo(Entity doc, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out) throws IOException {
-    helper.writeHeader(out, doc.getDisplayName());
+    helper.writeHeader(out, doc.getIdentificationName());
 
     JsonGenerator jgen = helper.getGenerator(out);
     ObjectWriter writer = helper.getObjectWriter(annotations);

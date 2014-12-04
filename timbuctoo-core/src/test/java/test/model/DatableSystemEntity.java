@@ -34,7 +34,7 @@ public class DatableSystemEntity extends SystemEntity {
   private Datable testDatable;
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     return null;
   }
 

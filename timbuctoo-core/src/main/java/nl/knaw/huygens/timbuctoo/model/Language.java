@@ -47,7 +47,7 @@ public class Language extends DomainEntity {
   }
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     return getName();
   }
 

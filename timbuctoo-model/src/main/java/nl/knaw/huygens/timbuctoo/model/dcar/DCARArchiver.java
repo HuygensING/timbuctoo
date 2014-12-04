@@ -96,7 +96,7 @@ public class DCARArchiver extends Archiver {
   }
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     return getNameEng();
   }
 

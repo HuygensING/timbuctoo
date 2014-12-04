@@ -56,7 +56,7 @@ public class SearchResult extends SystemEntity {
   }
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     return "Search " + getId();
   }
 

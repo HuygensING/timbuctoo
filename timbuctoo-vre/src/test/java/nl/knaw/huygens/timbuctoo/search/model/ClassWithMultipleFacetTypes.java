@@ -34,7 +34,7 @@ public class ClassWithMultipleFacetTypes extends DomainEntity {
   private String period;
 
   @Override
-  public String getDisplayName() {
+  public String getIdentificationName() {
     // TODO Auto-generated method stub
     return null;
   }

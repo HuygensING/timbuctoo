@@ -62,7 +62,7 @@ public class RelationRefCreator {
 
     DomainEntity relatedEntity = storage.getItem(mappedType, reference.getId());
 
-    return new RelationRef(mappedIName, xname, reference.getId(), relatedEntity.getDisplayName(), relationId, accepted, rev, relationName);
+    return new RelationRef(mappedIName, xname, reference.getId(), relatedEntity.getIdentificationName(), relationId, accepted, rev, relationName);
   }
 
   public <T extends DomainEntity> void addRelation(T entityToAddTo, EntityMapper mapper, Relation relation, RelationType relType) throws StorageException {

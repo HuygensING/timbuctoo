@@ -54,7 +54,7 @@ public class MongoDiffTest {
     protected List<Reference> variations = Lists.newArrayList();
 
     @Override
-    public String getDisplayName() {
+    public String getIdentificationName() {
       return name;
     }
   }

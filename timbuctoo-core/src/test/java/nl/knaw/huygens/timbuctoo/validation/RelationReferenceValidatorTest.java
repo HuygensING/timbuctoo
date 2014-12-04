@@ -79,14 +79,14 @@ public class RelationReferenceValidatorTest {
 
   private static class SourceType extends DomainEntity {
     @Override
-    public String getDisplayName() {
+    public String getIdentificationName() {
       return null;
     }
   }
 
   private static class TargetType extends DomainEntity {
     @Override
-    public String getDisplayName() {
+    public String getIdentificationName() {
       return null;
     }
   }
