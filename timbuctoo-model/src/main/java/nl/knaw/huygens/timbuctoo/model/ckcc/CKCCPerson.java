@@ -22,7 +22,11 @@ package nl.knaw.huygens.timbuctoo.model.ckcc;
  * #L%
  */
 
+import java.util.Map;
+
 import nl.knaw.huygens.timbuctoo.model.Person;
+
+import com.google.common.collect.Maps;
 
 public class CKCCPerson extends Person {
 
@@ -54,6 +58,15 @@ public class CKCCPerson extends Person {
 
   public void setNotes(String notes) {
     this.notes = notes;
+  }
+
+  @Override
+  public Map<String, String> getClientRepresentation() {
+    Map<String, String> data = Maps.newTreeMap();
+    addItemToRepresentation(data, "urn", urn);
+    addItemToRepresentation(data, "cenId", cenId);
+    addItemToRepresentation(data, "notes", notes);
+    return data;
   }
 
 }

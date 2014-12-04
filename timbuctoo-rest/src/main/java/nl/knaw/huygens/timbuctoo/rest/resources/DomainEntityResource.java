@@ -119,7 +119,7 @@ public class DomainEntityResource extends ResourceBase {
     return Response.ok(new GenericEntity<List<? extends DomainEntity>>(list) {}).build();
   }
 
-  private <T extends DomainEntity> List<T> retrieveEntities(Class<T> entityType, String typeValue, int rows, int start) {
+  protected final <T extends DomainEntity> List<T> retrieveEntities(Class<T> entityType, String typeValue, int rows, int start) {
     if (Strings.isNullOrEmpty(typeValue)) {
       return repository.getDomainEntities(entityType).skip(start).getSome(rows);
     } else {
@@ -344,7 +344,7 @@ public class DomainEntityResource extends ResourceBase {
 
   // ---------------------------------------------------------------------------
 
-  private Class<? extends DomainEntity> getValidEntityType(String name) {
+  protected final Class<? extends DomainEntity> getValidEntityType(String name) {
     return checkNotNull(typeRegistry.getTypeForXName(name), NOT_FOUND, "No domain entity collection %s", name);
   }
 

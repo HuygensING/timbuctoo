@@ -14,6 +14,7 @@ import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
 
 import java.net.URISyntaxException;
+import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -28,16 +29,20 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 @Path(V2_PATH + "/" + DOMAIN_PREFIX + "/" + ENTITY_PATH)
@@ -48,9 +53,9 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
     super(registry, repository, broker);
   }
 
+  @Override
   @GET
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
-  @Override
   public Response getEntities( //
       @PathParam(ENTITY_PARAM) String entityName, //
       @QueryParam("type") String typeValue, //
@@ -58,6 +63,38 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
       @QueryParam("start") @DefaultValue("0") int start //
   ) {
     return super.getEntities(entityName, typeValue, rows, start);
+  }
+
+  /**
+   * Returns a list of domain entities with a defined set of fields, currently
+   * implemented in the {@code DomainEntity.getClientRepresentation) method.
+   */
+  @GET
+  @Path("/defined")
+  @Produces({ MediaType.APPLICATION_JSON })
+  public Response getEntitiesRestricted( //
+      @PathParam(ENTITY_PARAM) String entityName, //
+      @QueryParam("type") String typeValue, //
+      @QueryParam("rows") @DefaultValue("200") int rows, //
+      @QueryParam("start") @DefaultValue("0") int start //
+  ) {
+    Class<? extends DomainEntity> entityType = getValidEntityType(entityName);
+    List<DomainEntityDTO> dtos = retrieveDTOs(entityType, typeValue, rows, start);
+    return Response.ok(new GenericEntity<List<DomainEntityDTO>>(dtos) {}).build();
+  }
+
+  private <T extends DomainEntity> List<DomainEntityDTO> retrieveDTOs(Class<T> entityType, String typeValue, int rows, int start) {
+    return createRefs(entityType, retrieveEntities(entityType, typeValue, rows, start));
+  }
+
+  private <T extends DomainEntity> List<DomainEntityDTO> createRefs(Class<T> type, List<T> entities) {
+    String itype = TypeNames.getInternalName(type);
+    String xtype = TypeNames.getExternalName(type);
+    List<DomainEntityDTO> list = Lists.newArrayListWithCapacity(entities.size());
+    for (T entity : entities) {
+      list.add(new DomainEntityDTO(itype, xtype, entity));
+    }
+    return list;
   }
 
   @Override

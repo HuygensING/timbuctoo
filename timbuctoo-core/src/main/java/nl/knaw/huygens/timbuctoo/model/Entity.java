@@ -63,7 +63,7 @@ public abstract class Entity {
   private Change modified;
 
   /**
-   * Returns the name to be displayed for identification of this entity.
+   * Returns the name used for identification of this entity.
    */
   @JsonIgnore
   @IndexAnnotation(fieldName = "desc")
