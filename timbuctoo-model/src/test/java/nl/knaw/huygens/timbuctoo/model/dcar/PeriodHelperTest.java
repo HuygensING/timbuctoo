@@ -33,55 +33,32 @@ import org.junit.Test;
 
 public class PeriodHelperTest {
 
-  private static final String SEPARATOR = " - ";
-
   @Test
   public void createPeriodTwoYears() {
-    assertThat(createPeriod("2001", "3001"), is(equalTo("2001" + SEPARATOR + "3001")));
+    String expected = "2001 - 3001";
+    assertThat(createPeriod("2001", "3001"), is(equalTo(expected)));
   }
 
   @Test
-  public void createPeriodBeginNull() {
-    assertThat(createPeriod(null, "3001"), is(equalTo("3001" + SEPARATOR + "3001")));
+  public void createPeriodNoBegin() {
+    String expected = "3001 - 3001";
+    assertThat(createPeriod(null, "3001"), is(equalTo(expected)));
+    assertThat(createPeriod("", "3001"), is(equalTo(expected)));
+    assertThat(createPeriod(" ", "3001"), is(equalTo(expected)));
   }
 
   @Test
-  public void createPeriodBeginEmpty() {
-    assertThat(createPeriod("", "3001"), is(equalTo("3001" + SEPARATOR + "3001")));
+  public void createPeriodNoEnd() {
+    String expected = "2001 - 2001";
+    assertThat(createPeriod("2001", null), is(equalTo(expected)));
+    assertThat(createPeriod("2001", ""), is(equalTo(expected)));
+    assertThat(createPeriod("2001", " "), is(equalTo(expected)));
   }
 
   @Test
-  public void createPeriodBeginWhiteSpace() {
-    assertThat(createPeriod(" ", "3001"), is(equalTo("3001" + SEPARATOR + "3001")));
-  }
-
-  @Test
-  public void createPeriodEndNull() {
-    assertThat(createPeriod("2001", null), is(equalTo("2001" + SEPARATOR + "2001")));
-  }
-
-  @Test
-  public void createPeriodEndEmpty() {
-    assertThat(createPeriod("2001", ""), is(equalTo("2001" + SEPARATOR + "2001")));
-  }
-
-  @Test
-  public void createPeriodEndWhiteSpace() {
-    assertThat(createPeriod("2001", " "), is(equalTo("2001" + SEPARATOR + "2001")));
-  }
-
-  @Test
-  public void createPeriodBothNull() {
+  public void createPeriodNoBeginNoEnd() {
     assertThat(createPeriod(null, null), is(nullValue()));
-  }
-
-  @Test
-  public void createPeriodBothEmptyString() {
     assertThat(createPeriod("", ""), is(nullValue()));
-  }
-
-  @Test
-  public void createPeriodBothWiteSpace() {
     assertThat(createPeriod(" ", " "), is(nullValue()));
   }
 
