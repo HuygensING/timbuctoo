@@ -14,7 +14,6 @@ import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
 
 import java.net.URISyntaxException;
-import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -52,13 +51,13 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
   @GET
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   @Override
-  public List<? extends DomainEntity> getAllDocs( //
+  public Response getEntities( //
       @PathParam(ENTITY_PARAM) String entityName, //
       @QueryParam("type") String typeValue, //
       @QueryParam("rows") @DefaultValue("200") int rows, //
       @QueryParam("start") @DefaultValue("0") int start //
   ) {
-    return super.getAllDocs(entityName, typeValue, rows, start);
+    return super.getEntities(entityName, typeValue, rows, start);
   }
 
   @Override

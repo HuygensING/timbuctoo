@@ -57,6 +57,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -107,13 +108,18 @@ public class DomainEntityResource extends ResourceBase {
 
   @GET
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
-  public List<? extends DomainEntity> getAllDocs( //
+  public Response getEntities( //
       @PathParam(ENTITY_PARAM) String entityName, //
       @QueryParam("type") String typeValue, //
       @QueryParam("rows") @DefaultValue("200") int rows, //
       @QueryParam("start") @DefaultValue("0") int start //
   ) {
     Class<? extends DomainEntity> entityType = getValidEntityType(entityName);
+    List<? extends DomainEntity> list = retrieveEntities(entityType, typeValue, rows, start);
+    return Response.ok(new GenericEntity<List<? extends DomainEntity>>(list) {}).build();
+  }
+
+  private <T extends DomainEntity> List<T> retrieveEntities(Class<T> entityType, String typeValue, int rows, int start) {
     if (Strings.isNullOrEmpty(typeValue)) {
       return repository.getDomainEntities(entityType).skip(start).getSome(rows);
     } else {
