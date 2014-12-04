@@ -105,8 +105,8 @@ text {
   <td><select id="vreselect"></select></td>
 </tr>
 <tr>
-  <td>Type</td>
-  <td><input name="" type="text" size="50" id="searchtype"/></td>
+  <td>Collection</td>
+  <td><input name="" type="text" size="50" id="searchcollection"/></td>
 </tr>
 <tr>
   <td>Text</td>
@@ -153,11 +153,10 @@ text {
   function doPost() {
   var errorToken = $('#error');
     jQuery.ajax({
-      url: searchUrl + '/' +$('#searchtype').val() + 's',
+      url: searchUrl + '/' +$('#searchcollection').val(),
       type: 'POST',
       data: JSON.stringify({
         'scopeId': $('#searchscope').val(),
-        'typeString': $('#searchtype').val(),
         'term': $('#searchtext').val(),
         'sortParameters': createSortParameters()
       }),
@@ -356,7 +355,8 @@ text {
         $('#vreselect').val('CKCC');
       }
     });
-    $('#searchtype').val('ckccperson');
+    
+    $('#searchcollection').val('ckccpersons');
     $('#searchtext').val('Reigersberch');
     $('#searchid').val('');
     $('#results').html('No results (yet)');

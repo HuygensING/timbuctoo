@@ -37,15 +37,15 @@
 <table>
 <tr>
   <td>VRE</td>
-  <td><select id="vreselect"></select></td>
+  <td><input id="vreselect" value="WomenWriters" disabled="disabled"></input></td>
 </tr>
 </table>
 
 <h2>Source Query</h2>
 <table>
 <tr>
-  <td>Type</td>
-  <td><input name="" type="text" size="50" id="searchtype1"/></td>
+  <td>Collection</td>
+  <td><input name="" type="text" size="50" id="searchcollection1"/></td>
 </tr>
 <tr>
   <td>Text</td>
@@ -57,8 +57,8 @@
 <h2>Target Query</h2>
 <table>
 <tr>
-  <td>Type</td>
-  <td><input name="" type="text" size="50" id="searchtype2"/></td>
+  <td>Collection</td>
+  <td><input name="" type="text" size="50" id="searchcollection2"/></td>
 </tr>
 <tr>
   <td>Text</td>
@@ -121,10 +121,9 @@
   function doPost1() {
 	var errorToken = $('#error');
     jQuery.ajax({
-      url: searchUrl + '/' + $('#searchtype1').val() + 's',
+      url: searchUrl + '/' + $('#searchcollection1').val(),
       type: 'POST',
       data: JSON.stringify({
-        'typeString': $('#searchtype1').val(),
         'term': $('#searchtext1').val(),
       }),
       headers : { 
@@ -147,10 +146,9 @@
   function doPost2() {
   var errorToken = $('#error');
     jQuery.ajax({
-      url: searchUrl + '/' + $('#searchtype2').val() + 's',
+      url: searchUrl + '/' + $('#searchcollection2').val(),
       type: 'POST',
       data: JSON.stringify({
-        'typeString': $('#searchtype2').val(),
         'term': $('#searchtext2').val(),
       }),
       headers : { 
@@ -218,25 +216,12 @@
   }
 
   $(document).ready(function() {
-	$.ajax({
-	  url : baseUrl + "system/vres",
-	  type: 'GET',
-	  success: function(data){
-		var vreSelect =$('#vreselect');  
-		$.each(data, function(i, item) {
-		  var option = $('<option>');
-		  option.attr('value', item);
-		  option.append(item);
-		  vreSelect.append(option);
-		})
-	  }
-	});
-
-    $('#searchtype1').val('wwperson');
+	
+    $('#searchcollection1').val('wwpersons');
     $('#searchtext1').val('Zuylen');
     $('#searchid1').val('');
 
-    $('#searchtype2').val('wwdocument');
+    $('#searchcollection2').val('wwdocuments');
     $('#searchtext2').val('Gids');
     $('#searchid2').val('');
 

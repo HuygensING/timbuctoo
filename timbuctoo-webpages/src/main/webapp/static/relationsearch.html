@@ -37,7 +37,7 @@
 <table>
 <tr>
   <td>VRE</td>
-  <td><select id="vreselect"></select></td>
+  <td><input id="vreselect" value="WomenWriters" disabled="disabled"></input></td>
 </tr>
 </table>
 
@@ -218,19 +218,6 @@
   }
 
   $(document).ready(function() {
-	$.ajax({
-	  url : baseUrl + "system/vres",
-	  type: 'GET',
-	  success: function(data){
-		var vreSelect =$('#vreselect');  
-		$.each(data, function(i, item) {
-		  var option = $('<option>');
-		  option.attr('value', item);
-		  option.append(item);
-		  vreSelect.append(option);
-		})
-	  }
-	});
 
     $('#searchtype1').val('wwdocument');
     $('#searchtext1').val('Zuylen');
