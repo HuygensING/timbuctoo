@@ -27,12 +27,14 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 import org.apache.commons.lang.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.base.Joiner;
 
 /**
  * A reference to a relation, to be used in other entities.
  * The reference is partially denormalized by including the display name.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class RelationRef implements Comparable<RelationRef> {
 
   private String type;
