@@ -26,6 +26,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.Person;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Maps;
 
 public class CKCCPerson extends Person {
@@ -52,6 +53,19 @@ public class CKCCPerson extends Person {
     this.cenId = cenId;
   }
 
+  @JsonIgnore
+  public String getCenUrn() {
+    if (cenId == null || cenId.isEmpty()) {
+      return "CEN::";
+    } else if (Character.isDigit(cenId.charAt(0))) {
+      // ppn
+      return String.format("CEN:%s:",  cenId);
+    } else {
+      // name
+      return String.format("CEN::%s",  cenId);
+    }
+  }
+
   public String getNotes() {
     return notes;
   }
@@ -63,9 +77,9 @@ public class CKCCPerson extends Person {
   @Override
   public Map<String, String> getClientRepresentation() {
     Map<String, String> data = Maps.newTreeMap();
-    addItemToRepresentation(data, "urn", urn);
-    addItemToRepresentation(data, "cenId", cenId);
-    addItemToRepresentation(data, "notes", notes);
+    addItemToRepresentation(data, "urn", getUrn());
+    addItemToRepresentation(data, "cen", getCenUrn());
+    addItemToRepresentation(data, "notes", getNotes());
     return data;
   }
 
