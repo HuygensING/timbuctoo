@@ -23,6 +23,7 @@ package nl.knaw.huygens.timbuctoo.model.util;
  */
 
 public class FloruitPeriod extends Period {
+
   public FloruitPeriod(String date) {
     super(date, date);
   }
@@ -50,13 +51,11 @@ public class FloruitPeriod extends Period {
     int toYear = getEndDate().getToYear();
     sb.append(fromYear);
 
-    if (fromYear == toYear) {
-
-    } else {
-      sb.append(" - ");
-      sb.append(toYear);
+    if (fromYear != toYear) {
+      sb.append('-').append(toYear);
     }
 
     return sb.toString();
   }
+
 }
