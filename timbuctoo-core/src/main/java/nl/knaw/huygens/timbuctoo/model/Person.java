@@ -85,31 +85,21 @@ public class Person extends DomainEntity {
     Datable birthDate = getBirthDate();
     Datable deathDate = getDeathDate();
 
-    if (birthDate == null && deathDate == null && floruit == null) {
-      return "";
-    }
-
-    StringBuilder sb = new StringBuilder();
-    sb.append(" (");
-
+    StringBuilder builder = new StringBuilder();
     if (birthDate != null || deathDate != null) {
-
+      builder.append(" (");
       if (birthDate != null) {
-        sb.append(getBirthYear(birthDate));
+        builder.append(getBirthYear(birthDate));
       }
-
-      sb.append(" - ");
-
+      builder.append('-');
       if (deathDate != null) {
-        sb.append(getDeathYear(deathDate));
+        builder.append(getDeathYear(deathDate));
       }
+      builder.append(')');
     } else if (floruit != null) {
-      sb.append(floruit);
+      builder.append(" (").append(floruit).append(')');
     }
-
-    sb.append(")");
-
-    return sb.toString();
+    return builder.toString();
   }
 
   private int getDeathYear(Datable deathDate) {

@@ -25,6 +25,7 @@ package nl.knaw.huygens.timbuctoo.model.ckcc;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.Person;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Maps;
@@ -36,6 +37,47 @@ public class CKCCPerson extends Person {
   /** Either a Pica PPN or a name */
   private String cenId;
   private String notes;
+
+  @Override
+  public String getIdentificationName() {
+    String name = defaultName().getSortName();
+    StringBuilder builder = new StringBuilder(name);
+    appendPeriod(builder);
+    return builder.toString();
+  }
+
+  private void appendPeriod(StringBuilder builder) {
+    Datable birthDate = getBirthDate();
+    Datable deathDate = getDeathDate();
+
+    if (birthDate != null || deathDate != null) {
+      builder.append(" (");
+      appendDate(builder, birthDate);
+      builder.append('-');
+      appendDate(builder, deathDate);
+      builder.append(')');
+    } else if (getFloruit() != null) {
+      builder.append(" (").append(getFloruit()).append(')');
+    }
+  }
+
+  private void appendDate(StringBuilder builder, Datable date) {
+    if (date != null) {
+      String text = date.toString();
+      if (text != null && text.length() != 0) {
+        text = text.replaceAll("[<>~?]", "");
+        text = text.replaceAll("/", "-");
+        int pos = text.indexOf('-');
+        if (pos > 0) {
+          text = text.substring(0, pos);
+        }
+        while (text.length() > 1 && text.charAt(0) == '0') {
+          text = text.substring(1);
+        }
+        builder.append(text);
+      }
+    }
+  }
 
   public String getUrn() {
     return urn;
@@ -59,10 +101,10 @@ public class CKCCPerson extends Person {
       return "CEN::";
     } else if (Character.isDigit(cenId.charAt(0))) {
       // ppn
-      return String.format("CEN:%s:",  cenId);
+      return String.format("CEN:%s:", cenId);
     } else {
       // name
-      return String.format("CEN::%s",  cenId);
+      return String.format("CEN::%s", cenId);
     }
   }
 
