@@ -172,6 +172,11 @@ public class CKCCImporter extends DefaultImporter {
 
   // ---------------------------------------------------------------------------
 
+  /*
+   * We have chosen to use the CKCC data "as is".
+   * CKCC handles organizations (collectives) as persons, so the visitor must respect this.
+   * However, we store these entities as collectives.
+   */
   private class CollectivesVisitor extends DelegatingVisitor<ImportContext> {
     public CollectivesVisitor() {
       super(new ImportContext());

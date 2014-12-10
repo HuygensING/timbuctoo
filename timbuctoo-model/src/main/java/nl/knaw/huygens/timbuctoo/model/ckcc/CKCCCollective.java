@@ -22,7 +22,11 @@ package nl.knaw.huygens.timbuctoo.model.ckcc;
  * #L%
  */
 
+import java.util.Map;
+
 import nl.knaw.huygens.timbuctoo.model.Collective;
+
+import com.google.common.collect.Maps;
 
 public class CKCCCollective extends Collective {
 
@@ -35,6 +39,13 @@ public class CKCCCollective extends Collective {
 
   public void setUrn(String urn) {
     this.urn = urn;
+  }
+
+  @Override
+  public Map<String, String> getClientRepresentation() {
+    Map<String, String> data = Maps.newTreeMap();
+    addItemToRepresentation(data, "urn", getUrn());
+    return data;
   }
 
 }
