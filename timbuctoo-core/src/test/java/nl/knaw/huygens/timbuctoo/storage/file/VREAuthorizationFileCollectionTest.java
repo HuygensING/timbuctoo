@@ -31,17 +31,13 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.fail;
 
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.file.FileCollection;
-import nl.knaw.huygens.timbuctoo.storage.file.VREAuthorizationFileCollection;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
@@ -234,12 +230,6 @@ public class VREAuthorizationFileCollectionTest extends FileCollectionTest<VREAu
 
     // verify
     assertThat(instance.get(id), is(nullValue(VREAuthorization.class)));
-  }
-
-  @Ignore
-  @Test
-  public void deleteDoesNothingIfAuthorizationCannotBeFound() {
-    fail("Yet to be implemented");
   }
 
   @Test

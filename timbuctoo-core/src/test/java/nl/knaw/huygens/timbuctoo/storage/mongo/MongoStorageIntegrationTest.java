@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.fail;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
@@ -13,7 +12,6 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
 import org.hamcrest.Matcher;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import test.variation.model.BaseVariationDomainEntity;
@@ -81,23 +79,12 @@ public class MongoStorageIntegrationTest extends DBIntegrationTest {
 
   @Test
   public void getDomainEntitiesReturnsAnIteratorForAllDomainEntitiesInTheDatabase() throws StorageException {
-    // setup
     int numberOfEntities = 3;
     for (int i = 0; i < numberOfEntities; i++) {
       addProjectADomainEntityToDatabase(GENERAL_STRING_VALUE);
     }
 
-    // action
-    StorageIterator<ProjectADomainEntity> allProjectADomainEntities = instance.getDomainEntities(DOMAIN_TYPE);
-
-    // verify
-    assertThat(allProjectADomainEntities.size(), is(equalTo(numberOfEntities)));
-  }
-
-  @Ignore("The concept of deleting domain entities should still be discussed")
-  @Test
-  public void deleteDomainEntity() {
-    fail("Yet to be implemented.");
+    assertThat(instance.getDomainEntities(DOMAIN_TYPE).size(), is(equalTo(numberOfEntities)));
   }
 
   @Test
@@ -119,8 +106,7 @@ public class MongoStorageIntegrationTest extends DBIntegrationTest {
 
   private String addProjectADomainEntityToDatabase(String generalTestDocValue) throws StorageException {
     ProjectADomainEntity entity = createEntityWithGeneralTestDocValue(generalTestDocValue);
-    String id = instance.addDomainEntity(DOMAIN_TYPE, entity, DEFAULT_CHANGE);
-    return id;
+    return instance.addDomainEntity(DOMAIN_TYPE, entity, DEFAULT_CHANGE);
   }
 
   private Matcher<ProjectADomainEntity> isNotNullProjectADomainEntity() {
