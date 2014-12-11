@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.model.util;
 
+import com.google.common.base.Strings;
+
 /*
  * #%L
  * Timbuctoo core
@@ -35,7 +37,12 @@ public class Period {
   }
 
   public Period(String startDate, String endDate) {
-    this(new Datable(startDate), new Datable(endDate));
+    this(convert(startDate), convert(endDate));
+  }
+
+  private static Datable convert(String value) {
+    String edtf = (value.length() < 4 && value.matches("\\d+")) ? Strings.padStart(value, 4, '0') : value;
+    return new Datable(edtf);
   }
 
   public Datable getStartDate() {

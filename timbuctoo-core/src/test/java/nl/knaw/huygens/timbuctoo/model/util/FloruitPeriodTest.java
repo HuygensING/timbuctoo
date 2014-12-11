@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.util;
+package nl.knaw.huygens.timbuctoo.model.util;
 
 /*
  * #%L
@@ -23,9 +23,7 @@ package nl.knaw.huygens.timbuctoo.util;
  */
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import nl.knaw.huygens.timbuctoo.model.util.FloruitPeriod;
+import static org.hamcrest.Matchers.hasToString;
 
 import org.junit.Test;
 
@@ -33,20 +31,24 @@ public class FloruitPeriodTest {
 
   @Test
   public void testToStringForOneDate() {
-    FloruitPeriod period = new FloruitPeriod("1012");
-    assertThat(period.toString(), is(equalTo("fl. 1012")));
+    assertThat(new FloruitPeriod("1012"), hasToString("fl. 1012"));
   }
 
   @Test
   public void testToStringForTwoDatesSingleYear() {
-    FloruitPeriod period = new FloruitPeriod("10121010", "10121212");
-    assertThat(period.toString(), is(equalTo("fl. 1012")));
+    assertThat(new FloruitPeriod("10121010", "10121212"), hasToString("fl. 1012"));
   }
 
   @Test
   public void testToStringForMultipleYears() {
-    FloruitPeriod period = new FloruitPeriod("10121010", "10141212");
-    assertThat(period.toString(), is(equalTo("fl. 1012-1014")));
+    assertThat(new FloruitPeriod("10121010", "10141212"), hasToString("fl. 1012-1014"));
+  }
+
+  @Test
+  public void testToStringForEarlyYear() {
+    assertThat(new FloruitPeriod("0042"), hasToString("fl. 42"));
+    assertThat(new FloruitPeriod("042"), hasToString("fl. 42"));
+    assertThat(new FloruitPeriod("42"), hasToString("fl. 42"));
   }
 
 }
