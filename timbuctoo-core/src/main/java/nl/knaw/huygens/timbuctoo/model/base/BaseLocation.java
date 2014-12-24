@@ -22,6 +22,10 @@ package nl.knaw.huygens.timbuctoo.model.base;
  * #L%
  */
 
+import java.util.Map;
+
+import com.google.common.collect.Maps;
+
 import nl.knaw.huygens.timbuctoo.model.Location;
 
 /**
@@ -37,6 +41,15 @@ public class BaseLocation extends Location {
 
   public void setNotes(String notes) {
     this.notes = notes;
+  }
+
+  @Override
+  public Map<String, String> getClientRepresentation() {
+    Map<String, String> data = Maps.newTreeMap();
+    addItemToRepresentation(data, "urn", getUrn());
+    addItemToRepresentation(data, "latitude", getLatitude());
+    addItemToRepresentation(data, "longitude", getLongitude());
+    return data;
   }
 
 }
