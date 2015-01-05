@@ -102,7 +102,7 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
   ) {
     super.put(entityName, id, input, vreId, userId);
 
-    return Response.ok(repository.getEntity(typeRegistry.getTypeForXName(entityName), id)).build();
+    return Response.ok(repository.getEntityWithRelations(typeRegistry.getTypeForXName(entityName), id)).build();
   }
 
   @Override
