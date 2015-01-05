@@ -105,6 +105,7 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
         .withPid("65262031-c5c2-44f9-b90e-11f9fc7736cf") //
         .build();
     when(repository.getEntity(type, id)).thenReturn(entity);
+    when(repository.getEntityWithRelations(type, id)).thenReturn(entity);
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = createResource(getExternalName(type), id) //
