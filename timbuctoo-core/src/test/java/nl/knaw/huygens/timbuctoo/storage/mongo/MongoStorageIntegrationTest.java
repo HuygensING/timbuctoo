@@ -23,7 +23,7 @@ public class MongoStorageIntegrationTest extends DBIntegrationTest {
   static final String GENERAL_STRING_VALUE = "test";
   private static final Class<ProjectADomainEntity> DOMAIN_TYPE = ProjectADomainEntity.class;
   private static final Change DEFAULT_CHANGE = new Change();
-  MongoStorage instance;
+  private MongoStorage instance;
 
   @Override
   public void setUp() throws Exception {
