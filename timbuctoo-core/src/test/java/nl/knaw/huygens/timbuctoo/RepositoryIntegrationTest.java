@@ -17,26 +17,35 @@ import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
-import nl.knaw.huygens.timbuctoo.storage.mongo.DBIntegrationTest;
+import nl.knaw.huygens.timbuctoo.storage.mongo.MongoDBIntegrationTestHelper;
 import nl.knaw.huygens.timbuctoo.util.RelationRefCreatorFactory;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
-public class RepositoryIntegrationTest extends DBIntegrationTest {
+public class RepositoryIntegrationTest {
   private static final Class<SearchResult> SEARCH_RESULT_TYPE = SearchResult.class;
   private Repository instance;
   private RelationRefCreatorFactory relationRefCreatorFactoryMock;
+  private MongoDBIntegrationTestHelper dbIntegrationTestHelper;
 
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  @Before
+  public void setup() throws Exception {
+    dbIntegrationTestHelper = new MongoDBIntegrationTestHelper();
+    dbIntegrationTestHelper.startCleanDB();
 
     TypeRegistry registry = TypeRegistry.getInstance();
-    Storage storage = createMongoStorage(registry);
+    Storage storage = dbIntegrationTestHelper.createStorage(registry);
     relationRefCreatorFactoryMock = mock(RelationRefCreatorFactory.class);
 
     instance = new Repository(registry, storage, mock(VRECollection.class), relationRefCreatorFactoryMock, new RelationTypes(storage));
+  }
+
+  @After
+  public void tearDown() {
+    dbIntegrationTestHelper.stopDB();
   }
 
   @Test

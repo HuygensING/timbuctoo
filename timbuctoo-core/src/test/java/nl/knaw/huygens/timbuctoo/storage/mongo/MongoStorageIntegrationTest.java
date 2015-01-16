@@ -12,24 +12,34 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
 import org.hamcrest.Matcher;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import test.variation.model.BaseVariationDomainEntity;
 import test.variation.model.TestSystemEntity;
 import test.variation.model.projecta.ProjectADomainEntity;
 
-public class MongoStorageIntegrationTest extends DBIntegrationTest {
+public class MongoStorageIntegrationTest {
   private static final Class<TestSystemEntity> SYSTEM_TYPE = TestSystemEntity.class;
   static final String GENERAL_STRING_VALUE = "test";
   private static final Class<ProjectADomainEntity> DOMAIN_TYPE = ProjectADomainEntity.class;
   private static final Change DEFAULT_CHANGE = new Change();
   private MongoStorage instance;
 
-  @Override
-  public void setUp() throws Exception {
-    super.setUp();
+  private MongoDBIntegrationTestHelper dbIntegrationTestHelper;
 
-    instance = createMongoStorage(TypeRegistry.getInstance());
+  @Before
+  public void setup() throws Exception {
+    dbIntegrationTestHelper = new MongoDBIntegrationTestHelper();
+    dbIntegrationTestHelper.startCleanDB();
+
+    instance = dbIntegrationTestHelper.createStorage(TypeRegistry.getInstance());
+  }
+
+  @After
+  public void tearDown() {
+    dbIntegrationTestHelper.stopDB();
   }
 
   /**************************************************************************************
