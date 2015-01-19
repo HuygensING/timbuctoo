@@ -49,6 +49,11 @@
         </exclusion>
       </exclusions>
     </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>${commons.lang.version}</version>
+    </dependency>
 
     <!-- Jackson -->
     <dependency>
@@ -87,10 +92,12 @@
     </dependency>
     <!-- ## End of main dependencies ## -->
     <!-- ## Test dependencies ## -->
+    <!-- In memory mongo -->
     <dependency>
       <groupId>de.flapdoodle.embed</groupId>
       <artifactId>de.flapdoodle.embed.mongo</artifactId>
       <version>1.46.1</version>
+      <scope>test</scope>
     </dependency>
     <!-- ## End of test dependencies ## -->
   </dependencies>
