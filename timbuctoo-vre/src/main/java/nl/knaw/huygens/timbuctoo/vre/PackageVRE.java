@@ -75,7 +75,7 @@ public class PackageVRE implements VRE {
     this.description = description;
     this.receptions = receptions;
     this.indexCollection = new IndexCollection();
-    this.searchResultConverter = new SearchResultConverter();
+    this.searchResultConverter = new SearchResultConverter(vreId);
     this.scope = createScope(modelPackage);
     this.typeMap = createTypeMap();
   }

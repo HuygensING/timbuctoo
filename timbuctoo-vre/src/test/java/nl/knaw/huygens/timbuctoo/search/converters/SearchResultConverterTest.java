@@ -46,6 +46,7 @@ public class SearchResultConverterTest {
   private static final ArrayList<String> IDS = Lists.newArrayList("id1", "id2", "id3");
   private static final String SEARCH_TERM = "searchTerm";
   private static final String TYPE_STRING = "typeString";
+  private static final String VRE_ID = "vreId";
   private static final List<Facet> FACETS = Lists.newArrayList();
   private static final List<SortParameter> SORT = Lists.newArrayList();
 
@@ -83,9 +84,9 @@ public class SearchResultConverterTest {
 
   @Test
   public void testConvert() {
-    SearchResultConverter instance = new SearchResultConverter();
+    SearchResultConverter instance = new SearchResultConverter(VRE_ID);
     SearchResult actualSearchResult = instance.convert(TYPE_STRING, facetedSearchResult);
-    assertThat(actualSearchResult, likeSearchResult(TYPE_STRING, IDS, SEARCH_TERM, SORT, FACETS));
+    assertThat(actualSearchResult, likeSearchResult(TYPE_STRING, IDS, SEARCH_TERM, SORT, FACETS, VRE_ID));
   }
 
 }
