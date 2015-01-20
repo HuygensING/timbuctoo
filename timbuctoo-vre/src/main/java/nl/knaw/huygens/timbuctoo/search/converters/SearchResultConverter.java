@@ -36,9 +36,15 @@ import com.google.common.collect.Lists;
  */
 public class SearchResultConverter {
 
+  private final String vreId;
+
+  public SearchResultConverter(String vreId) {
+    this.vreId = vreId;
+  }
+
   public SearchResult convert(String typeString, FacetedSearchResult facetedSearchResult) {
     SearchResult searchResult = new SearchResult();
-
+    searchResult.setVreId(vreId);
     searchResult.setFacets(facetedSearchResult.getFacets());
     searchResult.setSort(facetedSearchResult.getSort());
     searchResult.setTerm(facetedSearchResult.getTerm());

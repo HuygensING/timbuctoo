@@ -40,13 +40,15 @@ public class SearchResultMatcher extends TypeSafeMatcher<SearchResult> {
   private String term;
   private List<SortParameter> sort;
   private List<Facet> facets;
+  private String vreId;
 
-  private SearchResultMatcher(String searchType, List<String> ids, String term, List<SortParameter> sort, List<Facet> facets) {
+  private SearchResultMatcher(String searchType, List<String> ids, String term, List<SortParameter> sort, List<Facet> facets, String vreId) {
     this.searchType = searchType;
     this.ids = ids;
     this.term = term;
     this.sort = sort;
     this.facets = facets;
+    this.vreId = vreId;
   }
 
   @Override
@@ -60,7 +62,9 @@ public class SearchResultMatcher extends TypeSafeMatcher<SearchResult> {
         .appendText(" facets ") //
         .appendValue(facets) //
         .appendText(" searchType ") //
-        .appendValue(searchType);
+        .appendValue(searchType) //
+        .appendText(" vreId ") //
+        .appendValue(vreId);
 
   }
 
@@ -75,7 +79,9 @@ public class SearchResultMatcher extends TypeSafeMatcher<SearchResult> {
         .appendText(" facets ") //
         .appendValue(item.getFacets()) //
         .appendText(" searchType ") //
-        .appendValue(item.getSearchType());
+        .appendValue(item.getSearchType()) //
+        .appendText(" vreId ") //
+        .appendValue(item.getVreId());
   }
 
   @Override
@@ -85,64 +91,13 @@ public class SearchResultMatcher extends TypeSafeMatcher<SearchResult> {
     isEqual &= Objects.equal(sort, item.getSort());
     isEqual &= Objects.equal(facets, item.getFacets());
     isEqual &= Objects.equal(ids, item.getIds());
+    isEqual &= Objects.equal(vreId, item.getVreId());
 
     return isEqual;
   }
 
-  public static SearchResultMatcher likeSearchResult(String searchType, List<String> ids, String term, List<SortParameter> sort, List<Facet> facets) {
-    return new SearchResultMatcher(searchType, ids, term, sort, facets);
-  }
-
-  public static SearchResultMatcher likeRelationSearchResult(String searchType, List<String> ids, String term, List<SortParameter> sort, List<Facet> facets, List<String> sourceIds,
-      List<String> targetIds, List<String> relationTypeIds) {
-    return new RelationSearchResultMatcher(searchType, ids, term, sort, facets, sourceIds, targetIds, relationTypeIds);
-  }
-
-  private static class RelationSearchResultMatcher extends SearchResultMatcher {
-    private final List<String> sourceIds;
-    private final List<String> targetIds;
-    private final List<String> relationTypeIds;
-
-    private RelationSearchResultMatcher(String searchType, List<String> ids, String term, List<SortParameter> sort, List<Facet> facets, List<String> sourceIds, List<String> targetIds,
-        List<String> relationTypeIds) {
-      super(searchType, ids, term, sort, facets);
-      this.sourceIds = sourceIds;
-      this.targetIds = targetIds;
-      this.relationTypeIds = relationTypeIds;
-    }
-
-    @Override
-    public void describeTo(Description description) {
-      super.describeTo(description);
-      description.appendText(" sourceIds ") //
-          .appendValue(sourceIds) //
-          .appendText(" targetIds ")//
-          .appendValue(targetIds) //
-          .appendText(" relationTypeIds ") //
-          .appendValue(relationTypeIds);
-
-    }
-
-    @Override
-    protected void describeMismatchSafely(SearchResult item, Description mismatchDescription) {
-      // TODO Auto-generated method stub
-      super.describeMismatchSafely(item, mismatchDescription);
-      mismatchDescription.appendText(" sourceIds ") //
-          .appendValue(item.getSourceIds()) //
-          .appendText(" targetIds ")//
-          .appendValue(item.getTargetIds()) //
-          .appendText(" relationTypeIds ") //
-          .appendValue(item.getRelationTypeIds());
-    }
-
-    @Override
-    protected boolean matchesSafely(SearchResult item) {
-      boolean isEqual = super.matchesSafely(item);
-      isEqual &= Objects.equal(sourceIds, item.getSourceIds());
-      isEqual &= Objects.equal(targetIds, item.getTargetIds());
-      isEqual &= Objects.equal(relationTypeIds, item.getRelationTypeIds());
-      return isEqual;
-    }
+  public static SearchResultMatcher likeSearchResult(String searchType, List<String> ids, String term, List<SortParameter> sort, List<Facet> facets, String vreId) {
+    return new SearchResultMatcher(searchType, ids, term, sort, facets, vreId);
   }
 
 }
