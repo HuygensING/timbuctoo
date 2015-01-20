@@ -60,7 +60,7 @@ public class RegularSearchResultMapper extends SearchResultMapper {
     int end = normalizedStart + normalizedRows;
 
     List<String> idsToRetrieve = ids.subList(normalizedStart, end);
-    List<T> results = retrieveEntitiesWithRelations(type, idsToRetrieve);
+    List<T> results = retrieveEntitiesWithRelationsAndDerivedProperties(type, idsToRetrieve, searchResult.getVreId());
 
     String queryId = searchResult.getId();
 

@@ -30,6 +30,7 @@ import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,11 +67,13 @@ public abstract class SearchResultMapper {
     return entities;
   }
 
-  protected <T extends DomainEntity> List<T> retrieveEntitiesWithRelations(Class<T> type, List<String> ids) {
+  protected <T extends DomainEntity> List<T> retrieveEntitiesWithRelationsAndDerivedProperties(Class<T> type, List<String> ids, String vreId) {
     // Retrieve one-by-one to retain ordering
     List<T> entities = Lists.newArrayList();
+    VRE vre = repository.getVREById(vreId);
     for (String id : ids) {
       T entity = repository.getEntityWithRelations(type, id);
+      repository.addDerivedProperties(vre, entity);
       if (entity != null) {
         entities.add(entity);
       } else {
