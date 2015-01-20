@@ -51,6 +51,7 @@ public class ServletInjectionModule extends JerseyServletModule {
         UserResourceFilterFactory.class, RolesAllowedResourceFilterFactory.class));
     params.put(ResourceConfig.PROPERTY_CONTAINER_RESPONSE_FILTERS, ServletInjectionModelHelper.getClassNamesString(GZIPContentEncodingFilter.class, LoggingFilter.class, CORSFilter.class));
     params.put(ServletContainer.PROPERTY_WEB_PAGE_CONTENT_REGEX, "/static.*");
+    params.put(LoggingFilter.FEATURE_LOGGING_DISABLE_ENTITY, "true");
     filter("/*").through(GuiceContainer.class, params);
   }
 
