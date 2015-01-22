@@ -14,7 +14,7 @@ public class OAISetMatcher extends CompositeMatcher<MyOAISet> {
   }
 
   public OAISetMatcher withName(String name) {
-    addMatcher(new PropertyMatcher<MyOAISet>("name", name) {
+    addMatcher(new PropertyMatcher<MyOAISet, String>("name", name) {
 
       @Override
       protected String getItemValue(MyOAISet item) {
@@ -26,7 +26,7 @@ public class OAISetMatcher extends CompositeMatcher<MyOAISet> {
   }
 
   public OAISetMatcher withSetSpec(String setSpec) {
-    addMatcher(new PropertyMatcher<MyOAISet>("setSpec", setSpec) {
+    addMatcher(new PropertyMatcher<MyOAISet, String>("setSpec", setSpec) {
 
       @Override
       protected String getItemValue(MyOAISet item) {

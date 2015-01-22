@@ -40,7 +40,7 @@ public class CMDIDublinCoreRecordMatcher extends CompositeMatcher<CMDIDublinCore
     return this;
   }
 
-  private class MdSelfLinkMatcher extends PropertyMatcher<CMDIDublinCoreRecord> {
+  private class MdSelfLinkMatcher extends PropertyMatcher<CMDIDublinCoreRecord, String> {
     private static final String PROPERTY_NAME = "mdSelfLink";
 
     private MdSelfLinkMatcher(String mdSelfLink) {
@@ -53,7 +53,7 @@ public class CMDIDublinCoreRecordMatcher extends CompositeMatcher<CMDIDublinCore
     }
   }
 
-  private class MdProfileMatcher extends PropertyMatcher<CMDIDublinCoreRecord> {
+  private class MdProfileMatcher extends PropertyMatcher<CMDIDublinCoreRecord, String> {
 
     private static final String PROPERTY_NAME = "mdProfile";
 
@@ -67,7 +67,7 @@ public class CMDIDublinCoreRecordMatcher extends CompositeMatcher<CMDIDublinCore
     }
   }
 
-  private class MdCreatorMatcher extends PropertyMatcher<CMDIDublinCoreRecord> {
+  private class MdCreatorMatcher extends PropertyMatcher<CMDIDublinCoreRecord, String> {
     private static final String PROPERTY_NAME = "mdCreator";
 
     private MdCreatorMatcher(String mdCreator) {
@@ -80,7 +80,7 @@ public class CMDIDublinCoreRecordMatcher extends CompositeMatcher<CMDIDublinCore
     }
   }
 
-  private class MdCollectionDisplayNameMatcher extends PropertyMatcher<CMDIDublinCoreRecord> {
+  private class MdCollectionDisplayNameMatcher extends PropertyMatcher<CMDIDublinCoreRecord, String> {
     private static final String PROPERTY_NAME = "mdCollectionDisplayName";
 
     private MdCollectionDisplayNameMatcher(String propertyValue) {
@@ -93,7 +93,7 @@ public class CMDIDublinCoreRecordMatcher extends CompositeMatcher<CMDIDublinCore
     }
   }
 
-  private class DublinCoreRecordTitleMatcher extends PropertyMatcher<CMDIDublinCoreRecord> {
+  private class DublinCoreRecordTitleMatcher extends PropertyMatcher<CMDIDublinCoreRecord, String> {
     private static final String PROPERTY_NAME = "DublinCoreRecord with title";
 
     public DublinCoreRecordTitleMatcher(String propertyValue) {

@@ -14,7 +14,7 @@ public class RelationTypeMatcher extends CompositeMatcher<RelationType> {
   }
 
   public RelationTypeMatcher withId(String id) {
-    addMatcher(new PropertyMatcher<RelationType>("id", id) {
+    addMatcher(new PropertyMatcher<RelationType, String>("id", id) {
 
       @Override
       protected String getItemValue(RelationType item) {
@@ -26,7 +26,7 @@ public class RelationTypeMatcher extends CompositeMatcher<RelationType> {
   }
 
   public RelationTypeMatcher withRegularName(String regularName) {
-    addMatcher(new PropertyMatcher<RelationType>("regularName", regularName) {
+    addMatcher(new PropertyMatcher<RelationType, String>("regularName", regularName) {
 
       @Override
       protected String getItemValue(RelationType item) {
@@ -38,7 +38,7 @@ public class RelationTypeMatcher extends CompositeMatcher<RelationType> {
   }
 
   public RelationTypeMatcher withInverseName(String inverseName) {
-    addMatcher(new PropertyMatcher<RelationType>("inverseName", inverseName) {
+    addMatcher(new PropertyMatcher<RelationType, String>("inverseName", inverseName) {
 
       @Override
       protected String getItemValue(RelationType item) {

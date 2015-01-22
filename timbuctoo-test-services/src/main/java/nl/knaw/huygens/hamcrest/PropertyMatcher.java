@@ -6,11 +6,11 @@ import org.hamcrest.TypeSafeMatcher;
 import com.google.common.base.Objects;
 
 // Property matchers
-public abstract class PropertyMatcher<T> extends TypeSafeMatcher<T> {
+public abstract class PropertyMatcher<T, V> extends TypeSafeMatcher<T> {
   private final String propertyName;
-  private final Object propertyValue;
+  private final V propertyValue;
 
-  public PropertyMatcher(String propertyName, Object propertyValue) {
+  public PropertyMatcher(String propertyName, V propertyValue) {
     this.propertyName = propertyName;
     this.propertyValue = propertyValue;
   }
@@ -35,5 +35,5 @@ public abstract class PropertyMatcher<T> extends TypeSafeMatcher<T> {
     return Objects.equal(propertyValue, getItemValue(item));
   }
 
-  protected abstract Object getItemValue(T item);
+  protected abstract V getItemValue(T item);
 }
