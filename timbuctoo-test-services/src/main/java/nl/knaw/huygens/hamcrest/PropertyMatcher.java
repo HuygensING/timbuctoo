@@ -8,9 +8,9 @@ import com.google.common.base.Objects;
 // Property matchers
 public abstract class PropertyMatcher<T> extends TypeSafeMatcher<T> {
   private final String propertyName;
-  private final String propertyValue;
+  private final Object propertyValue;
 
-  public PropertyMatcher(String propertyName, String propertyValue) {
+  public PropertyMatcher(String propertyName, Object propertyValue) {
     this.propertyName = propertyName;
     this.propertyValue = propertyValue;
   }
@@ -35,5 +35,5 @@ public abstract class PropertyMatcher<T> extends TypeSafeMatcher<T> {
     return Objects.equal(propertyValue, getItemValue(item));
   }
 
-  protected abstract String getItemValue(T item);
+  protected abstract Object getItemValue(T item);
 }
