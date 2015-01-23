@@ -36,8 +36,10 @@ import nl.knaw.huygens.timbuctoo.util.Text;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 
-@IDPrefix("PERS")
+@IDPrefix(Person.ID_PREFIX)
 public class Person extends DomainEntity {
+
+  public static final String ID_PREFIX = "PERS";
 
   public static enum Gender {
     UNKNOWN, MALE, FEMALE, NOT_APPLICABLE

@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage;
 
+import static nl.knaw.huygens.timbuctoo.storage.PersonMatcher.likePerson;
+import static nl.knaw.huygens.timbuctoo.storage.PersonMatcher.likeProjectAPerson;
 import static nl.knaw.huygens.timbuctoo.storage.RelationTypeMatcher.matchesRelationType;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -9,16 +11,24 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.Person;
+import nl.knaw.huygens.timbuctoo.model.Person.Gender;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoDBIntegrationTestHelper;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import test.model.projecta.ProjectAPerson;
 
 import com.google.common.collect.Lists;
 
@@ -153,4 +163,43 @@ public class StorageIntegrationTest {
    * getItem 
    */
 
+  @Test
+  public void addDomainEntityAddsADomainEntityAndItsPrimitiveVersieToTheDatabase() throws Exception {
+    ProjectAPerson domainEntityToStore = new ProjectAPerson();
+    Gender gender = Gender.MALE;
+    domainEntityToStore.setGender(gender);
+    String forename = "Constantijn";
+    String surname = "Huygens";
+    PersonName name = PersonName.newInstance(forename, surname);
+    domainEntityToStore.addName(name);
+    String projectAPersonProperty = "projectAPersonProperty";
+    domainEntityToStore.setProjectAPersonProperty(projectAPersonProperty);
+
+    Datable birthDate = new Datable("1800");
+    domainEntityToStore.setBirthDate(birthDate);
+    Datable deathDate = new Datable("19000101");
+    domainEntityToStore.setDeathDate(deathDate);
+
+    String id = instance.addDomainEntity(ProjectAPerson.class, domainEntityToStore, new Change());
+    ArrayList<PersonName> names = Lists.newArrayList(name);
+
+    assertThat(id, startsWith(Person.ID_PREFIX));
+
+    assertThat("DomainEntity is not as expected", instance.getItem(ProjectAPerson.class, id), //
+        likeProjectAPerson() //
+            .withProjectAPersonProperty(projectAPersonProperty) //
+            .withId(id) //
+            .withBirthDate(birthDate) //
+            .withDeathDate(deathDate) //
+            .withGender(gender) //
+            .withNames(names));
+
+    assertThat("Primitive is not as expected", instance.getItem(Person.class, id), //
+        likePerson()//
+            .withId(id) //
+            .withNames(names)//
+            .withGender(gender)//
+            .withBirthDate(birthDate)//
+            .withDeathDate(deathDate));
+  }
 }
