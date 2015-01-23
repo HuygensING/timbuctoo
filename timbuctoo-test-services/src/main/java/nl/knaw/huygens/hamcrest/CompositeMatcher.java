@@ -31,6 +31,7 @@ public class CompositeMatcher<T> extends TypeSafeMatcher<T> {
   protected void describeMismatchSafely(T item, Description mismatchDescription) {
     for (final TypeSafeMatcher<T> matcher : getFailed()) {
       matcher.describeMismatch(item, mismatchDescription);
+      mismatchDescription.appendText(" ");
     }
   }
 
