@@ -11,7 +11,6 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -26,6 +25,7 @@ import nl.knaw.huygens.timbuctoo.storage.mongo.MongoDBIntegrationTestHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import test.model.projecta.ProjectAPerson;
@@ -33,6 +33,17 @@ import test.model.projecta.ProjectAPerson;
 import com.google.common.collect.Lists;
 
 public class StorageIntegrationTest {
+  private static final Class<Person> PRIMITIVE_DOMAIN_ENTITY_TYPE = Person.class;
+  private static final Change UPDATE_CHANGE = new Change();
+  private static final Datable BIRTH_DATE2 = new Datable("18000312");
+  private static final Class<ProjectAPerson> DOMAIN_ENTIY_TYPE = ProjectAPerson.class;
+  private static final String PID = "pid";
+  private static final Change CHANGE_TO_SAVE = UPDATE_CHANGE;
+  private static final Datable DEATH_DATE = new Datable("19000101");
+  private static final Datable BIRTH_DATE = new Datable("1800");
+  private static final String PROJECT_A_PERSON_PROPERTY = "projectAPersonProperty";
+  private static final Gender GENDER = Gender.MALE;
+  private static final PersonName PERSON_NAME = PersonName.newInstance("Constantijn", "Huygens");
   private static final String OTHER_REGULAR_NAME = "otherRegularName";
   private static final String INVERSE_NAME = "tset";
   private static final String REGULAR_NAME = "test";
@@ -152,9 +163,6 @@ public class StorageIntegrationTest {
   /* 
    * Methods to test for DomainEntity:
    * 
-   * addDomainEntity
-   * setPid
-   * updateDomainEntity
    * deleteDomainEntity
    * deleteNonPersistentDomainEntity
    * getDomainEntities
@@ -165,41 +173,145 @@ public class StorageIntegrationTest {
 
   @Test
   public void addDomainEntityAddsADomainEntityAndItsPrimitiveVersieToTheDatabase() throws Exception {
-    ProjectAPerson domainEntityToStore = new ProjectAPerson();
-    Gender gender = Gender.MALE;
-    domainEntityToStore.setGender(gender);
-    String forename = "Constantijn";
-    String surname = "Huygens";
-    PersonName name = PersonName.newInstance(forename, surname);
-    domainEntityToStore.addName(name);
-    String projectAPersonProperty = "projectAPersonProperty";
-    domainEntityToStore.setProjectAPersonProperty(projectAPersonProperty);
+    ProjectAPerson domainEntityToStore = createPerson(GENDER, PERSON_NAME, PROJECT_A_PERSON_PROPERTY, BIRTH_DATE, DEATH_DATE);
 
-    Datable birthDate = new Datable("1800");
-    domainEntityToStore.setBirthDate(birthDate);
-    Datable deathDate = new Datable("19000101");
-    domainEntityToStore.setDeathDate(deathDate);
-
-    String id = instance.addDomainEntity(ProjectAPerson.class, domainEntityToStore, new Change());
-    ArrayList<PersonName> names = Lists.newArrayList(name);
+    // action
+    String id = instance.addDomainEntity(DOMAIN_ENTIY_TYPE, domainEntityToStore, CHANGE_TO_SAVE);
 
     assertThat(id, startsWith(Person.ID_PREFIX));
 
-    assertThat("DomainEntity is not as expected", instance.getItem(ProjectAPerson.class, id), //
+    List<PersonName> names = Lists.newArrayList(PERSON_NAME);
+    assertThat("DomainEntity is not as expected", instance.getItem(DOMAIN_ENTIY_TYPE, id), //
         likeProjectAPerson() //
-            .withProjectAPersonProperty(projectAPersonProperty) //
+            .withProjectAPersonProperty(PROJECT_A_PERSON_PROPERTY) //
             .withId(id) //
-            .withBirthDate(birthDate) //
-            .withDeathDate(deathDate) //
-            .withGender(gender) //
+            .withBirthDate(BIRTH_DATE) //
+            .withDeathDate(DEATH_DATE) //
+            .withGender(GENDER) //
             .withNames(names));
 
-    assertThat("Primitive is not as expected", instance.getItem(Person.class, id), //
+    assertThat("Primitive is not as expected", instance.getItem(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), //
         likePerson()//
             .withId(id) //
             .withNames(names)//
-            .withGender(gender)//
-            .withBirthDate(birthDate)//
-            .withDeathDate(deathDate));
+            .withGender(GENDER)//
+            .withBirthDate(BIRTH_DATE)//
+            .withDeathDate(DEATH_DATE));
+  }
+
+  @Test
+  public void setPIDGivesTheDomainEntityAPidAndCreatesAVersion() throws Exception {
+    String id = addDefaultProjectAPerson();
+    // Make sure the entity exist
+    assertThat(instance.getItem(DOMAIN_ENTIY_TYPE, id), is(notNullValue()));
+
+    // action
+    instance.setPID(DOMAIN_ENTIY_TYPE, id, PID);
+
+    ProjectAPerson updatedEntity = instance.getItem(DOMAIN_ENTIY_TYPE, id);
+    assertThat("Entity has no pid", updatedEntity.getPid(), is(equalTo(PID)));
+
+    int rev = updatedEntity.getRev();
+    assertThat(instance.getRevision(DOMAIN_ENTIY_TYPE, id, rev), //
+        likeDefaultProjectAPerson(id)//
+            .withRevision(rev));
+  }
+
+  @Test
+  public void updateIncreasesTheRevisionNumberAndChangesTheDomainEntityButDoesNotCreateANewVersion() throws Exception {
+    String id = addDefaultProjectAPerson();
+
+    // Store the entity
+    ProjectAPerson storedDomainEntity = instance.getItem(DOMAIN_ENTIY_TYPE, id);
+    // Make sure the entity is stored
+    assertThat(storedDomainEntity, is(notNullValue()));
+
+    int firstRevision = storedDomainEntity.getRev();
+
+    // Update The entity
+    storedDomainEntity.setBirthDate(BIRTH_DATE2);
+    instance.updateDomainEntity(DOMAIN_ENTIY_TYPE, storedDomainEntity, UPDATE_CHANGE);
+
+    ProjectAPerson updatedEntity = instance.getItem(DOMAIN_ENTIY_TYPE, id);
+
+    assertThat("Project domain entity is not updated", //
+        updatedEntity, likeProjectAPerson()//
+            .withProjectAPersonProperty(PROJECT_A_PERSON_PROPERTY)//
+            .withBirthDate(BIRTH_DATE2)//
+            .withDeathDate(DEATH_DATE)//
+            .withGender(GENDER)//
+            .withId(id)//
+            .withNames(Lists.newArrayList(PERSON_NAME))//
+            .withRevision(firstRevision + 1));
+
+    assertThat("Primitive domain entity should not have changed", //
+        instance.getItem(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), likeDefaultPerson(id));
+
+    assertThat("No revision should be created for version 1",//
+        instance.getRevision(DOMAIN_ENTIY_TYPE, id, firstRevision), is(nullValue()));
+
+    int secondRevision = updatedEntity.getRev();
+    assertThat("No revision should be created for version 2",//
+        instance.getRevision(DOMAIN_ENTIY_TYPE, id, secondRevision), is(nullValue()));
+  }
+
+  @Ignore("Delete does not work. Test with multiple project variants.")
+  @Test
+  public void deletePersistentDomainEntityClearsTheEntityPropertiesSetsTheDeletedFlagToTrue() throws Exception {
+    String id = addDefaultProjectAPerson();
+
+    assertThat(instance.getItem(DOMAIN_ENTIY_TYPE, id), //
+        likeDefaultProjectAPerson(id)//
+            .withDeletedFlag(false));
+
+    assertThat(instance.getItem(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), //
+        likeDefaultPerson(id)//
+            .withDeletedFlag(false));
+
+    instance.deleteDomainEntity(DOMAIN_ENTIY_TYPE, id, UPDATE_CHANGE);
+
+    int expectedRevision = 2;
+    assertThat(instance.getItem(DOMAIN_ENTIY_TYPE, id), //
+        likeDefaultProjectAPerson(id).withRevision(expectedRevision));
+
+    assertThat(instance.getItem(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), //
+        likeDefaultPerson(id).withRevision(expectedRevision));
+
+  }
+
+  private ProjectAPerson createPerson(Gender gender, PersonName name, String projectAPersonProperty, Datable birthDate, Datable deathDate) {
+    ProjectAPerson domainEntityToStore = new ProjectAPerson();
+    domainEntityToStore.setGender(gender);
+    domainEntityToStore.addName(name);
+    domainEntityToStore.setProjectAPersonProperty(projectAPersonProperty);
+    domainEntityToStore.setBirthDate(birthDate);
+    domainEntityToStore.setDeathDate(deathDate);
+
+    return domainEntityToStore;
+  }
+
+  private String addDefaultProjectAPerson() throws StorageException {
+    ProjectAPerson domainEntityToStore = createPerson(GENDER, PERSON_NAME, PROJECT_A_PERSON_PROPERTY, BIRTH_DATE, DEATH_DATE);
+    String id = instance.addDomainEntity(DOMAIN_ENTIY_TYPE, domainEntityToStore, CHANGE_TO_SAVE);
+    return id;
+  }
+
+  private PersonMatcher<Person> likeDefaultPerson(String id) {
+    return likePerson()//
+        .withBirthDate(BIRTH_DATE)//
+        .withDeathDate(DEATH_DATE)//
+        .withGender(GENDER)//
+        .withId(id)//
+        .withNames(Lists.newArrayList(PERSON_NAME));
+  }
+
+  private PersonMatcher<ProjectAPerson> likeDefaultProjectAPerson(String id) {
+    return likeProjectAPerson()//
+        .withProjectAPersonProperty(PROJECT_A_PERSON_PROPERTY)//
+        .withBirthDate(BIRTH_DATE)//
+        .withDeathDate(DEATH_DATE)//
+        .withGender(GENDER)//
+        .withId(id)//
+        .withNames(Lists.newArrayList(PERSON_NAME));
   }
 }
