@@ -92,7 +92,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   protected static final String DEFAULT_RESOURCE = TypeNames.getExternalName(DEFAULT_TYPE);
 
   protected static final Class<BaseDomainEntity> BASE_TYPE = BaseDomainEntity.class;
-  private static final String BASE_RESOURCE = TypeNames.getExternalName(BASE_TYPE);
+  protected static final String BASE_RESOURCE = TypeNames.getExternalName(BASE_TYPE);
 
   protected static final String PERSISTENCE_PRODUCER = "persistenceProducer";
   protected static final String INDEX_PRODUCER = "indexProducer";
@@ -722,7 +722,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testDeleteDocumentDoesNotExist() throws Exception {
+  public void testDeleteEntityThatDoesNotExist() throws Exception {
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
 
     when(repository.doesVREExist(VRE_ID)).thenReturn(true);

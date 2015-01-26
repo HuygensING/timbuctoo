@@ -295,7 +295,7 @@ public class DomainEntityResource extends ResourceBase {
   /**
    * Notify other software components of a change in the data.
    */
-  private void notifyChange(ActionType actionType, Class<? extends DomainEntity> type, DomainEntity entity, String id) {
+  protected void notifyChange(ActionType actionType, Class<? extends DomainEntity> type, DomainEntity entity, String id) {
     switch (actionType) {
       case ADD:
       case MOD:

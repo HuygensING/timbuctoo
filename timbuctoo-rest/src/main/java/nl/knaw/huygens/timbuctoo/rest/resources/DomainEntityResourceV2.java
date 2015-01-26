@@ -32,14 +32,18 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
+import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
 import com.google.common.collect.Lists;
@@ -160,7 +164,37 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
       @PathParam(ENTITY_PARAM) String entityName, //
       @PathParam(ID_PARAM) String id, //
       @HeaderParam(VRE_ID_KEY) String vreId) {
-    return super.delete(entityName, id, vreId);
+
+    Class<? extends DomainEntity> type = getValidEntityType(entityName);
+
+    if (TypeRegistry.isPrimitiveDomainEntity(type)) {
+      return Response.status(Status.BAD_REQUEST).entity("Primitive DomainEntities cannot be deleted at this moment.").build();
+    }
+
+    if (Relation.class.isAssignableFrom(type)) {
+      return Response.status(Status.BAD_REQUEST).entity("Relations cannot be deleted at this moment. Use PUT with \"^accepted\" set to false.").build();
+    }
+
+    DomainEntity entity = repository.getEntity(type, id);
+
+    if (entity == null) {
+      return returnNotFoundResponse(id);
+    }
+
+    try {
+      repository.deleteDomainEntity(entity);
+      notifyChange(ActionType.MOD, type, entity, id);
+    } catch (NoSuchEntityException e) {
+      return returnNotFoundResponse(id);
+    } catch (StorageException e) {
+      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e).build();
+    }
+
+    return Response.noContent().build();
+
   }
 
+  protected Response returnNotFoundResponse(String id) {
+    return Response.status(Status.NOT_FOUND).entity("Entity with id \"" + id + "\" cannot be found.").build();
+  }
 }
