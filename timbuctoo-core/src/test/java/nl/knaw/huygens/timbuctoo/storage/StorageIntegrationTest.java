@@ -6,6 +6,7 @@ import static nl.knaw.huygens.timbuctoo.storage.RelationTypeMatcher.matchesRelat
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -22,6 +23,7 @@ import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoDBIntegrationTestHelper;
 
+import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -33,24 +35,39 @@ import test.model.projecta.ProjectAPerson;
 import com.google.common.collect.Lists;
 
 public class StorageIntegrationTest {
-  private static final Class<Person> PRIMITIVE_DOMAIN_ENTITY_TYPE = Person.class;
+  // General constants
+  private static final Change CHANGE_TO_SAVE = new Change();
   private static final Change UPDATE_CHANGE = new Change();
-  private static final Datable BIRTH_DATE2 = new Datable("18000312");
-  private static final Class<ProjectAPerson> DOMAIN_ENTIY_TYPE = ProjectAPerson.class;
-  private static final String PID = "pid";
-  private static final Change CHANGE_TO_SAVE = UPDATE_CHANGE;
-  private static final Datable DEATH_DATE = new Datable("19000101");
-  private static final Datable BIRTH_DATE = new Datable("1800");
-  private static final String PROJECT_A_PERSON_PROPERTY = "projectAPersonProperty";
-  private static final Gender GENDER = Gender.MALE;
-  private static final PersonName PERSON_NAME = PersonName.newInstance("Constantijn", "Huygens");
-  private static final String OTHER_REGULAR_NAME = "otherRegularName";
-  private static final String INVERSE_NAME = "tset";
+
+  // SystemEntity constants
   private static final String REGULAR_NAME = "test";
   private static final String REGULAR_NAME1 = "regularName1";
   private static final String REGULAR_NAME2 = "regularName2";
+  private static final String INVERSE_NAME = "tset";
   private static final String INVERSE_NAME1 = "inverseName1";
   private static final String INVERSE_NAME2 = "inverseName2";
+  private static final String OTHER_REGULAR_NAME = "otherRegularName";
+
+  // DomainEntity constants
+  private static final Class<ProjectAPerson> DOMAIN_ENTITY_TYPE = ProjectAPerson.class;
+  private static final Class<Person> PRIMITIVE_DOMAIN_ENTITY_TYPE = Person.class;
+  private static final Datable BIRTH_DATE = new Datable("1800");
+  private static final Datable BIRTH_DATE1 = new Datable("10001213");
+  private static final Datable BIRTH_DATE2 = new Datable("18000312");
+  private static final Datable DEATH_DATE = new Datable("19000101");
+  private static final Datable DEATH_DATE1 = new Datable("11000201");
+  private static final Datable DEATH_DATE2 = new Datable("19020103");
+  private static final Gender GENDER = Gender.MALE;
+  private static final Gender GENDER1 = Gender.FEMALE;
+  private static final Gender GENDER2 = Gender.MALE;
+  private static final PersonName PERSON_NAME = PersonName.newInstance("Constantijn", "Huygens");
+  private static final PersonName PERSON_NAME1 = PersonName.newInstance("Maria", "Reigersberch");
+  private static final PersonName PERSON_NAME2 = PersonName.newInstance("James", "Petiver");
+  private static final String PID = "pid";
+  private static final String PROJECT_A_PERSON_PROPERTY = "projectAPersonProperty";
+  private static final String PROJECT_A_PERSON_PROPERTY1 = "projectAPersonProperty1";
+  private static final String PROJECT_A_PERSON_PROPERTY2 = "projectAPersonProperty2";
+
   private Storage instance;
   private static TypeRegistry typeRegistry;
   private MongoDBIntegrationTestHelper dbIntegrationTestHelper;
@@ -58,7 +75,7 @@ public class StorageIntegrationTest {
   @BeforeClass
   public static void createTypeRegistry() throws Exception {
     typeRegistry = TypeRegistry.getInstance();
-    typeRegistry.init("nl.knaw.huygens.timbuctoo.model.*");
+    typeRegistry.init("nl.knaw.huygens.timbuctoo.model.* test.model.projecta");
 
   }
 
@@ -132,11 +149,11 @@ public class StorageIntegrationTest {
 
     List<RelationType> storedSystemEntities = instance.getSystemEntities(RelationType.class).getAll();
 
-    assertThat(storedSystemEntities.size(), is(equalTo(3)));
-    List<RelationTypeMatcher> relationTypeMatchers = Lists.newArrayList(matchesRelationType()//
-        .withId(id1)//
-        .withInverseName(INVERSE_NAME)//
-        .withRegularName(REGULAR_NAME),//
+    List<RelationTypeMatcher> relationTypeMatchers = Lists.newArrayList(//
+        matchesRelationType()//
+            .withId(id1)//
+            .withInverseName(INVERSE_NAME)//
+            .withRegularName(REGULAR_NAME),//
         matchesRelationType()//
             .withId(id2)//
             .withInverseName(INVERSE_NAME1)//
@@ -146,6 +163,7 @@ public class StorageIntegrationTest {
             .withInverseName(INVERSE_NAME2) //
             .withRegularName(REGULAR_NAME2));
 
+    assertThat(storedSystemEntities, hasSize(3));
     assertThat(storedSystemEntities, containsInAnyOrder(relationTypeMatchers.toArray(new RelationTypeMatcher[0])));
   }
 
@@ -160,28 +178,21 @@ public class StorageIntegrationTest {
     assertThat(instance.getItem(RelationType.class, id), is(nullValue()));
   }
 
-  /* 
-   * Methods to test for DomainEntity:
-   * 
-   * deleteDomainEntity
-   * deleteNonPersistentDomainEntity
-   * getDomainEntities
-   * getAllVariations
-   * getRevision
-   * getItem 
-   */
+  /********************************************************************************
+   * DomainEntity
+   ********************************************************************************/
 
   @Test
   public void addDomainEntityAddsADomainEntityAndItsPrimitiveVersieToTheDatabase() throws Exception {
     ProjectAPerson domainEntityToStore = createPerson(GENDER, PERSON_NAME, PROJECT_A_PERSON_PROPERTY, BIRTH_DATE, DEATH_DATE);
 
     // action
-    String id = instance.addDomainEntity(DOMAIN_ENTIY_TYPE, domainEntityToStore, CHANGE_TO_SAVE);
+    String id = instance.addDomainEntity(DOMAIN_ENTITY_TYPE, domainEntityToStore, CHANGE_TO_SAVE);
 
     assertThat(id, startsWith(Person.ID_PREFIX));
 
     List<PersonName> names = Lists.newArrayList(PERSON_NAME);
-    assertThat("DomainEntity is not as expected", instance.getItem(DOMAIN_ENTIY_TYPE, id), //
+    assertThat("DomainEntity is not as expected", instance.getItem(DOMAIN_ENTITY_TYPE, id), //
         likeProjectAPerson() //
             .withProjectAPersonProperty(PROJECT_A_PERSON_PROPERTY) //
             .withId(id) //
@@ -203,16 +214,16 @@ public class StorageIntegrationTest {
   public void setPIDGivesTheDomainEntityAPidAndCreatesAVersion() throws Exception {
     String id = addDefaultProjectAPerson();
     // Make sure the entity exist
-    assertThat(instance.getItem(DOMAIN_ENTIY_TYPE, id), is(notNullValue()));
+    assertThat(instance.getItem(DOMAIN_ENTITY_TYPE, id), is(notNullValue()));
 
     // action
-    instance.setPID(DOMAIN_ENTIY_TYPE, id, PID);
+    instance.setPID(DOMAIN_ENTITY_TYPE, id, PID);
 
-    ProjectAPerson updatedEntity = instance.getItem(DOMAIN_ENTIY_TYPE, id);
+    ProjectAPerson updatedEntity = instance.getItem(DOMAIN_ENTITY_TYPE, id);
     assertThat("Entity has no pid", updatedEntity.getPid(), is(equalTo(PID)));
 
     int rev = updatedEntity.getRev();
-    assertThat(instance.getRevision(DOMAIN_ENTIY_TYPE, id, rev), //
+    assertThat(instance.getRevision(DOMAIN_ENTITY_TYPE, id, rev), //
         likeDefaultProjectAPerson(id)//
             .withRevision(rev));
   }
@@ -222,7 +233,7 @@ public class StorageIntegrationTest {
     String id = addDefaultProjectAPerson();
 
     // Store the entity
-    ProjectAPerson storedDomainEntity = instance.getItem(DOMAIN_ENTIY_TYPE, id);
+    ProjectAPerson storedDomainEntity = instance.getItem(DOMAIN_ENTITY_TYPE, id);
     // Make sure the entity is stored
     assertThat(storedDomainEntity, is(notNullValue()));
 
@@ -230,9 +241,9 @@ public class StorageIntegrationTest {
 
     // Update The entity
     storedDomainEntity.setBirthDate(BIRTH_DATE2);
-    instance.updateDomainEntity(DOMAIN_ENTIY_TYPE, storedDomainEntity, UPDATE_CHANGE);
+    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, storedDomainEntity, UPDATE_CHANGE);
 
-    ProjectAPerson updatedEntity = instance.getItem(DOMAIN_ENTIY_TYPE, id);
+    ProjectAPerson updatedEntity = instance.getItem(DOMAIN_ENTITY_TYPE, id);
 
     assertThat("Project domain entity is not updated", //
         updatedEntity, likeProjectAPerson()//
@@ -248,11 +259,11 @@ public class StorageIntegrationTest {
         instance.getItem(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), likeDefaultPerson(id));
 
     assertThat("No revision should be created for version 1",//
-        instance.getRevision(DOMAIN_ENTIY_TYPE, id, firstRevision), is(nullValue()));
+        instance.getRevision(DOMAIN_ENTITY_TYPE, id, firstRevision), is(nullValue()));
 
     int secondRevision = updatedEntity.getRev();
     assertThat("No revision should be created for version 2",//
-        instance.getRevision(DOMAIN_ENTIY_TYPE, id, secondRevision), is(nullValue()));
+        instance.getRevision(DOMAIN_ENTITY_TYPE, id, secondRevision), is(nullValue()));
   }
 
   @Ignore("Delete does not work. Test with multiple project variants.")
@@ -260,7 +271,7 @@ public class StorageIntegrationTest {
   public void deletePersistentDomainEntityClearsTheEntityPropertiesSetsTheDeletedFlagToTrue() throws Exception {
     String id = addDefaultProjectAPerson();
 
-    assertThat(instance.getItem(DOMAIN_ENTIY_TYPE, id), //
+    assertThat(instance.getItem(DOMAIN_ENTITY_TYPE, id), //
         likeDefaultProjectAPerson(id)//
             .withDeletedFlag(false));
 
@@ -268,15 +279,76 @@ public class StorageIntegrationTest {
         likeDefaultPerson(id)//
             .withDeletedFlag(false));
 
-    instance.deleteDomainEntity(DOMAIN_ENTIY_TYPE, id, UPDATE_CHANGE);
+    instance.deleteDomainEntity(DOMAIN_ENTITY_TYPE, id, UPDATE_CHANGE);
 
     int expectedRevision = 2;
-    assertThat(instance.getItem(DOMAIN_ENTIY_TYPE, id), //
+    assertThat(instance.getItem(DOMAIN_ENTITY_TYPE, id), //
         likeDefaultProjectAPerson(id).withRevision(expectedRevision));
-
     assertThat(instance.getItem(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), //
         likeDefaultPerson(id).withRevision(expectedRevision));
 
+  }
+
+  @Test
+  public void deleteNonPersistentDomainEntityRemovesTheCompleteDomainEntity() throws Exception {
+    String id = addDefaultProjectAPerson();
+
+    assertThat(instance.getItem(DOMAIN_ENTITY_TYPE, id), likeDefaultProjectAPerson(id));
+    assertThat(instance.getItem(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), likeDefaultPerson(id));
+
+    instance.deleteNonPersistent(DOMAIN_ENTITY_TYPE, Lists.newArrayList(id));
+
+    assertThat(instance.getItem(DOMAIN_ENTITY_TYPE, id), is(nullValue()));
+    assertThat(instance.getItem(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), is(nullValue()));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void getDomainEntitiesReturnsAllDomainEntitiesOfTheRequestedType() throws Exception {
+    String id1 = addPerson(GENDER, PERSON_NAME, PROJECT_A_PERSON_PROPERTY, BIRTH_DATE, DEATH_DATE);
+    String id2 = addPerson(GENDER1, PERSON_NAME1, PROJECT_A_PERSON_PROPERTY1, BIRTH_DATE1, DEATH_DATE1);
+    String id3 = addPerson(GENDER2, PERSON_NAME2, PROJECT_A_PERSON_PROPERTY2, BIRTH_DATE2, DEATH_DATE2);
+
+    List<ProjectAPerson> persons = instance.getDomainEntities(DOMAIN_ENTITY_TYPE).getAll();
+
+    PersonMatcher<? super ProjectAPerson> personMatcher = likeProjectAPerson() //
+        .withProjectAPersonProperty(PROJECT_A_PERSON_PROPERTY)//
+        .withBirthDate(BIRTH_DATE) //
+        .withDeathDate(DEATH_DATE) //
+        .withGender(GENDER) //
+        .withId(id1) //
+        .withNames(Lists.newArrayList(PERSON_NAME));
+    PersonMatcher<? super ProjectAPerson> personMatcher1 = likeProjectAPerson() //
+        .withProjectAPersonProperty(PROJECT_A_PERSON_PROPERTY1)//
+        .withBirthDate(BIRTH_DATE1) //
+        .withDeathDate(DEATH_DATE1) //
+        .withGender(GENDER1) //
+        .withId(id2) //
+        .withNames(Lists.newArrayList(PERSON_NAME1));
+    PersonMatcher<? super ProjectAPerson> personMatcher2 = likeProjectAPerson() //
+        .withProjectAPersonProperty(PROJECT_A_PERSON_PROPERTY2)//
+        .withBirthDate(BIRTH_DATE2) //
+        .withDeathDate(DEATH_DATE2) //
+        .withGender(GENDER2) //
+        .withId(id3) //
+        .withNames(Lists.newArrayList(PERSON_NAME2));
+
+    assertThat(persons, hasSize(3));
+    assertThat(persons, containsInAnyOrder(personMatcher, personMatcher1, personMatcher2));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void getAllVariationsReturnsAllTheVariationsOfADomainEntity() throws Exception {
+    String id = addDefaultProjectAPerson();
+
+    List<? extends Person> allVariations = instance.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, id);
+
+    @SuppressWarnings("rawtypes")
+    Matcher[] matchers = { likeDefaultPerson(id), likeDefaultProjectAPerson(id) };
+
+    assertThat(allVariations, hasSize(2));
+    assertThat(allVariations, containsInAnyOrder(matchers));
   }
 
   private ProjectAPerson createPerson(Gender gender, PersonName name, String projectAPersonProperty, Datable birthDate, Datable deathDate) {
@@ -291,9 +363,12 @@ public class StorageIntegrationTest {
   }
 
   private String addDefaultProjectAPerson() throws StorageException {
-    ProjectAPerson domainEntityToStore = createPerson(GENDER, PERSON_NAME, PROJECT_A_PERSON_PROPERTY, BIRTH_DATE, DEATH_DATE);
-    String id = instance.addDomainEntity(DOMAIN_ENTIY_TYPE, domainEntityToStore, CHANGE_TO_SAVE);
-    return id;
+    return addPerson(GENDER, PERSON_NAME, PROJECT_A_PERSON_PROPERTY, BIRTH_DATE, DEATH_DATE);
+  }
+
+  private String addPerson(Gender gender, PersonName name, String projectAPersonProperty, Datable birthDate, Datable deathDate) throws StorageException {
+    ProjectAPerson domainEntityToStore = createPerson(gender, name, projectAPersonProperty, birthDate, deathDate);
+    return instance.addDomainEntity(DOMAIN_ENTITY_TYPE, domainEntityToStore, CHANGE_TO_SAVE);
   }
 
   private PersonMatcher<Person> likeDefaultPerson(String id) {
