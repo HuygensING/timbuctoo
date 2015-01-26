@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
+import nl.knaw.huygens.timbuctoo.storage.DBIntegrationTestHelper;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 
@@ -15,7 +16,7 @@ import de.flapdoodle.embed.mongo.config.Net;
 import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.process.runtime.Network;
 
-public class MongoDBIntegrationTestHelper {
+public class MongoDBIntegrationTestHelper implements DBIntegrationTestHelper {
 
   private static final int DB_PORT = 12345;
   private static final MongodStarter starter = MongodStarter.getDefaultInstance();
@@ -28,6 +29,10 @@ public class MongoDBIntegrationTestHelper {
     super();
   }
 
+  /* (non-Javadoc)
+   * @see nl.knaw.huygens.timbuctoo.storage.mongo.DBIntegrationTestHelper#startCleanDB()
+   */
+  @Override
   public void startCleanDB() throws Exception {
     mongodExe = starter.prepare(new MongodConfigBuilder().version(Version.Main.PRODUCTION)//
         .net(new Net(DB_PORT, Network.localhostIsIPv6()))//
@@ -39,11 +44,19 @@ public class MongoDBIntegrationTestHelper {
     mongoDB = new MongoDB(mongo, mongo.getDB("test"));
   }
 
+  /* (non-Javadoc)
+   * @see nl.knaw.huygens.timbuctoo.storage.mongo.DBIntegrationTestHelper#stopDB()
+   */
+  @Override
   public void stopDB() {
     mongod.stop();
     mongodExe.stop();
   }
 
+  /* (non-Javadoc)
+   * @see nl.knaw.huygens.timbuctoo.storage.mongo.DBIntegrationTestHelper#createStorage(nl.knaw.huygens.timbuctoo.config.TypeRegistry)
+   */
+  @Override
   public MongoStorage createStorage(TypeRegistry typeRegistry) throws ModelException {
     return new MongoStorage(mongoDB, new EntityIds(typeRegistry, mongoDB), new EntityInducer(), new EntityReducer(typeRegistry));
   }

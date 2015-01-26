@@ -21,7 +21,6 @@ import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
-import nl.knaw.huygens.timbuctoo.storage.mongo.MongoDBIntegrationTestHelper;
 
 import org.hamcrest.Matcher;
 import org.junit.After;
@@ -34,7 +33,7 @@ import test.model.projecta.ProjectAPerson;
 
 import com.google.common.collect.Lists;
 
-public class StorageIntegrationTest {
+public abstract class StorageIntegrationTest {
   // General constants
   private static final Change CHANGE_TO_SAVE = new Change();
   private static final Change UPDATE_CHANGE = new Change();
@@ -70,10 +69,11 @@ public class StorageIntegrationTest {
 
   private Storage instance;
   private static TypeRegistry typeRegistry;
-  private MongoDBIntegrationTestHelper dbIntegrationTestHelper;
+  private DBIntegrationTestHelper dbIntegrationTestHelper;
 
   @BeforeClass
   public static void createTypeRegistry() throws Exception {
+
     typeRegistry = TypeRegistry.getInstance();
     typeRegistry.init("nl.knaw.huygens.timbuctoo.model.* test.model.projecta");
 
@@ -81,11 +81,12 @@ public class StorageIntegrationTest {
 
   @Before
   public void setUp() throws Exception {
-    dbIntegrationTestHelper = new MongoDBIntegrationTestHelper();
-
+    dbIntegrationTestHelper = createDBIntegrationTestHelper();
     dbIntegrationTestHelper.startCleanDB();
     instance = dbIntegrationTestHelper.createStorage(typeRegistry);
   }
+
+  protected abstract DBIntegrationTestHelper createDBIntegrationTestHelper();
 
   @After
   public void tearDown() {
