@@ -295,11 +295,11 @@
             <goals>
               <goal>jar</goal>
             </goals>
-	    <configuration>
-              <additionalparam>-Xdoclint:none</additionalparam>
-            </configuration>
           </execution>
         </executions>
+        <configuration>
+          <failOnError>false</failOnError>
+        </configuration>
       </plugin>
     </plugins>
   </build>
