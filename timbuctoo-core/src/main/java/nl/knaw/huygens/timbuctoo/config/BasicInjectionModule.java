@@ -22,7 +22,9 @@ package nl.knaw.huygens.timbuctoo.config;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.storage.PropertyInducer;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
+import nl.knaw.huygens.timbuctoo.storage.mongo.MongoPropertyInducer;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorage;
 
 import com.google.inject.AbstractModule;
@@ -56,5 +58,7 @@ public class BasicInjectionModule extends AbstractModule {
     bind(TypeRegistry.class).toInstance(registry);
 
     bind(Storage.class).to(MongoStorage.class);
+    bind(PropertyInducer.class).to(MongoPropertyInducer.class);
   }
+
 }
