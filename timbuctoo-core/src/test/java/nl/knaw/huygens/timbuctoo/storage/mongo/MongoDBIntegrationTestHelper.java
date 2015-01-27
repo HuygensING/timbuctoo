@@ -57,8 +57,10 @@ public class MongoDBIntegrationTestHelper implements DBIntegrationTestHelper {
    * @see nl.knaw.huygens.timbuctoo.storage.mongo.DBIntegrationTestHelper#createStorage(nl.knaw.huygens.timbuctoo.config.TypeRegistry)
    */
   @Override
-  public MongoStorage createStorage(TypeRegistry typeRegistry) throws ModelException {
-    return new MongoStorage(mongoDB, new EntityIds(typeRegistry, mongoDB), new EntityInducer(), new EntityReducer(typeRegistry));
+  public MongoStorage createStorage(TypeRegistry registry) throws ModelException {
+    EntityInducer inducer = new EntityInducer(new MongoPropertyInducer());
+    EntityReducer reducer = new EntityReducer(registry);
+    return new MongoStorage(mongoDB, new EntityIds(registry, mongoDB), inducer, reducer);
   }
 
 }

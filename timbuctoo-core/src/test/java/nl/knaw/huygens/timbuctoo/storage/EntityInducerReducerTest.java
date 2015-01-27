@@ -73,7 +73,7 @@ public class EntityInducerReducerTest {
 
   @Before
   public void setup() throws Exception {
-    inducer = new EntityInducer();
+    inducer = new EntityInducer(new DefaultPropertyInducer());
     reducer = new EntityReducer(registry);
   }
 

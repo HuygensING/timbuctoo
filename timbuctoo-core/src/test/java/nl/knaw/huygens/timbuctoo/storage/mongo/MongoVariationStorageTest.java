@@ -76,7 +76,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
 
   @Override
   protected void setupStorage() throws UnknownHostException, MongoException {
-    EntityInducer inducer = new EntityInducer();
+    EntityInducer inducer = new EntityInducer(new MongoPropertyInducer());
     EntityReducer reducer = new EntityReducer(registry);
     storage = new MongoStorage(new MongoDB(mongo, db), entityIds, inducer, reducer);
     returnIdField = new BasicDBObject("_id", 1);

@@ -88,7 +88,7 @@ public class CombinedMongoStorageTest {
     mongoDB = mock(MongoDB.class);
     anyCollection = mock(DBCollection.class);
     entityIds = mock(EntityIds.class);
-    EntityInducer inducer = new EntityInducer();
+    EntityInducer inducer = new EntityInducer(new MongoPropertyInducer());
     EntityReducer reducer = new EntityReducer(registry);
     storage = new MongoStorage(mongoDB, entityIds, inducer, reducer);
 

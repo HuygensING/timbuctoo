@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.storage;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.BusinessRules;
@@ -39,10 +40,12 @@ import com.google.inject.Inject;
 
 public class EntityInducer {
 
+  private PropertyInducer propertyInducer;
   private final ObjectMapper jsonMapper;
 
   @Inject
-  public EntityInducer() {
+  public EntityInducer(PropertyInducer propertyInducer) {
+    this.propertyInducer = propertyInducer;
     jsonMapper = new ObjectMapper();
   }
 
@@ -121,7 +124,14 @@ public class EntityInducer {
    */
   private ObjectNode createJsonTree(Object object, Class<?> viewType, FieldMap fieldMap) {
     Properties properties = new Properties(object, viewType, fieldMap);
+    induceValuesOf(properties);
     return jsonMapper.valueToTree(properties);
+  }
+
+  private void induceValuesOf(Properties properties) {
+    for (Map.Entry<String,Object> entry : properties.entrySet()) {
+      entry.setValue(propertyInducer.apply(entry.getValue()));
+    }
   }
 
   /**

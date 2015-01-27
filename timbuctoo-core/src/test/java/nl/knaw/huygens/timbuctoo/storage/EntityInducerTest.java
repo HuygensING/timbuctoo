@@ -55,7 +55,7 @@ public class EntityInducerTest {
 
   @Before
   public void setup() throws Exception {
-    inducer = new EntityInducer();
+    inducer = new EntityInducer(new DefaultPropertyInducer());
     mapper = new ObjectMapper();
   }
 
