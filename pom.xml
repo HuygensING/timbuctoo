@@ -298,7 +298,8 @@
           </execution>
         </executions>
         <configuration>
-          <failOnError>false</failOnError>
+          <!-- Needed when the source is compiled with java 8  see http://stackoverflow.com/questions/15886209/maven-is-not-working-in-java-8-when-javadoc-tags-are-incomplete-->
+          <failOnError>false</failOnError> 
         </configuration>
       </plugin>
     </plugins>
