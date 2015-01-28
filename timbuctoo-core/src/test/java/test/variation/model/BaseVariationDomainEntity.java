@@ -78,7 +78,7 @@ public class BaseVariationDomainEntity extends DomainEntity {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("GeneralTestDoc { \ngeneralTestDocValue: ");
+    sb.append("BaseVariationDomainEntity { \ngeneralTestDocValue: ");
     sb.append(generalTestDocValue);
     sb.append("\nid: ");
     sb.append(getId());
