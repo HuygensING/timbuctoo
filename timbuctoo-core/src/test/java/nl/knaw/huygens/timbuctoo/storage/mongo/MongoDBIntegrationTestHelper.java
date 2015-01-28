@@ -59,7 +59,7 @@ public class MongoDBIntegrationTestHelper implements DBIntegrationTestHelper {
   @Override
   public MongoStorage createStorage(TypeRegistry registry) throws ModelException {
     EntityInducer inducer = new EntityInducer(new MongoPropertyInducer());
-    EntityReducer reducer = new EntityReducer(registry);
+    EntityReducer reducer = new EntityReducer(new MongoPropertyReducer(), registry);
     return new MongoStorage(mongoDB, new EntityIds(registry, mongoDB), inducer, reducer);
   }
 

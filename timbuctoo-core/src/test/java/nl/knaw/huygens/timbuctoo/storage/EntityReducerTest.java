@@ -77,7 +77,7 @@ public class EntityReducerTest {
 
   @Before
   public void setup() throws Exception {
-    reducer = new EntityReducer(registry);
+    reducer = new EntityReducer(new DefaultPropertyReducer(), registry);
     mapper = new ObjectMapper();
   }
 

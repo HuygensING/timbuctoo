@@ -61,11 +61,13 @@ public class EntityReducer {
 
   private static final Logger LOG = LoggerFactory.getLogger(EntityReducer.class);
 
+  private final PropertyReducer propertyReducer;
   private final TypeRegistry typeRegistry;
   private final ObjectMapper jsonMapper;
 
   @Inject
-  public EntityReducer(TypeRegistry registry) {
+  public EntityReducer(PropertyReducer propertyReducer, TypeRegistry registry) {
+    this.propertyReducer = propertyReducer;
     typeRegistry = registry;
     jsonMapper = new ObjectMapper();
   }

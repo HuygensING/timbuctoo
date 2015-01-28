@@ -129,7 +129,7 @@ public class EntityInducer {
   }
 
   private void induceValuesOf(Properties properties) {
-    for (Map.Entry<String,Object> entry : properties.entrySet()) {
+    for (Map.Entry<String, Object> entry : properties.entrySet()) {
       entry.setValue(propertyInducer.apply(entry.getValue()));
     }
   }
