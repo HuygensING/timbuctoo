@@ -94,17 +94,6 @@ public class Repository {
     vreMap = initVREMap(vreCollection);
   }
 
-  Repository(TypeRegistry registry, Storage storage, VRECollection vreCollection, RelationTypes relationTypes, EntityMappers entityMappers, RelationRefCreatorFactory relationAdder)
-      throws StorageException {
-    this.registry = registry;
-    this.storage = storage;
-    this.entityMappers = entityMappers;
-    this.relationRefCreatorFactory = relationAdder;
-    createIndexes();
-    this.relationTypes = relationTypes;
-    vreMap = initVREMap(vreCollection);
-  }
-
   /**
    * Create indexes, if they don't already exist.
    */
@@ -224,7 +213,18 @@ public class Repository {
   }
 
   public <T extends DomainEntity> void deleteDomainEntity(T entity) throws StorageException {
-    storage.deleteDomainEntity(entity.getClass(), entity.getId(), entity.getModified());
+    String id = entity.getId();
+    Class<? extends DomainEntity> type = entity.getClass();
+    if (TypeRegistry.isPrimitiveDomainEntity(type)) {
+      storage.deleteDomainEntity(type, id, entity.getModified());
+      storage.deleteRelationsOfEntity(Relation.class, id);
+    } else {
+      storage.deleteVariation(type, id);
+      EntityMapper mapper = entityMappers.getEntityMapper(type);
+      @SuppressWarnings("unchecked")
+      Class<? extends Relation> relation = (Class<? extends Relation>) mapper.map(Relation.class);
+      storage.declineRelationsOfEntity(relation, id);
+    }
   }
 
   /**

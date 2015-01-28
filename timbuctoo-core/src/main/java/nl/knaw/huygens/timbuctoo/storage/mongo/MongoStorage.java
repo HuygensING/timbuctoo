@@ -357,6 +357,24 @@ public class MongoStorage implements Storage {
   }
 
   @Override
+  public void deleteRelationsOfEntity(Class<? extends Relation> type, String id) {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void deleteVariation(Class<? extends DomainEntity> type, String id) {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void declineRelationsOfEntity(Class<? extends Relation> type, String id) {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
   public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) throws StorageException {
     DBObject query = queries.selectById(id);
 

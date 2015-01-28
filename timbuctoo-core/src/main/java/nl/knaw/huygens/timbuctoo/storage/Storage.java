@@ -103,6 +103,27 @@ public interface Storage {
    */
   <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws StorageException;
 
+  /**
+   * Removes the variation of type from a stored DomainEntity
+   * @param type the type of the variation to remove.
+   * @param id the id of the entity to remove the variation from.
+   */
+  void deleteVariation(Class<? extends DomainEntity> type, String id);
+
+  /**
+   * Deletes all the relations linked to the DomainEntity with {@code id}.
+   * @param type the type of relation to delete.
+   * @param id the id of the DomainEntity.
+   */
+  void deleteRelationsOfEntity(Class<? extends Relation> type, String id);
+
+  /**
+   * Sets the accepted property of a relation to false.
+   * @param type the project type of the relation to decline
+   * @param id the id of the entity for which the relations should be declined.
+   */
+  void declineRelationsOfEntity(Class<? extends Relation> type, String id);
+
   // -------------------------------------------------------------------
 
   /**
