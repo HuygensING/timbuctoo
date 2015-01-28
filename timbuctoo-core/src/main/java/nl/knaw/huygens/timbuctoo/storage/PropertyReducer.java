@@ -22,13 +22,17 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 public interface PropertyReducer {
 
   /**
-   * Converts a value read from the storage to a property value.
-   * @param value the value to transform.
+   * Converts a json node from the storage to a property value.
+   * @param type the type of the property.
+   * @param node the json node to transform.
    * @return the property value.
+   * @throws StorageException Thrown if conversion fails.
    */
-  Object apply(Object value);
+  Object apply(Class<?> type, JsonNode node) throws StorageException;
 
 }
