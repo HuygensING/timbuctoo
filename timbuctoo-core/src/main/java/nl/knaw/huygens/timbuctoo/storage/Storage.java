@@ -220,4 +220,13 @@ public interface Storage {
    */
   <T extends Relation> List<T> getRelationsByType(Class<T> type, List<String> relationTypeIds) throws StorageException;
 
+  /**
+   * Checks of a variation of the entity.
+   * @param type the type of the variation
+   * @param id the id of the entity, that should contain the variation
+   * @return true if the variation exist false if not.
+   * @throws StorageException wrapped exception around the database exceptions 
+   */
+  boolean doesVariationExist(Class<? extends DomainEntity> type, String id) throws StorageException;
+
 }

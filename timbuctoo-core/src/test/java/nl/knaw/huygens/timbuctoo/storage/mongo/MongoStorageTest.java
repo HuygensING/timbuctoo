@@ -25,6 +25,8 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 import static nl.knaw.huygens.timbuctoo.storage.Properties.propertyName;
 import static nl.knaw.huygens.timbuctoo.storage.mongo.JacksonDBObjectMatcher.jacksonDBObjectMatcherHasObject;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
@@ -44,6 +46,7 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -325,6 +328,74 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
     DBObject query = queries.selectNonPersistent(ids);
     verify(mongoDB).remove(dbCollection, query);
+  }
+
+  @Test
+  public void doesVariationExistReturnsTrueWhenTheDomainEntityContainsTheVariation() throws StorageException {
+    Class<ProjectADomainEntity> type = ProjectADomainEntity.class;
+    String prefix = TypeNames.getInternalName(type);
+    String basePrefix = TypeNames.getInternalName(TypeRegistry.getBaseClass(type));
+
+    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectNode node = objectMapper.createObjectNode();
+    ArrayNode variationNode = objectMapper.createArrayNode();
+    variationNode.add(prefix)//
+        .add(basePrefix);
+
+    node.put(createFieldName(prefix, "projectAGeneralTestDocValue"), "test") //
+        .put(createFieldName(prefix, "name"), "test") //
+        .put(createFieldName(prefix, "generalTestDocValue"), "test") //
+        .put(createFieldName(basePrefix, "name"), "test") //
+        .put(createFieldName(basePrefix, "generalTestDocValue"), "test") //
+        .put("_id", DEFAULT_ID) //
+        .put("^pid", "testPid")//
+        .put("^rev", 1)//
+        .put("^deleted", false)//
+        .put("^variations", variationNode);
+
+    when(dbCollection.findOne(queries.selectById(DEFAULT_ID))).thenReturn(new JacksonDBObject<JsonNode>(node, JsonNode.class));
+
+    // action
+    boolean exists = storage.doesVariationExist(type, DEFAULT_ID);
+
+    assertThat(exists, is(equalTo(true)));
+  }
+
+  @Test
+  public void doesVariationExistReturnsFalseWhenTheDomainEntityDoesNotContainTheVariation() throws Exception {
+    Class<ProjectADomainEntity> type = ProjectADomainEntity.class;
+    String basePrefix = TypeNames.getInternalName(TypeRegistry.getBaseClass(type));
+
+    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectNode node = objectMapper.createObjectNode();
+    ArrayNode variationNode = objectMapper.createArrayNode();
+    variationNode.add(basePrefix);
+
+    node.put(createFieldName(basePrefix, "name"), "test") //
+        .put(createFieldName(basePrefix, "generalTestDocValue"), "test") //
+        .put("_id", DEFAULT_ID) //
+        .put("^pid", "testPid")//
+        .put("^rev", 1)//
+        .put("^deleted", false)//
+        .put("^variations", variationNode);
+
+    when(dbCollection.findOne(queries.selectById(DEFAULT_ID))).thenReturn(new JacksonDBObject<JsonNode>(node, JsonNode.class));
+
+    // action
+    boolean exists = storage.doesVariationExist(type, DEFAULT_ID);
+
+    assertThat(exists, is(equalTo(false)));
+  }
+
+  @Test
+  public void doesVariationExistReturnsFalseWhenTheDomainEntityDoesNotExist() throws Exception {
+    Class<? extends DomainEntity> type = ProjectADomainEntity.class;
+    when(dbCollection.findOne(queries.selectById(DEFAULT_ID))).thenReturn(null);
+
+    // action
+    boolean exists = storage.doesVariationExist(type, DEFAULT_ID);
+
+    assertThat(exists, is(equalTo(false)));
   }
 
   // entityExists

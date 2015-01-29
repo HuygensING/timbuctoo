@@ -119,7 +119,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testGetEntityExisting() {
+  public void testGetEntityExisting() throws Exception {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     when(repository.getEntityWithRelations(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
 
@@ -133,7 +133,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testGetEntityWithRevision() {
+  public void testGetEntityWithRevision() throws Exception {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     int revision = 2;
     when(repository.getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision)).thenReturn(entity);
@@ -766,7 +766,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   // Security tests
 
   @Test
-  public void testGetEntityNotLoggedIn() {
+  public void testGetEntityNotLoggedIn() throws Exception {
     ProjectADomainEntity expectedDoc = new ProjectADomainEntity(DEFAULT_ID);
     when(repository.getEntityWithRelations(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(expectedDoc);
 
@@ -776,7 +776,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testGetEntityEmptyAuthorizationKey() {
+  public void testGetEntityEmptyAuthorizationKey() throws Exception {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     when(repository.getEntityWithRelations(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
 

@@ -128,8 +128,12 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
     Class<? extends DomainEntity> type = getValidEntityType(entityName);
 
     // to not break the other API's and make this one throw an exception when the variation does not exist.
-    if (!repository.doesVariationExist(type, id)) {
-      throw new WebApplicationException(Status.NOT_FOUND);
+    try {
+      if (!repository.doesVariationExist(type, id)) {
+        throw new WebApplicationException(Status.NOT_FOUND);
+      }
+    } catch (StorageException e) {
+      throw new WebApplicationException(e);
     }
 
     return super.getDoc(entityName, id, revision);

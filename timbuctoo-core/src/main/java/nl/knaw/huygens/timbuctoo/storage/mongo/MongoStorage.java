@@ -368,17 +368,7 @@ public class MongoStorage implements Storage {
     if (tree.isObject()) {
       ObjectNode objectTree = (ObjectNode) tree;
 
-      ArrayNode variations = (ArrayNode) objectTree.get(DomainEntity.VARIATIONS);
-
-      boolean containsVariation = false;
-      for (Iterator<JsonNode> variationIterator = variations.elements(); variationIterator.hasNext();) {
-        if (Objects.equal(variationToDelete, variationIterator.next().asText())) {
-          containsVariation = true;
-          break;
-        }
-      }
-
-      if (!containsVariation) {
+      if (!doesVariationExist(variationToDelete, objectTree)) {
         throw new NoSuchEntityException(type, id);
       }
 
@@ -592,6 +582,37 @@ public class MongoStorage implements Storage {
   public <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws StorageException {
     DBObject query = queries.selectNonPersistent(ids);
     mongoDB.remove(getDBCollection(type), query);
+  }
+
+  @Override
+  public boolean doesVariationExist(Class<? extends DomainEntity> type, String id) throws StorageException {
+
+    try {
+      JsonNode node = getExisting(type, queries.selectById(id));
+
+      if (node.isObject()) {
+        String variation = TypeNames.getInternalName(type);
+        return doesVariationExist(variation, (ObjectNode) node);
+      }
+
+    } catch (NoSuchEntityException e) {
+      return false;
+    }
+
+    return false;
+  }
+
+  private boolean doesVariationExist(String variation, ObjectNode objectTree) {
+    ArrayNode variations = (ArrayNode) objectTree.get(DomainEntity.VARIATIONS);
+
+    boolean containsVariation = false;
+    for (Iterator<JsonNode> variationIterator = variations.elements(); variationIterator.hasNext();) {
+      if (Objects.equal(variation, variationIterator.next().asText())) {
+        containsVariation = true;
+        break;
+      }
+    }
+    return containsVariation;
   }
 
 }

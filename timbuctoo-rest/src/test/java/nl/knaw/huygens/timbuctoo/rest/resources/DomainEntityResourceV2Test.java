@@ -267,7 +267,7 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
   }
 
   // GET
-  public void testGetVariationNonExistingInstanceButPrimitiveIs() {
+  public void testGetVariationNonExistingInstanceButPrimitiveIs() throws Exception {
 
     when(repository.doesVariationExist(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(false);
 
@@ -287,30 +287,30 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
   }
 
   @Override
-  public void testGetEntityExisting() {
+  public void testGetEntityExisting() throws Exception {
     makeSureVariationExists();
     super.testGetEntityExisting();
   }
 
   @Override
-  public void testGetEntityWithRevision() {
+  public void testGetEntityWithRevision() throws Exception {
     makeSureVariationExists();
     super.testGetEntityWithRevision();
   }
 
   @Override
-  public void testGetEntityNotLoggedIn() {
+  public void testGetEntityNotLoggedIn() throws Exception {
     makeSureVariationExists();
     super.testGetEntityNotLoggedIn();
   }
 
   @Override
-  public void testGetEntityEmptyAuthorizationKey() {
+  public void testGetEntityEmptyAuthorizationKey() throws Exception {
     makeSureVariationExists();
     super.testGetEntityEmptyAuthorizationKey();
   }
 
-  private void makeSureVariationExists() {
+  private void makeSureVariationExists() throws Exception {
     when(repository.doesVariationExist(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(true);
   }
 }
