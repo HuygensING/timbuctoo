@@ -41,7 +41,7 @@ public class MongoPropertyReducer implements PropertyReducer {
   }
 
   @Override
-  public Object apply(Class<?> type, JsonNode node) throws StorageException {
+  public Object reduce(Class<?> type, JsonNode node) throws StorageException {
     if (node.isArray()) {
       return createCollection(node);
     } else if (type == Integer.class || type == int.class) {

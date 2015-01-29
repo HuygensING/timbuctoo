@@ -33,6 +33,6 @@ public interface PropertyReducer {
    * @return the property value.
    * @throws StorageException Thrown if conversion fails.
    */
-  Object apply(Class<?> type, JsonNode node) throws StorageException;
+  Object reduce(Class<?> type, JsonNode node) throws StorageException;
 
 }

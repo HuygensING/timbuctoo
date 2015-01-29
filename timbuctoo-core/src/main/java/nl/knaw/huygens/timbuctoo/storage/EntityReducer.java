@@ -154,7 +154,7 @@ public class EntityReducer {
         JsonNode node = tree.findValue(key);
         if (node != null) {
           Field field = entry.getValue();
-          Object value = propertyReducer.apply(field.getType(), node);
+          Object value = propertyReducer.reduce(field.getType(), node);
           field.set(object, value);
         }
       }

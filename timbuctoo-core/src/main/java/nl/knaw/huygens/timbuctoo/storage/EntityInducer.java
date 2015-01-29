@@ -127,7 +127,7 @@ public class EntityInducer {
       String iname = TypeNames.getInternalName(viewType);
       for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
         Field field = entry.getValue();
-        JsonNode node = propertyInducer.apply(field.getType(), field.get(object));
+        JsonNode node = propertyInducer.induce(field.getType(), field.get(object));
         if (node != null) {
           String fieldName = entry.getKey();
           tree.put(propertyName(iname, fieldName), node);

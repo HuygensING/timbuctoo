@@ -29,6 +29,6 @@ public interface PropertyInducer {
 
   ObjectNode createObjectNode();
 
-  JsonNode apply(Class<?> type, Object value) throws StorageException;
+  JsonNode induce(Class<?> type, Object value) throws StorageException;
 
 }

@@ -46,7 +46,7 @@ public class MongoPropertyInducer implements PropertyInducer {
   }
 
   @Override
-  public JsonNode apply(Class<?> type, Object value) throws StorageException {
+  public JsonNode induce(Class<?> type, Object value) throws StorageException {
     Object converted = convert(type, value);
     return jsonMapper.valueToTree(converted);
   }

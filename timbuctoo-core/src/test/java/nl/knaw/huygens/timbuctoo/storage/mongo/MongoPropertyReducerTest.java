@@ -45,7 +45,7 @@ public class MongoPropertyReducerTest {
 
   private <T> void doTest(Class<?> type, T value) throws Exception {
     JsonNode node = mapper.valueToTree(value);
-    assertEquals(value, reducer.apply(type, node));
+    assertEquals(value, reducer.reduce(type, node));
   }
 
   @Test
@@ -129,7 +129,7 @@ public class MongoPropertyReducerTest {
   public void testDatable() throws Exception {
     Datable datable = new Datable("19531113");
     JsonNode node = mapper.valueToTree(datable.getEDTF());
-    assertEquals(datable, reducer.apply(Datable.class, node));
+    assertEquals(datable, reducer.reduce(Datable.class, node));
   }
 
 }
