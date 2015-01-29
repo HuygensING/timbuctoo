@@ -22,9 +22,12 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  * #L%
  */
 
+import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
+
 import java.util.Collection;
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.storage.Properties;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
@@ -36,10 +39,33 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class MongoProperties implements Properties {
 
+  /** Separator between parts of a property name. */
+  private static final String SEPARATOR = ":";
+
   private final ObjectMapper jsonMapper;
 
   public MongoProperties() {
     jsonMapper = new ObjectMapper();
+  }
+
+  /**
+   * Creates the property name for a field of an entity.
+   * @param type the type token of the entity.
+   * @param fieldName the name of the field; must not be null or empty.
+   * @return The property name.
+   */
+  public String propertyName(Class<? extends Entity> type, String fieldName) {
+    return propertyName(getInternalName(type), fieldName);
+  }
+
+  /**
+   * Creates the property name for a field of an entity.
+   * @param iname the internal name of the entity.
+   * @param fieldName the name of the field; must not be null or empty.
+   * @return The property name.
+   */
+  public String propertyName(String iname, String fieldName) {
+    return Character.isLetter(fieldName.charAt(0)) ? iname + SEPARATOR + fieldName : fieldName;
   }
 
   @Override

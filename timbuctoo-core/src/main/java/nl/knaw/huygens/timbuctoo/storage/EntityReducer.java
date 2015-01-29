@@ -23,7 +23,6 @@ package nl.knaw.huygens.timbuctoo.storage;
  */
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static nl.knaw.huygens.timbuctoo.storage.XProperties.propertyName;
 
 import java.lang.reflect.Field;
 import java.util.Iterator;
@@ -150,7 +149,7 @@ public class EntityReducer {
       String iname = TypeNames.getInternalName(viewType);
       FieldMap fields = FieldMap.getCombinedInstance(viewType);
       for (Map.Entry<String, Field> entry : fields.entrySet()) {
-        String key = propertyName(iname, entry.getKey());
+        String key = properties.propertyName(iname, entry.getKey());
         JsonNode node = tree.findValue(key);
         if (node != null) {
           Field field = entry.getValue();

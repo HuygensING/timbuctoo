@@ -22,13 +22,40 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.model.Entity;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public interface Properties {
 
+  /**
+   * Creates the property name for a field of an entity.
+   * @param type the type token of the entity.
+   * @param fieldName the name of the field; must not be null or empty.
+   * @return The property name.
+   */
+  String propertyName(Class<? extends Entity> type, String fieldName);
+
+  /**
+   * Creates the property name for a field of an entity.
+   * @param iname the internal name of the entity.
+   * @param fieldName the name of the field; must not be null or empty.
+   * @return The property name.
+   */
+  String propertyName(String iname, String fieldName);
+
+  /**
+   * @return
+   */
   ObjectNode createObjectNode();
 
+  /**
+   * @param type
+   * @param value
+   * @return
+   * @throws StorageException
+   */
   JsonNode induce(Class<?> type, Object value) throws StorageException;
 
   /**

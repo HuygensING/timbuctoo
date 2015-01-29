@@ -23,7 +23,6 @@ package nl.knaw.huygens.timbuctoo.storage;
  */
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static nl.knaw.huygens.timbuctoo.storage.XProperties.propertyName;
 
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -130,7 +129,7 @@ public class EntityInducer {
         JsonNode node = properties.induce(field.getType(), field.get(object));
         if (node != null) {
           String fieldName = entry.getKey();
-          tree.put(propertyName(iname, fieldName), node);
+          tree.put(properties.propertyName(iname, fieldName), node);
         }
       }
       return tree;
@@ -145,7 +144,7 @@ public class EntityInducer {
   private ObjectNode merge(ObjectNode tree, ObjectNode newTree, Class<?> type, Set<String> fieldNames) {
     String iname = TypeNames.getInternalName(type);
     for (String fieldName : fieldNames) {
-      String key = propertyName(iname, fieldName);
+      String key = properties.propertyName(iname, fieldName);
       JsonNode newValue = newTree.get(key);
       if (newValue != null) {
         tree.put(key, newValue);
