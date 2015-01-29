@@ -34,6 +34,7 @@ import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
+import nl.knaw.huygens.timbuctoo.storage.mongo.MongoPropertyInducer;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoPropertyReducer;
 
 import org.junit.AfterClass;
@@ -74,7 +75,7 @@ public class EntityInducerReducerTest {
 
   @Before
   public void setup() throws Exception {
-    inducer = new EntityInducer(new DefaultPropertyInducer());
+    inducer = new EntityInducer(new MongoPropertyInducer());
     reducer = new EntityReducer(new MongoPropertyReducer(), registry);
   }
 
