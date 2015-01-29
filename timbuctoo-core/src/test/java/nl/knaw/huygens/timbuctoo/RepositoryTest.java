@@ -47,6 +47,7 @@ import nl.knaw.huygens.timbuctoo.util.RelationRefCreatorFactory;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import test.variation.model.BaseVariationDomainEntity;
@@ -196,6 +197,7 @@ public class RepositoryTest {
     verify(storageMock).deleteSystemEntity(TestSystemEntity.class, DEFAULT_ID);
   }
 
+  @Ignore("Method cannot be used primitives at this moment.")
   @Test
   public void testDeleteDomainEntityPrimitive() throws Exception {
     BaseVariationDomainEntity entity = new BaseVariationDomainEntity(DEFAULT_ID);

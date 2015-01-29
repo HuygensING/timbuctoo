@@ -216,6 +216,12 @@ public class Repository {
    * Deletes a DomainEntity from the database. When the DomainEntity is a primitive the complete DomainEntity
    *  and it's Relations are removed. When the DomainEntity is a project variation the 
    *  Variation is removed and the Relations are declined for the project.
+   *  
+   * TODO: Make available for deleting primitives:
+   *  - The PID's should be updated
+   *  - The versions should be deleted
+   *  - The relations should be deleted:
+   *    Update PID's of the relations
    * @param entity
    * @throws StorageException
    */
@@ -224,8 +230,10 @@ public class Repository {
     Change change = entity.getModified();
     Class<? extends DomainEntity> type = entity.getClass();
     if (TypeRegistry.isPrimitiveDomainEntity(type)) {
-      storage.deleteDomainEntity(type, id, change);
-      storage.deleteRelationsOfEntity(Relation.class, id);
+      //storage.deleteDomainEntity(type, id, change);
+      //storage.deleteRelationsOfEntity(Relation.class, id);
+      // TODO Remove versions and update PID's
+      throw new UnsupportedOperationException("Not yet available for primitives yet");
     } else {
       storage.deleteVariation(type, id, change);
       EntityMapper mapper = entityMappers.getEntityMapper(type);
