@@ -160,7 +160,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testGetEntityNonExistingClass() {
+  public void testGetEntityNonExistingType() {
     ClientResponse response = createResource("unknown", "TST0000000001") //
         .get(ClientResponse.class);
     verifyResponseStatus(response, Status.NOT_FOUND);
