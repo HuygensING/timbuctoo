@@ -72,10 +72,13 @@ public class PropertiesTest {
     return entity;
   }
 
+  private Properties createProperties(MongoObjectMapperEntity entity) {
+    return new Properties(entity, TYPE, FieldMap.getInstance(TYPE));
+  }
+
   @Test
   public void testPropertyMapForNullObject() {
-    Properties properties = new Properties(null, TYPE);
-    assertThat(properties.keySet(), empty());
+    assertThat(createProperties(null).keySet(), empty());
   }
 
   @Test
@@ -89,7 +92,7 @@ public class PropertiesTest {
     map.put(PROP_ANNOTATED_KEY, ANNOTATED_PROPERTY);
     map.put(PWAA_KEY, PROP_WITH_ANNOTATED_ACCESSORS);
 
-    assertThat(new Properties(entity, TYPE), equalTo(map));
+    assertThat(createProperties(entity), equalTo(map));
   }
 
   @Test
@@ -101,7 +104,7 @@ public class PropertiesTest {
     map.put(TEST_VALUE1_KEY, TEST_VALUE1);
     map.put(TEST_VALUE2_KEY, TEST_VALUE2);
 
-    assertThat(new Properties(entity, TYPE), equalTo(map));
+    assertThat(createProperties(entity), equalTo(map));
   }
 
   @Test
@@ -113,7 +116,7 @@ public class PropertiesTest {
     Map<String, Object> map = Maps.newHashMap();
     map.put(propertyName(TYPE, "primitiveTestCollection"), list);
 
-    assertThat(new Properties(entity, TYPE), equalTo(map));
+    assertThat(createProperties(entity), equalTo(map));
   }
 
   @Test
@@ -122,7 +125,7 @@ public class PropertiesTest {
     entity.setId(ID);
     entity.setNonPrimitiveTestCollection(Lists.newArrayList(entity));
 
-    assertThat(new Properties(entity, TYPE).keySet(), hasSize(1));
+    assertThat(createProperties(entity).keySet(), hasSize(1));
   }
 
   @Test
@@ -133,7 +136,7 @@ public class PropertiesTest {
     Map<String, Object> map = Maps.newHashMap();
     map.put(propertyName(TYPE, "type"), TYPE);
 
-    assertThat(new Properties(entity, TYPE), equalTo(map));
+    assertThat(createProperties(entity), equalTo(map));
   }
 
   @Test
@@ -144,7 +147,7 @@ public class PropertiesTest {
     Map<String, Object> map = Maps.newHashMap();
     map.put(propertyName(TYPE, "date"), "20031011");
 
-    assertThat(new Properties(entity, TYPE), equalTo(map));
+    assertThat(createProperties(entity), equalTo(map));
   }
 
   @Test
@@ -158,7 +161,7 @@ public class PropertiesTest {
     Map<String, Object> map = Maps.newLinkedHashMap();
     map.put(propertyName(TYPE, "personName"), personName);
 
-    assertThat(new Properties(entity, TYPE), equalTo(map));
+    assertThat(createProperties(entity), equalTo(map));
   }
 
 }

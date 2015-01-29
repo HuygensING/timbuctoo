@@ -67,12 +67,6 @@ public class Properties extends TreeMap<String, Object> {
 
   private static final Logger LOG = LoggerFactory.getLogger(Properties.class);
 
-  public Properties() {}
-
-  public Properties(Object object, Class<?> type) {
-    this(object, type, FieldMap.getInstance(type));
-  }
-
   public Properties(Object object, Class<?> type, FieldMap fieldMap) {
     if (object != null) {
       String iname = TypeNames.getInternalName(type);
