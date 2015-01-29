@@ -14,6 +14,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
@@ -263,5 +264,53 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
     // handling of source and target entities of the relation
     verify(getProducer(INDEX_PRODUCER), times(1)).send(ActionType.MOD, BASE_TYPE, sourceId);
     verify(getProducer(INDEX_PRODUCER), times(1)).send(ActionType.MOD, BASE_TYPE, targetId);
+  }
+
+  // GET
+  public void testGetVariationNonExistingInstanceButPrimitiveIs() {
+
+    when(repository.doesVariationExist(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(false);
+
+    // The repository will always return an entity with the primitive with id exists
+    when(repository.getEntity(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(new ProjectADomainEntity());
+
+    // action
+    ClientResponse response = createResource(DEFAULT_RESOURCE, DEFAULT_ID)//
+        .type(MediaType.APPLICATION_JSON_TYPE) //
+        .accept(MediaType.APPLICATION_JSON_TYPE) //
+        .get(ClientResponse.class);
+
+    // verify
+    verifyResponseStatus(response, Status.NOT_FOUND);
+    verify(repository).doesVariationExist(DEFAULT_TYPE, DEFAULT_ID);
+    verifyNoMoreInteractions(repository);
+  }
+
+  @Override
+  public void testGetEntityExisting() {
+    makeSureVariationExists();
+    super.testGetEntityExisting();
+  }
+
+  @Override
+  public void testGetEntityWithRevision() {
+    makeSureVariationExists();
+    super.testGetEntityWithRevision();
+  }
+
+  @Override
+  public void testGetEntityNotLoggedIn() {
+    makeSureVariationExists();
+    super.testGetEntityNotLoggedIn();
+  }
+
+  @Override
+  public void testGetEntityEmptyAuthorizationKey() {
+    makeSureVariationExists();
+    super.testGetEntityEmptyAuthorizationKey();
+  }
+
+  private void makeSureVariationExists() {
+    when(repository.doesVariationExist(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(true);
   }
 }

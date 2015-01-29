@@ -578,4 +578,14 @@ public class Repository {
     return findEntity(type, Language.CODE, code);
   }
 
+  /**
+   * Checks of a variation of the entity.
+   * @param type the type of the variation
+   * @param id the id of the entity, that should contain the variation
+   * @return true if the variation exist false if not.
+   */
+  public boolean doesVariationExist(Class<? extends DomainEntity> type, String id) {
+    return false;
+  }
+
 }

@@ -28,6 +28,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
@@ -124,6 +125,13 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
       @PathParam(ID_PARAM) String id, //
       @QueryParam(REVISION_KEY) Integer revision//
   ) {
+    Class<? extends DomainEntity> type = getValidEntityType(entityName);
+
+    // to not break the other API's and make this one throw an exception when the variation does not exist.
+    if (!repository.doesVariationExist(type, id)) {
+      throw new WebApplicationException(Status.NOT_FOUND);
+    }
+
     return super.getDoc(entityName, id, revision);
   }
 
