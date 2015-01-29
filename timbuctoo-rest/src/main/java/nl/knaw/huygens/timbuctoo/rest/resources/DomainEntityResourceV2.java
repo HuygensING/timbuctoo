@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rest.resources;
 
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static nl.knaw.huygens.timbuctoo.config.Paths.DOMAIN_PREFIX;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
@@ -46,6 +47,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -190,6 +192,9 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
     if (Relation.class.isAssignableFrom(type)) {
       return Response.status(Status.BAD_REQUEST).entity("Relations cannot be deleted at this moment. Use PUT with \"^accepted\" set to false.").build();
     }
+    
+    VRE vre = getValidVRE(vreId);
+    checkCondition(vre.inScope(type, id), FORBIDDEN, "Entity %s %s not in scope %s", type, id, vreId);
 
     DomainEntity entity = repository.getEntity(type, id);
 

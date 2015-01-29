@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -211,6 +212,7 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
   public void testDeletePrimitiveType() {
     VRE vre = mock(VRE.class);
     makeVREAvailable(vre, VRE_ID);
+    when(vre.inScope(BASE_TYPE, DEFAULT_ID)).thenReturn(true);
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
 
     ClientResponse response = createResource(BASE_RESOURCE, DEFAULT_ID) //
@@ -255,6 +257,25 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
     verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
   }
 
+  @Test
+  public void testDeleteItemThatIsNotInScope() throws Exception {
+    VRE vre = mock(VRE.class);
+    when(vre.inScope(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(false);
+    makeVREAvailable(vre, VRE_ID);
+    setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
+
+    // action
+    ClientResponse response = createResource(DEFAULT_RESOURCE, DEFAULT_ID) //
+        .type(MediaType.APPLICATION_JSON_TYPE) //
+        .accept(MediaType.APPLICATION_JSON_TYPE) //
+        .header(AUTHORIZATION, CREDENTIALS) //
+        .header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
+
+    verifyResponseStatus(response, Status.FORBIDDEN);
+    verify(repository, never()).getEntity(DEFAULT_TYPE, DEFAULT_ID);
+    verify(repository, never()).deleteDomainEntity(any(DEFAULT_TYPE));
+  }
+
   private <T extends DomainEntity> void verifyDomainEntity(Class<T> type, T entity, String expectedId) {
     assertThat(entity, is(notNullValue(type)));
     assertThat(entity.getId(), is(equalTo(expectedId)));
@@ -267,6 +288,7 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
   }
 
   // GET
+  @Test
   public void testGetVariationNonExistingInstanceButPrimitiveIs() throws Exception {
 
     when(repository.doesVariationExist(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(false);

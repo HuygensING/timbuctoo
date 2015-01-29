@@ -348,7 +348,7 @@ public class DomainEntityResource extends ResourceBase {
     return checkNotNull(typeRegistry.getTypeForXName(name), NOT_FOUND, "No domain entity collection %s", name);
   }
 
-  private VRE getValidVRE(String id) {
+  protected VRE getValidVRE(String id) {
     return checkNotNull(repository.getVREById(id), NOT_FOUND, "No VRE with id %s", id);
   }
 
