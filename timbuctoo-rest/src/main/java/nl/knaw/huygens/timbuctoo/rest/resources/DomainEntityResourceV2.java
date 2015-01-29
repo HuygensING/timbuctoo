@@ -47,11 +47,15 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 @Path(V2_PATH + "/" + DOMAIN_PREFIX + "/" + ENTITY_PATH)
 public class DomainEntityResourceV2 extends DomainEntityResource {
+  private static Logger LOG = LoggerFactory.getLogger(DomainEntityResourceV2.class);
 
   @Inject
   public DomainEntityResourceV2(TypeRegistry registry, Repository repository, Broker broker) {
@@ -199,7 +203,8 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
     } catch (NoSuchEntityException e) {
       return returnNotFoundResponse(id);
     } catch (StorageException e) {
-      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e).build();
+      LOG.error("Storage exception occured.", e);
+      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
     }
 
     return Response.noContent().build();

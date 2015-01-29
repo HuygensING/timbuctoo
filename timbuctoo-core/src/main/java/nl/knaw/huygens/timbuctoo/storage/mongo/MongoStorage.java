@@ -405,11 +405,11 @@ public class MongoStorage implements Storage {
 
     String propertyName = String.format("%s:accepted", TypeNames.getInternalName(type));
 
-    mongoDB.update(getDBCollection(type), queries.selectRelationsByEntityId(id), queries.setPropertyToValue(propertyName, false));
+    getDBCollection(type).update(queries.selectRelationsByEntityId(id), queries.setPropertyToValue(propertyName, false));
 
   }
 
-  private void throwTypeIsAPrimitiveException(Class<? extends DomainEntity> type) {
+  private void throwTypeIsAPrimitiveException(Class<? extends DomainEntity> type) throws IllegalArgumentException {
     throw new IllegalArgumentException("Only project variations can be deleted. " + type.getSimpleName() + " is a primitive.");
   }
 

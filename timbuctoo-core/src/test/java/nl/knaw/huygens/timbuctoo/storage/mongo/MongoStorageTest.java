@@ -306,7 +306,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
     // verify
     String propertyName = String.format("%s:accepted", TypeNames.getInternalName(type));
-    verify(mongoDB).update(dbCollection, queries.selectRelationsByEntityId(DEFAULT_ID), queries.setPropertyToValue(propertyName, false));
+    dbCollection.update(queries.selectRelationsByEntityId(DEFAULT_ID), queries.setPropertyToValue(propertyName, false));
   }
 
   @Test(expected = IllegalArgumentException.class)
