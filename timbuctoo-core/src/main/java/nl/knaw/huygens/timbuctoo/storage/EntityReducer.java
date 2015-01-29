@@ -23,7 +23,7 @@ package nl.knaw.huygens.timbuctoo.storage;
  */
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static nl.knaw.huygens.timbuctoo.storage.Properties.propertyName;
+import static nl.knaw.huygens.timbuctoo.storage.XProperties.propertyName;
 
 import java.lang.reflect.Field;
 import java.util.Iterator;

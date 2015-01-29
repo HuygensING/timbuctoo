@@ -22,8 +22,8 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.storage.Properties.SEPARATOR;
-import static nl.knaw.huygens.timbuctoo.storage.Properties.propertyName;
+import static nl.knaw.huygens.timbuctoo.storage.XProperties.SEPARATOR;
+import static nl.knaw.huygens.timbuctoo.storage.XProperties.propertyName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
