@@ -34,7 +34,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
-import nl.knaw.huygens.timbuctoo.storage.mongo.MongoPropertyReducer;
+import nl.knaw.huygens.timbuctoo.storage.mongo.MongoProperties;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -78,7 +78,7 @@ public class EntityReducerTest {
 
   @Before
   public void setup() throws Exception {
-    reducer = new EntityReducer(new MongoPropertyReducer(), registry);
+    reducer = new EntityReducer(new MongoProperties(), registry);
     mapper = new ObjectMapper();
   }
 

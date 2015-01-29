@@ -30,7 +30,7 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
-import nl.knaw.huygens.timbuctoo.storage.mongo.MongoPropertyInducer;
+import nl.knaw.huygens.timbuctoo.storage.mongo.MongoProperties;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +56,7 @@ public class EntityInducerTest {
 
   @Before
   public void setup() throws Exception {
-    inducer = new EntityInducer(new MongoPropertyInducer());
+    inducer = new EntityInducer(new MongoProperties());
     mapper = new ObjectMapper();
   }
 

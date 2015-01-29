@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.storage.DBIntegrationTestHelper;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
+import nl.knaw.huygens.timbuctoo.storage.Properties;
 
 import com.mongodb.MongoClient;
 
@@ -58,8 +59,9 @@ public class MongoDBIntegrationTestHelper implements DBIntegrationTestHelper {
    */
   @Override
   public MongoStorage createStorage(TypeRegistry registry) throws ModelException {
-    EntityInducer inducer = new EntityInducer(new MongoPropertyInducer());
-    EntityReducer reducer = new EntityReducer(new MongoPropertyReducer(), registry);
+    Properties properties = new MongoProperties();
+    EntityInducer inducer = new EntityInducer(properties);
+    EntityReducer reducer = new EntityReducer(properties, registry);
     return new MongoStorage(mongoDB, new EntityIds(registry, mongoDB), inducer, reducer);
   }
 

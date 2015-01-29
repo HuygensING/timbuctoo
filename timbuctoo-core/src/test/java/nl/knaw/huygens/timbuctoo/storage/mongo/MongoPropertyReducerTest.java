@@ -24,7 +24,7 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static org.junit.Assert.assertEquals;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
-import nl.knaw.huygens.timbuctoo.storage.PropertyReducer;
+import nl.knaw.huygens.timbuctoo.storage.Properties;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -35,17 +35,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class MongoPropertyReducerTest {
 
   private ObjectMapper mapper;
-  private PropertyReducer reducer ;
+  private Properties properties;
 
   @Before
   public void setup() throws Exception {
     mapper = new ObjectMapper();
-    reducer = new MongoPropertyReducer();
+    properties = new MongoProperties();
   }
 
   private <T> void doTest(Class<?> type, T value) throws Exception {
     JsonNode node = mapper.valueToTree(value);
-    assertEquals(value, reducer.reduce(type, node));
+    assertEquals(value, properties.reduce(type, node));
   }
 
   @Test
@@ -129,7 +129,7 @@ public class MongoPropertyReducerTest {
   public void testDatable() throws Exception {
     Datable datable = new Datable("19531113");
     JsonNode node = mapper.valueToTree(datable.getEDTF());
-    assertEquals(datable, reducer.reduce(Datable.class, node));
+    assertEquals(datable, properties.reduce(Datable.class, node));
   }
 
 }

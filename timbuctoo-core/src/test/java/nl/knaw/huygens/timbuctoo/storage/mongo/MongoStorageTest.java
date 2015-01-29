@@ -34,6 +34,7 @@ import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
+import nl.knaw.huygens.timbuctoo.storage.Properties;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -67,8 +68,9 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Override
   protected void setupStorage() {
-    EntityInducer inducer = new EntityInducer(new MongoPropertyInducer());
-    EntityReducer reducer = new EntityReducer(new MongoPropertyReducer(), registry);
+    Properties properties = new MongoProperties();
+    EntityInducer inducer = new EntityInducer(properties);
+    EntityReducer reducer = new EntityReducer(properties, registry);
     storage = new MongoStorage(mongoDB, entityIds, inducer, reducer);
   }
 

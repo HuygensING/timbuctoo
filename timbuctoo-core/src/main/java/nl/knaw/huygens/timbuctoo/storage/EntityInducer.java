@@ -41,11 +41,11 @@ import com.google.inject.Inject;
 
 public class EntityInducer {
 
-  private final PropertyInducer propertyInducer;
+  private final Properties properties;
 
   @Inject
-  public EntityInducer(PropertyInducer propertyInducer) {
-    this.propertyInducer = propertyInducer;
+  public EntityInducer(Properties properties) {
+    this.properties = properties;
   }
 
   /**
@@ -123,11 +123,11 @@ public class EntityInducer {
    */
   private ObjectNode createJsonTree(Object object, Class<?> viewType, FieldMap fieldMap) {
     try {
-      ObjectNode tree = propertyInducer.createObjectNode();
+      ObjectNode tree = properties.createObjectNode();
       String iname = TypeNames.getInternalName(viewType);
       for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
         Field field = entry.getValue();
-        JsonNode node = propertyInducer.induce(field.getType(), field.get(object));
+        JsonNode node = properties.induce(field.getType(), field.get(object));
         if (node != null) {
           String fieldName = entry.getKey();
           tree.put(propertyName(iname, fieldName), node);

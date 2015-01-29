@@ -41,6 +41,7 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
+import nl.knaw.huygens.timbuctoo.storage.Properties;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
 import org.junit.AfterClass;
@@ -88,8 +89,9 @@ public class CombinedMongoStorageTest {
     mongoDB = mock(MongoDB.class);
     anyCollection = mock(DBCollection.class);
     entityIds = mock(EntityIds.class);
-    EntityInducer inducer = new EntityInducer(new MongoPropertyInducer());
-    EntityReducer reducer = new EntityReducer(new MongoPropertyReducer(), registry);
+    Properties properties = new MongoProperties();
+    EntityInducer inducer = new EntityInducer(properties);
+    EntityReducer reducer = new EntityReducer(properties, registry);
     storage = new MongoStorage(mongoDB, entityIds, inducer, reducer);
 
     mapper = new ObjectMapper();

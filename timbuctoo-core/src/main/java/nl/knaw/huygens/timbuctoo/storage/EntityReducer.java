@@ -58,12 +58,12 @@ public class EntityReducer {
 
   private static final Logger LOG = LoggerFactory.getLogger(EntityReducer.class);
 
-  private final PropertyReducer propertyReducer;
+  private final Properties properties;
   private final TypeRegistry typeRegistry;
 
   @Inject
-  public EntityReducer(PropertyReducer propertyReducer, TypeRegistry registry) {
-    this.propertyReducer = propertyReducer;
+  public EntityReducer(Properties properties, TypeRegistry registry) {
+    this.properties = properties;
     typeRegistry = registry;
   }
 
@@ -154,7 +154,7 @@ public class EntityReducer {
         JsonNode node = tree.findValue(key);
         if (node != null) {
           Field field = entry.getValue();
-          Object value = propertyReducer.reduce(field.getType(), node);
+          Object value = properties.reduce(field.getType(), node);
           field.set(object, value);
         }
       }

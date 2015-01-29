@@ -25,10 +25,19 @@ package nl.knaw.huygens.timbuctoo.storage;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-public interface PropertyInducer {
+public interface Properties {
 
   ObjectNode createObjectNode();
 
   JsonNode induce(Class<?> type, Object value) throws StorageException;
+
+  /**
+   * Converts a json node from the storage to a property value.
+   * @param type the type of the property.
+   * @param node the json node to transform.
+   * @return the property value.
+   * @throws StorageException Thrown if conversion fails.
+   */
+  Object reduce(Class<?> type, JsonNode node) throws StorageException;
 
 }

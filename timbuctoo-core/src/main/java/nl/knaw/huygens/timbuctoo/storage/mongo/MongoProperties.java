@@ -23,20 +23,22 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  */
 
 import java.util.Collection;
+import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
-import nl.knaw.huygens.timbuctoo.storage.PropertyInducer;
+import nl.knaw.huygens.timbuctoo.storage.Properties;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-public class MongoPropertyInducer implements PropertyInducer {
+public class MongoProperties implements Properties {
 
   private final ObjectMapper jsonMapper;
 
-  public MongoPropertyInducer() {
+  public MongoProperties() {
     jsonMapper = new ObjectMapper();
   }
 
@@ -63,6 +65,39 @@ public class MongoPropertyInducer implements PropertyInducer {
       }
     }
     return value;
+  }
+
+  @Override
+  public Object reduce(Class<?> type, JsonNode node) throws StorageException {
+    if (node.isArray()) {
+      return createCollection(node);
+    } else if (type == Integer.class || type == int.class) {
+      return node.asInt();
+    } else if (type == Boolean.class || type == boolean.class) {
+      return node.asBoolean();
+    } else if (type == Character.class || type == char.class) {
+      return node.asText().charAt(0);
+    } else if (type == Double.class || type == double.class) {
+      return node.asDouble();
+    } else if (type == Float.class || type == float.class) {
+      return (float) node.asDouble();
+    } else if (type == Long.class || type == long.class) {
+      return node.asLong();
+    } else if (type == Short.class || type == short.class) {
+      return (short) node.asInt();
+    } else if (Datable.class.isAssignableFrom(type)) {
+      return new Datable(node.asText());
+    } else {
+      return jsonMapper.convertValue(node, type);
+    }
+  }
+
+  private Object createCollection(JsonNode value) throws StorageException {
+    try {
+      return jsonMapper.readValue(value.toString(), new TypeReference<List<? extends Object>>() {});
+    } catch (Exception e) {
+      throw new StorageException(e);
+    }
   }
 
 }
