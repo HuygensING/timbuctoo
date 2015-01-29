@@ -57,7 +57,6 @@ import test.variation.model.projecta.ProjectADomainEntity;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
-import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 
@@ -167,17 +166,6 @@ public class CombinedMongoStorageTest {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
 
     storage.updateDomainEntity(ProjectADomainEntity.class, entity, new Change());
-  }
-
-  @Test
-  public void testDeleteDomainEntity() throws Exception {
-    DBObject dbObject = createTestConcreteDocDBObject(DEFAULT_ID, "test");
-    when(anyCollection.findOne(new BasicDBObject("_id", DEFAULT_ID))).thenReturn(dbObject);
-
-    Change change = new Change("test", "test");
-    storage.deleteDomainEntity(BaseVariationDomainEntity.class, DEFAULT_ID, change);
-
-    verify(mongoDB).update(any(DBCollection.class), any(DBObject.class), any(DBObject.class));
   }
 
   @Test(expected = StorageException.class)

@@ -23,28 +23,46 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  */
 
 import static nl.knaw.huygens.timbuctoo.storage.Properties.propertyName;
+import static nl.knaw.huygens.timbuctoo.storage.mongo.JacksonDBObjectMatcher.jacksonDBObjectMatcherHasObject;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import java.util.Date;
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
+import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mongojack.internal.stream.JacksonDBObject;
 
 import test.variation.model.BaseVariationDomainEntity;
 import test.variation.model.TestSystemEntity;
 import test.variation.model.projecta.ProjectADomainEntity;
+import test.variation.model.projecta.ProjectARelation;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 
 public class MongoStorageTest extends MongoStorageTestBase {
@@ -128,6 +146,174 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   // deleteDomainEntity
+  @Test
+  public void deleteDomainEntityRemovesTheWholeEntityFromTheDatabase() throws Exception {
+    Class<? extends DomainEntity> type = BaseVariationDomainEntity.class;
+
+    // Say that the item is deleted
+    when(mongoDB.remove(dbCollection, queries.selectById(DEFAULT_ID))).thenReturn(1);
+
+    storage.deleteDomainEntity(type, DEFAULT_ID, new Change());
+
+    verify(mongoDB).remove(dbCollection, queries.selectById(DEFAULT_ID));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void deleteDomainEntityThrowsAnIllegalArgumentExceptionIfTheTypeIsNotAPrimitiveType() throws Exception {
+    Class<? extends DomainEntity> type = ProjectADomainEntity.class;
+    try {
+      storage.deleteDomainEntity(type, DEFAULT_ID, new Change());
+    } finally {
+      verifyZeroInteractions(mongoDB);
+    }
+  }
+
+  @Test(expected = NoSuchEntityException.class)
+  public void deleteDomainEntityThrowsANoSuchEntityExceptionWhenTheEntityCannotBeFound() throws Exception {
+    Class<? extends DomainEntity> type = BaseVariationDomainEntity.class;
+
+    try {
+      storage.deleteDomainEntity(type, DEFAULT_ID, new Change());
+    } finally {
+      verify(mongoDB).remove(dbCollection, queries.selectById(DEFAULT_ID));
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void deleteVariationRemovesTheVariantFromTheDatabase() throws Exception {
+    Class<ProjectADomainEntity> type = ProjectADomainEntity.class;
+    String prefix = TypeNames.getInternalName(type);
+    String basePrefix = TypeNames.getInternalName(TypeRegistry.getBaseClass(type));
+
+    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectNode node = objectMapper.createObjectNode();
+    ArrayNode variationNode = objectMapper.createArrayNode();
+    variationNode.add(prefix)//
+        .add(basePrefix);
+
+    node.put(createFieldName(prefix, "projectAGeneralTestDocValue"), "test") //
+        .put(createFieldName(prefix, "name"), "test") //
+        .put(createFieldName(prefix, "generalTestDocValue"), "test") //
+        .put(createFieldName(basePrefix, "name"), "test") //
+        .put(createFieldName(basePrefix, "generalTestDocValue"), "test") //
+        .put("_id", DEFAULT_ID) //
+        .put("^pid", "testPid")//
+        .put("^rev", 1)//
+        .put("^deleted", false)//
+        .put("^variations", variationNode);
+
+    DBObject serializedEntity = new JacksonDBObject<JsonNode>(node, JsonNode.class);
+    when(dbCollection.findOne(queries.selectById(DEFAULT_ID))).thenReturn(serializedEntity);
+
+    // action
+    Change change = new Change();
+    storage.deleteVariation(type, DEFAULT_ID, change);
+
+    ObjectNode expected = objectMapper.createObjectNode();
+    ArrayNode expectedVariationNode = objectMapper.createArrayNode();
+    expectedVariationNode.add(basePrefix);
+    expected.put(createFieldName(basePrefix, "name"), "test") //
+        .put(createFieldName(basePrefix, "generalTestDocValue"), "test") //
+        .put("_id", DEFAULT_ID) //
+        .put("^rev", 2)//
+        .put("^deleted", false)//
+        .put("^variations", expectedVariationNode);
+    expected.put("^modified", objectMapper.valueToTree(change));
+
+    // verify    
+    @SuppressWarnings("rawtypes")
+    ArgumentCaptor<JacksonDBObject> entityCaptor = ArgumentCaptor.forClass(JacksonDBObject.class);
+    verify(mongoDB).update(any(DBCollection.class), any(DBObject.class), entityCaptor.capture());
+    assertThat((JacksonDBObject<JsonNode>) entityCaptor.getValue(), jacksonDBObjectMatcherHasObject(expected));
+  }
+
+  private String createFieldName(String prefix, String fieldName) {
+    return String.format("%s:%s", prefix, fieldName);
+  }
+
+  @Test(expected = NoSuchEntityException.class)
+  public void deleteVariationThrowsANoSuchEntityExceptionWhenTheVariationIsNotFound() throws Exception {
+    Class<ProjectADomainEntity> type = ProjectADomainEntity.class;
+    String basePrefix = TypeNames.getInternalName(TypeRegistry.getBaseClass(type));
+
+    ObjectMapper objectMapper = new ObjectMapper();
+    ObjectNode node = objectMapper.createObjectNode();
+    ArrayNode variationNode = objectMapper.createArrayNode();
+    variationNode.add(basePrefix);
+
+    node.put(createFieldName(basePrefix, "name"), "test") //
+        .put(createFieldName(basePrefix, "generalTestDocValue"), "test") //
+        .put("_id", DEFAULT_ID) //
+        .put("^pid", "testPid")//
+        .put("^rev", 1)//
+        .put("^deleted", false)//
+        .put("^variations", variationNode);
+
+    when(mongoDB.findOne(dbCollection, queries.selectById(DEFAULT_ID))).thenReturn(new JacksonDBObject<JsonNode>(node, JsonNode.class));
+
+    try {
+      storage.deleteVariation(type, DEFAULT_ID, new Change());
+    } finally {
+      verify(dbCollection).findOne(queries.selectById(DEFAULT_ID));
+      verify(mongoDB, never()).update(any(DBCollection.class), any(DBObject.class), any(DBObject.class));
+    }
+  }
+
+  @Test(expected = NoSuchEntityException.class)
+  public void deleteVariationThrowsANoSuchEntityExceptionWhenTheEntityIsNotFound() throws Exception {
+    Class<ProjectADomainEntity> type = ProjectADomainEntity.class;
+
+    try {
+      storage.deleteVariation(type, DEFAULT_ID, new Change());
+    } finally {
+      verify(dbCollection).findOne(queries.selectById(DEFAULT_ID));
+      verify(mongoDB, never()).update(any(DBCollection.class), any(DBObject.class), any(DBObject.class));
+    }
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void deleteVariationThrowsAnIllegalArgumentExceptionWhenTheTypeIsPrimitive() throws Exception {
+    Class<? extends DomainEntity> primitiveType = BaseVariationDomainEntity.class;
+
+    try {
+      storage.deleteVariation(primitiveType, DEFAULT_ID, new Change());
+    } finally {
+      verifyZeroInteractions(mongoDB);
+    }
+
+  }
+
+  @Test
+  public void deleteRelationsOfEntityRemovesTheRelationsOfEntityFromTheDatabase() throws Exception {
+    // action
+    storage.deleteRelationsOfEntity(Relation.class, DEFAULT_ID);
+
+    // verify
+    verify(mongoDB).remove(dbCollection, queries.selectRelationsByEntityId(DEFAULT_ID));
+  }
+
+  @Test
+  public void declineRelationsOfEntitySetAcceptedToFalseForTheSelectedVariations() throws Exception {
+    // setup
+    Class<ProjectARelation> type = ProjectARelation.class;
+
+    // action
+    storage.declineRelationsOfEntity(type, DEFAULT_ID);
+
+    // verify
+    String propertyName = String.format("%s:accepted", TypeNames.getInternalName(type));
+    verify(mongoDB).update(dbCollection, queries.selectRelationsByEntityId(DEFAULT_ID), queries.setPropertyToValue(propertyName, false));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void declineRelationsOfEntityRemovesThrowsAnIllegalArgumentExceptionWhenTheRelationTypeIsPrimitive() throws Exception {
+    try {
+      storage.declineRelationsOfEntity(Relation.class, DEFAULT_ID);
+    } finally {
+      verifyZeroInteractions(mongoDB);
+    }
+  }
 
   // deleteNonPersistent
 

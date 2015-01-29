@@ -212,14 +212,22 @@ public class Repository {
     storage.deleteSystemEntity(entity.getClass(), entity.getId());
   }
 
+  /**
+   * Deletes a DomainEntity from the database. When the DomainEntity is a primitive the complete DomainEntity
+   *  and it's Relations are removed. When the DomainEntity is a project variation the 
+   *  Variation is removed and the Relations are declined for the project.
+   * @param entity
+   * @throws StorageException
+   */
   public <T extends DomainEntity> void deleteDomainEntity(T entity) throws StorageException {
     String id = entity.getId();
+    Change change = entity.getModified();
     Class<? extends DomainEntity> type = entity.getClass();
     if (TypeRegistry.isPrimitiveDomainEntity(type)) {
-      storage.deleteDomainEntity(type, id, entity.getModified());
+      storage.deleteDomainEntity(type, id, change);
       storage.deleteRelationsOfEntity(Relation.class, id);
     } else {
-      storage.deleteVariation(type, id);
+      storage.deleteVariation(type, id, change);
       EntityMapper mapper = entityMappers.getEntityMapper(type);
       @SuppressWarnings("unchecked")
       Class<? extends Relation> relation = (Class<? extends Relation>) mapper.map(Relation.class);

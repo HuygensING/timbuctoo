@@ -208,10 +208,11 @@ public class RepositoryTest {
   @Test
   public void testDeleteDomainEntityProjectVariation() throws Exception {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
+    entity.setModified(change);
 
     repository.deleteDomainEntity(entity);
 
-    verify(storageMock).deleteVariation(ProjectADomainEntity.class, DEFAULT_ID);
+    verify(storageMock).deleteVariation(ProjectADomainEntity.class, DEFAULT_ID, change);
     verify(storageMock).declineRelationsOfEntity(ProjectARelation.class, DEFAULT_ID);
   }
 
