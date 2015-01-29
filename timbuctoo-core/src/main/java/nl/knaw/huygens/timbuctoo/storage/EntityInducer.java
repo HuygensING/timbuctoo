@@ -23,7 +23,9 @@ package nl.knaw.huygens.timbuctoo.storage;
  */
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static nl.knaw.huygens.timbuctoo.storage.Properties.propertyName;
 
+import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,19 +36,16 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 
 public class EntityInducer {
 
-  private PropertyInducer propertyInducer;
-  private final ObjectMapper jsonMapper;
+  private final PropertyInducer propertyInducer;
 
   @Inject
   public EntityInducer(PropertyInducer propertyInducer) {
     this.propertyInducer = propertyInducer;
-    jsonMapper = new ObjectMapper();
   }
 
   /**
@@ -123,14 +122,20 @@ public class EntityInducer {
    * Creates a Json tree given an object and a field map.
    */
   private ObjectNode createJsonTree(Object object, Class<?> viewType, FieldMap fieldMap) {
-    Properties properties = new Properties(object, viewType, fieldMap);
-    induceValuesOf(properties);
-    return jsonMapper.valueToTree(properties);
-  }
-
-  private void induceValuesOf(Properties properties) {
-    for (Map.Entry<String, Object> entry : properties.entrySet()) {
-      entry.setValue(propertyInducer.apply(entry.getValue()));
+    try {
+      ObjectNode tree = propertyInducer.createObjectNode();
+      String iname = TypeNames.getInternalName(viewType);
+      for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
+        Field field = entry.getValue();
+        JsonNode node = propertyInducer.apply(field.getType(), field.get(object));
+        if (node != null) {
+          String fieldName = entry.getKey();
+          tree.put(propertyName(iname, fieldName), node);
+        }
+      }
+      return tree;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
   }
 
@@ -140,7 +145,7 @@ public class EntityInducer {
   private ObjectNode merge(ObjectNode tree, ObjectNode newTree, Class<?> type, Set<String> fieldNames) {
     String iname = TypeNames.getInternalName(type);
     for (String fieldName : fieldNames) {
-      String key = Properties.propertyName(iname, fieldName);
+      String key = propertyName(iname, fieldName);
       JsonNode newValue = newTree.get(key);
       if (newValue != null) {
         tree.put(key, newValue);

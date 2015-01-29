@@ -22,13 +22,13 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 public interface PropertyInducer {
 
-  /**
-   * Prepares a property value for writing to the storage.
-   * @param value the property value to transform.
-   * @return the transformed value.
-   */
-  Object apply(Object value);
+  ObjectNode createObjectNode();
+
+  JsonNode apply(Class<?> type, Object value) throws StorageException;
 
 }

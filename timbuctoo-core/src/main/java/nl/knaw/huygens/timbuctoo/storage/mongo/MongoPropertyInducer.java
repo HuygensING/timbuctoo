@@ -22,12 +22,46 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  * #L%
  */
 
+import java.util.Collection;
+
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.storage.PropertyInducer;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class MongoPropertyInducer implements PropertyInducer {
 
+  private final ObjectMapper jsonMapper;
+
+  public MongoPropertyInducer() {
+    jsonMapper = new ObjectMapper();
+  }
+
   @Override
-  public Object apply(Object value) {
+  public ObjectNode createObjectNode() {
+    return jsonMapper.createObjectNode();
+  }
+
+  @Override
+  public JsonNode apply(Class<?> type, Object value) throws StorageException {
+    Object converted = convert(type, value);
+    return jsonMapper.valueToTree(converted);
+  }
+
+  private Object convert(Class<?> type, Object value) {
+    if (value == null) {
+      return null;
+    } else if (type == Datable.class) {
+      return Datable.class.cast(value).getEDTF();
+    } else if (Collection.class.isAssignableFrom(type)) {
+      Collection<?> collection = Collection.class.cast(value);
+      if (collection.isEmpty()) {
+        return null;
+      }
+    }
     return value;
   }
 
