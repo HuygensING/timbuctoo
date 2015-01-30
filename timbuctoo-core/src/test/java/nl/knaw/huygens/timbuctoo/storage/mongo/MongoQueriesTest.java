@@ -37,6 +37,7 @@ import org.junit.Test;
 import test.model.BaseDomainEntity;
 
 import com.google.common.collect.Maps;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 public class MongoQueriesTest {
@@ -109,21 +110,23 @@ public class MongoQueriesTest {
   }
 
   @Test
-  public void testSetPropertyToValue() {
+  public void testSetPropertiesToValue() {
     // setup
-    String propertyName = "object:accepted";
+    String propertyName1 = "object:accepted";
     boolean value1 = false;
-    String otherProperty = "object:otherProperty";
+    String propertyName2 = "object:otherProperty";
     String value2 = "value";
-    String expected = String.format("{\"$set\":{\"%s\":%b,\"%s\":\"%s\"}}", propertyName, value1, otherProperty, value2);
 
     Map<String, Object> propertiesWithValues = Maps.newHashMap();
-    propertiesWithValues.put(propertyName, value1);
-    propertiesWithValues.put(otherProperty, value2);
+    propertiesWithValues.put(propertyName1, value1);
+    propertiesWithValues.put(propertyName2, value2);
 
     // action
     DBObject updateQuery = queries.setPropertiesToValue(propertiesWithValues);
 
-    assertThat(toStringWithoutWhiteSpaces(updateQuery), is(equalTo(expected)));
+    DBObject expectedProperties = new BasicDBObject().append(propertyName1, value1).append(propertyName2, value2);
+    DBObject expected = new BasicDBObject("$set", expectedProperties);
+
+    assertThat(updateQuery, is(equalTo(expected)));
   }
 }

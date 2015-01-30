@@ -223,9 +223,10 @@ public class Repository {
    *  - The relations should be deleted:
    *    Update PID's of the relations
    * @param entity
+   * @return 
    * @throws StorageException
    */
-  public <T extends DomainEntity> void deleteDomainEntity(T entity) throws StorageException {
+  public <T extends DomainEntity> List<String> deleteDomainEntity(T entity) throws StorageException {
     String id = entity.getId();
     Change change = entity.getModified();
     Class<? extends DomainEntity> type = entity.getClass();
@@ -240,6 +241,7 @@ public class Repository {
       @SuppressWarnings("unchecked")
       Class<? extends Relation> relation = (Class<? extends Relation>) mapper.map(Relation.class);
       storage.declineRelationsOfEntity(relation, id);
+      return storage.getRelationIds(Lists.newArrayList(id));
     }
   }
 
