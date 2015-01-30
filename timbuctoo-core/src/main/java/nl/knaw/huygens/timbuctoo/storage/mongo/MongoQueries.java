@@ -168,4 +168,8 @@ public class MongoQueries {
     return updateQuery;
   }
 
+  public DBObject incrementRevision() {
+    return new BasicDBObject("$inc", new BasicDBObject("^rev", 1));
+  }
+
 }

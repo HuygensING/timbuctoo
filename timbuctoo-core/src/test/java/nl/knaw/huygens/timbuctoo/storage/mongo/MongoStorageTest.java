@@ -299,7 +299,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void declineRelationsOfEntitySetAcceptedToFalseForTheSelectedVariationsAndSetsThePIDToNull() throws Exception {
+  public void declineRelationsOfEntitySetAcceptedToFalseForTheSelectedVariationsAndSetsThePIDToNullAndIncreasesTheRevision() throws Exception {
     // setup
     Class<ProjectARelation> type = ProjectARelation.class;
     String propertyName = String.format("%s:accepted", TypeNames.getInternalName(type));
@@ -312,8 +312,12 @@ public class MongoStorageTest extends MongoStorageTestBase {
     storage.declineRelationsOfEntity(type, DEFAULT_ID);
 
     // verify
-
-    dbCollection.update(queries.selectRelationsByEntityId(DEFAULT_ID), queries.setPropertiesToValue(propertiesWithValues));
+    DBObject setQueryPart = queries.setPropertiesToValue(propertiesWithValues);
+    DBObject incQueryPArt = queries.incrementRevision();
+    BasicDBObject query = new BasicDBObject();
+    query.putAll(setQueryPart);
+    query.putAll(incQueryPArt);
+    verify(dbCollection).update(queries.selectRelationsByEntityId(DEFAULT_ID), query);
   }
 
   @Test(expected = IllegalArgumentException.class)

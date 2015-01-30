@@ -409,7 +409,11 @@ public class MongoStorage implements Storage {
     propertiesWithValues.put(propertyName, false);
     propertiesWithValues.put(DomainEntity.PID, null);
 
-    getDBCollection(type).update(queries.selectRelationsByEntityId(id), queries.setPropertiesToValue(propertiesWithValues));
+    BasicDBObject setQuery = new BasicDBObject();
+    setQuery.putAll(queries.setPropertiesToValue(propertiesWithValues));
+    setQuery.putAll(queries.incrementRevision());
+
+    getDBCollection(type).update(queries.selectRelationsByEntityId(id), setQuery);
 
   }
 
