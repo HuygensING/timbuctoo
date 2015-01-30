@@ -94,17 +94,6 @@ public class Repository {
     vreMap = initVREMap(vreCollection);
   }
 
-  Repository(TypeRegistry registry, Storage storage, VRECollection vreCollection, RelationTypes relationTypes, EntityMappers entityMappers, RelationRefCreatorFactory relationAdder)
-      throws StorageException {
-    this.registry = registry;
-    this.storage = storage;
-    this.entityMappers = entityMappers;
-    this.relationRefCreatorFactory = relationAdder;
-    createIndexes();
-    this.relationTypes = relationTypes;
-    vreMap = initVREMap(vreCollection);
-  }
-
   /**
    * Create indexes, if they don't already exist.
    */
@@ -223,8 +212,35 @@ public class Repository {
     storage.deleteSystemEntity(entity.getClass(), entity.getId());
   }
 
+  /**
+   * Deletes a DomainEntity from the database. When the DomainEntity is a primitive the complete DomainEntity
+   *  and it's Relations are removed. When the DomainEntity is a project variation the 
+   *  Variation is removed and the Relations are declined for the project.
+   *  
+   * TODO: Make available for deleting primitives:
+   *  - The PID's should be updated
+   *  - The versions should be deleted
+   *  - The relations should be deleted:
+   *    Update PID's of the relations
+   * @param entity
+   * @throws StorageException
+   */
   public <T extends DomainEntity> void deleteDomainEntity(T entity) throws StorageException {
-    storage.deleteDomainEntity(entity.getClass(), entity.getId(), entity.getModified());
+    String id = entity.getId();
+    Change change = entity.getModified();
+    Class<? extends DomainEntity> type = entity.getClass();
+    if (TypeRegistry.isPrimitiveDomainEntity(type)) {
+      //storage.deleteDomainEntity(type, id, change);
+      //storage.deleteRelationsOfEntity(Relation.class, id);
+      // TODO Remove versions and update PID's
+      throw new UnsupportedOperationException("Not yet available for primitives yet");
+    } else {
+      storage.deleteVariation(type, id, change);
+      EntityMapper mapper = entityMappers.getEntityMapper(type);
+      @SuppressWarnings("unchecked")
+      Class<? extends Relation> relation = (Class<? extends Relation>) mapper.map(Relation.class);
+      storage.declineRelationsOfEntity(relation, id);
+    }
   }
 
   /**
@@ -568,6 +584,17 @@ public class Repository {
 
   public <T extends Language> T getLanguageByCode(Class<T> type, String code) {
     return findEntity(type, Language.CODE, code);
+  }
+
+  /**
+   * Checks of a variation of the entity.
+   * @param type the type of the variation
+   * @param id the id of the entity, that should contain the variation
+   * @return true if the variation exist false if not.
+   * @throws StorageException wrapped exception around the database exceptions 
+   */
+  public boolean doesVariationExist(Class<? extends DomainEntity> type, String id) throws StorageException {
+    return storage.doesVariationExist(type, id);
   }
 
 }

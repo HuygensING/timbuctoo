@@ -103,6 +103,34 @@ public interface Storage {
    */
   <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws StorageException;
 
+  /**
+   * Removes the variation of type from a stored DomainEntity
+   * @param type the type of the variation to remove.
+   * @param id the id of the entity to remove the variation from.
+   * @param change the change to update the modified property.
+   * @throws IllegalArgumentException is thrown when the entity is a primitive.
+   * @throws NoSuchEntityException is thrown when the (variation) type does not exist for this entity.
+   * @throws StorageException is thrown when the delete of the variation fails.
+   */
+  void deleteVariation(Class<? extends DomainEntity> type, String id, Change change) throws IllegalArgumentException, NoSuchEntityException, StorageException;
+
+  /**
+   * Deletes all the relations linked to the DomainEntity with {@code id}.
+   * @param type the type of relation to delete.
+   * @param id the id of the DomainEntity.
+   * @throws StorageException is thrown when the communication with the database fails.
+   */
+  void deleteRelationsOfEntity(Class<Relation> type, String id) throws StorageException;
+
+  /**
+   * Sets the accepted property of a relation to false.
+   * @param type the project type of the relation to decline
+   * @param id the id of the entity for which the relations should be declined.
+   * @throws IllegalArgumentException when the variation type is a primitive.  
+   * @throws StorageException is thrown when the update fails.
+   */
+  void declineRelationsOfEntity(Class<? extends Relation> type, String id) throws IllegalArgumentException, StorageException;
+
   // -------------------------------------------------------------------
 
   /**
@@ -191,5 +219,14 @@ public interface Storage {
    * @throws StorageException wrapped exception around the database exceptions
    */
   <T extends Relation> List<T> getRelationsByType(Class<T> type, List<String> relationTypeIds) throws StorageException;
+
+  /**
+   * Checks of a variation of the entity.
+   * @param type the type of the variation
+   * @param id the id of the entity, that should contain the variation
+   * @return true if the variation exist false if not.
+   * @throws StorageException wrapped exception around the database exceptions 
+   */
+  boolean doesVariationExist(Class<? extends DomainEntity> type, String id) throws StorageException;
 
 }

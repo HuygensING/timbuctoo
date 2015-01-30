@@ -92,7 +92,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   protected static final String DEFAULT_RESOURCE = TypeNames.getExternalName(DEFAULT_TYPE);
 
   protected static final Class<BaseDomainEntity> BASE_TYPE = BaseDomainEntity.class;
-  private static final String BASE_RESOURCE = TypeNames.getExternalName(BASE_TYPE);
+  protected static final String BASE_RESOURCE = TypeNames.getExternalName(BASE_TYPE);
 
   protected static final String PERSISTENCE_PRODUCER = "persistenceProducer";
   protected static final String INDEX_PRODUCER = "indexProducer";
@@ -119,7 +119,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testGetEntityExisting() {
+  public void testGetEntityExisting() throws Exception {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     when(repository.getEntityWithRelations(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
 
@@ -133,7 +133,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testGetEntityWithRevision() {
+  public void testGetEntityWithRevision() throws Exception {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     int revision = 2;
     when(repository.getRevisionWithRelations(DEFAULT_TYPE, DEFAULT_ID, revision)).thenReturn(entity);
@@ -160,7 +160,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testGetEntityNonExistingClass() {
+  public void testGetEntityNonExistingType() {
     ClientResponse response = createResource("unknown", "TST0000000001") //
         .get(ClientResponse.class);
     verifyResponseStatus(response, Status.NOT_FOUND);
@@ -722,7 +722,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testDeleteDocumentDoesNotExist() throws Exception {
+  public void testDeleteEntityThatDoesNotExist() throws Exception {
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
 
     when(repository.doesVREExist(VRE_ID)).thenReturn(true);
@@ -766,7 +766,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   // Security tests
 
   @Test
-  public void testGetEntityNotLoggedIn() {
+  public void testGetEntityNotLoggedIn() throws Exception {
     ProjectADomainEntity expectedDoc = new ProjectADomainEntity(DEFAULT_ID);
     when(repository.getEntityWithRelations(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(expectedDoc);
 
@@ -776,7 +776,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void testGetEntityEmptyAuthorizationKey() {
+  public void testGetEntityEmptyAuthorizationKey() throws Exception {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     when(repository.getEntityWithRelations(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
 

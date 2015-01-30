@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rest.resources;
 
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static nl.knaw.huygens.timbuctoo.config.Paths.DOMAIN_PREFIX;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
@@ -28,25 +29,35 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
+import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 @Path(V2_PATH + "/" + DOMAIN_PREFIX + "/" + ENTITY_PATH)
 public class DomainEntityResourceV2 extends DomainEntityResource {
+  private static Logger LOG = LoggerFactory.getLogger(DomainEntityResourceV2.class);
 
   @Inject
   public DomainEntityResourceV2(TypeRegistry registry, Repository repository, Broker broker) {
@@ -120,6 +131,17 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
       @PathParam(ID_PARAM) String id, //
       @QueryParam(REVISION_KEY) Integer revision//
   ) {
+    Class<? extends DomainEntity> type = getValidEntityType(entityName);
+
+    // to not break the other API's and make this one throw an exception when the variation does not exist.
+    try {
+      if (!repository.doesVariationExist(type, id)) {
+        throw new WebApplicationException(Status.NOT_FOUND);
+      }
+    } catch (StorageException e) {
+      throw new WebApplicationException(e);
+    }
+
     return super.getDoc(entityName, id, revision);
   }
 
@@ -160,7 +182,41 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
       @PathParam(ENTITY_PARAM) String entityName, //
       @PathParam(ID_PARAM) String id, //
       @HeaderParam(VRE_ID_KEY) String vreId) {
-    return super.delete(entityName, id, vreId);
+
+    Class<? extends DomainEntity> type = getValidEntityType(entityName);
+
+    if (TypeRegistry.isPrimitiveDomainEntity(type)) {
+      return Response.status(Status.BAD_REQUEST).entity("Primitive DomainEntities cannot be deleted at this moment.").build();
+    }
+
+    if (Relation.class.isAssignableFrom(type)) {
+      return Response.status(Status.BAD_REQUEST).entity("Relations cannot be deleted at this moment. Use PUT with \"^accepted\" set to false.").build();
+    }
+    
+    VRE vre = getValidVRE(vreId);
+    checkCondition(vre.inScope(type, id), FORBIDDEN, "Entity %s %s not in scope %s", type, id, vreId);
+
+    DomainEntity entity = repository.getEntity(type, id);
+
+    if (entity == null) {
+      return returnNotFoundResponse(id);
+    }
+
+    try {
+      repository.deleteDomainEntity(entity);
+      notifyChange(ActionType.MOD, type, entity, id);
+    } catch (NoSuchEntityException e) {
+      return returnNotFoundResponse(id);
+    } catch (StorageException e) {
+      LOG.error("Storage exception occured.", e);
+      return Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
+    }
+
+    return Response.noContent().build();
+
   }
 
+  protected Response returnNotFoundResponse(String id) {
+    return Response.status(Status.NOT_FOUND).entity("Entity with id \"" + id + "\" cannot be found.").build();
+  }
 }

@@ -155,4 +155,11 @@ public class MongoQueries {
     return query;
   }
 
+  public DBObject setPropertyToValue(String propertyName, Object value) {
+    DBObject set = new BasicDBObject(propertyName, value);
+    DBObject updateQuery = new BasicDBObject("$set", set);
+
+    return updateQuery;
+  }
+
 }

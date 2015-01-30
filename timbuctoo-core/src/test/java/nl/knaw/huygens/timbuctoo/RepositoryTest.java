@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.config.EntityMappers;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
@@ -48,51 +47,52 @@ import nl.knaw.huygens.timbuctoo.util.RelationRefCreatorFactory;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import test.variation.model.BaseVariationDomainEntity;
 import test.variation.model.TestSystemEntity;
 import test.variation.model.projecta.ProjectADomainEntity;
+import test.variation.model.projecta.ProjectARelation;
 
 import com.google.common.collect.Lists;
 
 public class RepositoryTest {
 
+  private static final String TEST_MODEL_PACKAGES = "timbuctoo.model test.variation.model.*";
   private static final String DEFAULT_ID = "TEST000000000001";
   private static final int DEFAULT_REV = 42;
 
-  private TypeRegistry registryMock;
+  private TypeRegistry registry;
   private Storage storageMock;
   private VRECollection vreCollectionMock;
   private Repository repository;
   private Change change;
   private RelationTypes relationTypesMock;
-  private EntityMappers entityMappersMock;
   private RelationRefCreatorFactory relationRefCreatorFactoryMock;
 
   @Before
   public void setup() throws Exception {
     relationTypesMock = mock(RelationTypes.class);
-    registryMock = mock(TypeRegistry.class);
+    registry = TypeRegistry.getInstance().init(TEST_MODEL_PACKAGES);
     vreCollectionMock = mock(VRECollection.class);
     storageMock = mock(Storage.class);
-    entityMappersMock = mock(EntityMappers.class);
     relationRefCreatorFactoryMock = mock(RelationRefCreatorFactory.class);
 
-    repository = new Repository(registryMock, storageMock, vreCollectionMock, relationTypesMock, entityMappersMock, relationRefCreatorFactoryMock);
+    repository = new Repository(registry, storageMock, vreCollectionMock, relationRefCreatorFactoryMock, relationTypesMock);
     change = new Change("userId", "vreId");
   }
 
   @Test
   public void testEntityExists() throws Exception {
-    repository.entityExists(BaseVariationDomainEntity.class, "id");
-    verify(storageMock).entityExists(BaseVariationDomainEntity.class, "id");
+    repository.entityExists(BaseVariationDomainEntity.class, DEFAULT_ID);
+    verify(storageMock).entityExists(BaseVariationDomainEntity.class, DEFAULT_ID);
   }
 
   @Test
   public void testGetEntity() throws Exception {
-    repository.getEntity(BaseVariationDomainEntity.class, "id");
-    verify(storageMock).getItem(BaseVariationDomainEntity.class, "id");
+    repository.getEntity(BaseVariationDomainEntity.class, DEFAULT_ID);
+    verify(storageMock).getItem(BaseVariationDomainEntity.class, DEFAULT_ID);
   }
 
   @Test
@@ -143,8 +143,8 @@ public class RepositoryTest {
 
   @Test
   public void testGetVersions() throws Exception {
-    repository.getVersions(BaseVariationDomainEntity.class, "id");
-    verify(storageMock).getAllRevisions(BaseVariationDomainEntity.class, "id");
+    repository.getVersions(BaseVariationDomainEntity.class, DEFAULT_ID);
+    verify(storageMock).getAllRevisions(BaseVariationDomainEntity.class, DEFAULT_ID);
   }
 
   @Test
@@ -178,31 +178,44 @@ public class RepositoryTest {
 
   @Test
   public void testUpdatePrimitiveDomainEntity() throws Exception {
-    BaseVariationDomainEntity entity = new BaseVariationDomainEntity("id");
+    BaseVariationDomainEntity entity = new BaseVariationDomainEntity(DEFAULT_ID);
     repository.updateDomainEntity(BaseVariationDomainEntity.class, entity, change);
     verify(storageMock).updateDomainEntity(BaseVariationDomainEntity.class, entity, change);
   }
 
   @Test
   public void testUpdateProjectDomainEntity() throws Exception {
-    ProjectADomainEntity entity = new ProjectADomainEntity("id");
+    ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     repository.updateDomainEntity(ProjectADomainEntity.class, entity, change);
     verify(storageMock).updateDomainEntity(ProjectADomainEntity.class, entity, change);
   }
 
   @Test
   public void testDeleteSystemEntity() throws Exception {
-    TestSystemEntity entity = new TestSystemEntity("id");
+    TestSystemEntity entity = new TestSystemEntity(DEFAULT_ID);
     repository.deleteSystemEntity(entity);
-    verify(storageMock).deleteSystemEntity(TestSystemEntity.class, "id");
+    verify(storageMock).deleteSystemEntity(TestSystemEntity.class, DEFAULT_ID);
+  }
+
+  @Ignore("Method cannot be used primitives at this moment.")
+  @Test
+  public void testDeleteDomainEntityPrimitive() throws Exception {
+    BaseVariationDomainEntity entity = new BaseVariationDomainEntity(DEFAULT_ID);
+    entity.setModified(change);
+    repository.deleteDomainEntity(entity);
+    verify(storageMock).deleteDomainEntity(BaseVariationDomainEntity.class, DEFAULT_ID, change);
+    verify(storageMock).deleteRelationsOfEntity(Relation.class, DEFAULT_ID);
   }
 
   @Test
-  public void testDeleteDomainEntity() throws Exception {
-    BaseVariationDomainEntity entity = new BaseVariationDomainEntity("id");
+  public void testDeleteDomainEntityProjectVariation() throws Exception {
+    ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     entity.setModified(change);
+
     repository.deleteDomainEntity(entity);
-    verify(storageMock).deleteDomainEntity(BaseVariationDomainEntity.class, "id", change);
+
+    verify(storageMock).deleteVariation(ProjectADomainEntity.class, DEFAULT_ID, change);
+    verify(storageMock).declineRelationsOfEntity(ProjectARelation.class, DEFAULT_ID);
   }
 
   @Test
@@ -220,8 +233,8 @@ public class RepositoryTest {
 
   @Test
   public void testSetPID() throws Exception {
-    repository.setPID(BaseVariationDomainEntity.class, "id", "pid");
-    verify(storageMock).setPID(BaseVariationDomainEntity.class, "id", "pid");
+    repository.setPID(BaseVariationDomainEntity.class, DEFAULT_ID, "pid");
+    verify(storageMock).setPID(BaseVariationDomainEntity.class, DEFAULT_ID, "pid");
   }
 
   @Test
@@ -246,17 +259,15 @@ public class RepositoryTest {
 
   @Test
   public void testGetRelationTypeWhenItemIsUnknown() throws Exception {
-    String id = "id";
-    when(relationTypesMock.getById(id, false)).thenReturn(null);
-    assertNull(repository.getRelationTypeById(id, false));
+    when(relationTypesMock.getById(DEFAULT_ID, false)).thenReturn(null);
+    assertNull(repository.getRelationTypeById(DEFAULT_ID, false));
   }
 
   @Test
   public void testGetRelationTypeWhenItemIsNotInCache() throws Exception {
-    String id = "id";
     RelationType type = new RelationType();
-    when(relationTypesMock.getById(id, false)).thenReturn(type);
-    assertEquals(type, repository.getRelationTypeById(id, false));
+    when(relationTypesMock.getById(DEFAULT_ID, false)).thenReturn(type);
+    assertEquals(type, repository.getRelationTypeById(DEFAULT_ID, false));
   }
 
   @Test

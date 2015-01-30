@@ -28,9 +28,11 @@ import static nl.knaw.huygens.timbuctoo.storage.XProperties.propertyName;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -53,8 +55,10 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -338,22 +342,75 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws StorageException {
-    DBObject query = queries.selectById(id);
+    if (!TypeRegistry.isPrimitiveDomainEntity(type)) {
+      throw new IllegalArgumentException("Only primitive DomainEntities can be deleted. " + type.getSimpleName() + " is not a primitive DomainEntity.");
+    }
+    if (mongoDB.remove(getDBCollection(type), queries.selectById(id)) <= 0) {
+      throw new NoSuchEntityException(type, id);
+    }
+  }
 
+  @Override
+  public void deleteRelationsOfEntity(Class<Relation> type, String id) throws StorageException {
+    mongoDB.remove(getDBCollection(type), queries.selectRelationsByEntityId(id));
+  }
+
+  @Override
+  public void deleteVariation(Class<? extends DomainEntity> type, String id, Change change) throws StorageException {
+    String variationToDelete = TypeNames.getInternalName(type);
+    if (TypeRegistry.isPrimitiveDomainEntity(type)) {
+      throwTypeIsAPrimitiveException(type);
+    }
+
+    DBObject query = queries.selectById(id);
     JsonNode tree = getExisting(type, query);
+
+    if (tree.isObject()) {
+      ObjectNode objectTree = (ObjectNode) tree;
+
+      if (!doesVariationExist(variationToDelete, objectTree)) {
+        throw new NoSuchEntityException(type, id);
+      }
+
+      List<String> fieldsToDelete = Lists.newArrayList();
+      for (Iterator<String> fieldNames = objectTree.fieldNames(); fieldNames.hasNext();) {
+        String fieldName = fieldNames.next();
+        if (StringUtils.startsWith(fieldName, variationToDelete)) {
+          fieldsToDelete.add(fieldName);
+        }
+      }
+      objectTree.remove(fieldsToDelete);
+
+    }
+
     DomainEntity entity = reducer.reduceVariation(toBaseDomainEntity(type), tree);
     int revision = entity.getRev();
 
     entity.setRev(revision + 1);
     entity.setModified(change);
     entity.setPid(null);
-    entity.setDeleted(true);
-    entity.setVariations(null);
+    entity.getVariations().remove(variationToDelete);
 
     inducer.adminDomainEntity(entity, (ObjectNode) tree);
-    // TODO remove "real" data
 
     mongoDB.update(getDBCollection(type), query, toDBObject(tree));
+
+  }
+
+  @Override
+  public void declineRelationsOfEntity(Class<? extends Relation> type, String id) throws StorageException {
+    if (TypeRegistry.isPrimitiveDomainEntity(type)) {
+      throwTypeIsAPrimitiveException(type);
+    }
+
+    String propertyName = String.format("%s:accepted", TypeNames.getInternalName(type));
+
+    getDBCollection(type).update(queries.selectRelationsByEntityId(id), queries.setPropertyToValue(propertyName, false));
+
+  }
+
+  private void throwTypeIsAPrimitiveException(Class<? extends DomainEntity> type) throws IllegalArgumentException {
+    throw new IllegalArgumentException("Only project variations can be deleted. " + type.getSimpleName() + " is a primitive.");
   }
 
   @Override
@@ -525,6 +582,37 @@ public class MongoStorage implements Storage {
   public <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws StorageException {
     DBObject query = queries.selectNonPersistent(ids);
     mongoDB.remove(getDBCollection(type), query);
+  }
+
+  @Override
+  public boolean doesVariationExist(Class<? extends DomainEntity> type, String id) throws StorageException {
+
+    try {
+      JsonNode node = getExisting(type, queries.selectById(id));
+
+      if (node.isObject()) {
+        String variation = TypeNames.getInternalName(type);
+        return doesVariationExist(variation, (ObjectNode) node);
+      }
+
+    } catch (NoSuchEntityException e) {
+      return false;
+    }
+
+    return false;
+  }
+
+  private boolean doesVariationExist(String variation, ObjectNode objectTree) {
+    ArrayNode variations = (ArrayNode) objectTree.get(DomainEntity.VARIATIONS);
+
+    boolean containsVariation = false;
+    for (Iterator<JsonNode> variationIterator = variations.elements(); variationIterator.hasNext();) {
+      if (Objects.equal(variation, variationIterator.next().asText())) {
+        containsVariation = true;
+        break;
+      }
+    }
+    return containsVariation;
   }
 
 }

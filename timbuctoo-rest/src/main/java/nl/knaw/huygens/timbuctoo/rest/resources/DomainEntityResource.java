@@ -295,7 +295,7 @@ public class DomainEntityResource extends ResourceBase {
   /**
    * Notify other software components of a change in the data.
    */
-  private void notifyChange(ActionType actionType, Class<? extends DomainEntity> type, DomainEntity entity, String id) {
+  protected void notifyChange(ActionType actionType, Class<? extends DomainEntity> type, DomainEntity entity, String id) {
     switch (actionType) {
       case ADD:
       case MOD:
@@ -348,7 +348,7 @@ public class DomainEntityResource extends ResourceBase {
     return checkNotNull(typeRegistry.getTypeForXName(name), NOT_FOUND, "No domain entity collection %s", name);
   }
 
-  private VRE getValidVRE(String id) {
+  protected VRE getValidVRE(String id) {
     return checkNotNull(repository.getVREById(id), NOT_FOUND, "No VRE with id %s", id);
   }
 

@@ -101,7 +101,23 @@ public class MongoQueriesTest {
     DBObject query = queries.selectByModifiedDate(dateValue);
 
     // verify
-    assertThat(query.toString().replaceAll(" ", ""), is(equalTo(expectedQuery.replaceAll(" ", ""))));
+    assertThat(toStringWithoutWhiteSpaces(query), is(equalTo(expectedQuery.replaceAll(" ", ""))));
 
+  }
+
+  private String toStringWithoutWhiteSpaces(DBObject query) {
+    return query.toString().replaceAll("\\s", "");
+  }
+
+  @Test
+  public void testSetPropertyToValue() {
+    // setup
+    String propertyName = "ckccrelation:accepted";
+    String expected = "{\"$set\":{\"" + propertyName + "\":false}}";
+
+    // action
+    DBObject updateQuery = queries.setPropertyToValue(propertyName, false);
+
+    assertThat(toStringWithoutWhiteSpaces(updateQuery), is(equalTo(expected)));
   }
 }

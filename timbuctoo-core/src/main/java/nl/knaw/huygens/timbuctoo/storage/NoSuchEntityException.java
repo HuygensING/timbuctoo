@@ -1,5 +1,8 @@
 package nl.knaw.huygens.timbuctoo.storage;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+
 /*
  * #%L
  * Timbuctoo core
@@ -35,6 +38,10 @@ public class NoSuchEntityException extends StorageException {
 
   public NoSuchEntityException(String message) {
     super(message);
+  }
+
+  public NoSuchEntityException(Class<? extends Entity> type, String id) {
+    this("\"%s\" with \"%s\" does not exist.", TypeNames.getExternalName(type), id);
   }
 
   public NoSuchEntityException(String format, Object... args) {
