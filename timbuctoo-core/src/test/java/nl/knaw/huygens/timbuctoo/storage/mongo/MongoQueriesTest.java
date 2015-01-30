@@ -38,6 +38,7 @@ import org.junit.Test;
 import test.model.BaseDomainEntity;
 
 import com.google.common.collect.Maps;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
 public class MongoQueriesTest {
@@ -110,14 +111,23 @@ public class MongoQueriesTest {
   }
 
   @Test
-  public void testSetPropertyToValue() {
+  public void testSetPropertiesToValue() {
     // setup
-    String propertyName = "ckccrelation:accepted";
-    String expected = "{\"$set\":{\"" + propertyName + "\":false}}";
+    String propertyName1 = "object:accepted";
+    boolean value1 = false;
+    String propertyName2 = "object:otherProperty";
+    String value2 = "value";
+
+    Map<String, Object> propertiesWithValues = Maps.newHashMap();
+    propertiesWithValues.put(propertyName1, value1);
+    propertiesWithValues.put(propertyName2, value2);
 
     // action
-    DBObject updateQuery = queries.setPropertyToValue(propertyName, false);
+    DBObject updateQuery = queries.setPropertiesToValue(propertiesWithValues);
 
-    assertThat(toStringWithoutWhiteSpaces(updateQuery), is(equalTo(expected)));
+    DBObject expectedProperties = new BasicDBObject().append(propertyName1, value1).append(propertyName2, value2);
+    DBObject expected = new BasicDBObject("$set", expectedProperties);
+
+    assertThat(updateQuery, is(equalTo(expected)));
   }
 }

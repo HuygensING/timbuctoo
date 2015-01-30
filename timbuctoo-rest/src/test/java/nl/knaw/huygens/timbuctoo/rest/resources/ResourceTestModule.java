@@ -85,6 +85,7 @@ class ResourceTestModule extends JerseyServletModule {
   private RelationSearchResultMapper relationClientSearchResultCreator;
   private UserConfigurationHandler userConfigurationHandler;
   private BasicAuthenticationHandler basicAuthenticationHandler;
+  private ChangeHelper changeHelper;
 
   public ResourceTestModule() {
     try {
@@ -108,6 +109,7 @@ class ResourceTestModule extends JerseyServletModule {
       regularClientSearchResultCreator = mock(RegularSearchResultMapper.class);
       relationClientSearchResultCreator = mock(RelationSearchResultMapper.class);
       basicAuthenticationHandler = mock(BasicAuthenticationHandler.class);
+      changeHelper = mock(ChangeHelper.class);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -119,7 +121,7 @@ class ResourceTestModule extends JerseyServletModule {
    */
   public void cleanUpMocks() {
     reset(config, repository, userConfigurationHandler, jsonProvider, validator, mailSender, authenticationHandler, broker, indexProducer, persistenceProducer, indexManager, searchRequestValidator,
-        searchParametersConverter, relationSearcher, regularClientSearchResultCreator, regularClientSearchResultCreator, basicAuthenticationHandler);
+        searchParametersConverter, relationSearcher, regularClientSearchResultCreator, regularClientSearchResultCreator, basicAuthenticationHandler, changeHelper);
   }
 
   @Override
@@ -263,5 +265,11 @@ class ResourceTestModule extends JerseyServletModule {
   @Provides
   public BasicAuthenticationHandler provideBasicAuthenticationHandler() {
     return basicAuthenticationHandler;
+  }
+
+  @Singleton
+  @Provides
+  public ChangeHelper provideChangeHelper() {
+    return changeHelper;
   }
 }

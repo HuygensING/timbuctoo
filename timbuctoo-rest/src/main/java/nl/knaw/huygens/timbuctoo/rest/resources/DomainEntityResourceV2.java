@@ -41,7 +41,6 @@ import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
-import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -60,8 +59,8 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
   private static Logger LOG = LoggerFactory.getLogger(DomainEntityResourceV2.class);
 
   @Inject
-  public DomainEntityResourceV2(TypeRegistry registry, Repository repository, Broker broker) {
-    super(registry, repository, broker);
+  public DomainEntityResourceV2(TypeRegistry registry, Repository repository, ChangeHelper changeHelper) {
+    super(registry, repository, changeHelper);
   }
 
   @Override
@@ -192,7 +191,7 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
     if (Relation.class.isAssignableFrom(type)) {
       return Response.status(Status.BAD_REQUEST).entity("Relations cannot be deleted at this moment. Use PUT with \"^accepted\" set to false.").build();
     }
-    
+
     VRE vre = getValidVRE(vreId);
     checkCondition(vre.inScope(type, id), FORBIDDEN, "Entity %s %s not in scope %s", type, id, vreId);
 
@@ -203,8 +202,15 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
     }
 
     try {
-      repository.deleteDomainEntity(entity);
-      notifyChange(ActionType.MOD, type, entity, id);
+      List<String> updatedRelationIds = repository.deleteDomainEntity(entity);
+      changeHelper.notifyChange(ActionType.MOD, type, entity, id);
+
+      // FIXME: Quick hack to index and persist the updated relations.
+      // TODO: Find a better way to do this.
+      for (String relationId : updatedRelationIds) {
+        changeHelper.notifyChange(ActionType.MOD, Relation.class, repository.getEntity(Relation.class, relationId), relationId);
+      }
+
     } catch (NoSuchEntityException e) {
       return returnNotFoundResponse(id);
     } catch (StorageException e) {

@@ -26,6 +26,8 @@ import static nl.knaw.huygens.timbuctoo.storage.XProperties.propertyName;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -155,11 +157,19 @@ public class MongoQueries {
     return query;
   }
 
-  public DBObject setPropertyToValue(String propertyName, Object value) {
-    DBObject set = new BasicDBObject(propertyName, value);
+  public DBObject setPropertiesToValue(Map<String, Object> propertiesWithValues) {
+    BasicDBObject set = new BasicDBObject();
+    for (Entry<String, Object> entry : propertiesWithValues.entrySet()) {
+      set.append(entry.getKey(), entry.getValue());
+    }
+
     DBObject updateQuery = new BasicDBObject("$set", set);
 
     return updateQuery;
+  }
+
+  public DBObject incrementRevision() {
+    return new BasicDBObject("$inc", new BasicDBObject("^rev", 1));
   }
 
 }

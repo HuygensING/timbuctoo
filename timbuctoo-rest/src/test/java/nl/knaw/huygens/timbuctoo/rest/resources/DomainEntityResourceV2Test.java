@@ -13,19 +13,20 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import javax.jms.JMSException;
+import java.util.ArrayList;
+
 import javax.ws.rs.core.MediaType;
 
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
@@ -36,6 +37,7 @@ import org.junit.Test;
 import test.rest.model.projecta.ProjectADomainEntity;
 import test.rest.model.projecta.ProjectARelation;
 
+import com.google.common.collect.Lists;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.ClientResponse.Status;
 
@@ -137,9 +139,7 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
     verifyDomainEntity(type, response.getEntity(type), id);
 
     // handling of the relation entity itself
-    verify(getProducer(PERSISTENCE_PRODUCER), times(1)).send(ActionType.MOD, type, id);
-    verify(getProducer(INDEX_PRODUCER), times(1)).send(ActionType.MOD, type, id);
-    verifySourceAndTargetAreReIndexed(sourceId, targetId);
+    verify(getChangeHelper()).notifyChange(ActionType.MOD, type, entity, id);
   }
 
   @Override
@@ -193,7 +193,16 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
     when(vre.inScope(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(true);
     makeVREAvailable(vre, VRE_ID);
     setupUserWithRoles(VRE_ID, USER_ID, userRole);
-    createEntity();
+    DomainEntity entity = createEntity();
+
+    String relationId1 = "id1";
+    String relationId2 = "id2";
+    ArrayList<String> ids = Lists.newArrayList(relationId1, relationId2);
+    when(repository.deleteDomainEntity(any(DEFAULT_TYPE))).thenReturn(ids);
+    Relation relationMock1 = mock(Relation.class);
+    when(repository.getEntity(Relation.class, relationId1)).thenReturn(relationMock1);
+    Relation relationMock2 = mock(Relation.class);
+    when(repository.getEntity(Relation.class, relationId2)).thenReturn(relationMock2);
 
     // action
     ClientResponse response = createResource(DEFAULT_RESOURCE, DEFAULT_ID) //
@@ -202,10 +211,14 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
         .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
 
+    // verify
+    ChangeHelper changeHelper = injector.getInstance(ChangeHelper.class);
+
     verifyResponseStatus(response, Status.NO_CONTENT);
     verify(repository).deleteDomainEntity(any(DEFAULT_TYPE));
-    verify(getProducer(PERSISTENCE_PRODUCER)).send(ActionType.MOD, DEFAULT_TYPE, DEFAULT_ID);
-    verify(getProducer(INDEX_PRODUCER)).send(ActionType.MOD, DEFAULT_TYPE, DEFAULT_ID);
+    verify(changeHelper).notifyChange(ActionType.MOD, DEFAULT_TYPE, entity, DEFAULT_ID);
+    verify(changeHelper).notifyChange(ActionType.MOD, Relation.class, relationMock1, relationId1);
+    verify(changeHelper).notifyChange(ActionType.MOD, Relation.class, relationMock2, relationId2);
   }
 
   @Test
@@ -222,6 +235,7 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
         .header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
 
     verifyResponseStatus(response, Status.BAD_REQUEST);
+
   }
 
   @Test
@@ -254,7 +268,7 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
         .header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
 
     verifyResponseStatus(response, Status.NOT_FOUND);
-    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+    verifyZeroInteractions(getChangeHelper());
   }
 
   @Test
@@ -279,12 +293,6 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
   private <T extends DomainEntity> void verifyDomainEntity(Class<T> type, T entity, String expectedId) {
     assertThat(entity, is(notNullValue(type)));
     assertThat(entity.getId(), is(equalTo(expectedId)));
-  }
-
-  protected void verifySourceAndTargetAreReIndexed(String sourceId, String targetId) throws JMSException {
-    // handling of source and target entities of the relation
-    verify(getProducer(INDEX_PRODUCER), times(1)).send(ActionType.MOD, BASE_TYPE, sourceId);
-    verify(getProducer(INDEX_PRODUCER), times(1)).send(ActionType.MOD, BASE_TYPE, targetId);
   }
 
   // GET

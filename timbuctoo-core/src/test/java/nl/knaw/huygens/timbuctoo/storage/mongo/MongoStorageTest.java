@@ -36,6 +36,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -65,6 +66,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -299,16 +301,25 @@ public class MongoStorageTest extends MongoStorageTestBase {
   }
 
   @Test
-  public void declineRelationsOfEntitySetAcceptedToFalseForTheSelectedVariations() throws Exception {
+  public void declineRelationsOfEntitySetAcceptedToFalseForTheSelectedVariationsAndSetsThePIDToNullAndIncreasesTheRevision() throws Exception {
     // setup
     Class<ProjectARelation> type = ProjectARelation.class;
+    String propertyName = String.format("%s:accepted", TypeNames.getInternalName(type));
+
+    Map<String, Object> propertiesWithValues = Maps.newHashMap();
+    propertiesWithValues.put(propertyName, false);
+    propertiesWithValues.put(DomainEntity.PID, null);
 
     // action
     storage.declineRelationsOfEntity(type, DEFAULT_ID);
 
     // verify
-    String propertyName = String.format("%s:accepted", TypeNames.getInternalName(type));
-    dbCollection.update(queries.selectRelationsByEntityId(DEFAULT_ID), queries.setPropertyToValue(propertyName, false));
+    DBObject setQueryPart = queries.setPropertiesToValue(propertiesWithValues);
+    DBObject incQueryPArt = queries.incrementRevision();
+    BasicDBObject query = new BasicDBObject();
+    query.putAll(setQueryPart);
+    query.putAll(incQueryPArt);
+    verify(dbCollection).update(queries.selectRelationsByEntityId(DEFAULT_ID), query);
   }
 
   @Test(expected = IllegalArgumentException.class)

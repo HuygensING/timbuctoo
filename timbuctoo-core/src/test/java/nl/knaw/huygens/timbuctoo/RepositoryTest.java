@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.doThrow;
@@ -197,7 +198,7 @@ public class RepositoryTest {
     verify(storageMock).deleteSystemEntity(TestSystemEntity.class, DEFAULT_ID);
   }
 
-  @Ignore("Method cannot be used primitives at this moment.")
+  @Ignore("Method cannot be used for primitives at this moment.")
   @Test
   public void testDeleteDomainEntityPrimitive() throws Exception {
     BaseVariationDomainEntity entity = new BaseVariationDomainEntity(DEFAULT_ID);
@@ -208,11 +209,16 @@ public class RepositoryTest {
   }
 
   @Test
-  public void testDeleteDomainEntityProjectVariation() throws Exception {
+  public void testDeleteDomainEntityProjectVariationAndReturnsTheIdsOfTheUpdateRelatiosn() throws Exception {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     entity.setModified(change);
+    List<String> ids = Lists.newArrayList("id1", "id2");
 
-    repository.deleteDomainEntity(entity);
+    when(storageMock.getRelationIds(Lists.newArrayList(DEFAULT_ID))).thenReturn(ids);
+
+    List<String> actualIds = repository.deleteDomainEntity(entity);
+
+    assertThat(actualIds, is(equalTo(ids)));
 
     verify(storageMock).deleteVariation(ProjectADomainEntity.class, DEFAULT_ID, change);
     verify(storageMock).declineRelationsOfEntity(ProjectARelation.class, DEFAULT_ID);
