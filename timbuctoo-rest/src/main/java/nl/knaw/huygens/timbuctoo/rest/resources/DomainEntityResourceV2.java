@@ -58,10 +58,12 @@ import com.google.inject.Inject;
 @Path(V2_PATH + "/" + DOMAIN_PREFIX + "/" + ENTITY_PATH)
 public class DomainEntityResourceV2 extends DomainEntityResource {
   private static Logger LOG = LoggerFactory.getLogger(DomainEntityResourceV2.class);
+  private final ChangeHelper changeHelper;
 
   @Inject
-  public DomainEntityResourceV2(TypeRegistry registry, Repository repository, Broker broker) {
+  public DomainEntityResourceV2(TypeRegistry registry, Repository repository, Broker broker, ChangeHelper changeHelper) {
     super(registry, repository, broker);
+    this.changeHelper = changeHelper;
   }
 
   @Override
@@ -192,7 +194,7 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
     if (Relation.class.isAssignableFrom(type)) {
       return Response.status(Status.BAD_REQUEST).entity("Relations cannot be deleted at this moment. Use PUT with \"^accepted\" set to false.").build();
     }
-    
+
     VRE vre = getValidVRE(vreId);
     checkCondition(vre.inScope(type, id), FORBIDDEN, "Entity %s %s not in scope %s", type, id, vreId);
 
@@ -203,8 +205,15 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
     }
 
     try {
-      repository.deleteDomainEntity(entity);
-      notifyChange(ActionType.MOD, type, entity, id);
+      List<String> updatedRelationIds = repository.deleteDomainEntity(entity);
+      changeHelper.notifyChange(ActionType.MOD, type, entity, id);
+
+      // FIXME: Quick hack to index and persist the updated relations.
+      // TODO: Find a better way to do this.
+      for (String relationId : updatedRelationIds) {
+        changeHelper.notifyChange(ActionType.MOD, Relation.class, repository.getEntity(Relation.class, relationId), relationId);
+      }
+
     } catch (NoSuchEntityException e) {
       return returnNotFoundResponse(id);
     } catch (StorageException e) {
