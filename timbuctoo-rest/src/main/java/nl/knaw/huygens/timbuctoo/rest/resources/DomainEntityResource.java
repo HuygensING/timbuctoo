@@ -86,7 +86,7 @@ import com.google.common.base.Strings;
 import com.google.inject.Inject;
 
 /**
- * A REST resource for adressing collections of domain entities.
+ * A REST resource for addressing collections of domain entities.
  */
 @Path(V1_PATH_OPTIONAL + DOMAIN_PREFIX + "/" + ENTITY_PATH)
 public class DomainEntityResource extends ResourceBase {
