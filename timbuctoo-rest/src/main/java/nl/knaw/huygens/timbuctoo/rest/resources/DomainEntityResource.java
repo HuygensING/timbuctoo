@@ -44,7 +44,6 @@ import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.annotation.security.RolesAllowed;
-import javax.jms.JMSException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -66,10 +65,7 @@ import javax.ws.rs.core.UriInfo;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
-import nl.knaw.huygens.timbuctoo.messages.Broker;
-import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
@@ -95,13 +91,13 @@ public class DomainEntityResource extends ResourceBase {
 
   protected final TypeRegistry typeRegistry;
   protected final Repository repository;
-  protected final Broker broker;
+  protected final ChangeHelper changeHelper;
 
   @Inject
-  public DomainEntityResource(TypeRegistry registry, Repository repository, Broker broker) {
+  public DomainEntityResource(TypeRegistry registry, Repository repository, ChangeHelper changeHelper) {
     this.typeRegistry = registry;
     this.repository = repository;
-    this.broker = broker;
+    this.changeHelper = changeHelper;
   }
 
   // --- API -----------------------------------------------------------
@@ -157,7 +153,7 @@ public class DomainEntityResource extends ResourceBase {
     } catch (ValidationException e) {
       throw new TimbuctooException(BAD_REQUEST, "Invalid entity; %s", e.getMessage());
     }
-    notifyChange(ActionType.ADD, type, input, id);
+    changeHelper.notifyChange(ActionType.ADD, type, input, id);
 
     return Response.created(new URI(id)).build();
   }
@@ -218,7 +214,7 @@ public class DomainEntityResource extends ResourceBase {
     try {
       Change change = new Change(userId, vreId);
       repository.updateDomainEntity((Class<T>) type, (T) input, change);
-      notifyChange(ActionType.MOD, type, entity, id);
+      changeHelper.notifyChange(ActionType.MOD, type, entity, id);
     } catch (NoSuchEntityException e) {
       throw new TimbuctooException(NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
     } catch (UpdateException e) {
@@ -249,7 +245,7 @@ public class DomainEntityResource extends ResourceBase {
 
     try {
       for (String id : repository.getAllIdsWithoutPID(type)) {
-        sendPersistMessage(ActionType.MOD, type, id);
+        changeHelper.sendPersistMessage(ActionType.MOD, type, id);
       }
     } catch (StorageException e) {
       throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
@@ -278,67 +274,12 @@ public class DomainEntityResource extends ResourceBase {
 
     try {
       repository.deleteDomainEntity(entity);
-      notifyChange(ActionType.DEL, type, entity, id);
+      changeHelper.notifyChange(ActionType.DEL, type, entity, id);
       return Response.status(Status.NO_CONTENT).build();
     } catch (NoSuchEntityException e) {
       throw new TimbuctooException(NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
     } catch (StorageException e) {
       throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
-    }
-  }
-
-  // --- Message handling ----------------------------------------------
-
-  public static final String INDEX_MSG_PRODUCER = "ResourceIndexProducer";
-  public static final String PERSIST_MSG_PRODUCER = "ResourcePersistProducer";
-
-  /**
-   * Notify other software components of a change in the data.
-   */
-  protected void notifyChange(ActionType actionType, Class<? extends DomainEntity> type, DomainEntity entity, String id) {
-    switch (actionType) {
-      case ADD:
-      case MOD:
-        sendPersistMessage(actionType, type, id);
-        sendIndexMessage(actionType, type, id);
-        break;
-      case DEL:
-        sendIndexMessage(actionType, type, id);
-        break;
-      default:
-        LOG.error("Unexpected action {}", actionType);
-        break;
-    }
-
-    // TODO improve this solution
-    if (Relation.class.isAssignableFrom(type)) {
-      Relation relation = (Relation) entity;
-      updateIndex(relation.getSourceType(), relation.getSourceId());
-      updateIndex(relation.getTargetType(), relation.getTargetId());
-    }
-  }
-
-  private void updateIndex(String iname, String id) {
-    sendIndexMessage(ActionType.MOD, typeRegistry.getDomainEntityType(iname), id);
-  }
-
-  private void sendIndexMessage(ActionType actionType, Class<? extends DomainEntity> type, String id) {
-    try {
-      Producer producer = broker.getProducer(INDEX_MSG_PRODUCER, Broker.INDEX_QUEUE);
-      producer.send(actionType, type, id);
-    } catch (JMSException e) {
-      LOG.error("Failed to send index message {} - {} - {}. \n{}", actionType, type, id, e.getMessage());
-      LOG.debug("Exception", e);
-    }
-  }
-
-  protected void sendPersistMessage(ActionType actionType, Class<? extends DomainEntity> type, String id) {
-    try {
-      Producer producer = broker.getProducer(PERSIST_MSG_PRODUCER, Broker.PERSIST_QUEUE);
-      producer.send(actionType, type, id);
-    } catch (JMSException e) {
-      LOG.error("Failed to send persistence message {} - {} - {}. \n{}", actionType, type, id, e.getMessage());
-      LOG.debug("Exception", e);
     }
   }
 

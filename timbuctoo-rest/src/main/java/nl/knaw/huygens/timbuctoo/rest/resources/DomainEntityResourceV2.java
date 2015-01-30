@@ -41,7 +41,6 @@ import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
-import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -58,12 +57,10 @@ import com.google.inject.Inject;
 @Path(V2_PATH + "/" + DOMAIN_PREFIX + "/" + ENTITY_PATH)
 public class DomainEntityResourceV2 extends DomainEntityResource {
   private static Logger LOG = LoggerFactory.getLogger(DomainEntityResourceV2.class);
-  private final ChangeHelper changeHelper;
 
   @Inject
-  public DomainEntityResourceV2(TypeRegistry registry, Repository repository, Broker broker, ChangeHelper changeHelper) {
-    super(registry, repository, broker);
-    this.changeHelper = changeHelper;
+  public DomainEntityResourceV2(TypeRegistry registry, Repository repository, ChangeHelper changeHelper) {
+    super(registry, repository, changeHelper);
   }
 
   @Override

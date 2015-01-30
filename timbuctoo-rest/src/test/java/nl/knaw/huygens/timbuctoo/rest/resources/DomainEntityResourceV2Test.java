@@ -13,7 +13,6 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -21,7 +20,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 
-import javax.jms.JMSException;
 import javax.ws.rs.core.MediaType;
 
 import nl.knaw.huygens.timbuctoo.config.Paths;
@@ -141,9 +139,7 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
     verifyDomainEntity(type, response.getEntity(type), id);
 
     // handling of the relation entity itself
-    verify(getProducer(PERSISTENCE_PRODUCER), times(1)).send(ActionType.MOD, type, id);
-    verify(getProducer(INDEX_PRODUCER), times(1)).send(ActionType.MOD, type, id);
-    verifySourceAndTargetAreReIndexed(sourceId, targetId);
+    verify(getChangeHelper()).notifyChange(ActionType.MOD, type, entity, id);
   }
 
   @Override
@@ -272,7 +268,7 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
         .header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
 
     verifyResponseStatus(response, Status.NOT_FOUND);
-    verifyZeroInteractions(getProducer(PERSISTENCE_PRODUCER), getProducer(INDEX_PRODUCER));
+    verifyZeroInteractions(getChangeHelper());
   }
 
   @Test
@@ -297,12 +293,6 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
   private <T extends DomainEntity> void verifyDomainEntity(Class<T> type, T entity, String expectedId) {
     assertThat(entity, is(notNullValue(type)));
     assertThat(entity.getId(), is(equalTo(expectedId)));
-  }
-
-  protected void verifySourceAndTargetAreReIndexed(String sourceId, String targetId) throws JMSException {
-    // handling of source and target entities of the relation
-    verify(getProducer(INDEX_PRODUCER), times(1)).send(ActionType.MOD, BASE_TYPE, sourceId);
-    verify(getProducer(INDEX_PRODUCER), times(1)).send(ActionType.MOD, BASE_TYPE, targetId);
   }
 
   // GET
