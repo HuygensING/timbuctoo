@@ -111,11 +111,18 @@ public class MongoQueriesTest {
   @Test
   public void testSetPropertyToValue() {
     // setup
-    String propertyName = "ckccrelation:accepted";
-    String expected = "{\"$set\":{\"" + propertyName + "\":false}}";
+    String propertyName = "object:accepted";
+    boolean value1 = false;
+    String otherProperty = "object:otherProperty";
+    String value2 = "value";
+    String expected = String.format("{\"$set\":{\"%s\":%b,\"%s\":\"%s\"}}", propertyName, value1, otherProperty, value2);
+
+    Map<String, Object> propertiesWithValues = Maps.newHashMap();
+    propertiesWithValues.put(propertyName, value1);
+    propertiesWithValues.put(otherProperty, value2);
 
     // action
-    DBObject updateQuery = queries.setPropertyToValue(propertyName, false);
+    DBObject updateQuery = queries.setPropertiesToValue(propertiesWithValues);
 
     assertThat(toStringWithoutWhiteSpaces(updateQuery), is(equalTo(expected)));
   }

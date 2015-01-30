@@ -28,6 +28,7 @@ import static nl.knaw.huygens.timbuctoo.storage.Properties.propertyName;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -404,8 +405,11 @@ public class MongoStorage implements Storage {
     }
 
     String propertyName = String.format("%s:accepted", TypeNames.getInternalName(type));
+    HashMap<String, Object> propertiesWithValues = Maps.newHashMap();
+    propertiesWithValues.put(propertyName, false);
+    propertiesWithValues.put(DomainEntity.PID, null);
 
-    getDBCollection(type).update(queries.selectRelationsByEntityId(id), queries.setPropertyToValue(propertyName, false));
+    getDBCollection(type).update(queries.selectRelationsByEntityId(id), queries.setPropertiesToValue(propertiesWithValues));
 
   }
 
