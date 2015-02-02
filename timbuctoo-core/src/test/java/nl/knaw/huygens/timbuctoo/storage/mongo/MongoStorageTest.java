@@ -317,7 +317,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     BasicDBObject query = new BasicDBObject();
     query.putAll(setQueryPart);
     query.putAll(incQueryPArt);
-    verify(dbCollection).update(queries.selectRelationsByEntityId(DEFAULT_ID), query);
+    verify(dbCollection).update(queries.selectRelationsByEntityId(DEFAULT_ID), query, false, true);
   }
 
   @Test(expected = IllegalArgumentException.class)
