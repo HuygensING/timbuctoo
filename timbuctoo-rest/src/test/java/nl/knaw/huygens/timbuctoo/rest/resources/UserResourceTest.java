@@ -85,7 +85,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetAllUsers() {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, USER_ID, ADMIN_ROLE);
 
     StorageIterator<User> iterator = StorageIteratorStub.newInstance(createUser("id1", "a", "b"), createUser("id2", "c", "d"));
@@ -102,7 +102,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetAllUsersNotInRole() {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, USER_ID, NO_ROLES);
 
     ClientResponse response = createResource() //
@@ -123,7 +123,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetUserAsAdmin() {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, OTHER_USER_ID, ADMIN_ROLE);
 
     User expected = createUser(USER_ID, "test", "test");
@@ -141,7 +141,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetUserNotFound() {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, USER_ID, ADMIN_ROLE);
 
     when(userConfigurationHandler.getUser(USER_ID)).thenReturn(null);
@@ -155,7 +155,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetMyUserDataAsAdmin() {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, USER_ID, ADMIN_ROLE);
 
     User expected = createUser(USER_ID, "test", "test");
@@ -173,7 +173,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetMyUserDataAsUser() {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
 
     User expected = createUser(USER_ID, "test", "test");
@@ -191,7 +191,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetMyUserDataAsNewUser() throws Exception {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     User user = new User();
     user.setId(USER_ID);
     when(userConfigurationHandler.findUser(user)).thenReturn(user);
@@ -247,7 +247,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutUser() {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, USER_ID, ADMIN_ROLE);
     MailSender sender = injector.getInstance(MailSender.class);
 
@@ -271,7 +271,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutUserUserNotFound() throws Exception {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, USER_ID, ADMIN_ROLE);
 
     User user = createUser(USER_ID, "firstName", "lastName");
@@ -294,7 +294,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutUserNotInRole() {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, USER_ID, NO_ROLES);
 
     User user = createUser(USER_ID, "firstName", "lastName");
@@ -310,7 +310,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutUserNotLoggedIn() {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     User user = createUser(USER_ID, "firstName", "lastName");
     when(userConfigurationHandler.getUser(USER_ID)).thenReturn(null);
 
@@ -325,7 +325,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   @Ignore("Re enable the test if we have rethought the concept of deleting a user.")
   @Test
   public void testDeleteUser() {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, USER_ID, ADMIN_ROLE);
 
     ClientResponse response = createResource(USER_ID) //
@@ -338,7 +338,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   @Ignore("Re enable the test if we have rethought the concept of deleting a user.")
   @Test
   public void testDeleteUserUserNotFound() {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, USER_ID, ADMIN_ROLE);
     when(userConfigurationHandler.getUser(USER_ID)).thenReturn(null);
 
@@ -352,7 +352,7 @@ public class UserResourceTest extends WebServiceTestSetup {
   @Ignore("Re enable the test if we have rethought the concept of deleting a user.")
   @Test
   public void testDeleteUserNotInRole() {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, USER_ID, NO_ROLES);
 
     ClientResponse response = createResource(USER_ID) //
@@ -375,7 +375,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetVREAuthorizationAsAdmin() {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, OTHER_USER_ID, ADMIN_ROLE);
 
     VREAuthorization example = new VREAuthorization(VRE_ID, USER_ID);
@@ -416,7 +416,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetVREAuthorizationNotFound() {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, OTHER_USER_ID, ADMIN_ROLE);
 
     VREAuthorization example = new VREAuthorization(VRE_ID, USER_ID);
@@ -431,7 +431,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetVREAuthorizationNotInScope() {
-    setUpVREManager(OTHER_VRE_ID, true);
+    setVREExist(OTHER_VRE_ID, true);
     setupUserWithRoles(OTHER_VRE_ID, OTHER_USER_ID, ADMIN_ROLE);
 
     ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
@@ -443,7 +443,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPostVREAuthorizationAsAdmin() throws Exception {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, OTHER_USER_ID, ADMIN_ROLE);
 
     VREAuthorization authorization = new VREAuthorization(VRE_ID, USER_ID, USER_ROLE);
@@ -489,7 +489,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPostVREAuthorizationVREAuthorizationIsNull() throws Exception {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, OTHER_USER_ID, ADMIN_ROLE);
 
     ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH) //
@@ -504,7 +504,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPostVREAuthorizationNotInScope() throws Exception {
-    setUpVREManager(OTHER_VRE_ID, true);
+    setVREExist(OTHER_VRE_ID, true);
     setupUserWithRoles(OTHER_VRE_ID, OTHER_USER_ID, ADMIN_ROLE);
     VREAuthorization authorization = new VREAuthorization(VRE_ID, USER_ID, USER_ROLE);
 
@@ -520,7 +520,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutVREAuthorizationAsAdmin() throws Exception {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, OTHER_USER_ID, ADMIN_ROLE);
 
     VREAuthorization example = new VREAuthorization(VRE_ID, USER_ID);
@@ -539,7 +539,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutVREAuthorizationAsUser() throws Exception {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, OTHER_USER_ID, USER_ROLE);
     VREAuthorization authorization = new VREAuthorization(VRE_ID, USER_ID, USER_ROLE);
 
@@ -555,7 +555,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutVREAuthorizationNotLoggedIn() throws Exception {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setUserNotLoggedIn();
     VREAuthorization authorization = new VREAuthorization(VRE_ID, USER_ID, USER_ROLE);
 
@@ -571,7 +571,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutVREAuthorizationVREAuthorizationIsNull() throws Exception {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, OTHER_USER_ID, ADMIN_ROLE);
 
     ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
@@ -586,7 +586,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutVREAuthorizationNotFound() throws Exception {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, OTHER_USER_ID, ADMIN_ROLE);
     VREAuthorization authorization = new VREAuthorization(VRE_ID, USER_ID, USER_ROLE);
 
@@ -602,7 +602,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testPutVREAuthorizationNotInScope() throws Exception {
-    setUpVREManager(OTHER_VRE_ID, true);
+    setVREExist(OTHER_VRE_ID, true);
     setupUserWithRoles(OTHER_VRE_ID, OTHER_USER_ID, ADMIN_ROLE);
 
     VREAuthorization example = new VREAuthorization(VRE_ID, USER_ID);
@@ -621,7 +621,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteVREAuthorizationAsAdmin() throws Exception {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, OTHER_USER_ID, ADMIN_ROLE);
 
     VREAuthorization example = new VREAuthorization(VRE_ID, USER_ID);
@@ -640,7 +640,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteAuthorizationAsUser() throws Exception {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, OTHER_USER_ID, USER_ROLE);
 
     ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
@@ -655,7 +655,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteVREAuthorizationNotLoggedIn() throws Exception {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setUserNotLoggedIn();
 
     ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
@@ -670,7 +670,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteAuthorizationNotFound() throws Exception {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, OTHER_USER_ID, ADMIN_ROLE);
 
     VREAuthorization example = new VREAuthorization(VRE_ID, USER_ID);
@@ -688,7 +688,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testDeleteVREAuthorizationNotInScope() throws Exception {
-    setUpVREManager(OTHER_VRE_ID, true);
+    setVREExist(OTHER_VRE_ID, true);
     setupUserWithRoles(OTHER_VRE_ID, OTHER_USER_ID, ADMIN_ROLE);
 
     ClientResponse response = createResource(USER_ID, VREAUTHORIZATIONS_PATH, VRE_ID) //
@@ -703,7 +703,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetRolesAsAdmin() {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, USER_ID, ADMIN_ROLE);
 
     ClientResponse response = createResource("roles") //
@@ -718,7 +718,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetRolesAsUser() {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
 
     ClientResponse response = createResource("roles") //
@@ -730,7 +730,7 @@ public class UserResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetRolesNotLoggedIn() {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setUserNotLoggedIn();
 
     ClientResponse response = createResource("roles") //

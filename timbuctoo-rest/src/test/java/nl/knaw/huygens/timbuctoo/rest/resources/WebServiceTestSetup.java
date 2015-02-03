@@ -163,7 +163,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   }
 
   protected void makeVREAvailable(VRE vre, String vreId) {
-    when(repository.doesVREExist(vreId)).thenReturn(true);
+    setVREExist(vreId, true);
     when(repository.getVREById(vreId)).thenReturn(vre);
   }
 
@@ -172,7 +172,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
    * @param vreId the id to match the VRE.
    * @param vreExists {@code true} when the VRE has to exists {@code false} if not.
    */
-  protected void setUpVREManager(String vreId, boolean vreExists) {
+  protected void setVREExist(String vreId, boolean vreExists) {
     when(repository.doesVREExist(vreId)).thenReturn(vreExists);
   }
 
