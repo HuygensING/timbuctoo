@@ -100,7 +100,7 @@ public class SearchResource extends ResourceBase {
     String typeString = StringUtils.trimToNull(searchParams.getTypeString());
     searchRequestValidator.validate(vreId, registry.getXNameForIName(typeString), searchParamsV1);
 
-    VRE vre = repository.getVREById(vreId);
+    VRE vre = getValidVRE(repository, vreId);
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
 
     // Process
@@ -158,7 +158,7 @@ public class SearchResource extends ResourceBase {
 
     searchRequestValidator.validateRelationRequest(vreId, registry.getXNameForIName(typeString), params);
 
-    VRE vre = repository.getVREById(vreId);
+    VRE vre = getValidVRE(repository, vreId);
 
     // Process
     try {

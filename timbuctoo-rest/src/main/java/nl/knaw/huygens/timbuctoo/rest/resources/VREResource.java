@@ -33,7 +33,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
@@ -67,8 +66,7 @@ public class VREResource extends ResourceBase {
   @Produces({ MediaType.APPLICATION_JSON })
   @APIDesc("Provides info about the specified VRE.")
   public VREInfo getVREInfo(@PathParam("id") String vreId) {
-    VRE vre = repository.getVREById(vreId);
-    checkNotNull(vre, Status.NOT_FOUND, "No VRE with id %s", vreId);
+    VRE vre = getValidVRE(repository, vreId);
 
     VREInfo info = new VREInfo();
     info.setName(vre.getVreId());

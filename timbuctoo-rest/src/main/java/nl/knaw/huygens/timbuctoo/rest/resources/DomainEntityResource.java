@@ -290,7 +290,7 @@ public class DomainEntityResource extends ResourceBase {
   }
 
   protected VRE getValidVRE(String id) {
-    return checkNotNull(repository.getVREById(id), NOT_FOUND, "No VRE with id %s", id);
+    return getValidVRE(repository, id);
   }
 
 }

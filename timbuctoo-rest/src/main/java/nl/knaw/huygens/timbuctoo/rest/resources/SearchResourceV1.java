@@ -112,7 +112,7 @@ public class SearchResourceV1 extends ResourceBase {
 
     searchRequestValidator.validate(vreId, typeString, searchParams);
 
-    VRE vre = repository.getVREById(vreId);
+    VRE vre = getValidVRE(repository, vreId);
     Class<? extends DomainEntity> type = registry.getTypeForXName(typeString);
 
     // Process
@@ -140,7 +140,7 @@ public class SearchResourceV1 extends ResourceBase {
 
     Class<? extends DomainEntity> relationType = registry.getTypeForXName(relationTypeString);
     searchRequestValidator.validateRelationRequest(vreId, relationTypeString, params);
-    VRE vre = repository.getVREById(vreId);
+    VRE vre = getValidVRE(repository, vreId);
 
     // Process
     try {
