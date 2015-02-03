@@ -74,21 +74,26 @@ public class SearchResource extends ResourceBase {
 
   private static final Logger LOG = LoggerFactory.getLogger(SearchResource.class);
 
-  @Inject
-  private TypeRegistry registry;
-  @Inject
-  private Repository repository;
+  private final TypeRegistry registry;
+  private final Repository repository;
+
+  private final SearchRequestValidator searchRequestValidator;
+  final SearchParametersConverter searchParametersConverter;
+  private final RelationSearcher relationSearcher;
+  private final RegularSearchResultMapper regularSearchResultMapper;
+  private final RelationSearchResultMapper relationSearchResultMapper;
 
   @Inject
-  private SearchRequestValidator searchRequestValidator;
-  @Inject
-  SearchParametersConverter searchParametersConverter;
-  @Inject
-  private RelationSearcher relationSearcher;
-  @Inject
-  private RegularSearchResultMapper regularSearchResultMapper;
-  @Inject
-  private RelationSearchResultMapper relationSearchResultMapper;
+  public SearchResource(TypeRegistry registry, Repository repository, SearchRequestValidator searchRequestValidator, SearchParametersConverter searchParametersConverter,
+      RelationSearcher relationSearcher, RegularSearchResultMapper regularSearchResultMapper, RelationSearchResultMapper relationSearchResultMapper) {
+    this.registry = registry;
+    this.repository = repository;
+    this.searchRequestValidator = searchRequestValidator;
+    this.searchParametersConverter = searchParametersConverter;
+    this.relationSearcher = relationSearcher;
+    this.regularSearchResultMapper = regularSearchResultMapper;
+    this.relationSearchResultMapper = relationSearchResultMapper;
+  }
 
   @POST
   @APIDesc("Searches the Solr index")

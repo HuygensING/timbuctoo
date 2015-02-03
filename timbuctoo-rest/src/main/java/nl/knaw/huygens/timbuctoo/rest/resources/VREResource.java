@@ -48,10 +48,15 @@ import com.google.inject.Inject;
 @Path(VERSION_PATH_OPTIONAL + SYSTEM_PREFIX + "/vres")
 public class VREResource extends ResourceBase {
 
-  @Inject
   private Repository repository;
-  @Inject
   private VRECollection vres;
+
+  @Inject
+  public VREResource(Repository repository, VRECollection vres) {
+    this.repository = repository;
+    this.vres = vres;
+
+  }
 
   @GET
   @Produces({ MediaType.APPLICATION_JSON })

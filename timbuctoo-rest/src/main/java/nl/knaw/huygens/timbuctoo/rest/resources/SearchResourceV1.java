@@ -81,23 +81,27 @@ public class SearchResourceV1 extends ResourceBase {
 
   private static final String RELATION_PARAM = "relationType";
   private static final String RELATION_SEARCH_PREFIX = "{" + RELATION_PARAM + ": [a-z]*relations }";
-
   private static final Logger LOG = LoggerFactory.getLogger(SearchResourceV1.class);
 
+  private final TypeRegistry registry;
+  private final Repository repository;
+  private final Configuration config;
+  private final SearchRequestValidator searchRequestValidator;
+  private final RelationSearcher relationSearcher;
+  private final RegularSearchResultMapper regularSearchResultMapper;
+  private final RelationSearchResultMapper relationSearchResultMapper;
+
   @Inject
-  private TypeRegistry registry;
-  @Inject
-  private Repository repository;
-  @Inject
-  private Configuration config;
-  @Inject
-  private SearchRequestValidator searchRequestValidator;
-  @Inject
-  private RelationSearcher relationSearcher;
-  @Inject
-  private RegularSearchResultMapper regularSearchResultMapper;
-  @Inject
-  private RelationSearchResultMapper relationSearchResultMapper;
+  public SearchResourceV1(TypeRegistry registry, Repository repository, Configuration config, SearchRequestValidator searchRequestValidator, RelationSearcher relationSearcher,
+      RegularSearchResultMapper regularSearchResultMapper, RelationSearchResultMapper relationSearchResultMapper) {
+    this.registry = registry;
+    this.repository = repository;
+    this.config = config;
+    this.searchRequestValidator = searchRequestValidator;
+    this.relationSearcher = relationSearcher;
+    this.regularSearchResultMapper = regularSearchResultMapper;
+    this.relationSearchResultMapper = relationSearchResultMapper;
+  }
 
   @POST
   @Path("/" + ENTITY_PATH)
