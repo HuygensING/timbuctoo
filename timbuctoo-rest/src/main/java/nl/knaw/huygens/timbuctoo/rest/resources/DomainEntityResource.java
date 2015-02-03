@@ -90,13 +90,12 @@ public class DomainEntityResource extends ResourceBase {
   private static final Logger LOG = LoggerFactory.getLogger(DomainEntityResource.class);
 
   protected final TypeRegistry typeRegistry;
-  protected final Repository repository;
   protected final ChangeHelper changeHelper;
 
   @Inject
   public DomainEntityResource(TypeRegistry registry, Repository repository, ChangeHelper changeHelper) {
+    super(repository);
     this.typeRegistry = registry;
-    this.repository = repository;
     this.changeHelper = changeHelper;
   }
 
@@ -288,9 +287,4 @@ public class DomainEntityResource extends ResourceBase {
   protected final Class<? extends DomainEntity> getValidEntityType(String name) {
     return checkNotNull(typeRegistry.getTypeForXName(name), NOT_FOUND, "No domain entity collection %s", name);
   }
-
-  protected VRE getValidVRE(String id) {
-    return getValidVRE(repository, id);
-  }
-
 }

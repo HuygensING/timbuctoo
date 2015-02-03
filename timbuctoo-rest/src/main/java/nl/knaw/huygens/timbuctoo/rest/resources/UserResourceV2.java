@@ -28,6 +28,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
@@ -43,8 +44,8 @@ import com.google.inject.Inject;
 public class UserResourceV2 extends UserResource {
 
   @Inject
-  public UserResourceV2(UserConfigurationHandler userConfigurationHandler, MailSender mailSender) {
-    super(userConfigurationHandler, mailSender);
+  public UserResourceV2(Repository repository, UserConfigurationHandler userConfigurationHandler, MailSender mailSender) {
+    super(repository, userConfigurationHandler, mailSender);
   }
 
   @Override

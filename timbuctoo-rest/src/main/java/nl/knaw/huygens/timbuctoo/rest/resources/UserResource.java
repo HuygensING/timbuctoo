@@ -51,6 +51,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
@@ -76,7 +77,8 @@ public class UserResource extends ResourceBase {
   private final MailSender mailSender;
 
   @Inject
-  public UserResource(UserConfigurationHandler userConfigurationHandler, MailSender mailSender) {
+  public UserResource(Repository repository, UserConfigurationHandler userConfigurationHandler, MailSender mailSender) {
+    super(repository);
     this.userConfigurationHandler = userConfigurationHandler;
     this.mailSender = mailSender;
   }

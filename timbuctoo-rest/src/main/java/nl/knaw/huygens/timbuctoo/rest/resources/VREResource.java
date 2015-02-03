@@ -48,12 +48,11 @@ import com.google.inject.Inject;
 @Path(VERSION_PATH_OPTIONAL + SYSTEM_PREFIX + "/vres")
 public class VREResource extends ResourceBase {
 
-  private Repository repository;
   private VRECollection vres;
 
   @Inject
   public VREResource(Repository repository, VRECollection vres) {
-    this.repository = repository;
+    super(repository);
     this.vres = vres;
 
   }
@@ -74,7 +73,7 @@ public class VREResource extends ResourceBase {
   @Produces({ MediaType.APPLICATION_JSON })
   @APIDesc("Provides info about the specified VRE.")
   public VREInfo getVREInfo(@PathParam("id") String vreId) {
-    VRE vre = getValidVRE(repository, vreId);
+    VRE vre = super.getValidVRE(vreId);
 
     VREInfo info = new VREInfo();
     info.setName(vre.getVreId());

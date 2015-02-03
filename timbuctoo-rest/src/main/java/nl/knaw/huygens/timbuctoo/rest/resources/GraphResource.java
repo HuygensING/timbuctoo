@@ -75,12 +75,11 @@ public class GraphResource extends ResourceBase {
   private static final String ID_PARAM = "id";
   private static final String ID_PATH = "/{id: " + Paths.ID_REGEX + "}";
 
-  private final Repository repository;
   private final TypeRegistry registry;
 
   @Inject
   public GraphResource(Repository repository) {
-    this.repository = repository;
+    super(repository);
     registry = repository.getTypeRegistry();
   }
 

@@ -75,7 +75,6 @@ public class SearchResource extends ResourceBase {
   private static final Logger LOG = LoggerFactory.getLogger(SearchResource.class);
 
   private final TypeRegistry registry;
-  private final Repository repository;
 
   private final SearchRequestValidator searchRequestValidator;
   final SearchParametersConverter searchParametersConverter;
@@ -86,8 +85,8 @@ public class SearchResource extends ResourceBase {
   @Inject
   public SearchResource(TypeRegistry registry, Repository repository, SearchRequestValidator searchRequestValidator, SearchParametersConverter searchParametersConverter,
       RelationSearcher relationSearcher, RegularSearchResultMapper regularSearchResultMapper, RelationSearchResultMapper relationSearchResultMapper) {
+    super(repository);
     this.registry = registry;
-    this.repository = repository;
     this.searchRequestValidator = searchRequestValidator;
     this.searchParametersConverter = searchParametersConverter;
     this.relationSearcher = relationSearcher;
@@ -105,7 +104,7 @@ public class SearchResource extends ResourceBase {
     String typeString = StringUtils.trimToNull(searchParams.getTypeString());
     searchRequestValidator.validate(vreId, registry.getXNameForIName(typeString), searchParamsV1);
 
-    VRE vre = getValidVRE(repository, vreId);
+    VRE vre = getValidVRE(vreId);
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
 
     // Process
@@ -163,7 +162,7 @@ public class SearchResource extends ResourceBase {
 
     searchRequestValidator.validateRelationRequest(vreId, registry.getXNameForIName(typeString), params);
 
-    VRE vre = getValidVRE(repository, vreId);
+    VRE vre = getValidVRE(vreId);
 
     // Process
     try {

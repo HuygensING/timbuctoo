@@ -35,6 +35,13 @@ import nl.knaw.huygens.timbuctoo.vre.VRE;
  */
 public abstract class ResourceBase {
 
+  protected final Repository repository;
+
+  public ResourceBase(Repository repository) {
+    this.repository = repository;
+
+  }
+
   /**
    * Checks the specified condition
    * and throws a {@code TimbuctooException} if the condition is {@code false}.
@@ -54,8 +61,8 @@ public abstract class ResourceBase {
     return reference;
   }
 
-  protected VRE getValidVRE(Repository repository, String id) {
-    return checkNotNull(repository.getVREById(id), NOT_FOUND, "No VRE with id %s", id);
+  protected VRE getValidVRE(String id) {
+    return checkNotNull(this.repository.getVREById(id), NOT_FOUND, "No VRE with id %s", id);
   }
 
 }

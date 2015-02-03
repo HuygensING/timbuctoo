@@ -55,12 +55,11 @@ public class RelationTypeResource extends ResourceBase {
   private static final String ID_PATH = "/{id: " + RelationType.ID_PREFIX + "\\d+}";
 
   private final TypeRegistry registry;
-  private final Repository repository;
 
   @Inject
   public RelationTypeResource(TypeRegistry registry, Repository repository) {
+    super(repository);
     this.registry = registry;
-    this.repository = repository;
   }
 
   @GET
