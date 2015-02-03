@@ -23,6 +23,7 @@ package nl.knaw.huygens.timbuctoo.vre;
  */
 
 import java.util.List;
+import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.Configuration.VREDef;
@@ -32,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -43,7 +45,7 @@ public class VREs implements VRECollection {
 
   private static final Logger LOG = LoggerFactory.getLogger(VREs.class);
 
-  private final List<VRE> vres = Lists.newArrayList();
+  private final Map<String, VRE> vres = Maps.newHashMap();
 
   @Inject
   public VREs(Configuration config, IndexFactory indexFactory) {
@@ -51,13 +53,24 @@ public class VREs implements VRECollection {
       LOG.info("Adding {} - {}", vreDef.id, vreDef.description);
       VRE vre = new PackageVRE(vreDef.id, vreDef.description, vreDef.modelPackage, vreDef.receptions);
       vre.initIndexes(indexFactory);
-      vres.add(vre);
+      String vreId = vreDef.id;
+      vres.put(vreId, vre);
     }
   }
 
   @Override
   public List<VRE> getVREs() {
-    return vres;
+    return Lists.newArrayList(vres.values());
+  }
+
+  @Override
+  public boolean doesVREExist(String vreId) {
+    return vres.containsKey(vreId);
+  }
+
+  @Override
+  public VRE getVREById(String vreId) {
+    return vres.get(vreId);
   }
 
 }

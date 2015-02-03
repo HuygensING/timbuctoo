@@ -28,7 +28,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.EntityMapper;
@@ -63,7 +62,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -79,19 +77,19 @@ public class Repository {
   private final Storage storage;
   private final EntityMappers entityMappers;
   private final RelationTypes relationTypes;
-  private final Map<String, VRE> vreMap;
-
   private final RelationRefCreatorFactory relationRefCreatorFactory;
+  private final VRECollection vreCollection;
 
   @Inject
   public Repository(TypeRegistry registry, Storage storage, VRECollection vreCollection, RelationRefCreatorFactory relationRefCreatorFactory, RelationTypes relationTypes) throws StorageException {
     this.registry = registry;
     this.storage = storage;
+    this.vreCollection = vreCollection;
     this.relationRefCreatorFactory = relationRefCreatorFactory;
     this.relationTypes = relationTypes;
     entityMappers = new EntityMappers(registry.getDomainEntityTypes());
     createIndexes();
-    vreMap = initVREMap(vreCollection);
+
   }
 
   /**
@@ -138,28 +136,20 @@ public class Repository {
 
   // --- VRE's -----------------------------------------------------------------
 
-  private Map<String, VRE> initVREMap(VRECollection collection) {
-    Map<String, VRE> map = Maps.newTreeMap();
-    for (VRE vre : collection.getVREs()) {
-      map.put(vre.getVreId(), vre);
-    }
-    return map;
-  }
-
   /**
    * Returns the {@code VRE} that corresponds with {@code vreId},
    * or {@code null} if there is no such {@code VRE}.
    */
   public VRE getVREById(String vreId) {
-    return vreMap.get(vreId);
+    return vreCollection.getVREById(vreId);
   }
 
   public boolean doesVREExist(String vreId) {
-    return vreMap.containsKey(vreId);
+    return vreCollection.doesVREExist(vreId);
   }
 
   public Collection<VRE> getAllVREs() {
-    return vreMap.values();
+    return vreCollection.getVREs();
   }
 
   // --- add entities ----------------------------------------------------------

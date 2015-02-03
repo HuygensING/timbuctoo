@@ -29,6 +29,13 @@ import java.util.List;
  */
 public interface VRECollection {
 
+  boolean doesVREExist(String vreId);
+
   List<VRE> getVREs();
 
+  /**
+   * @returns the {@code VRE} that corresponds with {@code vreId},
+   * or {@code null} if there is no such {@code VRE}.
+   */
+  VRE getVREById(String vreId);
 }
