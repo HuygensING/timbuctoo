@@ -31,7 +31,7 @@ public interface VRECollection {
 
   boolean doesVREExist(String vreId);
 
-  List<VRE> getVREs();
+  List<VRE> getAll();
 
   /**
    * @returns the {@code VRE} that corresponds with {@code vreId},

@@ -62,7 +62,7 @@ public class VREResource extends ResourceBase {
   @APIDesc("Lists the available VRE's.")
   public Set<String> getAvailableVREs() {
     Set<String> ids = Sets.newTreeSet();
-    for (VRE vre : vres.getVREs()) {
+    for (VRE vre : vres.getAll()) {
       ids.add(vre.getVreId());
     }
     return ids;

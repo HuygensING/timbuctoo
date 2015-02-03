@@ -59,7 +59,7 @@ public class VREs implements VRECollection {
   }
 
   @Override
-  public List<VRE> getVREs() {
+  public List<VRE> getAll() {
     return Lists.newArrayList(vres.values());
   }
 

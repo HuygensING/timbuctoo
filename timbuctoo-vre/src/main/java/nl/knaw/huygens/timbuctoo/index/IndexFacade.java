@@ -69,7 +69,7 @@ public class IndexFacade implements IndexManager {
   }
 
   private Collection<VRE> getAllVREs() {
-    return vres.getVREs();
+    return vres.getAll();
   }
 
   @Override

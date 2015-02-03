@@ -109,7 +109,7 @@ public class IndexFacadeTest {
   }
 
   private void setupVREs(VRE... vres) {
-    when(vreCollectionMock.getVREs()).thenReturn(Lists.newArrayList(vres));
+    when(vreCollectionMock.getAll()).thenReturn(Lists.newArrayList(vres));
   }
 
   @Test
