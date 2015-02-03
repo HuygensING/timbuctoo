@@ -37,6 +37,7 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -54,12 +55,14 @@ public class IndexFacadeTest {
   private Repository repositoryMock;
   private static final Class<SubModel> TYPE = SubModel.class;
   private IndexStatus indexStatusMock;
+  private VRECollection vreCollectionMock;
 
   @Before
   public void setUp() {
     indexStatusMock = mock(IndexStatus.class);
     repositoryMock = mock(Repository.class);
-    instance = new IndexFacade(repositoryMock) {
+    vreCollectionMock = mock(VRECollection.class);
+    instance = new IndexFacade(repositoryMock, vreCollectionMock) {
       @Override
       protected IndexStatus createIndexStatus() {
         return indexStatusMock;
@@ -106,7 +109,7 @@ public class IndexFacadeTest {
   }
 
   private void setupVREs(VRE... vres) {
-    when(repositoryMock.getAllVREs()).thenReturn(Lists.newArrayList(vres));
+    when(vreCollectionMock.getVREs()).thenReturn(Lists.newArrayList(vres));
   }
 
   @Test
@@ -121,7 +124,7 @@ public class IndexFacadeTest {
     } finally {
       // verify
       verify(repositoryMock).getAllVariations(baseType, DEFAULT_ID);
-      verifyZeroInteractions(repositoryMock);
+      verifyZeroInteractions(vreCollectionMock);
     }
   }
 

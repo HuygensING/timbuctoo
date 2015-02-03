@@ -24,7 +24,6 @@ package nl.knaw.huygens.timbuctoo;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -146,10 +145,6 @@ public class Repository {
 
   public boolean doesVREExist(String vreId) {
     return vreCollection.doesVREExist(vreId);
-  }
-
-  public Collection<VRE> getAllVREs() {
-    return vreCollection.getVREs();
   }
 
   // --- add entities ----------------------------------------------------------

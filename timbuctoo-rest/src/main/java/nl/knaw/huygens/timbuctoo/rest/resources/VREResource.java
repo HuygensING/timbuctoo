@@ -39,6 +39,7 @@ import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -49,13 +50,15 @@ public class VREResource extends ResourceBase {
 
   @Inject
   private Repository repository;
+  @Inject
+  private VRECollection vres;
 
   @GET
   @Produces({ MediaType.APPLICATION_JSON })
   @APIDesc("Lists the available VRE's.")
   public Set<String> getAvailableVREs() {
     Set<String> ids = Sets.newTreeSet();
-    for (VRE vre : repository.getAllVREs()) {
+    for (VRE vre : vres.getVREs()) {
       ids.add(vre.getVreId());
     }
     return ids;

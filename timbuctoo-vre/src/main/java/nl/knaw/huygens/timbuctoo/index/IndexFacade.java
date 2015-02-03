@@ -30,6 +30,7 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -38,10 +39,12 @@ import com.google.inject.Singleton;
 public class IndexFacade implements IndexManager {
 
   private final Repository repository;
+  private final VRECollection vres;
 
   @Inject
-  public IndexFacade(Repository repository) {
+  public IndexFacade(Repository repository, VRECollection vres) {
     this.repository = repository;
+    this.vres = vres;
   }
 
   @Override
@@ -66,7 +69,7 @@ public class IndexFacade implements IndexManager {
   }
 
   private Collection<VRE> getAllVREs() {
-    return repository.getAllVREs();
+    return vres.getVREs();
   }
 
   @Override
