@@ -33,7 +33,7 @@ import nl.knaw.huygens.timbuctoo.vre.VRE;
 /**
  * Base class for Timbuctoo resources.
  */
-public class ResourceBase {
+public abstract class ResourceBase {
 
   /**
    * Checks the specified condition
