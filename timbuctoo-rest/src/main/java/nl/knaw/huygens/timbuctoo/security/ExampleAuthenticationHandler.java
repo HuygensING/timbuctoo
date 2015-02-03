@@ -31,6 +31,10 @@ import nl.knaw.huygens.security.client.model.HuygensSecurityInformation;
 import nl.knaw.huygens.security.client.model.SecurityInformation;
 import nl.knaw.huygens.security.core.model.Affiliation;
 
+/**
+ * @deprecated Use local login instead. 
+ */
+@Deprecated
 public class ExampleAuthenticationHandler implements AuthenticationHandler {
 
   @Override
