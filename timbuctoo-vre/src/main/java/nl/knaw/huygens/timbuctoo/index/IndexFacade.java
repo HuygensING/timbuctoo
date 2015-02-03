@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.index;
 
 import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
 
+import java.util.Collection;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.Repository;
@@ -58,10 +59,14 @@ public class IndexFacade implements IndexManager {
     Class<? extends DomainEntity> baseType = toBaseDomainEntity(type);
     List<? extends DomainEntity> variations = repository.getAllVariations(baseType, id);
     if (!variations.isEmpty()) {
-      for (VRE vre : repository.getAllVREs()) {
+      for (VRE vre : getAllVREs()) {
         indexChanger.executeIndexAction(baseType, vre, variations);
       }
     }
+  }
+
+  private Collection<VRE> getAllVREs() {
+    return repository.getAllVREs();
   }
 
   @Override
@@ -77,21 +82,21 @@ public class IndexFacade implements IndexManager {
 
   @Override
   public <T extends DomainEntity> void deleteEntity(Class<T> type, String id) throws IndexException {
-    for (VRE vre : repository.getAllVREs()) {
+    for (VRE vre : getAllVREs()) {
       vre.deleteFromIndex(type, id);
     }
   }
 
   @Override
   public <T extends DomainEntity> void deleteEntities(Class<T> type, List<String> ids) throws IndexException {
-    for (VRE vre : repository.getAllVREs()) {
+    for (VRE vre : getAllVREs()) {
       vre.deleteFromIndex(type, ids);
     }
   }
 
   @Override
   public void deleteAllEntities() throws IndexException {
-    for (VRE vre : repository.getAllVREs()) {
+    for (VRE vre : getAllVREs()) {
       vre.clearIndexes();
     }
   }
@@ -100,7 +105,7 @@ public class IndexFacade implements IndexManager {
   public IndexStatus getStatus() {
     IndexStatus indexStatus = createIndexStatus();
 
-    for (VRE vre : repository.getAllVREs()) {
+    for (VRE vre : getAllVREs()) {
       vre.addToIndexStatus(indexStatus);
     }
 
@@ -113,14 +118,14 @@ public class IndexFacade implements IndexManager {
 
   @Override
   public void commitAll() throws IndexException {
-    for (VRE vre : repository.getAllVREs()) {
+    for (VRE vre : getAllVREs()) {
       vre.commitAll();
     }
   }
 
   @Override
   public void close() {
-    for (VRE vre : repository.getAllVREs()) {
+    for (VRE vre : getAllVREs()) {
       vre.close();
     }
   }

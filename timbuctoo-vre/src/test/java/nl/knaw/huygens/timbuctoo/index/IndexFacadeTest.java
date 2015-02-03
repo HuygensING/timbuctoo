@@ -76,7 +76,7 @@ public class IndexFacadeTest {
 
     // when
     when(repositoryMock.getAllVariations(BASE_TYPE, DEFAULT_ID)).thenReturn(variations);
-    when(repositoryMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
+    setupVREs(vreMock);
 
     // action
     instance.addEntity(TYPE, DEFAULT_ID);
@@ -95,7 +95,7 @@ public class IndexFacadeTest {
 
     // when
     when(repositoryMock.getAllVariations(BASE_TYPE, DEFAULT_ID)).thenReturn(variations);
-    when(repositoryMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
+    setupVREs(vreMock1, vreMock2);
 
     // action
     instance.addEntity(TYPE, DEFAULT_ID);
@@ -103,6 +103,10 @@ public class IndexFacadeTest {
     // verify
     verify(vreMock1).addToIndex(BASE_TYPE, variations);
     verify(vreMock2).addToIndex(BASE_TYPE, variations);
+  }
+
+  private void setupVREs(VRE... vres) {
+    when(repositoryMock.getAllVREs()).thenReturn(Lists.newArrayList(vres));
   }
 
   @Test
@@ -131,7 +135,7 @@ public class IndexFacadeTest {
 
     // when
     when(repositoryMock.getAllVariations(BASE_TYPE, DEFAULT_ID)).thenReturn(variations);
-    when(repositoryMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
+    setupVREs(vreMock1, vreMock2);
     doThrow(IndexException.class).when(vreMock1).addToIndex(BASE_TYPE, variations);
 
     try {
@@ -153,7 +157,7 @@ public class IndexFacadeTest {
 
     // when
     doReturn(variations).when(repositoryMock).getAllVariations(BASE_TYPE, DEFAULT_ID);
-    when(repositoryMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
+    setupVREs(vreMock);
 
     // action
     instance.updateEntity(TYPE, DEFAULT_ID);
@@ -168,7 +172,7 @@ public class IndexFacadeTest {
     VRE vreMock = mock(VRE.class);
 
     // when
-    when(repositoryMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
+    setupVREs(vreMock);
 
     // action
     instance.deleteEntity(TYPE, DEFAULT_ID);
@@ -183,8 +187,7 @@ public class IndexFacadeTest {
     VRE vreMock1 = mock(VRE.class);
     VRE vreMock2 = mock(VRE.class);
 
-    // when
-    when(repositoryMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
+    setupVREs(vreMock1, vreMock2);
 
     // action
     instance.deleteEntity(TYPE, DEFAULT_ID);
@@ -200,8 +203,7 @@ public class IndexFacadeTest {
     VRE vreMock1 = mock(VRE.class);
     VRE vreMock2 = mock(VRE.class);
 
-    // when
-    when(repositoryMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
+    setupVREs(vreMock1, vreMock2);
     doThrow(IndexException.class).when(vreMock1).deleteFromIndex(TYPE, DEFAULT_ID);
 
     try {
@@ -221,7 +223,7 @@ public class IndexFacadeTest {
     List<String> ids = Lists.newArrayList("id1", "id2", "id3");
 
     // when
-    when(repositoryMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock));
+    setupVREs(vreMock);
 
     // action
     instance.deleteEntities(TYPE, ids);
@@ -236,8 +238,7 @@ public class IndexFacadeTest {
     VRE vreMock1 = mock(VRE.class);
     VRE vreMock2 = mock(VRE.class);
 
-    // when
-    when(repositoryMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
+    setupVREs(vreMock1, vreMock2);
 
     // action
     instance.deleteAllEntities();
@@ -253,8 +254,7 @@ public class IndexFacadeTest {
     VRE vreMock1 = mock(VRE.class);
     VRE vreMock2 = mock(VRE.class);
 
-    // when
-    when(repositoryMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
+    setupVREs(vreMock1, vreMock2);
     doThrow(IndexException.class).when(vreMock1).clearIndexes();
 
     try {
@@ -272,8 +272,7 @@ public class IndexFacadeTest {
     VRE vreMock1 = mock(VRE.class);
     VRE vreMock2 = mock(VRE.class);
 
-    // when
-    when(repositoryMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
+    setupVREs(vreMock1, vreMock2);
 
     // action
     IndexStatus actualIndexStatus = instance.getStatus();
@@ -291,8 +290,7 @@ public class IndexFacadeTest {
     VRE vreMock1 = mock(VRE.class);
     VRE vreMock2 = mock(VRE.class);
 
-    // when
-    when(repositoryMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
+    setupVREs(vreMock1, vreMock2);
 
     // action
     instance.commitAll();
@@ -308,8 +306,7 @@ public class IndexFacadeTest {
     VRE vreMock1 = mock(VRE.class);
     VRE vreMock2 = mock(VRE.class);
 
-    // when
-    when(repositoryMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
+    setupVREs(vreMock1, vreMock2);
     doThrow(IndexException.class).when(vreMock1).commitAll();
 
     try {
@@ -328,7 +325,7 @@ public class IndexFacadeTest {
     VRE vreMock1 = mock(VRE.class);
     VRE vreMock2 = mock(VRE.class);
 
-    when(repositoryMock.getAllVREs()).thenReturn(Lists.newArrayList(vreMock1, vreMock2));
+    setupVREs(vreMock1, vreMock2);
 
     // action
     instance.close();
