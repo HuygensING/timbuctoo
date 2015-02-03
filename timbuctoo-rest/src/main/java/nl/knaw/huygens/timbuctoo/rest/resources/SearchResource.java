@@ -60,6 +60,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -84,8 +85,8 @@ public class SearchResource extends ResourceBase {
 
   @Inject
   public SearchResource(TypeRegistry registry, Repository repository, SearchRequestValidator searchRequestValidator, SearchParametersConverter searchParametersConverter,
-      RelationSearcher relationSearcher, RegularSearchResultMapper regularSearchResultMapper, RelationSearchResultMapper relationSearchResultMapper) {
-    super(repository);
+      RelationSearcher relationSearcher, RegularSearchResultMapper regularSearchResultMapper, RelationSearchResultMapper relationSearchResultMapper, VRECollection vreCollection) {
+    super(repository, vreCollection);
     this.registry = registry;
     this.searchRequestValidator = searchRequestValidator;
     this.searchParametersConverter = searchParametersConverter;

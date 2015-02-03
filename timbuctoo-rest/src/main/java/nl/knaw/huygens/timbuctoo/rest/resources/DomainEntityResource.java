@@ -74,6 +74,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,8 +94,8 @@ public class DomainEntityResource extends ResourceBase {
   protected final ChangeHelper changeHelper;
 
   @Inject
-  public DomainEntityResource(TypeRegistry registry, Repository repository, ChangeHelper changeHelper) {
-    super(repository);
+  public DomainEntityResource(TypeRegistry registry, Repository repository, ChangeHelper changeHelper, VRECollection vreCollection) {
+    super(repository, vreCollection);
     this.typeRegistry = registry;
     this.changeHelper = changeHelper;
   }

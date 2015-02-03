@@ -29,6 +29,7 @@ import javax.ws.rs.core.Response.Status;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 /**
  * Base class for Timbuctoo resources.
@@ -36,9 +37,11 @@ import nl.knaw.huygens.timbuctoo.vre.VRE;
 public abstract class ResourceBase {
 
   protected final Repository repository;
+  private final VRECollection vreCollection;
 
-  public ResourceBase(Repository repository) {
+  public ResourceBase(Repository repository, VRECollection vreCollection) {
     this.repository = repository;
+    this.vreCollection = vreCollection;
 
   }
 
@@ -62,7 +65,7 @@ public abstract class ResourceBase {
   }
 
   protected VRE getValidVRE(String id) {
-    return checkNotNull(this.repository.getVREById(id), NOT_FOUND, "No VRE with id %s", id);
+    return checkNotNull(vreCollection.getVREById(id), NOT_FOUND, "No VRE with id %s", id);
   }
 
 }

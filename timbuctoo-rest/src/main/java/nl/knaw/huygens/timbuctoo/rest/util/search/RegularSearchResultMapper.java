@@ -35,6 +35,7 @@ import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
 import nl.knaw.huygens.timbuctoo.search.FullTextSearchFieldFinder;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
@@ -44,8 +45,9 @@ public class RegularSearchResultMapper extends SearchResultMapper {
   private final FullTextSearchFieldFinder fullTextSearchFieldFinder;
 
   @Inject
-  public RegularSearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator, FullTextSearchFieldFinder fullTextSearchFieldFinder) {
-    super(repository, sortableFieldFinder, hateoasURICreator);
+  public RegularSearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator, FullTextSearchFieldFinder fullTextSearchFieldFinder,
+      VRECollection vreCollection) {
+    super(repository, sortableFieldFinder, hateoasURICreator, vreCollection);
     this.fullTextSearchFieldFinder = fullTextSearchFieldFinder;
   }
 

@@ -33,6 +33,7 @@ import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import com.google.inject.Inject;
 
@@ -41,8 +42,8 @@ public class RelationSearchResultMapper extends SearchResultMapper {
   private final RelationMapper relationMapper;
 
   @Inject
-  public RelationSearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator, RelationMapper relationMapper) {
-    super(repository, sortableFieldFinder, hateoasURICreator);
+  public RelationSearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator, RelationMapper relationMapper, VRECollection vreCollection) {
+    super(repository, sortableFieldFinder, hateoasURICreator, vreCollection);
     this.relationMapper = relationMapper;
   }
 
@@ -51,7 +52,7 @@ public class RelationSearchResultMapper extends SearchResultMapper {
     RelationSearchResultDTO dto = new RelationSearchResultDTO();
 
     String queryId = searchResult.getId();
-    VRE vre = repository.getVREById(searchResult.getVreId());
+    VRE vre = vreCollection.getVREById(searchResult.getVreId());
     List<String> ids = getIds(searchResult);
     int numFound = ids.size();
     int normalizedStart = mapToRange(start, 0, numFound);

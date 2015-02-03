@@ -47,6 +47,7 @@ import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.rest.graph.D3Graph;
 import nl.knaw.huygens.timbuctoo.rest.graph.D3Node;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
@@ -55,8 +56,8 @@ import com.google.inject.Inject;
 public class ReceptionGraphResource extends ResourceBase {
 
   @Inject
-  public ReceptionGraphResource(Repository repository) {
-    super(repository);
+  public ReceptionGraphResource(Repository repository, VRECollection vreCollection) {
+    super(repository, vreCollection);
   }
 
   // --- API -----------------------------------------------------------

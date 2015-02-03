@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.rest.util.search;
 
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -34,6 +35,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -54,12 +56,17 @@ public class SearchResultMapperTest {
   protected Repository repositoryMock;
   protected SortableFieldFinder sortableFieldFinderMock;
   protected HATEOASURICreator hateoasURICreatorMock;
+  protected VRECollection vreCollectionMock;
 
   public void initializeRepository() {
-    vreMock = mock(VRE.class);
-    doReturn(VRE_ID).when(vreMock).getVreId();
     repositoryMock = mock(Repository.class);
-    doReturn(vreMock).when(repositoryMock).getVREById(VRE_ID);
+  }
+
+  public void initializeVRECollection() {
+    vreMock = mock(VRE.class);
+    when(vreMock.getVreId()).thenReturn(VRE_ID);
+    vreCollectionMock = mock(VRECollection.class);
+    when(vreCollectionMock.getVREById(VRE_ID)).thenReturn(vreMock);
   }
 
   public void initializeHATEOASURICreator() {

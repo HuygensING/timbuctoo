@@ -133,20 +133,6 @@ public class Repository {
     return registry;
   }
 
-  // --- VRE's -----------------------------------------------------------------
-
-  /**
-   * Returns the {@code VRE} that corresponds with {@code vreId},
-   * or {@code null} if there is no such {@code VRE}.
-   */
-  public VRE getVREById(String vreId) {
-    return vreCollection.getVREById(vreId);
-  }
-
-  public boolean doesVREExist(String vreId) {
-    return vreCollection.doesVREExist(vreId);
-  }
-
   // --- add entities ----------------------------------------------------------
 
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws StorageException, ValidationException {

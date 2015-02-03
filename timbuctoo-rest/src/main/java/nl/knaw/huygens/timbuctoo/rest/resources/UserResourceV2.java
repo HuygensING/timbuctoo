@@ -37,6 +37,7 @@ import nl.knaw.huygens.timbuctoo.security.UserConfigurationHandler;
 import nl.knaw.huygens.timbuctoo.security.UserRoles;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import com.google.inject.Inject;
 
@@ -44,8 +45,8 @@ import com.google.inject.Inject;
 public class UserResourceV2 extends UserResource {
 
   @Inject
-  public UserResourceV2(Repository repository, UserConfigurationHandler userConfigurationHandler, MailSender mailSender) {
-    super(repository, userConfigurationHandler, mailSender);
+  public UserResourceV2(Repository repository, UserConfigurationHandler userConfigurationHandler, MailSender mailSender, VRECollection vreCollection) {
+    super(repository, userConfigurationHandler, mailSender, vreCollection);
   }
 
   @Override

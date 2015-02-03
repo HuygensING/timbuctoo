@@ -40,6 +40,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
@@ -57,8 +58,8 @@ public class RelationTypeResource extends ResourceBase {
   private final TypeRegistry registry;
 
   @Inject
-  public RelationTypeResource(TypeRegistry registry, Repository repository) {
-    super(repository);
+  public RelationTypeResource(TypeRegistry registry, Repository repository, VRECollection vreCollection) {
+    super(repository, vreCollection);
     this.registry = registry;
   }
 

@@ -60,6 +60,7 @@ import nl.knaw.huygens.timbuctoo.security.UserConfigurationHandler;
 import nl.knaw.huygens.timbuctoo.security.UserRoles;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -77,8 +78,8 @@ public class UserResource extends ResourceBase {
   private final MailSender mailSender;
 
   @Inject
-  public UserResource(Repository repository, UserConfigurationHandler userConfigurationHandler, MailSender mailSender) {
-    super(repository);
+  public UserResource(Repository repository, UserConfigurationHandler userConfigurationHandler, MailSender mailSender, VRECollection vreCollection) {
+    super(repository, vreCollection);
     this.userConfigurationHandler = userConfigurationHandler;
     this.mailSender = mailSender;
   }

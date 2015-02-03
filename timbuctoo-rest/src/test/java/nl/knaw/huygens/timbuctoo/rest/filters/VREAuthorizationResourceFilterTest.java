@@ -28,11 +28,10 @@ import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-
-import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.rest.filters.VREAuthorizationFilterFactory.VREAuthorizationResourceFilter;
 import nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import org.junit.After;
 import org.junit.Before;
@@ -45,17 +44,17 @@ public class VREAuthorizationResourceFilterTest {
 
   private static final String VRE_ID = "testVRE";
   private VREAuthorizationResourceFilter instance;
-  private Repository repository;
+  private VRECollection vreCollectionMock;
 
   @Before
   public void setUp() {
-    repository = mock(Repository.class);
-    instance = new VREAuthorizationResourceFilter(repository);
+    vreCollectionMock = mock(VRECollection.class);
+    instance = new VREAuthorizationResourceFilter(vreCollectionMock);
   }
 
   @After
   public void tearDown() {
-    repository = null;
+    vreCollectionMock = null;
     instance = null;
   }
 
@@ -67,7 +66,7 @@ public class VREAuthorizationResourceFilterTest {
 
     instance.filter(request);
 
-    verify(repository, only()).doesVREExist(VRE_ID);
+    verify(vreCollectionMock, only()).doesVREExist(VRE_ID);
   }
 
   @Test(expected = TimbuctooException.class)
@@ -78,7 +77,7 @@ public class VREAuthorizationResourceFilterTest {
       instance.filter(request);
     } catch (TimbuctooException e) {
       assertEquals(Status.UNAUTHORIZED.getStatusCode(), e.getResponse().getStatus());
-      verifyZeroInteractions(repository);
+      verifyZeroInteractions(vreCollectionMock);
       throw e;
     }
   }
@@ -92,7 +91,7 @@ public class VREAuthorizationResourceFilterTest {
       instance.filter(request);
     } catch (TimbuctooException e) {
       assertEquals(Status.FORBIDDEN.getStatusCode(), e.getResponse().getStatus());
-      verify(repository, only()).doesVREExist(VRE_ID);
+      verify(vreCollectionMock, only()).doesVREExist(VRE_ID);
       throw e;
     }
   }
@@ -104,7 +103,7 @@ public class VREAuthorizationResourceFilterTest {
   }
 
   private void setupVREManager(String vreId, boolean vreExists) {
-    when(repository.doesVREExist(vreId)).thenReturn(vreExists);
+    when(vreCollectionMock.doesVREExist(vreId)).thenReturn(vreExists);
   }
 
 }

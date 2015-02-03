@@ -52,7 +52,7 @@ public class VREResource extends ResourceBase {
 
   @Inject
   public VREResource(Repository repository, VRECollection vres) {
-    super(repository);
+    super(repository, vres);
     this.vres = vres;
 
   }
