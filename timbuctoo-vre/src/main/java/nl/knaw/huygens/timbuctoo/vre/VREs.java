@@ -25,6 +25,7 @@ package nl.knaw.huygens.timbuctoo.vre;
 import java.util.List;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.Configuration.VREDef;
 import nl.knaw.huygens.timbuctoo.index.IndexFactory;
@@ -48,10 +49,10 @@ public class VREs implements VRECollection {
   private final Map<String, VRE> vres = Maps.newHashMap();
 
   @Inject
-  public VREs(Configuration config, IndexFactory indexFactory) {
+  public VREs(Configuration config, IndexFactory indexFactory, Repository repository) {
     for (VREDef vreDef : config.getVREDefs()) {
       LOG.info("Adding {} - {}", vreDef.id, vreDef.description);
-      VRE vre = new PackageVRE(vreDef.id, vreDef.description, vreDef.modelPackage, vreDef.receptions);
+      VRE vre = new PackageVRE(vreDef.id, vreDef.description, vreDef.modelPackage, vreDef.receptions, repository);
       vre.initIndexes(indexFactory);
       String vreId = vreDef.id;
       vres.put(vreId, vre);

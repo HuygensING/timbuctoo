@@ -25,10 +25,12 @@ package nl.knaw.huygens.timbuctoo.vre;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLanguage;
@@ -47,7 +49,8 @@ public class BaseVRETest {
   @BeforeClass
   public static void setupVRE() throws IOException {
     List<String> receptionNames = Lists.newArrayList();
-    vre = new PackageVRE("id", "Base VRE", "timbuctoo.model.base", receptionNames);
+    Repository repositoryMock = mock(Repository.class);
+    vre = new PackageVRE("id", "Base VRE", "timbuctoo.model.base", receptionNames, repositoryMock);
   }
 
   @AfterClass

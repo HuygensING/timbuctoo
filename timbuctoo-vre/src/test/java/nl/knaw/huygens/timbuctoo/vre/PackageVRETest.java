@@ -38,6 +38,7 @@ import java.util.Set;
 
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexCollection;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
@@ -49,6 +50,8 @@ import nl.knaw.huygens.timbuctoo.search.converters.SearchResultConverter;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InOrder;
+import org.mockito.Mockito;
 
 import test.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 import test.timbuctoo.index.model.Type1;
@@ -70,13 +73,15 @@ public class PackageVRETest {
   private IndexCollection indexCollectionMock;
   private Scope scopeMock;
   private PackageVRE vre;
+  private Repository repositoryMock;
 
   @Before
   public void setup() {
     indexCollectionMock = mock(IndexCollection.class);
     scopeMock = mock(Scope.class);
     when(indexCollectionMock.getIndexByType(TYPE)).thenReturn(indexMock);
-    vre = new PackageVRE("vreId", "description", scopeMock, indexCollectionMock, resultConverterMock);
+    repositoryMock = mock(Repository.class);
+    vre = new PackageVRE("vreId", "description", scopeMock, indexCollectionMock, resultConverterMock, repositoryMock);
   }
 
   @Test
@@ -268,7 +273,9 @@ public class PackageVRETest {
     vre.addToIndex(TYPE, variations);
 
     // verify
-    verify(indexMock).add(filteredVariations);
+    InOrder inOrder = Mockito.inOrder(repositoryMock, indexMock);
+    inOrder.verify(repositoryMock).addDerivedProperties(vre, entityInScope);
+    inOrder.verify(indexMock).add(filteredVariations);
   }
 
   @Test(expected = IndexException.class)
@@ -288,6 +295,7 @@ public class PackageVRETest {
       vre.addToIndex(TYPE, variations);
     } finally {
       // verify
+      verify(repositoryMock).addDerivedProperties(vre, entityInScope);
       verify(indexMock).add(filteredVariations);
     }
   }
@@ -307,7 +315,9 @@ public class PackageVRETest {
     vre.updateIndex(TYPE, variations);
 
     // verify
-    verify(indexMock).update(filteredVariations);
+    InOrder inOrder = Mockito.inOrder(repositoryMock, indexMock);
+    inOrder.verify(repositoryMock).addDerivedProperties(vre, entityInScope);
+    inOrder.verify(indexMock).update(filteredVariations);
   }
 
   @Test(expected = IndexException.class)
@@ -327,6 +337,7 @@ public class PackageVRETest {
       vre.updateIndex(TYPE, variations);
     } finally {
       // verify
+      verify(repositoryMock).addDerivedProperties(vre, entityInScope);
       verify(indexMock).update(filteredVariations);
     }
   }

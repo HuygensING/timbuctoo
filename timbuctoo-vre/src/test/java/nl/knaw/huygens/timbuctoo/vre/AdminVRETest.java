@@ -24,10 +24,12 @@ package nl.knaw.huygens.timbuctoo.vre;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.User;
@@ -45,7 +47,8 @@ public class AdminVRETest {
   @BeforeClass
   public static void setupVRE() throws IOException {
     List<String> receptionNames = Lists.newArrayList();
-    vre = new PackageVRE("Admin", "Admin VRE", "timbuctoo.model", receptionNames);
+    Repository repositoryMock = mock(Repository.class);
+    vre = new PackageVRE("Admin", "Admin VRE", "timbuctoo.model", receptionNames, repositoryMock);
   }
 
   @Test
