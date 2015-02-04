@@ -507,15 +507,12 @@ public class MongoStorageTest extends MongoStorageTestBase {
   @Test
   public void testGetRelationsByType() throws Exception {
     // setup
-    final String id1 = "id1";
-    final String id2 = "id2";
-    List<String> relationTypeIds = Lists.newArrayList(id1, id2);
-
-    final Class<Relation> type = Relation.class;
-    DBObject query = queries.selectByProperty(type, Relation.TYPE_ID, relationTypeIds);
+    String propertyName = properties.propertyName(Relation.class, Relation.TYPE_ID);
+    List<String> relationTypeIds = Lists.newArrayList("id1", "id2");
+    DBObject query = queries.selectByProperty(propertyName, relationTypeIds);
 
     // action
-    storage.getRelationsByType(type, relationTypeIds);
+    storage.getRelationsByType(Relation.class, relationTypeIds);
 
     // verify
     verify(mongoDB).find(dbCollection, query);

@@ -234,7 +234,8 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends Entity> StorageIterator<T> getEntitiesByProperty(Class<T> type, String field, String value) throws StorageException {
-    DBObject query = queries.selectByProperty(type, field, value);
+    String propertyName = properties.propertyName(type, field);
+    DBObject query = queries.selectByProperty(propertyName, value);
     return findItems(type, query);
   }
 
@@ -465,7 +466,8 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends Entity> T findItemByProperty(Class<T> type, String field, String value) throws StorageException {
-    DBObject query = queries.selectByProperty(type, field, value);
+    String propertyName = properties.propertyName(type, field);
+    DBObject query = queries.selectByProperty(propertyName, value);
     return getItem(type, query);
   }
 
@@ -583,8 +585,8 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends Relation> List<T> getRelationsByType(Class<T> type, List<String> relationTypeIds) throws StorageException {
-    DBObject query = queries.selectByProperty(type, Relation.TYPE_ID, relationTypeIds);
-
+    String propertyName = properties.propertyName(type, Relation.TYPE_ID);
+    DBObject query = queries.selectByProperty(propertyName, relationTypeIds);
     return findItems(type, query).getAll();
   }
 
