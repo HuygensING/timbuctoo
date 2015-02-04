@@ -33,6 +33,7 @@ import java.util.Set;
 
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexCollection;
@@ -70,10 +71,13 @@ public class PackageVRE implements VRE {
 
   private final SearchResultConverter searchResultConverter;
 
-  public PackageVRE(String vreId, String description, String modelPackage, List<String> receptions) {
+  private final Repository repository;
+
+  public PackageVRE(String vreId, String description, String modelPackage, List<String> receptions, Repository repository) {
     this.vreId = vreId;
     this.description = description;
     this.receptions = receptions;
+    this.repository = repository;
     this.indexCollection = new IndexCollection();
     this.searchResultConverter = new SearchResultConverter(vreId);
     this.scope = createScope(modelPackage);
@@ -81,9 +85,10 @@ public class PackageVRE implements VRE {
   }
 
   // For testing
-  public PackageVRE(String vreId, String description, Scope scope, IndexCollection indexCollection, SearchResultConverter searchResultConverter) {
+  public PackageVRE(String vreId, String description, Scope scope, IndexCollection indexCollection, SearchResultConverter searchResultConverter, Repository repository) {
     this.vreId = vreId;
     this.description = description;
+    this.repository = repository;
     this.receptions = Lists.newArrayList();
     this.indexCollection = indexCollection;
     this.searchResultConverter = searchResultConverter;
@@ -233,12 +238,33 @@ public class PackageVRE implements VRE {
 
   @Override
   public void addToIndex(Class<? extends DomainEntity> type, List<? extends DomainEntity> variations) throws IndexException {
-    indexCollection.getIndexByType(type).add(this.filter(variations));
+
+    IndexChanger indexAdder = new IndexChanger() {
+      @Override
+      public void change(Class<? extends DomainEntity> type, List<? extends DomainEntity> variations) throws IndexException {
+        indexCollection.getIndexByType(type).add(variations);
+      }
+    };
+    changeIndex(indexAdder, type, variations);
+  }
+
+  private void changeIndex(IndexChanger changer, Class<? extends DomainEntity> type, List<? extends DomainEntity> variations) throws IndexException {
+    List<? extends DomainEntity> filteredVariations = this.filter(variations);
+    for (DomainEntity variation : filteredVariations) {
+      repository.addDerivedProperties(this, variation);
+    }
+    changer.change(type, filteredVariations);
   }
 
   @Override
   public void updateIndex(Class<? extends DomainEntity> type, List<? extends DomainEntity> variations) throws IndexException {
-    indexCollection.getIndexByType(type).update(this.filter(variations));
+    IndexChanger indexUpdater = new IndexChanger() {
+      @Override
+      public void change(Class<? extends DomainEntity> type, List<? extends DomainEntity> variations) throws IndexException {
+        indexCollection.getIndexByType(type).update(variations);
+      }
+    };
+    changeIndex(indexUpdater, type, variations);
   }
 
   @Override
@@ -269,6 +295,10 @@ public class PackageVRE implements VRE {
         LOG.error("Failed to obtain status: {}", e.getMessage());
       }
     }
+  }
+
+  private interface IndexChanger {
+    void change(Class<? extends DomainEntity> type, List<? extends DomainEntity> variations) throws IndexException;
   }
 
 }

@@ -23,7 +23,6 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  */
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -82,7 +81,7 @@ public abstract class SearchResourceTestBase extends WebServiceTestSetup {
       when(vre.inScope(Mockito.<Class<? extends DomainEntity>> any())).thenReturn(isTypeInScope);
     }
 
-    when(repository.getVREById(anyString())).thenReturn(vre);
+    makeVREAvailable(vre, VRE_ID);
 
     return vre;
   }

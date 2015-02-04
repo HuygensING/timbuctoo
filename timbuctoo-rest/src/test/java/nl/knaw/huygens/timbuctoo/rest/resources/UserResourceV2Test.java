@@ -30,7 +30,7 @@ public class UserResourceV2Test extends UserResourceTest {
 
   @Override
   public void testPutUser() {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, "otherUserId", ADMIN_ROLE);
     MailSender sender = injector.getInstance(MailSender.class);
 
@@ -62,7 +62,7 @@ public class UserResourceV2Test extends UserResourceTest {
 
   @Override
   public void testPutVREAuthorizationAsAdmin() throws Exception {
-    setUpVREManager(VRE_ID, true);
+    setVREExist(VRE_ID, true);
     setupUserWithRoles(VRE_ID, OTHER_USER_ID, ADMIN_ROLE);
 
     VREAuthorization example = new VREAuthorization(VRE_ID, USER_ID);

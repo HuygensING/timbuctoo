@@ -46,6 +46,7 @@ import nl.knaw.huygens.timbuctoo.security.DefaultVREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.security.UserConfigurationHandler;
 import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.security.VREAuthorizationHandler;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.inject.Provides;
@@ -86,6 +87,7 @@ class ResourceTestModule extends JerseyServletModule {
   private UserConfigurationHandler userConfigurationHandler;
   private BasicAuthenticationHandler basicAuthenticationHandler;
   private ChangeHelper changeHelper;
+  private VRECollection vreCollection;
 
   public ResourceTestModule() {
     try {
@@ -110,6 +112,7 @@ class ResourceTestModule extends JerseyServletModule {
       relationClientSearchResultCreator = mock(RelationSearchResultMapper.class);
       basicAuthenticationHandler = mock(BasicAuthenticationHandler.class);
       changeHelper = mock(ChangeHelper.class);
+      vreCollection = mock(VRECollection.class);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -121,7 +124,7 @@ class ResourceTestModule extends JerseyServletModule {
    */
   public void cleanUpMocks() {
     reset(config, repository, userConfigurationHandler, jsonProvider, validator, mailSender, authenticationHandler, broker, indexProducer, persistenceProducer, indexManager, searchRequestValidator,
-        searchParametersConverter, relationSearcher, regularClientSearchResultCreator, regularClientSearchResultCreator, basicAuthenticationHandler, changeHelper);
+        searchParametersConverter, relationSearcher, regularClientSearchResultCreator, regularClientSearchResultCreator, basicAuthenticationHandler, changeHelper, vreCollection);
   }
 
   @Override
@@ -271,5 +274,11 @@ class ResourceTestModule extends JerseyServletModule {
   @Provides
   public ChangeHelper provideChangeHelper() {
     return changeHelper;
+  }
+
+  @Singleton
+  @Provides
+  public VRECollection provideVreCollection() {
+    return vreCollection;
   }
 }

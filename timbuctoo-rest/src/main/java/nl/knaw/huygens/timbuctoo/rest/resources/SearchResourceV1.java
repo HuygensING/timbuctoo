@@ -70,6 +70,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,23 +82,26 @@ public class SearchResourceV1 extends ResourceBase {
 
   private static final String RELATION_PARAM = "relationType";
   private static final String RELATION_SEARCH_PREFIX = "{" + RELATION_PARAM + ": [a-z]*relations }";
-
   private static final Logger LOG = LoggerFactory.getLogger(SearchResourceV1.class);
 
+  private final TypeRegistry registry;
+  private final Configuration config;
+  private final SearchRequestValidator searchRequestValidator;
+  private final RelationSearcher relationSearcher;
+  private final RegularSearchResultMapper regularSearchResultMapper;
+  private final RelationSearchResultMapper relationSearchResultMapper;
+
   @Inject
-  private TypeRegistry registry;
-  @Inject
-  private Repository repository;
-  @Inject
-  private Configuration config;
-  @Inject
-  private SearchRequestValidator searchRequestValidator;
-  @Inject
-  private RelationSearcher relationSearcher;
-  @Inject
-  private RegularSearchResultMapper regularSearchResultMapper;
-  @Inject
-  private RelationSearchResultMapper relationSearchResultMapper;
+  public SearchResourceV1(TypeRegistry registry, Repository repository, Configuration config, SearchRequestValidator searchRequestValidator, RelationSearcher relationSearcher,
+      RegularSearchResultMapper regularSearchResultMapper, RelationSearchResultMapper relationSearchResultMapper, VRECollection vreCollection) {
+    super(repository, vreCollection);
+    this.registry = registry;
+    this.config = config;
+    this.searchRequestValidator = searchRequestValidator;
+    this.relationSearcher = relationSearcher;
+    this.regularSearchResultMapper = regularSearchResultMapper;
+    this.relationSearchResultMapper = relationSearchResultMapper;
+  }
 
   @POST
   @Path("/" + ENTITY_PATH)
@@ -112,7 +116,7 @@ public class SearchResourceV1 extends ResourceBase {
 
     searchRequestValidator.validate(vreId, typeString, searchParams);
 
-    VRE vre = repository.getVREById(vreId);
+    VRE vre = getValidVRE(vreId);
     Class<? extends DomainEntity> type = registry.getTypeForXName(typeString);
 
     // Process
@@ -140,7 +144,7 @@ public class SearchResourceV1 extends ResourceBase {
 
     Class<? extends DomainEntity> relationType = registry.getTypeForXName(relationTypeString);
     searchRequestValidator.validateRelationRequest(vreId, relationTypeString, params);
-    VRE vre = repository.getVREById(vreId);
+    VRE vre = getValidVRE(vreId);
 
     // Process
     try {

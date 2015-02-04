@@ -41,6 +41,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.graph.GraphBuilder;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import com.google.inject.Inject;
 
@@ -75,12 +76,11 @@ public class GraphResource extends ResourceBase {
   private static final String ID_PARAM = "id";
   private static final String ID_PATH = "/{id: " + Paths.ID_REGEX + "}";
 
-  private final Repository repository;
   private final TypeRegistry registry;
 
   @Inject
-  public GraphResource(Repository repository) {
-    this.repository = repository;
+  public GraphResource(Repository repository, VRECollection vreCollection) {
+    super(repository, vreCollection);
     registry = repository.getTypeRegistry();
   }
 

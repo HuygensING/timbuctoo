@@ -565,7 +565,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testPostWrongType() throws Exception {
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
 
-    when(repository.doesVREExist(VRE_ID)).thenReturn(true);
+    setVREExist(VRE_ID, true);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID, "test");
     whenJsonProviderReadFromThenReturn(entity);
@@ -700,7 +700,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testDeleteEntityThatDoesNotExist() throws Exception {
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
 
-    when(repository.doesVREExist(VRE_ID)).thenReturn(true);
+    setVREExist(VRE_ID, true);
     when(repository.getEntity(BASE_TYPE, DEFAULT_ID)).thenReturn(null);
 
     ClientResponse response = createResource(BASE_RESOURCE, DEFAULT_ID) //
@@ -716,7 +716,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testDeleteTypeDoesNotExist() throws Exception {
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
 
-    when(repository.doesVREExist(VRE_ID)).thenReturn(true);
+    setVREExist(VRE_ID, true);
 
     ClientResponse response = createResource("unknownEntities", DEFAULT_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
@@ -908,7 +908,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testPutPIDTypeDoesNotExist() throws Exception {
     setupUserWithRoles(VRE_ID, USER_ID, ADMIN_ROLE);
 
-    when(repository.doesVREExist(VRE_ID)).thenReturn(true);
+    setVREExist(VRE_ID, true);
 
     ClientResponse response = doPutPIDRequest("unknowntypes");
     verifyResponseStatus(response, Status.NOT_FOUND);
@@ -921,7 +921,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   public void testPutPIDUserNotAllowed() throws Exception {
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
 
-    when(repository.doesVREExist(VRE_ID)).thenReturn(true);
+    setVREExist(VRE_ID, true);
 
     ClientResponse response = doPutPIDRequest("unknowntypes");
     verifyResponseStatus(response, Status.FORBIDDEN);

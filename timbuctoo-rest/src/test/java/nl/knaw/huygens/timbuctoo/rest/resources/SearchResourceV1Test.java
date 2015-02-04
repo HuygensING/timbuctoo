@@ -89,6 +89,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
   /**
    * Return the version of the api to test.
    */
+  @Override
   protected String getAPIVersion() {
     return Paths.V1_PATH;
   }
@@ -112,7 +113,6 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     String expected = getExpectedURL(ID);
     String actual = response.getHeaders().getFirst(LOCATION_HEADER);
     assertEquals(expected, actual);
-    verify(repository).getVREById(anyString());
     verifyVRESearchIsCalled(vreMock);
   }
 
@@ -167,7 +167,6 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
         .post(ClientResponse.class, params);
     verifyResponseStatus(response, Status.INTERNAL_SERVER_ERROR);
 
-    verify(repository).getVREById(anyString());
     verifyVRESearchIsCalled(vreMock);
   }
 
@@ -294,7 +293,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     VRE vreMock = mock(VRE.class);
     SearchResult searchResultMock = mock(SearchResult.class);
 
-    when(repository.getVREById(VRE_ID)).thenReturn(vreMock);
+    makeVREAvailable(vreMock, VRE_ID);
     when(searcher.search(any(VRE.class), isNotNull(new GenericType<Class<? extends DomainEntity>>() {}.getRawClass()), any(RelationSearchParameters.class))).thenReturn(searchResultMock);
     when(repository.addSystemEntity(SearchResult.class, searchResultMock)).thenReturn(ID);
 
@@ -332,7 +331,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     VRE vreMock = mock(VRE.class);
     SearchResult searchResultMock = mock(SearchResult.class);
 
-    when(repository.getVREById(VRE_ID)).thenReturn(vreMock);
+    makeVREAvailable(vreMock, VRE_ID);
     when(searcher.search(any(VRE.class), isNotNull(RELATION_TYPE), any(RelationSearchParameters.class))).thenReturn(searchResultMock);
     doThrow(Exception.class).when(repository).addSystemEntity(SearchResult.class, searchResultMock);
 
@@ -353,7 +352,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     RelationSearchParameters parameters = new RelationSearchParameters();
 
     VRE vreMock = mock(VRE.class);
-    when(repository.getVREById(VRE_ID)).thenReturn(vreMock);
+    makeVREAvailable(vreMock, VRE_ID);
     doThrow(SearchException.class).when(searcher).search(any(VRE.class), isNotNull(RELATION_TYPE), any(RelationSearchParameters.class));
 
     ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING) //

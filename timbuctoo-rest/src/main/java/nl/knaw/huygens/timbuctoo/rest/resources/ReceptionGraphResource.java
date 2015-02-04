@@ -47,6 +47,7 @@ import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.rest.graph.D3Graph;
 import nl.knaw.huygens.timbuctoo.rest.graph.D3Node;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
@@ -54,11 +55,9 @@ import com.google.inject.Inject;
 @Path(VERSION_PATH_OPTIONAL + "receptiongraph")
 public class ReceptionGraphResource extends ResourceBase {
 
-  private final Repository repository;
-
   @Inject
-  public ReceptionGraphResource(Repository repository) {
-    this.repository = repository;
+  public ReceptionGraphResource(Repository repository, VRECollection vreCollection) {
+    super(repository, vreCollection);
   }
 
   // --- API -----------------------------------------------------------
@@ -78,7 +77,7 @@ public class ReceptionGraphResource extends ResourceBase {
       @QueryParam("isSubject") @DefaultValue("true") boolean isSubject) //
   {
     checkNotNull(vreId, BAD_REQUEST, "No query parameter 'vreId'");
-    VRE vre = getValidVRE(repository, vreId);
+    VRE vre = getValidVRE(vreId);
     Class<? extends Person> personType = getPersonType(vre);
 
     checkNotNull(personId, BAD_REQUEST, "No query parameter 'personId'");

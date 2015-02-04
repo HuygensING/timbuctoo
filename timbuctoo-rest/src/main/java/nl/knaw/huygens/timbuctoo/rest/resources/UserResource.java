@@ -51,6 +51,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
@@ -59,6 +60,7 @@ import nl.knaw.huygens.timbuctoo.security.UserConfigurationHandler;
 import nl.knaw.huygens.timbuctoo.security.UserRoles;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -76,7 +78,8 @@ public class UserResource extends ResourceBase {
   private final MailSender mailSender;
 
   @Inject
-  public UserResource(UserConfigurationHandler userConfigurationHandler, MailSender mailSender) {
+  public UserResource(Repository repository, UserConfigurationHandler userConfigurationHandler, MailSender mailSender, VRECollection vreCollection) {
+    super(repository, vreCollection);
     this.userConfigurationHandler = userConfigurationHandler;
     this.mailSender = mailSender;
   }

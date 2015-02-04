@@ -26,9 +26,9 @@ import javax.ws.rs.core.Response.Status;
 
 import nl.knaw.huygens.security.client.filters.AbstractRolesAllowedResourceFilterFactory;
 import nl.knaw.huygens.security.client.filters.BypassFilter;
-import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import com.google.inject.Inject;
 import com.sun.jersey.api.model.AbstractMethod;
@@ -39,16 +39,16 @@ import com.sun.jersey.spi.container.ResourceFilter;
 
 public class VREAuthorizationFilterFactory extends AbstractRolesAllowedResourceFilterFactory {
 
-  private final Repository repository;
+  private final VRECollection vreCollection;
 
   @Inject
-  public VREAuthorizationFilterFactory(Repository repository) {
-    this.repository = repository;
+  public VREAuthorizationFilterFactory(VRECollection vreCollection) {
+    this.vreCollection = vreCollection;
   }
 
   @Override
   protected ResourceFilter createResourceFilter(AbstractMethod am) {
-    return new VREAuthorizationResourceFilter(this.repository);
+    return new VREAuthorizationResourceFilter(this.vreCollection);
   }
 
   @Override
@@ -61,10 +61,10 @@ public class VREAuthorizationFilterFactory extends AbstractRolesAllowedResourceF
    */
   protected static class VREAuthorizationResourceFilter implements ResourceFilter, ContainerRequestFilter {
 
-    private final Repository repository;
+    private final VRECollection vreCollection;
 
-    public VREAuthorizationResourceFilter(Repository repository) {
-      this.repository = repository;
+    public VREAuthorizationResourceFilter(VRECollection vreCollection) {
+      this.vreCollection = vreCollection;
     }
 
     @Override
@@ -76,7 +76,7 @@ public class VREAuthorizationFilterFactory extends AbstractRolesAllowedResourceF
         throw new TimbuctooException(Status.UNAUTHORIZED, "Missing VRE id");
       }
 
-      if (!repository.doesVREExist(vreId)) {
+      if (!vreCollection.doesVREExist(vreId)) {
         throw new TimbuctooException(Status.FORBIDDEN, "No VRE with id %s", vreId);
       }
 

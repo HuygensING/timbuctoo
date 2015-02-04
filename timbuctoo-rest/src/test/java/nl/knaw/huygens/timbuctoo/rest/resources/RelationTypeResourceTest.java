@@ -37,6 +37,7 @@ import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -66,12 +67,14 @@ public class RelationTypeResourceTest {
 
   private Repository repository;
   private RelationTypeResource resource;
+  private VRECollection vreCollection;
 
   @Before
   public void setup() {
+    vreCollection = mock(VRECollection.class);
     repository = mock(Repository.class);
     when(repository.getTypeRegistry()).thenReturn(registry);
-    resource = new RelationTypeResource(registry, repository);
+    resource = new RelationTypeResource(registry, repository, vreCollection);
   }
 
   @Test

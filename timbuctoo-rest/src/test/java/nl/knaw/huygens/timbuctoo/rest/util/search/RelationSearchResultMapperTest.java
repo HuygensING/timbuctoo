@@ -52,9 +52,10 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
     initializeRepository();
     initializeHATEOASURICreator();
     initilizeSortableFieldFinder();
+    initializeVRECollection();
 
     relationMapperMock = mock(RelationMapper.class);
-    instance = new RelationSearchResultMapper(repositoryMock, sortableFieldFinderMock, hateoasURICreatorMock, relationMapperMock);
+    instance = new RelationSearchResultMapper(repositoryMock, sortableFieldFinderMock, hateoasURICreatorMock, relationMapperMock, vreCollectionMock);
   }
 
   @Test

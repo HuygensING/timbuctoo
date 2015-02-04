@@ -31,6 +31,7 @@ import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,11 +45,13 @@ public abstract class SearchResultMapper {
   protected final Repository repository;
   protected final SortableFieldFinder sortableFieldFinder;
   protected final HATEOASURICreator hateoasURICreator;
+  protected final VRECollection vreCollection;
 
-  public SearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator) {
+  public SearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator, VRECollection vreCollection) {
     this.repository = repository;
     this.sortableFieldFinder = sortableFieldFinder;
     this.hateoasURICreator = hateoasURICreator;
+    this.vreCollection = vreCollection;
   }
 
   public abstract <T extends DomainEntity> SearchResultDTO create(Class<T> type, SearchResult searchResult, int start, int rows);
@@ -70,7 +73,7 @@ public abstract class SearchResultMapper {
   protected <T extends DomainEntity> List<T> retrieveEntitiesWithRelationsAndDerivedProperties(Class<T> type, List<String> ids, String vreId) {
     // Retrieve one-by-one to retain ordering
     List<T> entities = Lists.newArrayList();
-    VRE vre = repository.getVREById(vreId);
+    VRE vre = vreCollection.getVREById(vreId);
     for (String id : ids) {
       T entity = repository.getEntityWithRelations(type, id);
       repository.addDerivedProperties(vre, entity);

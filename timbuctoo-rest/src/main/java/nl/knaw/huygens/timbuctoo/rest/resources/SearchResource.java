@@ -60,6 +60,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -74,21 +75,25 @@ public class SearchResource extends ResourceBase {
 
   private static final Logger LOG = LoggerFactory.getLogger(SearchResource.class);
 
-  @Inject
-  private TypeRegistry registry;
-  @Inject
-  private Repository repository;
+  private final TypeRegistry registry;
+
+  private final SearchRequestValidator searchRequestValidator;
+  final SearchParametersConverter searchParametersConverter;
+  private final RelationSearcher relationSearcher;
+  private final RegularSearchResultMapper regularSearchResultMapper;
+  private final RelationSearchResultMapper relationSearchResultMapper;
 
   @Inject
-  private SearchRequestValidator searchRequestValidator;
-  @Inject
-  SearchParametersConverter searchParametersConverter;
-  @Inject
-  private RelationSearcher relationSearcher;
-  @Inject
-  private RegularSearchResultMapper regularSearchResultMapper;
-  @Inject
-  private RelationSearchResultMapper relationSearchResultMapper;
+  public SearchResource(TypeRegistry registry, Repository repository, SearchRequestValidator searchRequestValidator, SearchParametersConverter searchParametersConverter,
+      RelationSearcher relationSearcher, RegularSearchResultMapper regularSearchResultMapper, RelationSearchResultMapper relationSearchResultMapper, VRECollection vreCollection) {
+    super(repository, vreCollection);
+    this.registry = registry;
+    this.searchRequestValidator = searchRequestValidator;
+    this.searchParametersConverter = searchParametersConverter;
+    this.relationSearcher = relationSearcher;
+    this.regularSearchResultMapper = regularSearchResultMapper;
+    this.relationSearchResultMapper = relationSearchResultMapper;
+  }
 
   @POST
   @APIDesc("Searches the Solr index")
@@ -100,7 +105,7 @@ public class SearchResource extends ResourceBase {
     String typeString = StringUtils.trimToNull(searchParams.getTypeString());
     searchRequestValidator.validate(vreId, registry.getXNameForIName(typeString), searchParamsV1);
 
-    VRE vre = repository.getVREById(vreId);
+    VRE vre = getValidVRE(vreId);
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
 
     // Process
@@ -158,7 +163,7 @@ public class SearchResource extends ResourceBase {
 
     searchRequestValidator.validateRelationRequest(vreId, registry.getXNameForIName(typeString), params);
 
-    VRE vre = repository.getVREById(vreId);
+    VRE vre = getValidVRE(vreId);
 
     // Process
     try {

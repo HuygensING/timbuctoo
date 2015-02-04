@@ -47,6 +47,7 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,8 +60,8 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
   private static Logger LOG = LoggerFactory.getLogger(DomainEntityResourceV2.class);
 
   @Inject
-  public DomainEntityResourceV2(TypeRegistry registry, Repository repository, ChangeHelper changeHelper) {
-    super(registry, repository, changeHelper);
+  public DomainEntityResourceV2(TypeRegistry registry, Repository repository, ChangeHelper changeHelper, VRECollection vreCollection) {
+    super(registry, repository, changeHelper, vreCollection);
   }
 
   @Override

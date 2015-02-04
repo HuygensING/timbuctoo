@@ -24,11 +24,9 @@ package nl.knaw.huygens.timbuctoo;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.EntityMapper;
@@ -57,13 +55,11 @@ import nl.knaw.huygens.timbuctoo.util.KV;
 import nl.knaw.huygens.timbuctoo.util.RelationRefCreator;
 import nl.knaw.huygens.timbuctoo.util.RelationRefCreatorFactory;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
-import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -79,19 +75,17 @@ public class Repository {
   private final Storage storage;
   private final EntityMappers entityMappers;
   private final RelationTypes relationTypes;
-  private final Map<String, VRE> vreMap;
-
   private final RelationRefCreatorFactory relationRefCreatorFactory;
 
   @Inject
-  public Repository(TypeRegistry registry, Storage storage, VRECollection vreCollection, RelationRefCreatorFactory relationRefCreatorFactory, RelationTypes relationTypes) throws StorageException {
+  public Repository(TypeRegistry registry, Storage storage, RelationRefCreatorFactory relationRefCreatorFactory, RelationTypes relationTypes) throws StorageException {
     this.registry = registry;
     this.storage = storage;
     this.relationRefCreatorFactory = relationRefCreatorFactory;
     this.relationTypes = relationTypes;
     entityMappers = new EntityMappers(registry.getDomainEntityTypes());
     createIndexes();
-    vreMap = initVREMap(vreCollection);
+
   }
 
   /**
@@ -134,32 +128,6 @@ public class Repository {
 
   public TypeRegistry getTypeRegistry() {
     return registry;
-  }
-
-  // --- VRE's -----------------------------------------------------------------
-
-  private Map<String, VRE> initVREMap(VRECollection collection) {
-    Map<String, VRE> map = Maps.newTreeMap();
-    for (VRE vre : collection.getVREs()) {
-      map.put(vre.getVreId(), vre);
-    }
-    return map;
-  }
-
-  /**
-   * Returns the {@code VRE} that corresponds with {@code vreId},
-   * or {@code null} if there is no such {@code VRE}.
-   */
-  public VRE getVREById(String vreId) {
-    return vreMap.get(vreId);
-  }
-
-  public boolean doesVREExist(String vreId) {
-    return vreMap.containsKey(vreId);
-  }
-
-  public Collection<VRE> getAllVREs() {
-    return vreMap.values();
   }
 
   // --- add entities ----------------------------------------------------------

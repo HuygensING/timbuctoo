@@ -33,13 +33,13 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -48,15 +48,21 @@ import com.google.inject.Inject;
 @Path(VERSION_PATH_OPTIONAL + SYSTEM_PREFIX + "/vres")
 public class VREResource extends ResourceBase {
 
+  private VRECollection vres;
+
   @Inject
-  private Repository repository;
+  public VREResource(Repository repository, VRECollection vres) {
+    super(repository, vres);
+    this.vres = vres;
+
+  }
 
   @GET
   @Produces({ MediaType.APPLICATION_JSON })
   @APIDesc("Lists the available VRE's.")
   public Set<String> getAvailableVREs() {
     Set<String> ids = Sets.newTreeSet();
-    for (VRE vre : repository.getAllVREs()) {
+    for (VRE vre : vres.getAll()) {
       ids.add(vre.getVreId());
     }
     return ids;
@@ -67,8 +73,7 @@ public class VREResource extends ResourceBase {
   @Produces({ MediaType.APPLICATION_JSON })
   @APIDesc("Provides info about the specified VRE.")
   public VREInfo getVREInfo(@PathParam("id") String vreId) {
-    VRE vre = repository.getVREById(vreId);
-    checkNotNull(vre, Status.NOT_FOUND, "No VRE with id %s", vreId);
+    VRE vre = super.getValidVRE(vreId);
 
     VREInfo info = new VREInfo();
     info.setName(vre.getVreId());

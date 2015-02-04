@@ -19,7 +19,6 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoDBIntegrationTestHelper;
 import nl.knaw.huygens.timbuctoo.util.RelationRefCreatorFactory;
-import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import org.junit.After;
 import org.junit.Before;
@@ -40,7 +39,7 @@ public class RepositoryIntegrationTest {
     Storage storage = dbIntegrationTestHelper.createStorage(registry);
     relationRefCreatorFactoryMock = mock(RelationRefCreatorFactory.class);
 
-    instance = new Repository(registry, storage, mock(VRECollection.class), relationRefCreatorFactoryMock, new RelationTypes(storage));
+    instance = new Repository(registry, storage, relationRefCreatorFactoryMock, new RelationTypes(storage));
   }
 
   @After

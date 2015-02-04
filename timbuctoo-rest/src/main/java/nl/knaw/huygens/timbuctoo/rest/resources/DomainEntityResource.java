@@ -74,6 +74,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,13 +91,12 @@ public class DomainEntityResource extends ResourceBase {
   private static final Logger LOG = LoggerFactory.getLogger(DomainEntityResource.class);
 
   protected final TypeRegistry typeRegistry;
-  protected final Repository repository;
   protected final ChangeHelper changeHelper;
 
   @Inject
-  public DomainEntityResource(TypeRegistry registry, Repository repository, ChangeHelper changeHelper) {
+  public DomainEntityResource(TypeRegistry registry, Repository repository, ChangeHelper changeHelper, VRECollection vreCollection) {
+    super(repository, vreCollection);
     this.typeRegistry = registry;
-    this.repository = repository;
     this.changeHelper = changeHelper;
   }
 
@@ -288,9 +288,4 @@ public class DomainEntityResource extends ResourceBase {
   protected final Class<? extends DomainEntity> getValidEntityType(String name) {
     return checkNotNull(typeRegistry.getTypeForXName(name), NOT_FOUND, "No domain entity collection %s", name);
   }
-
-  protected VRE getValidVRE(String id) {
-    return checkNotNull(repository.getVREById(id), NOT_FOUND, "No VRE with id %s", id);
-  }
-
 }

@@ -40,6 +40,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
@@ -55,12 +56,11 @@ public class RelationTypeResource extends ResourceBase {
   private static final String ID_PATH = "/{id: " + RelationType.ID_PREFIX + "\\d+}";
 
   private final TypeRegistry registry;
-  private final Repository repository;
 
   @Inject
-  public RelationTypeResource(TypeRegistry registry, Repository repository) {
+  public RelationTypeResource(TypeRegistry registry, Repository repository, VRECollection vreCollection) {
+    super(repository, vreCollection);
     this.registry = registry;
-    this.repository = repository;
   }
 
   @GET

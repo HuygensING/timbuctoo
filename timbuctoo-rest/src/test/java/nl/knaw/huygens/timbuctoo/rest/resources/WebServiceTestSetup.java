@@ -40,6 +40,7 @@ import nl.knaw.huygens.timbuctoo.rest.filters.UserResourceFilterFactory;
 import nl.knaw.huygens.timbuctoo.rest.filters.VREAuthorizationFilterFactory;
 import nl.knaw.huygens.timbuctoo.security.UserConfigurationHandler;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -73,6 +74,7 @@ public abstract class WebServiceTestSetup extends JerseyTest {
 
   protected static Injector injector;
 
+  protected VRECollection vreCollection;
   protected Repository repository;
   protected UserConfigurationHandler userConfigurationHandler;
 
@@ -97,6 +99,11 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   @Before
   public void setupRepository() {
     repository = injector.getInstance(Repository.class);
+  }
+
+  @Before
+  public void setUpVRECollection() {
+    vreCollection = injector.getInstance(VRECollection.class);
   }
 
   /**
@@ -163,8 +170,8 @@ public abstract class WebServiceTestSetup extends JerseyTest {
   }
 
   protected void makeVREAvailable(VRE vre, String vreId) {
-    when(repository.doesVREExist(vreId)).thenReturn(true);
-    when(repository.getVREById(vreId)).thenReturn(vre);
+    setVREExist(vreId, true);
+    when(vreCollection.getVREById(vreId)).thenReturn(vre);
   }
 
   /**
@@ -172,8 +179,8 @@ public abstract class WebServiceTestSetup extends JerseyTest {
    * @param vreId the id to match the VRE.
    * @param vreExists {@code true} when the VRE has to exists {@code false} if not.
    */
-  protected void setUpVREManager(String vreId, boolean vreExists) {
-    when(repository.doesVREExist(vreId)).thenReturn(vreExists);
+  protected void setVREExist(String vreId, boolean vreExists) {
+    when(vreCollection.doesVREExist(vreId)).thenReturn(vreExists);
   }
 
   @SuppressWarnings("unchecked")
