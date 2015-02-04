@@ -27,7 +27,6 @@ import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
 
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -98,11 +97,15 @@ public class MongoStorage implements Storage {
     treeDecoderFactory = new TreeDecoderFactory();
   }
 
+  private String propertyName(Class<? extends Entity> type, String fieldName) {
+    return properties.propertyName(type, fieldName);
+  }
+
   @Override
   public void createIndex(boolean unique, Class<? extends Entity> type, String... fields) throws StorageException {
     DBObject keys = new BasicDBObject();
     for (String field : fields) {
-      keys.put(properties.propertyName(type, field), 1);
+      keys.put(propertyName(type, field), 1);
     }
     mongoDB.createIndex(getDBCollection(type), keys, new BasicDBObject("unique", unique));
   }
@@ -234,8 +237,7 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends Entity> StorageIterator<T> getEntitiesByProperty(Class<T> type, String field, String value) throws StorageException {
-    String propertyName = properties.propertyName(type, field);
-    DBObject query = queries.selectByProperty(propertyName, value);
+    DBObject query = queries.selectByProperty(propertyName(type, field), value);
     return findItems(type, query);
   }
 
@@ -398,7 +400,6 @@ public class MongoStorage implements Storage {
     inducer.adminDomainEntity(entity, (ObjectNode) tree);
 
     mongoDB.update(getDBCollection(type), query, toDBObject(tree));
-
   }
 
   @Override
@@ -407,17 +408,15 @@ public class MongoStorage implements Storage {
       throwTypeIsAPrimitiveException(type);
     }
 
-    String propertyName = String.format("%s:accepted", TypeNames.getInternalName(type));
-    HashMap<String, Object> propertiesWithValues = Maps.newHashMap();
-    propertiesWithValues.put(propertyName, false);
-    propertiesWithValues.put(DomainEntity.PID, null);
+    Map<String, Object> propertyMap = Maps.newHashMap();
+    propertyMap.put(propertyName(type, "accepted"), false);
+    propertyMap.put(DomainEntity.PID, null);
 
     BasicDBObject setQuery = new BasicDBObject();
-    setQuery.putAll(queries.setPropertiesToValue(propertiesWithValues));
+    setQuery.putAll(queries.setPropertiesToValue(propertyMap));
     setQuery.putAll(queries.incrementRevision());
 
     getDBCollection(type).update(queries.selectRelationsByEntityId(id), setQuery, false, true);
-
   }
 
   private void throwTypeIsAPrimitiveException(Class<? extends DomainEntity> type) throws IllegalArgumentException {
@@ -466,8 +465,7 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends Entity> T findItemByProperty(Class<T> type, String field, String value) throws StorageException {
-    String propertyName = properties.propertyName(type, field);
-    DBObject query = queries.selectByProperty(propertyName, value);
+    DBObject query = queries.selectByProperty(propertyName(type, field), value);
     return getItem(type, query);
   }
 
@@ -585,8 +583,7 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends Relation> List<T> getRelationsByType(Class<T> type, List<String> relationTypeIds) throws StorageException {
-    String propertyName = properties.propertyName(type, Relation.TYPE_ID);
-    DBObject query = queries.selectByProperty(propertyName, relationTypeIds);
+    DBObject query = queries.selectByProperty(propertyName(type, Relation.TYPE_ID), relationTypeIds);
     return findItems(type, query).getAll();
   }
 
@@ -598,7 +595,6 @@ public class MongoStorage implements Storage {
 
   @Override
   public boolean doesVariationExist(Class<? extends DomainEntity> type, String id) throws StorageException {
-
     try {
       JsonNode node = getExisting(type, queries.selectById(id));
 
@@ -616,15 +612,12 @@ public class MongoStorage implements Storage {
 
   private boolean doesVariationExist(String variation, ObjectNode objectTree) {
     ArrayNode variations = (ArrayNode) objectTree.get(DomainEntity.VARIATIONS);
-
-    boolean containsVariation = false;
     for (Iterator<JsonNode> variationIterator = variations.elements(); variationIterator.hasNext();) {
       if (Objects.equal(variation, variationIterator.next().asText())) {
-        containsVariation = true;
-        break;
+        return true;
       }
     }
-    return containsVariation;
+    return false;
   }
 
 }

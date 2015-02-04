@@ -154,15 +154,12 @@ public class MongoQueries {
     return query;
   }
 
-  public DBObject setPropertiesToValue(Map<String, Object> propertiesWithValues) {
+  public DBObject setPropertiesToValue(Map<String, Object> propertyMap) {
     BasicDBObject set = new BasicDBObject();
-    for (Entry<String, Object> entry : propertiesWithValues.entrySet()) {
+    for (Entry<String, Object> entry : propertyMap.entrySet()) {
       set.append(entry.getKey(), entry.getValue());
     }
-
-    DBObject updateQuery = new BasicDBObject("$set", set);
-
-    return updateQuery;
+    return new BasicDBObject("$set", set);
   }
 
   public DBObject incrementRevision() {
