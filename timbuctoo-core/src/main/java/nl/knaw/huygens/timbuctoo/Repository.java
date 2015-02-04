@@ -55,7 +55,6 @@ import nl.knaw.huygens.timbuctoo.util.KV;
 import nl.knaw.huygens.timbuctoo.util.RelationRefCreator;
 import nl.knaw.huygens.timbuctoo.util.RelationRefCreatorFactory;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
-import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,13 +76,11 @@ public class Repository {
   private final EntityMappers entityMappers;
   private final RelationTypes relationTypes;
   private final RelationRefCreatorFactory relationRefCreatorFactory;
-  private final VRECollection vreCollection;
 
   @Inject
-  public Repository(TypeRegistry registry, Storage storage, VRECollection vreCollection, RelationRefCreatorFactory relationRefCreatorFactory, RelationTypes relationTypes) throws StorageException {
+  public Repository(TypeRegistry registry, Storage storage, RelationRefCreatorFactory relationRefCreatorFactory, RelationTypes relationTypes) throws StorageException {
     this.registry = registry;
     this.storage = storage;
-    this.vreCollection = vreCollection;
     this.relationRefCreatorFactory = relationRefCreatorFactory;
     this.relationTypes = relationTypes;
     entityMappers = new EntityMappers(registry.getDomainEntityTypes());
