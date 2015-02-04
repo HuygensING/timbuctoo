@@ -49,7 +49,6 @@ import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.Properties;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.XProperties;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -88,18 +87,19 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   // ---------------------------------------------------------------------------
 
+  private Properties properties;
   private MongoStorage storage;
 
   @Override
   protected void setupStorage() {
-    Properties properties = new MongoProperties();
+    properties = new MongoProperties();
     EntityInducer inducer = new EntityInducer(properties);
     EntityReducer reducer = new EntityReducer(properties, registry);
     storage = new MongoStorage(mongoDB, entityIds, properties, inducer, reducer);
   }
 
   private String propertyName(Class<? extends Entity> type, String fieldName) {
-    return XProperties.propertyName(type, fieldName);
+    return properties.propertyName(type, fieldName);
   }
 
   // ---------------------------------------------------------------------------

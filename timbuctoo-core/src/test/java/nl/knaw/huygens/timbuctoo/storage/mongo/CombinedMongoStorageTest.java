@@ -22,7 +22,6 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.storage.XProperties.propertyName;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
@@ -35,7 +34,6 @@ import static org.mockito.Mockito.when;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
@@ -51,7 +49,6 @@ import org.junit.Test;
 import org.mongojack.internal.stream.JacksonDBObject;
 
 import test.variation.model.BaseVariationDomainEntity;
-import test.variation.model.TestConcreteDoc;
 import test.variation.model.TestSystemEntity;
 import test.variation.model.projecta.ProjectADomainEntity;
 
@@ -96,20 +93,6 @@ public class CombinedMongoStorageTest {
     mapper = new ObjectMapper();
 
     when(mongoDB.getCollection(anyString())).thenReturn(anyCollection);
-  }
-
-  private Map<String, Object> createDefaultMap(String id) {
-    Map<String, Object> map = Maps.newHashMap();
-    map.put("_id", id);
-    map.put("^rev", 0);
-    map.put(DomainEntity.DELETED, false);
-    return map;
-  }
-
-  private DBObject createTestConcreteDocDBObject(String id, String name) {
-    Map<String, Object> map = createDefaultMap(id);
-    map.put(propertyName(TestConcreteDoc.class, "name"), name);
-    return new DBJsonNode(mapper.valueToTree(map));
   }
 
   // -------------------------------------------------------------------
