@@ -52,7 +52,7 @@ public abstract class DomainEntity extends Entity {
   private String pid; // the persistent identifier.
   private boolean deleted;
   private int relationCount;
-  private final Map<String, String> properties = Maps.newHashMap();
+  private final Map<String, Object> properties = Maps.newHashMap();
   private final Map<String, Set<RelationRef>> relations = Maps.newHashMap();
   private List<String> variations = Lists.newArrayList();
 
@@ -94,16 +94,16 @@ public abstract class DomainEntity extends Entity {
   }
 
   @JsonProperty("@properties")
-  public Map<String, String> getProperties() {
+  public Map<String, Object> getProperties() {
     return properties;
   }
 
   @JsonIgnore
-  public String getProperty(String name) {
+  public Object getProperty(String name) {
     return properties.get(name);
   }
 
-  public void addProperty(String name, String value) {
+  public void addProperty(String name, Object value) {
     properties.put(name, value);
   }
 
