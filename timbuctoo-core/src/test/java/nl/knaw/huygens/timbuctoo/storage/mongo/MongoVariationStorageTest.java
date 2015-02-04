@@ -80,7 +80,7 @@ public class MongoVariationStorageTest extends MongoStorageTestBase {
     Properties properties = new MongoProperties();
     EntityInducer inducer = new EntityInducer(properties);
     EntityReducer reducer = new EntityReducer(properties, registry);
-    storage = new MongoStorage(new MongoDB(mongo, db), entityIds, inducer, reducer);
+    storage = new MongoStorage(new MongoDB(mongo, db), entityIds, properties, inducer, reducer);
     returnIdField = new BasicDBObject("_id", 1);
   }
 

@@ -95,7 +95,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     Properties properties = new MongoProperties();
     EntityInducer inducer = new EntityInducer(properties);
     EntityReducer reducer = new EntityReducer(properties, registry);
-    storage = new MongoStorage(mongoDB, entityIds, inducer, reducer);
+    storage = new MongoStorage(mongoDB, entityIds, properties, inducer, reducer);
   }
 
   private String propertyName(Class<? extends Entity> type, String fieldName) {

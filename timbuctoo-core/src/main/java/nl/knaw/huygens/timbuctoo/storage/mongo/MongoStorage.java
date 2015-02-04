@@ -24,7 +24,6 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
 import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
-import static nl.knaw.huygens.timbuctoo.storage.XProperties.propertyName;
 
 import java.util.Collections;
 import java.util.Date;
@@ -43,6 +42,7 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
+import nl.knaw.huygens.timbuctoo.storage.Properties;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
@@ -80,13 +80,15 @@ public class MongoStorage implements Storage {
   private final EntityReducer reducer;
   private final MongoQueries queries;
   private final ObjectMapper objectMapper;
+  private final Properties properties;
   private final TreeEncoderFactory treeEncoderFactory;
   private final TreeDecoderFactory treeDecoderFactory;
 
   @Inject
-  public MongoStorage(MongoDB mongoDB, EntityIds entityIds, EntityInducer inducer, EntityReducer reducer) {
+  public MongoStorage(MongoDB mongoDB, EntityIds entityIds, Properties properties, EntityInducer inducer, EntityReducer reducer) {
     this.mongoDB = mongoDB;
     this.entityIds = entityIds;
+    this.properties = properties;
     this.inducer = inducer;
     this.reducer = reducer;
 
@@ -100,7 +102,7 @@ public class MongoStorage implements Storage {
   public void createIndex(boolean unique, Class<? extends Entity> type, String... fields) throws StorageException {
     DBObject keys = new BasicDBObject();
     for (String field : fields) {
-      keys.put(propertyName(type, field), 1);
+      keys.put(properties.propertyName(type, field), 1);
     }
     mongoDB.createIndex(getDBCollection(type), keys, new BasicDBObject("unique", unique));
   }

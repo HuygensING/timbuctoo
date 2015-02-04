@@ -62,7 +62,7 @@ public class MongoDBIntegrationTestHelper implements DBIntegrationTestHelper {
     Properties properties = new MongoProperties();
     EntityInducer inducer = new EntityInducer(properties);
     EntityReducer reducer = new EntityReducer(properties, registry);
-    return new MongoStorage(mongoDB, new EntityIds(registry, mongoDB), inducer, reducer);
+    return new MongoStorage(mongoDB, new EntityIds(registry, mongoDB), properties, inducer, reducer);
   }
 
 }
