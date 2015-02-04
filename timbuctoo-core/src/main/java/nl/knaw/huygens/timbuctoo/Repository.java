@@ -542,7 +542,7 @@ public class Repository {
           Class<? extends DomainEntity> type = vre.mapTypeName(iname, REQUIRED);
           String id = regular ? relation.getTargetId() : relation.getSourceId();
           Object value = type.getMethod(property.getAccessor()).invoke(getEntity(type, id));
-          entity.addProperty(property.getPropertyName(), value.toString());
+          entity.addProperty(property.getPropertyName(), value);
         }
       } catch (Exception e) {
         LOG.error("Failed to add derived property: {}", e.getMessage());
