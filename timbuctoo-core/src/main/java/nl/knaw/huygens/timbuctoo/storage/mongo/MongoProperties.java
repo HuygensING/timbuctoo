@@ -39,7 +39,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public class MongoProperties implements Properties {
 
   /** Separator between parts of a property name. */
-  private static final String SEPARATOR = ":";
+  static final String SEPARATOR = ":";
 
   private final ObjectMapper jsonMapper;
 
