@@ -22,7 +22,6 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.storage.XProperties.propertyName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -80,6 +79,10 @@ public class EntityReducerTest {
   public void setup() throws Exception {
     reducer = new EntityReducer(new MongoProperties(), registry);
     mapper = new ObjectMapper();
+  }
+
+  private String propertyName(Class<? extends Entity> type, String fieldName) {
+    return XProperties.propertyName(type, fieldName);
   }
 
   private JsonNode newSystemEntityTree() {

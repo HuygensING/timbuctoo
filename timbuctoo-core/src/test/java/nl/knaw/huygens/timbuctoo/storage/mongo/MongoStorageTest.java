@@ -22,7 +22,6 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.storage.XProperties.propertyName;
 import static nl.knaw.huygens.timbuctoo.storage.mongo.JacksonDBObjectMatcher.jacksonDBObjectMatcherHasObject;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -41,6 +40,7 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
@@ -49,6 +49,7 @@ import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.Properties;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.XProperties;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -95,6 +96,10 @@ public class MongoStorageTest extends MongoStorageTestBase {
     EntityInducer inducer = new EntityInducer(properties);
     EntityReducer reducer = new EntityReducer(properties, registry);
     storage = new MongoStorage(mongoDB, entityIds, inducer, reducer);
+  }
+
+  private String propertyName(Class<? extends Entity> type, String fieldName) {
+    return XProperties.propertyName(type, fieldName);
   }
 
   // ---------------------------------------------------------------------------

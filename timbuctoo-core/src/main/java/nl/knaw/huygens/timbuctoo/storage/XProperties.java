@@ -27,9 +27,6 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 
 public class XProperties {
 
-  /** Separator between parts of a property name. */
-  public static final String SEPARATOR = ":";
-
   /**
    * Creates the property name for a field of an entity.
    * @param type the type token of the entity.
@@ -37,17 +34,7 @@ public class XProperties {
    * @return The property name.
    */
   public static String propertyName(Class<? extends Entity> type, String fieldName) {
-    return propertyName(getInternalName(type), fieldName);
-  }
-
-  /**
-   * Creates the property name for a field of an entity.
-   * @param iname the internal name of the entity.
-   * @param fieldName the name of the field; must not be null or empty.
-   * @return The property name.
-   */
-  public static String propertyName(String iname, String fieldName) {
-    return Character.isLetter(fieldName.charAt(0)) ? iname + SEPARATOR + fieldName : fieldName;
+    return Character.isLetter(fieldName.charAt(0)) ? getInternalName(type) + ":" + fieldName : fieldName;
   }
 
 }

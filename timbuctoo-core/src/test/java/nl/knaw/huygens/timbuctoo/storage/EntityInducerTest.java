@@ -22,12 +22,12 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.storage.XProperties.propertyName;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoProperties;
@@ -58,6 +58,10 @@ public class EntityInducerTest {
   public void setup() throws Exception {
     inducer = new EntityInducer(new MongoProperties());
     mapper = new ObjectMapper();
+  }
+
+  private String propertyName(Class<? extends Entity> type, String fieldName) {
+    return XProperties.propertyName(type, fieldName);
   }
 
   private void addValue(Map<String, Object> map, String key, String value) {
