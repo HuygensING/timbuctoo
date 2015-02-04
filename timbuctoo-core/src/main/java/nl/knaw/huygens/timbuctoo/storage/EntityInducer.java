@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.BusinessRules;
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
@@ -122,14 +121,14 @@ public class EntityInducer {
    */
   private ObjectNode createJsonTree(Object object, Class<?> viewType, FieldMap fieldMap) {
     try {
+      String prefix = properties.propertyPrefix(viewType);
       ObjectNode tree = properties.createObjectNode();
-      String iname = TypeNames.getInternalName(viewType);
       for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
         Field field = entry.getValue();
         JsonNode node = properties.induce(field.getType(), field.get(object));
         if (node != null) {
           String fieldName = entry.getKey();
-          tree.put(properties.propertyName(iname, fieldName), node);
+          tree.put(properties.propertyName(prefix, fieldName), node);
         }
       }
       return tree;
@@ -142,9 +141,9 @@ public class EntityInducer {
    * Merges into a tree the values corresponding to the specified keys of the new tree.
    */
   private ObjectNode merge(ObjectNode tree, ObjectNode newTree, Class<?> type, Set<String> fieldNames) {
-    String iname = TypeNames.getInternalName(type);
+    String prefix = properties.propertyPrefix(type);
     for (String fieldName : fieldNames) {
-      String key = properties.propertyName(iname, fieldName);
+      String key = properties.propertyName(prefix, fieldName);
       JsonNode newValue = newTree.get(key);
       if (newValue != null) {
         tree.put(key, newValue);

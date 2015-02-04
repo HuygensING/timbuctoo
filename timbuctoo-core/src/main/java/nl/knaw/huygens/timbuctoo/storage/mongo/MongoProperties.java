@@ -22,11 +22,10 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
-
 import java.util.Collection;
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.storage.Properties;
@@ -48,24 +47,19 @@ public class MongoProperties implements Properties {
     jsonMapper = new ObjectMapper();
   }
 
-  /**
-   * Creates the property name for a field of an entity.
-   * @param type the type token of the entity.
-   * @param fieldName the name of the field; must not be null or empty.
-   * @return The property name.
-   */
-  public String propertyName(Class<? extends Entity> type, String fieldName) {
-    return propertyName(getInternalName(type), fieldName);
+  @Override
+  public String propertyPrefix(Class<?> type) {
+    return TypeNames.getInternalName(type);
   }
 
-  /**
-   * Creates the property name for a field of an entity.
-   * @param iname the internal name of the entity.
-   * @param fieldName the name of the field; must not be null or empty.
-   * @return The property name.
-   */
-  public String propertyName(String iname, String fieldName) {
-    return Character.isLetter(fieldName.charAt(0)) ? iname + SEPARATOR + fieldName : fieldName;
+  @Override
+  public String propertyName(Class<? extends Entity> type, String fieldName) {
+    return propertyName(propertyPrefix(type), fieldName);
+  }
+
+  @Override
+  public String propertyName(String prefix, String fieldName) {
+    return Character.isLetter(fieldName.charAt(0)) ? prefix + SEPARATOR + fieldName : fieldName;
   }
 
   @Override

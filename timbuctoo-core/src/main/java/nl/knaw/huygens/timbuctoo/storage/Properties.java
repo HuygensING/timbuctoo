@@ -30,6 +30,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public interface Properties {
 
   /**
+   * Returns the prefix for a property name.
+   * @param type the type token of the entity.
+   * @return The prefix.
+   */
+  String propertyPrefix(Class<?> type);
+
+  /**
    * Creates the property name for a field of an entity.
    * @param type the type token of the entity.
    * @param fieldName the name of the field; must not be null or empty.
@@ -39,11 +46,11 @@ public interface Properties {
 
   /**
    * Creates the property name for a field of an entity.
-   * @param iname the internal name of the entity.
+   * @param prefix the prefix of the property name.
    * @param fieldName the name of the field; must not be null or empty.
    * @return The property name.
    */
-  String propertyName(String iname, String fieldName);
+  String propertyName(String prefix, String fieldName);
 
   /**
    * @return
