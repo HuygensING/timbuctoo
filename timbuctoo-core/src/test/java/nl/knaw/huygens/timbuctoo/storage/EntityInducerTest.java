@@ -51,17 +51,19 @@ public class EntityInducerTest {
   private final static String ID = "TEST042";
   private static final String PID = "test_pid";
 
+  private Properties properties;
   private EntityInducer inducer;
   private ObjectMapper mapper;
 
   @Before
   public void setup() throws Exception {
+    properties = new MongoProperties();
     inducer = new EntityInducer(new MongoProperties());
     mapper = new ObjectMapper();
   }
 
   private String propertyName(Class<? extends Entity> type, String fieldName) {
-    return XProperties.propertyName(type, fieldName);
+    return properties.propertyName(type, fieldName);
   }
 
   private void addValue(Map<String, Object> map, String key, String value) {

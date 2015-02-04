@@ -72,17 +72,19 @@ public class EntityReducerTest {
 
   // ---------------------------------------------------------------------------
 
+  private Properties properties;
   private EntityReducer reducer;
   private ObjectMapper mapper;
 
   @Before
   public void setup() throws Exception {
-    reducer = new EntityReducer(new MongoProperties(), registry);
+    properties = new MongoProperties();
+    reducer = new EntityReducer(properties, registry);
     mapper = new ObjectMapper();
   }
 
   private String propertyName(Class<? extends Entity> type, String fieldName) {
-    return XProperties.propertyName(type, fieldName);
+    return properties.propertyName(type, fieldName);
   }
 
   private JsonNode newSystemEntityTree() {
