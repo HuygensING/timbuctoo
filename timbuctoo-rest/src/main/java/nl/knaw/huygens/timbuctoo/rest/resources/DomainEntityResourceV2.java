@@ -40,6 +40,7 @@ import javax.ws.rs.core.UriInfo;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
@@ -205,6 +206,12 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
     try {
       List<String> updatedRelationIds = repository.deleteDomainEntity(entity);
       changeHelper.notifyChange(ActionType.MOD, type, entity, id);
+      try {
+        // FIXME: Ugly hack to remove the entity from the index of the VRE.
+        vre.deleteFromIndex(type, id);
+      } catch (IndexException e) {
+        LOG.error("Delete from index went wrong.", e);
+      }
 
       // FIXME: Quick hack to index and persist the updated relations.
       // TODO: Find a better way to do this.

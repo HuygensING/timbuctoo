@@ -216,6 +216,7 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
 
     verifyResponseStatus(response, Status.NO_CONTENT);
     verify(repository).deleteDomainEntity(any(DEFAULT_TYPE));
+    verify(vre).deleteFromIndex(DEFAULT_TYPE, DEFAULT_ID);
     verify(changeHelper).notifyChange(ActionType.MOD, DEFAULT_TYPE, entity, DEFAULT_ID);
     verify(changeHelper).notifyChange(ActionType.MOD, Relation.class, relationMock1, relationId1);
     verify(changeHelper).notifyChange(ActionType.MOD, Relation.class, relationMock2, relationId2);
