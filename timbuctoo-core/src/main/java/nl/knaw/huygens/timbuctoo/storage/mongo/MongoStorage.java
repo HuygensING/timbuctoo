@@ -224,6 +224,28 @@ public class MongoStorage implements Storage {
   }
 
   @Override
+  public <T extends Entity> T getEntity(Class<T> type, String id) throws StorageException {
+    DBObject query = queries.selectById(id);
+
+    DBObject object = mongoDB.findOne(getDBCollection(type), query);
+
+    if (object == null) {
+      return null;
+    }
+
+    JsonNode existing = toJsonNode(object);
+
+    if (TypeRegistry.isDomainEntity(type) && existing.isObject()) {
+      ObjectNode objectTree = (ObjectNode) existing;
+      if (!doesVariationExist(TypeNames.getInternalName(type), objectTree)) {
+        return null;
+      }
+    }
+
+    return reducer.reduceVariation(type, existing);
+  }
+
+  @Override
   public <T extends SystemEntity> StorageIterator<T> getSystemEntities(Class<T> type) throws StorageException {
     DBObject query = queries.selectAll();
     return findItems(type, query);

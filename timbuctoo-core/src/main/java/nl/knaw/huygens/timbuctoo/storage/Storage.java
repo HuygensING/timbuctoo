@@ -150,6 +150,11 @@ public interface Storage {
   <T extends Entity> T getEntityOrDefaultVariation(Class<T> type, String id) throws StorageException;
 
   /**
+   * Retrieves the specified entity, or {@code null} if no such entity exists.
+   */
+  <T extends Entity> T getEntity(Class<T> type, String id) throws StorageException;
+
+  /**
    * Retrieves all system entities of the specified type.
    */
   <T extends SystemEntity> StorageIterator<T> getSystemEntities(Class<T> type) throws StorageException;
