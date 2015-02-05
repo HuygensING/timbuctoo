@@ -218,7 +218,7 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends Entity> T getItem(Class<T> type, String id) throws StorageException {
+  public <T extends Entity> T getEntityOrDefaultVariation(Class<T> type, String id) throws StorageException {
     DBObject query = queries.selectById(id);
     return getItem(type, query);
   }

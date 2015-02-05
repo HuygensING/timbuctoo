@@ -76,12 +76,12 @@ public class RelationMapper {
         String sourceId = relation.getSourceId();
         DomainEntity source = sources.get(sourceId);
         if (source == null) {
-          source = repository.getEntityWithRelations(sourceType, sourceId);
+          source = repository.getEntityOrDefaultVariationWithRelations(sourceType, sourceId);
           repository.addDerivedProperties(vre, source);
           sources.put(sourceId, source);
         }
 
-        DomainEntity target = repository.getEntityWithRelations(targetType, relation.getTargetId());
+        DomainEntity target = repository.getEntityOrDefaultVariationWithRelations(targetType, relation.getTargetId());
         repository.addDerivedProperties(vre, target);
         list.add(new RelationDTO(itype, xtype, relation.getId(), relationName, source, target));
       }

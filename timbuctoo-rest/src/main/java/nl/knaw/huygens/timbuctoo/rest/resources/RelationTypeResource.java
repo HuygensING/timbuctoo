@@ -73,7 +73,7 @@ public class RelationTypeResource extends ResourceBase {
   @Path(ID_PATH)
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   public RelationType getRelationType(@PathParam(ID_PARAM) String id) {
-    RelationType entity = repository.getEntity(RelationType.class, id);
+    RelationType entity = repository.getEntityOrDefaultVariation(RelationType.class, id);
     checkNotNull(entity, Status.NOT_FOUND, "No RelationType with id %s", id);
     return entity;
   }

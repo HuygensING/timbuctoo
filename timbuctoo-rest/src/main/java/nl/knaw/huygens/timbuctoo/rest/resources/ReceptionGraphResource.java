@@ -108,7 +108,7 @@ public class ReceptionGraphResource extends ResourceBase {
     Map<String, Integer> map = Maps.newHashMap();
     for (Vertex vertex : graph.getVertices()) {
       String personId = vertex.getName();
-      T person = repository.getEntity(personType, personId);
+      T person = repository.getEntityOrDefaultVariation(personType, personId);
       D3Node node = createNode(personType, person);
       int index = d3Graph.addNode(node);
       map.put(personId, index);

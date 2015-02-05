@@ -60,7 +60,7 @@ public class RelationRefCreator {
     String mappedIName = TypeNames.getInternalName(mappedType);
     String xname = registry.getXNameForIName(mappedIName);
 
-    DomainEntity relatedEntity = storage.getItem(mappedType, reference.getId());
+    DomainEntity relatedEntity = storage.getEntityOrDefaultVariation(mappedType, reference.getId());
 
     return new RelationRef(mappedIName, xname, reference.getId(), relatedEntity.getIdentificationName(), relationId, accepted, rev, relationName);
   }

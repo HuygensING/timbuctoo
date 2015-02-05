@@ -168,7 +168,7 @@ public class Repository {
    * This method makes sure that the variation is actually stored.
    */
   public <T extends DomainEntity> void ensureVariation(Class<T> type, String id, Change change) throws StorageException {
-    T entity = getEntity(type, id);
+    T entity = getEntityOrDefaultVariation(type, id);
     if (entity != null && !entity.hasVariation(type)) {
       updateDomainEntity(type, entity, change);
     }
@@ -246,19 +246,19 @@ public class Repository {
     }
   }
 
-  public <T extends Entity> T getEntity(Class<T> type, String id) {
+  public <T extends Entity> T getEntityOrDefaultVariation(Class<T> type, String id) {
     try {
-      return storage.getItem(type, id);
+      return storage.getEntityOrDefaultVariation(type, id);
     } catch (StorageException e) {
       LOG.error("Error in getEntity({}, {}): {}", type.getSimpleName(), id, e.getMessage());
       return null;
     }
   }
 
-  public <T extends DomainEntity> T getEntityWithRelations(Class<T> type, String id) {
+  public <T extends DomainEntity> T getEntityOrDefaultVariationWithRelations(Class<T> type, String id) {
     T entity = null;
     try {
-      entity = storage.getItem(type, id);
+      entity = storage.getEntityOrDefaultVariation(type, id);
       if (entity != null) {
         addRelationsToEntity(entity);
       }
@@ -541,7 +541,7 @@ public class Repository {
           String iname = regular ? relation.getTargetType() : relation.getSourceType();
           Class<? extends DomainEntity> type = vre.mapTypeName(iname, REQUIRED);
           String id = regular ? relation.getTargetId() : relation.getSourceId();
-          Object value = type.getMethod(property.getAccessor()).invoke(getEntity(type, id));
+          Object value = type.getMethod(property.getAccessor()).invoke(getEntityOrDefaultVariation(type, id));
           entity.addProperty(property.getPropertyName(), value);
         }
       } catch (Exception e) {

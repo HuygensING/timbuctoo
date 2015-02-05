@@ -60,7 +60,7 @@ public abstract class SearchResultMapper {
     // Retrieve one-by-one to retain ordering
     List<T> entities = Lists.newArrayList();
     for (String id : ids) {
-      T entity = repository.getEntity(type, id);
+      T entity = repository.getEntityOrDefaultVariation(type, id);
       if (entity != null) {
         entities.add(entity);
       } else {
@@ -75,7 +75,7 @@ public abstract class SearchResultMapper {
     List<T> entities = Lists.newArrayList();
     VRE vre = vreCollection.getVREById(vreId);
     for (String id : ids) {
-      T entity = repository.getEntityWithRelations(type, id);
+      T entity = repository.getEntityOrDefaultVariationWithRelations(type, id);
       repository.addDerivedProperties(vre, entity);
       if (entity != null) {
         entities.add(entity);

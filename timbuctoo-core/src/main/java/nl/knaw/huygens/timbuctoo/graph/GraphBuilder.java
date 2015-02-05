@@ -108,7 +108,7 @@ public class GraphBuilder {
 
   private DomainEntity getEntity(String iname, String id) {
     Class<? extends DomainEntity> type = registry.getDomainEntityType(iname);
-    return repository.getEntity(type, id);
+    return repository.getEntityOrDefaultVariation(type, id);
   }
 
 }

@@ -105,7 +105,7 @@ public abstract class StorageIntegrationTest {
 
     assertThat(id, startsWith(RelationType.ID_PREFIX));
 
-    assertThat(instance.getItem(RelationType.class, id), //
+    assertThat(instance.getEntityOrDefaultVariation(RelationType.class, id), //
         matchesRelationType() //
             .withId(id)//
             .withInverseName(INVERSE_NAME)//
@@ -124,14 +124,14 @@ public abstract class StorageIntegrationTest {
   public void updateSystemEntityChangesTheExistingSystemEntity() throws Exception {
     RelationType systemEntityToStore = createRelationType(REGULAR_NAME, INVERSE_NAME);
     String id = instance.addSystemEntity(RelationType.class, systemEntityToStore);
-    RelationType storedSystemEntity = instance.getItem(RelationType.class, id);
+    RelationType storedSystemEntity = instance.getEntityOrDefaultVariation(RelationType.class, id);
     assertThat(storedSystemEntity, is(notNullValue()));
 
     storedSystemEntity.setRegularName(OTHER_REGULAR_NAME);
 
     instance.updateSystemEntity(RelationType.class, storedSystemEntity);
 
-    assertThat(instance.getItem(RelationType.class, id), //
+    assertThat(instance.getEntityOrDefaultVariation(RelationType.class, id), //
         matchesRelationType() //
             .withId(id)//
             .withInverseName(INVERSE_NAME)//
@@ -172,11 +172,11 @@ public abstract class StorageIntegrationTest {
   public void deleteSystemEntityRemovesAnEntityFromTheDatabase() throws StorageException {
     RelationType systemEntityToStore = createRelationType(REGULAR_NAME, INVERSE_NAME);
     String id = instance.addSystemEntity(RelationType.class, systemEntityToStore);
-    assertThat(instance.getItem(RelationType.class, id), is(notNullValue()));
+    assertThat(instance.getEntityOrDefaultVariation(RelationType.class, id), is(notNullValue()));
 
     instance.deleteSystemEntity(RelationType.class, id);
 
-    assertThat(instance.getItem(RelationType.class, id), is(nullValue()));
+    assertThat(instance.getEntityOrDefaultVariation(RelationType.class, id), is(nullValue()));
   }
 
   /********************************************************************************
@@ -193,7 +193,7 @@ public abstract class StorageIntegrationTest {
     assertThat(id, startsWith(Person.ID_PREFIX));
 
     List<PersonName> names = Lists.newArrayList(PERSON_NAME);
-    assertThat("DomainEntity is not as expected", instance.getItem(DOMAIN_ENTITY_TYPE, id), //
+    assertThat("DomainEntity is not as expected", instance.getEntityOrDefaultVariation(DOMAIN_ENTITY_TYPE, id), //
         likeProjectAPerson() //
             .withProjectAPersonProperty(PROJECT_A_PERSON_PROPERTY) //
             .withId(id) //
@@ -202,7 +202,7 @@ public abstract class StorageIntegrationTest {
             .withGender(GENDER) //
             .withNames(names));
 
-    assertThat("Primitive is not as expected", instance.getItem(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), //
+    assertThat("Primitive is not as expected", instance.getEntityOrDefaultVariation(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), //
         likePerson()//
             .withId(id) //
             .withNames(names)//
@@ -215,12 +215,12 @@ public abstract class StorageIntegrationTest {
   public void setPIDGivesTheDomainEntityAPidAndCreatesAVersion() throws Exception {
     String id = addDefaultProjectAPerson();
     // Make sure the entity exist
-    assertThat(instance.getItem(DOMAIN_ENTITY_TYPE, id), is(notNullValue()));
+    assertThat(instance.getEntityOrDefaultVariation(DOMAIN_ENTITY_TYPE, id), is(notNullValue()));
 
     // action
     instance.setPID(DOMAIN_ENTITY_TYPE, id, PID);
 
-    ProjectAPerson updatedEntity = instance.getItem(DOMAIN_ENTITY_TYPE, id);
+    ProjectAPerson updatedEntity = instance.getEntityOrDefaultVariation(DOMAIN_ENTITY_TYPE, id);
     assertThat("Entity has no pid", updatedEntity.getPid(), is(equalTo(PID)));
 
     int rev = updatedEntity.getRev();
@@ -234,7 +234,7 @@ public abstract class StorageIntegrationTest {
     String id = addDefaultProjectAPerson();
 
     // Store the entity
-    ProjectAPerson storedDomainEntity = instance.getItem(DOMAIN_ENTITY_TYPE, id);
+    ProjectAPerson storedDomainEntity = instance.getEntityOrDefaultVariation(DOMAIN_ENTITY_TYPE, id);
     // Make sure the entity is stored
     assertThat(storedDomainEntity, is(notNullValue()));
 
@@ -244,7 +244,7 @@ public abstract class StorageIntegrationTest {
     storedDomainEntity.setBirthDate(BIRTH_DATE2);
     instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, storedDomainEntity, UPDATE_CHANGE);
 
-    ProjectAPerson updatedEntity = instance.getItem(DOMAIN_ENTITY_TYPE, id);
+    ProjectAPerson updatedEntity = instance.getEntityOrDefaultVariation(DOMAIN_ENTITY_TYPE, id);
 
     assertThat("Project domain entity is not updated", //
         updatedEntity, likeProjectAPerson()//
@@ -257,7 +257,7 @@ public abstract class StorageIntegrationTest {
             .withRevision(firstRevision + 1));
 
     assertThat("Primitive domain entity should not have changed", //
-        instance.getItem(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), likeDefaultPerson(id));
+        instance.getEntityOrDefaultVariation(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), likeDefaultPerson(id));
 
     assertThat("No revision should be created for version 1",//
         instance.getRevision(DOMAIN_ENTITY_TYPE, id, firstRevision), is(nullValue()));
@@ -272,20 +272,20 @@ public abstract class StorageIntegrationTest {
   public void deletePersistentDomainEntityClearsTheEntityPropertiesSetsTheDeletedFlagToTrue() throws Exception {
     String id = addDefaultProjectAPerson();
 
-    assertThat(instance.getItem(DOMAIN_ENTITY_TYPE, id), //
+    assertThat(instance.getEntityOrDefaultVariation(DOMAIN_ENTITY_TYPE, id), //
         likeDefaultProjectAPerson(id)//
             .withDeletedFlag(false));
 
-    assertThat(instance.getItem(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), //
+    assertThat(instance.getEntityOrDefaultVariation(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), //
         likeDefaultPerson(id)//
             .withDeletedFlag(false));
 
     instance.deleteDomainEntity(DOMAIN_ENTITY_TYPE, id, UPDATE_CHANGE);
 
     int expectedRevision = 2;
-    assertThat(instance.getItem(DOMAIN_ENTITY_TYPE, id), //
+    assertThat(instance.getEntityOrDefaultVariation(DOMAIN_ENTITY_TYPE, id), //
         likeDefaultProjectAPerson(id).withRevision(expectedRevision));
-    assertThat(instance.getItem(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), //
+    assertThat(instance.getEntityOrDefaultVariation(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), //
         likeDefaultPerson(id).withRevision(expectedRevision));
 
   }
@@ -294,13 +294,13 @@ public abstract class StorageIntegrationTest {
   public void deleteNonPersistentDomainEntityRemovesTheCompleteDomainEntity() throws Exception {
     String id = addDefaultProjectAPerson();
 
-    assertThat(instance.getItem(DOMAIN_ENTITY_TYPE, id), likeDefaultProjectAPerson(id));
-    assertThat(instance.getItem(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), likeDefaultPerson(id));
+    assertThat(instance.getEntityOrDefaultVariation(DOMAIN_ENTITY_TYPE, id), likeDefaultProjectAPerson(id));
+    assertThat(instance.getEntityOrDefaultVariation(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), likeDefaultPerson(id));
 
     instance.deleteNonPersistent(DOMAIN_ENTITY_TYPE, Lists.newArrayList(id));
 
-    assertThat(instance.getItem(DOMAIN_ENTITY_TYPE, id), is(nullValue()));
-    assertThat(instance.getItem(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), is(nullValue()));
+    assertThat(instance.getEntityOrDefaultVariation(DOMAIN_ENTITY_TYPE, id), is(nullValue()));
+    assertThat(instance.getEntityOrDefaultVariation(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), is(nullValue()));
   }
 
   @SuppressWarnings("unchecked")

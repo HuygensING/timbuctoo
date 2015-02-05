@@ -82,7 +82,7 @@ public class SearchResultMapperTest {
     for (String id : idList) {
       T domainEntity = type.newInstance();
       domainEntities.add(domainEntity);
-      doReturn(domainEntity).when(repositoryMock).getEntity(type, id);
+      doReturn(domainEntity).when(repositoryMock).getEntityOrDefaultVariation(type, id);
     }
     return domainEntities;
   }

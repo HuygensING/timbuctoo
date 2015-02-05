@@ -161,7 +161,7 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
   ) {
     super.put(entityName, id, input, vreId, userId);
 
-    return Response.ok(repository.getEntityWithRelations(typeRegistry.getTypeForXName(entityName), id)).build();
+    return Response.ok(repository.getEntityOrDefaultVariationWithRelations(typeRegistry.getTypeForXName(entityName), id)).build();
   }
 
   @Override
@@ -197,7 +197,7 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
     VRE vre = getValidVRE(vreId);
     checkCondition(vre.inScope(type, id), FORBIDDEN, "Entity %s %s not in scope %s", type, id, vreId);
 
-    DomainEntity entity = repository.getEntity(type, id);
+    DomainEntity entity = repository.getEntityOrDefaultVariation(type, id);
 
     if (entity == null) {
       return returnNotFoundResponse(id);
@@ -216,7 +216,7 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
       // FIXME: Quick hack to index and persist the updated relations.
       // TODO: Find a better way to do this.
       for (String relationId : updatedRelationIds) {
-        changeHelper.notifyChange(ActionType.MOD, Relation.class, repository.getEntity(Relation.class, relationId), relationId);
+        changeHelper.notifyChange(ActionType.MOD, Relation.class, repository.getEntityOrDefaultVariation(Relation.class, relationId), relationId);
       }
 
     } catch (NoSuchEntityException e) {

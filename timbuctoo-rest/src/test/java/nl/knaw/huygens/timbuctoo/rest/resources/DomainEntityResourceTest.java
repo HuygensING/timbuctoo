@@ -109,7 +109,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   @Test
   public void testGetEntityExisting() throws Exception {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
-    when(repository.getEntityWithRelations(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariationWithRelations(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
 
     ClientResponse response = createResource(DEFAULT_RESOURCE, DEFAULT_ID) //
         .get(ClientResponse.class);
@@ -140,7 +140,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetEntityNonExistingInstance() {
-    when(repository.getEntity(DEFAULT_TYPE, "TST0000000001")).thenReturn(null);
+    when(repository.getEntityOrDefaultVariation(DEFAULT_TYPE, "TST0000000001")).thenReturn(null);
 
     ClientResponse response = createResource(DEFAULT_RESOURCE, "TST0000000001") //
         .get(ClientResponse.class);
@@ -192,7 +192,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
 
-    when(repository.getEntity(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = createResource(DEFAULT_RESOURCE, DEFAULT_ID) //
@@ -215,7 +215,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
 
-    when(repository.getEntity(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = createResource(DEFAULT_RESOURCE, DEFAULT_ID) //
@@ -236,7 +236,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     makeVREAvailable(vre, VRE_ID);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
-    when(repository.getEntity(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = createResource(DEFAULT_RESOURCE, DEFAULT_ID) //
@@ -327,7 +327,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
 
-    when(repository.getEntity(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
     doThrow(UpdateException.class).when(repository).updateDomainEntity(Matchers.<Class<ProjectADomainEntity>> any(), any(ProjectADomainEntity.class), any(Change.class));
     whenJsonProviderReadFromThenReturn(entity);
 
@@ -351,7 +351,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
 
-    when(repository.getEntity(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
     doThrow(NoSuchEntityException.class).when(repository).updateDomainEntity(Matchers.<Class<ProjectADomainEntity>> any(), any(ProjectADomainEntity.class), any(Change.class));
     whenJsonProviderReadFromThenReturn(entity);
 
@@ -477,7 +477,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .withTargetId(targetId) //
         .withPid("65262031-c5c2-44f9-b90e-11f9fc7736cf") //
         .build();
-    when(repository.getEntity(type, id)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariation(type, id)).thenReturn(entity);
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = createResource(getExternalName(type), id) //
@@ -651,7 +651,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     BaseDomainEntity entity = new BaseDomainEntity(DEFAULT_ID);
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
-    when(repository.getEntity(BASE_TYPE, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariation(BASE_TYPE, DEFAULT_ID)).thenReturn(entity);
 
     ClientResponse response = createResource(BASE_RESOURCE, DEFAULT_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
@@ -677,7 +677,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     verifyResponseStatus(response, Status.BAD_REQUEST);
 
     verifyZeroInteractions(getChangeHelper());
-    verify(repository, times(0)).getEntity(DEFAULT_TYPE, DEFAULT_ID);
+    verify(repository, times(0)).getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID);
   }
 
   @Test
@@ -685,7 +685,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
 
     BaseDomainEntity entity = new BaseDomainEntity(DEFAULT_ID);
-    when(repository.getEntity(BASE_TYPE, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariation(BASE_TYPE, DEFAULT_ID)).thenReturn(entity);
 
     ClientResponse response = createResource(BASE_RESOURCE, DEFAULT_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
@@ -701,7 +701,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
 
     setVREExist(VRE_ID, true);
-    when(repository.getEntity(BASE_TYPE, DEFAULT_ID)).thenReturn(null);
+    when(repository.getEntityOrDefaultVariation(BASE_TYPE, DEFAULT_ID)).thenReturn(null);
 
     ClientResponse response = createResource(BASE_RESOURCE, DEFAULT_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
@@ -743,7 +743,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   @Test
   public void testGetEntityNotLoggedIn() throws Exception {
     ProjectADomainEntity expectedDoc = new ProjectADomainEntity(DEFAULT_ID);
-    when(repository.getEntityWithRelations(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(expectedDoc);
+    when(repository.getEntityOrDefaultVariationWithRelations(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(expectedDoc);
 
     ClientResponse response = createResource(DEFAULT_RESOURCE, DEFAULT_ID) //
         .get(ClientResponse.class);
@@ -753,7 +753,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   @Test
   public void testGetEntityEmptyAuthorizationKey() throws Exception {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
-    when(repository.getEntityWithRelations(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariationWithRelations(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
 
     ClientResponse response = createResource(DEFAULT_RESOURCE, DEFAULT_ID) //
         .get(ClientResponse.class);

@@ -74,13 +74,13 @@ public class RelationRefCreatorTest {
     RelationRef expectedRef = createExpectedRelation(RELATION_ID, ACCEPTED, REVISION, REFERENCE_ID, MAPPED_TYPE, EXTERNAL_NAME, RELATION_NAME);
     DomainEntity referencedEntity = createReferencedEntity();
 
-    doReturn(referencedEntity).when(storageMock).getItem(MAPPED_TYPE, REFERENCE_ID);
+    doReturn(referencedEntity).when(storageMock).getEntityOrDefaultVariation(MAPPED_TYPE, REFERENCE_ID);
 
     // action
     RelationRef actualRef = newRelationRef();
 
     // verify
-    verify(storageMock).getItem(MAPPED_TYPE, REFERENCE_ID);
+    verify(storageMock).getEntityOrDefaultVariation(MAPPED_TYPE, REFERENCE_ID);
     assertThat(actualRef, equalTo(expectedRef));
   }
 
@@ -91,7 +91,7 @@ public class RelationRefCreatorTest {
   @Test(expected = StorageException.class)
   public void newRelationRefThrowsAnExceptionWhenStorageThrowsAnException() throws StorageException {
     // setup
-    doThrow(StorageException.class).when(storageMock).getItem(MAPPED_TYPE, REFERENCE_ID);
+    doThrow(StorageException.class).when(storageMock).getEntityOrDefaultVariation(MAPPED_TYPE, REFERENCE_ID);
 
     newRelationRef();
   }

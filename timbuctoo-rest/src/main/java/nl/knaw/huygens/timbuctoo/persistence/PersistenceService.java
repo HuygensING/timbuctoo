@@ -71,7 +71,7 @@ public class PersistenceService extends ConsumerService implements Runnable {
     Class<? extends DomainEntity> type = action.getType();
     String id = action.getId();
 
-    DomainEntity entity = repository.getEntity(type, id);
+    DomainEntity entity = repository.getEntityOrDefaultVariation(type, id);
     if (entity == null) {
       LOG.error("No {} with id {}", type, id);
       return;

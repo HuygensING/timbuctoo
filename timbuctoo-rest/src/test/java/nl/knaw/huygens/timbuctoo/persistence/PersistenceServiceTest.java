@@ -67,7 +67,7 @@ public class PersistenceServiceTest {
     entity.setId(DEFAULT_ID);
     entity.setRev(DEFAULT_REVISION);
 
-    when(repository.getEntity(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
 
     instance = new PersistenceService(broker, persistenceWrapper, repository);
   }
@@ -76,7 +76,7 @@ public class PersistenceServiceTest {
   public void testExecuteActionADD() throws Exception {
     testExecute(ActionType.ADD);
 
-    verify(repository).getEntity(DEFAULT_TYPE, DEFAULT_ID);
+    verify(repository).getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID);
     verify(persistenceWrapper).persistObject(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_REVISION);
     verify(persistenceWrapper).getPersistentURL(DEFAULT_PID);
     verify(repository).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
@@ -87,7 +87,7 @@ public class PersistenceServiceTest {
     doThrow(IllegalStateException.class).when(repository).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
     testExecute(ActionType.ADD);
 
-    verify(repository).getEntity(DEFAULT_TYPE, DEFAULT_ID);
+    verify(repository).getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID);
     verify(persistenceWrapper).persistObject(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_REVISION);
     verify(persistenceWrapper).getPersistentURL(DEFAULT_PID);
     verify(repository).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
@@ -100,7 +100,7 @@ public class PersistenceServiceTest {
 
     testExecute(ActionType.ADD);
 
-    verify(repository, only()).getEntity(DEFAULT_TYPE, DEFAULT_ID);
+    verify(repository, only()).getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID);
     verify(persistenceWrapper, only()).persistObject(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_REVISION);
   }
 
@@ -109,7 +109,7 @@ public class PersistenceServiceTest {
     doThrow(StorageException.class).when(repository).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
     testExecute(ActionType.ADD);
 
-    verify(repository).getEntity(DEFAULT_TYPE, DEFAULT_ID);
+    verify(repository).getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID);
     verify(persistenceWrapper).persistObject(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_REVISION);
     verify(persistenceWrapper).getPersistentURL(DEFAULT_PID);
     verify(repository).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
@@ -120,7 +120,7 @@ public class PersistenceServiceTest {
   public void testExecuteActionMOD() throws Exception {
     testExecute(ActionType.MOD);
 
-    verify(repository).getEntity(DEFAULT_TYPE, DEFAULT_ID);
+    verify(repository).getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID);
     verify(persistenceWrapper).persistObject(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_REVISION);
     verify(persistenceWrapper).getPersistentURL(DEFAULT_PID);
     verify(repository).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
@@ -131,7 +131,7 @@ public class PersistenceServiceTest {
     doThrow(IllegalStateException.class).when(repository).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
     testExecute(ActionType.MOD);
 
-    verify(repository).getEntity(DEFAULT_TYPE, DEFAULT_ID);
+    verify(repository).getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID);
     verify(persistenceWrapper).persistObject(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_REVISION);
     verify(repository).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
     verify(persistenceWrapper).deletePersistentId(DEFAULT_PID);
@@ -143,7 +143,7 @@ public class PersistenceServiceTest {
 
     testExecute(ActionType.MOD);
 
-    verify(repository, only()).getEntity(DEFAULT_TYPE, DEFAULT_ID);
+    verify(repository, only()).getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID);
     verify(persistenceWrapper, only()).persistObject(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_REVISION);
   }
 
@@ -152,7 +152,7 @@ public class PersistenceServiceTest {
     doThrow(StorageException.class).when(repository).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
     testExecute(ActionType.MOD);
 
-    verify(repository).getEntity(DEFAULT_TYPE, DEFAULT_ID);
+    verify(repository).getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID);
     verify(persistenceWrapper).persistObject(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_REVISION);
     verify(repository).setPID(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_PID_URL);
     verify(persistenceWrapper).deletePersistentId(DEFAULT_PID);

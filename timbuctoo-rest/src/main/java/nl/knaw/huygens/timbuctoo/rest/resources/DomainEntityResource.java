@@ -160,7 +160,7 @@ public class DomainEntityResource extends ResourceBase {
 
   private String updateTheDuplicateEntity(String entityName, DomainEntity input, String vreId, String userId, String id) throws StorageException {
     Class<? extends DomainEntity> entityType = getValidEntityType(entityName);
-    DomainEntity duplicatEnity = repository.getEntity(entityType, id);
+    DomainEntity duplicatEnity = repository.getEntityOrDefaultVariation(entityType, id);
 
     input.setRev(duplicatEnity.getRev());
     input.setId(id);
@@ -180,7 +180,7 @@ public class DomainEntityResource extends ResourceBase {
     Class<? extends DomainEntity> type = getValidEntityType(entityName);
 
     if (revision == null) {
-      DomainEntity entity = repository.getEntityWithRelations(type, id);
+      DomainEntity entity = repository.getEntityOrDefaultVariationWithRelations(type, id);
       return checkNotNull(entity, NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
     } else {
       DomainEntity entity = repository.getRevisionWithRelations(type, id, revision);
@@ -204,7 +204,7 @@ public class DomainEntityResource extends ResourceBase {
     Class<? extends DomainEntity> type = getValidEntityType(entityName);
     checkCondition(type == input.getClass(), BAD_REQUEST, "Type %s does not match input", type.getSimpleName());
 
-    DomainEntity entity = repository.getEntity(type, id);
+    DomainEntity entity = repository.getEntityOrDefaultVariation(type, id);
     checkNotNull(entity, NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
     checkNotNull(entity.getPid(), FORBIDDEN, "%s with id %s is read-only (no PID)", type.getSimpleName(), id);
 
@@ -265,7 +265,7 @@ public class DomainEntityResource extends ResourceBase {
       throw new TimbuctooException(BAD_REQUEST, "Not a primitive domain entity: %s", entityName);
     }
 
-    DomainEntity entity = repository.getEntity(type, id);
+    DomainEntity entity = repository.getEntityOrDefaultVariation(type, id);
     checkNotNull(entity, NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
     checkNotNull(entity.getPid(), FORBIDDEN, "%s with id %s is read-only (no PID)", type, id);
 

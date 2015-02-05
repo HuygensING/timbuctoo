@@ -422,7 +422,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetItemForSystemEntity() throws Exception {
-    storage.getItem(TestSystemEntity.class, DEFAULT_ID);
+    storage.getEntityOrDefaultVariation(TestSystemEntity.class, DEFAULT_ID);
 
     DBObject query = queries.selectById(DEFAULT_ID);
     verify(mongoDB).findOne(dbCollection, query);
@@ -431,7 +431,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetItemForDomainEntity() throws Exception {
-    storage.getItem(BaseVariationDomainEntity.class, DEFAULT_ID);
+    storage.getEntityOrDefaultVariation(BaseVariationDomainEntity.class, DEFAULT_ID);
 
     DBObject query = queries.selectById(DEFAULT_ID);
     verify(mongoDB).findOne(dbCollection, query);

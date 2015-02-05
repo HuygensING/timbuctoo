@@ -228,7 +228,7 @@ public class SearchResourceV1 extends ResourceBase {
   }
 
   private SearchResult getSearchResult(String id) {
-    return repository.getEntity(SearchResult.class, id);
+    return repository.getEntityOrDefaultVariation(SearchResult.class, id);
   }
 
   private String saveSearchResult(SearchResult result) throws StorageException, ValidationException {

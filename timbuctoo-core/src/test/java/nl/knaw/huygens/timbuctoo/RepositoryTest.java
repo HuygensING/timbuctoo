@@ -89,8 +89,8 @@ public class RepositoryTest {
 
   @Test
   public void testGetEntity() throws Exception {
-    repository.getEntity(BaseVariationDomainEntity.class, DEFAULT_ID);
-    verify(storageMock).getItem(BaseVariationDomainEntity.class, DEFAULT_ID);
+    repository.getEntityOrDefaultVariation(BaseVariationDomainEntity.class, DEFAULT_ID);
+    verify(storageMock).getEntityOrDefaultVariation(BaseVariationDomainEntity.class, DEFAULT_ID);
   }
 
   @Test
@@ -111,8 +111,8 @@ public class RepositoryTest {
 
   @Test
   public void testGetEntityWithRelations() throws Exception {
-    repository.getEntityWithRelations(BaseVariationDomainEntity.class, DEFAULT_ID);
-    verify(storageMock).getItem(BaseVariationDomainEntity.class, DEFAULT_ID);
+    repository.getEntityOrDefaultVariationWithRelations(BaseVariationDomainEntity.class, DEFAULT_ID);
+    verify(storageMock).getEntityOrDefaultVariation(BaseVariationDomainEntity.class, DEFAULT_ID);
   }
 
   @Test

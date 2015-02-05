@@ -180,7 +180,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     int defaultStart = 0;
     int defaultRows = 10;
 
-    when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
+    when(repository.getEntityOrDefaultVariation(SearchResult.class, ID)).thenReturn(searchResult);
     when(regularSearchResultMapperMock.create(SEARCH_RESULT_TYPE, searchResult, defaultStart, defaultRows)).thenReturn(clientSearchResult);
 
     ClientResponse response = searchResourceBuilder(ID) //
@@ -190,7 +190,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     RegularSearchResultDTO actualResult = response.getEntity(RegularSearchResultDTO.class);
     assertThat(actualResult, notNullValue(RegularSearchResultDTO.class));
 
-    verify(repository).getEntity(SearchResult.class, ID);
+    verify(repository).getEntityOrDefaultVariation(SearchResult.class, ID);
     verify(regularSearchResultMapperMock).create(SEARCH_RESULT_TYPE, searchResult, defaultStart, defaultRows);
   }
 
@@ -208,7 +208,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     queryParameters.add("start", "20");
     queryParameters.add("rows", "20");
 
-    when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
+    when(repository.getEntityOrDefaultVariation(SearchResult.class, ID)).thenReturn(searchResult);
     when(regularSearchResultMapperMock.create(SEARCH_RESULT_TYPE, searchResult, startIndex, numberOfRows)).thenReturn(clientSearchResult);
 
     ClientResponse clientResponse = searchResource(ID) //
@@ -221,7 +221,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     RegularSearchResultDTO actualResult = clientResponse.getEntity(RegularSearchResultDTO.class);
     assertThat(actualResult, notNullValue(RegularSearchResultDTO.class));
 
-    verify(repository).getEntity(SearchResult.class, ID);
+    verify(repository).getEntityOrDefaultVariation(SearchResult.class, ID);
     verify(regularSearchResultMapperMock).create(SEARCH_RESULT_TYPE, searchResult, startIndex, numberOfRows);
   }
 
@@ -235,7 +235,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     int defaultStart = 0;
     int defaultRows = 10;
 
-    when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
+    when(repository.getEntityOrDefaultVariation(SearchResult.class, ID)).thenReturn(searchResult);
     when(relationSearchResultMapperMock.create(TEST_RELATION_TYPE, searchResult, defaultStart, defaultRows)).thenReturn(clientSearchResult);
 
     ClientResponse response = searchResourceBuilder(ID) //
@@ -246,7 +246,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     RelationSearchResultDTO actualResult = response.getEntity(RelationSearchResultDTO.class);
     assertThat(actualResult, notNullValue(RelationSearchResultDTO.class));
 
-    verify(repository).getEntity(SearchResult.class, ID);
+    verify(repository).getEntityOrDefaultVariation(SearchResult.class, ID);
     verify(relationSearchResultMapperMock).create(TEST_RELATION_TYPE, searchResult, defaultStart, defaultRows);
   }
 
@@ -259,7 +259,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
 
   @Test
   public void testGetUnknownId() {
-    when(repository.getEntity(SearchResult.class, ID)).thenReturn(null);
+    when(repository.getEntityOrDefaultVariation(SearchResult.class, ID)).thenReturn(null);
 
     ClientResponse response = searchResourceBuilder(ID).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
     verifyResponseStatus(response, Status.NOT_FOUND);
@@ -271,7 +271,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     searchResult.setId(ID);
     searchResult.setSearchType("unknown");
 
-    when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
+    when(repository.getEntityOrDefaultVariation(SearchResult.class, ID)).thenReturn(searchResult);
 
     ClientResponse response = searchResourceBuilder(ID) //
         .accept(MediaType.APPLICATION_JSON_TYPE) //

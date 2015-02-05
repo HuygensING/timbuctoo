@@ -256,14 +256,14 @@ public class SearchRequestValidatorTest {
 
     setupTypeInScope(true, testRelation, relationTypeString);
 
-    when(repositoryMock.getEntity(SearchResult.class, unknownSourceSearchId)).thenReturn(null);
+    when(repositoryMock.getEntityOrDefaultVariation(SearchResult.class, unknownSourceSearchId)).thenReturn(null);
 
     try {
       instance.validateRelationRequest(VALID_VRE_ID, relationTypeString, relationSearchParameters);
     } finally {
       verify(typeRegistryMock).getTypeForXName(relationTypeString);
       verify(vreMock).inScope(testRelation);
-      verify(repositoryMock).getEntity(SearchResult.class, unknownSourceSearchId);
+      verify(repositoryMock).getEntityOrDefaultVariation(SearchResult.class, unknownSourceSearchId);
     }
   }
 
@@ -277,14 +277,14 @@ public class SearchRequestValidatorTest {
 
     setupTypeInScope(true, testRelation, relationTypeString);
 
-    when(repositoryMock.getEntity(SearchResult.class, knownSourceSearchId)).thenReturn(mock(SearchResult.class));
+    when(repositoryMock.getEntityOrDefaultVariation(SearchResult.class, knownSourceSearchId)).thenReturn(mock(SearchResult.class));
 
     try {
       instance.validateRelationRequest(VALID_VRE_ID, relationTypeString, relationSearchParameters);
     } finally {
       verify(typeRegistryMock).getTypeForXName(relationTypeString);
       verify(vreMock).inScope(testRelation);
-      verify(repositoryMock).getEntity(SearchResult.class, knownSourceSearchId);
+      verify(repositoryMock).getEntityOrDefaultVariation(SearchResult.class, knownSourceSearchId);
     }
   }
 
@@ -299,16 +299,16 @@ public class SearchRequestValidatorTest {
 
     setupTypeInScope(true, testRelation, relationTypeString);
 
-    when(repositoryMock.getEntity(SearchResult.class, knownSourceSearchId)).thenReturn(mock(SearchResult.class));
-    when(repositoryMock.getEntity(SearchResult.class, unknownTargetSearchId)).thenReturn(null);
+    when(repositoryMock.getEntityOrDefaultVariation(SearchResult.class, knownSourceSearchId)).thenReturn(mock(SearchResult.class));
+    when(repositoryMock.getEntityOrDefaultVariation(SearchResult.class, unknownTargetSearchId)).thenReturn(null);
 
     try {
       instance.validateRelationRequest(VALID_VRE_ID, relationTypeString, relationSearchParameters);
     } finally {
       verify(typeRegistryMock).getTypeForXName(relationTypeString);
       verify(vreMock).inScope(testRelation);
-      verify(repositoryMock).getEntity(SearchResult.class, knownSourceSearchId);
-      verify(repositoryMock).getEntity(SearchResult.class, unknownTargetSearchId);
+      verify(repositoryMock).getEntityOrDefaultVariation(SearchResult.class, knownSourceSearchId);
+      verify(repositoryMock).getEntityOrDefaultVariation(SearchResult.class, unknownTargetSearchId);
     }
   }
 
@@ -326,8 +326,8 @@ public class SearchRequestValidatorTest {
 
     setupTypeInScope(true, testRelation, relationTypeString);
 
-    when(repositoryMock.getEntity(SearchResult.class, knownSourceSearchId)).thenReturn(mock(SearchResult.class));
-    when(repositoryMock.getEntity(SearchResult.class, knownTargetSearchId)).thenReturn(mock(SearchResult.class));
+    when(repositoryMock.getEntityOrDefaultVariation(SearchResult.class, knownSourceSearchId)).thenReturn(mock(SearchResult.class));
+    when(repositoryMock.getEntityOrDefaultVariation(SearchResult.class, knownTargetSearchId)).thenReturn(mock(SearchResult.class));
     when(repositoryMock.getRelationTypeById(invalidRelationTypeId, false)).thenReturn(null);
     when(repositoryMock.getRelationTypeById(validRelationTypeId, false)).thenReturn(mock(RelationType.class));
 
@@ -336,8 +336,8 @@ public class SearchRequestValidatorTest {
     } finally {
       verify(typeRegistryMock).getTypeForXName(relationTypeString);
       verify(vreMock).inScope(testRelation);
-      verify(repositoryMock).getEntity(SearchResult.class, knownSourceSearchId);
-      verify(repositoryMock).getEntity(SearchResult.class, knownTargetSearchId);
+      verify(repositoryMock).getEntityOrDefaultVariation(SearchResult.class, knownSourceSearchId);
+      verify(repositoryMock).getEntityOrDefaultVariation(SearchResult.class, knownTargetSearchId);
       verify(repositoryMock).getRelationTypeById(validRelationTypeId, false);
       verify(repositoryMock).getRelationTypeById(invalidRelationTypeId, false);
     }
@@ -356,8 +356,8 @@ public class SearchRequestValidatorTest {
 
     setupTypeInScope(true, testRelation, relationTypeString);
 
-    when(repositoryMock.getEntity(SearchResult.class, knownSourceSearchId)).thenReturn(mock(SearchResult.class));
-    when(repositoryMock.getEntity(SearchResult.class, knownTargetSearchId)).thenReturn(mock(SearchResult.class));
+    when(repositoryMock.getEntityOrDefaultVariation(SearchResult.class, knownSourceSearchId)).thenReturn(mock(SearchResult.class));
+    when(repositoryMock.getEntityOrDefaultVariation(SearchResult.class, knownTargetSearchId)).thenReturn(mock(SearchResult.class));
     when(repositoryMock.getRelationTypeById(validRelationTypeId, false)).thenReturn(mock(RelationType.class));
 
     try {
@@ -365,8 +365,8 @@ public class SearchRequestValidatorTest {
     } finally {
       verify(typeRegistryMock).getTypeForXName(relationTypeString);
       verify(vreMock).inScope(testRelation);
-      verify(repositoryMock).getEntity(SearchResult.class, knownSourceSearchId);
-      verify(repositoryMock).getEntity(SearchResult.class, knownTargetSearchId);
+      verify(repositoryMock).getEntityOrDefaultVariation(SearchResult.class, knownSourceSearchId);
+      verify(repositoryMock).getEntityOrDefaultVariation(SearchResult.class, knownTargetSearchId);
       verify(repositoryMock).getRelationTypeById(validRelationTypeId, false);
     }
   }
