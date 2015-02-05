@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.fail;
 
 import java.util.List;
 
@@ -26,6 +27,7 @@ import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import test.model.projecta.ProjectAPerson;
@@ -267,7 +269,24 @@ public abstract class StorageIntegrationTest {
   }
 
   @Test
-  public void deleteVariationRemovesTheVariationFromTheDatabase() throws Exception {
+  public void deleteDomainEntityRemovesTheEntityFromTheDatabase() throws Exception {
+    String id = addDefaultProjectAPerson();
+
+    assertThat(instance.getEntity(DOMAIN_ENTITY_TYPE, id), //
+        likeDefaultProjectAPerson(id)//
+            .withDeletedFlag(false));
+
+    assertThat(instance.getEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), //
+        likeDefaultPerson(id)//
+            .withDeletedFlag(false));
+
+    instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, id, UPDATE_CHANGE);
+    assertThat(instance.getEntity(DOMAIN_ENTITY_TYPE, id), is(nullValue()));
+    assertThat(instance.getEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), is(nullValue()));
+  }
+
+  @Test
+  public void deleteVariationRemovesTheVariationFromTheEntity() throws Exception {
     String id = addDefaultProjectAPerson();
 
     assertThat(instance.getEntity(DOMAIN_ENTITY_TYPE, id), //
@@ -284,7 +303,18 @@ public abstract class StorageIntegrationTest {
     assertThat(instance.getEntity(DOMAIN_ENTITY_TYPE, id), is(nullValue()));
     assertThat(instance.getEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), //
         likeDefaultPerson(id).withRevision(expectedRevision));
+  }
 
+  @Ignore
+  @Test
+  public void declineRelationsOfEntitySetsAcceptedToFalseForTheVariation() {
+    fail("Yet to be implemented");
+  }
+
+  @Ignore
+  @Test
+  public void deleteRelationsOfEntityRemovesAllTheRelationsConnectedToTheEntity() {
+    fail("Yet to be implemented");
   }
 
   @Test
