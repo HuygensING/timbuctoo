@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage;
 
 import static nl.knaw.huygens.timbuctoo.storage.PersonMatcher.likePerson;
 import static nl.knaw.huygens.timbuctoo.storage.PersonMatcher.likeProjectAPerson;
+import static nl.knaw.huygens.timbuctoo.storage.RelationMatcher.likeRelation;
 import static nl.knaw.huygens.timbuctoo.storage.RelationTypeMatcher.matchesRelationType;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -11,13 +12,13 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assert.fail;
 
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Person.Gender;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
@@ -27,14 +28,22 @@ import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import test.model.projecta.ProjectAPerson;
+import test.variation.model.projecta.ProjectARelation;
 
 import com.google.common.collect.Lists;
 
 public abstract class StorageIntegrationTest {
+  private static final boolean NOT_ACCEPTED = false;
+  private static final Class<ProjectARelation> PROJECT_RELATION_TYPE = ProjectARelation.class;
+  private static final Class<Relation> PRIMITIVE_RELATION_TYPE = Relation.class;
+  private static final boolean ACCEPTED = true;
+  private static final String DEFAULT_TYPE_ID = "typeId";
+  private static final String DEFAULT_TARGET_TYPE = "targetType";
+  private static final String DEFAULT_TARGET_ID = "targetid";
+  private static final String DEFAULT_SOURCE_TYPE = "sourceType";
   // General constants
   private static final Change CHANGE_TO_SAVE = new Change();
   private static final Change UPDATE_CHANGE = new Change();
@@ -305,16 +314,40 @@ public abstract class StorageIntegrationTest {
         likeDefaultPerson(id).withRevision(expectedRevision));
   }
 
-  @Ignore
   @Test
-  public void declineRelationsOfEntitySetsAcceptedToFalseForTheVariation() {
-    fail("Yet to be implemented");
+  public void declineRelationsOfEntitySetsAcceptedToFalseForTheVariation() throws Exception {
+    // setup
+    String sourceId = addDefaultProjectAPerson();
+    String relationId = addDefaultRelation(sourceId);
+
+    // check if the relation is added
+    assertThat(instance.getEntity(PROJECT_RELATION_TYPE, relationId), likeDefaultAcceptedRelation(sourceId));
+    assertThat(instance.getEntity(PRIMITIVE_RELATION_TYPE, relationId), likeDefaultAcceptedRelation(sourceId));
+
+    // action
+    instance.declineRelationsOfEntity(PROJECT_RELATION_TYPE, sourceId);
+
+    // verify
+    assertThat(instance.getEntity(PROJECT_RELATION_TYPE, relationId), likeDefaultNotAcceptionRelation(sourceId));
+    assertThat(instance.getEntity(PRIMITIVE_RELATION_TYPE, relationId), likeDefaultAcceptedRelation(sourceId));
   }
 
-  @Ignore
   @Test
-  public void deleteRelationsOfEntityRemovesAllTheRelationsConnectedToTheEntity() {
-    fail("Yet to be implemented");
+  public void deleteRelationsOfEntityRemovesAllTheRelationsConnectedToTheEntity() throws Exception {
+    // setup
+    String sourceId = addDefaultProjectAPerson();
+    String relationId = addDefaultRelation(sourceId);
+
+    // check if the relation is added
+    assertThat(instance.getEntity(PROJECT_RELATION_TYPE, relationId), likeDefaultAcceptedRelation(sourceId));
+    assertThat(instance.getEntity(PRIMITIVE_RELATION_TYPE, relationId), likeDefaultAcceptedRelation(sourceId));
+
+    // action
+    instance.deleteRelationsOfEntity(PRIMITIVE_RELATION_TYPE, sourceId);
+
+    // verify
+    assertThat(instance.getEntity(PROJECT_RELATION_TYPE, relationId), is(nullValue()));
+    assertThat(instance.getEntity(PRIMITIVE_RELATION_TYPE, relationId), is(nullValue()));
   }
 
   @Test
@@ -379,6 +412,8 @@ public abstract class StorageIntegrationTest {
     assertThat(allVariations, containsInAnyOrder(matchers));
   }
 
+  // Person test helpers
+
   private ProjectAPerson createPerson(Gender gender, PersonName name, String projectAPersonProperty, Datable birthDate, Datable deathDate) {
     ProjectAPerson domainEntityToStore = new ProjectAPerson();
     domainEntityToStore.setGender(gender);
@@ -416,5 +451,40 @@ public abstract class StorageIntegrationTest {
         .withGender(GENDER)//
         .withId(id)//
         .withNames(Lists.newArrayList(PERSON_NAME));
+  }
+
+  // Relation test helpers
+
+  private RelationMatcher likeDefaultNotAcceptionRelation(String sourceId) {
+    return likeRelation()//
+        .withSourceId(sourceId) //
+        .withSourceType(DEFAULT_SOURCE_TYPE) //
+        .withTargetId(DEFAULT_TARGET_ID) //
+        .withTargetType(DEFAULT_TARGET_TYPE) //
+        .withTypeId(DEFAULT_TYPE_ID) //
+        .isAccepted(NOT_ACCEPTED);
+  }
+
+  private RelationMatcher likeDefaultAcceptedRelation(String sourceId) {
+    return likeRelation()//
+        .withSourceId(sourceId) //
+        .withSourceType(DEFAULT_SOURCE_TYPE) //
+        .withTargetId(DEFAULT_TARGET_ID) //
+        .withTargetType(DEFAULT_TARGET_TYPE) //
+        .withTypeId(DEFAULT_TYPE_ID) //
+        .isAccepted(ACCEPTED);
+  }
+
+  private String addDefaultRelation(String sourceId) throws StorageException {
+    ProjectARelation relation = new ProjectARelation();
+    relation.setAccepted(ACCEPTED);
+    relation.setSourceId(sourceId);
+    relation.setSourceType(DEFAULT_SOURCE_TYPE);
+    relation.setTargetId(DEFAULT_TARGET_ID);
+    relation.setTargetType(DEFAULT_TARGET_TYPE);
+    relation.setTypeId(DEFAULT_TYPE_ID);
+
+    String relationId = instance.addDomainEntity(PROJECT_RELATION_TYPE, relation, CHANGE_TO_SAVE);
+    return relationId;
   }
 }
