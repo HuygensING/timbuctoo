@@ -90,6 +90,14 @@
         </exclusion>
       </exclusions>
     </dependency>
+    
+    <!-- Neo4j -->
+    <dependency>
+      <groupId>org.neo4j</groupId>
+      <artifactId>neo4j-kernel</artifactId>
+      <version>${neo4j.version}</version>
+    </dependency>
+    
     <!-- ## End of main dependencies ## -->
     <!-- ## Test dependencies ## -->
     <!-- Timbuctoo test services -->
@@ -99,11 +107,19 @@
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
-    <!-- In memory mongo -->
+    <!-- In-memory mongo -->
     <dependency>
       <groupId>de.flapdoodle.embed</groupId>
       <artifactId>de.flapdoodle.embed.mongo</artifactId>
       <version>1.46.1</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- In-memory Neo4j -->
+    <dependency>
+      <groupId>org.neo4j</groupId>
+      <artifactId>neo4j-kernel</artifactId>
+      <version>${neo4j.version}</version>
+      <type>test-jar</type>
       <scope>test</scope>
     </dependency>
     <!-- ## End of test dependencies ## -->
