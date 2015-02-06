@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * #%L
  * Timbuctoo model
  * =======
- * Copyright (C) 2012 - 2014 Huygens ING
+ * Copyright (C) 2012 - 2015 Huygens ING
  * =======
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
