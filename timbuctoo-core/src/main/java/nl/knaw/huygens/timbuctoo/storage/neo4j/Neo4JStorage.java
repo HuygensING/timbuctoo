@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 import java.util.Date;
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -15,11 +14,17 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 
 public class Neo4JStorage implements Storage {
 
-  public Neo4JStorage(GraphDatabaseService db, TypeRegistry typeRegistry) {
-    // TODO Auto-generated constructor stub
+  private final NodeTransformer nodeTransformer;
+  private final GraphDatabaseService db;
+
+  public Neo4JStorage(GraphDatabaseService db, NodeTransformer nodeTransformer) {
+    this.db = db;
+    this.nodeTransformer = nodeTransformer;
   }
 
   @Override
@@ -42,8 +47,15 @@ public class Neo4JStorage implements Storage {
 
   @Override
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws StorageException {
-    // TODO Auto-generated method stub
-    return null;
+    try (Transaction transaction = db.beginTx()) {
+
+      Node node = db.createNode();
+      nodeTransformer.addValuesToNode(node, entity);
+      nodeTransformer.addAdministrativeValues(node, entity);
+
+      transaction.success();
+      return (String) node.getProperty("_id");
+    }
   }
 
   @Override
