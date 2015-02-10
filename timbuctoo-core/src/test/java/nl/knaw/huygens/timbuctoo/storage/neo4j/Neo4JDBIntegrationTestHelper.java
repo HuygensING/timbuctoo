@@ -24,7 +24,7 @@ public class Neo4JDBIntegrationTestHelper implements DBIntegrationTestHelper {
 
   @Override
   public Storage createStorage(TypeRegistry typeRegistry) throws ModelException {
-    return new Neo4jStorage(db, typeRegistry);
+    return new Neo4JStorage(db, typeRegistry);
   }
 
 }

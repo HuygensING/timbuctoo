@@ -16,9 +16,9 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 
-public class Neo4jStorage implements Storage {
+public class Neo4JStorage implements Storage {
 
-  public Neo4jStorage(GraphDatabaseService db, TypeRegistry typeRegistry) {
+  public Neo4JStorage(GraphDatabaseService db, TypeRegistry typeRegistry) {
     // TODO Auto-generated constructor stub
   }
 
