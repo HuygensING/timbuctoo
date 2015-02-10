@@ -17,11 +17,14 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 
+import com.google.inject.Inject;
+
 public class Neo4JStorage implements Storage {
 
   private final NodeTransformer nodeTransformer;
   private final GraphDatabaseService db;
 
+  @Inject
   public Neo4JStorage(GraphDatabaseService db, NodeTransformer nodeTransformer) {
     this.db = db;
     this.nodeTransformer = nodeTransformer;
