@@ -16,21 +16,21 @@ import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import org.junit.Test;
 
-import test.model.TestSystemEntity;
+import test.model.TestSystemEntityWrapper;
 
 public class EntityWrapperFactoryTest {
 
   @Test
   public void wrapAddsAFieldWrapperForEachFieldInTheEntity() {
-    TestSystemEntity entity = new TestSystemEntity();
-    int numberOfFields = TestSystemEntity.class.getDeclaredFields().length;
+    TestSystemEntityWrapper entity = new TestSystemEntityWrapper();
+    int numberOfFields = TestSystemEntityWrapper.class.getDeclaredFields().length;
     numberOfFields += SystemEntity.class.getDeclaredFields().length;
     numberOfFields += Entity.class.getDeclaredFields().length;
 
     FieldWrapper fieldWrapperMock = mock(FieldWrapper.class);
     FieldWrapperFactory fieldWrapperFactoryMock = mock(FieldWrapperFactory.class);
 
-    when(fieldWrapperFactoryMock.wrap(any(Field.class), any(TestSystemEntity.class))).thenReturn(fieldWrapperMock);
+    when(fieldWrapperFactoryMock.wrap(any(Field.class), any(TestSystemEntityWrapper.class))).thenReturn(fieldWrapperMock);
 
     final EntityWrapper objectWrapperMock = mock(EntityWrapper.class);
 
@@ -47,7 +47,7 @@ public class EntityWrapperFactoryTest {
     // verify
     assertThat(objectWrapper, is(notNullValue()));
 
-    verify(fieldWrapperFactoryMock, times(numberOfFields)).wrap(any(Field.class), any(TestSystemEntity.class));
+    verify(fieldWrapperFactoryMock, times(numberOfFields)).wrap(any(Field.class), any(TestSystemEntityWrapper.class));
     verify(objectWrapperMock, times(numberOfFields)).addFieldWrapper(fieldWrapperMock);
   }
 }
