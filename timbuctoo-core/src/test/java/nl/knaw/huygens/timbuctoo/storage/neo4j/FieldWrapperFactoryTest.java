@@ -40,7 +40,7 @@ public class FieldWrapperFactoryTest {
 
   @Test
   public void wrapCreatesASimpleValueFieldWrapperIfTheFieldContainsAString() throws Exception {
-    Field stringField = getField(TYPE, "value1");
+    Field stringField = getField(TYPE, "stringValue");
 
     testWrap(TEST_SYSTEM_ENTITY, stringField, SIMPLE_VALUE_WRAPPER_TYPE);
   }

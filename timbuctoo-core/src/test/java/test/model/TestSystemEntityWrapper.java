@@ -37,9 +37,7 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 @IDPrefix("TSYW")
 public class TestSystemEntityWrapper extends SystemEntity {
 
-  private String value1;
-  private String value2;
-  private String value3;
+  private String stringValue;
 
   private Long primitiveWrapperValue;
   private int primitiveValue;
@@ -55,17 +53,9 @@ public class TestSystemEntityWrapper extends SystemEntity {
     setId(id);
   }
 
-  public TestSystemEntityWrapper(String id, String value1, String value2) {
+  public TestSystemEntityWrapper(String id, String value1) {
     setId(id);
-    setValue1(value1);
-    setValue2(value2);
-  }
-
-  public TestSystemEntityWrapper(String id, String value1, String value2, String value3) {
-    setId(id);
-    setValue1(value1);
-    setValue2(value2);
-    setValue3(value3);
+    setStringValue(value1);
   }
 
   @Override
@@ -73,28 +63,12 @@ public class TestSystemEntityWrapper extends SystemEntity {
     return null;
   }
 
-  public String getValue1() {
-    return value1;
+  public String getStringValue() {
+    return stringValue;
   }
 
-  public void setValue1(String value) {
-    value1 = value;
-  }
-
-  public String getValue2() {
-    return value2;
-  }
-
-  public void setValue2(String value) {
-    value2 = value;
-  }
-
-  public String getValue3() {
-    return value3;
-  }
-
-  public void setValue3(String value) {
-    value3 = value;
+  public void setStringValue(String value) {
+    stringValue = value;
   }
 
   public Long getLongWrapperValue() {
