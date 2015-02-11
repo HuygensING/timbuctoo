@@ -14,4 +14,9 @@ public class ObjectWrapper {
     return null;
   }
 
+  public void addFieldWrapper(FieldWrapper fieldWrapperMock) {
+    // TODO Auto-generated method stub
+
+  }
+
 }
