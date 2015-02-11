@@ -7,18 +7,18 @@ import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import com.google.inject.Inject;
 
-public class ObjectWrapperFactory {
+public class EntityWrapperFactory {
 
   private FieldWrapperFactory fieldWrapperFactory;
 
   @Inject
-  public ObjectWrapperFactory(FieldWrapperFactory fieldWrapperFactory) {
+  public EntityWrapperFactory(FieldWrapperFactory fieldWrapperFactory) {
     this.fieldWrapperFactory = fieldWrapperFactory;
   }
 
-  public ObjectWrapper wrap(SystemEntity entity) {
+  public EntityWrapper wrap(SystemEntity entity) {
 
-    ObjectWrapper objectWrapper = createObjectWrapper();
+    EntityWrapper objectWrapper = createObjectWrapper();
 
     addFieldWrappers(objectWrapper, entity.getClass(), entity);
 
@@ -26,7 +26,7 @@ public class ObjectWrapperFactory {
   }
 
   @SuppressWarnings("unchecked")
-  private void addFieldWrappers(ObjectWrapper objectWrapper, Class<? extends Entity> type, SystemEntity instance) {
+  private void addFieldWrappers(EntityWrapper objectWrapper, Class<? extends Entity> type, SystemEntity instance) {
     for (Field field : type.getDeclaredFields()) {
       objectWrapper.addFieldWrapper(fieldWrapperFactory.wrap(field, instance));
     }
@@ -35,8 +35,8 @@ public class ObjectWrapperFactory {
     }
   }
 
-  protected ObjectWrapper createObjectWrapper() {
-    return new ObjectWrapper();
+  protected EntityWrapper createObjectWrapper() {
+    return new EntityWrapper();
   }
 
 }

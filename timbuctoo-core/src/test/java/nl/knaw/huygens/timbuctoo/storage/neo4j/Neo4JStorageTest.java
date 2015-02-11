@@ -26,9 +26,9 @@ public class Neo4JStorageTest {
     Class<TestSystemEntity> type = TestSystemEntity.class;
 
     GraphDatabaseService dbMock = mock(GraphDatabaseService.class);
-    ObjectWrapper objectWrapperMock = mock(ObjectWrapper.class);
+    EntityWrapper objectWrapperMock = mock(EntityWrapper.class);
 
-    ObjectWrapperFactory objectWrapperFactoryMock = mock(ObjectWrapperFactory.class);
+    EntityWrapperFactory objectWrapperFactoryMock = mock(EntityWrapperFactory.class);
     when(objectWrapperFactoryMock.wrap(entity)).thenReturn(objectWrapperMock);
     when(objectWrapperMock.addAdministrativeValues(nodeMock)).thenReturn(id);
 

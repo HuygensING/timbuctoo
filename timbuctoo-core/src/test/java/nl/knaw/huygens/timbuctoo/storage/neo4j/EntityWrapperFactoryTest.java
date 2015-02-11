@@ -18,7 +18,7 @@ import org.junit.Test;
 
 import test.model.TestSystemEntity;
 
-public class ObjectWrapperFactoryTest {
+public class EntityWrapperFactoryTest {
 
   @Test
   public void wrapAddsAFieldWrapperForEachFieldInTheEntity() {
@@ -32,17 +32,17 @@ public class ObjectWrapperFactoryTest {
 
     when(fieldWrapperFactoryMock.wrap(any(Field.class), any(TestSystemEntity.class))).thenReturn(fieldWrapperMock);
 
-    final ObjectWrapper objectWrapperMock = mock(ObjectWrapper.class);
+    final EntityWrapper objectWrapperMock = mock(EntityWrapper.class);
 
-    ObjectWrapperFactory instance = new ObjectWrapperFactory(fieldWrapperFactoryMock) {
+    EntityWrapperFactory instance = new EntityWrapperFactory(fieldWrapperFactoryMock) {
       @Override
-      protected ObjectWrapper createObjectWrapper() {
+      protected EntityWrapper createObjectWrapper() {
         return objectWrapperMock;
       }
     };
 
     // action
-    ObjectWrapper objectWrapper = instance.wrap(entity);
+    EntityWrapper objectWrapper = instance.wrap(entity);
 
     // verify
     assertThat(objectWrapper, is(notNullValue()));

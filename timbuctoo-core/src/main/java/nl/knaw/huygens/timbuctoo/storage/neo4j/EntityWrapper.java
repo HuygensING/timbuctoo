@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import org.neo4j.graphdb.Node;
 
-public class ObjectWrapper {
+public class EntityWrapper {
 
   public void addValuesToNode(Node node) {
     // TODO Auto-generated method stub

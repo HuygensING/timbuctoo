@@ -11,12 +11,12 @@ import org.neo4j.test.TestGraphDatabaseFactory;
 public class Neo4JDBIntegrationTestHelper implements DBIntegrationTestHelper {
 
   private GraphDatabaseService db;
-  private ObjectWrapperFactory objectWrapperFactory;
+  private EntityWrapperFactory objectWrapperFactory;
 
   @Override
   public void startCleanDB() throws Exception {
     db = new TestGraphDatabaseFactory().newImpermanentDatabase();
-    objectWrapperFactory = new ObjectWrapperFactory(new FieldWrapperFactory());
+    objectWrapperFactory = new EntityWrapperFactory(new FieldWrapperFactory());
   }
 
   @Override
