@@ -20,19 +20,22 @@ public class Neo4JStorageTest {
   @Ignore
   @Test
   public void addSystemEntitySavesTheSystemAsNodeAndReturnsItsId() throws Exception {
-    Class<TestSystemEntity> type = TestSystemEntity.class;
-    GraphDatabaseService dbMock = mock(GraphDatabaseService.class);
-    NodeTransformer nodeTransformerMock = mock(NodeTransformer.class);
-
-    Neo4JStorage instance = new Neo4JStorage(dbMock, nodeTransformerMock);
-
+    String id = "id";
     TestSystemEntity entity = new TestSystemEntity();
+    Node nodeMock = mock(Node.class);
+    Class<TestSystemEntity> type = TestSystemEntity.class;
+
+    GraphDatabaseService dbMock = mock(GraphDatabaseService.class);
+    ObjectWrapper objectWrapperMock = mock(ObjectWrapper.class);
+
+    ObjectWrapperFactory objectWrapperFactoryMock = mock(ObjectWrapperFactory.class);
+    when(objectWrapperFactoryMock.wrap(entity)).thenReturn(objectWrapperMock);
+    when(objectWrapperMock.addAdministrativeValues(nodeMock)).thenReturn(id);
+
+    Neo4JStorage instance = new Neo4JStorage(dbMock, objectWrapperFactoryMock);
 
     Transaction transactionMock = mock(Transaction.class);
     when(dbMock.beginTx()).thenReturn(transactionMock);
-    Node nodeMock = mock(Node.class);
-    String id = "id";
-    when(nodeMock.getProperty("_id")).thenReturn(id);
     when(dbMock.createNode()).thenReturn(nodeMock);
 
     // action
@@ -44,8 +47,8 @@ public class Neo4JStorageTest {
     InOrder inOrder = inOrder(dbMock, transactionMock);
     inOrder.verify(dbMock).beginTx();
     inOrder.verify(dbMock).createNode();
-    inOrder.verify(nodeTransformerMock).addValuesToNode(nodeMock, entity);
-    inOrder.verify(nodeTransformerMock).addAdministrativeValues(nodeMock, entity);
+    inOrder.verify(objectWrapperMock).addValuesToNode(nodeMock);
+    inOrder.verify(objectWrapperMock).addAdministrativeValues(nodeMock);
     inOrder.verify(transactionMock).success();
 
   }

@@ -21,13 +21,13 @@ import com.google.inject.Inject;
 
 public class Neo4JStorage implements Storage {
 
-  private final NodeTransformer nodeTransformer;
+  private final ObjectWrapperFactory objectWrapperFactory;
   private final GraphDatabaseService db;
 
   @Inject
-  public Neo4JStorage(GraphDatabaseService db, NodeTransformer nodeTransformer) {
+  public Neo4JStorage(GraphDatabaseService db, ObjectWrapperFactory objectWrapperFactory) {
     this.db = db;
-    this.nodeTransformer = nodeTransformer;
+    this.objectWrapperFactory = objectWrapperFactory;
   }
 
   @Override
@@ -51,13 +51,13 @@ public class Neo4JStorage implements Storage {
   @Override
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
-
+      ObjectWrapper objectWrapper = objectWrapperFactory.wrap(entity);
       Node node = db.createNode();
-      nodeTransformer.addValuesToNode(node, entity);
-      nodeTransformer.addAdministrativeValues(node, entity);
+      objectWrapper.addValuesToNode(node);
+      String id = objectWrapper.addAdministrativeValues(node);
 
       transaction.success();
-      return (String) node.getProperty("_id");
+      return id;
     }
   }
 
