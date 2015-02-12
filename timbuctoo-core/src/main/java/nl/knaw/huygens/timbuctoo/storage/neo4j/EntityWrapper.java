@@ -14,7 +14,7 @@ public class EntityWrapper {
     fieldWrappers = Lists.newArrayList();
   }
 
-  public void addValuesToNode(Node node) {
+  public void addValuesToNode(Node node) throws IllegalArgumentException, IllegalAccessException {
     for (FieldWrapper fieldWrapper : fieldWrappers) {
       fieldWrapper.addValueToNode(node);
     }

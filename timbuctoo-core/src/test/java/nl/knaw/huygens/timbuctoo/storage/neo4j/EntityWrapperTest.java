@@ -8,7 +8,7 @@ import org.neo4j.graphdb.Node;
 
 public class EntityWrapperTest {
   @Test
-  public void addValuesToNodeLetsTheFieldWrappersAddTheirValuesToTheNode() {
+  public void addValuesToNodeLetsTheFieldWrappersAddTheirValuesToTheNode() throws Exception {
     FieldWrapper fieldWrapperMock1 = mock(FieldWrapper.class);
     FieldWrapper fieldWrapperMock2 = mock(FieldWrapper.class);
 

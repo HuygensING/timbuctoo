@@ -67,8 +67,8 @@ public class TestSystemEntityWrapper extends SystemEntity {
     return stringValue;
   }
 
-  public void setStringValue(String value) {
-    stringValue = value;
+  public void setStringValue(String stringValue) {
+    this.stringValue = stringValue;
   }
 
   public Long getLongWrapperValue() {

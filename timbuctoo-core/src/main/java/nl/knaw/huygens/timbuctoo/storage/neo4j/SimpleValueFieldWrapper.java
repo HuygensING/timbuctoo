@@ -1,21 +1,17 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
-import java.lang.reflect.Field;
+import org.neo4j.graphdb.Node;
 
-import nl.knaw.huygens.timbuctoo.model.SystemEntity;
-
+/**
+ * A FieldWrapper that wraps fields for primitives, primitive wrappers, strings, 
+ * or collections of the former.  
+ *
+ */
 public class SimpleValueFieldWrapper extends FieldWrapper {
 
   @Override
-  public void setField(Field field) {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
-  public void setContainingEntity(SystemEntity entity) {
-    // TODO Auto-generated method stub
-
+  public void addValueToNode(Node node) throws IllegalArgumentException, IllegalAccessException {
+    node.setProperty(getName(), getFieldValue());
   }
 
 }

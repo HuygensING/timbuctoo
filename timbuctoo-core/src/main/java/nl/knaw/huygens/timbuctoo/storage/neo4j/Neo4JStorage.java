@@ -58,6 +58,8 @@ public class Neo4JStorage implements Storage {
 
       transaction.success();
       return id;
+    } catch (IllegalArgumentException | IllegalAccessException e) {
+      throw new StorageException(e);
     }
   }
 

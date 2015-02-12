@@ -8,13 +8,39 @@ import org.neo4j.graphdb.Node;
 
 public abstract class FieldWrapper {
 
-  public abstract void setField(Field field);
+  private Field field;
+  private SystemEntity entity;
+  private PropertyNameCreator propertyNameCreator;
 
-  public abstract void setContainingEntity(SystemEntity entity);
+  public void setContainingEntity(SystemEntity entity) {
+    this.entity = entity;
+  }
 
-  public void addValueToNode(Node node) {
-    // TODO Auto-generated method stub
+  public void setField(Field field) {
+    this.field = field;
+  }
 
+  public void setPropertyNameCreator(PropertyNameCreator propertyNameCreator) {
+    this.propertyNameCreator = propertyNameCreator;
+  }
+
+  protected Object getFieldValue() throws IllegalArgumentException, IllegalAccessException {
+    field.setAccessible(true);
+    return field.get(entity);
+  }
+
+  public abstract void addValueToNode(Node node) throws IllegalArgumentException, IllegalAccessException;
+
+  protected String getName() {
+    return propertyNameCreator.createName(getContainingType(), getFieldName());
+  }
+
+  private String getFieldName() {
+    return field.getName();
+  }
+
+  private Class<? extends SystemEntity> getContainingType() {
+    return entity.getClass();
   }
 
 }

@@ -11,11 +11,18 @@ import org.apache.commons.lang3.ClassUtils;
 
 public class FieldWrapperFactory {
 
+  private final PropertyNameCreator propertyNameCreator;
+
+  public FieldWrapperFactory(PropertyNameCreator propertyNameCreator) {
+    this.propertyNameCreator = propertyNameCreator;
+  }
+
   public FieldWrapper wrap(Field field, SystemEntity entity) {
     FieldWrapper fieldWrapper = createFieldWrapper(field);
 
     fieldWrapper.setField(field);
     fieldWrapper.setContainingEntity(entity);
+    fieldWrapper.setPropertyNameCreator(propertyNameCreator);
 
     return fieldWrapper;
   }

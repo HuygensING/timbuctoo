@@ -1,19 +1,14 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
-import java.lang.reflect.Field;
+import org.neo4j.graphdb.Node;
 
-import nl.knaw.huygens.timbuctoo.model.SystemEntity;
-
+/**
+ * A FieldWrapper for the more complex values.
+ */
 public class ObjectValueFieldWrapper extends FieldWrapper {
 
   @Override
-  public void setField(Field field) {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
-  public void setContainingEntity(SystemEntity entity) {
+  public void addValueToNode(Node node) {
     // TODO Auto-generated method stub
 
   }
