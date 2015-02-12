@@ -17,12 +17,13 @@ public class NameCreator {
   }
 
   public String propertyName(Class<? extends Entity> containingType, Field field) {
-    // TODO should be an enum
-    if (propertyBusinessRules.isAdministrativeProperty(field) || propertyBusinessRules.isVirtualProperty(field)) {
-      return getFieldName(containingType, field);
+    FieldType fieldType = propertyBusinessRules.getFieldType(containingType, field);
+
+    if (fieldType == FieldType.REGULAR) {
+      return String.format("%s:%s", internalTypeName(containingType), getFieldName(containingType, field));
     }
 
-    return String.format("%s:%s", internalTypeName(containingType), getFieldName(containingType, field));
+    return getFieldName(containingType, field);
   }
 
   /**

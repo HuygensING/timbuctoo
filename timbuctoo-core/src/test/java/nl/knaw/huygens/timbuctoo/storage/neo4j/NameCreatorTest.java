@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Field;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -33,6 +34,8 @@ public class NameCreatorTest {
   public void propertyNameReturnsTheInnerNameOfTheTypeAndTheFieldNameSeparatedByAColon() throws Exception {
     Field field = TYPE.getDeclaredField(DEFAULT_FIELD_NAME);
 
+    fieldIsFieldType(TYPE, field, FieldType.REGULAR);
+
     // action
     String name = instance.propertyName(TYPE, field);
 
@@ -44,7 +47,7 @@ public class NameCreatorTest {
   public void propertyNameReturnsTheFieldNameIfTheFieldIsAnAdministrative() throws Exception {
     Field field = TYPE.getDeclaredField(DEFAULT_FIELD_NAME);
 
-    fieldIsAdministrative(field);
+    fieldIsFieldType(TYPE, field, FieldType.ADMINISTRATIVE);
 
     // action
     String name = instance.propertyName(TYPE, field);
@@ -53,15 +56,15 @@ public class NameCreatorTest {
     assertThat(name, is(DEFAULT_FIELD_NAME));
   }
 
-  private void fieldIsAdministrative(Field field) {
-    when(propertyBusinessRulesMock.isAdministrativeProperty(field)).thenReturn(true);
+  private void fieldIsFieldType(Class<? extends Entity> containingType, Field field, FieldType fieldType) {
+    when(propertyBusinessRulesMock.getFieldType(containingType, field)).thenReturn(fieldType);
   }
 
   @Test
   public void propertyNameReturnsTheFieldNameIfTheFieldIsVirtual() throws Exception {
     Field field = TYPE.getDeclaredField(DEFAULT_FIELD_NAME);
 
-    fieldIsVirtual(field);
+    fieldIsFieldType(TYPE, field, FieldType.VIRTUAL);
 
     // action
     String name = instance.propertyName(TYPE, field);
@@ -70,13 +73,11 @@ public class NameCreatorTest {
     assertThat(name, is(DEFAULT_FIELD_NAME));
   }
 
-  private void fieldIsVirtual(Field field) {
-    when(propertyBusinessRulesMock.isVirtualProperty(field)).thenReturn(true);
-  }
-
   @Test
   public void propertyNameUsesThePropertyNameAnnotationWhenPresentOnTheProperty() throws Exception {
     Field field = TYPE.getDeclaredField(ANNOTATED_FIELD_NAME);
+
+    fieldIsFieldType(TYPE, field, FieldType.REGULAR);
 
     // action
     String name = instance.propertyName(TYPE, field);
@@ -88,6 +89,8 @@ public class NameCreatorTest {
   @Test
   public void propertyNameUsesThePropertyNameAnnotationWhenPresentOnGetterOfTheProperty() throws Exception {
     Field field = TYPE.getDeclaredField(PROPERTY_WITH_ANNOTATED_GETTER_NAME);
+
+    fieldIsFieldType(TYPE, field, FieldType.REGULAR);
 
     // action
     String name = instance.propertyName(TYPE, field);
