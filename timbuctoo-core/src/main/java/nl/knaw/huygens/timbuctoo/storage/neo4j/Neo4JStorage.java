@@ -51,15 +51,18 @@ public class Neo4JStorage implements Storage {
   @Override
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
-      EntityWrapper objectWrapper = objectWrapperFactory.wrap(entity);
-      Node node = db.createNode();
-      objectWrapper.addValuesToNode(node);
-      String id = objectWrapper.addAdministrativeValues(node);
+      try {
+        EntityWrapper objectWrapper = objectWrapperFactory.wrap(entity);
+        Node node = db.createNode();
+        objectWrapper.addValuesToNode(node);
+        String id = objectWrapper.addAdministrativeValues(node);
 
-      transaction.success();
-      return id;
-    } catch (IllegalArgumentException | IllegalAccessException e) {
-      throw new StorageException(e);
+        transaction.success();
+        return id;
+      } catch (IllegalArgumentException | IllegalAccessException e) {
+        transaction.failure();
+        throw new StorageException(e);
+      }
     }
   }
 
