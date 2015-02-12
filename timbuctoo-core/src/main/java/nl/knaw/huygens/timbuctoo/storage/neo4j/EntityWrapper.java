@@ -27,7 +27,7 @@ public class EntityWrapper {
   }
 
   private void addName(Node node) {
-    node.addLabel(DynamicLabel.label(nameCreator.typeName(entity.getClass())));
+    node.addLabel(DynamicLabel.label(nameCreator.internalTypeName(entity.getClass())));
   }
 
   public String addAdministrativeValues(Node node) {

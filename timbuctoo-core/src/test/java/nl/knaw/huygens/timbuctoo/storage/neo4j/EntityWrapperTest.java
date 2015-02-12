@@ -31,7 +31,7 @@ public class EntityWrapperTest {
     instance.setNameCreator(NAME_CREATOR_MOCK);
     instance.setEntity(ENTITY);
 
-    when(NAME_CREATOR_MOCK.typeName(TYPE)).thenReturn(TYPE_NAME);
+    when(NAME_CREATOR_MOCK.internalTypeName(TYPE)).thenReturn(TYPE_NAME);
 
   }
 

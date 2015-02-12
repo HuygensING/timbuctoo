@@ -18,12 +18,13 @@ public class SimpleValueFieldWrapperTest {
   private SimpleValueFieldWrapper instance;
   private NameCreator propertyNameCreatorMock;
   private Node nodeMock;
+  private Field field;
 
   @Before
   public void setUp() throws Exception {
     nodeMock = mock(Node.class);
 
-    Field field = TestSystemEntityWrapper.class.getDeclaredField(FIELD_NAME);
+    field = TestSystemEntityWrapper.class.getDeclaredField(FIELD_NAME);
     propertyNameCreatorMock = mock(NameCreator.class);
     instance = new SimpleValueFieldWrapper();
     instance.setField(field);
@@ -37,7 +38,7 @@ public class SimpleValueFieldWrapperTest {
     String value = "value";
     entity.setStringValue(value);
 
-    createPopertyNameForFieldName(PROPERTY_NAME, FIELD_NAME);
+    createPopertyNameForField(PROPERTY_NAME, field);
 
     instance.setContainingEntity(entity);
 
@@ -48,9 +49,9 @@ public class SimpleValueFieldWrapperTest {
     verify(nodeMock).setProperty(PROPERTY_NAME, value);
   }
 
-  private void createPopertyNameForFieldName(String propertyName, String fieldName) {
+  private void createPopertyNameForField(String propertyName, Field field) {
 
-    when(propertyNameCreatorMock.property(TestSystemEntityWrapper.class, fieldName)).thenReturn(propertyName);
+    when(propertyNameCreatorMock.propertyName(TestSystemEntityWrapper.class, field)).thenReturn(propertyName);
 
   }
 }

@@ -32,11 +32,7 @@ public abstract class FieldWrapper {
   public abstract void addValueToNode(Node node) throws IllegalArgumentException, IllegalAccessException;
 
   protected String getName() {
-    return nameCreator.property(getContainingType(), getFieldName());
-  }
-
-  private String getFieldName() {
-    return field.getName();
+    return nameCreator.propertyName(getContainingType(), field);
   }
 
   private Class<? extends SystemEntity> getContainingType() {

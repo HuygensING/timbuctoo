@@ -16,7 +16,7 @@ public class Neo4JDBIntegrationTestHelper implements DBIntegrationTestHelper {
   @Override
   public void startCleanDB() throws Exception {
     db = new TestGraphDatabaseFactory().newImpermanentDatabase();
-    NameCreator nameCreator = new NameCreator();
+    NameCreator nameCreator = new NameCreator(new PropertyBusinessRules());
     FieldWrapperFactory fieldWrapperFactory = new FieldWrapperFactory(nameCreator);
     objectWrapperFactory = new EntityWrapperFactory(fieldWrapperFactory, nameCreator);
   }

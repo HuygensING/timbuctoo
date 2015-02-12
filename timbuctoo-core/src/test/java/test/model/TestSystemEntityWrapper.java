@@ -29,6 +29,8 @@ import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * A system entity for test purposes, in particular for handling cases
  * where properties are set and modified. The type of these properties
@@ -36,6 +38,9 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
  */
 @IDPrefix("TSYW")
 public class TestSystemEntityWrapper extends SystemEntity {
+
+  public static final String ANNOTED_GETTER_NAME = "annotedGetter";
+  public static final String ANOTATED_PROPERTY_NAME = "something";
 
   private String stringValue;
 
@@ -46,6 +51,11 @@ public class TestSystemEntityWrapper extends SystemEntity {
   private List<Change> objectCollection;
   private Change objectValue;
   private Map<String, String> map;
+
+  @JsonProperty(ANOTATED_PROPERTY_NAME)
+  private String annotatedProperty;
+
+  private String propertyWithAnnotatedGetter;
 
   public TestSystemEntityWrapper() {}
 
@@ -125,6 +135,15 @@ public class TestSystemEntityWrapper extends SystemEntity {
 
   public void setMap(Map<String, String> map) {
     this.map = map;
+  }
+
+  @JsonProperty(ANNOTED_GETTER_NAME)
+  public String getPropertyWithAnnotatedGetter() {
+    return propertyWithAnnotatedGetter;
+  }
+
+  public void setPropertyWithAnnotatedGetter(String propertyWithAnnotatedGetter) {
+    this.propertyWithAnnotatedGetter = propertyWithAnnotatedGetter;
   }
 
 }
