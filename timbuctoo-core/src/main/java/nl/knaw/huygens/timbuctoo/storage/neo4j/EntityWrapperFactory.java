@@ -10,19 +10,23 @@ import com.google.inject.Inject;
 public class EntityWrapperFactory {
 
   private FieldWrapperFactory fieldWrapperFactory;
+  private NameCreator nameCreator;
 
   @Inject
-  public EntityWrapperFactory(FieldWrapperFactory fieldWrapperFactory) {
+  public EntityWrapperFactory(FieldWrapperFactory fieldWrapperFactory, NameCreator nameCreator) {
     this.fieldWrapperFactory = fieldWrapperFactory;
+    this.nameCreator = nameCreator;
   }
 
   public EntityWrapper wrap(SystemEntity entity) {
 
-    EntityWrapper objectWrapper = createObjectWrapper();
+    EntityWrapper entityWrapper = createEntityWrapper();
+    entityWrapper.setEntity(entity);
+    entityWrapper.setNameCreator(nameCreator);
 
-    addFieldWrappers(objectWrapper, entity.getClass(), entity);
+    addFieldWrappers(entityWrapper, entity.getClass(), entity);
 
-    return objectWrapper;
+    return entityWrapper;
   }
 
   @SuppressWarnings("unchecked")
@@ -35,7 +39,7 @@ public class EntityWrapperFactory {
     }
   }
 
-  protected EntityWrapper createObjectWrapper() {
+  protected EntityWrapper createEntityWrapper() {
     return new EntityWrapper();
   }
 

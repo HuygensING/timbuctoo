@@ -32,12 +32,13 @@ public class EntityWrapperFactoryTest {
 
     when(fieldWrapperFactoryMock.wrap(any(Field.class), any(TestSystemEntityWrapper.class))).thenReturn(fieldWrapperMock);
 
-    final EntityWrapper objectWrapperMock = mock(EntityWrapper.class);
+    final EntityWrapper entityWrapperMock = mock(EntityWrapper.class);
 
-    EntityWrapperFactory instance = new EntityWrapperFactory(fieldWrapperFactoryMock) {
+    NameCreator nameCreatorMock = mock(NameCreator.class);
+    EntityWrapperFactory instance = new EntityWrapperFactory(fieldWrapperFactoryMock, nameCreatorMock) {
       @Override
-      protected EntityWrapper createObjectWrapper() {
-        return objectWrapperMock;
+      protected EntityWrapper createEntityWrapper() {
+        return entityWrapperMock;
       }
     };
 
@@ -48,6 +49,8 @@ public class EntityWrapperFactoryTest {
     assertThat(objectWrapper, is(notNullValue()));
 
     verify(fieldWrapperFactoryMock, times(numberOfFields)).wrap(any(Field.class), any(TestSystemEntityWrapper.class));
-    verify(objectWrapperMock, times(numberOfFields)).addFieldWrapper(fieldWrapperMock);
+    verify(entityWrapperMock, times(numberOfFields)).addFieldWrapper(fieldWrapperMock);
+    verify(entityWrapperMock).setEntity(entity);
+    verify(entityWrapperMock).setNameCreator(nameCreatorMock);
   }
 }

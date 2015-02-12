@@ -20,7 +20,7 @@ public class FieldWrapperFactoryTest {
   private static final Class<ObjectValueFieldWrapper> OBJECT_WRAPPER_TYPE = ObjectValueFieldWrapper.class;
   private static final Class<SimpleValueFieldWrapper> SIMPLE_VALUE_WRAPPER_TYPE = SimpleValueFieldWrapper.class;
   private static final TestSystemEntityWrapper TEST_SYSTEM_ENTITY = new TestSystemEntityWrapper();
-  private static final PropertyNameCreator PROPERTY_NAME_CREATOR_MOCK = mock(PropertyNameCreator.class);
+  private static final NameCreator PROPERTY_NAME_CREATOR_MOCK = mock(NameCreator.class);
   private FieldWrapperFactory instance;
 
   @Before

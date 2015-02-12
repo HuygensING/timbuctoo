@@ -10,7 +10,7 @@ public abstract class FieldWrapper {
 
   private Field field;
   private SystemEntity entity;
-  private PropertyNameCreator propertyNameCreator;
+  private NameCreator nameCreator;
 
   public void setContainingEntity(SystemEntity entity) {
     this.entity = entity;
@@ -20,8 +20,8 @@ public abstract class FieldWrapper {
     this.field = field;
   }
 
-  public void setPropertyNameCreator(PropertyNameCreator propertyNameCreator) {
-    this.propertyNameCreator = propertyNameCreator;
+  public void setPropertyNameCreator(NameCreator nameCreator) {
+    this.nameCreator = nameCreator;
   }
 
   protected Object getFieldValue() throws IllegalArgumentException, IllegalAccessException {
@@ -32,7 +32,7 @@ public abstract class FieldWrapper {
   public abstract void addValueToNode(Node node) throws IllegalArgumentException, IllegalAccessException;
 
   protected String getName() {
-    return propertyNameCreator.createName(getContainingType(), getFieldName());
+    return nameCreator.property(getContainingType(), getFieldName());
   }
 
   private String getFieldName() {
