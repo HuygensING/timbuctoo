@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import org.neo4j.graphdb.DynamicLabel;
@@ -13,7 +14,6 @@ public class EntityWrapper {
 
   private List<FieldWrapper> fieldWrappers;
   private SystemEntity entity;
-  private NameCreator nameCreator;
 
   public EntityWrapper() {
     fieldWrappers = Lists.newArrayList();
@@ -27,7 +27,7 @@ public class EntityWrapper {
   }
 
   private void addName(Node node) {
-    node.addLabel(DynamicLabel.label(nameCreator.internalTypeName(entity.getClass())));
+    node.addLabel(DynamicLabel.label(TypeNames.getInternalName(entity.getClass())));
   }
 
   public String addAdministrativeValues(Node node) {
@@ -41,10 +41,6 @@ public class EntityWrapper {
 
   public void setEntity(SystemEntity entity) {
     this.entity = entity;
-  }
-
-  public void setNameCreator(NameCreator nameCreator) {
-    this.nameCreator = nameCreator;
   }
 
 }

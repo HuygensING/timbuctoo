@@ -34,8 +34,7 @@ public class EntityWrapperFactoryTest {
 
     final EntityWrapper entityWrapperMock = mock(EntityWrapper.class);
 
-    NameCreator nameCreatorMock = mock(NameCreator.class);
-    EntityWrapperFactory instance = new EntityWrapperFactory(fieldWrapperFactoryMock, nameCreatorMock) {
+    EntityWrapperFactory instance = new EntityWrapperFactory(fieldWrapperFactoryMock) {
       @Override
       protected EntityWrapper createEntityWrapper() {
         return entityWrapperMock;
@@ -51,6 +50,5 @@ public class EntityWrapperFactoryTest {
     verify(fieldWrapperFactoryMock, times(numberOfFields)).wrap(any(Field.class), any(TestSystemEntityWrapper.class));
     verify(entityWrapperMock, times(numberOfFields)).addFieldWrapper(fieldWrapperMock);
     verify(entityWrapperMock).setEntity(entity);
-    verify(entityWrapperMock).setNameCreator(nameCreatorMock);
   }
 }

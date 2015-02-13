@@ -4,7 +4,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -15,9 +15,8 @@ import test.model.TestSystemEntityWrapper;
 
 public class EntityWrapperTest {
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
+  private static final String TYPE_NAME = TypeNames.getInternalName(TYPE);
   private static final TestSystemEntityWrapper ENTITY = new TestSystemEntityWrapper();
-  private static final String TYPE_NAME = "typeName";
-  private static final NameCreator NAME_CREATOR_MOCK = mock(NameCreator.class);
   private static final Node NODE_MOCK = mock(Node.class);
   private static final FieldWrapper FIELD_WRAPPER_MOCK_1 = mock(FieldWrapper.class);
   private static final FieldWrapper FIELD_WRAPPER_MOCK_2 = mock(FieldWrapper.class);
@@ -28,11 +27,7 @@ public class EntityWrapperTest {
     instance = new EntityWrapper();
     instance.addFieldWrapper(FIELD_WRAPPER_MOCK_1);
     instance.addFieldWrapper(FIELD_WRAPPER_MOCK_2);
-    instance.setNameCreator(NAME_CREATOR_MOCK);
     instance.setEntity(ENTITY);
-
-    when(NAME_CREATOR_MOCK.internalTypeName(TYPE)).thenReturn(TYPE_NAME);
-
   }
 
   @Test

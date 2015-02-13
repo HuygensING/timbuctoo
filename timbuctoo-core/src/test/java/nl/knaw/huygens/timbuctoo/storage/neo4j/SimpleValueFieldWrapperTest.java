@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 
@@ -13,22 +12,21 @@ import org.neo4j.graphdb.Node;
 import test.model.TestSystemEntityWrapper;
 
 public class SimpleValueFieldWrapperTest {
-  private static final String PROPERTY_NAME = "propertyName";
   private static final String FIELD_NAME = "stringValue";
   private SimpleValueFieldWrapper instance;
-  private NameCreator propertyNameCreatorMock;
   private Node nodeMock;
   private Field field;
+  private FieldType fieldType;
 
   @Before
   public void setUp() throws Exception {
     nodeMock = mock(Node.class);
+    fieldType = FieldType.REGULAR;
 
     field = TestSystemEntityWrapper.class.getDeclaredField(FIELD_NAME);
-    propertyNameCreatorMock = mock(NameCreator.class);
     instance = new SimpleValueFieldWrapper();
     instance.setField(field);
-    instance.setPropertyNameCreator(propertyNameCreatorMock);
+    instance.setFieldType(fieldType);
 
   }
 
@@ -38,7 +36,8 @@ public class SimpleValueFieldWrapperTest {
     String value = "value";
     entity.setStringValue(value);
 
-    createPopertyNameForField(PROPERTY_NAME, field);
+    instance.setName(FIELD_NAME);
+    String propertyName = fieldType.propertyName(TestSystemEntityWrapper.class, FIELD_NAME);
 
     instance.setContainingEntity(entity);
 
@@ -46,12 +45,6 @@ public class SimpleValueFieldWrapperTest {
     instance.addValueToNode(nodeMock);
 
     // verify
-    verify(nodeMock).setProperty(PROPERTY_NAME, value);
-  }
-
-  private void createPopertyNameForField(String propertyName, Field field) {
-
-    when(propertyNameCreatorMock.propertyName(TestSystemEntityWrapper.class, field)).thenReturn(propertyName);
-
+    verify(nodeMock).setProperty(propertyName, value);
   }
 }

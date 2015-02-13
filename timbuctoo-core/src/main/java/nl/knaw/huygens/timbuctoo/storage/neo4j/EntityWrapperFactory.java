@@ -10,19 +10,16 @@ import com.google.inject.Inject;
 public class EntityWrapperFactory {
 
   private FieldWrapperFactory fieldWrapperFactory;
-  private NameCreator nameCreator;
 
   @Inject
-  public EntityWrapperFactory(FieldWrapperFactory fieldWrapperFactory, NameCreator nameCreator) {
+  public EntityWrapperFactory(FieldWrapperFactory fieldWrapperFactory) {
     this.fieldWrapperFactory = fieldWrapperFactory;
-    this.nameCreator = nameCreator;
   }
 
   public EntityWrapper wrap(SystemEntity entity) {
 
     EntityWrapper entityWrapper = createEntityWrapper();
     entityWrapper.setEntity(entity);
-    entityWrapper.setNameCreator(nameCreator);
 
     addFieldWrappers(entityWrapper, entity.getClass(), entity);
 
