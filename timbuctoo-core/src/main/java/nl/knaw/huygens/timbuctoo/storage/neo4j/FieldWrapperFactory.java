@@ -11,10 +11,10 @@ import org.apache.commons.lang3.ClassUtils;
 
 public class FieldWrapperFactory {
 
-  private final NameCreator propertyNameCreator;
+  private final PropertyBusinessRules propertyBusinessRules;
 
-  public FieldWrapperFactory(NameCreator nameCreator) {
-    this.propertyNameCreator = nameCreator;
+  public FieldWrapperFactory(PropertyBusinessRules propertyBusinessRules) {
+    this.propertyBusinessRules = propertyBusinessRules;
   }
 
   public FieldWrapper wrap(Field field, SystemEntity entity) {
@@ -22,7 +22,9 @@ public class FieldWrapperFactory {
 
     fieldWrapper.setField(field);
     fieldWrapper.setContainingEntity(entity);
-    fieldWrapper.setPropertyNameCreator(propertyNameCreator);
+    Class<? extends SystemEntity> containingType = entity.getClass();
+    fieldWrapper.setFieldType(propertyBusinessRules.getFieldType(containingType, field));
+    fieldWrapper.setName(propertyBusinessRules.getFieldName(containingType, field));
 
     return fieldWrapper;
   }

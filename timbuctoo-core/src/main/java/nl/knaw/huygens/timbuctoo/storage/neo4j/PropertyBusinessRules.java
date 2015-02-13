@@ -21,4 +21,9 @@ public class PropertyBusinessRules {
     return null;
   }
 
+  public String getFieldName(Class<? extends Entity> containingType, Field field) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 }

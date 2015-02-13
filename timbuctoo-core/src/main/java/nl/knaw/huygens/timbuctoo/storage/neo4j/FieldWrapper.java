@@ -39,4 +39,14 @@ public abstract class FieldWrapper {
     return entity.getClass();
   }
 
+  public void setFieldType(FieldType fieldType) {
+    // TODO Auto-generated method stub
+
+  }
+
+  public void setName(String fieldName) {
+    // TODO Auto-generated method stub
+
+  }
+
 }

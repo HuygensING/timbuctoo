@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 
@@ -16,17 +17,20 @@ import org.junit.Test;
 import test.model.TestSystemEntityWrapper;
 
 public class FieldWrapperFactoryTest {
+  private static final String FIELD_NAME = "fieldName";
+  private static final FieldType FIELD_TYPE = FieldType.REGULAR;
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
   private static final Class<ObjectValueFieldWrapper> OBJECT_WRAPPER_TYPE = ObjectValueFieldWrapper.class;
   private static final Class<SimpleValueFieldWrapper> SIMPLE_VALUE_WRAPPER_TYPE = SimpleValueFieldWrapper.class;
   private static final TestSystemEntityWrapper TEST_SYSTEM_ENTITY = new TestSystemEntityWrapper();
-  private static final NameCreator PROPERTY_NAME_CREATOR_MOCK = mock(NameCreator.class);
   private FieldWrapperFactory instance;
+  private PropertyBusinessRules propertyBusinessRulesMock;
 
   @Before
   public void setUp() {
+    propertyBusinessRulesMock = mock(PropertyBusinessRules.class);
 
-    instance = new FieldWrapperFactory(PROPERTY_NAME_CREATOR_MOCK) {
+    instance = new FieldWrapperFactory(propertyBusinessRulesMock) {
       @Override
       protected FieldWrapper createSimpleValueFieldWrapper() {
         return mock(SIMPLE_VALUE_WRAPPER_TYPE);
@@ -96,6 +100,9 @@ public class FieldWrapperFactoryTest {
   }
 
   private void testWrap(TestSystemEntityWrapper testSystemEntity, Field field, Class<? extends FieldWrapper> wrapperType) {
+    when(propertyBusinessRulesMock.getFieldType(TYPE, field)).thenReturn(FIELD_TYPE);
+    when(propertyBusinessRulesMock.getFieldName(TYPE, field)).thenReturn(FIELD_NAME);
+
     // action
     FieldWrapper fieldWrapper = instance.wrap(field, testSystemEntity);
 
@@ -104,6 +111,8 @@ public class FieldWrapperFactoryTest {
 
     verify(fieldWrapper).setField(field);
     verify(fieldWrapper).setContainingEntity(testSystemEntity);
+    verify(fieldWrapper).setFieldType(FIELD_TYPE);
+    verify(fieldWrapper).setName(FIELD_NAME);
   }
 
   private Field getField(Class<? extends Entity> type, String fieldName) throws NoSuchFieldException {
