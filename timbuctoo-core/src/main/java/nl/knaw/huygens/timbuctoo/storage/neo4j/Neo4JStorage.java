@@ -23,11 +23,13 @@ public class Neo4JStorage implements Storage {
 
   private final EntityWrapperFactory objectWrapperFactory;
   private final GraphDatabaseService db;
+  private IdGenerator idGenerator;
 
   @Inject
-  public Neo4JStorage(GraphDatabaseService db, EntityWrapperFactory objectWrapperFactory) {
+  public Neo4JStorage(GraphDatabaseService db, EntityWrapperFactory objectWrapperFactory, IdGenerator idGenerator) {
     this.db = db;
     this.objectWrapperFactory = objectWrapperFactory;
+    this.idGenerator = idGenerator;
   }
 
   @Override
@@ -54,8 +56,11 @@ public class Neo4JStorage implements Storage {
       try {
         EntityWrapper objectWrapper = objectWrapperFactory.wrap(entity);
         Node node = db.createNode();
+        String id = idGenerator.nextIdFor(type);
+
+        objectWrapper.setId(id);
         objectWrapper.addValuesToNode(node);
-        String id = objectWrapper.addAdministrativeValues(node);
+        objectWrapper.addAdministrativeValues(node);
 
         transaction.success();
         return id;

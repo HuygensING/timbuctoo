@@ -43,4 +43,9 @@ public class EntityWrapper {
     this.entity = entity;
   }
 
+  public void setId(String id) {
+    // TODO Auto-generated method stub
+
+  }
+
 }
