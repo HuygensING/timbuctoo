@@ -8,6 +8,7 @@ import nl.knaw.huygens.tei.ElementHandler;
 import nl.knaw.huygens.tei.Traversal;
 import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
 import nl.knaw.huygens.timbuctoo.model.Person;
+import nl.knaw.huygens.timbuctoo.model.Person.Gender;
 import nl.knaw.huygens.timbuctoo.model.cnw.AltName;
 import nl.knaw.huygens.timbuctoo.model.cnw.CNWLink;
 import nl.knaw.huygens.timbuctoo.model.cnw.CNWPerson;
@@ -496,54 +497,78 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 	private class RelatieHandler extends DefaultElementHandler<PersonContext> {
 		@Override
 		public Traversal enterElement(Element element, PersonContext context) {
-			context.currentRelation = new CNWRelation();
-			context.currentRelation.setSourceType("person");
-			context.currentRelation.setSourceId(context.pid);
+			//			context.currentRelation = new CNWRelation();
+			//			context.currentRelation.setSourceType("person");
+			//			context.currentRelation.setSourceId(context.pid);
 			return super.enterElement(element, context);
 		}
 
 		@Override
 		public Traversal leaveElement(Element element, PersonContext context) {
-			context.relations.add(context.currentRelation);
+			context.person.addRelative(context.currentRelationType + " van: " + context.currentRelativeName);
 			return super.leaveElement(element, context);
 		}
 	}
-
-	Map<String, String> reltypeMap = ImmutableMap.<String, String> builder()//
-			.put("broer", "isSiblingOf")//
-			.put("child", "isParentOf")//
-			.put("echtgenoot", "isSpouseOf")//
-			.put("gezel", "isSpouseOf")//
-			.put("grand", "isGrandparentOf")//
-			.put("klein", "isGrandparentOf")//
-			.put("parent", "isParentOf")//
-			.put("verloofd", "isSpouseOf")//
-			.build();
 
 	//	Map<String, String> reltypeMap = ImmutableMap.<String, String> builder()//
 	//			.put("broer", "isSiblingOf")//
 	//			.put("child", "isParentOf")//
 	//			.put("echtgenoot", "isSpouseOf")//
-	//			.put("gezel", "isCompanionOf")//
+	//			.put("gezel", "isSpouseOf")//
 	//			.put("grand", "isGrandparentOf")//
+	//			.put("klein", "isGrandparentOf")//
 	//			.put("parent", "isParentOf")//
-	//			.put("verloofd", "isEngagedTo")//
+	//			.put("verloofd", "isSpouseOf")//
 	//			.build();
+	Map<String, String> reltypeMapM = ImmutableMap.<String, String> builder()//
+			.put("broer", "(schoon-)broer")//
+			.put("child", "zoon")//
+			.put("echtgenoot", "echtgenoot")//
+			.put("gezel", "gezel")//
+			.put("grand", "grootvader")//
+			.put("klein", "kleinzoon")//
+			.put("parent", "vader")//
+			.put("verloofd", "verloofde")//
+			.build();
+	Map<String, String> reltypeMapF = ImmutableMap.<String, String> builder()//
+			.put("broer", "zus")//
+			.put("child", "dochter")//
+			.put("echtgenoot", "echtgenote")//
+			.put("gezel", "gezel")//
+			.put("grand", "grootmoeder")//
+			.put("klein", "kleindochter")//
+			.put("parent", "moeder")//
+			.put("verloofd", "verloofde")//
+			.build();
+	Map<String, String> reltypeMapU = ImmutableMap.<String, String> builder()//
+			.put("broer", "broer/zus")//
+			.put("child", "kind")//
+			.put("echtgenoot", "echtgenoot/echtgenote")//
+			.put("gezel", "gezel")//
+			.put("grand", "grootouder")//
+			.put("klein", "kleinkind")//
+			.put("parent", "ouder")//
+			.put("verloofd", "verloofde")//
+			.build();
+
+	Map<Gender, Map<String, String>> relTypeMaps = ImmutableMap.of(Gender.MALE, reltypeMapM, Gender.FEMALE, reltypeMapF, Gender.UNKNOWN, reltypeMapU);
 
 	private class ReltypeHandler extends CaptureHandler<PersonContext> {
 		@Override
 		public void handleContent(Element element, PersonContext context, String text) {
-			context.currentRelation.setTypeName(text);
-			context.currentRelation.setTypeType("relationtype");
-			context.currentRelation.setTypeId(reltypeMap.get(text));
+			context.currentRelationType = relTypeMaps.get(context.person.getGender()).get(text);
+			//			context.currentRelation.setTypeName(text);
+			//			context.currentRelation.setTypeType("relationtype");
+			//			context.currentRelation.setTypeId(reltypeMap.get(text));
 		}
 	}
 
 	private class KoppelnameHandler extends CaptureHandler<PersonContext> {
 		@Override
 		public void handleContent(Element element, PersonContext context, String text) {
-			context.currentRelation.setTargetType("person");
-			context.currentRelation.setTargetId(text);
+			context.currentRelativeName = text;
+			//			context.currentRelation.setTargetType("person");
+			//			context.currentRelation.setTargetId(text);
 		}
 	}
 

@@ -28,8 +28,9 @@ public class CNWPerson extends Person {
 	private List<CNWLink> verwijzingen = Lists.newArrayList();
 	private String notities = ""; //Bronvermeldingen, tekstveld; Interface geen facet, wel zichtbaar in pop up (Onderscheid Korte of lange presentatie)
 	private String opmerkingen = ""; //Tekstveld, met vast onderdeel (Afgesloten: XXXX-XX-XX);	Interface geen facet, wel zichtbaar in pop up
-	private String aantekeningen = ""; // KLadblok: Niet zichtbaar voor gebruiker, wel bewaren
+	private String aantekeningen = ""; // Kladblok: Niet zichtbaar voor gebruiker, wel bewaren
 	private List<AltName> altNames = Lists.newArrayList();
+	private List<String> relatives = Lists.newArrayList();
 
 	//	private String nametype = "";
 	//	private String woonplaats = "";
@@ -257,6 +258,15 @@ public class CNWPerson extends Person {
 
 	public void setAltNames(List<AltName> altNames) {
 		this.altNames = altNames;
+	}
+
+	@IndexAnnotation(fieldName = "dynamic_s_relatives", canBeEmpty = true, isFaceted = false)
+	public List<String> getRelatives() {
+		return relatives;
+	}
+
+	public void addRelative(String relative) {
+		relatives.add(relative);
 	}
 
 }

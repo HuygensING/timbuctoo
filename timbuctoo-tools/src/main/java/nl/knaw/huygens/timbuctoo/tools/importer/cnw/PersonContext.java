@@ -32,6 +32,8 @@ public class PersonContext extends XmlContext {
 	String pid;
 	public CNWRelation currentRelation;
 	public AltName currentAltName;
+	public String currentRelationType;
+	public String currentRelativeName;
 
 	public PersonContext(String pid) {
 		this.pid = pid;
