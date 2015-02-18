@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.model.cnw;
 
 import java.util.List;
-import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.Person;
@@ -10,7 +9,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 public class CNWPerson extends Person {
 
