@@ -8,7 +8,10 @@ import nl.knaw.huygens.tei.ElementHandler;
 import nl.knaw.huygens.tei.Traversal;
 import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
 import nl.knaw.huygens.timbuctoo.model.Person;
+<<<<<<< HEAD
 import nl.knaw.huygens.timbuctoo.model.Person.Gender;
+=======
+>>>>>>> 3cda949d93d9a8f016e453a1686c041b5a5dddda
 import nl.knaw.huygens.timbuctoo.model.cnw.AltName;
 import nl.knaw.huygens.timbuctoo.model.cnw.CNWLink;
 import nl.knaw.huygens.timbuctoo.model.cnw.CNWPerson;
