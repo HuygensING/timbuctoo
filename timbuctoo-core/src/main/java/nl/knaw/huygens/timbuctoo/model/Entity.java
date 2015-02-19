@@ -45,21 +45,29 @@ import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 @JsonTypeIdResolver(value = TimbuctooTypeIdResolver.class)
 public abstract class Entity {
 
+  public static final String MODIFIED_PROPERTY_NAME = "^modified";
+
+  public static final String CREATED_PROPERTY_NAME = "^created";
+
+  public static final String REVISION_PROPERTY_NAME = "^rev";
+
+  public static final String ID_PROPERTY_NAME = "_id";
+
   @NotNull
   @Pattern(regexp = Paths.ID_REGEX)
-  @JsonProperty("_id")
+  @JsonProperty(ID_PROPERTY_NAME)
   private String id;
 
   /** Revison number; also used for integrity of updates. */
-  @JsonProperty("^rev")
+  @JsonProperty(REVISION_PROPERTY_NAME)
   private int rev;
 
   /** Provides info about creation. */
-  @JsonProperty("^created")
+  @JsonProperty(CREATED_PROPERTY_NAME)
   private Change created;
 
   /** Provides info about last update. */
-  @JsonProperty("^modified")
+  @JsonProperty(MODIFIED_PROPERTY_NAME)
   private Change modified;
 
   /**
