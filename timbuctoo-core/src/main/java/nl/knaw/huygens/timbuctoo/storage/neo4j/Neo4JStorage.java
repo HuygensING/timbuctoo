@@ -23,13 +23,11 @@ public class Neo4JStorage implements Storage {
 
   private final EntityWrapperFactory objectWrapperFactory;
   private final GraphDatabaseService db;
-  private IdGenerator idGenerator;
 
   @Inject
-  public Neo4JStorage(GraphDatabaseService db, EntityWrapperFactory objectWrapperFactory, IdGenerator idGenerator) {
+  public Neo4JStorage(GraphDatabaseService db, EntityWrapperFactory objectWrapperFactory) {
     this.db = db;
     this.objectWrapperFactory = objectWrapperFactory;
-    this.idGenerator = idGenerator;
   }
 
   @Override
@@ -54,16 +52,14 @@ public class Neo4JStorage implements Storage {
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
       try {
-        EntityWrapper objectWrapper = objectWrapperFactory.wrap(entity);
+        EntityWrapper objectWrapper = objectWrapperFactory.wrapNew(entity);
         Node node = db.createNode();
-        String id = idGenerator.nextIdFor(type);
 
-        objectWrapper.setId(id);
         objectWrapper.addValuesToNode(node);
         objectWrapper.addAdministrativeValues(node);
 
         transaction.success();
-        return id;
+        return objectWrapper.getId();
       } catch (IllegalArgumentException | IllegalAccessException e) {
         transaction.failure();
         throw new StorageException(e);

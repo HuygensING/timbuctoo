@@ -4,24 +4,33 @@ import java.lang.reflect.Field;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 
 import com.google.inject.Inject;
 
 public class EntityWrapperFactory {
 
   private FieldWrapperFactory fieldWrapperFactory;
+  private final IdGenerator idGenerator;
 
   @Inject
-  public EntityWrapperFactory(FieldWrapperFactory fieldWrapperFactory) {
+  public EntityWrapperFactory(FieldWrapperFactory fieldWrapperFactory, IdGenerator idGenerator) {
     this.fieldWrapperFactory = fieldWrapperFactory;
+    this.idGenerator = idGenerator;
   }
 
-  public EntityWrapper wrap(SystemEntity entity) {
+  public EntityWrapper wrapNew(SystemEntity entity) {
+    Class<? extends SystemEntity> type = entity.getClass();
+    Change newChange = newChange();
 
     EntityWrapper entityWrapper = createEntityWrapper();
     entityWrapper.setEntity(entity);
+    entityWrapper.setCreated(newChange);
+    entityWrapper.setModified(newChange);
+    entityWrapper.setRev(newRevision());
+    entityWrapper.setId(idGenerator.nextIdFor(type));
 
-    addFieldWrappers(entityWrapper, entity.getClass(), entity);
+    addFieldWrappers(entityWrapper, type, entity);
 
     return entityWrapper;
   }
@@ -38,6 +47,14 @@ public class EntityWrapperFactory {
 
   protected EntityWrapper createEntityWrapper() {
     return new EntityWrapper();
+  }
+
+  protected Change newChange() {
+    return Change.newInternalInstance();
+  }
+
+  protected int newRevision() {
+    return 1;
   }
 
 }

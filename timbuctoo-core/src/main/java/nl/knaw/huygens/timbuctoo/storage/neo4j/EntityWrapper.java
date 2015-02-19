@@ -73,4 +73,8 @@ public class EntityWrapper {
     this.revision = revision;
   }
 
+  public String getId() {
+    return id;
+  }
+
 }
