@@ -1,6 +1,9 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import java.lang.reflect.Field;
@@ -11,7 +14,7 @@ import org.neo4j.graphdb.Node;
 
 import test.model.TestSystemEntityWrapper;
 
-public class SimpleValueFieldWrapperTest {
+public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
   private static final String FIELD_NAME = "stringValue";
   private SimpleValueFieldWrapper instance;
   private Node nodeMock;
@@ -30,6 +33,7 @@ public class SimpleValueFieldWrapperTest {
 
   }
 
+  @Override
   @Test
   public void addValueToNodeSetsThePropertyWithTheFieldNameToTheValueOfTheNode() throws Exception {
     TestSystemEntityWrapper entity = new TestSystemEntityWrapper();
@@ -46,5 +50,23 @@ public class SimpleValueFieldWrapperTest {
 
     // verify
     verify(nodeMock).setProperty(propertyName, value);
+  }
+
+  @Override
+  @Test
+  public void addValueToNodeDoesNotSetIfTheValueIsNull() throws Exception {
+    TestSystemEntityWrapper entity = new TestSystemEntityWrapper();
+    String value = null;
+    entity.setStringValue(value);
+
+    instance.setName(FIELD_NAME);
+
+    instance.setContainingEntity(entity);
+
+    // action
+    instance.addValueToNode(nodeMock);
+
+    // verify
+    verify(nodeMock, never()).setProperty(anyString(), any());
   }
 }

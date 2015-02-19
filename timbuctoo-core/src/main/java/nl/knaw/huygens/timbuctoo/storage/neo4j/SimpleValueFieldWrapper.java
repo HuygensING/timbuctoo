@@ -11,7 +11,10 @@ public class SimpleValueFieldWrapper extends FieldWrapper {
 
   @Override
   public void addValueToNode(Node node) throws IllegalArgumentException, IllegalAccessException {
-    node.setProperty(getName(), getFieldValue());
+    Object fieldValue = getFieldValue();
+    if (fieldValue != null) {
+      node.setProperty(getName(), fieldValue);
+    }
   }
 
 }
