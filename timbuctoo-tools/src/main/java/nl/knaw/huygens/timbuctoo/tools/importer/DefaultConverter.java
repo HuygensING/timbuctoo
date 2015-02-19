@@ -58,7 +58,7 @@ public abstract class DefaultConverter implements Task {
       outputDirectory.mkdirs();
       jsonConverter = new EntityToJsonConverter();
     } catch (Exception e) {
-      throw new IllegalStateException("Failed to initialize convereter: " + e.getMessage());
+      throw new IllegalStateException("Failed to initialize converter: " + e.getMessage());
     }
   }
 
