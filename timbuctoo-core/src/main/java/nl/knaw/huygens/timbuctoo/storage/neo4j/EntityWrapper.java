@@ -14,6 +14,8 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.Node;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 
 public class EntityWrapper {
@@ -44,8 +46,14 @@ public class EntityWrapper {
   public void addAdministrativeValues(Node node) {
     node.setProperty(ID_PROPERTY_NAME, id);
     node.setProperty(REVISION_PROPERTY_NAME, revision);
-    node.setProperty(CREATED_PROPERTY_NAME, created);
-    node.setProperty(MODIFIED_PROPERTY_NAME, modified);
+    try {
+      ObjectMapper objectMapper = new ObjectMapper();
+      node.setProperty(CREATED_PROPERTY_NAME, objectMapper.writeValueAsString(created));
+      node.setProperty(MODIFIED_PROPERTY_NAME, objectMapper.writeValueAsString(modified));
+    } catch (JsonProcessingException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
   }
 
   public void addFieldWrapper(FieldWrapper fieldWrapper) {

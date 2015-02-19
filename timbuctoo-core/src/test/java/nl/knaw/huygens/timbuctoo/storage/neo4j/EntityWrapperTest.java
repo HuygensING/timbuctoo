@@ -18,10 +18,12 @@ import org.neo4j.graphdb.Node;
 
 import test.model.TestSystemEntityWrapper;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class EntityWrapperTest {
   private static final int REVISION = 1;
-  private static final Change MODIFIED = new Change();
-  private static final Change CREATED = MODIFIED;
+  private static final Change CHANGE = new Change();
   private static final String ID = "id";
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
   private static final String TYPE_NAME = TypeNames.getInternalName(TYPE);
@@ -42,8 +44,8 @@ public class EntityWrapperTest {
     instance.addFieldWrapper(fieldWrapperMock2);
     instance.setEntity(ENTITY);
     instance.setId(ID);
-    instance.setCreated(CREATED);
-    instance.setModified(MODIFIED);
+    instance.setCreated(CHANGE);
+    instance.setModified(CHANGE);
     instance.setRev(REVISION);
   }
 
@@ -82,13 +84,21 @@ public class EntityWrapperTest {
   }
 
   @Test
-  public void addAdministrativeValuesAddsIdRevisionCreatedAndModified() {
+  public void addAdministrativeValuesAddsIdRevisionCreatedAndModified() throws Exception {
+
     // action
     instance.addAdministrativeValues(nodeMock);
 
+    // verify
+    String serializedChange = getSerializedChange();
+
     verify(nodeMock).setProperty(ID_PROPERTY_NAME, ID);
     verify(nodeMock).setProperty(REVISION_PROPERTY_NAME, REVISION);
-    verify(nodeMock).setProperty(CREATED_PROPERTY_NAME, CREATED);
-    verify(nodeMock).setProperty(MODIFIED_PROPERTY_NAME, MODIFIED);
+    verify(nodeMock).setProperty(CREATED_PROPERTY_NAME, serializedChange);
+    verify(nodeMock).setProperty(MODIFIED_PROPERTY_NAME, serializedChange);
+  }
+
+  private String getSerializedChange() throws JsonProcessingException {
+    return new ObjectMapper().writeValueAsString(CHANGE);
   }
 }
