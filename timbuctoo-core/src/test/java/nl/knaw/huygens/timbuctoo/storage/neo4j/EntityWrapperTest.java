@@ -31,7 +31,7 @@ public class EntityWrapperTest {
   private Node nodeMock;
   private FieldWrapper fieldWrapperMock1;
   private FieldWrapper fieldWrapperMock2;
-  private EntityWrapper instance;
+  private EntityWrapper<TestSystemEntityWrapper> instance;
 
   @Before
   public void setUp() {
@@ -39,7 +39,7 @@ public class EntityWrapperTest {
     fieldWrapperMock2 = mock(FieldWrapper.class);
     nodeMock = mock(Node.class);
 
-    instance = new EntityWrapper();
+    instance = new EntityWrapper<TestSystemEntityWrapper>();
     instance.addFieldWrapper(fieldWrapperMock1);
     instance.addFieldWrapper(fieldWrapperMock2);
     instance.setEntity(ENTITY);

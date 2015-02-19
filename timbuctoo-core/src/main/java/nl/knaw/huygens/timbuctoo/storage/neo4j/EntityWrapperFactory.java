@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 import java.lang.reflect.Field;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 
 import com.google.inject.Inject;
@@ -19,11 +18,11 @@ public class EntityWrapperFactory {
     this.idGenerator = idGenerator;
   }
 
-  public EntityWrapper createFromInstance(SystemEntity entity) {
-    Class<? extends SystemEntity> type = entity.getClass();
+  public <T extends Entity> EntityWrapper<T> createFromInstance(Class<T> type, T entity) {
+    //    Class<? extends SystemEntity> type = entity.getClass();
     Change newChange = newChange();
 
-    EntityWrapper entityWrapper = createEntityWrapper();
+    EntityWrapper<T> entityWrapper = createEntityWrapper(type);
     entityWrapper.setEntity(entity);
     entityWrapper.setCreated(newChange);
     entityWrapper.setModified(newChange);
@@ -35,23 +34,23 @@ public class EntityWrapperFactory {
     return entityWrapper;
   }
 
-  public EntityWrapper createFromType(Class<? extends Entity> type) {
+  public <T extends Entity> EntityWrapper<T> createFromType(Class<T> type) {
     // TODO Auto-generated method stub
     return null;
   }
 
   @SuppressWarnings("unchecked")
-  private void addFieldWrappers(EntityWrapper objectWrapper, Class<? extends Entity> type, SystemEntity instance) {
+  private <T extends Entity> void addFieldWrappers(EntityWrapper<T> objectWrapper, Class<T> type, T instance) {
     for (Field field : type.getDeclaredFields()) {
-      objectWrapper.addFieldWrapper(fieldWrapperFactory.wrap(field, instance));
+      objectWrapper.addFieldWrapper(fieldWrapperFactory.wrap(type, instance, field));
     }
     if (type != Entity.class) {
-      addFieldWrappers(objectWrapper, (Class<? extends Entity>) type.getSuperclass(), instance);
+      addFieldWrappers(objectWrapper, (Class<T>) type.getSuperclass(), instance);
     }
   }
 
-  protected EntityWrapper createEntityWrapper() {
-    return new EntityWrapper();
+  protected <T extends Entity> EntityWrapper<T> createEntityWrapper(Class<T> type) {
+    return new EntityWrapper<T>();
   }
 
   protected Change newChange() {

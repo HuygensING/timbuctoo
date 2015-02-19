@@ -59,7 +59,7 @@ public class Neo4JStorage implements Storage {
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
       try {
-        EntityWrapper objectWrapper = objectWrapperFactory.createFromInstance(entity);
+        EntityWrapper<T> objectWrapper = objectWrapperFactory.createFromInstance(type, entity);
         Node node = db.createNode();
 
         objectWrapper.addValuesToNode(node);
@@ -171,9 +171,9 @@ public class Neo4JStorage implements Storage {
 
     Node node = iterator.next();
 
-    EntityWrapper entityWrapper = objectWrapperFactory.createFromType(type);
+    EntityWrapper<T> entityWrapper = objectWrapperFactory.createFromType(type);
 
-    return (T) entityWrapper.createEntityFromNode(node);
+    return entityWrapper.createEntityFromNode(node);
   }
 
   @Override

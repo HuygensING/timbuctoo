@@ -25,6 +25,7 @@ public class EntityWrapperFactoryTest {
   private static final int REVISION = 1;
   private static final String ID = "id";
 
+  @SuppressWarnings("unchecked")
   @Test
   public void wrapAddsAFieldWrapperForEachFieldInTheEntity() {
     TestSystemEntityWrapper entity = new TestSystemEntityWrapper();
@@ -36,16 +37,17 @@ public class EntityWrapperFactoryTest {
     FieldWrapper fieldWrapperMock = mock(FieldWrapper.class);
     FieldWrapperFactory fieldWrapperFactoryMock = mock(FieldWrapperFactory.class);
 
-    when(fieldWrapperFactoryMock.wrap(any(Field.class), any(type))).thenReturn(fieldWrapperMock);
+    when(fieldWrapperFactoryMock.wrap(any(Class.class), any(type), any(Field.class))).thenReturn(fieldWrapperMock);
 
     IdGenerator idGeneratorMock = mock(IdGenerator.class);
     when(idGeneratorMock.nextIdFor(type)).thenReturn(ID);
 
+    @SuppressWarnings("rawtypes")
     final EntityWrapper entityWrapperMock = mock(EntityWrapper.class);
 
     EntityWrapperFactory instance = new EntityWrapperFactory(fieldWrapperFactoryMock, idGeneratorMock) {
       @Override
-      protected EntityWrapper createEntityWrapper() {
+      protected <T extends Entity> EntityWrapper<T> createEntityWrapper(Class<T> type) {
         return entityWrapperMock;
       }
 
@@ -62,12 +64,12 @@ public class EntityWrapperFactoryTest {
     };
 
     // action
-    EntityWrapper objectWrapper = instance.createFromInstance(entity);
+    EntityWrapper<TestSystemEntityWrapper> objectWrapper = instance.createFromInstance(type, entity);
 
     // verify
     assertThat(objectWrapper, is(notNullValue()));
 
-    verify(fieldWrapperFactoryMock, times(numberOfFields)).wrap(any(Field.class), any(type));
+    verify(fieldWrapperFactoryMock, times(numberOfFields)).wrap(any(Class.class), any(type), any(Field.class));
     verify(entityWrapperMock, times(numberOfFields)).addFieldWrapper(fieldWrapperMock);
     verify(entityWrapperMock).setEntity(entity);
     verify(entityWrapperMock).setId(ID);

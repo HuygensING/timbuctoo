@@ -8,7 +8,6 @@ import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 
 import org.neo4j.graphdb.DynamicLabel;
@@ -18,10 +17,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 
-public class EntityWrapper {
+public class EntityWrapper<T> {
 
   private List<FieldWrapper> fieldWrappers;
-  private SystemEntity entity;
+  private T entity;
   private String id;
   private Change modified;
   private Change created;
@@ -56,7 +55,7 @@ public class EntityWrapper {
     }
   }
 
-  public Object createEntityFromNode(Node node) {
+  public T createEntityFromNode(Node node) {
     return null;
   }
 
@@ -64,7 +63,7 @@ public class EntityWrapper {
     fieldWrappers.add(fieldWrapper);
   }
 
-  public void setEntity(SystemEntity entity) {
+  public void setEntity(T entity) {
     this.entity = entity;
   }
 

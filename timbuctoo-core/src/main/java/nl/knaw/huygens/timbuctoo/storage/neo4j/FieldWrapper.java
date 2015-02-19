@@ -2,18 +2,18 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import java.lang.reflect.Field;
 
-import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.neo4j.graphdb.Node;
 
 public abstract class FieldWrapper {
 
   private Field field;
-  private SystemEntity entity;
+  private Entity entity;
   private FieldType fieldType;
   private String fieldName;
 
-  public void setContainingEntity(SystemEntity entity) {
+  public void setContainingEntity(Entity entity) {
     this.entity = entity;
   }
 
@@ -37,7 +37,7 @@ public abstract class FieldWrapper {
     return fieldType.propertyName(getContainingType(), fieldName);
   }
 
-  private Class<? extends SystemEntity> getContainingType() {
+  private Class<? extends Entity> getContainingType() {
     return entity.getClass();
   }
 

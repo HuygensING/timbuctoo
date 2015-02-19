@@ -36,11 +36,12 @@ public class Neo4JStorageTest {
   private static final TestSystemEntity ENTITY = new TestSystemEntity();
   private static final String ID = "id";
   private GraphDatabaseService dbMock;
-  private EntityWrapper entityWrapperMock;
+  private EntityWrapper<TestSystemEntity> entityWrapperMock;
   private EntityWrapperFactory entityWrapperFactoryMock;
   private Neo4JStorage instance;
   private Transaction transactionMock;
 
+  @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
     nodeMock = mock(Node.class);
@@ -55,7 +56,7 @@ public class Neo4JStorageTest {
 
   private void setupEntityWrapperFactory() {
     entityWrapperFactoryMock = mock(EntityWrapperFactory.class);
-    when(entityWrapperFactoryMock.createFromInstance(ENTITY)).thenReturn(entityWrapperMock);
+    when(entityWrapperFactoryMock.createFromInstance(TYPE, ENTITY)).thenReturn(entityWrapperMock);
   }
 
   @Test
@@ -94,7 +95,7 @@ public class Neo4JStorageTest {
     when(dbMock.beginTx()).thenReturn(transactionMock);
     when(dbMock.createNode()).thenReturn(nodeMock);
 
-    when(entityWrapperFactoryMock.createFromInstance(ENTITY)).thenReturn(entityWrapperMock);
+    when(entityWrapperFactoryMock.createFromInstance(null, ENTITY)).thenReturn(entityWrapperMock);
     doThrow(exceptionToThrow).when(entityWrapperMock).addValuesToNode(nodeMock);
 
     try {

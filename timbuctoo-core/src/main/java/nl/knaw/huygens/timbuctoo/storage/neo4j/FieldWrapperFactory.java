@@ -5,7 +5,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
 
-import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.apache.commons.lang3.ClassUtils;
 
@@ -17,12 +17,12 @@ public class FieldWrapperFactory {
     this.propertyBusinessRules = propertyBusinessRules;
   }
 
-  public FieldWrapper wrap(Field field, SystemEntity entity) {
+  public <T extends Entity> FieldWrapper wrap(Class<T> type, T entity, Field field) {
     FieldWrapper fieldWrapper = createFieldWrapper(field);
 
     fieldWrapper.setField(field);
     fieldWrapper.setContainingEntity(entity);
-    Class<? extends SystemEntity> containingType = entity.getClass();
+    Class<? extends Entity> containingType = entity.getClass();
     fieldWrapper.setFieldType(propertyBusinessRules.getFieldType(containingType, field));
     fieldWrapper.setName(propertyBusinessRules.getFieldName(containingType, field));
 
