@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
 
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
 
@@ -19,28 +20,37 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
+  private static final FieldType FIELD_TYPE = FieldType.REGULAR;
+  private static final String FIELD_NAME = "fieldName";
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
+  private Node nodeMock;
+  private TestSystemEntityWrapper containingEntity;
+  private Field field;
+  private String propertyName;
+  private ObjectValueFieldWrapper instance;
+
+  @Before
+  public void setUp() throws Exception {
+    nodeMock = mock(Node.class);
+    containingEntity = new TestSystemEntityWrapper();
+    field = TYPE.getDeclaredField("objectValue");
+    propertyName = FIELD_TYPE.propertyName(TYPE, FIELD_NAME);
+
+    instance = new ObjectValueFieldWrapper();
+    instance.setContainingType(TYPE);
+    instance.setField(field);
+    instance.setFieldType(FIELD_TYPE);
+    instance.setName(FIELD_NAME);
+  }
 
   @Override
   @Test
   public void addValueToNodeSetsThePropertyWithTheFieldNameToTheValueOfTheNode() throws Exception {
-    Field field = TYPE.getDeclaredField("objectValue");
-    String fieldName = "fieldName";
-    FieldType fieldType = FieldType.REGULAR;
-    String propertyName = fieldType.propertyName(TYPE, fieldName);
-    Node nodeMock = mock(Node.class);
-
+    // setup
     Change change = new Change(87l, "userId", "vreId");
     String serializedValue = serializeValue(change);
 
-    TestSystemEntityWrapper containingEntity = new TestSystemEntityWrapper();
     containingEntity.setObjectValue(change);
-
-    ObjectValueFieldWrapper instance = new ObjectValueFieldWrapper();
-    instance.setContainingType(TYPE);
-    instance.setField(field);
-    instance.setFieldType(fieldType);
-    instance.setName(fieldName);
 
     // action
     instance.addValueToNode(containingEntity, nodeMock);
@@ -58,19 +68,8 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
   @Override
   @Test
   public void addValueToNodeDoesNotSetIfTheValueIsNull() throws Exception {
-    Field field = TYPE.getDeclaredField("objectValue");
-    String fieldName = "fieldName";
-    FieldType fieldType = FieldType.REGULAR;
-    Node nodeMock = mock(Node.class);
-
-    TestSystemEntityWrapper containingEntity = new TestSystemEntityWrapper();
+    // setup
     containingEntity.setObjectValue(null);
-
-    ObjectValueFieldWrapper instance = new ObjectValueFieldWrapper();
-    instance.setContainingType(TYPE);
-    instance.setField(field);
-    instance.setFieldType(fieldType);
-    instance.setName(fieldName);
 
     // action
     instance.addValueToNode(containingEntity, nodeMock);
