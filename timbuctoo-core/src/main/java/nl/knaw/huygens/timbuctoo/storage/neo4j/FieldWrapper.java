@@ -26,7 +26,12 @@ public abstract class FieldWrapper {
     return field.get(entity);
   }
 
-  public abstract void addValueToNode(Node node) throws IllegalArgumentException, IllegalAccessException;
+  public final void addValueToNode(Node node) throws IllegalArgumentException, IllegalAccessException {
+    Object fieldValue = getFieldValue();
+    if (fieldValue != null) {
+      node.setProperty(getName(), getFormattedValue(fieldValue));
+    }
+  }
 
   protected String getName() {
     return fieldType.propertyName(getContainingType(), fieldName);
@@ -43,5 +48,13 @@ public abstract class FieldWrapper {
   public void setName(String fieldName) {
     this.fieldName = fieldName;
   }
+
+  /**
+   * Formats the value so it is usable as value of a Neo4J node.
+   * @param fieldValue the unformatted value
+   * @return the formatted value
+   * @throws IllegalArgumentException if the value cannot be formatted.
+   */
+  protected abstract Object getFormattedValue(Object fieldValue) throws IllegalArgumentException;
 
 }

@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
-import org.neo4j.graphdb.Node;
 
 /**
  * A FieldWrapper that wraps fields for primitives, primitive wrappers, strings, 
@@ -10,11 +9,8 @@ import org.neo4j.graphdb.Node;
 public class SimpleValueFieldWrapper extends FieldWrapper {
 
   @Override
-  public void addValueToNode(Node node) throws IllegalArgumentException, IllegalAccessException {
-    Object fieldValue = getFieldValue();
-    if (fieldValue != null) {
-      node.setProperty(getName(), fieldValue);
-    }
+  protected Object getFormattedValue(Object fieldValue) throws IllegalArgumentException {
+    return fieldValue;
   }
 
 }
