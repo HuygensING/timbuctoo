@@ -15,6 +15,7 @@ import org.neo4j.graphdb.Node;
 import test.model.TestSystemEntityWrapper;
 
 public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
+  private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
   private static final String FIELD_NAME = "stringValue";
   private SimpleValueFieldWrapper instance;
   private Node nodeMock;
@@ -26,7 +27,7 @@ public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
     nodeMock = mock(Node.class);
     fieldType = FieldType.REGULAR;
 
-    field = TestSystemEntityWrapper.class.getDeclaredField(FIELD_NAME);
+    field = TYPE.getDeclaredField(FIELD_NAME);
     instance = new SimpleValueFieldWrapper();
     instance.setField(field);
     instance.setFieldType(fieldType);
@@ -41,12 +42,12 @@ public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
     entity.setStringValue(value);
 
     instance.setName(FIELD_NAME);
-    String propertyName = fieldType.propertyName(TestSystemEntityWrapper.class, FIELD_NAME);
+    String propertyName = fieldType.propertyName(TYPE, FIELD_NAME);
 
-    instance.setContainingEntity(entity);
+    instance.setContainingType(TYPE);
 
     // action
-    instance.addValueToNode(nodeMock);
+    instance.addValueToNode(entity, nodeMock);
 
     // verify
     verify(nodeMock).setProperty(propertyName, value);
@@ -61,10 +62,10 @@ public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
 
     instance.setName(FIELD_NAME);
 
-    instance.setContainingEntity(entity);
+    instance.setContainingType(TYPE);
 
     // action
-    instance.addValueToNode(nodeMock);
+    instance.addValueToNode(entity, nodeMock);
 
     // verify
     verify(nodeMock, never()).setProperty(anyString(), any());

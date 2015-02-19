@@ -110,7 +110,7 @@ public class FieldWrapperFactoryTest {
     assertThat(fieldWrapper, is(instanceOf(wrapperType)));
 
     verify(fieldWrapper).setField(field);
-    verify(fieldWrapper).setContainingEntity(testSystemEntity);
+    verify(fieldWrapper).setContainingType(TYPE);
     verify(fieldWrapper).setFieldType(FIELD_TYPE);
     verify(fieldWrapper).setName(FIELD_NAME);
   }

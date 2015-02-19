@@ -33,17 +33,17 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
     Change change = new Change(87l, "userId", "vreId");
     String serializedValue = serializeValue(change);
 
-    TestSystemEntityWrapper containingType = new TestSystemEntityWrapper();
-    containingType.setObjectValue(change);
+    TestSystemEntityWrapper containingEntity = new TestSystemEntityWrapper();
+    containingEntity.setObjectValue(change);
 
     ObjectValueFieldWrapper instance = new ObjectValueFieldWrapper();
-    instance.setContainingEntity(containingType);
+    instance.setContainingType(TYPE);
     instance.setField(field);
     instance.setFieldType(fieldType);
     instance.setName(fieldName);
 
     // action
-    instance.addValueToNode(nodeMock);
+    instance.addValueToNode(containingEntity, nodeMock);
 
     // verify
     verify(nodeMock).setProperty(propertyName, serializedValue);
@@ -63,17 +63,17 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
     FieldType fieldType = FieldType.REGULAR;
     Node nodeMock = mock(Node.class);
 
-    TestSystemEntityWrapper containingType = new TestSystemEntityWrapper();
-    containingType.setObjectValue(null);
+    TestSystemEntityWrapper containingEntity = new TestSystemEntityWrapper();
+    containingEntity.setObjectValue(null);
 
     ObjectValueFieldWrapper instance = new ObjectValueFieldWrapper();
-    instance.setContainingEntity(containingType);
+    instance.setContainingType(TYPE);
     instance.setField(field);
     instance.setFieldType(fieldType);
     instance.setName(fieldName);
 
     // action
-    instance.addValueToNode(nodeMock);
+    instance.addValueToNode(containingEntity, nodeMock);
 
     // verify
     verify(nodeMock, never()).setProperty(anyString(), any());

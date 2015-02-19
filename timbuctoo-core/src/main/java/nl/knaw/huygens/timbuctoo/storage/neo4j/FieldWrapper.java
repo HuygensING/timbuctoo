@@ -9,25 +9,25 @@ import org.neo4j.graphdb.Node;
 public abstract class FieldWrapper {
 
   private Field field;
-  private Entity entity;
+  private Class<? extends Entity> containingType;
   private FieldType fieldType;
   private String fieldName;
 
-  public void setContainingEntity(Entity entity) {
-    this.entity = entity;
+  public void setContainingType(Class<? extends Entity> containingType) {
+    this.containingType = containingType;
   }
 
   public void setField(Field field) {
     this.field = field;
   }
 
-  protected Object getFieldValue() throws IllegalArgumentException, IllegalAccessException {
+  protected Object getFieldValue(Entity entity) throws IllegalArgumentException, IllegalAccessException {
     field.setAccessible(true);
     return field.get(entity);
   }
 
-  public final void addValueToNode(Node node) throws IllegalArgumentException, IllegalAccessException {
-    Object fieldValue = getFieldValue();
+  public final void addValueToNode(Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException {
+    Object fieldValue = getFieldValue(entity);
     if (fieldValue != null) {
       node.setProperty(getName(), getFormattedValue(fieldValue));
     }
@@ -38,7 +38,7 @@ public abstract class FieldWrapper {
   }
 
   private Class<? extends Entity> getContainingType() {
-    return entity.getClass();
+    return containingType;
   }
 
   public void setFieldType(FieldType fieldType) {

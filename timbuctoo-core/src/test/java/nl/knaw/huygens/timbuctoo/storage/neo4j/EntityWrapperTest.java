@@ -56,30 +56,30 @@ public class EntityWrapperTest {
 
     // verify
     verify(nodeMock).addLabel(DynamicLabel.label(TYPE_NAME));
-    verify(fieldWrapperMock1).addValueToNode(nodeMock);
-    verify(fieldWrapperMock2).addValueToNode(nodeMock);
+    verify(fieldWrapperMock1).addValueToNode(ENTITY, nodeMock);
+    verify(fieldWrapperMock2).addValueToNode(ENTITY, nodeMock);
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void addValuesThrowsAnIllegalArgumentExceptionWhenOneOfTheFieldWrappersDoes() throws Exception {
-    addValuesFieldMapperThrowsException(IllegalArgumentException.class);
+  public void addValuesToNodeThrowsAnIllegalArgumentExceptionWhenOneOfTheFieldWrappersDoes() throws Exception {
+    addValuesToNodeFieldMapperThrowsException(IllegalArgumentException.class);
   }
 
   @Test(expected = IllegalAccessException.class)
-  public void addValuesThrowsAnIllegalArgumentAccessWhenOneOfTheFieldWrappersDoes() throws Exception {
-    addValuesFieldMapperThrowsException(IllegalAccessException.class);
+  public void addValuesToNodeThrowsAnIllegalArgumentAccessWhenOneOfTheFieldWrappersDoes() throws Exception {
+    addValuesToNodeFieldMapperThrowsException(IllegalAccessException.class);
   }
 
-  private void addValuesFieldMapperThrowsException(Class<? extends Exception> exceptionToThrow) throws Exception {
+  private void addValuesToNodeFieldMapperThrowsException(Class<? extends Exception> exceptionToThrow) throws Exception {
     // setup
-    doThrow(exceptionToThrow).when(fieldWrapperMock1).addValueToNode(nodeMock);
+    doThrow(exceptionToThrow).when(fieldWrapperMock1).addValueToNode(ENTITY, nodeMock);
 
     // action
     instance.addValuesToNode(nodeMock);
 
     // verify
     verify(nodeMock).addLabel(DynamicLabel.label(TYPE_NAME));
-    verify(fieldWrapperMock1).addValueToNode(nodeMock);
+    verify(fieldWrapperMock1).addValueToNode(ENTITY, nodeMock);
     verifyZeroInteractions(fieldWrapperMock2);
   }
 

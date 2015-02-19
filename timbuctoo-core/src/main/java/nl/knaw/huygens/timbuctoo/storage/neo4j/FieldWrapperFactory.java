@@ -21,8 +21,8 @@ public class FieldWrapperFactory {
     FieldWrapper fieldWrapper = createFieldWrapper(field);
 
     fieldWrapper.setField(field);
-    fieldWrapper.setContainingEntity(entity);
     Class<? extends Entity> containingType = entity.getClass();
+    fieldWrapper.setContainingType(containingType);
     fieldWrapper.setFieldType(propertyBusinessRules.getFieldType(containingType, field));
     fieldWrapper.setName(propertyBusinessRules.getFieldName(containingType, field));
 
