@@ -27,7 +27,7 @@ public class EntityWrapperFactoryTest {
 
   @SuppressWarnings("unchecked")
   @Test
-  public void wrapAddsAFieldWrapperForEachFieldInTheEntity() {
+  public void createFromInstanceAddsAFieldWrapperForEachFieldInTheEntity() {
     TestSystemEntityWrapper entity = new TestSystemEntityWrapper();
     Class<TestSystemEntityWrapper> type = TestSystemEntityWrapper.class;
     int numberOfFields = type.getDeclaredFields().length;
