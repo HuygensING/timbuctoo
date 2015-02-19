@@ -62,7 +62,7 @@ public class EntityWrapperFactoryTest {
     };
 
     // action
-    EntityWrapper objectWrapper = instance.wrapNew(entity);
+    EntityWrapper objectWrapper = instance.createFromInstance(entity);
 
     // verify
     assertThat(objectWrapper, is(notNullValue()));

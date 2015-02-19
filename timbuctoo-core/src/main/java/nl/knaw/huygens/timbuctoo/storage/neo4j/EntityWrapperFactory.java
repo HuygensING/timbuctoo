@@ -19,7 +19,7 @@ public class EntityWrapperFactory {
     this.idGenerator = idGenerator;
   }
 
-  public EntityWrapper wrapNew(SystemEntity entity) {
+  public EntityWrapper createFromInstance(SystemEntity entity) {
     Class<? extends SystemEntity> type = entity.getClass();
     Change newChange = newChange();
 
@@ -33,6 +33,11 @@ public class EntityWrapperFactory {
     addFieldWrappers(entityWrapper, type, entity);
 
     return entityWrapper;
+  }
+
+  public EntityWrapper createFromType(Class<? extends Entity> type) {
+    // TODO Auto-generated method stub
+    return null;
   }
 
   @SuppressWarnings("unchecked")

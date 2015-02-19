@@ -1,8 +1,11 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
+import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+
 import java.util.Date;
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -13,8 +16,12 @@ import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
+import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.ResourceIterable;
+import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 
 import com.google.inject.Inject;
@@ -52,7 +59,7 @@ public class Neo4JStorage implements Storage {
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
       try {
-        EntityWrapper objectWrapper = objectWrapperFactory.wrapNew(entity);
+        EntityWrapper objectWrapper = objectWrapperFactory.createFromInstance(entity);
         Node node = db.createNode();
 
         objectWrapper.addValuesToNode(node);
@@ -153,8 +160,20 @@ public class Neo4JStorage implements Storage {
 
   @Override
   public <T extends Entity> T getEntity(Class<T> type, String id) throws StorageException {
-    // TODO Auto-generated method stub
-    return null;
+    Label internalNameLabel = DynamicLabel.label(TypeNames.getInternalName(type));
+    ResourceIterable<Node> foundNodes = db.findNodesByLabelAndProperty(internalNameLabel, ID_PROPERTY_NAME, id);
+
+    ResourceIterator<Node> iterator = foundNodes.iterator();
+
+    if (!iterator.hasNext()) {
+      return null;
+    }
+
+    Node node = iterator.next();
+
+    EntityWrapper entityWrapper = objectWrapperFactory.createFromType(type);
+
+    return (T) entityWrapper.createEntityFromNode(node);
   }
 
   @Override

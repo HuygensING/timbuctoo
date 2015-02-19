@@ -56,6 +56,10 @@ public class EntityWrapper {
     }
   }
 
+  public Object createEntityFromNode(Node node) {
+    return null;
+  }
+
   public void addFieldWrapper(FieldWrapper fieldWrapper) {
     fieldWrappers.add(fieldWrapper);
   }
