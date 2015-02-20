@@ -34,9 +34,9 @@ public class EntityWrapperFactory {
     return entityWrapper;
   }
 
-  public <T extends Entity> EntityWrapper<T> createFromType(Class<T> type) {
-    // TODO Auto-generated method stub
-    return null;
+  public <T extends Entity> EntityWrapper<T> createFromType(Class<T> type) throws InstantiationException, IllegalAccessException {
+
+    return createFromInstance(type, type.newInstance());
   }
 
   @SuppressWarnings("unchecked")

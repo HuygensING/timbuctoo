@@ -166,6 +166,16 @@ public class Neo4JStorageTest {
     verifyZeroInteractions(entityWrapperFactoryMock);
   }
 
+  @Test(expected = StorageException.class)
+  public void getEntityThrowsAStorageExceptionWhenEntityWrapperFactoryThrowsAnInstantiationException() throws Exception {
+    getEntityThrowsStorageExceptionWhenEntityWrapperFactoryThrowsAnException(InstantiationException.class);
+  }
+
+  @Test(expected = StorageException.class)
+  public void getEntityThrowsAStorageExceptionWhenEntityWrapperFactoryThrowsAnIllegalAccessException() throws Exception {
+    getEntityThrowsStorageExceptionWhenEntityWrapperFactoryThrowsAnException(IllegalAccessException.class);
+  }
+
   private void oneNodeIsFound(Node nodeToBeFound) {
     @SuppressWarnings("unchecked")
     ResourceIterator<Node> nodeIterator = mock(ResourceIterator.class);
@@ -197,5 +207,20 @@ public class Neo4JStorageTest {
     ResourceIterable<Node> foundNodes = mock(ResourceIterable.class);
     when(foundNodes.iterator()).thenReturn(nodeIterator);
     when(dbMock.findNodesByLabelAndProperty(LABEL, ID_PROPERTY_NAME, ID)).thenReturn(foundNodes);
+  }
+
+  private void getEntityThrowsStorageExceptionWhenEntityWrapperFactoryThrowsAnException(Class<? extends Exception> exceptionToThrow) throws Exception {
+    oneNodeIsFound(nodeMock);
+    doThrow(exceptionToThrow).when(entityWrapperFactoryMock).createFromType(TYPE);
+
+    try {
+      // action
+      instance.getEntity(TYPE, ID);
+    } finally {
+      // verify
+      InOrder inOrder = inOrder(dbMock, entityWrapperFactoryMock);
+      inOrder.verify(dbMock).findNodesByLabelAndProperty(LABEL, ID_PROPERTY_NAME, ID);
+      inOrder.verify(entityWrapperFactoryMock).createFromType(TYPE);
+    }
   }
 }

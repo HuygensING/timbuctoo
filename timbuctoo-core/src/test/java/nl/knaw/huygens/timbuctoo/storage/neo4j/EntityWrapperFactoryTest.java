@@ -15,37 +15,38 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import test.model.TestSystemEntityWrapper;
 
 public class EntityWrapperFactoryTest {
 
+  private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
   private static final Change CHANGE = Change.newInternalInstance();
   private static final int REVISION = 1;
   private static final String ID = "id";
+  private EntityWrapperFactory instance;
+  @SuppressWarnings("rawtypes")
+  private EntityWrapper entityWrapperMock;
+  private FieldWrapper fieldWrapperMock;
+  private FieldWrapperFactory fieldWrapperFactoryMock;
+  private IdGenerator idGeneratorMock;
 
   @SuppressWarnings("unchecked")
-  @Test
-  public void createFromInstanceAddsAFieldWrapperForEachFieldInTheEntity() {
-    TestSystemEntityWrapper entity = new TestSystemEntityWrapper();
-    Class<TestSystemEntityWrapper> type = TestSystemEntityWrapper.class;
-    int numberOfFields = type.getDeclaredFields().length;
-    numberOfFields += SystemEntity.class.getDeclaredFields().length;
-    numberOfFields += Entity.class.getDeclaredFields().length;
+  @Before
+  public void setUp() {
+    entityWrapperMock = mock(EntityWrapper.class);
 
-    FieldWrapper fieldWrapperMock = mock(FieldWrapper.class);
-    FieldWrapperFactory fieldWrapperFactoryMock = mock(FieldWrapperFactory.class);
+    fieldWrapperMock = mock(FieldWrapper.class);
+    fieldWrapperFactoryMock = mock(FieldWrapperFactory.class);
 
-    when(fieldWrapperFactoryMock.wrap(any(Class.class), any(type), any(Field.class))).thenReturn(fieldWrapperMock);
+    when(fieldWrapperFactoryMock.wrap(any(Class.class), any(TYPE), any(Field.class))).thenReturn(fieldWrapperMock);
 
-    IdGenerator idGeneratorMock = mock(IdGenerator.class);
-    when(idGeneratorMock.nextIdFor(type)).thenReturn(ID);
+    idGeneratorMock = mock(IdGenerator.class);
+    when(idGeneratorMock.nextIdFor(TYPE)).thenReturn(ID);
 
-    @SuppressWarnings("rawtypes")
-    final EntityWrapper entityWrapperMock = mock(EntityWrapper.class);
-
-    EntityWrapperFactory instance = new EntityWrapperFactory(fieldWrapperFactoryMock, idGeneratorMock) {
+    instance = new EntityWrapperFactory(fieldWrapperFactoryMock, idGeneratorMock) {
       @Override
       protected <T extends Entity> EntityWrapper<T> createEntityWrapper(Class<T> type) {
         return entityWrapperMock;
@@ -62,19 +63,50 @@ public class EntityWrapperFactoryTest {
       }
 
     };
+  }
+
+  @Test
+  public void createFromInstanceAddsAFieldWrapperForEachFieldInTheEntity() {
+    TestSystemEntityWrapper entity = new TestSystemEntityWrapper();
+    int numberOfFields = countNumberOfFields();
 
     // action
-    EntityWrapper<TestSystemEntityWrapper> objectWrapper = instance.createFromInstance(type, entity);
+    EntityWrapper<TestSystemEntityWrapper> entityWrapper = instance.createFromInstance(TYPE, entity);
 
     // verify
-    assertThat(objectWrapper, is(notNullValue()));
+    assertThat(entityWrapper, is(notNullValue()));
 
-    verify(fieldWrapperFactoryMock, times(numberOfFields)).wrap(any(Class.class), any(type), any(Field.class));
-    verify(entityWrapperMock, times(numberOfFields)).addFieldWrapper(fieldWrapperMock);
-    verify(entityWrapperMock).setEntity(entity);
-    verify(entityWrapperMock).setId(ID);
-    verify(entityWrapperMock).setRev(REVISION);
-    verify(entityWrapperMock).setCreated(CHANGE);
-    verify(entityWrapperMock).setModified(CHANGE);
+    verify(entityWrapper, times(numberOfFields)).addFieldWrapper(fieldWrapperMock);
+    verify(entityWrapper).setEntity(entity);
+    verify(entityWrapper).setId(ID);
+    verify(entityWrapper).setRev(REVISION);
+    verify(entityWrapper).setCreated(CHANGE);
+    verify(entityWrapper).setModified(CHANGE);
   }
+
+  private int countNumberOfFields() {
+    int numberOfFields = TYPE.getDeclaredFields().length;
+    numberOfFields += SystemEntity.class.getDeclaredFields().length;
+    numberOfFields += Entity.class.getDeclaredFields().length;
+    return numberOfFields;
+  }
+
+  @Test
+  public void createFromTypeCreatesANewInstanceOfTheTypeAndAddsAFieldWrapperForEachField() throws Exception {
+    // setup
+    int numberOfFields = countNumberOfFields();
+
+    // action
+    EntityWrapper<TestSystemEntityWrapper> entityWrapper = instance.createFromType(TYPE);
+
+    // verify
+    verify(entityWrapper, times(numberOfFields)).addFieldWrapper(fieldWrapperMock);
+    verify(entityWrapper).setEntity(any(TYPE));
+    verify(entityWrapper).setId(ID);
+    verify(entityWrapper).setRev(REVISION);
+    verify(entityWrapper).setCreated(CHANGE);
+    verify(entityWrapper).setModified(CHANGE);
+
+  }
+
 }

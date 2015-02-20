@@ -171,7 +171,12 @@ public class Neo4JStorage implements Storage {
 
     Node node = iterator.next();
 
-    EntityWrapper<T> entityWrapper = objectWrapperFactory.createFromType(type);
+    EntityWrapper<T> entityWrapper;
+    try {
+      entityWrapper = objectWrapperFactory.createFromType(type);
+    } catch (InstantiationException | IllegalAccessException e) {
+      throw new StorageException(e);
+    }
 
     return entityWrapper.createEntityFromNode(node);
   }
