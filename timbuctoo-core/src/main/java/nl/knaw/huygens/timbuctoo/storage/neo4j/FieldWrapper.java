@@ -33,6 +33,16 @@ public abstract class FieldWrapper {
     }
   }
 
+  /**
+   * Extracts the value from the node and converts it so it can be added to the entity.
+   * @param entity the entity to add the values to
+   * @param node the node to retrieve the values from
+   */
+  public void addValueToEntity(Entity entity, Node node) {
+    // TODO Auto-generated method stub
+
+  }
+
   protected String getName() {
     return fieldType.propertyName(getContainingType(), fieldName);
   }

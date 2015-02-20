@@ -101,4 +101,14 @@ public class EntityWrapperTest {
   private String getSerializedChange() throws JsonProcessingException {
     return new ObjectMapper().writeValueAsString(CHANGE);
   }
+
+  @Test
+  public void createEntityFromNodeLetsAllTheFieldWrappersExtractTheValueOfTheNode() {
+    // action
+    instance.createEntityFromNode(nodeMock);
+
+    // verify
+    verify(fieldWrapperMock1).addValueToEntity(ENTITY, nodeMock);
+    verify(fieldWrapperMock2).addValueToEntity(ENTITY, nodeMock);
+  }
 }
