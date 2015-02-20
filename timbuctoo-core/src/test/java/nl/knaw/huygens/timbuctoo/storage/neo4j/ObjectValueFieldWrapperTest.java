@@ -53,7 +53,7 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
     containingEntity.setObjectValue(change);
 
     // action
-    instance.addValueToNode(containingEntity, nodeMock);
+    instance.addValueToNode(nodeMock, containingEntity);
 
     // verify
     verify(nodeMock).setProperty(propertyName, serializedValue);
@@ -72,7 +72,7 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
     containingEntity.setObjectValue(null);
 
     // action
-    instance.addValueToNode(containingEntity, nodeMock);
+    instance.addValueToNode(nodeMock, containingEntity);
 
     // verify
     verify(nodeMock, never()).setProperty(anyString(), any());

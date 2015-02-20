@@ -26,7 +26,7 @@ public abstract class FieldWrapper {
     return field.get(entity);
   }
 
-  public final void addValueToNode(Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException {
+  public final void addValueToNode(Node node, Entity entity) throws IllegalArgumentException, IllegalAccessException {
     Object fieldValue = getFieldValue(entity);
     if (fieldValue != null) {
       node.setProperty(getName(), getFormattedValue(fieldValue));

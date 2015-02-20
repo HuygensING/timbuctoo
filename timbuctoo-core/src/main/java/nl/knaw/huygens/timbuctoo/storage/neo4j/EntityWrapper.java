@@ -35,7 +35,7 @@ public class EntityWrapper<T extends Entity> {
     // TODO make difference between types of the field wrappers.
     addName(node);
     for (FieldWrapper fieldWrapper : fieldWrappers) {
-      fieldWrapper.addValueToNode(entity, node);
+      fieldWrapper.addValueToNode(node, entity);
     }
   }
 

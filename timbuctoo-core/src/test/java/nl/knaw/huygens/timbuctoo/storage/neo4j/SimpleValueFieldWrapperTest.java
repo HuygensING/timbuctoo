@@ -47,7 +47,7 @@ public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
     instance.setContainingType(TYPE);
 
     // action
-    instance.addValueToNode(entity, nodeMock);
+    instance.addValueToNode(nodeMock, entity);
 
     // verify
     verify(nodeMock).setProperty(propertyName, value);
@@ -65,7 +65,7 @@ public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
     instance.setContainingType(TYPE);
 
     // action
-    instance.addValueToNode(entity, nodeMock);
+    instance.addValueToNode(nodeMock, entity);
 
     // verify
     verify(nodeMock, never()).setProperty(anyString(), any());

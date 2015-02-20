@@ -56,8 +56,8 @@ public class EntityWrapperTest {
 
     // verify
     verify(nodeMock).addLabel(DynamicLabel.label(TYPE_NAME));
-    verify(fieldWrapperMock1).addValueToNode(ENTITY, nodeMock);
-    verify(fieldWrapperMock2).addValueToNode(ENTITY, nodeMock);
+    verify(fieldWrapperMock1).addValueToNode(nodeMock, ENTITY);
+    verify(fieldWrapperMock2).addValueToNode(nodeMock, ENTITY);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -72,14 +72,14 @@ public class EntityWrapperTest {
 
   private void addValuesToNodeFieldMapperThrowsException(Class<? extends Exception> exceptionToThrow) throws Exception {
     // setup
-    doThrow(exceptionToThrow).when(fieldWrapperMock1).addValueToNode(ENTITY, nodeMock);
+    doThrow(exceptionToThrow).when(fieldWrapperMock1).addValueToNode(nodeMock, ENTITY);
 
     // action
     instance.addValuesToNode(nodeMock);
 
     // verify
     verify(nodeMock).addLabel(DynamicLabel.label(TYPE_NAME));
-    verify(fieldWrapperMock1).addValueToNode(ENTITY, nodeMock);
+    verify(fieldWrapperMock1).addValueToNode(nodeMock, ENTITY);
     verifyZeroInteractions(fieldWrapperMock2);
   }
 
