@@ -29,7 +29,7 @@ public class EntityWrapperFactoryTest {
   private EntityWrapperFactory instance;
   @SuppressWarnings("rawtypes")
   private EntityWrapper entityWrapperMock;
-  private FieldWrapper fieldWrapperMock;
+  private AbstractFieldWrapper fieldWrapperMock;
   private FieldWrapperFactory fieldWrapperFactoryMock;
   private IdGenerator idGeneratorMock;
 
@@ -38,7 +38,7 @@ public class EntityWrapperFactoryTest {
   public void setUp() {
     entityWrapperMock = mock(EntityWrapper.class);
 
-    fieldWrapperMock = mock(FieldWrapper.class);
+    fieldWrapperMock = mock(AbstractFieldWrapper.class);
     fieldWrapperFactoryMock = mock(FieldWrapperFactory.class);
 
     when(fieldWrapperFactoryMock.wrap(any(Class.class), any(TYPE), any(Field.class))).thenReturn(fieldWrapperMock);

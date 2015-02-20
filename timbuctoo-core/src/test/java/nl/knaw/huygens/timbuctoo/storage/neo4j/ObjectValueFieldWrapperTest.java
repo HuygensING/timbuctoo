@@ -1,10 +1,15 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 
@@ -21,7 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
   private static final FieldType FIELD_TYPE = FieldType.REGULAR;
-  private static final String FIELD_NAME = "fieldName";
+  private static final String FIELD_NAME = "objectValue";
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
   private Node nodeMock;
   private TestSystemEntityWrapper containingEntity;
@@ -33,7 +38,7 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
   public void setUp() throws Exception {
     nodeMock = mock(Node.class);
     containingEntity = new TestSystemEntityWrapper();
-    field = TYPE.getDeclaredField("objectValue");
+    field = TYPE.getDeclaredField(FIELD_NAME);
     propertyName = FIELD_TYPE.propertyName(TYPE, FIELD_NAME);
 
     instance = new ObjectValueFieldWrapper();
@@ -76,6 +81,34 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
 
     // verify
     verify(nodeMock, never()).setProperty(anyString(), any());
+  }
+
+  @Override
+  @Test
+  public void addValueToEntitySetTheFieldOfTheEntityWithTheValue() throws Exception {
+    // setup
+    Change value = new Change(87l, "userId", "vreId");
+    when(nodeMock.getProperty(propertyName)).thenReturn(serializeValue(value));
+
+    // action
+    instance.addValueToEntity(containingEntity, nodeMock);
+
+    // verify
+    assertThat(containingEntity.getObjectValue(), is(equalTo(value)));
+  }
+
+  @Override
+  @Test
+  public void addValueToEntityDoesNothingIfThePropertyDoesNotExist() throws Exception {
+    // setup
+    Change value = null;
+    when(nodeMock.getProperty(propertyName)).thenReturn(serializeValue(value));
+
+    // action
+    instance.addValueToEntity(containingEntity, nodeMock);
+
+    // verify
+    assertThat(containingEntity.getObjectValue(), is(nullValue()));
   }
 
 }

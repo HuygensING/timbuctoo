@@ -223,4 +223,31 @@ public class Neo4JStorageTest {
       inOrder.verify(entityWrapperFactoryMock).createFromType(TYPE);
     }
   }
+
+  @Test(expected = StorageException.class)
+  public void getEntityThrowsAStorageExceptionWhenEntityWrapperThrowsAnIllegalArgumentException() throws Exception {
+    getEntityThrowsStorageExceptionWhenEntityWrapperThrowsAnException(IllegalArgumentException.class);
+  }
+
+  @Test(expected = StorageException.class)
+  public void getEntityThrowsAStorageExceptionWhenEntityWrapperThrowsAnIllegalAccessException() throws Exception {
+    getEntityThrowsStorageExceptionWhenEntityWrapperThrowsAnException(IllegalAccessException.class);
+  }
+
+  private void getEntityThrowsStorageExceptionWhenEntityWrapperThrowsAnException(Class<? extends Exception> exceptionToThrow) throws Exception {
+    oneNodeIsFound(nodeMock);
+    when(entityWrapperFactoryMock.createFromType(TYPE)).thenReturn(entityWrapperMock);
+    doThrow(exceptionToThrow).when(entityWrapperMock).createEntityFromNode(nodeMock);
+
+    try {
+      // action
+      instance.getEntity(TYPE, ID);
+    } finally {
+      // verify
+      InOrder inOrder = inOrder(dbMock, entityWrapperFactoryMock, entityWrapperMock);
+      inOrder.verify(dbMock).findNodesByLabelAndProperty(LABEL, ID_PROPERTY_NAME, ID);
+      inOrder.verify(entityWrapperFactoryMock).createFromType(TYPE);
+      inOrder.verify(entityWrapperMock).createEntityFromNode(nodeMock);
+    }
+  }
 }

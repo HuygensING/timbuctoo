@@ -32,7 +32,6 @@ public class EntityWrapper<T extends Entity> {
   }
 
   public void addValuesToNode(Node node) throws IllegalArgumentException, IllegalAccessException {
-    // TODO make difference between types of the field wrappers.
     addName(node);
     for (FieldWrapper fieldWrapper : fieldWrappers) {
       fieldWrapper.addValueToNode(node, entity);
@@ -56,7 +55,7 @@ public class EntityWrapper<T extends Entity> {
     }
   }
 
-  public T createEntityFromNode(Node node) {
+  public T createEntityFromNode(Node node) throws IllegalArgumentException, IllegalAccessException {
     for (FieldWrapper fieldWrapper : fieldWrappers) {
       fieldWrapper.addValueToEntity(entity, node);
     }

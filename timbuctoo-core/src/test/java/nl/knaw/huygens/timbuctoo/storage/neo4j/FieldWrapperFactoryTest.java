@@ -99,7 +99,7 @@ public class FieldWrapperFactoryTest {
     testWrap(TEST_SYSTEM_ENTITY, objectField, OBJECT_WRAPPER_TYPE);
   }
 
-  private void testWrap(TestSystemEntityWrapper testSystemEntity, Field field, Class<? extends FieldWrapper> wrapperType) {
+  private void testWrap(TestSystemEntityWrapper testSystemEntity, Field field, Class<? extends AbstractFieldWrapper> wrapperType) {
     when(propertyBusinessRulesMock.getFieldType(TYPE, field)).thenReturn(FIELD_TYPE);
     when(propertyBusinessRulesMock.getFieldName(TYPE, field)).thenReturn(FIELD_NAME);
 
