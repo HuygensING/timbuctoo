@@ -1,13 +1,17 @@
 package nl.knaw.huygens.timbuctoo.model.cnw;
 
+import java.text.MessageFormat;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.Person;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang3.StringUtils;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
 public class CNWPerson extends Person {
@@ -261,6 +265,21 @@ public class CNWPerson extends Person {
 	@IndexAnnotation(fieldName = "dynamic_s_relatives", canBeEmpty = true, isFaceted = false)
 	public List<String> getRelatives() {
 		return relatives;
+	}
+
+	@IndexAnnotation(fieldName = "dynamic_s_shortdescription", canBeEmpty = false, isFaceted = false)
+	public String getShortDescription() {
+		String charString = characteristics.isEmpty() ? "" : ", " + Joiner.on(", ").join(characteristics);
+		return MessageFormat.format("{0} ({1}-{2}){3}",//
+				StringUtils.defaultIfBlank(getName(), getKoppelnaam()),//
+				extractYear(getBirthDate()), //
+				extractYear(getDeathDate()), //
+				charString);
+	}
+
+	private String extractYear(Datable deathDate) {
+		String deathYear = deathDate == null ? "?" : deathDate.toString();
+		return deathYear;
 	}
 
 	public void addRelative(String relative) {

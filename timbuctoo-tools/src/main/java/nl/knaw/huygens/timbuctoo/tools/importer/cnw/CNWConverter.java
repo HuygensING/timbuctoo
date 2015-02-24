@@ -27,6 +27,7 @@ import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import nl.knaw.huygens.tei.Document;
@@ -41,6 +42,8 @@ import nl.knaw.huygens.timbuctoo.tools.process.Progress;
 import nl.knaw.huygens.timbuctoo.util.Files;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.solr.handler.admin.ShowFileRequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,6 +115,7 @@ public class CNWConverter extends DefaultConverter {
 		Progress progress = new Progress();
 		PrintWriter out = createPrintWriter(CNWPerson.class);
 		Set<RelationDTO> knownRelations = Sets.newHashSet();
+		Map<String, String> shortDescriptionMap = Maps.newHashMap();
 		try {
 			Collection<File> files = FileUtils.listFiles(inputDir, TEI_EXTENSIONS, false);
 			List<CNWRelation> relations = Lists.newArrayList();
@@ -126,19 +130,29 @@ public class CNWConverter extends DefaultConverter {
 				Visitor visitor = new PersonVisitor(personContext, listMaps);
 				Document.createFromXml(xml).accept(visitor);
 				CNWPerson person = personContext.person;
-//				LOG.info("person={}", person);
+				//				LOG.info("person={}", person);
 				relations.addAll(personContext.relations);
 				//				pid2koppelnaam.put(person.getId(), person.getKoppelnaam());
 				koppelnaam2pid.put(person.getKoppelnaam(), person.getId());
 				jsonConverter.appendTo(out, person);
+				shortDescriptionMap.put(person.getKoppelnaam(), person.getShortDescription());
 			}
 			out.close();
+
+			File personDescription = new File("import/CNW/person-short_description.csv");
+			Set<Entry<String, String>> entrySet = shortDescriptionMap.entrySet();
+			for (Entry<String, String> entry : entrySet) {
+				String koppelnaam = entry.getKey();
+				String description = entry.getValue();
+				CharSequence data = StringEscapeUtils.escapeCsv(koppelnaam) + ";" + StringEscapeUtils.escapeCsv(description) + "\n";
+				FileUtils.write(personDescription, data, true);
+			}
 
 			out = createPrintWriter(CNWRelation.class);
 			for (CNWRelation cnwRelation : relations) {
 				boolean append = true;
 				String targetId = cnwRelation.getTargetId();
-				if ("child".equals(cnwRelation.getTypeName())|| "klein".equals(cnwRelation.getTypeName())) {
+				if ("child".equals(cnwRelation.getTypeName()) || "klein".equals(cnwRelation.getTypeName())) {
 					String childId = cnwRelation.getSourceId();
 					String parentId = targetId;
 					String sourceRefId = koppelnaam2pid.get(parentId);

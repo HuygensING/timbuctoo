@@ -116,6 +116,7 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 		public Traversal leaveElement(Element element, PersonContext context) {
 			try {
 				String personId = context.person.getKoppelnaam();
+				LOG.info("{} - {}", personId, context.person.getShortDescription());
 
 				//				if (context.birthPlaceId != null) {
 				//					Reference brelType = getRelationTypeRef("hasBirthPlace", true);
@@ -522,7 +523,7 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 			.put("broer", "(schoon-)broer")//
 			.put("child", "zoon")//
 			.put("echtgenoot", "echtgenoot")//
-			.put("gezel", "gezel")//
+			.put("gezel", "levensgezel")//
 			.put("grand", "grootvader")//
 			.put("klein", "kleinzoon")//
 			.put("parent", "vader")//
@@ -532,7 +533,7 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 			.put("broer", "zus")//
 			.put("child", "dochter")//
 			.put("echtgenoot", "echtgenote")//
-			.put("gezel", "gezel")//
+			.put("gezel", "levelsgezellin")//
 			.put("grand", "grootmoeder")//
 			.put("klein", "kleindochter")//
 			.put("parent", "moeder")//
@@ -542,7 +543,7 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 			.put("broer", "broer/zus")//
 			.put("child", "kind")//
 			.put("echtgenoot", "echtgenoot/echtgenote")//
-			.put("gezel", "gezel")//
+			.put("gezel", "levensgezel/levensgezellin")//
 			.put("grand", "grootouder")//
 			.put("klein", "kleinkind")//
 			.put("parent", "ouder")//
