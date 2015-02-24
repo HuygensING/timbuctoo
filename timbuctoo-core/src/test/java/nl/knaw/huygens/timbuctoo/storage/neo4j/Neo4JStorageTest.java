@@ -125,9 +125,11 @@ public class Neo4JStorageTest {
     assertThat(actualEntity, is(equalTo(ENTITY)));
 
     InOrder inOrder = inOrder(dbMock, entityWrapperFactoryMock, entityWrapperMock);
+    inOrder.verify(dbMock).beginTx();
     inOrder.verify(dbMock).findNodesByLabelAndProperty(LABEL, ID_PROPERTY_NAME, ID);
     inOrder.verify(entityWrapperFactoryMock).createFromType(TYPE);
     inOrder.verify(entityWrapperMock).createEntityFromNode(nodeMock);
+    verifyNoMoreInteractions(dbMock, entityWrapperFactoryMock, entityWrapperMock);
   }
 
   @Test
@@ -146,9 +148,11 @@ public class Neo4JStorageTest {
     assertThat(actualEntity, is(equalTo(ENTITY)));
 
     InOrder inOrder = inOrder(dbMock, entityWrapperFactoryMock, entityWrapperMock);
+    inOrder.verify(dbMock).beginTx();
     inOrder.verify(dbMock).findNodesByLabelAndProperty(LABEL, ID_PROPERTY_NAME, ID);
     inOrder.verify(entityWrapperFactoryMock).createFromType(TYPE);
     inOrder.verify(entityWrapperMock).createEntityFromNode(nodeMock);
+    verifyNoMoreInteractions(dbMock, entityWrapperFactoryMock, entityWrapperMock);
   }
 
   @Test
@@ -219,8 +223,10 @@ public class Neo4JStorageTest {
     } finally {
       // verify
       InOrder inOrder = inOrder(dbMock, entityWrapperFactoryMock);
+      inOrder.verify(dbMock).beginTx();
       inOrder.verify(dbMock).findNodesByLabelAndProperty(LABEL, ID_PROPERTY_NAME, ID);
       inOrder.verify(entityWrapperFactoryMock).createFromType(TYPE);
+      verifyNoMoreInteractions(dbMock, entityWrapperFactoryMock);
     }
   }
 
@@ -245,9 +251,11 @@ public class Neo4JStorageTest {
     } finally {
       // verify
       InOrder inOrder = inOrder(dbMock, entityWrapperFactoryMock, entityWrapperMock);
+      inOrder.verify(dbMock).beginTx();
       inOrder.verify(dbMock).findNodesByLabelAndProperty(LABEL, ID_PROPERTY_NAME, ID);
       inOrder.verify(entityWrapperFactoryMock).createFromType(TYPE);
       inOrder.verify(entityWrapperMock).createEntityFromNode(nodeMock);
+      verifyNoMoreInteractions(dbMock, entityWrapperFactoryMock, entityWrapperMock);
     }
   }
 }

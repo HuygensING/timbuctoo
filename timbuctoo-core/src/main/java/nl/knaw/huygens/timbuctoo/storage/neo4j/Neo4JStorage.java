@@ -160,23 +160,25 @@ public class Neo4JStorage implements Storage {
 
   @Override
   public <T extends Entity> T getEntity(Class<T> type, String id) throws StorageException {
-    Label internalNameLabel = DynamicLabel.label(TypeNames.getInternalName(type));
-    ResourceIterable<Node> foundNodes = db.findNodesByLabelAndProperty(internalNameLabel, ID_PROPERTY_NAME, id);
+    try (Transaction transaction = db.beginTx()) {
+      Label internalNameLabel = DynamicLabel.label(TypeNames.getInternalName(type));
+      ResourceIterable<Node> foundNodes = db.findNodesByLabelAndProperty(internalNameLabel, ID_PROPERTY_NAME, id);
 
-    ResourceIterator<Node> iterator = foundNodes.iterator();
+      ResourceIterator<Node> iterator = foundNodes.iterator();
 
-    if (!iterator.hasNext()) {
-      return null;
-    }
+      if (!iterator.hasNext()) {
+        return null;
+      }
 
-    Node node = iterator.next();
+      Node node = iterator.next();
 
-    EntityWrapper<T> entityWrapper;
-    try {
-      entityWrapper = objectWrapperFactory.createFromType(type);
-      return entityWrapper.createEntityFromNode(node);
-    } catch (InstantiationException | IllegalAccessException | IllegalArgumentException e) {
-      throw new StorageException(e);
+      EntityWrapper<T> entityWrapper;
+      try {
+        entityWrapper = objectWrapperFactory.createFromType(type);
+        return entityWrapper.createEntityFromNode(node);
+      } catch (InstantiationException | IllegalAccessException | IllegalArgumentException e) {
+        throw new StorageException(e);
+      }
     }
 
   }
