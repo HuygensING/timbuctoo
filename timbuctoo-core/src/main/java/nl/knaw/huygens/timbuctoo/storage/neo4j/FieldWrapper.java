@@ -18,10 +18,9 @@ public interface FieldWrapper {
    * Extracts the value from the node and converts it so it can be added to the entity.
    * @param entity the entity to add the values to
    * @param node the node to retrieve the values from
-   * @throws IllegalAccessException 
-   * @throws IllegalArgumentException when the fieldType is different than the propertyType  
+   * @throws ConversionException when the value in the node could not be added to the entity.
    */
-  public abstract void addValueToEntity(Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException;
+  public abstract void addValueToEntity(Entity entity, Node node) throws ConversionException;
 
   public abstract void setFieldType(FieldType fieldType);
 

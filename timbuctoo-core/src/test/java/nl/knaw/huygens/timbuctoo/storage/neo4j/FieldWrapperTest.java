@@ -8,4 +8,8 @@ public interface FieldWrapperTest {
   void addValueToEntitySetTheFieldOfTheEntityWithTheValue() throws Exception;
 
   void addValueToEntityDoesNothingIfThePropertyDoesNotExist() throws Exception;
+
+  void addValueToEntityThrowsAConversionExceptionWhenAIllegalAccessExceptionIsThrown() throws Exception;
+
+  void addValueToEntityThrowsAConversionExceptionWhenAIllegalArgumentExceptionIsThrown() throws Exception;
 }

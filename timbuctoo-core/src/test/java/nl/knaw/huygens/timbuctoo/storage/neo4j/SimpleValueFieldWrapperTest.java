@@ -23,7 +23,7 @@ import test.model.TestSystemEntityWrapper;
 public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
   private static final String FIELD_NAME = "stringValue";
-  private static final FieldType fieldType = FieldType.REGULAR;
+  private static final FieldType FIELD_TYPE = FieldType.REGULAR;
   private SimpleValueFieldWrapper instance;
   private Node nodeMock;
   private Field field;
@@ -34,15 +34,19 @@ public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
   public void setUp() throws Exception {
     entity = new TestSystemEntityWrapper();
     nodeMock = mock(Node.class);
-    propertyName = fieldType.propertyName(TYPE, FIELD_NAME);
+    propertyName = FIELD_TYPE.propertyName(TYPE, FIELD_NAME);
 
     field = TYPE.getDeclaredField(FIELD_NAME);
     instance = new SimpleValueFieldWrapper();
-    instance.setField(field);
-    instance.setFieldType(fieldType);
-    instance.setName(FIELD_NAME);
-    instance.setContainingType(TYPE);
+    setupInstance(instance);
 
+  }
+
+  private void setupInstance(SimpleValueFieldWrapper simpleValueFieldWrapper) {
+    simpleValueFieldWrapper.setField(field);
+    simpleValueFieldWrapper.setFieldType(FIELD_TYPE);
+    simpleValueFieldWrapper.setName(FIELD_NAME);
+    simpleValueFieldWrapper.setContainingType(TYPE);
   }
 
   @Override
@@ -105,6 +109,47 @@ public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
     assertThat(entity.getStringValue(), is(nullValue()));
     verify(nodeMock).hasProperty(propertyName);
     verifyNoMoreInteractions(nodeMock);
+  }
+
+  @Test(expected = ConversionException.class)
+  @Override
+  public void addValueToEntityThrowsAConversionExceptionWhenAIllegalAccessExceptionIsThrown() throws Exception {
+    // setup 
+    when(nodeMock.hasProperty(propertyName)).thenReturn(true);
+    String value = "stringValue";
+    when(nodeMock.getProperty(propertyName)).thenReturn(value);
+
+    SimpleValueFieldWrapper instance = new SimpleValueFieldWrapper() {
+      @Override
+      protected void fillField(nl.knaw.huygens.timbuctoo.model.Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException {
+        throw new IllegalAccessException();
+      }
+    };
+    setupInstance(instance);
+
+    // action
+    instance.addValueToEntity(entity, nodeMock);
+
+  }
+
+  @Test(expected = ConversionException.class)
+  @Override
+  public void addValueToEntityThrowsAConversionExceptionWhenAIllegalArgumentExceptionIsThrown() throws Exception {
+    // setup 
+    when(nodeMock.hasProperty(propertyName)).thenReturn(true);
+    String value = "stringValue";
+    when(nodeMock.getProperty(propertyName)).thenReturn(value);
+
+    SimpleValueFieldWrapper instance = new SimpleValueFieldWrapper() {
+      @Override
+      protected void fillField(nl.knaw.huygens.timbuctoo.model.Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException {
+        throw new IllegalArgumentException();
+      }
+    };
+    setupInstance(instance);
+
+    //action
+    instance.addValueToEntity(entity, nodeMock);
   }
 
 }

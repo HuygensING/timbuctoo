@@ -102,7 +102,7 @@ public class EntityTypeWrapperTest {
   }
 
   @Test
-  public void createEntityFromNodeLetsAllTheFieldWrappersExtractTheValueOfTheNode() throws Exception {
+  public void addValuesToEntityLetsAllTheFieldWrappersExtractTheValueOfTheNode() throws Exception {
     // action
     instance.addValuesToEntity(ENTITY, nodeMock);
 
@@ -111,19 +111,9 @@ public class EntityTypeWrapperTest {
     verify(fieldWrapperMock2).addValueToEntity(ENTITY, nodeMock);
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void createEntityFromNodeThrowsAnIllegalArgumentExceptionIfAFieldWrapperAddValueToEntityThrowsOne() throws Exception {
-    createEntityFromNodeThrowsAnExceptionIfAFieldWrapperAddValueToEntityThrowsOne(IllegalArgumentException.class);
-  }
-
-  @Test(expected = IllegalAccessException.class)
-  public void createEntityFromNodeThrowsAnIllegalAccessExceptionIfAFieldWrapperAddValueToEntityThrowsOne() throws Exception {
-    createEntityFromNodeThrowsAnExceptionIfAFieldWrapperAddValueToEntityThrowsOne(IllegalAccessException.class);
-  }
-
-  private void createEntityFromNodeThrowsAnExceptionIfAFieldWrapperAddValueToEntityThrowsOne(Class<? extends Exception> exceptionToThrow) throws Exception {
+  public void addValuesToEntityThrowsAConversionExceptionIfAFieldWrapperAddValueToEntityThrowsOne() throws Exception {
     // setup
-    doThrow(exceptionToThrow).when(fieldWrapperMock1).addValueToEntity(ENTITY, nodeMock);
+    doThrow(ConversionException.class).when(fieldWrapperMock1).addValueToEntity(ENTITY, nodeMock);
 
     try {
       // action

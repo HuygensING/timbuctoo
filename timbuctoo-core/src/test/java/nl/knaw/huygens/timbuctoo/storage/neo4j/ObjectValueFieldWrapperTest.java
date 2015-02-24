@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 
 import org.junit.Before;
@@ -43,10 +44,14 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
     propertyName = FIELD_TYPE.propertyName(TYPE, FIELD_NAME);
 
     instance = new ObjectValueFieldWrapper();
-    instance.setContainingType(TYPE);
-    instance.setField(field);
-    instance.setFieldType(FIELD_TYPE);
-    instance.setName(FIELD_NAME);
+    setupInstance(instance);
+  }
+
+  private void setupInstance(ObjectValueFieldWrapper objectValueFieldWrapper) {
+    objectValueFieldWrapper.setContainingType(TYPE);
+    objectValueFieldWrapper.setField(field);
+    objectValueFieldWrapper.setFieldType(FIELD_TYPE);
+    objectValueFieldWrapper.setName(FIELD_NAME);
   }
 
   @Override
@@ -115,6 +120,48 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
     assertThat(containingEntity.getObjectValue(), is(nullValue()));
     verify(nodeMock).hasProperty(propertyName);
     verifyNoMoreInteractions(nodeMock);
+  }
+
+  @Test(expected = ConversionException.class)
+  @Override
+  public void addValueToEntityThrowsAConversionExceptionWhenAIllegalAccessExceptionIsThrown() throws Exception {
+    // setup
+    Change value = new Change(87l, "userId", "vreId");
+    when(nodeMock.hasProperty(propertyName)).thenReturn(true);
+    when(nodeMock.getProperty(propertyName)).thenReturn(serializeValue(value));
+
+    ObjectValueFieldWrapper instance = new ObjectValueFieldWrapper() {
+      @Override
+      protected void fillField(Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException {
+        throw new IllegalAccessException();
+      }
+    };
+    setupInstance(instance);
+
+    // action
+    instance.addValueToEntity(containingEntity, nodeMock);
+
+  }
+
+  @Test(expected = ConversionException.class)
+  @Override
+  public void addValueToEntityThrowsAConversionExceptionWhenAIllegalArgumentExceptionIsThrown() throws Exception {
+    // setup
+    Change value = new Change(87l, "userId", "vreId");
+    when(nodeMock.hasProperty(propertyName)).thenReturn(true);
+    when(nodeMock.getProperty(propertyName)).thenReturn(serializeValue(value));
+
+    ObjectValueFieldWrapper instance = new ObjectValueFieldWrapper() {
+      @Override
+      protected void fillField(Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException {
+        throw new IllegalArgumentException();
+      }
+    };
+    setupInstance(instance);
+
+    // action
+    instance.addValueToEntity(containingEntity, nodeMock);
+
   }
 
 }

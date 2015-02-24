@@ -54,7 +54,7 @@ public class EntityTypeWrapper<T extends Entity> {
     }
   }
 
-  public void addValuesToEntity(T entity, Node node) throws IllegalArgumentException, IllegalAccessException {
+  public void addValuesToEntity(T entity, Node node) throws ConversionException {
     for (FieldWrapper fieldWrapper : fieldWrappers) {
       fieldWrapper.addValueToEntity(entity, node);
     }
