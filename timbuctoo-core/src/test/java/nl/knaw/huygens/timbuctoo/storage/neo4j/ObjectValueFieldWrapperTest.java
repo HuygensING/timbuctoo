@@ -9,6 +9,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
@@ -88,6 +89,7 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
   public void addValueToEntitySetTheFieldOfTheEntityWithTheValue() throws Exception {
     // setup
     Change value = new Change(87l, "userId", "vreId");
+    when(nodeMock.hasProperty(propertyName)).thenReturn(true);
     when(nodeMock.getProperty(propertyName)).thenReturn(serializeValue(value));
 
     // action
@@ -95,20 +97,24 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
 
     // verify
     assertThat(containingEntity.getObjectValue(), is(equalTo(value)));
+    verify(nodeMock).hasProperty(propertyName);
+    verify(nodeMock).getProperty(propertyName);
+    verifyNoMoreInteractions(nodeMock);
   }
 
   @Override
   @Test
   public void addValueToEntityDoesNothingIfThePropertyDoesNotExist() throws Exception {
     // setup
-    Change value = null;
-    when(nodeMock.getProperty(propertyName)).thenReturn(serializeValue(value));
+    when(nodeMock.hasProperty(propertyName)).thenReturn(false);
 
     // action
     instance.addValueToEntity(containingEntity, nodeMock);
 
     // verify
     assertThat(containingEntity.getObjectValue(), is(nullValue()));
+    verify(nodeMock).hasProperty(propertyName);
+    verifyNoMoreInteractions(nodeMock);
   }
 
 }

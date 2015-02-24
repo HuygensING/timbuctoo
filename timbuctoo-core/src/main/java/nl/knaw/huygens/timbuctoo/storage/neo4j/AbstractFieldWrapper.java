@@ -51,7 +51,9 @@ public abstract class AbstractFieldWrapper implements FieldWrapper {
   @Override
   public final void addValueToEntity(Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException {
     field.setAccessible(true);
-    field.set(entity, convertValue(node.getProperty(getName()), field.getType()));
+    if (node.hasProperty(getName())) {
+      field.set(entity, convertValue(node.getProperty(getName()), field.getType()));
+    }
   }
 
   protected abstract Object convertValue(Object value, Class<?> fieldType);

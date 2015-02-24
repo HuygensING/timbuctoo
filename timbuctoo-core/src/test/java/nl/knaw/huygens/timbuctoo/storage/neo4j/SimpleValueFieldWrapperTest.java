@@ -3,11 +3,13 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
@@ -26,9 +28,11 @@ public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
   private Node nodeMock;
   private Field field;
   private String propertyName;
+  private TestSystemEntityWrapper entity;
 
   @Before
   public void setUp() throws Exception {
+    entity = new TestSystemEntityWrapper();
     nodeMock = mock(Node.class);
     propertyName = fieldType.propertyName(TYPE, FIELD_NAME);
 
@@ -44,8 +48,7 @@ public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
   @Override
   @Test
   public void addValueToNodeSetsThePropertyWithTheFieldNameToTheValueOfTheNode() throws Exception {
-    // setup
-    TestSystemEntityWrapper entity = new TestSystemEntityWrapper();
+
     String value = "value";
     entity.setStringValue(value);
 
@@ -60,7 +63,6 @@ public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
   @Test
   public void addValueToNodeDoesNotSetIfTheValueIsNull() throws Exception {
     // setup
-    TestSystemEntityWrapper entity = new TestSystemEntityWrapper();
     String value = null;
     entity.setStringValue(value);
 
@@ -75,30 +77,34 @@ public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
   @Test
   public void addValueToEntitySetTheFieldOfTheEntityWithTheValue() throws Exception {
     // setup 
+    when(nodeMock.hasProperty(propertyName)).thenReturn(true);
     String value = "stringValue";
     when(nodeMock.getProperty(propertyName)).thenReturn(value);
-    TestSystemEntityWrapper entity = new TestSystemEntityWrapper();
 
     // action
     instance.addValueToEntity(entity, nodeMock);
 
     // verify
     assertThat(entity.getStringValue(), is(equalTo(value)));
+    verify(nodeMock).hasProperty(propertyName);
+    verify(nodeMock).getProperty(propertyName);
+    verifyNoMoreInteractions(nodeMock);
 
   }
 
   @Override
   @Test
   public void addValueToEntityDoesNothingIfThePropertyDoesNotExist() throws Exception {
-    String nullValue = null;
-    when(nodeMock.getProperty(propertyName)).thenReturn(nullValue);
-    TestSystemEntityWrapper entity = new TestSystemEntityWrapper();
+    // setup
+    when(nodeMock.hasProperty(propertyName)).thenReturn(false);
 
     // action
     instance.addValueToEntity(entity, nodeMock);
 
     // verify
-    assertThat(entity.getStringValue(), is(equalTo(nullValue)));
+    assertThat(entity.getStringValue(), is(nullValue()));
+    verify(nodeMock).hasProperty(propertyName);
+    verifyNoMoreInteractions(nodeMock);
   }
 
 }
