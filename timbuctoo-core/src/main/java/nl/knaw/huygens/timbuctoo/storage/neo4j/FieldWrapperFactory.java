@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
@@ -30,6 +31,10 @@ public class FieldWrapperFactory {
   }
 
   private FieldWrapper createFieldWrapper(Field field) {
+    if (Modifier.isStatic(field.getModifiers())) {
+      return createNoOpFieldWrapper();
+    }
+
     return isSimpleValue(field) || isSimpleCollection(field) ? createSimpleValueFieldWrapper() : createObjectValueFieldWrapper();
   }
 
@@ -64,6 +69,10 @@ public class FieldWrapperFactory {
 
   protected FieldWrapper createObjectValueFieldWrapper() {
     return new ObjectValueFieldWrapper();
+  }
+
+  protected FieldWrapper createNoOpFieldWrapper() {
+    return new NoOpFieldWrapper();
   }
 
 }

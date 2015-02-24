@@ -42,6 +42,8 @@ public class TestSystemEntityWrapper extends SystemEntity {
   public static final String ANNOTED_GETTER_NAME = "annotedGetter";
   public static final String ANOTATED_PROPERTY_NAME = "something";
 
+  private static String staticField;
+
   private String stringValue;
 
   private Long primitiveWrapperValue;
@@ -144,6 +146,14 @@ public class TestSystemEntityWrapper extends SystemEntity {
 
   public void setPropertyWithAnnotatedGetter(String propertyWithAnnotatedGetter) {
     this.propertyWithAnnotatedGetter = propertyWithAnnotatedGetter;
+  }
+
+  public static String getStaticField() {
+    return staticField;
+  }
+
+  public static void setStaticField(String staticField) {
+    TestSystemEntityWrapper.staticField = staticField;
   }
 
 }

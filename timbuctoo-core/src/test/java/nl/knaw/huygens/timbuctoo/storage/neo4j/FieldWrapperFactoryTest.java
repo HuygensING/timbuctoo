@@ -22,6 +22,7 @@ public class FieldWrapperFactoryTest {
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
   private static final Class<ObjectValueFieldWrapper> OBJECT_WRAPPER_TYPE = ObjectValueFieldWrapper.class;
   private static final Class<SimpleValueFieldWrapper> SIMPLE_VALUE_WRAPPER_TYPE = SimpleValueFieldWrapper.class;
+  private static final Class<NoOpFieldWrapper> NO_OP_WRAPPER_TYPE = NoOpFieldWrapper.class;
   private static final TestSystemEntityWrapper TEST_SYSTEM_ENTITY = new TestSystemEntityWrapper();
   private FieldWrapperFactory instance;
   private PropertyBusinessRules propertyBusinessRulesMock;
@@ -39,6 +40,11 @@ public class FieldWrapperFactoryTest {
       @Override
       protected FieldWrapper createObjectValueFieldWrapper() {
         return mock(OBJECT_WRAPPER_TYPE);
+      }
+
+      @Override
+      protected FieldWrapper createNoOpFieldWrapper() {
+        return mock(NO_OP_WRAPPER_TYPE);
       }
     };
   }
@@ -99,7 +105,13 @@ public class FieldWrapperFactoryTest {
     testWrap(TEST_SYSTEM_ENTITY, objectField, OBJECT_WRAPPER_TYPE);
   }
 
-  private void testWrap(TestSystemEntityWrapper testSystemEntity, Field field, Class<? extends AbstractFieldWrapper> wrapperType) {
+  @Test
+  public void wrapCreatesANoOpFieldWrapperIfTheFieldIsStatic() throws Exception {
+    Field field = getField(TYPE, "staticField");
+    testWrap(TEST_SYSTEM_ENTITY, field, NO_OP_WRAPPER_TYPE);
+  }
+
+  private void testWrap(TestSystemEntityWrapper testSystemEntity, Field field, Class<? extends FieldWrapper> wrapperType) {
     when(propertyBusinessRulesMock.getFieldType(TYPE, field)).thenReturn(FIELD_TYPE);
     when(propertyBusinessRulesMock.getFieldName(TYPE, field)).thenReturn(FIELD_NAME);
 
