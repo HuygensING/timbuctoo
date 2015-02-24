@@ -1,8 +1,5 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -26,9 +23,9 @@ public class EntityWrapperFactoryTest {
   private static final Change CHANGE = Change.newInternalInstance();
   private static final int REVISION = 1;
   private static final String ID = "id";
-  private EntityWrapperFactory instance;
+  private EntityTypeWrapperFactory instance;
   @SuppressWarnings("rawtypes")
-  private EntityWrapper entityWrapperMock;
+  private EntityTypeWrapper entityWrapperMock;
   private AbstractFieldWrapper fieldWrapperMock;
   private FieldWrapperFactory fieldWrapperFactoryMock;
   private IdGenerator idGeneratorMock;
@@ -36,19 +33,19 @@ public class EntityWrapperFactoryTest {
   @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
-    entityWrapperMock = mock(EntityWrapper.class);
+    entityWrapperMock = mock(EntityTypeWrapper.class);
 
     fieldWrapperMock = mock(AbstractFieldWrapper.class);
     fieldWrapperFactoryMock = mock(FieldWrapperFactory.class);
 
-    when(fieldWrapperFactoryMock.wrap(any(Class.class), any(TYPE), any(Field.class))).thenReturn(fieldWrapperMock);
+    when(fieldWrapperFactoryMock.wrap(any(Class.class), any(Field.class))).thenReturn(fieldWrapperMock);
 
     idGeneratorMock = mock(IdGenerator.class);
     when(idGeneratorMock.nextIdFor(TYPE)).thenReturn(ID);
 
-    instance = new EntityWrapperFactory(fieldWrapperFactoryMock, idGeneratorMock) {
+    instance = new EntityTypeWrapperFactory(fieldWrapperFactoryMock, idGeneratorMock) {
       @Override
-      protected <T extends Entity> EntityWrapper<T> createEntityWrapper(Class<T> type) {
+      protected <T extends Entity> EntityTypeWrapper<T> createEntityWrapper(Class<T> type) {
         return entityWrapperMock;
       }
 
@@ -65,25 +62,6 @@ public class EntityWrapperFactoryTest {
     };
   }
 
-  @Test
-  public void createFromInstanceAddsAFieldWrapperForEachFieldInTheEntity() {
-    TestSystemEntityWrapper entity = new TestSystemEntityWrapper();
-    int numberOfFields = countNumberOfFields();
-
-    // action
-    EntityWrapper<TestSystemEntityWrapper> entityWrapper = instance.createFromInstance(TYPE, entity);
-
-    // verify
-    assertThat(entityWrapper, is(notNullValue()));
-
-    verify(entityWrapper, times(numberOfFields)).addFieldWrapper(fieldWrapperMock);
-    verify(entityWrapper).setEntity(entity);
-    verify(entityWrapper).setId(ID);
-    verify(entityWrapper).setRev(REVISION);
-    verify(entityWrapper).setCreated(CHANGE);
-    verify(entityWrapper).setModified(CHANGE);
-  }
-
   private int countNumberOfFields() {
     int numberOfFields = TYPE.getDeclaredFields().length;
     numberOfFields += SystemEntity.class.getDeclaredFields().length;
@@ -97,11 +75,10 @@ public class EntityWrapperFactoryTest {
     int numberOfFields = countNumberOfFields();
 
     // action
-    EntityWrapper<TestSystemEntityWrapper> entityWrapper = instance.createFromType(TYPE);
+    EntityTypeWrapper<TestSystemEntityWrapper> entityWrapper = instance.createFromType(TYPE);
 
     // verify
     verify(entityWrapper, times(numberOfFields)).addFieldWrapper(fieldWrapperMock);
-    verify(entityWrapper).setEntity(any(TYPE));
     verify(entityWrapper).setId(ID);
     verify(entityWrapper).setRev(REVISION);
     verify(entityWrapper).setCreated(CHANGE);

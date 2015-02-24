@@ -116,7 +116,7 @@ public class FieldWrapperFactoryTest {
     when(propertyBusinessRulesMock.getFieldName(TYPE, field)).thenReturn(FIELD_NAME);
 
     // action
-    FieldWrapper fieldWrapper = instance.wrap(TYPE, testSystemEntity, field);
+    FieldWrapper fieldWrapper = instance.wrap(TYPE, field);
 
     // verify
     assertThat(fieldWrapper, is(instanceOf(wrapperType)));

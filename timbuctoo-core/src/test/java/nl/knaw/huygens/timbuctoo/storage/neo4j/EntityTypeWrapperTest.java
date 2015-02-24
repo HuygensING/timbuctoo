@@ -21,7 +21,7 @@ import test.model.TestSystemEntityWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class EntityWrapperTest {
+public class EntityTypeWrapperTest {
   private static final int REVISION = 1;
   private static final Change CHANGE = new Change();
   private static final String ID = "id";
@@ -31,7 +31,7 @@ public class EntityWrapperTest {
   private Node nodeMock;
   private FieldWrapper fieldWrapperMock1;
   private FieldWrapper fieldWrapperMock2;
-  private EntityWrapper<TestSystemEntityWrapper> instance;
+  private EntityTypeWrapper<TestSystemEntityWrapper> instance;
 
   @Before
   public void setUp() {
@@ -39,10 +39,9 @@ public class EntityWrapperTest {
     fieldWrapperMock2 = mock(FieldWrapper.class);
     nodeMock = mock(Node.class);
 
-    instance = new EntityWrapper<TestSystemEntityWrapper>();
+    instance = new EntityTypeWrapper<TestSystemEntityWrapper>();
     instance.addFieldWrapper(fieldWrapperMock1);
     instance.addFieldWrapper(fieldWrapperMock2);
-    instance.setEntity(ENTITY);
     instance.setId(ID);
     instance.setCreated(CHANGE);
     instance.setModified(CHANGE);
@@ -52,7 +51,7 @@ public class EntityWrapperTest {
   @Test
   public void addValuesToNodeLetsTheFieldWrappersAddTheirValuesToTheNode() throws Exception {
     // action
-    instance.addValuesToNode(nodeMock);
+    instance.addValuesToNode(nodeMock, ENTITY);
 
     // verify
     verify(nodeMock).addLabel(DynamicLabel.label(TYPE_NAME));
@@ -75,7 +74,7 @@ public class EntityWrapperTest {
     doThrow(exceptionToThrow).when(fieldWrapperMock1).addValueToNode(nodeMock, ENTITY);
 
     // action
-    instance.addValuesToNode(nodeMock);
+    instance.addValuesToNode(nodeMock, ENTITY);
 
     // verify
     verify(nodeMock).addLabel(DynamicLabel.label(TYPE_NAME));
@@ -103,9 +102,9 @@ public class EntityWrapperTest {
   }
 
   @Test
-  public void createEntityFromNodeLetsAllTheFieldWrappersExtractTheValueOfTheNode() throws IllegalArgumentException, IllegalAccessException {
+  public void createEntityFromNodeLetsAllTheFieldWrappersExtractTheValueOfTheNode() throws Exception {
     // action
-    instance.createEntityFromNode(nodeMock);
+    instance.addValuesToEntity(ENTITY, nodeMock);
 
     // verify
     verify(fieldWrapperMock1).addValueToEntity(ENTITY, nodeMock);
@@ -128,7 +127,7 @@ public class EntityWrapperTest {
 
     try {
       // action
-      instance.createEntityFromNode(nodeMock);
+      instance.addValuesToEntity(ENTITY, nodeMock);
     } finally {
       // verify
       verify(fieldWrapperMock1).addValueToEntity(ENTITY, nodeMock);

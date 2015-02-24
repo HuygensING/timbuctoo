@@ -18,14 +18,13 @@ public class FieldWrapperFactory {
     this.propertyBusinessRules = propertyBusinessRules;
   }
 
-  public <T extends Entity> FieldWrapper wrap(Class<T> type, T entity, Field field) {
+  public <T extends Entity> FieldWrapper wrap(Class<T> type, Field field) {
     FieldWrapper fieldWrapper = createFieldWrapper(field);
 
     fieldWrapper.setField(field);
-    Class<? extends Entity> containingType = entity.getClass();
-    fieldWrapper.setContainingType(containingType);
-    fieldWrapper.setFieldType(propertyBusinessRules.getFieldType(containingType, field));
-    fieldWrapper.setName(propertyBusinessRules.getFieldName(containingType, field));
+    fieldWrapper.setContainingType(type);
+    fieldWrapper.setFieldType(propertyBusinessRules.getFieldType(type, field));
+    fieldWrapper.setName(propertyBusinessRules.getFieldName(type, field));
 
     return fieldWrapper;
   }

@@ -28,13 +28,15 @@ import com.google.inject.Inject;
 
 public class Neo4JStorage implements Storage {
 
-  private final EntityWrapperFactory objectWrapperFactory;
+  private final EntityTypeWrapperFactory objectWrapperFactory;
   private final GraphDatabaseService db;
+  private EntityInstantiator entityInstantiator;
 
   @Inject
-  public Neo4JStorage(GraphDatabaseService db, EntityWrapperFactory objectWrapperFactory) {
+  public Neo4JStorage(GraphDatabaseService db, EntityTypeWrapperFactory objectWrapperFactory, EntityInstantiator entityInstantiator) {
     this.db = db;
     this.objectWrapperFactory = objectWrapperFactory;
+    this.entityInstantiator = entityInstantiator;
   }
 
   @Override
@@ -59,10 +61,10 @@ public class Neo4JStorage implements Storage {
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
       try {
-        EntityWrapper<T> objectWrapper = objectWrapperFactory.createFromInstance(type, entity);
+        EntityTypeWrapper<T> objectWrapper = objectWrapperFactory.createFromType(type);
         Node node = db.createNode();
 
-        objectWrapper.addValuesToNode(node);
+        objectWrapper.addValuesToNode(node, entity);
         objectWrapper.addAdministrativeValues(node);
 
         transaction.success();
@@ -172,11 +174,14 @@ public class Neo4JStorage implements Storage {
 
       Node node = iterator.next();
 
-      EntityWrapper<T> entityWrapper;
       try {
-        entityWrapper = objectWrapperFactory.createFromType(type);
-        return entityWrapper.createEntityFromNode(node);
-      } catch (InstantiationException | IllegalAccessException | IllegalArgumentException e) {
+        T entity = entityInstantiator.createInstanceOf(type);
+
+        EntityTypeWrapper<T> entityWrapper = objectWrapperFactory.createFromType(type);
+        entityWrapper.addValuesToEntity(entity, node);
+
+        return entity;
+      } catch (IllegalAccessException | IllegalArgumentException | InstantiationException e) {
         throw new StorageException(e);
       }
     }

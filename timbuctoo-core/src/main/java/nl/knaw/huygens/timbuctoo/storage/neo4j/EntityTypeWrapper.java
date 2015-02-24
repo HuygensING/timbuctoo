@@ -18,27 +18,26 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 
-public class EntityWrapper<T extends Entity> {
+public class EntityTypeWrapper<T extends Entity> {
 
   private List<FieldWrapper> fieldWrappers;
-  private T entity;
   private String id;
   private Change modified;
   private Change created;
   private int revision;
 
-  public EntityWrapper() {
+  public EntityTypeWrapper() {
     fieldWrappers = Lists.newArrayList();
   }
 
-  public void addValuesToNode(Node node) throws IllegalArgumentException, IllegalAccessException {
-    addName(node);
+  public void addValuesToNode(Node node, T entity) throws IllegalArgumentException, IllegalAccessException {
+    addName(node, entity);
     for (FieldWrapper fieldWrapper : fieldWrappers) {
       fieldWrapper.addValueToNode(node, entity);
     }
   }
 
-  private void addName(Node node) {
+  private void addName(Node node, T entity) {
     node.addLabel(DynamicLabel.label(TypeNames.getInternalName(entity.getClass())));
   }
 
@@ -55,19 +54,14 @@ public class EntityWrapper<T extends Entity> {
     }
   }
 
-  public T createEntityFromNode(Node node) throws IllegalArgumentException, IllegalAccessException {
+  public void addValuesToEntity(T entity, Node node) throws IllegalArgumentException, IllegalAccessException {
     for (FieldWrapper fieldWrapper : fieldWrappers) {
       fieldWrapper.addValueToEntity(entity, node);
     }
-    return entity;
   }
 
   public void addFieldWrapper(FieldWrapper fieldWrapper) {
     fieldWrappers.add(fieldWrapper);
-  }
-
-  public void setEntity(T entity) {
-    this.entity = entity;
   }
 
   public void setId(String id) {
