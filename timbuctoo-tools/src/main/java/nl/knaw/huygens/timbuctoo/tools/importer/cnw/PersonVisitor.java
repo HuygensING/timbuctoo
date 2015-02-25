@@ -115,8 +115,8 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 		@Override
 		public Traversal leaveElement(Element element, PersonContext context) {
 			try {
-				String personId = context.person.getKoppelnaam();
-				LOG.info("{} - {}", personId, context.person.getShortDescription());
+//				String personId = context.person.getKoppelnaam();
+//				LOG.info("{} - {}", personId, context.person.getShortDescription());
 
 				//				if (context.birthPlaceId != null) {
 				//					Reference brelType = getRelationTypeRef("hasBirthPlace", true);

@@ -115,7 +115,7 @@ public class CNWPerson extends Person {
 		this.koppelnaam = koppelnaam;
 	}
 
-	@IndexAnnotation(fieldName = "dynamic_s_koppelnaam", canBeEmpty = false, isFaceted = false)
+	@IndexAnnotation(fieldName = "dynamic_s_koppelnaam", canBeEmpty = false, isFaceted = true)
 	public String getKoppelnaam() {
 		return koppelnaam;
 	}
@@ -266,6 +266,7 @@ public class CNWPerson extends Person {
 		return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
 	}
 
+	@IndexAnnotation(fieldName = "dynamic_s_altname", accessors = { "getName" }, canBeEmpty = true, isFaceted = true)
 	public List<AltName> getAltNames() {
 		return altNames;
 	}
