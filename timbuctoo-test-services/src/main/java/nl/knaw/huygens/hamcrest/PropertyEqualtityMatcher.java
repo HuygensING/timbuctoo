@@ -51,6 +51,4 @@ public abstract class PropertyEqualtityMatcher<T, V> extends PropertyMatcher<T, 
     description.appendText(fieldName).appendText(" has value: ").appendValue(value);
   }
 
-  @Override
-  protected abstract V getItemValue(T item);
 }
