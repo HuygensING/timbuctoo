@@ -21,7 +21,7 @@ public class NoOpFieldWrapper implements FieldWrapper {
   }
 
   @Override
-  public void addValueToNode(Node node, Entity entity) throws IllegalArgumentException, IllegalAccessException {
+  public void addValueToNode(Node node, Entity entity) throws ConversionException {
     // TODO Auto-generated method stub
 
   }

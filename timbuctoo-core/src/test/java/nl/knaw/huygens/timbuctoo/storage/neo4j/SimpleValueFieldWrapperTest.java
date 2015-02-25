@@ -14,6 +14,8 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 
+import nl.knaw.huygens.timbuctoo.model.Entity;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
@@ -77,6 +79,38 @@ public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
     verify(nodeMock, never()).setProperty(anyString(), any());
   }
 
+  @Test(expected = ConversionException.class)
+  @Override
+  public void addValueToNodeThrowsAConversionExceptionAnIllegalAccessExceptionIsThrown() throws Exception {
+    // setup
+    SimpleValueFieldWrapper instance = new SimpleValueFieldWrapper() {
+      @Override
+      protected Object getFieldValue(Entity entity) throws IllegalArgumentException, IllegalAccessException {
+        throw new IllegalAccessException();
+      }
+    };
+    setupInstance(instance);
+
+    // action
+    instance.addValueToNode(nodeMock, entity);
+  }
+
+  @Test(expected = ConversionException.class)
+  @Override
+  public void addValueToNodeThrowsAConversionExceptionAnIllegalArgumentExceptionIsThrown() throws Exception {
+    // setup
+    SimpleValueFieldWrapper instance = new SimpleValueFieldWrapper() {
+      @Override
+      protected Object getFieldValue(Entity entity) throws IllegalArgumentException, IllegalAccessException {
+        throw new IllegalArgumentException();
+      }
+    };
+    setupInstance(instance);
+
+    // action
+    instance.addValueToNode(nodeMock, entity);
+  }
+
   @Override
   @Test
   public void addValueToEntitySetTheFieldOfTheEntityWithTheValue() throws Exception {
@@ -113,7 +147,7 @@ public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
 
   @Test(expected = ConversionException.class)
   @Override
-  public void addValueToEntityThrowsAConversionExceptionWhenAIllegalAccessExceptionIsThrown() throws Exception {
+  public void addValueToEntityThrowsAConversionExceptionWhenAnIllegalAccessExceptionIsThrown() throws Exception {
     // setup 
     when(nodeMock.hasProperty(propertyName)).thenReturn(true);
     String value = "stringValue";
@@ -134,7 +168,7 @@ public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
 
   @Test(expected = ConversionException.class)
   @Override
-  public void addValueToEntityThrowsAConversionExceptionWhenAIllegalArgumentExceptionIsThrown() throws Exception {
+  public void addValueToEntityThrowsAConversionExceptionWhenAnIllegalArgumentExceptionIsThrown() throws Exception {
     // setup 
     when(nodeMock.hasProperty(propertyName)).thenReturn(true);
     String value = "stringValue";

@@ -82,23 +82,12 @@ public class Neo4JStorageTest {
   }
 
   @Test(expected = StorageException.class)
-  public void addSystemEntityRollsBackTheTransactionAndAndThrowsAStorageExceptionWhenObjectWrapperThrowsAnIllegalArgumentException() throws Exception {
-
-    addSystemEntityRollsBackTheTransactionAndThrowsStorageExceptionObjectrapperThrowsAnException(IllegalArgumentException.class);
-  }
-
-  @Test(expected = StorageException.class)
-  public void addSystemEntityRollsBackTheTransactionAndAndThrowsAStorageExceptionWhenObjectWrapperThrowsAnIllegalAccessException() throws Exception {
-
-    addSystemEntityRollsBackTheTransactionAndThrowsStorageExceptionObjectrapperThrowsAnException(IllegalAccessException.class);
-  }
-
-  private void addSystemEntityRollsBackTheTransactionAndThrowsStorageExceptionObjectrapperThrowsAnException(Class<? extends Exception> exceptionToThrow) throws Exception {
+  public void addSystemEntityRollsBackTheTransactionAndThrowsStorageExceptionObjectrapperThrowsAConversionException() throws Exception {
     when(dbMock.beginTx()).thenReturn(transactionMock);
     when(dbMock.createNode()).thenReturn(nodeMock);
 
     when(entityWrapperFactoryMock.createFromType(TYPE)).thenReturn(entityWrapperMock);
-    doThrow(exceptionToThrow).when(entityWrapperMock).addValuesToNode(nodeMock, ENTITY);
+    doThrow(ConversionException.class).when(entityWrapperMock).addValuesToNode(nodeMock, ENTITY);
 
     try {
       // action

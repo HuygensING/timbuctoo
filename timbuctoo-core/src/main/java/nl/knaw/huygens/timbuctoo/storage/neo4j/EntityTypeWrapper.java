@@ -30,7 +30,7 @@ public class EntityTypeWrapper<T extends Entity> {
     fieldWrappers = Lists.newArrayList();
   }
 
-  public void addValuesToNode(Node node, T entity) throws IllegalArgumentException, IllegalAccessException {
+  public void addValuesToNode(Node node, T entity) throws ConversionException {
     addName(node, entity);
     for (FieldWrapper fieldWrapper : fieldWrappers) {
       fieldWrapper.addValueToNode(node, entity);

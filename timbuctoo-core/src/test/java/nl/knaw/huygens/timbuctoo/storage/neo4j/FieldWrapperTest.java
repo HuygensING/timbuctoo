@@ -5,11 +5,15 @@ public interface FieldWrapperTest {
 
   void addValueToNodeDoesNotSetIfTheValueIsNull() throws Exception;
 
+  void addValueToNodeThrowsAConversionExceptionAnIllegalAccessExceptionIsThrown() throws Exception;
+
+  void addValueToNodeThrowsAConversionExceptionAnIllegalArgumentExceptionIsThrown() throws Exception;
+
   void addValueToEntitySetTheFieldOfTheEntityWithTheValue() throws Exception;
 
   void addValueToEntityDoesNothingIfThePropertyDoesNotExist() throws Exception;
 
-  void addValueToEntityThrowsAConversionExceptionWhenAIllegalAccessExceptionIsThrown() throws Exception;
+  void addValueToEntityThrowsAConversionExceptionWhenAnIllegalAccessExceptionIsThrown() throws Exception;
 
-  void addValueToEntityThrowsAConversionExceptionWhenAIllegalArgumentExceptionIsThrown() throws Exception;
+  void addValueToEntityThrowsAConversionExceptionWhenAnIllegalArgumentExceptionIsThrown() throws Exception;
 }

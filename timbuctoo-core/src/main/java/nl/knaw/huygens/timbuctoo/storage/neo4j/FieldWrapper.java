@@ -12,7 +12,7 @@ public interface FieldWrapper {
 
   public abstract void setField(Field field);
 
-  public abstract void addValueToNode(Node node, Entity entity) throws IllegalArgumentException, IllegalAccessException;
+  public abstract void addValueToNode(Node node, Entity entity) throws ConversionException;
 
   /**
    * Extracts the value from the node and converts it so it can be added to the entity.

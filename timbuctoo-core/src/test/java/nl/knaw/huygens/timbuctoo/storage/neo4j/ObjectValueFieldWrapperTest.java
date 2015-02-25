@@ -89,6 +89,38 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
     verify(nodeMock, never()).setProperty(anyString(), any());
   }
 
+  @Test(expected = ConversionException.class)
+  @Override
+  public void addValueToNodeThrowsAConversionExceptionAnIllegalAccessExceptionIsThrown() throws Exception {
+    // setup
+    ObjectValueFieldWrapper instance = new ObjectValueFieldWrapper() {
+      @Override
+      protected Object getFieldValue(Entity entity) throws IllegalArgumentException, IllegalAccessException {
+        throw new IllegalAccessException();
+      }
+    };
+    setupInstance(instance);
+
+    // action
+    instance.addValueToNode(nodeMock, containingEntity);
+  }
+
+  @Test(expected = ConversionException.class)
+  @Override
+  public void addValueToNodeThrowsAConversionExceptionAnIllegalArgumentExceptionIsThrown() throws Exception {
+    // setup
+    ObjectValueFieldWrapper instance = new ObjectValueFieldWrapper() {
+      @Override
+      protected Object getFieldValue(Entity entity) throws IllegalArgumentException, IllegalAccessException {
+        throw new IllegalArgumentException();
+      }
+    };
+    setupInstance(instance);
+
+    // action
+    instance.addValueToNode(nodeMock, containingEntity);
+  }
+
   @Override
   @Test
   public void addValueToEntitySetTheFieldOfTheEntityWithTheValue() throws Exception {
@@ -124,7 +156,7 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
 
   @Test(expected = ConversionException.class)
   @Override
-  public void addValueToEntityThrowsAConversionExceptionWhenAIllegalAccessExceptionIsThrown() throws Exception {
+  public void addValueToEntityThrowsAConversionExceptionWhenAnIllegalAccessExceptionIsThrown() throws Exception {
     // setup
     Change value = new Change(87l, "userId", "vreId");
     when(nodeMock.hasProperty(propertyName)).thenReturn(true);
@@ -145,7 +177,7 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
 
   @Test(expected = ConversionException.class)
   @Override
-  public void addValueToEntityThrowsAConversionExceptionWhenAIllegalArgumentExceptionIsThrown() throws Exception {
+  public void addValueToEntityThrowsAConversionExceptionWhenAnIllegalArgumentExceptionIsThrown() throws Exception {
     // setup
     Change value = new Change(87l, "userId", "vreId");
     when(nodeMock.hasProperty(propertyName)).thenReturn(true);

@@ -38,11 +38,17 @@ public abstract class AbstractFieldWrapper implements FieldWrapper {
    * @see nl.knaw.huygens.timbuctoo.storage.neo4j.FieldWrapper#addValueToNode(org.neo4j.graphdb.Node, nl.knaw.huygens.timbuctoo.model.Entity)
    */
   @Override
-  public final void addValueToNode(Node node, Entity entity) throws IllegalArgumentException, IllegalAccessException {
-    Object fieldValue = getFieldValue(entity);
-    if (fieldValue != null) {
-      node.setProperty(getName(), getFormattedValue(fieldValue));
+  public final void addValueToNode(Node node, Entity entity) throws ConversionException {
+    try {
+      Object fieldValue = getFieldValue(entity);
+
+      if (fieldValue != null) {
+        node.setProperty(getName(), getFormattedValue(fieldValue));
+      }
+    } catch (IllegalArgumentException | IllegalAccessException e) {
+      throw new ConversionException(e);
     }
+
   }
 
   /* (non-Javadoc)

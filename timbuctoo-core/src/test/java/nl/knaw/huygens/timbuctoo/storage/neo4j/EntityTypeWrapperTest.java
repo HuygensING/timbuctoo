@@ -59,19 +59,10 @@ public class EntityTypeWrapperTest {
     verify(fieldWrapperMock2).addValueToNode(nodeMock, ENTITY);
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void addValuesToNodeThrowsAnIllegalArgumentExceptionWhenOneOfTheFieldWrappersDoes() throws Exception {
-    addValuesToNodeFieldMapperThrowsException(IllegalArgumentException.class);
-  }
-
-  @Test(expected = IllegalAccessException.class)
-  public void addValuesToNodeThrowsAnIllegalArgumentAccessWhenOneOfTheFieldWrappersDoes() throws Exception {
-    addValuesToNodeFieldMapperThrowsException(IllegalAccessException.class);
-  }
-
-  private void addValuesToNodeFieldMapperThrowsException(Class<? extends Exception> exceptionToThrow) throws Exception {
+  @Test(expected = ConversionException.class)
+  public void addValuesToNodeFieldMapperThrowsException() throws Exception {
     // setup
-    doThrow(exceptionToThrow).when(fieldWrapperMock1).addValueToNode(nodeMock, ENTITY);
+    doThrow(ConversionException.class).when(fieldWrapperMock1).addValueToNode(nodeMock, ENTITY);
 
     // action
     instance.addValuesToNode(nodeMock, ENTITY);
