@@ -588,7 +588,15 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 	private class ValHandler extends CaptureHandler<PersonContext> {
 		@Override
 		public void handleContent(Element element, PersonContext context, String text) {
-			//			context.person.setVal(text);
+			String greatgrandparent = element.getParent().getParent().getParent().getName();
+			if ("birth".equals(greatgrandparent)) {
+				context.person.setBirthDateQualifier(text);
+			} else if ("death".equals(greatgrandparent)) {
+				context.person.setDeathDateQualifier(text);
+			} else {
+				LOG.warn("unhandled <val> in {}/{}/{}", greatgrandparent, element.getParent().getParent().getName(), element.getParent().getName());
+			}
+
 		}
 	}
 

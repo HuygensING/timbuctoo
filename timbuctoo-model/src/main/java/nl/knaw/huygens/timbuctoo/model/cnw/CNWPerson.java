@@ -33,6 +33,8 @@ public class CNWPerson extends Person {
 	private String aantekeningen = ""; // Kladblok: Niet zichtbaar voor gebruiker, wel bewaren
 	private List<AltName> altNames = Lists.newArrayList();
 	private List<String> relatives = Lists.newArrayList();
+	private String birthdateQualifier = "";
+	private String deathdateQualifier = "";
 
 	//	private String nametype = "";
 	//	private String woonplaats = "";
@@ -46,6 +48,16 @@ public class CNWPerson extends Person {
 	//	private String dbngUrl = "";
 	//	private String cenUrlAfz = "";
 	//	private String cenUrlOntv = "";
+
+	@IndexAnnotation(fieldName = "dynamic_s_birthdatequalifier", canBeEmpty = true, isFaceted = false)
+	public String getBirthdateQualifier() {
+		return birthdateQualifier;
+	}
+
+	@IndexAnnotation(fieldName = "dynamic_s_deathdatequalifier", canBeEmpty = true, isFaceted = false)
+	public String getDeathdateQualifier() {
+		return deathdateQualifier;
+	}
 
 	@IndexAnnotation(fieldName = "dynamic_s_membership", canBeEmpty = true, isFaceted = true)
 	public List<String> getMemberships() {
@@ -284,6 +296,14 @@ public class CNWPerson extends Person {
 
 	public void addRelative(String relative) {
 		relatives.add(relative);
+	}
+
+	public void setBirthDateQualifier(String qualifier) {
+		birthdateQualifier = qualifier;
+	}
+
+	public void setDeathDateQualifier(String qualifier) {
+		deathdateQualifier = qualifier;
 	}
 
 }
