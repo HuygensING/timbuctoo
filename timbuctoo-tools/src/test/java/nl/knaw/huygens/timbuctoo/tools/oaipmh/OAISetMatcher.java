@@ -23,7 +23,7 @@ package nl.knaw.huygens.timbuctoo.tools.oaipmh;
  */
 
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
-import nl.knaw.huygens.hamcrest.PropertyMatcher;
+import nl.knaw.huygens.hamcrest.PropertyEqualtityMatcher;
 import nl.knaw.huygens.oaipmh.MyOAISet;
 
 public class OAISetMatcher extends CompositeMatcher<MyOAISet> {
@@ -36,7 +36,7 @@ public class OAISetMatcher extends CompositeMatcher<MyOAISet> {
   }
 
   public OAISetMatcher withName(String name) {
-    addMatcher(new PropertyMatcher<MyOAISet, String>("name", name) {
+    addMatcher(new PropertyEqualtityMatcher<MyOAISet, String>("name", name) {
 
       @Override
       protected String getItemValue(MyOAISet item) {
@@ -48,7 +48,7 @@ public class OAISetMatcher extends CompositeMatcher<MyOAISet> {
   }
 
   public OAISetMatcher withSetSpec(String setSpec) {
-    addMatcher(new PropertyMatcher<MyOAISet, String>("setSpec", setSpec) {
+    addMatcher(new PropertyEqualtityMatcher<MyOAISet, String>("setSpec", setSpec) {
 
       @Override
       protected String getItemValue(MyOAISet item) {

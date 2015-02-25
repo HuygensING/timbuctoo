@@ -23,7 +23,7 @@ package nl.knaw.huygens.timbuctoo.storage;
  */
 
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
-import nl.knaw.huygens.hamcrest.PropertyMatcher;
+import nl.knaw.huygens.hamcrest.PropertyEqualtityMatcher;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 
 public class RelationMatcher extends CompositeMatcher<Relation> {
@@ -34,7 +34,7 @@ public class RelationMatcher extends CompositeMatcher<Relation> {
   }
 
   public RelationMatcher withSourceId(String sourceId) {
-    addMatcher(new PropertyMatcher<Relation, String>(Relation.SOURCE_ID, sourceId) {
+    addMatcher(new PropertyEqualtityMatcher<Relation, String>(Relation.SOURCE_ID, sourceId) {
 
       @Override
       protected String getItemValue(Relation item) {
@@ -46,7 +46,7 @@ public class RelationMatcher extends CompositeMatcher<Relation> {
   }
 
   public RelationMatcher withSourceType(String sourceType) {
-    addMatcher(new PropertyMatcher<Relation, String>("sourceType", sourceType) {
+    addMatcher(new PropertyEqualtityMatcher<Relation, String>("sourceType", sourceType) {
 
       @Override
       protected String getItemValue(Relation item) {
@@ -59,7 +59,7 @@ public class RelationMatcher extends CompositeMatcher<Relation> {
   }
 
   public RelationMatcher withTargetId(String targetId) {
-    addMatcher(new PropertyMatcher<Relation, String>(Relation.TARGET_ID, targetId) {
+    addMatcher(new PropertyEqualtityMatcher<Relation, String>(Relation.TARGET_ID, targetId) {
 
       @Override
       protected String getItemValue(Relation item) {
@@ -71,7 +71,7 @@ public class RelationMatcher extends CompositeMatcher<Relation> {
   }
 
   public RelationMatcher withTargetType(String targetType) {
-    addMatcher(new PropertyMatcher<Relation, String>("targetType", targetType) {
+    addMatcher(new PropertyEqualtityMatcher<Relation, String>("targetType", targetType) {
 
       @Override
       protected String getItemValue(Relation item) {
@@ -84,7 +84,7 @@ public class RelationMatcher extends CompositeMatcher<Relation> {
   }
 
   public RelationMatcher withTypeId(String typeId) {
-    addMatcher(new PropertyMatcher<Relation, String>(Relation.TYPE_ID, typeId) {
+    addMatcher(new PropertyEqualtityMatcher<Relation, String>(Relation.TYPE_ID, typeId) {
 
       @Override
       protected String getItemValue(Relation item) {
@@ -96,7 +96,7 @@ public class RelationMatcher extends CompositeMatcher<Relation> {
   }
 
   public RelationMatcher isAccepted(boolean accepted) {
-    addMatcher(new PropertyMatcher<Relation, Boolean>("accepted", accepted) {
+    addMatcher(new PropertyEqualtityMatcher<Relation, Boolean>("accepted", accepted) {
 
       @Override
       protected Boolean getItemValue(Relation item) {

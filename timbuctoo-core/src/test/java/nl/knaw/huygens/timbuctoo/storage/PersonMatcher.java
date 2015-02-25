@@ -25,7 +25,7 @@ package nl.knaw.huygens.timbuctoo.storage;
 import java.util.List;
 
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
-import nl.knaw.huygens.hamcrest.PropertyMatcher;
+import nl.knaw.huygens.hamcrest.PropertyEqualtityMatcher;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Person.Gender;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
@@ -42,7 +42,7 @@ public class PersonMatcher<T extends Person> extends CompositeMatcher<T> {
   }
 
   public PersonMatcher<T> withGender(Gender gender) {
-    this.addMatcher(new PropertyMatcher<T, Gender>("gender", gender) {
+    this.addMatcher(new PropertyEqualtityMatcher<T, Gender>("gender", gender) {
 
       @Override
       protected Gender getItemValue(T item) {
@@ -53,7 +53,7 @@ public class PersonMatcher<T extends Person> extends CompositeMatcher<T> {
   }
 
   public PersonMatcher<T> withId(String id) {
-    this.addMatcher(new PropertyMatcher<T, String>("id", id) {
+    this.addMatcher(new PropertyEqualtityMatcher<T, String>("id", id) {
 
       @Override
       protected String getItemValue(T item) {
@@ -64,7 +64,7 @@ public class PersonMatcher<T extends Person> extends CompositeMatcher<T> {
   }
 
   public PersonMatcher<T> withNames(List<PersonName> names) {
-    this.addMatcher(new PropertyMatcher<T, List<PersonName>>("names", names) {
+    this.addMatcher(new PropertyEqualtityMatcher<T, List<PersonName>>("names", names) {
 
       @Override
       protected List<PersonName> getItemValue(T item) {
@@ -75,7 +75,7 @@ public class PersonMatcher<T extends Person> extends CompositeMatcher<T> {
   }
 
   public PersonMatcher<T> withBirthDate(Datable birthDate) {
-    this.addMatcher(new PropertyMatcher<T, Datable>("birthDate", birthDate) {
+    this.addMatcher(new PropertyEqualtityMatcher<T, Datable>("birthDate", birthDate) {
 
       @Override
       protected Datable getItemValue(T item) {
@@ -86,7 +86,7 @@ public class PersonMatcher<T extends Person> extends CompositeMatcher<T> {
   }
 
   public PersonMatcher<T> withDeathDate(Datable deathDate) {
-    this.addMatcher(new PropertyMatcher<T, Datable>("deathDate", deathDate) {
+    this.addMatcher(new PropertyEqualtityMatcher<T, Datable>("deathDate", deathDate) {
 
       @Override
       protected Datable getItemValue(T item) {
@@ -97,7 +97,7 @@ public class PersonMatcher<T extends Person> extends CompositeMatcher<T> {
   }
 
   public PersonMatcher<T> withRevision(int revision) {
-    this.addMatcher(new PropertyMatcher<T, Integer>("rev", revision) {
+    this.addMatcher(new PropertyEqualtityMatcher<T, Integer>("rev", revision) {
 
       @Override
       protected Integer getItemValue(T item) {
@@ -108,7 +108,7 @@ public class PersonMatcher<T extends Person> extends CompositeMatcher<T> {
   }
 
   public PersonMatcher<T> withDeletedFlag(boolean deleted) {
-    this.addMatcher(new PropertyMatcher<T, Boolean>("deleted", deleted) {
+    this.addMatcher(new PropertyEqualtityMatcher<T, Boolean>("deleted", deleted) {
 
       @Override
       protected Boolean getItemValue(T item) {
@@ -128,7 +128,7 @@ public class PersonMatcher<T extends Person> extends CompositeMatcher<T> {
     }
 
     public ProjectAPersonMatcher withProjectAPersonProperty(String projectAPersonProperty) {
-      addMatcher(new PropertyMatcher<ProjectAPerson, String>("projectAPersonProperty", projectAPersonProperty) {
+      addMatcher(new PropertyEqualtityMatcher<ProjectAPerson, String>("projectAPersonProperty", projectAPersonProperty) {
 
         @Override
         protected String getItemValue(ProjectAPerson item) {
