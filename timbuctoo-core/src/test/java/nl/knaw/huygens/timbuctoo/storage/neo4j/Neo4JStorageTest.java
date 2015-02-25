@@ -26,17 +26,17 @@ import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 
-import test.model.TestSystemEntity;
+import test.model.TestSystemEntityWrapper;
 
 public class Neo4JStorageTest {
 
-  private static final Class<TestSystemEntity> TYPE = TestSystemEntity.class;
+  private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
   private static final Label LABEL = DynamicLabel.label(TypeNames.getInternalName(TYPE));
   private Node nodeMock;
-  private static final TestSystemEntity ENTITY = new TestSystemEntity();
+  private TestSystemEntityWrapper entity;
   private static final String ID = "id";
   private GraphDatabaseService dbMock;
-  private EntityTypeWrapper<TestSystemEntity> entityWrapperMock;
+  private EntityTypeWrapper<TestSystemEntityWrapper> entityWrapperMock;
   private EntityTypeWrapperFactory entityWrapperFactoryMock;
   private Neo4JStorage instance;
   private Transaction transactionMock;
@@ -45,6 +45,7 @@ public class Neo4JStorageTest {
   @SuppressWarnings("unchecked")
   @Before
   public void setUp() throws Exception {
+    entity = new TestSystemEntityWrapper();
     nodeMock = mock(Node.class);
     dbMock = mock(GraphDatabaseService.class);
     entityWrapperMock = mock(EntityTypeWrapper.class);
@@ -68,7 +69,7 @@ public class Neo4JStorageTest {
     when(entityWrapperMock.getId()).thenReturn(ID);
 
     // action
-    String actualId = instance.addSystemEntity(TYPE, ENTITY);
+    String actualId = instance.addSystemEntity(TYPE, entity);
 
     // verify
     assertThat(actualId, is(equalTo(ID)));
@@ -76,7 +77,7 @@ public class Neo4JStorageTest {
     InOrder inOrder = inOrder(dbMock, transactionMock, entityWrapperMock);
     inOrder.verify(dbMock).beginTx();
     inOrder.verify(dbMock).createNode();
-    inOrder.verify(entityWrapperMock).addValuesToNode(nodeMock, ENTITY);
+    inOrder.verify(entityWrapperMock).addValuesToNode(nodeMock, entity);
     inOrder.verify(entityWrapperMock).addAdministrativeValues(nodeMock);
     inOrder.verify(transactionMock).success();
   }
@@ -87,16 +88,16 @@ public class Neo4JStorageTest {
     when(dbMock.createNode()).thenReturn(nodeMock);
 
     when(entityWrapperFactoryMock.createFromType(TYPE)).thenReturn(entityWrapperMock);
-    doThrow(ConversionException.class).when(entityWrapperMock).addValuesToNode(nodeMock, ENTITY);
+    doThrow(ConversionException.class).when(entityWrapperMock).addValuesToNode(nodeMock, entity);
 
     try {
       // action
-      instance.addSystemEntity(TYPE, ENTITY);
+      instance.addSystemEntity(TYPE, entity);
     } finally {
       // verify
       verify(dbMock).beginTx();
       verify(dbMock).createNode();
-      verify(entityWrapperMock).addValuesToNode(nodeMock, ENTITY);
+      verify(entityWrapperMock).addValuesToNode(nodeMock, entity);
       verifyNoMoreInteractions(entityWrapperMock);
       verify(transactionMock).failure();
     }
@@ -107,19 +108,19 @@ public class Neo4JStorageTest {
 
     oneNodeIsFound(nodeMock);
     when(entityWrapperFactoryMock.createFromType(TYPE)).thenReturn(entityWrapperMock);
-    when(entityInstantiatorMock.createInstanceOf(TYPE)).thenReturn(ENTITY);
+    when(entityInstantiatorMock.createInstanceOf(TYPE)).thenReturn(entity);
 
     // action
-    TestSystemEntity actualEntity = instance.getEntity(TYPE, ID);
+    TestSystemEntityWrapper actualEntity = instance.getEntity(TYPE, ID);
 
     // verify
-    assertThat(actualEntity, is(equalTo(ENTITY)));
+    assertThat(actualEntity, is(equalTo(entity)));
 
     InOrder inOrder = inOrder(dbMock, entityWrapperFactoryMock, entityWrapperMock);
     inOrder.verify(dbMock).beginTx();
     inOrder.verify(dbMock).findNodesByLabelAndProperty(LABEL, ID_PROPERTY_NAME, ID);
     inOrder.verify(entityWrapperFactoryMock).createFromType(TYPE);
-    inOrder.verify(entityWrapperMock).addValuesToEntity(ENTITY, nodeMock);
+    inOrder.verify(entityWrapperMock).addValuesToEntity(entity, nodeMock);
     verifyNoMoreInteractions(dbMock, entityWrapperFactoryMock, entityWrapperMock);
   }
 
@@ -130,19 +131,19 @@ public class Neo4JStorageTest {
     Node otherFoundNode = mock(Node.class);
     multipleNodesAreFound(nodeMock, otherFoundNode);
     when(entityWrapperFactoryMock.createFromType(TYPE)).thenReturn(entityWrapperMock);
-    when(entityInstantiatorMock.createInstanceOf(TYPE)).thenReturn(ENTITY);
+    when(entityInstantiatorMock.createInstanceOf(TYPE)).thenReturn(entity);
 
     // action
-    TestSystemEntity actualEntity = instance.getEntity(TYPE, ID);
+    TestSystemEntityWrapper actualEntity = instance.getEntity(TYPE, ID);
 
     // verify
-    assertThat(actualEntity, is(equalTo(ENTITY)));
+    assertThat(actualEntity, is(equalTo(entity)));
 
     InOrder inOrder = inOrder(dbMock, entityWrapperFactoryMock, entityWrapperMock);
     inOrder.verify(dbMock).beginTx();
     inOrder.verify(dbMock).findNodesByLabelAndProperty(LABEL, ID_PROPERTY_NAME, ID);
     inOrder.verify(entityWrapperFactoryMock).createFromType(TYPE);
-    inOrder.verify(entityWrapperMock).addValuesToEntity(ENTITY, nodeMock);
+    inOrder.verify(entityWrapperMock).addValuesToEntity(entity, nodeMock);
     verifyNoMoreInteractions(dbMock, entityWrapperFactoryMock, entityWrapperMock);
   }
 
@@ -152,7 +153,7 @@ public class Neo4JStorageTest {
     nodeNodeIsFound();
 
     // action
-    TestSystemEntity actualEntity = instance.getEntity(TYPE, ID);
+    TestSystemEntityWrapper actualEntity = instance.getEntity(TYPE, ID);
 
     // verify
     assertThat(actualEntity, is(nullValue()));
@@ -199,8 +200,8 @@ public class Neo4JStorageTest {
     // setup
     oneNodeIsFound(nodeMock);
     when(entityWrapperFactoryMock.createFromType(TYPE)).thenReturn(entityWrapperMock);
-    when(entityInstantiatorMock.createInstanceOf(TYPE)).thenReturn(ENTITY);
-    doThrow(ConversionException.class).when(entityWrapperMock).addValuesToEntity(ENTITY, nodeMock);
+    when(entityInstantiatorMock.createInstanceOf(TYPE)).thenReturn(entity);
+    doThrow(ConversionException.class).when(entityWrapperMock).addValuesToEntity(entity, nodeMock);
 
     try {
       // action
@@ -211,7 +212,7 @@ public class Neo4JStorageTest {
       inOrder.verify(dbMock).beginTx();
       inOrder.verify(dbMock).findNodesByLabelAndProperty(LABEL, ID_PROPERTY_NAME, ID);
       inOrder.verify(entityWrapperFactoryMock).createFromType(TYPE);
-      inOrder.verify(entityWrapperMock).addValuesToEntity(ENTITY, nodeMock);
+      inOrder.verify(entityWrapperMock).addValuesToEntity(entity, nodeMock);
       verifyNoMoreInteractions(dbMock, entityWrapperFactoryMock, entityWrapperMock);
     }
   }
