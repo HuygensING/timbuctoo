@@ -25,18 +25,15 @@ package nl.knaw.huygens.hamcrest;
 import static org.hamcrest.Matchers.equalTo;
 
 import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.hamcrest.TypeSafeMatcher;
 
-public abstract class PropertyEqualtityMatcher<T, V> extends TypeSafeMatcher<T> {
+public abstract class PropertyEqualtityMatcher<T, V> extends PropertyMatcher<T, V> {
   private final String propertyName;
   private final V propertyValue;
-  private Matcher<V> matcher;
 
   public PropertyEqualtityMatcher(String propertyName, V propertyValue) {
+    super(propertyName, equalTo(propertyValue));
     this.propertyName = propertyName;
     this.propertyValue = propertyValue;
-    matcher = equalTo(propertyValue);
   }
 
   @Override
@@ -55,9 +52,5 @@ public abstract class PropertyEqualtityMatcher<T, V> extends TypeSafeMatcher<T> 
   }
 
   @Override
-  protected boolean matchesSafely(T item) {
-    return matcher.matches(getItemValue(item));
-  }
-
   protected abstract V getItemValue(T item);
 }
