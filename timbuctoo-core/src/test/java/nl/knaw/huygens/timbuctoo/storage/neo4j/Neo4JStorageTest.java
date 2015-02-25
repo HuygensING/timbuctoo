@@ -1,10 +1,12 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.TestSystemEntityWrapperMatcher.likeTestSystemEntityWrapper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -30,6 +32,7 @@ import test.model.TestSystemEntityWrapper;
 
 public class Neo4JStorageTest {
 
+  private static final int FIRST_REVISION = 1;
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
   private static final Label LABEL = DynamicLabel.label(TypeNames.getInternalName(TYPE));
   private Node nodeMock;
@@ -41,6 +44,7 @@ public class Neo4JStorageTest {
   private Neo4JStorage instance;
   private Transaction transactionMock;
   private EntityInstantiator entityInstantiatorMock;
+  private IdGenerator idGeneratorMock;
 
   @SuppressWarnings("unchecked")
   @Before
@@ -53,8 +57,9 @@ public class Neo4JStorageTest {
 
     transactionMock = mock(Transaction.class);
     entityInstantiatorMock = mock(EntityInstantiator.class);
+    idGeneratorMock = mock(IdGenerator.class);
 
-    instance = new Neo4JStorage(dbMock, entityWrapperFactoryMock, entityInstantiatorMock);
+    instance = new Neo4JStorage(dbMock, entityWrapperFactoryMock, entityInstantiatorMock, idGeneratorMock);
   }
 
   private void setupEntityWrapperFactory() throws Exception {
@@ -66,20 +71,25 @@ public class Neo4JStorageTest {
   public void addSystemEntitySavesTheSystemAsNodeAndReturnsItsId() throws Exception {
     when(dbMock.beginTx()).thenReturn(transactionMock);
     when(dbMock.createNode()).thenReturn(nodeMock);
-    when(entityWrapperMock.getId()).thenReturn(ID);
+    when(idGeneratorMock.nextIdFor(TYPE)).thenReturn(ID);
 
     // action
     String actualId = instance.addSystemEntity(TYPE, entity);
 
     // verify
-    assertThat(actualId, is(equalTo(ID)));
 
     InOrder inOrder = inOrder(dbMock, transactionMock, entityWrapperMock);
     inOrder.verify(dbMock).beginTx();
     inOrder.verify(dbMock).createNode();
-    inOrder.verify(entityWrapperMock).addValuesToNode(nodeMock, entity);
-    inOrder.verify(entityWrapperMock).addAdministrativeValues(nodeMock);
+    inOrder.verify(entityWrapperMock).addValuesToNode(//
+        argThat(equalTo(nodeMock)), // 
+        argThat(likeTestSystemEntityWrapper() //
+            .with(actualId) //
+            .withACreatedValue() //
+            .withAModifiedValue() //
+            .withRevision(FIRST_REVISION)));
     inOrder.verify(transactionMock).success();
+    verifyNoMoreInteractions(entityWrapperMock);
   }
 
   @Test(expected = StorageException.class)

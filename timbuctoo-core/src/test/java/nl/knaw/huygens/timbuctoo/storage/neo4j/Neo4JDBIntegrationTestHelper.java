@@ -21,7 +21,7 @@ public class Neo4JDBIntegrationTestHelper implements DBIntegrationTestHelper {
     db = new TestGraphDatabaseFactory().newImpermanentDatabase();
     PropertyBusinessRules propertyBusinessRules = new PropertyBusinessRules();
     FieldWrapperFactory fieldWrapperFactory = new FieldWrapperFactory(propertyBusinessRules);
-    objectWrapperFactory = new EntityTypeWrapperFactory(fieldWrapperFactory, idGenerator);
+    objectWrapperFactory = new EntityTypeWrapperFactory(fieldWrapperFactory);
     entityInstantiator = new EntityInstantiator();
   }
 
@@ -33,7 +33,7 @@ public class Neo4JDBIntegrationTestHelper implements DBIntegrationTestHelper {
   @Override
   public Storage createStorage(TypeRegistry typeRegistry) throws ModelException {
 
-    return new Neo4JStorage(db, objectWrapperFactory, entityInstantiator);
+    return new Neo4JStorage(db, objectWrapperFactory, entityInstantiator, idGenerator);
   }
 
 }

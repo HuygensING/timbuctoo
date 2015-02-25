@@ -30,13 +30,15 @@ public class Neo4JStorage implements Storage {
 
   private final EntityTypeWrapperFactory objectWrapperFactory;
   private final GraphDatabaseService db;
-  private EntityInstantiator entityInstantiator;
+  private final EntityInstantiator entityInstantiator;
+  private final IdGenerator idGenerator;
 
   @Inject
-  public Neo4JStorage(GraphDatabaseService db, EntityTypeWrapperFactory objectWrapperFactory, EntityInstantiator entityInstantiator) {
+  public Neo4JStorage(GraphDatabaseService db, EntityTypeWrapperFactory objectWrapperFactory, EntityInstantiator entityInstantiator, IdGenerator idGenerator) {
     this.db = db;
     this.objectWrapperFactory = objectWrapperFactory;
     this.entityInstantiator = entityInstantiator;
+    this.idGenerator = idGenerator;
   }
 
   @Override
@@ -61,19 +63,37 @@ public class Neo4JStorage implements Storage {
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
       try {
+        String id = addAdministrativeValues(type, entity);
+
         EntityTypeWrapper<T> objectWrapper = objectWrapperFactory.createFromType(type);
         Node node = db.createNode();
 
         objectWrapper.addValuesToNode(node, entity);
-        objectWrapper.addAdministrativeValues(node);
 
         transaction.success();
-        return objectWrapper.getId();
+        return id;
       } catch (ConversionException e) {
         transaction.failure();
         throw e;
       }
     }
+  }
+
+  private <T extends SystemEntity> String addAdministrativeValues(Class<T> type, T entity) {
+    String id = idGenerator.nextIdFor(type);
+    Change change = Change.newInternalInstance();
+
+    entity.setCreated(change);
+    entity.setModified(change);
+    entity.setId(id);
+    updateRevision(entity);
+
+    return id;
+  }
+
+  private <T extends SystemEntity> void updateRevision(T entity) {
+    int rev = entity.getRev();
+    entity.setRev(++rev);
   }
 
   @Override
