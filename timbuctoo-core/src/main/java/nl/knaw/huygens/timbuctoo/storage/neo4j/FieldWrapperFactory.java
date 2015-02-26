@@ -32,9 +32,13 @@ public class FieldWrapperFactory {
   private FieldWrapper createFieldWrapper(Field field) {
     if (Modifier.isStatic(field.getModifiers())) {
       return createNoOpFieldWrapper();
+    } else if (isSimpleValue(field)) {
+      return createSimpleValueFieldWrapper();
+    } else if (isSimpleCollection(field)) {
+      return createSimpleCollectionFieldWrapper();
     }
 
-    return isSimpleValue(field) || isSimpleCollection(field) ? createSimpleValueFieldWrapper() : createObjectValueFieldWrapper();
+    return createObjectValueFieldWrapper();
   }
 
   private boolean isSimpleCollection(Field field) {
@@ -49,16 +53,16 @@ public class FieldWrapperFactory {
       return false;
     }
 
-    return actualTypeArguments[0] instanceof Class ? isSimpleValue((Class<?>) actualTypeArguments[0]) : false;
+    return actualTypeArguments[0] instanceof Class ? isSimpleValueType((Class<?>) actualTypeArguments[0]) : false;
   }
 
   private boolean isSimpleValue(Field field) {
     Class<?> type = field.getType();
 
-    return isSimpleValue(type);
+    return isSimpleValueType(type);
   }
 
-  private boolean isSimpleValue(Class<?> type) {
+  private boolean isSimpleValueType(Class<?> type) {
     return ClassUtils.isPrimitiveOrWrapper(type) || type == String.class;
   }
 
@@ -72,6 +76,10 @@ public class FieldWrapperFactory {
 
   protected FieldWrapper createNoOpFieldWrapper() {
     return new NoOpFieldWrapper();
+  }
+
+  protected FieldWrapper createSimpleCollectionFieldWrapper() {
+    return new SimpleCollectionFieldWrapper();
   }
 
 }

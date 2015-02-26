@@ -23,6 +23,7 @@ public class FieldWrapperFactoryTest {
   private static final Class<ObjectValueFieldWrapper> OBJECT_WRAPPER_TYPE = ObjectValueFieldWrapper.class;
   private static final Class<SimpleValueFieldWrapper> SIMPLE_VALUE_WRAPPER_TYPE = SimpleValueFieldWrapper.class;
   private static final Class<NoOpFieldWrapper> NO_OP_WRAPPER_TYPE = NoOpFieldWrapper.class;
+  private static final Class<SimpleCollectionFieldWrapper> SIMPLE_COLLECTION_FIELD_WRAPPER_TYPE = SimpleCollectionFieldWrapper.class;
   private static final TestSystemEntityWrapper TEST_SYSTEM_ENTITY = new TestSystemEntityWrapper();
   private FieldWrapperFactory instance;
   private PropertyBusinessRules propertyBusinessRulesMock;
@@ -45,6 +46,11 @@ public class FieldWrapperFactoryTest {
       @Override
       protected FieldWrapper createNoOpFieldWrapper() {
         return mock(NO_OP_WRAPPER_TYPE);
+      }
+
+      @Override
+      protected FieldWrapper createSimpleCollectionFieldWrapper() {
+        return mock(SIMPLE_COLLECTION_FIELD_WRAPPER_TYPE);
       }
     };
   }
@@ -71,17 +77,17 @@ public class FieldWrapperFactoryTest {
   }
 
   @Test
-  public void wrapCreatesAPrimitiveCollectionFieldWrapperIfTheFieldContainsAPrimitiveCollection() throws Exception {
+  public void wrapCreatesASimpleCollectionFieldWrapperIfTheFieldContainsAPrimitiveCollection() throws Exception {
     Field longWrapperField = getField(TYPE, "primitiveCollection");
 
-    testWrap(TEST_SYSTEM_ENTITY, longWrapperField, SIMPLE_VALUE_WRAPPER_TYPE);
+    testWrap(TEST_SYSTEM_ENTITY, longWrapperField, SIMPLE_COLLECTION_FIELD_WRAPPER_TYPE);
   }
 
   @Test
-  public void wrapCreatesAPrimitiveCollectionFieldWrapperIfTheFieldContainsAStringCollection() throws Exception {
+  public void wrapCreatesASimpleCollectionFieldWrapperIfTheFieldContainsAStringCollection() throws Exception {
     Field longWrapperField = getField(TYPE, "stringCollection");
 
-    testWrap(TEST_SYSTEM_ENTITY, longWrapperField, SIMPLE_VALUE_WRAPPER_TYPE);
+    testWrap(TEST_SYSTEM_ENTITY, longWrapperField, SIMPLE_COLLECTION_FIELD_WRAPPER_TYPE);
   }
 
   @Test
