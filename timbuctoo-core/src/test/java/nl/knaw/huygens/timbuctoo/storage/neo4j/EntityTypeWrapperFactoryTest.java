@@ -16,7 +16,7 @@ import org.junit.Test;
 
 import test.model.TestSystemEntityWrapper;
 
-public class EntityWrapperFactoryTest {
+public class EntityTypeWrapperFactoryTest {
 
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
   private EntityTypeWrapperFactory instance;

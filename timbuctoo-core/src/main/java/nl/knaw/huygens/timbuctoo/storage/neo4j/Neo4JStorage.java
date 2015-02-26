@@ -28,15 +28,15 @@ import com.google.inject.Inject;
 
 public class Neo4JStorage implements Storage {
 
-  private final EntityTypeWrapperFactory objectWrapperFactory;
+  private final EntityTypeWrapperFactory entityTypeWrapperFactory;
   private final GraphDatabaseService db;
   private final EntityInstantiator entityInstantiator;
   private final IdGenerator idGenerator;
 
   @Inject
-  public Neo4JStorage(GraphDatabaseService db, EntityTypeWrapperFactory objectWrapperFactory, EntityInstantiator entityInstantiator, IdGenerator idGenerator) {
+  public Neo4JStorage(GraphDatabaseService db, EntityTypeWrapperFactory entityTypeWrapperFactory, EntityInstantiator entityInstantiator, IdGenerator idGenerator) {
     this.db = db;
-    this.objectWrapperFactory = objectWrapperFactory;
+    this.entityTypeWrapperFactory = entityTypeWrapperFactory;
     this.entityInstantiator = entityInstantiator;
     this.idGenerator = idGenerator;
   }
@@ -65,7 +65,7 @@ public class Neo4JStorage implements Storage {
       try {
         String id = addAdministrativeValues(type, entity);
 
-        EntityTypeWrapper<T> objectWrapper = objectWrapperFactory.createFromType(type);
+        EntityTypeWrapper<T> objectWrapper = entityTypeWrapperFactory.createFromType(type);
         Node node = db.createNode();
 
         objectWrapper.addValuesToNode(node, entity);
@@ -79,7 +79,13 @@ public class Neo4JStorage implements Storage {
     }
   }
 
-  private <T extends SystemEntity> String addAdministrativeValues(Class<T> type, T entity) {
+  /**
+   * Adds the administrative values to the entity.
+   * @param type the type to generate the id for
+   * @param entity the entity to add the values to
+   * @return the generated id
+   */
+  private <T extends Entity> String addAdministrativeValues(Class<T> type, T entity) {
     String id = idGenerator.nextIdFor(type);
     Change change = Change.newInternalInstance();
 
@@ -91,15 +97,32 @@ public class Neo4JStorage implements Storage {
     return id;
   }
 
-  private <T extends SystemEntity> void updateRevision(T entity) {
+  private <T extends Entity> void updateRevision(T entity) {
     int rev = entity.getRev();
     entity.setRev(++rev);
   }
 
   @Override
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
-    // TODO Auto-generated method stub
-    return null;
+    try (Transaction transaction = db.beginTx()) {
+      String id = addAdministrativeValues(type, entity);
+      Node node = db.createNode();
+
+      EntityTypeWrapper<T> domainEntityWrapper = entityTypeWrapperFactory.createFromType(type);
+      EntityTypeWrapper<? super T> primitiveEntityWrapper = entityTypeWrapperFactory.createForPrimitive(type);
+
+      try {
+        domainEntityWrapper.addValuesToNode(node, entity);
+        primitiveEntityWrapper.addValuesToNode(node, entity);
+      } catch (ConversionException e) {
+        transaction.failure();
+        throw e;
+      }
+
+      transaction.success();
+
+      return id;
+    }
   }
 
   @Override
@@ -197,7 +220,7 @@ public class Neo4JStorage implements Storage {
       try {
         T entity = entityInstantiator.createInstanceOf(type);
 
-        EntityTypeWrapper<T> entityWrapper = objectWrapperFactory.createFromType(type);
+        EntityTypeWrapper<T> entityWrapper = entityTypeWrapperFactory.createFromType(type);
         entityWrapper.addValuesToEntity(entity, node);
 
         return entity;

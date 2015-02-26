@@ -20,7 +20,11 @@ public class EntityTypeWrapperFactory {
     addFieldWrappers(entityWrapper, type);
 
     return entityWrapper;
+  }
 
+  public <T extends Entity> EntityTypeWrapper<? super T> createForPrimitive(Class<T> type) {
+
+    return null;
   }
 
   @SuppressWarnings("unchecked")

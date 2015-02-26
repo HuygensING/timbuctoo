@@ -29,7 +29,8 @@ public abstract class PropertyMatcher<T, V> extends TypeSafeMatcher<T> {
 
   @Override
   protected boolean matchesSafely(T item) {
-    return matcher.matches(getItemValue(item));
+    boolean matches = matcher.matches(getItemValue(item));
+    return matches;
   }
 
   protected abstract V getItemValue(T item);

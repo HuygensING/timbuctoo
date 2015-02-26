@@ -14,7 +14,7 @@ public class TestSystemEntityWrapperMatcher extends CompositeMatcher<TestSystemE
     return new TestSystemEntityWrapperMatcher();
   }
 
-  public TestSystemEntityWrapperMatcher with(String id) {
+  public TestSystemEntityWrapperMatcher withId(String id) {
     addMatcher(new PropertyEqualtityMatcher<TestSystemEntityWrapper, String>("id", id) {
 
       @Override
