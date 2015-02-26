@@ -42,13 +42,17 @@ public abstract class AbstractFieldWrapper implements FieldWrapper {
     try {
       Object fieldValue = getFieldValue(entity);
 
-      if (fieldValue != null) {
+      if (shouldAddValue(fieldValue)) {
         node.setProperty(getName(), getFormattedValue(fieldValue));
       }
     } catch (IllegalArgumentException | IllegalAccessException e) {
       throw new ConversionException(e);
     }
 
+  }
+
+  protected boolean shouldAddValue(Object fieldValue) {
+    return fieldValue != null;
   }
 
   /* (non-Javadoc)
@@ -70,7 +74,7 @@ public abstract class AbstractFieldWrapper implements FieldWrapper {
     field.set(entity, convertValue(node.getProperty(getName()), field.getType()));
   }
 
-  protected abstract Object convertValue(Object value, Class<?> fieldType);
+  protected abstract Object convertValue(Object value, Class<?> fieldType) throws IllegalArgumentException;
 
   protected String getName() {
     return fieldType.propertyName(getContainingType(), fieldName);

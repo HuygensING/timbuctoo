@@ -1,18 +1,19 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayContaining;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Field;
+import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
@@ -22,74 +23,88 @@ import org.neo4j.graphdb.Node;
 
 import test.model.TestSystemEntityWrapper;
 
-public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
-  private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
-  private static final String FIELD_NAME = "stringValue";
+import com.google.common.collect.Lists;
+
+public class SimpleCollectionFieldWrapperTest implements FieldWrapperTest {
+
+  private static final int VALUE_4 = 4;
+  private static final int VALUE_3 = 3;
+  private static final int VALUE_2 = 2;
+  private static final int VALUE_1 = 1;
   private static final FieldType FIELD_TYPE = FieldType.REGULAR;
-  private SimpleValueFieldWrapper instance;
-  private Node nodeMock;
-  private Field field;
+  private static final Class<TestSystemEntityWrapper> CONTAINING_TYPE = TestSystemEntityWrapper.class;
+  private static final String FIELD_NAME = "primitiveCollection";
   private String propertyName;
+  private SimpleCollectionFieldWrapper instance;
+  private Node nodeMock;
   private TestSystemEntityWrapper entity;
 
   @Before
-  public void setUp() throws Exception {
-    entity = new TestSystemEntityWrapper();
-    nodeMock = mock(Node.class);
-    propertyName = FIELD_TYPE.propertyName(TYPE, FIELD_NAME);
-
-    field = TYPE.getDeclaredField(FIELD_NAME);
-    instance = new SimpleValueFieldWrapper();
+  public void setUp() throws NoSuchFieldException {
+    instance = new SimpleCollectionFieldWrapper();
     setupInstance(instance);
 
+    propertyName = FIELD_TYPE.propertyName(CONTAINING_TYPE, FIELD_NAME);
+
+    nodeMock = mock(Node.class);
+    entity = new TestSystemEntityWrapper();
   }
 
-  private void setupInstance(SimpleValueFieldWrapper simpleValueFieldWrapper) {
-    simpleValueFieldWrapper.setField(field);
-    simpleValueFieldWrapper.setFieldType(FIELD_TYPE);
-    simpleValueFieldWrapper.setName(FIELD_NAME);
-    simpleValueFieldWrapper.setContainingType(TYPE);
+  private void setupInstance(SimpleCollectionFieldWrapper simpleCollectionFieldWrapper) throws NoSuchFieldException {
+    simpleCollectionFieldWrapper.setField(CONTAINING_TYPE.getDeclaredField(FIELD_NAME));
+    simpleCollectionFieldWrapper.setFieldType(FIELD_TYPE);
+    simpleCollectionFieldWrapper.setContainingType(CONTAINING_TYPE);
+    simpleCollectionFieldWrapper.setName(FIELD_NAME);
   }
 
-  @Override
   @Test
+  @Override
   public void addValueToNodeSetsThePropertyWithTheFieldNameToTheValueOfTheNode() throws Exception {
-    // setup
-    String value = "value";
-    entity.setStringValue(value);
+    List<Integer> value = Lists.newArrayList(VALUE_1, VALUE_2, VALUE_3, VALUE_4);
+    entity.setPrimitiveCollection(value);
 
     // action
     instance.addValueToNode(nodeMock, entity);
 
     // verify
-    verify(nodeMock).setProperty(propertyName, value);
+    verify(nodeMock).setProperty(argThat(equalTo(propertyName)), argThat(arrayContaining(VALUE_1, VALUE_2, VALUE_3, VALUE_4)));
   }
 
-  @Override
   @Test
+  @Override
   public void addValueToNodeDoesNotSetIfTheValueIsNull() throws Exception {
-    // setup
-    String value = null;
-    entity.setStringValue(value);
+    List<Integer> nullValue = null;
+    entity.setPrimitiveCollection(nullValue);
 
     // action
     instance.addValueToNode(nodeMock, entity);
 
     // verify
-    verify(nodeMock, never()).setProperty(anyString(), any());
+    verifyZeroInteractions(nodeMock);
+  }
+
+  @Test
+  public void addValueToNodeDoesNotSetIfTheCollectionIsEmpty() throws Exception {
+    List<Integer> emptyCollection = Lists.newArrayList();
+    entity.setPrimitiveCollection(emptyCollection);
+
+    // action
+    instance.addValueToNode(nodeMock, entity);
+
+    // verify
+    verifyZeroInteractions(nodeMock);
   }
 
   @Test(expected = ConversionException.class)
   @Override
   public void addValueToNodeThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalAccessException() throws Exception {
     // setup
-    SimpleValueFieldWrapper instance = new SimpleValueFieldWrapper() {
+    SimpleCollectionFieldWrapper instance = new SimpleCollectionFieldWrapper() {
       @Override
       protected Object getFieldValue(Entity entity) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalAccessException();
       }
     };
-    setupInstance(instance);
 
     // action
     instance.addValueToNode(nodeMock, entity);
@@ -99,58 +114,54 @@ public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
   @Override
   public void addValueToNodeThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalArgumentExceptionIsThrown() throws Exception {
     // setup
-    SimpleValueFieldWrapper instance = new SimpleValueFieldWrapper() {
+    SimpleCollectionFieldWrapper instance = new SimpleCollectionFieldWrapper() {
       @Override
       protected Object getFieldValue(Entity entity) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalArgumentException();
       }
     };
-    setupInstance(instance);
 
     // action
     instance.addValueToNode(nodeMock, entity);
   }
 
-  @Test(expected = ConversionException.class)
   @Override
+  @Test(expected = ConversionException.class)
   public void addValueToNodeThrowsAConversionExceptionIfGetFormatedValueThrowsAnIllegalArgumentException() throws Exception {
-    String value = "value";
-    entity.setStringValue(value);
-
     // setup
-    SimpleValueFieldWrapper instance = new SimpleValueFieldWrapper() {
+    SimpleCollectionFieldWrapper instance = new SimpleCollectionFieldWrapper() {
       @Override
       protected Object getFormattedValue(Object fieldValue) throws IllegalArgumentException {
         throw new IllegalArgumentException();
       }
     };
+
     setupInstance(instance);
+    entity.setPrimitiveCollection(Lists.newArrayList(VALUE_1, VALUE_2, VALUE_3, VALUE_4));
 
     // action
     instance.addValueToNode(nodeMock, entity);
   }
 
-  @Override
   @Test
+  @Override
   public void addValueToEntitySetTheFieldOfTheEntityWithTheValue() throws Exception {
-    // setup 
+    // setup
     when(nodeMock.hasProperty(propertyName)).thenReturn(true);
-    String value = "stringValue";
-    when(nodeMock.getProperty(propertyName)).thenReturn(value);
+    when(nodeMock.getProperty(propertyName)).thenReturn(new int[] { VALUE_1, VALUE_2, VALUE_3, VALUE_4 });
 
     // action
     instance.addValueToEntity(entity, nodeMock);
 
     // verify
-    assertThat(entity.getStringValue(), is(equalTo(value)));
+    assertThat(entity.getPrimitiveCollection(), is(contains(VALUE_1, VALUE_2, VALUE_3, VALUE_4)));
     verify(nodeMock).hasProperty(propertyName);
     verify(nodeMock).getProperty(propertyName);
     verifyNoMoreInteractions(nodeMock);
-
   }
 
-  @Override
   @Test
+  @Override
   public void addValueToEntityDoesNothingIfThePropertyDoesNotExist() throws Exception {
     // setup
     when(nodeMock.hasProperty(propertyName)).thenReturn(false);
@@ -159,7 +170,7 @@ public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
     instance.addValueToEntity(entity, nodeMock);
 
     // verify
-    assertThat(entity.getStringValue(), is(nullValue()));
+    assertThat(entity.getPrimitiveCollection(), is(nullValue()));
     verify(nodeMock).hasProperty(propertyName);
     verifyNoMoreInteractions(nodeMock);
   }
@@ -167,41 +178,40 @@ public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
   @Test(expected = ConversionException.class)
   @Override
   public void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnIllegalAccessExceptionIsThrown() throws Exception {
-    // setup 
+    // setup
     when(nodeMock.hasProperty(propertyName)).thenReturn(true);
-    String value = "stringValue";
-    when(nodeMock.getProperty(propertyName)).thenReturn(value);
+    when(nodeMock.getProperty(propertyName)).thenReturn(new int[] { VALUE_1, VALUE_2, VALUE_3, VALUE_4 });
 
-    SimpleValueFieldWrapper instance = new SimpleValueFieldWrapper() {
+    SimpleCollectionFieldWrapper instance = new SimpleCollectionFieldWrapper() {
       @Override
-      protected void fillField(nl.knaw.huygens.timbuctoo.model.Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException {
+      protected void fillField(Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalAccessException();
       }
     };
+
     setupInstance(instance);
 
     // action
     instance.addValueToEntity(entity, nodeMock);
-
   }
 
   @Test(expected = ConversionException.class)
   @Override
   public void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnAnIllegalArgumentExceptionIsThrown() throws Exception {
-    // setup 
+    // setup
     when(nodeMock.hasProperty(propertyName)).thenReturn(true);
-    String value = "stringValue";
-    when(nodeMock.getProperty(propertyName)).thenReturn(value);
+    when(nodeMock.getProperty(propertyName)).thenReturn(new int[] { VALUE_1, VALUE_2, VALUE_3, VALUE_4 });
 
-    SimpleValueFieldWrapper instance = new SimpleValueFieldWrapper() {
+    SimpleCollectionFieldWrapper instance = new SimpleCollectionFieldWrapper() {
       @Override
-      protected void fillField(nl.knaw.huygens.timbuctoo.model.Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException {
+      protected void fillField(Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalArgumentException();
       }
     };
+
     setupInstance(instance);
 
-    //action
+    // action
     instance.addValueToEntity(entity, nodeMock);
   }
 

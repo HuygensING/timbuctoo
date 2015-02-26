@@ -91,7 +91,7 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
 
   @Test(expected = ConversionException.class)
   @Override
-  public void addValueToNodeThrowsAConversionExceptionAnIllegalAccessExceptionIsThrown() throws Exception {
+  public void addValueToNodeThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalAccessException() throws Exception {
     // setup
     ObjectValueFieldWrapper instance = new ObjectValueFieldWrapper() {
       @Override
@@ -107,11 +107,31 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
 
   @Test(expected = ConversionException.class)
   @Override
-  public void addValueToNodeThrowsAConversionExceptionAnIllegalArgumentExceptionIsThrown() throws Exception {
+  public void addValueToNodeThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalArgumentExceptionIsThrown() throws Exception {
     // setup
     ObjectValueFieldWrapper instance = new ObjectValueFieldWrapper() {
       @Override
       protected Object getFieldValue(Entity entity) throws IllegalArgumentException, IllegalAccessException {
+        throw new IllegalArgumentException();
+      }
+    };
+    setupInstance(instance);
+
+    // action
+    instance.addValueToNode(nodeMock, containingEntity);
+  }
+
+  @Test(expected = ConversionException.class)
+  @Override
+  public void addValueToNodeThrowsAConversionExceptionIfGetFormatedValueThrowsAnIllegalArgumentException() throws Exception {
+    // setup
+    Change change = new Change(87l, "userId", "vreId");
+    containingEntity.setObjectValue(change);
+
+    // setup
+    ObjectValueFieldWrapper instance = new ObjectValueFieldWrapper() {
+      @Override
+      protected Object getFormattedValue(Object fieldValue) throws IllegalArgumentException {
         throw new IllegalArgumentException();
       }
     };
@@ -156,7 +176,7 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
 
   @Test(expected = ConversionException.class)
   @Override
-  public void addValueToEntityThrowsAConversionExceptionWhenAnIllegalAccessExceptionIsThrown() throws Exception {
+  public void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnIllegalAccessExceptionIsThrown() throws Exception {
     // setup
     Change value = new Change(87l, "userId", "vreId");
     when(nodeMock.hasProperty(propertyName)).thenReturn(true);
@@ -177,7 +197,7 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
 
   @Test(expected = ConversionException.class)
   @Override
-  public void addValueToEntityThrowsAConversionExceptionWhenAnIllegalArgumentExceptionIsThrown() throws Exception {
+  public void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnAnIllegalArgumentExceptionIsThrown() throws Exception {
     // setup
     Change value = new Change(87l, "userId", "vreId");
     when(nodeMock.hasProperty(propertyName)).thenReturn(true);
