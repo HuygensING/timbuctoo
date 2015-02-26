@@ -17,17 +17,22 @@ public class EntityTypeWrapperFactory {
     this.fieldWrapperFactory = fieldWrapperFactory;
   }
 
-  public <T extends Entity> EntityTypeWrapper<T> createFromType(Class<T> type) {
+  public <T extends Entity> EntityTypeWrapper<T> createForType(Class<T> type) {
     EntityTypeWrapper<T> entityWrapper = createEntityWrapper(type);
     addFieldWrappers(entityWrapper, type);
 
     return entityWrapper;
   }
 
+  /**
+   * Creates an EntityTypeWrapper for the primitive class of type.
+   * @param type a DomainEntity type to find the primitive class for 
+   * @return an EntityTypeWrapper for the primitive of type. This could be type itself.
+   */
   @SuppressWarnings("unchecked")
   public <T extends DomainEntity> EntityTypeWrapper<? super T> createForPrimitive(Class<T> type) {
     Class<? extends DomainEntity> primitive = TypeRegistry.toBaseDomainEntity(type);
-    EntityTypeWrapper<? extends DomainEntity> entityTypeWrapper = this.createFromType(primitive);
+    EntityTypeWrapper<? extends DomainEntity> entityTypeWrapper = this.createForType(primitive);
 
     return (EntityTypeWrapper<? super T>) entityTypeWrapper;
   }

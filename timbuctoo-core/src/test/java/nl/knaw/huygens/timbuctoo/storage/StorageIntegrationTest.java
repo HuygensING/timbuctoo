@@ -443,6 +443,7 @@ public abstract class StorageIntegrationTest {
     domainEntityToStore.setProjectAPersonProperty(projectAPersonProperty);
     domainEntityToStore.setBirthDate(birthDate);
     domainEntityToStore.setDeathDate(deathDate);
+    domainEntityToStore.setTypes(Lists.newArrayList("Test"));
 
     return domainEntityToStore;
   }

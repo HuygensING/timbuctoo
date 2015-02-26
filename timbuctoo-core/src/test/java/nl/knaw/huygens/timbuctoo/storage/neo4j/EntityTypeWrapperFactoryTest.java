@@ -51,14 +51,14 @@ public class EntityTypeWrapperFactoryTest {
   }
 
   @Test
-  public void createFromTypeAddsAFieldWrapperForEachField() throws Exception {
+  public void createForTypeAddsAFieldWrapperForEachField() throws Exception {
     // setup
     int numberOfFields = getNumberOfFields(SYSTEM_ENTITY_TYPE);
     numberOfFields += getNumberOfFields(SystemEntity.class);
     numberOfFields += getNumberOfFields(Entity.class);
 
     // action
-    EntityTypeWrapper<TestSystemEntityWrapper> entityWrapper = instance.createFromType(SYSTEM_ENTITY_TYPE);
+    EntityTypeWrapper<TestSystemEntityWrapper> entityWrapper = instance.createForType(SYSTEM_ENTITY_TYPE);
 
     // verify
     verify(fieldWrapperFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(SYSTEM_ENTITY_TYPE)), any(Field.class));

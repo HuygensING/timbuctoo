@@ -65,7 +65,7 @@ public class Neo4JStorage implements Storage {
       try {
         String id = addAdministrativeValues(type, entity);
 
-        EntityTypeWrapper<T> objectWrapper = entityTypeWrapperFactory.createFromType(type);
+        EntityTypeWrapper<T> objectWrapper = entityTypeWrapperFactory.createForType(type);
         Node node = db.createNode();
 
         objectWrapper.addValuesToNode(node, entity);
@@ -108,7 +108,7 @@ public class Neo4JStorage implements Storage {
       String id = addAdministrativeValues(type, entity);
       Node node = db.createNode();
 
-      EntityTypeWrapper<T> domainEntityWrapper = entityTypeWrapperFactory.createFromType(type);
+      EntityTypeWrapper<T> domainEntityWrapper = entityTypeWrapperFactory.createForType(type);
       EntityTypeWrapper<? super T> primitiveEntityWrapper = entityTypeWrapperFactory.createForPrimitive(type);
 
       try {
@@ -220,7 +220,7 @@ public class Neo4JStorage implements Storage {
       try {
         T entity = entityInstantiator.createInstanceOf(type);
 
-        EntityTypeWrapper<T> entityWrapper = entityTypeWrapperFactory.createFromType(type);
+        EntityTypeWrapper<T> entityWrapper = entityTypeWrapperFactory.createForType(type);
         entityWrapper.addValuesToEntity(entity, node);
 
         return entity;
