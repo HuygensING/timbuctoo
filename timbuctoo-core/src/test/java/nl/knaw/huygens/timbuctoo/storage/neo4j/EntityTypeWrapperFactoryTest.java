@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -8,17 +10,22 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import test.model.BaseDomainEntity;
 import test.model.TestSystemEntityWrapper;
+import test.model.projecta.SubADomainEntity;
 
 public class EntityTypeWrapperFactoryTest {
 
-  private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
+  private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
+  private static final Class<BaseDomainEntity> PRIMITIVE_DOMAIN_ENTITY_TYPE = BaseDomainEntity.class;
+  private static final Class<TestSystemEntityWrapper> SYSTEM_ENTITY_TYPE = TestSystemEntityWrapper.class;
   private EntityTypeWrapperFactory instance;
   @SuppressWarnings("rawtypes")
   private EntityTypeWrapper entityWrapperMock;
@@ -43,23 +50,37 @@ public class EntityTypeWrapperFactoryTest {
     };
   }
 
-  private int countNumberOfFields() {
-    int numberOfFields = TYPE.getDeclaredFields().length;
-    numberOfFields += SystemEntity.class.getDeclaredFields().length;
-    numberOfFields += Entity.class.getDeclaredFields().length;
-    return numberOfFields;
-  }
-
   @Test
   public void createFromTypeAddsAFieldWrapperForEachField() throws Exception {
     // setup
-    int numberOfFields = countNumberOfFields();
+    int numberOfFields = getNumberOfFields(SYSTEM_ENTITY_TYPE);
+    numberOfFields += getNumberOfFields(SystemEntity.class);
+    numberOfFields += getNumberOfFields(Entity.class);
 
     // action
-    EntityTypeWrapper<TestSystemEntityWrapper> entityWrapper = instance.createFromType(TYPE);
+    EntityTypeWrapper<TestSystemEntityWrapper> entityWrapper = instance.createFromType(SYSTEM_ENTITY_TYPE);
 
     // verify
+    verify(fieldWrapperFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(SYSTEM_ENTITY_TYPE)), any(Field.class));
     verify(entityWrapper, times(numberOfFields)).addFieldWrapper(fieldWrapperMock);
   }
 
+  @Test
+  public void createForPrimitiveRetrievesThePrimitiveDomainEntityAndCreatesAFieldWrapperForIt() {
+    // setup
+    int numberOfFields = getNumberOfFields(PRIMITIVE_DOMAIN_ENTITY_TYPE);
+    numberOfFields += getNumberOfFields(DomainEntity.class);
+    numberOfFields += getNumberOfFields(Entity.class);
+
+    // action
+    EntityTypeWrapper<? super SubADomainEntity> wrapper = instance.createForPrimitive(DOMAIN_ENTITY_TYPE);
+
+    // verify
+    verify(fieldWrapperFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(PRIMITIVE_DOMAIN_ENTITY_TYPE)), any(Field.class));
+    verify(wrapper, times(numberOfFields)).addFieldWrapper(fieldWrapperMock);
+  }
+
+  private int getNumberOfFields(Class<? extends Entity> type) {
+    return type.getDeclaredFields().length;
+  }
 }

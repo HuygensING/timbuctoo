@@ -2,6 +2,8 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import java.lang.reflect.Field;
 
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import com.google.inject.Inject;
@@ -22,19 +24,26 @@ public class EntityTypeWrapperFactory {
     return entityWrapper;
   }
 
-  public <T extends Entity> EntityTypeWrapper<? super T> createForPrimitive(Class<T> type) {
+  @SuppressWarnings("unchecked")
+  public <T extends DomainEntity> EntityTypeWrapper<? super T> createForPrimitive(Class<T> type) {
+    Class<? extends DomainEntity> primitive = TypeRegistry.toBaseDomainEntity(type);
+    EntityTypeWrapper<? extends DomainEntity> entityTypeWrapper = this.createFromType(primitive);
 
-    return null;
+    return (EntityTypeWrapper<? super T>) entityTypeWrapper;
   }
 
   @SuppressWarnings("unchecked")
   private <T extends Entity> void addFieldWrappers(EntityTypeWrapper<T> objectWrapper, Class<T> type) {
-    for (Field field : type.getDeclaredFields()) {
-      objectWrapper.addFieldWrapper(fieldWrapperFactory.wrap(type, field));
+    for (Class<? extends Entity> typeToGetFieldsFrom = type; isEntity(typeToGetFieldsFrom); typeToGetFieldsFrom = (Class<? extends Entity>) typeToGetFieldsFrom.getSuperclass()) {
+
+      for (Field field : typeToGetFieldsFrom.getDeclaredFields()) {
+        objectWrapper.addFieldWrapper(fieldWrapperFactory.wrap(type, field));
+      }
     }
-    if (type != Entity.class) {
-      addFieldWrappers(objectWrapper, (Class<T>) type.getSuperclass());
-    }
+  }
+
+  private boolean isEntity(Class<? extends Entity> typeToGetFieldsFrom) {
+    return Entity.class.isAssignableFrom(typeToGetFieldsFrom);
   }
 
   protected <T extends Entity> EntityTypeWrapper<T> createEntityWrapper(Class<T> type) {

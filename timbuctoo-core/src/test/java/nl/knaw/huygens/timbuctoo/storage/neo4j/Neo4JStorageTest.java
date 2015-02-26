@@ -17,6 +17,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
@@ -177,7 +178,7 @@ public class Neo4JStorageTest {
     }
   }
 
-  private <T extends Entity> EntityTypeWrapper<? super T> entityTypeWrapperFactoryCreatesAnEntityWrapperTypeForSuperType(Class<T> type) {
+  private <T extends DomainEntity> EntityTypeWrapper<? super T> entityTypeWrapperFactoryCreatesAnEntityWrapperTypeForSuperType(Class<T> type) {
     @SuppressWarnings("unchecked")
     EntityTypeWrapper<? super T> entityWrapper = mock(EntityTypeWrapper.class);
     doReturn(entityWrapper).when(entityWrapperFactoryMock).createForPrimitive(type);
