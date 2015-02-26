@@ -6,7 +6,13 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-public class SimpleCollectionFieldWrapper extends AbstractFieldWrapper {
+public class SimpleCollectionFieldWrapper<T> extends AbstractFieldWrapper {
+
+  private final Class<T> componentType;
+
+  public SimpleCollectionFieldWrapper(Class<T> componentType) {
+    this.componentType = componentType;
+  }
 
   @Override
   protected Object convertValue(Object value, Class<?> fieldType) {
@@ -35,7 +41,9 @@ public class SimpleCollectionFieldWrapper extends AbstractFieldWrapper {
   protected Object getFormattedValue(Object fieldValue) throws IllegalArgumentException {
     Collection<?> col = (Collection<?>) fieldValue;
 
-    return col.toArray();
-  }
+    @SuppressWarnings("unchecked")
+    T[] array = (T[]) Array.newInstance(componentType, col.size());
 
+    return col.toArray(array);
+  }
 }

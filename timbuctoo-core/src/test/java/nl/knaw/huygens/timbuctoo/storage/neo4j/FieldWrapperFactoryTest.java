@@ -23,6 +23,7 @@ public class FieldWrapperFactoryTest {
   private static final Class<ObjectValueFieldWrapper> OBJECT_WRAPPER_TYPE = ObjectValueFieldWrapper.class;
   private static final Class<SimpleValueFieldWrapper> SIMPLE_VALUE_WRAPPER_TYPE = SimpleValueFieldWrapper.class;
   private static final Class<NoOpFieldWrapper> NO_OP_WRAPPER_TYPE = NoOpFieldWrapper.class;
+  @SuppressWarnings("rawtypes")
   private static final Class<SimpleCollectionFieldWrapper> SIMPLE_COLLECTION_FIELD_WRAPPER_TYPE = SimpleCollectionFieldWrapper.class;
   private static final TestSystemEntityWrapper TEST_SYSTEM_ENTITY = new TestSystemEntityWrapper();
   private FieldWrapperFactory instance;
@@ -49,9 +50,10 @@ public class FieldWrapperFactoryTest {
       }
 
       @Override
-      protected FieldWrapper createSimpleCollectionFieldWrapper() {
+      protected <T> FieldWrapper createSimpleCollectionFieldWrapper(Class<T> componentType) {
         return mock(SIMPLE_COLLECTION_FIELD_WRAPPER_TYPE);
       }
+
     };
   }
 
@@ -78,16 +80,16 @@ public class FieldWrapperFactoryTest {
 
   @Test
   public void wrapCreatesASimpleCollectionFieldWrapperIfTheFieldContainsAPrimitiveCollection() throws Exception {
-    Field longWrapperField = getField(TYPE, "primitiveCollection");
+    Field primitiveCollectionField = getField(TYPE, "primitiveCollection");
 
-    testWrap(TEST_SYSTEM_ENTITY, longWrapperField, SIMPLE_COLLECTION_FIELD_WRAPPER_TYPE);
+    testWrap(TEST_SYSTEM_ENTITY, primitiveCollectionField, SIMPLE_COLLECTION_FIELD_WRAPPER_TYPE);
   }
 
   @Test
   public void wrapCreatesASimpleCollectionFieldWrapperIfTheFieldContainsAStringCollection() throws Exception {
-    Field longWrapperField = getField(TYPE, "stringCollection");
+    Field stringCollectionField = getField(TYPE, "stringCollection");
 
-    testWrap(TEST_SYSTEM_ENTITY, longWrapperField, SIMPLE_COLLECTION_FIELD_WRAPPER_TYPE);
+    testWrap(TEST_SYSTEM_ENTITY, stringCollectionField, SIMPLE_COLLECTION_FIELD_WRAPPER_TYPE);
   }
 
   @Test

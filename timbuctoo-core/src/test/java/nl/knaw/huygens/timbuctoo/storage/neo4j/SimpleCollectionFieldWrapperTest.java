@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.SimpleArrayMatcher.isSimpleArrayOfType;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -27,6 +27,7 @@ import com.google.common.collect.Lists;
 
 public class SimpleCollectionFieldWrapperTest implements FieldWrapperTest {
 
+  private static final Class<Integer> COMPONENT_TYPE = Integer.class;
   private static final int VALUE_4 = 4;
   private static final int VALUE_3 = 3;
   private static final int VALUE_2 = 2;
@@ -35,13 +36,13 @@ public class SimpleCollectionFieldWrapperTest implements FieldWrapperTest {
   private static final Class<TestSystemEntityWrapper> CONTAINING_TYPE = TestSystemEntityWrapper.class;
   private static final String FIELD_NAME = "primitiveCollection";
   private String propertyName;
-  private SimpleCollectionFieldWrapper instance;
+  private SimpleCollectionFieldWrapper<Integer> instance;
   private Node nodeMock;
   private TestSystemEntityWrapper entity;
 
   @Before
   public void setUp() throws NoSuchFieldException {
-    instance = new SimpleCollectionFieldWrapper();
+    instance = new SimpleCollectionFieldWrapper<Integer>(COMPONENT_TYPE);
     setupInstance(instance);
 
     propertyName = FIELD_TYPE.propertyName(CONTAINING_TYPE, FIELD_NAME);
@@ -50,7 +51,7 @@ public class SimpleCollectionFieldWrapperTest implements FieldWrapperTest {
     entity = new TestSystemEntityWrapper();
   }
 
-  private void setupInstance(SimpleCollectionFieldWrapper simpleCollectionFieldWrapper) throws NoSuchFieldException {
+  private void setupInstance(SimpleCollectionFieldWrapper<Integer> simpleCollectionFieldWrapper) throws NoSuchFieldException {
     simpleCollectionFieldWrapper.setField(CONTAINING_TYPE.getDeclaredField(FIELD_NAME));
     simpleCollectionFieldWrapper.setFieldType(FIELD_TYPE);
     simpleCollectionFieldWrapper.setContainingType(CONTAINING_TYPE);
@@ -67,7 +68,9 @@ public class SimpleCollectionFieldWrapperTest implements FieldWrapperTest {
     instance.addValueToNode(nodeMock, entity);
 
     // verify
-    verify(nodeMock).setProperty(argThat(equalTo(propertyName)), argThat(arrayContaining(VALUE_1, VALUE_2, VALUE_3, VALUE_4)));
+    verify(nodeMock).setProperty(argThat(equalTo(propertyName)), //
+        argThat(isSimpleArrayOfType(COMPONENT_TYPE) //
+            .withValues(VALUE_1, VALUE_2, VALUE_3, VALUE_4)));
   }
 
   @Test
@@ -99,7 +102,7 @@ public class SimpleCollectionFieldWrapperTest implements FieldWrapperTest {
   @Override
   public void addValueToNodeThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalAccessException() throws Exception {
     // setup
-    SimpleCollectionFieldWrapper instance = new SimpleCollectionFieldWrapper() {
+    SimpleCollectionFieldWrapper<Integer> instance = new SimpleCollectionFieldWrapper<Integer>(COMPONENT_TYPE) {
       @Override
       protected Object getFieldValue(Entity entity) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalAccessException();
@@ -114,7 +117,7 @@ public class SimpleCollectionFieldWrapperTest implements FieldWrapperTest {
   @Override
   public void addValueToNodeThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalArgumentExceptionIsThrown() throws Exception {
     // setup
-    SimpleCollectionFieldWrapper instance = new SimpleCollectionFieldWrapper() {
+    SimpleCollectionFieldWrapper<Integer> instance = new SimpleCollectionFieldWrapper<Integer>(COMPONENT_TYPE) {
       @Override
       protected Object getFieldValue(Entity entity) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalArgumentException();
@@ -129,7 +132,7 @@ public class SimpleCollectionFieldWrapperTest implements FieldWrapperTest {
   @Test(expected = ConversionException.class)
   public void addValueToNodeThrowsAConversionExceptionIfGetFormatedValueThrowsAnIllegalArgumentException() throws Exception {
     // setup
-    SimpleCollectionFieldWrapper instance = new SimpleCollectionFieldWrapper() {
+    SimpleCollectionFieldWrapper<Integer> instance = new SimpleCollectionFieldWrapper<Integer>(COMPONENT_TYPE) {
       @Override
       protected Object getFormattedValue(Object fieldValue) throws IllegalArgumentException {
         throw new IllegalArgumentException();
@@ -182,7 +185,7 @@ public class SimpleCollectionFieldWrapperTest implements FieldWrapperTest {
     when(nodeMock.hasProperty(propertyName)).thenReturn(true);
     when(nodeMock.getProperty(propertyName)).thenReturn(new int[] { VALUE_1, VALUE_2, VALUE_3, VALUE_4 });
 
-    SimpleCollectionFieldWrapper instance = new SimpleCollectionFieldWrapper() {
+    SimpleCollectionFieldWrapper<Integer> instance = new SimpleCollectionFieldWrapper<Integer>(COMPONENT_TYPE) {
       @Override
       protected void fillField(Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalAccessException();
@@ -202,7 +205,7 @@ public class SimpleCollectionFieldWrapperTest implements FieldWrapperTest {
     when(nodeMock.hasProperty(propertyName)).thenReturn(true);
     when(nodeMock.getProperty(propertyName)).thenReturn(new int[] { VALUE_1, VALUE_2, VALUE_3, VALUE_4 });
 
-    SimpleCollectionFieldWrapper instance = new SimpleCollectionFieldWrapper() {
+    SimpleCollectionFieldWrapper<Integer> instance = new SimpleCollectionFieldWrapper<Integer>(COMPONENT_TYPE) {
       @Override
       protected void fillField(Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalArgumentException();

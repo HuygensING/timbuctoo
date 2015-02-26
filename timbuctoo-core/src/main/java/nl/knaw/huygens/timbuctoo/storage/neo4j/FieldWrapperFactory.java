@@ -35,10 +35,22 @@ public class FieldWrapperFactory {
     } else if (isSimpleValue(field)) {
       return createSimpleValueFieldWrapper();
     } else if (isSimpleCollection(field)) {
-      return createSimpleCollectionFieldWrapper();
+      return createSimpleCollectionFieldWrapper(getComponentType(field));
     }
 
     return createObjectValueFieldWrapper();
+  }
+
+  private Class<?> getComponentType(Field field) {
+    Type[] actualTypeArguments = ((ParameterizedType) field.getGenericType()).getActualTypeArguments();
+
+    if (actualTypeArguments.length <= 0) {
+      return null;
+    }
+
+    Type firstTypeArgument = actualTypeArguments[0];
+    return firstTypeArgument instanceof Class<?> ? (Class<?>) firstTypeArgument : null;
+
   }
 
   private boolean isSimpleCollection(Field field) {
@@ -47,13 +59,13 @@ public class FieldWrapperFactory {
   }
 
   private boolean hasSimpleTypeArgument(Field field) {
-    Type[] actualTypeArguments = ((ParameterizedType) field.getGenericType()).getActualTypeArguments();
+    Class<?> componentType = getComponentType(field);
 
-    if (actualTypeArguments.length <= 0) {
+    if (componentType == null) {
       return false;
     }
 
-    return actualTypeArguments[0] instanceof Class ? isSimpleValueType((Class<?>) actualTypeArguments[0]) : false;
+    return componentType instanceof Class ? isSimpleValueType(componentType) : false;
   }
 
   private boolean isSimpleValue(Field field) {
@@ -78,8 +90,8 @@ public class FieldWrapperFactory {
     return new NoOpFieldWrapper();
   }
 
-  protected FieldWrapper createSimpleCollectionFieldWrapper() {
-    return new SimpleCollectionFieldWrapper();
+  protected <T> FieldWrapper createSimpleCollectionFieldWrapper(Class<T> componentType) {
+    return new SimpleCollectionFieldWrapper<T>(componentType);
   }
 
 }
