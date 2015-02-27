@@ -36,9 +36,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * where properties are set and modified. The type of these properties
  * is not relevant for that purpose, so we simply use strings.
  */
-@IDPrefix("TSYW")
+@IDPrefix(TestSystemEntityWrapper.ID_PREFIX)
 public class TestSystemEntityWrapper extends SystemEntity {
 
+  public static final String ID_PREFIX = "TSYW";
   public static final String ANNOTED_GETTER_NAME = "annotedGetter";
   public static final String ANOTATED_PROPERTY_NAME = "something";
 

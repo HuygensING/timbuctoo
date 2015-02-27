@@ -32,8 +32,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * where properties are set and modified. The type of these properties
  * is not relevant for that purpose, so we simply use strings.
  */
-@IDPrefix("TDOM")
+@IDPrefix(BaseDomainEntity.ID_PREFIX)
 public class BaseDomainEntity extends DomainEntity {
+
+  public static final String ID_PREFIX = "TDOM";
 
   @JsonProperty("^sharedValue")
   private String sharedValue;

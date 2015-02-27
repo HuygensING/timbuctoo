@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 import java.util.UUID;
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 public class IdGenerator {
@@ -13,9 +14,10 @@ public class IdGenerator {
   }
 
   private String getIdPrefix(Class<? extends Entity> type) {
-    IDPrefix idPrefix = type.getAnnotation(IDPrefix.class);
+    Class<? extends Entity> baseType = TypeRegistry.getBaseClass(type);
+
+    IDPrefix idPrefix = baseType.getAnnotation(IDPrefix.class);
 
     return idPrefix != null ? idPrefix.value() : "UNKN";
   }
-
 }
