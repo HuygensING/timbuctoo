@@ -13,20 +13,22 @@ import com.google.common.collect.Lists;
 public class EntityTypeWrapper<T extends Entity> {
 
   private List<FieldWrapper> fieldWrappers;
+  private Class<T> type;
 
-  public EntityTypeWrapper() {
+  public EntityTypeWrapper(Class<T> type) {
+    this.type = type;
     fieldWrappers = Lists.newArrayList();
   }
 
   public void addValuesToNode(Node node, T entity) throws ConversionException {
-    addName(node, entity);
+    addName(node);
     for (FieldWrapper fieldWrapper : fieldWrappers) {
       fieldWrapper.addValueToNode(node, entity);
     }
   }
 
-  private void addName(Node node, T entity) {
-    node.addLabel(DynamicLabel.label(TypeNames.getInternalName(entity.getClass())));
+  private void addName(Node node) {
+    node.addLabel(DynamicLabel.label(TypeNames.getInternalName(type)));
   }
 
   public void addValuesToEntity(T entity, Node node) throws ConversionException {

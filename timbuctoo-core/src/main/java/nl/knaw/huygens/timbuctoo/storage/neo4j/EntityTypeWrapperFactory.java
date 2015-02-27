@@ -52,6 +52,6 @@ public class EntityTypeWrapperFactory {
   }
 
   protected <T extends Entity> EntityTypeWrapper<T> createEntityWrapper(Class<T> type) {
-    return new EntityTypeWrapper<T>();
+    return new EntityTypeWrapper<T>(type);
   }
 }

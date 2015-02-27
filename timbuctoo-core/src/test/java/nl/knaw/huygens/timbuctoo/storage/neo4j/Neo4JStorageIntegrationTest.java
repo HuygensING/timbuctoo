@@ -15,7 +15,6 @@ public class Neo4JStorageIntegrationTest extends StorageIntegrationTest {
   }
 
   @Test
-  @Ignore
   @Override
   public void addDomainEntityAddsADomainEntityAndItsPrimitiveVersieToTheDatabase() throws Exception {
     // TODO Auto-generated method stub

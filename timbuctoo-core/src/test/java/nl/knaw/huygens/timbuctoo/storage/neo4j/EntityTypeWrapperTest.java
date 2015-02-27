@@ -28,7 +28,7 @@ public class EntityTypeWrapperTest {
     fieldWrapperMock2 = mock(FieldWrapper.class);
     nodeMock = mock(Node.class);
 
-    instance = new EntityTypeWrapper<TestSystemEntityWrapper>();
+    instance = new EntityTypeWrapper<TestSystemEntityWrapper>(TYPE);
     instance.addFieldWrapper(fieldWrapperMock1);
     instance.addFieldWrapper(fieldWrapperMock2);
   }
