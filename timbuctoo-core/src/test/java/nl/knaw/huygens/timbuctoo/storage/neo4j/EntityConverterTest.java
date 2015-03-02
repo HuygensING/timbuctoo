@@ -68,6 +68,7 @@ public class EntityConverterTest {
     verify(fieldWrapperMock2).addValueToEntity(ENTITY, nodeMock);
   }
 
+  @Test(expected = ConversionException.class)
   public void addValuesToEntityThrowsAConversionExceptionIfAFieldWrapperAddValueToEntityThrowsOne() throws Exception {
     // setup
     doThrow(ConversionException.class).when(fieldWrapperMock1).addValueToEntity(ENTITY, nodeMock);
