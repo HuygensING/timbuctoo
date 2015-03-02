@@ -22,11 +22,11 @@ import org.neo4j.graphdb.Node;
 
 import test.model.TestSystemEntityWrapper;
 
-public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
+public class SimpleValueFieldConverterTest implements FieldConverterTest {
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
   private static final String FIELD_NAME = "stringValue";
   private static final FieldType FIELD_TYPE = FieldType.REGULAR;
-  private SimpleValueFieldWrapper instance;
+  private SimpleValueFieldConverter instance;
   private Node nodeMock;
   private Field field;
   private String propertyName;
@@ -39,12 +39,12 @@ public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
     propertyName = FIELD_TYPE.propertyName(TYPE, FIELD_NAME);
 
     field = TYPE.getDeclaredField(FIELD_NAME);
-    instance = new SimpleValueFieldWrapper();
+    instance = new SimpleValueFieldConverter();
     setupInstance(instance);
 
   }
 
-  private void setupInstance(SimpleValueFieldWrapper simpleValueFieldWrapper) {
+  private void setupInstance(SimpleValueFieldConverter simpleValueFieldWrapper) {
     simpleValueFieldWrapper.setField(field);
     simpleValueFieldWrapper.setFieldType(FIELD_TYPE);
     simpleValueFieldWrapper.setName(FIELD_NAME);
@@ -83,7 +83,7 @@ public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
   @Override
   public void addValueToNodeThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalAccessException() throws Exception {
     // setup
-    SimpleValueFieldWrapper instance = new SimpleValueFieldWrapper() {
+    SimpleValueFieldConverter instance = new SimpleValueFieldConverter() {
       @Override
       protected Object getFieldValue(Entity entity) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalAccessException();
@@ -99,7 +99,7 @@ public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
   @Override
   public void addValueToNodeThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalArgumentExceptionIsThrown() throws Exception {
     // setup
-    SimpleValueFieldWrapper instance = new SimpleValueFieldWrapper() {
+    SimpleValueFieldConverter instance = new SimpleValueFieldConverter() {
       @Override
       protected Object getFieldValue(Entity entity) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalArgumentException();
@@ -118,7 +118,7 @@ public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
     entity.setStringValue(value);
 
     // setup
-    SimpleValueFieldWrapper instance = new SimpleValueFieldWrapper() {
+    SimpleValueFieldConverter instance = new SimpleValueFieldConverter() {
       @Override
       protected Object getFormattedValue(Object fieldValue) throws IllegalArgumentException {
         throw new IllegalArgumentException();
@@ -172,7 +172,7 @@ public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
     String value = "stringValue";
     when(nodeMock.getProperty(propertyName)).thenReturn(value);
 
-    SimpleValueFieldWrapper instance = new SimpleValueFieldWrapper() {
+    SimpleValueFieldConverter instance = new SimpleValueFieldConverter() {
       @Override
       protected void fillField(nl.knaw.huygens.timbuctoo.model.Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalAccessException();
@@ -193,7 +193,7 @@ public class SimpleValueFieldWrapperTest implements FieldWrapperTest {
     String value = "stringValue";
     when(nodeMock.getProperty(propertyName)).thenReturn(value);
 
-    SimpleValueFieldWrapper instance = new SimpleValueFieldWrapper() {
+    SimpleValueFieldConverter instance = new SimpleValueFieldConverter() {
       @Override
       protected void fillField(nl.knaw.huygens.timbuctoo.model.Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalArgumentException();

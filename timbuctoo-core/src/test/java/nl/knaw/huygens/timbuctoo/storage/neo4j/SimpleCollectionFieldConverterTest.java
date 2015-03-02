@@ -25,7 +25,7 @@ import test.model.TestSystemEntityWrapper;
 
 import com.google.common.collect.Lists;
 
-public class SimpleCollectionFieldWrapperTest implements FieldWrapperTest {
+public class SimpleCollectionFieldConverterTest implements FieldConverterTest {
 
   private static final Class<Integer> COMPONENT_TYPE = Integer.class;
   private static final int VALUE_4 = 4;
@@ -36,13 +36,13 @@ public class SimpleCollectionFieldWrapperTest implements FieldWrapperTest {
   private static final Class<TestSystemEntityWrapper> CONTAINING_TYPE = TestSystemEntityWrapper.class;
   private static final String FIELD_NAME = "primitiveCollection";
   private String propertyName;
-  private SimpleCollectionFieldWrapper<Integer> instance;
+  private SimpleCollectionFieldConverter<Integer> instance;
   private Node nodeMock;
   private TestSystemEntityWrapper entity;
 
   @Before
   public void setUp() throws NoSuchFieldException {
-    instance = new SimpleCollectionFieldWrapper<Integer>(COMPONENT_TYPE);
+    instance = new SimpleCollectionFieldConverter<Integer>(COMPONENT_TYPE);
     setupInstance(instance);
 
     propertyName = FIELD_TYPE.propertyName(CONTAINING_TYPE, FIELD_NAME);
@@ -51,7 +51,7 @@ public class SimpleCollectionFieldWrapperTest implements FieldWrapperTest {
     entity = new TestSystemEntityWrapper();
   }
 
-  private void setupInstance(SimpleCollectionFieldWrapper<Integer> simpleCollectionFieldWrapper) throws NoSuchFieldException {
+  private void setupInstance(SimpleCollectionFieldConverter<Integer> simpleCollectionFieldWrapper) throws NoSuchFieldException {
     simpleCollectionFieldWrapper.setField(CONTAINING_TYPE.getDeclaredField(FIELD_NAME));
     simpleCollectionFieldWrapper.setFieldType(FIELD_TYPE);
     simpleCollectionFieldWrapper.setContainingType(CONTAINING_TYPE);
@@ -102,7 +102,7 @@ public class SimpleCollectionFieldWrapperTest implements FieldWrapperTest {
   @Override
   public void addValueToNodeThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalAccessException() throws Exception {
     // setup
-    SimpleCollectionFieldWrapper<Integer> instance = new SimpleCollectionFieldWrapper<Integer>(COMPONENT_TYPE) {
+    SimpleCollectionFieldConverter<Integer> instance = new SimpleCollectionFieldConverter<Integer>(COMPONENT_TYPE) {
       @Override
       protected Object getFieldValue(Entity entity) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalAccessException();
@@ -117,7 +117,7 @@ public class SimpleCollectionFieldWrapperTest implements FieldWrapperTest {
   @Override
   public void addValueToNodeThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalArgumentExceptionIsThrown() throws Exception {
     // setup
-    SimpleCollectionFieldWrapper<Integer> instance = new SimpleCollectionFieldWrapper<Integer>(COMPONENT_TYPE) {
+    SimpleCollectionFieldConverter<Integer> instance = new SimpleCollectionFieldConverter<Integer>(COMPONENT_TYPE) {
       @Override
       protected Object getFieldValue(Entity entity) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalArgumentException();
@@ -132,7 +132,7 @@ public class SimpleCollectionFieldWrapperTest implements FieldWrapperTest {
   @Test(expected = ConversionException.class)
   public void addValueToNodeThrowsAConversionExceptionIfGetFormatedValueThrowsAnIllegalArgumentException() throws Exception {
     // setup
-    SimpleCollectionFieldWrapper<Integer> instance = new SimpleCollectionFieldWrapper<Integer>(COMPONENT_TYPE) {
+    SimpleCollectionFieldConverter<Integer> instance = new SimpleCollectionFieldConverter<Integer>(COMPONENT_TYPE) {
       @Override
       protected Object getFormattedValue(Object fieldValue) throws IllegalArgumentException {
         throw new IllegalArgumentException();
@@ -185,7 +185,7 @@ public class SimpleCollectionFieldWrapperTest implements FieldWrapperTest {
     when(nodeMock.hasProperty(propertyName)).thenReturn(true);
     when(nodeMock.getProperty(propertyName)).thenReturn(new int[] { VALUE_1, VALUE_2, VALUE_3, VALUE_4 });
 
-    SimpleCollectionFieldWrapper<Integer> instance = new SimpleCollectionFieldWrapper<Integer>(COMPONENT_TYPE) {
+    SimpleCollectionFieldConverter<Integer> instance = new SimpleCollectionFieldConverter<Integer>(COMPONENT_TYPE) {
       @Override
       protected void fillField(Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalAccessException();
@@ -205,7 +205,7 @@ public class SimpleCollectionFieldWrapperTest implements FieldWrapperTest {
     when(nodeMock.hasProperty(propertyName)).thenReturn(true);
     when(nodeMock.getProperty(propertyName)).thenReturn(new int[] { VALUE_1, VALUE_2, VALUE_3, VALUE_4 });
 
-    SimpleCollectionFieldWrapper<Integer> instance = new SimpleCollectionFieldWrapper<Integer>(COMPONENT_TYPE) {
+    SimpleCollectionFieldConverter<Integer> instance = new SimpleCollectionFieldConverter<Integer>(COMPONENT_TYPE) {
       @Override
       protected void fillField(Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalArgumentException();

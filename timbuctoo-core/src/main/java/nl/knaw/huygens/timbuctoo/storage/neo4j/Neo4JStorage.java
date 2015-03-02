@@ -28,13 +28,13 @@ import com.google.inject.Inject;
 
 public class Neo4JStorage implements Storage {
 
-  private final EntityTypeWrapperFactory entityTypeWrapperFactory;
+  private final EntityConverterFactory entityTypeWrapperFactory;
   private final GraphDatabaseService db;
   private final EntityInstantiator entityInstantiator;
   private final IdGenerator idGenerator;
 
   @Inject
-  public Neo4JStorage(GraphDatabaseService db, EntityTypeWrapperFactory entityTypeWrapperFactory, EntityInstantiator entityInstantiator, IdGenerator idGenerator) {
+  public Neo4JStorage(GraphDatabaseService db, EntityConverterFactory entityTypeWrapperFactory, EntityInstantiator entityInstantiator, IdGenerator idGenerator) {
     this.db = db;
     this.entityTypeWrapperFactory = entityTypeWrapperFactory;
     this.entityInstantiator = entityInstantiator;
@@ -65,7 +65,7 @@ public class Neo4JStorage implements Storage {
       try {
         String id = addAdministrativeValues(type, entity);
 
-        EntityTypeWrapper<T> objectWrapper = entityTypeWrapperFactory.createForType(type);
+        EntityConverter<T> objectWrapper = entityTypeWrapperFactory.createForType(type);
         Node node = db.createNode();
 
         objectWrapper.addValuesToNode(node, entity);
@@ -108,8 +108,8 @@ public class Neo4JStorage implements Storage {
       String id = addAdministrativeValues(type, entity);
       Node node = db.createNode();
 
-      EntityTypeWrapper<T> domainEntityWrapper = entityTypeWrapperFactory.createForType(type);
-      EntityTypeWrapper<? super T> primitiveEntityWrapper = entityTypeWrapperFactory.createForPrimitive(type);
+      EntityConverter<T> domainEntityWrapper = entityTypeWrapperFactory.createForType(type);
+      EntityConverter<? super T> primitiveEntityWrapper = entityTypeWrapperFactory.createForPrimitive(type);
 
       try {
         domainEntityWrapper.addValuesToNode(node, entity);
@@ -220,7 +220,7 @@ public class Neo4JStorage implements Storage {
       try {
         T entity = entityInstantiator.createInstanceOf(type);
 
-        EntityTypeWrapper<T> entityWrapper = entityTypeWrapperFactory.createForType(type);
+        EntityConverter<T> entityWrapper = entityTypeWrapperFactory.createForType(type);
         entityWrapper.addValuesToEntity(entity, node);
 
         return entity;

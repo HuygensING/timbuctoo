@@ -6,11 +6,11 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-public class SimpleCollectionFieldWrapper<T> extends AbstractFieldWrapper {
+public class SimpleCollectionFieldConverter<T> extends AbstractFieldConverter {
 
   private final Class<T> componentType;
 
-  public SimpleCollectionFieldWrapper(Class<T> componentType) {
+  public SimpleCollectionFieldConverter(Class<T> componentType) {
     this.componentType = componentType;
   }
 

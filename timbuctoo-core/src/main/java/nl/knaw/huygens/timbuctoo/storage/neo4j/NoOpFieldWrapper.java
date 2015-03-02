@@ -6,7 +6,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.neo4j.graphdb.Node;
 
-public class NoOpFieldWrapper implements FieldWrapper {
+public class NoOpFieldWrapper implements FieldConverter {
 
   @Override
   public void setContainingType(Class<? extends Entity> containingType) {

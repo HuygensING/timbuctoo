@@ -47,8 +47,8 @@ public class Neo4JStorageTest {
   private TestSystemEntityWrapper systemEntity;
   private static final String ID = "id";
   private GraphDatabaseService dbMock;
-  private EntityTypeWrapper<TestSystemEntityWrapper> entityWrapperMock;
-  private EntityTypeWrapperFactory entityWrapperFactoryMock;
+  private EntityConverter<TestSystemEntityWrapper> entityWrapperMock;
+  private EntityConverterFactory entityWrapperFactoryMock;
   private Neo4JStorage instance;
   private Transaction transactionMock;
   private EntityInstantiator entityInstantiatorMock;
@@ -61,7 +61,7 @@ public class Neo4JStorageTest {
     systemEntity = new TestSystemEntityWrapper();
     nodeMock = mock(Node.class);
     dbMock = mock(GraphDatabaseService.class);
-    entityWrapperMock = mock(EntityTypeWrapper.class);
+    entityWrapperMock = mock(EntityConverter.class);
     setupEntityWrapperFactory();
 
     transactionMock = mock(Transaction.class);
@@ -72,7 +72,7 @@ public class Neo4JStorageTest {
   }
 
   private void setupEntityWrapperFactory() throws Exception {
-    entityWrapperFactoryMock = mock(EntityTypeWrapperFactory.class);
+    entityWrapperFactoryMock = mock(EntityConverterFactory.class);
     when(entityWrapperFactoryMock.createForType(SYSTEM_ENTITY_TYPE)).thenReturn(entityWrapperMock);
   }
 
@@ -83,8 +83,8 @@ public class Neo4JStorageTest {
     dbMockCreatesTransaction(transactionMock);
     idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
 
-    EntityTypeWrapper<SubADomainEntity> domainEntityTypeWrapperMock = entityTypeWrapperFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);
-    EntityTypeWrapper<? super SubADomainEntity> primitiveDomainEntityTypeWrapperMock = entityTypeWrapperFactoryCreatesAnEntityWrapperTypeForSuperType(DOMAIN_ENTITY_TYPE);
+    EntityConverter<SubADomainEntity> domainEntityTypeWrapperMock = entityTypeWrapperFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);
+    EntityConverter<? super SubADomainEntity> primitiveDomainEntityTypeWrapperMock = entityTypeWrapperFactoryCreatesAnEntityWrapperTypeForSuperType(DOMAIN_ENTITY_TYPE);
 
     // action
     String actualId = instance.addDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
@@ -117,9 +117,9 @@ public class Neo4JStorageTest {
     dbMockCreatesTransaction(transactionMock);
     idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
 
-    EntityTypeWrapper<SubADomainEntity> domainEntityTypeWrapperMock = entityTypeWrapperFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);
+    EntityConverter<SubADomainEntity> domainEntityTypeWrapperMock = entityTypeWrapperFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);
     doThrow(ConversionException.class).when(domainEntityTypeWrapperMock).addValuesToNode(nodeMock, domainEntity);
-    EntityTypeWrapper<? super SubADomainEntity> primitiveDomainEntityTypeWrapperMock = entityTypeWrapperFactoryCreatesAnEntityWrapperTypeForSuperType(DOMAIN_ENTITY_TYPE);
+    EntityConverter<? super SubADomainEntity> primitiveDomainEntityTypeWrapperMock = entityTypeWrapperFactoryCreatesAnEntityWrapperTypeForSuperType(DOMAIN_ENTITY_TYPE);
 
     try {
       // action
@@ -148,8 +148,8 @@ public class Neo4JStorageTest {
     dbMockCreatesTransaction(transactionMock);
     idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
 
-    EntityTypeWrapper<SubADomainEntity> domainEntityTypeWrapperMock = entityTypeWrapperFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);
-    EntityTypeWrapper<? super SubADomainEntity> primitiveDomainEntityTypeWrapperMock = entityTypeWrapperFactoryCreatesAnEntityWrapperTypeForSuperType(DOMAIN_ENTITY_TYPE);
+    EntityConverter<SubADomainEntity> domainEntityTypeWrapperMock = entityTypeWrapperFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);
+    EntityConverter<? super SubADomainEntity> primitiveDomainEntityTypeWrapperMock = entityTypeWrapperFactoryCreatesAnEntityWrapperTypeForSuperType(DOMAIN_ENTITY_TYPE);
     doThrow(ConversionException.class).when(primitiveDomainEntityTypeWrapperMock).addValuesToNode(nodeMock, domainEntity);
 
     try {
@@ -178,16 +178,16 @@ public class Neo4JStorageTest {
     }
   }
 
-  private <T extends DomainEntity> EntityTypeWrapper<? super T> entityTypeWrapperFactoryCreatesAnEntityWrapperTypeForSuperType(Class<T> type) {
+  private <T extends DomainEntity> EntityConverter<? super T> entityTypeWrapperFactoryCreatesAnEntityWrapperTypeForSuperType(Class<T> type) {
     @SuppressWarnings("unchecked")
-    EntityTypeWrapper<? super T> entityWrapper = mock(EntityTypeWrapper.class);
+    EntityConverter<? super T> entityWrapper = mock(EntityConverter.class);
     doReturn(entityWrapper).when(entityWrapperFactoryMock).createForPrimitive(type);
     return entityWrapper;
   }
 
-  private <T extends Entity> EntityTypeWrapper<T> entityTypeWrapperFactoryCreatesAnEntityWrapperTypeFor(Class<T> type) {
+  private <T extends Entity> EntityConverter<T> entityTypeWrapperFactoryCreatesAnEntityWrapperTypeFor(Class<T> type) {
     @SuppressWarnings("unchecked")
-    EntityTypeWrapper<T> entityWrapper = mock(EntityTypeWrapper.class);
+    EntityConverter<T> entityWrapper = mock(EntityConverter.class);
     when(entityWrapperFactoryMock.createForType(type)).thenReturn(entityWrapper);
     return entityWrapper;
   }

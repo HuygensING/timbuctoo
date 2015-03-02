@@ -10,19 +10,19 @@ import org.neo4j.graphdb.Node;
 
 import com.google.common.collect.Lists;
 
-public class EntityTypeWrapper<T extends Entity> {
+public class EntityConverter<T extends Entity> {
 
-  private List<FieldWrapper> fieldWrappers;
+  private List<FieldConverter> fieldWrappers;
   private Class<T> type;
 
-  public EntityTypeWrapper(Class<T> type) {
+  public EntityConverter(Class<T> type) {
     this.type = type;
     fieldWrappers = Lists.newArrayList();
   }
 
   public void addValuesToNode(Node node, T entity) throws ConversionException {
     addName(node);
-    for (FieldWrapper fieldWrapper : fieldWrappers) {
+    for (FieldConverter fieldWrapper : fieldWrappers) {
       fieldWrapper.addValueToNode(node, entity);
     }
   }
@@ -32,12 +32,12 @@ public class EntityTypeWrapper<T extends Entity> {
   }
 
   public void addValuesToEntity(T entity, Node node) throws ConversionException {
-    for (FieldWrapper fieldWrapper : fieldWrappers) {
+    for (FieldConverter fieldWrapper : fieldWrappers) {
       fieldWrapper.addValueToEntity(entity, node);
     }
   }
 
-  public void addFieldWrapper(FieldWrapper fieldWrapper) {
+  public void addFieldWrapper(FieldConverter fieldWrapper) {
     fieldWrappers.add(fieldWrapper);
   }
 

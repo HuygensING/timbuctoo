@@ -16,41 +16,41 @@ import org.junit.Test;
 
 import test.model.TestSystemEntityWrapper;
 
-public class FieldWrapperFactoryTest {
+public class FieldConverterFactoryTest {
   private static final String FIELD_NAME = "fieldName";
   private static final FieldType FIELD_TYPE = FieldType.REGULAR;
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
-  private static final Class<ObjectValueFieldWrapper> OBJECT_WRAPPER_TYPE = ObjectValueFieldWrapper.class;
-  private static final Class<SimpleValueFieldWrapper> SIMPLE_VALUE_WRAPPER_TYPE = SimpleValueFieldWrapper.class;
+  private static final Class<ObjectValueFieldConverter> OBJECT_WRAPPER_TYPE = ObjectValueFieldConverter.class;
+  private static final Class<SimpleValueFieldConverter> SIMPLE_VALUE_WRAPPER_TYPE = SimpleValueFieldConverter.class;
   private static final Class<NoOpFieldWrapper> NO_OP_WRAPPER_TYPE = NoOpFieldWrapper.class;
   @SuppressWarnings("rawtypes")
-  private static final Class<SimpleCollectionFieldWrapper> SIMPLE_COLLECTION_FIELD_WRAPPER_TYPE = SimpleCollectionFieldWrapper.class;
+  private static final Class<SimpleCollectionFieldConverter> SIMPLE_COLLECTION_FIELD_WRAPPER_TYPE = SimpleCollectionFieldConverter.class;
   private static final TestSystemEntityWrapper TEST_SYSTEM_ENTITY = new TestSystemEntityWrapper();
-  private FieldWrapperFactory instance;
+  private FieldConverterFactory instance;
   private PropertyBusinessRules propertyBusinessRulesMock;
 
   @Before
   public void setUp() {
     propertyBusinessRulesMock = mock(PropertyBusinessRules.class);
 
-    instance = new FieldWrapperFactory(propertyBusinessRulesMock) {
+    instance = new FieldConverterFactory(propertyBusinessRulesMock) {
       @Override
-      protected FieldWrapper createSimpleValueFieldWrapper() {
+      protected FieldConverter createSimpleValueFieldWrapper() {
         return mock(SIMPLE_VALUE_WRAPPER_TYPE);
       }
 
       @Override
-      protected FieldWrapper createObjectValueFieldWrapper() {
+      protected FieldConverter createObjectValueFieldWrapper() {
         return mock(OBJECT_WRAPPER_TYPE);
       }
 
       @Override
-      protected FieldWrapper createNoOpFieldWrapper() {
+      protected FieldConverter createNoOpFieldWrapper() {
         return mock(NO_OP_WRAPPER_TYPE);
       }
 
       @Override
-      protected <T> FieldWrapper createSimpleCollectionFieldWrapper(Class<T> componentType) {
+      protected <T> FieldConverter createSimpleCollectionFieldWrapper(Class<T> componentType) {
         return mock(SIMPLE_COLLECTION_FIELD_WRAPPER_TYPE);
       }
 
@@ -119,12 +119,12 @@ public class FieldWrapperFactoryTest {
     testWrap(TEST_SYSTEM_ENTITY, field, NO_OP_WRAPPER_TYPE);
   }
 
-  private void testWrap(TestSystemEntityWrapper testSystemEntity, Field field, Class<? extends FieldWrapper> wrapperType) {
+  private void testWrap(TestSystemEntityWrapper testSystemEntity, Field field, Class<? extends FieldConverter> wrapperType) {
     when(propertyBusinessRulesMock.getFieldType(TYPE, field)).thenReturn(FIELD_TYPE);
     when(propertyBusinessRulesMock.getFieldName(TYPE, field)).thenReturn(FIELD_NAME);
 
     // action
-    FieldWrapper fieldWrapper = instance.wrap(TYPE, field);
+    FieldConverter fieldWrapper = instance.wrap(TYPE, field);
 
     // verify
     assertThat(fieldWrapper, is(instanceOf(wrapperType)));

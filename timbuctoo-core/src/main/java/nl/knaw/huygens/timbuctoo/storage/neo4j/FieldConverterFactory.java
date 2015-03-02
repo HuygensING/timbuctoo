@@ -10,16 +10,16 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.apache.commons.lang3.ClassUtils;
 
-public class FieldWrapperFactory {
+public class FieldConverterFactory {
 
   private final PropertyBusinessRules propertyBusinessRules;
 
-  public FieldWrapperFactory(PropertyBusinessRules propertyBusinessRules) {
+  public FieldConverterFactory(PropertyBusinessRules propertyBusinessRules) {
     this.propertyBusinessRules = propertyBusinessRules;
   }
 
-  public <T extends Entity> FieldWrapper wrap(Class<T> type, Field field) {
-    FieldWrapper fieldWrapper = createFieldWrapper(field);
+  public <T extends Entity> FieldConverter wrap(Class<T> type, Field field) {
+    FieldConverter fieldWrapper = createFieldWrapper(field);
 
     fieldWrapper.setField(field);
     fieldWrapper.setContainingType(type);
@@ -29,7 +29,7 @@ public class FieldWrapperFactory {
     return fieldWrapper;
   }
 
-  private FieldWrapper createFieldWrapper(Field field) {
+  private FieldConverter createFieldWrapper(Field field) {
     if (Modifier.isStatic(field.getModifiers())) {
       return createNoOpFieldWrapper();
     } else if (isSimpleValue(field)) {
@@ -78,20 +78,20 @@ public class FieldWrapperFactory {
     return ClassUtils.isPrimitiveOrWrapper(type) || type == String.class;
   }
 
-  protected FieldWrapper createSimpleValueFieldWrapper() {
-    return new SimpleValueFieldWrapper();
+  protected FieldConverter createSimpleValueFieldWrapper() {
+    return new SimpleValueFieldConverter();
   }
 
-  protected FieldWrapper createObjectValueFieldWrapper() {
-    return new ObjectValueFieldWrapper();
+  protected FieldConverter createObjectValueFieldWrapper() {
+    return new ObjectValueFieldConverter();
   }
 
-  protected FieldWrapper createNoOpFieldWrapper() {
+  protected FieldConverter createNoOpFieldWrapper() {
     return new NoOpFieldWrapper();
   }
 
-  protected <T> FieldWrapper createSimpleCollectionFieldWrapper(Class<T> componentType) {
-    return new SimpleCollectionFieldWrapper<T>(componentType);
+  protected <T> FieldConverter createSimpleCollectionFieldWrapper(Class<T> componentType) {
+    return new SimpleCollectionFieldConverter<T>(componentType);
   }
 
 }

@@ -26,7 +26,7 @@ import test.model.TestSystemEntityWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
+public class ObjectValueConverterTest implements FieldConverterTest {
   private static final FieldType FIELD_TYPE = FieldType.REGULAR;
   private static final String FIELD_NAME = "objectValue";
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
@@ -34,7 +34,7 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
   private TestSystemEntityWrapper containingEntity;
   private Field field;
   private String propertyName;
-  private ObjectValueFieldWrapper instance;
+  private ObjectValueFieldConverter instance;
 
   @Before
   public void setUp() throws Exception {
@@ -43,11 +43,11 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
     field = TYPE.getDeclaredField(FIELD_NAME);
     propertyName = FIELD_TYPE.propertyName(TYPE, FIELD_NAME);
 
-    instance = new ObjectValueFieldWrapper();
+    instance = new ObjectValueFieldConverter();
     setupInstance(instance);
   }
 
-  private void setupInstance(ObjectValueFieldWrapper objectValueFieldWrapper) {
+  private void setupInstance(ObjectValueFieldConverter objectValueFieldWrapper) {
     objectValueFieldWrapper.setContainingType(TYPE);
     objectValueFieldWrapper.setField(field);
     objectValueFieldWrapper.setFieldType(FIELD_TYPE);
@@ -93,7 +93,7 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
   @Override
   public void addValueToNodeThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalAccessException() throws Exception {
     // setup
-    ObjectValueFieldWrapper instance = new ObjectValueFieldWrapper() {
+    ObjectValueFieldConverter instance = new ObjectValueFieldConverter() {
       @Override
       protected Object getFieldValue(Entity entity) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalAccessException();
@@ -109,7 +109,7 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
   @Override
   public void addValueToNodeThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalArgumentExceptionIsThrown() throws Exception {
     // setup
-    ObjectValueFieldWrapper instance = new ObjectValueFieldWrapper() {
+    ObjectValueFieldConverter instance = new ObjectValueFieldConverter() {
       @Override
       protected Object getFieldValue(Entity entity) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalArgumentException();
@@ -129,7 +129,7 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
     containingEntity.setObjectValue(change);
 
     // setup
-    ObjectValueFieldWrapper instance = new ObjectValueFieldWrapper() {
+    ObjectValueFieldConverter instance = new ObjectValueFieldConverter() {
       @Override
       protected Object getFormattedValue(Object fieldValue) throws IllegalArgumentException {
         throw new IllegalArgumentException();
@@ -182,7 +182,7 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
     when(nodeMock.hasProperty(propertyName)).thenReturn(true);
     when(nodeMock.getProperty(propertyName)).thenReturn(serializeValue(value));
 
-    ObjectValueFieldWrapper instance = new ObjectValueFieldWrapper() {
+    ObjectValueFieldConverter instance = new ObjectValueFieldConverter() {
       @Override
       protected void fillField(Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalAccessException();
@@ -203,7 +203,7 @@ public class ObjectValueFieldWrapperTest implements FieldWrapperTest {
     when(nodeMock.hasProperty(propertyName)).thenReturn(true);
     when(nodeMock.getProperty(propertyName)).thenReturn(serializeValue(value));
 
-    ObjectValueFieldWrapper instance = new ObjectValueFieldWrapper() {
+    ObjectValueFieldConverter instance = new ObjectValueFieldConverter() {
       @Override
       protected void fillField(Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalArgumentException();

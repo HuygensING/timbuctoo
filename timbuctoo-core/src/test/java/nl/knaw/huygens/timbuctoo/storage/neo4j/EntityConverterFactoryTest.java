@@ -21,30 +21,30 @@ import test.model.BaseDomainEntity;
 import test.model.TestSystemEntityWrapper;
 import test.model.projecta.SubADomainEntity;
 
-public class EntityTypeWrapperFactoryTest {
+public class EntityConverterFactoryTest {
 
   private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
   private static final Class<BaseDomainEntity> PRIMITIVE_DOMAIN_ENTITY_TYPE = BaseDomainEntity.class;
   private static final Class<TestSystemEntityWrapper> SYSTEM_ENTITY_TYPE = TestSystemEntityWrapper.class;
-  private EntityTypeWrapperFactory instance;
+  private EntityConverterFactory instance;
   @SuppressWarnings("rawtypes")
-  private EntityTypeWrapper entityWrapperMock;
-  private AbstractFieldWrapper fieldWrapperMock;
-  private FieldWrapperFactory fieldWrapperFactoryMock;
+  private EntityConverter entityWrapperMock;
+  private AbstractFieldConverter fieldWrapperMock;
+  private FieldConverterFactory fieldWrapperFactoryMock;
 
   @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
-    entityWrapperMock = mock(EntityTypeWrapper.class);
+    entityWrapperMock = mock(EntityConverter.class);
 
-    fieldWrapperMock = mock(AbstractFieldWrapper.class);
-    fieldWrapperFactoryMock = mock(FieldWrapperFactory.class);
+    fieldWrapperMock = mock(AbstractFieldConverter.class);
+    fieldWrapperFactoryMock = mock(FieldConverterFactory.class);
 
     when(fieldWrapperFactoryMock.wrap(any(Class.class), any(Field.class))).thenReturn(fieldWrapperMock);
 
-    instance = new EntityTypeWrapperFactory(fieldWrapperFactoryMock) {
+    instance = new EntityConverterFactory(fieldWrapperFactoryMock) {
       @Override
-      protected <T extends Entity> EntityTypeWrapper<T> createEntityWrapper(Class<T> type) {
+      protected <T extends Entity> EntityConverter<T> createEntityWrapper(Class<T> type) {
         return entityWrapperMock;
       }
     };
@@ -58,7 +58,7 @@ public class EntityTypeWrapperFactoryTest {
     numberOfFields += getNumberOfFields(Entity.class);
 
     // action
-    EntityTypeWrapper<TestSystemEntityWrapper> entityWrapper = instance.createForType(SYSTEM_ENTITY_TYPE);
+    EntityConverter<TestSystemEntityWrapper> entityWrapper = instance.createForType(SYSTEM_ENTITY_TYPE);
 
     // verify
     verify(fieldWrapperFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(SYSTEM_ENTITY_TYPE)), any(Field.class));
@@ -73,7 +73,7 @@ public class EntityTypeWrapperFactoryTest {
     numberOfFields += getNumberOfFields(Entity.class);
 
     // action
-    EntityTypeWrapper<? super SubADomainEntity> wrapper = instance.createForPrimitive(DOMAIN_ENTITY_TYPE);
+    EntityConverter<? super SubADomainEntity> wrapper = instance.createForPrimitive(DOMAIN_ENTITY_TYPE);
 
     // verify
     verify(fieldWrapperFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(PRIMITIVE_DOMAIN_ENTITY_TYPE)), any(Field.class));

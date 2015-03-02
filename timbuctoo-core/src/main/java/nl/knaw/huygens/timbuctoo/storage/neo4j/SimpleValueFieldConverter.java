@@ -6,7 +6,7 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
  * or collections of the former.  
  *
  */
-public class SimpleValueFieldWrapper extends AbstractFieldWrapper {
+public class SimpleValueFieldConverter extends AbstractFieldConverter {
 
   @Override
   protected Object getFormattedValue(Object fieldValue) throws IllegalArgumentException {

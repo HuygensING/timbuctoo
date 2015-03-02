@@ -8,17 +8,17 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import com.google.inject.Inject;
 
-public class EntityTypeWrapperFactory {
+public class EntityConverterFactory {
 
-  private FieldWrapperFactory fieldWrapperFactory;
+  private FieldConverterFactory fieldWrapperFactory;
 
   @Inject
-  public EntityTypeWrapperFactory(FieldWrapperFactory fieldWrapperFactory) {
+  public EntityConverterFactory(FieldConverterFactory fieldWrapperFactory) {
     this.fieldWrapperFactory = fieldWrapperFactory;
   }
 
-  public <T extends Entity> EntityTypeWrapper<T> createForType(Class<T> type) {
-    EntityTypeWrapper<T> entityWrapper = createEntityWrapper(type);
+  public <T extends Entity> EntityConverter<T> createForType(Class<T> type) {
+    EntityConverter<T> entityWrapper = createEntityWrapper(type);
     addFieldWrappers(entityWrapper, type);
 
     return entityWrapper;
@@ -30,15 +30,15 @@ public class EntityTypeWrapperFactory {
    * @return an EntityTypeWrapper for the primitive of type. This could be type itself.
    */
   @SuppressWarnings("unchecked")
-  public <T extends DomainEntity> EntityTypeWrapper<? super T> createForPrimitive(Class<T> type) {
+  public <T extends DomainEntity> EntityConverter<? super T> createForPrimitive(Class<T> type) {
     Class<? extends DomainEntity> primitive = TypeRegistry.toBaseDomainEntity(type);
-    EntityTypeWrapper<? extends DomainEntity> entityTypeWrapper = this.createForType(primitive);
+    EntityConverter<? extends DomainEntity> entityTypeWrapper = this.createForType(primitive);
 
-    return (EntityTypeWrapper<? super T>) entityTypeWrapper;
+    return (EntityConverter<? super T>) entityTypeWrapper;
   }
 
   @SuppressWarnings("unchecked")
-  private <T extends Entity> void addFieldWrappers(EntityTypeWrapper<T> objectWrapper, Class<T> type) {
+  private <T extends Entity> void addFieldWrappers(EntityConverter<T> objectWrapper, Class<T> type) {
     for (Class<? extends Entity> typeToGetFieldsFrom = type; isEntity(typeToGetFieldsFrom); typeToGetFieldsFrom = (Class<? extends Entity>) typeToGetFieldsFrom.getSuperclass()) {
 
       for (Field field : typeToGetFieldsFrom.getDeclaredFields()) {
@@ -51,7 +51,7 @@ public class EntityTypeWrapperFactory {
     return Entity.class.isAssignableFrom(typeToGetFieldsFrom);
   }
 
-  protected <T extends Entity> EntityTypeWrapper<T> createEntityWrapper(Class<T> type) {
-    return new EntityTypeWrapper<T>(type);
+  protected <T extends Entity> EntityConverter<T> createEntityWrapper(Class<T> type) {
+    return new EntityConverter<T>(type);
   }
 }

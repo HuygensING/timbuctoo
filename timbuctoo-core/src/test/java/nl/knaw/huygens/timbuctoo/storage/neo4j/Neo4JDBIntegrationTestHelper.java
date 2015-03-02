@@ -11,7 +11,7 @@ import org.neo4j.test.TestGraphDatabaseFactory;
 public class Neo4JDBIntegrationTestHelper implements DBIntegrationTestHelper {
 
   private GraphDatabaseService db;
-  private EntityTypeWrapperFactory objectWrapperFactory;
+  private EntityConverterFactory objectWrapperFactory;
   private IdGenerator idGenerator;
   private EntityInstantiator entityInstantiator;
 
@@ -20,8 +20,8 @@ public class Neo4JDBIntegrationTestHelper implements DBIntegrationTestHelper {
     idGenerator = new IdGenerator();
     db = new TestGraphDatabaseFactory().newImpermanentDatabase();
     PropertyBusinessRules propertyBusinessRules = new PropertyBusinessRules();
-    FieldWrapperFactory fieldWrapperFactory = new FieldWrapperFactory(propertyBusinessRules);
-    objectWrapperFactory = new EntityTypeWrapperFactory(fieldWrapperFactory);
+    FieldConverterFactory fieldWrapperFactory = new FieldConverterFactory(propertyBusinessRules);
+    objectWrapperFactory = new EntityConverterFactory(fieldWrapperFactory);
     entityInstantiator = new EntityInstantiator();
   }
 
