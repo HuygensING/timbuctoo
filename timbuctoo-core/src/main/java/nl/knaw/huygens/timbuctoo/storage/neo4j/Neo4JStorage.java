@@ -138,7 +138,7 @@ public class Neo4JStorage implements Storage {
       }
 
       Node node = foundNodes.next();
-      int rev = (int) node.getProperty(REVISION_PROPERTY_NAME);
+      int rev = getRevision(node);
       if (rev != entity.getRev()) {
         transaction.failure();
         throw new UpdateException(String.format("\"%s\" with id \"%s\" and revision \"%d\".", type.getSimpleName(), entity.getId(), entity.getRev()));
@@ -250,13 +250,21 @@ public class Neo4JStorage implements Storage {
         return null;
       }
 
-      Node node = iterator.next();
+      Node nodeWithHighestRevision = iterator.next();
+
+      for (; iterator.hasNext();) {
+        Node next = iterator.next();
+
+        if (getRevision(next) > getRevision(nodeWithHighestRevision)) {
+          nodeWithHighestRevision = next;
+        }
+      }
 
       try {
         T entity = entityInstantiator.createInstanceOf(type);
 
         EntityConverter<T> entityWrapper = entityConverterFactory.createForType(type);
-        entityWrapper.addValuesToEntity(entity, node);
+        entityWrapper.addValuesToEntity(entity, nodeWithHighestRevision);
 
         return entity;
       } catch (IllegalAccessException | IllegalArgumentException | InstantiationException e) {
@@ -264,6 +272,10 @@ public class Neo4JStorage implements Storage {
       }
     }
 
+  }
+
+  private int getRevision(Node node) {
+    return (int) node.getProperty(REVISION_PROPERTY_NAME);
   }
 
   @Override
