@@ -129,6 +129,11 @@ public class Neo4JStorage implements Storage {
 
   @Override
   public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws StorageException {
+    updateEntity(type, entity);
+
+  }
+
+  private <T extends Entity> void updateEntity(Class<T> type, T entity) throws UpdateException, ConversionException {
     try (Transaction transaction = db.beginTx()) {
       Node node = getLatestById(type, entity.getId());
 
@@ -160,18 +165,16 @@ public class Neo4JStorage implements Storage {
         throw e;
       }
     }
-
   }
 
-  private <T extends SystemEntity> void updateAdministrativeValues(T entity) {
+  private <T extends Entity> void updateAdministrativeValues(T entity) {
     entity.setModified(Change.newInternalInstance());
     updateRevision(entity);
   }
 
   @Override
   public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
-    // TODO Auto-generated method stub
-
+    updateEntity(type, entity);
   }
 
   @Override

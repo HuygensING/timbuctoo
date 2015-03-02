@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualtityMatcher;
@@ -54,6 +56,17 @@ public class BaseDomainEntityMatcher<T extends BaseDomainEntity> extends Composi
       @Override
       protected Integer getItemValue(T item) {
         return item.getRev();
+      }
+    });
+    return this;
+  }
+
+  public BaseDomainEntityMatcher<T> withAModifiedValueNotEqualTo(Change oldModified) {
+    addMatcher(new PropertyMatcher<T, Change>("modified", not(equalTo(oldModified))) {
+
+      @Override
+      protected Change getItemValue(T item) {
+        return item.getModified();
       }
     });
     return this;

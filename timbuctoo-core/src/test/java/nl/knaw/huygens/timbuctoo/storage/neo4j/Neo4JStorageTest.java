@@ -44,6 +44,8 @@ public class Neo4JStorageTest {
   private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
   private static final int FIRST_REVISION = 1;
   private static final int SECOND_REVISION = 2;
+  private static final int THIRD_REVISION = 3;
+  private static final int FOURTH_REVISION = 4;
   private static final Class<TestSystemEntityWrapper> SYSTEM_ENTITY_TYPE = TestSystemEntityWrapper.class;
   private static final Label SYSTEM_ENTITY_LABEL = DynamicLabel.label(TypeNames.getInternalName(SYSTEM_ENTITY_TYPE));
   private static final Label DOMAIN_ENTITY_LABEL = DynamicLabel.label(TypeNames.getInternalName(DOMAIN_ENTITY_TYPE));
@@ -280,7 +282,7 @@ public class Neo4JStorageTest {
     // setup
     Node nodeWithFirstRevision = createNodeWithRevision(FIRST_REVISION);
     Node nodeWithSecondRevision = createNodeWithRevision(SECOND_REVISION);
-    Node nodeWithThirdRevision = createNodeWithRevision(3);
+    Node nodeWithThirdRevision = createNodeWithRevision(THIRD_REVISION);
     multipleNodesAreFound(DOMAIN_ENTITY_LABEL, nodeWithFirstRevision, nodeWithThirdRevision, nodeWithSecondRevision);
 
     EntityConverter<SubADomainEntity> domainEntityConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);
@@ -534,5 +536,141 @@ public class Neo4JStorageTest {
               .withRevision(SECOND_REVISION)));
       verify(transactionMock).failure();
     }
+  }
+
+  @Test
+  public void updateDomainEntityRetrievesTheNodeAndUpdatesItsValues() throws Exception {
+    // setup
+    dbMockCreatesTransaction(transactionMock);
+    oneNodeIsFound(DOMAIN_ENTITY_LABEL, nodeMock);
+    when(nodeMock.getProperty(REVISION_PROPERTY_NAME)).thenReturn(FIRST_REVISION);
+    EntityConverter<SubADomainEntity> domainEntityConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);;
+    when(entityConverterFactoryMock.createForType(DOMAIN_ENTITY_TYPE)).thenReturn(domainEntityConverterMock);
+
+    domainEntity.setId(ID);
+    domainEntity.setRev(FIRST_REVISION);
+    Change oldModified = new Change();
+    domainEntity.setModified(oldModified);
+
+    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
+
+    // verify
+    InOrder inOrder = inOrder(dbMock, domainEntityConverterMock, transactionMock);
+    inOrder.verify(dbMock).beginTx();
+    inOrder.verify(dbMock).findNodesByLabelAndProperty(DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+    inOrder.verify(domainEntityConverterMock).updateNode(argThat(equalTo(nodeMock)), //
+        argThat(likeBaseDomainEntity(SubADomainEntity.class) //
+            .withAModifiedValueNotEqualTo(oldModified) //
+            .withRevision(SECOND_REVISION)));
+    inOrder.verify(domainEntityConverterMock).updateModifiedAndRev(argThat(equalTo(nodeMock)), //
+        argThat(likeBaseDomainEntity(SubADomainEntity.class) //
+            .withAModifiedValueNotEqualTo(oldModified) //
+            .withRevision(SECOND_REVISION)));
+    inOrder.verify(transactionMock).success();
+    verifyNoMoreInteractions(dbMock, domainEntityConverterMock);
+  }
+
+  @Test
+  public void updateDomainEntityUpdatesTheLatestIfMultipleAreFound() throws Exception {
+    // setup
+    dbMockCreatesTransaction(transactionMock);
+    Node nodeWithFirstRevision = createNodeWithRevision(FIRST_REVISION);
+    Node nodeWithSecondRevision = createNodeWithRevision(SECOND_REVISION);
+    Node nodeWithThirdRevision = createNodeWithRevision(THIRD_REVISION);
+
+    multipleNodesAreFound(DOMAIN_ENTITY_LABEL, nodeWithFirstRevision, nodeWithThirdRevision, nodeWithSecondRevision);
+    when(nodeMock.getProperty(REVISION_PROPERTY_NAME)).thenReturn(SECOND_REVISION);
+    EntityConverter<SubADomainEntity> domainEntityConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);;
+    when(entityConverterFactoryMock.createForType(DOMAIN_ENTITY_TYPE)).thenReturn(domainEntityConverterMock);
+
+    domainEntity.setId(ID);
+    domainEntity.setRev(THIRD_REVISION);
+    Change oldModified = new Change();
+    domainEntity.setModified(oldModified);
+
+    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
+
+    // verify
+    InOrder inOrder = inOrder(dbMock, domainEntityConverterMock, transactionMock);
+    inOrder.verify(dbMock).beginTx();
+    inOrder.verify(dbMock).findNodesByLabelAndProperty(DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+    inOrder.verify(domainEntityConverterMock).updateNode(argThat(equalTo(nodeWithThirdRevision)), //
+        argThat(likeBaseDomainEntity(SubADomainEntity.class) //
+            .withAModifiedValueNotEqualTo(oldModified) //
+            .withRevision(FOURTH_REVISION)));
+    inOrder.verify(domainEntityConverterMock).updateModifiedAndRev(argThat(equalTo(nodeWithThirdRevision)), //
+        argThat(likeBaseDomainEntity(SubADomainEntity.class) //
+            .withAModifiedValueNotEqualTo(oldModified) //
+            .withRevision(FOURTH_REVISION)));
+    inOrder.verify(transactionMock).success();
+    verifyNoMoreInteractions(dbMock, domainEntityConverterMock);
+  }
+
+  @Test(expected = UpdateException.class)
+  public void updateDomainEntityThrowsAnUpdateExceptionWhenTheEntityCannotBeFound() throws Exception {
+    // setup
+    dbMockCreatesTransaction(transactionMock);
+    noNodeIsFound(DOMAIN_ENTITY_LABEL);
+
+    domainEntity.setId(ID);
+    domainEntity.setRev(FIRST_REVISION);
+    Change oldModified = new Change();
+    domainEntity.setModified(oldModified);
+
+    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
+
+    // verify
+    InOrder inOrder = inOrder(dbMock, transactionMock);
+    inOrder.verify(dbMock).beginTx();
+    inOrder.verify(dbMock).findNodesByLabelAndProperty(DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+    inOrder.verify(transactionMock).failure();
+    verifyZeroInteractions(entityConverterFactoryMock);
+    verifyNoMoreInteractions(dbMock);
+  }
+
+  @Test(expected = UpdateException.class)
+  public void updateDomainEntityThrowsAnUpdateExceptionWhenRevOfTheNodeIsHigherThanThatOfTheEntity() throws Exception {
+    // setup
+    dbMockCreatesTransaction(transactionMock);
+    oneNodeIsFound(DOMAIN_ENTITY_LABEL, nodeMock);
+    when(nodeMock.getProperty(REVISION_PROPERTY_NAME)).thenReturn(SECOND_REVISION);
+
+    domainEntity.setId(ID);
+    domainEntity.setRev(FIRST_REVISION);
+    Change oldModified = new Change();
+    domainEntity.setModified(oldModified);
+
+    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
+
+    // verify
+    InOrder inOrder = inOrder(dbMock, transactionMock);
+    inOrder.verify(dbMock).beginTx();
+    inOrder.verify(dbMock).findNodesByLabelAndProperty(DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+    inOrder.verify(transactionMock).failure();
+    verifyZeroInteractions(entityConverterFactoryMock);
+    verifyNoMoreInteractions(dbMock);
+  }
+
+  @Test(expected = UpdateException.class)
+  public void updateDomainEntityThrowsAnUpdateExceptionWhenRevOfTheNodeIsLowerThanThatOfTheEntity() throws Exception {
+    // setup
+    dbMockCreatesTransaction(transactionMock);
+    oneNodeIsFound(DOMAIN_ENTITY_LABEL, nodeMock);
+    when(nodeMock.getProperty(REVISION_PROPERTY_NAME)).thenReturn(FIRST_REVISION);
+
+    domainEntity.setId(ID);
+    domainEntity.setRev(SECOND_REVISION);
+    Change oldModified = new Change();
+    domainEntity.setModified(oldModified);
+
+    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
+
+    // verify
+    InOrder inOrder = inOrder(dbMock, transactionMock);
+    inOrder.verify(dbMock).beginTx();
+    inOrder.verify(dbMock).findNodesByLabelAndProperty(DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+    inOrder.verify(transactionMock).failure();
+    verifyZeroInteractions(entityConverterFactoryMock);
+    verifyNoMoreInteractions(dbMock);
   }
 }
