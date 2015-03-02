@@ -60,7 +60,6 @@ public class Neo4JStorageIntegrationTest extends StorageIntegrationTest {
   }
 
   @Test
-  @Ignore
   @Override
   public void deleteSystemEntityRemovesAnEntityFromTheDatabase() throws StorageException {
     // TODO Auto-generated method stub

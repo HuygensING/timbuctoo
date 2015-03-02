@@ -18,6 +18,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+
+import java.util.Iterator;
+
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -32,6 +35,7 @@ import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
@@ -617,15 +621,18 @@ public class Neo4JStorageTest {
     Change oldModified = new Change();
     domainEntity.setModified(oldModified);
 
-    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
-
-    // verify
-    InOrder inOrder = inOrder(dbMock, transactionMock);
-    inOrder.verify(dbMock).beginTx();
-    inOrder.verify(dbMock).findNodesByLabelAndProperty(DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
-    inOrder.verify(transactionMock).failure();
-    verifyZeroInteractions(entityConverterFactoryMock);
-    verifyNoMoreInteractions(dbMock);
+    try {
+      // action
+      instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
+    } finally {
+      // verify
+      InOrder inOrder = inOrder(dbMock, transactionMock);
+      inOrder.verify(dbMock).beginTx();
+      inOrder.verify(dbMock).findNodesByLabelAndProperty(DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+      inOrder.verify(transactionMock).failure();
+      verifyZeroInteractions(entityConverterFactoryMock);
+      verifyNoMoreInteractions(dbMock);
+    }
   }
 
   @Test(expected = UpdateException.class)
@@ -640,15 +647,18 @@ public class Neo4JStorageTest {
     Change oldModified = new Change();
     domainEntity.setModified(oldModified);
 
-    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
-
-    // verify
-    InOrder inOrder = inOrder(dbMock, transactionMock);
-    inOrder.verify(dbMock).beginTx();
-    inOrder.verify(dbMock).findNodesByLabelAndProperty(DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
-    inOrder.verify(transactionMock).failure();
-    verifyZeroInteractions(entityConverterFactoryMock);
-    verifyNoMoreInteractions(dbMock);
+    try {
+      // action
+      instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
+    } finally {
+      // verify
+      InOrder inOrder = inOrder(dbMock, transactionMock);
+      inOrder.verify(dbMock).beginTx();
+      inOrder.verify(dbMock).findNodesByLabelAndProperty(DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+      inOrder.verify(transactionMock).failure();
+      verifyZeroInteractions(entityConverterFactoryMock);
+      verifyNoMoreInteractions(dbMock);
+    }
   }
 
   @Test(expected = UpdateException.class)
@@ -663,14 +673,68 @@ public class Neo4JStorageTest {
     Change oldModified = new Change();
     domainEntity.setModified(oldModified);
 
-    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
+    try {
+      // action
+      instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
+    } finally {
+      // verify
+      InOrder inOrder = inOrder(dbMock, transactionMock);
+      inOrder.verify(dbMock).beginTx();
+      inOrder.verify(dbMock).findNodesByLabelAndProperty(DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+      inOrder.verify(transactionMock).failure();
+      verifyZeroInteractions(entityConverterFactoryMock);
+      verifyNoMoreInteractions(dbMock);
+    }
+  }
+
+  @Test
+  public void deleteSystemEntityFirstRemovesTheNodesRelationShipsAndThenTheNodeItselfTheDatabase() throws Exception {
+    // setup
+    dbMockCreatesTransaction(transactionMock);
+    Relationship relMock1 = mock(Relationship.class);
+    Relationship relMock2 = mock(Relationship.class);
+    nodeHaseRelationsShips(relMock1, relMock2);
+    oneNodeIsFound(SYSTEM_ENTITY_LABEL, nodeMock);
+
+    // action
+    int numDeleted = instance.deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID);
 
     // verify
-    InOrder inOrder = inOrder(dbMock, transactionMock);
+    assertThat(numDeleted, is(equalTo(1)));
+    InOrder inOrder = inOrder(dbMock, nodeMock, relMock1, relMock2, transactionMock);
     inOrder.verify(dbMock).beginTx();
-    inOrder.verify(dbMock).findNodesByLabelAndProperty(DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
-    inOrder.verify(transactionMock).failure();
-    verifyZeroInteractions(entityConverterFactoryMock);
-    verifyNoMoreInteractions(dbMock);
+    inOrder.verify(nodeMock).getRelationships();
+    inOrder.verify(relMock1).delete();
+    inOrder.verify(relMock2).delete();
+    inOrder.verify(nodeMock).delete();
+    inOrder.verify(transactionMock).success();
+
   }
+
+  private void nodeHaseRelationsShips(Relationship relMock1, Relationship relMock2) {
+    @SuppressWarnings("unchecked")
+    Iterator<Relationship> relationshipIteratorMock = mock(Iterator.class);
+    when(relationshipIteratorMock.hasNext()).thenReturn(true, true, false);
+    when(relationshipIteratorMock.next()).thenReturn(relMock1, relMock2);
+    @SuppressWarnings("unchecked")
+    Iterable<Relationship> relationshipsMock = mock(Iterable.class);
+    when(relationshipsMock.iterator()).thenReturn(relationshipIteratorMock);
+    when(nodeMock.getRelationships()).thenReturn(relationshipsMock);
+  }
+
+  @Test
+  public void deleteSystemEntityReturns0WhenTheEntityCannotBeFound() throws Exception {
+    // setup
+    noNodeIsFound(SYSTEM_ENTITY_LABEL);
+    dbMockCreatesTransaction(transactionMock);
+
+    // action
+    int numDeleted = instance.deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID);
+    // verify
+    assertThat(numDeleted, is(equalTo(0)));
+    verify(dbMock).beginTx();
+    verify(dbMock).findNodesByLabelAndProperty(SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+    verify(transactionMock).success();
+  }
+
 }
