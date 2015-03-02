@@ -146,12 +146,17 @@ public class Neo4JStorage implements Storage {
 
       updateAdministrativeValues(entity);
 
-      EntityConverter<T> entityConverter = entityConverterFactory.createForType(type);
+      try {
+        EntityConverter<T> entityConverter = entityConverterFactory.createForType(type);
 
-      entityConverter.updateNode(node, entity);
-      entityConverter.updateModifiedAndRev(node, entity);
+        entityConverter.updateNode(node, entity);
+        entityConverter.updateModifiedAndRev(node, entity);
 
-      transaction.success();
+        transaction.success();
+      } catch (ConversionException e) {
+        transaction.failure();
+        throw e;
+      }
     }
 
   }

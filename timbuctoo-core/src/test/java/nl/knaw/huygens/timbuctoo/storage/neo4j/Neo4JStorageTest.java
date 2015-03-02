@@ -13,6 +13,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -299,7 +300,7 @@ public class Neo4JStorageTest {
   @Test
   public void getEntityReturnsNullIfNoItemIsFound() throws Exception {
     // setup
-    nodeNodeIsFound();
+    noNodeIsFound();
 
     // action
     TestSystemEntityWrapper actualEntity = instance.getEntity(SYSTEM_ENTITY_TYPE, ID);
@@ -320,7 +321,7 @@ public class Neo4JStorageTest {
     nodesFound(nodeIterator);
   }
 
-  private void nodeNodeIsFound() {
+  private void noNodeIsFound() {
     @SuppressWarnings("unchecked")
     ResourceIterator<Node> nodeIterator = mock(ResourceIterator.class);
     when(nodeIterator.hasNext()).thenReturn(false);
@@ -474,7 +475,7 @@ public class Neo4JStorageTest {
   public void updateSystemEntityThrowsAnUpdateExceptionIfTheNodeCannotBeFound() throws Exception {
     // setup
     dbMockCreatesTransaction(transactionMock);
-    nodeNodeIsFound();
+    noNodeIsFound();
 
     systemEntity.setRev(FIRST_REVISION);
     systemEntity.setId(ID);
@@ -487,6 +488,39 @@ public class Neo4JStorageTest {
       verify(dbMock).findNodesByLabelAndProperty(SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
       verify(transactionMock).failure();
       verifyZeroInteractions(entityConverterFactoryMock);
+    }
+  }
+
+  @Test(expected = ConversionException.class)
+  public void updateSystemEntityThrowsAConversionExceptionWhenTheEntityCovnerterThrowsOne() throws Exception {
+    // setup
+    dbMockCreatesTransaction(transactionMock);
+    oneNodeIsFound(nodeMock);
+    when(nodeMock.getProperty(REVISION_PROPERTY_NAME)).thenReturn(FIRST_REVISION);
+    when(entityConverterFactoryMock.createForType(SYSTEM_ENTITY_TYPE)).thenReturn(entityConverterMock);
+    doThrow(ConversionException.class).when(entityConverterMock).updateNode(nodeMock, systemEntity);
+
+    systemEntity.setRev(FIRST_REVISION);
+    systemEntity.setId(ID);
+    Change oldModified = new Change();
+    systemEntity.setModified(oldModified);
+
+    try {
+      // action
+      instance.updateSystemEntity(SYSTEM_ENTITY_TYPE, systemEntity);
+    } finally {
+      // verify
+      verify(dbMock).beginTx();
+      verify(dbMock).findNodesByLabelAndProperty(SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+      verify(entityConverterMock).updateNode(argThat(equalTo(nodeMock)), //
+          argThat(likeTestSystemEntityWrapper() //
+              .withAModifiedValueNotEqualTo(oldModified) //
+              .withRevision(SECOND_REVISION)));
+      verify(entityConverterMock, never()).updateModifiedAndRev(argThat(equalTo(nodeMock)), //
+          argThat(likeTestSystemEntityWrapper() //
+              .withAModifiedValueNotEqualTo(oldModified) //
+              .withRevision(SECOND_REVISION)));
+      verify(transactionMock).failure();
     }
   }
 }
