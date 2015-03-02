@@ -449,6 +449,28 @@ public class Neo4JStorageTest {
   }
 
   @Test(expected = UpdateException.class)
+  public void updateSystemEntityThrowsAnUpdateExceptionIfTheNodeIsOlderThanTheEntityWithTheUpdatedInformation() throws Exception {
+    // setup
+    dbMockCreatesTransaction(transactionMock);
+    oneNodeIsFound(nodeMock);
+    when(nodeMock.getProperty(REVISION_PROPERTY_NAME)).thenReturn(FIRST_REVISION);
+
+    int newerRevision = 2;
+    systemEntity.setRev(newerRevision);
+    systemEntity.setId(ID);
+    try {
+      // action
+      instance.updateSystemEntity(SYSTEM_ENTITY_TYPE, systemEntity);
+    } finally {
+      // verify
+      verify(dbMock).beginTx();
+      verify(dbMock).findNodesByLabelAndProperty(SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+      verify(transactionMock).failure();
+      verifyZeroInteractions(entityConverterFactoryMock);
+    }
+  }
+
+  @Test(expected = UpdateException.class)
   public void updateSystemEntityThrowsAnUpdateExceptionIfTheNodeCannotBeFound() throws Exception {
     // setup
     dbMockCreatesTransaction(transactionMock);

@@ -139,9 +139,9 @@ public class Neo4JStorage implements Storage {
 
       Node node = foundNodes.next();
       int rev = (int) node.getProperty(REVISION_PROPERTY_NAME);
-      if (rev > entity.getRev()) {
+      if (rev != entity.getRev()) {
         transaction.failure();
-        throw new UpdateException(String.format("\"%s\" with id \"%s\" is updated in the mean time.", type.getSimpleName(), entity.getId()));
+        throw new UpdateException(String.format("\"%s\" with id \"%s\" and revision \"%d\".", type.getSimpleName(), entity.getId(), entity.getRev()));
       }
 
       updateAdministrativeValues(entity);
