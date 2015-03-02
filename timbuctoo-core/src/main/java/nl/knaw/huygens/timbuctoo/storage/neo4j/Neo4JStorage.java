@@ -130,14 +130,13 @@ public class Neo4JStorage implements Storage {
   @Override
   public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
-      ResourceIterator<Node> foundNodes = findByProperty(type, ID_PROPERTY_NAME, entity.getId());
+      Node node = getLatestById(type, entity.getId());
 
-      if (!foundNodes.hasNext()) {
+      if (node == null) {
         transaction.failure();
         throw new UpdateException(String.format("\"%s\" with id \"%s\" cannot be found.", type.getSimpleName(), entity.getId()));
       }
 
-      Node node = foundNodes.next();
       int rev = getRevision(node);
       if (rev != entity.getRev()) {
         transaction.failure();
@@ -244,20 +243,10 @@ public class Neo4JStorage implements Storage {
   @Override
   public <T extends Entity> T getEntity(Class<T> type, String id) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
-      ResourceIterator<Node> iterator = findByProperty(type, ID_PROPERTY_NAME, id);
+      Node nodeWithHighestRevision = getLatestById(type, id);
 
-      if (!iterator.hasNext()) {
+      if (nodeWithHighestRevision == null) {
         return null;
-      }
-
-      Node nodeWithHighestRevision = iterator.next();
-
-      for (; iterator.hasNext();) {
-        Node next = iterator.next();
-
-        if (getRevision(next) > getRevision(nodeWithHighestRevision)) {
-          nodeWithHighestRevision = next;
-        }
       }
 
       try {
@@ -272,6 +261,33 @@ public class Neo4JStorage implements Storage {
       }
     }
 
+  }
+
+  /**
+   * Retrieves all of {@code type} with {@code id} 
+   * and returns the one with the highest revision number.
+   * @param type the type to get the latest from
+   * @param id the id to get the latest from
+   * @return the node of type and id with the highest revision.
+   */
+  private <T extends Entity> Node getLatestById(Class<T> type, String id) {
+    ResourceIterator<Node> iterator = findByProperty(type, ID_PROPERTY_NAME, id);
+
+    if (!iterator.hasNext()) {
+      return null;
+    }
+
+    Node nodeWithHighestRevision = iterator.next();
+
+    for (; iterator.hasNext();) {
+      Node next = iterator.next();
+
+      if (getRevision(next) > getRevision(nodeWithHighestRevision)) {
+        nodeWithHighestRevision = next;
+      }
+    }
+
+    return nodeWithHighestRevision;
   }
 
   private int getRevision(Node node) {
