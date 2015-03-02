@@ -44,7 +44,7 @@ public class EntityConverterFactoryTest {
 
     instance = new EntityConverterFactory(fieldWrapperFactoryMock) {
       @Override
-      protected <T extends Entity> EntityConverter<T> createEntityWrapper(Class<T> type) {
+      protected <T extends Entity> EntityConverter<T> createEntityConverter(Class<T> type) {
         return entityWrapperMock;
       }
     };

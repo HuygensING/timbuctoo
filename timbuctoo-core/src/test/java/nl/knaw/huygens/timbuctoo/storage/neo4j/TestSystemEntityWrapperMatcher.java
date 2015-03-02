@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualtityMatcher;
@@ -48,6 +50,17 @@ public class TestSystemEntityWrapperMatcher extends CompositeMatcher<TestSystemE
     return this;
   }
 
+  public TestSystemEntityWrapperMatcher withAModifiedValueNotEqualTo(Change oldModified) {
+    addMatcher(new PropertyMatcher<TestSystemEntityWrapper, Change>("modified", not(equalTo(oldModified))) {
+
+      @Override
+      protected Change getItemValue(TestSystemEntityWrapper item) {
+        return item.getModified();
+      }
+    });
+    return this;
+  }
+
   public TestSystemEntityWrapperMatcher withRevision(int revisionNumber) {
     addMatcher(new PropertyEqualtityMatcher<TestSystemEntityWrapper, Integer>("rev", revisionNumber) {
 
@@ -58,4 +71,5 @@ public class TestSystemEntityWrapperMatcher extends CompositeMatcher<TestSystemE
     });
     return this;
   }
+
 }

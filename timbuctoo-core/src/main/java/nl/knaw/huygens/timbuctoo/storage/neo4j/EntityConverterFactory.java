@@ -18,7 +18,7 @@ public class EntityConverterFactory {
   }
 
   public <T extends Entity> EntityConverter<T> createForType(Class<T> type) {
-    EntityConverter<T> entityWrapper = createEntityWrapper(type);
+    EntityConverter<T> entityWrapper = createEntityConverter(type);
     addFieldWrappers(entityWrapper, type);
 
     return entityWrapper;
@@ -51,7 +51,7 @@ public class EntityConverterFactory {
     return Entity.class.isAssignableFrom(typeToGetFieldsFrom);
   }
 
-  protected <T extends Entity> EntityConverter<T> createEntityWrapper(Class<T> type) {
+  protected <T extends Entity> EntityConverter<T> createEntityConverter(Class<T> type) {
     return new EntityConverter<T>(type);
   }
 }

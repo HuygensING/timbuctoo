@@ -41,4 +41,24 @@ public class EntityConverter<T extends Entity> {
     fieldWrappers.add(fieldWrapper);
   }
 
+  /**
+   * Updates the non administrative properties of the node.
+   * @param node the node to update
+   * @param entity the entity that contains the data.
+   */
+  public void updateNode(Node node, Entity entity) {
+    // TODO Auto-generated method stub
+
+  }
+
+  /**
+   * Updates the modified and revision properties of the node.
+   * @param node the node to update
+   * @param entity the entity that contains the data to update.
+   */
+  public void updateModifiedAndRev(Node node, Entity entity) {
+    // TODO Auto-generated method stub
+
+  }
+
 }
