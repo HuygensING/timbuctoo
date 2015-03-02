@@ -262,7 +262,7 @@ public abstract class StorageIntegrationTest {
   }
 
   @Test
-  public void updateIncreasesTheRevisionNumberAndChangesTheDomainEntityButDoesNotCreateANewVersion() throws Exception {
+  public void updateDomainIncreasesTheRevisionNumberAndChangesTheDomainEntityButDoesNotCreateANewVersion() throws Exception {
     String id = addDefaultProjectAPerson();
 
     // Store the entity

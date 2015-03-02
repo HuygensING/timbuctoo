@@ -110,9 +110,9 @@ public class Neo4JStorageIntegrationTest extends StorageIntegrationTest {
   @Test
   @Ignore
   @Override
-  public void updateIncreasesTheRevisionNumberAndChangesTheDomainEntityButDoesNotCreateANewVersion() throws Exception {
+  public void updateDomainIncreasesTheRevisionNumberAndChangesTheDomainEntityButDoesNotCreateANewVersion() throws Exception {
     // TODO Auto-generated method stub
-    super.updateIncreasesTheRevisionNumberAndChangesTheDomainEntityButDoesNotCreateANewVersion();
+    super.updateDomainIncreasesTheRevisionNumberAndChangesTheDomainEntityButDoesNotCreateANewVersion();
   }
 
   @Test
