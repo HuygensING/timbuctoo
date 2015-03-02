@@ -43,7 +43,7 @@ public abstract class AbstractFieldConverter implements FieldConverter {
       Object fieldValue = getFieldValue(entity);
 
       if (shouldAddValue(fieldValue)) {
-        node.setProperty(getName(), getFormattedValue(fieldValue));
+        node.setProperty(getPropertyName(), getFormattedValue(fieldValue));
       }
     } catch (IllegalArgumentException | IllegalAccessException e) {
       throw new ConversionException(e);
@@ -62,7 +62,7 @@ public abstract class AbstractFieldConverter implements FieldConverter {
   public final void addValueToEntity(Entity entity, Node node) throws ConversionException {
     try {
       field.setAccessible(true);
-      if (node.hasProperty(getName())) {
+      if (node.hasProperty(getPropertyName())) {
         fillField(entity, node);
       }
     } catch (IllegalAccessException | IllegalArgumentException e) {
@@ -71,13 +71,18 @@ public abstract class AbstractFieldConverter implements FieldConverter {
   }
 
   protected void fillField(Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException {
-    field.set(entity, convertValue(node.getProperty(getName()), field.getType()));
+    field.set(entity, convertValue(node.getProperty(getPropertyName()), field.getType()));
   }
 
   protected abstract Object convertValue(Object value, Class<?> fieldType) throws IllegalArgumentException;
 
-  protected String getName() {
+  protected String getPropertyName() {
     return fieldType.propertyName(getContainingType(), fieldName);
+  }
+
+  @Override
+  public String getName() {
+    return fieldName;
   }
 
   private Class<? extends Entity> getContainingType() {

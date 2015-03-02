@@ -28,4 +28,6 @@ public interface FieldConverter {
 
   public abstract FieldType getFieldType();
 
+  public abstract String getName();
+
 }

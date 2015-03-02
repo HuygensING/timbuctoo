@@ -49,4 +49,9 @@ public class NoOpFieldWrapper implements FieldConverter {
     return FieldType.VIRTUAL;
   }
 
+  @Override
+  public String getName() {
+    return "";
+  }
+
 }

@@ -149,6 +149,9 @@ public class Neo4JStorage implements Storage {
       try {
         EntityConverter<T> entityConverter = entityConverterFactory.createForType(type);
 
+        /* split the update and the update of modified and rev, 
+         * to be sure the administrative values can only be changed by the system
+         */
         entityConverter.updateNode(node, entity);
         entityConverter.updateModifiedAndRev(node, entity);
 
