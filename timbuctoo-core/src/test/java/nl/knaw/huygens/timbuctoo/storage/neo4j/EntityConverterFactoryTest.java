@@ -62,7 +62,7 @@ public class EntityConverterFactoryTest {
 
     // verify
     verify(fieldWrapperFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(SYSTEM_ENTITY_TYPE)), any(Field.class));
-    verify(entityWrapper, times(numberOfFields)).addFieldWrapper(fieldWrapperMock);
+    verify(entityWrapper, times(numberOfFields)).addFieldConverter(fieldWrapperMock);
   }
 
   @Test
@@ -77,7 +77,7 @@ public class EntityConverterFactoryTest {
 
     // verify
     verify(fieldWrapperFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(PRIMITIVE_DOMAIN_ENTITY_TYPE)), any(Field.class));
-    verify(wrapper, times(numberOfFields)).addFieldWrapper(fieldWrapperMock);
+    verify(wrapper, times(numberOfFields)).addFieldConverter(fieldWrapperMock);
   }
 
   private int getNumberOfFields(Class<? extends Entity> type) {

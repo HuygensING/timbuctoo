@@ -65,7 +65,7 @@ public class SimpleCollectionFieldConverterTest implements FieldConverterTest {
     entity.setPrimitiveCollection(value);
 
     // action
-    instance.addValueToNode(nodeMock, entity);
+    instance.setNodeProperty(nodeMock, entity);
 
     // verify
     verify(nodeMock).setProperty(argThat(equalTo(propertyName)), //
@@ -80,7 +80,7 @@ public class SimpleCollectionFieldConverterTest implements FieldConverterTest {
     entity.setPrimitiveCollection(nullValue);
 
     // action
-    instance.addValueToNode(nodeMock, entity);
+    instance.setNodeProperty(nodeMock, entity);
 
     // verify
     verifyZeroInteractions(nodeMock);
@@ -92,7 +92,7 @@ public class SimpleCollectionFieldConverterTest implements FieldConverterTest {
     entity.setPrimitiveCollection(emptyCollection);
 
     // action
-    instance.addValueToNode(nodeMock, entity);
+    instance.setNodeProperty(nodeMock, entity);
 
     // verify
     verifyZeroInteractions(nodeMock);
@@ -110,7 +110,7 @@ public class SimpleCollectionFieldConverterTest implements FieldConverterTest {
     };
 
     // action
-    instance.addValueToNode(nodeMock, entity);
+    instance.setNodeProperty(nodeMock, entity);
   }
 
   @Test(expected = ConversionException.class)
@@ -125,7 +125,7 @@ public class SimpleCollectionFieldConverterTest implements FieldConverterTest {
     };
 
     // action
-    instance.addValueToNode(nodeMock, entity);
+    instance.setNodeProperty(nodeMock, entity);
   }
 
   @Override
@@ -143,7 +143,7 @@ public class SimpleCollectionFieldConverterTest implements FieldConverterTest {
     entity.setPrimitiveCollection(Lists.newArrayList(VALUE_1, VALUE_2, VALUE_3, VALUE_4));
 
     // action
-    instance.addValueToNode(nodeMock, entity);
+    instance.setNodeProperty(nodeMock, entity);
   }
 
   @Test

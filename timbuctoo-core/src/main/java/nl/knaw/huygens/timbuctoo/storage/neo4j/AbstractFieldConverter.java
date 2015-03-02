@@ -38,7 +38,7 @@ public abstract class AbstractFieldConverter implements FieldConverter {
    * @see nl.knaw.huygens.timbuctoo.storage.neo4j.FieldWrapper#addValueToNode(org.neo4j.graphdb.Node, nl.knaw.huygens.timbuctoo.model.Entity)
    */
   @Override
-  public final void addValueToNode(Node node, Entity entity) throws ConversionException {
+  public final void setNodeProperty(Node node, Entity entity) throws ConversionException {
     try {
       Object fieldValue = getFieldValue(entity);
 
@@ -90,6 +90,11 @@ public abstract class AbstractFieldConverter implements FieldConverter {
   @Override
   public void setFieldType(FieldType fieldType) {
     this.fieldType = fieldType;
+  }
+
+  @Override
+  public FieldType getFieldType() {
+    return fieldType;
   }
 
   /* (non-Javadoc)

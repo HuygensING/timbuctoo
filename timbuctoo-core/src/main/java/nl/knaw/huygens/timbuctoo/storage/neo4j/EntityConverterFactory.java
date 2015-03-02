@@ -42,7 +42,7 @@ public class EntityConverterFactory {
     for (Class<? extends Entity> typeToGetFieldsFrom = type; isEntity(typeToGetFieldsFrom); typeToGetFieldsFrom = (Class<? extends Entity>) typeToGetFieldsFrom.getSuperclass()) {
 
       for (Field field : typeToGetFieldsFrom.getDeclaredFields()) {
-        objectWrapper.addFieldWrapper(fieldWrapperFactory.wrap(type, field));
+        objectWrapper.addFieldConverter(fieldWrapperFactory.wrap(type, field));
       }
     }
   }

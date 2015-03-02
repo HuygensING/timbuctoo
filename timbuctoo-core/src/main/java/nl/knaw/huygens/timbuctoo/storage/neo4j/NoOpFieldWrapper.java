@@ -21,7 +21,7 @@ public class NoOpFieldWrapper implements FieldConverter {
   }
 
   @Override
-  public void addValueToNode(Node node, Entity entity) throws ConversionException {
+  public void setNodeProperty(Node node, Entity entity) throws ConversionException {
     // TODO Auto-generated method stub
 
   }
@@ -42,6 +42,11 @@ public class NoOpFieldWrapper implements FieldConverter {
   public void setName(String fieldName) {
     // TODO Auto-generated method stub
 
+  }
+
+  @Override
+  public FieldType getFieldType() {
+    return FieldType.VIRTUAL;
   }
 
 }

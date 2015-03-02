@@ -2,8 +2,10 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 
 import org.junit.Before;
@@ -18,69 +20,97 @@ public class EntityConverterTest {
   private static final String TYPE_NAME = TypeNames.getInternalName(TYPE);
   private static final TestSystemEntityWrapper ENTITY = new TestSystemEntityWrapper();
   private Node nodeMock;
-  private FieldConverter fieldWrapperMock1;
-  private FieldConverter fieldWrapperMock2;
+  private FieldConverter fieldConverterMock1;
+  private FieldConverter fieldConverterMock2;
   private EntityConverter<TestSystemEntityWrapper> instance;
 
   @Before
   public void setUp() {
-    fieldWrapperMock1 = mock(FieldConverter.class);
-    fieldWrapperMock2 = mock(FieldConverter.class);
+    fieldConverterMock1 = mock(FieldConverter.class);
+    fieldConverterMock2 = mock(FieldConverter.class);
     nodeMock = mock(Node.class);
 
     instance = new EntityConverter<TestSystemEntityWrapper>(TYPE);
-    instance.addFieldWrapper(fieldWrapperMock1);
-    instance.addFieldWrapper(fieldWrapperMock2);
+    instance.addFieldConverter(fieldConverterMock1);
+    instance.addFieldConverter(fieldConverterMock2);
   }
 
   @Test
-  public void addValuesToNodeLetsTheFieldWrappersAddTheirValuesToTheNode() throws Exception {
+  public void addValuesToNodeLetsTheFieldConvertersAddTheirValuesToTheNode() throws Exception {
     // action
     instance.addValuesToNode(nodeMock, ENTITY);
 
     // verify
     verify(nodeMock).addLabel(DynamicLabel.label(TYPE_NAME));
-    verify(fieldWrapperMock1).addValueToNode(nodeMock, ENTITY);
-    verify(fieldWrapperMock2).addValueToNode(nodeMock, ENTITY);
+    verify(fieldConverterMock1).setNodeProperty(nodeMock, ENTITY);
+    verify(fieldConverterMock2).setNodeProperty(nodeMock, ENTITY);
   }
 
   @Test(expected = ConversionException.class)
   public void addValuesToNodeFieldMapperThrowsException() throws Exception {
     // setup
-    doThrow(ConversionException.class).when(fieldWrapperMock1).addValueToNode(nodeMock, ENTITY);
+    doThrow(ConversionException.class).when(fieldConverterMock1).setNodeProperty(nodeMock, ENTITY);
 
     // action
     instance.addValuesToNode(nodeMock, ENTITY);
 
     // verify
     verify(nodeMock).addLabel(DynamicLabel.label(TYPE_NAME));
-    verify(fieldWrapperMock1).addValueToNode(nodeMock, ENTITY);
-    verifyZeroInteractions(fieldWrapperMock2);
+    verify(fieldConverterMock1).setNodeProperty(nodeMock, ENTITY);
+    verifyZeroInteractions(fieldConverterMock2);
   }
 
   @Test
-  public void addValuesToEntityLetsAllTheFieldWrappersExtractTheValueOfTheNode() throws Exception {
+  public void addValuesToEntityLetsAllTheFieldConvertersExtractTheValueOfTheNode() throws Exception {
     // action
     instance.addValuesToEntity(ENTITY, nodeMock);
 
     // verify
-    verify(fieldWrapperMock1).addValueToEntity(ENTITY, nodeMock);
-    verify(fieldWrapperMock2).addValueToEntity(ENTITY, nodeMock);
+    verify(fieldConverterMock1).addValueToEntity(ENTITY, nodeMock);
+    verify(fieldConverterMock2).addValueToEntity(ENTITY, nodeMock);
   }
 
   @Test(expected = ConversionException.class)
-  public void addValuesToEntityThrowsAConversionExceptionIfAFieldWrapperAddValueToEntityThrowsOne() throws Exception {
+  public void addValuesToEntityThrowsAConversionExceptionIfAFieldConverterAddValueToEntityThrowsOne() throws Exception {
     // setup
-    doThrow(ConversionException.class).when(fieldWrapperMock1).addValueToEntity(ENTITY, nodeMock);
+    doThrow(ConversionException.class).when(fieldConverterMock1).addValueToEntity(ENTITY, nodeMock);
 
     try {
       // action
       instance.addValuesToEntity(ENTITY, nodeMock);
     } finally {
       // verify
-      verify(fieldWrapperMock1).addValueToEntity(ENTITY, nodeMock);
-      verifyZeroInteractions(fieldWrapperMock2);
+      verify(fieldConverterMock1).addValueToEntity(ENTITY, nodeMock);
+      verifyZeroInteractions(fieldConverterMock2);
     }
+  }
+
+  @Test
+  public void updateNodeSetsTheValuesOfTheNonAdministrativeFields() throws Exception {
+    // setup
+    when(fieldConverterMock1.getFieldType()).thenReturn(FieldType.ADMINISTRATIVE);
+    when(fieldConverterMock2.getFieldType()).thenReturn(FieldType.REGULAR);
+
+    // action
+    instance.updateNode(nodeMock, ENTITY);
+
+    // verify
+    verify(fieldConverterMock1, never()).setNodeProperty(nodeMock, ENTITY);
+    verify(fieldConverterMock2).setNodeProperty(nodeMock, ENTITY);
+  }
+
+  @Test(expected = ConversionException.class)
+  public void updateNodeThrowsAnExceptionWhenAFieldConverterThrowsOne() throws Exception {
+    // setup
+    when(fieldConverterMock1.getFieldType()).thenReturn(FieldType.REGULAR);
+    doThrow(ConversionException.class).when(fieldConverterMock1).setNodeProperty(nodeMock, ENTITY);
+
+    // action
+    instance.updateNode(nodeMock, ENTITY);
+
+    // verify
+    verify(fieldConverterMock1).setNodeProperty(nodeMock, ENTITY);
+    verifyZeroInteractions(fieldConverterMock2);
   }
 
 }

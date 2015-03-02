@@ -12,7 +12,7 @@ public interface FieldConverter {
 
   public abstract void setField(Field field);
 
-  public abstract void addValueToNode(Node node, Entity entity) throws ConversionException;
+  public abstract void setNodeProperty(Node node, Entity entity) throws ConversionException;
 
   /**
    * Extracts the value from the node and converts it so it can be added to the entity.
@@ -25,5 +25,7 @@ public interface FieldConverter {
   public abstract void setFieldType(FieldType fieldType);
 
   public abstract void setName(String fieldName);
+
+  public abstract FieldType getFieldType();
 
 }
