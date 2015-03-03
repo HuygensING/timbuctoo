@@ -190,19 +190,26 @@ public class Neo4JStorage implements Storage {
   public <T extends SystemEntity> int deleteSystemEntity(Class<T> type, String id) throws StorageException {
     int numDeleted = 0;
     try (Transaction transaction = db.beginTx()) {
-      for (ResourceIterator<Node> nodes = findByProperty(type, ID_PROPERTY_NAME, id); nodes.hasNext();) {
-        Node node = nodes.next();
-
-        for (Iterator<Relationship> relationships = node.getRelationships().iterator(); relationships.hasNext();) {
-          relationships.next().delete();
-        }
-
-        node.delete();
-        numDeleted++;
-      }
+      ResourceIterator<Node> nodes = findByProperty(type, ID_PROPERTY_NAME, id);
+      numDeleted = deleteEntity(nodes);
       transaction.success();
     }
 
+    return numDeleted;
+  }
+
+  private int deleteEntity(ResourceIterator<Node> nodes) {
+    int numDeleted = 0;
+    for (; nodes.hasNext();) {
+      Node node = nodes.next();
+
+      for (Iterator<Relationship> relationships = node.getRelationships().iterator(); relationships.hasNext();) {
+        relationships.next().delete();
+      }
+
+      node.delete();
+      numDeleted++;
+    }
     return numDeleted;
   }
 
@@ -231,15 +238,8 @@ public class Neo4JStorage implements Storage {
         throw new NoSuchEntityException(type, id);
       }
 
-      for (; foundNodes.hasNext();) {
-        Node node = foundNodes.next();
+      deleteEntity(foundNodes);
 
-        for (Iterator<Relationship> relationships = node.getRelationships().iterator(); relationships.hasNext();) {
-          relationships.next().delete();
-        }
-
-        node.delete();
-      }
       transaction.success();
     }
   }
