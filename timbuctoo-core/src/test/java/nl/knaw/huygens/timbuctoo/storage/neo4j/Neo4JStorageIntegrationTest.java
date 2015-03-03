@@ -21,6 +21,15 @@ public class Neo4JStorageIntegrationTest extends StorageIntegrationTest {
     super.addDomainEntityAddsADomainEntityAndItsPrimitiveVersieToTheDatabase();
   }
 
+  @Test
+  @Ignore
+  @Override
+  public void addRelationAddsARelationAndItsPrimitiveVersieToTheDatabase() throws Exception {
+    // TODO Auto-generated method stub
+    super.addRelationAddsARelationAndItsPrimitiveVersieToTheDatabase();
+  }
+
+  @Test
   @Override
   public void addSystemEntityAddsASystemEntityToTheStorageAndReturnsItsId() throws Exception {
     // TODO Auto-generated method stub

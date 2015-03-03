@@ -58,6 +58,7 @@ import test.variation.model.projecta.ProjectARelation;
 import com.google.common.collect.Lists;
 
 public abstract class StorageIntegrationTest {
+  private static final String DEFAULT_SOURCE_ID = "sourceId";
   private static final boolean NOT_ACCEPTED = false;
   private static final Class<ProjectARelation> PROJECT_RELATION_TYPE = ProjectARelation.class;
   private static final Class<Relation> PRIMITIVE_RELATION_TYPE = Relation.class;
@@ -244,6 +245,48 @@ public abstract class StorageIntegrationTest {
   }
 
   @Test
+  public void addRelationAddsARelationAndItsPrimitiveVersieToTheDatabase() throws Exception {
+    String sourceId = addDefaultProjectAPerson();
+    String targetId = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+
+    String sourceType = "person";
+    String targetType = "person";
+
+    ProjectARelation relation = new ProjectARelation();
+    relation.setAccepted(ACCEPTED);
+    relation.setSourceId(sourceId);
+    relation.setSourceType(sourceType);
+    relation.setTargetId(targetId);
+    relation.setTargetType(targetType);
+    relation.setTypeId(typeId);
+
+    String id = instance.addDomainEntity(PROJECT_RELATION_TYPE, relation, CHANGE_TO_SAVE);
+
+    // check if the relation is added
+    assertThat(instance.getEntity(PROJECT_RELATION_TYPE, id), likeRelation()//
+        .withSourceId(sourceId) //
+        .withSourceType(sourceType) //
+        .withTargetId(targetId) //
+        .withTargetType(targetType) //
+        .withTypeId(typeId) //
+        .isAccepted(ACCEPTED));
+    assertThat(instance.getEntity(PRIMITIVE_RELATION_TYPE, id), likeRelation()//
+        .withSourceId(sourceId) //
+        .withSourceType(sourceType) //
+        .withTargetId(targetId) //
+        .withTargetType(targetType) //
+        .withTypeId(typeId) //
+        .isAccepted(ACCEPTED));
+  }
+
+  private String addRelationType() throws StorageException {
+    RelationType relationType = createRelationType(REGULAR_NAME, INVERSE_NAME);
+    String typeId = instance.addSystemEntity(RelationType.class, relationType);
+    return typeId;
+  }
+
+  @Test
   public void setPIDGivesTheDomainEntityAPidAndCreatesAVersion() throws Exception {
     String id = addDefaultProjectAPerson();
     // Make sure the entity exist
@@ -340,7 +383,7 @@ public abstract class StorageIntegrationTest {
   public void declineRelationsOfEntitySetsAcceptedToFalseForTheVariation() throws Exception {
     // setup
     String sourceId = addDefaultProjectAPerson();
-    String relationId = addDefaultRelation(sourceId);
+    String relationId = addDefaultProjectARelation(sourceId);
 
     // check if the relation is added
     assertThat(instance.getEntity(PROJECT_RELATION_TYPE, relationId), likeDefaultAcceptedRelation(sourceId));
@@ -358,7 +401,7 @@ public abstract class StorageIntegrationTest {
   public void deleteRelationsOfEntityRemovesAllTheRelationsConnectedToTheEntity() throws Exception {
     // setup
     String sourceId = addDefaultProjectAPerson();
-    String relationId = addDefaultRelation(sourceId);
+    String relationId = addDefaultProjectARelation(sourceId);
 
     // check if the relation is added
     assertThat(instance.getEntity(PROJECT_RELATION_TYPE, relationId), likeDefaultAcceptedRelation(sourceId));
@@ -498,7 +541,7 @@ public abstract class StorageIntegrationTest {
         .isAccepted(ACCEPTED);
   }
 
-  private String addDefaultRelation(String sourceId) throws StorageException {
+  private String addDefaultProjectARelation(String sourceId) throws StorageException {
     ProjectARelation relation = new ProjectARelation();
     relation.setAccepted(ACCEPTED);
     relation.setSourceId(sourceId);
