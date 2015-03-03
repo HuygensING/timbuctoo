@@ -20,11 +20,13 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.Iterator;
+import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
@@ -39,13 +41,19 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.helpers.collection.Iterables;
+import org.neo4j.helpers.collection.IteratorUtil;
 
+import test.model.BaseDomainEntity;
 import test.model.TestSystemEntityWrapper;
 import test.model.projecta.SubADomainEntity;
+
+import com.google.common.collect.Lists;
 
 public class Neo4JStorageTest {
 
   private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
+  private static final Class<BaseDomainEntity> PRIMITIVE_DOMAIN_ENTITY_TYPE = BaseDomainEntity.class;
   private static final int FIRST_REVISION = 1;
   private static final int SECOND_REVISION = 2;
   private static final int THIRD_REVISION = 3;
@@ -53,6 +61,7 @@ public class Neo4JStorageTest {
   private static final Class<TestSystemEntityWrapper> SYSTEM_ENTITY_TYPE = TestSystemEntityWrapper.class;
   private static final Label SYSTEM_ENTITY_LABEL = DynamicLabel.label(TypeNames.getInternalName(SYSTEM_ENTITY_TYPE));
   private static final Label DOMAIN_ENTITY_LABEL = DynamicLabel.label(TypeNames.getInternalName(DOMAIN_ENTITY_TYPE));
+  private static final Label PRIMITIVE_DOMAIN_ENTITY_LABEL = DynamicLabel.label(TypeNames.getInternalName(PRIMITIVE_DOMAIN_ENTITY_TYPE));
   private Node nodeMock;
   private SubADomainEntity domainEntity;
   private TestSystemEntityWrapper systemEntity;
@@ -331,35 +340,33 @@ public class Neo4JStorageTest {
   }
 
   private void oneNodeIsFound(Label label, Node nodeToBeFound) {
-    @SuppressWarnings("unchecked")
-    ResourceIterator<Node> nodeIterator = mock(ResourceIterator.class);
-    when(nodeIterator.hasNext()).thenReturn(true, false);
-    when(nodeIterator.next()).thenReturn(nodeToBeFound);
+    List<Node> nodes = Lists.newArrayList(nodeToBeFound);
+
+    ResourceIterator<Node> nodeIterator = IteratorUtil.asResourceIterator(nodes.iterator());
 
     nodesFound(label, nodeIterator);
   }
 
   private void noNodeIsFound(Label label) {
-    @SuppressWarnings("unchecked")
-    ResourceIterator<Node> nodeIterator = mock(ResourceIterator.class);
-    when(nodeIterator.hasNext()).thenReturn(false);
+    List<Node> emptyList = Lists.newArrayList();
+    ResourceIterator<Node> nodeIterator = IteratorUtil.asResourceIterator(emptyList.iterator());
 
     nodesFound(label, nodeIterator);
   }
 
   private void multipleNodesAreFound(Label label, Node node1, Node node2, Node node3) {
-    @SuppressWarnings("unchecked")
-    ResourceIterator<Node> nodeIterator = mock(ResourceIterator.class);
-    when(nodeIterator.hasNext()).thenReturn(true, true, true, false);
-    when(nodeIterator.next()).thenReturn(node1, node2, node3);
+    List<Node> nodesList = Lists.newArrayList(node1, node2, node3);
+
+    ResourceIterator<Node> nodeIterator = IteratorUtil.asResourceIterator(nodesList.iterator());
 
     nodesFound(label, nodeIterator);
   }
 
   private void nodesFound(Label label, ResourceIterator<Node> nodeIterator) {
-    @SuppressWarnings("unchecked")
-    ResourceIterable<Node> foundNodes = mock(ResourceIterable.class);
-    when(foundNodes.iterator()).thenReturn(nodeIterator);
+    Iterable<Node> nodes = IteratorUtil.asIterable(nodeIterator);
+
+    ResourceIterable<Node> foundNodes = Iterables.asResourceIterable(nodes);
+
     when(dbMock.findNodesByLabelAndProperty(label, ID_PROPERTY_NAME, ID)).thenReturn(foundNodes);
   }
 
@@ -693,7 +700,7 @@ public class Neo4JStorageTest {
     dbMockCreatesTransaction(transactionMock);
     Relationship relMock1 = mock(Relationship.class);
     Relationship relMock2 = mock(Relationship.class);
-    nodeHaseRelationsShips(relMock1, relMock2);
+    nodeHaseRelationsShips(nodeMock, relMock1, relMock2);
     oneNodeIsFound(SYSTEM_ENTITY_LABEL, nodeMock);
 
     // action
@@ -703,23 +710,16 @@ public class Neo4JStorageTest {
     assertThat(numDeleted, is(equalTo(1)));
     InOrder inOrder = inOrder(dbMock, nodeMock, relMock1, relMock2, transactionMock);
     inOrder.verify(dbMock).beginTx();
-    inOrder.verify(nodeMock).getRelationships();
-    inOrder.verify(relMock1).delete();
-    inOrder.verify(relMock2).delete();
-    inOrder.verify(nodeMock).delete();
+    verifyNodeAndItsRelationAreDelete(nodeMock, relMock1, relMock2, inOrder);
     inOrder.verify(transactionMock).success();
 
   }
 
-  private void nodeHaseRelationsShips(Relationship relMock1, Relationship relMock2) {
-    @SuppressWarnings("unchecked")
-    Iterator<Relationship> relationshipIteratorMock = mock(Iterator.class);
-    when(relationshipIteratorMock.hasNext()).thenReturn(true, true, false);
-    when(relationshipIteratorMock.next()).thenReturn(relMock1, relMock2);
-    @SuppressWarnings("unchecked")
-    Iterable<Relationship> relationshipsMock = mock(Iterable.class);
-    when(relationshipsMock.iterator()).thenReturn(relationshipIteratorMock);
-    when(nodeMock.getRelationships()).thenReturn(relationshipsMock);
+  private void nodeHaseRelationsShips(Node node, Relationship relMock1, Relationship relMock2) {
+    Iterator<Relationship> relationshipIterator = Lists.newArrayList(relMock1, relMock2).iterator();
+    Iterable<Relationship> relationships = IteratorUtil.asIterable(relationshipIterator);
+
+    when(node.getRelationships()).thenReturn(relationships);
   }
 
   @Test
@@ -735,6 +735,94 @@ public class Neo4JStorageTest {
     verify(dbMock).beginTx();
     verify(dbMock).findNodesByLabelAndProperty(SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
     verify(transactionMock).success();
+  }
+
+  @Test
+  public void deleteDomainEntityFirstRemovesTheNodesRelationShipsAndThenTheNodeItselfTheDatabase() throws Exception {
+    // setup
+    dbMockCreatesTransaction(transactionMock);
+    Relationship relMock1 = mock(Relationship.class);
+    Relationship relMock2 = mock(Relationship.class);
+    nodeHaseRelationsShips(nodeMock, relMock1, relMock2);
+    oneNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, nodeMock);
+
+    // action
+    instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, new Change());
+
+    // verify
+    InOrder inOrder = inOrder(dbMock, nodeMock, relMock1, relMock2, transactionMock);
+    inOrder.verify(dbMock).beginTx();
+    verifyNodeAndItsRelationAreDelete(nodeMock, relMock1, relMock2, inOrder);
+    inOrder.verify(transactionMock).success();
+
+  }
+
+  @Test
+  public void deleteDomainEntityRemovesAllTheFoundNodes() throws Exception {
+    // setup
+    dbMockCreatesTransaction(transactionMock);
+    Relationship relMock1 = mock(Relationship.class);
+    Relationship relMock2 = mock(Relationship.class);
+    nodeHaseRelationsShips(nodeMock, relMock1, relMock2);
+
+    Relationship relMock3 = mock(Relationship.class);
+    Relationship relMock4 = mock(Relationship.class);
+    Node nodeMock2 = mock(Node.class);
+    nodeHaseRelationsShips(nodeMock2, relMock3, relMock4);
+
+    Relationship relMock5 = mock(Relationship.class);
+    Relationship relMock6 = mock(Relationship.class);
+    Node nodeMock3 = mock(Node.class);
+    nodeHaseRelationsShips(nodeMock3, relMock5, relMock6);
+
+    multipleNodesAreFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, nodeMock, nodeMock2, nodeMock3);
+
+    // action
+    instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, new Change());
+
+    // verify
+    InOrder inOrder = inOrder(dbMock, nodeMock, relMock1, relMock2, nodeMock2, relMock3, relMock4, nodeMock3, relMock5, relMock6, transactionMock);
+    inOrder.verify(dbMock).beginTx();
+    verifyNodeAndItsRelationAreDelete(nodeMock, relMock1, relMock2, inOrder);
+    verifyNodeAndItsRelationAreDelete(nodeMock2, relMock3, relMock4, inOrder);
+    verifyNodeAndItsRelationAreDelete(nodeMock3, relMock5, relMock6, inOrder);
+    inOrder.verify(transactionMock).success();
+  }
+
+  private void verifyNodeAndItsRelationAreDelete(Node node, Relationship relMock1, Relationship relMock2, InOrder inOrder) {
+    inOrder.verify(node).getRelationships();
+    inOrder.verify(relMock1).delete();
+    inOrder.verify(relMock2).delete();
+    inOrder.verify(node).delete();
+  }
+
+  @Test(expected = NoSuchEntityException.class)
+  public void deleteDomainEntityThrowsANoSuchEntityExceptionWhenTheEntityCannotBeFound() throws Exception {
+    // setup
+    noNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL);
+    dbMockCreatesTransaction(transactionMock);
+
+    try {
+      // action
+      instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, new Change());
+    } finally {
+      // verify
+      verify(dbMock).beginTx();
+      verify(dbMock).findNodesByLabelAndProperty(PRIMITIVE_DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+      verify(transactionMock).failure();
+    }
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void deleteThrowsAnIllegalArgumentExceptionWhenTheEntityIsNotAPrimitiveDomainEntity() throws Exception {
+
+    try {
+      // action
+      instance.deleteDomainEntity(DOMAIN_ENTITY_TYPE, ID, new Change());
+    } finally {
+      // verify
+      verifyZeroInteractions(dbMock);
+    }
   }
 
 }
