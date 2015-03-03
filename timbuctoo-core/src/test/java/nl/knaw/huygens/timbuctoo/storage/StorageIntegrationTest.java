@@ -58,7 +58,6 @@ import test.variation.model.projecta.ProjectARelation;
 import com.google.common.collect.Lists;
 
 public abstract class StorageIntegrationTest {
-  private static final String DEFAULT_SOURCE_ID = "sourceId";
   private static final boolean NOT_ACCEPTED = false;
   private static final Class<ProjectARelation> PROJECT_RELATION_TYPE = ProjectARelation.class;
   private static final Class<Relation> PRIMITIVE_RELATION_TYPE = Relation.class;
@@ -159,7 +158,6 @@ public abstract class StorageIntegrationTest {
     String id = instance.addSystemEntity(RelationType.class, systemEntityToStore);
     RelationType storedSystemEntity = instance.getEntity(RelationType.class, id);
     assertThat(storedSystemEntity, is(notNullValue()));
-
     storedSystemEntity.setRegularName(OTHER_REGULAR_NAME);
 
     instance.updateSystemEntity(RelationType.class, storedSystemEntity);
