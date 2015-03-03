@@ -22,19 +22,9 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  * #L%
  */
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.UpdateException;
-
 import nl.knaw.huygens.timbuctoo.storage.DBIntegrationTestHelper;
 import nl.knaw.huygens.timbuctoo.storage.StorageIntegrationTest;
+
 public class MongoStorageIntegrationTest extends StorageIntegrationTest {
 
   @Override
