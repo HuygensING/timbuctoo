@@ -36,7 +36,6 @@ public class Neo4JStorageIntegrationTest extends StorageIntegrationTest {
   }
 
   @Test
-  @Ignore
   @Override
   public void deleteDomainEntityRemovesTheEntityFromTheDatabase() throws Exception {
     // TODO Auto-generated method stub
