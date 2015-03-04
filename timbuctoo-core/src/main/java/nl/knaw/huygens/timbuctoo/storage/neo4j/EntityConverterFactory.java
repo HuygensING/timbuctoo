@@ -5,9 +5,11 @@ import java.lang.reflect.Field;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
+import org.neo4j.graphdb.Relationship;
 
 import com.google.inject.Inject;
 
@@ -27,6 +29,11 @@ public class EntityConverterFactory {
       addFieldWrappers(entityWrapper, type);
 
       return entityWrapper;
+    } else if (Relation.class.isAssignableFrom(type) && Relationship.class.isAssignableFrom(propertyContainerType)) {
+      @SuppressWarnings("unchecked")
+      EntityConverter<T, U> entityConverter = (EntityConverter<T, U>) createRelationConverter((Class<? extends Relation>) type, (Class<? extends Relationship>) propertyContainerType);
+      addFieldWrappers(entityConverter, type);
+      return entityConverter;
     } else {
       return createNoOpEntityConverter(type, propertyContainerType);
     }
@@ -46,11 +53,11 @@ public class EntityConverterFactory {
   }
 
   @SuppressWarnings("unchecked")
-  private <T extends Entity, U extends PropertyContainer> void addFieldWrappers(EntityConverter<T, U> objectWrapper, Class<T> type) {
+  private <T extends Entity, U extends PropertyContainer> void addFieldWrappers(EntityConverter<T, U> entityConverter, Class<T> type) {
     for (Class<? extends Entity> typeToGetFieldsFrom = type; isEntity(typeToGetFieldsFrom); typeToGetFieldsFrom = (Class<? extends Entity>) typeToGetFieldsFrom.getSuperclass()) {
 
       for (Field field : typeToGetFieldsFrom.getDeclaredFields()) {
-        objectWrapper.addFieldConverter(fieldWrapperFactory.wrap(type, field));
+        entityConverter.addFieldConverter(fieldWrapperFactory.wrap(type, field));
       }
     }
   }
@@ -65,5 +72,9 @@ public class EntityConverterFactory {
 
   protected <T extends Entity, U extends PropertyContainer> EntityConverter<T, U> createNoOpEntityConverter(Class<T> type, Class<U> propertyContainerType) {
     return new NoOpEntityConverter<T, U>();
+  }
+
+  protected <T extends Relation, U extends Relationship> EntityConverter<T, U> createRelationConverter(Class<T> type, Class<U> relationType) {
+    return new RelationConverter<T, U>();
   }
 }

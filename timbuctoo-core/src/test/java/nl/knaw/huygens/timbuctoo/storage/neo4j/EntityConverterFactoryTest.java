@@ -14,12 +14,14 @@ import java.lang.reflect.Field;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
+import org.neo4j.graphdb.Relationship;
 
 import test.model.BaseDomainEntity;
 import test.model.TestSystemEntityWrapper;
@@ -36,6 +38,8 @@ public class EntityConverterFactoryTest {
   private NoOpEntityConverter noOpEntityConverterMock;
   @SuppressWarnings("rawtypes")
   private RegularEntityConverter regularEntityConverterMock;
+  @SuppressWarnings("rawtypes")
+  private RelationConverter relationConverterMock;
   private AbstractFieldConverter fieldConverterMock;
   private FieldConverterFactory fieldConverterFactoryMock;
 
@@ -44,6 +48,7 @@ public class EntityConverterFactoryTest {
   public void setUp() {
     regularEntityConverterMock = mock(RegularEntityConverter.class);
     noOpEntityConverterMock = mock(NoOpEntityConverter.class);
+    relationConverterMock = mock(RelationConverter.class);
 
     fieldConverterMock = mock(AbstractFieldConverter.class);
     fieldConverterFactoryMock = mock(FieldConverterFactory.class);
@@ -59,6 +64,11 @@ public class EntityConverterFactoryTest {
       @Override
       protected <T extends Entity, U extends PropertyContainer> EntityConverter<T, U> createNoOpEntityConverter(Class<T> type, Class<U> nodeType) {
         return noOpEntityConverterMock;
+      }
+
+      @Override
+      protected <T extends Relation, U extends Relationship> EntityConverter<T, U> createRelationConverter(Class<T> type, Class<U> nodeType) {
+        return relationConverterMock;
       }
     };
   }
@@ -79,12 +89,30 @@ public class EntityConverterFactoryTest {
   }
 
   @Test
-  public void createEntityForTypeCreatesANoOpEntityConverterIfPropertyConverterIsUsed() {
+  public void createEntityForTypeCreatesANoOpEntityConverterIfPropertyContainerIsUsed() {
     // action
     EntityConverter<TestSystemEntityWrapper, PropertyContainer> entityConverter = instance.createForTypeAndPropertyContainer(SYSTEM_ENTITY_TYPE, PropertyContainer.class);
 
     // verify
     assertThat(entityConverter, instanceOf(NoOpEntityConverter.class));
+  }
+
+  @Test
+  public void createEntityForTypeCreatesARelationConverterIfTheEntityIsARelationAndThePropertyContainerIsARelation() {
+    // action
+    EntityConverter<Relation, Relationship> entityConverter = instance.createForTypeAndPropertyContainer(Relation.class, Relationship.class);
+
+    // verify
+    assertThat(entityConverter, instanceOf(RelationConverter.class));
+  }
+
+  @Test
+  public void createEntityForTypeCreatesARegularEntityConverterIfThePropertyContainerIsANode() {
+    // action
+    EntityConverter<TestSystemEntityWrapper, Node> entityConverter = instance.createForTypeAndPropertyContainer(SYSTEM_ENTITY_TYPE, NODE_TYPE);
+
+    // verify
+    assertThat(entityConverter, instanceOf(EntityConverter.class));
   }
 
   @Test
