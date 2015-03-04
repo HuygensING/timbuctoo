@@ -14,7 +14,6 @@ public class Neo4JDBIntegrationTestHelper implements DBIntegrationTestHelper {
   private EntityConverterFactory objectWrapperFactory;
   private IdGenerator idGenerator;
   private EntityInstantiator entityInstantiator;
-  private RelationConverter relationConverter;
 
   @Override
   public void startCleanDB() throws Exception {
@@ -24,7 +23,6 @@ public class Neo4JDBIntegrationTestHelper implements DBIntegrationTestHelper {
     FieldConverterFactory fieldWrapperFactory = new FieldConverterFactory(propertyBusinessRules);
     objectWrapperFactory = new EntityConverterFactory(fieldWrapperFactory);
     entityInstantiator = new EntityInstantiator();
-    relationConverter = new RelationConverter();
   }
 
   @Override
@@ -35,7 +33,7 @@ public class Neo4JDBIntegrationTestHelper implements DBIntegrationTestHelper {
   @Override
   public Storage createStorage(TypeRegistry typeRegistry) throws ModelException {
 
-    return new Neo4JStorage(db, objectWrapperFactory, entityInstantiator, idGenerator, typeRegistry, relationConverter);
+    return new Neo4JStorage(db, objectWrapperFactory, entityInstantiator, idGenerator, typeRegistry);
   }
 
 }

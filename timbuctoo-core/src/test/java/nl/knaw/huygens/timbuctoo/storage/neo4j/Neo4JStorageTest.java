@@ -27,7 +27,6 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
@@ -41,6 +40,7 @@ import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
@@ -57,6 +57,7 @@ import com.google.common.collect.Lists;
 
 public class Neo4JStorageTest {
 
+  private static final Class<Relationship> RELATIONSHIP_TYPE = Relationship.class;
   private static final Class<Node> NODE_TYPE = Node.class;
   private static final String RELATION_TYPE_ID = "typeId";
   private static final String RELATION_TARGET_ID = "targetId";
@@ -87,7 +88,6 @@ public class Neo4JStorageTest {
   private Transaction transactionMock;
   private EntityInstantiator entityInstantiatorMock;
   private IdGenerator idGeneratorMock;
-  private RelationConverter relationConverterMock;
 
   @SuppressWarnings("unchecked")
   @Before
@@ -95,18 +95,22 @@ public class Neo4JStorageTest {
     domainEntity = new SubADomainEntity();
     systemEntity = new TestSystemEntityWrapper();
     nodeMock = mock(NODE_TYPE);
-    dbMock = mock(GraphDatabaseService.class);
+    setupDBTransaction();
     systemEntityConverterMock = mock(RegularEntityConverter.class);
     setupEntityConverterFactory();
 
-    transactionMock = mock(Transaction.class);
     entityInstantiatorMock = mock(EntityInstantiator.class);
     idGeneratorMock = mock(IdGenerator.class);
-    relationConverterMock = mock(RelationConverter.class);
 
     TypeRegistry typeRegistry = TypeRegistry.getInstance().init("timbuctoo.model test.model");
 
-    instance = new Neo4JStorage(dbMock, entityConverterFactoryMock, entityInstantiatorMock, idGeneratorMock, typeRegistry, relationConverterMock);
+    instance = new Neo4JStorage(dbMock, entityConverterFactoryMock, entityInstantiatorMock, idGeneratorMock, typeRegistry);
+  }
+
+  private void setupDBTransaction() {
+    transactionMock = mock(Transaction.class);
+    dbMock = mock(GraphDatabaseService.class);
+    when(dbMock.beginTx()).thenReturn(transactionMock);
   }
 
   private void setupEntityConverterFactory() throws Exception {
@@ -121,8 +125,8 @@ public class Neo4JStorageTest {
     dbMockCreatesTransaction(transactionMock);
     idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
 
-    EntityConverter<SubADomainEntity, Node> domainEntityConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);
-    EntityConverter<? super SubADomainEntity, Node> primitiveDomainEntityConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeForSuperType(DOMAIN_ENTITY_TYPE);
+    EntityConverter<SubADomainEntity, Node> domainEntityConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE, NODE_TYPE);
+    EntityConverter<? super SubADomainEntity, Node> primitiveDomainEntityConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeForSuperType(DOMAIN_ENTITY_TYPE, NODE_TYPE);
 
     // action
     String actualId = instance.addDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
@@ -155,9 +159,9 @@ public class Neo4JStorageTest {
     dbMockCreatesTransaction(transactionMock);
     idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
 
-    EntityConverter<SubADomainEntity, Node> domainEntityConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);
+    EntityConverter<SubADomainEntity, Node> domainEntityConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE, NODE_TYPE);
     doThrow(ConversionException.class).when(domainEntityConverterMock).addValuesToPropertyContainer(nodeMock, domainEntity);
-    EntityConverter<? super SubADomainEntity, Node> primitiveDomainEntityConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeForSuperType(DOMAIN_ENTITY_TYPE);
+    EntityConverter<? super SubADomainEntity, Node> primitiveDomainEntityConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeForSuperType(DOMAIN_ENTITY_TYPE, NODE_TYPE);
 
     try {
       // action
@@ -186,8 +190,8 @@ public class Neo4JStorageTest {
     dbMockCreatesTransaction(transactionMock);
     idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
 
-    EntityConverter<SubADomainEntity, Node> domainEntityConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);
-    EntityConverter<? super SubADomainEntity, Node> primitiveDomainEntityConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeForSuperType(DOMAIN_ENTITY_TYPE);
+    EntityConverter<SubADomainEntity, Node> domainEntityConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE, NODE_TYPE);
+    EntityConverter<? super SubADomainEntity, Node> primitiveDomainEntityConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeForSuperType(DOMAIN_ENTITY_TYPE, NODE_TYPE);
     doThrow(ConversionException.class).when(primitiveDomainEntityConverterMock).addValuesToPropertyContainer(nodeMock, domainEntity);
 
     try {
@@ -216,17 +220,17 @@ public class Neo4JStorageTest {
     }
   }
 
-  private <T extends DomainEntity> EntityConverter<? super T, Node> entityConverterFactoryCreatesAnEntityWrapperTypeForSuperType(Class<T> type) {
+  private <T extends DomainEntity, U extends PropertyContainer> EntityConverter<? super T, U> entityConverterFactoryCreatesAnEntityWrapperTypeForSuperType(Class<T> type, Class<U> propertyContainer) {
     @SuppressWarnings("unchecked")
-    EntityConverter<? super T, Node> entityWrapper = mock(RegularEntityConverter.class);
-    doReturn(entityWrapper).when(entityConverterFactoryMock).createForPrimitive(type, NODE_TYPE);
+    EntityConverter<? super T, U> entityWrapper = mock(EntityConverter.class);
+    doReturn(entityWrapper).when(entityConverterFactoryMock).createForPrimitive(type, propertyContainer);
     return entityWrapper;
   }
 
-  private <T extends Entity> EntityConverter<T, Node> entityConverterFactoryCreatesAnEntityWrapperTypeFor(Class<T> type) {
+  private <T extends Entity, U extends PropertyContainer> EntityConverter<T, U> entityConverterFactoryCreatesAnEntityWrapperTypeFor(Class<T> type, Class<U> propertyContainer) {
     @SuppressWarnings("unchecked")
-    EntityConverter<T, Node> entityWrapper = mock(RegularEntityConverter.class);
-    when(entityConverterFactoryMock.createForTypeAndPropertyContainer(type, NODE_TYPE)).thenReturn(entityWrapper);
+    EntityConverter<T, U> entityWrapper = mock(EntityConverter.class);
+    when(entityConverterFactoryMock.createForTypeAndPropertyContainer(type, propertyContainer)).thenReturn(entityWrapper);
     return entityWrapper;
   }
 
@@ -242,12 +246,14 @@ public class Neo4JStorageTest {
     Node relationTypeNodeMock = mock(NODE_TYPE);
     oneNodeIsFound(RELATION_TYPE_LABEL, RELATION_TYPE_ID, relationTypeNodeMock);
 
-    Relationship relationShipMock = mock(Relationship.class);
+    Relationship relationShipMock = mock(RELATIONSHIP_TYPE);
 
     when(sourceNodeMock.createRelationshipTo(argThat(equalTo(targetNodeMock)), argThat(likeRelationshipType().withName(name)))).thenReturn(relationShipMock);
     when(relationTypeNodeMock.getProperty(RelationType.REGULAR_NAME)).thenReturn(name);
-    when(dbMock.beginTx()).thenReturn(transactionMock);
     when(idGeneratorMock.nextIdFor(RELATION_TYPE)).thenReturn(ID);
+
+    EntityConverter<SubARelation, Relationship> subARelationConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(RELATION_TYPE, RELATIONSHIP_TYPE);
+    EntityConverter<? super SubARelation, Relationship> relationConverter = entityConverterFactoryCreatesAnEntityWrapperTypeForSuperType(RELATION_TYPE, RELATIONSHIP_TYPE);
 
     SubARelation relation = new SubARelation();
     relation.setSourceId(RELATION_SOURCE_ID);
@@ -267,10 +273,17 @@ public class Neo4JStorageTest {
     verify(dbMock).findNodesByLabelAndProperty(PRIMITIVE_DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, RELATION_TARGET_ID);
     verify(dbMock).findNodesByLabelAndProperty(RELATION_TYPE_LABEL, ID_PROPERTY_NAME, RELATION_TYPE_ID);
     verify(sourceNodeMock).createRelationshipTo(argThat(equalTo(targetNodeMock)), argThat(likeRelationshipType().withName(name)));
-    // TODO refactor that the properties ProjectARelation and Relation are added. 
-    verify(relationConverterMock).addValuesToRelationship( //
+
+    verify(subARelationConverterMock).addValuesToPropertyContainer( //
         argThat(equalTo(relationShipMock)), //
-        argThat(likeDomainEntity(Relation.class) //
+        argThat(likeDomainEntity(RELATION_TYPE) //
+            .withId(ID) //
+            .withACreatedValue() //
+            .withAModifiedValue() //
+            .withRevision(FIRST_REVISION)));
+    verify(relationConverter).addValuesToPropertyContainer( //
+        argThat(equalTo(relationShipMock)), //
+        argThat(likeDomainEntity(RELATION_TYPE) //
             .withId(ID) //
             .withACreatedValue() //
             .withAModifiedValue() //
@@ -282,7 +295,6 @@ public class Neo4JStorageTest {
   public void addDomainEntityWithRelationThrowsAStorageExceptionWhenTheSourceCannotBeFound() throws Exception {
     // setup
     noNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, RELATION_SOURCE_ID);
-    when(dbMock.beginTx()).thenReturn(transactionMock);
 
     SubARelation relation = new SubARelation();
     relation.setSourceId(RELATION_SOURCE_ID);
@@ -304,7 +316,6 @@ public class Neo4JStorageTest {
     // setup
     oneNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, RELATION_SOURCE_ID, mock(NODE_TYPE));
     noNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, RELATION_TARGET_ID);
-    when(dbMock.beginTx()).thenReturn(transactionMock);
 
     SubARelation relation = new SubARelation();
     relation.setSourceId(RELATION_SOURCE_ID);
@@ -331,7 +342,6 @@ public class Neo4JStorageTest {
     oneNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, RELATION_SOURCE_ID, mock(NODE_TYPE));
     oneNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, RELATION_TARGET_ID, mock(NODE_TYPE));
     noNodeIsFound(RELATION_TYPE_LABEL, RELATION_TYPE_ID);
-    when(dbMock.beginTx()).thenReturn(transactionMock);
 
     SubARelation relation = new SubARelation();
     relation.setSourceId(RELATION_SOURCE_ID);
@@ -440,7 +450,7 @@ public class Neo4JStorageTest {
     Node nodeWithThirdRevision = createNodeWithRevision(THIRD_REVISION);
     multipleNodesAreFound(DOMAIN_ENTITY_LABEL, ID, nodeWithFirstRevision, nodeWithThirdRevision, nodeWithSecondRevision);
 
-    EntityConverter<SubADomainEntity, Node> domainEntityConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);
+    EntityConverter<SubADomainEntity, Node> domainEntityConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE, NODE_TYPE);
     when(entityConverterFactoryMock.createForTypeAndPropertyContainer(DOMAIN_ENTITY_TYPE, NODE_TYPE)).thenReturn(domainEntityConverterMock);
     when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenReturn(domainEntity);
 
@@ -697,7 +707,7 @@ public class Neo4JStorageTest {
     dbMockCreatesTransaction(transactionMock);
     oneNodeIsFound(DOMAIN_ENTITY_LABEL, ID, nodeMock);
     when(nodeMock.getProperty(REVISION_PROPERTY_NAME)).thenReturn(FIRST_REVISION);
-    EntityConverter<SubADomainEntity, Node> domainEntityConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);;
+    EntityConverter<SubADomainEntity, Node> domainEntityConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE, NODE_TYPE);;
     when(entityConverterFactoryMock.createForTypeAndPropertyContainer(DOMAIN_ENTITY_TYPE, NODE_TYPE)).thenReturn(domainEntityConverterMock);
 
     domainEntity.setId(ID);
@@ -733,7 +743,7 @@ public class Neo4JStorageTest {
 
     multipleNodesAreFound(DOMAIN_ENTITY_LABEL, ID, nodeWithFirstRevision, nodeWithThirdRevision, nodeWithSecondRevision);
     when(nodeMock.getProperty(REVISION_PROPERTY_NAME)).thenReturn(SECOND_REVISION);
-    EntityConverter<SubADomainEntity, Node> domainEntityConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);
+    EntityConverter<SubADomainEntity, Node> domainEntityConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE, NODE_TYPE);
     //    when(entityConverterFactoryMock.createForTypeAndPropertyContainer(DOMAIN_ENTITY_TYPE, Node.class)).thenReturn(domainEntityConverterMock);
 
     domainEntity.setId(ID);
@@ -840,8 +850,8 @@ public class Neo4JStorageTest {
   public void deleteSystemEntityFirstRemovesTheNodesRelationShipsAndThenTheNodeItselfTheDatabase() throws Exception {
     // setup
     dbMockCreatesTransaction(transactionMock);
-    Relationship relMock1 = mock(Relationship.class);
-    Relationship relMock2 = mock(Relationship.class);
+    Relationship relMock1 = mock(RELATIONSHIP_TYPE);
+    Relationship relMock2 = mock(RELATIONSHIP_TYPE);
     nodeHaseRelationsShips(nodeMock, relMock1, relMock2);
     oneNodeIsFound(SYSTEM_ENTITY_LABEL, ID, nodeMock);
 
@@ -883,8 +893,8 @@ public class Neo4JStorageTest {
   public void deleteDomainEntityFirstRemovesTheNodesRelationShipsAndThenTheNodeItselfTheDatabase() throws Exception {
     // setup
     dbMockCreatesTransaction(transactionMock);
-    Relationship relMock1 = mock(Relationship.class);
-    Relationship relMock2 = mock(Relationship.class);
+    Relationship relMock1 = mock(RELATIONSHIP_TYPE);
+    Relationship relMock2 = mock(RELATIONSHIP_TYPE);
     nodeHaseRelationsShips(nodeMock, relMock1, relMock2);
     oneNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, ID, nodeMock);
 
@@ -903,17 +913,17 @@ public class Neo4JStorageTest {
   public void deleteDomainEntityRemovesAllTheFoundNodes() throws Exception {
     // setup
     dbMockCreatesTransaction(transactionMock);
-    Relationship relMock1 = mock(Relationship.class);
-    Relationship relMock2 = mock(Relationship.class);
+    Relationship relMock1 = mock(RELATIONSHIP_TYPE);
+    Relationship relMock2 = mock(RELATIONSHIP_TYPE);
     nodeHaseRelationsShips(nodeMock, relMock1, relMock2);
 
-    Relationship relMock3 = mock(Relationship.class);
-    Relationship relMock4 = mock(Relationship.class);
+    Relationship relMock3 = mock(RELATIONSHIP_TYPE);
+    Relationship relMock4 = mock(RELATIONSHIP_TYPE);
     Node nodeMock2 = mock(NODE_TYPE);
     nodeHaseRelationsShips(nodeMock2, relMock3, relMock4);
 
-    Relationship relMock5 = mock(Relationship.class);
-    Relationship relMock6 = mock(Relationship.class);
+    Relationship relMock5 = mock(RELATIONSHIP_TYPE);
+    Relationship relMock6 = mock(RELATIONSHIP_TYPE);
     Node nodeMock3 = mock(NODE_TYPE);
     nodeHaseRelationsShips(nodeMock3, relMock5, relMock6);
 

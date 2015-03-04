@@ -35,23 +35,21 @@ import com.google.inject.Inject;
 
 public class Neo4JStorage implements Storage {
 
+  private static final Class<Relationship> RELATIONSHIP_TYPE = Relationship.class;
   private static final Class<Node> NODE_TYPE = Node.class;
   private final EntityConverterFactory entityConverterFactory;
   private final GraphDatabaseService db;
   private final EntityInstantiator entityInstantiator;
   private final IdGenerator idGenerator;
   private final TypeRegistry typeRegistry;
-  private RelationConverter relationConverter;
 
   @Inject
-  public Neo4JStorage(GraphDatabaseService db, EntityConverterFactory entityTypeWrapperFactory, EntityInstantiator entityInstantiator, IdGenerator idGenerator, TypeRegistry typeRegistry,
-      RelationConverter relationConverter) {
+  public Neo4JStorage(GraphDatabaseService db, EntityConverterFactory entityTypeWrapperFactory, EntityInstantiator entityInstantiator, IdGenerator idGenerator, TypeRegistry typeRegistry) {
     this.db = db;
     this.entityConverterFactory = entityTypeWrapperFactory;
     this.entityInstantiator = entityInstantiator;
     this.idGenerator = idGenerator;
     this.typeRegistry = typeRegistry;
-    this.relationConverter = relationConverter;
   }
 
   @Override
@@ -146,9 +144,14 @@ public class Neo4JStorage implements Storage {
         throw new StorageException(createCannotFindString("RelationType", relation.getTypeType(), relation.getTypeId()));
       }
 
+      EntityConverter<T, Relationship> relationConverter = entityConverterFactory.createForTypeAndPropertyContainer(type, RELATIONSHIP_TYPE);
+      EntityConverter<? super T, Relationship> primitiveRelationConverter = entityConverterFactory.createForPrimitive(type, RELATIONSHIP_TYPE);
+
       String id = addAdministrativeValues(type, (T) relation);
       Relationship relationship = source.createRelationshipTo(target, DynamicRelationshipType.withName((String) relationType.getProperty(RelationType.REGULAR_NAME)));
-      relationConverter.addValuesToRelationship(relationship, relation);
+
+      relationConverter.addValuesToPropertyContainer(relationship, (T) relation);
+      primitiveRelationConverter.addValuesToPropertyContainer(relationship, (T) relation);
 
       transaction.success();
 
@@ -165,12 +168,12 @@ public class Neo4JStorage implements Storage {
       String id = addAdministrativeValues(type, entity);
       Node node = db.createNode();
 
-      EntityConverter<T, Node> domainEntityWrapper = entityConverterFactory.createForTypeAndPropertyContainer(type, NODE_TYPE);
-      EntityConverter<? super T, Node> primitiveEntityWrapper = entityConverterFactory.createForPrimitive(type, NODE_TYPE);
+      EntityConverter<T, Node> domainEntityConverter = entityConverterFactory.createForTypeAndPropertyContainer(type, NODE_TYPE);
+      EntityConverter<? super T, Node> primitiveEntityConverter = entityConverterFactory.createForPrimitive(type, NODE_TYPE);
 
       try {
-        domainEntityWrapper.addValuesToPropertyContainer(node, entity);
-        primitiveEntityWrapper.addValuesToPropertyContainer(node, entity);
+        domainEntityConverter.addValuesToPropertyContainer(node, entity);
+        primitiveEntityConverter.addValuesToPropertyContainer(node, entity);
       } catch (ConversionException e) {
         transaction.failure();
         throw e;
