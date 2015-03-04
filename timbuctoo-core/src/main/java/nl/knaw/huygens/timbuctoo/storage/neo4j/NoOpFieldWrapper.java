@@ -21,7 +21,7 @@ public class NoOpFieldWrapper implements FieldConverter {
   }
 
   @Override
-  public void setNodeProperty(Node node, Entity entity) throws ConversionException {
+  public void setPropertyContainerProperty(Node node, Entity entity) throws ConversionException {
     // TODO Auto-generated method stub
 
   }

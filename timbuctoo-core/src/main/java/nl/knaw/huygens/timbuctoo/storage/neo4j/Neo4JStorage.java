@@ -35,6 +35,7 @@ import com.google.inject.Inject;
 
 public class Neo4JStorage implements Storage {
 
+  private static final Class<Node> NODE_TYPE = Node.class;
   private final EntityConverterFactory entityConverterFactory;
   private final GraphDatabaseService db;
   private final EntityInstantiator entityInstantiator;
@@ -77,10 +78,10 @@ public class Neo4JStorage implements Storage {
       try {
         String id = addAdministrativeValues(type, entity);
 
-        EntityConverter<T> objectWrapper = entityConverterFactory.createForType(type);
+        EntityConverter<T, Node> objectWrapper = entityConverterFactory.createForTypeAndPropertyContainer(type, NODE_TYPE);
         Node node = db.createNode();
 
-        objectWrapper.addValuesToNode(node, entity);
+        objectWrapper.addValuesToPropertyContainer(node, entity);
 
         transaction.success();
         return id;
@@ -164,12 +165,12 @@ public class Neo4JStorage implements Storage {
       String id = addAdministrativeValues(type, entity);
       Node node = db.createNode();
 
-      EntityConverter<T> domainEntityWrapper = entityConverterFactory.createForType(type);
-      EntityConverter<? super T> primitiveEntityWrapper = entityConverterFactory.createForPrimitive(type);
+      EntityConverter<T, Node> domainEntityWrapper = entityConverterFactory.createForTypeAndPropertyContainer(type, NODE_TYPE);
+      EntityConverter<? super T, Node> primitiveEntityWrapper = entityConverterFactory.createForPrimitive(type, NODE_TYPE);
 
       try {
-        domainEntityWrapper.addValuesToNode(node, entity);
-        primitiveEntityWrapper.addValuesToNode(node, entity);
+        domainEntityWrapper.addValuesToPropertyContainer(node, entity);
+        primitiveEntityWrapper.addValuesToPropertyContainer(node, entity);
       } catch (ConversionException e) {
         transaction.failure();
         throw e;
@@ -206,12 +207,12 @@ public class Neo4JStorage implements Storage {
       updateAdministrativeValues(entity);
 
       try {
-        EntityConverter<T> entityConverter = entityConverterFactory.createForType(type);
+        EntityConverter<T, Node> entityConverter = entityConverterFactory.createForTypeAndPropertyContainer(type, NODE_TYPE);
 
         /* split the update and the update of modified and rev, 
          * to be sure the administrative values can only be changed by the system
          */
-        entityConverter.updateNode(node, entity);
+        entityConverter.updatePropertyContainer(node, entity);
         entityConverter.updateModifiedAndRev(node, entity);
 
         transaction.success();
@@ -344,7 +345,7 @@ public class Neo4JStorage implements Storage {
       try {
         T entity = entityInstantiator.createInstanceOf(type);
 
-        EntityConverter<T> entityWrapper = entityConverterFactory.createForType(type);
+        EntityConverter<T, Node> entityWrapper = entityConverterFactory.createForTypeAndPropertyContainer(type, NODE_TYPE);
         entityWrapper.addValuesToEntity(entity, nodeWithHighestRevision);
 
         return entity;

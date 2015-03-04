@@ -59,7 +59,7 @@ public class SimpleValueFieldConverterTest implements FieldConverterTest {
     entity.setStringValue(value);
 
     // action
-    instance.setNodeProperty(nodeMock, entity);
+    instance.setPropertyContainerProperty(nodeMock, entity);
 
     // verify
     verify(nodeMock).setProperty(propertyName, value);
@@ -73,7 +73,7 @@ public class SimpleValueFieldConverterTest implements FieldConverterTest {
     entity.setStringValue(value);
 
     // action
-    instance.setNodeProperty(nodeMock, entity);
+    instance.setPropertyContainerProperty(nodeMock, entity);
 
     // verify
     verify(nodeMock, never()).setProperty(anyString(), any());
@@ -92,7 +92,7 @@ public class SimpleValueFieldConverterTest implements FieldConverterTest {
     setupInstance(instance);
 
     // action
-    instance.setNodeProperty(nodeMock, entity);
+    instance.setPropertyContainerProperty(nodeMock, entity);
   }
 
   @Test(expected = ConversionException.class)
@@ -108,7 +108,7 @@ public class SimpleValueFieldConverterTest implements FieldConverterTest {
     setupInstance(instance);
 
     // action
-    instance.setNodeProperty(nodeMock, entity);
+    instance.setPropertyContainerProperty(nodeMock, entity);
   }
 
   @Test(expected = ConversionException.class)
@@ -127,7 +127,7 @@ public class SimpleValueFieldConverterTest implements FieldConverterTest {
     setupInstance(instance);
 
     // action
-    instance.setNodeProperty(nodeMock, entity);
+    instance.setPropertyContainerProperty(nodeMock, entity);
   }
 
   @Override

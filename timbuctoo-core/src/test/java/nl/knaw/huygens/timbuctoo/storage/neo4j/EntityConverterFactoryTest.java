@@ -16,6 +16,7 @@ import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.graphdb.Node;
 
 import test.model.BaseDomainEntity;
 import test.model.TestSystemEntityWrapper;
@@ -23,19 +24,20 @@ import test.model.projecta.SubADomainEntity;
 
 public class EntityConverterFactoryTest {
 
+  private static final Class<Node> NODE_TYPE = Node.class;
   private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
   private static final Class<BaseDomainEntity> PRIMITIVE_DOMAIN_ENTITY_TYPE = BaseDomainEntity.class;
   private static final Class<TestSystemEntityWrapper> SYSTEM_ENTITY_TYPE = TestSystemEntityWrapper.class;
   private EntityConverterFactory instance;
   @SuppressWarnings("rawtypes")
-  private EntityConverter entityWrapperMock;
+  private RegularEntityConverter entityWrapperMock;
   private AbstractFieldConverter fieldWrapperMock;
   private FieldConverterFactory fieldWrapperFactoryMock;
 
   @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
-    entityWrapperMock = mock(EntityConverter.class);
+    entityWrapperMock = mock(RegularEntityConverter.class);
 
     fieldWrapperMock = mock(AbstractFieldConverter.class);
     fieldWrapperFactoryMock = mock(FieldConverterFactory.class);
@@ -44,7 +46,7 @@ public class EntityConverterFactoryTest {
 
     instance = new EntityConverterFactory(fieldWrapperFactoryMock) {
       @Override
-      protected <T extends Entity> EntityConverter<T> createEntityConverter(Class<T> type) {
+      protected <T extends Entity, U extends Node> EntityConverter<T, U> createEntityConverter(Class<T> type, Class<U> nodeType) {
         return entityWrapperMock;
       }
     };
@@ -58,7 +60,7 @@ public class EntityConverterFactoryTest {
     numberOfFields += getNumberOfFields(Entity.class);
 
     // action
-    EntityConverter<TestSystemEntityWrapper> entityWrapper = instance.createForType(SYSTEM_ENTITY_TYPE);
+    EntityConverter<TestSystemEntityWrapper, Node> entityWrapper = instance.createForTypeAndPropertyContainer(SYSTEM_ENTITY_TYPE, NODE_TYPE);
 
     // verify
     verify(fieldWrapperFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(SYSTEM_ENTITY_TYPE)), any(Field.class));
@@ -73,7 +75,7 @@ public class EntityConverterFactoryTest {
     numberOfFields += getNumberOfFields(Entity.class);
 
     // action
-    EntityConverter<? super SubADomainEntity> wrapper = instance.createForPrimitive(DOMAIN_ENTITY_TYPE);
+    EntityConverter<? super SubADomainEntity, Node> wrapper = instance.createForPrimitive(DOMAIN_ENTITY_TYPE, NODE_TYPE);
 
     // verify
     verify(fieldWrapperFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(PRIMITIVE_DOMAIN_ENTITY_TYPE)), any(Field.class));

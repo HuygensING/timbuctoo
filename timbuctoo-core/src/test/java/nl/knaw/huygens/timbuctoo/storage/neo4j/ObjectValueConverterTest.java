@@ -64,7 +64,7 @@ public class ObjectValueConverterTest implements FieldConverterTest {
     containingEntity.setObjectValue(change);
 
     // action
-    instance.setNodeProperty(nodeMock, containingEntity);
+    instance.setPropertyContainerProperty(nodeMock, containingEntity);
 
     // verify
     verify(nodeMock).setProperty(propertyName, serializedValue);
@@ -83,7 +83,7 @@ public class ObjectValueConverterTest implements FieldConverterTest {
     containingEntity.setObjectValue(null);
 
     // action
-    instance.setNodeProperty(nodeMock, containingEntity);
+    instance.setPropertyContainerProperty(nodeMock, containingEntity);
 
     // verify
     verify(nodeMock, never()).setProperty(anyString(), any());
@@ -102,7 +102,7 @@ public class ObjectValueConverterTest implements FieldConverterTest {
     setupInstance(instance);
 
     // action
-    instance.setNodeProperty(nodeMock, containingEntity);
+    instance.setPropertyContainerProperty(nodeMock, containingEntity);
   }
 
   @Test(expected = ConversionException.class)
@@ -118,7 +118,7 @@ public class ObjectValueConverterTest implements FieldConverterTest {
     setupInstance(instance);
 
     // action
-    instance.setNodeProperty(nodeMock, containingEntity);
+    instance.setPropertyContainerProperty(nodeMock, containingEntity);
   }
 
   @Test(expected = ConversionException.class)
@@ -138,7 +138,7 @@ public class ObjectValueConverterTest implements FieldConverterTest {
     setupInstance(instance);
 
     // action
-    instance.setNodeProperty(nodeMock, containingEntity);
+    instance.setPropertyContainerProperty(nodeMock, containingEntity);
   }
 
   @Override
