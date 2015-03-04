@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
@@ -17,6 +19,7 @@ import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
 
 import test.model.BaseDomainEntity;
 import test.model.TestSystemEntityWrapper;
@@ -30,24 +33,32 @@ public class EntityConverterFactoryTest {
   private static final Class<TestSystemEntityWrapper> SYSTEM_ENTITY_TYPE = TestSystemEntityWrapper.class;
   private EntityConverterFactory instance;
   @SuppressWarnings("rawtypes")
-  private RegularEntityConverter entityWrapperMock;
-  private AbstractFieldConverter fieldWrapperMock;
-  private FieldConverterFactory fieldWrapperFactoryMock;
+  private NoOpEntityConverter noOpEntityConverterMock;
+  @SuppressWarnings("rawtypes")
+  private RegularEntityConverter regularEntityConverterMock;
+  private AbstractFieldConverter fieldConverterMock;
+  private FieldConverterFactory fieldConverterFactoryMock;
 
   @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
-    entityWrapperMock = mock(RegularEntityConverter.class);
+    regularEntityConverterMock = mock(RegularEntityConverter.class);
+    noOpEntityConverterMock = mock(NoOpEntityConverter.class);
 
-    fieldWrapperMock = mock(AbstractFieldConverter.class);
-    fieldWrapperFactoryMock = mock(FieldConverterFactory.class);
+    fieldConverterMock = mock(AbstractFieldConverter.class);
+    fieldConverterFactoryMock = mock(FieldConverterFactory.class);
 
-    when(fieldWrapperFactoryMock.wrap(any(Class.class), any(Field.class))).thenReturn(fieldWrapperMock);
+    when(fieldConverterFactoryMock.wrap(any(Class.class), any(Field.class))).thenReturn(fieldConverterMock);
 
-    instance = new EntityConverterFactory(fieldWrapperFactoryMock) {
+    instance = new EntityConverterFactory(fieldConverterFactoryMock) {
       @Override
       protected <T extends Entity, U extends Node> EntityConverter<T, U> createEntityConverter(Class<T> type, Class<U> nodeType) {
-        return entityWrapperMock;
+        return regularEntityConverterMock;
+      }
+
+      @Override
+      protected <T extends Entity, U extends PropertyContainer> EntityConverter<T, U> createNoOpEntityConverter(Class<T> type, Class<U> nodeType) {
+        return noOpEntityConverterMock;
       }
     };
   }
@@ -60,11 +71,20 @@ public class EntityConverterFactoryTest {
     numberOfFields += getNumberOfFields(Entity.class);
 
     // action
-    EntityConverter<TestSystemEntityWrapper, Node> entityWrapper = instance.createForTypeAndPropertyContainer(SYSTEM_ENTITY_TYPE, NODE_TYPE);
+    EntityConverter<TestSystemEntityWrapper, Node> entityConverter = instance.createForTypeAndPropertyContainer(SYSTEM_ENTITY_TYPE, NODE_TYPE);
 
     // verify
-    verify(fieldWrapperFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(SYSTEM_ENTITY_TYPE)), any(Field.class));
-    verify(entityWrapper, times(numberOfFields)).addFieldConverter(fieldWrapperMock);
+    verify(fieldConverterFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(SYSTEM_ENTITY_TYPE)), any(Field.class));
+    verify(entityConverter, times(numberOfFields)).addFieldConverter(fieldConverterMock);
+  }
+
+  @Test
+  public void createEntityForTypeCreatesANoOpEntityConverterIfPropertyConverterIsUsed() {
+    // action
+    EntityConverter<TestSystemEntityWrapper, PropertyContainer> entityConverter = instance.createForTypeAndPropertyContainer(SYSTEM_ENTITY_TYPE, PropertyContainer.class);
+
+    // verify
+    assertThat(entityConverter, instanceOf(NoOpEntityConverter.class));
   }
 
   @Test
@@ -78,8 +98,8 @@ public class EntityConverterFactoryTest {
     EntityConverter<? super SubADomainEntity, Node> wrapper = instance.createForPrimitive(DOMAIN_ENTITY_TYPE, NODE_TYPE);
 
     // verify
-    verify(fieldWrapperFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(PRIMITIVE_DOMAIN_ENTITY_TYPE)), any(Field.class));
-    verify(wrapper, times(numberOfFields)).addFieldConverter(fieldWrapperMock);
+    verify(fieldConverterFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(PRIMITIVE_DOMAIN_ENTITY_TYPE)), any(Field.class));
+    verify(wrapper, times(numberOfFields)).addFieldConverter(fieldConverterMock);
   }
 
   private int getNumberOfFields(Class<? extends Entity> type) {
