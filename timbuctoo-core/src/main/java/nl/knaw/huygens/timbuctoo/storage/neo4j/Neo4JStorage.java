@@ -150,10 +150,15 @@ public class Neo4JStorage implements Storage {
       String id = addAdministrativeValues(type, (T) relation);
       Relationship relationship = source.createRelationshipTo(target, DynamicRelationshipType.withName((String) relationType.getProperty(RelationType.REGULAR_NAME)));
 
-      relationConverter.addValuesToPropertyContainer(relationship, (T) relation);
-      primitiveRelationConverter.addValuesToPropertyContainer(relationship, (T) relation);
+      try {
+        relationConverter.addValuesToPropertyContainer(relationship, (T) relation);
+        primitiveRelationConverter.addValuesToPropertyContainer(relationship, (T) relation);
 
-      transaction.success();
+        transaction.success();
+      } catch (ConversionException e) {
+        transaction.failure();
+        throw e;
+      }
 
       return id;
     }
