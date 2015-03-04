@@ -6,17 +6,17 @@ import static org.hamcrest.Matchers.notNullValue;
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualtityMatcher;
 import nl.knaw.huygens.hamcrest.PropertyMatcher;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import test.model.BaseDomainEntity;
 
-public class BaseDomainEntityMatcher<T extends BaseDomainEntity> extends CompositeMatcher<T> {
-  private BaseDomainEntityMatcher() {}
+public class DomainEntityMatcher<T extends DomainEntity> extends CompositeMatcher<T> {
+  private DomainEntityMatcher() {}
 
-  public static <U extends BaseDomainEntity> BaseDomainEntityMatcher<U> likeBaseDomainEntity(Class<U> type) {
-    return new BaseDomainEntityMatcher<U>();
+  public static <U extends DomainEntity> DomainEntityMatcher<U> likeDomainEntity(Class<U> type) {
+    return new DomainEntityMatcher<U>();
   }
 
-  public BaseDomainEntityMatcher<T> withId(String id) {
+  public DomainEntityMatcher<T> withId(String id) {
     addMatcher(new PropertyEqualtityMatcher<T, String>("id", id) {
 
       @Override
@@ -28,7 +28,7 @@ public class BaseDomainEntityMatcher<T extends BaseDomainEntity> extends Composi
     return this;
   }
 
-  public BaseDomainEntityMatcher<T> withACreatedValue() {
+  public DomainEntityMatcher<T> withACreatedValue() {
     addMatcher(new PropertyMatcher<T, Change>("created", notNullValue(Change.class)) {
 
       @Override
@@ -39,7 +39,7 @@ public class BaseDomainEntityMatcher<T extends BaseDomainEntity> extends Composi
     return this;
   }
 
-  public BaseDomainEntityMatcher<T> withAModifiedValue() {
+  public DomainEntityMatcher<T> withAModifiedValue() {
     addMatcher(new PropertyMatcher<T, Change>("modified", notNullValue(Change.class)) {
 
       @Override
@@ -50,7 +50,7 @@ public class BaseDomainEntityMatcher<T extends BaseDomainEntity> extends Composi
     return this;
   }
 
-  public BaseDomainEntityMatcher<T> withRevision(int revisionNumber) {
+  public DomainEntityMatcher<T> withRevision(int revisionNumber) {
     addMatcher(new PropertyEqualtityMatcher<T, Integer>("rev", revisionNumber) {
 
       @Override
@@ -61,7 +61,7 @@ public class BaseDomainEntityMatcher<T extends BaseDomainEntity> extends Composi
     return this;
   }
 
-  public BaseDomainEntityMatcher<T> withAModifiedValueNotEqualTo(Change oldModified) {
+  public DomainEntityMatcher<T> withAModifiedValueNotEqualTo(Change oldModified) {
     addMatcher(new PropertyMatcher<T, Change>("modified", not(equalTo(oldModified))) {
 
       @Override

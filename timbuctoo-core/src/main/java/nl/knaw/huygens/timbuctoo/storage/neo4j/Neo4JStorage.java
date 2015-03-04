@@ -12,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
@@ -21,6 +22,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
 import org.neo4j.graphdb.DynamicLabel;
+import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
@@ -37,13 +39,18 @@ public class Neo4JStorage implements Storage {
   private final GraphDatabaseService db;
   private final EntityInstantiator entityInstantiator;
   private final IdGenerator idGenerator;
+  private final TypeRegistry typeRegistry;
+  private RelationConverter relationConverter;
 
   @Inject
-  public Neo4JStorage(GraphDatabaseService db, EntityConverterFactory entityTypeWrapperFactory, EntityInstantiator entityInstantiator, IdGenerator idGenerator) {
+  public Neo4JStorage(GraphDatabaseService db, EntityConverterFactory entityTypeWrapperFactory, EntityInstantiator entityInstantiator, IdGenerator idGenerator, TypeRegistry typeRegistry,
+      RelationConverter relationConverter) {
     this.db = db;
     this.entityConverterFactory = entityTypeWrapperFactory;
     this.entityInstantiator = entityInstantiator;
     this.idGenerator = idGenerator;
+    this.typeRegistry = typeRegistry;
+    this.relationConverter = relationConverter;
   }
 
   @Override
@@ -107,8 +114,52 @@ public class Neo4JStorage implements Storage {
     entity.setRev(++rev);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
+    if (Relation.class.isAssignableFrom(type)) {
+      return addRelationDomainEntity((Class<? extends Relation>) type, (Relation) entity);
+    } else {
+      return addRegularDomainEntity(type, entity);
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T extends Relation> String addRelationDomainEntity(Class<T> type, Relation relation) throws StorageException {
+    try (Transaction transaction = db.beginTx()) {
+      Node source = getLatestById(typeRegistry.getDomainEntityType(relation.getSourceType()), relation.getSourceId());
+      if (source == null) {
+        transaction.failure();
+        throw new StorageException(createCannotFindString("Source", relation.getSourceType(), relation.getSourceId()));
+      }
+
+      Node target = getLatestById(typeRegistry.getDomainEntityType(relation.getTargetType()), relation.getTargetId());
+      if (target == null) {
+        transaction.failure();
+        throw new StorageException(createCannotFindString("Target", relation.getSourceType(), relation.getSourceId()));
+      }
+
+      Node relationType = getLatestById(typeRegistry.getSystemEntityType(relation.getTypeType()), relation.getTypeId());
+      if (relationType == null) {
+        transaction.failure();
+        throw new StorageException(createCannotFindString("RelationType", relation.getTypeType(), relation.getTypeId()));
+      }
+
+      String id = addAdministrativeValues(type, (T) relation);
+      Relationship relationship = source.createRelationshipTo(target, DynamicRelationshipType.withName((String) relationType.getProperty(RelationType.REGULAR_NAME)));
+      relationConverter.addValuesToRelationship(relationship, relation);
+
+      transaction.success();
+
+      return id;
+    }
+  }
+
+  private String createCannotFindString(String relationPart, String typeName, String id) {
+    return String.format("%s of type \"%s\" with id \"%s\" could not be found.", relationPart, typeName, id);
+  }
+
+  private <T extends DomainEntity> String addRegularDomainEntity(Class<T> type, T entity) throws ConversionException {
     try (Transaction transaction = db.beginTx()) {
       String id = addAdministrativeValues(type, entity);
       Node node = db.createNode();
@@ -128,6 +179,7 @@ public class Neo4JStorage implements Storage {
 
       return id;
     }
+
   }
 
   @Override
