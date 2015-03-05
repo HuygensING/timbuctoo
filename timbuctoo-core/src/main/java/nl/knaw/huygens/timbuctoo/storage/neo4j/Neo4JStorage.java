@@ -346,72 +346,24 @@ public class Neo4JStorage implements Storage {
     return null;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public <T extends Entity> T getEntity(Class<T> type, String id) throws StorageException {
-    if (Relation.class.isAssignableFrom(type)) {
-      return (T) getRelation((Class<? extends Relation>) type, id);
-    } else {
-      return getRegularEntity(type, id);
-    }
+    PropertyContainer propertyContainerWithHighestRevision = null;
 
-  }
-
-  private <T extends Relation> T getRelation(Class<T> type, String id) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
-      Index<Relationship> index = db.index().forRelationships(RELATION_SHIP_ID_INDEX);
-
-      IndexHits<Relationship> indexHits = index.get(ID_PROPERTY_NAME, id);
-
-      ResourceIterator<Relationship> iterator = indexHits.iterator();
-      if (!iterator.hasNext()) {
-        transaction.success();
-        return null;
-      }
-      Relationship relationshipWithHighestRevision = iterator.next();
-
-      for (; iterator.hasNext();) {
-        Relationship next = iterator.next();
-
-        if (getRevision(next) > getRevision(relationshipWithHighestRevision)) {
-          relationshipWithHighestRevision = next;
-        }
+      if (Relation.class.isAssignableFrom(type)) {
+        propertyContainerWithHighestRevision = getLatestFromIndex(id, transaction);
+      } else {
+        propertyContainerWithHighestRevision = getLatestById(type, id);
       }
 
-      try {
-        T entity = entityInstantiator.createInstanceOf(type);
-
-        EntityConverter<T, Relationship> entityWrapper = entityConverterFactory.createForTypeAndPropertyContainer(type, RELATIONSHIP_TYPE);
-        entityWrapper.addValuesToEntity(entity, relationshipWithHighestRevision);
-
-        transaction.success();
-        return entity;
-      } catch (ConversionException e) {
-        transaction.failure();
-        throw e;
-      } catch (IllegalAccessException | IllegalArgumentException | InstantiationException e) {
-        transaction.failure();
-        throw new StorageException(e);
-      }
-
-    }
-
-  }
-
-  private <T extends Entity> T getRegularEntity(Class<T> type, String id) throws ConversionException, StorageException {
-    try (Transaction transaction = db.beginTx()) {
-      Node nodeWithHighestRevision = getLatestById(type, id);
-
-      if (nodeWithHighestRevision == null) {
+      if (propertyContainerWithHighestRevision == null) {
         transaction.success();
         return null;
       }
 
       try {
-        T entity = entityInstantiator.createInstanceOf(type);
-
-        EntityConverter<T, Node> entityWrapper = entityConverterFactory.createForTypeAndPropertyContainer(type, NODE_TYPE);
-        entityWrapper.addValuesToEntity(entity, nodeWithHighestRevision);
+        T entity = convertEnity(type, propertyContainerWithHighestRevision);
 
         transaction.success();
         return entity;
@@ -423,6 +375,38 @@ public class Neo4JStorage implements Storage {
         throw new StorageException(e);
       }
     }
+
+  }
+
+  private Relationship getLatestFromIndex(String id, Transaction transaction) {
+    Index<Relationship> index = db.index().forRelationships(RELATION_SHIP_ID_INDEX);
+
+    IndexHits<Relationship> indexHits = index.get(ID_PROPERTY_NAME, id);
+
+    ResourceIterator<Relationship> iterator = indexHits.iterator();
+    if (!iterator.hasNext()) {
+      return null;
+    }
+    Relationship relationshipWithHighestRevision = iterator.next();
+
+    for (; iterator.hasNext();) {
+      Relationship next = iterator.next();
+
+      if (getRevision(next) > getRevision(relationshipWithHighestRevision)) {
+        relationshipWithHighestRevision = next;
+      }
+    }
+    return relationshipWithHighestRevision;
+  }
+
+  private <T extends Entity, U extends PropertyContainer> T convertEnity(Class<T> type, U propertyContainer) throws InstantiationException, IllegalAccessException, ConversionException {
+    T entity = entityInstantiator.createInstanceOf(type);
+    @SuppressWarnings("unchecked")
+    Class<U> propertyContainerType = (Class<U>) propertyContainer.getClass();
+
+    EntityConverter<T, U> entityConverter = entityConverterFactory.createForTypeAndPropertyContainer(type, propertyContainerType);
+    entityConverter.addValuesToEntity(entity, propertyContainer);
+    return entity;
   }
 
   /**
