@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
-import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 
 public abstract class AbstractFieldConverter implements FieldConverter {
@@ -60,19 +59,19 @@ public abstract class AbstractFieldConverter implements FieldConverter {
    * @see nl.knaw.huygens.timbuctoo.storage.neo4j.FieldWrapper#addValueToEntity(nl.knaw.huygens.timbuctoo.model.Entity, org.neo4j.graphdb.Node)
    */
   @Override
-  public final void addValueToEntity(Entity entity, Node node) throws ConversionException {
+  public final void addValueToEntity(Entity entity, PropertyContainer propertyContainer) throws ConversionException {
     try {
       field.setAccessible(true);
-      if (node.hasProperty(getPropertyName())) {
-        fillField(entity, node);
+      if (propertyContainer.hasProperty(getPropertyName())) {
+        fillField(entity, propertyContainer);
       }
     } catch (IllegalAccessException | IllegalArgumentException e) {
       throw new ConversionException(e);
     }
   }
 
-  protected void fillField(Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException {
-    field.set(entity, convertValue(node.getProperty(getPropertyName()), field.getType()));
+  protected void fillField(Entity entity, PropertyContainer propertyContainer) throws IllegalArgumentException, IllegalAccessException {
+    field.set(entity, convertValue(propertyContainer.getProperty(getPropertyName()), field.getType()));
   }
 
   protected abstract Object convertValue(Object value, Class<?> fieldType) throws IllegalArgumentException;

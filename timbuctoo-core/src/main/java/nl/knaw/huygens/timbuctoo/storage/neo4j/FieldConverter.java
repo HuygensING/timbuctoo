@@ -4,31 +4,30 @@ import java.lang.reflect.Field;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
-import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 
 public interface FieldConverter {
 
-  public abstract void setContainingType(Class<? extends Entity> containingType);
+  void setContainingType(Class<? extends Entity> containingType);
 
-  public abstract void setField(Field field);
+  void setField(Field field);
 
-  public abstract void setPropertyContainerProperty(PropertyContainer propertyContainer, Entity entity) throws ConversionException;
+  void setPropertyContainerProperty(PropertyContainer propertyContainer, Entity entity) throws ConversionException;
 
   /**
-   * Extracts the value from the node and converts it so it can be added to the entity.
+   * Extracts the value from the propertyContainer and converts it so it can be added to the entity.
    * @param entity the entity to add the values to
-   * @param node the node to retrieve the values from
+   * @param propertyContainer the propertyContainer to retrieve the values from
    * @throws ConversionException when the value in the node could not be added to the entity.
    */
-  public abstract void addValueToEntity(Entity entity, Node node) throws ConversionException;
+  void addValueToEntity(Entity entity, PropertyContainer propertyContainer) throws ConversionException;
 
-  public abstract void setFieldType(FieldType fieldType);
+  void setFieldType(FieldType fieldType);
 
-  public abstract void setName(String fieldName);
+  void setName(String fieldName);
 
-  public abstract FieldType getFieldType();
+  FieldType getFieldType();
 
-  public abstract String getName();
+  String getName();
 
 }

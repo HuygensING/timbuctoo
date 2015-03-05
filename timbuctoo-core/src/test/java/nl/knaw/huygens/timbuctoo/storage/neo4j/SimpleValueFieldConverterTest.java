@@ -19,6 +19,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
 
 import test.model.TestSystemEntityWrapper;
 
@@ -174,7 +175,7 @@ public class SimpleValueFieldConverterTest implements FieldConverterTest {
 
     SimpleValueFieldConverter instance = new SimpleValueFieldConverter() {
       @Override
-      protected void fillField(nl.knaw.huygens.timbuctoo.model.Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException {
+      protected void fillField(nl.knaw.huygens.timbuctoo.model.Entity entity, PropertyContainer propertyContainer) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalAccessException();
       }
     };
@@ -195,7 +196,7 @@ public class SimpleValueFieldConverterTest implements FieldConverterTest {
 
     SimpleValueFieldConverter instance = new SimpleValueFieldConverter() {
       @Override
-      protected void fillField(nl.knaw.huygens.timbuctoo.model.Entity entity, Node node) throws IllegalArgumentException, IllegalAccessException {
+      protected void fillField(nl.knaw.huygens.timbuctoo.model.Entity entity, PropertyContainer propertyContainer) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalArgumentException();
       }
     };

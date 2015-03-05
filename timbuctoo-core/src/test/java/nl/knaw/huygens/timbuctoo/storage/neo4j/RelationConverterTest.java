@@ -74,4 +74,29 @@ public class RelationConverterTest {
     }
   }
 
+  @Test
+  public void addValuesToEntityCallsAllTheFieldConvertersThatAreNotOnTheIgnoredList() throws Exception {
+    // action
+    instance.addValuesToEntity(relation, relationshipMock);
+
+    // verify
+    verify(fieldConverterMock).addValueToEntity(relation, relationshipMock);
+    verify(someOtherFieldConverterMock).addValueToEntity(relation, relationshipMock);
+    verify(fieldConverterMockToIgnore1, never()).addValueToEntity(relation, relationshipMock);
+    verify(fieldConverterMockToIgnore2, never()).addValueToEntity(relation, relationshipMock);
+  }
+
+  @Test(expected = ConversionException.class)
+  public void addValuesToEntityThrowsAConversionExceptionIfOneOfTheFieldMappersDoes() throws Exception {
+    // setup
+    doThrow(ConversionException.class).when(fieldConverterMock).addValueToEntity(relation, relationshipMock);
+
+    try {
+      // action
+      instance.addValuesToEntity(relation, relationshipMock);
+    } finally {
+      // verify
+      verify(fieldConverterMock).addValueToEntity(relation, relationshipMock);;
+    }
+  }
 }

@@ -30,7 +30,11 @@ public class RelationConverter<T extends Relation, U extends Relationship> imple
 
   @Override
   public void addValuesToEntity(T entity, U propertyContainer) throws ConversionException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    for (FieldConverter fieldConverter : fieldConverters) {
+      if (!fieldsToIgnore.contains(fieldConverter.getName())) {
+        fieldConverter.addValueToEntity(entity, propertyContainer);
+      }
+    }
   }
 
   @Override
