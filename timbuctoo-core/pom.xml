@@ -90,14 +90,14 @@
         </exclusion>
       </exclusions>
     </dependency>
-    
+
     <!-- Neo4j -->
     <dependency>
       <groupId>org.neo4j</groupId>
       <artifactId>neo4j-kernel</artifactId>
       <version>${neo4j.version}</version>
     </dependency>
-    
+
     <!-- ## End of main dependencies ## -->
     <!-- ## Test dependencies ## -->
     <!-- Timbuctoo test services -->
@@ -121,6 +121,12 @@
       <version>${neo4j.version}</version>
       <type>test-jar</type>
       <scope>test</scope>
+    </dependency>
+    <!-- Lucene indexes for Neo4J needed for the in-memory Neo4J -->
+    <dependency>
+      <groupId>org.neo4j</groupId>
+      <artifactId>neo4j-lucene-index</artifactId>
+      <version>${neo4j.version}</version>
     </dependency>
     <!-- ## End of test dependencies ## -->
   </dependencies>

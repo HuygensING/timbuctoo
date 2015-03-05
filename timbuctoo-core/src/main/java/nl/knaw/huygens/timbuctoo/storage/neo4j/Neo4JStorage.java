@@ -153,7 +153,10 @@ public class Neo4JStorage implements Storage {
       EntityConverter<? super T, Relationship> primitiveRelationConverter = entityConverterFactory.createForPrimitive(type, RELATIONSHIP_TYPE);
 
       String id = addAdministrativeValues(type, (T) relation);
-      Relationship relationship = source.createRelationshipTo(target, DynamicRelationshipType.withName((String) relationType.getProperty(RelationType.REGULAR_NAME)));
+
+      // TODO get the relationTypeName via an entityConverter 
+      String relationTypeName = (String) relationType.getProperty(String.format("%s:%s", relation.getTypeType(), RelationType.REGULAR_NAME));
+      Relationship relationship = source.createRelationshipTo(target, DynamicRelationshipType.withName(relationTypeName));
 
       try {
         relationConverter.addValuesToPropertyContainer(relationship, (T) relation);
