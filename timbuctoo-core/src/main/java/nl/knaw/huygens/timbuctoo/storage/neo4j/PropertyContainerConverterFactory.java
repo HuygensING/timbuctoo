@@ -15,12 +15,12 @@ import org.neo4j.graphdb.Relationship;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
-public class EntityConverterFactory {
+public class PropertyContainerConverterFactory {
 
   private FieldConverterFactory fieldWrapperFactory;
 
   @Inject
-  public EntityConverterFactory(FieldConverterFactory fieldWrapperFactory) {
+  public PropertyContainerConverterFactory(FieldConverterFactory fieldWrapperFactory) {
     this.fieldWrapperFactory = fieldWrapperFactory;
   }
 

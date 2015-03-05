@@ -42,16 +42,16 @@ public class Neo4JStorage implements Storage {
 
   private static final Class<Relationship> RELATIONSHIP_TYPE = Relationship.class;
   private static final Class<Node> NODE_TYPE = Node.class;
-  private final EntityConverterFactory entityConverterFactory;
+  private final PropertyContainerConverterFactory propertyContainerConverterFactory;
   private final GraphDatabaseService db;
   private final EntityInstantiator entityInstantiator;
   private final IdGenerator idGenerator;
   private final TypeRegistry typeRegistry;
 
   @Inject
-  public Neo4JStorage(GraphDatabaseService db, EntityConverterFactory entityTypeWrapperFactory, EntityInstantiator entityInstantiator, IdGenerator idGenerator, TypeRegistry typeRegistry) {
+  public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, EntityInstantiator entityInstantiator, IdGenerator idGenerator, TypeRegistry typeRegistry) {
     this.db = db;
-    this.entityConverterFactory = entityTypeWrapperFactory;
+    this.propertyContainerConverterFactory = propertyContainerConverterFactory;
     this.entityInstantiator = entityInstantiator;
     this.idGenerator = idGenerator;
     this.typeRegistry = typeRegistry;
@@ -81,7 +81,7 @@ public class Neo4JStorage implements Storage {
       try {
         String id = addAdministrativeValues(type, entity);
 
-        EntityConverter<T, Node> objectWrapper = entityConverterFactory.createForTypeAndPropertyContainer(type, NODE_TYPE);
+        EntityConverter<T, Node> objectWrapper = propertyContainerConverterFactory.createForTypeAndPropertyContainer(type, NODE_TYPE);
         Node node = db.createNode();
 
         objectWrapper.addValuesToPropertyContainer(node, entity);
@@ -149,8 +149,8 @@ public class Neo4JStorage implements Storage {
         throw new StorageException(createCannotFindString("RelationType", relation.getTypeType(), relation.getTypeId()));
       }
 
-      EntityConverter<T, Relationship> relationConverter = entityConverterFactory.createForTypeAndPropertyContainer(type, RELATIONSHIP_TYPE);
-      EntityConverter<? super T, Relationship> primitiveRelationConverter = entityConverterFactory.createForPrimitive(type, RELATIONSHIP_TYPE);
+      EntityConverter<T, Relationship> relationConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(type, RELATIONSHIP_TYPE);
+      EntityConverter<? super T, Relationship> primitiveRelationConverter = propertyContainerConverterFactory.createForPrimitive(type, RELATIONSHIP_TYPE);
 
       String id = addAdministrativeValues(type, (T) relation);
 
@@ -182,8 +182,8 @@ public class Neo4JStorage implements Storage {
       String id = addAdministrativeValues(type, entity);
       Node node = db.createNode();
 
-      EntityConverter<T, Node> domainEntityConverter = entityConverterFactory.createForTypeAndPropertyContainer(type, NODE_TYPE);
-      EntityConverter<? super T, Node> primitiveEntityConverter = entityConverterFactory.createForPrimitive(type, NODE_TYPE);
+      EntityConverter<T, Node> domainEntityConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(type, NODE_TYPE);
+      EntityConverter<? super T, Node> primitiveEntityConverter = propertyContainerConverterFactory.createForPrimitive(type, NODE_TYPE);
 
       try {
         domainEntityConverter.addValuesToPropertyContainer(node, entity);
@@ -224,7 +224,7 @@ public class Neo4JStorage implements Storage {
       updateAdministrativeValues(entity);
 
       try {
-        EntityConverter<T, Node> entityConverter = entityConverterFactory.createForTypeAndPropertyContainer(type, NODE_TYPE);
+        EntityConverter<T, Node> entityConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(type, NODE_TYPE);
 
         /* split the update and the update of modified and rev, 
          * to be sure the administrative values can only be changed by the system
@@ -408,7 +408,7 @@ public class Neo4JStorage implements Storage {
     @SuppressWarnings("unchecked")
     Class<U> propertyContainerType = (Class<U>) propertyContainer.getClass();
 
-    EntityConverter<T, U> entityConverter = entityConverterFactory.createForTypeAndPropertyContainer(type, propertyContainerType);
+    EntityConverter<T, U> entityConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(type, propertyContainerType);
     entityConverter.addValuesToEntity(entity, propertyContainer);
     return entity;
   }

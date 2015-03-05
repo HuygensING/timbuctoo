@@ -27,13 +27,13 @@ import test.model.BaseDomainEntity;
 import test.model.TestSystemEntityWrapper;
 import test.model.projecta.SubADomainEntity;
 
-public class EntityConverterFactoryTest {
+public class PropertyContainerConverterFactoryTest {
 
   private static final Class<Node> NODE_TYPE = Node.class;
   private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
   private static final Class<BaseDomainEntity> PRIMITIVE_DOMAIN_ENTITY_TYPE = BaseDomainEntity.class;
   private static final Class<TestSystemEntityWrapper> SYSTEM_ENTITY_TYPE = TestSystemEntityWrapper.class;
-  private EntityConverterFactory instance;
+  private PropertyContainerConverterFactory instance;
   @SuppressWarnings("rawtypes")
   private NoOpEntityConverter noOpEntityConverterMock;
   @SuppressWarnings("rawtypes")
@@ -55,7 +55,7 @@ public class EntityConverterFactoryTest {
 
     when(fieldConverterFactoryMock.wrap(any(Class.class), any(Field.class))).thenReturn(fieldConverterMock);
 
-    instance = new EntityConverterFactory(fieldConverterFactoryMock) {
+    instance = new PropertyContainerConverterFactory(fieldConverterFactoryMock) {
       @Override
       protected <T extends Entity, U extends Node> EntityConverter<T, U> createEntityConverter(Class<T> type, Class<U> nodeType) {
         return regularEntityConverterMock;
