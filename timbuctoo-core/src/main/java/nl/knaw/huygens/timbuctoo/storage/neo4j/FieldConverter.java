@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
 
 public interface FieldConverter {
 
@@ -12,7 +13,7 @@ public interface FieldConverter {
 
   public abstract void setField(Field field);
 
-  public abstract void setPropertyContainerProperty(Node node, Entity entity) throws ConversionException;
+  public abstract void setPropertyContainerProperty(PropertyContainer propertyContainer, Entity entity) throws ConversionException;
 
   /**
    * Extracts the value from the node and converts it so it can be added to the entity.

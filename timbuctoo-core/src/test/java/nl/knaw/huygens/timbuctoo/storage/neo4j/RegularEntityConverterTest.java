@@ -1,11 +1,11 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.FieldConverterMockBuilder.newFieldConverter;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
@@ -40,11 +40,7 @@ public class RegularEntityConverterTest {
   }
 
   private FieldConverter createFieldConverterMock(String name, FieldType fieldType) {
-    FieldConverter fieldConverterMock = mock(FieldConverter.class);
-    when(fieldConverterMock.getName()).thenReturn(name);
-    when(fieldConverterMock.getFieldType()).thenReturn(fieldType);
-
-    return fieldConverterMock;
+    return newFieldConverter().withName(name).withType(fieldType).build();
   }
 
   @Test

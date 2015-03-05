@@ -22,7 +22,7 @@ public class FieldConverterFactoryTest {
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
   private static final Class<ObjectValueFieldConverter> OBJECT_WRAPPER_TYPE = ObjectValueFieldConverter.class;
   private static final Class<SimpleValueFieldConverter> SIMPLE_VALUE_WRAPPER_TYPE = SimpleValueFieldConverter.class;
-  private static final Class<NoOpFieldWrapper> NO_OP_WRAPPER_TYPE = NoOpFieldWrapper.class;
+  private static final Class<NoOpFieldConverter> NO_OP_WRAPPER_TYPE = NoOpFieldConverter.class;
   @SuppressWarnings("rawtypes")
   private static final Class<SimpleCollectionFieldConverter> SIMPLE_COLLECTION_FIELD_WRAPPER_TYPE = SimpleCollectionFieldConverter.class;
   private static final TestSystemEntityWrapper TEST_SYSTEM_ENTITY = new TestSystemEntityWrapper();

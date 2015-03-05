@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
 
 public abstract class AbstractFieldConverter implements FieldConverter {
 
@@ -38,12 +39,12 @@ public abstract class AbstractFieldConverter implements FieldConverter {
    * @see nl.knaw.huygens.timbuctoo.storage.neo4j.FieldWrapper#addValueToNode(org.neo4j.graphdb.Node, nl.knaw.huygens.timbuctoo.model.Entity)
    */
   @Override
-  public final void setPropertyContainerProperty(Node node, Entity entity) throws ConversionException {
+  public final void setPropertyContainerProperty(PropertyContainer propertyContainer, Entity entity) throws ConversionException {
     try {
       Object fieldValue = getFieldValue(entity);
 
       if (shouldAddValue(fieldValue)) {
-        node.setProperty(getPropertyName(), getFormattedValue(fieldValue));
+        propertyContainer.setProperty(getPropertyName(), getFormattedValue(fieldValue));
       }
     } catch (IllegalArgumentException | IllegalAccessException e) {
       throw new ConversionException(e);

@@ -5,8 +5,9 @@ import java.lang.reflect.Field;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
 
-public class NoOpFieldWrapper implements FieldConverter {
+public class NoOpFieldConverter implements FieldConverter {
 
   @Override
   public void setContainingType(Class<? extends Entity> containingType) {
@@ -21,7 +22,7 @@ public class NoOpFieldWrapper implements FieldConverter {
   }
 
   @Override
-  public void setPropertyContainerProperty(Node node, Entity entity) throws ConversionException {
+  public void setPropertyContainerProperty(PropertyContainer propertyContainer, Entity entity) throws ConversionException {
     // TODO Auto-generated method stub
 
   }

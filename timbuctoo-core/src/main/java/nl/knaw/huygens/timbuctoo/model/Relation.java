@@ -38,6 +38,9 @@ import com.google.common.base.Objects;
 @IDPrefix("RELA")
 public class Relation extends DomainEntity {
 
+  public static final String TARGET_TYPE = "^targetType";
+  public static final String TYPE_TYPE = "^typeType";
+  public static final String SOURCE_TYPE = "^sourceType";
   public static final String SOURCE_ID = "^sourceId";
   public static final String TARGET_ID = "^targetId";
   public static final String TYPE_ID = "^typeId";
@@ -84,12 +87,12 @@ public class Relation extends DomainEntity {
     sourceId = reference.getId();
   }
 
-  @JsonProperty("^sourceType")
+  @JsonProperty(SOURCE_TYPE)
   public String getSourceType() {
     return sourceType;
   }
 
-  @JsonProperty("^sourceType")
+  @JsonProperty(SOURCE_TYPE)
   public void setSourceType(String sourceRefType) {
     this.sourceType = sourceRefType;
   }
@@ -123,12 +126,12 @@ public class Relation extends DomainEntity {
     typeId = reference.getId();
   }
 
-  @JsonProperty("^typeType")
+  @JsonProperty(TYPE_TYPE)
   public String getTypeType() {
     return typeType;
   }
 
-  @JsonProperty("^typeType")
+  @JsonProperty(TYPE_TYPE)
   public void setTypeType(String typeRefType) {
     this.typeType = typeRefType;
   }
@@ -158,12 +161,12 @@ public class Relation extends DomainEntity {
     targetId = reference.getId();
   }
 
-  @JsonProperty("^targetType")
+  @JsonProperty(TARGET_TYPE)
   public String getTargetType() {
     return targetType;
   }
 
-  @JsonProperty("^targetType")
+  @JsonProperty(TARGET_TYPE)
   public void setTargetType(String targetRefType) {
     this.targetType = targetRefType;
   }

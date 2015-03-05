@@ -87,7 +87,7 @@ public class FieldConverterFactory {
   }
 
   protected FieldConverter createNoOpFieldWrapper() {
-    return new NoOpFieldWrapper();
+    return new NoOpFieldConverter();
   }
 
   protected <T> FieldConverter createSimpleCollectionFieldWrapper(Class<T> componentType) {

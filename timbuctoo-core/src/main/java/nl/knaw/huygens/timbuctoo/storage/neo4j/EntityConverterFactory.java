@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -11,6 +12,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 public class EntityConverterFactory {
@@ -75,6 +77,7 @@ public class EntityConverterFactory {
   }
 
   protected <T extends Relation, U extends Relationship> EntityConverter<T, U> createRelationConverter(Class<T> type, Class<U> relationType) {
-    return new RelationConverter<T, U>();
+    ArrayList<String> fieldsToIgnore = Lists.newArrayList(Relation.SOURCE_ID, Relation.TARGET_ID, Relation.TYPE_ID, Relation.SOURCE_TYPE, Relation.TARGET_TYPE, Relation.TYPE_TYPE);
+    return new RelationConverter<T, U>(fieldsToIgnore);
   }
 }
