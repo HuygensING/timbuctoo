@@ -77,7 +77,7 @@ public class EntityConverterFactory {
   }
 
   protected <T extends Relation, U extends Relationship> EntityConverter<T, U> createRelationConverter(Class<T> type, Class<U> relationType) {
-    ArrayList<String> fieldsToIgnore = Lists.newArrayList(Relation.SOURCE_ID, Relation.TARGET_ID, Relation.TYPE_ID, Relation.SOURCE_TYPE, Relation.TARGET_TYPE, Relation.TYPE_TYPE);
+    ArrayList<String> fieldsToIgnore = Lists.newArrayList(Relation.SOURCE_ID, Relation.TARGET_ID, Relation.SOURCE_TYPE, Relation.TARGET_TYPE);
     return new RelationConverter<T, U>(fieldsToIgnore);
   }
 }

@@ -106,4 +106,15 @@ public class RelationMatcher extends CompositeMatcher<Relation> {
 
     return this;
   }
+
+  public RelationMatcher withTypeType(String typeType) {
+    addMatcher(new PropertyEqualtityMatcher<Relation, String>("typeType", typeType) {
+
+      @Override
+      protected String getItemValue(Relation item) {
+        return item.getTypeType();
+      }
+    });
+    return this;
+  }
 }
