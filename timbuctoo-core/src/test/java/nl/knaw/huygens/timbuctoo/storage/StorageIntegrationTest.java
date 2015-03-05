@@ -58,6 +58,7 @@ import test.variation.model.projecta.ProjectARelation;
 import com.google.common.collect.Lists;
 
 public abstract class StorageIntegrationTest {
+  private static final String RELATIONTYPE_TYPE_STRING = "relationtype";
   private static final boolean NOT_ACCEPTED = false;
   private static final Class<ProjectARelation> PROJECT_RELATION_TYPE = ProjectARelation.class;
   private static final Class<Relation> PRIMITIVE_RELATION_TYPE = Relation.class;
@@ -258,6 +259,7 @@ public abstract class StorageIntegrationTest {
     relation.setTargetId(targetId);
     relation.setTargetType(targetType);
     relation.setTypeId(typeId);
+    relation.setTypeType(RELATIONTYPE_TYPE_STRING);
 
     String id = instance.addDomainEntity(PROJECT_RELATION_TYPE, relation, CHANGE_TO_SAVE);
 
