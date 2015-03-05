@@ -3,12 +3,14 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.DomainEntityMatcher.likeDomainEntity;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.Neo4JStorage.RELATION_SHIP_ID_INDEX;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipTypeMatcher.likeRelationshipType;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.TestSystemEntityWrapperMatcher.likeTestSystemEntityWrapper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -45,6 +47,9 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.index.IndexHits;
+import org.neo4j.graphdb.index.IndexManager;
+import org.neo4j.graphdb.index.RelationshipIndex;
 import org.neo4j.helpers.collection.Iterables;
 import org.neo4j.helpers.collection.IteratorUtil;
 
@@ -57,7 +62,8 @@ import com.google.common.collect.Lists;
 
 public class Neo4JStorageTest {
 
-  private static final Class<Relationship> RELATIONSHIP_TYPE = Relationship.class;
+  private static final Class<Relationship> RELATION_SHIP_TYPE = Relationship.class;
+  private static final Class<Relationship> RELATIONSHIP_TYPE = RELATION_SHIP_TYPE;
   private static final Class<Node> NODE_TYPE = Node.class;
   private static final String RELATION_TYPE_ID = "typeId";
   private static final String RELATION_TARGET_ID = "targetId";
@@ -486,11 +492,12 @@ public class Neo4JStorageTest {
     // verify
     assertThat(actualEntity, is(equalTo(systemEntity)));
 
-    InOrder inOrder = inOrder(dbMock, entityConverterFactoryMock, systemEntityConverterMock);
+    InOrder inOrder = inOrder(dbMock, entityConverterFactoryMock, systemEntityConverterMock, transactionMock);
     inOrder.verify(dbMock).beginTx();
     inOrder.verify(dbMock).findNodesByLabelAndProperty(SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
     inOrder.verify(entityConverterFactoryMock).createForTypeAndPropertyContainer(SYSTEM_ENTITY_TYPE, NODE_TYPE);
     inOrder.verify(systemEntityConverterMock).addValuesToEntity(systemEntity, nodeMock);
+    inOrder.verify(transactionMock).success();
     verifyNoMoreInteractions(dbMock, entityConverterFactoryMock, systemEntityConverterMock);
   }
 
@@ -514,12 +521,125 @@ public class Neo4JStorageTest {
     // verify
     assertThat(actualEntity, is(equalTo(domainEntity)));
 
-    InOrder inOrder = inOrder(dbMock, entityConverterFactoryMock, domainEntityConverterMock);
+    InOrder inOrder = inOrder(dbMock, entityConverterFactoryMock, domainEntityConverterMock, transactionMock);
     inOrder.verify(dbMock).beginTx();
     inOrder.verify(dbMock).findNodesByLabelAndProperty(DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
     inOrder.verify(entityConverterFactoryMock).createForTypeAndPropertyContainer(DOMAIN_ENTITY_TYPE, NODE_TYPE);
     inOrder.verify(domainEntityConverterMock).addValuesToEntity(domainEntity, nodeWithThirdRevision);
+    inOrder.verify(transactionMock).success();
     verifyNoMoreInteractions(dbMock, entityConverterFactoryMock, domainEntityConverterMock);
+  }
+
+  @Test
+  public void getEntityForRelationReturnsTheRelationThatBelongsToTheId() throws Exception {
+    // setup
+    Relationship relationshipMock = mock(RELATION_SHIP_TYPE);
+    RelationshipIndex indexMock = oneRelationshipIsFoundInIndexWithName(RELATION_SHIP_ID_INDEX, relationshipMock);
+    SubARelation relation = new SubARelation();
+
+    EntityConverter<SubARelation, Relationship> relationConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(RELATION_TYPE, RELATION_SHIP_TYPE);
+    when(entityConverterFactoryMock.createForTypeAndPropertyContainer(RELATION_TYPE, RELATION_SHIP_TYPE)).thenReturn(relationConverterMock);
+    when(entityInstantiatorMock.createInstanceOf(RELATION_TYPE)).thenReturn(relation);
+
+    when(entityInstantiatorMock.createInstanceOf(RELATION_TYPE)).thenReturn(relation);
+
+    // action
+    SubARelation actualRelation = instance.getEntity(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(actualRelation, is(sameInstance(relation)));
+
+    verify(dbMock).beginTx();
+    verify(indexMock).get(ID_PROPERTY_NAME, ID);
+    verify(relationConverterMock).addValuesToEntity(relation, relationshipMock);
+    verify(transactionMock).success();
+  }
+
+  @Test
+  public void getEntityForRelationReturnsNullIfTheRelationIsNotFound() throws Exception {
+    // setup
+    RelationshipIndex indexMock = noRelationsAreFoundInIndexWithName(RELATION_SHIP_ID_INDEX);
+
+    // action
+    SubARelation actualRelation = instance.getEntity(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(actualRelation, is(nullValue()));
+
+    verify(dbMock).beginTx();
+    verify(indexMock).get(ID_PROPERTY_NAME, ID);
+    verifyZeroInteractions(entityConverterFactoryMock, entityInstantiatorMock);
+    verify(transactionMock).success();
+  }
+
+  @Test(expected = StorageException.class)
+  public void getEntityForRelationThrowsStorageExceptionWhenEntityInstantiatorThrowsAnInstantiationException() throws Exception {
+    getEntityForRelationThrowsStorageExceptionWhenEntityInstantiatorThrowsAnException(InstantiationException.class);
+  }
+
+  @Test(expected = StorageException.class)
+  public void getEntityForRelationThrowsStorageExceptionWhenEntityInstantiatorThrowsAnIllegalAccessException() throws Exception {
+    getEntityForRelationThrowsStorageExceptionWhenEntityInstantiatorThrowsAnException(IllegalAccessException.class);
+  }
+
+  private void getEntityForRelationThrowsStorageExceptionWhenEntityInstantiatorThrowsAnException(Class<? extends Exception> exceptionToThrow) throws Exception {
+    // setup
+    Relationship relationshipMock = mock(Relationship.class);
+    RelationshipIndex indexMock = oneRelationshipIsFoundInIndexWithName(RELATION_SHIP_ID_INDEX, relationshipMock);
+    doThrow(exceptionToThrow).when(entityInstantiatorMock).createInstanceOf(RELATION_TYPE);
+
+    try {
+      // action
+      instance.getEntity(RELATION_TYPE, ID);
+    } finally {
+      // verify
+      verify(dbMock).beginTx();
+      verify(dbMock).index();
+      verify(indexMock).get(ID_PROPERTY_NAME, ID);
+      verify(transactionMock).failure();
+      verifyNoMoreInteractions(dbMock);
+      verifyZeroInteractions(entityConverterFactoryMock);
+    }
+  }
+
+  private RelationshipIndex noRelationsAreFoundInIndexWithName(String indexName) {
+    RelationshipIndex indexMock = dbHasRelationshipIndexWithName(indexName);
+    noRelationshipisFoundInIndex(indexMock);
+    return indexMock;
+  }
+
+  private void noRelationshipisFoundInIndex(RelationshipIndex indexMock) {
+    List<Relationship> relationships = Lists.newArrayList();
+    ResourceIterator<Relationship> relationshipIterator = IteratorUtil.asResourceIterator(relationships.iterator());
+    @SuppressWarnings("unchecked")
+    IndexHits<Relationship> indexHitsMock = mock(IndexHits.class);
+    when(indexHitsMock.iterator()).thenReturn(relationshipIterator);
+    when(indexMock.get(ID_PROPERTY_NAME, ID)).thenReturn(indexHitsMock);
+  }
+
+  private RelationshipIndex oneRelationshipIsFoundInIndexWithName(String indexName, Relationship relationshipMock) {
+    RelationshipIndex indexMock = dbHasRelationshipIndexWithName(indexName);
+    oneRelationshipisFoundInIndex(indexMock, relationshipMock);
+    return indexMock;
+  }
+
+  private void oneRelationshipisFoundInIndex(RelationshipIndex indexMock, Relationship relationshipMock) {
+    List<Relationship> relationships = Lists.newArrayList(relationshipMock);
+    ResourceIterator<Relationship> relationshipIterator = IteratorUtil.asResourceIterator(relationships.iterator());
+    @SuppressWarnings("unchecked")
+    IndexHits<Relationship> indexHitsMock = mock(IndexHits.class);
+    when(indexHitsMock.iterator()).thenReturn(relationshipIterator);
+    when(indexMock.get(ID_PROPERTY_NAME, ID)).thenReturn(indexHitsMock);
+  }
+
+  private RelationshipIndex dbHasRelationshipIndexWithName(String indexName) {
+    RelationshipIndex indexMock = mock(RelationshipIndex.class);
+    IndexManager indexManagerMock = mock(IndexManager.class);
+
+    when(indexManagerMock.forRelationships(indexName)).thenReturn(indexMock);
+    when(dbMock.index()).thenReturn(indexManagerMock);
+
+    return indexMock;
   }
 
   private Node createNodeWithRevision(int revision) {
@@ -540,6 +660,7 @@ public class Neo4JStorageTest {
     assertThat(actualEntity, is(nullValue()));
 
     verify(dbMock).findNodesByLabelAndProperty(SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+    verify(transactionMock).success();
     verifyZeroInteractions(entityConverterFactoryMock);
   }
 
@@ -587,11 +708,12 @@ public class Neo4JStorageTest {
       instance.getEntity(SYSTEM_ENTITY_TYPE, ID);
     } finally {
       // verify
-      InOrder inOrder = inOrder(dbMock, entityConverterFactoryMock, systemEntityConverterMock);
+      InOrder inOrder = inOrder(dbMock, entityConverterFactoryMock, systemEntityConverterMock, transactionMock);
       inOrder.verify(dbMock).beginTx();
       inOrder.verify(dbMock).findNodesByLabelAndProperty(SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
       inOrder.verify(entityConverterFactoryMock).createForTypeAndPropertyContainer(SYSTEM_ENTITY_TYPE, NODE_TYPE);
       inOrder.verify(systemEntityConverterMock).addValuesToEntity(systemEntity, nodeMock);
+      inOrder.verify(transactionMock).failure();
       verifyNoMoreInteractions(dbMock, entityConverterFactoryMock, systemEntityConverterMock);
     }
   }
@@ -609,7 +731,6 @@ public class Neo4JStorageTest {
   private void getEntityThrowsStorageExceptionWhenEntityInstantiatorThrowsAnException(Class<? extends Exception> exceptionToThrow) throws Exception {
     // setup
     oneNodeIsFound(SYSTEM_ENTITY_LABEL, ID, nodeMock);
-    when(entityConverterFactoryMock.createForTypeAndPropertyContainer(SYSTEM_ENTITY_TYPE, NODE_TYPE)).thenReturn(systemEntityConverterMock);
     doThrow(exceptionToThrow).when(entityInstantiatorMock).createInstanceOf(SYSTEM_ENTITY_TYPE);
 
     try {
@@ -617,11 +738,11 @@ public class Neo4JStorageTest {
       instance.getEntity(SYSTEM_ENTITY_TYPE, ID);
     } finally {
       // verify
-      InOrder inOrder = inOrder(dbMock, entityConverterFactoryMock, systemEntityConverterMock);
+      InOrder inOrder = inOrder(dbMock, entityConverterFactoryMock, systemEntityConverterMock, transactionMock);
       inOrder.verify(dbMock).beginTx();
       inOrder.verify(dbMock).findNodesByLabelAndProperty(SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+      inOrder.verify(transactionMock).failure();
       verifyNoMoreInteractions(dbMock);
-      verifyZeroInteractions(entityConverterFactoryMock, systemEntityConverterMock);
     }
   }
 

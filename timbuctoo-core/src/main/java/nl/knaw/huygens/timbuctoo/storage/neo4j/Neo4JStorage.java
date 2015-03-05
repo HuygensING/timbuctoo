@@ -26,14 +26,19 @@ import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.index.Index;
+import org.neo4j.graphdb.index.IndexHits;
 
 import com.google.inject.Inject;
 
 public class Neo4JStorage implements Storage {
+
+  public static final String RELATION_SHIP_ID_INDEX = "RelationShip id";
 
   private static final Class<Relationship> RELATIONSHIP_TYPE = Relationship.class;
   private static final Class<Node> NODE_TYPE = Node.class;
@@ -341,12 +346,64 @@ public class Neo4JStorage implements Storage {
     return null;
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public <T extends Entity> T getEntity(Class<T> type, String id) throws StorageException {
+    if (Relation.class.isAssignableFrom(type)) {
+      return (T) getRelation((Class<? extends Relation>) type, id);
+    } else {
+      return getRegularEntity(type, id);
+    }
+
+  }
+
+  private <T extends Relation> T getRelation(Class<T> type, String id) throws StorageException {
+    try (Transaction transaction = db.beginTx()) {
+      Index<Relationship> index = db.index().forRelationships(RELATION_SHIP_ID_INDEX);
+
+      IndexHits<Relationship> indexHits = index.get(ID_PROPERTY_NAME, id);
+
+      ResourceIterator<Relationship> iterator = indexHits.iterator();
+      if (!iterator.hasNext()) {
+        transaction.success();
+        return null;
+      }
+      Relationship relationshipWithHighestRevision = iterator.next();
+
+      for (; iterator.hasNext();) {
+        Relationship next = iterator.next();
+
+        if (getRevision(next) > getRevision(relationshipWithHighestRevision)) {
+          relationshipWithHighestRevision = next;
+        }
+      }
+
+      try {
+        T entity = entityInstantiator.createInstanceOf(type);
+
+        EntityConverter<T, Relationship> entityWrapper = entityConverterFactory.createForTypeAndPropertyContainer(type, RELATIONSHIP_TYPE);
+        entityWrapper.addValuesToEntity(entity, relationshipWithHighestRevision);
+
+        transaction.success();
+        return entity;
+      } catch (ConversionException e) {
+        transaction.failure();
+        throw e;
+      } catch (IllegalAccessException | IllegalArgumentException | InstantiationException e) {
+        transaction.failure();
+        throw new StorageException(e);
+      }
+
+    }
+
+  }
+
+  private <T extends Entity> T getRegularEntity(Class<T> type, String id) throws ConversionException, StorageException {
     try (Transaction transaction = db.beginTx()) {
       Node nodeWithHighestRevision = getLatestById(type, id);
 
       if (nodeWithHighestRevision == null) {
+        transaction.success();
         return null;
       }
 
@@ -356,12 +413,16 @@ public class Neo4JStorage implements Storage {
         EntityConverter<T, Node> entityWrapper = entityConverterFactory.createForTypeAndPropertyContainer(type, NODE_TYPE);
         entityWrapper.addValuesToEntity(entity, nodeWithHighestRevision);
 
+        transaction.success();
         return entity;
+      } catch (ConversionException e) {
+        transaction.failure();
+        throw e;
       } catch (IllegalAccessException | IllegalArgumentException | InstantiationException e) {
+        transaction.failure();
         throw new StorageException(e);
       }
     }
-
   }
 
   /**
@@ -391,8 +452,8 @@ public class Neo4JStorage implements Storage {
     return nodeWithHighestRevision;
   }
 
-  private int getRevision(Node node) {
-    return (int) node.getProperty(REVISION_PROPERTY_NAME);
+  private int getRevision(PropertyContainer propertyContainer) {
+    return (int) propertyContainer.getProperty(REVISION_PROPERTY_NAME);
   }
 
   @Override
