@@ -75,6 +75,7 @@ public class Neo4JStorageTest {
   private static final Class<SubARelation> RELATION_TYPE = SubARelation.class;
   private static final String PRIMITIVE_DOMAIN_ENTITY_NAME = TypeNames.getInternalName(PRIMITIVE_DOMAIN_ENTITY_TYPE);
   private static final String RELATION_TYPE_NAME = TypeNames.getInternalName(RelationType.class);
+  private static final String RELATIONTYPE_REGULAR_NAME_PROPERTY = String.format("%s:%s", RELATION_TYPE_NAME, RelationType.REGULAR_NAME);
   private static final int FIRST_REVISION = 1;
   private static final int SECOND_REVISION = 2;
   private static final int THIRD_REVISION = 3;
@@ -258,7 +259,7 @@ public class Neo4JStorageTest {
     Relationship relationShipMock = mock(RELATIONSHIP_TYPE);
 
     when(sourceNodeMock.createRelationshipTo(argThat(equalTo(targetNodeMock)), argThat(likeRelationshipType().withName(name)))).thenReturn(relationShipMock);
-    when(relationTypeNodeMock.getProperty(RelationType.REGULAR_NAME)).thenReturn(name);
+    when(relationTypeNodeMock.getProperty(RELATIONTYPE_REGULAR_NAME_PROPERTY)).thenReturn(name);
     when(idGeneratorMock.nextIdFor(RELATION_TYPE)).thenReturn(ID);
 
     EntityConverter<SubARelation, Relationship> subARelationConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(RELATION_TYPE, RELATIONSHIP_TYPE);
@@ -329,7 +330,7 @@ public class Neo4JStorageTest {
     EntityConverter<? super SubARelation, Relationship> relationConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeForSuperType(RELATION_TYPE, RELATIONSHIP_TYPE);
 
     when(sourceNodeMock.createRelationshipTo(argThat(equalTo(targetNodeMock)), argThat(likeRelationshipType().withName(name)))).thenReturn(relationShipMock);
-    when(relationTypeNodeMock.getProperty(RelationType.REGULAR_NAME)).thenReturn(name);
+    when(relationTypeNodeMock.getProperty(RELATIONTYPE_REGULAR_NAME_PROPERTY)).thenReturn(name);
     when(idGeneratorMock.nextIdFor(RELATION_TYPE)).thenReturn(ID);
     doThrow(ConversionException.class).when(subARelationConverterMock).addValuesToPropertyContainer(relationShipMock, relation);
 
