@@ -159,6 +159,7 @@ public class Neo4JStorage implements Storage {
         relationConverter.addValuesToPropertyContainer(relationship, (T) relation);
         primitiveRelationConverter.addValuesToPropertyContainer(relationship, (T) relation);
 
+        db.index().forRelationships(RELATION_SHIP_ID_INDEX).add(relationship, ID_PROPERTY_NAME, id);
         transaction.success();
       } catch (ConversionException e) {
         transaction.failure();

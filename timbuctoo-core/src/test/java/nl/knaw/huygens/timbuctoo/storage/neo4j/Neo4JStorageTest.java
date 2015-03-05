@@ -253,6 +253,8 @@ public class Neo4JStorageTest {
     Node relationTypeNodeMock = mock(NODE_TYPE);
     oneNodeIsFound(RELATION_TYPE_LABEL, RELATION_TYPE_ID, relationTypeNodeMock);
 
+    RelationshipIndex indexMock = dbHasRelationshipIndexWithName(RELATION_SHIP_ID_INDEX);
+
     Relationship relationShipMock = mock(RELATIONSHIP_TYPE);
 
     when(sourceNodeMock.createRelationshipTo(argThat(equalTo(targetNodeMock)), argThat(likeRelationshipType().withName(name)))).thenReturn(relationShipMock);
@@ -260,7 +262,7 @@ public class Neo4JStorageTest {
     when(idGeneratorMock.nextIdFor(RELATION_TYPE)).thenReturn(ID);
 
     EntityConverter<SubARelation, Relationship> subARelationConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(RELATION_TYPE, RELATIONSHIP_TYPE);
-    EntityConverter<? super SubARelation, Relationship> relationConverter = entityConverterFactoryCreatesAnEntityWrapperTypeForSuperType(RELATION_TYPE, RELATIONSHIP_TYPE);
+    EntityConverter<? super SubARelation, Relationship> relationConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeForSuperType(RELATION_TYPE, RELATIONSHIP_TYPE);
 
     SubARelation relation = new SubARelation();
     relation.setSourceId(RELATION_SOURCE_ID);
@@ -275,27 +277,31 @@ public class Neo4JStorageTest {
     // verify
     assertThat(id, is(equalTo(ID)));
 
-    verify(dbMock).beginTx();
-    verify(dbMock).findNodesByLabelAndProperty(PRIMITIVE_DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, RELATION_SOURCE_ID);
-    verify(dbMock).findNodesByLabelAndProperty(PRIMITIVE_DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, RELATION_TARGET_ID);
-    verify(dbMock).findNodesByLabelAndProperty(RELATION_TYPE_LABEL, ID_PROPERTY_NAME, RELATION_TYPE_ID);
-    verify(sourceNodeMock).createRelationshipTo(argThat(equalTo(targetNodeMock)), argThat(likeRelationshipType().withName(name)));
+    InOrder inOrder = inOrder(dbMock, sourceNodeMock, subARelationConverterMock, relationConverterMock, indexMock, transactionMock);
 
-    verify(subARelationConverterMock).addValuesToPropertyContainer( //
+    inOrder.verify(dbMock).beginTx();
+    inOrder.verify(dbMock).findNodesByLabelAndProperty(PRIMITIVE_DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, RELATION_SOURCE_ID);
+    inOrder.verify(dbMock).findNodesByLabelAndProperty(PRIMITIVE_DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, RELATION_TARGET_ID);
+    inOrder.verify(dbMock).findNodesByLabelAndProperty(RELATION_TYPE_LABEL, ID_PROPERTY_NAME, RELATION_TYPE_ID);
+    inOrder.verify(sourceNodeMock).createRelationshipTo(argThat(equalTo(targetNodeMock)), argThat(likeRelationshipType().withName(name)));
+
+    inOrder.verify(subARelationConverterMock).addValuesToPropertyContainer( //
         argThat(equalTo(relationShipMock)), //
         argThat(likeDomainEntity(RELATION_TYPE) //
             .withId(ID) //
             .withACreatedValue() //
             .withAModifiedValue() //
             .withRevision(FIRST_REVISION)));
-    verify(relationConverter).addValuesToPropertyContainer( //
+    inOrder.verify(relationConverterMock).addValuesToPropertyContainer( //
         argThat(equalTo(relationShipMock)), //
         argThat(likeDomainEntity(RELATION_TYPE) //
             .withId(ID) //
             .withACreatedValue() //
             .withAModifiedValue() //
             .withRevision(FIRST_REVISION)));
-    verify(transactionMock).success();
+
+    inOrder.verify(indexMock).add(relationShipMock, ID_PROPERTY_NAME, id);
+    inOrder.verify(transactionMock).success();
   }
 
   @Test(expected = StorageException.class)
