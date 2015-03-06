@@ -16,7 +16,7 @@ import org.neo4j.graphdb.Node;
 
 import test.model.TestSystemEntityWrapper;
 
-public class RegularEntityConverterTest {
+public class NodeConverterTest {
   private static final String FIELD_CONVERTER2_NAME = "fieldConverter2";
   private static final String FIELD_CONVERTER1_NAME = "fieldConverter1";
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
@@ -25,7 +25,7 @@ public class RegularEntityConverterTest {
   private Node nodeMock;
   private FieldConverter administrativeFieldConverterMock;
   private FieldConverter regularFieldConverterMock;
-  private RegularEntityConverter<TestSystemEntityWrapper, Node> instance;
+  private NodeConverter<TestSystemEntityWrapper, Node> instance;
 
   @Before
   public void setUp() {
@@ -34,7 +34,7 @@ public class RegularEntityConverterTest {
 
     nodeMock = mock(Node.class);
 
-    instance = new RegularEntityConverter<TestSystemEntityWrapper, Node>(TYPE);
+    instance = new NodeConverter<TestSystemEntityWrapper, Node>(TYPE);
     instance.addFieldConverter(administrativeFieldConverterMock);
     instance.addFieldConverter(regularFieldConverterMock);
   }

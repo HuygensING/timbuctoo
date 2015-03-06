@@ -37,7 +37,7 @@ public class PropertyContainerConverterFactoryTest {
   @SuppressWarnings("rawtypes")
   private NoOpPropertyContainerConverter noOpPropertyContainerConverterConverterMock;
   @SuppressWarnings("rawtypes")
-  private RegularEntityConverter regularEntityConverterMock;
+  private NodeConverter nodeConverterMock;
   @SuppressWarnings("rawtypes")
   private RelationConverter relationConverterMock;
   private AbstractFieldConverter fieldConverterMock;
@@ -46,7 +46,7 @@ public class PropertyContainerConverterFactoryTest {
   @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
-    regularEntityConverterMock = mock(RegularEntityConverter.class);
+    nodeConverterMock = mock(NodeConverter.class);
     noOpPropertyContainerConverterConverterMock = mock(NoOpPropertyContainerConverter.class);
     relationConverterMock = mock(RelationConverter.class);
 
@@ -57,8 +57,8 @@ public class PropertyContainerConverterFactoryTest {
 
     instance = new PropertyContainerConverterFactory(fieldConverterFactoryMock) {
       @Override
-      protected <T extends Entity, U extends Node> PropertyContainerConverter<T, U> createEntityConverter(Class<T> type, Class<U> nodeType) {
-        return regularEntityConverterMock;
+      protected <T extends Entity, U extends Node> PropertyContainerConverter<T, U> createNodeConverter(Class<T> type, Class<U> nodeType) {
+        return nodeConverterMock;
       }
 
       @Override

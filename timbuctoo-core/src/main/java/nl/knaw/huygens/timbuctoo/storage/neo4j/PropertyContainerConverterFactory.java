@@ -27,7 +27,7 @@ public class PropertyContainerConverterFactory {
   public <T extends Entity, U extends PropertyContainer> PropertyContainerConverter<T, U> createForTypeAndPropertyContainer(Class<T> type, Class<U> propertyContainerType) {
     if (Node.class.isAssignableFrom(propertyContainerType)) {
       @SuppressWarnings("unchecked")
-      PropertyContainerConverter<T, U> propertyContainerConverter = (PropertyContainerConverter<T, U>) createEntityConverter(type, (Class<? extends Node>) propertyContainerType);
+      PropertyContainerConverter<T, U> propertyContainerConverter = (PropertyContainerConverter<T, U>) createNodeConverter(type, (Class<? extends Node>) propertyContainerType);
       addFieldWrappers(propertyContainerConverter, type);
 
       return propertyContainerConverter;
@@ -69,8 +69,8 @@ public class PropertyContainerConverterFactory {
     return Entity.class.isAssignableFrom(typeToGetFieldsFrom);
   }
 
-  protected <T extends Entity, U extends Node> PropertyContainerConverter<T, U> createEntityConverter(Class<T> type, Class<U> nodeType) {
-    return new RegularEntityConverter<T, U>(type);
+  protected <T extends Entity, U extends Node> PropertyContainerConverter<T, U> createNodeConverter(Class<T> type, Class<U> nodeType) {
+    return new NodeConverter<T, U>(type);
   }
 
   protected <T extends Entity, U extends PropertyContainer> PropertyContainerConverter<T, U> createNoOpPropertyContainerConverter(Class<T> type, Class<U> propertyContainerType) {
