@@ -82,7 +82,7 @@ public class Neo4JStorage implements Storage {
       try {
         String id = addAdministrativeValues(type, entity);
 
-        PropertyContainerConverter<T, Node> propertyContainerConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(type, NODE_TYPE);
+        PropertyContainerConverter<Node, T> propertyContainerConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(NODE_TYPE, type);
         Node node = db.createNode();
 
         propertyContainerConverter.addValuesToPropertyContainer(node, entity);
@@ -150,8 +150,8 @@ public class Neo4JStorage implements Storage {
         throw new StorageException(createCannotFindString("RelationType", relation.getTypeType(), relation.getTypeId()));
       }
 
-      PropertyContainerConverter<T, Relationship> relationConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(type, RELATIONSHIP_TYPE);
-      PropertyContainerConverter<? super T, Relationship> primitiveRelationConverter = propertyContainerConverterFactory.createForPrimitive(type, RELATIONSHIP_TYPE);
+      PropertyContainerConverter<Relationship, T> relationConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(RELATIONSHIP_TYPE, type);
+      PropertyContainerConverter<Relationship, ? super T> primitiveRelationConverter = propertyContainerConverterFactory.createForPrimitive(RELATIONSHIP_TYPE, type);
 
       String id = addAdministrativeValues(type, (T) relation);
 
@@ -183,8 +183,8 @@ public class Neo4JStorage implements Storage {
       String id = addAdministrativeValues(type, entity);
       Node node = db.createNode();
 
-      PropertyContainerConverter<T, Node> domainEntityConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(type, NODE_TYPE);
-      PropertyContainerConverter<? super T, Node> primitiveEntityConverter = propertyContainerConverterFactory.createForPrimitive(type, NODE_TYPE);
+      PropertyContainerConverter<Node, T> domainEntityConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(NODE_TYPE, type);
+      PropertyContainerConverter<Node, ? super T> primitiveEntityConverter = propertyContainerConverterFactory.createForPrimitive(NODE_TYPE, type);
 
       try {
         domainEntityConverter.addValuesToPropertyContainer(node, entity);
@@ -225,7 +225,7 @@ public class Neo4JStorage implements Storage {
       updateAdministrativeValues(entity);
 
       try {
-        PropertyContainerConverter<T, Node> propertyContainerConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(type, NODE_TYPE);
+        PropertyContainerConverter<Node, T> propertyContainerConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(NODE_TYPE, type);
 
         /* split the update and the update of modified and rev, 
          * to be sure the administrative values can only be changed by the system
@@ -409,7 +409,7 @@ public class Neo4JStorage implements Storage {
     @SuppressWarnings("unchecked")
     Class<U> propertyContainerType = (Class<U>) propertyContainer.getClass();
 
-    PropertyContainerConverter<T, U> propertyContainerConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(type, propertyContainerType);
+    PropertyContainerConverter<U, T> propertyContainerConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(propertyContainerType, type);
     propertyContainerConverter.addValuesToEntity(entity, propertyContainer);
     return entity;
   }

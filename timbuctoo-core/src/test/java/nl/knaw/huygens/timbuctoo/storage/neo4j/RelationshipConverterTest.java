@@ -38,7 +38,7 @@ public class RelationshipConverterTest {
   private FieldConverter someOtherFieldConverterMock;
   private Relationship relationshipMock;
   private Relation relation;
-  private RelationshipConverter<Relation, Relationship> instance;
+  private RelationshipConverter<Relationship, Relation> instance;
 
   @Before
   public void setUp() {
@@ -47,7 +47,7 @@ public class RelationshipConverterTest {
     fieldConverterMock = newFieldConverter().withName(FIELD_CONVERTER).withType(FieldType.ADMINISTRATIVE).build();
     someOtherFieldConverterMock = newFieldConverter().withName(OTHER_FIELD_CONVERTER).withType(FieldType.REGULAR).build();
 
-    instance = new RelationshipConverter<Relation, Relationship>(FIELD_TO_IGNORE);
+    instance = new RelationshipConverter<Relationship, Relation>(FIELD_TO_IGNORE);
     instance.addFieldConverter(someOtherFieldConverterMock);
     instance.addFieldConverter(fieldConverterMock);
     instance.addFieldConverter(fieldConverterMockToIgnore2);

@@ -4,7 +4,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.neo4j.graphdb.PropertyContainer;
 
-public interface PropertyContainerConverter<T extends Entity, U extends PropertyContainer> {
+public interface PropertyContainerConverter<U extends PropertyContainer, T extends Entity> {
 
   void addValuesToPropertyContainer(U propertyContainer, T entity) throws ConversionException;
 

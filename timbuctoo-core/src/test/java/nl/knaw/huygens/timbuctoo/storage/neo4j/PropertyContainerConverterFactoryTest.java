@@ -57,17 +57,17 @@ public class PropertyContainerConverterFactoryTest {
 
     instance = new PropertyContainerConverterFactory(fieldConverterFactoryMock) {
       @Override
-      protected <T extends Entity, U extends Node> PropertyContainerConverter<T, U> createNodeConverter(Class<T> type, Class<U> nodeType) {
+      protected <U extends Node, T extends Entity> PropertyContainerConverter<U, T> createNodeConverter(Class<U> nodeType, Class<T> type) {
         return nodeConverterMock;
       }
 
       @Override
-      protected <T extends Entity, U extends PropertyContainer> PropertyContainerConverter<T, U> createNoOpPropertyContainerConverter(Class<T> type, Class<U> nodeType) {
+      protected <U extends PropertyContainer, T extends Entity> PropertyContainerConverter<U, T> createNoOpPropertyContainerConverter(Class<U> propertyContainerType, Class<T> type) {
         return noOpPropertyContainerConverterConverterMock;
       }
 
       @Override
-      protected <T extends Relation, U extends Relationship> PropertyContainerConverter<T, U> createRelationshipConverter(Class<T> type, Class<U> nodeType) {
+      protected <U extends Relationship, T extends Relation> PropertyContainerConverter<U, T> createRelationshipConverter(Class<U> relationType, Class<T> type) {
         return relationshipConverterMock;
       }
     };
@@ -81,7 +81,7 @@ public class PropertyContainerConverterFactoryTest {
     numberOfFields += getNumberOfFields(Entity.class);
 
     // action
-    PropertyContainerConverter<TestSystemEntityWrapper, Node> propertyContainerConverter = instance.createForTypeAndPropertyContainer(SYSTEM_ENTITY_TYPE, NODE_TYPE);
+    PropertyContainerConverter<Node, TestSystemEntityWrapper> propertyContainerConverter = instance.createForTypeAndPropertyContainer(NODE_TYPE, SYSTEM_ENTITY_TYPE);
 
     // verify
     verify(fieldConverterFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(SYSTEM_ENTITY_TYPE)), any(Field.class));
@@ -91,7 +91,7 @@ public class PropertyContainerConverterFactoryTest {
   @Test
   public void createEntityForTypeCreatesANoOpEntityConverterIfPropertyContainerIsUsed() {
     // action
-    PropertyContainerConverter<TestSystemEntityWrapper, PropertyContainer> propertyContainerConverter = instance.createForTypeAndPropertyContainer(SYSTEM_ENTITY_TYPE, PropertyContainer.class);
+    PropertyContainerConverter<PropertyContainer, TestSystemEntityWrapper> propertyContainerConverter = instance.createForTypeAndPropertyContainer(PropertyContainer.class, SYSTEM_ENTITY_TYPE);
 
     // verify
     assertThat(propertyContainerConverter, instanceOf(NoOpPropertyContainerConverter.class));
@@ -100,7 +100,7 @@ public class PropertyContainerConverterFactoryTest {
   @Test
   public void createEntityForTypeCreatesARelationConverterIfTheEntityIsARelationAndThePropertyContainerIsARelation() {
     // action
-    PropertyContainerConverter<Relation, Relationship> propertyContainerConverter = instance.createForTypeAndPropertyContainer(Relation.class, Relationship.class);
+    PropertyContainerConverter<Relationship, Relation> propertyContainerConverter = instance.createForTypeAndPropertyContainer(Relationship.class, Relation.class);
 
     // verify
     assertThat(propertyContainerConverter, instanceOf(RelationshipConverter.class));
@@ -109,7 +109,7 @@ public class PropertyContainerConverterFactoryTest {
   @Test
   public void createEntityForTypeCreatesARegularEntityConverterIfThePropertyContainerIsANode() {
     // action
-    PropertyContainerConverter<TestSystemEntityWrapper, Node> propertyContainerConverter = instance.createForTypeAndPropertyContainer(SYSTEM_ENTITY_TYPE, NODE_TYPE);
+    PropertyContainerConverter<Node, TestSystemEntityWrapper> propertyContainerConverter = instance.createForTypeAndPropertyContainer(NODE_TYPE, SYSTEM_ENTITY_TYPE);
 
     // verify
     assertThat(propertyContainerConverter, instanceOf(PropertyContainerConverter.class));
@@ -123,7 +123,7 @@ public class PropertyContainerConverterFactoryTest {
     numberOfFields += getNumberOfFields(Entity.class);
 
     // action
-    PropertyContainerConverter<? super SubADomainEntity, Node> wrapper = instance.createForPrimitive(DOMAIN_ENTITY_TYPE, NODE_TYPE);
+    PropertyContainerConverter<Node, ? super SubADomainEntity> wrapper = instance.createForPrimitive(NODE_TYPE, DOMAIN_ENTITY_TYPE);
 
     // verify
     verify(fieldConverterFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(PRIMITIVE_DOMAIN_ENTITY_TYPE)), any(Field.class));

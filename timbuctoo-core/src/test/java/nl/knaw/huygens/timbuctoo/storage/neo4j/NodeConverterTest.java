@@ -25,7 +25,7 @@ public class NodeConverterTest {
   private Node nodeMock;
   private FieldConverter administrativeFieldConverterMock;
   private FieldConverter regularFieldConverterMock;
-  private NodeConverter<TestSystemEntityWrapper, Node> instance;
+  private NodeConverter<Node, TestSystemEntityWrapper> instance;
 
   @Before
   public void setUp() {
@@ -34,7 +34,7 @@ public class NodeConverterTest {
 
     nodeMock = mock(Node.class);
 
-    instance = new NodeConverter<TestSystemEntityWrapper, Node>(TYPE);
+    instance = new NodeConverter<Node, TestSystemEntityWrapper>(TYPE);
     instance.addFieldConverter(administrativeFieldConverterMock);
     instance.addFieldConverter(regularFieldConverterMock);
   }

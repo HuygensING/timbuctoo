@@ -13,7 +13,7 @@ import org.neo4j.graphdb.Relationship;
 
 import com.google.common.collect.Lists;
 
-public class RelationshipConverter<T extends Relation, U extends Relationship> implements PropertyContainerConverter<T, U> {
+public class RelationshipConverter<U extends Relationship, T extends Relation> implements PropertyContainerConverter<U, T> {
 
   private List<String> fieldsToIgnore;
   private List<FieldConverter> fieldConverters;
