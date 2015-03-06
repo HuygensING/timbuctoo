@@ -38,7 +38,7 @@ public class PropertyContainerConverterFactory {
       addFieldWrappers(entityConverter, type);
       return entityConverter;
     } else {
-      return createNoOpEntityConverter(type, propertyContainerType);
+      return createNoOpPropertyContainerConverter(type, propertyContainerType);
     }
   }
 
@@ -73,8 +73,8 @@ public class PropertyContainerConverterFactory {
     return new RegularEntityConverter<T, U>(type);
   }
 
-  protected <T extends Entity, U extends PropertyContainer> PropertyContainerConverter<T, U> createNoOpEntityConverter(Class<T> type, Class<U> propertyContainerType) {
-    return new NoOpEntityConverter<T, U>();
+  protected <T extends Entity, U extends PropertyContainer> PropertyContainerConverter<T, U> createNoOpPropertyContainerConverter(Class<T> type, Class<U> propertyContainerType) {
+    return new NoOpPropertyContainerConverter<T, U>();
   }
 
   protected <T extends Relation, U extends Relationship> PropertyContainerConverter<T, U> createRelationConverter(Class<T> type, Class<U> relationType) {

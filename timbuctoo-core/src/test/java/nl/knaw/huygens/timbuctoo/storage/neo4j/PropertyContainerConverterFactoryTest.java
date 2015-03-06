@@ -35,7 +35,7 @@ public class PropertyContainerConverterFactoryTest {
   private static final Class<TestSystemEntityWrapper> SYSTEM_ENTITY_TYPE = TestSystemEntityWrapper.class;
   private PropertyContainerConverterFactory instance;
   @SuppressWarnings("rawtypes")
-  private NoOpEntityConverter noOpEntityConverterMock;
+  private NoOpPropertyContainerConverter noOpPropertyContainerConverterConverterMock;
   @SuppressWarnings("rawtypes")
   private RegularEntityConverter regularEntityConverterMock;
   @SuppressWarnings("rawtypes")
@@ -47,7 +47,7 @@ public class PropertyContainerConverterFactoryTest {
   @Before
   public void setUp() {
     regularEntityConverterMock = mock(RegularEntityConverter.class);
-    noOpEntityConverterMock = mock(NoOpEntityConverter.class);
+    noOpPropertyContainerConverterConverterMock = mock(NoOpPropertyContainerConverter.class);
     relationConverterMock = mock(RelationConverter.class);
 
     fieldConverterMock = mock(AbstractFieldConverter.class);
@@ -62,8 +62,8 @@ public class PropertyContainerConverterFactoryTest {
       }
 
       @Override
-      protected <T extends Entity, U extends PropertyContainer> PropertyContainerConverter<T, U> createNoOpEntityConverter(Class<T> type, Class<U> nodeType) {
-        return noOpEntityConverterMock;
+      protected <T extends Entity, U extends PropertyContainer> PropertyContainerConverter<T, U> createNoOpPropertyContainerConverter(Class<T> type, Class<U> nodeType) {
+        return noOpPropertyContainerConverterConverterMock;
       }
 
       @Override
@@ -94,7 +94,7 @@ public class PropertyContainerConverterFactoryTest {
     PropertyContainerConverter<TestSystemEntityWrapper, PropertyContainer> propertyContainerConverter = instance.createForTypeAndPropertyContainer(SYSTEM_ENTITY_TYPE, PropertyContainer.class);
 
     // verify
-    assertThat(propertyContainerConverter, instanceOf(NoOpEntityConverter.class));
+    assertThat(propertyContainerConverter, instanceOf(NoOpPropertyContainerConverter.class));
   }
 
   @Test
