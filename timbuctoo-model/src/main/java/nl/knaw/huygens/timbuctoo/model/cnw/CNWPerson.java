@@ -7,12 +7,12 @@ import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
-import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.lang3.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
@@ -74,7 +74,7 @@ public class CNWPerson extends Person {
 		return deathdateQualifier;
 	}
 
-	@IndexAnnotation(fieldName = "dynamic_s_membership", canBeEmpty = true, isFaceted = true)
+	@IndexAnnotation(title = "Lidmaatschap(pen)", fieldName = "dynamic_s_membership", canBeEmpty = true, isFaceted = true)
 	public List<String> getMemberships() {
 		return memberships;
 	}
@@ -103,7 +103,7 @@ public class CNWPerson extends Person {
 		this.domains = domains;
 	}
 
-	@IndexAnnotation(fieldName = "dynamic_s_domain", canBeEmpty = false, isFaceted = true)
+	@IndexAnnotation(title = "Domein(en)", fieldName = "dynamic_s_domain", canBeEmpty = false, isFaceted = true)
 	public List<String> getDomains() {
 		return domains;
 	}
@@ -112,7 +112,7 @@ public class CNWPerson extends Person {
 		this.subdomains = subdomains;
 	}
 
-	@IndexAnnotation(fieldName = "dynamic_s_subdomain", canBeEmpty = true, isFaceted = true)
+	@IndexAnnotation(title = "Subdomein(en)", fieldName = "dynamic_s_subdomain", canBeEmpty = true, isFaceted = true)
 	public List<String> getSubDomains() {
 		return subdomains;
 	}
@@ -121,7 +121,7 @@ public class CNWPerson extends Person {
 		this.characteristics = characteristicList;
 	}
 
-	@IndexAnnotation(fieldName = "dynamic_s_characteristic", canBeEmpty = false, isFaceted = true)
+	@IndexAnnotation(title = "Karakteristiek(en)", fieldName = "dynamic_s_characteristic", canBeEmpty = false, isFaceted = true)
 	public List<String> getCharacteristics() {
 		return characteristics;
 	}
@@ -130,7 +130,7 @@ public class CNWPerson extends Person {
 		this.koppelnaam = koppelnaam;
 	}
 
-	@IndexAnnotation(fieldName = "dynamic_s_koppelnaam", canBeEmpty = false, isFaceted = true)
+	@IndexAnnotation(title = "Koppelnaam", fieldName = "dynamic_s_koppelnaam", canBeEmpty = false, isFaceted = true)
 	public String getKoppelnaam() {
 		return koppelnaam;
 	}
@@ -179,9 +179,14 @@ public class CNWPerson extends Person {
 		this.networkDomains = networkDomains;
 	}
 
-	@IndexAnnotation(fieldName = "dynamic_s_networkdomain", canBeEmpty = false, isFaceted = true)
 	public List<String> getNetworkDomains() {
 		return networkDomains;
+	}
+
+	@JsonIgnore
+	@IndexAnnotation(title = "Netwerk(en)", fieldName = "dynamic_s_networkdomain", canBeEmpty = false, isFaceted = true)
+	public String getNetworkDomainString() {
+		return Joiner.on(" en ").join(networkDomains);
 	}
 
 	//	public String getDbngUrl() {
@@ -281,7 +286,7 @@ public class CNWPerson extends Person {
 		return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
 	}
 
-	@IndexAnnotation(fieldName = "dynamic_s_altname", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+	@IndexAnnotation(title = "Alternatieve naam", fieldName = "dynamic_s_altname", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
 	public List<AltName> getAltNames() {
 		return altNames.list;
 	}
@@ -322,7 +327,7 @@ public class CNWPerson extends Person {
 		this.cnwBirthYear = new Datable(String.valueOf(cnwBirthYear));
 	}
 
-	@IndexAnnotation(fieldName = "dynamic_i_birthyear", facetType = FacetType.RANGE, isFaceted = true)
+	@IndexAnnotation(fieldName = "dynamic_i_birthyear", facetType = FacetType.RANGE, isFaceted = false)
 	public Datable getCnwBirthYear() {
 		return cnwBirthYear;
 	}
@@ -331,7 +336,7 @@ public class CNWPerson extends Person {
 		birthdateQualifier = qualifier;
 	}
 
-	@IndexAnnotation(fieldName = "dynamic_i_deathyear", facetType = FacetType.RANGE, isFaceted = true)
+	@IndexAnnotation(fieldName = "dynamic_i_deathyear", facetType = FacetType.RANGE, isFaceted = false)
 	public Datable getCnwDeathYear() {
 		return cnwDeathYear;
 	}
