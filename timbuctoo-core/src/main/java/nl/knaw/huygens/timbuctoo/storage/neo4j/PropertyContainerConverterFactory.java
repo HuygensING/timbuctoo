@@ -24,16 +24,17 @@ public class PropertyContainerConverterFactory {
     this.fieldWrapperFactory = fieldWrapperFactory;
   }
 
-  public <T extends Entity, U extends PropertyContainer> EntityConverter<T, U> createForTypeAndPropertyContainer(Class<T> type, Class<U> propertyContainerType) {
+  public <T extends Entity, U extends PropertyContainer> PropertyContainerConverter<T, U> createForTypeAndPropertyContainer(Class<T> type, Class<U> propertyContainerType) {
     if (Node.class.isAssignableFrom(propertyContainerType)) {
       @SuppressWarnings("unchecked")
-      EntityConverter<T, U> entityWrapper = (EntityConverter<T, U>) createEntityConverter(type, (Class<? extends Node>) propertyContainerType);
-      addFieldWrappers(entityWrapper, type);
+      PropertyContainerConverter<T, U> propertyContainerConverter = (PropertyContainerConverter<T, U>) createEntityConverter(type, (Class<? extends Node>) propertyContainerType);
+      addFieldWrappers(propertyContainerConverter, type);
 
-      return entityWrapper;
+      return propertyContainerConverter;
     } else if (Relation.class.isAssignableFrom(type) && Relationship.class.isAssignableFrom(propertyContainerType)) {
       @SuppressWarnings("unchecked")
-      EntityConverter<T, U> entityConverter = (EntityConverter<T, U>) createRelationConverter((Class<? extends Relation>) type, (Class<? extends Relationship>) propertyContainerType);
+      PropertyContainerConverter<T, U> entityConverter = (PropertyContainerConverter<T, U>) createRelationConverter((Class<? extends Relation>) type,
+          (Class<? extends Relationship>) propertyContainerType);
       addFieldWrappers(entityConverter, type);
       return entityConverter;
     } else {
@@ -47,19 +48,19 @@ public class PropertyContainerConverterFactory {
    * @return an EntityTypeWrapper for the primitive of type. This could be type itself.
    */
   @SuppressWarnings("unchecked")
-  public <T extends DomainEntity, U extends PropertyContainer> EntityConverter<? super T, U> createForPrimitive(Class<T> type, Class<U> propertyContainerType) {
+  public <T extends DomainEntity, U extends PropertyContainer> PropertyContainerConverter<? super T, U> createForPrimitive(Class<T> type, Class<U> propertyContainerType) {
     Class<? extends DomainEntity> primitive = TypeRegistry.toBaseDomainEntity(type);
-    EntityConverter<? extends DomainEntity, U> entityTypeWrapper = this.createForTypeAndPropertyContainer(primitive, propertyContainerType);
+    PropertyContainerConverter<? extends DomainEntity, U> propertyContainerConverter = this.createForTypeAndPropertyContainer(primitive, propertyContainerType);
 
-    return (EntityConverter<? super T, U>) entityTypeWrapper;
+    return (PropertyContainerConverter<? super T, U>) propertyContainerConverter;
   }
 
   @SuppressWarnings("unchecked")
-  private <T extends Entity, U extends PropertyContainer> void addFieldWrappers(EntityConverter<T, U> entityConverter, Class<T> type) {
+  private <T extends Entity, U extends PropertyContainer> void addFieldWrappers(PropertyContainerConverter<T, U> propertyContainerConverter, Class<T> type) {
     for (Class<? extends Entity> typeToGetFieldsFrom = type; isEntity(typeToGetFieldsFrom); typeToGetFieldsFrom = (Class<? extends Entity>) typeToGetFieldsFrom.getSuperclass()) {
 
       for (Field field : typeToGetFieldsFrom.getDeclaredFields()) {
-        entityConverter.addFieldConverter(fieldWrapperFactory.wrap(type, field));
+        propertyContainerConverter.addFieldConverter(fieldWrapperFactory.wrap(type, field));
       }
     }
   }
@@ -68,15 +69,15 @@ public class PropertyContainerConverterFactory {
     return Entity.class.isAssignableFrom(typeToGetFieldsFrom);
   }
 
-  protected <T extends Entity, U extends Node> EntityConverter<T, U> createEntityConverter(Class<T> type, Class<U> nodeType) {
+  protected <T extends Entity, U extends Node> PropertyContainerConverter<T, U> createEntityConverter(Class<T> type, Class<U> nodeType) {
     return new RegularEntityConverter<T, U>(type);
   }
 
-  protected <T extends Entity, U extends PropertyContainer> EntityConverter<T, U> createNoOpEntityConverter(Class<T> type, Class<U> propertyContainerType) {
+  protected <T extends Entity, U extends PropertyContainer> PropertyContainerConverter<T, U> createNoOpEntityConverter(Class<T> type, Class<U> propertyContainerType) {
     return new NoOpEntityConverter<T, U>();
   }
 
-  protected <T extends Relation, U extends Relationship> EntityConverter<T, U> createRelationConverter(Class<T> type, Class<U> relationType) {
+  protected <T extends Relation, U extends Relationship> PropertyContainerConverter<T, U> createRelationConverter(Class<T> type, Class<U> relationType) {
     ArrayList<String> fieldsToIgnore = Lists.newArrayList(Relation.SOURCE_ID, Relation.TARGET_ID, Relation.SOURCE_TYPE, Relation.TARGET_TYPE);
     return new RelationConverter<T, U>(fieldsToIgnore);
   }

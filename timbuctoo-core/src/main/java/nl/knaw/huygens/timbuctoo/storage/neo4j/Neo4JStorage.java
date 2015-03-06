@@ -49,7 +49,8 @@ public class Neo4JStorage implements Storage {
   private final TypeRegistry typeRegistry;
 
   @Inject
-  public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, EntityInstantiator entityInstantiator, IdGenerator idGenerator, TypeRegistry typeRegistry) {
+  public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, EntityInstantiator entityInstantiator, IdGenerator idGenerator,
+      TypeRegistry typeRegistry) {
     this.db = db;
     this.propertyContainerConverterFactory = propertyContainerConverterFactory;
     this.entityInstantiator = entityInstantiator;
@@ -81,10 +82,10 @@ public class Neo4JStorage implements Storage {
       try {
         String id = addAdministrativeValues(type, entity);
 
-        EntityConverter<T, Node> objectWrapper = propertyContainerConverterFactory.createForTypeAndPropertyContainer(type, NODE_TYPE);
+        PropertyContainerConverter<T, Node> propertyContainerConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(type, NODE_TYPE);
         Node node = db.createNode();
 
-        objectWrapper.addValuesToPropertyContainer(node, entity);
+        propertyContainerConverter.addValuesToPropertyContainer(node, entity);
 
         transaction.success();
         return id;
@@ -149,8 +150,8 @@ public class Neo4JStorage implements Storage {
         throw new StorageException(createCannotFindString("RelationType", relation.getTypeType(), relation.getTypeId()));
       }
 
-      EntityConverter<T, Relationship> relationConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(type, RELATIONSHIP_TYPE);
-      EntityConverter<? super T, Relationship> primitiveRelationConverter = propertyContainerConverterFactory.createForPrimitive(type, RELATIONSHIP_TYPE);
+      PropertyContainerConverter<T, Relationship> relationConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(type, RELATIONSHIP_TYPE);
+      PropertyContainerConverter<? super T, Relationship> primitiveRelationConverter = propertyContainerConverterFactory.createForPrimitive(type, RELATIONSHIP_TYPE);
 
       String id = addAdministrativeValues(type, (T) relation);
 
@@ -182,8 +183,8 @@ public class Neo4JStorage implements Storage {
       String id = addAdministrativeValues(type, entity);
       Node node = db.createNode();
 
-      EntityConverter<T, Node> domainEntityConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(type, NODE_TYPE);
-      EntityConverter<? super T, Node> primitiveEntityConverter = propertyContainerConverterFactory.createForPrimitive(type, NODE_TYPE);
+      PropertyContainerConverter<T, Node> domainEntityConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(type, NODE_TYPE);
+      PropertyContainerConverter<? super T, Node> primitiveEntityConverter = propertyContainerConverterFactory.createForPrimitive(type, NODE_TYPE);
 
       try {
         domainEntityConverter.addValuesToPropertyContainer(node, entity);
@@ -224,13 +225,13 @@ public class Neo4JStorage implements Storage {
       updateAdministrativeValues(entity);
 
       try {
-        EntityConverter<T, Node> entityConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(type, NODE_TYPE);
+        PropertyContainerConverter<T, Node> propertyContainerConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(type, NODE_TYPE);
 
         /* split the update and the update of modified and rev, 
          * to be sure the administrative values can only be changed by the system
          */
-        entityConverter.updatePropertyContainer(node, entity);
-        entityConverter.updateModifiedAndRev(node, entity);
+        propertyContainerConverter.updatePropertyContainer(node, entity);
+        propertyContainerConverter.updateModifiedAndRev(node, entity);
 
         transaction.success();
       } catch (ConversionException e) {
@@ -408,8 +409,8 @@ public class Neo4JStorage implements Storage {
     @SuppressWarnings("unchecked")
     Class<U> propertyContainerType = (Class<U>) propertyContainer.getClass();
 
-    EntityConverter<T, U> entityConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(type, propertyContainerType);
-    entityConverter.addValuesToEntity(entity, propertyContainer);
+    PropertyContainerConverter<T, U> propertyContainerConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(type, propertyContainerType);
+    propertyContainerConverter.addValuesToEntity(entity, propertyContainer);
     return entity;
   }
 

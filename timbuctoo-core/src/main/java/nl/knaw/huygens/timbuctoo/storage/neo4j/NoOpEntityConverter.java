@@ -4,7 +4,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.neo4j.graphdb.PropertyContainer;
 
-public class NoOpEntityConverter<T extends Entity, U extends PropertyContainer> implements EntityConverter<T, U> {
+public class NoOpEntityConverter<T extends Entity, U extends PropertyContainer> implements PropertyContainerConverter<T, U> {
 
   @Override
   public void addValuesToPropertyContainer(U propertyContainer, T entity) throws ConversionException {
