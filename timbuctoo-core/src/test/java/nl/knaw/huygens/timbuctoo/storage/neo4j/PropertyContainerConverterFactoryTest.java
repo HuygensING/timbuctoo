@@ -39,7 +39,7 @@ public class PropertyContainerConverterFactoryTest {
   @SuppressWarnings("rawtypes")
   private NodeConverter nodeConverterMock;
   @SuppressWarnings("rawtypes")
-  private RelationConverter relationConverterMock;
+  private RelationshipConverter relationshipConverterMock;
   private AbstractFieldConverter fieldConverterMock;
   private FieldConverterFactory fieldConverterFactoryMock;
 
@@ -48,7 +48,7 @@ public class PropertyContainerConverterFactoryTest {
   public void setUp() {
     nodeConverterMock = mock(NodeConverter.class);
     noOpPropertyContainerConverterConverterMock = mock(NoOpPropertyContainerConverter.class);
-    relationConverterMock = mock(RelationConverter.class);
+    relationshipConverterMock = mock(RelationshipConverter.class);
 
     fieldConverterMock = mock(AbstractFieldConverter.class);
     fieldConverterFactoryMock = mock(FieldConverterFactory.class);
@@ -67,8 +67,8 @@ public class PropertyContainerConverterFactoryTest {
       }
 
       @Override
-      protected <T extends Relation, U extends Relationship> PropertyContainerConverter<T, U> createRelationConverter(Class<T> type, Class<U> nodeType) {
-        return relationConverterMock;
+      protected <T extends Relation, U extends Relationship> PropertyContainerConverter<T, U> createRelationshipConverter(Class<T> type, Class<U> nodeType) {
+        return relationshipConverterMock;
       }
     };
   }
@@ -103,7 +103,7 @@ public class PropertyContainerConverterFactoryTest {
     PropertyContainerConverter<Relation, Relationship> propertyContainerConverter = instance.createForTypeAndPropertyContainer(Relation.class, Relationship.class);
 
     // verify
-    assertThat(propertyContainerConverter, instanceOf(RelationConverter.class));
+    assertThat(propertyContainerConverter, instanceOf(RelationshipConverter.class));
   }
 
   @Test

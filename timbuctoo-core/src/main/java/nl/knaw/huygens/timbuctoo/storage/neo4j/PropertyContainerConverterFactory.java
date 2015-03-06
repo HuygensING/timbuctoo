@@ -33,7 +33,7 @@ public class PropertyContainerConverterFactory {
       return propertyContainerConverter;
     } else if (Relation.class.isAssignableFrom(type) && Relationship.class.isAssignableFrom(propertyContainerType)) {
       @SuppressWarnings("unchecked")
-      PropertyContainerConverter<T, U> entityConverter = (PropertyContainerConverter<T, U>) createRelationConverter((Class<? extends Relation>) type,
+      PropertyContainerConverter<T, U> entityConverter = (PropertyContainerConverter<T, U>) createRelationshipConverter((Class<? extends Relation>) type,
           (Class<? extends Relationship>) propertyContainerType);
       addFieldWrappers(entityConverter, type);
       return entityConverter;
@@ -77,8 +77,8 @@ public class PropertyContainerConverterFactory {
     return new NoOpPropertyContainerConverter<T, U>();
   }
 
-  protected <T extends Relation, U extends Relationship> PropertyContainerConverter<T, U> createRelationConverter(Class<T> type, Class<U> relationType) {
+  protected <T extends Relation, U extends Relationship> PropertyContainerConverter<T, U> createRelationshipConverter(Class<T> type, Class<U> relationType) {
     ArrayList<String> fieldsToIgnore = Lists.newArrayList(Relation.SOURCE_ID, Relation.TARGET_ID, Relation.SOURCE_TYPE, Relation.TARGET_TYPE);
-    return new RelationConverter<T, U>(fieldsToIgnore);
+    return new RelationshipConverter<T, U>(fieldsToIgnore);
   }
 }
