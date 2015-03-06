@@ -3,9 +3,11 @@ package nl.knaw.huygens.timbuctoo.model.cnw;
 import java.text.MessageFormat;
 import java.util.List;
 
+import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -31,10 +33,23 @@ public class CNWPerson extends Person {
 	private String notities = ""; //Bronvermeldingen, tekstveld; Interface geen facet, wel zichtbaar in pop up (Onderscheid Korte of lange presentatie)
 	private String opmerkingen = ""; //Tekstveld, met vast onderdeel (Afgesloten: XXXX-XX-XX);	Interface geen facet, wel zichtbaar in pop up
 	private String aantekeningen = ""; // Kladblok: Niet zichtbaar voor gebruiker, wel bewaren
-	private List<AltName> altNames = Lists.newArrayList();
+	private AltNames altNames = new AltNames();
 	private List<String> relatives = Lists.newArrayList();
+
+	private Datable cnwBirthYear;
+	private Datable cnwDeathYear;
 	private String birthdateQualifier = "";
 	private String deathdateQualifier = "";
+
+	// Container class, for entity reducer
+	private static class AltNames {
+		public List<AltName> list;
+
+		public AltNames() {
+			list = Lists.newArrayList();
+		}
+
+	}
 
 	//	private String nametype = "";
 	//	private String woonplaats = "";
@@ -266,18 +281,22 @@ public class CNWPerson extends Person {
 		return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
 	}
 
-	@IndexAnnotation(fieldName = "dynamic_s_altname", accessors = { "getName" }, canBeEmpty = true, isFaceted = true)
+	@IndexAnnotation(fieldName = "dynamic_s_altname", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
 	public List<AltName> getAltNames() {
-		return altNames;
+		return altNames.list;
 	}
 
 	public void setAltNames(List<AltName> altNames) {
-		this.altNames = altNames;
+		this.altNames.list = altNames;
 	}
 
 	@IndexAnnotation(fieldName = "dynamic_s_relatives", canBeEmpty = true, isFaceted = false)
 	public List<String> getRelatives() {
 		return relatives;
+	}
+
+	public void setShortDescription(String ignoredparameter) {
+		// shortDescription should be a generated field 
 	}
 
 	@IndexAnnotation(fieldName = "dynamic_s_shortdescription", canBeEmpty = false, isFaceted = false)
@@ -299,8 +318,26 @@ public class CNWPerson extends Person {
 		relatives.add(relative);
 	}
 
+	public void setCnwBirthYear(Integer cnwBirthYear) {
+		this.cnwBirthYear = new Datable(String.valueOf(cnwBirthYear));
+	}
+
+	@IndexAnnotation(fieldName = "dynamic_i_birthyear", facetType = FacetType.RANGE, isFaceted = true)
+	public Datable getCnwBirthYear() {
+		return cnwBirthYear;
+	}
+
 	public void setBirthDateQualifier(String qualifier) {
 		birthdateQualifier = qualifier;
+	}
+
+	@IndexAnnotation(fieldName = "dynamic_i_deathyear", facetType = FacetType.RANGE, isFaceted = true)
+	public Datable getCnwDeathYear() {
+		return cnwDeathYear;
+	}
+
+	public void setCnwDeathYear(Integer cnwDeathYear) {
+		this.cnwDeathYear = new Datable(String.valueOf(cnwDeathYear));
 	}
 
 	public void setDeathDateQualifier(String qualifier) {

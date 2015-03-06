@@ -70,7 +70,7 @@ public class CNWConverter extends DefaultConverter {
 	// private static final String ORGANIZATIONS = "CNW-organizations.xml";
 
 	private final File inputDir;
-	private Set<String> relationTypeNames;
+//	private Set<String> relationTypeNames;
 	//	private Map<String, String> pid2koppelnaam = Maps.newHashMap();
 	private Map<String, String> koppelnaam2pid = Maps.newHashMap();
 
@@ -97,7 +97,7 @@ public class CNWConverter extends DefaultConverter {
 
 			RelationTypeImporter importer = new RelationTypeImporter();
 			importer.call(RelationTypeImporter.RELATION_TYPE_DEFS);
-			relationTypeNames = importer.getNames();
+//			relationTypeNames = importer.getNames();
 
 			printBoxedText("Lists");
 			Map<String, Map<String, String>> listMaps = importLists();

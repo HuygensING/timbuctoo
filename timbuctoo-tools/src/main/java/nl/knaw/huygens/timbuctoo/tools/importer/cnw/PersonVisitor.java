@@ -115,8 +115,8 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 		@Override
 		public Traversal leaveElement(Element element, PersonContext context) {
 			try {
-//				String personId = context.person.getKoppelnaam();
-//				LOG.info("{} - {}", personId, context.person.getShortDescription());
+				//				String personId = context.person.getKoppelnaam();
+				//				LOG.info("{} - {}", personId, context.person.getShortDescription());
 
 				//				if (context.birthPlaceId != null) {
 				//					Reference brelType = getRelationTypeRef("hasBirthPlace", true);
@@ -178,7 +178,9 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 		public Traversal leaveElement(Element element, PersonContext context) {
 			context.birthPlaceId = context.getCurrentLocationId();
 			if (StringUtils.isNotEmpty(context.year)) {
-				context.person.setBirthDate(new Datable(context.year));
+				Datable birthDate = new Datable(context.year);
+				context.person.setBirthDate(birthDate);
+				context.person.setCnwBirthYear(birthDate.getFromYear());
 			}
 			context.year = "";
 
@@ -197,7 +199,9 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 		public Traversal leaveElement(Element element, PersonContext context) {
 			context.deathPlaceId = context.getCurrentLocationId();
 			if (StringUtils.isNotEmpty(context.year)) {
-				context.person.setDeathDate(new Datable(context.year));
+				Datable cnwDeathYear = new Datable(context.year);
+				context.person.setDeathDate(cnwDeathYear);
+				context.person.setCnwDeathYear(cnwDeathYear.getToYear());
 			}
 			context.year = "";
 			return super.leaveElement(element, context);
@@ -400,7 +404,7 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 		@Override
 		public void handleContent(Element element, PersonContext context, String text) {
 			if (element.getParent().hasName("names")) {
-				context.currentAltName.setName(text);
+				context.currentAltName.setDisplayName(text);
 			} else {
 				context.person.setName(text);
 			}
