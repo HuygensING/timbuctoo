@@ -5,7 +5,9 @@ import java.util.List;
 
 import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.Person;
+import nl.knaw.huygens.timbuctoo.model.Person.Gender;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -51,22 +53,26 @@ public class CNWPerson extends Person {
 
 	}
 
-	//	private String nametype = "";
-	//	private String woonplaats = "";
-	//	private String education = "";
-	//	private String occupation = "";
-	//	private String politics = "";
-	//	private String opmPolitics = "";
-	//	private String levensbeschouwing = "";
-	//	private String literatuur = "";
-	//	private String bntlUrl = "";//Link, mogelijkheid tot doorklikken
-	//	private String dbngUrl = "";
-	//	private String cenUrlAfz = "";
-	//	private String cenUrlOntv = "";
+	@IndexAnnotation(title = "Geslacht", fieldName = "dynamic_s_gender", isFaceted = true, canBeEmpty = true)
+	public Gender getGender() {
+		return super.getGender();
+	}
+
+	@IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_s_birthDate", isFaceted = false, canBeEmpty = true), //
+			@IndexAnnotation(fieldName = "dynamic_k_birthDate", canBeEmpty = true, isSortable = true) })
+	public Datable getBirthDate() {
+		return super.getBirthDate();
+	}
 
 	@IndexAnnotation(fieldName = "dynamic_s_birthdatequalifier", canBeEmpty = true, isFaceted = false)
 	public String getBirthdateQualifier() {
 		return birthdateQualifier;
+	}
+
+	@IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_s_deathDate", isFaceted = false, canBeEmpty = true), //
+			@IndexAnnotation(fieldName = "dynamic_k_deathDate", isSortable = true, canBeEmpty = true) })
+	public Datable getDeathDate() {
+		return super.getDeathDate();
 	}
 
 	@IndexAnnotation(fieldName = "dynamic_s_deathdatequalifier", canBeEmpty = true, isFaceted = false)
@@ -181,6 +187,11 @@ public class CNWPerson extends Person {
 
 	public List<String> getNetworkDomains() {
 		return networkDomains;
+	}
+
+	@IndexAnnotation(fieldName = "dynamic_s_types", isFaceted = false)
+	public List<String> getTypes() {
+		return super.getTypes();
 	}
 
 	@JsonIgnore
