@@ -309,7 +309,7 @@ public class Neo4JStorageTest {
 
   private <T extends Relation> PropertyContainerConverter<Relationship, T> propertyContainerConverterFactoryHasRelationshipConverterFor(Class<T> type) {
     @SuppressWarnings("unchecked")
-    RelationshipConverter<Relationship, T> relationshipConverter = mock(RelationshipConverter.class);
+    RelationshipConverter<T> relationshipConverter = mock(RelationshipConverter.class);
     when(propertyContainerConverterFactoryMock.createForRelation(type)).thenReturn(relationshipConverter);
 
     return relationshipConverter;
@@ -317,7 +317,7 @@ public class Neo4JStorageTest {
 
   private <T extends Relation> PropertyContainerConverter<Relationship, T> propertyContainerConverterFactoryHasRelationshipConverterForPrimitive(Class<T> type) {
     @SuppressWarnings("unchecked")
-    RelationshipConverter<Relationship, T> relationshipConverter = mock(RelationshipConverter.class);
+    RelationshipConverter<T> relationshipConverter = mock(RelationshipConverter.class);
     doReturn(relationshipConverter).when(propertyContainerConverterFactoryMock).createForPrimitiveRelation(type);
 
     return relationshipConverter;

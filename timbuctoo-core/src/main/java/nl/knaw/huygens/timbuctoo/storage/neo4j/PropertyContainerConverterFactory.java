@@ -8,9 +8,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 
-import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
-import org.neo4j.graphdb.Relationship;
 
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
@@ -24,25 +22,25 @@ public class PropertyContainerConverterFactory {
     this.fieldWrapperFactory = fieldWrapperFactory;
   }
 
-  public <T extends Relation> RelationshipConverter<Relationship, T> createForRelation(Class<T> type) {
-    RelationshipConverter<Relationship, T> relationshipConverter = createRelationshipConverter(Relationship.class, type);
+  public <T extends Relation> RelationshipConverter<T> createForRelation(Class<T> type) {
+    RelationshipConverter<T> relationshipConverter = createRelationshipConverter(type);
     addFieldWrappers(relationshipConverter, type);
 
     return relationshipConverter;
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends Relation> RelationshipConverter<Relationship, ? super T> createForPrimitiveRelation(Class<T> type) {
+  public <T extends Relation> RelationshipConverter<? super T> createForPrimitiveRelation(Class<T> type) {
     Class<? extends Relation> primitive = (Class<? extends Relation>) TypeRegistry.toBaseDomainEntity(type);
-    RelationshipConverter<Relationship, ? extends Relation> propertyContainerConverter = this.createForRelation(primitive);
+    RelationshipConverter<? extends Relation> propertyContainerConverter = this.createForRelation(primitive);
 
-    return (RelationshipConverter<Relationship, ? super T>) propertyContainerConverter;
+    return (RelationshipConverter<? super T>) propertyContainerConverter;
 
   }
 
   public <U extends PropertyContainer, T extends Entity> PropertyContainerConverter<U, T> createForTypeAndPropertyContainer(Class<U> propertyContainerType, Class<T> type) {
     @SuppressWarnings("unchecked")
-    PropertyContainerConverter<U, T> propertyContainerConverter = (PropertyContainerConverter<U, T>) createNodeConverter((Class<? extends Node>) propertyContainerType, type);
+    PropertyContainerConverter<U, T> propertyContainerConverter = (PropertyContainerConverter<U, T>) createNodeConverter(type);
     addFieldWrappers(propertyContainerConverter, type);
 
     return propertyContainerConverter;
@@ -76,16 +74,16 @@ public class PropertyContainerConverterFactory {
     return Entity.class.isAssignableFrom(typeToGetFieldsFrom);
   }
 
-  protected <U extends Node, T extends Entity> PropertyContainerConverter<U, T> createNodeConverter(Class<U> nodeType, Class<T> type) {
-    return new NodeConverter<U, T>(type);
+  protected <T extends Entity> NodeConverter<T> createNodeConverter(Class<T> type) {
+    return new NodeConverter<T>(type);
   }
 
   protected <U extends PropertyContainer, T extends Entity> PropertyContainerConverter<U, T> createNoOpPropertyContainerConverter(Class<U> propertyContainerType, Class<T> type) {
     return new NoOpPropertyContainerConverter<U, T>();
   }
 
-  protected <U extends Relationship, T extends Relation> RelationshipConverter<U, T> createRelationshipConverter(Class<U> relationType, Class<T> type) {
+  protected <T extends Relation> RelationshipConverter<T> createRelationshipConverter(Class<T> type) {
     ArrayList<String> fieldsToIgnore = Lists.newArrayList(Relation.SOURCE_ID, Relation.TARGET_ID, Relation.SOURCE_TYPE, Relation.TARGET_TYPE);
-    return new RelationshipConverter<U, T>(fieldsToIgnore);
+    return new RelationshipConverter<T>(fieldsToIgnore);
   }
 }

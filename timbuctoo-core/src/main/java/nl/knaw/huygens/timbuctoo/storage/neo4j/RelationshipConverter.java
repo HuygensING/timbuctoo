@@ -13,7 +13,7 @@ import org.neo4j.graphdb.Relationship;
 
 import com.google.common.collect.Lists;
 
-public class RelationshipConverter<U extends Relationship, T extends Relation> implements PropertyContainerConverter<U, T> {
+public class RelationshipConverter<T extends Relation> implements PropertyContainerConverter<Relationship, T> {
 
   private List<String> fieldsToIgnore;
   private List<FieldConverter> fieldConverters;
@@ -24,30 +24,30 @@ public class RelationshipConverter<U extends Relationship, T extends Relation> i
   }
 
   @Override
-  public void addValuesToPropertyContainer(U propertyContainer, T entity) throws ConversionException {
+  public void addValuesToPropertyContainer(Relationship relationship, T entity) throws ConversionException {
     for (FieldConverter fieldConverter : fieldConverters) {
       if (!fieldsToIgnore.contains(fieldConverter.getName())) {
-        fieldConverter.setPropertyContainerProperty(propertyContainer, entity);
+        fieldConverter.setPropertyContainerProperty(relationship, entity);
       }
     }
   }
 
   @Override
-  public void addValuesToEntity(T entity, U propertyContainer) throws ConversionException {
+  public void addValuesToEntity(T entity, Relationship relationship) throws ConversionException {
     for (FieldConverter fieldConverter : fieldConverters) {
       if (!fieldsToIgnore.contains(fieldConverter.getName())) {
-        fieldConverter.addValueToEntity(entity, propertyContainer);
+        fieldConverter.addValueToEntity(entity, relationship);
       }
     }
 
-    Node startNode = propertyContainer.getStartNode();
+    Node startNode = relationship.getStartNode();
     if (startNode.hasProperty(ID_PROPERTY_NAME)) {
       entity.setSourceId((String) startNode.getProperty(ID_PROPERTY_NAME));
     }
 
     entity.setSourceType(getPrimitiveType(startNode));
 
-    Node endNode = propertyContainer.getEndNode();
+    Node endNode = relationship.getEndNode();
     if (endNode.hasProperty(ID_PROPERTY_NAME)) {
       entity.setTargetId((String) endNode.getProperty(ID_PROPERTY_NAME));
     }
@@ -72,12 +72,12 @@ public class RelationshipConverter<U extends Relationship, T extends Relation> i
   }
 
   @Override
-  public void updatePropertyContainer(U propertyContainer, Entity entity) throws ConversionException {
+  public void updatePropertyContainer(Relationship relationship, Entity entity) throws ConversionException {
     throw new UnsupportedOperationException("Yet to be implemented");
   }
 
   @Override
-  public void updateModifiedAndRev(U propertyContainer, Entity entity) throws ConversionException {
+  public void updateModifiedAndRev(Relationship relationship, Entity entity) throws ConversionException {
     throw new UnsupportedOperationException("Yet to be implemented");
   }
 

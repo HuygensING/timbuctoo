@@ -374,7 +374,7 @@ public class Neo4JStorage implements Storage {
       try {
         T entity = entityInstantiator.createInstanceOf(type);
 
-        RelationshipConverter<Relationship, T> converter = propertyContainerConverterFactory.createForRelation(type);
+        RelationshipConverter<T> converter = propertyContainerConverterFactory.createForRelation(type);
         converter.addValuesToEntity(entity, propertyContainerWithHighestRevision);
 
         transaction.success();

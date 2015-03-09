@@ -20,8 +20,6 @@ import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.PropertyContainer;
-import org.neo4j.graphdb.Relationship;
 
 import test.model.BaseDomainEntity;
 import test.model.TestSystemEntityWrapper;
@@ -38,8 +36,6 @@ public class PropertyContainerConverterFactoryTest {
   private static final Class<TestSystemEntityWrapper> SYSTEM_ENTITY_TYPE = TestSystemEntityWrapper.class;
   private PropertyContainerConverterFactory instance;
   @SuppressWarnings("rawtypes")
-  private NoOpPropertyContainerConverter noOpPropertyContainerConverterConverterMock;
-  @SuppressWarnings("rawtypes")
   private NodeConverter nodeConverterMock;
   @SuppressWarnings("rawtypes")
   private RelationshipConverter relationshipConverterMock;
@@ -50,7 +46,6 @@ public class PropertyContainerConverterFactoryTest {
   @Before
   public void setUp() {
     nodeConverterMock = mock(NodeConverter.class);
-    noOpPropertyContainerConverterConverterMock = mock(NoOpPropertyContainerConverter.class);
     relationshipConverterMock = mock(RelationshipConverter.class);
 
     fieldConverterMock = mock(AbstractFieldConverter.class);
@@ -60,17 +55,12 @@ public class PropertyContainerConverterFactoryTest {
 
     instance = new PropertyContainerConverterFactory(fieldConverterFactoryMock) {
       @Override
-      protected <U extends Node, T extends Entity> PropertyContainerConverter<U, T> createNodeConverter(Class<U> nodeType, Class<T> type) {
+      protected <T extends Entity> NodeConverter<T> createNodeConverter(Class<T> type) {
         return nodeConverterMock;
       }
 
       @Override
-      protected <U extends PropertyContainer, T extends Entity> PropertyContainerConverter<U, T> createNoOpPropertyContainerConverter(Class<U> propertyContainerType, Class<T> type) {
-        return noOpPropertyContainerConverterConverterMock;
-      }
-
-      @Override
-      protected <U extends Relationship, T extends Relation> RelationshipConverter<U, T> createRelationshipConverter(Class<U> relationType, Class<T> type) {
+      protected <T extends Relation> RelationshipConverter<T> createRelationshipConverter(Class<T> type) {
         return relationshipConverterMock;
       }
     };
@@ -123,7 +113,7 @@ public class PropertyContainerConverterFactoryTest {
     numberOfFields += getNumberOfFields(Entity.class);
 
     // action
-    RelationshipConverter<Relationship, SubARelation> converter = instance.createForRelation(RELATION_TYPE);
+    RelationshipConverter<SubARelation> converter = instance.createForRelation(RELATION_TYPE);
 
     // verify
     verify(fieldConverterFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(RELATION_TYPE)), any(Field.class));
@@ -137,7 +127,7 @@ public class PropertyContainerConverterFactoryTest {
     numberOfFields += getNumberOfFields(Entity.class);
 
     // action
-    RelationshipConverter<Relationship, ? super SubARelation> converter = instance.createForPrimitiveRelation(RELATION_TYPE);
+    RelationshipConverter<? super SubARelation> converter = instance.createForPrimitiveRelation(RELATION_TYPE);
 
     // verify
     verify(fieldConverterFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(PRIMITIVE_RELATION_TYPE)), any(Field.class));

@@ -15,7 +15,7 @@ import org.neo4j.graphdb.Node;
 
 import com.google.common.collect.Maps;
 
-public class NodeConverter<U extends Node, T extends Entity> implements PropertyContainerConverter<U, T> {
+public class NodeConverter<T extends Entity> implements PropertyContainerConverter<Node, T> {
 
   private Class<T> type;
   private Map<String, FieldConverter> nameFieldConverterMap;
@@ -26,7 +26,7 @@ public class NodeConverter<U extends Node, T extends Entity> implements Property
   }
 
   @Override
-  public void addValuesToPropertyContainer(U node, T entity) throws ConversionException {
+  public void addValuesToPropertyContainer(Node node, T entity) throws ConversionException {
     addName(node);
     for (FieldConverter fieldConverter : getFieldConverters()) {
       fieldConverter.setPropertyContainerProperty(node, entity);
@@ -37,12 +37,12 @@ public class NodeConverter<U extends Node, T extends Entity> implements Property
     return nameFieldConverterMap.values();
   }
 
-  private void addName(U node) {
+  private void addName(Node node) {
     node.addLabel(DynamicLabel.label(TypeNames.getInternalName(type)));
   }
 
   @Override
-  public void addValuesToEntity(T entity, U node) throws ConversionException {
+  public void addValuesToEntity(T entity, Node node) throws ConversionException {
     for (FieldConverter fieldConverter : getFieldConverters()) {
       fieldConverter.addValueToEntity(entity, node);
     }
@@ -64,7 +64,7 @@ public class NodeConverter<U extends Node, T extends Entity> implements Property
    * @throws ConversionException when the fieldConverter throws one.
    */
   @Override
-  public void updatePropertyContainer(U node, Entity entity) throws ConversionException {
+  public void updatePropertyContainer(Node node, Entity entity) throws ConversionException {
     for (FieldConverter fieldConverter : getFieldConverters()) {
       if (fieldConverter.getFieldType() != ADMINISTRATIVE) {
         fieldConverter.setPropertyContainerProperty(node, entity);
@@ -80,7 +80,7 @@ public class NodeConverter<U extends Node, T extends Entity> implements Property
    * @throws ConversionException when one of the FieldConverters throws one 
    */
   @Override
-  public void updateModifiedAndRev(U node, Entity entity) throws ConversionException {
+  public void updateModifiedAndRev(Node node, Entity entity) throws ConversionException {
     getFieldConverterByName(MODIFIED_PROPERTY_NAME).setPropertyContainerProperty(node, entity);
     getFieldConverterByName(REVISION_PROPERTY_NAME).setPropertyContainerProperty(node, entity);
   }
