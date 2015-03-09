@@ -437,16 +437,6 @@ public class Neo4JStorage implements Storage {
     return relationshipWithHighestRevision;
   }
 
-  private <T extends Entity, U extends PropertyContainer> T convertEnity(Class<T> type, U propertyContainer) throws InstantiationException, IllegalAccessException, ConversionException {
-    T entity = entityInstantiator.createInstanceOf(type);
-    @SuppressWarnings("unchecked")
-    Class<U> propertyContainerType = (Class<U>) propertyContainer.getClass();
-
-    PropertyContainerConverter<U, T> propertyContainerConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(propertyContainerType, type);
-    propertyContainerConverter.addValuesToEntity(entity, propertyContainer);
-    return entity;
-  }
-
   /**
    * Retrieves all of {@code type} with {@code id} 
    * and returns the one with the highest revision number.
