@@ -30,7 +30,6 @@ public class PropertyContainerConverterFactoryTest {
 
   private static final Class<Relation> PRIMITIVE_RELATION_TYPE = Relation.class;
   private static final Class<SubARelation> RELATION_TYPE = SubARelation.class;
-  private static final Class<Node> NODE_TYPE = Node.class;
   private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
   private static final Class<BaseDomainEntity> PRIMITIVE_DOMAIN_ENTITY_TYPE = BaseDomainEntity.class;
   private static final Class<TestSystemEntityWrapper> SYSTEM_ENTITY_TYPE = TestSystemEntityWrapper.class;
@@ -74,7 +73,7 @@ public class PropertyContainerConverterFactoryTest {
     numberOfFields += getNumberOfFields(Entity.class);
 
     // action
-    PropertyContainerConverter<Node, TestSystemEntityWrapper> propertyContainerConverter = instance.createForTypeAndPropertyContainer(NODE_TYPE, SYSTEM_ENTITY_TYPE);
+    PropertyContainerConverter<Node, TestSystemEntityWrapper> propertyContainerConverter = instance.createForType(SYSTEM_ENTITY_TYPE);
 
     // verify
     verify(fieldConverterFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(SYSTEM_ENTITY_TYPE)), any(Field.class));
@@ -84,7 +83,7 @@ public class PropertyContainerConverterFactoryTest {
   @Test
   public void createEntityForTypeCreatesANodeConverter() {
     // action
-    PropertyContainerConverter<Node, TestSystemEntityWrapper> propertyContainerConverter = instance.createForTypeAndPropertyContainer(NODE_TYPE, SYSTEM_ENTITY_TYPE);
+    PropertyContainerConverter<Node, TestSystemEntityWrapper> propertyContainerConverter = instance.createForType(SYSTEM_ENTITY_TYPE);
 
     // verify
     assertThat(propertyContainerConverter, instanceOf(NodeConverter.class));
@@ -98,7 +97,7 @@ public class PropertyContainerConverterFactoryTest {
     numberOfFields += getNumberOfFields(Entity.class);
 
     // action
-    PropertyContainerConverter<Node, ? super SubADomainEntity> converter = instance.createForPrimitive(NODE_TYPE, DOMAIN_ENTITY_TYPE);
+    PropertyContainerConverter<Node, ? super SubADomainEntity> converter = instance.createForPrimitive(DOMAIN_ENTITY_TYPE);
 
     // verify
     verify(fieldConverterFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(PRIMITIVE_DOMAIN_ENTITY_TYPE)), any(Field.class));

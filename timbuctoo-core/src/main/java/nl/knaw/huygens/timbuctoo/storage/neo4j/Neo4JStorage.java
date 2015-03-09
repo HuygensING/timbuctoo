@@ -81,7 +81,7 @@ public class Neo4JStorage implements Storage {
       try {
         String id = addAdministrativeValues(type, entity);
 
-        PropertyContainerConverter<Node, T> propertyContainerConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(NODE_TYPE, type);
+        PropertyContainerConverter<Node, T> propertyContainerConverter = propertyContainerConverterFactory.createForType(type);
         Node node = db.createNode();
 
         propertyContainerConverter.addValuesToPropertyContainer(node, entity);
@@ -182,8 +182,8 @@ public class Neo4JStorage implements Storage {
       String id = addAdministrativeValues(type, entity);
       Node node = db.createNode();
 
-      PropertyContainerConverter<Node, T> domainEntityConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(NODE_TYPE, type);
-      PropertyContainerConverter<Node, ? super T> primitiveEntityConverter = propertyContainerConverterFactory.createForPrimitive(NODE_TYPE, type);
+      PropertyContainerConverter<Node, T> domainEntityConverter = propertyContainerConverterFactory.createForType(type);
+      PropertyContainerConverter<Node, ? super T> primitiveEntityConverter = propertyContainerConverterFactory.createForPrimitive(type);
 
       try {
         domainEntityConverter.addValuesToPropertyContainer(node, entity);
@@ -224,7 +224,7 @@ public class Neo4JStorage implements Storage {
       updateAdministrativeValues(entity);
 
       try {
-        PropertyContainerConverter<Node, T> propertyContainerConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(NODE_TYPE, type);
+        PropertyContainerConverter<Node, T> propertyContainerConverter = propertyContainerConverterFactory.createForType(type);
 
         /* split the update and the update of modified and rev, 
          * to be sure the administrative values can only be changed by the system
@@ -401,7 +401,7 @@ public class Neo4JStorage implements Storage {
       try {
         T entity = entityInstantiator.createInstanceOf(type);
 
-        PropertyContainerConverter<Node, T> converter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(NODE_TYPE, type);
+        PropertyContainerConverter<Node, T> converter = propertyContainerConverterFactory.createForType(type);
         converter.addValuesToEntity(entity, propertyContainerWithHighestRevision);
 
         transaction.success();

@@ -38,9 +38,8 @@ public class PropertyContainerConverterFactory {
 
   }
 
-  public <U extends PropertyContainer, T extends Entity> PropertyContainerConverter<U, T> createForTypeAndPropertyContainer(Class<U> propertyContainerType, Class<T> type) {
-    @SuppressWarnings("unchecked")
-    PropertyContainerConverter<U, T> propertyContainerConverter = (PropertyContainerConverter<U, T>) createNodeConverter(type);
+  public <T extends Entity> NodeConverter<T> createForType(Class<T> type) {
+    NodeConverter<T> propertyContainerConverter = createNodeConverter(type);
     addFieldWrappers(propertyContainerConverter, type);
 
     return propertyContainerConverter;
@@ -53,11 +52,11 @@ public class PropertyContainerConverterFactory {
    * @return an EntityTypeWrapper for the primitive of type. This could be type itself.
    */
   @SuppressWarnings("unchecked")
-  public <U extends PropertyContainer, T extends DomainEntity> PropertyContainerConverter<U, ? super T> createForPrimitive(Class<U> propertyContainerType, Class<T> type) {
+  public <T extends DomainEntity> NodeConverter<? super T> createForPrimitive(Class<T> type) {
     Class<? extends DomainEntity> primitive = TypeRegistry.toBaseDomainEntity(type);
-    PropertyContainerConverter<U, ? extends DomainEntity> propertyContainerConverter = this.createForTypeAndPropertyContainer(propertyContainerType, primitive);
+    NodeConverter<? extends DomainEntity> nodeConverter = this.createForType(primitive);
 
-    return (PropertyContainerConverter<U, ? super T>) propertyContainerConverter;
+    return (NodeConverter<? super T>) nodeConverter;
   }
 
   @SuppressWarnings("unchecked")
