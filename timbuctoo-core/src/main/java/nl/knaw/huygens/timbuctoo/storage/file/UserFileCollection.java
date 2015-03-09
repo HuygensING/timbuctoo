@@ -57,7 +57,7 @@ public class UserFileCollection extends FileCollection<User> {
     for (User user : users) {
       String id = user.getId();
       idUserMap.put(id, user);
-      persistentIdIdMap.put(user.getPersistentId(), id);
+      indexPersistenId(id, user.getPersistentId());
     }
   }
 
@@ -73,11 +73,15 @@ public class UserFileCollection extends FileCollection<User> {
 
     idUserMap.put(id, user);
 
+    indexPersistenId(id, persistentId);
+
+    return id;
+  }
+
+  private void indexPersistenId(String id, String persistentId) {
     if (persistentId != null) {
       persistentIdIdMap.put(persistentId, id);
     }
-
-    return id;
   }
 
   @Override
