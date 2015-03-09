@@ -176,7 +176,6 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 
 		@Override
 		public Traversal leaveElement(Element element, PersonContext context) {
-			context.birthPlaceId = context.getCurrentLocationId();
 			if (StringUtils.isNotEmpty(context.year)) {
 				Datable birthDate = new Datable(context.year);
 				context.person.setBirthDate(birthDate);
@@ -197,7 +196,6 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 
 		@Override
 		public Traversal leaveElement(Element element, PersonContext context) {
-			context.deathPlaceId = context.getCurrentLocationId();
 			if (StringUtils.isNotEmpty(context.year)) {
 				Datable cnwDeathYear = new Datable(context.year);
 				context.person.setDeathDate(cnwDeathYear);

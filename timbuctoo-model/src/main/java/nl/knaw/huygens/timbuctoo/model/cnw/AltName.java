@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.model.cnw;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 //@JsonIgnoreProperties(ignoreUnknown = true)
 public class AltName {

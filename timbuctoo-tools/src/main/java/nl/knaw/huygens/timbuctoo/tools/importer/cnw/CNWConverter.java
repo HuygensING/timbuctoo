@@ -25,7 +25,6 @@ package nl.knaw.huygens.timbuctoo.tools.importer.cnw;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -33,7 +32,6 @@ import java.util.Set;
 import nl.knaw.huygens.tei.Document;
 import nl.knaw.huygens.tei.Visitor;
 import nl.knaw.huygens.timbuctoo.model.cnw.CNWPerson;
-import nl.knaw.huygens.timbuctoo.model.cnw.CNWRelation;
 import nl.knaw.huygens.timbuctoo.tools.importer.DefaultConverter;
 import nl.knaw.huygens.timbuctoo.tools.importer.RelationDTO;
 import nl.knaw.huygens.timbuctoo.tools.importer.RelationTypeImporter;
@@ -43,11 +41,9 @@ import nl.knaw.huygens.timbuctoo.util.Files;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.solr.handler.admin.ShowFileRequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -118,7 +114,6 @@ public class CNWConverter extends DefaultConverter {
 		Map<String, String> shortDescriptionMap = Maps.newHashMap();
 		try {
 			Collection<File> files = FileUtils.listFiles(inputDir, TEI_EXTENSIONS, false);
-			List<CNWRelation> relations = Lists.newArrayList();
 			for (File file : Sets.newTreeSet(files)) {
 				progress.step();
 				String fileName = file.getName();
@@ -130,9 +125,6 @@ public class CNWConverter extends DefaultConverter {
 				Visitor visitor = new PersonVisitor(personContext, listMaps);
 				Document.createFromXml(xml).accept(visitor);
 				CNWPerson person = personContext.person;
-				//				LOG.info("person={}", person);
-				relations.addAll(personContext.relations);
-				//				pid2koppelnaam.put(person.getId(), person.getKoppelnaam());
 				koppelnaam2pid.put(person.getKoppelnaam(), person.getId());
 				jsonConverter.appendTo(out, person);
 				shortDescriptionMap.put(person.getKoppelnaam(), person.getShortDescription());
@@ -148,44 +140,6 @@ public class CNWConverter extends DefaultConverter {
 				FileUtils.write(personDescription, data, true);
 			}
 
-			out = createPrintWriter(CNWRelation.class);
-			for (CNWRelation cnwRelation : relations) {
-				boolean append = true;
-				String targetId = cnwRelation.getTargetId();
-				if ("child".equals(cnwRelation.getTypeName()) || "klein".equals(cnwRelation.getTypeName())) {
-					String childId = cnwRelation.getSourceId();
-					String parentId = targetId;
-					String sourceRefId = koppelnaam2pid.get(parentId);
-					if (sourceRefId == null) {
-						LOG.error("\nonbekende koppelnaam: {} in {}.xml", parentId, childId.replace("cnw:pers:", ""));
-						append = false;
-					}
-					cnwRelation.setSourceId(sourceRefId);
-					cnwRelation.setTargetId(childId);
-				} else {
-					String targetRefId = koppelnaam2pid.get(targetId);
-					if (targetRefId == null) {
-						LOG.error("\nin {}.xml: onbekende koppelnaam: {} ", cnwRelation.getSourceId().replace("cnw:pers:", ""), targetId);
-						append = false;
-					}
-					cnwRelation.setTargetId(targetRefId);
-				}
-				if (append) {
-					RelationDTO relationDTO = new RelationDTO();
-					relationDTO.setSourceType(cnwRelation.getSourceType());
-					relationDTO.setSourceValue(cnwRelation.getSourceId());
-					relationDTO.setTypeName(cnwRelation.getTypeId());
-					relationDTO.setTargetType(cnwRelation.getTargetType());
-					relationDTO.setTargetValue(cnwRelation.getTargetId());
-					if (!knownRelations.contains(relationDTO)) {
-						jsonConverter.appendTo(out, relationDTO);
-						knownRelations.add(relationDTO);
-						//					LOG.info("unique:{}", relationDTO);
-					} else {
-						//					LOG.info("duplicate:{}", relationDTO);
-					}
-				}
-			}
 
 		} finally {
 			out.close();

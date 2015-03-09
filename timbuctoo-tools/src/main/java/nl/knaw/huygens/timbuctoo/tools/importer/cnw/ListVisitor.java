@@ -1,28 +1,13 @@
 package nl.knaw.huygens.timbuctoo.tools.importer.cnw;
 
-import java.util.Map;
-
 import nl.knaw.huygens.tei.DelegatingVisitor;
 import nl.knaw.huygens.tei.Element;
-import nl.knaw.huygens.tei.ElementHandler;
 import nl.knaw.huygens.tei.Traversal;
 import nl.knaw.huygens.tei.handlers.DefaultElementHandler;
-import nl.knaw.huygens.timbuctoo.model.Person;
-import nl.knaw.huygens.timbuctoo.model.cnw.AltName;
-import nl.knaw.huygens.timbuctoo.model.cnw.CNWLink;
-import nl.knaw.huygens.timbuctoo.model.cnw.CNWPerson;
-import nl.knaw.huygens.timbuctoo.model.cnw.CNWRelation;
-import nl.knaw.huygens.timbuctoo.model.util.Datable;
-import nl.knaw.huygens.timbuctoo.model.util.PersonName;
-import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.timbuctoo.tools.importer.CaptureHandler;
 
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 
 public class ListVisitor extends DelegatingVisitor<ListContext> {
 	private static final Logger LOG = LoggerFactory.getLogger(ListVisitor.class);
