@@ -77,10 +77,6 @@ public class PropertyContainerConverterFactory {
     return new NodeConverter<T>(type);
   }
 
-  protected <U extends PropertyContainer, T extends Entity> PropertyContainerConverter<U, T> createNoOpPropertyContainerConverter(Class<U> propertyContainerType, Class<T> type) {
-    return new NoOpPropertyContainerConverter<U, T>();
-  }
-
   protected <T extends Relation> RelationshipConverter<T> createRelationshipConverter(Class<T> type) {
     ArrayList<String> fieldsToIgnore = Lists.newArrayList(Relation.SOURCE_ID, Relation.TARGET_ID, Relation.SOURCE_TYPE, Relation.TARGET_TYPE);
     return new RelationshipConverter<T>(fieldsToIgnore);
