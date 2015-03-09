@@ -1,13 +1,21 @@
 package nl.knaw.huygens.timbuctoo.model.cnw;
 
+import java.text.MessageFormat;
 import java.util.List;
 
+import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.Person;
+import nl.knaw.huygens.timbuctoo.model.Person.Gender;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang3.StringUtils;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
 public class CNWPerson extends Person {
@@ -27,23 +35,52 @@ public class CNWPerson extends Person {
 	private String notities = ""; //Bronvermeldingen, tekstveld; Interface geen facet, wel zichtbaar in pop up (Onderscheid Korte of lange presentatie)
 	private String opmerkingen = ""; //Tekstveld, met vast onderdeel (Afgesloten: XXXX-XX-XX);	Interface geen facet, wel zichtbaar in pop up
 	private String aantekeningen = ""; // Kladblok: Niet zichtbaar voor gebruiker, wel bewaren
-	private List<AltName> altNames = Lists.newArrayList();
+	private AltNames altNames = new AltNames();
 	private List<String> relatives = Lists.newArrayList();
 
-	//	private String nametype = "";
-	//	private String woonplaats = "";
-	//	private String education = "";
-	//	private String occupation = "";
-	//	private String politics = "";
-	//	private String opmPolitics = "";
-	//	private String levensbeschouwing = "";
-	//	private String literatuur = "";
-	//	private String bntlUrl = "";//Link, mogelijkheid tot doorklikken
-	//	private String dbngUrl = "";
-	//	private String cenUrlAfz = "";
-	//	private String cenUrlOntv = "";
+	private Datable cnwBirthYear;
+	private Datable cnwDeathYear;
+	private String birthdateQualifier = "";
+	private String deathdateQualifier = "";
 
-	@IndexAnnotation(fieldName = "dynamic_s_membership", canBeEmpty = true, isFaceted = true)
+	// Container class, for entity reducer
+	private static class AltNames {
+		public List<AltName> list;
+
+		public AltNames() {
+			list = Lists.newArrayList();
+		}
+
+	}
+
+	@IndexAnnotation(title = "Geslacht", fieldName = "dynamic_s_gender", isFaceted = true, canBeEmpty = true)
+	public Gender getGender() {
+		return super.getGender();
+	}
+
+	@IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_s_birthDate", isFaceted = false, canBeEmpty = true), //
+			@IndexAnnotation(fieldName = "dynamic_k_birthDate", canBeEmpty = true, isSortable = true) })
+	public Datable getBirthDate() {
+		return super.getBirthDate();
+	}
+
+	@IndexAnnotation(fieldName = "dynamic_s_birthdatequalifier", canBeEmpty = true, isFaceted = false)
+	public String getBirthdateQualifier() {
+		return birthdateQualifier;
+	}
+
+	@IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_s_deathDate", isFaceted = false, canBeEmpty = true), //
+			@IndexAnnotation(fieldName = "dynamic_k_deathDate", isSortable = true, canBeEmpty = true) })
+	public Datable getDeathDate() {
+		return super.getDeathDate();
+	}
+
+	@IndexAnnotation(fieldName = "dynamic_s_deathdatequalifier", canBeEmpty = true, isFaceted = false)
+	public String getDeathdateQualifier() {
+		return deathdateQualifier;
+	}
+
+	@IndexAnnotation(title = "Lidmaatschap(pen)", fieldName = "dynamic_s_membership", canBeEmpty = true, isFaceted = true)
 	public List<String> getMemberships() {
 		return memberships;
 	}
@@ -72,7 +109,7 @@ public class CNWPerson extends Person {
 		this.domains = domains;
 	}
 
-	@IndexAnnotation(fieldName = "dynamic_s_domain", canBeEmpty = false, isFaceted = true)
+	@IndexAnnotation(title = "Domein(en)", fieldName = "dynamic_s_domain", canBeEmpty = false, isFaceted = true)
 	public List<String> getDomains() {
 		return domains;
 	}
@@ -81,7 +118,7 @@ public class CNWPerson extends Person {
 		this.subdomains = subdomains;
 	}
 
-	@IndexAnnotation(fieldName = "dynamic_s_subdomain", canBeEmpty = true, isFaceted = true)
+	@IndexAnnotation(title = "Subdomein(en)", fieldName = "dynamic_s_subdomain", canBeEmpty = true, isFaceted = true)
 	public List<String> getSubDomains() {
 		return subdomains;
 	}
@@ -90,7 +127,7 @@ public class CNWPerson extends Person {
 		this.characteristics = characteristicList;
 	}
 
-	@IndexAnnotation(fieldName = "dynamic_s_characteristic", canBeEmpty = false, isFaceted = true)
+	@IndexAnnotation(title = "Karakteristiek(en)", fieldName = "dynamic_s_characteristic", canBeEmpty = false, isFaceted = true)
 	public List<String> getCharacteristics() {
 		return characteristics;
 	}
@@ -99,7 +136,7 @@ public class CNWPerson extends Person {
 		this.koppelnaam = koppelnaam;
 	}
 
-	@IndexAnnotation(fieldName = "dynamic_s_koppelnaam", canBeEmpty = false, isFaceted = false)
+	@IndexAnnotation(title = "Koppelnaam", fieldName = "dynamic_s_koppelnaam", canBeEmpty = false, isFaceted = true)
 	public String getKoppelnaam() {
 		return koppelnaam;
 	}
@@ -148,9 +185,19 @@ public class CNWPerson extends Person {
 		this.networkDomains = networkDomains;
 	}
 
-	@IndexAnnotation(fieldName = "dynamic_s_networkdomain", canBeEmpty = false, isFaceted = true)
 	public List<String> getNetworkDomains() {
 		return networkDomains;
+	}
+
+	@IndexAnnotation(fieldName = "dynamic_s_types", isFaceted = false)
+	public List<String> getTypes() {
+		return super.getTypes();
+	}
+
+	@JsonIgnore
+	@IndexAnnotation(title = "Netwerk(en)", fieldName = "dynamic_s_networkdomain", canBeEmpty = false, isFaceted = true)
+	public String getNetworkDomainString() {
+		return Joiner.on(" en ").join(networkDomains);
 	}
 
 	//	public String getDbngUrl() {
@@ -250,12 +297,13 @@ public class CNWPerson extends Person {
 		return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
 	}
 
+	@IndexAnnotation(title = "Alternatieve naam", fieldName = "dynamic_s_altname", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
 	public List<AltName> getAltNames() {
-		return altNames;
+		return altNames.list;
 	}
 
 	public void setAltNames(List<AltName> altNames) {
-		this.altNames = altNames;
+		this.altNames.list = altNames;
 	}
 
 	@IndexAnnotation(fieldName = "dynamic_s_relatives", canBeEmpty = true, isFaceted = false)
@@ -263,8 +311,53 @@ public class CNWPerson extends Person {
 		return relatives;
 	}
 
+	public void setShortDescription(String ignoredparameter) {
+		// shortDescription should be a generated field 
+	}
+
+	@IndexAnnotation(fieldName = "dynamic_s_shortdescription", canBeEmpty = false, isFaceted = false)
+	public String getShortDescription() {
+		String charString = characteristics.isEmpty() ? "" : ", " + Joiner.on(", ").join(characteristics);
+		return MessageFormat.format("{0} ({1}-{2}){3}",//
+				StringUtils.defaultIfBlank(getName(), getKoppelnaam()),//
+				extractYear(getBirthDate()), //
+				extractYear(getDeathDate()), //
+				charString);
+	}
+
+	private String extractYear(Datable deathDate) {
+		String deathYear = deathDate == null ? "?" : deathDate.toString();
+		return deathYear;
+	}
+
 	public void addRelative(String relative) {
 		relatives.add(relative);
+	}
+
+	public void setCnwBirthYear(Integer cnwBirthYear) {
+		this.cnwBirthYear = new Datable(String.valueOf(cnwBirthYear));
+	}
+
+	@IndexAnnotation(fieldName = "dynamic_i_birthyear", facetType = FacetType.RANGE, isFaceted = false)
+	public Datable getCnwBirthYear() {
+		return cnwBirthYear;
+	}
+
+	public void setBirthDateQualifier(String qualifier) {
+		birthdateQualifier = qualifier;
+	}
+
+	@IndexAnnotation(fieldName = "dynamic_i_deathyear", facetType = FacetType.RANGE, isFaceted = false)
+	public Datable getCnwDeathYear() {
+		return cnwDeathYear;
+	}
+
+	public void setCnwDeathYear(Integer cnwDeathYear) {
+		this.cnwDeathYear = new Datable(String.valueOf(cnwDeathYear));
+	}
+
+	public void setDeathDateQualifier(String qualifier) {
+		deathdateQualifier = qualifier;
 	}
 
 }

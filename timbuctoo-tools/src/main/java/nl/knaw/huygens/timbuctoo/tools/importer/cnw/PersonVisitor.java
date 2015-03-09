@@ -115,7 +115,8 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 		@Override
 		public Traversal leaveElement(Element element, PersonContext context) {
 			try {
-				String personId = context.person.getKoppelnaam();
+				//				String personId = context.person.getKoppelnaam();
+				//				LOG.info("{} - {}", personId, context.person.getShortDescription());
 
 				//				if (context.birthPlaceId != null) {
 				//					Reference brelType = getRelationTypeRef("hasBirthPlace", true);
@@ -175,9 +176,10 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 
 		@Override
 		public Traversal leaveElement(Element element, PersonContext context) {
-			context.birthPlaceId = context.getCurrentLocationId();
 			if (StringUtils.isNotEmpty(context.year)) {
-				context.person.setBirthDate(new Datable(context.year));
+				Datable birthDate = new Datable(context.year);
+				context.person.setBirthDate(birthDate);
+				context.person.setCnwBirthYear(birthDate.getFromYear());
 			}
 			context.year = "";
 
@@ -194,9 +196,10 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 
 		@Override
 		public Traversal leaveElement(Element element, PersonContext context) {
-			context.deathPlaceId = context.getCurrentLocationId();
 			if (StringUtils.isNotEmpty(context.year)) {
-				context.person.setDeathDate(new Datable(context.year));
+				Datable cnwDeathYear = new Datable(context.year);
+				context.person.setDeathDate(cnwDeathYear);
+				context.person.setCnwDeathYear(cnwDeathYear.getToYear());
 			}
 			context.year = "";
 			return super.leaveElement(element, context);
@@ -399,7 +402,7 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 		@Override
 		public void handleContent(Element element, PersonContext context, String text) {
 			if (element.getParent().hasName("names")) {
-				context.currentAltName.setName(text);
+				context.currentAltName.setDisplayName(text);
 			} else {
 				context.person.setName(text);
 			}
@@ -522,7 +525,7 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 			.put("broer", "(schoon-)broer")//
 			.put("child", "zoon")//
 			.put("echtgenoot", "echtgenoot")//
-			.put("gezel", "gezel")//
+			.put("gezel", "levensgezel")//
 			.put("grand", "grootvader")//
 			.put("klein", "kleinzoon")//
 			.put("parent", "vader")//
@@ -532,7 +535,7 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 			.put("broer", "zus")//
 			.put("child", "dochter")//
 			.put("echtgenoot", "echtgenote")//
-			.put("gezel", "gezel")//
+			.put("gezel", "levelsgezellin")//
 			.put("grand", "grootmoeder")//
 			.put("klein", "kleindochter")//
 			.put("parent", "moeder")//
@@ -542,7 +545,7 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 			.put("broer", "broer/zus")//
 			.put("child", "kind")//
 			.put("echtgenoot", "echtgenoot/echtgenote")//
-			.put("gezel", "gezel")//
+			.put("gezel", "levensgezel/levensgezellin")//
 			.put("grand", "grootouder")//
 			.put("klein", "kleinkind")//
 			.put("parent", "ouder")//
@@ -587,7 +590,15 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 	private class ValHandler extends CaptureHandler<PersonContext> {
 		@Override
 		public void handleContent(Element element, PersonContext context, String text) {
-			//			context.person.setVal(text);
+			String greatgrandparent = element.getParent().getParent().getParent().getName();
+			if ("birth".equals(greatgrandparent)) {
+				context.person.setBirthDateQualifier(text);
+			} else if ("death".equals(greatgrandparent)) {
+				context.person.setDeathDateQualifier(text);
+			} else {
+				LOG.warn("unhandled <val> in {}/{}/{}", greatgrandparent, element.getParent().getParent().getName(), element.getParent().getName());
+			}
+
 		}
 	}
 

@@ -35,8 +35,6 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.file.FileCollection;
-import nl.knaw.huygens.timbuctoo.storage.file.UserFileCollection;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -273,6 +271,19 @@ public class UserFileCollectionTest extends FileCollectionTest<User> {
     // verify
     assertThat(collections.get(userId), sameInstance(user1));
     assertThat(collections.findItem(user1), sameInstance(user1));
+  }
+
+  @Test
+  public void intializeWithAListOfUsersWithoutPersistentIdDoesNotThrowAnException() {
+    // setup
+    User user1 = createUserWithPersistentId(null);
+    String userId = "test";
+    user1.setId(userId);
+    List<User> users = Lists.newArrayList(user1);
+
+    // action
+    new UserFileCollection(users);
+
   }
 
   @Test

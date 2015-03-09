@@ -1,8 +1,12 @@
 package nl.knaw.huygens.timbuctoo.model.cnw;
 
+
+//@JsonIgnoreProperties(ignoreUnknown = true)
 public class AltName {
-	private String nametype = "";
-	private String name = "";
+	private String nametype;
+	private String name;
+
+//	public AltName() {}
 
 	public String getNametype() {
 		return nametype;
@@ -12,11 +16,11 @@ public class AltName {
 		this.nametype = nametype;
 	}
 
-	public String getName() {
+	public String getDisplayName() {
 		return name;
 	}
 
-	public void setName(String name) {
+	public void setDisplayName(String name) {
 		this.name = name;
 	}
 }
