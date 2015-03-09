@@ -26,9 +26,12 @@ import org.neo4j.graphdb.Relationship;
 import test.model.BaseDomainEntity;
 import test.model.TestSystemEntityWrapper;
 import test.model.projecta.SubADomainEntity;
+import test.model.projecta.SubARelation;
 
 public class PropertyContainerConverterFactoryTest {
 
+  private static final Class<Relation> PRIMITIVE_RELATION_TYPE = Relation.class;
+  private static final Class<SubARelation> RELATION_TYPE = SubARelation.class;
   private static final Class<Node> NODE_TYPE = Node.class;
   private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
   private static final Class<BaseDomainEntity> PRIMITIVE_DOMAIN_ENTITY_TYPE = BaseDomainEntity.class;
@@ -67,14 +70,14 @@ public class PropertyContainerConverterFactoryTest {
       }
 
       @Override
-      protected <U extends Relationship, T extends Relation> PropertyContainerConverter<U, T> createRelationshipConverter(Class<U> relationType, Class<T> type) {
+      protected <U extends Relationship, T extends Relation> RelationshipConverter<U, T> createRelationshipConverter(Class<U> relationType, Class<T> type) {
         return relationshipConverterMock;
       }
     };
   }
 
   @Test
-  public void createForTypeAddsAFieldWrapperForEachField() throws Exception {
+  public void createForTypeAddsAFieldConverterForEachField() throws Exception {
     // setup
     int numberOfFields = getNumberOfFields(SYSTEM_ENTITY_TYPE);
     numberOfFields += getNumberOfFields(SystemEntity.class);
@@ -89,30 +92,12 @@ public class PropertyContainerConverterFactoryTest {
   }
 
   @Test
-  public void createEntityForTypeCreatesANoOpEntityConverterIfPropertyContainerIsUsed() {
-    // action
-    PropertyContainerConverter<PropertyContainer, TestSystemEntityWrapper> propertyContainerConverter = instance.createForTypeAndPropertyContainer(PropertyContainer.class, SYSTEM_ENTITY_TYPE);
-
-    // verify
-    assertThat(propertyContainerConverter, instanceOf(NoOpPropertyContainerConverter.class));
-  }
-
-  @Test
-  public void createEntityForTypeCreatesARelationConverterIfTheEntityIsARelationAndThePropertyContainerIsARelation() {
-    // action
-    PropertyContainerConverter<Relationship, Relation> propertyContainerConverter = instance.createForTypeAndPropertyContainer(Relationship.class, Relation.class);
-
-    // verify
-    assertThat(propertyContainerConverter, instanceOf(RelationshipConverter.class));
-  }
-
-  @Test
-  public void createEntityForTypeCreatesARegularEntityConverterIfThePropertyContainerIsANode() {
+  public void createEntityForTypeCreatesANodeConverter() {
     // action
     PropertyContainerConverter<Node, TestSystemEntityWrapper> propertyContainerConverter = instance.createForTypeAndPropertyContainer(NODE_TYPE, SYSTEM_ENTITY_TYPE);
 
     // verify
-    assertThat(propertyContainerConverter, instanceOf(PropertyContainerConverter.class));
+    assertThat(propertyContainerConverter, instanceOf(NodeConverter.class));
   }
 
   @Test
@@ -123,11 +108,40 @@ public class PropertyContainerConverterFactoryTest {
     numberOfFields += getNumberOfFields(Entity.class);
 
     // action
-    PropertyContainerConverter<Node, ? super SubADomainEntity> wrapper = instance.createForPrimitive(NODE_TYPE, DOMAIN_ENTITY_TYPE);
+    PropertyContainerConverter<Node, ? super SubADomainEntity> converter = instance.createForPrimitive(NODE_TYPE, DOMAIN_ENTITY_TYPE);
 
     // verify
     verify(fieldConverterFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(PRIMITIVE_DOMAIN_ENTITY_TYPE)), any(Field.class));
-    verify(wrapper, times(numberOfFields)).addFieldConverter(fieldConverterMock);
+    verify(converter, times(numberOfFields)).addFieldConverter(fieldConverterMock);
+  }
+
+  @Test
+  public void createForRelationAddsAFieldConverterForEachFieldOfTheType() {
+    int numberOfFields = getNumberOfFields(RELATION_TYPE);
+    numberOfFields += getNumberOfFields(PRIMITIVE_RELATION_TYPE);
+    numberOfFields += getNumberOfFields(DomainEntity.class);
+    numberOfFields += getNumberOfFields(Entity.class);
+
+    // action
+    RelationshipConverter<Relationship, SubARelation> converter = instance.createForRelation(RELATION_TYPE);
+
+    // verify
+    verify(fieldConverterFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(RELATION_TYPE)), any(Field.class));
+    verify(converter, times(numberOfFields)).addFieldConverter(fieldConverterMock);
+  }
+
+  @Test
+  public void createForPrimitveRelationAddsAFieldConverterForEachFieldOfTheType() {
+    int numberOfFields = getNumberOfFields(PRIMITIVE_RELATION_TYPE);
+    numberOfFields += getNumberOfFields(DomainEntity.class);
+    numberOfFields += getNumberOfFields(Entity.class);
+
+    // action
+    RelationshipConverter<Relationship, ? super SubARelation> converter = instance.createForPrimitiveRelation(RELATION_TYPE);
+
+    // verify
+    verify(fieldConverterFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(PRIMITIVE_RELATION_TYPE)), any(Field.class));
+    verify(converter, times(numberOfFields)).addFieldConverter(fieldConverterMock);
   }
 
   private int getNumberOfFields(Class<? extends Entity> type) {

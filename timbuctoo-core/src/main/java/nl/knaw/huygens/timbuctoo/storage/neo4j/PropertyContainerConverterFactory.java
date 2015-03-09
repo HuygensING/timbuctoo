@@ -24,22 +24,29 @@ public class PropertyContainerConverterFactory {
     this.fieldWrapperFactory = fieldWrapperFactory;
   }
 
-  public <U extends PropertyContainer, T extends Entity> PropertyContainerConverter<U, T> createForTypeAndPropertyContainer(Class<U> propertyContainerType, Class<T> type) {
-    if (Node.class.isAssignableFrom(propertyContainerType)) {
-      @SuppressWarnings("unchecked")
-      PropertyContainerConverter<U, T> propertyContainerConverter = (PropertyContainerConverter<U, T>) createNodeConverter((Class<? extends Node>) propertyContainerType, type);
-      addFieldWrappers(propertyContainerConverter, type);
+  public <T extends Relation> RelationshipConverter<Relationship, T> createForRelation(Class<T> type) {
+    RelationshipConverter<Relationship, T> relationshipConverter = createRelationshipConverter(Relationship.class, type);
+    addFieldWrappers(relationshipConverter, type);
 
-      return propertyContainerConverter;
-    } else if (Relation.class.isAssignableFrom(type) && Relationship.class.isAssignableFrom(propertyContainerType)) {
-      @SuppressWarnings("unchecked")
-      PropertyContainerConverter<U, T> propertyContainerConverter = (PropertyContainerConverter<U, T>) createRelationshipConverter((Class<? extends Relationship>) propertyContainerType,
-          (Class<? extends Relation>) type);
-      addFieldWrappers(propertyContainerConverter, type);
-      return propertyContainerConverter;
-    } else {
-      return createNoOpPropertyContainerConverter(propertyContainerType, type);
-    }
+    return relationshipConverter;
+  }
+
+  @SuppressWarnings("unchecked")
+  public <T extends Relation> RelationshipConverter<Relationship, ? super T> createForPrimitiveRelation(Class<T> type) {
+    Class<? extends Relation> primitive = (Class<? extends Relation>) TypeRegistry.toBaseDomainEntity(type);
+    RelationshipConverter<Relationship, ? extends Relation> propertyContainerConverter = this.createForRelation(primitive);
+
+    return (RelationshipConverter<Relationship, ? super T>) propertyContainerConverter;
+
+  }
+
+  public <U extends PropertyContainer, T extends Entity> PropertyContainerConverter<U, T> createForTypeAndPropertyContainer(Class<U> propertyContainerType, Class<T> type) {
+    @SuppressWarnings("unchecked")
+    PropertyContainerConverter<U, T> propertyContainerConverter = (PropertyContainerConverter<U, T>) createNodeConverter((Class<? extends Node>) propertyContainerType, type);
+    addFieldWrappers(propertyContainerConverter, type);
+
+    return propertyContainerConverter;
+
   }
 
   /**
@@ -77,7 +84,7 @@ public class PropertyContainerConverterFactory {
     return new NoOpPropertyContainerConverter<U, T>();
   }
 
-  protected <U extends Relationship, T extends Relation> PropertyContainerConverter<U, T> createRelationshipConverter(Class<U> relationType, Class<T> type) {
+  protected <U extends Relationship, T extends Relation> RelationshipConverter<U, T> createRelationshipConverter(Class<U> relationType, Class<T> type) {
     ArrayList<String> fieldsToIgnore = Lists.newArrayList(Relation.SOURCE_ID, Relation.TARGET_ID, Relation.SOURCE_TYPE, Relation.TARGET_TYPE);
     return new RelationshipConverter<U, T>(fieldsToIgnore);
   }

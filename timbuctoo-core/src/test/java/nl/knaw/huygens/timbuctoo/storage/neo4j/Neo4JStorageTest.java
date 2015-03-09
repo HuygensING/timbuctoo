@@ -30,6 +30,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
@@ -228,7 +229,8 @@ public class Neo4JStorageTest {
     }
   }
 
-  private <T extends DomainEntity, U extends PropertyContainer> PropertyContainerConverter<U, ? super T> entityConverterFactoryCreatesAnEntityWrapperTypeForSuperType(Class<T> type, Class<U> propertyContainer) {
+  private <T extends DomainEntity, U extends PropertyContainer> PropertyContainerConverter<U, ? super T> entityConverterFactoryCreatesAnEntityWrapperTypeForSuperType(Class<T> type,
+      Class<U> propertyContainer) {
     @SuppressWarnings("unchecked")
     PropertyContainerConverter<U, ? super T> entityWrapper = mock(PropertyContainerConverter.class);
     doReturn(entityWrapper).when(propertyContainerConverterFactoryMock).createForPrimitive(propertyContainer, type);
@@ -243,7 +245,7 @@ public class Neo4JStorageTest {
   }
 
   @Test
-  public void addDomainEntityWithRelationAddsARelationShipToTheSourceAndReturnsTheId() throws Exception {
+  public void addDomainEntityWithRelationAddsARelationshipToTheSourceAndReturnsTheId() throws Exception {
     // setup
     String name = "regularTypeName";
 
@@ -262,8 +264,8 @@ public class Neo4JStorageTest {
     when(relationTypeNodeMock.getProperty(RELATIONTYPE_REGULAR_NAME_PROPERTY)).thenReturn(name);
     when(idGeneratorMock.nextIdFor(RELATION_TYPE)).thenReturn(ID);
 
-    PropertyContainerConverter<Relationship, SubARelation> subARelationConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(RELATION_TYPE, RELATIONSHIP_TYPE);
-    PropertyContainerConverter<Relationship, ? super SubARelation> relationConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeForSuperType(RELATION_TYPE, RELATIONSHIP_TYPE);
+    PropertyContainerConverter<Relationship, SubARelation> subARelationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    PropertyContainerConverter<Relationship, ? super SubARelation> relationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterForPrimitive(RELATION_TYPE);
 
     SubARelation relation = new SubARelation();
     relation.setSourceId(RELATION_SOURCE_ID);
@@ -305,6 +307,22 @@ public class Neo4JStorageTest {
     inOrder.verify(transactionMock).success();
   }
 
+  private <T extends Relation> PropertyContainerConverter<Relationship, T> propertyContainerConverterFactoryHasRelationshipConverterFor(Class<T> type) {
+    @SuppressWarnings("unchecked")
+    RelationshipConverter<Relationship, T> relationshipConverter = mock(RelationshipConverter.class);
+    when(propertyContainerConverterFactoryMock.createForRelation(type)).thenReturn(relationshipConverter);
+
+    return relationshipConverter;
+  }
+
+  private <T extends Relation> PropertyContainerConverter<Relationship, T> propertyContainerConverterFactoryHasRelationshipConverterForPrimitive(Class<T> type) {
+    @SuppressWarnings("unchecked")
+    RelationshipConverter<Relationship, T> relationshipConverter = mock(RelationshipConverter.class);
+    doReturn(relationshipConverter).when(propertyContainerConverterFactoryMock).createForPrimitiveRelation(type);
+
+    return relationshipConverter;
+  }
+
   @Test(expected = StorageException.class)
   public void addDomainEntityWithRelationAddsThrowsAConversionExceptionWhenOneOfTheEntityConvertersDoes() throws Exception {
     // setup
@@ -326,8 +344,8 @@ public class Neo4JStorageTest {
 
     Relationship relationShipMock = mock(RELATIONSHIP_TYPE);
 
-    PropertyContainerConverter<Relationship, SubARelation> subARelationConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(RELATION_TYPE, RELATIONSHIP_TYPE);
-    PropertyContainerConverter<Relationship, ? super SubARelation> relationConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeForSuperType(RELATION_TYPE, RELATIONSHIP_TYPE);
+    PropertyContainerConverter<Relationship, SubARelation> subARelationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    PropertyContainerConverter<Relationship, ? super SubARelation> relationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterForPrimitive(RELATION_TYPE);
 
     when(sourceNodeMock.createRelationshipTo(argThat(equalTo(targetNodeMock)), argThat(likeRelationshipType().withName(name)))).thenReturn(relationShipMock);
     when(relationTypeNodeMock.getProperty(RELATIONTYPE_REGULAR_NAME_PROPERTY)).thenReturn(name);
@@ -542,8 +560,7 @@ public class Neo4JStorageTest {
     RelationshipIndex indexMock = oneRelationshipIsFoundInIndexWithName(RELATION_SHIP_ID_INDEX, relationshipMock);
     SubARelation relation = new SubARelation();
 
-    PropertyContainerConverter<Relationship, SubARelation> relationConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(RELATION_TYPE, RELATION_SHIP_TYPE);
-    when(propertyContainerConverterFactoryMock.createForTypeAndPropertyContainer(RELATION_SHIP_TYPE, RELATION_TYPE)).thenReturn(relationConverterMock);
+    PropertyContainerConverter<Relationship, SubARelation> relationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
     when(entityInstantiatorMock.createInstanceOf(RELATION_TYPE)).thenReturn(relation);
 
     // action
@@ -567,8 +584,7 @@ public class Neo4JStorageTest {
     RelationshipIndex indexMock = multipleRelationshipsAreFoundInIndexWithName(RELATION_SHIP_ID_INDEX, relationshipFirstRevision, relationshipThirdRevision, relationshipSecondRevision);
     SubARelation relation = new SubARelation();
 
-    PropertyContainerConverter<Relationship, SubARelation> relationConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(RELATION_TYPE, RELATION_SHIP_TYPE);
-    when(propertyContainerConverterFactoryMock.createForTypeAndPropertyContainer(RELATION_SHIP_TYPE, RELATION_TYPE)).thenReturn(relationConverterMock);
+    PropertyContainerConverter<Relationship, SubARelation> relationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
     when(entityInstantiatorMock.createInstanceOf(RELATION_TYPE)).thenReturn(relation);
 
     // action
@@ -613,8 +629,7 @@ public class Neo4JStorageTest {
     RelationshipIndex indexMock = oneRelationshipIsFoundInIndexWithName(RELATION_SHIP_ID_INDEX, relationshipMock);
     SubARelation relation = new SubARelation();
 
-    PropertyContainerConverter<Relationship, SubARelation> relationConverterMock = entityConverterFactoryCreatesAnEntityWrapperTypeFor(RELATION_TYPE, RELATION_SHIP_TYPE);
-    when(propertyContainerConverterFactoryMock.createForTypeAndPropertyContainer(RELATION_SHIP_TYPE, RELATION_TYPE)).thenReturn(relationConverterMock);
+    PropertyContainerConverter<Relationship, SubARelation> relationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
     when(entityInstantiatorMock.createInstanceOf(RELATION_TYPE)).thenReturn(relation);
 
     doThrow(ConversionException.class).when(relationConverterMock).addValuesToEntity(relation, relationshipMock);

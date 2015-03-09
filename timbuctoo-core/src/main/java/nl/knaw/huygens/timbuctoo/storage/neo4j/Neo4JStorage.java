@@ -40,7 +40,6 @@ public class Neo4JStorage implements Storage {
 
   public static final String RELATION_SHIP_ID_INDEX = "RelationShip id";
 
-  private static final Class<Relationship> RELATIONSHIP_TYPE = Relationship.class;
   private static final Class<Node> NODE_TYPE = Node.class;
   private final PropertyContainerConverterFactory propertyContainerConverterFactory;
   private final GraphDatabaseService db;
@@ -150,8 +149,8 @@ public class Neo4JStorage implements Storage {
         throw new StorageException(createCannotFindString("RelationType", relation.getTypeType(), relation.getTypeId()));
       }
 
-      PropertyContainerConverter<Relationship, T> relationConverter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(RELATIONSHIP_TYPE, type);
-      PropertyContainerConverter<Relationship, ? super T> primitiveRelationConverter = propertyContainerConverterFactory.createForPrimitive(RELATIONSHIP_TYPE, type);
+      PropertyContainerConverter<Relationship, T> relationConverter = propertyContainerConverterFactory.createForRelation(type);
+      PropertyContainerConverter<Relationship, ? super T> primitiveRelationConverter = propertyContainerConverterFactory.createForPrimitiveRelation(type);
 
       String id = addAdministrativeValues(type, (T) relation);
 
@@ -353,14 +352,19 @@ public class Neo4JStorage implements Storage {
 
   @Override
   public <T extends Entity> T getEntity(Class<T> type, String id) throws StorageException {
-    PropertyContainer propertyContainerWithHighestRevision = null;
+    if (Relation.class.isAssignableFrom(type)) {
+      @SuppressWarnings("unchecked")
+      T relationDomainEntity = (T) getRelationDomainEntity((Class<Relation>) type, id);
+      return relationDomainEntity;
+    } else {
+      return getRegularEntity(type, id);
+    }
 
+  }
+
+  private <T extends Relation> T getRelationDomainEntity(Class<T> type, String id) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
-      if (Relation.class.isAssignableFrom(type)) {
-        propertyContainerWithHighestRevision = getLatestFromIndex(id, transaction);
-      } else {
-        propertyContainerWithHighestRevision = getLatestById(type, id);
-      }
+      Relationship propertyContainerWithHighestRevision = getLatestFromIndex(id, transaction);
 
       if (propertyContainerWithHighestRevision == null) {
         transaction.success();
@@ -368,7 +372,10 @@ public class Neo4JStorage implements Storage {
       }
 
       try {
-        T entity = convertEnity(type, propertyContainerWithHighestRevision);
+        T entity = entityInstantiator.createInstanceOf(type);
+
+        RelationshipConverter<Relationship, T> converter = propertyContainerConverterFactory.createForRelation(type);
+        converter.addValuesToEntity(entity, propertyContainerWithHighestRevision);
 
         transaction.success();
         return entity;
@@ -380,7 +387,33 @@ public class Neo4JStorage implements Storage {
         throw new StorageException(e);
       }
     }
+  }
 
+  private <T extends Entity> T getRegularEntity(Class<T> type, String id) throws StorageException {
+    try (Transaction transaction = db.beginTx()) {
+      Node propertyContainerWithHighestRevision = getLatestById(type, id);
+
+      if (propertyContainerWithHighestRevision == null) {
+        transaction.success();
+        return null;
+      }
+
+      try {
+        T entity = entityInstantiator.createInstanceOf(type);
+
+        PropertyContainerConverter<Node, T> converter = propertyContainerConverterFactory.createForTypeAndPropertyContainer(NODE_TYPE, type);
+        converter.addValuesToEntity(entity, propertyContainerWithHighestRevision);
+
+        transaction.success();
+        return entity;
+      } catch (ConversionException e) {
+        transaction.failure();
+        throw e;
+      } catch (IllegalAccessException | IllegalArgumentException | InstantiationException e) {
+        transaction.failure();
+        throw new StorageException(e);
+      }
+    }
   }
 
   private Relationship getLatestFromIndex(String id, Transaction transaction) {
