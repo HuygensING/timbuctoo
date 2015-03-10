@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
+import org.neo4j.graphdb.Node;
 
 /**
  * A FieldWrapper that wraps fields for primitives, primitive wrappers, strings, 
@@ -16,5 +17,11 @@ public class SimpleValueFieldConverter extends AbstractFieldConverter {
   @Override
   protected Object convertValue(Object value, Class<?> fieldType) {
     return value;
+  }
+
+  @Override
+  public Object getValue(Node node) {
+    // TODO Auto-generated method stub
+    return null;
   }
 }
