@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
-import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 
 public interface FieldConverter {
@@ -31,6 +30,6 @@ public interface FieldConverter {
 
   String getName();
 
-  Object getValue(Node node) throws ConversionException;
+  Object getValue(PropertyContainer propertyContainer) throws ConversionException;
 
 }

@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -159,7 +160,7 @@ public class SimpleCollectionFieldConverterTest implements FieldConverterTest {
 
     // verify
     assertThat(entity.getPrimitiveCollection(), is(contains(VALUE_1, VALUE_2, VALUE_3, VALUE_4)));
-    verify(nodeMock).hasProperty(propertyName);
+    verify(nodeMock, atLeastOnce()).hasProperty(propertyName);
     verify(nodeMock).getProperty(propertyName);
     verifyNoMoreInteractions(nodeMock);
   }

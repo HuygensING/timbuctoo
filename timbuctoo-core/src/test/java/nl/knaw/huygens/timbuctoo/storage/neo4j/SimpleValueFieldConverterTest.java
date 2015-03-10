@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -142,7 +143,7 @@ public class SimpleValueFieldConverterTest implements FieldConverterTest {
 
     // verify
     assertThat(entity.getStringValue(), is(equalTo(STRING_VALUE)));
-    verify(nodeMock).hasProperty(propertyName);
+    verify(nodeMock, atLeastOnce()).hasProperty(propertyName);
     verify(nodeMock).getProperty(propertyName);
     verifyNoMoreInteractions(nodeMock);
 

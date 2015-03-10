@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
-import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 
 public class NoOpFieldConverter implements FieldConverter {
@@ -56,7 +55,7 @@ public class NoOpFieldConverter implements FieldConverter {
   }
 
   @Override
-  public Object getValue(Node node) {
+  public Object getValue(PropertyContainer propertyContainer) {
     // TODO Auto-generated method stub
     return null;
   }
