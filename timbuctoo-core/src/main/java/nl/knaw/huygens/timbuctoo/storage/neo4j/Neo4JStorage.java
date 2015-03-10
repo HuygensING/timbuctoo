@@ -246,7 +246,12 @@ public class Neo4JStorage implements Storage {
 
   @Override
   public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
+    removePID(entity);
     updateEntity(type, entity);
+  }
+
+  private <T extends DomainEntity> void removePID(T entity) {
+    entity.setPid(null);
   }
 
   @Override

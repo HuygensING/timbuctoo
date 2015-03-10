@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualtityMatcher;
 import nl.knaw.huygens.hamcrest.PropertyMatcher;
@@ -69,6 +70,18 @@ public class DomainEntityMatcher<T extends DomainEntity> extends CompositeMatche
         return item.getModified();
       }
     });
+    return this;
+  }
+
+  public DomainEntityMatcher<T> withoutAPID() {
+    addMatcher(new PropertyMatcher<T, String>("pid", nullValue(String.class)) {
+
+      @Override
+      protected String getItemValue(T item) {
+        return item.getPid();
+      }
+    });
+
     return this;
   }
 }

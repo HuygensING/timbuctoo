@@ -62,6 +62,7 @@ import com.google.common.collect.Lists;
 
 public class Neo4JStorageTest {
 
+  private static final String PID = "pid";
   private static final Class<Relationship> RELATION_SHIP_TYPE = Relationship.class;
   private static final Class<Relationship> RELATIONSHIP_TYPE = RELATION_SHIP_TYPE;
   private static final Class<Node> NODE_TYPE = Node.class;
@@ -962,6 +963,7 @@ public class Neo4JStorageTest {
 
     domainEntity.setId(ID);
     domainEntity.setRev(FIRST_REVISION);
+    domainEntity.setPid(PID);
     Change oldModified = new Change();
     domainEntity.setModified(oldModified);
 
@@ -974,11 +976,13 @@ public class Neo4JStorageTest {
     inOrder.verify(domainEntityConverterMock).updatePropertyContainer(argThat(equalTo(nodeMock)), //
         argThat(likeDomainEntity(SubADomainEntity.class) //
             .withAModifiedValueNotEqualTo(oldModified) //
-            .withRevision(SECOND_REVISION)));
+            .withRevision(SECOND_REVISION) //
+            .withoutAPID()));
     inOrder.verify(domainEntityConverterMock).updateModifiedAndRev(argThat(equalTo(nodeMock)), //
         argThat(likeDomainEntity(SubADomainEntity.class) //
             .withAModifiedValueNotEqualTo(oldModified) //
-            .withRevision(SECOND_REVISION)));
+            .withRevision(SECOND_REVISION) //
+            .withoutAPID()));
     inOrder.verify(transactionMock).success();
     verifyNoMoreInteractions(dbMock, domainEntityConverterMock);
   }
@@ -997,6 +1001,7 @@ public class Neo4JStorageTest {
 
     domainEntity.setId(ID);
     domainEntity.setRev(THIRD_REVISION);
+    domainEntity.setPid(PID);
     Change oldModified = new Change();
     domainEntity.setModified(oldModified);
 
@@ -1009,11 +1014,13 @@ public class Neo4JStorageTest {
     inOrder.verify(domainEntityConverterMock).updatePropertyContainer(argThat(equalTo(nodeWithThirdRevision)), //
         argThat(likeDomainEntity(SubADomainEntity.class) //
             .withAModifiedValueNotEqualTo(oldModified) //
-            .withRevision(FOURTH_REVISION)));
+            .withRevision(FOURTH_REVISION) //
+            .withoutAPID()));
     inOrder.verify(domainEntityConverterMock).updateModifiedAndRev(argThat(equalTo(nodeWithThirdRevision)), //
         argThat(likeDomainEntity(SubADomainEntity.class) //
             .withAModifiedValueNotEqualTo(oldModified) //
-            .withRevision(FOURTH_REVISION)));
+            .withRevision(FOURTH_REVISION) //
+            .withoutAPID()));
     inOrder.verify(transactionMock).success();
     verifyNoMoreInteractions(dbMock, domainEntityConverterMock);
   }
@@ -1026,6 +1033,7 @@ public class Neo4JStorageTest {
 
     domainEntity.setId(ID);
     domainEntity.setRev(FIRST_REVISION);
+    domainEntity.setPid(PID);
     Change oldModified = new Change();
     domainEntity.setModified(oldModified);
 
@@ -1052,6 +1060,7 @@ public class Neo4JStorageTest {
 
     domainEntity.setId(ID);
     domainEntity.setRev(FIRST_REVISION);
+    domainEntity.setPid(PID);
     Change oldModified = new Change();
     domainEntity.setModified(oldModified);
 
@@ -1078,6 +1087,7 @@ public class Neo4JStorageTest {
 
     domainEntity.setId(ID);
     domainEntity.setRev(SECOND_REVISION);
+    domainEntity.setPid(PID);
     Change oldModified = new Change();
     domainEntity.setModified(oldModified);
 
