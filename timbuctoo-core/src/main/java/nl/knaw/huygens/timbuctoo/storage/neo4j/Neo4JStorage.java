@@ -130,23 +130,9 @@ public class Neo4JStorage implements Storage {
   @SuppressWarnings("unchecked")
   private <T extends Relation> String addRelationDomainEntity(Class<T> type, Relation relation) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
-      Node source = getLatestById(typeRegistry.getDomainEntityType(relation.getSourceType()), relation.getSourceId());
-      if (source == null) {
-        transaction.failure();
-        throw new StorageException(createCannotFindString("Source", relation.getSourceType(), relation.getSourceId()));
-      }
-
-      Node target = getLatestById(typeRegistry.getDomainEntityType(relation.getTargetType()), relation.getTargetId());
-      if (target == null) {
-        transaction.failure();
-        throw new StorageException(createCannotFindString("Target", relation.getSourceType(), relation.getSourceId()));
-      }
-
-      Node relationType = getLatestById(typeRegistry.getSystemEntityType(relation.getTypeType()), relation.getTypeId());
-      if (relationType == null) {
-        transaction.failure();
-        throw new StorageException(createCannotFindString("RelationType", relation.getTypeType(), relation.getTypeId()));
-      }
+      Node source = getRelationPart(transaction, typeRegistry.getDomainEntityType(relation.getSourceType()), "Source", relation.getSourceId());
+      Node target = getRelationPart(transaction, typeRegistry.getDomainEntityType(relation.getTargetType()), "Target", relation.getTargetId());
+      Node relationType = getRelationPart(transaction, typeRegistry.getSystemEntityType(relation.getTypeType()), "RelationType", relation.getTypeId());
 
       RelationshipConverter<T> relationConverter = propertyContainerConverterFactory.createForRelation(type);
       RelationshipConverter<? super T> primitiveRelationConverter = propertyContainerConverterFactory.createForPrimitiveRelation(type);
@@ -172,8 +158,17 @@ public class Neo4JStorage implements Storage {
     }
   }
 
-  private String createCannotFindString(String relationPart, String typeName, String id) {
-    return String.format("%s of type \"%s\" with id \"%s\" could not be found.", relationPart, typeName, id);
+  private Node getRelationPart(Transaction transaction, Class<? extends Entity> type, String partName, String partId) throws StorageException {
+    Node part = getLatestById(type, partId);
+    if (part == null) {
+      transaction.failure();
+      throw new StorageException(createCannotFindString(partName, type, partId));
+    }
+    return part;
+  }
+
+  private String createCannotFindString(String relationPart, Class<? extends Entity> type, String id) {
+    return String.format("%s of type \"%s\" with id \"%s\" could not be found.", relationPart, type, id);
   }
 
   private <T extends DomainEntity> String addRegularDomainEntity(Class<T> type, T entity) throws ConversionException {
