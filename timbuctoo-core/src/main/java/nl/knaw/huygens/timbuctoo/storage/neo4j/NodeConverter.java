@@ -89,4 +89,9 @@ public class NodeConverter<T extends Entity> implements PropertyContainerConvert
     return nameFieldConverterMap.get(fieldName);
   }
 
+  public Object getPropertyValue(Node relationType, String propertyName) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 }

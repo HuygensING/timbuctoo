@@ -38,7 +38,7 @@ import com.google.inject.Inject;
 
 public class Neo4JStorage implements Storage {
 
-  public static final String RELATION_SHIP_ID_INDEX = "RelationShip id";
+  public static final String RELATIONSHIP_ID_INDEX = "RelationShip id";
 
   private final PropertyContainerConverterFactory propertyContainerConverterFactory;
   private final GraphDatabaseService db;
@@ -136,18 +136,19 @@ public class Neo4JStorage implements Storage {
 
       RelationshipConverter<T> relationConverter = propertyContainerConverterFactory.createForRelation(type);
       RelationshipConverter<? super T> primitiveRelationConverter = propertyContainerConverterFactory.createForPrimitiveRelation(type);
+      NodeConverter<RelationType> relationTypeConverter = propertyContainerConverterFactory.createForType(RelationType.class);
 
       String id = addAdministrativeValues(type, (T) relation);
 
       // TODO get the relationTypeName via an entityConverter 
-      String relationTypeName = (String) relationType.getProperty(String.format("%s:%s", relation.getTypeType(), RelationType.REGULAR_NAME));
+      String relationTypeName = (String) relationTypeConverter.getPropertyValue(relationType, RelationType.REGULAR_NAME);
       Relationship relationship = source.createRelationshipTo(target, DynamicRelationshipType.withName(relationTypeName));
 
       try {
         relationConverter.addValuesToPropertyContainer(relationship, (T) relation);
         primitiveRelationConverter.addValuesToPropertyContainer(relationship, (T) relation);
 
-        db.index().forRelationships(RELATION_SHIP_ID_INDEX).add(relationship, ID_PROPERTY_NAME, id);
+        db.index().forRelationships(RELATIONSHIP_ID_INDEX).add(relationship, ID_PROPERTY_NAME, id);
         transaction.success();
       } catch (ConversionException e) {
         transaction.failure();
@@ -417,7 +418,7 @@ public class Neo4JStorage implements Storage {
   }
 
   private Relationship getLatestFromIndex(String id, Transaction transaction) {
-    Index<Relationship> index = db.index().forRelationships(RELATION_SHIP_ID_INDEX);
+    Index<Relationship> index = db.index().forRelationships(RELATIONSHIP_ID_INDEX);
 
     IndexHits<Relationship> indexHits = index.get(ID_PROPERTY_NAME, id);
 
