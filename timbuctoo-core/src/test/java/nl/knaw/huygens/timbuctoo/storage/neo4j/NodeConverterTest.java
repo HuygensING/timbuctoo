@@ -141,7 +141,7 @@ public class NodeConverterTest {
   }
 
   @Test
-  public void getPropertyValueReturnsTheValueTheRetrievedFieldConverterReturns() {
+  public void getPropertyValueReturnsTheValueTheRetrievedFieldConverterReturns() throws Exception {
     String propertyName = "propertyName";
     FieldType fieldType = FieldType.REGULAR;
 
@@ -159,7 +159,7 @@ public class NodeConverterTest {
   }
 
   @Test
-  public void getPropertyValueReturnsNullIfTheFieldConverterCannotBeFound() {
+  public void getPropertyValueReturnsNullIfTheFieldConverterCannotBeFound() throws Exception {
     // setup
     String propertyName = "propertyName";
     String otherPropertyName = "otherPropertyName";
@@ -173,4 +173,25 @@ public class NodeConverterTest {
     // verify
     assertThat(value, is(nullValue()));
   }
+
+  @Test(expected = ConversionException.class)
+  public void getPropertyThrowsAConversionExceptionWhenTheFieldConverterDoes() throws ConversionException {
+    String propertyName = "propertyName";
+    FieldType fieldType = FieldType.REGULAR;
+
+    FieldConverter fieldConverterMock = createFieldConverterMock(propertyName, fieldType);
+    doThrow(ConversionException.class).when(fieldConverterMock).getValue(nodeMock);
+    instance.addFieldConverter(fieldConverterMock);
+
+    String value = "value";
+    when(fieldConverterMock.getValue(nodeMock)).thenReturn(value);
+
+    try {
+      // action
+      instance.getPropertyValue(nodeMock, propertyName);
+    } finally {
+      verify(fieldConverterMock).getValue(nodeMock);
+    }
+  }
+
 }

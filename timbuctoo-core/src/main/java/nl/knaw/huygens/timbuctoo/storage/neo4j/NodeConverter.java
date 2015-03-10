@@ -89,7 +89,7 @@ public class NodeConverter<T extends Entity> implements PropertyContainerConvert
     return nameFieldConverterMap.get(fieldName);
   }
 
-  public Object getPropertyValue(Node node, String fieldName) {
+  public Object getPropertyValue(Node node, String fieldName) throws ConversionException {
     FieldConverter fieldConverter = getFieldConverterByName(fieldName);
     if (fieldConverter == null) {
       return null;

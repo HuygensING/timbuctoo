@@ -24,8 +24,9 @@ import org.neo4j.graphdb.PropertyContainer;
 import test.model.TestSystemEntityWrapper;
 
 public class SimpleValueFieldConverterTest implements FieldConverterTest {
+  private static final String STRING_VALUE = "stringValue";
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
-  private static final String FIELD_NAME = "stringValue";
+  private static final String FIELD_NAME = STRING_VALUE;
   private static final FieldType FIELD_TYPE = FieldType.REGULAR;
   private SimpleValueFieldConverter instance;
   private Node nodeMock;
@@ -134,16 +135,13 @@ public class SimpleValueFieldConverterTest implements FieldConverterTest {
   @Override
   @Test
   public void addValueToEntitySetTheFieldOfTheEntityWithTheValue() throws Exception {
-    // setup 
-    when(nodeMock.hasProperty(propertyName)).thenReturn(true);
-    String value = "stringValue";
-    when(nodeMock.getProperty(propertyName)).thenReturn(value);
+    nodeHasValueFor(propertyName, STRING_VALUE);
 
     // action
     instance.addValueToEntity(entity, nodeMock);
 
     // verify
-    assertThat(entity.getStringValue(), is(equalTo(value)));
+    assertThat(entity.getStringValue(), is(equalTo(STRING_VALUE)));
     verify(nodeMock).hasProperty(propertyName);
     verify(nodeMock).getProperty(propertyName);
     verifyNoMoreInteractions(nodeMock);
@@ -169,9 +167,7 @@ public class SimpleValueFieldConverterTest implements FieldConverterTest {
   @Override
   public void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnIllegalAccessExceptionIsThrown() throws Exception {
     // setup 
-    when(nodeMock.hasProperty(propertyName)).thenReturn(true);
-    String value = "stringValue";
-    when(nodeMock.getProperty(propertyName)).thenReturn(value);
+    nodeHasValueFor(propertyName, STRING_VALUE);
 
     SimpleValueFieldConverter instance = new SimpleValueFieldConverter() {
       @Override
@@ -186,13 +182,15 @@ public class SimpleValueFieldConverterTest implements FieldConverterTest {
 
   }
 
+  private void nodeHasValueFor(String propertyName, String value) {
+    when(nodeMock.hasProperty(propertyName)).thenReturn(true);
+    when(nodeMock.getProperty(propertyName)).thenReturn(value);
+  }
+
   @Test(expected = ConversionException.class)
   @Override
   public void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnAnIllegalArgumentExceptionIsThrown() throws Exception {
-    // setup 
-    when(nodeMock.hasProperty(propertyName)).thenReturn(true);
-    String value = "stringValue";
-    when(nodeMock.getProperty(propertyName)).thenReturn(value);
+    nodeHasValueFor(propertyName, STRING_VALUE);
 
     SimpleValueFieldConverter instance = new SimpleValueFieldConverter() {
       @Override
@@ -206,4 +204,45 @@ public class SimpleValueFieldConverterTest implements FieldConverterTest {
     instance.addValueToEntity(entity, nodeMock);
   }
 
+  @Test
+  @Override
+  public void getValueReturnsTheConvertedValueOfTheNode() throws Exception {
+    // setup
+    nodeHasValueFor(propertyName, STRING_VALUE);
+
+    // action
+    String value = (String) instance.getValue(nodeMock);
+
+    // verify
+    assertThat(value, is(equalTo(STRING_VALUE)));
+  }
+
+  @Test
+  @Override
+  public void getValueReturnsNullIfTheNodeDoesNotContainTheValue() throws Exception {
+    // action
+    Object value = instance.getValue(nodeMock);
+
+    // verify
+    assertThat(value, is(nullValue()));
+
+  }
+
+  @Test(expected = ConversionException.class)
+  @Override
+  public void getValueThrowsAConversionExceptionIfTheValueCouldNotBeConverted() throws Exception {
+    // setup
+    nodeHasValueFor(propertyName, STRING_VALUE);
+
+    SimpleValueFieldConverter instance = new SimpleValueFieldConverter() {
+      @Override
+      protected Object convertValue(Object value, java.lang.Class<?> fieldType) {
+        throw new IllegalArgumentException();
+      }
+    };
+    setupInstance(instance);
+
+    // action
+    instance.getValue(nodeMock);
+  }
 }

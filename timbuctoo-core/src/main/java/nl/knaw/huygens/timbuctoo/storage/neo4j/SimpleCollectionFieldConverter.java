@@ -4,8 +4,6 @@ import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.List;
 
-import org.neo4j.graphdb.Node;
-
 import com.google.common.collect.Lists;
 
 public class SimpleCollectionFieldConverter<T> extends AbstractFieldConverter {
@@ -49,9 +47,4 @@ public class SimpleCollectionFieldConverter<T> extends AbstractFieldConverter {
     return col.toArray(array);
   }
 
-  @Override
-  public Object getValue(Node node) {
-    // TODO Auto-generated method stub
-    return null;
-  }
 }

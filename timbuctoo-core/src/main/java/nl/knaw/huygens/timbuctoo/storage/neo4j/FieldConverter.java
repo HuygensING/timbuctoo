@@ -31,6 +31,6 @@ public interface FieldConverter {
 
   String getName();
 
-  Object getValue(Node node);
+  Object getValue(Node node) throws ConversionException;
 
 }

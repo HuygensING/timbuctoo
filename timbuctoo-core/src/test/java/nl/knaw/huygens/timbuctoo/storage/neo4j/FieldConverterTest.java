@@ -18,4 +18,10 @@ public interface FieldConverterTest {
   void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnAnIllegalArgumentExceptionIsThrown() throws Exception;
 
   void addValueToNodeThrowsAConversionExceptionIfGetFormatedValueThrowsAnIllegalArgumentException() throws Exception;
+
+  void getValueReturnsTheConvertedValueOfTheNode() throws Exception;
+
+  void getValueReturnsNullIfTheNodeDoesNotContainTheValue() throws Exception;
+
+  void getValueThrowsAConversionExceptionIfTheValueCouldNotBeConverted() throws Exception;
 }

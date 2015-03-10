@@ -2,8 +2,6 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import java.io.IOException;
 
-import org.neo4j.graphdb.Node;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -38,12 +36,6 @@ public class ObjectValueFieldConverter extends AbstractFieldConverter {
     } catch (IOException e) {
       throw new IllegalArgumentException("Value could not be read.");
     }
-  }
-
-  @Override
-  public Object getValue(Node node) {
-    // TODO Auto-generated method stub
-    return null;
   }
 
 }
