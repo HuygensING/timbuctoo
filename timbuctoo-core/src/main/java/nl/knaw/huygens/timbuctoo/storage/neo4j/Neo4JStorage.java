@@ -294,6 +294,7 @@ public class Neo4JStorage implements Storage {
     return 0;
   }
 
+  // TODO: Make equal to deleteSystemEntity see TIM-54
   @Override
   public <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws StorageException {
     if (!TypeRegistry.isPrimitiveDomainEntity(type)) {
