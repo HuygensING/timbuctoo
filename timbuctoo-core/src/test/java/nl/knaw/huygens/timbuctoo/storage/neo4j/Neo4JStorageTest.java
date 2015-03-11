@@ -578,7 +578,7 @@ public class Neo4JStorageTest {
     RelationshipIndex indexMock = multipleRelationshipsAreFoundInIndexWithName(RELATIONSHIP_ID_INDEX, relationshipFirstRevision, relationshipThirdRevision, relationshipSecondRevision);
     SubARelation relation = new SubARelation();
 
-    PropertyContainerConverter<Relationship, SubARelation> relationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    RelationshipConverter<SubARelation> relationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
     when(entityInstantiatorMock.createInstanceOf(RELATION_TYPE)).thenReturn(relation);
 
     // action

@@ -10,10 +10,8 @@ public interface PropertyContainerConverter<U extends PropertyContainer, T exten
 
   void addValuesToEntity(T entity, U propertyContainer) throws ConversionException;
 
-  void addFieldConverter(FieldConverter fieldWrapper);
+  void updatePropertyContainer(U propertyContainer, T entity) throws ConversionException;
 
-  void updatePropertyContainer(U propertyContainer, Entity entity) throws ConversionException;
-
-  void updateModifiedAndRev(U propertyContainer, Entity entity) throws ConversionException;
+  void updateModifiedAndRev(U propertyContainer, T entity) throws ConversionException;
 
 }

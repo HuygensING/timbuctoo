@@ -25,7 +25,7 @@ import org.neo4j.helpers.collection.IteratorUtil;
 
 import com.google.common.collect.Lists;
 
-public class RelationshipConverterTest {
+public class SimpleRelationshipConverterTest {
 
   private static final String OTHER_FIELD_CONVERTER = "otherFieldConverter";
   private static final String FIELD_CONVERTER = "fieldConverter";
@@ -38,7 +38,7 @@ public class RelationshipConverterTest {
   private FieldConverter someOtherFieldConverterMock;
   private Relationship relationshipMock;
   private Relation relation;
-  private RelationshipConverter<Relation> instance;
+  private SimpleRelationshipConverter<Relation> instance;
 
   @Before
   public void setUp() {
@@ -47,7 +47,7 @@ public class RelationshipConverterTest {
     fieldConverterMock = newFieldConverter().withName(FIELD_CONVERTER).withType(FieldType.ADMINISTRATIVE).build();
     someOtherFieldConverterMock = newFieldConverter().withName(OTHER_FIELD_CONVERTER).withType(FieldType.REGULAR).build();
 
-    instance = new RelationshipConverter<Relation>(FIELD_TO_IGNORE);
+    instance = new SimpleRelationshipConverter<Relation>(FIELD_TO_IGNORE);
     instance.addFieldConverter(someOtherFieldConverterMock);
     instance.addFieldConverter(fieldConverterMock);
     instance.addFieldConverter(fieldConverterMockToIgnore2);
