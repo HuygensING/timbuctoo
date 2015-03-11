@@ -15,12 +15,12 @@ import org.neo4j.graphdb.Node;
 
 import com.google.common.collect.Maps;
 
-public class SimpleNodeConverter<T extends Entity> implements NodeConverter<T>, SimplePropertyContainerConverter<Node, T> {
+public class ExtendableNodeConverter<T extends Entity> implements NodeConverter<T>, ExtendablePropertyContainerConverter<Node, T> {
 
   private Class<T> type;
   private Map<String, FieldConverter> nameFieldConverterMap;
 
-  public SimpleNodeConverter(Class<T> type) {
+  public ExtendableNodeConverter(Class<T> type) {
     this.type = type;
     nameFieldConverterMap = Maps.newHashMap();
   }

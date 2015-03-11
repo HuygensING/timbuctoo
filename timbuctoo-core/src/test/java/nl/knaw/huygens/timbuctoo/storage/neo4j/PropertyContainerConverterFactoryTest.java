@@ -36,17 +36,17 @@ public class PropertyContainerConverterFactoryTest {
   private static final Class<TestSystemEntityWrapper> SYSTEM_ENTITY_TYPE = TestSystemEntityWrapper.class;
   private PropertyContainerConverterFactory instance;
   @SuppressWarnings("rawtypes")
-  private SimpleNodeConverter nodeConverterMock;
+  private ExtendableNodeConverter nodeConverterMock;
   @SuppressWarnings("rawtypes")
-  private SimpleRelationshipConverter relationshipConverterMock;
+  private ExtendableRelationshipConverter relationshipConverterMock;
   private AbstractFieldConverter fieldConverterMock;
   private FieldConverterFactory fieldConverterFactoryMock;
 
   @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
-    nodeConverterMock = mock(SimpleNodeConverter.class);
-    relationshipConverterMock = mock(SimpleRelationshipConverter.class);
+    nodeConverterMock = mock(ExtendableNodeConverter.class);
+    relationshipConverterMock = mock(ExtendableRelationshipConverter.class);
 
     fieldConverterMock = mock(AbstractFieldConverter.class);
     fieldConverterFactoryMock = mock(FieldConverterFactory.class);
@@ -55,12 +55,12 @@ public class PropertyContainerConverterFactoryTest {
 
     instance = new PropertyContainerConverterFactory(fieldConverterFactoryMock) {
       @Override
-      protected <T extends Entity> SimpleNodeConverter<T> createSimpleNodeConverter(Class<T> type) {
+      protected <T extends Entity> ExtendableNodeConverter<T> createSimpleNodeConverter(Class<T> type) {
         return nodeConverterMock;
       }
 
       @Override
-      protected <T extends Relation> SimpleRelationshipConverter<T> createSimpleRelationshipConverter(Class<T> type) {
+      protected <T extends Relation> ExtendableRelationshipConverter<T> createSimpleRelationshipConverter(Class<T> type) {
         return relationshipConverterMock;
       }
 
@@ -78,9 +78,9 @@ public class PropertyContainerConverterFactoryTest {
     PropertyContainerConverter<Node, TestSystemEntityWrapper> propertyContainerConverter = instance.createForType(SYSTEM_ENTITY_TYPE);
 
     // verify
-    assertThat(propertyContainerConverter, instanceOf(SimpleNodeConverter.class));
+    assertThat(propertyContainerConverter, instanceOf(ExtendableNodeConverter.class));
     verify(fieldConverterFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(SYSTEM_ENTITY_TYPE)), any(Field.class));
-    verify((SimpleNodeConverter<TestSystemEntityWrapper>) propertyContainerConverter, times(numberOfFields)).addFieldConverter(fieldConverterMock);
+    verify((ExtendableNodeConverter<TestSystemEntityWrapper>) propertyContainerConverter, times(numberOfFields)).addFieldConverter(fieldConverterMock);
   }
 
   @Test
@@ -94,9 +94,9 @@ public class PropertyContainerConverterFactoryTest {
     NodeConverter<? super SubADomainEntity> converter = instance.createForPrimitive(DOMAIN_ENTITY_TYPE);
 
     // verify
-    assertThat(converter, is(instanceOf(SimpleNodeConverter.class)));
+    assertThat(converter, is(instanceOf(ExtendableNodeConverter.class)));
     verify(fieldConverterFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(PRIMITIVE_DOMAIN_ENTITY_TYPE)), any(Field.class));
-    verify((SimpleNodeConverter<? super SubADomainEntity>) converter, times(numberOfFields)).addFieldConverter(fieldConverterMock);
+    verify((ExtendableNodeConverter<? super SubADomainEntity>) converter, times(numberOfFields)).addFieldConverter(fieldConverterMock);
   }
 
   @Test
@@ -110,9 +110,9 @@ public class PropertyContainerConverterFactoryTest {
     RelationshipConverter<SubARelation> converter = instance.createForRelation(RELATION_TYPE);
 
     // verify
-    assertThat(converter, is(instanceOf(SimpleRelationshipConverter.class)));
+    assertThat(converter, is(instanceOf(ExtendableRelationshipConverter.class)));
     verify(fieldConverterFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(RELATION_TYPE)), any(Field.class));
-    verify((SimpleRelationshipConverter<SubARelation>) converter, times(numberOfFields)).addFieldConverter(fieldConverterMock);
+    verify((ExtendableRelationshipConverter<SubARelation>) converter, times(numberOfFields)).addFieldConverter(fieldConverterMock);
   }
 
   @Test
@@ -125,9 +125,9 @@ public class PropertyContainerConverterFactoryTest {
     RelationshipConverter<? super SubARelation> converter = instance.createForPrimitiveRelation(RELATION_TYPE);
 
     // verify
-    assertThat(converter, is(instanceOf(SimpleRelationshipConverter.class)));
+    assertThat(converter, is(instanceOf(ExtendableRelationshipConverter.class)));
     verify(fieldConverterFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(PRIMITIVE_RELATION_TYPE)), any(Field.class));
-    verify((SimpleRelationshipConverter<? super SubARelation>) converter, times(numberOfFields)).addFieldConverter(fieldConverterMock);
+    verify((ExtendableRelationshipConverter<? super SubARelation>) converter, times(numberOfFields)).addFieldConverter(fieldConverterMock);
   }
 
   private int getNumberOfFields(Class<? extends Entity> type) {

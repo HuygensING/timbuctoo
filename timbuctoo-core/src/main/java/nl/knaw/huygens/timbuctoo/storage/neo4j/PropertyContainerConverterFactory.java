@@ -24,7 +24,7 @@ public class PropertyContainerConverterFactory {
   }
 
   public <T extends Relation> RelationshipConverter<T> createForRelation(Class<T> type) {
-    SimpleRelationshipConverter<T> relationshipConverter = createSimpleRelationshipConverter(type);
+    ExtendableRelationshipConverter<T> relationshipConverter = createSimpleRelationshipConverter(type);
     addFieldWrappers(relationshipConverter, type);
 
     return relationshipConverter;
@@ -40,7 +40,7 @@ public class PropertyContainerConverterFactory {
   }
 
   public <T extends Entity> NodeConverter<T> createForType(Class<T> type) {
-    SimpleNodeConverter<T> propertyContainerConverter = createSimpleNodeConverter(type);
+    ExtendableNodeConverter<T> propertyContainerConverter = createSimpleNodeConverter(type);
     addFieldWrappers(propertyContainerConverter, type);
 
     return propertyContainerConverter;
@@ -76,7 +76,7 @@ public class PropertyContainerConverterFactory {
   }
 
   @SuppressWarnings("unchecked")
-  private <U extends PropertyContainer, T extends Entity> void addFieldWrappers(SimplePropertyContainerConverter<U, T> propertyContainerConverter, Class<T> type) {
+  private <U extends PropertyContainer, T extends Entity> void addFieldWrappers(ExtendablePropertyContainerConverter<U, T> propertyContainerConverter, Class<T> type) {
     for (Class<? extends Entity> typeToGetFieldsFrom = type; isEntity(typeToGetFieldsFrom); typeToGetFieldsFrom = (Class<? extends Entity>) typeToGetFieldsFrom.getSuperclass()) {
 
       for (Field field : typeToGetFieldsFrom.getDeclaredFields()) {
@@ -89,13 +89,13 @@ public class PropertyContainerConverterFactory {
     return Entity.class.isAssignableFrom(typeToGetFieldsFrom);
   }
 
-  protected <T extends Entity> SimpleNodeConverter<T> createSimpleNodeConverter(Class<T> type) {
-    return new SimpleNodeConverter<T>(type);
+  protected <T extends Entity> ExtendableNodeConverter<T> createSimpleNodeConverter(Class<T> type) {
+    return new ExtendableNodeConverter<T>(type);
   }
 
-  protected <T extends Relation> SimpleRelationshipConverter<T> createSimpleRelationshipConverter(Class<T> type) {
+  protected <T extends Relation> ExtendableRelationshipConverter<T> createSimpleRelationshipConverter(Class<T> type) {
     ArrayList<String> fieldsToIgnore = Lists.newArrayList(Relation.SOURCE_ID, Relation.TARGET_ID, Relation.SOURCE_TYPE, Relation.TARGET_TYPE);
-    return new SimpleRelationshipConverter<T>(fieldsToIgnore);
+    return new ExtendableRelationshipConverter<T>(fieldsToIgnore);
   }
 
 }
