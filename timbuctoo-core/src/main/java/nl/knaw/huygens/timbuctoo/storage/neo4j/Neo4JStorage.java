@@ -176,12 +176,10 @@ public class Neo4JStorage implements Storage {
       String id = addAdministrativeValues(type, entity);
       Node node = db.createNode();
 
-      NodeConverter<T> domainEntityConverter = propertyContainerConverterFactory.createForType(type);
-      NodeConverter<? super T> primitiveEntityConverter = propertyContainerConverterFactory.createForPrimitive(type);
+      NodeConverter<? super T> compositeNodeConverter = propertyContainerConverterFactory.createCompositeForType(type);
 
       try {
-        domainEntityConverter.addValuesToPropertyContainer(node, entity);
-        primitiveEntityConverter.addValuesToPropertyContainer(node, entity);
+        compositeNodeConverter.addValuesToPropertyContainer(node, entity);
       } catch (ConversionException e) {
         transaction.failure();
         throw e;

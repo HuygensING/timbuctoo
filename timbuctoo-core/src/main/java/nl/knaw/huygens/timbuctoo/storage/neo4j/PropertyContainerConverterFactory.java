@@ -81,4 +81,9 @@ public class PropertyContainerConverterFactory {
     ArrayList<String> fieldsToIgnore = Lists.newArrayList(Relation.SOURCE_ID, Relation.TARGET_ID, Relation.SOURCE_TYPE, Relation.TARGET_TYPE);
     return new RelationshipConverter<T>(fieldsToIgnore);
   }
+
+  public <T extends Entity> NodeConverter<? super T> createCompositeForType(Class<T> type) {
+    // TODO Auto-generated method stub
+    return null;
+  }
 }

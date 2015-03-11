@@ -129,8 +129,7 @@ public class Neo4JStorageTest {
     dbMockCreatesTransaction(transactionMock);
     idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
 
-    NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);
-    NodeConverter<? super SubADomainEntity> primitiveDomainEntityConverterMock = propertyContainerConverterFactoryCreatesAnEntityWrapperTypeForSuperType(DOMAIN_ENTITY_TYPE);
+    NodeConverter<? super SubADomainEntity> compositeConverter = propertyContainerConverterFactoryHasCompositeConverterFor(DOMAIN_ENTITY_TYPE);
 
     // action
     String actualId = instance.addDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
@@ -138,22 +137,21 @@ public class Neo4JStorageTest {
     // verify
     verify(dbMock).beginTx();
     verify(dbMock).createNode();
-    verify(domainEntityConverterMock).addValuesToPropertyContainer( //
+    verify(compositeConverter).addValuesToPropertyContainer( //
         argThat(equalTo(nodeMock)), // 
         argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
             .withId(actualId) //
             .withACreatedValue() //
             .withAModifiedValue() //
             .withRevision(FIRST_REVISION)));
-    verify(primitiveDomainEntityConverterMock).addValuesToPropertyContainer( //
-        argThat(equalTo(nodeMock)), //
-        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
-            .withId(actualId) //
-            .withACreatedValue() //
-            .withAModifiedValue() //
-            .withRevision(FIRST_REVISION)));
     verify(transactionMock).success();
-    verifyNoMoreInteractions(domainEntityConverterMock, primitiveDomainEntityConverterMock);
+  }
+
+  private <T extends DomainEntity> NodeConverter<? super T> propertyContainerConverterFactoryHasCompositeConverterFor(Class<T> type) {
+    @SuppressWarnings("unchecked")
+    NodeConverter<? super T> converter = mock(NodeConverter.class);
+    doReturn(converter).when(propertyContainerConverterFactoryMock).createCompositeForType(type);
+    return converter;
   }
 
   @Test(expected = StorageException.class)
@@ -163,9 +161,8 @@ public class Neo4JStorageTest {
     dbMockCreatesTransaction(transactionMock);
     idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
 
-    NodeConverter<SubADomainEntity> propertyContainerConverter = propertyContainerConverterFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);
-    doThrow(ConversionException.class).when(propertyContainerConverter).addValuesToPropertyContainer(nodeMock, domainEntity);
-    NodeConverter<? super SubADomainEntity> primitiveDomainEntityConverterMock = propertyContainerConverterFactoryCreatesAnEntityWrapperTypeForSuperType(DOMAIN_ENTITY_TYPE);
+    NodeConverter<? super SubADomainEntity> compositeConverter = propertyContainerConverterFactoryHasCompositeConverterFor(DOMAIN_ENTITY_TYPE);
+    doThrow(ConversionException.class).when(compositeConverter).addValuesToPropertyContainer(nodeMock, domainEntity);
 
     try {
       // action
@@ -174,7 +171,7 @@ public class Neo4JStorageTest {
       // verify
       verify(dbMock).beginTx();
       verify(dbMock).createNode();
-      verify(propertyContainerConverter).addValuesToPropertyContainer( //
+      verify(compositeConverter).addValuesToPropertyContainer( //
           argThat(equalTo(nodeMock)), // 
           argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
               .withId(ID) //
@@ -182,53 +179,8 @@ public class Neo4JStorageTest {
               .withAModifiedValue() //
               .withRevision(FIRST_REVISION)));
       verify(transactionMock).failure();
-      verifyNoMoreInteractions(propertyContainerConverter);
-      verifyZeroInteractions(primitiveDomainEntityConverterMock);
+      verifyNoMoreInteractions(compositeConverter);
     }
-  }
-
-  @Test(expected = StorageException.class)
-  public void addDomainEntityRollsBackTheTransactionAndThrowsAStorageExceptionWhenThePrimitiveDomainEntityConverterThrowsAConversionException() throws Exception {
-    // setup
-    dbMockCreatesNode(nodeMock);
-    dbMockCreatesTransaction(transactionMock);
-    idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
-
-    NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryCreatesAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);
-    NodeConverter<? super SubADomainEntity> primitiveDomainEntityConverterMock = propertyContainerConverterFactoryCreatesAnEntityWrapperTypeForSuperType(DOMAIN_ENTITY_TYPE);
-    doThrow(ConversionException.class).when(primitiveDomainEntityConverterMock).addValuesToPropertyContainer(nodeMock, domainEntity);
-
-    try {
-      // action
-      instance.addDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
-    } finally {
-      // verify
-      verify(dbMock).beginTx();
-      verify(dbMock).createNode();
-      verify(domainEntityConverterMock).addValuesToPropertyContainer( //
-          argThat(equalTo(nodeMock)), // 
-          argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
-              .withId(ID) //
-              .withACreatedValue() //
-              .withAModifiedValue() //
-              .withRevision(FIRST_REVISION)));
-      verify(primitiveDomainEntityConverterMock).addValuesToPropertyContainer( //
-          argThat(equalTo(nodeMock)), //
-          argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
-              .withId(ID) //
-              .withACreatedValue() //
-              .withAModifiedValue() //
-              .withRevision(FIRST_REVISION)));
-      verify(transactionMock).failure();
-      verifyNoMoreInteractions(domainEntityConverterMock, primitiveDomainEntityConverterMock);
-    }
-  }
-
-  private <T extends DomainEntity> NodeConverter<? super T> propertyContainerConverterFactoryCreatesAnEntityWrapperTypeForSuperType(Class<T> type) {
-    @SuppressWarnings("unchecked")
-    NodeConverter<? super T> nodeConverter = mock(NodeConverter.class);
-    doReturn(nodeConverter).when(propertyContainerConverterFactoryMock).createForPrimitive(type);
-    return nodeConverter;
   }
 
   private <T extends Entity> NodeConverter<T> propertyContainerConverterFactoryCreatesAnEntityWrapperTypeFor(Class<T> type) {
