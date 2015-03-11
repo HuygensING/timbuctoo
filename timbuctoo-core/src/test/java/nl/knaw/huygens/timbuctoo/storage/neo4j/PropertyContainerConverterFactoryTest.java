@@ -63,6 +63,7 @@ public class PropertyContainerConverterFactoryTest {
       protected <T extends Relation> SimpleRelationshipConverter<T> createSimpleRelationshipConverter(Class<T> type) {
         return relationshipConverterMock;
       }
+
     };
   }
 
@@ -131,5 +132,28 @@ public class PropertyContainerConverterFactoryTest {
 
   private int getNumberOfFields(Class<? extends Entity> type) {
     return type.getDeclaredFields().length;
+  }
+
+  @Test
+  public void createCompositeForTypeCreatesANodeConverterWithATwoSimpleNodeConvertersAdded() {
+    // setup
+    int domainEntityNumberOfFields = getNumberOfFields(DOMAIN_ENTITY_TYPE);
+    domainEntityNumberOfFields += getNumberOfFields(PRIMITIVE_DOMAIN_ENTITY_TYPE);
+    domainEntityNumberOfFields += getNumberOfFields(DomainEntity.class);
+    domainEntityNumberOfFields += getNumberOfFields(Entity.class);
+
+    int primitiveDomainEntityNumberOfFields = getNumberOfFields(PRIMITIVE_DOMAIN_ENTITY_TYPE);
+    primitiveDomainEntityNumberOfFields += getNumberOfFields(DomainEntity.class);
+    primitiveDomainEntityNumberOfFields += getNumberOfFields(Entity.class);
+
+    // action
+    NodeConverter<SubADomainEntity> converter = instance.createCompositeForType(DOMAIN_ENTITY_TYPE);
+
+    // verify
+    assertThat(converter, is(instanceOf(CompositeNodeConverter.class)));
+    assertThat(((CompositeNodeConverter<SubADomainEntity>) converter).getNodeConverters().size(), is(equalTo(2)));
+
+    verify(fieldConverterFactoryMock, times(domainEntityNumberOfFields)).wrap(argThat(equalTo(DOMAIN_ENTITY_TYPE)), any(Field.class));
+    verify(fieldConverterFactoryMock, times(primitiveDomainEntityNumberOfFields)).wrap(argThat(equalTo(PRIMITIVE_DOMAIN_ENTITY_TYPE)), any(Field.class));
   }
 }

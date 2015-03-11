@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -43,7 +44,6 @@ public class PropertyContainerConverterFactory {
     addFieldWrappers(propertyContainerConverter, type);
 
     return propertyContainerConverter;
-
   }
 
   /**
@@ -57,6 +57,22 @@ public class PropertyContainerConverterFactory {
     NodeConverter<? extends DomainEntity> nodeConverter = this.createForType(primitive);
 
     return (NodeConverter<? super T>) nodeConverter;
+  }
+
+  /**
+   * Creates a NodeConverter that handles the values of type,
+   *  as well as the values of the primitive domain entity of type.
+   * @param type the type to create the NodeConverter for 
+   * @return a NodeConverter
+   */
+  public <T extends DomainEntity> NodeConverter<T> createCompositeForType(Class<T> type) {
+    List<NodeConverter<? super T>> nodeConverters = Lists.newArrayList();
+    nodeConverters.add(createForType(type));
+    nodeConverters.add(createForPrimitive(type));
+
+    CompositeNodeConverter<T> compositeNodeConverter = new CompositeNodeConverter<T>(nodeConverters);
+
+    return compositeNodeConverter;
   }
 
   @SuppressWarnings("unchecked")
@@ -82,8 +98,4 @@ public class PropertyContainerConverterFactory {
     return new SimpleRelationshipConverter<T>(fieldsToIgnore);
   }
 
-  public <T extends Entity> NodeConverter<? super T> createCompositeForType(Class<T> type) {
-    // TODO Auto-generated method stub
-    return null;
-  }
 }
