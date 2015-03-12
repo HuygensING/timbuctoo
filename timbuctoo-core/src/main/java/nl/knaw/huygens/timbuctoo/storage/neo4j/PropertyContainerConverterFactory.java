@@ -30,17 +30,20 @@ public class PropertyContainerConverterFactory {
     return relationshipConverter;
   }
 
-  public <T extends Relation> RelationshipConverter<T> createCompositeForRelation(Class<T> type) {
-    return null;
-  }
-
   @SuppressWarnings("unchecked")
   public <T extends Relation> RelationshipConverter<? super T> createForPrimitiveRelation(Class<T> type) {
     Class<? extends Relation> primitive = (Class<? extends Relation>) TypeRegistry.toBaseDomainEntity(type);
     RelationshipConverter<? extends Relation> propertyContainerConverter = this.createForRelation(primitive);
 
     return (RelationshipConverter<? super T>) propertyContainerConverter;
+  }
 
+  public <T extends Relation> RelationshipConverter<T> createCompositeForRelation(Class<T> type) {
+    List<RelationshipConverter<? super T>> relationshipConverters = Lists.newArrayList();
+    relationshipConverters.add(createForRelation(type));
+    relationshipConverters.add(createForPrimitiveRelation(type));
+
+    return new CompositeRelationshipConverter<T>(relationshipConverters);
   }
 
   public <T extends Entity> NodeConverter<T> createForType(Class<T> type) {
@@ -51,9 +54,9 @@ public class PropertyContainerConverterFactory {
   }
 
   /**
-   * Creates an EntityTypeWrapper for the primitive class of type.
+   * Creates a NodeConverter for the primitive class of type.
    * @param type a DomainEntity type to find the primitive class for
-   * @return an EntityTypeWrapper for the primitive of type. This could be type itself.
+   * @return a NodeConverter for the primitive of type. This could be type itself.
    */
   @SuppressWarnings("unchecked")
   public <T extends DomainEntity> NodeConverter<? super T> createForPrimitive(Class<T> type) {

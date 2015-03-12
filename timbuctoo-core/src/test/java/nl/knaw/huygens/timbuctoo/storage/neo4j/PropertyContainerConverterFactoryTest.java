@@ -135,7 +135,7 @@ public class PropertyContainerConverterFactoryTest {
   }
 
   @Test
-  public void createCompositeForTypeCreatesANodeConverterWithATwoSimpleNodeConvertersAdded() {
+  public void createCompositeForTypeCreatesANodeConverterWithATwoExtendableNodeConvertersAdded() {
     // setup
     int domainEntityNumberOfFields = getNumberOfFields(DOMAIN_ENTITY_TYPE);
     domainEntityNumberOfFields += getNumberOfFields(PRIMITIVE_DOMAIN_ENTITY_TYPE);
@@ -155,5 +155,28 @@ public class PropertyContainerConverterFactoryTest {
 
     verify(fieldConverterFactoryMock, times(domainEntityNumberOfFields)).wrap(argThat(equalTo(DOMAIN_ENTITY_TYPE)), any(Field.class));
     verify(fieldConverterFactoryMock, times(primitiveDomainEntityNumberOfFields)).wrap(argThat(equalTo(PRIMITIVE_DOMAIN_ENTITY_TYPE)), any(Field.class));
+  }
+
+  @Test
+  public void createCompositeForRelationCreatesARelationshipConverterWithToExtendableRelationConverters() {
+    // setup
+    int domainEntityNumberOfFields = getNumberOfFields(RELATION_TYPE);
+    domainEntityNumberOfFields += getNumberOfFields(PRIMITIVE_RELATION_TYPE);
+    domainEntityNumberOfFields += getNumberOfFields(DomainEntity.class);
+    domainEntityNumberOfFields += getNumberOfFields(Entity.class);
+
+    int primitiveDomainEntityNumberOfFields = getNumberOfFields(PRIMITIVE_RELATION_TYPE);
+    primitiveDomainEntityNumberOfFields += getNumberOfFields(DomainEntity.class);
+    primitiveDomainEntityNumberOfFields += getNumberOfFields(Entity.class);
+
+    // action
+    RelationshipConverter<SubARelation> converter = instance.createCompositeForRelation(RELATION_TYPE);
+
+    // verify
+    assertThat(converter, is(instanceOf(CompositeRelationshipConverter.class)));
+    assertThat(((CompositeRelationshipConverter<SubARelation>) converter).getNodeConverters().size(), is(equalTo(2)));
+
+    verify(fieldConverterFactoryMock, times(domainEntityNumberOfFields)).wrap(argThat(equalTo(RELATION_TYPE)), any(Field.class));
+    verify(fieldConverterFactoryMock, times(primitiveDomainEntityNumberOfFields)).wrap(argThat(equalTo(PRIMITIVE_RELATION_TYPE)), any(Field.class));
   }
 }
