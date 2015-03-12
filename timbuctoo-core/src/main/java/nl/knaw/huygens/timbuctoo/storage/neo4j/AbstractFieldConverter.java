@@ -118,8 +118,7 @@ public abstract class AbstractFieldConverter implements FieldConverter {
    */
   protected abstract Object getFormattedValue(Object fieldValue) throws IllegalArgumentException;
 
-  @Override
-  public Object getValue(PropertyContainer propertyContainer) throws ConversionException {
+  protected Object getValue(PropertyContainer propertyContainer) throws ConversionException {
     if (propertyContainer.hasProperty(getPropertyName())) {
       try {
         return convertValue(propertyContainer.getProperty(getPropertyName()), getType());

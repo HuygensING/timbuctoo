@@ -19,9 +19,4 @@ public interface FieldConverterTest {
 
   void addValueToNodeThrowsAConversionExceptionIfGetFormatedValueThrowsAnIllegalArgumentException() throws Exception;
 
-  void getValueReturnsTheConvertedValueOfTheNode() throws Exception;
-
-  void getValueReturnsNullIfTheNodeDoesNotContainTheValue() throws Exception;
-
-  void getValueThrowsAConversionExceptionIfTheValueCouldNotBeConverted() throws Exception;
 }

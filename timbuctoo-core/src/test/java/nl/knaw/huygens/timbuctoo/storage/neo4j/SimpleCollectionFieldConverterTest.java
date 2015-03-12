@@ -14,7 +14,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import java.util.Collection;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -221,44 +220,4 @@ public class SimpleCollectionFieldConverterTest implements FieldConverterTest {
     instance.addValueToEntity(entity, nodeMock);
   }
 
-  @Test
-  @Override
-  public void getValueReturnsTheConvertedValueOfTheNode() throws Exception {
-    // setup
-    nodeHasValueFor(propertyName, new int[] { VALUE_1, VALUE_2, VALUE_3, VALUE_4 });
-
-    // action
-    @SuppressWarnings("unchecked")
-    Collection<Integer> value = (Collection<Integer>) instance.getValue(nodeMock);
-
-    // verify
-    assertThat(value, contains(VALUE_1, VALUE_2, VALUE_3, VALUE_4));
-  }
-
-  @Test
-  @Override
-  public void getValueReturnsNullIfTheNodeDoesNotContainTheValue() throws Exception {
-    // action
-    Object value = instance.getValue(nodeMock);
-
-    // verify
-    assertThat(value, is(nullValue()));
-  }
-
-  @Test(expected = ConversionException.class)
-  @Override
-  public void getValueThrowsAConversionExceptionIfTheValueCouldNotBeConverted() throws Exception {
-    // setup
-    nodeHasValueFor(propertyName, new int[] { VALUE_1, VALUE_2, VALUE_3, VALUE_4 });
-    SimpleCollectionFieldConverter<Integer> instance = new SimpleCollectionFieldConverter<Integer>(Integer.class) {
-      @Override
-      protected Object convertValue(Object value, Class<?> fieldType) {
-        throw new IllegalArgumentException();
-      }
-    };
-    setupInstance(instance);
-
-    // action
-    instance.getValue(nodeMock);
-  }
 }

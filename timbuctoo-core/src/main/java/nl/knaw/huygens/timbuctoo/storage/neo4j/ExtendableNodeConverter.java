@@ -89,13 +89,4 @@ public class ExtendableNodeConverter<T extends Entity> implements NodeConverter<
     return nameFieldConverterMap.get(fieldName);
   }
 
-  @Override
-  public Object getPropertyValue(Node node, String fieldName) throws ConversionException {
-    FieldConverter fieldConverter = getFieldConverterByName(fieldName);
-    if (fieldConverter == null) {
-      return null;
-    }
-
-    return fieldConverter.getValue(node);
-  }
 }

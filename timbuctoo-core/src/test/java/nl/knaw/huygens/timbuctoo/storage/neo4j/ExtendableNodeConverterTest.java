@@ -1,16 +1,11 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.FieldConverterMockBuilder.newFieldConverter;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
@@ -138,60 +133,6 @@ public class ExtendableNodeConverterTest {
     verify(revConverterMock).setPropertyContainerProperty(nodeMock, ENTITY);
     verify(administrativeFieldConverterMock, never()).setPropertyContainerProperty(nodeMock, ENTITY);
     verify(regularFieldConverterMock, never()).setPropertyContainerProperty(nodeMock, ENTITY);
-  }
-
-  @Test
-  public void getPropertyValueReturnsTheValueTheRetrievedFieldConverterReturns() throws Exception {
-    String propertyName = "propertyName";
-    FieldType fieldType = FieldType.REGULAR;
-
-    FieldConverter fieldConverterMock = createFieldConverterMock(propertyName, fieldType);
-    instance.addFieldConverter(fieldConverterMock);
-
-    String value = "value";
-    when(fieldConverterMock.getValue(nodeMock)).thenReturn(value);
-
-    // action
-    Object actualValue = instance.getPropertyValue(nodeMock, propertyName);
-
-    // verify
-    assertThat(value, is(equalTo(actualValue)));
-  }
-
-  @Test
-  public void getPropertyValueReturnsNullIfTheFieldConverterCannotBeFound() throws Exception {
-    // setup
-    String propertyName = "propertyName";
-    String otherPropertyName = "otherPropertyName";
-    FieldType fieldType = FieldType.REGULAR;
-
-    instance.addFieldConverter(createFieldConverterMock(otherPropertyName, fieldType));
-
-    // action
-    Object value = instance.getPropertyValue(nodeMock, propertyName);
-
-    // verify
-    assertThat(value, is(nullValue()));
-  }
-
-  @Test(expected = ConversionException.class)
-  public void getPropertyThrowsAConversionExceptionWhenTheFieldConverterDoes() throws ConversionException {
-    String propertyName = "propertyName";
-    FieldType fieldType = FieldType.REGULAR;
-
-    FieldConverter fieldConverterMock = createFieldConverterMock(propertyName, fieldType);
-    doThrow(ConversionException.class).when(fieldConverterMock).getValue(nodeMock);
-    instance.addFieldConverter(fieldConverterMock);
-
-    String value = "value";
-    when(fieldConverterMock.getValue(nodeMock)).thenReturn(value);
-
-    try {
-      // action
-      instance.getPropertyValue(nodeMock, propertyName);
-    } finally {
-      verify(fieldConverterMock).getValue(nodeMock);
-    }
   }
 
 }

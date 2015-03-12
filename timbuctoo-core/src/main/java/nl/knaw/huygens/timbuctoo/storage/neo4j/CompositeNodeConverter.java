@@ -54,11 +54,6 @@ public class CompositeNodeConverter<T extends Entity> implements NodeConverter<T
     }, node, entity);
   }
 
-  @Override
-  public Object getPropertyValue(Node node, String fieldName) throws ConversionException {
-    throw new UnsupportedOperationException("Will not be implemented");
-  }
-
   public List<NodeConverter<? super T>> getNodeConverters() {
     return nodeConverters;
   }

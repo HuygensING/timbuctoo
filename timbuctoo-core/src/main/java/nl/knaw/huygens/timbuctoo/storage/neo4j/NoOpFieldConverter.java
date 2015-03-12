@@ -54,10 +54,4 @@ public class NoOpFieldConverter implements FieldConverter {
     return "";
   }
 
-  @Override
-  public Object getValue(PropertyContainer propertyContainer) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
 }

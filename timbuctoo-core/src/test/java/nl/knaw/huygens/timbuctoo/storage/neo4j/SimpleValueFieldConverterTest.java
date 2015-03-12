@@ -205,45 +205,4 @@ public class SimpleValueFieldConverterTest implements FieldConverterTest {
     instance.addValueToEntity(entity, nodeMock);
   }
 
-  @Test
-  @Override
-  public void getValueReturnsTheConvertedValueOfTheNode() throws Exception {
-    // setup
-    nodeHasValueFor(propertyName, STRING_VALUE);
-
-    // action
-    String value = (String) instance.getValue(nodeMock);
-
-    // verify
-    assertThat(value, is(equalTo(STRING_VALUE)));
-  }
-
-  @Test
-  @Override
-  public void getValueReturnsNullIfTheNodeDoesNotContainTheValue() throws Exception {
-    // action
-    Object value = instance.getValue(nodeMock);
-
-    // verify
-    assertThat(value, is(nullValue()));
-
-  }
-
-  @Test(expected = ConversionException.class)
-  @Override
-  public void getValueThrowsAConversionExceptionIfTheValueCouldNotBeConverted() throws Exception {
-    // setup
-    nodeHasValueFor(propertyName, STRING_VALUE);
-
-    SimpleValueFieldConverter instance = new SimpleValueFieldConverter() {
-      @Override
-      protected Object convertValue(Object value, java.lang.Class<?> fieldType) {
-        throw new IllegalArgumentException();
-      }
-    };
-    setupInstance(instance);
-
-    // action
-    instance.getValue(nodeMock);
-  }
 }

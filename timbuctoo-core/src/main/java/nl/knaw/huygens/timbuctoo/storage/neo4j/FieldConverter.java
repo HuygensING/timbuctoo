@@ -30,6 +30,4 @@ public interface FieldConverter {
 
   String getName();
 
-  Object getValue(PropertyContainer propertyContainer) throws ConversionException;
-
 }

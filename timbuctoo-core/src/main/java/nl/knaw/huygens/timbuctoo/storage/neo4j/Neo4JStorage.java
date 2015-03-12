@@ -132,17 +132,15 @@ public class Neo4JStorage implements Storage {
     try (Transaction transaction = db.beginTx()) {
       Node source = getRelationPart(transaction, typeRegistry.getDomainEntityType(relation.getSourceType()), "Source", relation.getSourceId());
       Node target = getRelationPart(transaction, typeRegistry.getDomainEntityType(relation.getTargetType()), "Target", relation.getTargetId());
-      Node relationType = getRelationPart(transaction, typeRegistry.getSystemEntityType(relation.getTypeType()), "RelationType", relation.getTypeId());
+      Node relationTypeNode = getRelationPart(transaction, typeRegistry.getSystemEntityType(relation.getTypeType()), "RelationType", relation.getTypeId());
 
       RelationshipConverter<T> relationConverter = propertyContainerConverterFactory.createForRelation(type);
       RelationshipConverter<? super T> primitiveRelationConverter = propertyContainerConverterFactory.createForPrimitiveRelation(type);
-      NodeConverter<RelationType> relationTypeConverter = propertyContainerConverterFactory.createForType(RelationType.class);
 
       String id = addAdministrativeValues(type, (T) relation);
 
       try {
-        // TODO deserialize the whole relationType and call the method with the requested value.
-        String relationTypeName = (String) relationTypeConverter.getPropertyValue(relationType, RelationType.REGULAR_NAME);
+        String relationTypeName = getRegularRelationName(relationTypeNode);
         Relationship relationship = source.createRelationshipTo(target, DynamicRelationshipType.withName(relationTypeName));
 
         relationConverter.addValuesToPropertyContainer(relationship, (T) relation);
@@ -153,10 +151,23 @@ public class Neo4JStorage implements Storage {
       } catch (ConversionException e) {
         transaction.failure();
         throw e;
+      } catch (InstantiationException | IllegalAccessException e) {
+        transaction.failure();
+        throw new StorageException(e);
       }
 
       return id;
     }
+  }
+
+  private String getRegularRelationName(Node relationTypeNode) throws ConversionException, InstantiationException, IllegalAccessException {
+    NodeConverter<RelationType> relationTypeConverter = propertyContainerConverterFactory.createForType(RelationType.class);
+    RelationType relationType = entityInstantiator.createInstanceOf(RelationType.class);
+
+    relationTypeConverter.addValuesToEntity(relationType, relationTypeNode);
+
+    String relationTypeName = relationType.getRegularName();
+    return relationTypeName;
   }
 
   private Node getRelationPart(Transaction transaction, Class<? extends Entity> type, String partName, String partId) throws StorageException {

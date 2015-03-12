@@ -216,46 +216,4 @@ public class ObjectValueConverterTest implements FieldConverterTest {
     when(nodeMock.getProperty(propertyName)).thenReturn(serializeValue(value));
   }
 
-  @Test
-  @Override
-  public void getValueReturnsTheConvertedValueOfTheNode() throws Exception {
-    // setup
-    nodeHasValueFor(propertyName, DEFAULT_VALUE);
-
-    // action
-    Change value = (Change) instance.getValue(nodeMock);
-
-    // verify
-    assertThat(value, is(equalTo(DEFAULT_VALUE)));
-  }
-
-  @Test
-  @Override
-  public void getValueReturnsNullIfTheNodeDoesNotContainTheValue() throws Exception {
-    // action
-    Object value = instance.getValue(nodeMock);
-
-    // verify
-    assertThat(value, is(nullValue()));
-  }
-
-  @Test(expected = ConversionException.class)
-  @Override
-  public void getValueThrowsAConversionExceptionIfTheValueCouldNotBeConverted() throws Exception {
-    // setup
-    nodeHasValueFor(propertyName, DEFAULT_VALUE);
-
-    ObjectValueFieldConverter instance = new ObjectValueFieldConverter() {
-      @Override
-      protected Object convertValue(Object value, Class<?> fieldType) throws IllegalArgumentException {
-        throw new IllegalArgumentException();
-      }
-    };
-
-    setupInstance(instance);
-
-    // action
-    instance.getValue(nodeMock);
-  }
-
 }
