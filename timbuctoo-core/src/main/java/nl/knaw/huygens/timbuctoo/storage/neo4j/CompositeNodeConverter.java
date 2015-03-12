@@ -6,7 +6,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.neo4j.graphdb.Node;
 
-public class CompositeNodeConverter<T extends Entity> implements NodeConverter<T> {
+class CompositeNodeConverter<T extends Entity> implements NodeConverter<T> {
 
   private List<NodeConverter<? super T>> nodeConverters;
 

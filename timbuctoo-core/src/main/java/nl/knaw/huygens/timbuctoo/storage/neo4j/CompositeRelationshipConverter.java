@@ -6,7 +6,7 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 
 import org.neo4j.graphdb.Relationship;
 
-public class CompositeRelationshipConverter<T extends Relation> implements RelationshipConverter<T> {
+class CompositeRelationshipConverter<T extends Relation> implements RelationshipConverter<T> {
 
   private List<RelationshipConverter<? super T>> converters;
 

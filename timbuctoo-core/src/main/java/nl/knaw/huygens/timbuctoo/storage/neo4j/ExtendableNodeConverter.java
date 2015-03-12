@@ -15,7 +15,7 @@ import org.neo4j.graphdb.Node;
 
 import com.google.common.collect.Maps;
 
-public class ExtendableNodeConverter<T extends Entity> implements NodeConverter<T>, ExtendablePropertyContainerConverter<Node, T> {
+class ExtendableNodeConverter<T extends Entity> implements NodeConverter<T>, ExtendablePropertyContainerConverter<Node, T> {
 
   private Class<T> type;
   private Map<String, FieldConverter> nameFieldConverterMap;
