@@ -16,32 +16,35 @@ public class CompositeNodeConverter<T extends Entity> implements NodeConverter<T
 
   @Override
   public void addValuesToPropertyContainer(Node node, T entity) throws ConversionException {
-    // TODO Auto-generated method stub
-
+    for (NodeConverter<? super T> converter : nodeConverters) {
+      converter.addValuesToPropertyContainer(node, entity);
+    }
   }
 
   @Override
   public void addValuesToEntity(T entity, Node node) throws ConversionException {
-    // TODO Auto-generated method stub
-
+    for (NodeConverter<? super T> converter : nodeConverters) {
+      converter.addValuesToEntity(entity, node);
+    }
   }
 
   @Override
   public void updatePropertyContainer(Node node, T entity) throws ConversionException {
-    // TODO Auto-generated method stub
-
+    for (NodeConverter<? super T> converter : nodeConverters) {
+      converter.updatePropertyContainer(node, entity);
+    }
   }
 
   @Override
   public void updateModifiedAndRev(Node node, T entity) throws ConversionException {
-    // TODO Auto-generated method stub
-
+    for (NodeConverter<? super T> converter : nodeConverters) {
+      converter.updateModifiedAndRev(node, entity);
+    }
   }
 
   @Override
   public Object getPropertyValue(Node node, String fieldName) throws ConversionException {
-    // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException("Will not be implemented");
   }
 
   public List<NodeConverter<? super T>> getNodeConverters() {

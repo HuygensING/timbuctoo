@@ -30,6 +30,7 @@ public interface NodeConverter<T extends Entity> extends PropertyContainerConver
   @Override
   void updateModifiedAndRev(Node node, T entity) throws ConversionException;
 
+  @Deprecated
   Object getPropertyValue(Node node, String fieldName) throws ConversionException;
 
 }

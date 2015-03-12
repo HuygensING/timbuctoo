@@ -141,6 +141,7 @@ public class Neo4JStorage implements Storage {
       String id = addAdministrativeValues(type, (T) relation);
 
       try {
+        // TODO deserialize the whole relationType and call the method with the requested value.
         String relationTypeName = (String) relationTypeConverter.getPropertyValue(relationType, RelationType.REGULAR_NAME);
         Relationship relationship = source.createRelationshipTo(target, DynamicRelationshipType.withName(relationTypeName));
 
