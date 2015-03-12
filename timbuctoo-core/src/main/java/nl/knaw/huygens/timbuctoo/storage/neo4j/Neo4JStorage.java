@@ -134,8 +134,7 @@ public class Neo4JStorage implements Storage {
       Node target = getRelationPart(transaction, typeRegistry.getDomainEntityType(relation.getTargetType()), "Target", relation.getTargetId());
       Node relationTypeNode = getRelationPart(transaction, typeRegistry.getSystemEntityType(relation.getTypeType()), "RelationType", relation.getTypeId());
 
-      RelationshipConverter<T> relationConverter = propertyContainerConverterFactory.createForRelation(type);
-      RelationshipConverter<? super T> primitiveRelationConverter = propertyContainerConverterFactory.createForPrimitiveRelation(type);
+      RelationshipConverter<T> relationConverter = propertyContainerConverterFactory.createCompositeForRelation(type);
 
       String id = addAdministrativeValues(type, (T) relation);
 
@@ -144,7 +143,6 @@ public class Neo4JStorage implements Storage {
         Relationship relationship = source.createRelationshipTo(target, DynamicRelationshipType.withName(relationTypeName));
 
         relationConverter.addValuesToPropertyContainer(relationship, (T) relation);
-        primitiveRelationConverter.addValuesToPropertyContainer(relationship, (T) relation);
 
         db.index().forRelationships(RELATIONSHIP_ID_INDEX).add(relationship, ID_PROPERTY_NAME, id);
         transaction.success();

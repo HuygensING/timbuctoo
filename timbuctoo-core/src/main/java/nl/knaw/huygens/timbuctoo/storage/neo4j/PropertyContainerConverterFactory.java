@@ -30,6 +30,10 @@ public class PropertyContainerConverterFactory {
     return relationshipConverter;
   }
 
+  public <T extends Relation> RelationshipConverter<T> createCompositeForRelation(Class<T> type) {
+    return null;
+  }
+
   @SuppressWarnings("unchecked")
   public <T extends Relation> RelationshipConverter<? super T> createForPrimitiveRelation(Class<T> type) {
     Class<? extends Relation> primitive = (Class<? extends Relation>) TypeRegistry.toBaseDomainEntity(type);
