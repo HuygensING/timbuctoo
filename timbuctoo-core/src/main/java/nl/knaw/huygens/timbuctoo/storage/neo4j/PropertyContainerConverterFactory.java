@@ -31,7 +31,7 @@ public class PropertyContainerConverterFactory {
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends Relation> RelationshipConverter<? super T> createForPrimitiveRelation(Class<T> type) {
+  private <T extends Relation> RelationshipConverter<? super T> createForPrimitiveRelation(Class<T> type) {
     Class<? extends Relation> primitive = (Class<? extends Relation>) TypeRegistry.toBaseDomainEntity(type);
     RelationshipConverter<? extends Relation> propertyContainerConverter = this.createForRelation(primitive);
 
@@ -59,7 +59,7 @@ public class PropertyContainerConverterFactory {
    * @return a NodeConverter for the primitive of type. This could be type itself.
    */
   @SuppressWarnings("unchecked")
-  public <T extends DomainEntity> NodeConverter<? super T> createForPrimitive(Class<T> type) {
+  private <T extends DomainEntity> NodeConverter<? super T> createForPrimitive(Class<T> type) {
     Class<? extends DomainEntity> primitive = TypeRegistry.toBaseDomainEntity(type);
     NodeConverter<? extends DomainEntity> nodeConverter = this.createForType(primitive);
 

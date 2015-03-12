@@ -84,22 +84,6 @@ public class PropertyContainerConverterFactoryTest {
   }
 
   @Test
-  public void createForPrimitiveRetrievesThePrimitiveDomainEntityAndCreatesAFieldWrapperForIt() {
-    // setup
-    int numberOfFields = getNumberOfFields(PRIMITIVE_DOMAIN_ENTITY_TYPE);
-    numberOfFields += getNumberOfFields(DomainEntity.class);
-    numberOfFields += getNumberOfFields(Entity.class);
-
-    // action
-    NodeConverter<? super SubADomainEntity> converter = instance.createForPrimitive(DOMAIN_ENTITY_TYPE);
-
-    // verify
-    assertThat(converter, is(instanceOf(ExtendableNodeConverter.class)));
-    verify(fieldConverterFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(PRIMITIVE_DOMAIN_ENTITY_TYPE)), any(Field.class));
-    verify((ExtendableNodeConverter<? super SubADomainEntity>) converter, times(numberOfFields)).addFieldConverter(fieldConverterMock);
-  }
-
-  @Test
   public void createForRelationAddsAFieldConverterForEachFieldOfTheType() {
     int numberOfFields = getNumberOfFields(RELATION_TYPE);
     numberOfFields += getNumberOfFields(PRIMITIVE_RELATION_TYPE);
@@ -113,21 +97,6 @@ public class PropertyContainerConverterFactoryTest {
     assertThat(converter, is(instanceOf(ExtendableRelationshipConverter.class)));
     verify(fieldConverterFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(RELATION_TYPE)), any(Field.class));
     verify((ExtendableRelationshipConverter<SubARelation>) converter, times(numberOfFields)).addFieldConverter(fieldConverterMock);
-  }
-
-  @Test
-  public void createForPrimitveRelationAddsAFieldConverterForEachFieldOfTheType() {
-    int numberOfFields = getNumberOfFields(PRIMITIVE_RELATION_TYPE);
-    numberOfFields += getNumberOfFields(DomainEntity.class);
-    numberOfFields += getNumberOfFields(Entity.class);
-
-    // action
-    RelationshipConverter<? super SubARelation> converter = instance.createForPrimitiveRelation(RELATION_TYPE);
-
-    // verify
-    assertThat(converter, is(instanceOf(ExtendableRelationshipConverter.class)));
-    verify(fieldConverterFactoryMock, times(numberOfFields)).wrap(argThat(equalTo(PRIMITIVE_RELATION_TYPE)), any(Field.class));
-    verify((ExtendableRelationshipConverter<? super SubARelation>) converter, times(numberOfFields)).addFieldConverter(fieldConverterMock);
   }
 
   private int getNumberOfFields(Class<? extends Entity> type) {
