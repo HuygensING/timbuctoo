@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
-import static nl.knaw.huygens.timbuctoo.storage.neo4j.FieldConverterMockBuilder.newFieldConverter;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.PropertyConverterMockBuilder.newPropertyConverter;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -23,24 +23,24 @@ public class ExtendableNodeConverterTest {
   private static final String TYPE_NAME = TypeNames.getInternalName(TYPE);
   private static final TestSystemEntityWrapper ENTITY = new TestSystemEntityWrapper();
   private Node nodeMock;
-  private FieldConverter administrativeFieldConverterMock;
-  private FieldConverter regularFieldConverterMock;
+  private PropertyConverter administrativePropertyConverterMock;
+  private PropertyConverter regularPropertyConverterMock;
   private ExtendableNodeConverter<TestSystemEntityWrapper> instance;
 
   @Before
   public void setUp() {
-    administrativeFieldConverterMock = createFieldConverterMock(FIELD_CONVERTER1_NAME, FieldType.ADMINISTRATIVE);
-    regularFieldConverterMock = createFieldConverterMock(FIELD_CONVERTER2_NAME, FieldType.REGULAR);
+    administrativePropertyConverterMock = createPropertyConverterMock(FIELD_CONVERTER1_NAME, FieldType.ADMINISTRATIVE);
+    regularPropertyConverterMock = createPropertyConverterMock(FIELD_CONVERTER2_NAME, FieldType.REGULAR);
 
     nodeMock = mock(Node.class);
 
     instance = new ExtendableNodeConverter<TestSystemEntityWrapper>(TYPE);
-    instance.addFieldConverter(administrativeFieldConverterMock);
-    instance.addFieldConverter(regularFieldConverterMock);
+    instance.addPropertyConverter(administrativePropertyConverterMock);
+    instance.addPropertyConverter(regularPropertyConverterMock);
   }
 
-  private FieldConverter createFieldConverterMock(String name, FieldType fieldType) {
-    return newFieldConverter().withName(name).withType(fieldType).build();
+  private PropertyConverter createPropertyConverterMock(String name, FieldType fieldType) {
+    return newPropertyConverter().withName(name).withType(fieldType).build();
   }
 
   @Test
@@ -50,22 +50,22 @@ public class ExtendableNodeConverterTest {
 
     // verify
     verify(nodeMock).addLabel(DynamicLabel.label(TYPE_NAME));
-    verify(administrativeFieldConverterMock).setPropertyContainerProperty(nodeMock, ENTITY);
-    verify(regularFieldConverterMock).setPropertyContainerProperty(nodeMock, ENTITY);
+    verify(administrativePropertyConverterMock).setPropertyContainerProperty(nodeMock, ENTITY);
+    verify(regularPropertyConverterMock).setPropertyContainerProperty(nodeMock, ENTITY);
   }
 
   @Test(expected = ConversionException.class)
   public void addValuesToNodeFieldMapperThrowsException() throws Exception {
     // setup
-    doThrow(ConversionException.class).when(administrativeFieldConverterMock).setPropertyContainerProperty(nodeMock, ENTITY);
+    doThrow(ConversionException.class).when(administrativePropertyConverterMock).setPropertyContainerProperty(nodeMock, ENTITY);
 
     // action
     instance.addValuesToPropertyContainer(nodeMock, ENTITY);
 
     // verify
     verify(nodeMock).addLabel(DynamicLabel.label(TYPE_NAME));
-    verify(administrativeFieldConverterMock).setPropertyContainerProperty(nodeMock, ENTITY);
-    verifyZeroInteractions(regularFieldConverterMock);
+    verify(administrativePropertyConverterMock).setPropertyContainerProperty(nodeMock, ENTITY);
+    verifyZeroInteractions(regularPropertyConverterMock);
   }
 
   @Test
@@ -74,21 +74,21 @@ public class ExtendableNodeConverterTest {
     instance.addValuesToEntity(ENTITY, nodeMock);
 
     // verify
-    verify(administrativeFieldConverterMock).addValueToEntity(ENTITY, nodeMock);
-    verify(regularFieldConverterMock).addValueToEntity(ENTITY, nodeMock);
+    verify(administrativePropertyConverterMock).addValueToEntity(ENTITY, nodeMock);
+    verify(regularPropertyConverterMock).addValueToEntity(ENTITY, nodeMock);
   }
 
   @Test(expected = ConversionException.class)
   public void addValuesToEntityThrowsAConversionExceptionIfAFieldConverterAddValueToEntityThrowsOne() throws Exception {
     // setup
-    doThrow(ConversionException.class).when(administrativeFieldConverterMock).addValueToEntity(ENTITY, nodeMock);
+    doThrow(ConversionException.class).when(administrativePropertyConverterMock).addValueToEntity(ENTITY, nodeMock);
 
     try {
       // action
       instance.addValuesToEntity(ENTITY, nodeMock);
     } finally {
       // verify
-      verify(administrativeFieldConverterMock).addValueToEntity(ENTITY, nodeMock);
+      verify(administrativePropertyConverterMock).addValueToEntity(ENTITY, nodeMock);
     }
   }
 
@@ -100,30 +100,30 @@ public class ExtendableNodeConverterTest {
     instance.updatePropertyContainer(nodeMock, ENTITY);
 
     // verify
-    verify(administrativeFieldConverterMock, never()).setPropertyContainerProperty(nodeMock, ENTITY);
-    verify(regularFieldConverterMock).setPropertyContainerProperty(nodeMock, ENTITY);
+    verify(administrativePropertyConverterMock, never()).setPropertyContainerProperty(nodeMock, ENTITY);
+    verify(regularPropertyConverterMock).setPropertyContainerProperty(nodeMock, ENTITY);
   }
 
   @Test(expected = ConversionException.class)
   public void updateNodeThrowsAnExceptionWhenAFieldConverterThrowsOne() throws Exception {
     // setup
-    doThrow(ConversionException.class).when(regularFieldConverterMock).setPropertyContainerProperty(nodeMock, ENTITY);
+    doThrow(ConversionException.class).when(regularPropertyConverterMock).setPropertyContainerProperty(nodeMock, ENTITY);
 
     // action
     instance.updatePropertyContainer(nodeMock, ENTITY);
 
     // verify
-    verify(administrativeFieldConverterMock).setPropertyContainerProperty(nodeMock, ENTITY);
+    verify(administrativePropertyConverterMock).setPropertyContainerProperty(nodeMock, ENTITY);
   }
 
   @Test
   public void updateModifiedAndRevLetTheFieldConvertersSetTheValuesForRevisionAndModified() throws Exception {
     // setup
-    FieldConverter modifiedConverterMock = createFieldConverterMock(Entity.MODIFIED_PROPERTY_NAME, FieldType.ADMINISTRATIVE);
-    FieldConverter revConverterMock = createFieldConverterMock(Entity.REVISION_PROPERTY_NAME, FieldType.ADMINISTRATIVE);
+    PropertyConverter modifiedConverterMock = createPropertyConverterMock(Entity.MODIFIED_PROPERTY_NAME, FieldType.ADMINISTRATIVE);
+    PropertyConverter revConverterMock = createPropertyConverterMock(Entity.REVISION_PROPERTY_NAME, FieldType.ADMINISTRATIVE);
 
-    instance.addFieldConverter(modifiedConverterMock);
-    instance.addFieldConverter(revConverterMock);
+    instance.addPropertyConverter(modifiedConverterMock);
+    instance.addPropertyConverter(revConverterMock);
 
     // action
     instance.updateModifiedAndRev(nodeMock, ENTITY);
@@ -131,8 +131,8 @@ public class ExtendableNodeConverterTest {
     // verify
     verify(modifiedConverterMock).setPropertyContainerProperty(nodeMock, ENTITY);
     verify(revConverterMock).setPropertyContainerProperty(nodeMock, ENTITY);
-    verify(administrativeFieldConverterMock, never()).setPropertyContainerProperty(nodeMock, ENTITY);
-    verify(regularFieldConverterMock, never()).setPropertyContainerProperty(nodeMock, ENTITY);
+    verify(administrativePropertyConverterMock, never()).setPropertyContainerProperty(nodeMock, ENTITY);
+    verify(regularPropertyConverterMock, never()).setPropertyContainerProperty(nodeMock, ENTITY);
   }
 
 }

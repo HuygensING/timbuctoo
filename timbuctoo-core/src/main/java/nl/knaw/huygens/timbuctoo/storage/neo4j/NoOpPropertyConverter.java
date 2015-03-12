@@ -6,7 +6,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.neo4j.graphdb.PropertyContainer;
 
-public class NoOpFieldConverter implements FieldConverter {
+public class NoOpPropertyConverter implements PropertyConverter {
 
   @Override
   public void setContainingType(Class<? extends Entity> containingType) {

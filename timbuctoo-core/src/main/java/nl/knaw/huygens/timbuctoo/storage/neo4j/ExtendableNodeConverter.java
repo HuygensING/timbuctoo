@@ -18,23 +18,23 @@ import com.google.common.collect.Maps;
 class ExtendableNodeConverter<T extends Entity> implements NodeConverter<T>, ExtendablePropertyContainerConverter<Node, T> {
 
   private Class<T> type;
-  private Map<String, FieldConverter> nameFieldConverterMap;
+  private Map<String, PropertyConverter> namePropertyConverterMap;
 
   public ExtendableNodeConverter(Class<T> type) {
     this.type = type;
-    nameFieldConverterMap = Maps.newHashMap();
+    namePropertyConverterMap = Maps.newHashMap();
   }
 
   @Override
   public void addValuesToPropertyContainer(Node node, T entity) throws ConversionException {
     addName(node);
-    for (FieldConverter fieldConverter : getFieldConverters()) {
-      fieldConverter.setPropertyContainerProperty(node, entity);
+    for (PropertyConverter propertyConverter : getPropertyConverters()) {
+      propertyConverter.setPropertyContainerProperty(node, entity);
     }
   }
 
-  private Collection<FieldConverter> getFieldConverters() {
-    return nameFieldConverterMap.values();
+  private Collection<PropertyConverter> getPropertyConverters() {
+    return namePropertyConverterMap.values();
   }
 
   private void addName(Node node) {
@@ -43,18 +43,18 @@ class ExtendableNodeConverter<T extends Entity> implements NodeConverter<T>, Ext
 
   @Override
   public void addValuesToEntity(T entity, Node node) throws ConversionException {
-    for (FieldConverter fieldConverter : getFieldConverters()) {
-      fieldConverter.addValueToEntity(entity, node);
+    for (PropertyConverter propertyConverter : getPropertyConverters()) {
+      propertyConverter.addValueToEntity(entity, node);
     }
   }
 
   @Override
-  public void addFieldConverter(FieldConverter fieldWrapper) {
+  public void addPropertyConverter(PropertyConverter fieldWrapper) {
     mapToFieldName(fieldWrapper);
   }
 
-  private void mapToFieldName(FieldConverter fieldConverter) {
-    nameFieldConverterMap.put(fieldConverter.getName(), fieldConverter);
+  private void mapToFieldName(PropertyConverter propertyConverter) {
+    namePropertyConverterMap.put(propertyConverter.getName(), propertyConverter);
   }
 
   /**
@@ -65,9 +65,9 @@ class ExtendableNodeConverter<T extends Entity> implements NodeConverter<T>, Ext
    */
   @Override
   public void updatePropertyContainer(Node node, Entity entity) throws ConversionException {
-    for (FieldConverter fieldConverter : getFieldConverters()) {
-      if (fieldConverter.getFieldType() != ADMINISTRATIVE) {
-        fieldConverter.setPropertyContainerProperty(node, entity);
+    for (PropertyConverter propertyConverter : getPropertyConverters()) {
+      if (propertyConverter.getFieldType() != ADMINISTRATIVE) {
+        propertyConverter.setPropertyContainerProperty(node, entity);
       }
     }
 
@@ -81,12 +81,12 @@ class ExtendableNodeConverter<T extends Entity> implements NodeConverter<T>, Ext
    */
   @Override
   public void updateModifiedAndRev(Node node, Entity entity) throws ConversionException {
-    getFieldConverterByName(MODIFIED_PROPERTY_NAME).setPropertyContainerProperty(node, entity);
-    getFieldConverterByName(REVISION_PROPERTY_NAME).setPropertyContainerProperty(node, entity);
+    getPropertyConverterByName(MODIFIED_PROPERTY_NAME).setPropertyContainerProperty(node, entity);
+    getPropertyConverterByName(REVISION_PROPERTY_NAME).setPropertyContainerProperty(node, entity);
   }
 
-  private FieldConverter getFieldConverterByName(String fieldName) {
-    return nameFieldConverterMap.get(fieldName);
+  private PropertyConverter getPropertyConverterByName(String fieldName) {
+    return namePropertyConverterMap.get(fieldName);
   }
 
 }

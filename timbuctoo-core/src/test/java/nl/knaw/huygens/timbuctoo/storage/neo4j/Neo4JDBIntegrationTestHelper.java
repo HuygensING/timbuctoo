@@ -20,8 +20,8 @@ public class Neo4JDBIntegrationTestHelper implements DBIntegrationTestHelper {
     idGenerator = new IdGenerator();
     db = new TestGraphDatabaseFactory().newImpermanentDatabase();
     PropertyBusinessRules propertyBusinessRules = new PropertyBusinessRules();
-    FieldConverterFactory fieldWrapperFactory = new FieldConverterFactory(propertyBusinessRules);
-    propertyContainerConverterFactory = new PropertyContainerConverterFactory(fieldWrapperFactory);
+    PropertyConverterFactory propertyConverterFactory = new PropertyConverterFactory(propertyBusinessRules);
+    propertyContainerConverterFactory = new PropertyContainerConverterFactory(propertyConverterFactory);
     entityInstantiator = new EntityInstantiator();
   }
 

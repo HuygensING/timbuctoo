@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
-public interface FieldConverterTest {
+public interface PropertyConverterTest {
   void addValueToNodeSetsThePropertyWithTheFieldNameToTheValueOfTheNode() throws Exception;
 
   void addValueToNodeDoesNotSetIfTheValueIsNull() throws Exception;

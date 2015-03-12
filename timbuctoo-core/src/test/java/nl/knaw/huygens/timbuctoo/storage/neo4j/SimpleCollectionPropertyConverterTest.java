@@ -27,7 +27,7 @@ import test.model.TestSystemEntityWrapper;
 
 import com.google.common.collect.Lists;
 
-public class SimpleCollectionFieldConverterTest implements FieldConverterTest {
+public class SimpleCollectionPropertyConverterTest implements PropertyConverterTest {
 
   private static final Class<Integer> COMPONENT_TYPE = Integer.class;
   private static final int VALUE_4 = 4;
@@ -38,13 +38,13 @@ public class SimpleCollectionFieldConverterTest implements FieldConverterTest {
   private static final Class<TestSystemEntityWrapper> CONTAINING_TYPE = TestSystemEntityWrapper.class;
   private static final String FIELD_NAME = "primitiveCollection";
   private String propertyName;
-  private SimpleCollectionFieldConverter<Integer> instance;
+  private SimpleCollectionPropertyConverter<Integer> instance;
   private Node nodeMock;
   private TestSystemEntityWrapper entity;
 
   @Before
   public void setUp() throws NoSuchFieldException {
-    instance = new SimpleCollectionFieldConverter<Integer>(COMPONENT_TYPE);
+    instance = new SimpleCollectionPropertyConverter<Integer>(COMPONENT_TYPE);
     setupInstance(instance);
 
     propertyName = FIELD_TYPE.propertyName(CONTAINING_TYPE, FIELD_NAME);
@@ -53,7 +53,7 @@ public class SimpleCollectionFieldConverterTest implements FieldConverterTest {
     entity = new TestSystemEntityWrapper();
   }
 
-  private void setupInstance(SimpleCollectionFieldConverter<Integer> simpleCollectionFieldWrapper) throws NoSuchFieldException {
+  private void setupInstance(SimpleCollectionPropertyConverter<Integer> simpleCollectionFieldWrapper) throws NoSuchFieldException {
     simpleCollectionFieldWrapper.setField(CONTAINING_TYPE.getDeclaredField(FIELD_NAME));
     simpleCollectionFieldWrapper.setFieldType(FIELD_TYPE);
     simpleCollectionFieldWrapper.setContainingType(CONTAINING_TYPE);
@@ -104,7 +104,7 @@ public class SimpleCollectionFieldConverterTest implements FieldConverterTest {
   @Override
   public void addValueToNodeThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalAccessException() throws Exception {
     // setup
-    SimpleCollectionFieldConverter<Integer> instance = new SimpleCollectionFieldConverter<Integer>(COMPONENT_TYPE) {
+    SimpleCollectionPropertyConverter<Integer> instance = new SimpleCollectionPropertyConverter<Integer>(COMPONENT_TYPE) {
       @Override
       protected Object getFieldValue(Entity entity) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalAccessException();
@@ -119,7 +119,7 @@ public class SimpleCollectionFieldConverterTest implements FieldConverterTest {
   @Override
   public void addValueToNodeThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalArgumentExceptionIsThrown() throws Exception {
     // setup
-    SimpleCollectionFieldConverter<Integer> instance = new SimpleCollectionFieldConverter<Integer>(COMPONENT_TYPE) {
+    SimpleCollectionPropertyConverter<Integer> instance = new SimpleCollectionPropertyConverter<Integer>(COMPONENT_TYPE) {
       @Override
       protected Object getFieldValue(Entity entity) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalArgumentException();
@@ -134,7 +134,7 @@ public class SimpleCollectionFieldConverterTest implements FieldConverterTest {
   @Test(expected = ConversionException.class)
   public void addValueToNodeThrowsAConversionExceptionIfGetFormatedValueThrowsAnIllegalArgumentException() throws Exception {
     // setup
-    SimpleCollectionFieldConverter<Integer> instance = new SimpleCollectionFieldConverter<Integer>(COMPONENT_TYPE) {
+    SimpleCollectionPropertyConverter<Integer> instance = new SimpleCollectionPropertyConverter<Integer>(COMPONENT_TYPE) {
       @Override
       protected Object getFormattedValue(Object fieldValue) throws IllegalArgumentException {
         throw new IllegalArgumentException();
@@ -189,7 +189,7 @@ public class SimpleCollectionFieldConverterTest implements FieldConverterTest {
   public void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnIllegalAccessExceptionIsThrown() throws Exception {
     nodeHasValueFor(propertyName, new int[] { VALUE_1, VALUE_2, VALUE_3, VALUE_4 });
 
-    SimpleCollectionFieldConverter<Integer> instance = new SimpleCollectionFieldConverter<Integer>(COMPONENT_TYPE) {
+    SimpleCollectionPropertyConverter<Integer> instance = new SimpleCollectionPropertyConverter<Integer>(COMPONENT_TYPE) {
       @Override
       protected void fillField(Entity entity, PropertyContainer propertyContainer) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalAccessException();
@@ -207,7 +207,7 @@ public class SimpleCollectionFieldConverterTest implements FieldConverterTest {
   public void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnAnIllegalArgumentExceptionIsThrown() throws Exception {
     nodeHasValueFor(propertyName, new int[] { VALUE_1, VALUE_2, VALUE_3, VALUE_4 });
 
-    SimpleCollectionFieldConverter<Integer> instance = new SimpleCollectionFieldConverter<Integer>(COMPONENT_TYPE) {
+    SimpleCollectionPropertyConverter<Integer> instance = new SimpleCollectionPropertyConverter<Integer>(COMPONENT_TYPE) {
       @Override
       protected void fillField(Entity entity, PropertyContainer propertyContainer) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalArgumentException();

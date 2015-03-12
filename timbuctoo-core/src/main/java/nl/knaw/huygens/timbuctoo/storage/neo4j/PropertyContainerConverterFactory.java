@@ -16,11 +16,11 @@ import com.google.inject.Inject;
 
 public class PropertyContainerConverterFactory {
 
-  private FieldConverterFactory fieldWrapperFactory;
+  private PropertyConverterFactory propertyConverterFactory;
 
   @Inject
-  public PropertyContainerConverterFactory(FieldConverterFactory fieldWrapperFactory) {
-    this.fieldWrapperFactory = fieldWrapperFactory;
+  public PropertyContainerConverterFactory(PropertyConverterFactory fieldWrapperFactory) {
+    this.propertyConverterFactory = fieldWrapperFactory;
   }
 
   public <T extends Relation> RelationshipConverter<T> createForRelation(Class<T> type) {
@@ -87,7 +87,7 @@ public class PropertyContainerConverterFactory {
     for (Class<? extends Entity> typeToGetFieldsFrom = type; isEntity(typeToGetFieldsFrom); typeToGetFieldsFrom = (Class<? extends Entity>) typeToGetFieldsFrom.getSuperclass()) {
 
       for (Field field : typeToGetFieldsFrom.getDeclaredFields()) {
-        propertyContainerConverter.addFieldConverter(fieldWrapperFactory.wrap(type, field));
+        propertyContainerConverter.addPropertyConverter(propertyConverterFactory.createFor(type, field));
       }
     }
   }

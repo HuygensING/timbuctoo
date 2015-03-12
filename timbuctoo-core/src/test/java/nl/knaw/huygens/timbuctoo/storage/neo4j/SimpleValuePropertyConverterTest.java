@@ -16,7 +16,6 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Field;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -25,67 +24,59 @@ import org.neo4j.graphdb.PropertyContainer;
 
 import test.model.TestSystemEntityWrapper;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-public class ObjectValueConverterTest implements FieldConverterTest {
-  private static final Change DEFAULT_VALUE = new Change(87l, "userId", "vreId");
-  private static final FieldType FIELD_TYPE = FieldType.REGULAR;
-  private static final String FIELD_NAME = "objectValue";
+public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
+  private static final String STRING_VALUE = "stringValue";
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
+  private static final String FIELD_NAME = STRING_VALUE;
+  private static final FieldType FIELD_TYPE = FieldType.REGULAR;
+  private SimpleValuePropertyConverter instance;
   private Node nodeMock;
-  private TestSystemEntityWrapper containingEntity;
   private Field field;
   private String propertyName;
-  private ObjectValueFieldConverter instance;
+  private TestSystemEntityWrapper entity;
 
   @Before
   public void setUp() throws Exception {
+    entity = new TestSystemEntityWrapper();
     nodeMock = mock(Node.class);
-    containingEntity = new TestSystemEntityWrapper();
-    field = TYPE.getDeclaredField(FIELD_NAME);
     propertyName = FIELD_TYPE.propertyName(TYPE, FIELD_NAME);
 
-    instance = new ObjectValueFieldConverter();
+    field = TYPE.getDeclaredField(FIELD_NAME);
+    instance = new SimpleValuePropertyConverter();
     setupInstance(instance);
+
   }
 
-  private void setupInstance(ObjectValueFieldConverter objectValueFieldWrapper) {
-    objectValueFieldWrapper.setContainingType(TYPE);
-    objectValueFieldWrapper.setField(field);
-    objectValueFieldWrapper.setFieldType(FIELD_TYPE);
-    objectValueFieldWrapper.setName(FIELD_NAME);
+  private void setupInstance(SimpleValuePropertyConverter simpleValueFieldWrapper) {
+    simpleValueFieldWrapper.setField(field);
+    simpleValueFieldWrapper.setFieldType(FIELD_TYPE);
+    simpleValueFieldWrapper.setName(FIELD_NAME);
+    simpleValueFieldWrapper.setContainingType(TYPE);
   }
 
   @Override
   @Test
   public void addValueToNodeSetsThePropertyWithTheFieldNameToTheValueOfTheNode() throws Exception {
     // setup
-    String serializedValue = serializeValue(DEFAULT_VALUE);
-
-    containingEntity.setObjectValue(DEFAULT_VALUE);
+    String value = "value";
+    entity.setStringValue(value);
 
     // action
-    instance.setPropertyContainerProperty(nodeMock, containingEntity);
+    instance.setPropertyContainerProperty(nodeMock, entity);
 
     // verify
-    verify(nodeMock).setProperty(propertyName, serializedValue);
-  }
-
-  private String serializeValue(Change change) throws JsonProcessingException {
-    ObjectMapper objectMapper = new ObjectMapper();
-    String serializedValue = objectMapper.writeValueAsString(change);
-    return serializedValue;
+    verify(nodeMock).setProperty(propertyName, value);
   }
 
   @Override
   @Test
   public void addValueToNodeDoesNotSetIfTheValueIsNull() throws Exception {
     // setup
-    containingEntity.setObjectValue(null);
+    String value = null;
+    entity.setStringValue(value);
 
     // action
-    instance.setPropertyContainerProperty(nodeMock, containingEntity);
+    instance.setPropertyContainerProperty(nodeMock, entity);
 
     // verify
     verify(nodeMock, never()).setProperty(anyString(), any());
@@ -95,7 +86,7 @@ public class ObjectValueConverterTest implements FieldConverterTest {
   @Override
   public void addValueToNodeThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalAccessException() throws Exception {
     // setup
-    ObjectValueFieldConverter instance = new ObjectValueFieldConverter() {
+    SimpleValuePropertyConverter instance = new SimpleValuePropertyConverter() {
       @Override
       protected Object getFieldValue(Entity entity) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalAccessException();
@@ -104,14 +95,14 @@ public class ObjectValueConverterTest implements FieldConverterTest {
     setupInstance(instance);
 
     // action
-    instance.setPropertyContainerProperty(nodeMock, containingEntity);
+    instance.setPropertyContainerProperty(nodeMock, entity);
   }
 
   @Test(expected = ConversionException.class)
   @Override
   public void addValueToNodeThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalArgumentExceptionIsThrown() throws Exception {
     // setup
-    ObjectValueFieldConverter instance = new ObjectValueFieldConverter() {
+    SimpleValuePropertyConverter instance = new SimpleValuePropertyConverter() {
       @Override
       protected Object getFieldValue(Entity entity) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalArgumentException();
@@ -120,17 +111,17 @@ public class ObjectValueConverterTest implements FieldConverterTest {
     setupInstance(instance);
 
     // action
-    instance.setPropertyContainerProperty(nodeMock, containingEntity);
+    instance.setPropertyContainerProperty(nodeMock, entity);
   }
 
   @Test(expected = ConversionException.class)
   @Override
   public void addValueToNodeThrowsAConversionExceptionIfGetFormatedValueThrowsAnIllegalArgumentException() throws Exception {
-    // setup
-    containingEntity.setObjectValue(DEFAULT_VALUE);
+    String value = "value";
+    entity.setStringValue(value);
 
     // setup
-    ObjectValueFieldConverter instance = new ObjectValueFieldConverter() {
+    SimpleValuePropertyConverter instance = new SimpleValuePropertyConverter() {
       @Override
       protected Object getFormattedValue(Object fieldValue) throws IllegalArgumentException {
         throw new IllegalArgumentException();
@@ -139,23 +130,23 @@ public class ObjectValueConverterTest implements FieldConverterTest {
     setupInstance(instance);
 
     // action
-    instance.setPropertyContainerProperty(nodeMock, containingEntity);
+    instance.setPropertyContainerProperty(nodeMock, entity);
   }
 
   @Override
   @Test
   public void addValueToEntitySetTheFieldOfTheEntityWithTheValue() throws Exception {
-    // setup
-    nodeHasValueFor(propertyName, DEFAULT_VALUE);
+    nodeHasValueFor(propertyName, STRING_VALUE);
 
     // action
-    instance.addValueToEntity(containingEntity, nodeMock);
+    instance.addValueToEntity(entity, nodeMock);
 
     // verify
-    assertThat(containingEntity.getObjectValue(), is(equalTo(DEFAULT_VALUE)));
+    assertThat(entity.getStringValue(), is(equalTo(STRING_VALUE)));
     verify(nodeMock, atLeastOnce()).hasProperty(propertyName);
     verify(nodeMock).getProperty(propertyName);
     verifyNoMoreInteractions(nodeMock);
+
   }
 
   @Override
@@ -165,10 +156,10 @@ public class ObjectValueConverterTest implements FieldConverterTest {
     when(nodeMock.hasProperty(propertyName)).thenReturn(false);
 
     // action
-    instance.addValueToEntity(containingEntity, nodeMock);
+    instance.addValueToEntity(entity, nodeMock);
 
     // verify
-    assertThat(containingEntity.getObjectValue(), is(nullValue()));
+    assertThat(entity.getStringValue(), is(nullValue()));
     verify(nodeMock).hasProperty(propertyName);
     verifyNoMoreInteractions(nodeMock);
   }
@@ -176,44 +167,42 @@ public class ObjectValueConverterTest implements FieldConverterTest {
   @Test(expected = ConversionException.class)
   @Override
   public void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnIllegalAccessExceptionIsThrown() throws Exception {
-    // setup
-    nodeHasValueFor(propertyName, DEFAULT_VALUE);
+    // setup 
+    nodeHasValueFor(propertyName, STRING_VALUE);
 
-    ObjectValueFieldConverter instance = new ObjectValueFieldConverter() {
+    SimpleValuePropertyConverter instance = new SimpleValuePropertyConverter() {
       @Override
-      protected void fillField(Entity entity, PropertyContainer propertyContainer) throws IllegalArgumentException, IllegalAccessException {
+      protected void fillField(nl.knaw.huygens.timbuctoo.model.Entity entity, PropertyContainer propertyContainer) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalAccessException();
       }
     };
     setupInstance(instance);
 
     // action
-    instance.addValueToEntity(containingEntity, nodeMock);
+    instance.addValueToEntity(entity, nodeMock);
 
+  }
+
+  private void nodeHasValueFor(String propertyName, String value) {
+    when(nodeMock.hasProperty(propertyName)).thenReturn(true);
+    when(nodeMock.getProperty(propertyName)).thenReturn(value);
   }
 
   @Test(expected = ConversionException.class)
   @Override
   public void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnAnIllegalArgumentExceptionIsThrown() throws Exception {
-    // setup
-    nodeHasValueFor(propertyName, DEFAULT_VALUE);
+    nodeHasValueFor(propertyName, STRING_VALUE);
 
-    ObjectValueFieldConverter instance = new ObjectValueFieldConverter() {
+    SimpleValuePropertyConverter instance = new SimpleValuePropertyConverter() {
       @Override
-      protected void fillField(Entity entity, PropertyContainer propertyContainer) throws IllegalArgumentException, IllegalAccessException {
+      protected void fillField(nl.knaw.huygens.timbuctoo.model.Entity entity, PropertyContainer propertyContainer) throws IllegalArgumentException, IllegalAccessException {
         throw new IllegalArgumentException();
       }
     };
     setupInstance(instance);
 
-    // action
-    instance.addValueToEntity(containingEntity, nodeMock);
-
-  }
-
-  private void nodeHasValueFor(String propertyName, Change value) throws JsonProcessingException {
-    when(nodeMock.hasProperty(propertyName)).thenReturn(true);
-    when(nodeMock.getProperty(propertyName)).thenReturn(serializeValue(value));
+    //action
+    instance.addValueToEntity(entity, nodeMock);
   }
 
 }

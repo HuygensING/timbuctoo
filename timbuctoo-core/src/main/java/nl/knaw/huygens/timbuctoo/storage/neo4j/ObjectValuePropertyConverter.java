@@ -8,11 +8,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * A FieldWrapper for the more complex values.
  */
-public class ObjectValueFieldConverter extends AbstractFieldConverter {
+public class ObjectValuePropertyConverter extends AbstractPropertyConverter {
 
   private ObjectMapper objectMapper;
 
-  public ObjectValueFieldConverter() {
+  public ObjectValuePropertyConverter() {
     objectMapper = new ObjectMapper();
   }
 

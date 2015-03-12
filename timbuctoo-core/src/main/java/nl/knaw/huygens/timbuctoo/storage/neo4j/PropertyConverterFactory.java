@@ -10,35 +10,35 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.apache.commons.lang3.ClassUtils;
 
-public class FieldConverterFactory {
+public class PropertyConverterFactory {
 
   private final PropertyBusinessRules propertyBusinessRules;
 
-  public FieldConverterFactory(PropertyBusinessRules propertyBusinessRules) {
+  public PropertyConverterFactory(PropertyBusinessRules propertyBusinessRules) {
     this.propertyBusinessRules = propertyBusinessRules;
   }
 
-  public <T extends Entity> FieldConverter wrap(Class<T> type, Field field) {
-    FieldConverter fieldWrapper = createFieldWrapper(field);
+  public <T extends Entity> PropertyConverter createFor(Class<T> type, Field field) {
+    PropertyConverter propertyConverter = createPropertyConverter(field);
 
-    fieldWrapper.setField(field);
-    fieldWrapper.setContainingType(type);
-    fieldWrapper.setFieldType(propertyBusinessRules.getFieldType(type, field));
-    fieldWrapper.setName(propertyBusinessRules.getFieldName(type, field));
+    propertyConverter.setField(field);
+    propertyConverter.setContainingType(type);
+    propertyConverter.setFieldType(propertyBusinessRules.getFieldType(type, field));
+    propertyConverter.setName(propertyBusinessRules.getFieldName(type, field));
 
-    return fieldWrapper;
+    return propertyConverter;
   }
 
-  private FieldConverter createFieldWrapper(Field field) {
+  private PropertyConverter createPropertyConverter(Field field) {
     if (Modifier.isStatic(field.getModifiers())) {
-      return createNoOpFieldWrapper();
+      return createNoOpPropertyConverter();
     } else if (isSimpleValue(field)) {
-      return createSimpleValueFieldWrapper();
+      return createSimpleValuePropertyConverter();
     } else if (isSimpleCollection(field)) {
-      return createSimpleCollectionFieldWrapper(getComponentType(field));
+      return createSimpleCollectionPropertyConverter(getComponentType(field));
     }
 
-    return createObjectValueFieldWrapper();
+    return createObjectValuePropertyConverter();
   }
 
   private Class<?> getComponentType(Field field) {
@@ -78,20 +78,20 @@ public class FieldConverterFactory {
     return ClassUtils.isPrimitiveOrWrapper(type) || type == String.class;
   }
 
-  protected FieldConverter createSimpleValueFieldWrapper() {
-    return new SimpleValueFieldConverter();
+  protected PropertyConverter createSimpleValuePropertyConverter() {
+    return new SimpleValuePropertyConverter();
   }
 
-  protected FieldConverter createObjectValueFieldWrapper() {
-    return new ObjectValueFieldConverter();
+  protected PropertyConverter createObjectValuePropertyConverter() {
+    return new ObjectValuePropertyConverter();
   }
 
-  protected FieldConverter createNoOpFieldWrapper() {
-    return new NoOpFieldConverter();
+  protected PropertyConverter createNoOpPropertyConverter() {
+    return new NoOpPropertyConverter();
   }
 
-  protected <T> FieldConverter createSimpleCollectionFieldWrapper(Class<T> componentType) {
-    return new SimpleCollectionFieldConverter<T>(componentType);
+  protected <T> PropertyConverter createSimpleCollectionPropertyConverter(Class<T> componentType) {
+    return new SimpleCollectionPropertyConverter<T>(componentType);
   }
 
 }

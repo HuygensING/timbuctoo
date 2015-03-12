@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.storage.RelationMatcher.likeRelation;
-import static nl.knaw.huygens.timbuctoo.storage.neo4j.FieldConverterMockBuilder.newFieldConverter;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.PropertyConverterMockBuilder.newPropertyConverter;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -32,26 +32,26 @@ public class ExtendableRelationshipConverterTest {
   private static final String FIELD_TO_IGNORE2 = "fieldToIgnore2";
   private static final String FIELD_TO_IGNORE1 = "fieldToIgnore1";
   private static final ArrayList<String> FIELD_TO_IGNORE = Lists.newArrayList(FIELD_TO_IGNORE1, FIELD_TO_IGNORE2);
-  private FieldConverter fieldConverterMockToIgnore1;
-  private FieldConverter fieldConverterMockToIgnore2;
-  private FieldConverter fieldConverterMock;
-  private FieldConverter someOtherFieldConverterMock;
+  private PropertyConverter propertyConverterMockToIgnore1;
+  private PropertyConverter propertyConverterMockToIgnore2;
+  private PropertyConverter propertyConverterMock;
+  private PropertyConverter someOtherPropertyConverterMock;
   private Relationship relationshipMock;
   private Relation relation;
   private ExtendableRelationshipConverter<Relation> instance;
 
   @Before
   public void setUp() {
-    fieldConverterMockToIgnore1 = newFieldConverter().withName(FIELD_TO_IGNORE1).build();
-    fieldConverterMockToIgnore2 = newFieldConverter().withName(FIELD_TO_IGNORE2).build();
-    fieldConverterMock = newFieldConverter().withName(FIELD_CONVERTER).withType(FieldType.ADMINISTRATIVE).build();
-    someOtherFieldConverterMock = newFieldConverter().withName(OTHER_FIELD_CONVERTER).withType(FieldType.REGULAR).build();
+    propertyConverterMockToIgnore1 = newPropertyConverter().withName(FIELD_TO_IGNORE1).build();
+    propertyConverterMockToIgnore2 = newPropertyConverter().withName(FIELD_TO_IGNORE2).build();
+    propertyConverterMock = newPropertyConverter().withName(FIELD_CONVERTER).withType(FieldType.ADMINISTRATIVE).build();
+    someOtherPropertyConverterMock = newPropertyConverter().withName(OTHER_FIELD_CONVERTER).withType(FieldType.REGULAR).build();
 
     instance = new ExtendableRelationshipConverter<Relation>(FIELD_TO_IGNORE);
-    instance.addFieldConverter(someOtherFieldConverterMock);
-    instance.addFieldConverter(fieldConverterMock);
-    instance.addFieldConverter(fieldConverterMockToIgnore2);
-    instance.addFieldConverter(fieldConverterMockToIgnore1);
+    instance.addPropertyConverter(someOtherPropertyConverterMock);
+    instance.addPropertyConverter(propertyConverterMock);
+    instance.addPropertyConverter(propertyConverterMockToIgnore2);
+    instance.addPropertyConverter(propertyConverterMockToIgnore1);
 
     relationshipMock = mock(Relationship.class);
     relation = new Relation();
@@ -63,23 +63,23 @@ public class ExtendableRelationshipConverterTest {
     instance.addValuesToPropertyContainer(relationshipMock, relation);
 
     // verify
-    verify(fieldConverterMock).setPropertyContainerProperty(relationshipMock, relation);
-    verify(someOtherFieldConverterMock).setPropertyContainerProperty(relationshipMock, relation);
-    verify(fieldConverterMockToIgnore1, never()).setPropertyContainerProperty(relationshipMock, relation);
-    verify(fieldConverterMockToIgnore2, never()).setPropertyContainerProperty(relationshipMock, relation);
+    verify(propertyConverterMock).setPropertyContainerProperty(relationshipMock, relation);
+    verify(someOtherPropertyConverterMock).setPropertyContainerProperty(relationshipMock, relation);
+    verify(propertyConverterMockToIgnore1, never()).setPropertyContainerProperty(relationshipMock, relation);
+    verify(propertyConverterMockToIgnore2, never()).setPropertyContainerProperty(relationshipMock, relation);
   }
 
   @Test(expected = ConversionException.class)
   public void addValuesToPropertyContainerThrowsAConversionExceptionIfOneOfTheFieldMappersDoes() throws Exception {
     // setup
-    doThrow(ConversionException.class).when(fieldConverterMock).setPropertyContainerProperty(relationshipMock, relation);
+    doThrow(ConversionException.class).when(propertyConverterMock).setPropertyContainerProperty(relationshipMock, relation);
 
     try {
       // action
       instance.addValuesToPropertyContainer(relationshipMock, relation);
     } finally {
       // verify
-      verify(fieldConverterMock).setPropertyContainerProperty(relationshipMock, relation);
+      verify(propertyConverterMock).setPropertyContainerProperty(relationshipMock, relation);
     }
   }
 
@@ -111,10 +111,10 @@ public class ExtendableRelationshipConverterTest {
         .withTargetId(targetId) //
         .withTargetType(targetType));
 
-    verify(fieldConverterMock).addValueToEntity(relation, relationshipMock);
-    verify(someOtherFieldConverterMock).addValueToEntity(relation, relationshipMock);
-    verify(fieldConverterMockToIgnore1, never()).addValueToEntity(relation, relationshipMock);
-    verify(fieldConverterMockToIgnore2, never()).addValueToEntity(relation, relationshipMock);
+    verify(propertyConverterMock).addValueToEntity(relation, relationshipMock);
+    verify(someOtherPropertyConverterMock).addValueToEntity(relation, relationshipMock);
+    verify(propertyConverterMockToIgnore1, never()).addValueToEntity(relation, relationshipMock);
+    verify(propertyConverterMockToIgnore2, never()).addValueToEntity(relation, relationshipMock);
   }
 
   private void nodeHasLabels(Node node, String label1, String label2) {
@@ -130,14 +130,14 @@ public class ExtendableRelationshipConverterTest {
   @Test(expected = ConversionException.class)
   public void addValuesToEntityThrowsAConversionExceptionIfOneOfTheFieldMappersDoes() throws Exception {
     // setup
-    doThrow(ConversionException.class).when(fieldConverterMock).addValueToEntity(relation, relationshipMock);
+    doThrow(ConversionException.class).when(propertyConverterMock).addValueToEntity(relation, relationshipMock);
 
     try {
       // action
       instance.addValuesToEntity(relation, relationshipMock);
     } finally {
       // verify
-      verify(fieldConverterMock).addValueToEntity(relation, relationshipMock);;
+      verify(propertyConverterMock).addValueToEntity(relation, relationshipMock);;
     }
   }
 }

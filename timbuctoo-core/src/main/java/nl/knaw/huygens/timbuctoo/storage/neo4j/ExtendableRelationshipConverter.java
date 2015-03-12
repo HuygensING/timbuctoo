@@ -15,27 +15,27 @@ import com.google.common.collect.Lists;
 class ExtendableRelationshipConverter<T extends Relation> implements RelationshipConverter<T>, ExtendablePropertyContainerConverter<Relationship, T> {
 
   private List<String> fieldsToIgnore;
-  private List<FieldConverter> fieldConverters;
+  private List<PropertyConverter> propertyConverters;
 
   public ExtendableRelationshipConverter(List<String> fieldsToIgnore) {
     this.fieldsToIgnore = fieldsToIgnore;
-    fieldConverters = Lists.newArrayList();
+    propertyConverters = Lists.newArrayList();
   }
 
   @Override
   public void addValuesToPropertyContainer(Relationship relationship, T entity) throws ConversionException {
-    for (FieldConverter fieldConverter : fieldConverters) {
-      if (!fieldsToIgnore.contains(fieldConverter.getName())) {
-        fieldConverter.setPropertyContainerProperty(relationship, entity);
+    for (PropertyConverter propertyConverter : propertyConverters) {
+      if (!fieldsToIgnore.contains(propertyConverter.getName())) {
+        propertyConverter.setPropertyContainerProperty(relationship, entity);
       }
     }
   }
 
   @Override
   public void addValuesToEntity(T entity, Relationship relationship) throws ConversionException {
-    for (FieldConverter fieldConverter : fieldConverters) {
-      if (!fieldsToIgnore.contains(fieldConverter.getName())) {
-        fieldConverter.addValueToEntity(entity, relationship);
+    for (PropertyConverter propertyConverter : propertyConverters) {
+      if (!fieldsToIgnore.contains(propertyConverter.getName())) {
+        propertyConverter.addValueToEntity(entity, relationship);
       }
     }
 
@@ -66,8 +66,8 @@ class ExtendableRelationshipConverter<T extends Relation> implements Relationshi
   }
 
   @Override
-  public void addFieldConverter(FieldConverter fieldConverter) {
-    this.fieldConverters.add(fieldConverter);
+  public void addPropertyConverter(PropertyConverter fieldConverter) {
+    this.propertyConverters.add(fieldConverter);
   }
 
   @Override
