@@ -16,30 +16,56 @@ public class CompositeRelationshipConverter<T extends Relation> implements Relat
 
   @Override
   public void addValuesToPropertyContainer(Relationship relationship, T entity) throws ConversionException {
-    // TODO Auto-generated method stub
-
+    executeAction(new ActionExecutor<T>() {
+      @Override
+      public void execute(RelationshipConverter<? super T> converter, Relationship relationship, T entity) throws ConversionException {
+        converter.addValuesToPropertyContainer(relationship, entity);
+      }
+    }, relationship, entity);
   }
 
   @Override
   public void addValuesToEntity(T entity, Relationship relationship) throws ConversionException {
-    // TODO Auto-generated method stub
-
+    executeAction(new ActionExecutor<T>() {
+      @Override
+      public void execute(RelationshipConverter<? super T> converter, Relationship relationship, T entity) throws ConversionException {
+        converter.addValuesToEntity(entity, relationship);
+      }
+    }, relationship, entity);
   }
 
   @Override
   public void updatePropertyContainer(Relationship relationship, T entity) throws ConversionException {
-    // TODO Auto-generated method stub
-
+    executeAction(new ActionExecutor<T>() {
+      @Override
+      public void execute(RelationshipConverter<? super T> converter, Relationship relationship, T entity) throws ConversionException {
+        converter.updatePropertyContainer(relationship, entity);
+      }
+    }, relationship, entity);
   }
 
   @Override
   public void updateModifiedAndRev(Relationship relationship, T entity) throws ConversionException {
-    // TODO Auto-generated method stub
-
+    executeAction(new ActionExecutor<T>() {
+      @Override
+      public void execute(RelationshipConverter<? super T> converter, Relationship relationship, T entity) throws ConversionException {
+        converter.updateModifiedAndRev(relationship, entity);
+      }
+    }, relationship, entity);
   }
 
   public List<RelationshipConverter<? super T>> getNodeConverters() {
     return this.converters;
+  }
+
+  private void executeAction(ActionExecutor<T> actionExecutor, Relationship relationship, T entity) throws ConversionException {
+    for (RelationshipConverter<? super T> converter : converters) {
+      actionExecutor.execute(converter, relationship, entity);
+    }
+  }
+
+  private interface ActionExecutor<T> {
+    void execute(RelationshipConverter<? super T> converter, Relationship relationship, T entity) throws ConversionException;
   }
 
 }
