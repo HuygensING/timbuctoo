@@ -16,30 +16,42 @@ public class CompositeNodeConverter<T extends Entity> implements NodeConverter<T
 
   @Override
   public void addValuesToPropertyContainer(Node node, T entity) throws ConversionException {
-    for (NodeConverter<? super T> converter : nodeConverters) {
-      converter.addValuesToPropertyContainer(node, entity);
-    }
+    executeAction(new ActionExecutor<T>() {
+      @Override
+      public void execute(NodeConverter<? super T> converter, Node node, T entity) throws ConversionException {
+        converter.addValuesToPropertyContainer(node, entity);
+      }
+    }, node, entity);
   }
 
   @Override
   public void addValuesToEntity(T entity, Node node) throws ConversionException {
-    for (NodeConverter<? super T> converter : nodeConverters) {
-      converter.addValuesToEntity(entity, node);
-    }
+    executeAction(new ActionExecutor<T>() {
+      @Override
+      public void execute(NodeConverter<? super T> converter, Node node, T entity) throws ConversionException {
+        converter.addValuesToEntity(entity, node);
+      }
+    }, node, entity);
   }
 
   @Override
   public void updatePropertyContainer(Node node, T entity) throws ConversionException {
-    for (NodeConverter<? super T> converter : nodeConverters) {
-      converter.updatePropertyContainer(node, entity);
-    }
+    executeAction(new ActionExecutor<T>() {
+      @Override
+      public void execute(NodeConverter<? super T> converter, Node node, T entity) throws ConversionException {
+        converter.updatePropertyContainer(node, entity);
+      }
+    }, node, entity);
   }
 
   @Override
   public void updateModifiedAndRev(Node node, T entity) throws ConversionException {
-    for (NodeConverter<? super T> converter : nodeConverters) {
-      converter.updateModifiedAndRev(node, entity);
-    }
+    executeAction(new ActionExecutor<T>() {
+      @Override
+      public void execute(NodeConverter<? super T> converter, Node node, T entity) throws ConversionException {
+        converter.updateModifiedAndRev(node, entity);
+      }
+    }, node, entity);
   }
 
   @Override
@@ -49,6 +61,16 @@ public class CompositeNodeConverter<T extends Entity> implements NodeConverter<T
 
   public List<NodeConverter<? super T>> getNodeConverters() {
     return nodeConverters;
+  }
+
+  private void executeAction(ActionExecutor<T> actionExecutor, Node node, T entity) throws ConversionException {
+    for (NodeConverter<? super T> converter : nodeConverters) {
+      actionExecutor.execute(converter, node, entity);
+    }
+  }
+
+  private interface ActionExecutor<T> {
+    void execute(NodeConverter<? super T> nodeConverterm, Node node, T entity) throws ConversionException;
   }
 
 }
