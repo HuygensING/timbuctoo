@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.DomainEntityBuilder.aDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.DomainEntityMatcher.likeDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.Neo4JStorage.RELATIONSHIP_ID_INDEX;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeMockBuilder.aNode;
@@ -64,7 +65,6 @@ import com.google.common.collect.Lists;
 
 public class Neo4JStorageTest {
 
-  private static final String PID = "pid";
   private static final Class<Relationship> RELATIONSHIP_TYPE = Relationship.class;
   private static final String RELATION_TYPE_ID = "typeId";
   private static final String RELATION_TARGET_ID = "targetId";
@@ -85,7 +85,6 @@ public class Neo4JStorageTest {
   private static final Label SYSTEM_ENTITY_LABEL = DynamicLabel.label(TypeNames.getInternalName(SYSTEM_ENTITY_TYPE));
   private static final Label RELATION_TYPE_LABEL = DynamicLabel.label(RELATION_TYPE_NAME);
 
-  private SubADomainEntity domainEntity;
   private TestSystemEntityWrapper systemEntity;
   private static final String ID = "id";
 
@@ -98,7 +97,6 @@ public class Neo4JStorageTest {
 
   @Before
   public void setUp() throws Exception {
-    domainEntity = new SubADomainEntity();
     systemEntity = new TestSystemEntityWrapper();
     setupDBTransaction();
     setupEntityConverterFactory();
@@ -129,6 +127,7 @@ public class Neo4JStorageTest {
     idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
 
     NodeConverter<? super SubADomainEntity> compositeConverter = propertyContainerConverterFactoryHasCompositeConverterFor(DOMAIN_ENTITY_TYPE);
+    SubADomainEntity domainEntity = aDomainEntity().build();
 
     // action
     String actualId = instance.addDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
@@ -161,6 +160,7 @@ public class Neo4JStorageTest {
 
     idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
 
+    SubADomainEntity domainEntity = aDomainEntity().build();
     NodeConverter<? super SubADomainEntity> compositeConverter = propertyContainerConverterFactoryHasCompositeConverterFor(DOMAIN_ENTITY_TYPE);
     doThrow(ConversionException.class).when(compositeConverter).addValuesToPropertyContainer(nodeMock, domainEntity);
 
@@ -603,6 +603,8 @@ public class Neo4JStorageTest {
         .andNode(nodeWithThirdRevision)//
         .foundInDB(dbMock);
 
+    SubADomainEntity domainEntity = aDomainEntity().build();
+
     NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);
     when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenReturn(domainEntity);
 
@@ -1011,11 +1013,13 @@ public class Neo4JStorageTest {
 
     NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);;
 
-    domainEntity.setId(ID);
-    domainEntity.setRev(FIRST_REVISION);
-    domainEntity.setPid(PID);
     Change oldModified = new Change();
-    domainEntity.setModified(oldModified);
+    SubADomainEntity domainEntity = aDomainEntity() //
+        .withId(ID) //
+        .withRev(FIRST_REVISION)//
+        .withAPid()//
+        .withModified(oldModified)//
+        .build();
 
     instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
 
@@ -1050,11 +1054,13 @@ public class Neo4JStorageTest {
 
     NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);
 
-    domainEntity.setId(ID);
-    domainEntity.setRev(THIRD_REVISION);
-    domainEntity.setPid(PID);
     Change oldModified = new Change();
-    domainEntity.setModified(oldModified);
+    SubADomainEntity domainEntity = aDomainEntity() //
+        .withId(ID) //
+        .withRev(THIRD_REVISION)//
+        .withAPid()//
+        .withModified(oldModified)//
+        .build();
 
     instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
 
@@ -1081,11 +1087,13 @@ public class Neo4JStorageTest {
     // setup
     anEmptySearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
 
-    domainEntity.setId(ID);
-    domainEntity.setRev(FIRST_REVISION);
-    domainEntity.setPid(PID);
     Change oldModified = new Change();
-    domainEntity.setModified(oldModified);
+    SubADomainEntity domainEntity = aDomainEntity() //
+        .withId(ID) //
+        .withRev(FIRST_REVISION)//
+        .withAPid()//
+        .withModified(oldModified)//
+        .build();
 
     try {
       // action
@@ -1110,11 +1118,13 @@ public class Neo4JStorageTest {
         .withNode(nodeMock) //
         .foundInDB(dbMock);
 
-    domainEntity.setId(ID);
-    domainEntity.setRev(FIRST_REVISION);
-    domainEntity.setPid(PID);
     Change oldModified = new Change();
-    domainEntity.setModified(oldModified);
+    SubADomainEntity domainEntity = aDomainEntity() //
+        .withId(ID) //
+        .withRev(FIRST_REVISION)//
+        .withAPid()//
+        .withModified(oldModified)//
+        .build();
 
     try {
       // action
@@ -1133,16 +1143,18 @@ public class Neo4JStorageTest {
   @Test(expected = UpdateException.class)
   public void updateDomainEntityThrowsAnUpdateExceptionWhenRevOfTheNodeIsLowerThanThatOfTheEntity() throws Exception {
     // setup
-    Node nodeMock = aNode().withRevision(FIRST_REVISION).build();
+    Node nodeMock = aNode().withRevision(SECOND_REVISION).build();
     aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
         .withNode(nodeMock) //
         .foundInDB(dbMock);
 
-    domainEntity.setId(ID);
-    domainEntity.setRev(SECOND_REVISION);
-    domainEntity.setPid(PID);
     Change oldModified = new Change();
-    domainEntity.setModified(oldModified);
+    SubADomainEntity domainEntity = aDomainEntity() //
+        .withId(ID) //
+        .withRev(FIRST_REVISION)//
+        .withAPid()//
+        .withModified(oldModified)//
+        .build();
 
     try {
       // action
