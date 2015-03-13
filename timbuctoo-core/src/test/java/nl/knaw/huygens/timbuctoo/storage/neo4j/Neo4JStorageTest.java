@@ -192,7 +192,7 @@ public class Neo4JStorageTest {
   }
 
   @Test
-  public void addDomainEntityWithRelationAddsARelationshipToTheSourceAndReturnsTheId() throws Exception {
+  public void addDomainEntityForRelationAddsARelationshipToTheSourceAndReturnsTheId() throws Exception {
     // setup
     String name = "regularTypeName";
 
@@ -271,7 +271,7 @@ public class Neo4JStorageTest {
   }
 
   @Test(expected = StorageException.class)
-  public void addDomainEntityWithRelationThrowsAConversionExceptionWhenTheRelationshipConverterDoes() throws Exception {
+  public void addDomainEntityForRelationThrowsAConversionExceptionWhenTheRelationshipConverterDoes() throws Exception {
     // setup
     SubARelation relation = new SubARelation();
     relation.setSourceId(RELATION_SOURCE_ID);
@@ -320,16 +320,16 @@ public class Neo4JStorageTest {
   }
 
   @Test(expected = StorageException.class)
-  public void addDomainEntityWithRelationThrowsAStorageExceptionWhenTheEntityInstantiatorThrowsAnIllegalAccessException() throws Exception {
-    addDomainEntityWithRelationThrowsAStorageExceptionWhenTheEntityInstantiatorThrowsAnException(IllegalAccessException.class);
+  public void addDomainEntityForRelationThrowsAStorageExceptionWhenTheEntityInstantiatorThrowsAnIllegalAccessException() throws Exception {
+    addDomainEntityForRelationThrowsAStorageExceptionWhenTheEntityInstantiatorThrowsAnException(IllegalAccessException.class);
   }
 
   @Test(expected = StorageException.class)
-  public void addDomainEntityWithRelationThrowsAStorageExceptionWhenTheEntityInstantiatorThrowsAnInstantiationException() throws Exception {
-    addDomainEntityWithRelationThrowsAStorageExceptionWhenTheEntityInstantiatorThrowsAnException(InstantiationException.class);
+  public void addDomainEntityForRelationThrowsAStorageExceptionWhenTheEntityInstantiatorThrowsAnInstantiationException() throws Exception {
+    addDomainEntityForRelationThrowsAStorageExceptionWhenTheEntityInstantiatorThrowsAnException(InstantiationException.class);
   }
 
-  private void addDomainEntityWithRelationThrowsAStorageExceptionWhenTheEntityInstantiatorThrowsAnException(Class<? extends Exception> exceptionToThrow) throws Exception {
+  private void addDomainEntityForRelationThrowsAStorageExceptionWhenTheEntityInstantiatorThrowsAnException(Class<? extends Exception> exceptionToThrow) throws Exception {
     // setup
     SubARelation relation = new SubARelation();
     relation.setSourceId(RELATION_SOURCE_ID);
@@ -370,7 +370,7 @@ public class Neo4JStorageTest {
   }
 
   @Test(expected = StorageException.class)
-  public void addDomainEntityWithRelationThrowsAConversionExceptionWhenTheRegularNameOfTheRelationTypeCannotBeFound() throws Exception {
+  public void addDomainEntityForRelationThrowsAConversionExceptionWhenTheRegularNameOfTheRelationTypeCannotBeFound() throws Exception {
     // setup
     SubARelation relation = new SubARelation();
     relation.setSourceId(RELATION_SOURCE_ID);
@@ -411,7 +411,7 @@ public class Neo4JStorageTest {
   }
 
   @Test(expected = StorageException.class)
-  public void addDomainEntityWithRelationThrowsAStorageExceptionWhenTheSourceCannotBeFound() throws Exception {
+  public void addDomainEntityForRelationThrowsAStorageExceptionWhenTheSourceCannotBeFound() throws Exception {
     // setup
     noNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, RELATION_SOURCE_ID);
 
@@ -431,7 +431,7 @@ public class Neo4JStorageTest {
   }
 
   @Test(expected = StorageException.class)
-  public void addDomainEntityWithRelationThrowsAStorageExceptionWhenTheTargetCannotBeFound() throws Exception {
+  public void addDomainEntityForRelationThrowsAStorageExceptionWhenTheTargetCannotBeFound() throws Exception {
     // setup
     oneNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, RELATION_SOURCE_ID, mock(NODE_TYPE));
     noNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, RELATION_TARGET_ID);
@@ -455,7 +455,7 @@ public class Neo4JStorageTest {
   }
 
   @Test(expected = StorageException.class)
-  public void addDomainEntityWithRelationThrowsAStorageExceptionWhenRelationTypeCannotBeFound() throws Exception {
+  public void addDomainEntityForRelationThrowsAStorageExceptionWhenRelationTypeCannotBeFound() throws Exception {
 
     // setup
     oneNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, RELATION_SOURCE_ID, mock(NODE_TYPE));
