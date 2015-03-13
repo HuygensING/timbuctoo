@@ -4,6 +4,8 @@ import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.DomainEntityMatcher.likeDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.Neo4JStorage.RELATIONSHIP_ID_INDEX;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeMockBuilder.aNode;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipBuilder.aRelationship;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipTypeMatcher.likeRelationshipType;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SearchResultBuilder.aSearchResult;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SearchResultBuilder.anEmptySearchResult;
@@ -25,7 +27,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import java.util.Iterator;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
@@ -196,10 +197,16 @@ public class Neo4JStorageTest {
     // setup
     String name = "regularTypeName";
 
-    Node sourceNodeMock = mock(NODE_TYPE);
-    oneNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, RELATION_SOURCE_ID, sourceNodeMock);
-    Node targetNodeMock = mock(NODE_TYPE);
-    oneNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, RELATION_TARGET_ID, targetNodeMock);
+    Node sourceNodeMock = aNode().build();
+    aSearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(RELATION_SOURCE_ID) //
+        .withNode(sourceNodeMock) //
+        .foundInDB(dbMock);
+
+    Node targetNodeMock = aNode().build();
+    aSearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(RELATION_TARGET_ID) //
+        .withNode(targetNodeMock) //
+        .foundInDB(dbMock);
+
     relationTypeWithRegularNameExists(name);
 
     RelationshipIndex indexMock = dbHasRelationshipIndexWithName(RELATIONSHIP_ID_INDEX);
@@ -244,8 +251,11 @@ public class Neo4JStorageTest {
   }
 
   private NodeConverter<RelationType> relationTypeWithRegularNameExists(String name) throws Exception {
-    Node relationTypeNodeMock = mock(NODE_TYPE);
-    oneNodeIsFound(RELATION_TYPE_LABEL, RELATION_TYPE_ID, relationTypeNodeMock);
+    Node relationTypeNodeMock = aNode().build();
+    aSearchResult().forLabel(RELATION_TYPE_LABEL).andId(RELATION_TYPE_ID) //
+        .withNode(relationTypeNodeMock) //
+        .foundInDB(dbMock);
+
     NodeConverter<RelationType> relationTypeConverter = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(RELATIONTYPE_TYPE);
     RelationType relationType = new RelationType();
     relationType.setRegularName(name);
@@ -282,10 +292,14 @@ public class Neo4JStorageTest {
     relation.setTypeType(RELATION_TYPE_NAME);
     String name = "regularTypeName";
 
-    Node sourceNodeMock = mock(NODE_TYPE);
-    oneNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, RELATION_SOURCE_ID, sourceNodeMock);
-    Node targetNodeMock = mock(NODE_TYPE);
-    oneNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, RELATION_TARGET_ID, targetNodeMock);
+    Node sourceNodeMock = aNode().build();
+    aSearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(RELATION_SOURCE_ID) //
+        .withNode(sourceNodeMock) //
+        .foundInDB(dbMock);
+    Node targetNodeMock = aNode().build();
+    aSearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(RELATION_TARGET_ID) //
+        .withNode(targetNodeMock) //
+        .foundInDB(dbMock);
 
     relationTypeWithRegularNameExists(name);
 
@@ -340,10 +354,14 @@ public class Neo4JStorageTest {
     relation.setTypeType(RELATION_TYPE_NAME);
     String name = "regularTypeName";
 
-    Node sourceNodeMock = mock(NODE_TYPE);
-    oneNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, RELATION_SOURCE_ID, sourceNodeMock);
-    Node targetNodeMock = mock(NODE_TYPE);
-    oneNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, RELATION_TARGET_ID, targetNodeMock);
+    Node sourceNodeMock = aNode().build();
+    aSearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(RELATION_SOURCE_ID) //
+        .withNode(sourceNodeMock) //
+        .foundInDB(dbMock);
+    Node targetNodeMock = aNode().build();
+    aSearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(RELATION_TARGET_ID) //
+        .withNode(targetNodeMock) //
+        .foundInDB(dbMock);
 
     relationTypeWithRegularNameExists(name);
 
@@ -381,10 +399,15 @@ public class Neo4JStorageTest {
     relation.setTypeType(RELATION_TYPE_NAME);
     String name = "regularTypeName";
 
-    Node sourceNodeMock = mock(NODE_TYPE);
-    oneNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, RELATION_SOURCE_ID, sourceNodeMock);
-    Node targetNodeMock = mock(NODE_TYPE);
-    oneNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, RELATION_TARGET_ID, targetNodeMock);
+    Node sourceNodeMock = aNode().build();
+    aSearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(RELATION_SOURCE_ID) //
+        .withNode(sourceNodeMock) //
+        .foundInDB(dbMock);
+
+    Node targetNodeMock = aNode().build();
+    aSearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(RELATION_TARGET_ID) //
+        .withNode(targetNodeMock) //
+        .foundInDB(dbMock);
 
     NodeConverter<RelationType> relationTypeConverter = relationTypeWithRegularNameExists(name);
 
@@ -413,7 +436,7 @@ public class Neo4JStorageTest {
   @Test(expected = StorageException.class)
   public void addDomainEntityForRelationThrowsAStorageExceptionWhenTheSourceCannotBeFound() throws Exception {
     // setup
-    noNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, RELATION_SOURCE_ID);
+    anEmptySearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(RELATION_SOURCE_ID).foundInDB(dbMock);
 
     SubARelation relation = new SubARelation();
     relation.setSourceId(RELATION_SOURCE_ID);
@@ -433,8 +456,11 @@ public class Neo4JStorageTest {
   @Test(expected = StorageException.class)
   public void addDomainEntityForRelationThrowsAStorageExceptionWhenTheTargetCannotBeFound() throws Exception {
     // setup
-    oneNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, RELATION_SOURCE_ID, mock(NODE_TYPE));
-    noNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, RELATION_TARGET_ID);
+    aSearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(RELATION_SOURCE_ID) //
+        .withNode(aNode().build())//
+        .foundInDB(dbMock);
+
+    anEmptySearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(RELATION_TARGET_ID).foundInDB(dbMock);
 
     SubARelation relation = new SubARelation();
     relation.setSourceId(RELATION_SOURCE_ID);
@@ -458,9 +484,14 @@ public class Neo4JStorageTest {
   public void addDomainEntityForRelationThrowsAStorageExceptionWhenRelationTypeCannotBeFound() throws Exception {
 
     // setup
-    oneNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, RELATION_SOURCE_ID, mock(NODE_TYPE));
-    oneNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, RELATION_TARGET_ID, mock(NODE_TYPE));
-    noNodeIsFound(RELATION_TYPE_LABEL, RELATION_TYPE_ID);
+    aSearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(RELATION_SOURCE_ID) //
+        .withNode(aNode().build()) //
+        .foundInDB(dbMock);
+    aSearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(RELATION_TARGET_ID) //
+        .withNode(aNode().build()) //
+        .foundInDB(dbMock);
+
+    anEmptySearchResult().forLabel(RELATION_TYPE_LABEL).andId(RELATION_TYPE_ID).foundInDB(dbMock);
 
     SubARelation relation = new SubARelation();
     relation.setSourceId(RELATION_SOURCE_ID);
@@ -545,8 +576,11 @@ public class Neo4JStorageTest {
 
   @Test
   public void getEntityReturnsTheItemWhenFound() throws Exception {
+    Node nodeMock2 = aNode().build();
+    aSearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID) //
+        .withNode(nodeMock2) //
+        .foundInDB(dbMock);
 
-    oneNodeIsFound(SYSTEM_ENTITY_LABEL, ID, nodeMock);
     when(entityInstantiatorMock.createInstanceOf(SYSTEM_ENTITY_TYPE)).thenReturn(systemEntity);
     NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(SYSTEM_ENTITY_TYPE);
 
@@ -559,7 +593,7 @@ public class Neo4JStorageTest {
     InOrder inOrder = inOrder(dbMock, propertyContainerConverterFactoryMock, systemEntityConverterMock, transactionMock);
     inOrder.verify(dbMock).beginTx();
     inOrder.verify(dbMock).findNodesByLabelAndProperty(SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
-    inOrder.verify(systemEntityConverterMock).addValuesToEntity(systemEntity, nodeMock);
+    inOrder.verify(systemEntityConverterMock).addValuesToEntity(systemEntity, nodeMock2);
     inOrder.verify(transactionMock).success();
     verifyNoMoreInteractions(dbMock, systemEntityConverterMock);
   }
@@ -567,10 +601,13 @@ public class Neo4JStorageTest {
   @Test
   public void getEntityReturnsTheLatestIfMoreThanOneItemIsFound() throws Exception {
     // setup
-    Node nodeWithFirstRevision = createNodeWithRevision(FIRST_REVISION);
-    Node nodeWithSecondRevision = createNodeWithRevision(SECOND_REVISION);
-    Node nodeWithThirdRevision = createNodeWithRevision(THIRD_REVISION);
-    multipleNodesAreFound(DOMAIN_ENTITY_LABEL, ID, nodeWithFirstRevision, nodeWithThirdRevision, nodeWithSecondRevision);
+    Node nodeWithThirdRevision = aNode().withRevision(THIRD_REVISION).build();
+
+    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
+        .withNode(aNode().withRevision(FIRST_REVISION).build()) //
+        .andNode(aNode().withRevision(SECOND_REVISION).build()) //
+        .andNode(nodeWithThirdRevision)//
+        .foundInDB(dbMock);
 
     NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);
     when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenReturn(domainEntity);
@@ -761,16 +798,10 @@ public class Neo4JStorageTest {
     return indexMock;
   }
 
-  private Node createNodeWithRevision(int revision) {
-    Node otherFoundNode = mock(NODE_TYPE);
-    when(otherFoundNode.getProperty(REVISION_PROPERTY_NAME)).thenReturn(revision);
-    return otherFoundNode;
-  }
-
   @Test
   public void getEntityReturnsNullIfNoItemIsFound() throws Exception {
     // setup
-    noNodeIsFound(SYSTEM_ENTITY_LABEL, ID);
+    anEmptySearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
 
     // action
     TestSystemEntityWrapper actualEntity = instance.getEntity(SYSTEM_ENTITY_TYPE, ID);
@@ -783,27 +814,14 @@ public class Neo4JStorageTest {
     verifyZeroInteractions(propertyContainerConverterFactoryMock);
   }
 
-  private void oneNodeIsFound(Label label, String id, Node nodeToBeFound) {
-    aSearchResult().forLabel(label).andId(id) //
-        .withNode(nodeToBeFound).foundInDB(dbMock);
-  }
-
-  private void noNodeIsFound(Label label, String id) {
-    anEmptySearchResult().forLabel(label).andId(id).foundInDB(dbMock);
-  }
-
-  private void multipleNodesAreFound(Label label, String id, Node node1, Node node2, Node node3) {
-    aSearchResult().forLabel(label).andId(id) //
-        .withNode(node1) //
-        .andNode(node2) //
-        .andNode(node3) //
-        .foundInDB(dbMock);
-  }
-
   @Test(expected = StorageException.class)
   public void getEntityThrowsStorageExceptionWhenEntityWrapperThrowsAConversionException() throws Exception {
     // setup
-    oneNodeIsFound(SYSTEM_ENTITY_LABEL, ID, nodeMock);
+    Node nodeMock = aNode().build();
+    aSearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID)//
+        .withNode(nodeMock)//
+        .foundInDB(dbMock);
+
     when(entityInstantiatorMock.createInstanceOf(SYSTEM_ENTITY_TYPE)).thenReturn(systemEntity);
     NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(SYSTEM_ENTITY_TYPE);
     doThrow(ConversionException.class).when(systemEntityConverterMock).addValuesToEntity(systemEntity, nodeMock);
@@ -834,7 +852,11 @@ public class Neo4JStorageTest {
 
   private void getEntityThrowsStorageExceptionWhenEntityInstantiatorThrowsAnException(Class<? extends Exception> exceptionToThrow) throws Exception {
     // setup
-    oneNodeIsFound(SYSTEM_ENTITY_LABEL, ID, nodeMock);
+    Node nodeMock = aNode().build();
+    aSearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID) //
+        .withNode(nodeMock) //
+        .foundInDB(dbMock);
+
     doThrow(exceptionToThrow).when(entityInstantiatorMock).createInstanceOf(SYSTEM_ENTITY_TYPE);
 
     try {
@@ -854,8 +876,11 @@ public class Neo4JStorageTest {
   public void updateSystemEntityRetrievesTheEntityAndUpdatesTheData() throws Exception {
     // setup
     dbMockCreatesTransaction(transactionMock);
-    oneNodeIsFound(SYSTEM_ENTITY_LABEL, ID, nodeMock);
-    when(nodeMock.getProperty(REVISION_PROPERTY_NAME)).thenReturn(FIRST_REVISION);
+    Node nodeMock = aNode().withRevision(FIRST_REVISION).build();
+    aSearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID) //
+        .withNode(nodeMock) //
+        .foundInDB(dbMock);
+
     NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(SYSTEM_ENTITY_TYPE);
 
     systemEntity.setId(ID);
@@ -885,9 +910,12 @@ public class Neo4JStorageTest {
   public void updateSystemEntityThrowsAnUpdateExceptionIfTheNodeIsNewerThanTheEntityWithTheUpdatedInformation() throws Exception {
     // setup
     dbMockCreatesTransaction(transactionMock);
-    oneNodeIsFound(SYSTEM_ENTITY_LABEL, ID, nodeMock);
+
     int newerRevision = 2;
-    when(nodeMock.getProperty(REVISION_PROPERTY_NAME)).thenReturn(newerRevision);
+    Node nodeMock = aNode().withRevision(newerRevision).build();
+    aSearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID) //
+        .withNode(nodeMock) //
+        .foundInDB(dbMock);
 
     systemEntity.setRev(FIRST_REVISION);
     systemEntity.setId(ID);
@@ -907,8 +935,10 @@ public class Neo4JStorageTest {
   public void updateSystemEntityThrowsAnUpdateExceptionIfTheNodeIsOlderThanTheEntityWithTheUpdatedInformation() throws Exception {
     // setup
     dbMockCreatesTransaction(transactionMock);
-    oneNodeIsFound(SYSTEM_ENTITY_LABEL, ID, nodeMock);
-    when(nodeMock.getProperty(REVISION_PROPERTY_NAME)).thenReturn(FIRST_REVISION);
+    Node nodeMock = aNode().withRevision(FIRST_REVISION).build();
+    aSearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID) //
+        .withNode(nodeMock) //
+        .foundInDB(dbMock);
 
     int newerRevision = 2;
     systemEntity.setRev(newerRevision);
@@ -929,7 +959,7 @@ public class Neo4JStorageTest {
   public void updateSystemEntityThrowsAnUpdateExceptionIfTheNodeCannotBeFound() throws Exception {
     // setup
     dbMockCreatesTransaction(transactionMock);
-    noNodeIsFound(SYSTEM_ENTITY_LABEL, ID);
+    anEmptySearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
 
     systemEntity.setRev(FIRST_REVISION);
     systemEntity.setId(ID);
@@ -949,8 +979,11 @@ public class Neo4JStorageTest {
   public void updateSystemEntityThrowsAConversionExceptionWhenTheEntityCovnerterThrowsOne() throws Exception {
     // setup
     dbMockCreatesTransaction(transactionMock);
-    oneNodeIsFound(SYSTEM_ENTITY_LABEL, ID, nodeMock);
-    when(nodeMock.getProperty(REVISION_PROPERTY_NAME)).thenReturn(FIRST_REVISION);
+
+    Node nodeMock = aNode().withRevision(FIRST_REVISION).build();
+    aSearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID) //
+        .withNode(nodeMock) //
+        .foundInDB(dbMock);
 
     NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(SYSTEM_ENTITY_TYPE);
 
@@ -984,8 +1017,12 @@ public class Neo4JStorageTest {
   public void updateDomainEntityRetrievesTheNodeAndUpdatesItsValues() throws Exception {
     // setup
     dbMockCreatesTransaction(transactionMock);
-    oneNodeIsFound(DOMAIN_ENTITY_LABEL, ID, nodeMock);
-    when(nodeMock.getProperty(REVISION_PROPERTY_NAME)).thenReturn(FIRST_REVISION);
+    Node nodeMock = aNode().withRevision(FIRST_REVISION).build();
+
+    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
+        .withNode(nodeMock) //
+        .foundInDB(dbMock);
+
     NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);;
 
     domainEntity.setId(ID);
@@ -1018,11 +1055,14 @@ public class Neo4JStorageTest {
   public void updateDomainEntityUpdatesTheLatestIfMultipleAreFound() throws Exception {
     // setup
     dbMockCreatesTransaction(transactionMock);
-    Node nodeWithFirstRevision = createNodeWithRevision(FIRST_REVISION);
-    Node nodeWithSecondRevision = createNodeWithRevision(SECOND_REVISION);
-    Node nodeWithThirdRevision = createNodeWithRevision(THIRD_REVISION);
+    Node nodeWithThirdRevision = aNode().withRevision(THIRD_REVISION).build();
 
-    multipleNodesAreFound(DOMAIN_ENTITY_LABEL, ID, nodeWithFirstRevision, nodeWithThirdRevision, nodeWithSecondRevision);
+    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
+        .withNode(aNode().withRevision(FIRST_REVISION).build()) //
+        .andNode(aNode().withRevision(SECOND_REVISION).build()) //
+        .andNode(nodeWithThirdRevision)//
+        .foundInDB(dbMock);
+
     when(nodeMock.getProperty(REVISION_PROPERTY_NAME)).thenReturn(SECOND_REVISION);
     NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);
 
@@ -1056,7 +1096,7 @@ public class Neo4JStorageTest {
   public void updateDomainEntityThrowsAnUpdateExceptionWhenTheEntityCannotBeFound() throws Exception {
     // setup
     dbMockCreatesTransaction(transactionMock);
-    noNodeIsFound(DOMAIN_ENTITY_LABEL, ID);
+    anEmptySearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
 
     domainEntity.setId(ID);
     domainEntity.setRev(FIRST_REVISION);
@@ -1082,8 +1122,11 @@ public class Neo4JStorageTest {
   public void updateDomainEntityThrowsAnUpdateExceptionWhenRevOfTheNodeIsHigherThanThatOfTheEntity() throws Exception {
     // setup
     dbMockCreatesTransaction(transactionMock);
-    oneNodeIsFound(DOMAIN_ENTITY_LABEL, ID, nodeMock);
-    when(nodeMock.getProperty(REVISION_PROPERTY_NAME)).thenReturn(SECOND_REVISION);
+    Node nodeMock = aNode().withRevision(SECOND_REVISION).build();
+
+    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
+        .withNode(nodeMock) //
+        .foundInDB(dbMock);
 
     domainEntity.setId(ID);
     domainEntity.setRev(FIRST_REVISION);
@@ -1109,8 +1152,10 @@ public class Neo4JStorageTest {
   public void updateDomainEntityThrowsAnUpdateExceptionWhenRevOfTheNodeIsLowerThanThatOfTheEntity() throws Exception {
     // setup
     dbMockCreatesTransaction(transactionMock);
-    oneNodeIsFound(DOMAIN_ENTITY_LABEL, ID, nodeMock);
-    when(nodeMock.getProperty(REVISION_PROPERTY_NAME)).thenReturn(FIRST_REVISION);
+    Node nodeMock = aNode().withRevision(FIRST_REVISION).build();
+    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
+        .withNode(nodeMock) //
+        .foundInDB(dbMock);
 
     domainEntity.setId(ID);
     domainEntity.setRev(SECOND_REVISION);
@@ -1136,34 +1181,30 @@ public class Neo4JStorageTest {
   public void deleteSystemEntityFirstRemovesTheNodesRelationShipsAndThenTheNodeItselfTheDatabase() throws Exception {
     // setup
     dbMockCreatesTransaction(transactionMock);
-    Relationship relMock1 = mock(RELATIONSHIP_TYPE);
-    Relationship relMock2 = mock(RELATIONSHIP_TYPE);
-    nodeHaseRelationsShips(nodeMock, relMock1, relMock2);
-    oneNodeIsFound(SYSTEM_ENTITY_LABEL, ID, nodeMock);
+    Relationship relMock1 = aRelationship().build();
+    Relationship relMock2 = aRelationship().build();
+    Node nodeMock2 = aNode().withARelationShip(relMock1).andRelationship(relMock2).build();
+
+    aSearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID) //
+        .withNode(nodeMock2) //
+        .foundInDB(dbMock);
 
     // action
     int numDeleted = instance.deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID);
 
     // verify
     assertThat(numDeleted, is(equalTo(1)));
-    InOrder inOrder = inOrder(dbMock, nodeMock, relMock1, relMock2, transactionMock);
+    InOrder inOrder = inOrder(dbMock, nodeMock2, relMock1, relMock2, transactionMock);
     inOrder.verify(dbMock).beginTx();
-    verifyNodeAndItsRelationAreDelete(nodeMock, relMock1, relMock2, inOrder);
+    verifyNodeAndItsRelationAreDelete(nodeMock2, relMock1, relMock2, inOrder);
     inOrder.verify(transactionMock).success();
 
-  }
-
-  private void nodeHaseRelationsShips(Node node, Relationship relMock1, Relationship relMock2) {
-    Iterator<Relationship> relationshipIterator = Lists.newArrayList(relMock1, relMock2).iterator();
-    Iterable<Relationship> relationships = IteratorUtil.asIterable(relationshipIterator);
-
-    when(node.getRelationships()).thenReturn(relationships);
   }
 
   @Test
   public void deleteSystemEntityReturns0WhenTheEntityCannotBeFound() throws Exception {
     // setup
-    noNodeIsFound(SYSTEM_ENTITY_LABEL, ID);
+    anEmptySearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
     dbMockCreatesTransaction(transactionMock);
 
     // action
@@ -1179,10 +1220,14 @@ public class Neo4JStorageTest {
   public void deleteDomainEntityFirstRemovesTheNodesRelationShipsAndThenTheNodeItselfTheDatabase() throws Exception {
     // setup
     dbMockCreatesTransaction(transactionMock);
-    Relationship relMock1 = mock(RELATIONSHIP_TYPE);
-    Relationship relMock2 = mock(RELATIONSHIP_TYPE);
-    nodeHaseRelationsShips(nodeMock, relMock1, relMock2);
-    oneNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, ID, nodeMock);
+
+    Relationship relMock1 = aRelationship().build();
+    Relationship relMock2 = aRelationship().build();
+    Node nodeMock = aNode().withARelationShip(relMock1).andRelationship(relMock2).build();
+
+    aSearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(ID) //
+        .withNode(nodeMock) //
+        .foundInDB(dbMock);
 
     // action
     instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, new Change());
@@ -1199,21 +1244,24 @@ public class Neo4JStorageTest {
   public void deleteDomainEntityRemovesAllTheFoundNodes() throws Exception {
     // setup
     dbMockCreatesTransaction(transactionMock);
-    Relationship relMock1 = mock(RELATIONSHIP_TYPE);
-    Relationship relMock2 = mock(RELATIONSHIP_TYPE);
-    nodeHaseRelationsShips(nodeMock, relMock1, relMock2);
 
-    Relationship relMock3 = mock(RELATIONSHIP_TYPE);
-    Relationship relMock4 = mock(RELATIONSHIP_TYPE);
-    Node nodeMock2 = mock(NODE_TYPE);
-    nodeHaseRelationsShips(nodeMock2, relMock3, relMock4);
+    Relationship relMock1 = aRelationship().build();
+    Relationship relMock2 = aRelationship().build();
+    Node nodeMock = aNode().withARelationShip(relMock1).andRelationship(relMock2).build();
 
-    Relationship relMock5 = mock(RELATIONSHIP_TYPE);
-    Relationship relMock6 = mock(RELATIONSHIP_TYPE);
-    Node nodeMock3 = mock(NODE_TYPE);
-    nodeHaseRelationsShips(nodeMock3, relMock5, relMock6);
+    Relationship relMock3 = aRelationship().build();
+    Relationship relMock4 = aRelationship().build();
+    Node nodeMock2 = aNode().withARelationShip(relMock3).andRelationship(relMock4).build();
 
-    multipleNodesAreFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, ID, nodeMock, nodeMock2, nodeMock3);
+    Relationship relMock5 = aRelationship().build();
+    Relationship relMock6 = aRelationship().build();
+    Node nodeMock3 = aNode().withARelationShip(relMock5).andRelationship(relMock6).build();
+
+    aSearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(ID) //
+        .withNode(nodeMock) //
+        .andNode(nodeMock2) //
+        .andNode(nodeMock3) //
+        .foundInDB(dbMock);
 
     // action
     instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, new Change());
@@ -1237,7 +1285,7 @@ public class Neo4JStorageTest {
   @Test(expected = NoSuchEntityException.class)
   public void deleteDomainEntityThrowsANoSuchEntityExceptionWhenTheEntityCannotBeFound() throws Exception {
     // setup
-    noNodeIsFound(PRIMITIVE_DOMAIN_ENTITY_LABEL, ID);
+    anEmptySearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
     dbMockCreatesTransaction(transactionMock);
 
     try {
