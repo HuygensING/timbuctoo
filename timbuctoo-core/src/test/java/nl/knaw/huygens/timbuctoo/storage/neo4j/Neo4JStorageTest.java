@@ -128,7 +128,6 @@ public class Neo4JStorageTest {
   public void addDomainEntitySavesTheProjectVersionAndThePrimitiveAndReturnsTheId() throws Exception {
     // setup
     dbMockCreatesNode(nodeMock);
-    dbMockCreatesTransaction(transactionMock);
     idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
 
     NodeConverter<? super SubADomainEntity> compositeConverter = propertyContainerConverterFactoryHasCompositeConverterFor(DOMAIN_ENTITY_TYPE);
@@ -160,7 +159,7 @@ public class Neo4JStorageTest {
   public void addDomainEntityRollsBackTheTransactionAndThrowsAStorageExceptionWhenTheDomainEntityConverterThrowsAConversionException() throws Exception {
     // setup
     dbMockCreatesNode(nodeMock);
-    dbMockCreatesTransaction(transactionMock);
+
     idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
 
     NodeConverter<? super SubADomainEntity> compositeConverter = propertyContainerConverterFactoryHasCompositeConverterFor(DOMAIN_ENTITY_TYPE);
@@ -516,7 +515,6 @@ public class Neo4JStorageTest {
 
   @Test
   public void addSystemEntitySavesTheSystemAsNodeAndReturnsItsId() throws Exception {
-    dbMockCreatesTransaction(transactionMock);
     dbMockCreatesNode(nodeMock);
     idGeneratorMockCreatesIDFor(SYSTEM_ENTITY_TYPE, ID);
 
@@ -548,13 +546,8 @@ public class Neo4JStorageTest {
     when(dbMock.createNode()).thenReturn(node);
   }
 
-  private void dbMockCreatesTransaction(Transaction transaction) {
-    when(dbMock.beginTx()).thenReturn(transaction);
-  }
-
   @Test(expected = StorageException.class)
   public void addSystemEntityRollsBackTheTransactionAndThrowsStorageExceptionObjectrapperThrowsAConversionException() throws Exception {
-    dbMockCreatesTransaction(transactionMock);
     dbMockCreatesNode(nodeMock);
 
     NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(SYSTEM_ENTITY_TYPE);
@@ -875,7 +868,6 @@ public class Neo4JStorageTest {
   @Test
   public void updateSystemEntityRetrievesTheEntityAndUpdatesTheData() throws Exception {
     // setup
-    dbMockCreatesTransaction(transactionMock);
     Node nodeMock = aNode().withRevision(FIRST_REVISION).build();
     aSearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID) //
         .withNode(nodeMock) //
@@ -909,8 +901,6 @@ public class Neo4JStorageTest {
   @Test(expected = UpdateException.class)
   public void updateSystemEntityThrowsAnUpdateExceptionIfTheNodeIsNewerThanTheEntityWithTheUpdatedInformation() throws Exception {
     // setup
-    dbMockCreatesTransaction(transactionMock);
-
     int newerRevision = 2;
     Node nodeMock = aNode().withRevision(newerRevision).build();
     aSearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID) //
@@ -934,7 +924,6 @@ public class Neo4JStorageTest {
   @Test(expected = UpdateException.class)
   public void updateSystemEntityThrowsAnUpdateExceptionIfTheNodeIsOlderThanTheEntityWithTheUpdatedInformation() throws Exception {
     // setup
-    dbMockCreatesTransaction(transactionMock);
     Node nodeMock = aNode().withRevision(FIRST_REVISION).build();
     aSearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID) //
         .withNode(nodeMock) //
@@ -958,7 +947,6 @@ public class Neo4JStorageTest {
   @Test(expected = UpdateException.class)
   public void updateSystemEntityThrowsAnUpdateExceptionIfTheNodeCannotBeFound() throws Exception {
     // setup
-    dbMockCreatesTransaction(transactionMock);
     anEmptySearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
 
     systemEntity.setRev(FIRST_REVISION);
@@ -978,8 +966,6 @@ public class Neo4JStorageTest {
   @Test(expected = ConversionException.class)
   public void updateSystemEntityThrowsAConversionExceptionWhenTheEntityCovnerterThrowsOne() throws Exception {
     // setup
-    dbMockCreatesTransaction(transactionMock);
-
     Node nodeMock = aNode().withRevision(FIRST_REVISION).build();
     aSearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID) //
         .withNode(nodeMock) //
@@ -1016,7 +1002,6 @@ public class Neo4JStorageTest {
   @Test
   public void updateDomainEntityRetrievesTheNodeAndUpdatesItsValues() throws Exception {
     // setup
-    dbMockCreatesTransaction(transactionMock);
     Node nodeMock = aNode().withRevision(FIRST_REVISION).build();
 
     aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
@@ -1054,7 +1039,6 @@ public class Neo4JStorageTest {
   @Test
   public void updateDomainEntityUpdatesTheLatestIfMultipleAreFound() throws Exception {
     // setup
-    dbMockCreatesTransaction(transactionMock);
     Node nodeWithThirdRevision = aNode().withRevision(THIRD_REVISION).build();
 
     aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
@@ -1095,7 +1079,6 @@ public class Neo4JStorageTest {
   @Test(expected = UpdateException.class)
   public void updateDomainEntityThrowsAnUpdateExceptionWhenTheEntityCannotBeFound() throws Exception {
     // setup
-    dbMockCreatesTransaction(transactionMock);
     anEmptySearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
 
     domainEntity.setId(ID);
@@ -1121,7 +1104,6 @@ public class Neo4JStorageTest {
   @Test(expected = UpdateException.class)
   public void updateDomainEntityThrowsAnUpdateExceptionWhenRevOfTheNodeIsHigherThanThatOfTheEntity() throws Exception {
     // setup
-    dbMockCreatesTransaction(transactionMock);
     Node nodeMock = aNode().withRevision(SECOND_REVISION).build();
 
     aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
@@ -1151,7 +1133,6 @@ public class Neo4JStorageTest {
   @Test(expected = UpdateException.class)
   public void updateDomainEntityThrowsAnUpdateExceptionWhenRevOfTheNodeIsLowerThanThatOfTheEntity() throws Exception {
     // setup
-    dbMockCreatesTransaction(transactionMock);
     Node nodeMock = aNode().withRevision(FIRST_REVISION).build();
     aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
         .withNode(nodeMock) //
@@ -1180,7 +1161,6 @@ public class Neo4JStorageTest {
   @Test
   public void deleteSystemEntityFirstRemovesTheNodesRelationShipsAndThenTheNodeItselfTheDatabase() throws Exception {
     // setup
-    dbMockCreatesTransaction(transactionMock);
     Relationship relMock1 = aRelationship().build();
     Relationship relMock2 = aRelationship().build();
     Node nodeMock2 = aNode().withARelationShip(relMock1).andRelationship(relMock2).build();
@@ -1205,7 +1185,6 @@ public class Neo4JStorageTest {
   public void deleteSystemEntityReturns0WhenTheEntityCannotBeFound() throws Exception {
     // setup
     anEmptySearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
-    dbMockCreatesTransaction(transactionMock);
 
     // action
     int numDeleted = instance.deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID);
@@ -1219,8 +1198,6 @@ public class Neo4JStorageTest {
   @Test
   public void deleteDomainEntityFirstRemovesTheNodesRelationShipsAndThenTheNodeItselfTheDatabase() throws Exception {
     // setup
-    dbMockCreatesTransaction(transactionMock);
-
     Relationship relMock1 = aRelationship().build();
     Relationship relMock2 = aRelationship().build();
     Node nodeMock = aNode().withARelationShip(relMock1).andRelationship(relMock2).build();
@@ -1243,8 +1220,6 @@ public class Neo4JStorageTest {
   @Test
   public void deleteDomainEntityRemovesAllTheFoundNodes() throws Exception {
     // setup
-    dbMockCreatesTransaction(transactionMock);
-
     Relationship relMock1 = aRelationship().build();
     Relationship relMock2 = aRelationship().build();
     Node nodeMock = aNode().withARelationShip(relMock1).andRelationship(relMock2).build();
@@ -1286,8 +1261,6 @@ public class Neo4JStorageTest {
   public void deleteDomainEntityThrowsANoSuchEntityExceptionWhenTheEntityCannotBeFound() throws Exception {
     // setup
     anEmptySearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
-    dbMockCreatesTransaction(transactionMock);
-
     try {
       // action
       instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, new Change());
