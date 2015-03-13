@@ -8,6 +8,7 @@ import static org.neo4j.helpers.collection.IteratorUtil.asIterable;
 
 import java.util.List;
 
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -76,6 +77,12 @@ public class NodeMockBuilder {
 
   private void addRelationship(Relationship relationship) {
     relationships.add(relationship);
+  }
+
+  public Node createdBy(GraphDatabaseService dbMock) {
+    Node node = this.build();
+    when(dbMock.createNode()).thenReturn(node);
+    return node;
   }
 
 }
