@@ -66,7 +66,6 @@ public class Neo4JStorageTest {
 
   private static final String PID = "pid";
   private static final Class<Relationship> RELATIONSHIP_TYPE = Relationship.class;
-  private static final Class<Node> NODE_TYPE = Node.class;
   private static final String RELATION_TYPE_ID = "typeId";
   private static final String RELATION_TARGET_ID = "targetId";
   private static final String RELATION_SOURCE_ID = "sourceId";
@@ -86,7 +85,6 @@ public class Neo4JStorageTest {
   private static final Label SYSTEM_ENTITY_LABEL = DynamicLabel.label(TypeNames.getInternalName(SYSTEM_ENTITY_TYPE));
   private static final Label RELATION_TYPE_LABEL = DynamicLabel.label(RELATION_TYPE_NAME);
 
-  private Node nodeMock;
   private SubADomainEntity domainEntity;
   private TestSystemEntityWrapper systemEntity;
   private static final String ID = "id";
@@ -102,7 +100,6 @@ public class Neo4JStorageTest {
   public void setUp() throws Exception {
     domainEntity = new SubADomainEntity();
     systemEntity = new TestSystemEntityWrapper();
-    nodeMock = mock(NODE_TYPE);
     setupDBTransaction();
     setupEntityConverterFactory();
 
@@ -127,6 +124,7 @@ public class Neo4JStorageTest {
   @Test
   public void addDomainEntitySavesTheProjectVersionAndThePrimitiveAndReturnsTheId() throws Exception {
     // setup
+    Node nodeMock = aNode().build();
     dbMockCreatesNode(nodeMock);
     idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
 
@@ -158,6 +156,7 @@ public class Neo4JStorageTest {
   @Test(expected = StorageException.class)
   public void addDomainEntityRollsBackTheTransactionAndThrowsAStorageExceptionWhenTheDomainEntityConverterThrowsAConversionException() throws Exception {
     // setup
+    Node nodeMock = aNode().build();
     dbMockCreatesNode(nodeMock);
 
     idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
@@ -515,6 +514,7 @@ public class Neo4JStorageTest {
 
   @Test
   public void addSystemEntitySavesTheSystemAsNodeAndReturnsItsId() throws Exception {
+    Node nodeMock = aNode().build();
     dbMockCreatesNode(nodeMock);
     idGeneratorMockCreatesIDFor(SYSTEM_ENTITY_TYPE, ID);
 
@@ -548,6 +548,7 @@ public class Neo4JStorageTest {
 
   @Test(expected = StorageException.class)
   public void addSystemEntityRollsBackTheTransactionAndThrowsStorageExceptionObjectrapperThrowsAConversionException() throws Exception {
+    Node nodeMock = aNode().build();
     dbMockCreatesNode(nodeMock);
 
     NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(SYSTEM_ENTITY_TYPE);
@@ -1047,7 +1048,6 @@ public class Neo4JStorageTest {
         .andNode(nodeWithThirdRevision)//
         .foundInDB(dbMock);
 
-    when(nodeMock.getProperty(REVISION_PROPERTY_NAME)).thenReturn(SECOND_REVISION);
     NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);
 
     domainEntity.setId(ID);
