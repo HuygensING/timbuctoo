@@ -3,7 +3,10 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.DomainEntityMatcher.likeDomainEntity;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.FoundNodesBuilder.foundNode;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.FoundNodesBuilder.noNodeIsFoundFor;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.Neo4JStorage.RELATIONSHIP_ID_INDEX;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeMockBuilder.node;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipTypeMatcher.likeRelationshipType;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.TestSystemEntityWrapperMatcher.likeTestSystemEntityWrapper;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -45,13 +48,11 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.IndexHits;
 import org.neo4j.graphdb.index.IndexManager;
 import org.neo4j.graphdb.index.RelationshipIndex;
-import org.neo4j.helpers.collection.Iterables;
 import org.neo4j.helpers.collection.IteratorUtil;
 
 import test.model.BaseDomainEntity;
@@ -784,34 +785,18 @@ public class Neo4JStorageTest {
   }
 
   private void oneNodeIsFound(Label label, String id, Node nodeToBeFound) {
-    List<Node> nodes = Lists.newArrayList(nodeToBeFound);
-
-    ResourceIterator<Node> nodeIterator = IteratorUtil.asResourceIterator(nodes.iterator());
-
-    nodesFound(label, nodeIterator, id);
+    foundNode(node(nodeToBeFound).withLabel(label).withId(id)).inDB(dbMock);
   }
 
   private void noNodeIsFound(Label label, String id) {
-    List<Node> emptyList = Lists.newArrayList();
-    ResourceIterator<Node> nodeIterator = IteratorUtil.asResourceIterator(emptyList.iterator());
-
-    nodesFound(label, nodeIterator, id);
+    noNodeIsFoundFor(label, id).inDB(dbMock);
   }
 
   private void multipleNodesAreFound(Label label, String id, Node node1, Node node2, Node node3) {
-    List<Node> nodesList = Lists.newArrayList(node1, node2, node3);
-
-    ResourceIterator<Node> nodeIterator = IteratorUtil.asResourceIterator(nodesList.iterator());
-
-    nodesFound(label, nodeIterator, id);
-  }
-
-  private void nodesFound(Label label, ResourceIterator<Node> nodeIterator, String id) {
-    Iterable<Node> nodes = IteratorUtil.asIterable(nodeIterator);
-
-    ResourceIterable<Node> foundNodes = Iterables.asResourceIterable(nodes);
-
-    when(dbMock.findNodesByLabelAndProperty(label, ID_PROPERTY_NAME, id)).thenReturn(foundNodes);
+    foundNode(node(node1).withId(id).withLabel(label)) //
+        .andNode(node(node2).withId(id).withLabel(label)) //
+        .andNode(node(node3).withId(id).withLabel(label)) //
+        .inDB(dbMock);
   }
 
   @Test(expected = StorageException.class)
