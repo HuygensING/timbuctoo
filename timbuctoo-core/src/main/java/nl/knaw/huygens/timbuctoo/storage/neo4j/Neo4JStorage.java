@@ -390,7 +390,7 @@ public class Neo4JStorage implements Storage {
       } catch (ConversionException e) {
         transaction.failure();
         throw e;
-      } catch (IllegalAccessException | IllegalArgumentException | InstantiationException e) {
+      } catch (IllegalArgumentException | InstantiationException e) {
         transaction.failure();
         throw new StorageException(e);
       }
@@ -417,7 +417,7 @@ public class Neo4JStorage implements Storage {
       } catch (ConversionException e) {
         transaction.failure();
         throw e;
-      } catch (IllegalAccessException | IllegalArgumentException | InstantiationException e) {
+      } catch (IllegalArgumentException | InstantiationException e) {
         transaction.failure();
         throw new StorageException(e);
       }

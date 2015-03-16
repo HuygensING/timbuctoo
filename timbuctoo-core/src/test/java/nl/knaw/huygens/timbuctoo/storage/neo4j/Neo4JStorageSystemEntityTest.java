@@ -152,22 +152,13 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
 
   @Test(expected = StorageException.class)
   public void getEntityThrowsStorageExceptionWhenEntityInstantiatorThrowsAnInstantiationException() throws Exception {
-    getEntityThrowsStorageExceptionWhenEntityInstantiatorThrowsAnException(InstantiationException.class);
-  }
-
-  @Test(expected = StorageException.class)
-  public void getEntityThrowsStorageExceptionWhenEntityInstantiatorThrowsAnIllegalAccessException() throws Exception {
-    getEntityThrowsStorageExceptionWhenEntityInstantiatorThrowsAnException(IllegalAccessException.class);
-  }
-
-  private void getEntityThrowsStorageExceptionWhenEntityInstantiatorThrowsAnException(Class<? extends Exception> exceptionToThrow) throws Exception {
     // setup
     Node nodeMock = aNode().build();
     aSearchResult().forLabel(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL).andId(ID) //
         .withNode(nodeMock) //
         .foundInDB(dbMock);
 
-    doThrow(exceptionToThrow).when(entityInstantiatorMock).createInstanceOf(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE);
+    doThrow(InstantiationException.class).when(entityInstantiatorMock).createInstanceOf(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE);
 
     try {
       // action

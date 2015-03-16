@@ -462,21 +462,12 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
 
   @Test(expected = StorageException.class)
   public void getEntityForRelationThrowsStorageExceptionWhenEntityInstantiatorThrowsAnInstantiationException() throws Exception {
-    getEntityForRelationThrowsStorageExceptionWhenEntityInstantiatorThrowsAnException(InstantiationException.class);
-  }
-
-  @Test(expected = StorageException.class)
-  public void getEntityForRelationThrowsStorageExceptionWhenEntityInstantiatorThrowsAnIllegalAccessException() throws Exception {
-    getEntityForRelationThrowsStorageExceptionWhenEntityInstantiatorThrowsAnException(IllegalAccessException.class);
-  }
-
-  private void getEntityForRelationThrowsStorageExceptionWhenEntityInstantiatorThrowsAnException(Class<? extends Exception> exceptionToThrow) throws Exception {
     // setup
     RelationshipIndex indexMock = aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
         .containsForId(ID)//
         .relationship(aRelationship().build())//
         .foundInDB(dbMock);
-    doThrow(exceptionToThrow).when(entityInstantiatorMock).createInstanceOf(Neo4JStorageRelationTest.RELATION_TYPE);
+    doThrow(InstantiationException.class).when(entityInstantiatorMock).createInstanceOf(Neo4JStorageRelationTest.RELATION_TYPE);
 
     try {
       // action
