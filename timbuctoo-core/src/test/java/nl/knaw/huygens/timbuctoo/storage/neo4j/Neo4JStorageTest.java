@@ -18,27 +18,16 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 
 import test.model.BaseDomainEntity;
-import test.model.TestSystemEntityWrapper;
-import test.model.projecta.SubADomainEntity;
-import test.model.projecta.SubARelation;
 
-public class Neo4JStorageTest {
+public abstract class Neo4JStorageTest {
 
-  protected static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
   protected static final Class<BaseDomainEntity> PRIMITIVE_DOMAIN_ENTITY_TYPE = BaseDomainEntity.class;
-  protected static final Class<TestSystemEntityWrapper> SYSTEM_ENTITY_TYPE = TestSystemEntityWrapper.class;
-  protected static final Class<SubARelation> RELATION_TYPE = SubARelation.class;
-
   protected static final String PRIMITIVE_DOMAIN_ENTITY_NAME = TypeNames.getInternalName(PRIMITIVE_DOMAIN_ENTITY_TYPE);
+  protected static final Label PRIMITIVE_DOMAIN_ENTITY_LABEL = DynamicLabel.label(PRIMITIVE_DOMAIN_ENTITY_NAME);
 
   protected static final int FIRST_REVISION = 1;
   protected static final int SECOND_REVISION = 2;
   protected static final int THIRD_REVISION = 3;
-  protected static final int FOURTH_REVISION = 4;
-  protected static final Label DOMAIN_ENTITY_LABEL = DynamicLabel.label(TypeNames.getInternalName(DOMAIN_ENTITY_TYPE));
-  protected static final Label PRIMITIVE_DOMAIN_ENTITY_LABEL = DynamicLabel.label(PRIMITIVE_DOMAIN_ENTITY_NAME);
-  protected static final Label SYSTEM_ENTITY_LABEL = DynamicLabel.label(TypeNames.getInternalName(SYSTEM_ENTITY_TYPE));
-
   protected static final String ID = "id";
 
   protected GraphDatabaseService dbMock;

@@ -19,26 +19,32 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
 import org.junit.Test;
 import org.mockito.InOrder;
+import org.neo4j.graphdb.DynamicLabel;
+import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
 import test.model.TestSystemEntityWrapper;
 
 public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
+  private static final Class<TestSystemEntityWrapper> SYSTEM_ENTITY_TYPE = TestSystemEntityWrapper.class;
+  private static final Label SYSTEM_ENTITY_LABEL = DynamicLabel.label(TypeNames.getInternalName(SYSTEM_ENTITY_TYPE));
+
   @Test
   public void addSystemEntitySavesTheSystemAsNodeAndReturnsItsId() throws Exception {
     Node nodeMock = aNode().createdBy(dbMock);
-    idGeneratorMockCreatesIDFor(SYSTEM_ENTITY_TYPE, ID);
+    idGeneratorMockCreatesIDFor(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE, ID);
 
-    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(SYSTEM_ENTITY_TYPE);
+    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE);
     // action
-    String actualId = instance.addSystemEntity(SYSTEM_ENTITY_TYPE, aSystemEntity().build());
+    String actualId = instance.addSystemEntity(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE, aSystemEntity().build());
 
     // verify
     InOrder inOrder = inOrder(dbMock, transactionMock, systemEntityConverterMock);
@@ -58,14 +64,14 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
   public void addSystemEntityRollsBackTheTransactionAndThrowsStorageExceptionObjectrapperThrowsAConversionException() throws Exception {
     Node nodeMock = aNode().createdBy(dbMock);
 
-    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(SYSTEM_ENTITY_TYPE);
+    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE);
 
     TestSystemEntityWrapper systemEntity = aSystemEntity().build();
     doThrow(ConversionException.class).when(systemEntityConverterMock).addValuesToPropertyContainer(nodeMock, systemEntity);
 
     try {
       // action
-      instance.addSystemEntity(SYSTEM_ENTITY_TYPE, systemEntity);
+      instance.addSystemEntity(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE, systemEntity);
     } finally {
       // verify
       verify(dbMock).beginTx();
@@ -78,23 +84,23 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
   @Test
   public void getEntityReturnsTheItemWhenFound() throws Exception {
     Node nodeMock2 = aNode().build();
-    aSearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID) //
+    aSearchResult().forLabel(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL).andId(ID) //
         .withNode(nodeMock2) //
         .foundInDB(dbMock);
 
     TestSystemEntityWrapper systemEntity = aSystemEntity().build();
-    when(entityInstantiatorMock.createInstanceOf(SYSTEM_ENTITY_TYPE)).thenReturn(systemEntity);
-    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(SYSTEM_ENTITY_TYPE);
+    when(entityInstantiatorMock.createInstanceOf(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE)).thenReturn(systemEntity);
+    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE);
 
     // action
-    TestSystemEntityWrapper actualEntity = instance.getEntity(SYSTEM_ENTITY_TYPE, ID);
+    TestSystemEntityWrapper actualEntity = instance.getEntity(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE, ID);
 
     // verify
     assertThat(actualEntity, is(equalTo(systemEntity)));
 
     InOrder inOrder = inOrder(dbMock, propertyContainerConverterFactoryMock, systemEntityConverterMock, transactionMock);
     inOrder.verify(dbMock).beginTx();
-    inOrder.verify(dbMock).findNodesByLabelAndProperty(SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+    inOrder.verify(dbMock).findNodesByLabelAndProperty(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
     inOrder.verify(systemEntityConverterMock).addValuesToEntity(systemEntity, nodeMock2);
     inOrder.verify(transactionMock).success();
     verifyNoMoreInteractions(dbMock, systemEntityConverterMock);
@@ -103,15 +109,15 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
   @Test
   public void getEntityReturnsNullIfNoItemIsFound() throws Exception {
     // setup
-    anEmptySearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
+    anEmptySearchResult().forLabel(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
 
     // action
-    TestSystemEntityWrapper actualEntity = instance.getEntity(SYSTEM_ENTITY_TYPE, ID);
+    TestSystemEntityWrapper actualEntity = instance.getEntity(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE, ID);
 
     // verify
     assertThat(actualEntity, is(nullValue()));
 
-    verify(dbMock).findNodesByLabelAndProperty(SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+    verify(dbMock).findNodesByLabelAndProperty(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
     verify(transactionMock).success();
     verifyZeroInteractions(propertyContainerConverterFactoryMock);
   }
@@ -120,24 +126,24 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
   public void getEntityThrowsStorageExceptionWhenEntityWrapperThrowsAConversionException() throws Exception {
     // setup
     Node nodeMock = aNode().build();
-    aSearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID)//
+    aSearchResult().forLabel(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL).andId(ID)//
         .withNode(nodeMock)//
         .foundInDB(dbMock);
 
     TestSystemEntityWrapper systemEntity = aSystemEntity().build();
 
-    when(entityInstantiatorMock.createInstanceOf(SYSTEM_ENTITY_TYPE)).thenReturn(systemEntity);
-    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(SYSTEM_ENTITY_TYPE);
+    when(entityInstantiatorMock.createInstanceOf(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE)).thenReturn(systemEntity);
+    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE);
     doThrow(ConversionException.class).when(systemEntityConverterMock).addValuesToEntity(systemEntity, nodeMock);
 
     try {
       // action
-      instance.getEntity(SYSTEM_ENTITY_TYPE, ID);
+      instance.getEntity(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE, ID);
     } finally {
       // verify
       InOrder inOrder = inOrder(dbMock, propertyContainerConverterFactoryMock, systemEntityConverterMock, transactionMock);
       inOrder.verify(dbMock).beginTx();
-      inOrder.verify(dbMock).findNodesByLabelAndProperty(SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+      inOrder.verify(dbMock).findNodesByLabelAndProperty(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
       inOrder.verify(systemEntityConverterMock).addValuesToEntity(systemEntity, nodeMock);
       inOrder.verify(transactionMock).failure();
       verifyNoMoreInteractions(dbMock, systemEntityConverterMock);
@@ -157,20 +163,20 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
   private void getEntityThrowsStorageExceptionWhenEntityInstantiatorThrowsAnException(Class<? extends Exception> exceptionToThrow) throws Exception {
     // setup
     Node nodeMock = aNode().build();
-    aSearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID) //
+    aSearchResult().forLabel(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL).andId(ID) //
         .withNode(nodeMock) //
         .foundInDB(dbMock);
 
-    doThrow(exceptionToThrow).when(entityInstantiatorMock).createInstanceOf(SYSTEM_ENTITY_TYPE);
+    doThrow(exceptionToThrow).when(entityInstantiatorMock).createInstanceOf(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE);
 
     try {
       // action
-      instance.getEntity(SYSTEM_ENTITY_TYPE, ID);
+      instance.getEntity(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE, ID);
     } finally {
       // verify
       InOrder inOrder = inOrder(dbMock, propertyContainerConverterFactoryMock, transactionMock);
       inOrder.verify(dbMock).beginTx();
-      inOrder.verify(dbMock).findNodesByLabelAndProperty(SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+      inOrder.verify(dbMock).findNodesByLabelAndProperty(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
       inOrder.verify(transactionMock).failure();
       verifyNoMoreInteractions(dbMock);
     }
@@ -180,11 +186,11 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
   public void updateSystemEntityRetrievesTheEntityAndUpdatesTheData() throws Exception {
     // setup
     Node nodeMock = aNode().withRevision(FIRST_REVISION).build();
-    aSearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID) //
+    aSearchResult().forLabel(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL).andId(ID) //
         .withNode(nodeMock) //
         .foundInDB(dbMock);
 
-    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(SYSTEM_ENTITY_TYPE);
+    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE);
 
     Change oldModified = new Change();
     TestSystemEntityWrapper systemEntity = aSystemEntity() //
@@ -193,12 +199,12 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
         .withModified(oldModified)//
         .build();
 
-    instance.updateSystemEntity(SYSTEM_ENTITY_TYPE, systemEntity);
+    instance.updateSystemEntity(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE, systemEntity);
 
     // verify
     InOrder inOrder = inOrder(dbMock, systemEntityConverterMock, transactionMock);
     inOrder.verify(dbMock).beginTx();
-    inOrder.verify(dbMock).findNodesByLabelAndProperty(SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+    inOrder.verify(dbMock).findNodesByLabelAndProperty(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
     inOrder.verify(systemEntityConverterMock).updatePropertyContainer(argThat(equalTo(nodeMock)), //
         argThat(likeTestSystemEntityWrapper() //
             .withAModifiedValueNotEqualTo(oldModified) //
@@ -216,7 +222,7 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
     // setup
     int newerRevision = 2;
     Node nodeMock = aNode().withRevision(newerRevision).build();
-    aSearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID) //
+    aSearchResult().forLabel(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL).andId(ID) //
         .withNode(nodeMock) //
         .foundInDB(dbMock);
 
@@ -227,11 +233,11 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
 
     try {
       // action
-      instance.updateSystemEntity(SYSTEM_ENTITY_TYPE, systemEntity);
+      instance.updateSystemEntity(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE, systemEntity);
     } finally {
       // verify
       verify(dbMock).beginTx();
-      verify(dbMock).findNodesByLabelAndProperty(SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+      verify(dbMock).findNodesByLabelAndProperty(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
       verify(transactionMock).failure();
       verifyZeroInteractions(propertyContainerConverterFactoryMock);
     }
@@ -241,7 +247,7 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
   public void updateSystemEntityThrowsAnUpdateExceptionIfTheNodeIsOlderThanTheEntityWithTheUpdatedInformation() throws Exception {
     // setup
     Node nodeMock = aNode().withRevision(FIRST_REVISION).build();
-    aSearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID) //
+    aSearchResult().forLabel(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL).andId(ID) //
         .withNode(nodeMock) //
         .foundInDB(dbMock);
 
@@ -252,11 +258,11 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
 
     try {
       // action
-      instance.updateSystemEntity(SYSTEM_ENTITY_TYPE, systemEntity);
+      instance.updateSystemEntity(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE, systemEntity);
     } finally {
       // verify
       verify(dbMock).beginTx();
-      verify(dbMock).findNodesByLabelAndProperty(SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+      verify(dbMock).findNodesByLabelAndProperty(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
       verify(transactionMock).failure();
       verifyZeroInteractions(propertyContainerConverterFactoryMock);
     }
@@ -265,7 +271,7 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
   @Test(expected = UpdateException.class)
   public void updateSystemEntityThrowsAnUpdateExceptionIfTheNodeCannotBeFound() throws Exception {
     // setup
-    anEmptySearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
+    anEmptySearchResult().forLabel(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
 
     TestSystemEntityWrapper systemEntity = aSystemEntity() //
         .withId(ID)//
@@ -273,11 +279,11 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
 
     try {
       // action
-      instance.updateSystemEntity(SYSTEM_ENTITY_TYPE, systemEntity);
+      instance.updateSystemEntity(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE, systemEntity);
     } finally {
       // verify
       verify(dbMock).beginTx();
-      verify(dbMock).findNodesByLabelAndProperty(SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+      verify(dbMock).findNodesByLabelAndProperty(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
       verify(transactionMock).failure();
       verifyZeroInteractions(propertyContainerConverterFactoryMock);
     }
@@ -287,11 +293,11 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
   public void updateSystemEntityThrowsAConversionExceptionWhenTheEntityCovnerterThrowsOne() throws Exception {
     // setup
     Node nodeMock = aNode().withRevision(FIRST_REVISION).build();
-    aSearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID) //
+    aSearchResult().forLabel(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL).andId(ID) //
         .withNode(nodeMock) //
         .foundInDB(dbMock);
 
-    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(SYSTEM_ENTITY_TYPE);
+    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE);
 
     Change oldModified = new Change();
     TestSystemEntityWrapper systemEntity = aSystemEntity() //
@@ -304,11 +310,11 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
 
     try {
       // action
-      instance.updateSystemEntity(SYSTEM_ENTITY_TYPE, systemEntity);
+      instance.updateSystemEntity(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE, systemEntity);
     } finally {
       // verify
       verify(dbMock).beginTx();
-      verify(dbMock).findNodesByLabelAndProperty(SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+      verify(dbMock).findNodesByLabelAndProperty(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
       verify(systemEntityConverterMock).updatePropertyContainer(argThat(equalTo(nodeMock)), //
           argThat(likeTestSystemEntityWrapper() //
               .withAModifiedValueNotEqualTo(oldModified) //
@@ -328,12 +334,12 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
     Relationship relMock2 = aRelationship().build();
     Node nodeMock2 = aNode().withARelationShip(relMock1).andRelationship(relMock2).build();
 
-    aSearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID) //
+    aSearchResult().forLabel(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL).andId(ID) //
         .withNode(nodeMock2) //
         .foundInDB(dbMock);
 
     // action
-    int numDeleted = instance.deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID);
+    int numDeleted = instance.deleteSystemEntity(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE, ID);
 
     // verify
     assertThat(numDeleted, is(equalTo(1)));
@@ -347,14 +353,14 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
   @Test
   public void deleteSystemEntityReturns0WhenTheEntityCannotBeFound() throws Exception {
     // setup
-    anEmptySearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
+    anEmptySearchResult().forLabel(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
 
     // action
-    int numDeleted = instance.deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID);
+    int numDeleted = instance.deleteSystemEntity(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE, ID);
     // verify
     assertThat(numDeleted, is(equalTo(0)));
     verify(dbMock).beginTx();
-    verify(dbMock).findNodesByLabelAndProperty(SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+    verify(dbMock).findNodesByLabelAndProperty(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
     verify(transactionMock).success();
   }
 }
