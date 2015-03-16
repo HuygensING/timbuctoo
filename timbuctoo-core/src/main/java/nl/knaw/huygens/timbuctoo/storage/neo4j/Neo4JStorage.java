@@ -21,6 +21,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
+import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -45,15 +46,17 @@ public class Neo4JStorage implements Storage {
   private final EntityInstantiator entityInstantiator;
   private final IdGenerator idGenerator;
   private final TypeRegistry typeRegistry;
+  private final NodeDuplicator nodeDuplicator;
 
   @Inject
   public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, EntityInstantiator entityInstantiator, IdGenerator idGenerator,
-      TypeRegistry typeRegistry) {
+      TypeRegistry typeRegistry, NodeDuplicator nodeDuplicator) {
     this.db = db;
     this.propertyContainerConverterFactory = propertyContainerConverterFactory;
     this.entityInstantiator = entityInstantiator;
     this.idGenerator = idGenerator;
     this.typeRegistry = typeRegistry;
+    this.nodeDuplicator = nodeDuplicator;
   }
 
   @Override
@@ -259,8 +262,45 @@ public class Neo4JStorage implements Storage {
 
   @Override
   public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) throws StorageException {
-    // TODO Auto-generated method stub
+    try (Transaction transaction = db.beginTx()) {
+      Node node = getLatestById(type, id);
 
+      if (node == null) {
+        transaction.failure();
+        throw new NoSuchEntityException(type, id);
+      }
+
+      try {
+        T entity = entityInstantiator.createInstanceOf(type);
+
+        if (!StringUtils.isBlank(entity.getPid())) {
+          transaction.failure();
+          throw new IllegalStateException(String.format("%s with %s already has a pid: %s", type.getSimpleName(), id, pid));
+        }
+
+        NodeConverter<T> converter = propertyContainerConverterFactory.createForType(type);
+        converter.addValuesToEntity(entity, node);
+
+        updateNodeWithPID(type, pid, node, entity, converter);
+
+        // FIXME functionality should be part of the repository class.
+        nodeDuplicator.saveDuplicate(node);
+
+        transaction.success();
+      } catch (InstantiationException e) {
+        transaction.failure();
+        throw new StorageException(e);
+      }
+
+    }
+
+  }
+
+  private <T extends DomainEntity> void updateNodeWithPID(Class<T> type, String pid, Node node, T entity, NodeConverter<T> converter) throws ConversionException {
+
+    entity.setPid(pid);
+
+    converter.addValuesToPropertyContainer(node, entity);
   }
 
   @Override

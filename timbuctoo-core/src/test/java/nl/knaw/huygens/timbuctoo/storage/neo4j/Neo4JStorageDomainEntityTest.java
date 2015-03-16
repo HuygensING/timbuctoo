@@ -37,6 +37,7 @@ import test.model.projecta.SubADomainEntity;
 
 public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
 
+  private static final String PID = "pid";
   private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
   private static final Label DOMAIN_ENTITY_LABEL = DynamicLabel.label(TypeNames.getInternalName(DOMAIN_ENTITY_TYPE));
   private static final int FOURTH_REVISION = 4;
@@ -116,7 +117,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
 
     SubADomainEntity domainEntity = aDomainEntity().withId(ID).build();
 
-    NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE);
+    NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE);
     when(entityInstantiatorMock.createInstanceOf(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE)).thenReturn(domainEntity);
 
     // action
@@ -142,7 +143,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
         .withNode(nodeMock) //
         .foundInDB(dbMock);
 
-    NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE);;
+    NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE);;
 
     Change oldModified = new Change();
     SubADomainEntity domainEntity = aDomainEntity() //
@@ -183,7 +184,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
         .andNode(nodeWithThirdRevision)//
         .foundInDB(dbMock);
 
-    NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE);
+    NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE);
 
     Change oldModified = new Change();
     SubADomainEntity domainEntity = aDomainEntity() //
@@ -382,4 +383,82 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
       verifyZeroInteractions(dbMock);
     }
   }
+
+  @Test
+  public void setPIDAddsAPIDToTheNodeAndDuplicatesTheNode() throws InstantiationException, IllegalAccessException, Exception {
+    // setup
+    Node node = aNode().build();
+    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID)//
+        .withNode(node)//
+        .foundInDB(dbMock);
+
+    when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenReturn(aDomainEntity().withId(ID).build());
+    NodeConverter<SubADomainEntity> converterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
+
+    // action
+    instance.setPID(DOMAIN_ENTITY_TYPE, ID, PID);
+
+    InOrder inOrder = inOrder(converterMock, transactionMock, nodeDuplicatorMock);
+    inOrder.verify(converterMock).addValuesToPropertyContainer( //
+        argThat(equalTo(node)), //
+        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE).withId(ID).withPID(PID)));
+    inOrder.verify(nodeDuplicatorMock).saveDuplicate(node);
+    inOrder.verify(transactionMock).success();
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void setPIDThrowsAnIllegalStateExceptionWhenTheEntityAlreadyHasAPID() throws Exception {
+    // setup
+    Node aNodeWithoutPID = aNode().build();
+    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID)//
+        .withNode(aNodeWithoutPID)//
+        .foundInDB(dbMock);
+
+    when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE))//
+        .thenReturn(aDomainEntity().withAPid().build());
+
+    try {
+      // action
+      instance.setPID(DOMAIN_ENTITY_TYPE, ID, PID);
+    } finally {
+      // verify
+      verify(transactionMock).failure();
+    }
+  }
+
+  @Test(expected = StorageException.class)
+  public void setPIDThrowsAStorageExceptionWhenTheEntityDoesNotExist() throws Exception {
+    // setup
+    anEmptySearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
+
+    try {
+      // action
+      instance.setPID(DOMAIN_ENTITY_TYPE, ID, PID);
+    } finally {
+      // verify
+      verify(transactionMock).failure();
+    }
+
+  }
+
+  @Test(expected = StorageException.class)
+  public void setPIDThrowsAStorageExceptionWhenTheEntityCannotBeInstatiated() throws Exception {
+
+    // setup
+    Node aNodeWithoutPID = aNode().build();
+    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID)//
+        .withNode(aNodeWithoutPID)//
+        .foundInDB(dbMock);
+
+    when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenThrow(new InstantiationException());
+
+    try {
+      // action
+      instance.setPID(DOMAIN_ENTITY_TYPE, ID, PID);
+    } finally {
+      // verify
+      verify(transactionMock).failure();
+    }
+  }
+
 }

@@ -110,7 +110,7 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
         .withNode(relationTypeNodeMock) //
         .foundInDB(dbMock);
 
-    NodeConverter<RelationType> relationTypeConverter = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(RELATIONTYPE_TYPE);
+    NodeConverter<RelationType> relationTypeConverter = propertyContainerConverterFactoryHasANodeConverterTypeFor(RELATIONTYPE_TYPE);
     RelationType relationType = new RelationType();
     relationType.setRegularName(name);
 

@@ -46,4 +46,5 @@ public class DomainEntityBuilder {
     this.modified = modified;
     return this;
   }
+
 }

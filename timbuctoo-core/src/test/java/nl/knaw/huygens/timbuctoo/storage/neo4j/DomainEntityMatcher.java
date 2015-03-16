@@ -84,4 +84,15 @@ public class DomainEntityMatcher<T extends DomainEntity> extends CompositeMatche
 
     return this;
   }
+
+  public DomainEntityMatcher<T> withPID(String pid) {
+    addMatcher(new PropertyEqualtityMatcher<T, String>("pid", pid) {
+
+      @Override
+      protected String getItemValue(T item) {
+        return item.getPid();
+      }
+    });
+    return this;
+  }
 }

@@ -42,7 +42,7 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
     Node nodeMock = aNode().createdBy(dbMock);
     idGeneratorMockCreatesIDFor(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE, ID);
 
-    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE);
+    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE);
     // action
     String actualId = instance.addSystemEntity(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE, aSystemEntity().build());
 
@@ -64,7 +64,7 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
   public void addSystemEntityRollsBackTheTransactionAndThrowsStorageExceptionObjectrapperThrowsAConversionException() throws Exception {
     Node nodeMock = aNode().createdBy(dbMock);
 
-    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE);
+    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE);
 
     TestSystemEntityWrapper systemEntity = aSystemEntity().build();
     doThrow(ConversionException.class).when(systemEntityConverterMock).addValuesToPropertyContainer(nodeMock, systemEntity);
@@ -90,7 +90,7 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
 
     TestSystemEntityWrapper systemEntity = aSystemEntity().build();
     when(entityInstantiatorMock.createInstanceOf(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE)).thenReturn(systemEntity);
-    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE);
+    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE);
 
     // action
     TestSystemEntityWrapper actualEntity = instance.getEntity(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE, ID);
@@ -133,7 +133,7 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
     TestSystemEntityWrapper systemEntity = aSystemEntity().build();
 
     when(entityInstantiatorMock.createInstanceOf(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE)).thenReturn(systemEntity);
-    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE);
+    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE);
     doThrow(ConversionException.class).when(systemEntityConverterMock).addValuesToEntity(systemEntity, nodeMock);
 
     try {
@@ -181,7 +181,7 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
         .withNode(nodeMock) //
         .foundInDB(dbMock);
 
-    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE);
+    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE);
 
     Change oldModified = new Change();
     TestSystemEntityWrapper systemEntity = aSystemEntity() //
@@ -288,7 +288,7 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
         .withNode(nodeMock) //
         .foundInDB(dbMock);
 
-    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE);
+    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE);
 
     Change oldModified = new Change();
     TestSystemEntityWrapper systemEntity = aSystemEntity() //

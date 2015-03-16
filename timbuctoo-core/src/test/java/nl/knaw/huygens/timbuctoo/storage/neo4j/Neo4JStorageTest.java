@@ -36,18 +36,20 @@ public abstract class Neo4JStorageTest {
   protected Transaction transactionMock;
   protected EntityInstantiator entityInstantiatorMock;
   protected IdGenerator idGeneratorMock;
+  protected NodeDuplicator nodeDuplicatorMock;
 
   @Before
   public void setUp() throws Exception {
     setupDBTransaction();
     setupEntityConverterFactory();
 
+    nodeDuplicatorMock = mock(NodeDuplicator.class);
     entityInstantiatorMock = mock(EntityInstantiator.class);
     idGeneratorMock = mock(IdGenerator.class);
 
     TypeRegistry typeRegistry = TypeRegistry.getInstance().init("timbuctoo.model test.model");
 
-    instance = new Neo4JStorage(dbMock, propertyContainerConverterFactoryMock, entityInstantiatorMock, idGeneratorMock, typeRegistry);
+    instance = new Neo4JStorage(dbMock, propertyContainerConverterFactoryMock, entityInstantiatorMock, idGeneratorMock, typeRegistry, nodeDuplicatorMock);
   }
 
   private void setupDBTransaction() {
@@ -60,7 +62,7 @@ public abstract class Neo4JStorageTest {
     propertyContainerConverterFactoryMock = mock(PropertyContainerConverterFactory.class);
   }
 
-  protected <T extends Entity> NodeConverter<T> propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(Class<T> type) {
+  protected <T extends Entity> NodeConverter<T> propertyContainerConverterFactoryHasANodeConverterTypeFor(Class<T> type) {
     @SuppressWarnings("unchecked")
     NodeConverter<T> nodeConverter = mock(NodeConverter.class);
     when(propertyContainerConverterFactoryMock.createForType(argThat(equalTo(type)))).thenReturn(nodeConverter);
