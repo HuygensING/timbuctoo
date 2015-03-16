@@ -1,12 +1,12 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.DomainEntityBuilder.aDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.DomainEntityMatcher.likeDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.Neo4JStorage.RELATIONSHIP_ID_INDEX;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeMockBuilder.aNode;
-import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipBuilder.aRelationship;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipIndexMockBuilder.aRelationshipIndexForName;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipMockBuilder.aRelationship;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipTypeMatcher.likeRelationshipType;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SearchResultBuilder.aSearchResult;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SearchResultBuilder.anEmptySearchResult;
@@ -28,9 +28,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-
-import java.util.List;
-
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -50,19 +47,13 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.index.IndexHits;
-import org.neo4j.graphdb.index.IndexManager;
 import org.neo4j.graphdb.index.RelationshipIndex;
-import org.neo4j.helpers.collection.IteratorUtil;
 
 import test.model.BaseDomainEntity;
 import test.model.TestSystemEntityWrapper;
 import test.model.projecta.SubADomainEntity;
 import test.model.projecta.SubARelation;
-
-import com.google.common.collect.Lists;
 
 public class Neo4JStorageTest {
 
@@ -204,7 +195,7 @@ public class Neo4JStorageTest {
 
     relationTypeWithRegularNameExists(name);
 
-    RelationshipIndex indexMock = dbHasRelationshipIndexWithName(RELATIONSHIP_ID_INDEX);
+    RelationshipIndex indexMock = aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).foundInDB(dbMock);
     Relationship relationShipMock = mock(RELATIONSHIP_TYPE);
 
     RelationshipConverter<SubARelation> relationConverterMock = propertyContainerFactoryHasCompositeRelationshipConverterFor(RELATION_TYPE);
@@ -583,12 +574,10 @@ public class Neo4JStorageTest {
         .andNode(nodeWithThirdRevision)//
         .foundInDB(dbMock);
 
-    SubADomainEntity domainEntity = aDomainEntity().build();
+    SubADomainEntity domainEntity = aDomainEntity().withId(ID).build();
 
     NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);
     when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenReturn(domainEntity);
-
-    domainEntity.setId(ID);
 
     // action
     SubADomainEntity actualEntity = instance.getEntity(DOMAIN_ENTITY_TYPE, ID);
@@ -607,8 +596,11 @@ public class Neo4JStorageTest {
   @Test
   public void getEntityForRelationReturnsTheRelationThatBelongsToTheId() throws Exception {
     // setup
-    Relationship relationshipMock = mock(Relationship.class);
-    RelationshipIndex indexMock = oneRelationshipIsFoundInIndexWithName(RELATIONSHIP_ID_INDEX, relationshipMock);
+    Relationship relationshipMock = aRelationship().build();
+    RelationshipIndex indexMock = aRelationshipIndexForName(RELATIONSHIP_ID_INDEX) //
+        .containsForId(ID) //
+        .relationship(relationshipMock) //
+        .foundInDB(dbMock);
     SubARelation relation = new SubARelation();
 
     RelationshipConverter<SubARelation> relationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
@@ -629,10 +621,14 @@ public class Neo4JStorageTest {
   @Test
   public void getEntityForRelationReturnsTheLatestIfMultipleAreFound() throws Exception {
     // setup
-    Relationship relationshipFirstRevision = createRelationshipWithRevision(FIRST_REVISION);
-    Relationship relationshipSecondRevision = createRelationshipWithRevision(SECOND_REVISION);
-    Relationship relationshipThirdRevision = createRelationshipWithRevision(THIRD_REVISION);
-    RelationshipIndex indexMock = multipleRelationshipsAreFoundInIndexWithName(RELATIONSHIP_ID_INDEX, relationshipFirstRevision, relationshipThirdRevision, relationshipSecondRevision);
+    Relationship relationshipFirstRevision = aRelationship().withRevision(FIRST_REVISION).build();
+    Relationship relationshipSecondRevision = aRelationship().withRevision(SECOND_REVISION).build();
+    Relationship relationshipThirdRevision = aRelationship().withRevision(THIRD_REVISION).build();
+    RelationshipIndex indexMock = aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
+        .relationship(relationshipFirstRevision) //
+        .andRelationship(relationshipThirdRevision) //
+        .andRelationship(relationshipSecondRevision) //
+        .foundInDB(dbMock);
     SubARelation relation = new SubARelation();
 
     RelationshipConverter<SubARelation> relationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
@@ -650,16 +646,12 @@ public class Neo4JStorageTest {
     verify(transactionMock).success();
   }
 
-  private Relationship createRelationshipWithRevision(int revision) {
-    Relationship relationship = mock(RELATIONSHIP_TYPE);
-    when(relationship.getProperty(REVISION_PROPERTY_NAME)).thenReturn(revision);
-    return relationship;
-  }
-
   @Test
   public void getEntityForRelationReturnsNullIfTheRelationIsNotFound() throws Exception {
     // setup
-    RelationshipIndex indexMock = noRelationsAreFoundInIndexWithName(RELATIONSHIP_ID_INDEX);
+    RelationshipIndex indexMock = aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
+        .containsNothingForId(ID)//
+        .foundInDB(dbMock);
 
     // action
     SubARelation actualRelation = instance.getEntity(RELATION_TYPE, ID);
@@ -676,8 +668,11 @@ public class Neo4JStorageTest {
   @Test(expected = ConversionException.class)
   public void getEntityForRelationThrowsAConversionExceptionWhenTheRelationConverterDoes() throws Exception {
     // setup
-    Relationship relationshipMock = mock(Relationship.class);
-    RelationshipIndex indexMock = oneRelationshipIsFoundInIndexWithName(RELATIONSHIP_ID_INDEX, relationshipMock);
+    Relationship relationshipMock = aRelationship().build();
+    RelationshipIndex indexMock = aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
+        .containsForId(ID)//
+        .relationship(relationshipMock)//
+        .foundInDB(dbMock);
     SubARelation relation = new SubARelation();
 
     RelationshipConverter<SubARelation> relationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
@@ -709,8 +704,10 @@ public class Neo4JStorageTest {
 
   private void getEntityForRelationThrowsStorageExceptionWhenEntityInstantiatorThrowsAnException(Class<? extends Exception> exceptionToThrow) throws Exception {
     // setup
-    Relationship relationshipMock = mock(Relationship.class);
-    RelationshipIndex indexMock = oneRelationshipIsFoundInIndexWithName(RELATIONSHIP_ID_INDEX, relationshipMock);
+    RelationshipIndex indexMock = aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
+        .containsForId(ID)//
+        .relationship(aRelationship().build())//
+        .foundInDB(dbMock);
     doThrow(exceptionToThrow).when(entityInstantiatorMock).createInstanceOf(RELATION_TYPE);
 
     try {
@@ -725,53 +722,6 @@ public class Neo4JStorageTest {
       verifyNoMoreInteractions(dbMock);
       verifyZeroInteractions(propertyContainerConverterFactoryMock);
     }
-  }
-
-  private RelationshipIndex multipleRelationshipsAreFoundInIndexWithName(String relationShipIdIndex, Relationship relationshipFirstRevision, Relationship relationshipThirdRevision,
-      Relationship relationshipSecondRevision) {
-    RelationshipIndex index = dbHasRelationshipIndexWithName(relationShipIdIndex);
-    relationshipsAreFoundInIndex(index, relationshipFirstRevision, relationshipThirdRevision, relationshipSecondRevision);
-    return index;
-  }
-
-  private RelationshipIndex noRelationsAreFoundInIndexWithName(String indexName) {
-    RelationshipIndex indexMock = dbHasRelationshipIndexWithName(indexName);
-    noRelationshipisFoundInIndex(indexMock);
-    return indexMock;
-  }
-
-  private void noRelationshipisFoundInIndex(RelationshipIndex indexMock) {
-    List<Relationship> relationships = Lists.newArrayList();
-    ResourceIterator<Relationship> relationshipIterator = IteratorUtil.asResourceIterator(relationships.iterator());
-    @SuppressWarnings("unchecked")
-    IndexHits<Relationship> indexHitsMock = mock(IndexHits.class);
-    when(indexHitsMock.iterator()).thenReturn(relationshipIterator);
-    when(indexMock.get(ID_PROPERTY_NAME, ID)).thenReturn(indexHitsMock);
-  }
-
-  private RelationshipIndex oneRelationshipIsFoundInIndexWithName(String indexName, Relationship relationshipMock) {
-    RelationshipIndex indexMock = dbHasRelationshipIndexWithName(indexName);
-    relationshipsAreFoundInIndex(indexMock, relationshipMock);
-    return indexMock;
-  }
-
-  private void relationshipsAreFoundInIndex(RelationshipIndex indexMock, Relationship... relationshipMocks) {
-    List<Relationship> relationships = Lists.newArrayList(relationshipMocks);
-    ResourceIterator<Relationship> relationshipIterator = IteratorUtil.asResourceIterator(relationships.iterator());
-    @SuppressWarnings("unchecked")
-    IndexHits<Relationship> indexHitsMock = mock(IndexHits.class);
-    when(indexHitsMock.iterator()).thenReturn(relationshipIterator);
-    when(indexMock.get(ID_PROPERTY_NAME, ID)).thenReturn(indexHitsMock);
-  }
-
-  private RelationshipIndex dbHasRelationshipIndexWithName(String indexName) {
-    RelationshipIndex indexMock = mock(RelationshipIndex.class);
-    IndexManager indexManagerMock = mock(IndexManager.class);
-
-    when(indexManagerMock.forRelationships(indexName)).thenReturn(indexMock);
-    when(dbMock.index()).thenReturn(indexManagerMock);
-
-    return indexMock;
   }
 
   @Test
