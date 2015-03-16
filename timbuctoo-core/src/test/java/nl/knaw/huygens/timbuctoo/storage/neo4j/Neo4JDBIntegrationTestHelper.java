@@ -33,7 +33,7 @@ public class Neo4JDBIntegrationTestHelper implements DBIntegrationTestHelper {
   @Override
   public Storage createStorage(TypeRegistry typeRegistry) throws ModelException {
 
-    return new Neo4JStorage(db, propertyContainerConverterFactory, entityInstantiator, idGenerator, typeRegistry, new NodeDuplicator());
+    return new Neo4JStorage(db, propertyContainerConverterFactory, entityInstantiator, idGenerator, typeRegistry, new NodeDuplicator(db));
   }
 
 }

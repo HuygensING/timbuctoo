@@ -307,7 +307,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
     // setup
     Relationship relMock1 = aRelationship().build();
     Relationship relMock2 = aRelationship().build();
-    Node nodeMock = aNode().withARelationShip(relMock1).andRelationship(relMock2).build();
+    Node nodeMock = aNode().withOutgoingRelationShip(relMock1).andOutgoingRelationship(relMock2).build();
 
     aSearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(ID) //
         .withNode(nodeMock) //
@@ -329,15 +329,15 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
     // setup
     Relationship relMock1 = aRelationship().build();
     Relationship relMock2 = aRelationship().build();
-    Node nodeMock = aNode().withARelationShip(relMock1).andRelationship(relMock2).build();
+    Node nodeMock = aNode().withOutgoingRelationShip(relMock1).andOutgoingRelationship(relMock2).build();
 
     Relationship relMock3 = aRelationship().build();
     Relationship relMock4 = aRelationship().build();
-    Node nodeMock2 = aNode().withARelationShip(relMock3).andRelationship(relMock4).build();
+    Node nodeMock2 = aNode().withOutgoingRelationShip(relMock3).andOutgoingRelationship(relMock4).build();
 
     Relationship relMock5 = aRelationship().build();
     Relationship relMock6 = aRelationship().build();
-    Node nodeMock3 = aNode().withARelationShip(relMock5).andRelationship(relMock6).build();
+    Node nodeMock3 = aNode().withOutgoingRelationShip(relMock5).andOutgoingRelationship(relMock6).build();
 
     aSearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(ID) //
         .withNode(nodeMock) //

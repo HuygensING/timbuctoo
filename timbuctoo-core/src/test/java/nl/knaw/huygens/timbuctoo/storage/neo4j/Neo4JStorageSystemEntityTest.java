@@ -323,7 +323,7 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
     // setup
     Relationship relMock1 = aRelationship().build();
     Relationship relMock2 = aRelationship().build();
-    Node nodeMock2 = aNode().withARelationShip(relMock1).andRelationship(relMock2).build();
+    Node nodeMock2 = aNode().withOutgoingRelationShip(relMock1).andOutgoingRelationship(relMock2).build();
 
     aSearchResult().forLabel(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL).andId(ID) //
         .withNode(nodeMock2) //
