@@ -1,8 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.storage.neo4j.DomainEntityBuilder.aDomainEntity;
-import static nl.knaw.huygens.timbuctoo.storage.neo4j.DomainEntityMatcher.likeDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeMockBuilder.aNode;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipMockBuilder.aRelationship;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SearchResultBuilder.aSearchResult;
@@ -14,7 +12,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -25,10 +22,8 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
@@ -49,8 +44,8 @@ import test.model.projecta.SubARelation;
 
 public class Neo4JStorageTest {
 
-  private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
-  private static final Class<BaseDomainEntity> PRIMITIVE_DOMAIN_ENTITY_TYPE = BaseDomainEntity.class;
+  protected static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
+  protected static final Class<BaseDomainEntity> PRIMITIVE_DOMAIN_ENTITY_TYPE = BaseDomainEntity.class;
   private static final Class<TestSystemEntityWrapper> SYSTEM_ENTITY_TYPE = TestSystemEntityWrapper.class;
   protected static final Class<SubARelation> RELATION_TYPE = SubARelation.class;
 
@@ -59,8 +54,8 @@ public class Neo4JStorageTest {
   protected static final int FIRST_REVISION = 1;
   protected static final int SECOND_REVISION = 2;
   protected static final int THIRD_REVISION = 3;
-  private static final int FOURTH_REVISION = 4;
-  private static final Label DOMAIN_ENTITY_LABEL = DynamicLabel.label(TypeNames.getInternalName(DOMAIN_ENTITY_TYPE));
+  protected static final int FOURTH_REVISION = 4;
+  protected static final Label DOMAIN_ENTITY_LABEL = DynamicLabel.label(TypeNames.getInternalName(DOMAIN_ENTITY_TYPE));
   protected static final Label PRIMITIVE_DOMAIN_ENTITY_LABEL = DynamicLabel.label(PRIMITIVE_DOMAIN_ENTITY_NAME);
   private static final Label SYSTEM_ENTITY_LABEL = DynamicLabel.label(TypeNames.getInternalName(SYSTEM_ENTITY_TYPE));
 
@@ -96,68 +91,6 @@ public class Neo4JStorageTest {
     propertyContainerConverterFactoryMock = mock(PropertyContainerConverterFactory.class);
   }
 
-  @Test
-  public void addDomainEntitySavesTheProjectVersionAndThePrimitiveAndReturnsTheId() throws Exception {
-    // setup
-    Node nodeMock = aNode().createdBy(dbMock);
-    idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
-
-    NodeConverter<? super SubADomainEntity> compositeConverter = propertyContainerConverterFactoryHasCompositeConverterFor(DOMAIN_ENTITY_TYPE);
-    SubADomainEntity domainEntity = aDomainEntity().build();
-
-    // action
-    String actualId = instance.addDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
-
-    // verify
-    verify(dbMock).beginTx();
-    verify(dbMock).createNode();
-    verify(compositeConverter).addValuesToPropertyContainer( //
-        argThat(equalTo(nodeMock)), // 
-        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
-            .withId(actualId) //
-            .withACreatedValue() //
-            .withAModifiedValue() //
-            .withRevision(FIRST_REVISION)));
-    verify(transactionMock).success();
-  }
-
-  private <T extends DomainEntity> NodeConverter<? super T> propertyContainerConverterFactoryHasCompositeConverterFor(Class<T> type) {
-    @SuppressWarnings("unchecked")
-    NodeConverter<? super T> converter = mock(NodeConverter.class);
-    doReturn(converter).when(propertyContainerConverterFactoryMock).createCompositeForType(type);
-    return converter;
-  }
-
-  @Test(expected = StorageException.class)
-  public void addDomainEntityRollsBackTheTransactionAndThrowsAStorageExceptionWhenTheDomainEntityConverterThrowsAConversionException() throws Exception {
-    // setup
-    Node nodeMock = aNode().createdBy(dbMock);
-
-    idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
-
-    SubADomainEntity domainEntity = aDomainEntity().build();
-    NodeConverter<? super SubADomainEntity> compositeConverter = propertyContainerConverterFactoryHasCompositeConverterFor(DOMAIN_ENTITY_TYPE);
-    doThrow(ConversionException.class).when(compositeConverter).addValuesToPropertyContainer(nodeMock, domainEntity);
-
-    try {
-      // action
-      instance.addDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
-    } finally {
-      // verify
-      verify(dbMock).beginTx();
-      verify(dbMock).createNode();
-      verify(compositeConverter).addValuesToPropertyContainer( //
-          argThat(equalTo(nodeMock)), // 
-          argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
-              .withId(ID) //
-              .withACreatedValue() //
-              .withAModifiedValue() //
-              .withRevision(FIRST_REVISION)));
-      verify(transactionMock).failure();
-      verifyNoMoreInteractions(compositeConverter);
-    }
-  }
-
   protected <T extends Entity> NodeConverter<T> propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(Class<T> type) {
     @SuppressWarnings("unchecked")
     NodeConverter<T> nodeConverter = mock(NodeConverter.class);
@@ -188,7 +121,7 @@ public class Neo4JStorageTest {
     verifyNoMoreInteractions(systemEntityConverterMock);
   }
 
-  private void idGeneratorMockCreatesIDFor(Class<? extends Entity> type, String id) {
+  protected void idGeneratorMockCreatesIDFor(Class<? extends Entity> type, String id) {
     when(idGeneratorMock.nextIdFor(type)).thenReturn(id);
   }
 
@@ -236,36 +169,6 @@ public class Neo4JStorageTest {
     inOrder.verify(systemEntityConverterMock).addValuesToEntity(systemEntity, nodeMock2);
     inOrder.verify(transactionMock).success();
     verifyNoMoreInteractions(dbMock, systemEntityConverterMock);
-  }
-
-  @Test
-  public void getEntityReturnsTheLatestIfMoreThanOneItemIsFound() throws Exception {
-    // setup
-    Node nodeWithThirdRevision = aNode().withRevision(THIRD_REVISION).build();
-
-    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
-        .withNode(aNode().withRevision(FIRST_REVISION).build()) //
-        .andNode(aNode().withRevision(SECOND_REVISION).build()) //
-        .andNode(nodeWithThirdRevision)//
-        .foundInDB(dbMock);
-
-    SubADomainEntity domainEntity = aDomainEntity().withId(ID).build();
-
-    NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);
-    when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenReturn(domainEntity);
-
-    // action
-    SubADomainEntity actualEntity = instance.getEntity(DOMAIN_ENTITY_TYPE, ID);
-
-    // verify
-    assertThat(actualEntity, is(equalTo(domainEntity)));
-
-    InOrder inOrder = inOrder(dbMock, propertyContainerConverterFactoryMock, domainEntityConverterMock, transactionMock);
-    inOrder.verify(dbMock).beginTx();
-    inOrder.verify(dbMock).findNodesByLabelAndProperty(DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
-    inOrder.verify(domainEntityConverterMock).addValuesToEntity(domainEntity, nodeWithThirdRevision);
-    inOrder.verify(transactionMock).success();
-    verifyNoMoreInteractions(dbMock, domainEntityConverterMock);
   }
 
   @Test
@@ -490,174 +393,6 @@ public class Neo4JStorageTest {
   }
 
   @Test
-  public void updateDomainEntityRetrievesTheNodeAndUpdatesItsValues() throws Exception {
-    // setup
-    Node nodeMock = aNode().withRevision(FIRST_REVISION).build();
-
-    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
-        .withNode(nodeMock) //
-        .foundInDB(dbMock);
-
-    NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);;
-
-    Change oldModified = new Change();
-    SubADomainEntity domainEntity = aDomainEntity() //
-        .withId(ID) //
-        .withRev(FIRST_REVISION)//
-        .withAPid()//
-        .withModified(oldModified)//
-        .build();
-
-    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
-
-    // verify
-    InOrder inOrder = inOrder(dbMock, domainEntityConverterMock, transactionMock);
-    inOrder.verify(dbMock).beginTx();
-    inOrder.verify(dbMock).findNodesByLabelAndProperty(DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
-    inOrder.verify(domainEntityConverterMock).updatePropertyContainer(argThat(equalTo(nodeMock)), //
-        argThat(likeDomainEntity(SubADomainEntity.class) //
-            .withAModifiedValueNotEqualTo(oldModified) //
-            .withRevision(SECOND_REVISION) //
-            .withoutAPID()));
-    inOrder.verify(domainEntityConverterMock).updateModifiedAndRev(argThat(equalTo(nodeMock)), //
-        argThat(likeDomainEntity(SubADomainEntity.class) //
-            .withAModifiedValueNotEqualTo(oldModified) //
-            .withRevision(SECOND_REVISION) //
-            .withoutAPID()));
-    inOrder.verify(transactionMock).success();
-    verifyNoMoreInteractions(dbMock, domainEntityConverterMock);
-  }
-
-  @Test
-  public void updateDomainEntityUpdatesTheLatestIfMultipleAreFound() throws Exception {
-    // setup
-    Node nodeWithThirdRevision = aNode().withRevision(THIRD_REVISION).build();
-
-    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
-        .withNode(aNode().withRevision(FIRST_REVISION).build()) //
-        .andNode(aNode().withRevision(SECOND_REVISION).build()) //
-        .andNode(nodeWithThirdRevision)//
-        .foundInDB(dbMock);
-
-    NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasAnEntityWrapperTypeFor(DOMAIN_ENTITY_TYPE);
-
-    Change oldModified = new Change();
-    SubADomainEntity domainEntity = aDomainEntity() //
-        .withId(ID) //
-        .withRev(THIRD_REVISION)//
-        .withAPid()//
-        .withModified(oldModified)//
-        .build();
-
-    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
-
-    // verify
-    InOrder inOrder = inOrder(dbMock, domainEntityConverterMock, transactionMock);
-    inOrder.verify(dbMock).beginTx();
-    inOrder.verify(dbMock).findNodesByLabelAndProperty(DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
-    inOrder.verify(domainEntityConverterMock).updatePropertyContainer(argThat(equalTo(nodeWithThirdRevision)), //
-        argThat(likeDomainEntity(SubADomainEntity.class) //
-            .withAModifiedValueNotEqualTo(oldModified) //
-            .withRevision(FOURTH_REVISION) //
-            .withoutAPID()));
-    inOrder.verify(domainEntityConverterMock).updateModifiedAndRev(argThat(equalTo(nodeWithThirdRevision)), //
-        argThat(likeDomainEntity(SubADomainEntity.class) //
-            .withAModifiedValueNotEqualTo(oldModified) //
-            .withRevision(FOURTH_REVISION) //
-            .withoutAPID()));
-    inOrder.verify(transactionMock).success();
-    verifyNoMoreInteractions(dbMock, domainEntityConverterMock);
-  }
-
-  @Test(expected = UpdateException.class)
-  public void updateDomainEntityThrowsAnUpdateExceptionWhenTheEntityCannotBeFound() throws Exception {
-    // setup
-    anEmptySearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
-
-    Change oldModified = new Change();
-    SubADomainEntity domainEntity = aDomainEntity() //
-        .withId(ID) //
-        .withRev(FIRST_REVISION)//
-        .withAPid()//
-        .withModified(oldModified)//
-        .build();
-
-    try {
-      // action
-      instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
-    } finally {
-      // verify
-      InOrder inOrder = inOrder(dbMock, transactionMock);
-      inOrder.verify(dbMock).beginTx();
-      inOrder.verify(dbMock).findNodesByLabelAndProperty(DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
-      inOrder.verify(transactionMock).failure();
-      verifyZeroInteractions(propertyContainerConverterFactoryMock);
-      verifyNoMoreInteractions(dbMock);
-    }
-  }
-
-  @Test(expected = UpdateException.class)
-  public void updateDomainEntityThrowsAnUpdateExceptionWhenRevOfTheNodeIsHigherThanThatOfTheEntity() throws Exception {
-    // setup
-    Node nodeMock = aNode().withRevision(SECOND_REVISION).build();
-
-    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
-        .withNode(nodeMock) //
-        .foundInDB(dbMock);
-
-    Change oldModified = new Change();
-    SubADomainEntity domainEntity = aDomainEntity() //
-        .withId(ID) //
-        .withRev(FIRST_REVISION)//
-        .withAPid()//
-        .withModified(oldModified)//
-        .build();
-
-    try {
-      // action
-      instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
-    } finally {
-      // verify
-      InOrder inOrder = inOrder(dbMock, transactionMock);
-      inOrder.verify(dbMock).beginTx();
-      inOrder.verify(dbMock).findNodesByLabelAndProperty(DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
-      inOrder.verify(transactionMock).failure();
-      verifyZeroInteractions(propertyContainerConverterFactoryMock);
-      verifyNoMoreInteractions(dbMock);
-    }
-  }
-
-  @Test(expected = UpdateException.class)
-  public void updateDomainEntityThrowsAnUpdateExceptionWhenRevOfTheNodeIsLowerThanThatOfTheEntity() throws Exception {
-    // setup
-    Node nodeMock = aNode().withRevision(SECOND_REVISION).build();
-    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
-        .withNode(nodeMock) //
-        .foundInDB(dbMock);
-
-    Change oldModified = new Change();
-    SubADomainEntity domainEntity = aDomainEntity() //
-        .withId(ID) //
-        .withRev(FIRST_REVISION)//
-        .withAPid()//
-        .withModified(oldModified)//
-        .build();
-
-    try {
-      // action
-      instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, new Change());
-    } finally {
-      // verify
-      InOrder inOrder = inOrder(dbMock, transactionMock);
-      inOrder.verify(dbMock).beginTx();
-      inOrder.verify(dbMock).findNodesByLabelAndProperty(DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
-      inOrder.verify(transactionMock).failure();
-      verifyZeroInteractions(propertyContainerConverterFactoryMock);
-      verifyNoMoreInteractions(dbMock);
-    }
-  }
-
-  @Test
   public void deleteSystemEntityFirstRemovesTheNodesRelationShipsAndThenTheNodeItselfTheDatabase() throws Exception {
     // setup
     Relationship relMock1 = aRelationship().build();
@@ -694,93 +429,11 @@ public class Neo4JStorageTest {
     verify(transactionMock).success();
   }
 
-  @Test
-  public void deleteDomainEntityFirstRemovesTheNodesRelationShipsAndThenTheNodeItselfTheDatabase() throws Exception {
-    // setup
-    Relationship relMock1 = aRelationship().build();
-    Relationship relMock2 = aRelationship().build();
-    Node nodeMock = aNode().withARelationShip(relMock1).andRelationship(relMock2).build();
-
-    aSearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(ID) //
-        .withNode(nodeMock) //
-        .foundInDB(dbMock);
-
-    // action
-    instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, new Change());
-
-    // verify
-    InOrder inOrder = inOrder(dbMock, nodeMock, relMock1, relMock2, transactionMock);
-    inOrder.verify(dbMock).beginTx();
-    verifyNodeAndItsRelationAreDelete(nodeMock, relMock1, relMock2, inOrder);
-    inOrder.verify(transactionMock).success();
-
-  }
-
-  @Test
-  public void deleteDomainEntityRemovesAllTheFoundNodes() throws Exception {
-    // setup
-    Relationship relMock1 = aRelationship().build();
-    Relationship relMock2 = aRelationship().build();
-    Node nodeMock = aNode().withARelationShip(relMock1).andRelationship(relMock2).build();
-
-    Relationship relMock3 = aRelationship().build();
-    Relationship relMock4 = aRelationship().build();
-    Node nodeMock2 = aNode().withARelationShip(relMock3).andRelationship(relMock4).build();
-
-    Relationship relMock5 = aRelationship().build();
-    Relationship relMock6 = aRelationship().build();
-    Node nodeMock3 = aNode().withARelationShip(relMock5).andRelationship(relMock6).build();
-
-    aSearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(ID) //
-        .withNode(nodeMock) //
-        .andNode(nodeMock2) //
-        .andNode(nodeMock3) //
-        .foundInDB(dbMock);
-
-    // action
-    instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, new Change());
-
-    // verify
-    InOrder inOrder = inOrder(dbMock, nodeMock, relMock1, relMock2, nodeMock2, relMock3, relMock4, nodeMock3, relMock5, relMock6, transactionMock);
-    inOrder.verify(dbMock).beginTx();
-    verifyNodeAndItsRelationAreDelete(nodeMock, relMock1, relMock2, inOrder);
-    verifyNodeAndItsRelationAreDelete(nodeMock2, relMock3, relMock4, inOrder);
-    verifyNodeAndItsRelationAreDelete(nodeMock3, relMock5, relMock6, inOrder);
-    inOrder.verify(transactionMock).success();
-  }
-
-  private void verifyNodeAndItsRelationAreDelete(Node node, Relationship relMock1, Relationship relMock2, InOrder inOrder) {
+  protected void verifyNodeAndItsRelationAreDelete(Node node, Relationship relMock1, Relationship relMock2, InOrder inOrder) {
     inOrder.verify(node).getRelationships();
     inOrder.verify(relMock1).delete();
     inOrder.verify(relMock2).delete();
     inOrder.verify(node).delete();
-  }
-
-  @Test(expected = NoSuchEntityException.class)
-  public void deleteDomainEntityThrowsANoSuchEntityExceptionWhenTheEntityCannotBeFound() throws Exception {
-    // setup
-    anEmptySearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
-    try {
-      // action
-      instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, new Change());
-    } finally {
-      // verify
-      verify(dbMock).beginTx();
-      verify(dbMock).findNodesByLabelAndProperty(PRIMITIVE_DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
-      verify(transactionMock).failure();
-    }
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void deleteThrowsAnIllegalArgumentExceptionWhenTheEntityIsNotAPrimitiveDomainEntity() throws Exception {
-
-    try {
-      // action
-      instance.deleteDomainEntity(DOMAIN_ENTITY_TYPE, ID, new Change());
-    } finally {
-      // verify
-      verifyZeroInteractions(dbMock);
-    }
   }
 
 }
