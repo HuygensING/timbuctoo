@@ -368,9 +368,7 @@ public class Neo4JStorageTest {
     } finally {
       // verify
       verify(dbMock).beginTx();
-      verify(dbMock).findNodesByLabelAndProperty(PRIMITIVE_DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, RELATION_SOURCE_ID);
-      verify(dbMock).findNodesByLabelAndProperty(PRIMITIVE_DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, RELATION_TARGET_ID);
-      verify(dbMock).findNodesByLabelAndProperty(RELATION_TYPE_LABEL, ID_PROPERTY_NAME, RELATION_TYPE_ID);
+      verify(entityInstantiatorMock).createInstanceOf(RELATIONTYPE_TYPE);
       verify(transactionMock).failure();
       verifyZeroInteractions(relationConverterMock, sourceNodeMock);
     }
@@ -414,9 +412,7 @@ public class Neo4JStorageTest {
     } finally {
       // verify
       verify(dbMock).beginTx();
-      verify(dbMock).findNodesByLabelAndProperty(PRIMITIVE_DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, RELATION_SOURCE_ID);
-      verify(dbMock).findNodesByLabelAndProperty(PRIMITIVE_DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, RELATION_TARGET_ID);
-      verify(dbMock).findNodesByLabelAndProperty(RELATION_TYPE_LABEL, ID_PROPERTY_NAME, RELATION_TYPE_ID);
+      verify(relationTypeConverter).addValuesToEntity(any(RelationType.class), any(Node.class));
       verify(transactionMock).failure();
       verifyZeroInteractions(relationConverterMock, sourceNodeMock);
     }
@@ -515,7 +511,6 @@ public class Neo4JStorageTest {
     // verify
     InOrder inOrder = inOrder(dbMock, transactionMock, systemEntityConverterMock);
     inOrder.verify(dbMock).beginTx();
-    inOrder.verify(dbMock).createNode();
     inOrder.verify(systemEntityConverterMock).addValuesToPropertyContainer(//
         argThat(equalTo(nodeMock)), // 
         argThat(likeTestSystemEntityWrapper() //
@@ -546,7 +541,6 @@ public class Neo4JStorageTest {
     } finally {
       // verify
       verify(dbMock).beginTx();
-      verify(dbMock).createNode();
       verify(systemEntityConverterMock).addValuesToPropertyContainer(nodeMock, systemEntity);
       verifyNoMoreInteractions(systemEntityConverterMock);
       verify(transactionMock).failure();
