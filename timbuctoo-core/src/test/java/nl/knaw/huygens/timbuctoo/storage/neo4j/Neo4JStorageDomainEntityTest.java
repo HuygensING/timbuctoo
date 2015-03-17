@@ -65,7 +65,30 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
             .withId(actualId) //
             .withACreatedValue() //
             .withAModifiedValue() //
-            .withRevision(FIRST_REVISION)));
+            .withRevision(FIRST_REVISION)//
+            .withoutAPID()));
+    verify(transactionMock).success();
+  }
+
+  @Test
+  public void addDomainEntityRemovesThePIDBeforeSaving() throws Exception {
+    // setup
+    Node nodeMock = aNode().createdBy(dbMock);
+    idGeneratorMockCreatesIDFor(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE, ID);
+
+    NodeConverter<? super SubADomainEntity> compositeConverter = propertyContainerConverterFactoryHasCompositeConverterFor(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE);
+    SubADomainEntity domainEntityWithAPID = aDomainEntity().withAPid().build();
+
+    // action
+    instance.addDomainEntity(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntityWithAPID, new Change());
+
+    // verify
+    verify(dbMock).beginTx();
+    verify(dbMock).createNode();
+    verify(compositeConverter).addValuesToPropertyContainer( //
+        argThat(equalTo(nodeMock)), // 
+        argThat(likeDomainEntity(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE) //
+            .withoutAPID()));
     verify(transactionMock).success();
   }
 

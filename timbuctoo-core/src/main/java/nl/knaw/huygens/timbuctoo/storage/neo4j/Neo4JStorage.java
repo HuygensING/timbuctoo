@@ -188,6 +188,7 @@ public class Neo4JStorage implements Storage {
 
   private <T extends DomainEntity> String addRegularDomainEntity(Class<T> type, T entity) throws ConversionException {
     try (Transaction transaction = db.beginTx()) {
+      removePID(entity);
       String id = addAdministrativeValues(type, entity);
       Node node = db.createNode();
 
