@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
+import static nl.knaw.huygens.timbuctoo.model.DomainEntity.PID;
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static org.mockito.Mockito.mock;
@@ -8,6 +9,8 @@ import static org.neo4j.helpers.collection.IteratorUtil.asIterable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -16,20 +19,20 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 public class NodeMockBuilder {
   private final List<Label> labels;
   private List<Relationship> outGoingRelationships;
-  private List<String> propertyKeys;
-  private String id;
-  private int revision = 0;
   private List<Relationship> incommingRelationships;
+
+  private final Map<String, Object> properties;
 
   private NodeMockBuilder() {
     labels = Lists.newArrayList();
     incommingRelationships = Lists.newArrayList();
     outGoingRelationships = Lists.newArrayList();
-    propertyKeys = Lists.newArrayList();
+    properties = Maps.newHashMap();
   }
 
   public static NodeMockBuilder aNode() {
@@ -42,22 +45,22 @@ public class NodeMockBuilder {
   }
 
   public NodeMockBuilder withId(String id) {
-    propertyKeys.add(ID_PROPERTY_NAME);
-    this.id = id;
+    addProperty(ID_PROPERTY_NAME, id);
     return this;
   }
 
-  public Node build() {
-    Node node = mock(Node.class);
-    when(node.getProperty(ID_PROPERTY_NAME)).thenReturn(id);
-    when(node.getProperty(REVISION_PROPERTY_NAME)).thenReturn(revision);
-    when(node.getLabels()).thenReturn(asIterable(getLabels().iterator()));
-    when(node.getRelationships(Direction.OUTGOING)).thenReturn(asIterable(getOutgoingRelationships().iterator()));
-    when(node.getRelationships(Direction.INCOMING)).thenReturn(asIterable(getIncommingRelationships().iterator()));
-    when(node.getRelationships()).thenReturn(getAllRelationships());
-    when(node.getPropertyKeys()).thenReturn(asIterable(propertyKeys.iterator()));
+  public NodeMockBuilder withAPID() {
+    this.addProperty(PID, "pid");
+    return this;
+  }
 
-    return node;
+  public NodeMockBuilder withRevision(int revision) {
+    this.addProperty(REVISION_PROPERTY_NAME, revision);
+    return this;
+  }
+
+  private void addProperty(String propertyName, Object value) {
+    this.properties.put(propertyName, value);
   }
 
   private List<Relationship> getIncommingRelationships() {
@@ -104,14 +107,31 @@ public class NodeMockBuilder {
   }
 
   private void addIncommingRelationship(Relationship relationship) {
-
     getIncommingRelationships().add(relationship);
   }
 
-  public NodeMockBuilder withRevision(int revision) {
-    propertyKeys.add(REVISION_PROPERTY_NAME);
-    this.revision = revision;
-    return this;
+  public Node build() {
+    Node node = mock(Node.class);
+
+    addPropertiesToNode(node, properties);
+
+    when(node.getLabels()).thenReturn(asIterable(getLabels().iterator()));
+    when(node.getRelationships(Direction.OUTGOING)).thenReturn(asIterable(getOutgoingRelationships().iterator()));
+    when(node.getRelationships(Direction.INCOMING)).thenReturn(asIterable(getIncommingRelationships().iterator()));
+    when(node.getRelationships()).thenReturn(getAllRelationships());
+
+    return node;
+  }
+
+  private void addPropertiesToNode(Node node, Map<String, Object> properties) {
+    when(node.getPropertyKeys()).thenReturn(asIterable(properties.keySet().iterator()));
+    for (Entry<String, Object> entry : properties.entrySet()) {
+      String key = entry.getKey();
+
+      when(node.getProperty(key)).thenReturn(entry.getValue());
+      when(node.hasProperty(key)).thenReturn(true);
+    }
+
   }
 
   public Node createdBy(GraphDatabaseService dbMock) {

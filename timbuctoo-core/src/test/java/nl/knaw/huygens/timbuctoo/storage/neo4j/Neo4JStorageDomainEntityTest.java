@@ -465,7 +465,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
 
   @Test
   public void getRevisionReturnsTheDomainEntityWithTheRequestedRevision() throws Exception {
-    Node nodeWithSameRevision = aNode().withRevision(FIRST_REVISION).build();
+    Node nodeWithSameRevision = aNode().withRevision(FIRST_REVISION).withAPID().build();
     aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).withNode(nodeWithSameRevision).foundInDB(dbMock);
 
     when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenReturn(new SubADomainEntity());
@@ -477,6 +477,22 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
     // verify
     assertThat(entity, is(instanceOf(SubADomainEntity.class)));
     verify(converter).addValuesToEntity(entity, nodeWithSameRevision);
+    verify(transactionMock).success();
+  }
+
+  @Test
+  public void getRevisionReturnsNullIfTheFoundEntityHasNoPID() throws Exception {
+    Node nodeWithSameRevision = aNode().withRevision(FIRST_REVISION).build();
+    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).withNode(nodeWithSameRevision).foundInDB(dbMock);
+
+    when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenReturn(new SubADomainEntity());
+    propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
+
+    // action
+    SubADomainEntity entity = instance.getRevision(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION);
+
+    // verify
+    assertThat(entity, is(nullValue()));
     verify(transactionMock).success();
   }
 
@@ -496,7 +512,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
   @Test
   public void getRevisionReturnsNullIfTheRevisionCannotBeFound() throws Exception {
     // setup
-    Node nodeWithDifferentRevision = aNode().withRevision(SECOND_REVISION).build();
+    Node nodeWithDifferentRevision = aNode().withRevision(SECOND_REVISION).withAPID().build();
     aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).withNode(nodeWithDifferentRevision).foundInDB(dbMock);
 
     // action
@@ -510,7 +526,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
   @Test(expected = StorageException.class)
   public void getRevisionThrowsAStorageExceptionIfTheEntityCannotBeInstantiated() throws Exception {
     // setup
-    Node nodeWithSameRevision = aNode().withRevision(FIRST_REVISION).build();
+    Node nodeWithSameRevision = aNode().withRevision(FIRST_REVISION).withAPID().build();
     aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).withNode(nodeWithSameRevision).foundInDB(dbMock);
 
     when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenThrow(new InstantiationException());

@@ -106,7 +106,6 @@ public class Neo4JStorageIntegrationTest extends StorageIntegrationTest {
   }
 
   @Test
-  @Ignore
   @Override
   public void setPIDGivesTheDomainEntityAPidAndCreatesAVersion() throws Exception {
     // TODO Auto-generated method stub

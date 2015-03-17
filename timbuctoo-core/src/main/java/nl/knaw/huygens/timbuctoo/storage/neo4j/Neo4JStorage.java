@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
+import static nl.knaw.huygens.timbuctoo.model.DomainEntity.PID;
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 
@@ -605,7 +606,9 @@ public class Neo4JStorage implements Storage {
       }
     }
 
-    return nodeWithRevision;
+    // Needed to mimic the separate collections used in the Mongo storage.
+    // getRevision only returns objects with a PID.
+    return nodeWithRevision != null && nodeWithRevision.hasProperty(PID) ? nodeWithRevision : null;
   }
 
   @Override
