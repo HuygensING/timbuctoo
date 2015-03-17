@@ -58,6 +58,8 @@ import test.variation.model.projecta.ProjectARelation;
 import com.google.common.collect.Lists;
 
 public abstract class StorageIntegrationTest {
+  private static final String RELATION_TARGET_TYPE = "person";
+  private static final String RELATION_SOURCE_TYPE = RELATION_TARGET_TYPE;
   private static final String RELATIONTYPE_TYPE_STRING = "relationtype";
   private static final boolean NOT_ACCEPTED = false;
   private static final Class<ProjectARelation> PROJECT_RELATION_TYPE = ProjectARelation.class;
@@ -241,49 +243,6 @@ public abstract class StorageIntegrationTest {
             .withGender(GENDER)//
             .withBirthDate(BIRTH_DATE)//
             .withDeathDate(DEATH_DATE));
-  }
-
-  @Test
-  public void addRelationAddsARelationAndItsPrimitiveVersieToTheDatabase() throws Exception {
-    String sourceId = addDefaultProjectAPerson();
-    String targetId = addDefaultProjectAPerson();
-    String typeId = addRelationType();
-
-    String sourceType = "person";
-    String targetType = "person";
-
-    ProjectARelation relation = new ProjectARelation();
-    relation.setAccepted(ACCEPTED);
-    relation.setSourceId(sourceId);
-    relation.setSourceType(sourceType);
-    relation.setTargetId(targetId);
-    relation.setTargetType(targetType);
-    relation.setTypeId(typeId);
-    relation.setTypeType(RELATIONTYPE_TYPE_STRING);
-
-    String id = instance.addDomainEntity(PROJECT_RELATION_TYPE, relation, CHANGE_TO_SAVE);
-
-    // check if the relation is added
-    assertThat(instance.getEntity(PROJECT_RELATION_TYPE, id), likeRelation()//
-        .withSourceId(sourceId) //
-        .withSourceType(sourceType) //
-        .withTargetId(targetId) //
-        .withTargetType(targetType) //
-        .withTypeId(typeId) //
-        .isAccepted(ACCEPTED));
-    assertThat(instance.getEntity(PRIMITIVE_RELATION_TYPE, id), likeRelation()//
-        .withSourceId(sourceId) //
-        .withSourceType(sourceType) //
-        .withTargetId(targetId) //
-        .withTargetType(targetType) //
-        .withTypeId(typeId) //
-        .isAccepted(ACCEPTED));
-  }
-
-  private String addRelationType() throws StorageException {
-    RelationType relationType = createRelationType(REGULAR_NAME, INVERSE_NAME);
-    String typeId = instance.addSystemEntity(RelationType.class, relationType);
-    return typeId;
   }
 
   @Test
@@ -552,5 +511,106 @@ public abstract class StorageIntegrationTest {
 
     String relationId = instance.addDomainEntity(PROJECT_RELATION_TYPE, relation, CHANGE_TO_SAVE);
     return relationId;
+  }
+
+  /*********************************************************************************
+   * Relation
+   ********************************************************************************/
+  @Test
+  public void addRelationAddsARelationAndItsPrimitiveVersieToTheDatabase() throws Exception {
+    String sourceId = addDefaultProjectAPerson();
+    String targetId = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+
+    String id = addDefaultRelation(sourceId, targetId, typeId);
+
+    // check if the relation is added
+    assertThat(instance.getEntity(PROJECT_RELATION_TYPE, id), likeDefaultRelation(sourceId, targetId, typeId));
+    assertThat(instance.getEntity(PRIMITIVE_RELATION_TYPE, id), likeDefaultPrimitiveRelation(id, sourceId, targetId, typeId));
+  }
+
+  private RelationMatcher likeDefaultPrimitiveRelation(String id, String sourceId, String targetId, String typeId) {
+    return likeRelation()//
+        .withId(id) //
+        .withSourceId(sourceId) //
+        .withSourceType(RELATION_SOURCE_TYPE) //
+        .withTargetId(targetId) //
+        .withTargetType(RELATION_TARGET_TYPE) //
+        .withTypeId(typeId) //
+        .isAccepted(ACCEPTED);
+  }
+
+  private RelationMatcher likeDefaultRelation(String sourceId, String targetId, String typeId) {
+    return likeRelation()//
+        .withSourceId(sourceId) //
+        .withSourceType(RELATION_SOURCE_TYPE) //
+        .withTargetId(targetId) //
+        .withTargetType(RELATION_TARGET_TYPE) //
+        .withTypeId(typeId) //
+        .isAccepted(ACCEPTED);
+  }
+
+  private String addDefaultRelation(String sourceId, String targetId, String typeId) throws StorageException {
+    ProjectARelation relation = new ProjectARelation();
+    relation.setAccepted(ACCEPTED);
+    relation.setSourceId(sourceId);
+    relation.setSourceType(RELATION_SOURCE_TYPE);
+    relation.setTargetId(targetId);
+    relation.setTargetType(RELATION_TARGET_TYPE);
+    relation.setTypeId(typeId);
+    relation.setTypeType(RELATIONTYPE_TYPE_STRING);
+
+    String id = instance.addDomainEntity(PROJECT_RELATION_TYPE, relation, CHANGE_TO_SAVE);
+    return id;
+  }
+
+  private String addRelationType() throws StorageException {
+    RelationType relationType = createRelationType(REGULAR_NAME, INVERSE_NAME);
+    String typeId = instance.addSystemEntity(RelationType.class, relationType);
+    return typeId;
+  }
+
+  @Test
+  public void updateRelationUpdatesTheValuesOfTheRelationAndIncreasesTheRevButDoesNotCreateANewRevision() throws Exception {
+    // setup
+    String sourceId = addDefaultProjectAPerson();
+    String targetId = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+
+    String id = addDefaultRelation(sourceId, targetId, typeId);
+    ProjectARelation relation = instance.getEntity(PROJECT_RELATION_TYPE, id);
+    // assert the relation is stored
+    assertThat(relation, is(notNullValue()));
+
+    int firstRevision = relation.getRev();
+
+    relation.setAccepted(NOT_ACCEPTED);
+
+    // action
+    instance.updateDomainEntity(PROJECT_RELATION_TYPE, relation, UPDATE_CHANGE);
+
+    // verify
+    ProjectARelation updateRelation = instance.getEntity(PROJECT_RELATION_TYPE, id);
+
+    assertThat("Relation is not updated", updateRelation, //
+        is(likeRelation()//
+            .withId(id) //
+            .withSourceId(sourceId) //
+            .withSourceType(RELATION_SOURCE_TYPE) //
+            .withTargetId(targetId) //
+            .withTargetType(RELATION_TARGET_TYPE) //
+            .withTypeId(typeId) //
+            .isAccepted(NOT_ACCEPTED) //
+            .withRev(firstRevision + 1)));
+
+    assertThat("Primitive domain entity should not have changed", //
+        instance.getEntity(PRIMITIVE_RELATION_TYPE, id), likeDefaultPrimitiveRelation(id, sourceId, targetId, typeId));
+
+    assertThat("No revision should be created for version 1",//
+        instance.getRevision(DOMAIN_ENTITY_TYPE, id, firstRevision), is(nullValue()));
+
+    int secondRevision = updateRelation.getRev();
+    assertThat("No revision should be created for version 2",//
+        instance.getRevision(DOMAIN_ENTITY_TYPE, id, secondRevision), is(nullValue()));
   }
 }

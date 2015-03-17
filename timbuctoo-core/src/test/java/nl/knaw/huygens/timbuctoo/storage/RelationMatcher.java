@@ -117,4 +117,26 @@ public class RelationMatcher extends CompositeMatcher<Relation> {
     });
     return this;
   }
+
+  public RelationMatcher withRev(int revision) {
+    addMatcher(new PropertyEqualtityMatcher<Relation, Integer>("rev", revision) {
+
+      @Override
+      protected Integer getItemValue(Relation item) {
+        return item.getRev();
+      }
+    });
+    return this;
+  }
+
+  public RelationMatcher withId(String id) {
+    addMatcher(new PropertyEqualtityMatcher<Relation, String>("id", id) {
+
+      @Override
+      protected String getItemValue(Relation item) {
+        return item.getId();
+      }
+    });
+    return this;
+  }
 }
