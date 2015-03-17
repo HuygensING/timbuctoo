@@ -126,7 +126,6 @@ public class Neo4JStorageIntegrationTest extends StorageIntegrationTest {
     super.updateSystemEntityChangesTheExistingSystemEntity();
   }
 
-  @Ignore
   @Test
   @Override
   public void updateRelationUpdatesTheValuesOfTheRelationAndIncreasesTheRevButDoesNotCreateANewRevision() throws Exception {
