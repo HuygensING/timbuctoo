@@ -7,7 +7,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import static org.neo4j.graphdb.DynamicLabel.label;
 
@@ -166,7 +165,28 @@ public class ExtendableRelationshipConverterTest {
     } finally {
       // verify
       verify(regularPropertyConverterMock).setPropertyContainerProperty(relationshipMock, relation);
-      verifyZeroInteractions(adminPropertyConverterMock, propertyConverterMockToIgnore1, propertyConverterMockToIgnore2);
     }
+  }
+
+  @Test
+  public void updateModifiedAndRevLetTheFieldConvertersSetTheValuesForRevisionAndModified() throws Exception {
+    // setup
+    PropertyConverter modifiedConverterMock = newPropertyConverter().withName(Entity.MODIFIED_PROPERTY_NAME).withType(FieldType.ADMINISTRATIVE).build();
+    PropertyConverter revConverterMock = newPropertyConverter().withName(Entity.REVISION_PROPERTY_NAME).withType(FieldType.ADMINISTRATIVE).build();
+
+    instance.addPropertyConverter(modifiedConverterMock);
+    instance.addPropertyConverter(revConverterMock);
+
+    // action
+    instance.updateModifiedAndRev(relationshipMock, relation);
+
+    // verify
+    verify(modifiedConverterMock).setPropertyContainerProperty(relationshipMock, relation);
+    verify(revConverterMock).setPropertyContainerProperty(relationshipMock, relation);
+
+    verify(adminPropertyConverterMock, never()).setPropertyContainerProperty(relationshipMock, relation);
+    verify(regularPropertyConverterMock, never()).setPropertyContainerProperty(relationshipMock, relation);
+    verify(propertyConverterMockToIgnore1, never()).setPropertyContainerProperty(relationshipMock, relation);
+    verify(propertyConverterMockToIgnore2, never()).setPropertyContainerProperty(relationshipMock, relation);
   }
 }

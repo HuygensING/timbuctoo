@@ -1,8 +1,12 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.MODIFIED_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.Relation;
 
@@ -10,21 +14,21 @@ import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 class ExtendableRelationshipConverter<T extends Relation> implements RelationshipConverter<T>, ExtendablePropertyContainerConverter<Relationship, T> {
 
   private List<String> fieldsToIgnore;
-  private List<PropertyConverter> propertyConverters;
+  private Map<String, PropertyConverter> propertyConverters;
 
   public ExtendableRelationshipConverter(List<String> fieldsToIgnore) {
     this.fieldsToIgnore = fieldsToIgnore;
-    propertyConverters = Lists.newArrayList();
+    propertyConverters = Maps.newHashMap();
   }
 
   @Override
   public void addValuesToPropertyContainer(Relationship relationship, T entity) throws ConversionException {
-    for (PropertyConverter propertyConverter : propertyConverters) {
+    for (PropertyConverter propertyConverter : getPropertyConverters()) {
       if (!shouldIgnoreField(propertyConverter)) {
         propertyConverter.setPropertyContainerProperty(relationship, entity);
       }
@@ -33,7 +37,7 @@ class ExtendableRelationshipConverter<T extends Relation> implements Relationshi
 
   @Override
   public void addValuesToEntity(T entity, Relationship relationship) throws ConversionException {
-    for (PropertyConverter propertyConverter : propertyConverters) {
+    for (PropertyConverter propertyConverter : getPropertyConverters()) {
       if (!shouldIgnoreField(propertyConverter)) {
         propertyConverter.addValueToEntity(entity, relationship);
       }
@@ -67,12 +71,16 @@ class ExtendableRelationshipConverter<T extends Relation> implements Relationshi
 
   @Override
   public void addPropertyConverter(PropertyConverter fieldConverter) {
-    this.propertyConverters.add(fieldConverter);
+    this.propertyConverters.put(fieldConverter.getName(), fieldConverter);
+  }
+
+  private Collection<PropertyConverter> getPropertyConverters() {
+    return propertyConverters.values();
   }
 
   @Override
   public void updatePropertyContainer(Relationship relationship, T entity) throws ConversionException {
-    for (PropertyConverter propertyConverter : propertyConverters) {
+    for (PropertyConverter propertyConverter : getPropertyConverters()) {
       if (isRegularConverter(propertyConverter) && !shouldIgnoreField(propertyConverter)) {
         propertyConverter.setPropertyContainerProperty(relationship, entity);
       }
@@ -89,7 +97,12 @@ class ExtendableRelationshipConverter<T extends Relation> implements Relationshi
 
   @Override
   public void updateModifiedAndRev(Relationship relationship, T entity) throws ConversionException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    getPropertyConverter(REVISION_PROPERTY_NAME).setPropertyContainerProperty(relationship, entity);
+    getPropertyConverter(MODIFIED_PROPERTY_NAME).setPropertyContainerProperty(relationship, entity);
+  }
+
+  private PropertyConverter getPropertyConverter(String fieldName) {
+    return propertyConverters.get(fieldName);
   }
 
 }
