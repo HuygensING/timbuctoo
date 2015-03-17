@@ -9,7 +9,9 @@ import static nl.knaw.huygens.timbuctoo.storage.neo4j.SearchResultBuilder.aSearc
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SearchResultBuilder.anEmptySearchResult;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -461,4 +463,65 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
     }
   }
 
+  @Test
+  public void getRevisionReturnsTheDomainEntityWithTheRequestedRevision() throws Exception {
+    Node nodeWithSameRevision = aNode().withRevision(FIRST_REVISION).build();
+    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).withNode(nodeWithSameRevision).foundInDB(dbMock);
+
+    when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenReturn(new SubADomainEntity());
+    NodeConverter<SubADomainEntity> converter = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
+
+    // action
+    SubADomainEntity entity = instance.getRevision(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION);
+
+    // verify
+    assertThat(entity, is(instanceOf(SubADomainEntity.class)));
+    verify(converter).addValuesToEntity(entity, nodeWithSameRevision);
+    verify(transactionMock).success();
+  }
+
+  @Test
+  public void getRevisionReturnsNullIfTheEntityCannotBeFound() throws Exception {
+    // setup
+    anEmptySearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
+
+    // action
+    SubADomainEntity entity = instance.getRevision(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION);
+
+    // verify
+    assertThat(entity, is(nullValue()));
+    verify(transactionMock).success();
+  }
+
+  @Test
+  public void getRevisionReturnsNullIfTheRevisionCannotBeFound() throws Exception {
+    // setup
+    Node nodeWithDifferentRevision = aNode().withRevision(SECOND_REVISION).build();
+    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).withNode(nodeWithDifferentRevision).foundInDB(dbMock);
+
+    // action
+    SubADomainEntity entity = instance.getRevision(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION);
+
+    // verify
+    assertThat(entity, is(nullValue()));
+    verify(transactionMock).success();
+  }
+
+  @Test(expected = StorageException.class)
+  public void getRevisionThrowsAStorageExceptionIfTheEntityCannotBeInstantiated() throws Exception {
+    // setup
+    Node nodeWithSameRevision = aNode().withRevision(FIRST_REVISION).build();
+    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).withNode(nodeWithSameRevision).foundInDB(dbMock);
+
+    when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenThrow(new InstantiationException());
+
+    try {
+      // action
+      instance.getRevision(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION);
+    } finally {
+      // verify
+      verify(transactionMock).failure();
+    }
+
+  }
 }

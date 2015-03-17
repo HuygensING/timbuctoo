@@ -35,6 +35,7 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
 
+import com.google.common.base.Objects;
 import com.google.inject.Inject;
 
 public class Neo4JStorage implements Storage {
@@ -561,9 +562,50 @@ public class Neo4JStorage implements Storage {
   }
 
   @Override
-  public <T extends DomainEntity> T getRevision(Class<T> type, String id, int revisionId) throws StorageException {
-    // TODO Auto-generated method stub
-    return null;
+  public <T extends DomainEntity> T getRevision(Class<T> type, String id, int revision) throws StorageException {
+    try (Transaction transaction = db.beginTx()) {
+      Node node = getRevisionNode(type, id, revision);
+
+      if (node == null) {
+        transaction.success();
+        return null;
+      }
+
+      try {
+        T entity = entityInstantiator.createInstanceOf(type);
+        NodeConverter<T> converter = propertyContainerConverterFactory.createForType(type);
+
+        converter.addValuesToEntity(entity, node);
+
+        transaction.success();
+        return entity;
+
+      } catch (InstantiationException e) {
+        transaction.failure();
+        throw new StorageException(e);
+      }
+    }
+  }
+
+  private <T extends Entity> Node getRevisionNode(Class<T> type, String id, int revision) {
+    ResourceIterator<Node> iterator = findByProperty(type, ID_PROPERTY_NAME, id);
+
+    if (!iterator.hasNext()) {
+      return null;
+    }
+
+    Node nodeWithRevision = null;
+
+    for (; iterator.hasNext();) {
+      Node next = iterator.next();
+
+      if (Objects.equal(revision, next.getProperty(REVISION_PROPERTY_NAME))) {
+        nodeWithRevision = next;
+        break;
+      }
+    }
+
+    return nodeWithRevision;
   }
 
   @Override
