@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
@@ -12,6 +13,7 @@ import org.neo4j.graphdb.Relationship;
 public class NodeDuplicator {
 
   private final GraphDatabaseService db;
+  static final DynamicRelationshipType VERSION_OF_RELATIONSHIP_TYPE = DynamicRelationshipType.withName("versionOf");
 
   public NodeDuplicator(GraphDatabaseService db) {
     this.db = db;
@@ -19,38 +21,43 @@ public class NodeDuplicator {
 
   /**
    * Duplicates the node and all its relationships and saves it to the database.
-   * @param node the node to duplicate.
+   * @param original the node to duplicate.
    */
-  public void saveDuplicate(Node node) {
+  public void saveDuplicate(Node original) {
     Node duplicate = db.createNode();
 
-    addLabelsToDuplicate(duplicate, node);
-    addPropertiesToDuplicate(duplicate, node);
-    addRelationshipsToDuplicate(duplicate, node);
+    addLabelsToDuplicate(duplicate, original);
+    addPropertiesToDuplicate(duplicate, original);
+    addRelationshipsToDuplicate(duplicate, original);
+    addVersionOfRelationToDuplicate(duplicate, original);
   }
 
-  private void addLabelsToDuplicate(Node duplicatedNode, Node node) {
-    for (Label label : node.getLabels()) {
+  private void addLabelsToDuplicate(Node duplicatedNode, Node orginal) {
+    for (Label label : orginal.getLabels()) {
       duplicatedNode.addLabel(label);
     }
   }
 
-  private void addPropertiesToDuplicate(Node duplicatedNode, Node node) {
-    for (String propertyKey : node.getPropertyKeys()) {
-      duplicatedNode.setProperty(propertyKey, node.getProperty(propertyKey));
+  private void addPropertiesToDuplicate(Node duplicatedNode, Node original) {
+    for (String propertyKey : original.getPropertyKeys()) {
+      duplicatedNode.setProperty(propertyKey, original.getProperty(propertyKey));
     }
   }
 
-  private void addRelationshipsToDuplicate(Node duplicatedNode, Node node) {
-    duplicateRelationships(duplicatedNode, node, new IncommingRelationshipDuplicator());
-    duplicateRelationships(duplicatedNode, node, new OutgoingRelationshipDuplicator());
+  private void addRelationshipsToDuplicate(Node duplicatedNode, Node original) {
+    duplicateRelationships(duplicatedNode, original, new IncommingRelationshipDuplicator());
+    duplicateRelationships(duplicatedNode, original, new OutgoingRelationshipDuplicator());
 
   }
 
-  private void duplicateRelationships(Node duplicatedNode, Node node, RelationshipDuplicator relDuplicator) {
-    for (Relationship relationship : node.getRelationships(relDuplicator.getDirection())) {
+  private void duplicateRelationships(Node duplicatedNode, Node original, RelationshipDuplicator relDuplicator) {
+    for (Relationship relationship : original.getRelationships(relDuplicator.getDirection())) {
       relDuplicator.addRelationshipToNode(duplicatedNode, relationship);
     }
+  }
+
+  private void addVersionOfRelationToDuplicate(Node duplicateNode, Node original) {
+    duplicateNode.createRelationshipTo(original, VERSION_OF_RELATIONSHIP_TYPE);
   }
 
   private static interface RelationshipDuplicator {

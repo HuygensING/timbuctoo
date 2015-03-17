@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeDuplicator.VERSION_OF_RELATIONSHIP_TYPE;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeMockBuilder.aNode;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipMockBuilder.aRelationship;
 import static org.mockito.Mockito.mock;
@@ -88,5 +89,18 @@ public class NodeDuplicatorTest {
     // verify
     verify(duplicatedNode).createRelationshipTo(endNodeRel1, relType1);
     verify(startNodeRel2).createRelationshipTo(duplicatedNode, relType2);
+  }
+
+  @Test
+  public void saveDuplicateCreatesARelationBetweenTheDuplicateAndTheOriginal() {
+    // setup
+    Node nodeToDuplicate = aNode().build();
+    Node duplicatedNode = aNode().createdBy(dbMock);
+
+    // action
+    instance.saveDuplicate(nodeToDuplicate);
+
+    // verify
+    verify(duplicatedNode).createRelationshipTo(nodeToDuplicate, VERSION_OF_RELATIONSHIP_TYPE);
   }
 }
