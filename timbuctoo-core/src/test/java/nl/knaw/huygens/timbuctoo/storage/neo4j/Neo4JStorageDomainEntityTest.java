@@ -54,7 +54,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
     SubADomainEntity domainEntity = aDomainEntity().build();
 
     // action
-    String actualId = instance.addDomainEntity(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntity, new Change());
+    String actualId = instance.addDomainEntity(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
 
     // verify
     verify(dbMock).beginTx();
@@ -80,7 +80,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
     SubADomainEntity domainEntityWithAPID = aDomainEntity().withAPid().build();
 
     // action
-    instance.addDomainEntity(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntityWithAPID, new Change());
+    instance.addDomainEntity(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntityWithAPID, CHANGE);
 
     // verify
     verify(dbMock).beginTx();
@@ -112,7 +112,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
 
     try {
       // action
-      instance.addDomainEntity(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntity, new Change());
+      instance.addDomainEntity(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
     } finally {
       // verify
       verify(dbMock).beginTx();
@@ -170,7 +170,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
 
     NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE);;
 
-    Change oldModified = new Change();
+    Change oldModified = CHANGE;
     SubADomainEntity domainEntity = aDomainEntity() //
         .withId(ID) //
         .withRev(FIRST_REVISION)//
@@ -178,7 +178,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
         .withModified(oldModified)//
         .build();
 
-    instance.updateDomainEntity(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntity, new Change());
+    instance.updateDomainEntity(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
 
     // verify
     InOrder inOrder = inOrder(dbMock, domainEntityConverterMock, transactionMock);
@@ -211,7 +211,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
 
     NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE);
 
-    Change oldModified = new Change();
+    Change oldModified = CHANGE;
     SubADomainEntity domainEntity = aDomainEntity() //
         .withId(ID) //
         .withRev(THIRD_REVISION)//
@@ -219,7 +219,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
         .withModified(oldModified)//
         .build();
 
-    instance.updateDomainEntity(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntity, new Change());
+    instance.updateDomainEntity(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
 
     // verify
     InOrder inOrder = inOrder(dbMock, domainEntityConverterMock, transactionMock);
@@ -244,7 +244,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
     // setup
     anEmptySearchResult().forLabel(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
 
-    Change oldModified = new Change();
+    Change oldModified = CHANGE;
     SubADomainEntity domainEntity = aDomainEntity() //
         .withId(ID) //
         .withRev(FIRST_REVISION)//
@@ -254,7 +254,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
 
     try {
       // action
-      instance.updateDomainEntity(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntity, new Change());
+      instance.updateDomainEntity(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
     } finally {
       // verify
       InOrder inOrder = inOrder(dbMock, transactionMock);
@@ -275,7 +275,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
         .withNode(nodeMock) //
         .foundInDB(dbMock);
 
-    Change oldModified = new Change();
+    Change oldModified = CHANGE;
     SubADomainEntity domainEntity = aDomainEntity() //
         .withId(ID) //
         .withRev(FIRST_REVISION)//
@@ -285,7 +285,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
 
     try {
       // action
-      instance.updateDomainEntity(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntity, new Change());
+      instance.updateDomainEntity(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
     } finally {
       // verify
       InOrder inOrder = inOrder(dbMock, transactionMock);
@@ -305,7 +305,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
         .withNode(nodeMock) //
         .foundInDB(dbMock);
 
-    Change oldModified = new Change();
+    Change oldModified = CHANGE;
     SubADomainEntity domainEntity = aDomainEntity() //
         .withId(ID) //
         .withRev(FIRST_REVISION)//
@@ -315,7 +315,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
 
     try {
       // action
-      instance.updateDomainEntity(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntity, new Change());
+      instance.updateDomainEntity(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
     } finally {
       // verify
       InOrder inOrder = inOrder(dbMock, transactionMock);
@@ -339,7 +339,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
         .foundInDB(dbMock);
 
     // action
-    instance.deleteDomainEntity(Neo4JStorageTest.PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, new Change());
+    instance.deleteDomainEntity(Neo4JStorageTest.PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, CHANGE);
 
     // verify
     InOrder inOrder = inOrder(dbMock, nodeMock, relMock1, relMock2, transactionMock);
@@ -371,7 +371,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
         .foundInDB(dbMock);
 
     // action
-    instance.deleteDomainEntity(Neo4JStorageTest.PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, new Change());
+    instance.deleteDomainEntity(Neo4JStorageTest.PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, CHANGE);
 
     // verify
     InOrder inOrder = inOrder(dbMock, nodeMock, relMock1, relMock2, nodeMock2, relMock3, relMock4, nodeMock3, relMock5, relMock6, transactionMock);
@@ -388,7 +388,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
     anEmptySearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
     try {
       // action
-      instance.deleteDomainEntity(Neo4JStorageTest.PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, new Change());
+      instance.deleteDomainEntity(Neo4JStorageTest.PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, CHANGE);
     } finally {
       // verify
       verify(dbMock).beginTx();
@@ -402,7 +402,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
 
     try {
       // action
-      instance.deleteDomainEntity(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE, ID, new Change());
+      instance.deleteDomainEntity(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE, ID, CHANGE);
     } finally {
       // verify
       verifyZeroInteractions(dbMock);

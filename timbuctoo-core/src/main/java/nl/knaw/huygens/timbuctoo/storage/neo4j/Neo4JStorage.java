@@ -220,13 +220,13 @@ public class Neo4JStorage implements Storage {
 
       if (node == null) {
         transaction.failure();
-        throw new UpdateException(String.format("\"%s\" with id \"%s\" cannot be found.", type.getSimpleName(), entity.getId()));
+        throw new UpdateException(entityNotFoundMessageFor(type, entity));
       }
 
       int rev = getRevision(node);
       if (rev != entity.getRev()) {
         transaction.failure();
-        throw new UpdateException(String.format("\"%s\" with id \"%s\" and revision \"%d\".", type.getSimpleName(), entity.getId(), entity.getRev()));
+        throw new UpdateException(revisionNotFoundMessage(type, entity, rev));
       }
 
       updateAdministrativeValues(entity);
@@ -248,15 +248,60 @@ public class Neo4JStorage implements Storage {
     }
   }
 
+  private <T extends Entity> String revisionNotFoundMessage(Class<T> type, T entity, int actualLatestRev) {
+    return String.format("\"%s\" with id \"%s\" and revision \"%d\" found. Revision \"%d\" wanted.", type.getSimpleName(), entity.getId(), entity.getRev(), actualLatestRev);
+  }
+
+  private <T extends Entity> String entityNotFoundMessageFor(Class<T> type, T entity) {
+    return String.format("\"%s\" with id \"%s\" cannot be found.", type.getSimpleName(), entity.getId());
+  }
+
   private <T extends Entity> void updateAdministrativeValues(T entity) {
     entity.setModified(Change.newInternalInstance());
     updateRevision(entity);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
     removePID(entity);
-    updateEntity(type, entity);
+    if (Relation.class.isAssignableFrom(type)) {
+      updateRelation((Class<? extends Relation>) type, (Relation) entity);
+    } else {
+      updateEntity(type, entity);
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T extends Relation> void updateRelation(Class<T> type, Relation relation) throws StorageException {
+    try (Transaction transaction = db.beginTx()) {
+      Relationship relationship = getLatestFromIndex(relation.getId(), transaction);
+
+      T entity = (T) relation;
+      if (relationship == null) {
+        transaction.failure();
+        throw new UpdateException(entityNotFoundMessageFor(type, entity));
+      }
+
+      int rev = getRevision(relationship);
+      if (rev != relation.getRev()) {
+        transaction.failure();
+        throw new UpdateException(revisionNotFoundMessage(type, entity, rev));
+      }
+
+      updateAdministrativeValues(relation);
+
+      RelationshipConverter<T> converter = propertyContainerConverterFactory.createForRelation(type);
+      try {
+        converter.updatePropertyContainer(relationship, entity);
+        converter.updateModifiedAndRev(relationship, entity);
+        transaction.success();
+      } catch (ConversionException e) {
+        transaction.failure();
+        throw e;
+      }
+
+    }
   }
 
   private <T extends DomainEntity> void removePID(T entity) {

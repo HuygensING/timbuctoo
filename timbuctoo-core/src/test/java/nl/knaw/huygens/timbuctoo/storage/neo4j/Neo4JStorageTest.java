@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 
 import org.junit.Before;
 import org.mockito.InOrder;
@@ -29,6 +30,7 @@ public abstract class Neo4JStorageTest {
   protected static final int SECOND_REVISION = 2;
   protected static final int THIRD_REVISION = 3;
   protected static final String ID = "id";
+  protected static final Change CHANGE = new Change();
 
   protected GraphDatabaseService dbMock;
   protected PropertyContainerConverterFactory propertyContainerConverterFactoryMock;

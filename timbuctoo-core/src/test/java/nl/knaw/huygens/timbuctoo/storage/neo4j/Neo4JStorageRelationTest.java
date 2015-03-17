@@ -9,6 +9,7 @@ import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipMockBuilder.aR
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipTypeMatcher.likeRelationshipType;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SearchResultBuilder.aSearchResult;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SearchResultBuilder.anEmptySearchResult;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.SubARelationBuilder.aRelation;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -28,6 +29,7 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -73,14 +75,13 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
 
     when(sourceNodeMock.createRelationshipTo(argThat(equalTo(targetNodeMock)), argThat(likeRelationshipType().withName(name)))).thenReturn(relationShipMock);
     when(idGeneratorMock.nextIdFor(Neo4JStorageRelationTest.RELATION_TYPE)).thenReturn(ID);
-
-    SubARelation relation = new SubARelation();
-    relation.setSourceId(RELATION_SOURCE_ID);
-    relation.setSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME);
-    relation.setTargetId(RELATION_TARGET_ID);
-    relation.setTargetType(PRIMITIVE_DOMAIN_ENTITY_NAME);
-    relation.setTypeId(RELATION_TYPE_ID);
-    relation.setTypeType(RELATION_TYPE_NAME);
+    SubARelation relation = aRelation()//
+        .withSourceId(RELATION_SOURCE_ID) //
+        .withSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME) //
+        .withTargetId(RELATION_TARGET_ID) //
+        .withTargetType(PRIMITIVE_DOMAIN_ENTITY_NAME) //
+        .withTypeId(RELATION_TYPE_ID) //
+        .withTypeType(RELATION_TYPE_NAME).build();
 
     // action
     String id = instance.addDomainEntity(SubARelation.class, relation, new Change());
@@ -94,7 +95,7 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
 
     inOrder.verify(relationConverterMock).addValuesToPropertyContainer( //
         argThat(equalTo(relationShipMock)), //
-        argThat(likeDomainEntity(Neo4JStorageRelationTest.RELATION_TYPE) //
+        argThat(likeDomainEntity(RELATION_TYPE) //
             .withId(ID) //
             .withACreatedValue() //
             .withAModifiedValue() //
@@ -136,14 +137,13 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
 
   @Test(expected = StorageException.class)
   public void addDomainEntityForRelationThrowsAConversionExceptionWhenTheRelationshipConverterDoes() throws Exception {
-    // setup
-    SubARelation relation = new SubARelation();
-    relation.setSourceId(RELATION_SOURCE_ID);
-    relation.setSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME);
-    relation.setTargetId(RELATION_TARGET_ID);
-    relation.setTargetType(PRIMITIVE_DOMAIN_ENTITY_NAME);
-    relation.setTypeId(RELATION_TYPE_ID);
-    relation.setTypeType(RELATION_TYPE_NAME);
+    SubARelation relation = aRelation()//
+        .withSourceId(RELATION_SOURCE_ID) //
+        .withSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME) //
+        .withTargetId(RELATION_TARGET_ID) //
+        .withTargetType(PRIMITIVE_DOMAIN_ENTITY_NAME) //
+        .withTypeId(RELATION_TYPE_ID) //
+        .withTypeType(RELATION_TYPE_NAME).build();
     String name = "regularTypeName";
 
     Node sourceNodeMock = aNode().build();
@@ -195,14 +195,13 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
   }
 
   private void addDomainEntityForRelationThrowsAStorageExceptionWhenTheEntityInstantiatorThrowsAnException(Class<? extends Exception> exceptionToThrow) throws Exception {
-    // setup
-    SubARelation relation = new SubARelation();
-    relation.setSourceId(RELATION_SOURCE_ID);
-    relation.setSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME);
-    relation.setTargetId(RELATION_TARGET_ID);
-    relation.setTargetType(PRIMITIVE_DOMAIN_ENTITY_NAME);
-    relation.setTypeId(RELATION_TYPE_ID);
-    relation.setTypeType(RELATION_TYPE_NAME);
+    SubARelation relation = aRelation()//
+        .withSourceId(RELATION_SOURCE_ID) //
+        .withSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME) //
+        .withTargetId(RELATION_TARGET_ID) //
+        .withTargetType(PRIMITIVE_DOMAIN_ENTITY_NAME) //
+        .withTypeId(RELATION_TYPE_ID) //
+        .withTypeType(RELATION_TYPE_NAME).build();
     String name = "regularTypeName";
 
     Node sourceNodeMock = aNode().build();
@@ -238,14 +237,13 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
 
   @Test(expected = StorageException.class)
   public void addDomainEntityForRelationThrowsAConversionExceptionWhenTheRegularNameOfTheRelationTypeCannotBeFound() throws Exception {
-    // setup
-    SubARelation relation = new SubARelation();
-    relation.setSourceId(RELATION_SOURCE_ID);
-    relation.setSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME);
-    relation.setTargetId(RELATION_TARGET_ID);
-    relation.setTargetType(PRIMITIVE_DOMAIN_ENTITY_NAME);
-    relation.setTypeId(RELATION_TYPE_ID);
-    relation.setTypeType(RELATION_TYPE_NAME);
+    SubARelation relation = aRelation()//
+        .withSourceId(RELATION_SOURCE_ID) //
+        .withSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME) //
+        .withTargetId(RELATION_TARGET_ID) //
+        .withTargetType(PRIMITIVE_DOMAIN_ENTITY_NAME) //
+        .withTypeId(RELATION_TYPE_ID) //
+        .withTypeType(RELATION_TYPE_NAME).build();
     String name = "regularTypeName";
 
     Node sourceNodeMock = aNode().build();
@@ -339,14 +337,13 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
         .foundInDB(dbMock);
 
     anEmptySearchResult().forLabel(RELATION_TYPE_LABEL).andId(RELATION_TYPE_ID).foundInDB(dbMock);
-
-    SubARelation relation = new SubARelation();
-    relation.setSourceId(RELATION_SOURCE_ID);
-    relation.setSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME);
-    relation.setTargetId(RELATION_TARGET_ID);
-    relation.setTargetType(PRIMITIVE_DOMAIN_ENTITY_NAME);
-    relation.setTypeId(RELATION_TYPE_ID);
-    relation.setTypeType(RELATION_TYPE_NAME);
+    SubARelation relation = aRelation()//
+        .withSourceId(RELATION_SOURCE_ID) //
+        .withSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME) //
+        .withTargetId(RELATION_TARGET_ID) //
+        .withTargetType(PRIMITIVE_DOMAIN_ENTITY_NAME) //
+        .withTypeId(RELATION_TYPE_ID) //
+        .withTypeType(RELATION_TYPE_NAME).build();
 
     try {
       // action
@@ -480,6 +477,195 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
       verify(transactionMock).failure();
       verifyNoMoreInteractions(dbMock);
       verifyZeroInteractions(propertyContainerConverterFactoryMock);
+    }
+  }
+
+  @Test
+  public void updateDomainEntityRetrievesTheRelationAndUpdateItsValuesAndAdministrativeValues() throws Exception {
+    // setup
+    Relationship relationship = aRelationship().withRevision(FIRST_REVISION).build();
+    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
+        .containsForId(ID) //
+        .relationship(relationship) //
+        .foundInDB(dbMock);
+
+    Change oldModified = CHANGE;
+    SubARelation relation = aRelation()//
+        .withId(ID) //
+        .withRevision(FIRST_REVISION) //
+        .withModified(oldModified) //
+        .build();
+
+    RelationshipConverter<SubARelation> converterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+
+    // action
+    instance.updateDomainEntity(RELATION_TYPE, relation, CHANGE);
+
+    // verify
+    InOrder inOrder = inOrder(dbMock, transactionMock, converterMock);
+    inOrder.verify(dbMock).beginTx();
+    inOrder.verify(converterMock).updatePropertyContainer( //
+        argThat(equalTo(relationship)), //
+        argThat(likeDomainEntity(RELATION_TYPE) //
+            .withId(ID) //
+            .withAModifiedValueNotEqualTo(oldModified) //
+            .withRevision(SECOND_REVISION)));
+    inOrder.verify(converterMock).updateModifiedAndRev( //
+        argThat(equalTo(relationship)), //
+        argThat(likeDomainEntity(RELATION_TYPE) //
+            .withId(ID) //
+            .withAModifiedValueNotEqualTo(oldModified) //
+            .withRevision(SECOND_REVISION)));
+    inOrder.verify(transactionMock).success();
+  }
+
+  @Test
+  public void updateDomainEntityRemovesThePIDOfTheRelationBeforeTheUpdate() throws Exception {
+    // setup
+    Relationship relationship = aRelationship().withRevision(FIRST_REVISION).build();
+    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
+        .containsForId(ID) //
+        .relationship(relationship) //
+        .foundInDB(dbMock);
+
+    Change oldModified = CHANGE;
+    SubARelation relation = aRelation()//
+        .withId(ID) //
+        .withRevision(FIRST_REVISION) //
+        .withModified(oldModified) //
+        .withAPID() //
+        .build();
+
+    RelationshipConverter<SubARelation> converterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+
+    // action
+    instance.updateDomainEntity(RELATION_TYPE, relation, CHANGE);
+
+    // verify
+    verify(converterMock).updatePropertyContainer( //
+        argThat(equalTo(relationship)), //
+        argThat(likeDomainEntity(RELATION_TYPE).withoutAPID()));
+    verify(converterMock).updateModifiedAndRev( //
+        argThat(equalTo(relationship)), //
+        argThat(likeDomainEntity(RELATION_TYPE).withoutAPID()));
+  }
+
+  @Test
+  public void updateDomainEntityUpdatesTheLatestIfMultipleAreFound() throws Exception {
+    // setup
+    Relationship relationshipWithHighestRev = aRelationship().withRevision(SECOND_REVISION).build();
+    Relationship otherRelationShip = aRelationship().withRevision(FIRST_REVISION).build();
+    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
+        .relationship(relationshipWithHighestRev) //
+        .andRelationship(otherRelationShip) //
+        .foundInDB(dbMock);
+
+    SubARelation relation = aRelation().withId(ID).withRevision(SECOND_REVISION).build();
+
+    RelationshipConverter<SubARelation> converterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+
+    // action
+    instance.updateDomainEntity(RELATION_TYPE, relation, CHANGE);
+
+    // verify
+    verify(converterMock).updatePropertyContainer(relationshipWithHighestRev, relation);
+    verify(converterMock).updateModifiedAndRev(relationshipWithHighestRev, relation);
+  }
+
+  @Test(expected = UpdateException.class)
+  public void updateDomainEntityThrowsAnUpdateExceptionWhenTheRelationshipToUpdateCannotBeFound() throws Exception {
+    // setup
+    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsNothingForId(ID).foundInDB(dbMock);
+    SubARelation relation = aRelation()//
+        .withId(ID)//
+        .build();
+    try {
+      // action
+      instance.updateDomainEntity(RELATION_TYPE, relation, CHANGE);
+    } finally {
+      // verify
+      verify(dbMock).beginTx();
+
+      verify(transactionMock).failure();
+    }
+  }
+
+  @Test(expected = UpdateException.class)
+  public void updateDomainEntityThrowsAnUpdateExceptionWhenRevOfTheRelationshipIsHigherThanThatOfTheEntity() throws Exception {
+    // setup
+    Relationship relationshipWithHigherRev = aRelationship().withRevision(SECOND_REVISION).build();
+    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
+        .containsForId(ID) //
+        .relationship(relationshipWithHigherRev) //
+        .foundInDB(dbMock);
+
+    SubARelation relation = aRelation()//
+        .withId(ID)//
+        .withRevision(FIRST_REVISION) //
+        .build();
+
+    try {
+      // action
+      instance.updateDomainEntity(RELATION_TYPE, relation, CHANGE);
+    } finally {
+      // verify
+      verify(dbMock).beginTx();
+
+      verify(transactionMock).failure();
+    }
+  }
+
+  @Test(expected = UpdateException.class)
+  public void updateDomainEntityThrowsAnUpdateExceptionWhenRevOfTheRelationshipIsLowerThanThatOfTheEntity() throws Exception {
+    // setup
+    Relationship relationshipWithLowerRev = aRelationship().withRevision(FIRST_REVISION).build();
+    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
+        .containsForId(ID) //
+        .relationship(relationshipWithLowerRev) //
+        .foundInDB(dbMock);
+
+    SubARelation relation = aRelation()//
+        .withId(ID)//
+        .withRevision(SECOND_REVISION) //
+        .build();
+
+    try {
+      // action
+      instance.updateDomainEntity(RELATION_TYPE, relation, CHANGE);
+    } finally {
+      // verify
+      verify(dbMock).beginTx();
+
+      verify(transactionMock).failure();
+    }
+  }
+
+  @Test(expected = ConversionException.class)
+  public void updateDomainEntityThrowsAConversionExceptionWhenTheRelationshipConverterThrowsOne() throws Exception {
+    // setup
+    Relationship relationship = aRelationship().withRevision(FIRST_REVISION).build();
+    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
+        .containsForId(ID) //
+        .relationship(relationship) //
+        .foundInDB(dbMock);
+
+    Change oldModified = CHANGE;
+    SubARelation relation = aRelation()//
+        .withId(ID) //
+        .withRevision(FIRST_REVISION) //
+        .build();
+
+    RelationshipConverter<SubARelation> converterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    doThrow(ConversionException.class).when(converterMock).updatePropertyContainer(relationship, relation);
+
+    try {
+      // action
+      instance.updateDomainEntity(RELATION_TYPE, relation, oldModified);
+    } finally {
+      // verify
+      verify(dbMock).beginTx();
+      verify(converterMock).updatePropertyContainer(relationship, relation);
+      verify(transactionMock).failure();
     }
   }
 }
