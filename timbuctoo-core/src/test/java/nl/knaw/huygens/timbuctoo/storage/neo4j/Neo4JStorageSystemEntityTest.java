@@ -281,7 +281,7 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
   }
 
   @Test(expected = ConversionException.class)
-  public void updateSystemEntityThrowsAConversionExceptionWhenTheEntityCovnerterThrowsOne() throws Exception {
+  public void updateSystemEntityThrowsAConversionExceptionWhenTheEntityConverterThrowsOne() throws Exception {
     // setup
     Node nodeMock = aNode().withRevision(FIRST_REVISION).build();
     aSearchResult().forLabel(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_LABEL).andId(ID) //
