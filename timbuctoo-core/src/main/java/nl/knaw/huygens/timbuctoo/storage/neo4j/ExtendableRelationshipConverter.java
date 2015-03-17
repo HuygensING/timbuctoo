@@ -25,7 +25,7 @@ class ExtendableRelationshipConverter<T extends Relation> implements Relationshi
   @Override
   public void addValuesToPropertyContainer(Relationship relationship, T entity) throws ConversionException {
     for (PropertyConverter propertyConverter : propertyConverters) {
-      if (!fieldsToIgnore.contains(propertyConverter.getName())) {
+      if (!shouldIgnoreField(propertyConverter)) {
         propertyConverter.setPropertyContainerProperty(relationship, entity);
       }
     }
@@ -34,7 +34,7 @@ class ExtendableRelationshipConverter<T extends Relation> implements Relationshi
   @Override
   public void addValuesToEntity(T entity, Relationship relationship) throws ConversionException {
     for (PropertyConverter propertyConverter : propertyConverters) {
-      if (!fieldsToIgnore.contains(propertyConverter.getName())) {
+      if (!shouldIgnoreField(propertyConverter)) {
         propertyConverter.addValueToEntity(entity, relationship);
       }
     }
@@ -72,7 +72,19 @@ class ExtendableRelationshipConverter<T extends Relation> implements Relationshi
 
   @Override
   public void updatePropertyContainer(Relationship relationship, T entity) throws ConversionException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    for (PropertyConverter propertyConverter : propertyConverters) {
+      if (isRegularConverter(propertyConverter) && !shouldIgnoreField(propertyConverter)) {
+        propertyConverter.setPropertyContainerProperty(relationship, entity);
+      }
+    }
+  }
+
+  private boolean isRegularConverter(PropertyConverter propertyConverter) {
+    return FieldType.REGULAR == propertyConverter.getFieldType();
+  }
+
+  private boolean shouldIgnoreField(PropertyConverter propertyConverter) {
+    return fieldsToIgnore.contains(propertyConverter.getName());
   }
 
   @Override
