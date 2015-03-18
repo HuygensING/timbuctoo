@@ -118,7 +118,7 @@ public class RelationMatcher extends CompositeMatcher<Relation> {
     return this;
   }
 
-  public RelationMatcher withRev(int revision) {
+  public RelationMatcher withRevision(int revision) {
     addMatcher(new PropertyEqualtityMatcher<Relation, Integer>("rev", revision) {
 
       @Override

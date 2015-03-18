@@ -254,6 +254,7 @@ public abstract class StorageIntegrationTest {
     // action
     instance.setPID(DOMAIN_ENTITY_TYPE, id, PID);
 
+    // verify
     ProjectAPerson updatedEntity = instance.getEntity(DOMAIN_ENTITY_TYPE, id);
     assertThat("Entity has no pid", updatedEntity.getPid(), is(equalTo(PID)));
 
@@ -601,7 +602,7 @@ public abstract class StorageIntegrationTest {
             .withTargetType(RELATION_TARGET_TYPE) //
             .withTypeId(typeId) //
             .isAccepted(NOT_ACCEPTED) //
-            .withRev(firstRevision + 1)));
+            .withRevision(firstRevision + 1)));
 
     assertThat("Primitive domain entity should not have changed", //
         instance.getEntity(PRIMITIVE_RELATION_TYPE, id), likeDefaultPrimitiveRelation(id, sourceId, targetId, typeId));
@@ -612,5 +613,28 @@ public abstract class StorageIntegrationTest {
     int secondRevision = updateRelation.getRev();
     assertThat("No revision should be created for version 2",//
         instance.getRevision(DOMAIN_ENTITY_TYPE, id, secondRevision), is(nullValue()));
+  }
+
+  @Test
+  public void setPIDForRelationCreatesANewRevisionAndFillsThePID() throws Exception {
+    // setup
+    String sourceId = addDefaultProjectAPerson();
+    String targetId = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+
+    String id = addDefaultRelation(sourceId, targetId, typeId);
+
+    // action
+    instance.setPID(PROJECT_RELATION_TYPE, id, PID);
+
+    // verify
+    ProjectARelation updatedEntity = instance.getEntity(PROJECT_RELATION_TYPE, id);
+    assertThat("Entity has no pid", updatedEntity.getPid(), is(equalTo(PID)));
+
+    int rev = updatedEntity.getRev();
+    assertThat(instance.getRevision(PROJECT_RELATION_TYPE, id, rev), //
+        likeDefaultRelation(sourceId, targetId, typeId)//
+            .withId(id)//
+            .withRevision(rev));
   }
 }
