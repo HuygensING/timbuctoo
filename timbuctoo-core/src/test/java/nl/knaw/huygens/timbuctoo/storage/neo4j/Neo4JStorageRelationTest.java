@@ -668,4 +668,5 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
       verify(transactionMock).failure();
     }
   }
+
 }

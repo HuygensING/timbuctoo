@@ -413,6 +413,26 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
   }
 
   @Test
+  public void setPIDAddsAPIDToTheLatestNodeIfMultipleAreFound() throws InstantiationException, IllegalAccessException, Exception {
+    // setup
+    Node nodeWithLatestRevision = aNode().withRevision(SECOND_REVISION).build();
+    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID)//
+        .withNode(aNode().withRevision(FIRST_REVISION).build()).withNode(nodeWithLatestRevision)//
+        .foundInDB(dbMock);
+
+    when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenReturn(aDomainEntity().withId(ID).build());
+    NodeConverter<SubADomainEntity> converterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
+
+    // action
+    instance.setPID(DOMAIN_ENTITY_TYPE, ID, PID);
+
+    verify(converterMock).addValuesToPropertyContainer( //
+        argThat(equalTo(nodeWithLatestRevision)), //
+        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE).withId(ID).withPID(PID)));
+
+  }
+
+  @Test
   public void setPIDAddsAPIDToTheNodeAndDuplicatesTheNode() throws InstantiationException, IllegalAccessException, Exception {
     // setup
     Node node = aNode().build();
