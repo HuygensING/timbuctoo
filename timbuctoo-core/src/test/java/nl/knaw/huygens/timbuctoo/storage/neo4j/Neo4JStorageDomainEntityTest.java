@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -30,6 +31,8 @@ import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
 import org.junit.Test;
 import org.mockito.InOrder;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
@@ -434,19 +437,35 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
   @Test(expected = IllegalStateException.class)
   public void setPIDThrowsAnIllegalStateExceptionWhenTheEntityAlreadyHasAPID() throws Exception {
     // setup
-    Node aNodeWithoutPID = aNode().build();
+    Node aNodeWithAPID = aNode().withAPID().build();
     aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID)//
-        .withNode(aNodeWithoutPID)//
+        .withNode(aNodeWithAPID)//
         .foundInDB(dbMock);
 
+    SubADomainEntity entity = aDomainEntity().build();
     when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE))//
-        .thenReturn(aDomainEntity().withAPid().build());
+        .thenReturn(entity);
+
+    NodeConverter<SubADomainEntity> nodeConverter = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
+
+    doAnswer(new Answer<Object>() {
+
+      @Override
+      public Object answer(InvocationOnMock invocation) throws Throwable {
+        DomainEntity entity = (DomainEntity) invocation.getArguments()[0];
+        Node node = (Node) invocation.getArguments()[1];
+        entity.setPid("" + node.getProperty(DomainEntity.PID));
+
+        return null;
+      }
+    }).when(nodeConverter).addValuesToEntity(entity, aNodeWithAPID);
 
     try {
       // action
       instance.setPID(DOMAIN_ENTITY_TYPE, ID, PID);
     } finally {
       // verify
+      verify(nodeConverter).addValuesToEntity(entity, aNodeWithAPID);
       verify(transactionMock).failure();
     }
   }

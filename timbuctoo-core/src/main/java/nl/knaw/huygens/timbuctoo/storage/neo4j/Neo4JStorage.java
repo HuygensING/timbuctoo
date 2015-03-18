@@ -321,13 +321,13 @@ public class Neo4JStorage implements Storage {
       try {
         T entity = entityInstantiator.createInstanceOf(type);
 
+        NodeConverter<T> converter = propertyContainerConverterFactory.createForType(type);
+        converter.addValuesToEntity(entity, node);
+
         if (!StringUtils.isBlank(entity.getPid())) {
           transaction.failure();
           throw new IllegalStateException(String.format("%s with %s already has a pid: %s", type.getSimpleName(), id, pid));
         }
-
-        NodeConverter<T> converter = propertyContainerConverterFactory.createForType(type);
-        converter.addValuesToEntity(entity, node);
 
         updateNodeWithPID(type, pid, node, entity, converter);
 
