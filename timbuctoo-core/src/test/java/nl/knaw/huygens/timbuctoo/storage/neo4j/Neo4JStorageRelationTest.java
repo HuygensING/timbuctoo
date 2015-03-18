@@ -689,9 +689,14 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
       instance.setPID(RELATION_TYPE, ID, PID);
     } finally {
       // verify
-      verify(converter).addValuesToEntity(entity, relationship);
-      verify(relationshipDuplicatorMock).saveDuplicate(relationship);
-      verify(transactionMock).success();
+      InOrder inOrder = inOrder(converter, relationshipDuplicatorMock, transactionMock);
+      inOrder.verify(converter).addValuesToPropertyContainer(//
+          argThat(equalTo(relationship)), //
+          argThat(likeDomainEntity(RELATION_TYPE)//
+              .withPID(PID)//
+              .withRevision(SECOND_REVISION)));
+      inOrder.verify(relationshipDuplicatorMock).saveDuplicate(relationship);
+      inOrder.verify(transactionMock).success();
     }
   }
 

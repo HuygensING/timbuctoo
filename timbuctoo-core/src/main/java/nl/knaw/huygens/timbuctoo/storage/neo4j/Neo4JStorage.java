@@ -337,6 +337,10 @@ public class Neo4JStorage implements Storage {
 
         validateEntityHasNoPID(type, id, pid, transaction, entity);
 
+        entity.setPid(pid);
+
+        converter.addValuesToPropertyContainer(relationship, entity);
+
         relationshipDuplicator.saveDuplicate(relationship);
 
         transaction.success();
