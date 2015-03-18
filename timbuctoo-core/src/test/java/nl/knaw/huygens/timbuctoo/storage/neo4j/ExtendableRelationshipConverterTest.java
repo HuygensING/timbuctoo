@@ -9,9 +9,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
-
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -31,17 +28,10 @@ import test.model.projecta.ProjectAPerson;
 import test.model.projecta.SubADomainEntity;
 import test.variation.model.projecta.ProjectADomainEntity;
 
-import com.google.common.collect.Lists;
-
 public class ExtendableRelationshipConverterTest {
 
   private static final String OTHER_FIELD_CONVERTER = "otherFieldConverter";
   private static final String FIELD_CONVERTER = "fieldConverter";
-  private static final String FIELD_TO_IGNORE2 = "fieldToIgnore2";
-  private static final String FIELD_TO_IGNORE1 = "fieldToIgnore1";
-  private static final ArrayList<String> FIELDS_TO_IGNORE = Lists.newArrayList(FIELD_TO_IGNORE1, FIELD_TO_IGNORE2);
-  private PropertyConverter propertyConverterMockToIgnore1;
-  private PropertyConverter propertyConverterMockToIgnore2;
   private PropertyConverter adminPropertyConverterMock;
   private PropertyConverter regularPropertyConverterMock;
   private Relationship relationshipMock;
@@ -54,16 +44,12 @@ public class ExtendableRelationshipConverterTest {
     typeRegistry = TypeRegistry.getInstance();
     typeRegistry.init(getPackageName(SubADomainEntity.class) + " " + getPackageName(BaseDomainEntity.class) + " " + getPackageName(Person.class));
 
-    propertyConverterMockToIgnore1 = newPropertyConverter().withName(FIELD_TO_IGNORE1).build();
-    propertyConverterMockToIgnore2 = newPropertyConverter().withName(FIELD_TO_IGNORE2).build();
     adminPropertyConverterMock = newPropertyConverter().withName(FIELD_CONVERTER).withType(FieldType.ADMINISTRATIVE).build();
     regularPropertyConverterMock = newPropertyConverter().withName(OTHER_FIELD_CONVERTER).withType(FieldType.REGULAR).build();
 
-    instance = new ExtendableRelationshipConverter<Relation>(typeRegistry, FIELDS_TO_IGNORE);
+    instance = new ExtendableRelationshipConverter<Relation>(typeRegistry);
     instance.addPropertyConverter(regularPropertyConverterMock);
     instance.addPropertyConverter(adminPropertyConverterMock);
-    instance.addPropertyConverter(propertyConverterMockToIgnore2);
-    instance.addPropertyConverter(propertyConverterMockToIgnore1);
 
     relationshipMock = mock(Relationship.class);
     relation = new Relation();
@@ -74,15 +60,14 @@ public class ExtendableRelationshipConverterTest {
   }
 
   @Test
-  public void addValuesToPropertyContainerCallsAllTheFieldConvertersThatAreNotOnTheIgnoreList() throws Exception {
+  public void addValuesToPropertyContainerCallsAllTheFieldConverters() throws Exception {
     // action
     instance.addValuesToPropertyContainer(relationshipMock, relation);
 
     // verify
     verify(adminPropertyConverterMock).setPropertyContainerProperty(relationshipMock, relation);
     verify(regularPropertyConverterMock).setPropertyContainerProperty(relationshipMock, relation);
-    verify(propertyConverterMockToIgnore1, never()).setPropertyContainerProperty(relationshipMock, relation);
-    verify(propertyConverterMockToIgnore2, never()).setPropertyContainerProperty(relationshipMock, relation);
+
   }
 
   @Test(expected = ConversionException.class)
@@ -100,7 +85,7 @@ public class ExtendableRelationshipConverterTest {
   }
 
   @Test
-  public void addValuesToEntityCallsAllTheFieldConvertersThatAreNotOnTheIgnoredListAndSetsFieldsOfRelationThatArePackedInTheStartAndEndNode() throws Exception {
+  public void addValuesToEntityCallsAllTheFieldConvertersSetsFieldsOfRelationThatArePackedInTheStartAndEndNode() throws Exception {
     // setup
     Label startNodeBaseTypeLabel = getLabelOfType(BaseDomainEntity.class);
     String sourceId = "sourceId";
@@ -133,8 +118,6 @@ public class ExtendableRelationshipConverterTest {
 
     verify(adminPropertyConverterMock).addValueToEntity(relation, relationshipMock);
     verify(regularPropertyConverterMock).addValueToEntity(relation, relationshipMock);
-    verify(propertyConverterMockToIgnore1, never()).addValueToEntity(relation, relationshipMock);
-    verify(propertyConverterMockToIgnore2, never()).addValueToEntity(relation, relationshipMock);
   }
 
   private Label getLabelOfType(Class<? extends DomainEntity> type) {
@@ -162,10 +145,7 @@ public class ExtendableRelationshipConverterTest {
 
     // verify
     verify(regularPropertyConverterMock).setPropertyContainerProperty(relationshipMock, relation);
-
     verify(adminPropertyConverterMock, never()).setPropertyContainerProperty(relationshipMock, relation);
-    verify(propertyConverterMockToIgnore1, never()).setPropertyContainerProperty(relationshipMock, relation);
-    verify(propertyConverterMockToIgnore2, never()).setPropertyContainerProperty(relationshipMock, relation);
   }
 
   @Test(expected = ConversionException.class)
@@ -200,7 +180,5 @@ public class ExtendableRelationshipConverterTest {
 
     verify(adminPropertyConverterMock, never()).setPropertyContainerProperty(relationshipMock, relation);
     verify(regularPropertyConverterMock, never()).setPropertyContainerProperty(relationshipMock, relation);
-    verify(propertyConverterMockToIgnore1, never()).setPropertyContainerProperty(relationshipMock, relation);
-    verify(propertyConverterMockToIgnore2, never()).setPropertyContainerProperty(relationshipMock, relation);
   }
 }

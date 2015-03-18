@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -103,8 +102,7 @@ public class PropertyContainerConverterFactory {
   }
 
   protected <T extends Relation> ExtendableRelationshipConverter<T> createSimpleRelationshipConverter(Class<T> type) {
-    ArrayList<String> fieldsToIgnore = Lists.newArrayList(Relation.SOURCE_ID, Relation.TARGET_ID, Relation.SOURCE_TYPE, Relation.TARGET_TYPE);
-    return new ExtendableRelationshipConverter<T>(typeRegistry, fieldsToIgnore);
+    return new ExtendableRelationshipConverter<T>(typeRegistry);
   }
 
 }

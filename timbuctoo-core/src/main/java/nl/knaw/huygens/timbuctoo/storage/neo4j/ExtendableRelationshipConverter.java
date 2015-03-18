@@ -5,7 +5,6 @@ import static nl.knaw.huygens.timbuctoo.model.Entity.MODIFIED_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -20,31 +19,25 @@ import com.google.common.collect.Maps;
 
 class ExtendableRelationshipConverter<T extends Relation> implements RelationshipConverter<T>, ExtendablePropertyContainerConverter<Relationship, T> {
 
-  private List<String> fieldsToIgnore;
   private Map<String, PropertyConverter> propertyConverters;
   private TypeRegistry typeRegistry;
 
-  public ExtendableRelationshipConverter(TypeRegistry typeRegistry, List<String> fieldsToIgnore) {
+  public ExtendableRelationshipConverter(TypeRegistry typeRegistry) {
     this.typeRegistry = typeRegistry;
-    this.fieldsToIgnore = fieldsToIgnore;
     propertyConverters = Maps.newHashMap();
   }
 
   @Override
   public void addValuesToPropertyContainer(Relationship relationship, T entity) throws ConversionException {
     for (PropertyConverter propertyConverter : getPropertyConverters()) {
-      if (!shouldIgnoreField(propertyConverter)) {
-        propertyConverter.setPropertyContainerProperty(relationship, entity);
-      }
+      propertyConverter.setPropertyContainerProperty(relationship, entity);
     }
   }
 
   @Override
   public void addValuesToEntity(T entity, Relationship relationship) throws ConversionException {
     for (PropertyConverter propertyConverter : getPropertyConverters()) {
-      if (!shouldIgnoreField(propertyConverter)) {
-        propertyConverter.addValueToEntity(entity, relationship);
-      }
+      propertyConverter.addValueToEntity(entity, relationship);
     }
 
     Node startNode = relationship.getStartNode();
@@ -86,7 +79,7 @@ class ExtendableRelationshipConverter<T extends Relation> implements Relationshi
   @Override
   public void updatePropertyContainer(Relationship relationship, T entity) throws ConversionException {
     for (PropertyConverter propertyConverter : getPropertyConverters()) {
-      if (isRegularConverter(propertyConverter) && !shouldIgnoreField(propertyConverter)) {
+      if (isRegularConverter(propertyConverter)) {
         propertyConverter.setPropertyContainerProperty(relationship, entity);
       }
     }
@@ -94,10 +87,6 @@ class ExtendableRelationshipConverter<T extends Relation> implements Relationshi
 
   private boolean isRegularConverter(PropertyConverter propertyConverter) {
     return FieldType.REGULAR == propertyConverter.getFieldType();
-  }
-
-  private boolean shouldIgnoreField(PropertyConverter propertyConverter) {
-    return fieldsToIgnore.contains(propertyConverter.getName());
   }
 
   @Override
