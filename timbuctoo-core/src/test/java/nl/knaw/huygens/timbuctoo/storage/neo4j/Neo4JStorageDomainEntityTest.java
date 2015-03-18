@@ -613,6 +613,25 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
       // verify
       verify(transactionMock).failure();
     }
+  }
 
+  @Test(expected = ConversionException.class)
+  public void getRevisionThrowsAStorageExceptionIfTheEntityCannotBeConverted() throws Exception {
+    Node nodeWithSameRevision = aNode().withRevision(FIRST_REVISION).withAPID().build();
+    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).withNode(nodeWithSameRevision).foundInDB(dbMock);
+
+    SubADomainEntity entity = new SubADomainEntity();
+    when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenReturn(entity);
+    NodeConverter<SubADomainEntity> converter = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
+    doThrow(ConversionException.class).when(converter).addValuesToEntity(entity, nodeWithSameRevision);
+
+    try {
+      // action
+      instance.getRevision(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION);
+    } finally {
+      // verify
+      verify(converter).addValuesToEntity(entity, nodeWithSameRevision);
+      verify(transactionMock).failure();
+    }
   }
 }
