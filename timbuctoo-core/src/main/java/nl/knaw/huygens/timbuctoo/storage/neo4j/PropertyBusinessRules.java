@@ -15,20 +15,22 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class PropertyBusinessRules {
 
-  private boolean isAdministrativeProperty(String fieldName) {
+  private boolean isAdministrativeProperty(Class<? extends Entity> containingType, Field field) {
+    String fieldName = getFieldName(containingType, field);
     return StringUtils.startsWithAny(fieldName, "_", "^");
   }
 
-  private boolean isVirtualProperty(String fieldName) {
+  private boolean isVirtualProperty(Class<? extends Entity> containingType, Field field) {
+    String fieldName = getFieldName(containingType, field);
     return StringUtils.startsWith(fieldName, "@");
   }
 
   public FieldType getFieldType(Class<? extends Entity> containingType, Field field) {
-    if (isAdministrativeProperty(getFieldName(containingType, field))) {
+    if (isAdministrativeProperty(containingType, field)) {
       return ADMINISTRATIVE;
     }
 
-    if (isVirtualProperty(getFieldName(containingType, field))) {
+    if (isVirtualProperty(containingType, field)) {
       return VIRTUAL;
     }
 
