@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
+import static nl.knaw.huygens.timbuctoo.model.DomainEntity.PID;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -13,6 +14,7 @@ public class RelationshipMockBuilder {
   private Node endNode;
   private DynamicRelationshipType relationshipType;
   private Node startNode;
+  private String pid;
 
   private RelationshipMockBuilder() {
 
@@ -25,6 +27,7 @@ public class RelationshipMockBuilder {
   public Relationship build() {
     Relationship relationshipMock = mock(Relationship.class);
     when(relationshipMock.getProperty(REVISION_PROPERTY_NAME)).thenReturn(revision);
+    when(relationshipMock.getProperty(PID)).thenReturn(pid);
     when(relationshipMock.getEndNode()).thenReturn(endNode);
     when(relationshipMock.getStartNode()).thenReturn(startNode);
     when(relationshipMock.getType()).thenReturn(relationshipType);
@@ -48,6 +51,11 @@ public class RelationshipMockBuilder {
 
   public RelationshipMockBuilder withStartNode(Node startNode) {
     this.startNode = startNode;
+    return this;
+  }
+
+  public RelationshipMockBuilder withAPID() {
+    this.pid = "pid";
     return this;
   }
 }

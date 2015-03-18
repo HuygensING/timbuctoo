@@ -42,7 +42,6 @@ import test.model.projecta.SubADomainEntity;
 
 public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
 
-  private static final String PID = "pid";
   private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
   private static final Label DOMAIN_ENTITY_LABEL = DynamicLabel.label(TypeNames.getInternalName(DOMAIN_ENTITY_TYPE));
   private static final int FOURTH_REVISION = 4;

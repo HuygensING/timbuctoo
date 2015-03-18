@@ -49,16 +49,18 @@ public class Neo4JStorage implements Storage {
   private final IdGenerator idGenerator;
   private final TypeRegistry typeRegistry;
   private final NodeDuplicator nodeDuplicator;
+  private final RelationshipDuplicator relationshipDuplicator;
 
   @Inject
   public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, EntityInstantiator entityInstantiator, IdGenerator idGenerator,
-      TypeRegistry typeRegistry, NodeDuplicator nodeDuplicator) {
+      TypeRegistry typeRegistry, NodeDuplicator nodeDuplicator, RelationshipDuplicator relationshipDuplicator) {
     this.db = db;
     this.propertyContainerConverterFactory = propertyContainerConverterFactory;
     this.entityInstantiator = entityInstantiator;
     this.idGenerator = idGenerator;
     this.typeRegistry = typeRegistry;
     this.nodeDuplicator = nodeDuplicator;
+    this.relationshipDuplicator = relationshipDuplicator;
   }
 
   @Override
@@ -308,8 +310,47 @@ public class Neo4JStorage implements Storage {
     entity.setPid(null);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) throws StorageException {
+    if (Relation.class.isAssignableFrom(type)) {
+      setRelationPID((Class<? extends Relation>) type, id, pid);
+    } else {
+      setDomainEntityPID(type, id, pid);
+    }
+  }
+
+  private <T extends Relation> void setRelationPID(Class<T> type, String id, String pid) throws NoSuchEntityException, ConversionException, StorageException {
+    try (Transaction transaction = db.beginTx()) {
+      Relationship relationship = getLatestFromIndex(id, transaction);
+
+      if (relationship == null) {
+        transaction.failure();
+        throw new NoSuchEntityException(type, id);
+      }
+
+      try {
+        T entity = entityInstantiator.createInstanceOf(type);
+        RelationshipConverter<T> converter = propertyContainerConverterFactory.createForRelation(type);
+
+        converter.addValuesToEntity(entity, relationship);
+
+        validateEntityHasNoPID(type, id, pid, transaction, entity);
+
+        relationshipDuplicator.saveDuplicate(relationship);
+
+        transaction.success();
+      } catch (ConversionException e) {
+        transaction.failure();
+        throw e;
+      } catch (InstantiationException e) {
+        transaction.failure();
+        throw new StorageException(e);
+      }
+    }
+  }
+
+  private <T extends DomainEntity> void setDomainEntityPID(Class<T> type, String id, String pid) throws NoSuchEntityException, ConversionException, StorageException {
     try (Transaction transaction = db.beginTx()) {
       Node node = getLatestById(type, id);
 
@@ -324,10 +365,7 @@ public class Neo4JStorage implements Storage {
         NodeConverter<T> converter = propertyContainerConverterFactory.createForType(type);
         converter.addValuesToEntity(entity, node);
 
-        if (!StringUtils.isBlank(entity.getPid())) {
-          transaction.failure();
-          throw new IllegalStateException(String.format("%s with %s already has a pid: %s", type.getSimpleName(), id, pid));
-        }
+        validateEntityHasNoPID(type, id, pid, transaction, entity);
 
         updateNodeWithPID(type, pid, node, entity, converter);
 
@@ -342,9 +380,14 @@ public class Neo4JStorage implements Storage {
         transaction.failure();
         throw new StorageException(e);
       }
-
     }
+  }
 
+  private <T extends DomainEntity> void validateEntityHasNoPID(Class<T> type, String id, String pid, Transaction transaction, T entity) {
+    if (!StringUtils.isBlank(entity.getPid())) {
+      transaction.failure();
+      throw new IllegalStateException(String.format("%s with %s already has a pid: %s", type.getSimpleName(), id, pid));
+    }
   }
 
   private <T extends DomainEntity> void updateNodeWithPID(Class<T> type, String pid, Node node, T entity, NodeConverter<T> converter) throws ConversionException {

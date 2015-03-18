@@ -31,6 +31,7 @@ public abstract class Neo4JStorageTest {
   protected static final int THIRD_REVISION = 3;
   protected static final String ID = "id";
   protected static final Change CHANGE = new Change();
+  protected static final String PID = "pid";
 
   protected GraphDatabaseService dbMock;
   protected PropertyContainerConverterFactory propertyContainerConverterFactoryMock;
@@ -39,19 +40,21 @@ public abstract class Neo4JStorageTest {
   protected EntityInstantiator entityInstantiatorMock;
   protected IdGenerator idGeneratorMock;
   protected NodeDuplicator nodeDuplicatorMock;
+  protected RelationshipDuplicator relationshipDuplicatorMock;
 
   @Before
   public void setUp() throws Exception {
     setupDBTransaction();
     setupEntityConverterFactory();
 
+    relationshipDuplicatorMock = mock(RelationshipDuplicator.class);
     nodeDuplicatorMock = mock(NodeDuplicator.class);
     entityInstantiatorMock = mock(EntityInstantiator.class);
     idGeneratorMock = mock(IdGenerator.class);
 
     TypeRegistry typeRegistry = TypeRegistry.getInstance().init("timbuctoo.model test.model");
 
-    instance = new Neo4JStorage(dbMock, propertyContainerConverterFactoryMock, entityInstantiatorMock, idGeneratorMock, typeRegistry, nodeDuplicatorMock);
+    instance = new Neo4JStorage(dbMock, propertyContainerConverterFactoryMock, entityInstantiatorMock, idGeneratorMock, typeRegistry, nodeDuplicatorMock, relationshipDuplicatorMock);
   }
 
   private void setupDBTransaction() {
