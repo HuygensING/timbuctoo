@@ -16,11 +16,13 @@ import com.google.inject.Inject;
 
 public class PropertyContainerConverterFactory {
 
-  private PropertyConverterFactory propertyConverterFactory;
+  private final PropertyConverterFactory propertyConverterFactory;
+  private final TypeRegistry typeRegistry;
 
   @Inject
-  public PropertyContainerConverterFactory(PropertyConverterFactory fieldWrapperFactory) {
+  public PropertyContainerConverterFactory(PropertyConverterFactory fieldWrapperFactory, TypeRegistry typeRegistry) {
     this.propertyConverterFactory = fieldWrapperFactory;
+    this.typeRegistry = typeRegistry;
   }
 
   public <T extends Relation> RelationshipConverter<T> createForRelation(Class<T> type) {
@@ -102,7 +104,7 @@ public class PropertyContainerConverterFactory {
 
   protected <T extends Relation> ExtendableRelationshipConverter<T> createSimpleRelationshipConverter(Class<T> type) {
     ArrayList<String> fieldsToIgnore = Lists.newArrayList(Relation.SOURCE_ID, Relation.TARGET_ID, Relation.SOURCE_TYPE, Relation.TARGET_TYPE);
-    return new ExtendableRelationshipConverter<T>(fieldsToIgnore);
+    return new ExtendableRelationshipConverter<T>(typeRegistry, fieldsToIgnore);
   }
 
 }

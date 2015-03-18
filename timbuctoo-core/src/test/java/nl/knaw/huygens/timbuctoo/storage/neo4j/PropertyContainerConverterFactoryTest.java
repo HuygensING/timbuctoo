@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -41,10 +42,12 @@ public class PropertyContainerConverterFactoryTest {
   private ExtendableRelationshipConverter relationshipConverterMock;
   private AbstractPropertyConverter fieldConverterMock;
   private PropertyConverterFactory propertyConverterFactoryMock;
+  private TypeRegistry typeRegistryMock;
 
   @SuppressWarnings("unchecked")
   @Before
   public void setUp() {
+    typeRegistryMock = mock(TypeRegistry.class);
     nodeConverterMock = mock(ExtendableNodeConverter.class);
     relationshipConverterMock = mock(ExtendableRelationshipConverter.class);
 
@@ -53,7 +56,7 @@ public class PropertyContainerConverterFactoryTest {
 
     when(propertyConverterFactoryMock.createFor(any(Class.class), any(Field.class))).thenReturn(fieldConverterMock);
 
-    instance = new PropertyContainerConverterFactory(propertyConverterFactoryMock) {
+    instance = new PropertyContainerConverterFactory(propertyConverterFactoryMock, typeRegistryMock) {
       @Override
       protected <T extends Entity> ExtendableNodeConverter<T> createSimpleNodeConverter(Class<T> type) {
         return nodeConverterMock;

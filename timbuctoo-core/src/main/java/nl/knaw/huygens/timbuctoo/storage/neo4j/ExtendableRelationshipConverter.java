@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 
 import org.neo4j.graphdb.Label;
@@ -20,8 +22,10 @@ class ExtendableRelationshipConverter<T extends Relation> implements Relationshi
 
   private List<String> fieldsToIgnore;
   private Map<String, PropertyConverter> propertyConverters;
+  private TypeRegistry typeRegistry;
 
-  public ExtendableRelationshipConverter(List<String> fieldsToIgnore) {
+  public ExtendableRelationshipConverter(TypeRegistry typeRegistry, List<String> fieldsToIgnore) {
+    this.typeRegistry = typeRegistry;
     this.fieldsToIgnore = fieldsToIgnore;
     propertyConverters = Maps.newHashMap();
   }
@@ -58,15 +62,16 @@ class ExtendableRelationshipConverter<T extends Relation> implements Relationshi
   }
 
   private String getPrimitiveType(Node node) {
-    String name = null;
-
-    // TODO: find a neater way to determine the name of the primitive type see TIM-63
     for (Label label : node.getLabels()) {
-      if (name == null || label.name().length() < name.length()) {
-        name = label.name();
+      String name = label.name();
+
+      Class<? extends DomainEntity> type = typeRegistry.getDomainEntityType(name);
+      if (TypeRegistry.isPrimitiveDomainEntity(type)) {
+        return name;
       }
     }
-    return name;
+
+    return null;
   }
 
   @Override

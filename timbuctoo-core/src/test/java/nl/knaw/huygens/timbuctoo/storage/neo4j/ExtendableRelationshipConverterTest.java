@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.storage.RelationMatcher.likeRelation;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeMockBuilder.aNode;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.PropertyConverterMockBuilder.newPropertyConverter;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.doThrow;
@@ -8,20 +9,27 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.neo4j.graphdb.DynamicLabel.label;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.helpers.collection.IteratorUtil;
+
+import test.model.BaseDomainEntity;
+import test.model.projecta.ProjectAPerson;
+import test.model.projecta.SubADomainEntity;
+import test.variation.model.projecta.ProjectADomainEntity;
 
 import com.google.common.collect.Lists;
 
@@ -31,7 +39,7 @@ public class ExtendableRelationshipConverterTest {
   private static final String FIELD_CONVERTER = "fieldConverter";
   private static final String FIELD_TO_IGNORE2 = "fieldToIgnore2";
   private static final String FIELD_TO_IGNORE1 = "fieldToIgnore1";
-  private static final ArrayList<String> FIELD_TO_IGNORE = Lists.newArrayList(FIELD_TO_IGNORE1, FIELD_TO_IGNORE2);
+  private static final ArrayList<String> FIELDS_TO_IGNORE = Lists.newArrayList(FIELD_TO_IGNORE1, FIELD_TO_IGNORE2);
   private PropertyConverter propertyConverterMockToIgnore1;
   private PropertyConverter propertyConverterMockToIgnore2;
   private PropertyConverter adminPropertyConverterMock;
@@ -39,15 +47,19 @@ public class ExtendableRelationshipConverterTest {
   private Relationship relationshipMock;
   private Relation relation;
   private ExtendableRelationshipConverter<Relation> instance;
+  private TypeRegistry typeRegistry;
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
+    typeRegistry = TypeRegistry.getInstance();
+    typeRegistry.init(SubADomainEntity.class.getPackage().getName() + " " + BaseDomainEntity.class.getPackage().getName() + " " + Person.class.getPackage().getName());
+
     propertyConverterMockToIgnore1 = newPropertyConverter().withName(FIELD_TO_IGNORE1).build();
     propertyConverterMockToIgnore2 = newPropertyConverter().withName(FIELD_TO_IGNORE2).build();
     adminPropertyConverterMock = newPropertyConverter().withName(FIELD_CONVERTER).withType(FieldType.ADMINISTRATIVE).build();
     regularPropertyConverterMock = newPropertyConverter().withName(OTHER_FIELD_CONVERTER).withType(FieldType.REGULAR).build();
 
-    instance = new ExtendableRelationshipConverter<Relation>(FIELD_TO_IGNORE);
+    instance = new ExtendableRelationshipConverter<Relation>(typeRegistry, FIELDS_TO_IGNORE);
     instance.addPropertyConverter(regularPropertyConverterMock);
     instance.addPropertyConverter(adminPropertyConverterMock);
     instance.addPropertyConverter(propertyConverterMockToIgnore2);
@@ -86,17 +98,21 @@ public class ExtendableRelationshipConverterTest {
   @Test
   public void addValuesToEntityCallsAllTheFieldConvertersThatAreNotOnTheIgnoredListAndSetsFieldsOfRelationThatArePackedInTheStartAndEndNode() throws Exception {
     // setup
+    Label startNodeBaseTypeLabel = getLabelOfType(BaseDomainEntity.class);
     String sourceId = "sourceId";
-    String sourceType = "sourceType";
-    Node startNode = mock(Node.class);
-    nodeHasIdProperty(startNode, sourceId);
-    nodeHasLabels(startNode, sourceType, "otherSourceType");
+    String sourceType = startNodeBaseTypeLabel.name();
+    Node startNode = aNode().withId(sourceId)//
+        .withLabel(getLabelOfType(ProjectADomainEntity.class))//
+        .withLabel(startNodeBaseTypeLabel)//
+        .build();
 
+    Label endNodeBaseTypeLabel = getLabelOfType(Person.class);
     String targetId = "targetId";
-    String targetType = "targetType";
-    Node endNode = mock(Node.class);
-    nodeHasLabels(endNode, targetType, "otherTargetType");
-    nodeHasIdProperty(endNode, targetId);
+    String targetType = endNodeBaseTypeLabel.name();
+    Node endNode = aNode().withId(targetId) //
+        .withLabel(getLabelOfType(ProjectAPerson.class)) //
+        .withLabel(endNodeBaseTypeLabel)//
+        .build();
 
     when(relationshipMock.getStartNode()).thenReturn(startNode);
     when(relationshipMock.getEndNode()).thenReturn(endNode);
@@ -117,14 +133,8 @@ public class ExtendableRelationshipConverterTest {
     verify(propertyConverterMockToIgnore2, never()).addValueToEntity(relation, relationshipMock);
   }
 
-  private void nodeHasLabels(Node node, String label1, String label2) {
-    Iterator<Label> iterator = Lists.newArrayList(label(label2), label(label1)).iterator();
-    when(node.getLabels()).thenReturn(IteratorUtil.asIterable(iterator));
-  }
-
-  private void nodeHasIdProperty(Node node, String propertyValue) {
-    when(node.hasProperty(Entity.ID_PROPERTY_NAME)).thenReturn(true);
-    when(node.getProperty(Entity.ID_PROPERTY_NAME)).thenReturn(propertyValue);
+  private Label getLabelOfType(Class<? extends DomainEntity> type) {
+    return DynamicLabel.label(TypeNames.getInternalName(type));
   }
 
   @Test(expected = ConversionException.class)

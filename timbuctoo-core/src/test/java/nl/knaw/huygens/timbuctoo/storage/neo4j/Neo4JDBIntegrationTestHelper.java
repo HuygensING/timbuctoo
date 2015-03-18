@@ -14,14 +14,15 @@ public class Neo4JDBIntegrationTestHelper implements DBIntegrationTestHelper {
   private PropertyContainerConverterFactory propertyContainerConverterFactory;
   private IdGenerator idGenerator;
   private EntityInstantiator entityInstantiator;
+  private PropertyConverterFactory propertyConverterFactory;
 
   @Override
   public void startCleanDB() throws Exception {
     idGenerator = new IdGenerator();
     db = new TestGraphDatabaseFactory().newImpermanentDatabase();
     PropertyBusinessRules propertyBusinessRules = new PropertyBusinessRules();
-    PropertyConverterFactory propertyConverterFactory = new PropertyConverterFactory(propertyBusinessRules);
-    propertyContainerConverterFactory = new PropertyContainerConverterFactory(propertyConverterFactory);
+    propertyConverterFactory = new PropertyConverterFactory(propertyBusinessRules);
+
     entityInstantiator = new EntityInstantiator();
   }
 
@@ -32,7 +33,7 @@ public class Neo4JDBIntegrationTestHelper implements DBIntegrationTestHelper {
 
   @Override
   public Storage createStorage(TypeRegistry typeRegistry) throws ModelException {
-
+    propertyContainerConverterFactory = new PropertyContainerConverterFactory(propertyConverterFactory, typeRegistry);
     return new Neo4JStorage(db, propertyContainerConverterFactory, entityInstantiator, idGenerator, typeRegistry, new NodeDuplicator(db));
   }
 
