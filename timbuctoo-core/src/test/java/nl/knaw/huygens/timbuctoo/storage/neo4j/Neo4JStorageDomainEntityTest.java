@@ -470,6 +470,32 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
     }
   }
 
+  @Test(expected = ConversionException.class)
+  public void setPIDThrowsAConversionExceptionWhenTheNodeConverterDoes() throws Exception {
+    // setup
+    Node aNodeWithAPID = aNode().withAPID().build();
+    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID)//
+        .withNode(aNodeWithAPID)//
+        .foundInDB(dbMock);
+
+    SubADomainEntity entity = aDomainEntity().build();
+    when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE))//
+        .thenReturn(entity);
+
+    NodeConverter<SubADomainEntity> nodeConverter = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
+
+    doThrow(ConversionException.class).when(nodeConverter).addValuesToEntity(entity, aNodeWithAPID);
+
+    try {
+      // action
+      instance.setPID(DOMAIN_ENTITY_TYPE, ID, PID);
+    } finally {
+      // verify
+      verify(nodeConverter).addValuesToEntity(entity, aNodeWithAPID);
+      verify(transactionMock).failure();
+    }
+  }
+
   @Test(expected = StorageException.class)
   public void setPIDThrowsAStorageExceptionWhenTheEntityDoesNotExist() throws Exception {
     // setup

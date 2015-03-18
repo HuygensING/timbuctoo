@@ -335,6 +335,9 @@ public class Neo4JStorage implements Storage {
         nodeDuplicator.saveDuplicate(node);
 
         transaction.success();
+      } catch (ConversionException e) {
+        transaction.failure();
+        throw e;
       } catch (InstantiationException e) {
         transaction.failure();
         throw new StorageException(e);
