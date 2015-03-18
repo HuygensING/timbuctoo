@@ -23,6 +23,7 @@ package nl.knaw.huygens.timbuctoo.model;
  */
 
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.annotations.DBIgnore;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
@@ -50,13 +51,17 @@ public class Relation extends DomainEntity {
   public static final String TYPE_ID_FACET_NAME = "dynamic_s_typeId";
 
   /** A reference to the 'active' participant of the relation (resembles rdf:subject). */
+  @DBIgnore
   private String sourceType;
+  @DBIgnore
   private String sourceId;
   /** A reference to the property or characteristic of the subject (resembles rdf:predicate). */
   private String typeType;
   private String typeId;
   /** A reference to the 'passive' participant of the relation (resembles rdf:object). */
+  @DBIgnore
   private String targetType;
+  @DBIgnore
   private String targetId;
   /**
    * Do we accept the existence of this relation? As such it also controls
