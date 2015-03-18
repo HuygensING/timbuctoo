@@ -52,7 +52,7 @@ public class ExtendableRelationshipConverterTest {
   @Before
   public void setUp() throws Exception {
     typeRegistry = TypeRegistry.getInstance();
-    typeRegistry.init(SubADomainEntity.class.getPackage().getName() + " " + BaseDomainEntity.class.getPackage().getName() + " " + Person.class.getPackage().getName());
+    typeRegistry.init(getPackageName(SubADomainEntity.class) + " " + getPackageName(BaseDomainEntity.class) + " " + getPackageName(Person.class));
 
     propertyConverterMockToIgnore1 = newPropertyConverter().withName(FIELD_TO_IGNORE1).build();
     propertyConverterMockToIgnore2 = newPropertyConverter().withName(FIELD_TO_IGNORE2).build();
@@ -67,6 +67,10 @@ public class ExtendableRelationshipConverterTest {
 
     relationshipMock = mock(Relationship.class);
     relation = new Relation();
+  }
+
+  private String getPackageName(Class<? extends DomainEntity> type) {
+    return type.getPackage().getName();
   }
 
   @Test
