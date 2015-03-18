@@ -32,8 +32,8 @@ public class NodeDuplicator {
     addVersionOfRelationToDuplicate(duplicate, original);
   }
 
-  private void addLabelsToDuplicate(Node duplicatedNode, Node orginal) {
-    for (Label label : orginal.getLabels()) {
+  private void addLabelsToDuplicate(Node duplicatedNode, Node original) {
+    for (Label label : original.getLabels()) {
       duplicatedNode.addLabel(label);
     }
   }
@@ -45,7 +45,7 @@ public class NodeDuplicator {
   }
 
   private void addRelationshipsToDuplicate(Node duplicatedNode, Node original) {
-    duplicateRelationships(duplicatedNode, original, new IncommingRelationshipDuplicator());
+    duplicateRelationships(duplicatedNode, original, new IncomingRelationshipDuplicator());
     duplicateRelationships(duplicatedNode, original, new OutgoingRelationshipDuplicator());
 
   }
@@ -63,10 +63,10 @@ public class NodeDuplicator {
   private static interface RelationshipDuplicator {
     Direction getDirection();
 
-    void addRelationshipToNode(Node nodeToDuplicate, Relationship relationship);
+    void addRelationshipToNode(Node duplicatedNode, Relationship relationship);
   }
 
-  private static class IncommingRelationshipDuplicator implements RelationshipDuplicator {
+  private static class IncomingRelationshipDuplicator implements RelationshipDuplicator {
 
     @Override
     public Direction getDirection() {
