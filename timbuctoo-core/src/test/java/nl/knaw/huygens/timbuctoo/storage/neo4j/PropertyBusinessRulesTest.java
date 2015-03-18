@@ -56,6 +56,13 @@ public class PropertyBusinessRulesTest {
     verifyThatFieldIsOfType(DomainEntity.class, fieldWithNameThatStartsWithAtSign, VIRTUAL);
   }
 
+  @Test
+  public void getFieldTypeReturnsVIRTUALIfTheFieldHasAnAnnotationDBIgnore() throws Exception {
+    Field fieldWithDBIgnoreAnnotation = TYPE.getDeclaredField("dbIgnoreAnnotatedProperty");
+
+    verifyThatFieldIsOfType(TYPE, fieldWithDBIgnoreAnnotation, VIRTUAL);
+  }
+
   private void verifyThatFieldIsOfType(Class<? extends Entity> containingType, Field field, FieldType expectedFieldType) {
     FieldType fieldType = instance.getFieldType(containingType, field);
 

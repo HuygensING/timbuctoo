@@ -7,6 +7,7 @@ import static nl.knaw.huygens.timbuctoo.storage.neo4j.FieldType.VIRTUAL;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import nl.knaw.huygens.timbuctoo.annotations.DBIgnore;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.apache.commons.lang3.StringUtils;
@@ -22,7 +23,7 @@ public class PropertyBusinessRules {
 
   private boolean isVirtualProperty(Class<? extends Entity> containingType, Field field) {
     String fieldName = getFieldName(containingType, field);
-    return StringUtils.startsWith(fieldName, "@");
+    return field.isAnnotationPresent(DBIgnore.class) || StringUtils.startsWith(fieldName, "@");
   }
 
   public FieldType getFieldType(Class<? extends Entity> containingType, Field field) {

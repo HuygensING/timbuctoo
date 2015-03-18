@@ -25,6 +25,7 @@ package test.model;
 import java.util.List;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.annotations.DBIgnore;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
@@ -59,6 +60,9 @@ public class TestSystemEntityWrapper extends SystemEntity {
   private String annotatedProperty;
 
   private String propertyWithAnnotatedGetter;
+
+  @DBIgnore
+  private String dbIgnoreAnnotatedProperty;
 
   public TestSystemEntityWrapper() {}
 
@@ -155,6 +159,14 @@ public class TestSystemEntityWrapper extends SystemEntity {
 
   public static void setStaticField(String staticField) {
     TestSystemEntityWrapper.staticField = staticField;
+  }
+
+  public String getDbIgnoreAnnotatedProperty() {
+    return dbIgnoreAnnotatedProperty;
+  }
+
+  public void setDbIgnoreAnnotatedProperty(String dbIgnoreAnnotatedProperty) {
+    this.dbIgnoreAnnotatedProperty = dbIgnoreAnnotatedProperty;
   }
 
 }
