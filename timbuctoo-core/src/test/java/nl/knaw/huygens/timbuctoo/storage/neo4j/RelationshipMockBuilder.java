@@ -5,18 +5,23 @@ import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.neo4j.graphdb.DynamicRelationshipType;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
+
+import com.google.common.collect.Maps;
 
 public class RelationshipMockBuilder {
-  private int revision;
   private Node endNode;
-  private DynamicRelationshipType relationshipType;
+  private RelationshipType relationshipType;
   private Node startNode;
-  private String pid;
+  private Map<String, Object> properties;
 
   private RelationshipMockBuilder() {
+    properties = Maps.newHashMap();
 
   }
 
@@ -26,17 +31,18 @@ public class RelationshipMockBuilder {
 
   public Relationship build() {
     Relationship relationshipMock = mock(Relationship.class);
-    when(relationshipMock.getProperty(REVISION_PROPERTY_NAME)).thenReturn(revision);
-    when(relationshipMock.getProperty(PID)).thenReturn(pid);
+    addProperties(relationshipMock);
     when(relationshipMock.getEndNode()).thenReturn(endNode);
     when(relationshipMock.getStartNode()).thenReturn(startNode);
     when(relationshipMock.getType()).thenReturn(relationshipType);
     return relationshipMock;
   }
 
-  public RelationshipMockBuilder withRevision(int revision) {
-    this.revision = revision;
-    return this;
+  private void addProperties(Relationship relationshipMock) {
+    when(relationshipMock.getPropertyKeys()).thenReturn(properties.keySet());
+    for (Entry<String, Object> entry : properties.entrySet()) {
+      when(relationshipMock.getProperty(entry.getKey())).thenReturn(entry.getValue());
+    }
   }
 
   public RelationshipMockBuilder withEndNode(Node endNode) {
@@ -44,7 +50,7 @@ public class RelationshipMockBuilder {
     return this;
   }
 
-  public RelationshipMockBuilder withType(DynamicRelationshipType relationshipType) {
+  public RelationshipMockBuilder withType(RelationshipType relationshipType) {
     this.relationshipType = relationshipType;
     return this;
   }
@@ -55,7 +61,15 @@ public class RelationshipMockBuilder {
   }
 
   public RelationshipMockBuilder withAPID() {
-    this.pid = "pid";
+    return withProperty(PID, "pid");
+  }
+
+  public RelationshipMockBuilder withRevision(int revision) {
+    return withProperty(REVISION_PROPERTY_NAME, revision);
+  }
+
+  public RelationshipMockBuilder withProperty(String key, Object value) {
+    properties.put(key, value);
     return this;
   }
 }
