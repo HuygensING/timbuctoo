@@ -26,7 +26,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
@@ -36,30 +35,15 @@ import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
 import org.junit.Test;
 import org.mockito.InOrder;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.index.RelationshipIndex;
 
 import test.model.projecta.SubARelation;
 
 public class Neo4JStorageRelationTest extends Neo4JStorageTest {
-  protected final class SetPIDAnswer implements Answer<Object> {
-    @Override
-    public Object answer(InvocationOnMock invocation) throws Throwable {
-      DomainEntity domainEntity = (DomainEntity) invocation.getArguments()[0];
-      PropertyContainer container = (PropertyContainer) invocation.getArguments()[1];
-
-      domainEntity.setPid("" + container.getProperty(DomainEntity.PID));
-
-      return null;
-    }
-  }
-
   private static final Class<Relationship> RELATIONSHIP_TYPE = Relationship.class;
   private static final String RELATION_TYPE_ID = "typeId";
   private static final String RELATION_TARGET_ID = "targetId";
@@ -747,7 +731,7 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
     when(entityInstantiatorMock.createInstanceOf(RELATION_TYPE)).thenReturn(entity);
 
     RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
-    doAnswer(new SetPIDAnswer()).when(converter).addValuesToEntity(entity, relationship);
+    doAnswer(setPIDOfEntity()).when(converter).addValuesToEntity(entity, relationship);
 
     try {
       // action

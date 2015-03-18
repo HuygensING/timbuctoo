@@ -31,8 +31,6 @@ import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
 import org.junit.Test;
 import org.mockito.InOrder;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
@@ -467,17 +465,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
 
     NodeConverter<SubADomainEntity> nodeConverter = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
 
-    doAnswer(new Answer<Object>() {
-
-      @Override
-      public Object answer(InvocationOnMock invocation) throws Throwable {
-        DomainEntity entity = (DomainEntity) invocation.getArguments()[0];
-        Node node = (Node) invocation.getArguments()[1];
-        entity.setPid("" + node.getProperty(DomainEntity.PID));
-
-        return null;
-      }
-    }).when(nodeConverter).addValuesToEntity(entity, aNodeWithAPID);
+    doAnswer(setPIDOfEntity()).when(nodeConverter).addValuesToEntity(entity, aNodeWithAPID);
 
     try {
       // action

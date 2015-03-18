@@ -6,15 +6,19 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 
 import org.junit.Before;
 import org.mockito.InOrder;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 
@@ -85,4 +89,19 @@ public abstract class Neo4JStorageTest {
     when(idGeneratorMock.nextIdFor(type)).thenReturn(id);
   }
 
+  protected Answer<Object> setPIDOfEntity() {
+    return new SetPIDAnswer();
+  }
+
+  private final class SetPIDAnswer implements Answer<Object> {
+    @Override
+    public Object answer(InvocationOnMock invocation) throws Throwable {
+      DomainEntity domainEntity = (DomainEntity) invocation.getArguments()[0];
+      PropertyContainer container = (PropertyContainer) invocation.getArguments()[1];
+
+      domainEntity.setPid("" + container.getProperty(DomainEntity.PID));
+
+      return null;
+    }
+  }
 }
