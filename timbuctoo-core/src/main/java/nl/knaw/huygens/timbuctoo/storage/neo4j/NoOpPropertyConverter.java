@@ -8,6 +8,8 @@ import org.neo4j.graphdb.PropertyContainer;
 
 public class NoOpPropertyConverter implements PropertyConverter {
 
+  private String fieldName;
+
   @Override
   public void setContainingType(Class<? extends Entity> containingType) {
     // TODO Auto-generated method stub
@@ -40,8 +42,7 @@ public class NoOpPropertyConverter implements PropertyConverter {
 
   @Override
   public void setName(String fieldName) {
-    // TODO Auto-generated method stub
-
+    this.fieldName = fieldName;
   }
 
   @Override
@@ -51,7 +52,7 @@ public class NoOpPropertyConverter implements PropertyConverter {
 
   @Override
   public String getName() {
-    return "";
+    return this.fieldName;
   }
 
 }
