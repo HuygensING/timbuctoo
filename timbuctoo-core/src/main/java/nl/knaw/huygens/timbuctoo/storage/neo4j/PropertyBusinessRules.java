@@ -3,14 +3,15 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.FieldType.ADMINISTRATIVE;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.FieldType.REGULAR;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.FieldType.VIRTUAL;
+import static org.apache.commons.lang3.StringUtils.startsWith;
+import static org.apache.commons.lang3.StringUtils.startsWithAny;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
 import nl.knaw.huygens.timbuctoo.annotations.DBIgnore;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -18,12 +19,16 @@ public class PropertyBusinessRules {
 
   private boolean isAdministrativeProperty(Class<? extends Entity> containingType, Field field) {
     String fieldName = getFieldName(containingType, field);
-    return StringUtils.startsWithAny(fieldName, "_", "^");
+    return startsWithAny(fieldName, "_", "^");
   }
 
   private boolean isVirtualProperty(Class<? extends Entity> containingType, Field field) {
     String fieldName = getFieldName(containingType, field);
-    return field.isAnnotationPresent(DBIgnore.class) || StringUtils.startsWith(fieldName, "@");
+    return field.isAnnotationPresent(DBIgnore.class) || startsWith(fieldName, "@") || isStatic(field);
+  }
+
+  private boolean isStatic(Field field) {
+    return Modifier.isStatic(field.getModifiers());
   }
 
   public FieldType getFieldType(Class<? extends Entity> containingType, Field field) {

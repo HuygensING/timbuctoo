@@ -57,10 +57,17 @@ public class PropertyBusinessRulesTest {
   }
 
   @Test
-  public void getFieldTypeReturnsVIRTUALIfTheFieldHasAnAnnotationDBIgnore() throws Exception {
-    Field fieldWithDBIgnoreAnnotation = TYPE.getDeclaredField("dbIgnoreAnnotatedProperty");
+  public void getFieldTypeReturnsVIRTUALIfTheFieldIsStatic() throws Exception {
+    Field staticField = TYPE.getDeclaredField("ID_PREFIX");
 
-    verifyThatFieldIsOfType(TYPE, fieldWithDBIgnoreAnnotation, VIRTUAL);
+    verifyThatFieldIsOfType(TYPE, staticField, VIRTUAL);
+  }
+
+  @Test
+  public void getFieldTypeReturnsVIRTUALIfTheFieldHasAnAnnotationDBIgnore() throws Exception {
+    Field staticField = TYPE.getDeclaredField("dbIgnoreAnnotatedProperty");
+
+    verifyThatFieldIsOfType(TYPE, staticField, VIRTUAL);
   }
 
   @Test
