@@ -19,14 +19,14 @@ public class PropertyContainerConverterFactory {
   private final TypeRegistry typeRegistry;
 
   @Inject
-  public PropertyContainerConverterFactory(PropertyConverterFactory fieldWrapperFactory, TypeRegistry typeRegistry) {
-    this.propertyConverterFactory = fieldWrapperFactory;
+  public PropertyContainerConverterFactory(PropertyConverterFactory propertyConverterFactory, TypeRegistry typeRegistry) {
+    this.propertyConverterFactory = propertyConverterFactory;
     this.typeRegistry = typeRegistry;
   }
 
   public <T extends Relation> RelationshipConverter<T> createForRelation(Class<T> type) {
     ExtendableRelationshipConverter<T> relationshipConverter = createSimpleRelationshipConverter(type);
-    addFieldWrappers(relationshipConverter, type);
+    addPropertyConverters(relationshipConverter, type);
 
     return relationshipConverter;
   }
@@ -49,7 +49,7 @@ public class PropertyContainerConverterFactory {
 
   public <T extends Entity> NodeConverter<T> createForType(Class<T> type) {
     ExtendableNodeConverter<T> propertyContainerConverter = createSimpleNodeConverter(type);
-    addFieldWrappers(propertyContainerConverter, type);
+    addPropertyConverters(propertyContainerConverter, type);
 
     return propertyContainerConverter;
   }
@@ -84,7 +84,7 @@ public class PropertyContainerConverterFactory {
   }
 
   @SuppressWarnings("unchecked")
-  private <U extends PropertyContainer, T extends Entity> void addFieldWrappers(ExtendablePropertyContainerConverter<U, T> propertyContainerConverter, Class<T> type) {
+  private <U extends PropertyContainer, T extends Entity> void addPropertyConverters(ExtendablePropertyContainerConverter<U, T> propertyContainerConverter, Class<T> type) {
     for (Class<? extends Entity> typeToGetFieldsFrom = type; isEntity(typeToGetFieldsFrom); typeToGetFieldsFrom = (Class<? extends Entity>) typeToGetFieldsFrom.getSuperclass()) {
 
       for (Field field : typeToGetFieldsFrom.getDeclaredFields()) {
