@@ -23,7 +23,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
@@ -474,12 +473,9 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
       instance.getEntity(Neo4JStorageRelationTest.RELATION_TYPE, ID);
     } finally {
       // verify
-      verify(dbMock).beginTx();
-      verify(dbMock).index();
       verify(indexMock).get(ID_PROPERTY_NAME, ID);
+      verify(entityInstantiatorMock).createInstanceOf(RELATION_TYPE);
       verifyTransactionFailed();
-      verifyNoMoreInteractions(dbMock);
-      verifyZeroInteractions(propertyContainerConverterFactoryMock);
     }
   }
 

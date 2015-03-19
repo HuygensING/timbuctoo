@@ -331,10 +331,9 @@ public class Neo4JStorage implements Storage {
       }
 
       try {
-        T entity = entityInstantiator.createInstanceOf(type);
         RelationshipConverter<T> converter = propertyContainerConverterFactory.createForRelation(type);
 
-        converter.addValuesToEntity(entity, relationship);
+        T entity = convertRelationshipToRelation(type, relationship);
 
         validateEntityHasNoPID(type, id, pid, transaction, entity);
 
@@ -519,10 +518,7 @@ public class Neo4JStorage implements Storage {
       }
 
       try {
-        T entity = entityInstantiator.createInstanceOf(type);
-
-        RelationshipConverter<T> converter = propertyContainerConverterFactory.createForRelation(type);
-        converter.addValuesToEntity(entity, propertyContainerWithHighestRevision);
+        T entity = convertRelationshipToRelation(type, propertyContainerWithHighestRevision);
 
         transaction.success();
         return entity;
@@ -546,10 +542,7 @@ public class Neo4JStorage implements Storage {
       }
 
       try {
-        T entity = entityInstantiator.createInstanceOf(type);
-
-        NodeConverter<T> converter = propertyContainerConverterFactory.createForType(type);
-        converter.addValuesToEntity(entity, propertyContainerWithHighestRevision);
+        T entity = convertNodeToEntity(type, propertyContainerWithHighestRevision);
 
         transaction.success();
         return entity;
@@ -685,10 +678,7 @@ public class Neo4JStorage implements Storage {
       }
 
       try {
-        T entity = entityInstantiator.createInstanceOf(type);
-
-        RelationshipConverter<T> converter = propertyContainerConverterFactory.createForRelation(type);
-        converter.addValuesToEntity(entity, relationship);
+        T entity = convertRelationshipToRelation(type, relationship);
 
         if (hasPID(entity)) {
           transaction.success();
@@ -706,6 +696,21 @@ public class Neo4JStorage implements Storage {
       }
 
     }
+  }
+
+  private <T extends Relation> T convertRelationshipToRelation(Class<T> type, Relationship relationship) throws InstantiationException, ConversionException {
+
+    RelationshipConverter<T> converter = propertyContainerConverterFactory.createForRelation(type);
+
+    return convertRelationshipToRelation(type, relationship, converter);
+  }
+
+  private <T extends Relation> T convertRelationshipToRelation(Class<T> type, Relationship relationship, RelationshipConverter<T> converter) throws InstantiationException, ConversionException {
+    T entity = entityInstantiator.createInstanceOf(type);
+
+    converter.addValuesToEntity(entity, relationship);
+
+    return entity;
   }
 
   private <T extends Relation> boolean hasPID(T entity) {
@@ -734,10 +739,7 @@ public class Neo4JStorage implements Storage {
       }
 
       try {
-        T entity = entityInstantiator.createInstanceOf(type);
-        NodeConverter<T> converter = propertyContainerConverterFactory.createForType(type);
-
-        converter.addValuesToEntity(entity, node);
+        T entity = convertNodeToEntity(type, node);
 
         transaction.success();
         return entity;
@@ -750,6 +752,16 @@ public class Neo4JStorage implements Storage {
         throw new StorageException(e);
       }
     }
+  }
+
+  private <T extends Entity> T convertNodeToEntity(Class<T> type, Node node) throws InstantiationException, ConversionException {
+    return convertNodeToEntity(type, node, propertyContainerConverterFactory.createForType(type));
+  }
+
+  private <T extends Entity> T convertNodeToEntity(Class<T> type, Node node, NodeConverter<T> converter) throws InstantiationException, ConversionException {
+    T entity = entityInstantiator.createInstanceOf(type);
+    converter.addValuesToEntity(entity, node);
+    return entity;
   }
 
   private <T extends Entity> Node getRevisionNode(Class<T> type, String id, int revision) {
