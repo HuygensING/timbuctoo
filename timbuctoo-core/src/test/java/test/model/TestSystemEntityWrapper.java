@@ -64,6 +64,12 @@ public class TestSystemEntityWrapper extends SystemEntity {
   @DBIgnore
   private String dbIgnoreAnnotatedProperty;
 
+  @DBIgnore
+  private String _dbIgnoreAnnotatedProperty;
+  @DBIgnore
+  @JsonProperty("^adminDBIgnoreAnnotatedProperty")
+  private String adminDBIgnoreAnnotatedProperty;
+
   public TestSystemEntityWrapper() {}
 
   public TestSystemEntityWrapper(String id) {
@@ -167,6 +173,22 @@ public class TestSystemEntityWrapper extends SystemEntity {
 
   public void setDbIgnoreAnnotatedProperty(String dbIgnoreAnnotatedProperty) {
     this.dbIgnoreAnnotatedProperty = dbIgnoreAnnotatedProperty;
+  }
+
+  public String get_dbIgnoreAnnotatedProperty() {
+    return _dbIgnoreAnnotatedProperty;
+  }
+
+  public void set_dbIgnoreAnnotatedProperty(String _dbIgnoreAnnotatedProperty) {
+    this._dbIgnoreAnnotatedProperty = _dbIgnoreAnnotatedProperty;
+  }
+
+  public String getAdminDBIgnoreAnnotatedProperty() {
+    return adminDBIgnoreAnnotatedProperty;
+  }
+
+  public void setAdminDBIgnoreAnnotatedProperty(String adminDBIgnoreAnnotatedProperty) {
+    this.adminDBIgnoreAnnotatedProperty = adminDBIgnoreAnnotatedProperty;
   }
 
 }

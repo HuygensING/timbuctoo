@@ -27,12 +27,12 @@ public class PropertyBusinessRules {
   }
 
   public FieldType getFieldType(Class<? extends Entity> containingType, Field field) {
-    if (isAdministrativeProperty(containingType, field)) {
-      return ADMINISTRATIVE;
-    }
-
     if (isVirtualProperty(containingType, field)) {
       return VIRTUAL;
+    }
+
+    if (isAdministrativeProperty(containingType, field)) {
+      return ADMINISTRATIVE;
     }
 
     return REGULAR;

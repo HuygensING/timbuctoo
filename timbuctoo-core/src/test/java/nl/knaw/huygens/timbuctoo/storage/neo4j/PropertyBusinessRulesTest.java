@@ -63,6 +63,20 @@ public class PropertyBusinessRulesTest {
     verifyThatFieldIsOfType(TYPE, fieldWithDBIgnoreAnnotation, VIRTUAL);
   }
 
+  @Test
+  public void getFieldTypeReturnsVIRTUALIfTheFieldNameStartsWithACaretAndHasAnAnnotationDBIgnore() throws Exception {
+    Field fieldWithDBIgnoreAnnotation = TYPE.getDeclaredField("adminDBIgnoreAnnotatedProperty");
+
+    verifyThatFieldIsOfType(TYPE, fieldWithDBIgnoreAnnotation, VIRTUAL);
+  }
+
+  @Test
+  public void getFieldTypeReturnsVIRTUALIfTheFieldNameStartsWithAnUnderscoreAndHasAnAnnotationDBIgnore() throws Exception {
+    Field fieldWithDBIgnoreAnnotation = TYPE.getDeclaredField("_dbIgnoreAnnotatedProperty");
+
+    verifyThatFieldIsOfType(TYPE, fieldWithDBIgnoreAnnotation, VIRTUAL);
+  }
+
   private void verifyThatFieldIsOfType(Class<? extends Entity> containingType, Field field, FieldType expectedFieldType) {
     FieldType fieldType = instance.getFieldType(containingType, field);
 
