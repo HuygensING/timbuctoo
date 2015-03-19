@@ -1,7 +1,8 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.FieldType.VIRTUAL;
+
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
@@ -19,18 +20,19 @@ public class PropertyConverterFactory {
   }
 
   public <T extends Entity> PropertyConverter createFor(Class<T> type, Field field) {
-    PropertyConverter propertyConverter = createPropertyConverter(field);
+    FieldType fieldType = propertyBusinessRules.getFieldType(type, field);
+    PropertyConverter propertyConverter = createPropertyConverter(field, fieldType);
 
     propertyConverter.setField(field);
     propertyConverter.setContainingType(type);
-    propertyConverter.setFieldType(propertyBusinessRules.getFieldType(type, field));
+    propertyConverter.setFieldType(fieldType);
     propertyConverter.setName(propertyBusinessRules.getFieldName(type, field));
 
     return propertyConverter;
   }
 
-  private PropertyConverter createPropertyConverter(Field field) {
-    if (Modifier.isStatic(field.getModifiers())) {
+  private PropertyConverter createPropertyConverter(Field field, FieldType fieldType) {
+    if (fieldType == VIRTUAL) {
       return createNoOpPropertyConverter();
     } else if (isSimpleValue(field)) {
       return createSimpleValuePropertyConverter();

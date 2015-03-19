@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.FieldType.REGULAR;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.FieldType.VIRTUAL;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
@@ -18,13 +20,12 @@ import test.model.TestSystemEntityWrapper;
 
 public class PropertyConverterFactoryTest {
   private static final String FIELD_NAME = "fieldName";
-  private static final FieldType FIELD_TYPE = FieldType.REGULAR;
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
-  private static final Class<ObjectValuePropertyConverter> OBJECT_WRAPPER_TYPE = ObjectValuePropertyConverter.class;
-  private static final Class<SimpleValuePropertyConverter> SIMPLE_VALUE_WRAPPER_TYPE = SimpleValuePropertyConverter.class;
-  private static final Class<NoOpPropertyConverter> NO_OP_WRAPPER_TYPE = NoOpPropertyConverter.class;
+  private static final Class<ObjectValuePropertyConverter> OBJECT_CONVERTER_TYPE = ObjectValuePropertyConverter.class;
+  private static final Class<SimpleValuePropertyConverter> SIMPLE_VALUE_CONVERTER_TYPE = SimpleValuePropertyConverter.class;
+  private static final Class<NoOpPropertyConverter> NO_OP_CONVERTER_TYPE = NoOpPropertyConverter.class;
   @SuppressWarnings("rawtypes")
-  private static final Class<SimpleCollectionPropertyConverter> SIMPLE_COLLECTION_FIELD_WRAPPER_TYPE = SimpleCollectionPropertyConverter.class;
+  private static final Class<SimpleCollectionPropertyConverter> SIMPLE_COLLECTION_FIELD_CONVERTER_TYPE = SimpleCollectionPropertyConverter.class;
   private static final TestSystemEntityWrapper TEST_SYSTEM_ENTITY = new TestSystemEntityWrapper();
   private PropertyConverterFactory instance;
   private PropertyBusinessRules propertyBusinessRulesMock;
@@ -36,102 +37,103 @@ public class PropertyConverterFactoryTest {
     instance = new PropertyConverterFactory(propertyBusinessRulesMock) {
       @Override
       protected PropertyConverter createSimpleValuePropertyConverter() {
-        return mock(SIMPLE_VALUE_WRAPPER_TYPE);
+        return mock(SIMPLE_VALUE_CONVERTER_TYPE);
       }
 
       @Override
       protected PropertyConverter createObjectValuePropertyConverter() {
-        return mock(OBJECT_WRAPPER_TYPE);
+        return mock(OBJECT_CONVERTER_TYPE);
       }
 
       @Override
       protected PropertyConverter createNoOpPropertyConverter() {
-        return mock(NO_OP_WRAPPER_TYPE);
+        return mock(NO_OP_CONVERTER_TYPE);
       }
 
       @Override
       protected <T> PropertyConverter createSimpleCollectionPropertyConverter(Class<T> componentType) {
-        return mock(SIMPLE_COLLECTION_FIELD_WRAPPER_TYPE);
+        return mock(SIMPLE_COLLECTION_FIELD_CONVERTER_TYPE);
       }
 
     };
   }
 
   @Test
-  public void createForCreatesASimpleValueFieldWrapperIfTheFieldContainsAString() throws Exception {
+  public void createForCreatesASimpleValuePropertyConverterIfTheFieldContainsAString() throws Exception {
     Field stringField = getField(TYPE, "stringValue");
 
-    testCreateFor(TEST_SYSTEM_ENTITY, stringField, SIMPLE_VALUE_WRAPPER_TYPE);
+    testCreateFor(TEST_SYSTEM_ENTITY, stringField, REGULAR, SIMPLE_VALUE_CONVERTER_TYPE);
   }
 
   @Test
-  public void createForCreatesASimpleValueFieldWrapperIfTheFieldContainsAPrimitive() throws Exception {
+  public void createForCreatesASimpleValuePropertyConverterIfTheFieldContainsAPrimitive() throws Exception {
     Field intField = getField(TYPE, "primitiveValue");
 
-    testCreateFor(TEST_SYSTEM_ENTITY, intField, SIMPLE_VALUE_WRAPPER_TYPE);
+    testCreateFor(TEST_SYSTEM_ENTITY, intField, REGULAR, SIMPLE_VALUE_CONVERTER_TYPE);
   }
 
   @Test
-  public void wrapCreatesASimpleValueFieldWrapperIfTheFieldContainsAPrimitiveWrapper() throws Exception {
+  public void wrapCreatesASimpleValuePropertyConverterIfTheFieldContainsAPrimitiveWrapper() throws Exception {
     Field longWrapperField = getField(TYPE, "primitiveWrapperValue");
 
-    testCreateFor(TEST_SYSTEM_ENTITY, longWrapperField, SIMPLE_VALUE_WRAPPER_TYPE);
+    testCreateFor(TEST_SYSTEM_ENTITY, longWrapperField, REGULAR, SIMPLE_VALUE_CONVERTER_TYPE);
   }
 
   @Test
-  public void createForCreatesASimpleCollectionFieldWrapperIfTheFieldContainsAPrimitiveCollection() throws Exception {
+  public void createForCreatesASimpleCollectionPropertyConverterIfTheFieldContainsAPrimitiveCollection() throws Exception {
     Field primitiveCollectionField = getField(TYPE, "primitiveCollection");
 
-    testCreateFor(TEST_SYSTEM_ENTITY, primitiveCollectionField, SIMPLE_COLLECTION_FIELD_WRAPPER_TYPE);
+    testCreateFor(TEST_SYSTEM_ENTITY, primitiveCollectionField, REGULAR, SIMPLE_COLLECTION_FIELD_CONVERTER_TYPE);
   }
 
   @Test
-  public void wrapCreatesASimpleCollectionFieldWrapperIfTheFieldContainsAStringCollection() throws Exception {
+  public void wrapCreatesASimpleCollectionPropertyConverterIfTheFieldContainsAStringCollection() throws Exception {
     Field stringCollectionField = getField(TYPE, "stringCollection");
 
-    testCreateFor(TEST_SYSTEM_ENTITY, stringCollectionField, SIMPLE_COLLECTION_FIELD_WRAPPER_TYPE);
+    testCreateFor(TEST_SYSTEM_ENTITY, stringCollectionField, REGULAR, SIMPLE_COLLECTION_FIELD_CONVERTER_TYPE);
   }
 
   @Test
-  public void createForCreatesAnObjectFieldWrapperIfTheFieldContainsAnObjectValue() throws Exception {
+  public void createForCreatesAnObjectPropertyConverterIfTheFieldContainsAnObjectValue() throws Exception {
     Field objectField = getField(TYPE, "objectValue");
 
-    testCreateFor(TEST_SYSTEM_ENTITY, objectField, OBJECT_WRAPPER_TYPE);
+    testCreateFor(TEST_SYSTEM_ENTITY, objectField, REGULAR, OBJECT_CONVERTER_TYPE);
   }
 
   @Test
-  public void createForCreatesAnObjectFieldWrapperIfTheFieldContainsAnObjectCollection() throws Exception {
+  public void createForCreatesAnObjectPropertyConverterIfTheFieldContainsAnObjectCollection() throws Exception {
     Field objectField = getField(TYPE, "objectCollection");
 
-    testCreateFor(TEST_SYSTEM_ENTITY, objectField, OBJECT_WRAPPER_TYPE);
+    testCreateFor(TEST_SYSTEM_ENTITY, objectField, REGULAR, OBJECT_CONVERTER_TYPE);
   }
 
   @Test
-  public void createForCreatesAnObjectFieldWrapperIfTheFieldContainsAMap() throws Exception {
+  public void createForCreatesAnObjectPropertyConverterIfTheFieldContainsAMap() throws Exception {
     Field objectField = getField(TYPE, "map");
 
-    testCreateFor(TEST_SYSTEM_ENTITY, objectField, OBJECT_WRAPPER_TYPE);
+    testCreateFor(TEST_SYSTEM_ENTITY, objectField, REGULAR, OBJECT_CONVERTER_TYPE);
   }
 
   @Test
-  public void createForCreatesANoOpFieldWrapperIfTheFieldIsStatic() throws Exception {
-    Field field = getField(TYPE, "staticField");
-    testCreateFor(TEST_SYSTEM_ENTITY, field, NO_OP_WRAPPER_TYPE);
+  public void createForCreatesANoOpPropertyConverterIfTheFieldTypeIsVirtual() throws Exception {
+    Field field = getField(TYPE, "dbIgnoreAnnotatedProperty");
+
+    testCreateFor(TEST_SYSTEM_ENTITY, field, VIRTUAL, NO_OP_CONVERTER_TYPE);
   }
 
-  private void testCreateFor(TestSystemEntityWrapper testSystemEntity, Field field, Class<? extends PropertyConverter> wrapperType) {
-    when(propertyBusinessRulesMock.getFieldType(TYPE, field)).thenReturn(FIELD_TYPE);
+  private void testCreateFor(TestSystemEntityWrapper testSystemEntity, Field field, FieldType fieldType, Class<? extends PropertyConverter> expectedConverterType) {
+    when(propertyBusinessRulesMock.getFieldType(TYPE, field)).thenReturn(fieldType);
     when(propertyBusinessRulesMock.getFieldName(TYPE, field)).thenReturn(FIELD_NAME);
 
     // action
     PropertyConverter propertyConverter = instance.createFor(TYPE, field);
 
     // verify
-    assertThat(propertyConverter, is(instanceOf(wrapperType)));
+    assertThat(propertyConverter, is(instanceOf(expectedConverterType)));
 
     verify(propertyConverter).setField(field);
     verify(propertyConverter).setContainingType(TYPE);
-    verify(propertyConverter).setFieldType(FIELD_TYPE);
+    verify(propertyConverter).setFieldType(fieldType);
     verify(propertyConverter).setName(FIELD_NAME);
   }
 
