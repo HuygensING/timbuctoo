@@ -20,7 +20,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.ModelException;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Relationship;
 
@@ -32,9 +34,10 @@ import test.model.projecta.SubARelation;
 public class RelationConversionTest {
 
   private static final String A_STRING = "aString";
+  private RelationshipConverter<SubARelation> converter;
 
-  @Test
-  public void sourceTypeSourceIdTargetTypeAndTargetIdAreNotAddedToTheRelationship() throws Exception {
+  @Before
+  public void setup() throws ModelException {
     // setup
     PropertyBusinessRules propertyBusinessRules = new PropertyBusinessRules();
     PropertyConverterFactory propertyConverterFactory = new PropertyConverterFactory(propertyBusinessRules);
@@ -42,8 +45,12 @@ public class RelationConversionTest {
     typeRegistry.init("timbuctoo.model test.model.projecta");
 
     PropertyContainerConverterFactory converterFactory = new PropertyContainerConverterFactory(propertyConverterFactory, typeRegistry);
-    RelationshipConverter<SubARelation> converter = converterFactory.createForRelation(SubARelation.class);
+    converter = converterFactory.createForRelation(SubARelation.class);
+  }
 
+  @Test
+  public void sourceTypeSourceIdTargetTypeAndTargetIdAreNotAddedToTheRelationship() throws Exception {
+    // setup
     Relationship relationshipMock = aRelationship().build();
 
     SubARelation relation = aRelation().withId(A_STRING).withAPID() //
