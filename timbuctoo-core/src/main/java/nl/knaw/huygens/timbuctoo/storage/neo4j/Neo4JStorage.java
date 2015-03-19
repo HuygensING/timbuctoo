@@ -364,10 +364,8 @@ public class Neo4JStorage implements Storage {
       }
 
       try {
-        T entity = entityInstantiator.createInstanceOf(type);
-
         NodeConverter<T> converter = propertyContainerConverterFactory.createForType(type);
-        converter.addValuesToEntity(entity, node);
+        T entity = convertNodeToEntity(type, node, converter);
 
         validateEntityHasNoPID(type, id, pid, transaction, entity);
 
