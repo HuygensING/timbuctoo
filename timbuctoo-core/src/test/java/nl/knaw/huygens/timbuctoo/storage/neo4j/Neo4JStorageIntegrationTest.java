@@ -133,7 +133,6 @@ public class Neo4JStorageIntegrationTest extends StorageIntegrationTest {
     super.updateRelationUpdatesTheValuesOfTheRelationAndIncreasesTheRevButDoesNotCreateANewRevision();
   }
 
-  @Ignore
   @Test
   @Override
   public void setPIDForRelationCreatesANewRevisionAndFillsThePID() throws Exception {
