@@ -52,6 +52,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
@@ -84,6 +85,7 @@ public class UserResource extends ResourceBase {
     this.mailSender = mailSender;
   }
 
+  @APIDesc("Get all users. Query params: \"rows\" (default: 200), \"start\" (default: 0)")
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
@@ -91,6 +93,7 @@ public class UserResource extends ResourceBase {
     return userConfigurationHandler.getUsers().skip(start).getSome(rows);
   }
 
+  @APIDesc("Get a user by id")
   @GET
   @Path(ID_REGEX)
   @Produces(MediaType.APPLICATION_JSON)
@@ -101,6 +104,7 @@ public class UserResource extends ResourceBase {
     return user;
   }
 
+  @APIDesc("Get the user information of the logged in user.")
   @GET
   @Path("/me")
   @Produces(MediaType.APPLICATION_JSON)
@@ -116,6 +120,7 @@ public class UserResource extends ResourceBase {
     return user;
   }
 
+  @APIDesc("Update a user information")
   @PUT
   @Path(ID_REGEX)
   @Produces(MediaType.APPLICATION_JSON)
@@ -165,6 +170,7 @@ public class UserResource extends ResourceBase {
 
   // VREAuthorization
 
+  @APIDesc("Get the vre authorization of the user for a certain vre.")
   @GET
   @Path(VRE_AUTHORIZATION_PATH)
   @Produces(MediaType.APPLICATION_JSON)
@@ -178,6 +184,7 @@ public class UserResource extends ResourceBase {
     return findVREAuthorization(vreId, userId);
   }
 
+  @APIDesc("Create a vre authorization for a certain user. Expects a vre authorization body.")
   @POST
   @Path(VRE_AUTHORIZATION_COLLECTION_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
@@ -197,6 +204,7 @@ public class UserResource extends ResourceBase {
     return Response.created(new URI(vreId)).build();
   }
 
+  @APIDesc("Update a vre authorization for a certain user. Expects a vre authorization body.")
   @PUT
   @Path(VRE_AUTHORIZATION_PATH)
   @Produces(MediaType.APPLICATION_JSON)
@@ -217,6 +225,7 @@ public class UserResource extends ResourceBase {
     return Response.noContent().build();
   }
 
+  @APIDesc("Remove a vre authorization from a certain user.")
   @DELETE
   @Path(VRE_AUTHORIZATION_PATH)
   @RolesAllowed(ADMIN_ROLE)
@@ -252,6 +261,7 @@ public class UserResource extends ResourceBase {
 
   // Roles
 
+  @APIDesc("Return all the know roles.")
   @GET
   @Path("roles")
   @Produces(MediaType.APPLICATION_JSON)

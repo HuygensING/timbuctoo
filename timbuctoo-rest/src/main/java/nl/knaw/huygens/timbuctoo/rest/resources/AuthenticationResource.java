@@ -32,6 +32,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
 import nl.knaw.huygens.security.client.UnauthorizedException;
+import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders;
 import nl.knaw.huygens.timbuctoo.security.BasicAuthenticationHandler;
@@ -46,6 +47,7 @@ public class AuthenticationResource {
     this.authenticationHandler = authenticationHandler;
   }
 
+  @APIDesc("Expects an Authorization header with a Basic authentication information.")
   @POST
   public Response authenticate(@HeaderParam(HttpHeaders.AUTHORIZATION) String authorization) {
     try {

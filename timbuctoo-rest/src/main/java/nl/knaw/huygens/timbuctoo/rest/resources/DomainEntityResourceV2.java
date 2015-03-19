@@ -60,6 +60,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
@@ -87,6 +88,7 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
     super(registry, repository, changeHelper, vreCollection);
   }
 
+  @APIDesc("Get an number of entities. Query params: \"rows\" (default: 200) and \"start\" (default: 0).")
   @Override
   @GET
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
@@ -131,6 +133,7 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
     return list;
   }
 
+  @APIDesc("Post an entity. Body required.")
   @Override
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
@@ -145,6 +148,7 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
     return super.post(entityName, input, uriInfo, vreId, userId);
   }
 
+  @APIDesc("Get a single entity. Query param: \"rev\" (default:latest) ")
   @Override
   @GET
   @Path(ID_PATH)
@@ -168,6 +172,7 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
     return super.getDoc(entityName, id, revision);
   }
 
+  @APIDesc("Update an entity. Body required.")
   @Override
   @PUT
   @Path(ID_PATH)
@@ -186,6 +191,7 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
     return Response.ok(repository.getEntityWithRelations(typeRegistry.getTypeForXName(entityName), id)).build();
   }
 
+  @APIDesc("Set the pids of the entities.")
   @Override
   @PUT
   @Path(PID_PATH)
@@ -197,6 +203,7 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
     super.putPIDs(entityName, vreId);
   }
 
+  @APIDesc("Delete an specific entity.")
   @Override
   @DELETE
   @Path(ID_PATH)

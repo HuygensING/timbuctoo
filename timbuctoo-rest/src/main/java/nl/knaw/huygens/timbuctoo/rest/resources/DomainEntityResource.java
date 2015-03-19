@@ -63,6 +63,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -102,6 +103,7 @@ public class DomainEntityResource extends ResourceBase {
 
   // --- API -----------------------------------------------------------
 
+  @APIDesc("Get an number of entities. Query params: \"rows\" (default: 200) and \"start\" (default: 0).")
   @GET
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   public Response getEntities( //
@@ -123,6 +125,7 @@ public class DomainEntityResource extends ResourceBase {
     }
   }
 
+  @APIDesc("Post an entity. Body required.")
   @SuppressWarnings("unchecked")
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
@@ -169,6 +172,7 @@ public class DomainEntityResource extends ResourceBase {
     return id;
   }
 
+  @APIDesc("Get a single entity. Query param: \"rev\" (default:latest) ")
   @GET
   @Path(ID_PATH)
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
@@ -188,6 +192,7 @@ public class DomainEntityResource extends ResourceBase {
     }
   }
 
+  @APIDesc("Update an entity. Body required.")
   @SuppressWarnings("unchecked")
   @PUT
   @Path(ID_PATH)
@@ -225,6 +230,7 @@ public class DomainEntityResource extends ResourceBase {
     return Response.noContent().build();
   }
 
+  @APIDesc("Set the pids of the entities.")
   @PUT
   @Path(PID_PATH)
   @RolesAllowed(ADMIN_ROLE)
@@ -252,6 +258,7 @@ public class DomainEntityResource extends ResourceBase {
     }
   }
 
+  @APIDesc("Delete an specific entity.")
   @DELETE
   @Path(ID_PATH)
   @RolesAllowed({ USER_ROLE, ADMIN_ROLE })

@@ -37,6 +37,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.graph.Edge;
 import nl.knaw.huygens.timbuctoo.graph.Graph;
@@ -69,6 +70,7 @@ public class ReceptionGraphResource extends ResourceBase {
    * person are used; otherwise the receptions authored by the specified
    * person are used.
    */
+  @APIDesc("Women Writers specific. Get the receptions for a person. Query params: \"vreId\", \"personId\", \"isSubject\"")
   @GET
   @Produces({ MediaType.APPLICATION_JSON })
   public Object getGraph( //
