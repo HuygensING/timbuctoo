@@ -35,6 +35,7 @@ import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
+import org.neo4j.helpers.Strings;
 
 import com.google.common.base.Objects;
 import com.google.inject.Inject;
@@ -563,11 +564,7 @@ public class Neo4JStorage implements Storage {
   }
 
   private Relationship getLatestFromIndex(String id, Transaction transaction) {
-    Index<Relationship> index = db.index().forRelationships(RELATIONSHIP_ID_INDEX);
-
-    IndexHits<Relationship> indexHits = index.get(ID_PROPERTY_NAME, id);
-
-    ResourceIterator<Relationship> iterator = indexHits.iterator();
+    ResourceIterator<Relationship> iterator = getFromIndex(id);
     if (!iterator.hasNext()) {
       return null;
     }
@@ -581,6 +578,15 @@ public class Neo4JStorage implements Storage {
       }
     }
     return relationshipWithHighestRevision;
+  }
+
+  private ResourceIterator<Relationship> getFromIndex(String id) {
+    Index<Relationship> index = db.index().forRelationships(RELATIONSHIP_ID_INDEX);
+
+    IndexHits<Relationship> indexHits = index.get(ID_PROPERTY_NAME, id);
+
+    ResourceIterator<Relationship> iterator = indexHits.iterator();
+    return iterator;
   }
 
   /**
@@ -658,8 +664,67 @@ public class Neo4JStorage implements Storage {
     return null;
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> T getRevision(Class<T> type, String id, int revision) throws StorageException {
+    if (Relation.class.isAssignableFrom(type)) {
+      return (T) getRelationRevision((Class<? extends Relation>) type, id, revision);
+    } else {
+      return getDomainEntityRevision(type, id, revision);
+    }
+  }
+
+  private <T extends Relation> T getRelationRevision(Class<T> type, String id, int revision) throws StorageException {
+    try (Transaction transaction = db.beginTx()) {
+
+      Relationship relationship = getRevisionRelationship(type, id, revision);
+
+      if (relationship == null) {
+        transaction.success();
+        return null;
+      }
+
+      try {
+        T entity = entityInstantiator.createInstanceOf(type);
+
+        RelationshipConverter<T> converter = propertyContainerConverterFactory.createForRelation(type);
+        converter.addValuesToEntity(entity, relationship);
+
+        if (hasPID(entity)) {
+          transaction.success();
+          return null;
+        }
+
+        transaction.success();
+        return entity;
+      } catch (ConversionException e) {
+        transaction.failure();
+        throw e;
+      } catch (InstantiationException e) {
+        transaction.failure();
+        throw new StorageException(e);
+      }
+
+    }
+  }
+
+  private <T extends Relation> boolean hasPID(T entity) {
+    return Strings.isBlank(entity.getPid());
+  }
+
+  private <T extends Relation> Relationship getRevisionRelationship(Class<T> type, String id, int revision) {
+    ResourceIterator<Relationship> iterator = getFromIndex(id);
+    for (; iterator.hasNext();) {
+      Relationship next = iterator.next();
+      if (getRevision(next) == revision) {
+        return next;
+      }
+    }
+
+    return null;
+  }
+
+  private <T extends DomainEntity> T getDomainEntityRevision(Class<T> type, String id, int revision) throws ConversionException, StorageException {
     try (Transaction transaction = db.beginTx()) {
       Node node = getRevisionNode(type, id, revision);
 
@@ -677,6 +742,9 @@ public class Neo4JStorage implements Storage {
         transaction.success();
         return entity;
 
+      } catch (ConversionException e) {
+        transaction.failure();
+        throw e;
       } catch (InstantiationException e) {
         transaction.failure();
         throw new StorageException(e);
