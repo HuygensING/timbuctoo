@@ -96,7 +96,7 @@ public class SearchResource extends ResourceBase {
   }
 
   @POST
-  @APIDesc("Searches the Solr index")
+  @APIDesc("Searches the Solr index. Expects a search parameters body.")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response regularPost(SearchParameters searchParams, @HeaderParam(VRE_ID_KEY) String vreId) {
 
@@ -123,7 +123,7 @@ public class SearchResource extends ResourceBase {
 
   @GET
   @Path("/{id: " + SearchResult.ID_PREFIX + "\\d+}")
-  @APIDesc("Returns (paged) search results")
+  @APIDesc("Returns (paged) search results Query params: \"start\" (default: 0) \"rows\" (default: 10)")
   @Produces({ MediaType.APPLICATION_JSON })
   public Response regularGet( //
       @PathParam("id") String queryId, //
@@ -156,6 +156,7 @@ public class SearchResource extends ResourceBase {
   @POST
   @Path("/" + RELATION_SEARCH_PREFIX)
   @Consumes(MediaType.APPLICATION_JSON)
+  @APIDesc("Searches the Solr index. Expects a relation search parameters body.")
   public Response relationPost(@HeaderParam(VRE_ID_KEY) String vreId, RelationSearchParameters params) {
 
     final String typeString = params.getTypeString();
@@ -176,6 +177,7 @@ public class SearchResource extends ResourceBase {
     }
   }
 
+  @APIDesc("Returns (paged) search results Query params: \"start\" (default: 0) \"rows\" (default: 10)")
   @GET
   @Path("/" + RELATION_SEARCH_PREFIX + "/{id: " + SearchResult.ID_PREFIX + "\\d+}")
   @Produces({ MediaType.APPLICATION_JSON })

@@ -105,7 +105,7 @@ public class SearchResourceV1 extends ResourceBase {
 
   @POST
   @Path("/" + ENTITY_PATH)
-  @APIDesc("Searches the Solr index")
+  @APIDesc("Searches the Solr index. Expects a search parameters body.")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response regularPost( //
       @PathParam(VERSION_PARAM) String version, //
@@ -132,6 +132,7 @@ public class SearchResourceV1 extends ResourceBase {
     }
   }
 
+  @APIDesc("Searches the Solr index. Expects a relation search parameters body.")
   @POST
   @Path("/" + RELATION_SEARCH_PREFIX)
   @Consumes(MediaType.APPLICATION_JSON)
@@ -160,7 +161,7 @@ public class SearchResourceV1 extends ResourceBase {
   @GET
   @Path("/{id: " + SearchResult.ID_PREFIX + "\\d+}")
   @Produces({ MediaType.APPLICATION_JSON })
-  @APIDesc("Returns (paged) search results")
+  @APIDesc("Returns (paged) search results Query params: \"start\" (default: 0) \"rows\" (default: 10)")
   public Response get( //
       @PathParam("id") String queryId, //
       @QueryParam("start") @DefaultValue("0") final int start, //
@@ -197,6 +198,7 @@ public class SearchResourceV1 extends ResourceBase {
         .build();
   }
 
+  @APIDesc("Exports a search result to an Excel format.")
   @GET
   @Path("/{id: " + SearchResult.ID_PREFIX + "\\d+}/xls")
   @Produces({ XLSProvider.EXCEL_TYPE_STRING })

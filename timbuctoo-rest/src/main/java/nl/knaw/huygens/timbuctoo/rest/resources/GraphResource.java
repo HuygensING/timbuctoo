@@ -36,6 +36,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.graph.GraphBuilder;
@@ -86,6 +87,7 @@ public class GraphResource extends ResourceBase {
 
   // --- API -----------------------------------------------------------
 
+  @APIDesc("Get the network of an entity. Query param: \"depth\" (default: 1)")
   @GET
   @Path(ID_PATH)
   @Produces({ MediaType.APPLICATION_JSON })

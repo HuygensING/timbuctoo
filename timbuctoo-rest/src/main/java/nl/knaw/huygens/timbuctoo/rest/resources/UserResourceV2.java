@@ -51,6 +51,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
@@ -71,6 +72,7 @@ public class UserResourceV2 extends UserResource {
     super(repository, userConfigurationHandler, mailSender, vreCollection);
   }
 
+  @APIDesc("Get all users. Query params: \"rows\" (default: 200), \"start\" (default: 0)")
   @Override
   @GET
   @Produces(MediaType.APPLICATION_JSON)
@@ -79,6 +81,7 @@ public class UserResourceV2 extends UserResource {
     return super.getAll(rows, start);
   }
 
+  @APIDesc("Get a user by id")
   @Override
   @GET
   @Path(ID_REGEX)
@@ -88,6 +91,7 @@ public class UserResourceV2 extends UserResource {
     return super.get(id);
   }
 
+  @APIDesc("Get the user information of the logged in user.")
   @Override
   @GET
   @Path("/me")
@@ -97,6 +101,7 @@ public class UserResourceV2 extends UserResource {
     return super.getMyUserData(id, vreId);
   }
 
+  @APIDesc("Update a user information")
   @Override
   @PUT
   @Path(ID_REGEX)
@@ -114,6 +119,7 @@ public class UserResourceV2 extends UserResource {
     return Response.ok(userConfigurationHandler.getUser(id)).build();
   }
 
+  @APIDesc("Get the vre authorization of the user for a certain vre.")
   @Override
   @GET
   @Path(VRE_AUTHORIZATION_PATH)
@@ -127,6 +133,7 @@ public class UserResourceV2 extends UserResource {
     return super.getVreAuthorization(userId, vreId, userVREId);
   }
 
+  @APIDesc("Create a vre authorization for a certain user. Expects a vre authorization body.")
   @Override
   @POST
   @Path(VRE_AUTHORIZATION_COLLECTION_PATH)
@@ -140,6 +147,7 @@ public class UserResourceV2 extends UserResource {
     return super.postVREAuthorization(userId, userVREId, authorization);
   }
 
+  @APIDesc("Update a vre authorization for a certain user. Expects a vre authorization body.")
   @Override
   @PUT
   @Path(VRE_AUTHORIZATION_PATH)
@@ -160,6 +168,7 @@ public class UserResourceV2 extends UserResource {
     return Response.ok(findVREAuthorization(userVREId, userId)).build();
   }
 
+  @APIDesc("Remove a vre authorization from a certain user.")
   @Override
   @DELETE
   @Path(VRE_AUTHORIZATION_PATH)
@@ -172,6 +181,7 @@ public class UserResourceV2 extends UserResource {
     super.deleteVREAuthorization(userId, vreId, userVREId);
   }
 
+  @APIDesc("Return all the know roles.")
   @Override
   @GET
   @Path("roles")

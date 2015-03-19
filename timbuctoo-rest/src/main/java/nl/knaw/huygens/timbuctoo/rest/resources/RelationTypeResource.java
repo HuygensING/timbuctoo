@@ -36,6 +36,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -63,6 +64,7 @@ public class RelationTypeResource extends ResourceBase {
     this.registry = registry;
   }
 
+  @APIDesc("Get all the relation types. Query params: \"iname\"")
   @GET
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   public List<RelationType> getRelationTypes(@QueryParam("iname") String name) {
