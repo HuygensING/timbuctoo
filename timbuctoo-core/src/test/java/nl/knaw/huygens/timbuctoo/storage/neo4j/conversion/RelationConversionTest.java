@@ -22,8 +22,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipConverter;
-import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.property.PropertyBusinessRules;
-import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.property.PropertyConverterFactory;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -42,12 +40,10 @@ public class RelationConversionTest {
   @Before
   public void setup() throws ModelException {
     // setup
-    PropertyBusinessRules propertyBusinessRules = new PropertyBusinessRules();
-    PropertyConverterFactory propertyConverterFactory = new PropertyConverterFactory(propertyBusinessRules);
     TypeRegistry typeRegistry = TypeRegistry.getInstance();
     typeRegistry.init("timbuctoo.model test.model.projecta");
 
-    PropertyContainerConverterFactory converterFactory = new PropertyContainerConverterFactory(propertyConverterFactory, typeRegistry);
+    PropertyContainerConverterFactory converterFactory = new PropertyContainerConverterFactory(typeRegistry);
     converter = converterFactory.createForRelation(SubARelation.class);
   }
 

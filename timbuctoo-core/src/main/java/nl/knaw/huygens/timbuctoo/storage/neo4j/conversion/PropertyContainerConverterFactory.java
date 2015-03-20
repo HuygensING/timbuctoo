@@ -27,6 +27,11 @@ public class PropertyContainerConverterFactory {
     this.typeRegistry = typeRegistry;
   }
 
+  public PropertyContainerConverterFactory(TypeRegistry typeRegistry) {
+    this.propertyConverterFactory = new PropertyConverterFactory();
+    this.typeRegistry = typeRegistry;
+  }
+
   public <T extends Relation> RelationshipConverter<T> createForRelation(Class<T> type) {
     ExtendableRelationshipConverter<T> relationshipConverter = createSimpleRelationshipConverter(type);
     addPropertyConverters(relationshipConverter, type);

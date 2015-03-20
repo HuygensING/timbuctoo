@@ -9,6 +9,7 @@ import java.util.Collection;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.FieldType;
+import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyConverter;
 
 import org.apache.commons.lang3.ClassUtils;
 
@@ -18,6 +19,10 @@ public class PropertyConverterFactory {
 
   public PropertyConverterFactory(PropertyBusinessRules propertyBusinessRules) {
     this.propertyBusinessRules = propertyBusinessRules;
+  }
+
+  public PropertyConverterFactory() {
+    this.propertyBusinessRules = new PropertyBusinessRules();
   }
 
   public <T extends Entity> PropertyConverter createFor(Class<T> type, Field field) {

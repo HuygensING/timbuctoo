@@ -16,7 +16,7 @@ import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.FieldType;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class PropertyBusinessRules {
+class PropertyBusinessRules {
 
   private boolean isAdministrativeProperty(Class<? extends Entity> containingType, Field field) {
     String fieldName = getFieldName(containingType, field);

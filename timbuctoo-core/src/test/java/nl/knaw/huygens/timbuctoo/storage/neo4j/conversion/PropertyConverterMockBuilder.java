@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j.conversion;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.property.PropertyConverter;
 
 public class PropertyConverterMockBuilder {
   private String name;

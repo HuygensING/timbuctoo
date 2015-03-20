@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-public class SimpleCollectionPropertyConverter<T> extends AbstractPropertyConverter {
+class SimpleCollectionPropertyConverter<T> extends AbstractPropertyConverter {
 
   private final Class<T> componentType;
 

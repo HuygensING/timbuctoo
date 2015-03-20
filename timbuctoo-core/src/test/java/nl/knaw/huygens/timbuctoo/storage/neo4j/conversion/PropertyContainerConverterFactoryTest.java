@@ -21,11 +21,6 @@ import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.NodeConverter;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.PropertyContainerConverter;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipConverter;
-import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.CompositeNodeConverter;
-import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.CompositeRelationshipConverter;
-import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.ExtendableNodeConverter;
-import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.ExtendableRelationshipConverter;
-import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.property.AbstractPropertyConverter;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.property.PropertyConverterFactory;
 
 import org.junit.Before;
@@ -49,7 +44,7 @@ public class PropertyContainerConverterFactoryTest {
   private ExtendableNodeConverter nodeConverterMock;
   @SuppressWarnings("rawtypes")
   private ExtendableRelationshipConverter relationshipConverterMock;
-  private AbstractPropertyConverter fieldConverterMock;
+  private PropertyConverter propertyConverterMock;
   private PropertyConverterFactory propertyConverterFactoryMock;
   private TypeRegistry typeRegistryMock;
 
@@ -60,10 +55,10 @@ public class PropertyContainerConverterFactoryTest {
     nodeConverterMock = mock(ExtendableNodeConverter.class);
     relationshipConverterMock = mock(ExtendableRelationshipConverter.class);
 
-    fieldConverterMock = mock(AbstractPropertyConverter.class);
+    propertyConverterMock = mock(PropertyConverter.class);
     propertyConverterFactoryMock = mock(PropertyConverterFactory.class);
 
-    when(propertyConverterFactoryMock.createFor(any(Class.class), any(Field.class))).thenReturn(fieldConverterMock);
+    when(propertyConverterFactoryMock.createFor(any(Class.class), any(Field.class))).thenReturn(propertyConverterMock);
 
     instance = new PropertyContainerConverterFactory(propertyConverterFactoryMock, typeRegistryMock) {
       @Override
@@ -92,7 +87,7 @@ public class PropertyContainerConverterFactoryTest {
     // verify
     assertThat(propertyContainerConverter, instanceOf(ExtendableNodeConverter.class));
     verify(propertyConverterFactoryMock, times(numberOfFields)).createFor(argThat(equalTo(SYSTEM_ENTITY_TYPE)), any(Field.class));
-    verify((ExtendableNodeConverter<TestSystemEntityWrapper>) propertyContainerConverter, times(numberOfFields)).addPropertyConverter(fieldConverterMock);
+    verify((ExtendableNodeConverter<TestSystemEntityWrapper>) propertyContainerConverter, times(numberOfFields)).addPropertyConverter(propertyConverterMock);
   }
 
   @Test
@@ -108,7 +103,7 @@ public class PropertyContainerConverterFactoryTest {
     // verify
     assertThat(converter, is(instanceOf(ExtendableRelationshipConverter.class)));
     verify(propertyConverterFactoryMock, times(numberOfFields)).createFor(argThat(equalTo(RELATION_TYPE)), any(Field.class));
-    verify((ExtendableRelationshipConverter<SubARelation>) converter, times(numberOfFields)).addPropertyConverter(fieldConverterMock);
+    verify((ExtendableRelationshipConverter<SubARelation>) converter, times(numberOfFields)).addPropertyConverter(propertyConverterMock);
   }
 
   private int getNumberOfFields(Class<? extends Entity> type) {

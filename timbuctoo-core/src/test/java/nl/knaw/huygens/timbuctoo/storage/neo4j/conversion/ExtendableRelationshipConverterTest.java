@@ -17,7 +17,6 @@ import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.ExtendableRelationshipConverter;
-import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.property.PropertyConverter;
 
 import org.junit.Before;
 import org.junit.Test;

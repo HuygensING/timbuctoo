@@ -12,7 +12,6 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipConverter;
-import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.property.PropertyConverter;
 
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;

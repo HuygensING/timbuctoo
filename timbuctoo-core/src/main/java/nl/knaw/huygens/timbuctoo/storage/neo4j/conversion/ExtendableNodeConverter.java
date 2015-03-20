@@ -11,7 +11,6 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.NodeConverter;
-import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.property.PropertyConverter;
 
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.Node;

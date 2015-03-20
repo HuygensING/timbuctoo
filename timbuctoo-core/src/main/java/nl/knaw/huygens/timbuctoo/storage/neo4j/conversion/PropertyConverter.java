@@ -1,10 +1,9 @@
-package nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.property;
+package nl.knaw.huygens.timbuctoo.storage.neo4j.conversion;
 
 import java.lang.reflect.Field;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.ConversionException;
-import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.FieldType;
 
 import org.neo4j.graphdb.PropertyContainer;
 
