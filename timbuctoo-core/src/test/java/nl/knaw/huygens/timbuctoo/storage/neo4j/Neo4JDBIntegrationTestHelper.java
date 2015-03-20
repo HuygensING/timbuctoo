@@ -4,6 +4,9 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.storage.DBIntegrationTestHelper;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
+import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConverterFactory;
+import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.property.PropertyBusinessRules;
+import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.property.PropertyConverterFactory;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.test.TestGraphDatabaseFactory;
