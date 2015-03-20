@@ -66,19 +66,18 @@ public class Neo4JStorage implements Storage {
 
   @Override
   public void createIndex(boolean unique, Class<? extends Entity> type, String... fields) throws StorageException {
-    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Yet to be implemented");
 
   }
 
   @Override
   public <T extends Entity> String getStatistics(Class<T> type) {
-    // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
   @Override
   public void close() {
-    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Yet to be implemented");
 
   }
 
@@ -428,14 +427,12 @@ public class Neo4JStorage implements Storage {
 
   @Override
   public <T extends SystemEntity> int deleteSystemEntities(Class<T> type) throws StorageException {
-    // TODO Auto-generated method stub
-    return 0;
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
   @Override
   public <T extends SystemEntity> int deleteByModifiedDate(Class<T> type, Date dateValue) throws StorageException {
-    // TODO Auto-generated method stub
-    return 0;
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
   // TODO: Make equal to deleteSystemEntity see TIM-54
@@ -460,38 +457,36 @@ public class Neo4JStorage implements Storage {
 
   @Override
   public <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws StorageException {
-    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Yet to be implemented");
 
   }
 
   @Override
   public void deleteVariation(Class<? extends DomainEntity> type, String id, Change change) throws IllegalArgumentException, NoSuchEntityException, StorageException {
-    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Yet to be implemented");
 
   }
 
   @Override
   public void deleteRelationsOfEntity(Class<Relation> type, String id) throws StorageException {
-    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Yet to be implemented");
 
   }
 
   @Override
   public void declineRelationsOfEntity(Class<? extends Relation> type, String id) throws IllegalArgumentException, StorageException {
-    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Yet to be implemented");
 
   }
 
   @Override
   public <T extends Entity> boolean entityExists(Class<T> type, String id) throws StorageException {
-    // TODO Auto-generated method stub
-    return false;
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
   @Override
   public <T extends Entity> T getEntityOrDefaultVariation(Class<T> type, String id) throws StorageException {
-    // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
   @Override
@@ -613,32 +608,27 @@ public class Neo4JStorage implements Storage {
 
   @Override
   public <T extends SystemEntity> StorageIterator<T> getSystemEntities(Class<T> type) throws StorageException {
-    // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
   @Override
   public <T extends DomainEntity> StorageIterator<T> getDomainEntities(Class<T> type) throws StorageException {
-    // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
   @Override
   public <T extends Entity> StorageIterator<T> getEntitiesByProperty(Class<T> type, String field, String value) throws StorageException {
-    // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
   @Override
   public <T extends Entity> long count(Class<T> type) {
-    // TODO Auto-generated method stub
-    return 0;
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
   @Override
   public <T extends Entity> T findItemByProperty(Class<T> type, String field, String value) throws StorageException {
-    // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
   private <T extends Entity> ResourceIterator<Node> findByProperty(Class<T> type, String propertyName, String id) {
@@ -651,8 +641,7 @@ public class Neo4JStorage implements Storage {
 
   @Override
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws StorageException {
-    // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
   @SuppressWarnings("unchecked")
@@ -787,50 +776,42 @@ public class Neo4JStorage implements Storage {
 
   @Override
   public <T extends DomainEntity> List<T> getAllRevisions(Class<T> type, String id) throws StorageException {
-    // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
   @Override
   public <T extends Relation> T findRelation(Class<T> type, String sourceId, String targetId, String relationTypeId) throws StorageException {
-    // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
   @Override
   public <T extends Relation> StorageIterator<T> findRelations(Class<T> type, String sourceId, String targetId, String relationTypeId) throws StorageException {
-    // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
   @Override
   public <T extends Relation> StorageIterator<T> getRelationsByEntityId(Class<T> type, String id) throws StorageException {
-    // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
   @Override
   public <T extends DomainEntity> List<String> getAllIdsWithoutPIDOfType(Class<T> type) throws StorageException {
-    // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
   @Override
   public List<String> getRelationIds(List<String> ids) throws StorageException {
-    // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
   @Override
   public <T extends Relation> List<T> getRelationsByType(Class<T> type, List<String> relationTypeIds) throws StorageException {
-    // TODO Auto-generated method stub
-    return null;
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
   @Override
   public boolean doesVariationExist(Class<? extends DomainEntity> type, String id) throws StorageException {
-    // TODO Auto-generated method stub
-    return false;
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
 }
