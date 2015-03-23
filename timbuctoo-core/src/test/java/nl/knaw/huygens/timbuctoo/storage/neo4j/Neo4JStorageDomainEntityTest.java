@@ -1,12 +1,12 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.storage.neo4j.SubADomainEntityBuilder.aDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.DomainEntityMatcher.likeDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeMockBuilder.aNode;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipMockBuilder.aRelationship;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SearchResultBuilder.aSearchResult;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SearchResultBuilder.anEmptySearchResult;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.SubADomainEntityBuilder.aDomainEntity;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
@@ -143,7 +143,7 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
     SubADomainEntity domainEntity = aDomainEntity().withId(ID).build();
 
     NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE);
-    when(entityInstantiatorMock.createInstanceOf(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE)).thenReturn(domainEntity);
+    when(domainEntityConverterMock.convertToEntity(nodeWithThirdRevision)).thenReturn(domainEntity);
 
     // action
     SubADomainEntity actualEntity = instance.getEntity(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_TYPE, ID);
@@ -152,11 +152,9 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
     assertThat(actualEntity, is(equalTo(domainEntity)));
 
     InOrder inOrder = inOrder(dbMock, propertyContainerConverterFactoryMock, domainEntityConverterMock, transactionMock);
-    inOrder.verify(dbMock).beginTx();
     inOrder.verify(dbMock).findNodesByLabelAndProperty(Neo4JStorageDomainEntityTest.DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
-    inOrder.verify(domainEntityConverterMock).addValuesToEntity(domainEntity, nodeWithThirdRevision);
+    inOrder.verify(domainEntityConverterMock).convertToEntity(nodeWithThirdRevision);
     inOrder.verify(transactionMock).success();
-    verifyNoMoreInteractions(dbMock, domainEntityConverterMock);
   }
 
   @Test

@@ -370,18 +370,18 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
         .foundInDB(dbMock);
     SubARelation relation = new SubARelation();
 
-    RelationshipConverter<SubARelation> relationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(Neo4JStorageRelationTest.RELATION_TYPE);
-    when(entityInstantiatorMock.createInstanceOf(Neo4JStorageRelationTest.RELATION_TYPE)).thenReturn(relation);
+    RelationshipConverter<SubARelation> relationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    when(relationConverterMock.convertToEntity(relationshipMock)).thenReturn(relation);
 
     // action
-    SubARelation actualRelation = instance.getEntity(Neo4JStorageRelationTest.RELATION_TYPE, ID);
+    SubARelation actualRelation = instance.getEntity(RELATION_TYPE, ID);
 
     // verify
     assertThat(actualRelation, is(sameInstance(relation)));
 
     verify(dbMock).beginTx();
     verify(indexMock).get(ID_PROPERTY_NAME, ID);
-    verify(relationConverterMock).addValuesToEntity(relation, relationshipMock);
+    verify(relationConverterMock).convertToEntity(relationshipMock);
     verifyTransActionSucceeded();
   }
 
@@ -399,7 +399,7 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
     SubARelation relation = new SubARelation();
 
     RelationshipConverter<SubARelation> relationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(Neo4JStorageRelationTest.RELATION_TYPE);
-    when(entityInstantiatorMock.createInstanceOf(Neo4JStorageRelationTest.RELATION_TYPE)).thenReturn(relation);
+    when(relationConverterMock.convertToEntity(relationshipThirdRevision)).thenReturn(relation);
 
     // action
     SubARelation actualRelation = instance.getEntity(Neo4JStorageRelationTest.RELATION_TYPE, ID);
@@ -409,7 +409,7 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
 
     verify(dbMock).beginTx();
     verify(indexMock).get(ID_PROPERTY_NAME, ID);
-    verify(relationConverterMock).addValuesToEntity(relation, relationshipThirdRevision);
+    verify(relationConverterMock).convertToEntity(relationshipThirdRevision);
     verifyTransActionSucceeded();
   }
 
@@ -443,9 +443,7 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
     SubARelation relation = new SubARelation();
 
     RelationshipConverter<SubARelation> relationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(Neo4JStorageRelationTest.RELATION_TYPE);
-    when(entityInstantiatorMock.createInstanceOf(Neo4JStorageRelationTest.RELATION_TYPE)).thenReturn(relation);
-
-    doThrow(ConversionException.class).when(relationConverterMock).addValuesToEntity(relation, relationshipMock);
+    doThrow(ConversionException.class).when(relationConverterMock).convertToEntity(relationshipMock);
 
     // action
     SubARelation actualRelation = instance.getEntity(Neo4JStorageRelationTest.RELATION_TYPE, ID);
@@ -455,18 +453,21 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
 
     verify(dbMock).beginTx();
     verify(indexMock).get(ID_PROPERTY_NAME, ID);
-    verify(relationConverterMock).addValuesToEntity(relation, relationshipMock);
+    verify(relationConverterMock).convertToEntity(relationshipMock);
     verifyTransactionFailed();
   }
 
   @Test(expected = StorageException.class)
-  public void getEntityForRelationThrowsStorageExceptionWhenEntityInstantiatorThrowsAnInstantiationException() throws Exception {
+  public void getEntityForRelationThrowsStorageExceptionWhenRelationshipConverterThrowsAnInstantiationException() throws Exception {
     // setup
+    Relationship relationshipMock = aRelationship().build();
     RelationshipIndex indexMock = aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
         .containsForId(ID)//
-        .relationship(aRelationship().build())//
+        .relationship(relationshipMock)//
         .foundInDB(dbMock);
-    doThrow(InstantiationException.class).when(entityInstantiatorMock).createInstanceOf(Neo4JStorageRelationTest.RELATION_TYPE);
+
+    RelationshipConverter<SubARelation> relationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(Neo4JStorageRelationTest.RELATION_TYPE);
+    doThrow(InstantiationException.class).when(relationConverterMock).convertToEntity(relationshipMock);
 
     try {
       // action
@@ -474,7 +475,7 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
     } finally {
       // verify
       verify(indexMock).get(ID_PROPERTY_NAME, ID);
-      verify(entityInstantiatorMock).createInstanceOf(RELATION_TYPE);
+      verify(relationConverterMock).convertToEntity(relationshipMock);
       verifyTransactionFailed();
     }
   }

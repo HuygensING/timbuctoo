@@ -70,4 +70,9 @@ class CompositeRelationshipConverter<T extends Relation> implements Relationship
     void execute(RelationshipConverter<? super T> converter, Relationship relationship, T entity) throws ConversionException;
   }
 
+  @Override
+  public T convertToEntity(Relationship propertyContainer) throws ConversionException, InstantiationException {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
 }

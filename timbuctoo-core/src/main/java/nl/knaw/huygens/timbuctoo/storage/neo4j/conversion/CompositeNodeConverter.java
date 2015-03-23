@@ -70,4 +70,9 @@ class CompositeNodeConverter<T extends Entity> implements NodeConverter<T> {
     void execute(NodeConverter<? super T> nodeConverterm, Node node, T entity) throws ConversionException;
   }
 
+  @Override
+  public T convertToEntity(Node propertyContainer) throws ConversionException, InstantiationException {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
 }

@@ -79,4 +79,9 @@ class ExtendableNodeConverter<T extends Entity> implements NodeConverter<T>, Ext
     return namePropertyConverterMap.get(fieldName);
   }
 
+  @Override
+  public T convertToEntity(Node propertyContainer) throws ConversionException, InstantiationException {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
 }

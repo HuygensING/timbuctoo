@@ -26,4 +26,7 @@ public interface PropertyContainerConverter<U extends PropertyContainer, T exten
    */
   void updateModifiedAndRev(U propertyContainer, T entity) throws ConversionException;
 
+  
+  T convertToEntity(U propertyContainer) throws ConversionException, InstantiationException;
+
 }

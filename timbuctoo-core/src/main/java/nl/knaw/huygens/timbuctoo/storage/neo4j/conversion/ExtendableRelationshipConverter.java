@@ -101,4 +101,9 @@ class ExtendableRelationshipConverter<T extends Relation> implements Relationshi
     return propertyConverters.get(fieldName);
   }
 
+  @Override
+  public T convertToEntity(Relationship propertyContainer) throws ConversionException, InstantiationException {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
 }

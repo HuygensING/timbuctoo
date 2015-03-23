@@ -504,15 +504,17 @@ public class Neo4JStorage implements Storage {
 
   private <T extends Relation> T getRelationDomainEntity(Class<T> type, String id) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
-      Relationship propertyContainerWithHighestRevision = getLatestFromIndex(id, transaction);
+      Relationship relationshipWithHighestRevision = getLatestFromIndex(id, transaction);
 
-      if (propertyContainerWithHighestRevision == null) {
+      if (relationshipWithHighestRevision == null) {
         transaction.success();
         return null;
       }
 
       try {
-        T entity = convertRelationshipToRelation(type, propertyContainerWithHighestRevision);
+
+        RelationshipConverter<T> relationshipConverter = propertyContainerConverterFactory.createForRelation(type);
+        T entity = relationshipConverter.convertToEntity(relationshipWithHighestRevision);
 
         transaction.success();
         return entity;
@@ -528,15 +530,16 @@ public class Neo4JStorage implements Storage {
 
   private <T extends Entity> T getRegularEntity(Class<T> type, String id) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
-      Node propertyContainerWithHighestRevision = getLatestById(type, id);
+      Node nodeWithHighestRevision = getLatestById(type, id);
 
-      if (propertyContainerWithHighestRevision == null) {
+      if (nodeWithHighestRevision == null) {
         transaction.success();
         return null;
       }
 
       try {
-        T entity = convertNodeToEntity(type, propertyContainerWithHighestRevision);
+        NodeConverter<T> nodeConverter = propertyContainerConverterFactory.createForType(type);
+        T entity = nodeConverter.convertToEntity(nodeWithHighestRevision);
 
         transaction.success();
         return entity;
