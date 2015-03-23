@@ -9,7 +9,7 @@ import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyConverter;
 
 import org.neo4j.graphdb.PropertyContainer;
 
-public abstract class AbstractPropertyConverter implements PropertyConverter {
+abstract class AbstractPropertyConverter implements PropertyConverter {
 
   private Field field;
   private Class<? extends Entity> containingType;
