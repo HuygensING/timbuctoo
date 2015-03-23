@@ -479,10 +479,6 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
         .withNode(aNodeWithAPID)//
         .foundInDB(dbMock);
 
-    SubADomainEntity entity = aDomainEntity().build();
-    when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE))//
-        .thenReturn(entity);
-
     NodeConverter<SubADomainEntity> nodeConverter = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
     when(nodeConverter.convertToEntity(aNodeWithAPID)).thenThrow(new ConversionException());
 
@@ -638,9 +634,6 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
   public void getRevisionThrowsAStorageExceptionIfTheEntityCannotBeConverted() throws Exception {
     Node nodeWithSameRevision = aNode().withRevision(FIRST_REVISION).withAPID().build();
     aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).withNode(nodeWithSameRevision).foundInDB(dbMock);
-
-    SubADomainEntity entity = new SubADomainEntity();
-    when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenReturn(entity);
 
     NodeConverter<SubADomainEntity> converter = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
     when(converter.convertToEntity(nodeWithSameRevision)).thenThrow(new ConversionException());

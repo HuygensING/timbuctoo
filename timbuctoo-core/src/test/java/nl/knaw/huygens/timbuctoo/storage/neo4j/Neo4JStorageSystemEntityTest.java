@@ -128,9 +128,6 @@ public class Neo4JStorageSystemEntityTest extends Neo4JStorageTest {
         .withNode(nodeMock)//
         .foundInDB(dbMock);
 
-    TestSystemEntityWrapper systemEntity = aSystemEntity().build();
-
-    when(entityInstantiatorMock.createInstanceOf(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE)).thenReturn(systemEntity);
     NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE);
     doThrow(ConversionException.class).when(systemEntityConverterMock).convertToEntity(nodeMock);
 

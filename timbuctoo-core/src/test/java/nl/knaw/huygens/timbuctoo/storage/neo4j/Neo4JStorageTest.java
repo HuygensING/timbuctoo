@@ -42,7 +42,6 @@ public abstract class Neo4JStorageTest {
   protected PropertyContainerConverterFactory propertyContainerConverterFactoryMock;
   protected Neo4JStorage instance;
   protected Transaction transactionMock;
-  protected EntityInstantiator entityInstantiatorMock;
   protected IdGenerator idGeneratorMock;
   protected NodeDuplicator nodeDuplicatorMock;
   protected RelationshipDuplicator relationshipDuplicatorMock;
@@ -54,7 +53,6 @@ public abstract class Neo4JStorageTest {
 
     relationshipDuplicatorMock = mock(RelationshipDuplicator.class);
     nodeDuplicatorMock = mock(NodeDuplicator.class);
-    entityInstantiatorMock = mock(EntityInstantiator.class);
     idGeneratorMock = mock(IdGenerator.class);
 
     TypeRegistry typeRegistry = TypeRegistry.getInstance().init("timbuctoo.model test.model");

@@ -410,9 +410,8 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
     // verify
     assertThat(actualRelation, is(nullValue()));
 
-    verify(dbMock).beginTx();
     verify(indexMock).get(ID_PROPERTY_NAME, ID);
-    verifyZeroInteractions(propertyContainerConverterFactoryMock, entityInstantiatorMock);
+    verifyZeroInteractions(propertyContainerConverterFactoryMock);
     verifyTransActionSucceeded();
   }
 
@@ -830,7 +829,7 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
     // verify
     assertThat(relation, is(instanceOf(RELATION_TYPE)));
 
-    InOrder inOrder = inOrder(indexMock, converterMock, entityInstantiatorMock, transactionMock);
+    InOrder inOrder = inOrder(indexMock, converterMock, transactionMock);
     inOrder.verify(indexMock).get(ID_PROPERTY_NAME, ID);
     inOrder.verify(converterMock).convertToEntity(relationshipWithPID);
     inOrder.verify(transactionMock).success();
