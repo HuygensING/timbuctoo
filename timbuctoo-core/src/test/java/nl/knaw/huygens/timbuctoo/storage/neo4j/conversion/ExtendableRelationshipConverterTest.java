@@ -16,7 +16,6 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.ConversionException;
-import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.ExtendableRelationshipConverter;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -138,6 +137,52 @@ public class ExtendableRelationshipConverterTest {
       // verify
       verify(adminPropertyConverterMock).addValueToEntity(relation, relationshipMock);;
     }
+  }
+
+  @Test(expected = CorruptNodeException.class)
+  public void addValuesToEntityThrowsACorruptNodeExceptionWhenTheSourceNodeHasNoLabelWithThePrimitiveName() throws Exception {
+    // setup
+    String sourceId = "sourceId";
+    Node startNodeWithoutLabel = aNode().withId(sourceId)//
+        .withLabel(getLabelOfType(ProjectADomainEntity.class))//
+        .build();
+
+    Label endNodeBaseTypeLabel = getLabelOfType(Person.class);
+    String targetId = "targetId";
+    Node endNode = aNode().withId(targetId) //
+        .withLabel(getLabelOfType(ProjectAPerson.class)) //
+        .withLabel(endNodeBaseTypeLabel)//
+        .build();
+
+    when(relationshipMock.getStartNode()).thenReturn(startNodeWithoutLabel);
+    when(relationshipMock.getEndNode()).thenReturn(endNode);
+
+    // action
+    instance.addValuesToEntity(relation, relationshipMock);
+
+  }
+
+  @Test(expected = CorruptNodeException.class)
+  public void addValuesToEntityThrowsACorruptNodeExceptionWhenTheTargetNodeHasNoLabelWithThePrimitiveName() throws Exception {
+    // setup
+    Label startNodeBaseTypeLabel = getLabelOfType(BaseDomainEntity.class);
+    String sourceId = "sourceId";
+    Node startNode = aNode().withId(sourceId)//
+        .withLabel(getLabelOfType(ProjectADomainEntity.class))//
+        .withLabel(startNodeBaseTypeLabel)//
+        .build();
+
+    String targetId = "targetId";
+    Node endNodeWithoutLabel = aNode().withId(targetId) //
+        .withLabel(getLabelOfType(ProjectAPerson.class)) //
+        .build();
+
+    when(relationshipMock.getStartNode()).thenReturn(startNode);
+    when(relationshipMock.getEndNode()).thenReturn(endNodeWithoutLabel);
+
+    // action
+    instance.addValuesToEntity(relation, relationshipMock);
+
   }
 
   @Test

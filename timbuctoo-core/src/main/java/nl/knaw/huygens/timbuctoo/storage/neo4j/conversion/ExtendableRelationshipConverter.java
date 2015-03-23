@@ -66,7 +66,7 @@ class ExtendableRelationshipConverter<T extends Relation> implements Relationshi
       }
     }
 
-    return null;
+    throw new CorruptNodeException(node.getProperty(ID_PROPERTY_NAME));
   }
 
   @Override
