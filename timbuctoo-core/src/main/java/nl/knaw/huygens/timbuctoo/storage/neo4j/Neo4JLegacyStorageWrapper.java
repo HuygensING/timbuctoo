@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
-import static nl.knaw.huygens.timbuctoo.model.DomainEntity.PID;
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 
@@ -38,7 +37,6 @@ import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
 import org.neo4j.helpers.Strings;
 
-import com.google.common.base.Objects;
 import com.google.inject.Inject;
 
 public class Neo4JLegacyStorageWrapper implements Storage {
@@ -51,16 +49,18 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   private final TypeRegistry typeRegistry;
   private final NodeDuplicator nodeDuplicator;
   private final RelationshipDuplicator relationshipDuplicator;
+  private final Neo4JStorage neo4JStorage;
 
   @Inject
   public Neo4JLegacyStorageWrapper(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, IdGenerator idGenerator, TypeRegistry typeRegistry,
-      NodeDuplicator nodeDuplicator, RelationshipDuplicator relationshipDuplicator) {
+      NodeDuplicator nodeDuplicator, RelationshipDuplicator relationshipDuplicator, Neo4JStorage neo4JStorage) {
     this.db = db;
     this.propertyContainerConverterFactory = propertyContainerConverterFactory;
     this.idGenerator = idGenerator;
     this.typeRegistry = typeRegistry;
     this.nodeDuplicator = nodeDuplicator;
     this.relationshipDuplicator = relationshipDuplicator;
+    this.neo4JStorage = neo4JStorage;
   }
 
   @Override
@@ -644,7 +644,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
     if (Relation.class.isAssignableFrom(type)) {
       return (T) getRelationRevision((Class<? extends Relation>) type, id, revision);
     } else {
-      return getDomainEntityRevision(type, id, revision);
+      return neo4JStorage.getDomainEntityRevision(type, id, revision);
     }
   }
 
@@ -694,54 +694,6 @@ public class Neo4JLegacyStorageWrapper implements Storage {
     }
 
     return null;
-  }
-
-  private <T extends DomainEntity> T getDomainEntityRevision(Class<T> type, String id, int revision) throws ConversionException, StorageException {
-    try (Transaction transaction = db.beginTx()) {
-      Node node = getRevisionNode(type, id, revision);
-
-      if (node == null) {
-        transaction.success();
-        return null;
-      }
-
-      try {
-        NodeConverter<T> nodeConverter = propertyContainerConverterFactory.createForType(type);
-        T entity = nodeConverter.convertToEntity(node);
-
-        transaction.success();
-        return entity;
-      } catch (ConversionException e) {
-        transaction.failure();
-        throw e;
-      } catch (InstantiationException e) {
-        transaction.failure();
-        throw new StorageException(e);
-      }
-    }
-  }
-
-  private <T extends Entity> Node getRevisionNode(Class<T> type, String id, int revision) {
-    ResourceIterator<Node> iterator = findByProperty(type, ID_PROPERTY_NAME, id);
-
-    if (!iterator.hasNext()) {
-      return null;
-    }
-
-    Node nodeWithRevision = null;
-
-    for (; iterator.hasNext();) {
-      Node next = iterator.next();
-
-      if (Objects.equal(revision, next.getProperty(REVISION_PROPERTY_NAME))) {
-        nodeWithRevision = next;
-        break;
-      }
-    }
-
-    // Needed to mimic the separate collections used in the Mongo storage.
-    // getRevision only returns objects with a PID.
-    return nodeWithRevision != null && nodeWithRevision.hasProperty(PID) ? nodeWithRevision : null;
   }
 
   @Override
