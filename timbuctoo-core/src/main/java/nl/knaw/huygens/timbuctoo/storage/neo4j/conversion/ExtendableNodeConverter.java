@@ -59,12 +59,6 @@ class ExtendableNodeConverter<T extends Entity> implements NodeConverter<T>, Ext
     namePropertyConverterMap.put(propertyConverter.getName(), propertyConverter);
   }
 
-  /**
-   * Updates the non administrative properties of the node.
-   * @param node the node to update
-   * @param entity the entity that contains the data.
-   * @throws ConversionException when the fieldConverter throws one.
-   */
   @Override
   public void updatePropertyContainer(Node node, Entity entity) throws ConversionException {
     for (PropertyConverter propertyConverter : getPropertyConverters()) {
@@ -75,12 +69,6 @@ class ExtendableNodeConverter<T extends Entity> implements NodeConverter<T>, Ext
 
   }
 
-  /**
-   * Updates the modified and revision properties of the node.
-   * @param node the node to update
-   * @param entity the entity that contains the data to update.
-   * @throws ConversionException when one of the FieldConverters throws one 
-   */
   @Override
   public void updateModifiedAndRev(Node node, Entity entity) throws ConversionException {
     getPropertyConverterByName(MODIFIED_PROPERTY_NAME).setPropertyContainerProperty(node, entity);
