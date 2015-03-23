@@ -7,7 +7,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIntegrationTest;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class Neo4JStorageIntegrationTest extends StorageIntegrationTest {
+public class Neo4JLegacyStorageWrapperIntegrationTest extends StorageIntegrationTest {
 
   @Override
   protected DBIntegrationTestHelper createDBIntegrationTestHelper() {

@@ -41,7 +41,7 @@ import org.neo4j.helpers.Strings;
 import com.google.common.base.Objects;
 import com.google.inject.Inject;
 
-public class Neo4JStorage implements Storage {
+public class Neo4JLegacyStorageWrapper implements Storage {
 
   public static final String RELATIONSHIP_ID_INDEX = "RelationShip id";
 
@@ -53,7 +53,7 @@ public class Neo4JStorage implements Storage {
   private final RelationshipDuplicator relationshipDuplicator;
 
   @Inject
-  public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, IdGenerator idGenerator, TypeRegistry typeRegistry,
+  public Neo4JLegacyStorageWrapper(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, IdGenerator idGenerator, TypeRegistry typeRegistry,
       NodeDuplicator nodeDuplicator, RelationshipDuplicator relationshipDuplicator) {
     this.db = db;
     this.propertyContainerConverterFactory = propertyContainerConverterFactory;

@@ -25,7 +25,7 @@ import org.neo4j.graphdb.Transaction;
 
 import test.model.BaseDomainEntity;
 
-public abstract class Neo4JStorageTest {
+public abstract class Neo4JLegacyStorageWrapperTest {
 
   protected static final Class<BaseDomainEntity> PRIMITIVE_DOMAIN_ENTITY_TYPE = BaseDomainEntity.class;
   protected static final String PRIMITIVE_DOMAIN_ENTITY_NAME = TypeNames.getInternalName(PRIMITIVE_DOMAIN_ENTITY_TYPE);
@@ -40,7 +40,7 @@ public abstract class Neo4JStorageTest {
 
   protected GraphDatabaseService dbMock;
   protected PropertyContainerConverterFactory propertyContainerConverterFactoryMock;
-  protected Neo4JStorage instance;
+  protected Neo4JLegacyStorageWrapper instance;
   protected Transaction transactionMock;
   protected IdGenerator idGeneratorMock;
   protected NodeDuplicator nodeDuplicatorMock;
@@ -57,7 +57,7 @@ public abstract class Neo4JStorageTest {
 
     TypeRegistry typeRegistry = TypeRegistry.getInstance().init("timbuctoo.model test.model");
 
-    instance = new Neo4JStorage(dbMock, propertyContainerConverterFactoryMock, idGeneratorMock, typeRegistry, nodeDuplicatorMock, relationshipDuplicatorMock);
+    instance = new Neo4JLegacyStorageWrapper(dbMock, propertyContainerConverterFactoryMock, idGeneratorMock, typeRegistry, nodeDuplicatorMock, relationshipDuplicatorMock);
   }
 
   private void setupDBTransaction() {
