@@ -79,7 +79,7 @@ public class Neo4JStorage {
     for (; iterator.hasNext();) {
       Node next = iterator.next();
 
-      if (Objects.equal(revision, next.getProperty(REVISION_PROPERTY_NAME))) {
+      if (Objects.equal(revision, getRevisionProperty(next))) {
         nodeWithRevision = next;
         break;
       }
@@ -136,7 +136,7 @@ public class Neo4JStorage {
     ResourceIterator<Relationship> iterator = getFromIndex(id);
     for (; iterator.hasNext();) {
       Relationship next = iterator.next();
-      if (getRevision(next) == revision) {
+      if (getRevisionProperty(next) == revision) {
         return next;
       }
     }
@@ -153,7 +153,7 @@ public class Neo4JStorage {
     return iterator;
   }
 
-  private int getRevision(PropertyContainer propertyContainer) {
+  private int getRevisionProperty(PropertyContainer propertyContainer) {
     return (int) propertyContainer.getProperty(REVISION_PROPERTY_NAME);
   }
 
