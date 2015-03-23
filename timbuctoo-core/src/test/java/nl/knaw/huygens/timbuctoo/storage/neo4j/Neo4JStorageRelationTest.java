@@ -18,7 +18,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -678,9 +677,9 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
         .foundInDB(dbMock);
 
     SubARelation entity = aRelation().build();
-    when(entityInstantiatorMock.createInstanceOf(RELATION_TYPE)).thenReturn(entity);
 
     RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    when(converter.convertToEntity(relationship)).thenReturn(entity);
 
     try {
       // action
@@ -707,16 +706,16 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
         .foundInDB(dbMock);
 
     SubARelation entity = aRelation().build();
-    when(entityInstantiatorMock.createInstanceOf(RELATION_TYPE)).thenReturn(entity);
 
     RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    when(converter.convertToEntity(latestRelationship)).thenReturn(entity);
 
     try {
       // action
       instance.setPID(RELATION_TYPE, ID, PID);
     } finally {
       // verify
-      verify(converter).addValuesToEntity(entity, latestRelationship);
+      verify(converter).addValuesToPropertyContainer(latestRelationship, entity);
       verifyTransActionSucceeded();
     }
   }
@@ -729,18 +728,17 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
         .relationship(relationship) //
         .foundInDB(dbMock);
 
-    SubARelation entity = aRelation().build();
-    when(entityInstantiatorMock.createInstanceOf(RELATION_TYPE)).thenReturn(entity);
+    SubARelation entityWithAPID = aRelation().withAPID().build();
 
     RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
-    doAnswer(setPIDOfEntity()).when(converter).addValuesToEntity(entity, relationship);
+    when(converter.convertToEntity(relationship)).thenReturn(entityWithAPID);
 
     try {
       // action
       instance.setPID(RELATION_TYPE, ID, PID);
     } finally {
       // verify
-      verify(converter).addValuesToEntity(entity, relationship);
+      verify(converter).convertToEntity(relationship);
       verifyTransactionFailed();
     }
   }
@@ -753,36 +751,61 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
         .relationship(relationship) //
         .foundInDB(dbMock);
 
-    SubARelation entity = aRelation().build();
-    when(entityInstantiatorMock.createInstanceOf(RELATION_TYPE)).thenReturn(entity);
-
     RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
-    doThrow(ConversionException.class).when(converter).addValuesToEntity(entity, relationship);
+    when(converter.convertToEntity(relationship)).thenThrow(new ConversionException());
 
     try {
       // action
       instance.setPID(RELATION_TYPE, ID, PID);
     } finally {
       // verify
-      verify(converter).addValuesToEntity(entity, relationship);
+      verify(converter).convertToEntity(relationship);
       verifyTransactionFailed();
+    }
+  }
+
+  @Test(expected = ConversionException.class)
+  public void setPIDThrowsAConversionsExceptionWhenTheUpdatedEntityCannotBeConvertedToARelationship() throws Exception {
+    // setup
+    Relationship relationship = aRelationship().withRevision(SECOND_REVISION).build();
+    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
+        .relationship(relationship) //
+        .foundInDB(dbMock);
+
+    SubARelation entity = aRelation().build();
+
+    RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    when(converter.convertToEntity(relationship)).thenReturn(entity);
+    doThrow(ConversionException.class).when(converter).addValuesToPropertyContainer(relationship, entity);
+
+    try {
+      // action
+      instance.setPID(RELATION_TYPE, ID, PID);
+    } finally {
+      // verify
+      verify(converter).addValuesToPropertyContainer(//
+          argThat(equalTo(relationship)), //
+          argThat(likeDomainEntity(RELATION_TYPE)//
+              .withPID(PID)));
     }
   }
 
   @Test(expected = StorageException.class)
   public void setPIDThrowsAStorageExceptionIfTheRelationCannotBeInstatiated() throws Exception {
     // setup
+    Relationship relationship = aRelationship().build();
     aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
-        .relationship(aRelationship().build()) //
+        .relationship(relationship) //
         .foundInDB(dbMock);
 
-    when(entityInstantiatorMock.createInstanceOf(RELATION_TYPE)).thenThrow(new InstantiationException());
+    RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    when(converter.convertToEntity(relationship)).thenThrow(new InstantiationException());
+
     try {
       // action
       instance.setPID(RELATION_TYPE, ID, PID);
     } finally {
       // verify
-      verify(entityInstantiatorMock).createInstanceOf(RELATION_TYPE);
       verifyTransactionFailed();
     }
   }

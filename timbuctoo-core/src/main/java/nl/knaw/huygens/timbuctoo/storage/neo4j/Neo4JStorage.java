@@ -333,7 +333,7 @@ public class Neo4JStorage implements Storage {
       try {
         RelationshipConverter<T> converter = propertyContainerConverterFactory.createForRelation(type);
 
-        T entity = convertRelationshipToRelation(type, relationship);
+        T entity = converter.convertToEntity(relationship);
 
         validateEntityHasNoPID(type, id, pid, transaction, entity);
 
@@ -365,11 +365,12 @@ public class Neo4JStorage implements Storage {
 
       try {
         NodeConverter<T> converter = propertyContainerConverterFactory.createForType(type);
-        T entity = convertNodeToEntity(type, node, converter);
+        T entity = converter.convertToEntity(node);
 
         validateEntityHasNoPID(type, id, pid, transaction, entity);
 
-        updateNodeWithPID(type, pid, node, entity, converter);
+        entity.setPid(pid);
+        converter.addValuesToPropertyContainer(node, entity);
 
         // FIXME functionality should be part of the repository class.
         nodeDuplicator.saveDuplicate(node);
@@ -390,13 +391,6 @@ public class Neo4JStorage implements Storage {
       transaction.failure();
       throw new IllegalStateException(String.format("%s with %s already has a pid: %s", type.getSimpleName(), id, pid));
     }
-  }
-
-  private <T extends DomainEntity> void updateNodeWithPID(Class<T> type, String pid, Node node, T entity, NodeConverter<T> converter) throws ConversionException {
-
-    entity.setPid(pid);
-
-    converter.addValuesToPropertyContainer(node, entity);
   }
 
   @Override
@@ -690,21 +684,6 @@ public class Neo4JStorage implements Storage {
     }
   }
 
-  private <T extends Relation> T convertRelationshipToRelation(Class<T> type, Relationship relationship) throws InstantiationException, ConversionException {
-
-    RelationshipConverter<T> converter = propertyContainerConverterFactory.createForRelation(type);
-
-    return convertRelationshipToRelation(type, relationship, converter);
-  }
-
-  private <T extends Relation> T convertRelationshipToRelation(Class<T> type, Relationship relationship, RelationshipConverter<T> converter) throws InstantiationException, ConversionException {
-    T entity = entityInstantiator.createInstanceOf(type);
-
-    converter.addValuesToEntity(entity, relationship);
-
-    return entity;
-  }
-
   private <T extends Relation> boolean hasPID(T entity) {
     return Strings.isBlank(entity.getPid());
   }
@@ -744,12 +723,6 @@ public class Neo4JStorage implements Storage {
         throw new StorageException(e);
       }
     }
-  }
-
-  private <T extends Entity> T convertNodeToEntity(Class<T> type, Node node, NodeConverter<T> converter) throws InstantiationException, ConversionException {
-    T entity = entityInstantiator.createInstanceOf(type);
-    converter.addValuesToEntity(entity, node);
-    return entity;
   }
 
   private <T extends Entity> Node getRevisionNode(Class<T> type, String id, int revision) {

@@ -13,7 +13,6 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -415,8 +414,8 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
         .withNode(aNode().withRevision(FIRST_REVISION).build()).withNode(nodeWithLatestRevision)//
         .foundInDB(dbMock);
 
-    when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenReturn(aDomainEntity().withId(ID).build());
     NodeConverter<SubADomainEntity> converterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
+    when(converterMock.convertToEntity(nodeWithLatestRevision)).thenReturn(aDomainEntity().withId(ID).build());
 
     // action
     instance.setPID(DOMAIN_ENTITY_TYPE, ID, PID);
@@ -435,8 +434,8 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
         .withNode(node)//
         .foundInDB(dbMock);
 
-    when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenReturn(aDomainEntity().withId(ID).build());
     NodeConverter<SubADomainEntity> converterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
+    when(converterMock.convertToEntity(node)).thenReturn(aDomainEntity().withId(ID).build());
 
     // action
     instance.setPID(DOMAIN_ENTITY_TYPE, ID, PID);
@@ -457,26 +456,23 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
         .withNode(aNodeWithAPID)//
         .foundInDB(dbMock);
 
-    SubADomainEntity entity = aDomainEntity().build();
-    when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE))//
-        .thenReturn(entity);
+    SubADomainEntity entityWithPID = aDomainEntity().withAPid().build();
 
     NodeConverter<SubADomainEntity> nodeConverter = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
-
-    doAnswer(setPIDOfEntity()).when(nodeConverter).addValuesToEntity(entity, aNodeWithAPID);
+    when(nodeConverter.convertToEntity(aNodeWithAPID)).thenReturn(entityWithPID);
 
     try {
       // action
       instance.setPID(DOMAIN_ENTITY_TYPE, ID, PID);
     } finally {
       // verify
-      verify(nodeConverter).addValuesToEntity(entity, aNodeWithAPID);
+      verify(nodeConverter).convertToEntity(aNodeWithAPID);
       verify(transactionMock).failure();
     }
   }
 
   @Test(expected = ConversionException.class)
-  public void setPIDThrowsAConversionExceptionWhenTheNodeConverterDoes() throws Exception {
+  public void setPIDThrowsAConversionExceptionWhenTheNodeCannotBeConverted() throws Exception {
     // setup
     Node aNodeWithAPID = aNode().withAPID().build();
     aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID)//
@@ -488,15 +484,38 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
         .thenReturn(entity);
 
     NodeConverter<SubADomainEntity> nodeConverter = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
-
-    doThrow(ConversionException.class).when(nodeConverter).addValuesToEntity(entity, aNodeWithAPID);
+    when(nodeConverter.convertToEntity(aNodeWithAPID)).thenThrow(new ConversionException());
 
     try {
       // action
       instance.setPID(DOMAIN_ENTITY_TYPE, ID, PID);
     } finally {
       // verify
-      verify(nodeConverter).addValuesToEntity(entity, aNodeWithAPID);
+      verify(nodeConverter).convertToEntity(aNodeWithAPID);
+      verify(transactionMock).failure();
+    }
+  }
+
+  @Test(expected = ConversionException.class)
+  public void setPIDThrowsAConversionsExceptionWhenTheUpdatedEntityCannotBeCovnverted() throws Exception {
+    // setup
+    Node aNode = aNode().build();
+    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID)//
+        .withNode(aNode)//
+        .foundInDB(dbMock);
+
+    SubADomainEntity entity = aDomainEntity().build();
+
+    NodeConverter<SubADomainEntity> nodeConverter = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
+    when(nodeConverter.convertToEntity(aNode)).thenReturn(entity);
+    doThrow(ConversionException.class).when(nodeConverter).addValuesToPropertyContainer(aNode, entity);
+
+    try {
+      // action
+      instance.setPID(DOMAIN_ENTITY_TYPE, ID, PID);
+    } finally {
+      // verify
+      verify(nodeConverter).addValuesToPropertyContainer(aNode, entity);
       verify(transactionMock).failure();
     }
   }
@@ -520,12 +539,13 @@ public class Neo4JStorageDomainEntityTest extends Neo4JStorageTest {
   public void setPIDThrowsAStorageExceptionWhenTheEntityCannotBeInstatiated() throws Exception {
 
     // setup
-    Node aNodeWithoutPID = aNode().build();
+    Node aNode = aNode().build();
     aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID)//
-        .withNode(aNodeWithoutPID)//
+        .withNode(aNode)//
         .foundInDB(dbMock);
 
-    when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenThrow(new InstantiationException());
+    NodeConverter<SubADomainEntity> converterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
+    when(converterMock.convertToEntity(aNode)).thenThrow(new InstantiationException());
 
     try {
       // action
