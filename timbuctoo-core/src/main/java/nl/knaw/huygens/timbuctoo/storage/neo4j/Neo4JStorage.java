@@ -669,7 +669,8 @@ public class Neo4JStorage implements Storage {
       }
 
       try {
-        T entity = convertRelationshipToRelation(type, relationship);
+        RelationshipConverter<T> converter = propertyContainerConverterFactory.createForRelation(type);
+        T entity = converter.convertToEntity(relationship);
 
         if (hasPID(entity)) {
           transaction.success();
@@ -730,11 +731,11 @@ public class Neo4JStorage implements Storage {
       }
 
       try {
-        T entity = convertNodeToEntity(type, node);
+        NodeConverter<T> nodeConverter = propertyContainerConverterFactory.createForType(type);
+        T entity = nodeConverter.convertToEntity(node);
 
         transaction.success();
         return entity;
-
       } catch (ConversionException e) {
         transaction.failure();
         throw e;
@@ -743,10 +744,6 @@ public class Neo4JStorage implements Storage {
         throw new StorageException(e);
       }
     }
-  }
-
-  private <T extends Entity> T convertNodeToEntity(Class<T> type, Node node) throws InstantiationException, ConversionException {
-    return convertNodeToEntity(type, node, propertyContainerConverterFactory.createForType(type));
   }
 
   private <T extends Entity> T convertNodeToEntity(Class<T> type, Node node, NodeConverter<T> converter) throws InstantiationException, ConversionException {

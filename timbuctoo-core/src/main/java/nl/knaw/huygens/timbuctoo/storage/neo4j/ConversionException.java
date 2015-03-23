@@ -8,6 +8,8 @@ public class ConversionException extends StorageException {
     super(cause);
   }
 
+  public ConversionException() {}
+
   /**
    * 
    */
