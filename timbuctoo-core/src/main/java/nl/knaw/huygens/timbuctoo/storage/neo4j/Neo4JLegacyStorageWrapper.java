@@ -35,7 +35,6 @@ import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
-import org.neo4j.helpers.Strings;
 
 import com.google.inject.Inject;
 
@@ -642,58 +641,10 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   @Override
   public <T extends DomainEntity> T getRevision(Class<T> type, String id, int revision) throws StorageException {
     if (Relation.class.isAssignableFrom(type)) {
-      return (T) getRelationRevision((Class<? extends Relation>) type, id, revision);
+      return (T) neo4JStorage.getRelationRevision((Class<? extends Relation>) type, id, revision);
     } else {
       return neo4JStorage.getDomainEntityRevision(type, id, revision);
     }
-  }
-
-  private <T extends Relation> T getRelationRevision(Class<T> type, String id, int revision) throws StorageException {
-    try (Transaction transaction = db.beginTx()) {
-
-      Relationship relationship = getRevisionRelationship(type, id, revision);
-
-      if (relationship == null) {
-        transaction.success();
-        return null;
-      }
-
-      try {
-        RelationshipConverter<T> converter = propertyContainerConverterFactory.createForRelation(type);
-        T entity = converter.convertToEntity(relationship);
-
-        if (hasPID(entity)) {
-          transaction.success();
-          return null;
-        }
-
-        transaction.success();
-        return entity;
-      } catch (ConversionException e) {
-        transaction.failure();
-        throw e;
-      } catch (InstantiationException e) {
-        transaction.failure();
-        throw new StorageException(e);
-      }
-
-    }
-  }
-
-  private <T extends Relation> boolean hasPID(T entity) {
-    return Strings.isBlank(entity.getPid());
-  }
-
-  private <T extends Relation> Relationship getRevisionRelationship(Class<T> type, String id, int revision) {
-    ResourceIterator<Relationship> iterator = getFromIndex(id);
-    for (; iterator.hasNext();) {
-      Relationship next = iterator.next();
-      if (getRevision(next) == revision) {
-        return next;
-      }
-    }
-
-    return null;
   }
 
   @Override

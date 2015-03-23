@@ -1,11 +1,11 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
-import static nl.knaw.huygens.timbuctoo.model.DomainEntity.PID;
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConverterFactory;
 
@@ -13,14 +13,20 @@ import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.index.Index;
+import org.neo4j.graphdb.index.IndexHits;
+import org.neo4j.helpers.Strings;
 
 import com.google.common.base.Objects;
 
 public class Neo4JStorage {
 
+  public static final String RELATIONSHIP_ID_INDEX = "RelationShip id";
   private GraphDatabaseService db;
   private PropertyContainerConverterFactory propertyContainerConverterFactory;
 
@@ -41,6 +47,13 @@ public class Neo4JStorage {
       try {
         NodeConverter<T> nodeConverter = propertyContainerConverterFactory.createForType(type);
         T entity = nodeConverter.convertToEntity(node);
+
+        // Needed to mimic the separate collections used in the Mongo storage.
+        // getRevision only returns objects with a PID.
+        if (!hasPID(entity)) {
+          transaction.success();
+          return null;
+        }
 
         transaction.success();
         return entity;
@@ -72,9 +85,7 @@ public class Neo4JStorage {
       }
     }
 
-    // Needed to mimic the separate collections used in the Mongo storage.
-    // getRevision only returns objects with a PID.
-    return nodeWithRevision != null && nodeWithRevision.hasProperty(PID) ? nodeWithRevision : null;
+    return nodeWithRevision;
   }
 
   private <T extends Entity> ResourceIterator<Node> findByProperty(Class<T> type, String propertyName, String id) {
@@ -83,6 +94,67 @@ public class Neo4JStorage {
 
     ResourceIterator<Node> iterator = foundNodes.iterator();
     return iterator;
+  }
+
+  public <T extends Relation> T getRelationRevision(Class<T> type, String id, int revision) throws StorageException {
+    try (Transaction transaction = db.beginTx()) {
+
+      Relationship relationship = getRevisionRelationship(type, id, revision);
+
+      if (relationship == null) {
+        transaction.success();
+        return null;
+      }
+
+      try {
+        RelationshipConverter<T> converter = propertyContainerConverterFactory.createForRelation(type);
+        T entity = converter.convertToEntity(relationship);
+
+        if (!hasPID(entity)) {
+          transaction.success();
+          return null;
+        }
+
+        transaction.success();
+        return entity;
+      } catch (ConversionException e) {
+        transaction.failure();
+        throw e;
+      } catch (InstantiationException e) {
+        transaction.failure();
+        throw new StorageException(e);
+      }
+
+    }
+  }
+
+  private <T extends DomainEntity> boolean hasPID(T entity) {
+    return !Strings.isBlank(entity.getPid());
+  }
+
+  private <T extends Relation> Relationship getRevisionRelationship(Class<T> type, String id, int revision) {
+    ResourceIterator<Relationship> iterator = getFromIndex(id);
+    for (; iterator.hasNext();) {
+      Relationship next = iterator.next();
+      if (getRevision(next) == revision) {
+        return next;
+      }
+    }
+
+    return null;
+  }
+
+  private ResourceIterator<Relationship> getFromIndex(String id) {
+    Index<Relationship> index = db.index().forRelationships(RELATIONSHIP_ID_INDEX);
+
+    IndexHits<Relationship> indexHits = index.get(ID_PROPERTY_NAME, id);
+
+    ResourceIterator<Relationship> iterator = indexHits.iterator();
+    return iterator;
+  }
+
+  private int getRevision(PropertyContainer propertyContainer) {
+    return (int) propertyContainer.getProperty(REVISION_PROPERTY_NAME);
   }
 
 }

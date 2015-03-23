@@ -12,8 +12,8 @@ import static nl.knaw.huygens.timbuctoo.storage.neo4j.SearchResultBuilder.anEmpt
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SubARelationBuilder.aRelation;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Matchers.any;
@@ -366,7 +366,7 @@ public class Neo4JLegacyStorageWrapperRelationTest extends Neo4JLegacyStorageWra
     verify(dbMock).beginTx();
     verify(indexMock).get(ID_PROPERTY_NAME, ID);
     verify(relationConverterMock).convertToEntity(relationshipMock);
-    verifyTransActionSucceeded();
+    verifyTransactionSucceeded();
   }
 
   @Test
@@ -394,7 +394,7 @@ public class Neo4JLegacyStorageWrapperRelationTest extends Neo4JLegacyStorageWra
     verify(dbMock).beginTx();
     verify(indexMock).get(ID_PROPERTY_NAME, ID);
     verify(relationConverterMock).convertToEntity(relationshipThirdRevision);
-    verifyTransActionSucceeded();
+    verifyTransactionSucceeded();
   }
 
   @Test
@@ -412,7 +412,7 @@ public class Neo4JLegacyStorageWrapperRelationTest extends Neo4JLegacyStorageWra
 
     verify(indexMock).get(ID_PROPERTY_NAME, ID);
     verifyZeroInteractions(propertyContainerConverterFactoryMock);
-    verifyTransActionSucceeded();
+    verifyTransactionSucceeded();
   }
 
   @Test(expected = ConversionException.class)
@@ -700,7 +700,7 @@ public class Neo4JLegacyStorageWrapperRelationTest extends Neo4JLegacyStorageWra
     } finally {
       // verify
       verify(converter).addValuesToPropertyContainer(latestRelationship, entity);
-      verifyTransActionSucceeded();
+      verifyTransactionSucceeded();
     }
   }
 
@@ -808,129 +808,35 @@ public class Neo4JLegacyStorageWrapperRelationTest extends Neo4JLegacyStorageWra
 
   }
 
-  @Test
-  public void getRevisionReturnsTheRelationForTheRequestedRevision() throws Exception {
-    Relationship relationshipWithPID = aRelationship()//
-        .withRevision(FIRST_REVISION)//
-        .withAPID()//
-        .build();
-    RelationshipIndex indexMock = aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
-        .containsForId(ID)//
-        .relationship(relationshipWithPID)//
-        .foundInDB(dbMock);
-
-    SubARelation entity = aRelation().withAPID().build();
-    RelationshipConverter<SubARelation> converterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
-    when(converterMock.convertToEntity(relationshipWithPID)).thenReturn(entity);
-
-    // action
-    SubARelation relation = instance.getRevision(RELATION_TYPE, ID, FIRST_REVISION);
-
-    // verify
-    assertThat(relation, is(instanceOf(RELATION_TYPE)));
-
-    InOrder inOrder = inOrder(indexMock, converterMock, transactionMock);
-    inOrder.verify(indexMock).get(ID_PROPERTY_NAME, ID);
-    inOrder.verify(converterMock).convertToEntity(relationshipWithPID);
-    inOrder.verify(transactionMock).success();
-  }
-
-  @Test
-  public void getRevisionReturnsNullIfTheFoundRelationshipHasNoPID() throws Exception {
-    Relationship relationshipWithoutPID = aRelationship().withRevision(FIRST_REVISION).build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID)//
-        .relationship(relationshipWithoutPID)//
-        .foundInDB(dbMock);
-
-    SubARelation entityWithoutPID = aRelation().build();
-    RelationshipConverter<SubARelation> relationshipConverter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
-    when(relationshipConverter.convertToEntity(relationshipWithoutPID)).thenReturn(entityWithoutPID);
-
-    // action
-    SubARelation relation = instance.getRevision(RELATION_TYPE, ID, FIRST_REVISION);
-
-    // verify
-    assertThat(relation, is(nullValue()));
-    verifyTransActionSucceeded();
-  }
-
-  @Test
-  public void getRevisionReturnsNullIfTheRelationshipDoesNotExist() throws Exception {
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsNothingForId(ID).foundInDB(dbMock);
-
-    // action
-    SubARelation relation = instance.getRevision(RELATION_TYPE, ID, FIRST_REVISION);
-
-    // verify
-    assertThat(relation, is(nullValue()));
-    verifyTransActionSucceeded();
-  }
-
-  @Test
-  public void getRevisionReturnsNullIfTheRevisionDoesNotExist() throws Exception {
-    Relationship relationshipWithDifferentRevision = aRelationship().withAPID().withRevision(FIRST_REVISION).build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID)//
-        .relationship(relationshipWithDifferentRevision)//
-        .foundInDB(dbMock);
-
-    // action
-    SubARelation relation = instance.getRevision(RELATION_TYPE, ID, SECOND_REVISION);
-
-    // verify
-    assertThat(relation, is(nullValue()));
-    verifyTransActionSucceeded();
-  }
-
-  private void verifyTransActionSucceeded() {
-    verify(transactionMock).success();
-  }
-
-  @Test(expected = StorageException.class)
-  public void getRevisionThrowsAStorageExceptionIfTheRelationCannotBeInstantiated() throws Exception {
-    Relationship relationshipWithPID = aRelationship()//
-        .withRevision(FIRST_REVISION)//
-        .withAPID()//
-        .build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID)//
-        .relationship(relationshipWithPID)//
-        .foundInDB(dbMock);
-
-    RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
-    when(converter.convertToEntity(relationshipWithPID)).thenThrow(new InstantiationException());
-
-    try {
-      // action
-      instance.getRevision(RELATION_TYPE, ID, FIRST_REVISION);
-    } finally {
-      // verify
-      verifyTransactionFailed();
-    }
-  }
-
   private void verifyTransactionFailed() {
     verify(transactionMock).failure();
   }
 
-  @Test(expected = ConversionException.class)
-  public void getRevisionThrowsAStorageExceptionIfTheRelationCannotBeConverted() throws Exception {
-    Relationship relationshipWithPID = aRelationship()//
-        .withRevision(FIRST_REVISION)//
-        .withAPID()//
-        .build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID)//
-        .relationship(relationshipWithPID)//
-        .foundInDB(dbMock);
-
-    RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
-    when(converter.convertToEntity(relationshipWithPID)).thenThrow(new ConversionException());
-
-    try {
-      // action
-      instance.getRevision(RELATION_TYPE, ID, FIRST_REVISION);
-    } finally {
-      // verify
-      verify(converter).convertToEntity(relationshipWithPID);
-      verifyTransactionFailed();
-    }
+  private void verifyTransactionSucceeded() {
+    verify(transactionMock).success();
   }
+
+  @Test
+  public void getRevisionForRelationDelegatesTheCallToNeo4JStorageGetRelationRevision() throws Exception {
+    // setup
+    when(neo4JStorageMock.getRelationRevision(RELATION_TYPE, ID, FIRST_REVISION)).thenReturn(aRelation().build());
+
+    // action
+    SubARelation relation = instance.getRevision(RELATION_TYPE, ID, FIRST_REVISION);
+
+    // verify
+    assertThat(relation, is(notNullValue()));
+
+    verify(neo4JStorageMock).getRelationRevision(RELATION_TYPE, ID, FIRST_REVISION);
+  }
+
+  @Test(expected = StorageException.class)
+  public void getRevisionThrowsAStorageExceptionWhenNeo4JStorageGetRelationRevisionDoes() throws Exception {
+    // setup
+    when(neo4JStorageMock.getRelationRevision(RELATION_TYPE, ID, FIRST_REVISION)).thenThrow(new StorageException());
+
+    // action
+    instance.getRevision(RELATION_TYPE, ID, FIRST_REVISION);
+  }
+
 }
