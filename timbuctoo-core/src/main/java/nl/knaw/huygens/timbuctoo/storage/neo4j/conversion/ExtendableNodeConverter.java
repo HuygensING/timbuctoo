@@ -10,6 +10,7 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.ConversionException;
+import nl.knaw.huygens.timbuctoo.storage.neo4j.EntityInstantiator;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.NodeConverter;
 
 import org.neo4j.graphdb.DynamicLabel;
@@ -19,11 +20,17 @@ import com.google.common.collect.Maps;
 
 class ExtendableNodeConverter<T extends Entity> implements NodeConverter<T>, ExtendablePropertyContainerConverter<Node, T> {
 
-  private Class<T> type;
-  private Map<String, PropertyConverter> namePropertyConverterMap;
+  private final Class<T> type;
+  private final Map<String, PropertyConverter> namePropertyConverterMap;
+  private final EntityInstantiator entityInstantiator;
 
   public ExtendableNodeConverter(Class<T> type) {
+    this(type, new EntityInstantiator());
+  }
+
+  public ExtendableNodeConverter(Class<T> type, EntityInstantiator entityInstantiator) {
     this.type = type;
+    this.entityInstantiator = entityInstantiator;
     namePropertyConverterMap = Maps.newHashMap();
   }
 
@@ -81,7 +88,10 @@ class ExtendableNodeConverter<T extends Entity> implements NodeConverter<T>, Ext
 
   @Override
   public T convertToEntity(Node propertyContainer) throws ConversionException, InstantiationException {
-    throw new UnsupportedOperationException("Yet to be implemented");
-  }
+    T entity = entityInstantiator.createInstanceOf(type);
 
+    addValuesToEntity(entity, propertyContainer);
+
+    return entity;
+  }
 }
