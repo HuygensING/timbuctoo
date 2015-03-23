@@ -33,7 +33,7 @@ public class PropertyContainerConverterFactory {
   }
 
   public <T extends Relation> RelationshipConverter<T> createForRelation(Class<T> type) {
-    ExtendableRelationshipConverter<T> relationshipConverter = createSimpleRelationshipConverter(type);
+    ExtendableRelationshipConverter<T> relationshipConverter = createExtendableRelationshipConverter(type);
     addPropertyConverters(relationshipConverter, type);
 
     return relationshipConverter;
@@ -56,7 +56,7 @@ public class PropertyContainerConverterFactory {
   }
 
   public <T extends Entity> NodeConverter<T> createForType(Class<T> type) {
-    ExtendableNodeConverter<T> propertyContainerConverter = createSimpleNodeConverter(type);
+    ExtendableNodeConverter<T> propertyContainerConverter = createExtendableNodeConverter(type);
     addPropertyConverters(propertyContainerConverter, type);
 
     return propertyContainerConverter;
@@ -105,12 +105,12 @@ public class PropertyContainerConverterFactory {
     return Entity.class.isAssignableFrom(typeToGetFieldsFrom);
   }
 
-  protected <T extends Entity> ExtendableNodeConverter<T> createSimpleNodeConverter(Class<T> type) {
+  protected <T extends Entity> ExtendableNodeConverter<T> createExtendableNodeConverter(Class<T> type) {
     return new ExtendableNodeConverter<T>(type);
   }
 
-  protected <T extends Relation> ExtendableRelationshipConverter<T> createSimpleRelationshipConverter(Class<T> type) {
-    return new ExtendableRelationshipConverter<T>(typeRegistry);
+  protected <T extends Relation> ExtendableRelationshipConverter<T> createExtendableRelationshipConverter(Class<T> type) {
+    return new ExtendableRelationshipConverter<T>(type, typeRegistry);
   }
 
 }

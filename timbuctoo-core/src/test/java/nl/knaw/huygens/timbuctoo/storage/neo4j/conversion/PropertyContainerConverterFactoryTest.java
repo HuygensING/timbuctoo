@@ -62,12 +62,12 @@ public class PropertyContainerConverterFactoryTest {
 
     instance = new PropertyContainerConverterFactory(propertyConverterFactoryMock, typeRegistryMock) {
       @Override
-      protected <T extends Entity> ExtendableNodeConverter<T> createSimpleNodeConverter(Class<T> type) {
+      protected <T extends Entity> ExtendableNodeConverter<T> createExtendableNodeConverter(Class<T> type) {
         return nodeConverterMock;
       }
 
       @Override
-      protected <T extends Relation> ExtendableRelationshipConverter<T> createSimpleRelationshipConverter(Class<T> type) {
+      protected <T extends Relation> ExtendableRelationshipConverter<T> createExtendableRelationshipConverter(Class<T> type) {
         return relationshipConverterMock;
       }
 

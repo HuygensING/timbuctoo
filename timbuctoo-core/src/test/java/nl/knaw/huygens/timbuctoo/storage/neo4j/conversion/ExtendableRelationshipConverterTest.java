@@ -4,6 +4,8 @@ import static nl.knaw.huygens.timbuctoo.storage.RelationMatcher.likeRelation;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeMockBuilder.aNode;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyConverterMockBuilder.newPropertyConverter;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -16,6 +18,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.ConversionException;
+import nl.knaw.huygens.timbuctoo.storage.neo4j.EntityInstantiator;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +34,7 @@ import test.variation.model.projecta.ProjectADomainEntity;
 
 public class ExtendableRelationshipConverterTest {
 
+  private static final Class<Relation> TYPE = Relation.class;
   private static final String OTHER_FIELD_CONVERTER = "otherFieldConverter";
   private static final String FIELD_CONVERTER = "fieldConverter";
   private PropertyConverter adminPropertyConverterMock;
@@ -39,16 +43,19 @@ public class ExtendableRelationshipConverterTest {
   private Relation relation;
   private ExtendableRelationshipConverter<Relation> instance;
   private TypeRegistry typeRegistry;
+  private EntityInstantiator entityInstantiatorMock;
 
   @Before
   public void setUp() throws Exception {
+    entityInstantiatorMock = mock(EntityInstantiator.class);
+
     typeRegistry = TypeRegistry.getInstance();
     typeRegistry.init(getPackageName(SubADomainEntity.class) + " " + getPackageName(BaseDomainEntity.class) + " " + getPackageName(Person.class));
 
     adminPropertyConverterMock = newPropertyConverter().withName(FIELD_CONVERTER).withType(FieldType.ADMINISTRATIVE).build();
     regularPropertyConverterMock = newPropertyConverter().withName(OTHER_FIELD_CONVERTER).withType(FieldType.REGULAR).build();
 
-    instance = new ExtendableRelationshipConverter<Relation>(typeRegistry);
+    instance = new ExtendableRelationshipConverter<Relation>(TYPE, typeRegistry, entityInstantiatorMock);
     instance.addPropertyConverter(regularPropertyConverterMock);
     instance.addPropertyConverter(adminPropertyConverterMock);
 
@@ -86,7 +93,7 @@ public class ExtendableRelationshipConverterTest {
   }
 
   @Test
-  public void addValuesToEntityCallsAllTheFieldConvertersSetsFieldsOfRelationThatArePackedInTheStartAndEndNode() throws Exception {
+  public void addValuesToEntityCallsAllThePropertyConvertersSetsFieldsOfRelationThatArePackedInTheStartAndEndNode() throws Exception {
     // setup
     Label startNodeBaseTypeLabel = getLabelOfType(BaseDomainEntity.class);
     String sourceId = "sourceId";
@@ -227,5 +234,58 @@ public class ExtendableRelationshipConverterTest {
 
     verify(adminPropertyConverterMock, never()).setPropertyContainerProperty(relationshipMock, relation);
     verify(regularPropertyConverterMock, never()).setPropertyContainerProperty(relationshipMock, relation);
+  }
+
+  @Test
+  public void convertToEntityCreatesANewInstanceOfTheTypeAndLetThePropertyConvertersAddTheirValuesToIt() throws Exception {
+    // setup
+    when(entityInstantiatorMock.createInstanceOf(TYPE)).thenReturn(relation);
+
+    // setup
+    Label startNodeBaseTypeLabel = getLabelOfType(BaseDomainEntity.class);
+    String sourceId = "sourceId";
+    Node startNode = aNode().withId(sourceId)//
+        .withLabel(getLabelOfType(ProjectADomainEntity.class))//
+        .withLabel(startNodeBaseTypeLabel)//
+        .build();
+
+    Label endNodeBaseTypeLabel = getLabelOfType(Person.class);
+    String targetId = "targetId";
+    Node endNode = aNode().withId(targetId) //
+        .withLabel(getLabelOfType(ProjectAPerson.class)) //
+        .withLabel(endNodeBaseTypeLabel)//
+        .build();
+
+    when(relationshipMock.getStartNode()).thenReturn(startNode);
+    when(relationshipMock.getEndNode()).thenReturn(endNode);
+
+    // action
+    Relation actualRelation = instance.convertToEntity(relationshipMock);
+
+    // verify
+    assertThat(actualRelation, is(sameInstance(relation)));
+
+    verify(adminPropertyConverterMock).addValueToEntity(relation, relationshipMock);
+    verify(regularPropertyConverterMock).addValueToEntity(relation, relationshipMock);
+  }
+
+  @Test(expected = InstantiationException.class)
+  public void convertToEntityThrowsAnInstantionExceptionWhenTheEntityCannotBeInstatiated() throws Exception {
+    // setup
+    when(entityInstantiatorMock.createInstanceOf(TYPE)).thenThrow(new InstantiationException());
+
+    // action
+    instance.convertToEntity(relationshipMock);
+
+  }
+
+  @Test(expected = ConversionException.class)
+  public void convertToEntityThrowsAConversionExceptionWhenOneOfTheValuesCannotBeConverted() throws Exception {
+    // setup
+    doThrow(ConversionException.class).when(adminPropertyConverterMock).addValueToEntity(relation, relationshipMock);
+    when(entityInstantiatorMock.createInstanceOf(TYPE)).thenReturn(relation);
+
+    // action
+    instance.convertToEntity(relationshipMock);
   }
 }

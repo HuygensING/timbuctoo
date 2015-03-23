@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.ConversionException;
+import nl.knaw.huygens.timbuctoo.storage.neo4j.EntityInstantiator;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipConverter;
 
 import org.neo4j.graphdb.Label;
@@ -21,12 +22,20 @@ import com.google.common.collect.Maps;
 
 class ExtendableRelationshipConverter<T extends Relation> implements RelationshipConverter<T>, ExtendablePropertyContainerConverter<Relationship, T> {
 
-  private Map<String, PropertyConverter> propertyConverters;
-  private TypeRegistry typeRegistry;
+  private final Map<String, PropertyConverter> propertyConverters;
+  private final TypeRegistry typeRegistry;
+  private final EntityInstantiator entityInstantiatorMock;
+  private final Class<T> type;
 
-  public ExtendableRelationshipConverter(TypeRegistry typeRegistry) {
+  public ExtendableRelationshipConverter(Class<T> type, TypeRegistry typeRegistry, EntityInstantiator entityInstantiatorMock) {
+    this.type = type;
     this.typeRegistry = typeRegistry;
+    this.entityInstantiatorMock = entityInstantiatorMock;
     propertyConverters = Maps.newHashMap();
+  }
+
+  public ExtendableRelationshipConverter(Class<T> type, TypeRegistry typeRegistry) {
+    this(type, typeRegistry, new EntityInstantiator());
   }
 
   @Override
@@ -103,7 +112,11 @@ class ExtendableRelationshipConverter<T extends Relation> implements Relationshi
 
   @Override
   public T convertToEntity(Relationship propertyContainer) throws ConversionException, InstantiationException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    T entity = entityInstantiatorMock.createInstanceOf(type);
+
+    addValuesToEntity(entity, propertyContainer);
+
+    return entity;
   }
 
 }
