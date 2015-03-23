@@ -59,7 +59,7 @@ public abstract class Neo4JStorageTest {
 
     TypeRegistry typeRegistry = TypeRegistry.getInstance().init("timbuctoo.model test.model");
 
-    instance = new Neo4JStorage(dbMock, propertyContainerConverterFactoryMock, entityInstantiatorMock, idGeneratorMock, typeRegistry, nodeDuplicatorMock, relationshipDuplicatorMock);
+    instance = new Neo4JStorage(dbMock, propertyContainerConverterFactoryMock, idGeneratorMock, typeRegistry, nodeDuplicatorMock, relationshipDuplicatorMock);
   }
 
   private void setupDBTransaction() {

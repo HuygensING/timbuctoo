@@ -115,8 +115,8 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
     NodeConverter<RelationType> relationTypeConverter = propertyContainerConverterFactoryHasANodeConverterTypeFor(RELATIONTYPE_TYPE);
     RelationType relationType = new RelationType();
     relationType.setRegularName(name);
+    when(relationTypeConverter.convertToEntity(relationTypeNodeMock)).thenReturn(relationType);
 
-    when(entityInstantiatorMock.createInstanceOf(RELATIONTYPE_TYPE)).thenReturn(relationType);
     return relationTypeConverter;
   }
 
@@ -186,16 +186,7 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
   }
 
   @Test(expected = StorageException.class)
-  public void addDomainEntityForRelationThrowsAStorageExceptionWhenTheEntityInstantiatorThrowsAnIllegalAccessException() throws Exception {
-    addDomainEntityForRelationThrowsAStorageExceptionWhenTheEntityInstantiatorThrowsAnException(IllegalAccessException.class);
-  }
-
-  @Test(expected = StorageException.class)
-  public void addDomainEntityForRelationThrowsAStorageExceptionWhenTheEntityInstantiatorThrowsAnInstantiationException() throws Exception {
-    addDomainEntityForRelationThrowsAStorageExceptionWhenTheEntityInstantiatorThrowsAnException(InstantiationException.class);
-  }
-
-  private void addDomainEntityForRelationThrowsAStorageExceptionWhenTheEntityInstantiatorThrowsAnException(Class<? extends Exception> exceptionToThrow) throws Exception {
+  public void addDomainEntityForRelationThrowsAStorageExceptionWhenTheRelationTypeCannotBeInstantiated() throws Exception {
     SubARelation relation = aRelation()//
         .withSourceId(RELATION_SOURCE_ID) //
         .withSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME) //
@@ -214,30 +205,25 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
         .withNode(targetNodeMock) //
         .foundInDB(dbMock);
 
-    relationTypeWithRegularNameExists(name);
+    NodeConverter<RelationType> relationTypeConverter = relationTypeWithRegularNameExists(name);
 
     Relationship relationShipMock = mock(RELATIONSHIP_TYPE);
 
-    RelationshipConverter<SubARelation> relationConverterMock = propertyContainerFactoryHasCompositeRelationshipConverterFor(Neo4JStorageRelationTest.RELATION_TYPE);
-
     when(sourceNodeMock.createRelationshipTo(argThat(equalTo(targetNodeMock)), argThat(likeRelationshipType().withName(name)))).thenReturn(relationShipMock);
     when(idGeneratorMock.nextIdFor(Neo4JStorageRelationTest.RELATION_TYPE)).thenReturn(ID);
-    doThrow(exceptionToThrow).when(entityInstantiatorMock).createInstanceOf(RELATIONTYPE_TYPE);
+    when(relationTypeConverter.convertToEntity(any(Node.class))).thenThrow(new InstantiationException());
 
     try {
       // action
       instance.addDomainEntity(SubARelation.class, relation, new Change());
     } finally {
       // verify
-      verify(dbMock).beginTx();
-      verify(entityInstantiatorMock).createInstanceOf(RELATIONTYPE_TYPE);
       verifyTransactionFailed();
-      verifyZeroInteractions(relationConverterMock, sourceNodeMock);
     }
   }
 
-  @Test(expected = StorageException.class)
-  public void addDomainEntityForRelationThrowsAConversionExceptionWhenTheRegularNameOfTheRelationTypeCannotBeFound() throws Exception {
+  @Test(expected = ConversionException.class)
+  public void addDomainEntityForRelationThrowsAConversionExceptionWhenTheRelationCannotBeConverted() throws Exception {
     SubARelation relation = aRelation()//
         .withSourceId(RELATION_SOURCE_ID) //
         .withSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME) //
@@ -265,7 +251,7 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
 
     when(sourceNodeMock.createRelationshipTo(argThat(equalTo(targetNodeMock)), argThat(likeRelationshipType().withName(name)))).thenReturn(relationShipMock);
     when(idGeneratorMock.nextIdFor(Neo4JStorageRelationTest.RELATION_TYPE)).thenReturn(ID);
-    doThrow(ConversionException.class).when(relationTypeConverter).addValuesToEntity(any(RelationType.class), any(Node.class));
+    when(relationTypeConverter.convertToEntity(any(Node.class))).thenThrow(new ConversionException());
 
     try {
       // action
@@ -273,7 +259,6 @@ public class Neo4JStorageRelationTest extends Neo4JStorageTest {
     } finally {
       // verify
       verify(dbMock).beginTx();
-      verify(relationTypeConverter).addValuesToEntity(any(RelationType.class), any(Node.class));
       verifyTransactionFailed();
       verifyZeroInteractions(relationConverterMock, sourceNodeMock);
     }

@@ -47,18 +47,16 @@ public class Neo4JStorage implements Storage {
 
   private final PropertyContainerConverterFactory propertyContainerConverterFactory;
   private final GraphDatabaseService db;
-  private final EntityInstantiator entityInstantiator;
   private final IdGenerator idGenerator;
   private final TypeRegistry typeRegistry;
   private final NodeDuplicator nodeDuplicator;
   private final RelationshipDuplicator relationshipDuplicator;
 
   @Inject
-  public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, EntityInstantiator entityInstantiator, IdGenerator idGenerator,
-      TypeRegistry typeRegistry, NodeDuplicator nodeDuplicator, RelationshipDuplicator relationshipDuplicator) {
+  public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, IdGenerator idGenerator, TypeRegistry typeRegistry,
+      NodeDuplicator nodeDuplicator, RelationshipDuplicator relationshipDuplicator) {
     this.db = db;
     this.propertyContainerConverterFactory = propertyContainerConverterFactory;
-    this.entityInstantiator = entityInstantiator;
     this.idGenerator = idGenerator;
     this.typeRegistry = typeRegistry;
     this.nodeDuplicator = nodeDuplicator;
@@ -168,9 +166,7 @@ public class Neo4JStorage implements Storage {
 
   private String getRegularRelationName(Node relationTypeNode) throws ConversionException, InstantiationException, IllegalAccessException {
     NodeConverter<RelationType> relationTypeConverter = propertyContainerConverterFactory.createForType(RelationType.class);
-    RelationType relationType = entityInstantiator.createInstanceOf(RelationType.class);
-
-    relationTypeConverter.addValuesToEntity(relationType, relationTypeNode);
+    RelationType relationType = relationTypeConverter.convertToEntity(relationTypeNode);
 
     String relationTypeName = relationType.getRegularName();
     return relationTypeName;
