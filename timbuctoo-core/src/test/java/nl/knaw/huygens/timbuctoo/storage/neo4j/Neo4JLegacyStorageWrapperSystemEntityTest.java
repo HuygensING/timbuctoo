@@ -120,7 +120,7 @@ public class Neo4JLegacyStorageWrapperSystemEntityTest extends Neo4JLegacyStorag
     verifyZeroInteractions(propertyContainerConverterFactoryMock);
   }
 
-  @Test(expected = StorageException.class)
+  @Test(expected = ConversionException.class)
   public void getEntityThrowsStorageExceptionWhenEntityWrapperThrowsAConversionException() throws Exception {
     // setup
     Node nodeMock = aNode().build();
@@ -128,10 +128,8 @@ public class Neo4JLegacyStorageWrapperSystemEntityTest extends Neo4JLegacyStorag
         .withNode(nodeMock)//
         .foundInDB(dbMock);
 
-    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(Neo4JStorageSystemEntityTest.SYSTEM_ENTITY_TYPE);
-
-    when(entityInstantiatorMock.createInstanceOf(Neo4JLegacyStorageWrapperSystemEntityTest.SYSTEM_ENTITY_TYPE)).thenReturn(systemEntity);
     NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(Neo4JLegacyStorageWrapperSystemEntityTest.SYSTEM_ENTITY_TYPE);
+    when(systemEntityConverterMock.convertToEntity(nodeMock)).thenThrow(new ConversionException());
 
     try {
       // action
