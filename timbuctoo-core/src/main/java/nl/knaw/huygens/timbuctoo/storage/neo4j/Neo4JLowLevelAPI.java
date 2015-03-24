@@ -27,7 +27,7 @@ public class Neo4JLowLevelAPI {
   }
 
   public int getRevisionProperty(PropertyContainer propertyContainer) {
-    return propertyContainer.hasProperty(REVISION_PROPERTY_NAME) ? //
+    return propertyContainer != null && propertyContainer.hasProperty(REVISION_PROPERTY_NAME) ? //
     (int) propertyContainer.getProperty(REVISION_PROPERTY_NAME)
         : 0;
   }
@@ -43,12 +43,7 @@ public class Neo4JLowLevelAPI {
     try (Transaction transaction = db.beginTx()) {
       ResourceIterator<Node> iterator = findByProperty(type, ID_PROPERTY_NAME, id);
 
-      if (!iterator.hasNext()) {
-        transaction.success();
-        return null;
-      }
-
-      Node nodeWithHighestRevision = iterator.next();
+      Node nodeWithHighestRevision = null;
 
       for (; iterator.hasNext();) {
         Node next = iterator.next();
@@ -66,11 +61,6 @@ public class Neo4JLowLevelAPI {
   public <T extends Entity> Node getNodeWithRevision(Class<T> type, String id, int revision) {
     try (Transaction transaction = db.beginTx()) {
       ResourceIterator<Node> iterator = findByProperty(type, ID_PROPERTY_NAME, id);
-
-      if (!iterator.hasNext()) {
-        transaction.success();
-        return null;
-      }
 
       Node nodeWithRevision = null;
 
@@ -99,11 +89,8 @@ public class Neo4JLowLevelAPI {
   public Relationship getLatestRelationship(String id) {
     try (Transaction transaction = db.beginTx()) {
       ResourceIterator<Relationship> iterator = getFromIndex(id);
-      if (!iterator.hasNext()) {
-        transaction.success();
-        return null;
-      }
-      Relationship relationshipWithHighestRevision = iterator.next();
+
+      Relationship relationshipWithHighestRevision = null;
 
       for (; iterator.hasNext();) {
         Relationship next = iterator.next();
@@ -120,15 +107,19 @@ public class Neo4JLowLevelAPI {
   public <T extends Relation> Relationship getRelationshipWithRevision(Class<T> relationType, String id, int revision) {
     try (Transaction transaction = db.beginTx()) {
       ResourceIterator<Relationship> iterator = getFromIndex(id);
+
+      Relationship relationshipWithRevsion = null;
+
       for (; iterator.hasNext();) {
         Relationship next = iterator.next();
         if (getRevisionProperty(next) == revision) {
-          transaction.success();
-          return next;
+
+          relationshipWithRevsion = next;
+          break;
         }
       }
       transaction.success();
-      return null;
+      return relationshipWithRevsion;
     }
   }
 

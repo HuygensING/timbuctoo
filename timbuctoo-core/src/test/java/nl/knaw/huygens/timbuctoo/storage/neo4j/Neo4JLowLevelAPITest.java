@@ -79,6 +79,18 @@ public class Neo4JLowLevelAPITest {
   }
 
   @Test
+  public void getRevisionPropertyReturnsZeroIfThePropertyContainerIsNull() {
+    // setup
+    Node nullNode = null;
+
+    // action
+    int actualRevision = instance.getRevisionProperty(nullNode);
+
+    // verify
+    assertThat(actualRevision, is(equalTo(0)));
+  }
+
+  @Test
   public void getLatestByIdReturnsTheNodeWithTheHighestRevision() {
     // setup
     Node nodeWithThirdRevision = aNode().withRevision(THIRD_REVISION).build();
