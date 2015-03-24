@@ -338,6 +338,17 @@ public class Neo4JStorage {
     }
   }
 
+  public <T extends SystemEntity> int deleteSystemEntity(Class<T> type, String id) throws StorageException {
+    int numDeleted = 0;
+    try (Transaction transaction = db.beginTx()) {
+      ResourceIterator<Node> nodes = findByProperty(type, ID_PROPERTY_NAME, id);
+      numDeleted = deleteEntity(nodes);
+      transaction.success();
+    }
+
+    return numDeleted;
+  }
+
   private int deleteEntity(ResourceIterator<Node> nodes) {
     int numDeleted = 0;
     for (; nodes.hasNext();) {

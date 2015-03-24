@@ -1,9 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
-
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
@@ -21,10 +18,8 @@ import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
-import org.neo4j.graphdb.Transaction;
 
 import com.google.inject.Inject;
 
@@ -100,29 +95,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends SystemEntity> int deleteSystemEntity(Class<T> type, String id) throws StorageException {
-    int numDeleted = 0;
-    try (Transaction transaction = db.beginTx()) {
-      ResourceIterator<Node> nodes = findByProperty(type, ID_PROPERTY_NAME, id);
-      numDeleted = deleteEntity(nodes);
-      transaction.success();
-    }
-
-    return numDeleted;
-  }
-
-  private int deleteEntity(ResourceIterator<Node> nodes) {
-    int numDeleted = 0;
-    for (; nodes.hasNext();) {
-      Node node = nodes.next();
-
-      for (Iterator<Relationship> relationships = node.getRelationships().iterator(); relationships.hasNext();) {
-        relationships.next().delete();
-      }
-
-      node.delete();
-      numDeleted++;
-    }
-    return numDeleted;
+    return neo4JStorage.deleteSystemEntity(type, id);
   }
 
   @Override

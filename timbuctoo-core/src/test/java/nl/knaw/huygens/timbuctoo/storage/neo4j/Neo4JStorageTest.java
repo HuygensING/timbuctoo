@@ -756,6 +756,43 @@ public class Neo4JStorageTest {
   }
 
   @Test
+  public void deleteSystemEntityFirstRemovesTheNodesRelationShipsAndThenTheNodeItselfTheDatabase() throws Exception {
+    // setup
+    Relationship relMock1 = aRelationship().build();
+    Relationship relMock2 = aRelationship().build();
+    Node nodeMock2 = aNode().withOutgoingRelationShip(relMock1).andOutgoingRelationship(relMock2).build();
+
+    aSearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID) //
+        .withNode(nodeMock2) //
+        .foundInDB(dbMock);
+
+    // action
+    int numDeleted = instance.deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(numDeleted, is(equalTo(1)));
+    InOrder inOrder = inOrder(dbMock, nodeMock2, relMock1, relMock2, transactionMock);
+    inOrder.verify(dbMock).beginTx();
+    verifyNodeAndItsRelationAreDelete(nodeMock2, relMock1, relMock2, inOrder);
+    inOrder.verify(transactionMock).success();
+
+  }
+
+  @Test
+  public void deleteSystemEntityReturns0WhenTheEntityCannotBeFound() throws Exception {
+    // setup
+    anEmptySearchResult().forLabel(SYSTEM_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
+
+    // action
+    int numDeleted = instance.deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID);
+    // verify
+    assertThat(numDeleted, is(equalTo(0)));
+    verify(dbMock).beginTx();
+    verify(dbMock).findNodesByLabelAndProperty(SYSTEM_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+    verify(transactionMock).success();
+  }
+
+  @Test
   public void getDomainEntityRevisionReturnsTheDomainEntityWithTheRequestedRevision() throws Exception {
     Node nodeWithSameRevision = aNode().withRevision(FIRST_REVISION).withAPID().build();
     aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).withNode(nodeWithSameRevision).foundInDB(dbMock);
