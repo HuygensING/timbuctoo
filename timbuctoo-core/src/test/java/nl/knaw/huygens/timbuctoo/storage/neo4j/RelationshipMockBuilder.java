@@ -41,7 +41,9 @@ public class RelationshipMockBuilder {
   private void addProperties(Relationship relationshipMock) {
     when(relationshipMock.getPropertyKeys()).thenReturn(properties.keySet());
     for (Entry<String, Object> entry : properties.entrySet()) {
-      when(relationshipMock.getProperty(entry.getKey())).thenReturn(entry.getValue());
+      String key = entry.getKey();
+      when(relationshipMock.getProperty(key)).thenReturn(entry.getValue());
+      when(relationshipMock.hasProperty(key)).thenReturn(true);
     }
   }
 
