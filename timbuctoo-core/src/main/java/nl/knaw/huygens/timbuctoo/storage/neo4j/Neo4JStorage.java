@@ -70,6 +70,32 @@ public class Neo4JStorage {
     }
   }
 
+  public <T extends Relation> T getRelation(Class<T> type, String id) throws StorageException {
+    try (Transaction transaction = db.beginTx()) {
+      Relationship relationshipWithHighestRevision = getLatestRelationship(id);
+
+      if (relationshipWithHighestRevision == null) {
+        transaction.success();
+        return null;
+      }
+
+      try {
+
+        RelationshipConverter<T> relationshipConverter = propertyContainerConverterFactory.createForRelation(type);
+        T entity = relationshipConverter.convertToEntity(relationshipWithHighestRevision);
+
+        transaction.success();
+        return entity;
+      } catch (ConversionException e) {
+        transaction.failure();
+        throw e;
+      } catch (IllegalArgumentException | InstantiationException e) {
+        transaction.failure();
+        throw new StorageException(e);
+      }
+    }
+  }
+
   public <T extends DomainEntity> T getDomainEntityRevision(Class<T> type, String id, int revision) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
       Node node = getRevisionNode(type, id, revision);

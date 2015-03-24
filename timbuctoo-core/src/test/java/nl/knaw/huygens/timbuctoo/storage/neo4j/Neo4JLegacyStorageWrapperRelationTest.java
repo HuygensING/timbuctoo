@@ -14,7 +14,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
@@ -344,122 +343,25 @@ public class Neo4JLegacyStorageWrapperRelationTest extends Neo4JLegacyStorageWra
   }
 
   @Test
-  public void getEntityForRelationReturnsTheRelationThatBelongsToTheId() throws Exception {
+  public void getEntityForRelationDelegatesToNeo4JStorageGetRelation() throws Exception {
     // setup
-    Relationship relationshipMock = aRelationship().build();
-    RelationshipIndex indexMock = aRelationshipIndexForName(RELATIONSHIP_ID_INDEX) //
-        .containsForId(ID) //
-        .relationship(relationshipMock) //
-        .foundInDB(dbMock);
-    SubARelation relation = new SubARelation();
-
-    RelationshipConverter<SubARelation> relationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
-    when(relationConverterMock.convertToEntity(relationshipMock)).thenReturn(relation);
+    SubARelation relation = aRelation().build();
+    when(neo4JStorageMock.getRelation(RELATION_TYPE, ID)).thenReturn(relation);
 
     // action
     SubARelation actualRelation = instance.getEntity(RELATION_TYPE, ID);
 
     // verify
     assertThat(actualRelation, is(sameInstance(relation)));
-
-    verify(dbMock).beginTx();
-    verify(indexMock).get(ID_PROPERTY_NAME, ID);
-    verify(relationConverterMock).convertToEntity(relationshipMock);
-    verifyTransactionSucceeded();
-  }
-
-  @Test
-  public void getEntityForRelationReturnsTheLatestIfMultipleAreFound() throws Exception {
-    // setup
-    Relationship relationshipFirstRevision = aRelationship().withRevision(FIRST_REVISION).build();
-    Relationship relationshipSecondRevision = aRelationship().withRevision(SECOND_REVISION).build();
-    Relationship relationshipThirdRevision = aRelationship().withRevision(THIRD_REVISION).build();
-    RelationshipIndex indexMock = aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
-        .relationship(relationshipFirstRevision) //
-        .andRelationship(relationshipThirdRevision) //
-        .andRelationship(relationshipSecondRevision) //
-        .foundInDB(dbMock);
-    SubARelation relation = new SubARelation();
-
-    RelationshipConverter<SubARelation> relationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(Neo4JLegacyStorageWrapperRelationTest.RELATION_TYPE);
-    when(relationConverterMock.convertToEntity(relationshipThirdRevision)).thenReturn(relation);
-
-    // action
-    SubARelation actualRelation = instance.getEntity(Neo4JLegacyStorageWrapperRelationTest.RELATION_TYPE, ID);
-
-    // verify
-    assertThat(actualRelation, is(sameInstance(relation)));
-
-    verify(dbMock).beginTx();
-    verify(indexMock).get(ID_PROPERTY_NAME, ID);
-    verify(relationConverterMock).convertToEntity(relationshipThirdRevision);
-    verifyTransactionSucceeded();
-  }
-
-  @Test
-  public void getEntityForRelationReturnsNullIfTheRelationIsNotFound() throws Exception {
-    // setup
-    RelationshipIndex indexMock = aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
-        .containsNothingForId(ID)//
-        .foundInDB(dbMock);
-
-    // action
-    SubARelation actualRelation = instance.getEntity(Neo4JLegacyStorageWrapperRelationTest.RELATION_TYPE, ID);
-
-    // verify
-    assertThat(actualRelation, is(nullValue()));
-
-    verify(indexMock).get(ID_PROPERTY_NAME, ID);
-    verifyZeroInteractions(propertyContainerConverterFactoryMock);
-    verifyTransactionSucceeded();
-  }
-
-  @Test(expected = ConversionException.class)
-  public void getEntityForRelationThrowsAConversionExceptionWhenTheRelationConverterDoes() throws Exception {
-    // setup
-    Relationship relationshipMock = aRelationship().build();
-    RelationshipIndex indexMock = aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
-        .containsForId(ID)//
-        .relationship(relationshipMock)//
-        .foundInDB(dbMock);
-    SubARelation relation = new SubARelation();
-
-    RelationshipConverter<SubARelation> relationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(Neo4JLegacyStorageWrapperRelationTest.RELATION_TYPE);
-    doThrow(ConversionException.class).when(relationConverterMock).convertToEntity(relationshipMock);
-
-    // action
-    SubARelation actualRelation = instance.getEntity(Neo4JLegacyStorageWrapperRelationTest.RELATION_TYPE, ID);
-
-    // verify
-    assertThat(actualRelation, is(sameInstance(relation)));
-
-    verify(dbMock).beginTx();
-    verify(indexMock).get(ID_PROPERTY_NAME, ID);
-    verify(relationConverterMock).convertToEntity(relationshipMock);
-    verifyTransactionFailed();
   }
 
   @Test(expected = StorageException.class)
-  public void getEntityForRelationThrowsStorageExceptionWhenRelationshipConverterThrowsAnInstantiationException() throws Exception {
+  public void getEntityForRelationThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
-    Relationship relationshipMock = aRelationship().build();
-    RelationshipIndex indexMock = aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
-        .containsForId(ID)//
-        .relationship(relationshipMock)//
-        .foundInDB(dbMock);
+    when(neo4JStorageMock.getRelation(RELATION_TYPE, ID)).thenThrow(new StorageException());
 
-    RelationshipConverter<SubARelation> relationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(Neo4JLegacyStorageWrapperRelationTest.RELATION_TYPE);
-    doThrow(InstantiationException.class).when(relationConverterMock).convertToEntity(relationshipMock);
-
-    try {
-      // action
-      instance.getEntity(Neo4JLegacyStorageWrapperRelationTest.RELATION_TYPE, ID);
-    } finally {
-      // verify
-      verify(indexMock).get(ID_PROPERTY_NAME, ID);
-      verify(relationConverterMock).convertToEntity(relationshipMock);
-      verifyTransactionFailed();
-    }
+    // action
+    instance.getEntity(RELATION_TYPE, ID);
   }
 
   @Test
@@ -671,10 +573,6 @@ public class Neo4JLegacyStorageWrapperRelationTest extends Neo4JLegacyStorageWra
 
   private void verifyTransactionFailed() {
     verify(transactionMock).failure();
-  }
-
-  private void verifyTransactionSucceeded() {
-    verify(transactionMock).success();
   }
 
   @Test

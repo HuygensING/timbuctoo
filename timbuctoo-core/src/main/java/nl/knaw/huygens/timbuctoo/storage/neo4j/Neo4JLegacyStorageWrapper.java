@@ -406,38 +406,12 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   public <T extends Entity> T getEntity(Class<T> type, String id) throws StorageException {
     if (Relation.class.isAssignableFrom(type)) {
       @SuppressWarnings("unchecked")
-      T relationDomainEntity = (T) getRelationDomainEntity((Class<Relation>) type, id);
+      T relationDomainEntity = (T) neo4JStorage.getRelation((Class<Relation>) type, id);
       return relationDomainEntity;
     } else {
       return neo4JStorage.getEntity(type, id);
     }
 
-  }
-
-  private <T extends Relation> T getRelationDomainEntity(Class<T> type, String id) throws StorageException {
-    try (Transaction transaction = db.beginTx()) {
-      Relationship relationshipWithHighestRevision = getLatestFromIndex(id, transaction);
-
-      if (relationshipWithHighestRevision == null) {
-        transaction.success();
-        return null;
-      }
-
-      try {
-
-        RelationshipConverter<T> relationshipConverter = propertyContainerConverterFactory.createForRelation(type);
-        T entity = relationshipConverter.convertToEntity(relationshipWithHighestRevision);
-
-        transaction.success();
-        return entity;
-      } catch (ConversionException e) {
-        transaction.failure();
-        throw e;
-      } catch (IllegalArgumentException | InstantiationException e) {
-        transaction.failure();
-        throw new StorageException(e);
-      }
-    }
   }
 
   private Relationship getLatestFromIndex(String id, Transaction transaction) {

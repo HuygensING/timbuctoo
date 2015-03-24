@@ -16,6 +16,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -734,6 +735,125 @@ public class Neo4JStorageTest {
       verifyTransactionFailed();
     }
 
+  }
+
+  @Test
+  public void getRelationReturnsTheRelationThatBelongsToTheId() throws Exception {
+    // setup
+    Relationship relationshipMock = aRelationship().build();
+    RelationshipIndex indexMock = aRelationshipIndexForName(RELATIONSHIP_ID_INDEX) //
+        .containsForId(ID) //
+        .relationship(relationshipMock) //
+        .foundInDB(dbMock);
+    SubARelation relation = new SubARelation();
+
+    RelationshipConverter<SubARelation> relationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    when(relationConverterMock.convertToEntity(relationshipMock)).thenReturn(relation);
+
+    // action
+    SubARelation actualRelation = instance.getRelation(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(actualRelation, is(sameInstance(relation)));
+
+    verify(dbMock).beginTx();
+    verify(indexMock).get(ID_PROPERTY_NAME, ID);
+    verify(relationConverterMock).convertToEntity(relationshipMock);
+    verifyTransactionSucceeded();
+  }
+
+  @Test
+  public void getRelationReturnsTheLatestIfMultipleAreFound() throws Exception {
+    // setup
+    Relationship relationshipFirstRevision = aRelationship().withRevision(FIRST_REVISION).build();
+    Relationship relationshipSecondRevision = aRelationship().withRevision(SECOND_REVISION).build();
+    Relationship relationshipThirdRevision = aRelationship().withRevision(THIRD_REVISION).build();
+    RelationshipIndex indexMock = aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
+        .relationship(relationshipFirstRevision) //
+        .andRelationship(relationshipThirdRevision) //
+        .andRelationship(relationshipSecondRevision) //
+        .foundInDB(dbMock);
+    SubARelation relation = new SubARelation();
+
+    RelationshipConverter<SubARelation> relationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    when(relationConverterMock.convertToEntity(relationshipThirdRevision)).thenReturn(relation);
+
+    // action
+    SubARelation actualRelation = instance.getRelation(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(actualRelation, is(sameInstance(relation)));
+
+    verify(dbMock).beginTx();
+    verify(indexMock).get(ID_PROPERTY_NAME, ID);
+    verify(relationConverterMock).convertToEntity(relationshipThirdRevision);
+    verifyTransactionSucceeded();
+  }
+
+  @Test
+  public void getRelationReturnsNullIfTheRelationIsNotFound() throws Exception {
+    // setup
+    RelationshipIndex indexMock = aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
+        .containsNothingForId(ID)//
+        .foundInDB(dbMock);
+
+    // action
+    SubARelation actualRelation = instance.getRelation(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(actualRelation, is(nullValue()));
+
+    verify(indexMock).get(ID_PROPERTY_NAME, ID);
+    verifyZeroInteractions(propertyContainerConverterFactoryMock);
+    verifyTransactionSucceeded();
+  }
+
+  @Test(expected = ConversionException.class)
+  public void getRelationThrowsAConversionExceptionWhenTheRelationConverterDoes() throws Exception {
+    // setup
+    Relationship relationshipMock = aRelationship().build();
+    RelationshipIndex indexMock = aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
+        .containsForId(ID)//
+        .relationship(relationshipMock)//
+        .foundInDB(dbMock);
+    SubARelation relation = new SubARelation();
+
+    RelationshipConverter<SubARelation> relationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    doThrow(ConversionException.class).when(relationConverterMock).convertToEntity(relationshipMock);
+
+    // action
+    SubARelation actualRelation = instance.getRelation(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(actualRelation, is(sameInstance(relation)));
+
+    verify(dbMock).beginTx();
+    verify(indexMock).get(ID_PROPERTY_NAME, ID);
+    verify(relationConverterMock).convertToEntity(relationshipMock);
+    verifyTransactionFailed();
+  }
+
+  @Test(expected = StorageException.class)
+  public void getRelationThrowsStorageExceptionWhenRelationshipConverterThrowsAnInstantiationException() throws Exception {
+    // setup
+    Relationship relationshipMock = aRelationship().build();
+    RelationshipIndex indexMock = aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
+        .containsForId(ID)//
+        .relationship(relationshipMock)//
+        .foundInDB(dbMock);
+
+    RelationshipConverter<SubARelation> relationConverterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    doThrow(InstantiationException.class).when(relationConverterMock).convertToEntity(relationshipMock);
+
+    try {
+      // action
+      instance.getRelation(RELATION_TYPE, ID);
+    } finally {
+      // verify
+      verify(indexMock).get(ID_PROPERTY_NAME, ID);
+      verify(relationConverterMock).convertToEntity(relationshipMock);
+      verifyTransactionFailed();
+    }
   }
 
 }
