@@ -59,7 +59,7 @@ public abstract class Neo4JLegacyStorageWrapperTest {
 
     TypeRegistry typeRegistry = TypeRegistry.getInstance().init("timbuctoo.model test.model");
 
-    instance = new Neo4JLegacyStorageWrapper(dbMock, propertyContainerConverterFactoryMock, idGeneratorMock, typeRegistry, nodeDuplicatorMock, relationshipDuplicatorMock, neo4JStorageMock);
+    instance = new Neo4JLegacyStorageWrapper(dbMock, propertyContainerConverterFactoryMock, idGeneratorMock, typeRegistry, relationshipDuplicatorMock, neo4JStorageMock);
   }
 
   private void setupDBTransaction() {

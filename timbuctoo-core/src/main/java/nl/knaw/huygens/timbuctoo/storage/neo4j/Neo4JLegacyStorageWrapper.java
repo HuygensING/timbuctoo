@@ -46,18 +46,16 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   private final GraphDatabaseService db;
   private final IdGenerator idGenerator;
   private final TypeRegistry typeRegistry;
-  private final NodeDuplicator nodeDuplicator;
   private final RelationshipDuplicator relationshipDuplicator;
   private final Neo4JStorage neo4JStorage;
 
   @Inject
   public Neo4JLegacyStorageWrapper(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, IdGenerator idGenerator, TypeRegistry typeRegistry,
-      NodeDuplicator nodeDuplicator, RelationshipDuplicator relationshipDuplicator, Neo4JStorage neo4JStorage) {
+      RelationshipDuplicator relationshipDuplicator, Neo4JStorage neo4JStorage) {
     this.db = db;
     this.propertyContainerConverterFactory = propertyContainerConverterFactory;
     this.idGenerator = idGenerator;
     this.typeRegistry = typeRegistry;
-    this.nodeDuplicator = nodeDuplicator;
     this.relationshipDuplicator = relationshipDuplicator;
     this.neo4JStorage = neo4JStorage;
   }
@@ -312,7 +310,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
     if (Relation.class.isAssignableFrom(type)) {
       setRelationPID((Class<? extends Relation>) type, id, pid);
     } else {
-      setDomainEntityPID(type, id, pid);
+      neo4JStorage.setDomainEntityPID(type, id, pid);
     }
   }
 
@@ -337,38 +335,6 @@ public class Neo4JLegacyStorageWrapper implements Storage {
         converter.addValuesToPropertyContainer(relationship, entity);
 
         relationshipDuplicator.saveDuplicate(relationship);
-
-        transaction.success();
-      } catch (ConversionException e) {
-        transaction.failure();
-        throw e;
-      } catch (InstantiationException e) {
-        transaction.failure();
-        throw new StorageException(e);
-      }
-    }
-  }
-
-  private <T extends DomainEntity> void setDomainEntityPID(Class<T> type, String id, String pid) throws NoSuchEntityException, ConversionException, StorageException {
-    try (Transaction transaction = db.beginTx()) {
-      Node node = getLatestById(type, id);
-
-      if (node == null) {
-        transaction.failure();
-        throw new NoSuchEntityException(type, id);
-      }
-
-      try {
-        NodeConverter<T> converter = propertyContainerConverterFactory.createForType(type);
-        T entity = converter.convertToEntity(node);
-
-        validateEntityHasNoPID(type, id, pid, transaction, entity);
-
-        entity.setPid(pid);
-        converter.addValuesToPropertyContainer(node, entity);
-
-        // FIXME functionality should be part of the repository class.
-        nodeDuplicator.saveDuplicate(node);
 
         transaction.success();
       } catch (ConversionException e) {
