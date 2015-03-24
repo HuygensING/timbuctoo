@@ -38,47 +38,26 @@ public class Neo4JLegacyStorageWrapperSystemEntityTest extends Neo4JLegacyStorag
   private static final Label SYSTEM_ENTITY_LABEL = DynamicLabel.label(TypeNames.getInternalName(SYSTEM_ENTITY_TYPE));
 
   @Test
-  public void addSystemEntitySavesTheSystemAsNodeAndReturnsItsId() throws Exception {
-    Node nodeMock = aNode().createdBy(dbMock);
-    idGeneratorMockCreatesIDFor(Neo4JLegacyStorageWrapperSystemEntityTest.SYSTEM_ENTITY_TYPE, ID);
+  public void addSystemEntityDelegatesToNeo4JStorage() throws Exception {
+    // setup
+    TestSystemEntityWrapper entity = aSystemEntity().build();
+    when(neo4JStorageMock.addSystemEntity(SYSTEM_ENTITY_TYPE, entity)).thenReturn(ID);
 
-    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(Neo4JLegacyStorageWrapperSystemEntityTest.SYSTEM_ENTITY_TYPE);
     // action
-    String actualId = instance.addSystemEntity(Neo4JLegacyStorageWrapperSystemEntityTest.SYSTEM_ENTITY_TYPE, aSystemEntity().build());
+    String actualId = instance.addSystemEntity(SYSTEM_ENTITY_TYPE, entity);
 
     // verify
-    InOrder inOrder = inOrder(dbMock, transactionMock, systemEntityConverterMock);
-    inOrder.verify(dbMock).beginTx();
-    inOrder.verify(systemEntityConverterMock).addValuesToPropertyContainer(//
-        argThat(equalTo(nodeMock)), // 
-        argThat(likeTestSystemEntityWrapper() //
-            .withId(actualId) //
-            .withACreatedValue() //
-            .withAModifiedValue() //
-            .withRevision(FIRST_REVISION)));
-    inOrder.verify(transactionMock).success();
-    verifyNoMoreInteractions(systemEntityConverterMock);
+    assertThat(actualId, is(equalTo(ID)));
+    verify(neo4JStorageMock).addSystemEntity(SYSTEM_ENTITY_TYPE, entity);
   }
 
   @Test(expected = StorageException.class)
-  public void addSystemEntityRollsBackTheTransactionAndThrowsStorageExceptionObjectrapperThrowsAConversionException() throws Exception {
-    Node nodeMock = aNode().createdBy(dbMock);
+  public void addSystemEntityThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
+    TestSystemEntityWrapper entity = aSystemEntity().build();
+    when(neo4JStorageMock.addSystemEntity(SYSTEM_ENTITY_TYPE, entity)).thenThrow(new StorageException());
 
-    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(Neo4JLegacyStorageWrapperSystemEntityTest.SYSTEM_ENTITY_TYPE);
-
-    TestSystemEntityWrapper systemEntity = aSystemEntity().build();
-    doThrow(ConversionException.class).when(systemEntityConverterMock).addValuesToPropertyContainer(nodeMock, systemEntity);
-
-    try {
-      // action
-      instance.addSystemEntity(Neo4JLegacyStorageWrapperSystemEntityTest.SYSTEM_ENTITY_TYPE, systemEntity);
-    } finally {
-      // verify
-      verify(dbMock).beginTx();
-      verify(systemEntityConverterMock).addValuesToPropertyContainer(nodeMock, systemEntity);
-      verifyNoMoreInteractions(systemEntityConverterMock);
-      verify(transactionMock).failure();
-    }
+    // action
+    instance.addSystemEntity(SYSTEM_ENTITY_TYPE, entity);
   }
 
   @Test

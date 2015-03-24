@@ -13,11 +13,9 @@ public class Neo4JDBIntegrationTestHelper implements DBIntegrationTestHelper {
 
   private GraphDatabaseService db;
   private PropertyContainerConverterFactory propertyContainerConverterFactory;
-  private IdGenerator idGenerator;
 
   @Override
   public void startCleanDB() throws Exception {
-    idGenerator = new IdGenerator();
     db = new TestGraphDatabaseFactory().newImpermanentDatabase();
   }
 
@@ -29,7 +27,7 @@ public class Neo4JDBIntegrationTestHelper implements DBIntegrationTestHelper {
   @Override
   public Storage createStorage(TypeRegistry typeRegistry) throws ModelException {
     propertyContainerConverterFactory = new PropertyContainerConverterFactory(typeRegistry);
-    return new Neo4JLegacyStorageWrapper(db, propertyContainerConverterFactory, idGenerator, new Neo4JStorage(db, propertyContainerConverterFactory, typeRegistry));
+    return new Neo4JLegacyStorageWrapper(db, propertyContainerConverterFactory, new Neo4JStorage(db, propertyContainerConverterFactory, typeRegistry));
   }
 
 }

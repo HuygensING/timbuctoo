@@ -12,6 +12,7 @@ import static nl.knaw.huygens.timbuctoo.storage.neo4j.SearchResultBuilder.anEmpt
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SubADomainEntityBuilder.aDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SubARelationBuilder.aRelation;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.TestSystemEntityWrapperBuilder.aSystemEntity;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.TestSystemEntityWrapperMatcher.likeTestSystemEntityWrapper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
@@ -192,6 +193,50 @@ public class Neo4JStorageTest {
               .withRevision(FIRST_REVISION)));
       verify(transactionMock).failure();
       verifyNoMoreInteractions(compositeConverter);
+    }
+  }
+
+  @Test
+  public void addSystemEntitySavesTheSystemAsNodeAndReturnsItsId() throws Exception {
+    Node nodeMock = aNode().createdBy(dbMock);
+    idGeneratorMockCreatesIDFor(SYSTEM_ENTITY_TYPE, ID);
+
+    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(SYSTEM_ENTITY_TYPE);
+    // action
+    String actualId = instance.addSystemEntity(SYSTEM_ENTITY_TYPE, aSystemEntity().build());
+
+    // verify
+    InOrder inOrder = inOrder(dbMock, transactionMock, systemEntityConverterMock);
+    inOrder.verify(dbMock).beginTx();
+    inOrder.verify(systemEntityConverterMock).addValuesToPropertyContainer(//
+        argThat(equalTo(nodeMock)), // 
+        argThat(likeTestSystemEntityWrapper() //
+            .withId(actualId) //
+            .withACreatedValue() //
+            .withAModifiedValue() //
+            .withRevision(FIRST_REVISION)));
+    inOrder.verify(transactionMock).success();
+    verifyNoMoreInteractions(systemEntityConverterMock);
+  }
+
+  @Test(expected = StorageException.class)
+  public void addSystemEntityRollsBackTheTransactionAndThrowsStorageExceptionObjectrapperThrowsAConversionException() throws Exception {
+    Node nodeMock = aNode().createdBy(dbMock);
+
+    NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(SYSTEM_ENTITY_TYPE);
+
+    TestSystemEntityWrapper systemEntity = aSystemEntity().build();
+    doThrow(ConversionException.class).when(systemEntityConverterMock).addValuesToPropertyContainer(nodeMock, systemEntity);
+
+    try {
+      // action
+      instance.addSystemEntity(SYSTEM_ENTITY_TYPE, systemEntity);
+    } finally {
+      // verify
+      verify(dbMock).beginTx();
+      verify(systemEntityConverterMock).addValuesToPropertyContainer(nodeMock, systemEntity);
+      verifyNoMoreInteractions(systemEntityConverterMock);
+      verify(transactionMock).failure();
     }
   }
 

@@ -41,14 +41,12 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   private final PropertyContainerConverterFactory propertyContainerConverterFactory;
   private final GraphDatabaseService db;
-  private final IdGenerator idGenerator;
   private final Neo4JStorage neo4JStorage;
 
   @Inject
-  public Neo4JLegacyStorageWrapper(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, IdGenerator idGenerator, Neo4JStorage neo4JStorage) {
+  public Neo4JLegacyStorageWrapper(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, Neo4JStorage neo4JStorage) {
     this.db = db;
     this.propertyContainerConverterFactory = propertyContainerConverterFactory;
-    this.idGenerator = idGenerator;
     this.neo4JStorage = neo4JStorage;
   }
 
@@ -71,40 +69,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws StorageException {
-    try (Transaction transaction = db.beginTx()) {
-      try {
-        String id = addAdministrativeValues(type, entity);
-
-        NodeConverter<T> propertyContainerConverter = propertyContainerConverterFactory.createForType(type);
-        Node node = db.createNode();
-
-        propertyContainerConverter.addValuesToPropertyContainer(node, entity);
-
-        transaction.success();
-        return id;
-      } catch (ConversionException e) {
-        transaction.failure();
-        throw e;
-      }
-    }
-  }
-
-  /**
-   * Adds the administrative values to the entity.
-   * @param type the type to generate the id for
-   * @param entity the entity to add the values to
-   * @return the generated id
-   */
-  private <T extends Entity> String addAdministrativeValues(Class<T> type, T entity) {
-    String id = idGenerator.nextIdFor(type);
-    Change change = Change.newInternalInstance();
-
-    entity.setCreated(change);
-    entity.setModified(change);
-    entity.setId(id);
-    updateRevision(entity);
-
-    return id;
+    return neo4JStorage.addSystemEntity(type, entity);
   }
 
   private <T extends Entity> void updateRevision(T entity) {

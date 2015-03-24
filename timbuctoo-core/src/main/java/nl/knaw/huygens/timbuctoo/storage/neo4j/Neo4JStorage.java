@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
@@ -72,6 +73,25 @@ public class Neo4JStorage {
       transaction.success();
 
       return id;
+    }
+  }
+
+  public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws StorageException {
+    try (Transaction transaction = db.beginTx()) {
+      try {
+        String id = addAdministrativeValues(type, entity);
+
+        NodeConverter<T> propertyContainerConverter = propertyContainerConverterFactory.createForType(type);
+        Node node = db.createNode();
+
+        propertyContainerConverter.addValuesToPropertyContainer(node, entity);
+
+        transaction.success();
+        return id;
+      } catch (ConversionException e) {
+        transaction.failure();
+        throw e;
+      }
     }
   }
 
