@@ -231,6 +231,10 @@ public class Neo4JStorage {
     updateEntity(type, entity, change);
   }
 
+  public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws StorageException {
+    updateEntity(type, entity, Change.newInternalInstance());
+  }
+
   private <T extends Entity> void updateEntity(Class<T> type, T entity, Change change) throws UpdateException, ConversionException {
     try (Transaction transaction = db.beginTx()) {
       Node node = getLatestById(type, entity.getId());

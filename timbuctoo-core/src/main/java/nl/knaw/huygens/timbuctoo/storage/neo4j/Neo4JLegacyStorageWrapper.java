@@ -89,42 +89,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws StorageException {
-    updateEntity(type, entity);
-
-  }
-
-  private <T extends Entity> void updateEntity(Class<T> type, T entity) throws UpdateException, ConversionException {
-    try (Transaction transaction = db.beginTx()) {
-      Node node = getLatestById(type, entity.getId());
-
-      if (node == null) {
-        transaction.failure();
-        throw new UpdateException(entityNotFoundMessageFor(type, entity));
-      }
-
-      int rev = getRevision(node);
-      if (rev != entity.getRev()) {
-        transaction.failure();
-        throw new UpdateException(revisionNotFoundMessage(type, entity, rev));
-      }
-
-      updateAdministrativeValues(entity);
-
-      try {
-        NodeConverter<T> propertyContainerConverter = propertyContainerConverterFactory.createForType(type);
-
-        /* split the update and the update of modified and rev, 
-         * to be sure the administrative values can only be changed by the system
-         */
-        propertyContainerConverter.updatePropertyContainer(node, entity);
-        propertyContainerConverter.updateModifiedAndRev(node, entity);
-
-        transaction.success();
-      } catch (ConversionException e) {
-        transaction.failure();
-        throw e;
-      }
-    }
+    neo4JStorage.updateSystemEntity(type, entity);
   }
 
   private <T extends Entity> String revisionNotFoundMessage(Class<T> type, T entity, int actualLatestRev) {
