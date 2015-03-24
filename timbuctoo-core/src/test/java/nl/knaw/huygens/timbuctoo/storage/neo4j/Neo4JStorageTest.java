@@ -18,15 +18,19 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConverterFactory;
@@ -58,26 +62,118 @@ public class Neo4JStorageTest {
   private static final int THIRD_REVISION = 3;
   private static final Class<SubARelation> RELATION_TYPE = SubARelation.class;
   private static final String PID = "pid";
+  private static final Change CHANGE = Change.newInternalInstance();
   private Neo4JStorage instance;
   private PropertyContainerConverterFactory propertyContainerConverterFactoryMock;
   private Transaction transactionMock = mock(Transaction.class);
   private GraphDatabaseService dbMock;
   private NodeDuplicator nodeDuplicatorMock;
   private RelationshipDuplicator relationshipDuplicatorMock;
+  private IdGenerator idGeneratorMock;
 
   @Before
   public void setup() throws Exception {
     nodeDuplicatorMock = mock(NodeDuplicator.class);
     relationshipDuplicatorMock = mock(RelationshipDuplicator.class);
+    idGeneratorMock = mock(IdGenerator.class);
     setupEntityConverterFactory();
     setupDBTransaction();
-    instance = new Neo4JStorage(dbMock, propertyContainerConverterFactoryMock, nodeDuplicatorMock, relationshipDuplicatorMock);
+    instance = new Neo4JStorage(dbMock, propertyContainerConverterFactoryMock, nodeDuplicatorMock, relationshipDuplicatorMock, idGeneratorMock);
   }
 
   private void setupDBTransaction() {
     transactionMock = mock(Transaction.class);
     dbMock = mock(GraphDatabaseService.class);
     when(dbMock.beginTx()).thenReturn(transactionMock);
+  }
+
+  private void idGeneratorMockCreatesIDFor(Class<? extends Entity> type, String id) {
+    when(idGeneratorMock.nextIdFor(type)).thenReturn(id);
+  }
+
+  @Test
+  public void addDomainEntitySavesTheProjectVersionAndThePrimitiveAndReturnsTheId() throws Exception {
+    // setup
+    Node nodeMock = aNode().createdBy(dbMock);
+    idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
+
+    NodeConverter<? super SubADomainEntity> compositeConverter = propertyContainerConverterFactoryHasCompositeConverterFor(DOMAIN_ENTITY_TYPE);
+    SubADomainEntity domainEntity = aDomainEntity().build();
+
+    // action
+    String actualId = instance.addDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
+
+    // verify
+    verify(dbMock).beginTx();
+    verify(dbMock).createNode();
+    verify(compositeConverter).addValuesToPropertyContainer( //
+        argThat(equalTo(nodeMock)), // 
+        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
+            .withId(actualId) //
+            .withACreatedValue() //
+            .withAModifiedValue() //
+            .withRevision(FIRST_REVISION)//
+            .withoutAPID()));
+    verify(transactionMock).success();
+  }
+
+  @Test
+  public void addDomainEntityRemovesThePIDBeforeSaving() throws Exception {
+    // setup
+    Node nodeMock = aNode().createdBy(dbMock);
+    idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
+
+    NodeConverter<? super SubADomainEntity> compositeConverter = propertyContainerConverterFactoryHasCompositeConverterFor(DOMAIN_ENTITY_TYPE);
+    SubADomainEntity domainEntityWithAPID = aDomainEntity().withAPid().build();
+
+    // action
+    instance.addDomainEntity(DOMAIN_ENTITY_TYPE, domainEntityWithAPID, CHANGE);
+
+    // verify
+    verify(dbMock).beginTx();
+    verify(dbMock).createNode();
+    verify(compositeConverter).addValuesToPropertyContainer( //
+        argThat(equalTo(nodeMock)), // 
+        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
+            .withoutAPID()));
+    verify(transactionMock).success();
+  }
+
+  private <T extends DomainEntity> NodeConverter<? super T> propertyContainerConverterFactoryHasCompositeConverterFor(Class<T> type) {
+    @SuppressWarnings("unchecked")
+    NodeConverter<? super T> converter = mock(NodeConverter.class);
+    doReturn(converter).when(propertyContainerConverterFactoryMock).createCompositeForType(type);
+    return converter;
+  }
+
+  @Test(expected = StorageException.class)
+  public void addDomainEntityRollsBackTheTransactionAndThrowsAStorageExceptionWhenTheDomainEntityConverterThrowsAConversionException() throws Exception {
+    // setup
+    Node nodeMock = aNode().createdBy(dbMock);
+
+    idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
+
+    SubADomainEntity domainEntity = aDomainEntity().build();
+    NodeConverter<? super SubADomainEntity> compositeConverter = propertyContainerConverterFactoryHasCompositeConverterFor(DOMAIN_ENTITY_TYPE);
+    doThrow(ConversionException.class).when(compositeConverter).addValuesToPropertyContainer(nodeMock, domainEntity);
+
+    try {
+      // action
+      instance.addDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
+    } finally {
+      // verify
+      verify(dbMock).beginTx();
+      verify(dbMock).createNode();
+      verify(compositeConverter).addValuesToPropertyContainer( //
+          argThat(equalTo(nodeMock)), // 
+          argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
+              .withId(ID) //
+              .withACreatedValue() //
+              .withAModifiedValue() //
+              .withRevision(FIRST_REVISION)));
+      verify(transactionMock).failure();
+      verifyNoMoreInteractions(compositeConverter);
+    }
   }
 
   @Test

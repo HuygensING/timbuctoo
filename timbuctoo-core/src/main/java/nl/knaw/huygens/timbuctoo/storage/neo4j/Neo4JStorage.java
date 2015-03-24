@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConverterFactory;
@@ -29,20 +30,71 @@ import com.google.common.base.Objects;
 public class Neo4JStorage {
 
   public static final String RELATIONSHIP_ID_INDEX = "RelationShip id";
-  private GraphDatabaseService db;
-  private PropertyContainerConverterFactory propertyContainerConverterFactory;
+  private final GraphDatabaseService db;
+  private final PropertyContainerConverterFactory propertyContainerConverterFactory;
   private final NodeDuplicator nodeDuplicator;
-  private RelationshipDuplicator relationshipDuplicator;
+  private final RelationshipDuplicator relationshipDuplicator;
+  private final IdGenerator idGenerator;
 
   public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory) {
-    this(db, propertyContainerConverterFactory, new NodeDuplicator(db), new RelationshipDuplicator(db));
+    this(db, propertyContainerConverterFactory, new NodeDuplicator(db), new RelationshipDuplicator(db), new IdGenerator());
   }
 
-  public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, NodeDuplicator nodeDuplicator, RelationshipDuplicator relationshipDuplicator) {
+  public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, NodeDuplicator nodeDuplicator, RelationshipDuplicator relationshipDuplicator,
+      IdGenerator idGenerator) {
     this.db = db;
     this.propertyContainerConverterFactory = propertyContainerConverterFactory;
     this.nodeDuplicator = nodeDuplicator;
     this.relationshipDuplicator = relationshipDuplicator;
+    this.idGenerator = idGenerator;
+  }
+
+  public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
+    try (Transaction transaction = db.beginTx()) {
+      removePID(entity);
+      String id = addAdministrativeValues(type, entity);
+      Node node = db.createNode();
+
+      NodeConverter<? super T> compositeNodeConverter = propertyContainerConverterFactory.createCompositeForType(type);
+
+      try {
+        compositeNodeConverter.addValuesToPropertyContainer(node, entity);
+      } catch (ConversionException e) {
+        transaction.failure();
+        throw e;
+      }
+
+      transaction.success();
+
+      return id;
+    }
+  }
+
+  /**
+   * Adds the administrative values to the entity.
+   * @param type the type to generate the id for
+   * @param entity the entity to add the values to
+   * @return the generated id
+   */
+  private <T extends Entity> String addAdministrativeValues(Class<T> type, T entity) {
+    String id = idGenerator.nextIdFor(type);
+    Change change = Change.newInternalInstance();
+
+    entity.setCreated(change);
+    entity.setModified(change);
+    entity.setId(id);
+    updateRevision(entity);
+
+    return id;
+  }
+
+  private <T extends Entity> void updateRevision(T entity) {
+    int rev = entity.getRev();
+    entity.setRev(++rev);
+  }
+
+  private <T extends DomainEntity> void removePID(T entity) {
+    entity.setPid(null);
   }
 
   public <T extends Entity> T getEntity(Class<T> type, String id) throws StorageException {

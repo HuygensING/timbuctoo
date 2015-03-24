@@ -12,16 +12,13 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
@@ -43,88 +40,27 @@ public class Neo4JLegacyStorageWrapperDomainEntityTest extends Neo4JLegacyStorag
   private static final int FOURTH_REVISION = 4;
 
   @Test
-  public void addDomainEntitySavesTheProjectVersionAndThePrimitiveAndReturnsTheId() throws Exception {
+  public void addDomainEntityDelegatesToNeo4JStorageAddDomainEntity() throws Exception {
     // setup
-    Node nodeMock = aNode().createdBy(dbMock);
-    idGeneratorMockCreatesIDFor(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_TYPE, ID);
-
-    NodeConverter<? super SubADomainEntity> compositeConverter = propertyContainerConverterFactoryHasCompositeConverterFor(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_TYPE);
-    SubADomainEntity domainEntity = aDomainEntity().build();
+    SubADomainEntity entity = aDomainEntity().build();
+    when(neo4JStorageMock.addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE)).thenReturn(ID);
 
     // action
-    String actualId = instance.addDomainEntity(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
+    String id = instance.addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
 
     // verify
-    verify(dbMock).beginTx();
-    verify(dbMock).createNode();
-    verify(compositeConverter).addValuesToPropertyContainer( //
-        argThat(equalTo(nodeMock)), // 
-        argThat(likeDomainEntity(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_TYPE) //
-            .withId(actualId) //
-            .withACreatedValue() //
-            .withAModifiedValue() //
-            .withRevision(FIRST_REVISION)//
-            .withoutAPID()));
-    verify(transactionMock).success();
-  }
-
-  @Test
-  public void addDomainEntityRemovesThePIDBeforeSaving() throws Exception {
-    // setup
-    Node nodeMock = aNode().createdBy(dbMock);
-    idGeneratorMockCreatesIDFor(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_TYPE, ID);
-
-    NodeConverter<? super SubADomainEntity> compositeConverter = propertyContainerConverterFactoryHasCompositeConverterFor(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_TYPE);
-    SubADomainEntity domainEntityWithAPID = aDomainEntity().withAPid().build();
-
-    // action
-    instance.addDomainEntity(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntityWithAPID, CHANGE);
-
-    // verify
-    verify(dbMock).beginTx();
-    verify(dbMock).createNode();
-    verify(compositeConverter).addValuesToPropertyContainer( //
-        argThat(equalTo(nodeMock)), // 
-        argThat(likeDomainEntity(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_TYPE) //
-            .withoutAPID()));
-    verify(transactionMock).success();
-  }
-
-  private <T extends DomainEntity> NodeConverter<? super T> propertyContainerConverterFactoryHasCompositeConverterFor(Class<T> type) {
-    @SuppressWarnings("unchecked")
-    NodeConverter<? super T> converter = mock(NodeConverter.class);
-    doReturn(converter).when(propertyContainerConverterFactoryMock).createCompositeForType(type);
-    return converter;
+    assertThat(id, is(equalTo(ID)));
+    verify(neo4JStorageMock).addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
   }
 
   @Test(expected = StorageException.class)
-  public void addDomainEntityRollsBackTheTransactionAndThrowsAStorageExceptionWhenTheDomainEntityConverterThrowsAConversionException() throws Exception {
+  public void addDomainEntityThrowsAnExceptionWhenTheDelegateDoes() throws Exception {
     // setup
-    Node nodeMock = aNode().createdBy(dbMock);
+    SubADomainEntity entity = aDomainEntity().build();
+    when(neo4JStorageMock.addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE)).thenThrow(new StorageException());
 
-    idGeneratorMockCreatesIDFor(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_TYPE, ID);
-
-    SubADomainEntity domainEntity = aDomainEntity().build();
-    NodeConverter<? super SubADomainEntity> compositeConverter = propertyContainerConverterFactoryHasCompositeConverterFor(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_TYPE);
-    doThrow(ConversionException.class).when(compositeConverter).addValuesToPropertyContainer(nodeMock, domainEntity);
-
-    try {
-      // action
-      instance.addDomainEntity(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
-    } finally {
-      // verify
-      verify(dbMock).beginTx();
-      verify(dbMock).createNode();
-      verify(compositeConverter).addValuesToPropertyContainer( //
-          argThat(equalTo(nodeMock)), // 
-          argThat(likeDomainEntity(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_TYPE) //
-              .withId(ID) //
-              .withACreatedValue() //
-              .withAModifiedValue() //
-              .withRevision(FIRST_REVISION)));
-      verify(transactionMock).failure();
-      verifyNoMoreInteractions(compositeConverter);
-    }
+    // action
+    instance.addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
   }
 
   @Test

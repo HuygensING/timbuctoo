@@ -123,7 +123,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
     if (Relation.class.isAssignableFrom(type)) {
       return addRelationDomainEntity((Class<? extends Relation>) type, (Relation) entity);
     } else {
-      return addRegularDomainEntity(type, entity);
+      return neo4JStorage.addDomainEntity(type, entity, change);
     }
   }
 
@@ -177,28 +177,6 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   private String createCannotFindString(String relationPart, Class<? extends Entity> type, String id) {
     return String.format("%s of type \"%s\" with id \"%s\" could not be found.", relationPart, type, id);
-  }
-
-  private <T extends DomainEntity> String addRegularDomainEntity(Class<T> type, T entity) throws ConversionException {
-    try (Transaction transaction = db.beginTx()) {
-      removePID(entity);
-      String id = addAdministrativeValues(type, entity);
-      Node node = db.createNode();
-
-      NodeConverter<? super T> compositeNodeConverter = propertyContainerConverterFactory.createCompositeForType(type);
-
-      try {
-        compositeNodeConverter.addValuesToPropertyContainer(node, entity);
-      } catch (ConversionException e) {
-        transaction.failure();
-        throw e;
-      }
-
-      transaction.success();
-
-      return id;
-    }
-
   }
 
   @Override
