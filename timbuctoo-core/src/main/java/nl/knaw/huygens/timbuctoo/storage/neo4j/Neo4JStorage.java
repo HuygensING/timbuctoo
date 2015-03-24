@@ -18,7 +18,6 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConverterFactory;
 
-import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -432,36 +431,6 @@ public class Neo4JStorage {
     return !Strings.isBlank(entity.getPid());
   }
 
-  private ResourceIterator<Relationship> getFromIndex(String id) {
-    Index<Relationship> index = db.index().forRelationships(RELATIONSHIP_ID_INDEX);
-
-    IndexHits<Relationship> indexHits = index.get(ID_PROPERTY_NAME, id);
-
-    ResourceIterator<Relationship> iterator = indexHits.iterator();
-    return iterator;
-  }
-
-  private Relationship getLatestRelationship(String id) {
-    ResourceIterator<Relationship> iterator = getFromIndex(id);
-    if (!iterator.hasNext()) {
-      return null;
-    }
-    Relationship relationshipWithHighestRevision = iterator.next();
-
-    for (; iterator.hasNext();) {
-      Relationship next = iterator.next();
-
-      if (getRevisionProperty(next) > getRevisionProperty(relationshipWithHighestRevision)) {
-        relationshipWithHighestRevision = next;
-      }
-    }
-    return relationshipWithHighestRevision;
-  }
-
-  private int getRevisionProperty(PropertyContainer propertyContainer) {
-    return (int) propertyContainer.getProperty(REVISION_PROPERTY_NAME);
-  }
-
   public <T extends DomainEntity> void setDomainEntityPID(Class<T> type, String id, String pid) throws NoSuchEntityException, ConversionException, StorageException {
     try (Transaction transaction = db.beginTx()) {
       Node node = getLatestById(type, id);
@@ -528,7 +497,7 @@ public class Neo4JStorage {
   }
 
   private <T extends DomainEntity> void validateEntityHasNoPID(Class<T> type, String id, String pid, Transaction transaction, T entity) {
-    if (!StringUtils.isBlank(entity.getPid())) {
+    if (hasPID(entity)) {
       transaction.failure();
       throw new IllegalStateException(String.format("%s with %s already has a pid: %s", type.getSimpleName(), id, pid));
     }
@@ -537,6 +506,11 @@ public class Neo4JStorage {
   /* *************************************************************************************
    * Low level API
    * ************************************************************************************/
+
+  private int getRevisionProperty(PropertyContainer propertyContainer) {
+    return (int) propertyContainer.getProperty(REVISION_PROPERTY_NAME);
+  }
+
   /**
    * Retrieves all of {@code type} with {@code id} 
    * and returns the one with the highest revision number.
@@ -562,18 +536,6 @@ public class Neo4JStorage {
     }
 
     return nodeWithHighestRevision;
-  }
-
-  private <T extends Relation> Relationship getRevisionRelationship(Class<T> type, String id, int revision) {
-    ResourceIterator<Relationship> iterator = getFromIndex(id);
-    for (; iterator.hasNext();) {
-      Relationship next = iterator.next();
-      if (getRevisionProperty(next) == revision) {
-        return next;
-      }
-    }
-
-    return null;
   }
 
   private <T extends Entity> Node getRevisionNode(Class<T> type, String id, int revision) {
@@ -602,6 +564,44 @@ public class Neo4JStorage {
     ResourceIterable<Node> foundNodes = db.findNodesByLabelAndProperty(internalNameLabel, propertyName, id);
 
     ResourceIterator<Node> iterator = foundNodes.iterator();
+    return iterator;
+  }
+
+  private Relationship getLatestRelationship(String id) {
+    ResourceIterator<Relationship> iterator = getFromIndex(id);
+    if (!iterator.hasNext()) {
+      return null;
+    }
+    Relationship relationshipWithHighestRevision = iterator.next();
+
+    for (; iterator.hasNext();) {
+      Relationship next = iterator.next();
+
+      if (getRevisionProperty(next) > getRevisionProperty(relationshipWithHighestRevision)) {
+        relationshipWithHighestRevision = next;
+      }
+    }
+    return relationshipWithHighestRevision;
+  }
+
+  private <T extends Relation> Relationship getRevisionRelationship(Class<T> type, String id, int revision) {
+    ResourceIterator<Relationship> iterator = getFromIndex(id);
+    for (; iterator.hasNext();) {
+      Relationship next = iterator.next();
+      if (getRevisionProperty(next) == revision) {
+        return next;
+      }
+    }
+
+    return null;
+  }
+
+  private ResourceIterator<Relationship> getFromIndex(String id) {
+    Index<Relationship> index = db.index().forRelationships(RELATIONSHIP_ID_INDEX);
+
+    IndexHits<Relationship> indexHits = index.get(ID_PROPERTY_NAME, id);
+
+    ResourceIterator<Relationship> iterator = indexHits.iterator();
     return iterator;
   }
 
