@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConverterFactory;
 
@@ -55,13 +56,15 @@ public class Neo4JStorageTest {
   private Transaction transactionMock = mock(Transaction.class);
   private GraphDatabaseService dbMock;
   private NodeDuplicator nodeDuplicatorMock;
+  private RelationshipDuplicator relationshipDuplicatorMock;
 
   @Before
   public void setup() throws Exception {
     nodeDuplicatorMock = mock(NodeDuplicator.class);
+    relationshipDuplicatorMock = mock(RelationshipDuplicator.class);
     setupEntityConverterFactory();
     setupDBTransaction();
-    instance = new Neo4JStorage(dbMock, propertyContainerConverterFactoryMock, nodeDuplicatorMock);
+    instance = new Neo4JStorage(dbMock, propertyContainerConverterFactoryMock, nodeDuplicatorMock, relationshipDuplicatorMock);
   }
 
   private void setupDBTransaction() {
@@ -370,7 +373,7 @@ public class Neo4JStorageTest {
 
     // verify
     assertThat(relation, is(nullValue()));
-    verifyTransActionSucceeded();
+    verifyTransactionSucceeded();
   }
 
   @Test
@@ -382,7 +385,7 @@ public class Neo4JStorageTest {
 
     // verify
     assertThat(relation, is(nullValue()));
-    verifyTransActionSucceeded();
+    verifyTransactionSucceeded();
   }
 
   @Test
@@ -397,10 +400,10 @@ public class Neo4JStorageTest {
 
     // verify
     assertThat(relation, is(nullValue()));
-    verifyTransActionSucceeded();
+    verifyTransactionSucceeded();
   }
 
-  private void verifyTransActionSucceeded() {
+  private void verifyTransactionSucceeded() {
     verify(transactionMock).success();
   }
 
@@ -459,6 +462,162 @@ public class Neo4JStorageTest {
     when(propertyContainerConverterFactoryMock.createForRelation(type)).thenReturn(relationshipConverter);
 
     return relationshipConverter;
+  }
+
+  @Test
+  public void setRelationPIDSetsThePIDOfTheRelationAndDuplicatesIt() throws Exception {
+    // setup
+    Relationship relationship = aRelationship().withRevision(SECOND_REVISION).build();
+    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
+        .relationship(relationship) //
+        .foundInDB(dbMock);
+
+    SubARelation entity = aRelation().build();
+
+    RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    when(converter.convertToEntity(relationship)).thenReturn(entity);
+
+    try {
+      // action
+      instance.setRelationPID(RELATION_TYPE, ID, PID);
+    } finally {
+      // verify
+      InOrder inOrder = inOrder(converter, relationshipDuplicatorMock, transactionMock);
+      inOrder.verify(converter).addValuesToPropertyContainer(//
+          argThat(equalTo(relationship)), //
+          argThat(likeDomainEntity(RELATION_TYPE)//
+              .withPID(PID)));
+      inOrder.verify(relationshipDuplicatorMock).saveDuplicate(relationship);
+      inOrder.verify(transactionMock).success();
+    }
+  }
+
+  @Test
+  public void setRelationPIDSetsToTheLatest() throws Exception {
+    // setup
+    Relationship latestRelationship = aRelationship().withRevision(SECOND_REVISION).build();
+    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
+        .relationship(aRelationship().withRevision(FIRST_REVISION).build()) //
+        .andRelationship(latestRelationship) //
+        .foundInDB(dbMock);
+
+    SubARelation entity = aRelation().build();
+
+    RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    when(converter.convertToEntity(latestRelationship)).thenReturn(entity);
+
+    try {
+      // action
+      instance.setRelationPID(RELATION_TYPE, ID, PID);
+    } finally {
+      // verify
+      verify(converter).addValuesToPropertyContainer(latestRelationship, entity);
+      verifyTransactionSucceeded();
+    }
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void setRelationPIDThrowsAnIllegalStateExceptionIfTheRelationAlreadyHasAPID() throws Exception {
+    // setup
+    Relationship relationship = aRelationship().withAPID().build();
+    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
+        .relationship(relationship) //
+        .foundInDB(dbMock);
+
+    SubARelation entityWithAPID = aRelation().withAPID().build();
+
+    RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    when(converter.convertToEntity(relationship)).thenReturn(entityWithAPID);
+
+    try {
+      // action
+      instance.setRelationPID(RELATION_TYPE, ID, PID);
+    } finally {
+      // verify
+      verify(converter).convertToEntity(relationship);
+      verifyTransactionFailed();
+    }
+  }
+
+  @Test(expected = ConversionException.class)
+  public void setRelationPIDThrowsAConversionExceptionIfTheRelationshipCannotBeConverted() throws Exception {
+    // setup
+    Relationship relationship = aRelationship().build();
+    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
+        .relationship(relationship) //
+        .foundInDB(dbMock);
+
+    RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    when(converter.convertToEntity(relationship)).thenThrow(new ConversionException());
+
+    try {
+      // action
+      instance.setRelationPID(RELATION_TYPE, ID, PID);
+    } finally {
+      // verify
+      verify(converter).convertToEntity(relationship);
+      verifyTransactionFailed();
+    }
+  }
+
+  @Test(expected = ConversionException.class)
+  public void setRelationPIDThrowsAConversionsExceptionWhenTheUpdatedEntityCannotBeConvertedToARelationship() throws Exception {
+    // setup
+    Relationship relationship = aRelationship().withRevision(SECOND_REVISION).build();
+    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
+        .relationship(relationship) //
+        .foundInDB(dbMock);
+
+    SubARelation entity = aRelation().build();
+
+    RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    when(converter.convertToEntity(relationship)).thenReturn(entity);
+    doThrow(ConversionException.class).when(converter).addValuesToPropertyContainer(relationship, entity);
+
+    try {
+      // action
+      instance.setRelationPID(RELATION_TYPE, ID, PID);
+    } finally {
+      // verify
+      verify(converter).addValuesToPropertyContainer(//
+          argThat(equalTo(relationship)), //
+          argThat(likeDomainEntity(RELATION_TYPE)//
+              .withPID(PID)));
+    }
+  }
+
+  @Test(expected = StorageException.class)
+  public void setRelationPIDThrowsAStorageExceptionIfTheRelationCannotBeInstatiated() throws Exception {
+    // setup
+    Relationship relationship = aRelationship().build();
+    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
+        .relationship(relationship) //
+        .foundInDB(dbMock);
+
+    RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    when(converter.convertToEntity(relationship)).thenThrow(new InstantiationException());
+
+    try {
+      // action
+      instance.setRelationPID(RELATION_TYPE, ID, PID);
+    } finally {
+      // verify
+      verifyTransactionFailed();
+    }
+  }
+
+  @Test(expected = NoSuchEntityException.class)
+  public void setRelationPIDThrowsANoSuchEntityExceptionIfTheRelationshipCannotBeFound() throws Exception {
+    // setup
+    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsNothingForId(ID).foundInDB(dbMock);
+
+    try {
+      // action
+      instance.setRelationPID(RELATION_TYPE, ID, PID);
+    } finally {
+      verifyTransactionFailed();
+    }
+
   }
 
 }

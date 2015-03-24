@@ -22,7 +22,6 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConverterFactory;
 
-import org.apache.commons.lang.StringUtils;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -46,17 +45,15 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   private final GraphDatabaseService db;
   private final IdGenerator idGenerator;
   private final TypeRegistry typeRegistry;
-  private final RelationshipDuplicator relationshipDuplicator;
   private final Neo4JStorage neo4JStorage;
 
   @Inject
   public Neo4JLegacyStorageWrapper(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, IdGenerator idGenerator, TypeRegistry typeRegistry,
-      RelationshipDuplicator relationshipDuplicator, Neo4JStorage neo4JStorage) {
+      Neo4JStorage neo4JStorage) {
     this.db = db;
     this.propertyContainerConverterFactory = propertyContainerConverterFactory;
     this.idGenerator = idGenerator;
     this.typeRegistry = typeRegistry;
-    this.relationshipDuplicator = relationshipDuplicator;
     this.neo4JStorage = neo4JStorage;
   }
 
@@ -308,49 +305,9 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   @Override
   public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) throws StorageException {
     if (Relation.class.isAssignableFrom(type)) {
-      setRelationPID((Class<? extends Relation>) type, id, pid);
+      neo4JStorage.setRelationPID((Class<? extends Relation>) type, id, pid);
     } else {
       neo4JStorage.setDomainEntityPID(type, id, pid);
-    }
-  }
-
-  private <T extends Relation> void setRelationPID(Class<T> type, String id, String pid) throws NoSuchEntityException, ConversionException, StorageException {
-    try (Transaction transaction = db.beginTx()) {
-      Relationship relationship = getLatestFromIndex(id, transaction);
-
-      if (relationship == null) {
-        transaction.failure();
-        throw new NoSuchEntityException(type, id);
-      }
-
-      try {
-        RelationshipConverter<T> converter = propertyContainerConverterFactory.createForRelation(type);
-
-        T entity = converter.convertToEntity(relationship);
-
-        validateEntityHasNoPID(type, id, pid, transaction, entity);
-
-        entity.setPid(pid);
-
-        converter.addValuesToPropertyContainer(relationship, entity);
-
-        relationshipDuplicator.saveDuplicate(relationship);
-
-        transaction.success();
-      } catch (ConversionException e) {
-        transaction.failure();
-        throw e;
-      } catch (InstantiationException e) {
-        transaction.failure();
-        throw new StorageException(e);
-      }
-    }
-  }
-
-  private <T extends DomainEntity> void validateEntityHasNoPID(Class<T> type, String id, String pid, Transaction transaction, T entity) {
-    if (!StringUtils.isBlank(entity.getPid())) {
-      transaction.failure();
-      throw new IllegalStateException(String.format("%s with %s already has a pid: %s", type.getSimpleName(), id, pid));
     }
   }
 

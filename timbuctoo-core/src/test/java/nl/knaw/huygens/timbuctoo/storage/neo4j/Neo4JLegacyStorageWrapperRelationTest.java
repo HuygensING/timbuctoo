@@ -28,7 +28,6 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
@@ -653,159 +652,21 @@ public class Neo4JLegacyStorageWrapperRelationTest extends Neo4JLegacyStorageWra
   }
 
   @Test
-  public void setPIDSetsThePIDOfTheRelationAndDuplicatesIt() throws Exception {
-    // setup
-    Relationship relationship = aRelationship().withRevision(SECOND_REVISION).build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
-        .relationship(relationship) //
-        .foundInDB(dbMock);
+  public void setPIDForRelationDelegatesToNeo4JStorageSetRelationPID() throws Exception {
+    // action
+    instance.setPID(RELATION_TYPE, ID, PID);
 
-    SubARelation entity = aRelation().build();
-
-    RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
-    when(converter.convertToEntity(relationship)).thenReturn(entity);
-
-    try {
-      // action
-      instance.setPID(RELATION_TYPE, ID, PID);
-    } finally {
-      // verify
-      InOrder inOrder = inOrder(converter, relationshipDuplicatorMock, transactionMock);
-      inOrder.verify(converter).addValuesToPropertyContainer(//
-          argThat(equalTo(relationship)), //
-          argThat(likeDomainEntity(RELATION_TYPE)//
-              .withPID(PID)));
-      inOrder.verify(relationshipDuplicatorMock).saveDuplicate(relationship);
-      inOrder.verify(transactionMock).success();
-    }
-  }
-
-  @Test
-  public void setPIDSetsToTheLatest() throws Exception {
-    // setup
-    Relationship latestRelationship = aRelationship().withRevision(SECOND_REVISION).build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
-        .relationship(aRelationship().withRevision(FIRST_REVISION).build()) //
-        .andRelationship(latestRelationship) //
-        .foundInDB(dbMock);
-
-    SubARelation entity = aRelation().build();
-
-    RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
-    when(converter.convertToEntity(latestRelationship)).thenReturn(entity);
-
-    try {
-      // action
-      instance.setPID(RELATION_TYPE, ID, PID);
-    } finally {
-      // verify
-      verify(converter).addValuesToPropertyContainer(latestRelationship, entity);
-      verifyTransactionSucceeded();
-    }
-  }
-
-  @Test(expected = IllegalStateException.class)
-  public void setPIDThrowsAnIllegalStateExceptionIfTheRelationAlreadyHasAPID() throws Exception {
-    // setup
-    Relationship relationship = aRelationship().withAPID().build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
-        .relationship(relationship) //
-        .foundInDB(dbMock);
-
-    SubARelation entityWithAPID = aRelation().withAPID().build();
-
-    RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
-    when(converter.convertToEntity(relationship)).thenReturn(entityWithAPID);
-
-    try {
-      // action
-      instance.setPID(RELATION_TYPE, ID, PID);
-    } finally {
-      // verify
-      verify(converter).convertToEntity(relationship);
-      verifyTransactionFailed();
-    }
-  }
-
-  @Test(expected = ConversionException.class)
-  public void setPIDThrowsAConversionExceptionIfTheRelationshipCannotBeConverted() throws Exception {
-    // setup
-    Relationship relationship = aRelationship().build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
-        .relationship(relationship) //
-        .foundInDB(dbMock);
-
-    RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
-    when(converter.convertToEntity(relationship)).thenThrow(new ConversionException());
-
-    try {
-      // action
-      instance.setPID(RELATION_TYPE, ID, PID);
-    } finally {
-      // verify
-      verify(converter).convertToEntity(relationship);
-      verifyTransactionFailed();
-    }
-  }
-
-  @Test(expected = ConversionException.class)
-  public void setPIDThrowsAConversionsExceptionWhenTheUpdatedEntityCannotBeConvertedToARelationship() throws Exception {
-    // setup
-    Relationship relationship = aRelationship().withRevision(SECOND_REVISION).build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
-        .relationship(relationship) //
-        .foundInDB(dbMock);
-
-    SubARelation entity = aRelation().build();
-
-    RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
-    when(converter.convertToEntity(relationship)).thenReturn(entity);
-    doThrow(ConversionException.class).when(converter).addValuesToPropertyContainer(relationship, entity);
-
-    try {
-      // action
-      instance.setPID(RELATION_TYPE, ID, PID);
-    } finally {
-      // verify
-      verify(converter).addValuesToPropertyContainer(//
-          argThat(equalTo(relationship)), //
-          argThat(likeDomainEntity(RELATION_TYPE)//
-              .withPID(PID)));
-    }
+    // verify
+    verify(neo4JStorageMock).setRelationPID(RELATION_TYPE, ID, PID);
   }
 
   @Test(expected = StorageException.class)
-  public void setPIDThrowsAStorageExceptionIfTheRelationCannotBeInstatiated() throws Exception {
+  public void setPIDForRelationThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
-    Relationship relationship = aRelationship().build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
-        .relationship(relationship) //
-        .foundInDB(dbMock);
+    doThrow(StorageException.class).when(neo4JStorageMock).setRelationPID(RELATION_TYPE, ID, PID);
 
-    RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
-    when(converter.convertToEntity(relationship)).thenThrow(new InstantiationException());
-
-    try {
-      // action
-      instance.setPID(RELATION_TYPE, ID, PID);
-    } finally {
-      // verify
-      verifyTransactionFailed();
-    }
-  }
-
-  @Test(expected = NoSuchEntityException.class)
-  public void setPIDThrowsANoSuchEntityExceptionIfTheRelationshipCannotBeFound() throws Exception {
-    // setup
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsNothingForId(ID).foundInDB(dbMock);
-
-    try {
-      // action
-      instance.setPID(RELATION_TYPE, ID, PID);
-    } finally {
-      verifyTransactionFailed();
-    }
-
+    // action
+    instance.setPID(RELATION_TYPE, ID, PID);
   }
 
   private void verifyTransactionFailed() {

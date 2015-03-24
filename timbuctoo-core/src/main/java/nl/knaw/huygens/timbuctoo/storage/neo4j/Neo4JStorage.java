@@ -32,15 +32,17 @@ public class Neo4JStorage {
   private GraphDatabaseService db;
   private PropertyContainerConverterFactory propertyContainerConverterFactory;
   private final NodeDuplicator nodeDuplicator;
+  private RelationshipDuplicator relationshipDuplicator;
 
-  public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, NodeDuplicator nodeDuplicator) {
+  public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory) {
+    this(db, propertyContainerConverterFactory, new NodeDuplicator(db), new RelationshipDuplicator(db));
+  }
+
+  public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, NodeDuplicator nodeDuplicator, RelationshipDuplicator relationshipDuplicator) {
     this.db = db;
     this.propertyContainerConverterFactory = propertyContainerConverterFactory;
     this.nodeDuplicator = nodeDuplicator;
-  }
-
-  public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory) {
-    this(db, propertyContainerConverterFactory, new NodeDuplicator(db));
+    this.relationshipDuplicator = relationshipDuplicator;
   }
 
   public <T extends DomainEntity> T getDomainEntityRevision(Class<T> type, String id, int revision) throws StorageException {
@@ -120,6 +122,23 @@ public class Neo4JStorage {
     return iterator;
   }
 
+  private Relationship getLatestRelationship(String id) {
+    ResourceIterator<Relationship> iterator = getFromIndex(id);
+    if (!iterator.hasNext()) {
+      return null;
+    }
+    Relationship relationshipWithHighestRevision = iterator.next();
+
+    for (; iterator.hasNext();) {
+      Relationship next = iterator.next();
+
+      if (getRevisionProperty(next) > getRevisionProperty(relationshipWithHighestRevision)) {
+        relationshipWithHighestRevision = next;
+      }
+    }
+    return relationshipWithHighestRevision;
+  }
+
   private int getRevisionProperty(PropertyContainer propertyContainer) {
     return (int) propertyContainer.getProperty(REVISION_PROPERTY_NAME);
   }
@@ -144,6 +163,39 @@ public class Neo4JStorage {
 
         // FIXME functionality should be part of the repository class.
         nodeDuplicator.saveDuplicate(node);
+
+        transaction.success();
+      } catch (ConversionException e) {
+        transaction.failure();
+        throw e;
+      } catch (InstantiationException e) {
+        transaction.failure();
+        throw new StorageException(e);
+      }
+    }
+  }
+
+  public <T extends Relation> void setRelationPID(Class<T> type, String id, String pid) throws NoSuchEntityException, ConversionException, StorageException {
+    try (Transaction transaction = db.beginTx()) {
+      Relationship relationship = getLatestRelationship(id);
+
+      if (relationship == null) {
+        transaction.failure();
+        throw new NoSuchEntityException(type, id);
+      }
+
+      try {
+        RelationshipConverter<T> converter = propertyContainerConverterFactory.createForRelation(type);
+
+        T entity = converter.convertToEntity(relationship);
+
+        validateEntityHasNoPID(type, id, pid, transaction, entity);
+
+        entity.setPid(pid);
+
+        converter.addValuesToPropertyContainer(relationship, entity);
+
+        relationshipDuplicator.saveDuplicate(relationship);
 
         transaction.success();
       } catch (ConversionException e) {
