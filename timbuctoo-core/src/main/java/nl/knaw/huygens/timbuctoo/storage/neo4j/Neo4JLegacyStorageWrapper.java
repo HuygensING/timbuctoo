@@ -409,7 +409,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
       T relationDomainEntity = (T) getRelationDomainEntity((Class<Relation>) type, id);
       return relationDomainEntity;
     } else {
-      return getRegularEntity(type, id);
+      return neo4JStorage.getEntity(type, id);
     }
 
   }
@@ -427,31 +427,6 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
         RelationshipConverter<T> relationshipConverter = propertyContainerConverterFactory.createForRelation(type);
         T entity = relationshipConverter.convertToEntity(relationshipWithHighestRevision);
-
-        transaction.success();
-        return entity;
-      } catch (ConversionException e) {
-        transaction.failure();
-        throw e;
-      } catch (IllegalArgumentException | InstantiationException e) {
-        transaction.failure();
-        throw new StorageException(e);
-      }
-    }
-  }
-
-  private <T extends Entity> T getRegularEntity(Class<T> type, String id) throws StorageException {
-    try (Transaction transaction = db.beginTx()) {
-      Node nodeWithHighestRevision = getLatestById(type, id);
-
-      if (nodeWithHighestRevision == null) {
-        transaction.success();
-        return null;
-      }
-
-      try {
-        NodeConverter<T> nodeConverter = propertyContainerConverterFactory.createForType(type);
-        T entity = nodeConverter.convertToEntity(nodeWithHighestRevision);
 
         transaction.success();
         return entity;

@@ -10,6 +10,7 @@ import static nl.knaw.huygens.timbuctoo.storage.neo4j.SubADomainEntityBuilder.aD
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -127,31 +128,25 @@ public class Neo4JLegacyStorageWrapperDomainEntityTest extends Neo4JLegacyStorag
   }
 
   @Test
-  public void getEntityReturnsTheLatestIfMoreThanOneItemIsFound() throws Exception {
+  public void getEntityDelegatesToNeo4JStorageGetEntity() throws Exception {
     // setup
-    Node nodeWithThirdRevision = aNode().withRevision(THIRD_REVISION).build();
-
-    aSearchResult().forLabel(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_LABEL).andId(ID) //
-        .withNode(aNode().withRevision(FIRST_REVISION).build()) //
-        .andNode(aNode().withRevision(SECOND_REVISION).build()) //
-        .andNode(nodeWithThirdRevision)//
-        .foundInDB(dbMock);
-
-    SubADomainEntity domainEntity = aDomainEntity().withId(ID).build();
-
-    NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_TYPE);
-    when(domainEntityConverterMock.convertToEntity(nodeWithThirdRevision)).thenReturn(domainEntity);
+    SubADomainEntity entity = aDomainEntity().build();
+    when(neo4JStorageMock.getEntity(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entity);
 
     // action
-    SubADomainEntity actualEntity = instance.getEntity(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_TYPE, ID);
+    SubADomainEntity actualEntity = instance.getEntity(DOMAIN_ENTITY_TYPE, ID);
 
     // verify
-    assertThat(actualEntity, is(equalTo(domainEntity)));
+    assertThat(actualEntity, is(sameInstance(entity)));
+  }
 
-    InOrder inOrder = inOrder(dbMock, propertyContainerConverterFactoryMock, domainEntityConverterMock, transactionMock);
-    inOrder.verify(dbMock).findNodesByLabelAndProperty(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
-    inOrder.verify(domainEntityConverterMock).convertToEntity(nodeWithThirdRevision);
-    inOrder.verify(transactionMock).success();
+  @Test(expected = StorageException.class)
+  public void getEntityDelegatesThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
+    // setup
+    when(neo4JStorageMock.getEntity(DOMAIN_ENTITY_TYPE, ID)).thenThrow(new StorageException());
+
+    // action
+    instance.getEntity(DOMAIN_ENTITY_TYPE, ID);
   }
 
   @Test

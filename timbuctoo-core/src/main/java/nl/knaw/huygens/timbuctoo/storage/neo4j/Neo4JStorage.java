@@ -45,6 +45,31 @@ public class Neo4JStorage {
     this.relationshipDuplicator = relationshipDuplicator;
   }
 
+  public <T extends Entity> T getEntity(Class<T> type, String id) throws StorageException {
+    try (Transaction transaction = db.beginTx()) {
+      Node nodeWithHighestRevision = getLatestById(type, id);
+
+      if (nodeWithHighestRevision == null) {
+        transaction.success();
+        return null;
+      }
+
+      try {
+        NodeConverter<T> nodeConverter = propertyContainerConverterFactory.createForType(type);
+        T entity = nodeConverter.convertToEntity(nodeWithHighestRevision);
+
+        transaction.success();
+        return entity;
+      } catch (ConversionException e) {
+        transaction.failure();
+        throw e;
+      } catch (IllegalArgumentException | InstantiationException e) {
+        transaction.failure();
+        throw new StorageException(e);
+      }
+    }
+  }
+
   public <T extends DomainEntity> T getDomainEntityRevision(Class<T> type, String id, int revision) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
       Node node = getRevisionNode(type, id, revision);
