@@ -143,11 +143,11 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
-    removePID(entity);
     if (Relation.class.isAssignableFrom(type)) {
+      removePID(entity);
       updateRelation((Class<? extends Relation>) type, (Relation) entity);
     } else {
-      updateEntity(type, entity);
+      neo4JStorage.updateDomainEntity(type, entity, change);
     }
   }
 

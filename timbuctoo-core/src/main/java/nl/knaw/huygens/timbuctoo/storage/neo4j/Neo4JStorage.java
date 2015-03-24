@@ -12,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConverterFactory;
 
 import org.apache.commons.lang.StringUtils;
@@ -223,6 +224,58 @@ public class Neo4JStorage {
         throw new StorageException(e);
       }
     }
+  }
+
+  public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
+    removePID(entity);
+    updateEntity(type, entity, change);
+  }
+
+  private <T extends Entity> void updateEntity(Class<T> type, T entity, Change change) throws UpdateException, ConversionException {
+    try (Transaction transaction = db.beginTx()) {
+      Node node = getLatestById(type, entity.getId());
+
+      if (node == null) {
+        transaction.failure();
+        throw new UpdateException(entityNotFoundMessageFor(type, entity));
+      }
+
+      int rev = getRevisionProperty(node);
+      if (rev != entity.getRev()) {
+        transaction.failure();
+        throw new UpdateException(revisionNotFoundMessage(type, entity, rev));
+      }
+
+      updateAdministrativeValues(entity);
+
+      try {
+        NodeConverter<T> propertyContainerConverter = propertyContainerConverterFactory.createForType(type);
+
+        /* split the update and the update of modified and rev, 
+         * to be sure the administrative values can only be changed by the system
+         */
+        propertyContainerConverter.updatePropertyContainer(node, entity);
+        propertyContainerConverter.updateModifiedAndRev(node, entity);
+
+        transaction.success();
+      } catch (ConversionException e) {
+        transaction.failure();
+        throw e;
+      }
+    }
+  }
+
+  private <T extends Entity> void updateAdministrativeValues(T entity) {
+    entity.setModified(Change.newInternalInstance());
+    updateRevision(entity);
+  }
+
+  private <T extends Entity> String revisionNotFoundMessage(Class<T> type, T entity, int actualLatestRev) {
+    return String.format("\"%s\" with id \"%s\" and revision \"%d\" found. Revision \"%d\" wanted.", type.getSimpleName(), entity.getId(), entity.getRev(), actualLatestRev);
+  }
+
+  private <T extends Entity> String entityNotFoundMessageFor(Class<T> type, T entity) {
+    return String.format("\"%s\" with id \"%s\" cannot be found.", type.getSimpleName(), entity.getId());
   }
 
   public <T extends DomainEntity> T getDomainEntityRevision(Class<T> type, String id, int revision) throws StorageException {

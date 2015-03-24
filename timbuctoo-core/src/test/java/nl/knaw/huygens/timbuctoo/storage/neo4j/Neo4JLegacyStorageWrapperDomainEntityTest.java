@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.storage.neo4j.DomainEntityMatcher.likeDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeMockBuilder.aNode;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipMockBuilder.aRelationship;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SearchResultBuilder.aSearchResult;
@@ -11,23 +10,16 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
 import org.junit.Test;
 import org.mockito.InOrder;
-import org.neo4j.graphdb.DynamicLabel;
-import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
@@ -36,8 +28,6 @@ import test.model.projecta.SubADomainEntity;
 public class Neo4JLegacyStorageWrapperDomainEntityTest extends Neo4JLegacyStorageWrapperTest {
 
   private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
-  private static final Label DOMAIN_ENTITY_LABEL = DynamicLabel.label(TypeNames.getInternalName(DOMAIN_ENTITY_TYPE));
-  private static final int FOURTH_REVISION = 4;
 
   @Test
   public void addDomainEntityDelegatesToNeo4JStorageAddDomainEntity() throws Exception {
@@ -86,171 +76,27 @@ public class Neo4JLegacyStorageWrapperDomainEntityTest extends Neo4JLegacyStorag
   }
 
   @Test
-  public void updateDomainEntityRetrievesTheNodeAndUpdatesItsValues() throws Exception {
+  public void updateDomainEntityDelegatesToNeo4JStorage() throws Exception {
     // setup
-    Node nodeMock = aNode().withRevision(FIRST_REVISION).build();
+    SubADomainEntity entity = aDomainEntity().build();
 
-    aSearchResult().forLabel(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_LABEL).andId(ID) //
-        .withNode(nodeMock) //
-        .foundInDB(dbMock);
-
-    NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_TYPE);;
-
-    Change oldModified = CHANGE;
-    SubADomainEntity domainEntity = aDomainEntity() //
-        .withId(ID) //
-        .withRev(FIRST_REVISION)//
-        .withAPid()//
-        .withModified(oldModified)//
-        .build();
-
-    instance.updateDomainEntity(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
+    // action
+    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
 
     // verify
-    InOrder inOrder = inOrder(dbMock, domainEntityConverterMock, transactionMock);
-    inOrder.verify(dbMock).beginTx();
-    inOrder.verify(dbMock).findNodesByLabelAndProperty(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
-    inOrder.verify(domainEntityConverterMock).updatePropertyContainer(argThat(equalTo(nodeMock)), //
-        argThat(likeDomainEntity(SubADomainEntity.class) //
-            .withAModifiedValueNotEqualTo(oldModified) //
-            .withRevision(SECOND_REVISION) //
-            .withoutAPID()));
-    inOrder.verify(domainEntityConverterMock).updateModifiedAndRev(argThat(equalTo(nodeMock)), //
-        argThat(likeDomainEntity(SubADomainEntity.class) //
-            .withAModifiedValueNotEqualTo(oldModified) //
-            .withRevision(SECOND_REVISION) //
-            .withoutAPID()));
-    inOrder.verify(transactionMock).success();
-    verifyNoMoreInteractions(dbMock, domainEntityConverterMock);
+    verify(neo4JStorageMock).updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
   }
 
-  @Test
-  public void updateDomainEntityUpdatesTheLatestIfMultipleAreFound() throws Exception {
+  @Test(expected = StorageException.class)
+  public void updateDomainEntityThrowAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
-    Node nodeWithThirdRevision = aNode().withRevision(THIRD_REVISION).build();
+    SubADomainEntity entity = aDomainEntity().build();
 
-    aSearchResult().forLabel(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_LABEL).andId(ID) //
-        .withNode(aNode().withRevision(FIRST_REVISION).build()) //
-        .andNode(aNode().withRevision(SECOND_REVISION).build()) //
-        .andNode(nodeWithThirdRevision)//
-        .foundInDB(dbMock);
+    doThrow(StorageException.class).when(neo4JStorageMock).updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
 
-    NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_TYPE);
+    // action
+    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
 
-    Change oldModified = CHANGE;
-    SubADomainEntity domainEntity = aDomainEntity() //
-        .withId(ID) //
-        .withRev(THIRD_REVISION)//
-        .withAPid()//
-        .withModified(oldModified)//
-        .build();
-
-    instance.updateDomainEntity(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
-
-    // verify
-    InOrder inOrder = inOrder(dbMock, domainEntityConverterMock, transactionMock);
-    inOrder.verify(dbMock).beginTx();
-    inOrder.verify(dbMock).findNodesByLabelAndProperty(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
-    inOrder.verify(domainEntityConverterMock).updatePropertyContainer(argThat(equalTo(nodeWithThirdRevision)), //
-        argThat(likeDomainEntity(SubADomainEntity.class) //
-            .withAModifiedValueNotEqualTo(oldModified) //
-            .withRevision(Neo4JLegacyStorageWrapperDomainEntityTest.FOURTH_REVISION) //
-            .withoutAPID()));
-    inOrder.verify(domainEntityConverterMock).updateModifiedAndRev(argThat(equalTo(nodeWithThirdRevision)), //
-        argThat(likeDomainEntity(SubADomainEntity.class) //
-            .withAModifiedValueNotEqualTo(oldModified) //
-            .withRevision(Neo4JLegacyStorageWrapperDomainEntityTest.FOURTH_REVISION) //
-            .withoutAPID()));
-    inOrder.verify(transactionMock).success();
-    verifyNoMoreInteractions(dbMock, domainEntityConverterMock);
-  }
-
-  @Test(expected = UpdateException.class)
-  public void updateDomainEntityThrowsAnUpdateExceptionWhenTheEntityCannotBeFound() throws Exception {
-    // setup
-    anEmptySearchResult().forLabel(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
-
-    Change oldModified = CHANGE;
-    SubADomainEntity domainEntity = aDomainEntity() //
-        .withId(ID) //
-        .withRev(FIRST_REVISION)//
-        .withAPid()//
-        .withModified(oldModified)//
-        .build();
-
-    try {
-      // action
-      instance.updateDomainEntity(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
-    } finally {
-      // verify
-      InOrder inOrder = inOrder(dbMock, transactionMock);
-      inOrder.verify(dbMock).beginTx();
-      inOrder.verify(dbMock).findNodesByLabelAndProperty(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
-      inOrder.verify(transactionMock).failure();
-      verifyZeroInteractions(propertyContainerConverterFactoryMock);
-      verifyNoMoreInteractions(dbMock);
-    }
-  }
-
-  @Test(expected = UpdateException.class)
-  public void updateDomainEntityThrowsAnUpdateExceptionWhenRevOfTheNodeIsHigherThanThatOfTheEntity() throws Exception {
-    // setup
-    Node nodeMock = aNode().withRevision(SECOND_REVISION).build();
-
-    aSearchResult().forLabel(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_LABEL).andId(ID) //
-        .withNode(nodeMock) //
-        .foundInDB(dbMock);
-
-    Change oldModified = CHANGE;
-    SubADomainEntity domainEntity = aDomainEntity() //
-        .withId(ID) //
-        .withRev(FIRST_REVISION)//
-        .withAPid()//
-        .withModified(oldModified)//
-        .build();
-
-    try {
-      // action
-      instance.updateDomainEntity(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
-    } finally {
-      // verify
-      InOrder inOrder = inOrder(dbMock, transactionMock);
-      inOrder.verify(dbMock).beginTx();
-      inOrder.verify(dbMock).findNodesByLabelAndProperty(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
-      inOrder.verify(transactionMock).failure();
-      verifyZeroInteractions(propertyContainerConverterFactoryMock);
-      verifyNoMoreInteractions(dbMock);
-    }
-  }
-
-  @Test(expected = UpdateException.class)
-  public void updateDomainEntityThrowsAnUpdateExceptionWhenRevOfTheNodeIsLowerThanThatOfTheEntity() throws Exception {
-    // setup
-    Node nodeMock = aNode().withRevision(SECOND_REVISION).build();
-    aSearchResult().forLabel(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_LABEL).andId(ID) //
-        .withNode(nodeMock) //
-        .foundInDB(dbMock);
-
-    Change oldModified = CHANGE;
-    SubADomainEntity domainEntity = aDomainEntity() //
-        .withId(ID) //
-        .withRev(FIRST_REVISION)//
-        .withAPid()//
-        .withModified(oldModified)//
-        .build();
-
-    try {
-      // action
-      instance.updateDomainEntity(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
-    } finally {
-      // verify
-      InOrder inOrder = inOrder(dbMock, transactionMock);
-      inOrder.verify(dbMock).beginTx();
-      inOrder.verify(dbMock).findNodesByLabelAndProperty(Neo4JLegacyStorageWrapperDomainEntityTest.DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
-      inOrder.verify(transactionMock).failure();
-      verifyZeroInteractions(propertyContainerConverterFactoryMock);
-      verifyNoMoreInteractions(dbMock);
-    }
   }
 
   @Test
