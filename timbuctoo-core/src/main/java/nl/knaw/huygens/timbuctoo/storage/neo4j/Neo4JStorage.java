@@ -43,19 +43,21 @@ public class Neo4JStorage {
   private final RelationshipDuplicator relationshipDuplicator;
   private final IdGenerator idGenerator;
   private final TypeRegistry typeRegistry;
+  private final Neo4JLowLevelAPI neo4jLowLevelAPI;
 
   public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, TypeRegistry typeRegistry) {
-    this(db, propertyContainerConverterFactory, new NodeDuplicator(db), new RelationshipDuplicator(db), new IdGenerator(), typeRegistry);
+    this(db, propertyContainerConverterFactory, new NodeDuplicator(db), new RelationshipDuplicator(db), new IdGenerator(), typeRegistry, new Neo4JLowLevelAPI(db));
   }
 
   public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, NodeDuplicator nodeDuplicator, RelationshipDuplicator relationshipDuplicator,
-      IdGenerator idGenerator, TypeRegistry typeRegistry) {
+      IdGenerator idGenerator, TypeRegistry typeRegistry, Neo4JLowLevelAPI neo4jLowLevelAPI) {
     this.db = db;
     this.propertyContainerConverterFactory = propertyContainerConverterFactory;
     this.nodeDuplicator = nodeDuplicator;
     this.relationshipDuplicator = relationshipDuplicator;
     this.idGenerator = idGenerator;
     this.typeRegistry = typeRegistry;
+    this.neo4jLowLevelAPI = neo4jLowLevelAPI;
   }
 
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
@@ -179,7 +181,7 @@ public class Neo4JStorage {
 
   public <T extends Entity> T getEntity(Class<T> type, String id) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
-      Node nodeWithHighestRevision = getLatestById(type, id);
+      Node nodeWithHighestRevision = neo4jLowLevelAPI.getLatestNodeById(type, id);
 
       if (nodeWithHighestRevision == null) {
         transaction.success();
