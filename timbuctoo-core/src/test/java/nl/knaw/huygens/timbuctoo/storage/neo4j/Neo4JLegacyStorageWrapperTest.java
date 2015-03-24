@@ -56,7 +56,7 @@ public abstract class Neo4JLegacyStorageWrapperTest {
     nodeDuplicatorMock = mock(NodeDuplicator.class);
     idGeneratorMock = mock(IdGenerator.class);
 
-    instance = new Neo4JLegacyStorageWrapper(dbMock, neo4JStorageMock);
+    instance = new Neo4JLegacyStorageWrapper(neo4JStorageMock);
   }
 
   private void setupDBTransaction() {

@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 import java.util.Date;
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -14,25 +13,16 @@ import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
-import org.neo4j.graphdb.DynamicLabel;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Label;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.ResourceIterable;
-import org.neo4j.graphdb.ResourceIterator;
-
 import com.google.inject.Inject;
 
 public class Neo4JLegacyStorageWrapper implements Storage {
 
   public static final String RELATIONSHIP_ID_INDEX = "RelationShip id";
 
-  private final GraphDatabaseService db;
   private final Neo4JStorage neo4JStorage;
 
   @Inject
-  public Neo4JLegacyStorageWrapper(GraphDatabaseService db, Neo4JStorage neo4JStorage) {
-    this.db = db;
+  public Neo4JLegacyStorageWrapper(Neo4JStorage neo4JStorage) {
     this.neo4JStorage = neo4JStorage;
   }
 
@@ -182,14 +172,6 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   @Override
   public <T extends Entity> T findItemByProperty(Class<T> type, String field, String value) throws StorageException {
     throw new UnsupportedOperationException("Yet to be implemented");
-  }
-
-  private <T extends Entity> ResourceIterator<Node> findByProperty(Class<T> type, String propertyName, String id) {
-    Label internalNameLabel = DynamicLabel.label(TypeNames.getInternalName(type));
-    ResourceIterable<Node> foundNodes = db.findNodesByLabelAndProperty(internalNameLabel, propertyName, id);
-
-    ResourceIterator<Node> iterator = foundNodes.iterator();
-    return iterator;
   }
 
   @Override
