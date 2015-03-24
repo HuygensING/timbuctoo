@@ -4,6 +4,7 @@ import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 
 import java.util.Iterator;
+import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -327,8 +328,8 @@ public class Neo4JStorage {
     }
 
     try (Transaction transaction = db.beginTx()) {
-      ResourceIterator<Node> foundNodes = findByProperty(type, ID_PROPERTY_NAME, id);
-      if (!foundNodes.hasNext()) {
+      List<Node> foundNodes = neo4jLowLevelAPI.getNodesWithId(type, id);
+      if (foundNodes.isEmpty()) {
         transaction.failure();
         throw new NoSuchEntityException(type, id);
       }
@@ -342,19 +343,17 @@ public class Neo4JStorage {
   public <T extends SystemEntity> int deleteSystemEntity(Class<T> type, String id) throws StorageException {
     int numDeleted = 0;
     try (Transaction transaction = db.beginTx()) {
-      ResourceIterator<Node> nodes = findByProperty(type, ID_PROPERTY_NAME, id);
-      numDeleted = deleteEntity(nodes);
+      List<Node> foundNodes = neo4jLowLevelAPI.getNodesWithId(type, id);
+      numDeleted = deleteEntity(foundNodes);
       transaction.success();
     }
 
     return numDeleted;
   }
 
-  private int deleteEntity(ResourceIterator<Node> nodes) {
+  private int deleteEntity(List<Node> nodes) {
     int numDeleted = 0;
-    for (; nodes.hasNext();) {
-      Node node = nodes.next();
-
+    for (Node node : nodes) {
       for (Iterator<Relationship> relationships = node.getRelationships().iterator(); relationships.hasNext();) {
         relationships.next().delete();
       }
