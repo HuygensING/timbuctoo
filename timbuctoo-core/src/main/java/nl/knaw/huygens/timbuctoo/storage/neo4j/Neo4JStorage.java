@@ -241,7 +241,7 @@ public class Neo4JStorage {
 
   private <T extends Entity> void updateEntity(Class<T> type, T entity, Change change) throws UpdateException, ConversionException {
     try (Transaction transaction = db.beginTx()) {
-      Node node = getLatestById(type, entity.getId());
+      Node node = neo4jLowLevelAPI.getLatestNodeById(type, entity.getId());
 
       if (node == null) {
         transaction.failure();
