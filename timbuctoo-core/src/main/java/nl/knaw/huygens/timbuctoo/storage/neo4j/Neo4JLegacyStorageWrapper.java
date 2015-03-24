@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -136,24 +135,9 @@ public class Neo4JLegacyStorageWrapper implements Storage {
     throw new UnsupportedOperationException("Yet to be implemented");
   }
 
-  // TODO: Make equal to deleteSystemEntity see TIM-54
   @Override
   public <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws StorageException {
-    if (!TypeRegistry.isPrimitiveDomainEntity(type)) {
-      throw new IllegalArgumentException("Only primitive DomainEntities can be deleted. " + type.getSimpleName() + " is not a primitive DomainEntity.");
-    }
-
-    try (Transaction transaction = db.beginTx()) {
-      ResourceIterator<Node> foundNodes = findByProperty(type, ID_PROPERTY_NAME, id);
-      if (!foundNodes.hasNext()) {
-        transaction.failure();
-        throw new NoSuchEntityException(type, id);
-      }
-
-      deleteEntity(foundNodes);
-
-      transaction.success();
-    }
+    neo4JStorage.deleteDomainEntity(type, id, change);
   }
 
   @Override

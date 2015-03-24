@@ -667,6 +667,95 @@ public class Neo4JStorageTest {
   }
 
   @Test
+  public void deleteDomainEntityFirstRemovesTheNodesRelationShipsAndThenTheNodeItselfTheDatabase() throws Exception {
+    // setup
+    Relationship relMock1 = aRelationship().build();
+    Relationship relMock2 = aRelationship().build();
+    Node nodeMock = aNode().withOutgoingRelationShip(relMock1).andOutgoingRelationship(relMock2).build();
+
+    aSearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(ID) //
+        .withNode(nodeMock) //
+        .foundInDB(dbMock);
+
+    // action
+    instance.deleteDomainEntity(Neo4JLegacyStorageWrapperTest.PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, CHANGE);
+
+    // verify
+    InOrder inOrder = inOrder(dbMock, nodeMock, relMock1, relMock2, transactionMock);
+    inOrder.verify(dbMock).beginTx();
+    verifyNodeAndItsRelationAreDelete(nodeMock, relMock1, relMock2, inOrder);
+    inOrder.verify(transactionMock).success();
+
+  }
+
+  @Test
+  public void deleteDomainEntityRemovesAllTheFoundNodes() throws Exception {
+    // setup
+    Relationship relMock1 = aRelationship().build();
+    Relationship relMock2 = aRelationship().build();
+    Node nodeMock = aNode().withOutgoingRelationShip(relMock1).andOutgoingRelationship(relMock2).build();
+
+    Relationship relMock3 = aRelationship().build();
+    Relationship relMock4 = aRelationship().build();
+    Node nodeMock2 = aNode().withOutgoingRelationShip(relMock3).andOutgoingRelationship(relMock4).build();
+
+    Relationship relMock5 = aRelationship().build();
+    Relationship relMock6 = aRelationship().build();
+    Node nodeMock3 = aNode().withOutgoingRelationShip(relMock5).andOutgoingRelationship(relMock6).build();
+
+    aSearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(ID) //
+        .withNode(nodeMock) //
+        .andNode(nodeMock2) //
+        .andNode(nodeMock3) //
+        .foundInDB(dbMock);
+
+    // action
+    instance.deleteDomainEntity(Neo4JLegacyStorageWrapperTest.PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, CHANGE);
+
+    // verify
+    InOrder inOrder = inOrder(dbMock, nodeMock, relMock1, relMock2, nodeMock2, relMock3, relMock4, nodeMock3, relMock5, relMock6, transactionMock);
+    inOrder.verify(dbMock).beginTx();
+    verifyNodeAndItsRelationAreDelete(nodeMock, relMock1, relMock2, inOrder);
+    verifyNodeAndItsRelationAreDelete(nodeMock2, relMock3, relMock4, inOrder);
+    verifyNodeAndItsRelationAreDelete(nodeMock3, relMock5, relMock6, inOrder);
+    inOrder.verify(transactionMock).success();
+  }
+
+  private void verifyNodeAndItsRelationAreDelete(Node node, Relationship relMock1, Relationship relMock2, InOrder inOrder) {
+    inOrder.verify(node).getRelationships();
+    inOrder.verify(relMock1).delete();
+    inOrder.verify(relMock2).delete();
+    inOrder.verify(node).delete();
+  }
+
+  @Test(expected = NoSuchEntityException.class)
+  public void deleteDomainEntityThrowsANoSuchEntityExceptionWhenTheEntityCannotBeFound() throws Exception {
+    // setup
+    anEmptySearchResult().forLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
+    try {
+      // action
+      instance.deleteDomainEntity(Neo4JLegacyStorageWrapperTest.PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, CHANGE);
+    } finally {
+      // verify
+      verify(dbMock).beginTx();
+      verify(dbMock).findNodesByLabelAndProperty(PRIMITIVE_DOMAIN_ENTITY_LABEL, ID_PROPERTY_NAME, ID);
+      verify(transactionMock).failure();
+    }
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void deleteThrowsAnIllegalArgumentExceptionWhenTheEntityIsNotAPrimitiveDomainEntity() throws Exception {
+
+    try {
+      // action
+      instance.deleteDomainEntity(DOMAIN_ENTITY_TYPE, ID, CHANGE);
+    } finally {
+      // verify
+      verifyZeroInteractions(dbMock);
+    }
+  }
+
+  @Test
   public void getDomainEntityRevisionReturnsTheDomainEntityWithTheRequestedRevision() throws Exception {
     Node nodeWithSameRevision = aNode().withRevision(FIRST_REVISION).withAPID().build();
     aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).withNode(nodeWithSameRevision).foundInDB(dbMock);

@@ -2,6 +2,9 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
+
+import java.util.Iterator;
+
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -314,6 +317,40 @@ public class Neo4JStorage {
 
   private <T extends Entity> String entityNotFoundMessageFor(Class<T> type, T entity) {
     return String.format("\"%s\" with id \"%s\" cannot be found.", type.getSimpleName(), entity.getId());
+  }
+
+  // TODO: Make equal to deleteSystemEntity see TIM-54
+  public <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws StorageException {
+    if (!TypeRegistry.isPrimitiveDomainEntity(type)) {
+      throw new IllegalArgumentException("Only primitive DomainEntities can be deleted. " + type.getSimpleName() + " is not a primitive DomainEntity.");
+    }
+
+    try (Transaction transaction = db.beginTx()) {
+      ResourceIterator<Node> foundNodes = findByProperty(type, ID_PROPERTY_NAME, id);
+      if (!foundNodes.hasNext()) {
+        transaction.failure();
+        throw new NoSuchEntityException(type, id);
+      }
+
+      deleteEntity(foundNodes);
+
+      transaction.success();
+    }
+  }
+
+  private int deleteEntity(ResourceIterator<Node> nodes) {
+    int numDeleted = 0;
+    for (; nodes.hasNext();) {
+      Node node = nodes.next();
+
+      for (Iterator<Relationship> relationships = node.getRelationships().iterator(); relationships.hasNext();) {
+        relationships.next().delete();
+      }
+
+      node.delete();
+      numDeleted++;
+    }
+    return numDeleted;
   }
 
   public <T extends DomainEntity> T getDomainEntityRevision(Class<T> type, String id, int revision) throws StorageException {
