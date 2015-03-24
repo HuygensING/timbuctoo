@@ -667,7 +667,7 @@ public class Neo4JStorageTest {
   @Test
   public void getDomainEntityRevisionReturnsTheDomainEntityWithTheRequestedRevision() throws Exception {
     Node nodeWithSameRevision = aNode().withRevision(FIRST_REVISION).withAPID().build();
-    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).withNode(nodeWithSameRevision).foundInDB(dbMock);
+    nodeWithRevisionFound(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION, nodeWithSameRevision);
 
     NodeConverter<SubADomainEntity> converter = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
     when(converter.convertToEntity(nodeWithSameRevision)).thenReturn(aDomainEntity().withAPid().build());
@@ -681,13 +681,21 @@ public class Neo4JStorageTest {
     verify(transactionMock).success();
   }
 
+  private void nodeWithRevisionFound(Class<SubADomainEntity> type, String id, int revision, Node node) {
+    when(neo4JLowLevelAPIMock.getNodeWithRevision(type, id, revision)).thenReturn(node);
+  }
+
+  private void noNodeWithRevisionFound(Class<SubADomainEntity> type, String id, int revision) {
+    when(neo4JLowLevelAPIMock.getNodeWithRevision(type, id, revision)).thenReturn(null);
+  }
+
   @Test
   public void getDomainEntityRevisionReturnsNullIfTheFoundEntityHasNoPID() throws Exception {
-    Node nodeWithSameRevision = aNode().withRevision(FIRST_REVISION).build();
-    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).withNode(nodeWithSameRevision).foundInDB(dbMock);
+    Node nodeWithoutPID = aNode().withRevision(FIRST_REVISION).build();
+    nodeWithRevisionFound(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION, nodeWithoutPID);
 
     NodeConverter<SubADomainEntity> nodeConverter = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
-    when(nodeConverter.convertToEntity(nodeWithSameRevision)).thenReturn(aDomainEntity().build());
+    when(nodeConverter.convertToEntity(nodeWithoutPID)).thenReturn(aDomainEntity().build());
 
     // action
     SubADomainEntity actualEntity = instance.getDomainEntityRevision(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION);
@@ -700,7 +708,7 @@ public class Neo4JStorageTest {
   @Test
   public void getDomainEntityRevisionReturnsNullIfTheEntityCannotBeFound() throws Exception {
     // setup
-    anEmptySearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
+    noNodeWithRevisionFound(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION);
 
     // action
     SubADomainEntity entity = instance.getDomainEntityRevision(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION);
@@ -714,7 +722,7 @@ public class Neo4JStorageTest {
   public void getDomainEntityRevisionReturnsNullIfTheRevisionCannotBeFound() throws Exception {
     // setup
     Node nodeWithDifferentRevision = aNode().withRevision(SECOND_REVISION).withAPID().build();
-    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).withNode(nodeWithDifferentRevision).foundInDB(dbMock);
+    nodeWithRevisionFound(DOMAIN_ENTITY_TYPE, ID, SECOND_REVISION, nodeWithDifferentRevision);
 
     // action
     SubADomainEntity entity = instance.getDomainEntityRevision(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION);
@@ -728,7 +736,7 @@ public class Neo4JStorageTest {
   public void getDomainEntityRevisionThrowsAStorageExceptionIfTheEntityCannotBeInstantiated() throws Exception {
     // setup
     Node nodeWithSameRevision = aNode().withRevision(FIRST_REVISION).withAPID().build();
-    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).withNode(nodeWithSameRevision).foundInDB(dbMock);
+    nodeWithRevisionFound(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION, nodeWithSameRevision);
 
     NodeConverter<SubADomainEntity> converter = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
     when(converter.convertToEntity(nodeWithSameRevision)).thenThrow(new InstantiationException());
@@ -745,7 +753,7 @@ public class Neo4JStorageTest {
   @Test(expected = ConversionException.class)
   public void getDomainEntityRevisionThrowsAConversionExceptionIfTheEntityCannotBeConverted() throws Exception {
     Node nodeWithSameRevision = aNode().withRevision(FIRST_REVISION).withAPID().build();
-    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).withNode(nodeWithSameRevision).foundInDB(dbMock);
+    nodeWithRevisionFound(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION, nodeWithSameRevision);
 
     NodeConverter<SubADomainEntity> converter = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
     when(converter.convertToEntity(nodeWithSameRevision)).thenThrow(new ConversionException());

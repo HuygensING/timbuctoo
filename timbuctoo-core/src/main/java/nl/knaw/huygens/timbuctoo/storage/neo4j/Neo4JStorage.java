@@ -33,8 +33,6 @@ import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
 import org.neo4j.helpers.Strings;
 
-import com.google.common.base.Objects;
-
 public class Neo4JStorage {
 
   public static final String RELATIONSHIP_ID_INDEX = "RelationShip id";
@@ -366,7 +364,7 @@ public class Neo4JStorage {
 
   public <T extends DomainEntity> T getDomainEntityRevision(Class<T> type, String id, int revision) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
-      Node node = getRevisionNode(type, id, revision);
+      Node node = neo4jLowLevelAPI.getNodeWithRevision(type, id, revision);
 
       if (node == null) {
         transaction.success();
@@ -537,27 +535,6 @@ public class Neo4JStorage {
     }
 
     return nodeWithHighestRevision;
-  }
-
-  private <T extends Entity> Node getRevisionNode(Class<T> type, String id, int revision) {
-    ResourceIterator<Node> iterator = findByProperty(type, ID_PROPERTY_NAME, id);
-
-    if (!iterator.hasNext()) {
-      return null;
-    }
-
-    Node nodeWithRevision = null;
-
-    for (; iterator.hasNext();) {
-      Node next = iterator.next();
-
-      if (Objects.equal(revision, getRevisionProperty(next))) {
-        nodeWithRevision = next;
-        break;
-      }
-    }
-
-    return nodeWithRevision;
   }
 
   private <T extends Entity> ResourceIterator<Node> findByProperty(Class<T> type, String propertyName, String id) {
