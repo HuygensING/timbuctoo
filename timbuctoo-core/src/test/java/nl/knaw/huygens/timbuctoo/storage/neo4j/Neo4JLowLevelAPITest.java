@@ -7,6 +7,8 @@ import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipMockBuilder.aR
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SearchResultBuilder.aSearchResult;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SearchResultBuilder.anEmptySearchResult;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -14,6 +16,9 @@ import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.List;
+
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 
 import org.junit.Before;
@@ -177,6 +182,40 @@ public class Neo4JLowLevelAPITest {
   }
 
   @Test
+  public void getAllNodesWithTimbuctooIdReturnsAListWithTheFoundNodes() {
+    // setup
+    Node node1 = aNode().withRevision(FIRST_REVISION).build();
+    Node node2 = aNode().withRevision(SECOND_REVISION).build();
+    Node node3 = aNode().withRevision(THIRD_REVISION).build();
+
+    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
+        .withNode(node1) //
+        .andNode(node3) //
+        .andNode(node2) //
+        .foundInDB(dbMock);
+
+    // action
+    List<Node> foundNodes = instance.getNodesWithId(DOMAIN_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(foundNodes, containsInAnyOrder(node1, node2, node3));
+  }
+
+  @Test
+  public void getAllNodesWithTimbuctooIdReturnsAnEmptyListWhenNoNodesAreFound() {
+    // setup
+    anEmptySearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
+        .foundInDB(dbMock);
+
+    // action
+    List<Node> foundNodes = instance.getNodesWithId(DOMAIN_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(foundNodes, is(empty()));
+
+  }
+
+  @Test
   public void getLatestRelationshipReturnsTheRelationshipWithTheHighestRevisionWithId() {
     // setup
     Relationship relationshipThirdRevision = aRelationship().withRevision(THIRD_REVISION).build();
@@ -255,4 +294,5 @@ public class Neo4JLowLevelAPITest {
     assertThat(actualRelationship, is(nullValue()));
     transactionSuccess();
   }
+
 }

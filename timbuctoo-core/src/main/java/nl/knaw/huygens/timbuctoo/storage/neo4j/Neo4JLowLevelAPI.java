@@ -2,6 +2,9 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
+
+import java.util.List;
+
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -17,6 +20,8 @@ import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
+
+import com.google.common.collect.Lists;
 
 public class Neo4JLowLevelAPI {
   public static final String RELATIONSHIP_ID_INDEX = "RelationShip id";
@@ -86,6 +91,17 @@ public class Neo4JLowLevelAPI {
     return iterator;
   }
 
+  public <T extends Entity> List<Node> getNodesWithId(Class<T> type, String id) {
+    List<Node> nodes = Lists.newArrayList();
+    ResourceIterator<Node> iterator = findByProperty(type, ID_PROPERTY_NAME, id);
+
+    for (; iterator.hasNext();) {
+      nodes.add(iterator.next());
+    }
+
+    return nodes;
+  }
+
   public Relationship getLatestRelationship(String id) {
     try (Transaction transaction = db.beginTx()) {
       ResourceIterator<Relationship> iterator = getFromIndex(id);
@@ -131,4 +147,5 @@ public class Neo4JLowLevelAPI {
     ResourceIterator<Relationship> iterator = indexHits.iterator();
     return iterator;
   }
+
 }
