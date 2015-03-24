@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 
 import java.util.Date;
 import java.util.Iterator;
@@ -18,20 +17,15 @@ import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.UpdateException;
-import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConverterFactory;
 
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.index.Index;
-import org.neo4j.graphdb.index.IndexHits;
 
 import com.google.inject.Inject;
 
@@ -39,14 +33,12 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   public static final String RELATIONSHIP_ID_INDEX = "RelationShip id";
 
-  private final PropertyContainerConverterFactory propertyContainerConverterFactory;
   private final GraphDatabaseService db;
   private final Neo4JStorage neo4JStorage;
 
   @Inject
-  public Neo4JLegacyStorageWrapper(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, Neo4JStorage neo4JStorage) {
+  public Neo4JLegacyStorageWrapper(GraphDatabaseService db, Neo4JStorage neo4JStorage) {
     this.db = db;
-    this.propertyContainerConverterFactory = propertyContainerConverterFactory;
     this.neo4JStorage = neo4JStorage;
   }
 
@@ -72,11 +64,6 @@ public class Neo4JLegacyStorageWrapper implements Storage {
     return neo4JStorage.addSystemEntity(type, entity);
   }
 
-  private <T extends Entity> void updateRevision(T entity) {
-    int rev = entity.getRev();
-    entity.setRev(++rev);
-  }
-
   @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
@@ -92,64 +79,14 @@ public class Neo4JLegacyStorageWrapper implements Storage {
     neo4JStorage.updateSystemEntity(type, entity);
   }
 
-  private <T extends Entity> String revisionNotFoundMessage(Class<T> type, T entity, int actualLatestRev) {
-    return String.format("\"%s\" with id \"%s\" and revision \"%d\" found. Revision \"%d\" wanted.", type.getSimpleName(), entity.getId(), entity.getRev(), actualLatestRev);
-  }
-
-  private <T extends Entity> String entityNotFoundMessageFor(Class<T> type, T entity) {
-    return String.format("\"%s\" with id \"%s\" cannot be found.", type.getSimpleName(), entity.getId());
-  }
-
-  private <T extends Entity> void updateAdministrativeValues(T entity) {
-    entity.setModified(Change.newInternalInstance());
-    updateRevision(entity);
-  }
-
   @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
     if (Relation.class.isAssignableFrom(type)) {
-      removePID(entity);
-      updateRelation((Class<? extends Relation>) type, (Relation) entity);
+      neo4JStorage.updateRelation((Class<? extends Relation>) type, (Relation) entity, change);
     } else {
       neo4JStorage.updateDomainEntity(type, entity, change);
     }
-  }
-
-  @SuppressWarnings("unchecked")
-  private <T extends Relation> void updateRelation(Class<T> type, Relation relation) throws StorageException {
-    try (Transaction transaction = db.beginTx()) {
-      Relationship relationship = getLatestFromIndex(relation.getId(), transaction);
-
-      T entity = (T) relation;
-      if (relationship == null) {
-        transaction.failure();
-        throw new UpdateException(entityNotFoundMessageFor(type, entity));
-      }
-
-      int rev = getRevision(relationship);
-      if (rev != relation.getRev()) {
-        transaction.failure();
-        throw new UpdateException(revisionNotFoundMessage(type, entity, rev));
-      }
-
-      updateAdministrativeValues(relation);
-
-      RelationshipConverter<T> converter = propertyContainerConverterFactory.createForRelation(type);
-      try {
-        converter.updatePropertyContainer(relationship, entity);
-        converter.updateModifiedAndRev(relationship, entity);
-        transaction.success();
-      } catch (ConversionException e) {
-        transaction.failure();
-        throw e;
-      }
-
-    }
-  }
-
-  private <T extends DomainEntity> void removePID(T entity) {
-    entity.setPid(null);
   }
 
   @SuppressWarnings("unchecked")
@@ -263,63 +200,6 @@ public class Neo4JLegacyStorageWrapper implements Storage {
       return neo4JStorage.getEntity(type, id);
     }
 
-  }
-
-  private Relationship getLatestFromIndex(String id, Transaction transaction) {
-    ResourceIterator<Relationship> iterator = getFromIndex(id);
-    if (!iterator.hasNext()) {
-      return null;
-    }
-    Relationship relationshipWithHighestRevision = iterator.next();
-
-    for (; iterator.hasNext();) {
-      Relationship next = iterator.next();
-
-      if (getRevision(next) > getRevision(relationshipWithHighestRevision)) {
-        relationshipWithHighestRevision = next;
-      }
-    }
-    return relationshipWithHighestRevision;
-  }
-
-  private ResourceIterator<Relationship> getFromIndex(String id) {
-    Index<Relationship> index = db.index().forRelationships(RELATIONSHIP_ID_INDEX);
-
-    IndexHits<Relationship> indexHits = index.get(ID_PROPERTY_NAME, id);
-
-    ResourceIterator<Relationship> iterator = indexHits.iterator();
-    return iterator;
-  }
-
-  /**
-   * Retrieves all of {@code type} with {@code id} 
-   * and returns the one with the highest revision number.
-   * @param type the type to get the latest from
-   * @param id the id to get the latest from
-   * @return the node of type and id with the highest revision.
-   */
-  private <T extends Entity> Node getLatestById(Class<T> type, String id) {
-    ResourceIterator<Node> iterator = findByProperty(type, ID_PROPERTY_NAME, id);
-
-    if (!iterator.hasNext()) {
-      return null;
-    }
-
-    Node nodeWithHighestRevision = iterator.next();
-
-    for (; iterator.hasNext();) {
-      Node next = iterator.next();
-
-      if (getRevision(next) > getRevision(nodeWithHighestRevision)) {
-        nodeWithHighestRevision = next;
-      }
-    }
-
-    return nodeWithHighestRevision;
-  }
-
-  private int getRevision(PropertyContainer propertyContainer) {
-    return (int) propertyContainer.getProperty(REVISION_PROPERTY_NAME);
   }
 
   @Override

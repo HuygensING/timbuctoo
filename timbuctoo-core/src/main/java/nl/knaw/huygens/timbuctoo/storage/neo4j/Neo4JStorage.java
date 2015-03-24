@@ -269,6 +269,40 @@ public class Neo4JStorage {
     }
   }
 
+  @SuppressWarnings("unchecked")
+  public <T extends Relation> void updateRelation(Class<T> type, Relation relation, Change change) throws StorageException {
+
+    try (Transaction transaction = db.beginTx()) {
+      Relationship relationship = getLatestRelationship(relation.getId());
+
+      T entity = (T) relation;
+      if (relationship == null) {
+        transaction.failure();
+        throw new UpdateException(entityNotFoundMessageFor(type, entity));
+      }
+
+      int rev = getRevisionProperty(relationship);
+      if (rev != relation.getRev()) {
+        transaction.failure();
+        throw new UpdateException(revisionNotFoundMessage(type, entity, rev));
+      }
+
+      removePID(relation);
+      updateAdministrativeValues(relation);
+
+      RelationshipConverter<T> converter = propertyContainerConverterFactory.createForRelation(type);
+      try {
+        converter.updatePropertyContainer(relationship, entity);
+        converter.updateModifiedAndRev(relationship, entity);
+        transaction.success();
+      } catch (ConversionException e) {
+        transaction.failure();
+        throw e;
+      }
+
+    }
+  }
+
   private <T extends Entity> void updateAdministrativeValues(T entity) {
     entity.setModified(Change.newInternalInstance());
     updateRevision(entity);

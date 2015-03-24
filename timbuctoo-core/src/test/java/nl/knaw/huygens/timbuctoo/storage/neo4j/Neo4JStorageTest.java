@@ -1049,13 +1049,194 @@ public class Neo4JStorageTest {
     }
   }
 
-  //  private <T extends Relation> RelationshipConverter<T> propertyContainerConverterFactoryHasRelationshipConverterFor(Class<T> type) {
-  //    @SuppressWarnings("unchecked")
-  //    RelationshipConverter<T> relationshipConverter = mock(RelationshipConverter.class);
-  //    when(propertyContainerConverterFactoryMock.createForRelation(type)).thenReturn(relationshipConverter);
-  //
-  //    return relationshipConverter;
-  //  }
+  @Test
+  public void updateRelationRetrievesTheRelationAndUpdateItsValuesAndAdministrativeValues() throws Exception {
+    // setup
+    Relationship relationship = aRelationship().withRevision(FIRST_REVISION).build();
+    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
+        .containsForId(ID) //
+        .relationship(relationship) //
+        .foundInDB(dbMock);
+
+    Change oldModified = CHANGE;
+    SubARelation relation = aRelation()//
+        .withId(ID) //
+        .withRevision(FIRST_REVISION) //
+        .withModified(oldModified) //
+        .build();
+
+    RelationshipConverter<SubARelation> converterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+
+    // action
+    instance.updateRelation(RELATION_TYPE, relation, CHANGE);
+
+    // verify
+    InOrder inOrder = inOrder(dbMock, transactionMock, converterMock);
+    inOrder.verify(dbMock).beginTx();
+    inOrder.verify(converterMock).updatePropertyContainer( //
+        argThat(equalTo(relationship)), //
+        argThat(likeDomainEntity(RELATION_TYPE) //
+            .withId(ID) //
+            .withAModifiedValueNotEqualTo(oldModified) //
+            .withRevision(SECOND_REVISION)));
+    inOrder.verify(converterMock).updateModifiedAndRev( //
+        argThat(equalTo(relationship)), //
+        argThat(likeDomainEntity(RELATION_TYPE) //
+            .withId(ID) //
+            .withAModifiedValueNotEqualTo(oldModified) //
+            .withRevision(SECOND_REVISION)));
+    inOrder.verify(transactionMock).success();
+  }
+
+  @Test
+  public void updateRelationRemovesThePIDOfTheRelationBeforeTheUpdate() throws Exception {
+    // setup
+    Relationship relationship = aRelationship().withRevision(FIRST_REVISION).build();
+    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
+        .containsForId(ID) //
+        .relationship(relationship) //
+        .foundInDB(dbMock);
+
+    Change oldModified = CHANGE;
+    SubARelation relation = aRelation()//
+        .withId(ID) //
+        .withRevision(FIRST_REVISION) //
+        .withModified(oldModified) //
+        .withAPID() //
+        .build();
+
+    RelationshipConverter<SubARelation> converterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+
+    // action
+    instance.updateRelation(RELATION_TYPE, relation, CHANGE);
+
+    // verify
+    verify(converterMock).updatePropertyContainer( //
+        argThat(equalTo(relationship)), //
+        argThat(likeDomainEntity(RELATION_TYPE).withoutAPID()));
+    verify(converterMock).updateModifiedAndRev( //
+        argThat(equalTo(relationship)), //
+        argThat(likeDomainEntity(RELATION_TYPE).withoutAPID()));
+  }
+
+  @Test
+  public void updateRelationUpdatesTheLatestIfMultipleAreFound() throws Exception {
+    // setup
+    Relationship relationshipWithHighestRev = aRelationship().withRevision(SECOND_REVISION).build();
+    Relationship otherRelationShip = aRelationship().withRevision(FIRST_REVISION).build();
+    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
+        .relationship(relationshipWithHighestRev) //
+        .andRelationship(otherRelationShip) //
+        .foundInDB(dbMock);
+
+    SubARelation relation = aRelation().withId(ID).withRevision(SECOND_REVISION).build();
+
+    RelationshipConverter<SubARelation> converterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+
+    // action
+    instance.updateRelation(RELATION_TYPE, relation, CHANGE);
+
+    // verify
+    verify(converterMock).updatePropertyContainer(relationshipWithHighestRev, relation);
+    verify(converterMock).updateModifiedAndRev(relationshipWithHighestRev, relation);
+  }
+
+  @Test(expected = UpdateException.class)
+  public void updateRelationThrowsAnUpdateExceptionWhenTheRelationshipToUpdateCannotBeFound() throws Exception {
+    // setup
+    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsNothingForId(ID).foundInDB(dbMock);
+    SubARelation relation = aRelation()//
+        .withId(ID)//
+        .build();
+    try {
+      // action
+      instance.updateRelation(RELATION_TYPE, relation, CHANGE);
+    } finally {
+      // verify
+      verify(dbMock).beginTx();
+
+      verifyTransactionFailed();
+    }
+  }
+
+  @Test(expected = UpdateException.class)
+  public void updateRelationThrowsAnUpdateExceptionWhenRevOfTheRelationshipIsHigherThanThatOfTheEntity() throws Exception {
+    // setup
+    Relationship relationshipWithHigherRev = aRelationship().withRevision(SECOND_REVISION).build();
+    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
+        .containsForId(ID) //
+        .relationship(relationshipWithHigherRev) //
+        .foundInDB(dbMock);
+
+    SubARelation relation = aRelation()//
+        .withId(ID)//
+        .withRevision(FIRST_REVISION) //
+        .build();
+
+    try {
+      // action
+      instance.updateRelation(RELATION_TYPE, relation, CHANGE);
+    } finally {
+      // verify
+      verify(dbMock).beginTx();
+
+      verifyTransactionFailed();
+    }
+  }
+
+  @Test(expected = UpdateException.class)
+  public void updateRelationThrowsAnUpdateExceptionWhenRevOfTheRelationshipIsLowerThanThatOfTheEntity() throws Exception {
+    // setup
+    Relationship relationshipWithLowerRev = aRelationship().withRevision(FIRST_REVISION).build();
+    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
+        .containsForId(ID) //
+        .relationship(relationshipWithLowerRev) //
+        .foundInDB(dbMock);
+
+    SubARelation relation = aRelation()//
+        .withId(ID)//
+        .withRevision(SECOND_REVISION) //
+        .build();
+
+    try {
+      // action
+      instance.updateRelation(RELATION_TYPE, relation, CHANGE);
+    } finally {
+      // verify
+      verify(dbMock).beginTx();
+
+      verifyTransactionFailed();
+    }
+  }
+
+  @Test(expected = ConversionException.class)
+  public void updateRelationThrowsAConversionExceptionWhenTheRelationshipConverterThrowsOne() throws Exception {
+    // setup
+    Relationship relationship = aRelationship().withRevision(FIRST_REVISION).build();
+    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
+        .containsForId(ID) //
+        .relationship(relationship) //
+        .foundInDB(dbMock);
+
+    Change oldModified = CHANGE;
+    SubARelation relation = aRelation()//
+        .withId(ID) //
+        .withRevision(FIRST_REVISION) //
+        .build();
+
+    RelationshipConverter<SubARelation> converterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    doThrow(ConversionException.class).when(converterMock).updatePropertyContainer(relationship, relation);
+
+    try {
+      // action
+      instance.updateRelation(RELATION_TYPE, relation, oldModified);
+    } finally {
+      // verify
+      verify(dbMock).beginTx();
+      verify(converterMock).updatePropertyContainer(relationship, relation);
+      verifyTransactionFailed();
+    }
+  }
 
   @Test
   public void setRelationPIDSetsThePIDOfTheRelationAndDuplicatesIt() throws Exception {
