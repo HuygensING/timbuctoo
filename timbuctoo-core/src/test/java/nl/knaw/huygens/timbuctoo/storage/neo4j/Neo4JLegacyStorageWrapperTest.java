@@ -5,7 +5,6 @@ import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
@@ -57,9 +56,7 @@ public abstract class Neo4JLegacyStorageWrapperTest {
     nodeDuplicatorMock = mock(NodeDuplicator.class);
     idGeneratorMock = mock(IdGenerator.class);
 
-    TypeRegistry typeRegistry = TypeRegistry.getInstance().init("timbuctoo.model test.model");
-
-    instance = new Neo4JLegacyStorageWrapper(dbMock, propertyContainerConverterFactoryMock, idGeneratorMock, typeRegistry, neo4JStorageMock);
+    instance = new Neo4JLegacyStorageWrapper(dbMock, propertyContainerConverterFactoryMock, idGeneratorMock, neo4JStorageMock);
   }
 
   private void setupDBTransaction() {

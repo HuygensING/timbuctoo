@@ -12,7 +12,6 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
@@ -23,7 +22,6 @@ import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConverterFactory;
 
 import org.neo4j.graphdb.DynamicLabel;
-import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
@@ -44,16 +42,13 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   private final PropertyContainerConverterFactory propertyContainerConverterFactory;
   private final GraphDatabaseService db;
   private final IdGenerator idGenerator;
-  private final TypeRegistry typeRegistry;
   private final Neo4JStorage neo4JStorage;
 
   @Inject
-  public Neo4JLegacyStorageWrapper(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, IdGenerator idGenerator, TypeRegistry typeRegistry,
-      Neo4JStorage neo4JStorage) {
+  public Neo4JLegacyStorageWrapper(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, IdGenerator idGenerator, Neo4JStorage neo4JStorage) {
     this.db = db;
     this.propertyContainerConverterFactory = propertyContainerConverterFactory;
     this.idGenerator = idGenerator;
-    this.typeRegistry = typeRegistry;
     this.neo4JStorage = neo4JStorage;
   }
 
@@ -121,62 +116,10 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   @Override
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
     if (Relation.class.isAssignableFrom(type)) {
-      return addRelationDomainEntity((Class<? extends Relation>) type, (Relation) entity);
+      return neo4JStorage.addRelation((Class<? extends Relation>) type, (Relation) entity, change);
     } else {
       return neo4JStorage.addDomainEntity(type, entity, change);
     }
-  }
-
-  @SuppressWarnings("unchecked")
-  private <T extends Relation> String addRelationDomainEntity(Class<T> type, Relation relation) throws StorageException {
-    try (Transaction transaction = db.beginTx()) {
-      Node source = getRelationPart(transaction, typeRegistry.getDomainEntityType(relation.getSourceType()), "Source", relation.getSourceId());
-      Node target = getRelationPart(transaction, typeRegistry.getDomainEntityType(relation.getTargetType()), "Target", relation.getTargetId());
-      Node relationTypeNode = getRelationPart(transaction, typeRegistry.getSystemEntityType(relation.getTypeType()), "RelationType", relation.getTypeId());
-
-      RelationshipConverter<T> relationConverter = propertyContainerConverterFactory.createCompositeForRelation(type);
-
-      String id = addAdministrativeValues(type, (T) relation);
-
-      try {
-        String relationTypeName = getRegularRelationName(relationTypeNode);
-        Relationship relationship = source.createRelationshipTo(target, DynamicRelationshipType.withName(relationTypeName));
-
-        relationConverter.addValuesToPropertyContainer(relationship, (T) relation);
-
-        db.index().forRelationships(RELATIONSHIP_ID_INDEX).add(relationship, ID_PROPERTY_NAME, id);
-        transaction.success();
-      } catch (ConversionException e) {
-        transaction.failure();
-        throw e;
-      } catch (InstantiationException | IllegalAccessException e) {
-        transaction.failure();
-        throw new StorageException(e);
-      }
-
-      return id;
-    }
-  }
-
-  private String getRegularRelationName(Node relationTypeNode) throws ConversionException, InstantiationException, IllegalAccessException {
-    NodeConverter<RelationType> relationTypeConverter = propertyContainerConverterFactory.createForType(RelationType.class);
-    RelationType relationType = relationTypeConverter.convertToEntity(relationTypeNode);
-
-    String relationTypeName = relationType.getRegularName();
-    return relationTypeName;
-  }
-
-  private Node getRelationPart(Transaction transaction, Class<? extends Entity> type, String partName, String partId) throws StorageException {
-    Node part = getLatestById(type, partId);
-    if (part == null) {
-      transaction.failure();
-      throw new StorageException(createCannotFindString(partName, type, partId));
-    }
-    return part;
-  }
-
-  private String createCannotFindString(String relationPart, Class<? extends Entity> type, String id) {
-    return String.format("%s of type \"%s\" with id \"%s\" could not be found.", relationPart, type, id);
   }
 
   @Override
