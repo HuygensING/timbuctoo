@@ -25,7 +25,7 @@ import org.neo4j.graphdb.index.IndexHits;
 
 import com.google.common.collect.Lists;
 
-public class Neo4JLowLevelAPI {
+class Neo4JLowLevelAPI {
   public static final String RELATIONSHIP_ID_INDEX = "RelationShip id";
   private final GraphDatabaseService db;
 
