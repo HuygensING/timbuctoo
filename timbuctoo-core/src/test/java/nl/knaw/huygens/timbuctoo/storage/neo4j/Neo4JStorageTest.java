@@ -1492,9 +1492,7 @@ public class Neo4JStorageTest {
   public void setRelationPIDSetsThePIDOfTheRelationAndDuplicatesIt() throws Exception {
     // setup
     Relationship relationship = aRelationship().withRevision(SECOND_REVISION).build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
-        .relationship(relationship) //
-        .foundInDB(dbMock);
+    latestRelationshipFoundForId(ID, relationship);
 
     SubARelation entity = aRelation().build();
 
@@ -1506,36 +1504,11 @@ public class Neo4JStorageTest {
       instance.setRelationPID(RELATION_TYPE, ID, PID);
     } finally {
       // verify
-      InOrder inOrder = inOrder(converter, relationshipDuplicatorMock, transactionMock);
-      inOrder.verify(converter).addValuesToPropertyContainer(//
+      verify(converter).addValuesToPropertyContainer(//
           argThat(equalTo(relationship)), //
           argThat(likeDomainEntity(RELATION_TYPE)//
               .withPID(PID)));
-      inOrder.verify(relationshipDuplicatorMock).saveDuplicate(relationship);
-      inOrder.verify(transactionMock).success();
-    }
-  }
-
-  @Test
-  public void setRelationPIDSetsToTheLatest() throws Exception {
-    // setup
-    Relationship latestRelationship = aRelationship().withRevision(SECOND_REVISION).build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
-        .relationship(aRelationship().withRevision(FIRST_REVISION).build()) //
-        .andRelationship(latestRelationship) //
-        .foundInDB(dbMock);
-
-    SubARelation entity = aRelation().build();
-
-    RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
-    when(converter.convertToEntity(latestRelationship)).thenReturn(entity);
-
-    try {
-      // action
-      instance.setRelationPID(RELATION_TYPE, ID, PID);
-    } finally {
-      // verify
-      verify(converter).addValuesToPropertyContainer(latestRelationship, entity);
+      verify(relationshipDuplicatorMock).saveDuplicate(relationship);
       verifyTransactionSucceeded();
     }
   }
@@ -1543,22 +1516,19 @@ public class Neo4JStorageTest {
   @Test(expected = IllegalStateException.class)
   public void setRelationPIDThrowsAnIllegalStateExceptionIfTheRelationAlreadyHasAPID() throws Exception {
     // setup
-    Relationship relationship = aRelationship().withAPID().build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
-        .relationship(relationship) //
-        .foundInDB(dbMock);
+    Relationship relationshipWithPID = aRelationship().withAPID().build();
+    latestRelationshipFoundForId(ID, relationshipWithPID);
 
     SubARelation entityWithAPID = aRelation().withAPID().build();
 
     RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
-    when(converter.convertToEntity(relationship)).thenReturn(entityWithAPID);
+    when(converter.convertToEntity(relationshipWithPID)).thenReturn(entityWithAPID);
 
     try {
       // action
       instance.setRelationPID(RELATION_TYPE, ID, PID);
     } finally {
       // verify
-      verify(converter).convertToEntity(relationship);
       verifyTransactionFailed();
     }
   }
@@ -1567,9 +1537,7 @@ public class Neo4JStorageTest {
   public void setRelationPIDThrowsAConversionExceptionIfTheRelationshipCannotBeConverted() throws Exception {
     // setup
     Relationship relationship = aRelationship().build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
-        .relationship(relationship) //
-        .foundInDB(dbMock);
+    latestRelationshipFoundForId(ID, relationship);
 
     RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
     when(converter.convertToEntity(relationship)).thenThrow(new ConversionException());
@@ -1579,7 +1547,6 @@ public class Neo4JStorageTest {
       instance.setRelationPID(RELATION_TYPE, ID, PID);
     } finally {
       // verify
-      verify(converter).convertToEntity(relationship);
       verifyTransactionFailed();
     }
   }
@@ -1588,9 +1555,7 @@ public class Neo4JStorageTest {
   public void setRelationPIDThrowsAConversionsExceptionWhenTheUpdatedEntityCannotBeConvertedToARelationship() throws Exception {
     // setup
     Relationship relationship = aRelationship().withRevision(SECOND_REVISION).build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
-        .relationship(relationship) //
-        .foundInDB(dbMock);
+    latestRelationshipFoundForId(ID, relationship);
 
     SubARelation entity = aRelation().build();
 
@@ -1603,10 +1568,7 @@ public class Neo4JStorageTest {
       instance.setRelationPID(RELATION_TYPE, ID, PID);
     } finally {
       // verify
-      verify(converter).addValuesToPropertyContainer(//
-          argThat(equalTo(relationship)), //
-          argThat(likeDomainEntity(RELATION_TYPE)//
-              .withPID(PID)));
+      verifyTransactionFailed();
     }
   }
 
@@ -1614,9 +1576,7 @@ public class Neo4JStorageTest {
   public void setRelationPIDThrowsAStorageExceptionIfTheRelationCannotBeInstatiated() throws Exception {
     // setup
     Relationship relationship = aRelationship().build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
-        .relationship(relationship) //
-        .foundInDB(dbMock);
+    latestRelationshipFoundForId(ID, relationship);
 
     RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
     when(converter.convertToEntity(relationship)).thenThrow(new InstantiationException());
@@ -1633,7 +1593,7 @@ public class Neo4JStorageTest {
   @Test(expected = NoSuchEntityException.class)
   public void setRelationPIDThrowsANoSuchEntityExceptionIfTheRelationshipCannotBeFound() throws Exception {
     // setup
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsNothingForId(ID).foundInDB(dbMock);
+    noLatestRelationshipFoundForId(ID);
 
     try {
       // action

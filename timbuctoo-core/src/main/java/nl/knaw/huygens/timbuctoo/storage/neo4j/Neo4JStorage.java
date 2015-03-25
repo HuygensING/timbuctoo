@@ -23,10 +23,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.index.Index;
-import org.neo4j.graphdb.index.IndexHits;
 import org.neo4j.helpers.Strings;
 
 public class Neo4JStorage {
@@ -460,7 +457,7 @@ public class Neo4JStorage {
 
   public <T extends Relation> void setRelationPID(Class<T> type, String id, String pid) throws NoSuchEntityException, ConversionException, StorageException {
     try (Transaction transaction = db.beginTx()) {
-      Relationship relationship = getLatestRelationship(id);
+      Relationship relationship = neo4jLowLevelAPI.getLatestRelationship(id);
 
       if (relationship == null) {
         transaction.failure();
@@ -505,31 +502,4 @@ public class Neo4JStorage {
   private int getRevisionProperty(PropertyContainer propertyContainer) {
     return (int) propertyContainer.getProperty(REVISION_PROPERTY_NAME);
   }
-
-  private Relationship getLatestRelationship(String id) {
-    ResourceIterator<Relationship> iterator = getFromIndex(id);
-    if (!iterator.hasNext()) {
-      return null;
-    }
-    Relationship relationshipWithHighestRevision = iterator.next();
-
-    for (; iterator.hasNext();) {
-      Relationship next = iterator.next();
-
-      if (getRevisionProperty(next) > getRevisionProperty(relationshipWithHighestRevision)) {
-        relationshipWithHighestRevision = next;
-      }
-    }
-    return relationshipWithHighestRevision;
-  }
-
-  private ResourceIterator<Relationship> getFromIndex(String id) {
-    Index<Relationship> index = db.index().forRelationships(RELATIONSHIP_ID_INDEX);
-
-    IndexHits<Relationship> indexHits = index.get(ID_PROPERTY_NAME, id);
-
-    ResourceIterator<Relationship> iterator = indexHits.iterator();
-    return iterator;
-  }
-
 }
