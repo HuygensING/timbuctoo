@@ -1,7 +1,8 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.SystemRelationshipType.VERSION_OF;
+
 import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
@@ -13,7 +14,6 @@ import org.neo4j.graphdb.Relationship;
 public class NodeDuplicator {
 
   private final GraphDatabaseService db;
-  static final DynamicRelationshipType VERSION_OF_RELATIONSHIP_TYPE = DynamicRelationshipType.withName("versionOf");
 
   public NodeDuplicator(GraphDatabaseService db) {
     this.db = db;
@@ -57,7 +57,7 @@ public class NodeDuplicator {
   }
 
   private void addVersionOfRelationToDuplicate(Node duplicateNode, Node original) {
-    duplicateNode.createRelationshipTo(original, VERSION_OF_RELATIONSHIP_TYPE);
+    duplicateNode.createRelationshipTo(original, VERSION_OF);
   }
 
   private static interface RelationshipDuplicator {
