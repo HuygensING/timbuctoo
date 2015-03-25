@@ -65,7 +65,7 @@ public class Neo4JLowLevelAPITest {
     Node node = aNode().withRevision(revision).build();
 
     // action
-    int actualRevision = instance.getRevisionProperty(node);
+    int actualRevision = Neo4JLowLevelAPI.getRevisionProperty(node);
 
     // verify
     assertThat(actualRevision, is(equalTo(revision)));
@@ -77,7 +77,7 @@ public class Neo4JLowLevelAPITest {
     Node nodeWithoutRevision = aNode().build();
 
     // action
-    int actualRevision = instance.getRevisionProperty(nodeWithoutRevision);
+    int actualRevision = Neo4JLowLevelAPI.getRevisionProperty(nodeWithoutRevision);
 
     // verify
     assertThat(actualRevision, is(equalTo(0)));
@@ -89,7 +89,7 @@ public class Neo4JLowLevelAPITest {
     Node nullNode = null;
 
     // action
-    int actualRevision = instance.getRevisionProperty(nullNode);
+    int actualRevision = Neo4JLowLevelAPI.getRevisionProperty(nullNode);
 
     // verify
     assertThat(actualRevision, is(equalTo(0)));

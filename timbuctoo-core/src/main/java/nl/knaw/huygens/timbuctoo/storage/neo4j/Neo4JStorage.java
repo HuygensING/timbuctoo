@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.Neo4JLowLevelAPI.getRevisionProperty;
 
 import java.util.Iterator;
 import java.util.List;
@@ -21,7 +21,6 @@ import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConve
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.Strings;
@@ -495,11 +494,4 @@ public class Neo4JStorage {
     }
   }
 
-  /* *************************************************************************************
-   * Low level API
-   * ************************************************************************************/
-
-  private int getRevisionProperty(PropertyContainer propertyContainer) {
-    return (int) propertyContainer.getProperty(REVISION_PROPERTY_NAME);
-  }
 }

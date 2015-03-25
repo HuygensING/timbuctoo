@@ -31,7 +31,7 @@ public class Neo4JLowLevelAPI {
     this.db = db;
   }
 
-  public int getRevisionProperty(PropertyContainer propertyContainer) {
+  public static int getRevisionProperty(PropertyContainer propertyContainer) {
     return propertyContainer != null && propertyContainer.hasProperty(REVISION_PROPERTY_NAME) ? //
     (int) propertyContainer.getProperty(REVISION_PROPERTY_NAME)
         : 0;
