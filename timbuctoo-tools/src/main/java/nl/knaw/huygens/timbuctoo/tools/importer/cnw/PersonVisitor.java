@@ -81,7 +81,7 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 
 		addElementHandler(new DomainsHandler(), "domains");
 
-		addElementHandler(new ActivityHandler(), "act");
+		//		addElementHandler(new ActivityHandler(), "act");
 		//			addElementHandler(new PoliticsHandler(), "politics");
 		//			addElementHandler(new OpmPoliticsHandler(), "opm_politics");
 		//			addElementHandler(new LevensbeschouwingHandler(), "levensbeschouwing");
@@ -101,6 +101,8 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 
 		addElementHandler(new NotitiesHandler(), "notities");
 		addElementHandler(new AantekeningenHandler(), "aantekeningen");
+		addElementHandler(new MembershipHandler(), "lidmaatschap");
+		addElementHandler(new PeriodicalHandler(), "periodiek");
 
 	}
 
@@ -231,10 +233,23 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 		}
 	}
 
-	private class ActivityHandler extends CaptureHandler<PersonContext> {
+	private class MembershipHandler extends CaptureHandler<PersonContext> {
 		@Override
 		public void handleContent(Element element, PersonContext context, String text) {
-			context.person.getMemberships().add(text);
+			String denormalized = denormalized(text, "memberships");
+			if (denormalized != null) {
+				context.person.getMemberships().add(denormalized);
+			}
+		}
+	}
+
+	private class PeriodicalHandler extends CaptureHandler<PersonContext> {
+		@Override
+		public void handleContent(Element element, PersonContext context, String text) {
+			String denormalized = denormalized(text, "periodics");
+			if (denormalized != null) {
+				context.person.getPeriodicals().add(denormalized);
+			}
 		}
 	}
 

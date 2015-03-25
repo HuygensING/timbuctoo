@@ -132,6 +132,7 @@ public class CNWConverter extends DefaultConverter {
 			out.close();
 
 			File personDescription = new File("import/CNW/person-short_description.csv");
+			FileUtils.write(personDescription, "koppelnaam;korte_omschrijving\n", false);
 			Set<Entry<String, String>> entrySet = shortDescriptionMap.entrySet();
 			for (Entry<String, String> entry : entrySet) {
 				String koppelnaam = entry.getKey();

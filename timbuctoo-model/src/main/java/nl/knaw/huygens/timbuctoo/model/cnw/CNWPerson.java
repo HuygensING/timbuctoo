@@ -7,7 +7,6 @@ import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.Person;
-import nl.knaw.huygens.timbuctoo.model.Person.Gender;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -28,6 +27,7 @@ public class CNWPerson extends Person {
 	private List<String> subdomains = Lists.newArrayList();
 	private List<String> characteristics = Lists.newArrayList();
 
+	private List<String> periodicals = Lists.newArrayList(); // Periodieken
 	private List<String> memberships = Lists.newArrayList(); // Lidmaatschappen : Om te zetten naar facet met sorteerbare lijst
 	private String biodesurl = "";//Bioport url, Link, mogelijkheid tot doorklikken
 	private String dbnlUrl = "";//Link, mogelijkheid tot doorklikken
@@ -78,6 +78,11 @@ public class CNWPerson extends Person {
 	@IndexAnnotation(fieldName = "dynamic_s_deathdatequalifier", canBeEmpty = true, isFaceted = false)
 	public String getDeathdateQualifier() {
 		return deathdateQualifier;
+	}
+
+	@IndexAnnotation(title = "Periodieken", fieldName = "dynamic_s_periodical", canBeEmpty = true, isFaceted = true)
+	public List<String> getPeriodicals() {
+		return periodicals;
 	}
 
 	@IndexAnnotation(title = "Lidmaatschap(pen)", fieldName = "dynamic_s_membership", canBeEmpty = true, isFaceted = true)
