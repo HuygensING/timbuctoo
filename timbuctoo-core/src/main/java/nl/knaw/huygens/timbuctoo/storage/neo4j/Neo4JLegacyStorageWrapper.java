@@ -17,8 +17,6 @@ import com.google.inject.Inject;
 
 public class Neo4JLegacyStorageWrapper implements Storage {
 
-  public static final String RELATIONSHIP_ID_INDEX = "RelationShip id";
-
   private final Neo4JStorage neo4JStorage;
 
   @Inject

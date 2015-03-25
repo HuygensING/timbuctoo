@@ -29,7 +29,7 @@ import com.google.inject.Inject;
 
 public class Neo4JStorage {
 
-  public static final String RELATIONSHIP_ID_INDEX = "RelationShip id";
+  private static final String RELATIONSHIP_ID_INDEX = "RelationShip id";
   private final GraphDatabaseService db;
   private final PropertyContainerConverterFactory propertyContainerConverterFactory;
   private final NodeDuplicator nodeDuplicator;
