@@ -26,7 +26,8 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   @Override
   public void createIndex(boolean unique, Class<? extends Entity> type, String... fields) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    // FIXME indexes should be created in a different way for Neo4J TIM-109
+    //    throw new UnsupportedOperationException("Yet to be implemented");
 
   }
 
