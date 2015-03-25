@@ -154,4 +154,8 @@ class Neo4JLowLevelAPI {
     return iterator;
   }
 
+  public void addRelationship(Relationship relationship, String id) {
+    db.index().forRelationships(RELATIONSHIP_ID_INDEX).add(relationship, ID_PROPERTY_NAME, id);
+  }
+
 }

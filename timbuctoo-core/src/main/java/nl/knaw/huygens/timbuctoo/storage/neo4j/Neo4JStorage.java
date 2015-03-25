@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.Neo4JLowLevelAPI.getRevisionProperty;
 
 import java.util.Iterator;
@@ -29,7 +28,6 @@ import com.google.inject.Inject;
 
 public class Neo4JStorage {
 
-  private static final String RELATIONSHIP_ID_INDEX = "RelationShip id";
   private final GraphDatabaseService db;
   private final PropertyContainerConverterFactory propertyContainerConverterFactory;
   private final NodeDuplicator nodeDuplicator;
@@ -111,7 +109,7 @@ public class Neo4JStorage {
 
         relationConverter.addValuesToPropertyContainer(relationship, (T) relation);
 
-        db.index().forRelationships(RELATIONSHIP_ID_INDEX).add(relationship, ID_PROPERTY_NAME, id);
+        neo4jLowLevelAPI.addRelationship(relationship, id);
         transaction.success();
       } catch (ConversionException e) {
         transaction.failure();

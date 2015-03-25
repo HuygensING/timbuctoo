@@ -1,9 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.DomainEntityMatcher.likeDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeMockBuilder.aNode;
-import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipIndexMockBuilder.aRelationshipIndexForName;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipMockBuilder.aRelationship;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipTypeMatcher.likeRelationshipType;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SearchResultBuilder.anEmptySearchResult;
@@ -51,7 +49,6 @@ import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.index.RelationshipIndex;
 
 import test.model.BaseDomainEntity;
 import test.model.TestSystemEntityWrapper;
@@ -920,7 +917,6 @@ public class Neo4JStorageTest {
 
     relationTypeWithRegularNameExists(name);
 
-    RelationshipIndex indexMock = aRelationshipIndexForName(Neo4JLowLevelAPI.RELATIONSHIP_ID_INDEX).foundInDB(dbMock);
     Relationship relationShipMock = mock(RELATIONSHIP_TYPE);
 
     RelationshipConverter<SubARelation> relationConverterMock = propertyContainerFactoryHasCompositeRelationshipConverterFor(RELATION_TYPE);
@@ -940,7 +936,7 @@ public class Neo4JStorageTest {
     // verify
     assertThat(id, is(equalTo(ID)));
 
-    InOrder inOrder = inOrder(dbMock, sourceNodeMock, relationConverterMock, indexMock, transactionMock);
+    InOrder inOrder = inOrder(dbMock, sourceNodeMock, relationConverterMock, transactionMock, neo4JLowLevelAPIMock);
 
     inOrder.verify(dbMock).beginTx();
     inOrder.verify(sourceNodeMock).createRelationshipTo(argThat(equalTo(targetNodeMock)), argThat(likeRelationshipType().withName(name)));
@@ -953,7 +949,7 @@ public class Neo4JStorageTest {
             .withAModifiedValue() //
             .withRevision(FIRST_REVISION)));
 
-    inOrder.verify(indexMock).add(relationShipMock, ID_PROPERTY_NAME, id);
+    inOrder.verify(neo4JLowLevelAPIMock).addRelationship(relationShipMock, id);
     inOrder.verify(transactionMock).success();
   }
 

@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
+import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.Neo4JLowLevelAPI.RELATIONSHIP_ID_INDEX;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeMockBuilder.aNode;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipIndexMockBuilder.aRelationshipIndexForName;
@@ -30,6 +31,7 @@ import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.index.RelationshipIndex;
 
 import test.model.projecta.SubADomainEntity;
 import test.model.projecta.SubARelation;
@@ -57,6 +59,19 @@ public class Neo4JLowLevelAPITest {
     dbMock = mock(GraphDatabaseService.class);
     transactionMock = mock(Transaction.class);
     when(dbMock.beginTx()).thenReturn(transactionMock);
+  }
+
+  @Test
+  public void addRelationshipAddsTheRelationshipToTheRelationshipIdIndex() {
+    // setup
+    Relationship relationship = aRelationship().build();
+    RelationshipIndex indexMock = aRelationshipIndexForName(Neo4JLowLevelAPI.RELATIONSHIP_ID_INDEX).foundInDB(dbMock);
+
+    // action
+    instance.addRelationship(relationship, ID);
+
+    // verify
+    verify(indexMock).add(relationship, ID_PROPERTY_NAME, ID);
   }
 
   @Test
