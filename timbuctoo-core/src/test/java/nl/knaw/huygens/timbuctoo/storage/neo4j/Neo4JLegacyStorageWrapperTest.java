@@ -420,4 +420,19 @@ public class Neo4JLegacyStorageWrapperTest {
     verify(neo4JStorageMock).close();
   }
 
+  @Test
+  public void isAvailableReturnsTheValueTheNeo4JStorageReturns() {
+    boolean available = true;
+    // setup
+    when(neo4JStorageMock.isAvailable()).thenReturn(available);
+
+    // action
+    boolean actualAvailable = instance.isAvailable();
+
+    // verify
+    assertThat(actualAvailable, is(equalTo(available)));
+
+    verify(neo4JStorageMock).isAvailable();
+  }
+
 }

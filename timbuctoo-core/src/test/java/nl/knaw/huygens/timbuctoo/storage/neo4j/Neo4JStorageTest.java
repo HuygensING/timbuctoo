@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.DomainEntityMatcher.likeDomainEntity;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.Neo4JStorage.REQUEST_TIMEOUT;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeMockBuilder.aNode;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipMockBuilder.aRelationship;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipTypeMatcher.likeRelationshipType;
@@ -1624,4 +1625,18 @@ public class Neo4JStorageTest {
     verify(dbMock).shutdown();
   }
 
+  @Test
+  public void isAvailableClassTheDBWithATimeout() {
+    // setup
+    boolean available = true;
+    when(dbMock.isAvailable(REQUEST_TIMEOUT)).thenReturn(available);
+
+    // action
+    boolean actualAvailable = instance.isAvailable();
+
+    // verify
+    assertThat(actualAvailable, is(equalTo(available)));
+
+    verify(dbMock).isAvailable(REQUEST_TIMEOUT);
+  }
 }

@@ -27,6 +27,7 @@ import org.neo4j.helpers.Strings;
 import com.google.inject.Inject;
 
 public class Neo4JStorage {
+  static final long REQUEST_TIMEOUT = 5000;
 
   private final GraphDatabaseService db;
   private final PropertyContainerConverterFactory propertyContainerConverterFactory;
@@ -499,4 +500,7 @@ public class Neo4JStorage {
     db.shutdown();
   }
 
+  public boolean isAvailable() {
+    return db.isAvailable(REQUEST_TIMEOUT);
+  }
 }

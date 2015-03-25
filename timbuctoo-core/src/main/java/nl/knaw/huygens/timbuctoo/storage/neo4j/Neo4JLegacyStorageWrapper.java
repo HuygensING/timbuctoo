@@ -43,7 +43,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   @Override
   public boolean isAvailable() {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return neo4JStorage.isAvailable();
   }
 
   @Override
