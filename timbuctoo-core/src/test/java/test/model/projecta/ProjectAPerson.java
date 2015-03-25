@@ -24,7 +24,11 @@ package test.model.projecta;
 
 import nl.knaw.huygens.timbuctoo.model.Person;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class ProjectAPerson extends Person {
+  public static final String PROJECT_A_PERSON_PROPERTY_NAME = "projectAPersonProperty";
+  @JsonProperty(PROJECT_A_PERSON_PROPERTY_NAME)
   private String projectAPersonProperty;
 
   public String getProjectAPersonProperty() {

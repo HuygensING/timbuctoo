@@ -213,6 +213,22 @@ public abstract class StorageIntegrationTest {
     assertThat(instance.getEntity(RelationType.class, id), is(nullValue()));
   }
 
+  @Test
+  public void findItemByPropertyForSystemEntityReturnsTheFirstFoundInTheDatabase() throws Exception {
+    // setup
+    RelationType relationType = createRelationType(REGULAR_NAME, INVERSE_NAME);
+    String id = instance.addSystemEntity(RelationType.class, relationType);
+
+    // action
+    RelationType foundRelationType = instance.findItemByProperty(RelationType.class, RelationType.REGULAR_NAME, REGULAR_NAME);
+
+    // verify
+    assertThat(foundRelationType, matchesRelationType()//
+        .withId(id) //
+        .withInverseName(INVERSE_NAME) //
+        .withRegularName(REGULAR_NAME));
+  }
+
   /* ******************************************************************************
    * DomainEntity
    * ******************************************************************************/
@@ -437,6 +453,24 @@ public abstract class StorageIntegrationTest {
     assertThat(allVariations, containsInAnyOrder(matchers));
   }
 
+  @Test
+  public void findItemByPropertyForDomainEntityReturnsTheFirstDomainEntityFound() throws StorageException {
+    // setup
+    ProjectAPerson person = createPerson(GENDER, PERSON_NAME, PROJECT_A_PERSON_PROPERTY, BIRTH_DATE, DEATH_DATE);
+    String id = instance.addDomainEntity(ProjectAPerson.class, person, CHANGE_TO_SAVE);
+
+    // action
+    ProjectAPerson foundPerson = instance.findItemByProperty(ProjectAPerson.class, ProjectAPerson.PROJECT_A_PERSON_PROPERTY_NAME, PROJECT_A_PERSON_PROPERTY);
+
+    assertThat(foundPerson, likePerson()//
+        .withBirthDate(BIRTH_DATE)//
+        .withDeathDate(DEATH_DATE)//
+        .withGender(GENDER)//
+        .withId(id)//
+        .withNames(Lists.newArrayList(PERSON_NAME)));
+
+  }
+
   // Person test helpers
 
   private ProjectAPerson createPerson(Gender gender, PersonName name, String projectAPersonProperty, Datable birthDate, Datable deathDate) {
@@ -636,6 +670,29 @@ public abstract class StorageIntegrationTest {
         likeDefaultRelation(sourceId, targetId, typeId)//
             .withId(id)//
             .withRevision(rev));
+  }
+
+  @Test
+  public void findItemByPropertyForRelationReturnsTheFirstRelationFound() throws Exception {
+    // setup
+    String sourceId = addDefaultProjectAPerson();
+    String targetId = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+
+    addDefaultRelation(sourceId, targetId, typeId);
+
+    // action
+    ProjectARelation foundRelation = instance.findItemByProperty(PROJECT_RELATION_TYPE, Relation.SOURCE_ID, sourceId);
+
+    // verify
+    assertThat(foundRelation, likeRelation()//
+        .withSourceId(sourceId) //
+        .withSourceType(RELATION_SOURCE_TYPE) //
+        .withTargetId(targetId) //
+        .withTargetType(RELATION_TARGET_TYPE) //
+        .withTypeId(typeId) //
+        .isAccepted(ACCEPTED));
+
   }
 
   /* **************************************************************************
