@@ -48,6 +48,12 @@ public interface Storage {
    */
   void close();
 
+  /**
+   * Checks if the storage is available.
+   * @return true if the storage is available.
+   */
+  boolean isAvailable();
+
   // --- add entities --------------------------------------------------
 
   /**

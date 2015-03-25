@@ -128,9 +128,9 @@ public abstract class StorageIntegrationTest {
     dbIntegrationTestHelper.stopDB();
   }
 
-  /********************************************************************************
+  /* ******************************************************************************
    * SystemEntity
-   ********************************************************************************/
+   * ******************************************************************************/
 
   @Test
   public void addSystemEntityAddsASystemEntityToTheStorageAndReturnsItsId() throws Exception {
@@ -213,9 +213,9 @@ public abstract class StorageIntegrationTest {
     assertThat(instance.getEntity(RelationType.class, id), is(nullValue()));
   }
 
-  /********************************************************************************
+  /* ******************************************************************************
    * DomainEntity
-   ********************************************************************************/
+   * ******************************************************************************/
 
   @Test
   public void addDomainEntityAddsADomainEntityAndItsPrimitiveVersieToTheDatabase() throws Exception {
@@ -514,9 +514,9 @@ public abstract class StorageIntegrationTest {
     return relationId;
   }
 
-  /*********************************************************************************
+  /* *******************************************************************************
    * Relation
-   ********************************************************************************/
+   * ******************************************************************************/
   @Test
   public void addRelationAddsARelationAndItsPrimitiveVersieToTheDatabase() throws Exception {
     String sourceId = addDefaultProjectAPerson();
@@ -636,5 +636,17 @@ public abstract class StorageIntegrationTest {
         likeDefaultRelation(sourceId, targetId, typeId)//
             .withId(id)//
             .withRevision(rev));
+  }
+
+  /* **************************************************************************
+   * Other methods
+   * **************************************************************************/
+  @Test
+  public void closeClosesTheDatabaseconnection() {
+    assertThat("Storage is not available before closing", instance.isAvailable(), is(equalTo(true)));
+
+    instance.close();
+
+    assertThat("Storage is not closed", instance.isAvailable(), is(equalTo(false)));
   }
 }

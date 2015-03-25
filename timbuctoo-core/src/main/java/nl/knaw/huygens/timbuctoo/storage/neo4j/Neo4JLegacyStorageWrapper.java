@@ -43,6 +43,11 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   }
 
   @Override
+  public boolean isAvailable() {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
+  @Override
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws StorageException {
     return neo4JStorage.addSystemEntity(type, entity);
   }

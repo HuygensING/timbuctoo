@@ -124,6 +124,11 @@ public class MongoStorage implements Storage {
     mongoDB.close();
   }
 
+  @Override
+  public boolean isAvailable() {
+    return mongoDB.isAvailable();
+  }
+
   // --- support -------------------------------------------------------
 
   private final Map<Class<? extends Entity>, DBCollection> collectionCache = Maps.newHashMap();

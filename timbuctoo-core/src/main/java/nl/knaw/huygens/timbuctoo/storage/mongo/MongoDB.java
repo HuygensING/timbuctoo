@@ -97,6 +97,10 @@ public class MongoDB {
     LOG.info("Closed");
   }
 
+  public boolean isAvailable() {
+    return mongo.getConnector().isOpen();
+  }
+
   /**
    * Closes the specified cursor.
    */
