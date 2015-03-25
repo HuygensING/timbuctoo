@@ -272,7 +272,7 @@ public class Neo4JStorage {
   public <T extends Relation> void updateRelation(Class<T> type, Relation relation, Change change) throws StorageException {
 
     try (Transaction transaction = db.beginTx()) {
-      Relationship relationship = getLatestRelationship(relation.getId());
+      Relationship relationship = neo4jLowLevelAPI.getLatestRelationship(relation.getId());
 
       T entity = (T) relation;
       if (relationship == null) {

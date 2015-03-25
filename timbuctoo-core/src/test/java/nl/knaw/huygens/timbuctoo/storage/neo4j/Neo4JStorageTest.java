@@ -1342,10 +1342,7 @@ public class Neo4JStorageTest {
   public void updateRelationRetrievesTheRelationAndUpdateItsValuesAndAdministrativeValues() throws Exception {
     // setup
     Relationship relationship = aRelationship().withRevision(FIRST_REVISION).build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
-        .containsForId(ID) //
-        .relationship(relationship) //
-        .foundInDB(dbMock);
+    latestRelationshipFoundForId(ID, relationship);
 
     Change oldModified = CHANGE;
     SubARelation relation = aRelation()//
@@ -1360,31 +1357,26 @@ public class Neo4JStorageTest {
     instance.updateRelation(RELATION_TYPE, relation, CHANGE);
 
     // verify
-    InOrder inOrder = inOrder(dbMock, transactionMock, converterMock);
-    inOrder.verify(dbMock).beginTx();
-    inOrder.verify(converterMock).updatePropertyContainer( //
+    verify(converterMock).updatePropertyContainer( //
         argThat(equalTo(relationship)), //
         argThat(likeDomainEntity(RELATION_TYPE) //
             .withId(ID) //
             .withAModifiedValueNotEqualTo(oldModified) //
             .withRevision(SECOND_REVISION)));
-    inOrder.verify(converterMock).updateModifiedAndRev( //
+    verify(converterMock).updateModifiedAndRev( //
         argThat(equalTo(relationship)), //
         argThat(likeDomainEntity(RELATION_TYPE) //
             .withId(ID) //
             .withAModifiedValueNotEqualTo(oldModified) //
             .withRevision(SECOND_REVISION)));
-    inOrder.verify(transactionMock).success();
+    verifyTransactionSucceeded();
   }
 
   @Test
   public void updateRelationRemovesThePIDOfTheRelationBeforeTheUpdate() throws Exception {
     // setup
     Relationship relationship = aRelationship().withRevision(FIRST_REVISION).build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
-        .containsForId(ID) //
-        .relationship(relationship) //
-        .foundInDB(dbMock);
+    latestRelationshipFoundForId(ID, relationship);
 
     Change oldModified = CHANGE;
     SubARelation relation = aRelation()//
@@ -1408,42 +1400,20 @@ public class Neo4JStorageTest {
         argThat(likeDomainEntity(RELATION_TYPE).withoutAPID()));
   }
 
-  @Test
-  public void updateRelationUpdatesTheLatestIfMultipleAreFound() throws Exception {
-    // setup
-    Relationship relationshipWithHighestRev = aRelationship().withRevision(SECOND_REVISION).build();
-    Relationship otherRelationShip = aRelationship().withRevision(FIRST_REVISION).build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
-        .relationship(relationshipWithHighestRev) //
-        .andRelationship(otherRelationShip) //
-        .foundInDB(dbMock);
-
-    SubARelation relation = aRelation().withId(ID).withRevision(SECOND_REVISION).build();
-
-    RelationshipConverter<SubARelation> converterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
-
-    // action
-    instance.updateRelation(RELATION_TYPE, relation, CHANGE);
-
-    // verify
-    verify(converterMock).updatePropertyContainer(relationshipWithHighestRev, relation);
-    verify(converterMock).updateModifiedAndRev(relationshipWithHighestRev, relation);
-  }
-
   @Test(expected = UpdateException.class)
   public void updateRelationThrowsAnUpdateExceptionWhenTheRelationshipToUpdateCannotBeFound() throws Exception {
     // setup
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsNothingForId(ID).foundInDB(dbMock);
+    noLatestRelationshipFoundForId(ID);
+
     SubARelation relation = aRelation()//
         .withId(ID)//
+        .withRevision(FIRST_REVISION)//
         .build();
     try {
       // action
       instance.updateRelation(RELATION_TYPE, relation, CHANGE);
     } finally {
       // verify
-      verify(dbMock).beginTx();
-
       verifyTransactionFailed();
     }
   }
@@ -1452,10 +1422,7 @@ public class Neo4JStorageTest {
   public void updateRelationThrowsAnUpdateExceptionWhenRevOfTheRelationshipIsHigherThanThatOfTheEntity() throws Exception {
     // setup
     Relationship relationshipWithHigherRev = aRelationship().withRevision(SECOND_REVISION).build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
-        .containsForId(ID) //
-        .relationship(relationshipWithHigherRev) //
-        .foundInDB(dbMock);
+    latestRelationshipFoundForId(ID, relationshipWithHigherRev);
 
     SubARelation relation = aRelation()//
         .withId(ID)//
@@ -1477,10 +1444,7 @@ public class Neo4JStorageTest {
   public void updateRelationThrowsAnUpdateExceptionWhenRevOfTheRelationshipIsLowerThanThatOfTheEntity() throws Exception {
     // setup
     Relationship relationshipWithLowerRev = aRelationship().withRevision(FIRST_REVISION).build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
-        .containsForId(ID) //
-        .relationship(relationshipWithLowerRev) //
-        .foundInDB(dbMock);
+    latestRelationshipFoundForId(ID, relationshipWithLowerRev);
 
     SubARelation relation = aRelation()//
         .withId(ID)//
@@ -1502,10 +1466,7 @@ public class Neo4JStorageTest {
   public void updateRelationThrowsAConversionExceptionWhenTheRelationshipConverterThrowsOne() throws Exception {
     // setup
     Relationship relationship = aRelationship().withRevision(FIRST_REVISION).build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX)//
-        .containsForId(ID) //
-        .relationship(relationship) //
-        .foundInDB(dbMock);
+    latestRelationshipFoundForId(ID, relationship);
 
     Change oldModified = CHANGE;
     SubARelation relation = aRelation()//
