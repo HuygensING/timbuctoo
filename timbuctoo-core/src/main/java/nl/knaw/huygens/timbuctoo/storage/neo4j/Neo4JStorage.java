@@ -201,7 +201,7 @@ public class Neo4JStorage {
 
   public <T extends Relation> T getRelation(Class<T> type, String id) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
-      Relationship relationshipWithHighestRevision = getLatestRelationship(id);
+      Relationship relationshipWithHighestRevision = neo4jLowLevelAPI.getLatestRelationship(id);
 
       if (relationshipWithHighestRevision == null) {
         transaction.success();
