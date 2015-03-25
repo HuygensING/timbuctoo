@@ -25,6 +25,8 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.Strings;
 
+import com.google.inject.Inject;
+
 public class Neo4JStorage {
 
   public static final String RELATIONSHIP_ID_INDEX = "RelationShip id";
@@ -36,6 +38,7 @@ public class Neo4JStorage {
   private final TypeRegistry typeRegistry;
   private final Neo4JLowLevelAPI neo4jLowLevelAPI;
 
+  @Inject
   public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, TypeRegistry typeRegistry) {
     this(db, propertyContainerConverterFactory, new NodeDuplicator(db), new RelationshipDuplicator(db), new IdGenerator(), typeRegistry, new Neo4JLowLevelAPI(db));
   }

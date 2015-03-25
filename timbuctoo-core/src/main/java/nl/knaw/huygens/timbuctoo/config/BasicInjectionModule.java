@@ -22,10 +22,11 @@ package nl.knaw.huygens.timbuctoo.config;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.storage.Properties;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
-import nl.knaw.huygens.timbuctoo.storage.mongo.MongoProperties;
-import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorage;
+import nl.knaw.huygens.timbuctoo.storage.neo4j.Neo4JLegacyStorageWrapper;
+
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
@@ -57,8 +58,10 @@ public class BasicInjectionModule extends AbstractModule {
     bind(Configuration.class).toInstance(config);
     bind(TypeRegistry.class).toInstance(registry);
 
-    bind(Storage.class).to(MongoStorage.class);
-    bind(Properties.class).to(MongoProperties.class);
-  }
+    //    bind(Storage.class).to(MongoStorage.class);
+    //    bind(Properties.class).to(MongoProperties.class);
 
+    bind(Storage.class).to(Neo4JLegacyStorageWrapper.class);
+    bind(GraphDatabaseService.class).toInstance(new GraphDatabaseFactory().newEmbeddedDatabase(config.getDirectory("admin_data.directory") + "/db"));
+  }
 }
