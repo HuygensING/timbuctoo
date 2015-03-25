@@ -6,7 +6,6 @@ import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import java.util.Iterator;
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -19,14 +18,11 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConverterFactory;
 
-import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
@@ -139,7 +135,7 @@ public class Neo4JStorage {
   }
 
   private Node getRelationPart(Transaction transaction, Class<? extends Entity> type, String partName, String partId) throws StorageException {
-    Node part = getLatestById(type, partId);
+    Node part = neo4jLowLevelAPI.getLatestNodeById(type, partId);
     if (part == null) {
       transaction.failure();
       throw new StorageException(createCannotFindString(partName, type, partId));
@@ -508,41 +504,6 @@ public class Neo4JStorage {
 
   private int getRevisionProperty(PropertyContainer propertyContainer) {
     return (int) propertyContainer.getProperty(REVISION_PROPERTY_NAME);
-  }
-
-  /**
-   * Retrieves all of {@code type} with {@code id} 
-   * and returns the one with the highest revision number.
-   * @param type the type to get the latest from
-   * @param id the id to get the latest from
-   * @return the node of type and id with the highest revision.
-   */
-  private <T extends Entity> Node getLatestById(Class<T> type, String id) {
-    ResourceIterator<Node> iterator = findByProperty(type, ID_PROPERTY_NAME, id);
-
-    if (!iterator.hasNext()) {
-      return null;
-    }
-
-    Node nodeWithHighestRevision = iterator.next();
-
-    for (; iterator.hasNext();) {
-      Node next = iterator.next();
-
-      if (getRevisionProperty(next) > getRevisionProperty(nodeWithHighestRevision)) {
-        nodeWithHighestRevision = next;
-      }
-    }
-
-    return nodeWithHighestRevision;
-  }
-
-  private <T extends Entity> ResourceIterator<Node> findByProperty(Class<T> type, String propertyName, String id) {
-    Label internalNameLabel = DynamicLabel.label(TypeNames.getInternalName(type));
-    ResourceIterable<Node> foundNodes = db.findNodesByLabelAndProperty(internalNameLabel, propertyName, id);
-
-    ResourceIterator<Node> iterator = foundNodes.iterator();
-    return iterator;
   }
 
   private Relationship getLatestRelationship(String id) {
