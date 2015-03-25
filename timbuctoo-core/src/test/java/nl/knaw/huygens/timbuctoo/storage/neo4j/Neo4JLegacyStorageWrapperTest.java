@@ -410,4 +410,14 @@ public class Neo4JLegacyStorageWrapperTest {
       return null;
     }
   }
+
+  @Test
+  public void closeDelegatesToTheNeo4JStorage() {
+    // action
+    instance.close();
+
+    // verify
+    verify(neo4JStorageMock).close();
+  }
+
 }

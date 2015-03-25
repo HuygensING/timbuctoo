@@ -38,8 +38,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   @Override
   public void close() {
-    throw new UnsupportedOperationException("Yet to be implemented");
-
+    neo4JStorage.close();
   }
 
   @Override

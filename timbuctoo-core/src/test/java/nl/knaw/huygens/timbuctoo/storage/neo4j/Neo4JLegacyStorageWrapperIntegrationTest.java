@@ -140,7 +140,6 @@ public class Neo4JLegacyStorageWrapperIntegrationTest extends StorageIntegration
     super.setPIDForRelationCreatesANewRevisionAndFillsThePID();
   }
 
-  @Ignore
   @Test
   @Override
   public void closeClosesTheDatabaseconnection() {

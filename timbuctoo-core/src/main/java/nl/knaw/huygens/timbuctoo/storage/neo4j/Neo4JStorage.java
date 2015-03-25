@@ -495,4 +495,8 @@ public class Neo4JStorage {
     }
   }
 
+  public void close() {
+    db.shutdown();
+  }
+
 }

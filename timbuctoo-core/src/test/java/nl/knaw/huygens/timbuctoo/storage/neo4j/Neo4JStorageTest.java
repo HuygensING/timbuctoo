@@ -1615,4 +1615,13 @@ public class Neo4JStorageTest {
     return relationshipConverter;
   }
 
+  @Test
+  public void closeCallsTheDBToClose() {
+    // action
+    instance.close();
+
+    // verify
+    verify(dbMock).shutdown();
+  }
+
 }
