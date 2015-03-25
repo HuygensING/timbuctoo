@@ -432,7 +432,7 @@ public class Neo4JStorage {
 
   public <T extends DomainEntity> void setDomainEntityPID(Class<T> type, String id, String pid) throws NoSuchEntityException, ConversionException, StorageException {
     try (Transaction transaction = db.beginTx()) {
-      Node node = getLatestById(type, id);
+      Node node = neo4jLowLevelAPI.getLatestNodeById(type, id);
 
       if (node == null) {
         transaction.failure();

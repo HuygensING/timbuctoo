@@ -783,9 +783,7 @@ public class Neo4JStorageTest {
   public void setDomainEntityPIDAddsAPIDToTheLatestNodeIfMultipleAreFound() throws InstantiationException, IllegalAccessException, Exception {
     // setup
     Node nodeWithLatestRevision = aNode().withRevision(SECOND_REVISION).build();
-    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID)//
-        .withNode(aNode().withRevision(FIRST_REVISION).build()).withNode(nodeWithLatestRevision)//
-        .foundInDB(dbMock);
+    latestNodeFoundFor(DOMAIN_ENTITY_TYPE, ID, nodeWithLatestRevision);
 
     NodeConverter<SubADomainEntity> converterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
     when(converterMock.convertToEntity(nodeWithLatestRevision)).thenReturn(aDomainEntity().withId(ID).build());
@@ -793,6 +791,7 @@ public class Neo4JStorageTest {
     // action
     instance.setDomainEntityPID(DOMAIN_ENTITY_TYPE, ID, PID);
 
+    // verify
     verify(converterMock).addValuesToPropertyContainer( //
         argThat(equalTo(nodeWithLatestRevision)), //
         argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE).withId(ID).withPID(PID)));
@@ -803,9 +802,7 @@ public class Neo4JStorageTest {
   public void setDomainEntityPIDAddsAPIDToTheNodeAndDuplicatesTheNode() throws InstantiationException, IllegalAccessException, Exception {
     // setup
     Node node = aNode().build();
-    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID)//
-        .withNode(node)//
-        .foundInDB(dbMock);
+    latestNodeFoundFor(DOMAIN_ENTITY_TYPE, ID, node);
 
     NodeConverter<SubADomainEntity> converterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
     when(converterMock.convertToEntity(node)).thenReturn(aDomainEntity().withId(ID).build());
@@ -813,21 +810,16 @@ public class Neo4JStorageTest {
     // action
     instance.setDomainEntityPID(DOMAIN_ENTITY_TYPE, ID, PID);
 
-    InOrder inOrder = inOrder(converterMock, transactionMock, nodeDuplicatorMock);
-    inOrder.verify(converterMock).addValuesToPropertyContainer( //
-        argThat(equalTo(node)), //
-        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE).withId(ID).withPID(PID)));
-    inOrder.verify(nodeDuplicatorMock).saveDuplicate(node);
-    inOrder.verify(transactionMock).success();
+    // verify
+    verify(nodeDuplicatorMock).saveDuplicate(node);
+    verify(transactionMock).success();
   }
 
   @Test(expected = IllegalStateException.class)
   public void setDomainEntityPIDThrowsAnIllegalStateExceptionWhenTheEntityAlreadyHasAPID() throws Exception {
     // setup
     Node aNodeWithAPID = aNode().withAPID().build();
-    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID)//
-        .withNode(aNodeWithAPID)//
-        .foundInDB(dbMock);
+    latestNodeFoundFor(DOMAIN_ENTITY_TYPE, ID, aNodeWithAPID);
 
     SubADomainEntity entityWithPID = aDomainEntity().withAPid().build();
 
@@ -839,7 +831,6 @@ public class Neo4JStorageTest {
       instance.setDomainEntityPID(DOMAIN_ENTITY_TYPE, ID, PID);
     } finally {
       // verify
-      verify(nodeConverter).convertToEntity(aNodeWithAPID);
       verify(transactionMock).failure();
     }
   }
@@ -847,20 +838,17 @@ public class Neo4JStorageTest {
   @Test(expected = ConversionException.class)
   public void setDomainEntityPIDThrowsAConversionExceptionWhenTheNodeCannotBeConverted() throws Exception {
     // setup
-    Node aNodeWithAPID = aNode().withAPID().build();
-    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID)//
-        .withNode(aNodeWithAPID)//
-        .foundInDB(dbMock);
+    Node aNode = aNode().build();
+    latestNodeFoundFor(DOMAIN_ENTITY_TYPE, ID, aNode);
 
     NodeConverter<SubADomainEntity> nodeConverter = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
-    when(nodeConverter.convertToEntity(aNodeWithAPID)).thenThrow(new ConversionException());
+    when(nodeConverter.convertToEntity(aNode)).thenThrow(new ConversionException());
 
     try {
       // action
       instance.setDomainEntityPID(DOMAIN_ENTITY_TYPE, ID, PID);
     } finally {
       // verify
-      verify(nodeConverter).convertToEntity(aNodeWithAPID);
       verify(transactionMock).failure();
     }
   }
@@ -869,9 +857,7 @@ public class Neo4JStorageTest {
   public void setDomainEntityPIDThrowsAConversionsExceptionWhenTheUpdatedEntityCannotBeCovnverted() throws Exception {
     // setup
     Node aNode = aNode().build();
-    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID)//
-        .withNode(aNode)//
-        .foundInDB(dbMock);
+    latestNodeFoundFor(DOMAIN_ENTITY_TYPE, ID, aNode);
 
     SubADomainEntity entity = aDomainEntity().build();
 
@@ -892,7 +878,7 @@ public class Neo4JStorageTest {
   @Test(expected = StorageException.class)
   public void setDomainEntityPIDThrowsAStorageExceptionWhenTheEntityDoesNotExist() throws Exception {
     // setup
-    anEmptySearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID).foundInDB(dbMock);
+    noLatestNodeFoundFor(DOMAIN_ENTITY_TYPE, ID);
 
     try {
       // action
@@ -906,12 +892,9 @@ public class Neo4JStorageTest {
 
   @Test(expected = StorageException.class)
   public void setDomainEntityPIDThrowsAStorageExceptionWhenTheEntityCannotBeInstatiated() throws Exception {
-
     // setup
     Node aNode = aNode().build();
-    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID)//
-        .withNode(aNode)//
-        .foundInDB(dbMock);
+    latestNodeFoundFor(DOMAIN_ENTITY_TYPE, ID, aNode);
 
     NodeConverter<SubADomainEntity> converterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
     when(converterMock.convertToEntity(aNode)).thenThrow(new InstantiationException());
