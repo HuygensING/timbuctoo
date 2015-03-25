@@ -393,7 +393,7 @@ public class Neo4JStorage {
   public <T extends Relation> T getRelationRevision(Class<T> type, String id, int revision) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
 
-      Relationship relationship = getRevisionRelationship(type, id, revision);
+      Relationship relationship = neo4jLowLevelAPI.getRelationshipWithRevision(type, id, revision);
 
       if (relationship == null) {
         transaction.success();
@@ -521,18 +521,6 @@ public class Neo4JStorage {
       }
     }
     return relationshipWithHighestRevision;
-  }
-
-  private <T extends Relation> Relationship getRevisionRelationship(Class<T> type, String id, int revision) {
-    ResourceIterator<Relationship> iterator = getFromIndex(id);
-    for (; iterator.hasNext();) {
-      Relationship next = iterator.next();
-      if (getRevisionProperty(next) == revision) {
-        return next;
-      }
-    }
-
-    return null;
   }
 
   private ResourceIterator<Relationship> getFromIndex(String id) {
