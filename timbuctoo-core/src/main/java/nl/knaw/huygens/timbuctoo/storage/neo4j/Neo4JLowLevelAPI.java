@@ -2,6 +2,8 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.SystemRelationshipType.VERSION_OF;
+import static org.neo4j.graphdb.Direction.INCOMING;
 
 import java.util.List;
 
@@ -53,7 +55,7 @@ public class Neo4JLowLevelAPI {
       for (; iterator.hasNext();) {
         Node next = iterator.next();
 
-        if (getRevisionProperty(next) > getRevisionProperty(nodeWithHighestRevision)) {
+        if (newNodeHasHigherRevision(nodeWithHighestRevision, next) && !next.hasRelationship(INCOMING, VERSION_OF)) {
           nodeWithHighestRevision = next;
         }
       }
@@ -61,6 +63,10 @@ public class Neo4JLowLevelAPI {
       transaction.success();
       return nodeWithHighestRevision;
     }
+  }
+
+  private boolean newNodeHasHigherRevision(Node nodeWithHighestRevision, Node next) {
+    return getRevisionProperty(next) > getRevisionProperty(nodeWithHighestRevision);
   }
 
   public <T extends Entity> Node getNodeWithRevision(Class<T> type, String id, int revision) {

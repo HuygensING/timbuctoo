@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import static org.neo4j.helpers.collection.IteratorUtil.asIterable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -17,21 +18,22 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class NodeMockBuilder {
   private final List<Label> labels;
-  private List<Relationship> outGoingRelationships;
-  private List<Relationship> incommingRelationships;
+  private Map<RelationshipType, List<Relationship>> outGoingRelationships;
+  private Map<RelationshipType, List<Relationship>> incommingRelationships;
 
   private final Map<String, Object> properties;
 
   private NodeMockBuilder() {
     labels = Lists.newArrayList();
-    incommingRelationships = Lists.newArrayList();
-    outGoingRelationships = Lists.newArrayList();
+    incommingRelationships = Maps.newHashMap();
+    outGoingRelationships = Maps.newHashMap();
     properties = Maps.newHashMap();
   }
 
@@ -63,18 +65,27 @@ public class NodeMockBuilder {
     this.properties.put(propertyName, value);
   }
 
-  private List<Relationship> getIncommingRelationships() {
-    return incommingRelationships;
+  private Collection<Relationship> getIncommingRelationships() {
+    return getRelationships(incommingRelationships);
   }
 
-  private List<Relationship> getOutgoingRelationships() {
-    return outGoingRelationships;
+  private Collection<Relationship> getOutgoingRelationships() {
+    return getRelationships(outGoingRelationships);
+  }
+
+  private Collection<Relationship> getRelationships(Map<RelationshipType, List<Relationship>> relationshipMap) {
+    Collection<List<Relationship>> values = relationshipMap.values();
+    List<Relationship> relationships = Lists.newArrayList();
+    for (List<Relationship> valuesPart : values) {
+      relationships.addAll(valuesPart);
+    }
+    return relationships;
   }
 
   private List<Relationship> getAllRelationships() {
     ArrayList<Relationship> allRelationships = Lists.newArrayList();
-    allRelationships.addAll(incommingRelationships);
-    allRelationships.addAll(outGoingRelationships);
+    allRelationships.addAll(getIncommingRelationships());
+    allRelationships.addAll(getOutgoingRelationships());
     return allRelationships;
   }
 
@@ -93,7 +104,7 @@ public class NodeMockBuilder {
   }
 
   private void addOutGoingRelationship(Relationship relationship) {
-    getOutgoingRelationships().add(relationship);
+    addRelationship(relationship, outGoingRelationships);
   }
 
   public NodeMockBuilder withIncommingRelationShip(Relationship relationship) {
@@ -107,7 +118,19 @@ public class NodeMockBuilder {
   }
 
   private void addIncommingRelationship(Relationship relationship) {
-    getIncommingRelationships().add(relationship);
+    addRelationship(relationship, incommingRelationships);
+
+  }
+
+  private void addRelationship(Relationship relationship, Map<RelationshipType, List<Relationship>> relationshipMap) {
+    RelationshipType relationshipType = relationship.getType();
+    List<Relationship> relationshipsOfType = relationshipMap.get(relationshipType);
+    if (relationshipsOfType == null) {
+      relationshipsOfType = Lists.newArrayList();
+      relationshipMap.put(relationshipType, relationshipsOfType);
+    }
+
+    relationshipsOfType.add(relationship);
   }
 
   public Node build() {
@@ -116,11 +139,24 @@ public class NodeMockBuilder {
     addPropertiesToNode(node, properties);
 
     when(node.getLabels()).thenReturn(asIterable(getLabels().iterator()));
+    addRelationships(node);
+
+    return node;
+  }
+
+  private void addRelationships(Node node) {
     when(node.getRelationships(Direction.OUTGOING)).thenReturn(asIterable(getOutgoingRelationships().iterator()));
     when(node.getRelationships(Direction.INCOMING)).thenReturn(asIterable(getIncommingRelationships().iterator()));
     when(node.getRelationships()).thenReturn(getAllRelationships());
 
-    return node;
+    hasRelationship(node, Direction.OUTGOING, outGoingRelationships);
+    hasRelationship(node, Direction.INCOMING, incommingRelationships);
+  }
+
+  private void hasRelationship(Node node, Direction direction, Map<RelationshipType, List<Relationship>> relationshipMap) {
+    for (RelationshipType relationshipType : relationshipMap.keySet()) {
+      when(node.hasRelationship(direction, relationshipType)).thenReturn(true);
+    }
   }
 
   private void addPropertiesToNode(Node node, Map<String, Object> properties) {

@@ -6,6 +6,7 @@ import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipIndexMockBuild
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipMockBuilder.aRelationship;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SearchResultBuilder.aSearchResult;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SearchResultBuilder.anEmptySearchResult;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.SystemRelationshipType.VERSION_OF;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -96,12 +97,16 @@ public class Neo4JLowLevelAPITest {
   }
 
   @Test
-  public void getLatestByIdReturnsTheNodeWithTheHighestRevision() {
+  public void getLatestNodeByIdReturnsTheNodeWithTheHighestRevisionThatHasNoIncommingVersionOfRelations() {
     // setup
-    Node nodeWithThirdRevision = aNode().withRevision(THIRD_REVISION).build();
+    NodeMockBuilder nodeBuildWithThirdRevision = aNode().withRevision(THIRD_REVISION);
+    Node nodeWithThirdRevision = nodeBuildWithThirdRevision.build();
+    Relationship versionOfRelationship = aRelationship().withType(VERSION_OF).build();
+    Node nodeWithThirdRevisionAndIncommingVersionOfRelationNode = nodeBuildWithThirdRevision.withIncommingRelationShip(versionOfRelationship).build();
 
     aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
         .withNode(aNode().withRevision(FIRST_REVISION).build()) //
+        .andNode(nodeWithThirdRevisionAndIncommingVersionOfRelationNode) //
         .andNode(nodeWithThirdRevision) //
         .andNode(aNode().withRevision(SECOND_REVISION).build()) //
         .foundInDB(dbMock);
@@ -120,7 +125,7 @@ public class Neo4JLowLevelAPITest {
   }
 
   @Test
-  public void getLatestByIdReturnsNullIfNoNodesAreFound() {
+  public void getLatestNodeByIdReturnsNullIfNoNodesAreFound() {
     // setup
     anEmptySearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
         .foundInDB(dbMock);
