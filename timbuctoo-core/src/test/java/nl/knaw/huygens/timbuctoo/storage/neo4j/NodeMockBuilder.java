@@ -107,7 +107,7 @@ public class NodeMockBuilder {
     addRelationship(relationship, outGoingRelationships);
   }
 
-  public NodeMockBuilder withIncommingRelationShip(Relationship relationship) {
+  public NodeMockBuilder withIncomingRelationShip(Relationship relationship) {
     addIncommingRelationship(relationship);
     return this;
   }

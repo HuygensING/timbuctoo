@@ -89,9 +89,9 @@ class Neo4JLowLevelAPI {
     }
   }
 
-  private <T extends Entity> ResourceIterator<Node> findByProperty(Class<T> type, String propertyName, String id) {
+  private <T extends Entity> ResourceIterator<Node> findByProperty(Class<T> type, String propertyName, String value) {
     Label internalNameLabel = DynamicLabel.label(TypeNames.getInternalName(type));
-    ResourceIterable<Node> foundNodes = db.findNodesByLabelAndProperty(internalNameLabel, propertyName, id);
+    ResourceIterable<Node> foundNodes = db.findNodesByLabelAndProperty(internalNameLabel, propertyName, value);
 
     ResourceIterator<Node> iterator = foundNodes.iterator();
     return iterator;
@@ -166,7 +166,24 @@ class Neo4JLowLevelAPI {
    * @return the first node found or null if none are found
    */
   public Node findNodeByProperty(Class<? extends Entity> type, String field, String value) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    try (Transaction transaction = db.beginTx()) {
+
+      ResourceIterator<Node> foundNodes = findByProperty(type, field, value);
+      Node firstNodeWithoutIncommingVersionOfRelations = null;
+
+      for (; foundNodes.hasNext();) {
+        Node node = foundNodes.next();
+
+        if (!node.hasRelationship(INCOMING, VERSION_OF)) {
+          firstNodeWithoutIncommingVersionOfRelations = node;
+          break;
+        }
+
+      }
+
+      transaction.success();
+      return firstNodeWithoutIncommingVersionOfRelations;
+    }
   }
 
 }

@@ -17,8 +17,9 @@ import com.google.common.collect.Lists;
 
 public class SearchResultBuilder {
   private Label label;
-  private String id;
+  private String value;
   private final List<Node> nodes;
+  private String propertyName;
 
   public static SearchResultBuilder anEmptySearchResult() {
     return new SearchResultBuilder();
@@ -32,9 +33,14 @@ public class SearchResultBuilder {
     nodes = Lists.newArrayList();
   }
 
-  public SearchResultBuilder andId(String id) {
-    this.id = id;
+  public SearchResultBuilder andPropertyWithValue(String propertyName, String value) {
+    this.propertyName = propertyName;
+    this.value = value;
     return this;
+  }
+
+  public SearchResultBuilder andId(String id) {
+    return andPropertyWithValue(ID_PROPERTY_NAME, id);
   }
 
   public SearchResultBuilder forLabel(Label label) {
@@ -66,6 +72,7 @@ public class SearchResultBuilder {
 
     Iterable<Node> nodesIterable = IteratorUtil.asIterable(nodeIterator);
     ResourceIterable<Node> foundNodes = Iterables.asResourceIterable(nodesIterable);
-    when(db.findNodesByLabelAndProperty(label, ID_PROPERTY_NAME, id)).thenReturn(foundNodes);
+    when(db.findNodesByLabelAndProperty(label, propertyName, value)).thenReturn(foundNodes);
   }
+
 }

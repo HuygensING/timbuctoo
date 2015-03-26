@@ -37,6 +37,8 @@ import test.model.projecta.SubADomainEntity;
 import test.model.projecta.SubARelation;
 
 public class Neo4JLowLevelAPITest {
+  private static final String PROPERTY_VALUE = "test";
+  private static final String DOMAIN_ENTITY_PROPERTY = SubADomainEntity.VALUEA2_NAME;
   private static final int FIRST_REVISION = 1;
   private static final int SECOND_REVISION = 2;
   private static final int THIRD_REVISION = 3;
@@ -117,7 +119,7 @@ public class Neo4JLowLevelAPITest {
     NodeMockBuilder nodeBuildWithThirdRevision = aNode().withRevision(THIRD_REVISION);
     Node nodeWithThirdRevision = nodeBuildWithThirdRevision.build();
     Relationship versionOfRelationship = aRelationship().withType(VERSION_OF).build();
-    Node nodeWithThirdRevisionAndIncommingVersionOfRelationNode = nodeBuildWithThirdRevision.withIncommingRelationShip(versionOfRelationship).build();
+    Node nodeWithThirdRevisionAndIncommingVersionOfRelationNode = nodeBuildWithThirdRevision.withIncomingRelationShip(versionOfRelationship).build();
 
     aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
         .withNode(aNode().withRevision(FIRST_REVISION).build()) //
@@ -233,6 +235,65 @@ public class Neo4JLowLevelAPITest {
     // verify
     assertThat(foundNodes, is(empty()));
 
+  }
+
+  @Test
+  public void findNodeByPropertyReturnsTheFirstFoundNodeWithThePropertyThatHasNoIncomingVersionOfRelations() {
+    // setup
+    Relationship versionOf = aRelationship().withType(VERSION_OF).build();
+    Node aNodeWithIncomingVersionOfRelations = aNode().withIncomingRelationShip(versionOf).build();
+    Node aNodeWithoutIncommingRelations = aNode().build();
+    Node otherNodeWithoutIncommingRelations = aNode().build();
+
+    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andPropertyWithValue(DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE) //
+        .withNode(aNodeWithIncomingVersionOfRelations) //
+        .andNode(aNodeWithoutIncommingRelations) //
+        .andNode(otherNodeWithoutIncommingRelations) //
+        .foundInDB(dbMock);
+
+    // action
+    Node foundNode = instance.findNodeByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE);
+
+    // verify
+    assertThat(foundNode, is(sameInstance(aNodeWithoutIncommingRelations)));
+
+    verify(transactionMock).success();
+  }
+
+  @Test
+  public void findNodeByPropertyReturnsNullIfNoNodesAreFound() {
+    // setup
+    anEmptySearchResult().forLabel(DOMAIN_ENTITY_LABEL) //
+        .andPropertyWithValue(DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE) //
+        .foundInDB(dbMock);
+
+    // action
+    Node foundNode = instance.findNodeByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE);
+
+    // verify
+    assertThat(foundNode, is(nullValue()));
+
+    verify(transactionMock).success();
+  }
+
+  @Test
+  public void findNodeByPropertyReturnsNullIfNoNodeWithoutIncomingVersionOfRelationsAreFound() {
+    // setup
+    Relationship versionOf = aRelationship().withType(VERSION_OF).build();
+    Node aNodeWithIncomingVersionOfRelations = aNode().withIncomingRelationShip(versionOf).build();
+
+    aSearchResult().forLabel(DOMAIN_ENTITY_LABEL) //
+        .andPropertyWithValue(DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE) //
+        .withNode(aNodeWithIncomingVersionOfRelations) //
+        .foundInDB(dbMock);
+
+    // action
+    Node foundNode = instance.findNodeByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE);
+
+    // verify
+    assertThat(foundNode, is(nullValue()));
+
+    verify(transactionMock).success();
   }
 
   @Test

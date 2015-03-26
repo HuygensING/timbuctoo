@@ -78,7 +78,7 @@ public class NodeDuplicatorTest {
         .build();
 
     Node nodeToDuplicate = aNode().withOutgoingRelationShip(outgoingRelationship)//
-        .withIncommingRelationShip(incommingRelationship)//
+        .withIncomingRelationShip(incommingRelationship)//
         .build();
 
     Node duplicatedNode = aNode().createdBy(dbMock);
