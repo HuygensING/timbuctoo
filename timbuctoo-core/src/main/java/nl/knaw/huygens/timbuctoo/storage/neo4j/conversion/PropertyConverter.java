@@ -31,4 +31,6 @@ public interface PropertyConverter {
 
   String getName();
 
+  String getPropertyName();
+
 }

@@ -79,7 +79,8 @@ abstract class AbstractPropertyConverter implements PropertyConverter {
 
   protected abstract Object convertValue(Object value, Class<?> fieldType) throws IllegalArgumentException;
 
-  protected String getPropertyName() {
+  @Override
+  public String getPropertyName() {
     return fieldType.propertyName(getContainingType(), fieldName);
   }
 

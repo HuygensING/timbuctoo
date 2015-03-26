@@ -58,4 +58,9 @@ class NoOpPropertyConverter implements PropertyConverter {
     return this.fieldName;
   }
 
+  @Override
+  public String getPropertyName() {
+    return "";
+  }
+
 }
