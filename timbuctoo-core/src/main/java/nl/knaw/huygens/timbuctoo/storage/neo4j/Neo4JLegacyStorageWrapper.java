@@ -174,7 +174,13 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends Entity> T findItemByProperty(Class<T> type, String field, String value) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    if (Relation.class.isAssignableFrom(type)) {
+      @SuppressWarnings("unchecked")
+      T relation = (T) neo4JStorage.findRelationByProperty((Class<? extends Relation>) type, field, value);
+      return relation;
+    } else {
+      return neo4JStorage.findEntityByProperty(type, field, value);
+    }
   }
 
   @Override

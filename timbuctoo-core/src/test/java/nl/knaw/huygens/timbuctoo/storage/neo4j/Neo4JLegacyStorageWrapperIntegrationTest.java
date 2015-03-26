@@ -146,4 +146,22 @@ public class Neo4JLegacyStorageWrapperIntegrationTest extends StorageIntegration
     super.closeClosesTheDatabaseconnection();
   }
 
+  @Test
+  @Override
+  public void findItemByPropertyForDomainEntityReturnsTheFirstDomainEntityFound() throws StorageException {
+    super.findItemByPropertyForDomainEntityReturnsTheFirstDomainEntityFound();
+  }
+
+  @Test
+  @Override
+  public void findItemByPropertyForRelationReturnsTheFirstRelationFound() throws Exception {
+    super.findItemByPropertyForRelationReturnsTheFirstRelationFound();
+  }
+
+  @Test
+  @Override
+  public void findItemByPropertyForSystemEntityReturnsTheFirstFoundInTheDatabase() throws Exception {
+    super.findItemByPropertyForSystemEntityReturnsTheFirstFoundInTheDatabase();
+  }
+
 }

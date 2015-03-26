@@ -36,6 +36,10 @@ import test.model.projecta.SubARelation;
 
 public class Neo4JLegacyStorageWrapperTest {
 
+  private static final String RELATION_PROPERTY_NAME = SubARelation.SOURCE_ID;
+  private static final String SYSTEM_ENTITY_PROPERTY = TestSystemEntityWrapper.ANOTATED_PROPERTY_NAME;
+  private static final String PROPERTY_VALUE = "TEST";
+  private static final String DOMAIN_ENTITY_PROPERTY_NAME = SubADomainEntity.VALUEA2_NAME;
   protected static final Class<BaseDomainEntity> PRIMITIVE_DOMAIN_ENTITY_TYPE = BaseDomainEntity.class;
   protected static final String PRIMITIVE_DOMAIN_ENTITY_NAME = TypeNames.getInternalName(PRIMITIVE_DOMAIN_ENTITY_TYPE);
   protected static final Label PRIMITIVE_DOMAIN_ENTITY_LABEL = DynamicLabel.label(PRIMITIVE_DOMAIN_ENTITY_NAME);
@@ -207,6 +211,30 @@ public class Neo4JLegacyStorageWrapperTest {
   }
 
   @Test
+  public void findItemByPropertyForDomainEntityDelegatesToNeo4JStorageFindEntityByProperty() throws Exception {
+    // setup
+    SubADomainEntity entity = aDomainEntity().build();
+    when(neo4JStorageMock.findEntityByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY_NAME, PROPERTY_VALUE))//
+        .thenReturn(entity);
+
+    // action
+    SubADomainEntity actualEntity = instance.findItemByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY_NAME, PROPERTY_VALUE);
+
+    // verify
+    assertThat(actualEntity, is(sameInstance(entity)));
+  }
+
+  @Test(expected = StorageException.class)
+  public void findItemByPropertyForDomainEntityThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
+    // setup
+    when(neo4JStorageMock.findEntityByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY_NAME, PROPERTY_VALUE))//
+        .thenThrow(new StorageException());
+
+    // action
+    instance.findItemByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY_NAME, PROPERTY_VALUE);
+  }
+
+  @Test
   public void addDomainEntityForRelationDelegatesToNeo4JStorageAddRelation() throws Exception {
     // setup
     SubARelation relation = aRelation().build();
@@ -308,6 +336,30 @@ public class Neo4JLegacyStorageWrapperTest {
   }
 
   @Test
+  public void findItemByPropertyForRelationDelegatesToNeo4JStorageFindRelationByProperty() throws Exception {
+    // setup
+    SubARelation entity = aRelation().build();
+    when(neo4JStorageMock.findRelationByProperty(RELATION_TYPE, RELATION_PROPERTY_NAME, PROPERTY_VALUE))//
+        .thenReturn(entity);
+
+    // action
+    SubARelation actualEntity = instance.findItemByProperty(RELATION_TYPE, RELATION_PROPERTY_NAME, PROPERTY_VALUE);
+
+    // verify
+    assertThat(actualEntity, is(sameInstance(entity)));
+  }
+
+  @Test(expected = StorageException.class)
+  public void findItemByPropertyForRelationThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
+    // setup
+    when(neo4JStorageMock.findRelationByProperty(RELATION_TYPE, RELATION_PROPERTY_NAME, PROPERTY_VALUE))//
+        .thenThrow(new StorageException());
+
+    // action
+    instance.findItemByProperty(RELATION_TYPE, RELATION_PROPERTY_NAME, PROPERTY_VALUE);
+  }
+
+  @Test
   public void addSystemEntityDelegatesToNeo4JStorage() throws Exception {
     // setup
     TestSystemEntityWrapper entity = aSystemEntity().build();
@@ -389,6 +441,30 @@ public class Neo4JLegacyStorageWrapperTest {
     when(neo4JStorageMock.deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID)).thenThrow(new StorageException());
     // action
     instance.deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID);
+  }
+
+  @Test
+  public void findItemByPropertyForSystemEntityDelegatesToNeo4JStorageFindEntityByProperty() throws Exception {
+    // setup
+    TestSystemEntityWrapper entity = aSystemEntity().build();
+    when(neo4JStorageMock.findEntityByProperty(SYSTEM_ENTITY_TYPE, SYSTEM_ENTITY_PROPERTY, PROPERTY_VALUE))//
+        .thenReturn(entity);
+
+    // action
+    TestSystemEntityWrapper actualEntity = instance.findItemByProperty(SYSTEM_ENTITY_TYPE, SYSTEM_ENTITY_PROPERTY, PROPERTY_VALUE);
+
+    // verify
+    assertThat(actualEntity, is(sameInstance(entity)));
+  }
+
+  @Test(expected = StorageException.class)
+  public void findItemByPropertyForSystemEntityThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
+    // setup
+    when(neo4JStorageMock.findEntityByProperty(SYSTEM_ENTITY_TYPE, SYSTEM_ENTITY_PROPERTY, PROPERTY_VALUE))//
+        .thenThrow(new StorageException());
+
+    // action
+    instance.findItemByProperty(SYSTEM_ENTITY_TYPE, SYSTEM_ENTITY_PROPERTY, PROPERTY_VALUE);
   }
 
   @Test

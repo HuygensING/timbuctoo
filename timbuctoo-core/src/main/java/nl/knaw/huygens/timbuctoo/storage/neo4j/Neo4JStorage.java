@@ -503,4 +503,12 @@ public class Neo4JStorage {
   public boolean isAvailable() {
     return db.isAvailable(REQUEST_TIMEOUT);
   }
+
+  public <T extends Entity> T findEntityByProperty(Class<T> type, String field, String value) throws StorageException {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
+  public <T extends Relation> T findRelationByProperty(Class<T> type, String field, String value) throws StorageException {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }
