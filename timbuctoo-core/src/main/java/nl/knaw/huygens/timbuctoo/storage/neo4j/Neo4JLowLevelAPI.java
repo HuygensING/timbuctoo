@@ -2,6 +2,8 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Relation.SOURCE_ID;
+import static nl.knaw.huygens.timbuctoo.model.Relation.TARGET_ID;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SystemRelationshipType.VERSION_OF;
 import static org.neo4j.graphdb.Direction.INCOMING;
 
@@ -26,7 +28,9 @@ import org.neo4j.graphdb.index.IndexHits;
 import com.google.common.collect.Lists;
 
 class Neo4JLowLevelAPI {
-  static final String RELATIONSHIP_ID_INDEX = "RelationShip id";
+  static final String RELATIONSHIP_ID_INDEX = "Relationship id";
+  static final String RELATIONSHIP_START_ID_INDEX = "Relationship start id";
+  static final String RELATIONSHIP_END_ID_INDEX = "Relationship end id";
   private final GraphDatabaseService db;
 
   public Neo4JLowLevelAPI(GraphDatabaseService db) {
@@ -156,6 +160,12 @@ class Neo4JLowLevelAPI {
 
   public void addRelationship(Relationship relationship, String id) {
     db.index().forRelationships(RELATIONSHIP_ID_INDEX).add(relationship, ID_PROPERTY_NAME, id);
+    db.index().forRelationships(RELATIONSHIP_START_ID_INDEX).add(relationship, SOURCE_ID, getNodeId(relationship.getStartNode()));
+    db.index().forRelationships(RELATIONSHIP_END_ID_INDEX).add(relationship, TARGET_ID, getNodeId(relationship.getEndNode()));
+  }
+
+  private Object getNodeId(Node node) {
+    return node.getProperty(ID_PROPERTY_NAME);
   }
 
   /**

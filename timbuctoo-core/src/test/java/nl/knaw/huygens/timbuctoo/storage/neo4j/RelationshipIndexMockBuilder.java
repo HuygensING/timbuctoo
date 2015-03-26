@@ -6,37 +6,41 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.index.IndexHits;
-import org.neo4j.graphdb.index.IndexManager;
 import org.neo4j.graphdb.index.RelationshipIndex;
 import org.neo4j.helpers.collection.IteratorUtil;
 
 import com.google.common.collect.Lists;
 
 public class RelationshipIndexMockBuilder {
-  private String id;
+  private Object value;
   private List<Relationship> relationships;
-  private String indexName;
+  private String propertyName;
 
-  private RelationshipIndexMockBuilder(String indexName) {
-    this.indexName = indexName;
+  private RelationshipIndexMockBuilder() {
     relationships = Lists.newArrayList();
   }
 
-  public static RelationshipIndexMockBuilder aRelationshipIndexForName(String indexName) {
-    return new RelationshipIndexMockBuilder(indexName);
+  public static RelationshipIndexMockBuilder aRelationshipIndex() {
+    return new RelationshipIndexMockBuilder();
+  }
+
+  public RelationshipIndexMockBuilder containsForPropertyWithValue(String propertyName, Object propertyValue) {
+    this.propertyName = propertyName;
+    this.value = propertyValue;
+
+    return this;
   }
 
   public RelationshipIndexMockBuilder containsForId(String id) {
-    this.id = id;
+    containsForPropertyWithValue(ID_PROPERTY_NAME, id);
     return this;
   }
 
   public RelationshipIndexMockBuilder containsNothingForId(String id) {
-    this.id = id;
+    containsForPropertyWithValue(ID_PROPERTY_NAME, id);
     return this;
   }
 
@@ -54,24 +58,14 @@ public class RelationshipIndexMockBuilder {
     relationships.add(relationship);
   }
 
-  public RelationshipIndex foundInDB(GraphDatabaseService dbMock) {
+  public RelationshipIndex build() {
     RelationshipIndex indexMock = mock(RelationshipIndex.class);
-    dbHasRelationshipIndexWithName(dbMock, indexMock);
 
     ResourceIterator<Relationship> relationshipIterator = IteratorUtil.asResourceIterator(relationships.iterator());
     @SuppressWarnings("unchecked")
     IndexHits<Relationship> indexHitsMock = mock(IndexHits.class);
     when(indexHitsMock.iterator()).thenReturn(relationshipIterator);
-    when(indexMock.get(ID_PROPERTY_NAME, id)).thenReturn(indexHitsMock);
-
-    return indexMock;
-  }
-
-  private RelationshipIndex dbHasRelationshipIndexWithName(GraphDatabaseService dbMock, RelationshipIndex indexMock) {
-    IndexManager indexManagerMock = mock(IndexManager.class);
-
-    when(indexManagerMock.forRelationships(indexName)).thenReturn(indexMock);
-    when(dbMock.index()).thenReturn(indexManagerMock);
+    when(indexMock.get(propertyName, value)).thenReturn(indexHitsMock);
 
     return indexMock;
   }

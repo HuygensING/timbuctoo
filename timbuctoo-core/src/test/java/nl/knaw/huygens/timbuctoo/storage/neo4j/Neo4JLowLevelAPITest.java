@@ -1,9 +1,12 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.IndexManagerMockBuilder.anIndexManager;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.Neo4JLowLevelAPI.RELATIONSHIP_END_ID_INDEX;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.Neo4JLowLevelAPI.RELATIONSHIP_ID_INDEX;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.Neo4JLowLevelAPI.RELATIONSHIP_START_ID_INDEX;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeMockBuilder.aNode;
-import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipIndexMockBuilder.aRelationshipIndexForName;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipIndexMockBuilder.aRelationshipIndex;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipMockBuilder.aRelationship;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SearchResultBuilder.aSearchResult;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SearchResultBuilder.anEmptySearchResult;
@@ -22,6 +25,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -64,16 +68,32 @@ public class Neo4JLowLevelAPITest {
   }
 
   @Test
-  public void addRelationshipAddsTheRelationshipToTheRelationshipIdIndex() {
+  public void addRelationshipIndexesTheRelationship() {
     // setup
-    Relationship relationship = aRelationship().build();
-    RelationshipIndex indexMock = aRelationshipIndexForName(Neo4JLowLevelAPI.RELATIONSHIP_ID_INDEX).foundInDB(dbMock);
+    String startNodeId = "startNodeId";
+    String endNodeId = "endNodeId";
+    Relationship relationship = aRelationship() //
+        .withProperty(ID_PROPERTY_NAME, ID)//
+        .withStartNode(aNode().withId(startNodeId).build()) //
+        .withEndNode(aNode().withId(endNodeId).build()) //
+        .build();
+
+    RelationshipIndex idIndexMock = aRelationshipIndex().build();
+    RelationshipIndex startIdIndexMock = aRelationshipIndex().build();
+    RelationshipIndex endIdIndexMock = aRelationshipIndex().build();
+
+    anIndexManager().containsRelationshipIndexWithName(idIndexMock, RELATIONSHIP_ID_INDEX) //
+        .containsRelationshipIndexWithName(startIdIndexMock, RELATIONSHIP_START_ID_INDEX) //
+        .containsRelationshipIndexWithName(endIdIndexMock, RELATIONSHIP_END_ID_INDEX) //
+        .foundInDB(dbMock);
 
     // action
     instance.addRelationship(relationship, ID);
 
     // verify
-    verify(indexMock).add(relationship, ID_PROPERTY_NAME, ID);
+    verify(idIndexMock).add(relationship, ID_PROPERTY_NAME, ID);
+    verify(startIdIndexMock).add(relationship, Relation.SOURCE_ID, startNodeId);
+    verify(endIdIndexMock).add(relationship, Relation.TARGET_ID, endNodeId);
   }
 
   @Test
@@ -300,10 +320,13 @@ public class Neo4JLowLevelAPITest {
   public void getLatestRelationshipReturnsTheRelationshipWithTheHighestRevisionWithId() {
     // setup
     Relationship relationshipThirdRevision = aRelationship().withRevision(THIRD_REVISION).build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
+    RelationshipIndex index = aRelationshipIndex().containsForId(ID) //
         .relationship(aRelationship().withRevision(FIRST_REVISION).build()) //
         .andRelationship(relationshipThirdRevision) //
         .andRelationship(aRelationship().withRevision(SECOND_REVISION).build()) //
+        .build();
+
+    anIndexManager().containsRelationshipIndexWithName(index, RELATIONSHIP_ID_INDEX) //
         .foundInDB(dbMock);
 
     // action
@@ -317,7 +340,8 @@ public class Neo4JLowLevelAPITest {
   @Test
   public void getLatestRelationshipReturnsNullWhenNoRelationshipsAreFoundForId() {
     // setup
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsNothingForId(ID) //
+    RelationshipIndex index = aRelationshipIndex().containsNothingForId(ID).build();
+    anIndexManager().containsRelationshipIndexWithName(index, RELATIONSHIP_ID_INDEX) //
         .foundInDB(dbMock);
 
     // action
@@ -332,10 +356,13 @@ public class Neo4JLowLevelAPITest {
   public void getRelationshipWithRevisionReturnsTheRelationshipForTheIdAndRevision() {
     // setup
     Relationship relationshipThirdRevision = aRelationship().withRevision(THIRD_REVISION).build();
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
+    RelationshipIndex index = aRelationshipIndex().containsForId(ID) //
         .relationship(aRelationship().withRevision(FIRST_REVISION).build()) //
         .andRelationship(relationshipThirdRevision) //
         .andRelationship(aRelationship().withRevision(SECOND_REVISION).build()) //
+        .build();
+
+    anIndexManager().containsRelationshipIndexWithName(index, RELATIONSHIP_ID_INDEX) //
         .foundInDB(dbMock);
 
     // action
@@ -349,7 +376,10 @@ public class Neo4JLowLevelAPITest {
   @Test
   public void getRelationshipWithRevisionReturnsNullIfNoRelationsAreFound() {
     // setup
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsNothingForId(ID) //
+    RelationshipIndex index = aRelationshipIndex().containsNothingForId(ID) //
+        .build();
+
+    anIndexManager().containsRelationshipIndexWithName(index, RELATIONSHIP_ID_INDEX) //
         .foundInDB(dbMock);
 
     // action
@@ -363,9 +393,12 @@ public class Neo4JLowLevelAPITest {
   @Test
   public void getRelationshipWithRevisionReturnsNullIfTheRevisionIsNotFound() {
     // setup
-    aRelationshipIndexForName(RELATIONSHIP_ID_INDEX).containsForId(ID) //
+    RelationshipIndex index = aRelationshipIndex().containsForId(ID) //
         .relationship(aRelationship().withRevision(FIRST_REVISION).build()) //
         .andRelationship(aRelationship().withRevision(SECOND_REVISION).build()) //
+        .build();
+
+    anIndexManager().containsRelationshipIndexWithName(index, RELATIONSHIP_ID_INDEX) //
         .foundInDB(dbMock);
 
     // action
