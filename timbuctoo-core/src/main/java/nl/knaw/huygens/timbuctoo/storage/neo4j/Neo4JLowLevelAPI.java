@@ -161,14 +161,14 @@ class Neo4JLowLevelAPI {
   /**
    * Finds the first node without incoming versionOf relationships. 
    * @param type the type of the label the node has to have
-   * @param field the name of the property that should contain the value
+   * @param propertyName the name of the property that should contain the value
    * @param value the value the property should have
    * @return the first node found or null if none are found
    */
-  public Node findNodeByProperty(Class<? extends Entity> type, String field, String value) {
+  public Node findNodeByProperty(Class<? extends Entity> type, String propertyName, String value) {
     try (Transaction transaction = db.beginTx()) {
 
-      ResourceIterator<Node> foundNodes = findByProperty(type, field, value);
+      ResourceIterator<Node> foundNodes = findByProperty(type, propertyName, value);
       Node firstNodeWithoutIncommingVersionOfRelations = null;
 
       for (; foundNodes.hasNext();) {
