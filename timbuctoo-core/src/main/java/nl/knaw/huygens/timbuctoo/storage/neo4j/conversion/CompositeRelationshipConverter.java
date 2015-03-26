@@ -75,4 +75,9 @@ class CompositeRelationshipConverter<T extends Relation> implements Relationship
     throw new UnsupportedOperationException("Yet to be implemented");
   }
 
+  @Override
+  public String getPropertyName(String fieldName) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
 }

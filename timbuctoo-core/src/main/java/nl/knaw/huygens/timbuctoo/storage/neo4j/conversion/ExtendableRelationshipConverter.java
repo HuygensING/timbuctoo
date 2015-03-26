@@ -119,4 +119,9 @@ class ExtendableRelationshipConverter<T extends Relation> implements Relationshi
     return entity;
   }
 
+  @Override
+  public String getPropertyName(String fieldName) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
 }

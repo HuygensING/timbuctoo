@@ -196,4 +196,8 @@ class Neo4JLowLevelAPI {
     }
   }
 
+  public Relationship findRelationshipByProperty(String propertyName, String propertyValue) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
 }

@@ -60,6 +60,7 @@ import com.google.common.collect.Lists;
 
 public class Neo4JStorageTest {
 
+  private static final String RELATION_FIELD_NAME = SubARelation.SOURCE_ID;
   private static final String PROPERTY_NAME = "propertyName";
   private static final String PROPERTY_VALUE = "Test";
   private static final String DOMAIN_ENTITY_FIELD = SubADomainEntity.VALUEA2_NAME;
@@ -908,7 +909,7 @@ public class Neo4JStorageTest {
   public void findEntityByPropertyConvertsTheFirstNodeFoundWithProperty() throws Exception {
     // setup
     Node node = aNode().build();
-    when(neo4JLowLevelAPIMock.findNodeByProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(node);
+    nodeFoundFor(DOMAIN_ENTITY_TYPE, node, PROPERTY_NAME, PROPERTY_VALUE);
 
     NodeConverter<SubADomainEntity> converterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
     when(converterMock.getPropertyName(DOMAIN_ENTITY_FIELD)).thenReturn(PROPERTY_NAME);
@@ -927,7 +928,7 @@ public class Neo4JStorageTest {
   @Test
   public void findEntityByPropertyReturnsNullIfNoNodeIsFound() throws Exception {
     // setup
-    when(neo4JLowLevelAPIMock.findNodeByProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(null);
+    noNodeFoundFor(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE);
 
     NodeConverter<SubADomainEntity> converterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
     when(converterMock.getPropertyName(DOMAIN_ENTITY_FIELD)).thenReturn(PROPERTY_NAME);
@@ -941,11 +942,15 @@ public class Neo4JStorageTest {
     verifyTransactionSucceeded();
   }
 
+  private void noNodeFoundFor(Class<SubADomainEntity> type, String propertyName, String propertyValue) {
+    when(neo4JLowLevelAPIMock.findNodeByProperty(type, propertyName, propertyValue)).thenReturn(null);
+  }
+
   @Test(expected = ConversionException.class)
   public void findEntityByPropertyThrowsAConversionExceptionWhenTheNodeCannotBeConverted() throws Exception {
     // setup
     Node node = aNode().build();
-    when(neo4JLowLevelAPIMock.findNodeByProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(node);
+    nodeFoundFor(DOMAIN_ENTITY_TYPE, node, PROPERTY_NAME, PROPERTY_VALUE);
 
     NodeConverter<SubADomainEntity> converterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
     when(converterMock.getPropertyName(DOMAIN_ENTITY_FIELD)).thenReturn(PROPERTY_NAME);
@@ -964,7 +969,7 @@ public class Neo4JStorageTest {
   public void findEntityByPropertyThrowsAStorageExceptionWhenTheEntityCannotBeInstantiated() throws Exception {
     // setup
     Node node = aNode().build();
-    when(neo4JLowLevelAPIMock.findNodeByProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(node);
+    nodeFoundFor(DOMAIN_ENTITY_TYPE, node, PROPERTY_NAME, PROPERTY_VALUE);
 
     NodeConverter<SubADomainEntity> converterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
     when(converterMock.getPropertyName(DOMAIN_ENTITY_FIELD)).thenReturn(PROPERTY_NAME);
@@ -977,6 +982,10 @@ public class Neo4JStorageTest {
       // verify
       verifyTransactionFailed();
     }
+  }
+
+  private void nodeFoundFor(Class<SubADomainEntity> type, Node node, String propertyName, String propertyValue) {
+    when(neo4JLowLevelAPIMock.findNodeByProperty(type, propertyName, propertyValue)).thenReturn(node);
   }
 
   /* *****************************************************************************
@@ -1693,6 +1702,90 @@ public class Neo4JStorageTest {
 
     return relationshipConverter;
   }
+
+  @Test
+  public void findRelationByPropertySearchesTheRelationshipByPropertyAndConvertsIt() throws Exception {
+    // setup
+    Relationship relationship = aRelationship().build();
+    relationshipFoundFor(PROPERTY_NAME, PROPERTY_VALUE, relationship);
+
+    RelationshipConverter<SubARelation> relationshipConverter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    when(relationshipConverter.getPropertyName(RELATION_FIELD_NAME)).thenReturn(PROPERTY_NAME);
+    SubARelation relation = aRelation().build();
+    when(relationshipConverter.convertToEntity(relationship)).thenReturn(relation);
+
+    // action
+    SubARelation actualRelation = instance.findRelationByProperty(RELATION_TYPE, RELATION_FIELD_NAME, PROPERTY_VALUE);
+
+    // verify
+    assertThat(actualRelation, is(sameInstance(relation)));
+    verifyTransactionSucceeded();
+  }
+
+  @Test
+  public void findRelationByPropertyReturnsNullIfTheRelationshipCannotBeFound() throws Exception {
+    // setup
+    noRelationshipFoundFor(PROPERTY_NAME, PROPERTY_VALUE);
+    RelationshipConverter<SubARelation> relationshipConverter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    when(relationshipConverter.getPropertyName(RELATION_FIELD_NAME)).thenReturn(PROPERTY_NAME);
+
+    // action
+    SubARelation actualRelation = instance.findRelationByProperty(RELATION_TYPE, RELATION_FIELD_NAME, PROPERTY_VALUE);
+
+    // verify
+    assertThat(actualRelation, is(nullValue()));
+    verifyTransactionSucceeded();
+  }
+
+  private void noRelationshipFoundFor(String propertyName, String propertyValue) {
+    when(neo4JLowLevelAPIMock.findRelationshipByProperty(propertyName, propertyValue)).thenReturn(null);
+  }
+
+  @Test(expected = ConversionException.class)
+  public void findRelationByPropertyThrowsAConversionExceptionIfTheRelationshipCannotBeConverted() throws Exception {
+    // setup
+    Relationship relationship = aRelationship().build();
+    relationshipFoundFor(PROPERTY_NAME, PROPERTY_VALUE, relationship);
+
+    RelationshipConverter<SubARelation> relationshipConverter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    when(relationshipConverter.getPropertyName(RELATION_FIELD_NAME)).thenReturn(PROPERTY_NAME);
+    when(relationshipConverter.convertToEntity(relationship)).thenThrow(new ConversionException());
+
+    try {
+      // action
+      instance.findRelationByProperty(RELATION_TYPE, RELATION_FIELD_NAME, PROPERTY_VALUE);
+    } finally {
+      // verify
+      verifyTransactionFailed();
+    }
+  }
+
+  private void relationshipFoundFor(String propertyName, String propertyValue, Relationship relationship) {
+    when(neo4JLowLevelAPIMock.findRelationshipByProperty(propertyName, propertyValue)).thenReturn(relationship);
+  }
+
+  @Test(expected = StorageException.class)
+  public void findRelationByPropertyThrowsAStorageExceptionIfTheRelationCannotBeInstantiated() throws Exception {
+    // setup
+    Relationship relationship = aRelationship().build();
+    relationshipFoundFor(PROPERTY_NAME, PROPERTY_VALUE, relationship);
+
+    RelationshipConverter<SubARelation> relationshipConverter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    when(relationshipConverter.getPropertyName(RELATION_FIELD_NAME)).thenReturn(PROPERTY_NAME);
+    when(relationshipConverter.convertToEntity(relationship)).thenThrow(new InstantiationException());
+
+    try {
+      // action
+      instance.findRelationByProperty(RELATION_TYPE, RELATION_FIELD_NAME, PROPERTY_VALUE);
+    } finally {
+      // verify
+      verifyTransactionFailed();
+    }
+  }
+
+  /* *****************************************************************************
+   * Other methods
+   * *****************************************************************************/
 
   @Test
   public void closeCallsTheDBToClose() {
