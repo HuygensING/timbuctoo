@@ -14,7 +14,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
@@ -23,13 +22,10 @@ import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConve
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 
@@ -102,10 +98,6 @@ public class Neo4JLegacyStorageWrapperTest {
 
   protected void idGeneratorMockCreatesIDFor(Class<? extends Entity> type, String id) {
     when(idGeneratorMock.nextIdFor(type)).thenReturn(id);
-  }
-
-  protected Answer<Object> setPIDOfEntity() {
-    return new SetPIDAnswer();
   }
 
   @Test
@@ -397,18 +389,6 @@ public class Neo4JLegacyStorageWrapperTest {
     when(neo4JStorageMock.deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID)).thenThrow(new StorageException());
     // action
     instance.deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID);
-  }
-
-  private final class SetPIDAnswer implements Answer<Object> {
-    @Override
-    public Object answer(InvocationOnMock invocation) throws Throwable {
-      DomainEntity domainEntity = (DomainEntity) invocation.getArguments()[0];
-      PropertyContainer container = (PropertyContainer) invocation.getArguments()[1];
-
-      domainEntity.setPid("" + container.getProperty(DomainEntity.PID));
-
-      return null;
-    }
   }
 
   @Test
