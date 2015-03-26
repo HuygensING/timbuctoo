@@ -60,6 +60,8 @@ import com.google.common.collect.Lists;
 
 public class Neo4JStorageTest {
 
+  private static final String PROPERTY_VALUE = "Test";
+  private static final String DOMAIN_ENTITY_PROPERTY = SubADomainEntity.VALUEA2_NAME;
   private static final Class<BaseDomainEntity> PRIMITIVE_DOMAIN_ENTITY_TYPE = BaseDomainEntity.class;
   private static final String PRIMITIVE_DOMAIN_ENTITY_NAME = TypeNames.getInternalName(PRIMITIVE_DOMAIN_ENTITY_TYPE);
 
@@ -898,6 +900,75 @@ public class Neo4JStorageTest {
     } finally {
       // verify
       verify(transactionMock).failure();
+    }
+  }
+
+  @Test
+  public void findEntityByPropertyConvertsTheFirstNodeFoundWithProperty() throws Exception {
+    // setup
+    Node node = aNode().build();
+    when(neo4JLowLevelAPIMock.findNodeByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE)).thenReturn(node);
+
+    NodeConverter<SubADomainEntity> converterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
+    SubADomainEntity entity = aDomainEntity().build();
+    when(converterMock.convertToEntity(node)).thenReturn(entity);
+
+    // action
+    SubADomainEntity actualEntity = instance.findEntityByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE);
+
+    // verify
+    assertThat(actualEntity, is(sameInstance(entity)));
+
+    verifyTransactionSucceeded();
+  }
+
+  @Test
+  public void findEntityByPropertyReturnsNullIfNoNodeIsFound() throws Exception {
+    // setup
+    when(neo4JLowLevelAPIMock.findNodeByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE)).thenReturn(null);
+
+    // action
+    SubADomainEntity actualEntity = instance.findEntityByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE);
+
+    // verify
+    assertThat(actualEntity, is(nullValue()));
+
+    verifyTransactionSucceeded();
+  }
+
+  @Test(expected = ConversionException.class)
+  public void findEntityByPropertyThrowsAConversionExceptionWhenTheNodeCannotBeConverted() throws Exception {
+    // setup
+    Node node = aNode().build();
+    when(neo4JLowLevelAPIMock.findNodeByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE)).thenReturn(node);
+
+    NodeConverter<SubADomainEntity> converterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
+    when(converterMock.convertToEntity(node)).thenThrow(new ConversionException());
+
+    try {
+      // action
+      instance.findEntityByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE);
+    } finally {
+      // verify
+      verifyTransactionFailed();
+    }
+  }
+
+  @Test(expected = StorageException.class)
+  public void findEntityByPropertyThrowsAStorageExceptionWhenTheEntityCannotBeInstantiated() throws Exception {
+    // setup
+    Node node = aNode().build();
+    when(neo4JLowLevelAPIMock.findNodeByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE)).thenReturn(node);
+
+    NodeConverter<SubADomainEntity> converterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
+    when(converterMock.convertToEntity(node)).thenThrow(new InstantiationException());
+
+    try {
+      // action
+      instance.findEntityByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE);
+    } finally {
+      // verify
+      verifyTransactionFailed();
     }
   }
 

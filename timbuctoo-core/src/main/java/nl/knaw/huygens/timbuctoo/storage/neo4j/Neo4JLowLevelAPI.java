@@ -158,4 +158,15 @@ class Neo4JLowLevelAPI {
     db.index().forRelationships(RELATIONSHIP_ID_INDEX).add(relationship, ID_PROPERTY_NAME, id);
   }
 
+  /**
+   * Finds the first node without incoming versionOf relationships. 
+   * @param type the type of the label the node has to have
+   * @param field the name of the property that should contain the value
+   * @param value the value the property should have
+   * @return the first node found or null if none are found
+   */
+  public Node findNodeByProperty(Class<? extends Entity> type, String field, String value) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
 }

@@ -505,7 +505,27 @@ public class Neo4JStorage {
   }
 
   public <T extends Entity> T findEntityByProperty(Class<T> type, String field, String value) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    try (Transaction transaction = db.beginTx()) {
+      Node node = neo4jLowLevelAPI.findNodeByProperty(type, field, value);
+
+      if (node == null) {
+        transaction.success();
+        return null;
+      }
+
+      try {
+        NodeConverter<T> converter = propertyContainerConverterFactory.createForType(type);
+        T entity = converter.convertToEntity(node);
+        transaction.success();
+        return entity;
+      } catch (ConversionException e) {
+        transaction.failure();
+        throw e;
+      } catch (InstantiationException e) {
+        transaction.failure();
+        throw new StorageException(e);
+      }
+    }
   }
 
   public <T extends Relation> T findRelationByProperty(Class<T> type, String field, String value) throws StorageException {
