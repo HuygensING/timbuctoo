@@ -4,6 +4,7 @@ import static nl.knaw.huygens.timbuctoo.storage.RelationMatcher.likeRelation;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeMockBuilder.aNode;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyConverterMockBuilder.newPropertyConverter;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.doThrow;
@@ -35,7 +36,7 @@ import test.variation.model.projecta.ProjectADomainEntity;
 public class ExtendableRelationshipConverterTest {
 
   private static final Class<Relation> TYPE = Relation.class;
-  private static final String OTHER_FIELD_CONVERTER = "otherFieldConverter";
+  private static final String REGULAR_FIELD_CONVERTER = "otherFieldConverter";
   private static final String FIELD_CONVERTER = "fieldConverter";
   private PropertyConverter adminPropertyConverterMock;
   private PropertyConverter regularPropertyConverterMock;
@@ -53,7 +54,7 @@ public class ExtendableRelationshipConverterTest {
     typeRegistry.init(getPackageName(SubADomainEntity.class) + " " + getPackageName(BaseDomainEntity.class) + " " + getPackageName(Person.class));
 
     adminPropertyConverterMock = newPropertyConverter().withName(FIELD_CONVERTER).withType(FieldType.ADMINISTRATIVE).build();
-    regularPropertyConverterMock = newPropertyConverter().withName(OTHER_FIELD_CONVERTER).withType(FieldType.REGULAR).build();
+    regularPropertyConverterMock = newPropertyConverter().withName(REGULAR_FIELD_CONVERTER).withType(FieldType.REGULAR).build();
 
     instance = new ExtendableRelationshipConverter<Relation>(TYPE, typeRegistry, entityInstantiatorMock);
     instance.addPropertyConverter(regularPropertyConverterMock);
@@ -287,5 +288,28 @@ public class ExtendableRelationshipConverterTest {
 
     // action
     instance.convertToEntity(relationshipMock);
+  }
+
+  @Test
+  public void getPropertyNameReturnsTheNameOfTheFoundPropertyConverter() {
+    // setup
+    String propertyName = "test";
+    when(regularPropertyConverterMock.getPropertyName()).thenReturn(propertyName);
+
+    // action
+    String actualPropertyName = instance.getPropertyName(REGULAR_FIELD_CONVERTER);
+
+    // verify
+    assertThat(actualPropertyName, is(equalTo(propertyName)));
+  }
+
+  @Test(expected = FieldNonExistingException.class)
+  public void getPropertyNameThrowsARuntimeExceptionWhenThePropertyIsNotFound() {
+    // setup
+    String nonExistingFieldName = "nonExistingPropertyName";
+
+    // action
+    instance.getPropertyName(nonExistingFieldName);
+
   }
 }

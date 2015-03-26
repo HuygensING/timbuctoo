@@ -22,7 +22,7 @@ import com.google.common.collect.Maps;
 
 class ExtendableRelationshipConverter<T extends Relation> implements RelationshipConverter<T>, ExtendablePropertyContainerConverter<Relationship, T> {
 
-  private final Map<String, PropertyConverter> propertyConverters;
+  private final Map<String, PropertyConverter> fieldNamePropertyConverterMap;
   private final TypeRegistry typeRegistry;
   private final EntityInstantiator entityInstantiatorMock;
   private final Class<T> type;
@@ -31,7 +31,7 @@ class ExtendableRelationshipConverter<T extends Relation> implements Relationshi
     this.type = type;
     this.typeRegistry = typeRegistry;
     this.entityInstantiatorMock = entityInstantiatorMock;
-    propertyConverters = Maps.newHashMap();
+    fieldNamePropertyConverterMap = Maps.newHashMap();
   }
 
   public ExtendableRelationshipConverter(Class<T> type, TypeRegistry typeRegistry) {
@@ -80,11 +80,11 @@ class ExtendableRelationshipConverter<T extends Relation> implements Relationshi
 
   @Override
   public void addPropertyConverter(PropertyConverter fieldConverter) {
-    this.propertyConverters.put(fieldConverter.getName(), fieldConverter);
+    this.fieldNamePropertyConverterMap.put(fieldConverter.getName(), fieldConverter);
   }
 
   private Collection<PropertyConverter> getPropertyConverters() {
-    return propertyConverters.values();
+    return fieldNamePropertyConverterMap.values();
   }
 
   @Override
@@ -102,12 +102,12 @@ class ExtendableRelationshipConverter<T extends Relation> implements Relationshi
 
   @Override
   public void updateModifiedAndRev(Relationship relationship, T entity) throws ConversionException {
-    getPropertyConverter(REVISION_PROPERTY_NAME).setPropertyContainerProperty(relationship, entity);
-    getPropertyConverter(MODIFIED_PROPERTY_NAME).setPropertyContainerProperty(relationship, entity);
+    getPropertyConverterByFieldName(REVISION_PROPERTY_NAME).setPropertyContainerProperty(relationship, entity);
+    getPropertyConverterByFieldName(MODIFIED_PROPERTY_NAME).setPropertyContainerProperty(relationship, entity);
   }
 
-  private PropertyConverter getPropertyConverter(String fieldName) {
-    return propertyConverters.get(fieldName);
+  private PropertyConverter getPropertyConverterByFieldName(String fieldName) {
+    return fieldNamePropertyConverterMap.get(fieldName);
   }
 
   @Override
@@ -121,7 +121,14 @@ class ExtendableRelationshipConverter<T extends Relation> implements Relationshi
 
   @Override
   public String getPropertyName(String fieldName) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    if (!hasPropertyContainerForField(fieldName)) {
+      throw new FieldNonExistingException(type, fieldName);
+    }
+    return getPropertyConverterByFieldName(fieldName).getPropertyName();
+  }
+
+  private boolean hasPropertyContainerForField(String fieldName) {
+    return fieldNamePropertyConverterMap.containsKey(fieldName);
   }
 
 }
