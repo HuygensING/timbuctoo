@@ -60,8 +60,9 @@ import com.google.common.collect.Lists;
 
 public class Neo4JStorageTest {
 
+  private static final String PROPERTY_NAME = "propertyName";
   private static final String PROPERTY_VALUE = "Test";
-  private static final String DOMAIN_ENTITY_PROPERTY = SubADomainEntity.VALUEA2_NAME;
+  private static final String DOMAIN_ENTITY_FIELD = SubADomainEntity.VALUEA2_NAME;
   private static final Class<BaseDomainEntity> PRIMITIVE_DOMAIN_ENTITY_TYPE = BaseDomainEntity.class;
   private static final String PRIMITIVE_DOMAIN_ENTITY_NAME = TypeNames.getInternalName(PRIMITIVE_DOMAIN_ENTITY_TYPE);
 
@@ -907,14 +908,15 @@ public class Neo4JStorageTest {
   public void findEntityByPropertyConvertsTheFirstNodeFoundWithProperty() throws Exception {
     // setup
     Node node = aNode().build();
-    when(neo4JLowLevelAPIMock.findNodeByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE)).thenReturn(node);
+    when(neo4JLowLevelAPIMock.findNodeByProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(node);
 
     NodeConverter<SubADomainEntity> converterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
+    when(converterMock.getPropertyName(DOMAIN_ENTITY_FIELD)).thenReturn(PROPERTY_NAME);
     SubADomainEntity entity = aDomainEntity().build();
     when(converterMock.convertToEntity(node)).thenReturn(entity);
 
     // action
-    SubADomainEntity actualEntity = instance.findEntityByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE);
+    SubADomainEntity actualEntity = instance.findEntityByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_FIELD, PROPERTY_VALUE);
 
     // verify
     assertThat(actualEntity, is(sameInstance(entity)));
@@ -925,10 +927,13 @@ public class Neo4JStorageTest {
   @Test
   public void findEntityByPropertyReturnsNullIfNoNodeIsFound() throws Exception {
     // setup
-    when(neo4JLowLevelAPIMock.findNodeByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE)).thenReturn(null);
+    when(neo4JLowLevelAPIMock.findNodeByProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(null);
+
+    NodeConverter<SubADomainEntity> converterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
+    when(converterMock.getPropertyName(DOMAIN_ENTITY_FIELD)).thenReturn(PROPERTY_NAME);
 
     // action
-    SubADomainEntity actualEntity = instance.findEntityByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE);
+    SubADomainEntity actualEntity = instance.findEntityByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_FIELD, PROPERTY_VALUE);
 
     // verify
     assertThat(actualEntity, is(nullValue()));
@@ -940,14 +945,15 @@ public class Neo4JStorageTest {
   public void findEntityByPropertyThrowsAConversionExceptionWhenTheNodeCannotBeConverted() throws Exception {
     // setup
     Node node = aNode().build();
-    when(neo4JLowLevelAPIMock.findNodeByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE)).thenReturn(node);
+    when(neo4JLowLevelAPIMock.findNodeByProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(node);
 
     NodeConverter<SubADomainEntity> converterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
+    when(converterMock.getPropertyName(DOMAIN_ENTITY_FIELD)).thenReturn(PROPERTY_NAME);
     when(converterMock.convertToEntity(node)).thenThrow(new ConversionException());
 
     try {
       // action
-      instance.findEntityByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE);
+      instance.findEntityByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_FIELD, PROPERTY_VALUE);
     } finally {
       // verify
       verifyTransactionFailed();
@@ -958,14 +964,15 @@ public class Neo4JStorageTest {
   public void findEntityByPropertyThrowsAStorageExceptionWhenTheEntityCannotBeInstantiated() throws Exception {
     // setup
     Node node = aNode().build();
-    when(neo4JLowLevelAPIMock.findNodeByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE)).thenReturn(node);
+    when(neo4JLowLevelAPIMock.findNodeByProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(node);
 
     NodeConverter<SubADomainEntity> converterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
+    when(converterMock.getPropertyName(DOMAIN_ENTITY_FIELD)).thenReturn(PROPERTY_NAME);
     when(converterMock.convertToEntity(node)).thenThrow(new InstantiationException());
 
     try {
       // action
-      instance.findEntityByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE);
+      instance.findEntityByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_FIELD, PROPERTY_VALUE);
     } finally {
       // verify
       verifyTransactionFailed();

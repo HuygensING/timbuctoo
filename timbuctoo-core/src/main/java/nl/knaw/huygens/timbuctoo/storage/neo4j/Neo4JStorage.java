@@ -506,7 +506,11 @@ public class Neo4JStorage {
 
   public <T extends Entity> T findEntityByProperty(Class<T> type, String field, String value) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
-      Node node = neo4jLowLevelAPI.findNodeByProperty(type, field, value);
+      NodeConverter<T> converter = propertyContainerConverterFactory.createForType(type);
+
+      String propertyName = converter.getPropertyName(field);
+
+      Node node = neo4jLowLevelAPI.findNodeByProperty(type, propertyName, value);
 
       if (node == null) {
         transaction.success();
@@ -514,7 +518,6 @@ public class Neo4JStorage {
       }
 
       try {
-        NodeConverter<T> converter = propertyContainerConverterFactory.createForType(type);
         T entity = converter.convertToEntity(node);
         transaction.success();
         return entity;

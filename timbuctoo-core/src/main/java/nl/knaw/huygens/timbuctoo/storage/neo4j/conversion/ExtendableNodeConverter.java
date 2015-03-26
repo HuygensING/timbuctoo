@@ -94,4 +94,9 @@ class ExtendableNodeConverter<T extends Entity> implements NodeConverter<T>, Ext
 
     return entity;
   }
+
+  @Override
+  public String getPropertyName(String fieldName) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }

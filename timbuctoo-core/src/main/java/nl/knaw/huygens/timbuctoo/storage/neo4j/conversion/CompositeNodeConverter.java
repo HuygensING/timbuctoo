@@ -75,4 +75,9 @@ class CompositeNodeConverter<T extends Entity> implements NodeConverter<T> {
     throw new UnsupportedOperationException("Yet to be implemented");
   }
 
+  @Override
+  public String getPropertyName(String fieldName) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
 }
