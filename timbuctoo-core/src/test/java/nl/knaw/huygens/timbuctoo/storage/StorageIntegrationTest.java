@@ -552,7 +552,7 @@ public abstract class StorageIntegrationTest {
    * Relation
    * ******************************************************************************/
   @Test
-  public void addRelationAddsARelationAndItsPrimitiveVersieToTheDatabase() throws Exception {
+  public void addRelationAddsARelationAndItsPrimitiveVersionToTheDatabase() throws Exception {
     String sourceId = addDefaultProjectAPerson();
     String targetId = addDefaultProjectAPerson();
     String typeId = addRelationType();

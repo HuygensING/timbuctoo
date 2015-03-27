@@ -23,9 +23,9 @@ public class Neo4JLegacyStorageWrapperIntegrationTest extends StorageIntegration
 
   @Test
   @Override
-  public void addRelationAddsARelationAndItsPrimitiveVersieToTheDatabase() throws Exception {
+  public void addRelationAddsARelationAndItsPrimitiveVersionToTheDatabase() throws Exception {
     // TODO Auto-generated method stub
-    super.addRelationAddsARelationAndItsPrimitiveVersieToTheDatabase();
+    super.addRelationAddsARelationAndItsPrimitiveVersionToTheDatabase();
   }
 
   @Test
