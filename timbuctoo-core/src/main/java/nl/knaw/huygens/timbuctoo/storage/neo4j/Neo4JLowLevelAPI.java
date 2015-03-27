@@ -4,7 +4,7 @@ import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Relation.SOURCE_ID;
 import static nl.knaw.huygens.timbuctoo.model.Relation.TARGET_ID;
-import static nl.knaw.huygens.timbuctoo.storage.neo4j.PropertyNotSearchableException.propertyHasNoIndex;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.PropertyNotIndexedException.propertyHasNoIndex;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SystemRelationshipType.VERSION_OF;
 import static org.neo4j.graphdb.Direction.INCOMING;
 
@@ -166,9 +166,9 @@ class Neo4JLowLevelAPI {
   }
 
   public void addRelationship(Relationship relationship, String id) {
-    relationshipIndexesMock.indexField(ID_PROPERTY_NAME, id);
-    relationshipIndexesMock.indexField(SOURCE_ID, getNodeId(relationship.getStartNode()));
-    relationshipIndexesMock.indexField(TARGET_ID, getNodeId(relationship.getEndNode()));
+    relationshipIndexesMock.indexByField(relationship, ID_PROPERTY_NAME, id);
+    relationshipIndexesMock.indexByField(relationship, SOURCE_ID, getNodeId(relationship.getStartNode()));
+    relationshipIndexesMock.indexByField(relationship, TARGET_ID, getNodeId(relationship.getEndNode()));
   }
 
   private Object getNodeId(Node node) {

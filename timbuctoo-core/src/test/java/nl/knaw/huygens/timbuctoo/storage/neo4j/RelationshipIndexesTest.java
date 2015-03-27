@@ -164,4 +164,28 @@ public class RelationshipIndexesTest {
   private void transactionSucceeded() {
     verify(transactionMock).success();
   }
+
+  @Test
+  public void indexFieldIndexesTheRelationshipForTheFieldAndTheProperty() {
+    // setup
+    RelationshipIndex index = aRelationshipIndex().build();
+
+    anIndexManager().containsRelationshipIndexWithName(index, PROPERTY_WITH_INDEX) //
+        .foundInDB(dbMock);
+
+    Relationship relationship = aRelationship().build();
+
+    // action
+    instance.indexByField(relationship, PROPERTY_WITH_INDEX, PROPERTY_VALUE);
+
+    // verify
+    verify(index).add(relationship, PROPERTY_WITH_INDEX, PROPERTY_VALUE);
+
+  }
+
+  @Test(expected = PropertyNotIndexedException.class)
+  public void indexFieldThrowsAPropertyNotIndexExceptionWhenThereIsNoIndexForTheProperty() {
+    // action
+    instance.indexByField(aRelationship().build(), PROPERTY_WITHOUT_INDEX, PROPERTY_VALUE);
+  }
 }

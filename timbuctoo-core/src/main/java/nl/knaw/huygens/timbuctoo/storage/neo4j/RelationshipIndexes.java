@@ -13,6 +13,7 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.IndexHits;
+import org.neo4j.graphdb.index.RelationshipIndex;
 
 import com.google.common.collect.Lists;
 
@@ -37,16 +38,20 @@ class RelationshipIndexes {
   public List<Relationship> getRelationshipsBy(String propertyName, String propertyValue) {
     try (Transaction transaction = db.beginTx()) {
 
-      IndexHits<Relationship> indexHits = db.index().forRelationships(propertyName).get(propertyName, propertyValue);
+      IndexHits<Relationship> indexHits = getFromIndex(propertyName, propertyValue);
 
       transaction.success();
       return Lists.newArrayList(indexHits.iterator());
     }
   }
 
+  private IndexHits<Relationship> getFromIndex(String propertyName, Object propertyValue) {
+    return getRelationIndexshipFor(propertyName).get(propertyName, propertyValue);
+  }
+
   public boolean isLatestVersion(Relationship relationship) {
     try (Transaction transaction = db.beginTx()) {
-      IndexHits<Relationship> indexHits = db.index().forRelationships(ID_PROPERTY_NAME).get(ID_PROPERTY_NAME, relationship.getProperty(ID_PROPERTY_NAME));
+      IndexHits<Relationship> indexHits = getFromIndex(ID_PROPERTY_NAME, relationship.getProperty(ID_PROPERTY_NAME));
 
       int revisionToCheck = getRevisionProperty(relationship);
 
@@ -65,14 +70,26 @@ class RelationshipIndexes {
     }
   }
 
+  private RelationshipIndex getRelationIndexshipFor(String propertyName) {
+    return db.index().forRelationships(propertyName);
+  }
+
   public static int getRevisionProperty(PropertyContainer propertyContainer) {
     return propertyContainer != null && propertyContainer.hasProperty(REVISION_PROPERTY_NAME) ? //
     (int) propertyContainer.getProperty(REVISION_PROPERTY_NAME)
         : 0;
   }
 
-  public void indexField(String propertyName, Object value) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+  public void indexByField(Relationship relationship, String propertyName, Object value) {
+    if (!containsIndexFor(propertyName)) {
+      throw PropertyNotIndexedException.propertyHasNoIndex(relationship.getClass(), propertyName);
+    }
+
+    addToIndex(relationship, propertyName, value);
+  }
+
+  private void addToIndex(Relationship relationship, String propertyName, Object value) {
+    getRelationIndexshipFor(propertyName).add(relationship, propertyName, value);
   }
 
 }

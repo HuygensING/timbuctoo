@@ -86,9 +86,9 @@ public class Neo4JLowLevelAPITest {
     instance.addRelationship(relationship, ID);
 
     // verify
-    verify(relationshipIndexesMock).indexField(ID_PROPERTY_NAME, ID);
-    verify(relationshipIndexesMock).indexField(Relation.SOURCE_ID, startNodeId);
-    verify(relationshipIndexesMock).indexField(Relation.TARGET_ID, endNodeId);
+    verify(relationshipIndexesMock).indexByField(relationship, ID_PROPERTY_NAME, ID);
+    verify(relationshipIndexesMock).indexByField(relationship, Relation.SOURCE_ID, startNodeId);
+    verify(relationshipIndexesMock).indexByField(relationship, Relation.TARGET_ID, endNodeId);
   }
 
   @Test
@@ -475,8 +475,8 @@ public class Neo4JLowLevelAPITest {
     when(relationshipIndexesMock.containsIndexFor(propertyName)).thenReturn(true);
   }
 
-  @Test(expected = PropertyNotSearchableException.class)
-  public void findRelationshipByProeprtyThrowsAnNoIndexForFieldExceptionInThereIsNoIndexForTheField() {
+  @Test(expected = PropertyNotIndexedException.class)
+  public void findRelationshipByProeprtyThrowsAPropertyNotIndexedExceptionInThereIsNoIndexForTheField() {
     // setup
     noIndexFor(RELATIONSHIP_PROPERTY_WITHOUT_INDEX);
 
