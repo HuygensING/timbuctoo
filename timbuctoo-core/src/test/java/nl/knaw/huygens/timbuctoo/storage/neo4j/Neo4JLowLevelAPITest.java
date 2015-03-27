@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.IndexManagerMockBuilder.anIndexManager;
-import static nl.knaw.huygens.timbuctoo.storage.neo4j.Neo4JLowLevelAPI.RELATIONSHIP_ID_INDEX;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeMockBuilder.aNode;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipIndexMockBuilder.aRelationshipIndex;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipMockBuilder.aRelationship;
@@ -321,7 +320,7 @@ public class Neo4JLowLevelAPITest {
         .andRelationship(aRelationship().withRevision(SECOND_REVISION).build()) //
         .build();
 
-    anIndexManager().containsRelationshipIndexWithName(index, RELATIONSHIP_ID_INDEX) //
+    anIndexManager().containsRelationshipIndexWithName(index, ID_PROPERTY_NAME) //
         .foundInDB(dbMock);
 
     // action
@@ -336,7 +335,7 @@ public class Neo4JLowLevelAPITest {
   public void getLatestRelationshipReturnsNullWhenNoRelationshipsAreFoundForId() {
     // setup
     RelationshipIndex index = aRelationshipIndex().containsNothingForId(ID).build();
-    anIndexManager().containsRelationshipIndexWithName(index, RELATIONSHIP_ID_INDEX) //
+    anIndexManager().containsRelationshipIndexWithName(index, ID_PROPERTY_NAME) //
         .foundInDB(dbMock);
 
     // action
@@ -357,7 +356,7 @@ public class Neo4JLowLevelAPITest {
         .andRelationship(aRelationship().withRevision(SECOND_REVISION).build()) //
         .build();
 
-    anIndexManager().containsRelationshipIndexWithName(index, RELATIONSHIP_ID_INDEX) //
+    anIndexManager().containsRelationshipIndexWithName(index, ID_PROPERTY_NAME) //
         .foundInDB(dbMock);
 
     // action
@@ -374,7 +373,7 @@ public class Neo4JLowLevelAPITest {
     RelationshipIndex index = aRelationshipIndex().containsNothingForId(ID) //
         .build();
 
-    anIndexManager().containsRelationshipIndexWithName(index, RELATIONSHIP_ID_INDEX) //
+    anIndexManager().containsRelationshipIndexWithName(index, ID_PROPERTY_NAME) //
         .foundInDB(dbMock);
 
     // action
@@ -393,7 +392,7 @@ public class Neo4JLowLevelAPITest {
         .andRelationship(aRelationship().withRevision(SECOND_REVISION).build()) //
         .build();
 
-    anIndexManager().containsRelationshipIndexWithName(index, RELATIONSHIP_ID_INDEX) //
+    anIndexManager().containsRelationshipIndexWithName(index, ID_PROPERTY_NAME) //
         .foundInDB(dbMock);
 
     // action

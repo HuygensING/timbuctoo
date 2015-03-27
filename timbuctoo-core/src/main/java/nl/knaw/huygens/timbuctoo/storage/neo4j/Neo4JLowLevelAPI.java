@@ -157,7 +157,7 @@ class Neo4JLowLevelAPI {
   }
 
   private ResourceIterator<Relationship> getFromIndex(String id) {
-    Index<Relationship> index = db.index().forRelationships(RELATIONSHIP_ID_INDEX);
+    Index<Relationship> index = db.index().forRelationships(ID_PROPERTY_NAME);
 
     IndexHits<Relationship> indexHits = index.get(ID_PROPERTY_NAME, id);
 
