@@ -60,7 +60,7 @@ class NoOpPropertyConverter implements PropertyConverter {
 
   @Override
   public String getPropertyName() {
-    return "";
+    return fieldName;
   }
 
 }
