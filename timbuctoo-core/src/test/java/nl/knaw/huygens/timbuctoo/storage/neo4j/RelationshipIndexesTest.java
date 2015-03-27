@@ -226,4 +226,61 @@ public class RelationshipIndexesTest {
     assertThat(actualRelationship, is(nullValue()));
     transactionSucceeded();
   }
+
+  @Test
+  public void getRelationshipWithRevisionReturnsTheRelationshipForTheIdAndRevision() {
+    // setup
+    Relationship relationshipThirdRevision = aRelationship().withRevision(THIRD_REVISION).build();
+    RelationshipIndex index = aRelationshipIndex().containsForId(ID) //
+        .relationship(aRelationship().withRevision(FIRST_REVISION).build()) //
+        .andRelationship(relationshipThirdRevision) //
+        .andRelationship(aRelationship().withRevision(SECOND_REVISION).build()) //
+        .build();
+
+    anIndexManager().containsRelationshipIndexWithName(index, ID_PROPERTY_NAME) //
+        .foundInDB(dbMock);
+
+    // action
+    Relationship actualRelationship = instance.getRelationshipWithRevision(ID, THIRD_REVISION);
+
+    // verify
+    assertThat(actualRelationship, is(sameInstance(relationshipThirdRevision)));
+    transactionSucceeded();
+  }
+
+  @Test
+  public void getRelationshipWithRevisionReturnsNullIfNoRelationsAreFound() {
+    // setup
+    RelationshipIndex index = aRelationshipIndex().containsNothingForId(ID) //
+        .build();
+
+    anIndexManager().containsRelationshipIndexWithName(index, ID_PROPERTY_NAME) //
+        .foundInDB(dbMock);
+
+    // action
+    Relationship actualRelationship = instance.getRelationshipWithRevision(ID, THIRD_REVISION);
+
+    // verify
+    assertThat(actualRelationship, is(nullValue()));
+    transactionSucceeded();
+  }
+
+  @Test
+  public void getRelationshipWithRevisionReturnsNullIfTheRevisionIsNotFound() {
+    // setup
+    RelationshipIndex index = aRelationshipIndex().containsForId(ID) //
+        .relationship(aRelationship().withRevision(FIRST_REVISION).build()) //
+        .andRelationship(aRelationship().withRevision(SECOND_REVISION).build()) //
+        .build();
+
+    anIndexManager().containsRelationshipIndexWithName(index, ID_PROPERTY_NAME) //
+        .foundInDB(dbMock);
+
+    // action
+    Relationship actualRelationship = instance.getRelationshipWithRevision(ID, THIRD_REVISION);
+
+    // verify
+    assertThat(actualRelationship, is(nullValue()));
+    transactionSucceeded();
+  }
 }

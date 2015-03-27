@@ -124,22 +124,7 @@ class Neo4JLowLevelAPI {
   }
 
   public <T extends Relation> Relationship getRelationshipWithRevision(Class<T> relationType, String id, int revision) {
-    try (Transaction transaction = db.beginTx()) {
-      ResourceIterator<Relationship> iterator = getFromIndex(id);
-
-      Relationship relationshipWithRevsion = null;
-
-      for (; iterator.hasNext();) {
-        Relationship next = iterator.next();
-        if (getRevisionProperty(next) == revision) {
-
-          relationshipWithRevsion = next;
-          break;
-        }
-      }
-      transaction.success();
-      return relationshipWithRevsion;
-    }
+    return relationshipIndexesMock.getRelationshipWithRevision(id, revision);
   }
 
   private ResourceIterator<Relationship> getFromIndex(String id) {

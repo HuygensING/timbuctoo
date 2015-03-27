@@ -7,6 +7,8 @@ import static nl.knaw.huygens.timbuctoo.model.Relation.TARGET_ID;
 
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.model.Relation;
+
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
@@ -115,5 +117,24 @@ class RelationshipIndexes {
 
     ResourceIterator<Relationship> iterator = indexHits.iterator();
     return iterator;
+  }
+
+  public <T extends Relation> Relationship getRelationshipWithRevision(String id, int revision) {
+    try (Transaction transaction = db.beginTx()) {
+      ResourceIterator<Relationship> iterator = getFromIndexById(id);
+
+      Relationship relationshipWithRevsion = null;
+
+      for (; iterator.hasNext();) {
+        Relationship next = iterator.next();
+        if (getRevisionProperty(next) == revision) {
+
+          relationshipWithRevsion = next;
+          break;
+        }
+      }
+      transaction.success();
+      return relationshipWithRevsion;
+    }
   }
 }

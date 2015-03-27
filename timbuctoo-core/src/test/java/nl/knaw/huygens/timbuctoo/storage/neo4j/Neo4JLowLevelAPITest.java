@@ -1,9 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.storage.neo4j.IndexManagerMockBuilder.anIndexManager;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeMockBuilder.aNode;
-import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipIndexMockBuilder.aRelationshipIndex;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipMockBuilder.aRelationship;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SearchResultBuilder.aSearchResult;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SearchResultBuilder.anEmptySearchResult;
@@ -32,7 +30,6 @@ import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.index.RelationshipIndex;
 
 import test.model.projecta.SubADomainEntity;
 import test.model.projecta.SubARelation;
@@ -337,60 +334,28 @@ public class Neo4JLowLevelAPITest {
   }
 
   @Test
-  public void getRelationshipWithRevisionReturnsTheRelationshipForTheIdAndRevision() {
+  public void getRelationshipDelegatesToRelationshipIndexes() {
     // setup
-    Relationship relationshipThirdRevision = aRelationship().withRevision(THIRD_REVISION).build();
-    RelationshipIndex index = aRelationshipIndex().containsForId(ID) //
-        .relationship(aRelationship().withRevision(FIRST_REVISION).build()) //
-        .andRelationship(relationshipThirdRevision) //
-        .andRelationship(aRelationship().withRevision(SECOND_REVISION).build()) //
-        .build();
-
-    anIndexManager().containsRelationshipIndexWithName(index, ID_PROPERTY_NAME) //
-        .foundInDB(dbMock);
+    Relationship relationship = aRelationship().withRevision(THIRD_REVISION).build();
+    when(relationshipIndexesMock.getRelationshipWithRevision(ID, THIRD_REVISION)).thenReturn(relationship);
 
     // action
     Relationship actualRelationship = instance.getRelationshipWithRevision(RELATION_TYPE, ID, THIRD_REVISION);
 
     // verify
-    assertThat(actualRelationship, is(sameInstance(relationshipThirdRevision)));
-    transactionSucceeded();
+    assertThat(actualRelationship, is(sameInstance(relationship)));
   }
 
   @Test
-  public void getRelationshipWithRevisionReturnsNullIfNoRelationsAreFound() {
+  public void getRelationshipWithRevisionReturnsNullIfTheRevisionIsNoFound() {
     // setup
-    RelationshipIndex index = aRelationshipIndex().containsNothingForId(ID) //
-        .build();
-
-    anIndexManager().containsRelationshipIndexWithName(index, ID_PROPERTY_NAME) //
-        .foundInDB(dbMock);
+    when(relationshipIndexesMock.getRelationshipWithRevision(ID, THIRD_REVISION)).thenReturn(null);
 
     // action
     Relationship actualRelationship = instance.getRelationshipWithRevision(RELATION_TYPE, ID, THIRD_REVISION);
 
     // verify
     assertThat(actualRelationship, is(nullValue()));
-    transactionSucceeded();
-  }
-
-  @Test
-  public void getRelationshipWithRevisionReturnsNullIfTheRevisionIsNotFound() {
-    // setup
-    RelationshipIndex index = aRelationshipIndex().containsForId(ID) //
-        .relationship(aRelationship().withRevision(FIRST_REVISION).build()) //
-        .andRelationship(aRelationship().withRevision(SECOND_REVISION).build()) //
-        .build();
-
-    anIndexManager().containsRelationshipIndexWithName(index, ID_PROPERTY_NAME) //
-        .foundInDB(dbMock);
-
-    // action
-    Relationship actualRelationship = instance.getRelationshipWithRevision(RELATION_TYPE, ID, THIRD_REVISION);
-
-    // verify
-    assertThat(actualRelationship, is(nullValue()));
-    transactionSucceeded();
   }
 
   @Test
