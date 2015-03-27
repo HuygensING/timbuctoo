@@ -34,6 +34,13 @@ public class RelationshipIndexMockBuilder {
     return this;
   }
 
+  public RelationshipIndexMockBuilder containsNothingForPropertyWithValue(String propertyName, String propertyValue) {
+    this.propertyName = propertyName;
+    this.value = propertyValue;
+
+    return this;
+  }
+
   public RelationshipIndexMockBuilder containsForId(String id) {
     containsForPropertyWithValue(ID_PROPERTY_NAME, id);
     return this;

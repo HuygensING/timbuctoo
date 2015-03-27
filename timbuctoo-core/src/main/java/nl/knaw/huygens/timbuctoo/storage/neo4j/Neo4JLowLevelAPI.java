@@ -39,7 +39,7 @@ class Neo4JLowLevelAPI {
   private RelationshipIndexes relationshipIndexesMock;
 
   public Neo4JLowLevelAPI(GraphDatabaseService db) {
-    this(db, new RelationshipIndexes());
+    this(db, new RelationshipIndexes(db));
   }
 
   Neo4JLowLevelAPI(GraphDatabaseService db, RelationshipIndexes relationshipIndexesMock) {
