@@ -71,4 +71,8 @@ class RelationshipIndexes {
         : 0;
   }
 
+  public void indexField(String propertyName, Object value) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
 }

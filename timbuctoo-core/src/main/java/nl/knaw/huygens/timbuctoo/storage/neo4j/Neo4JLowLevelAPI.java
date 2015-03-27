@@ -9,7 +9,6 @@ import static nl.knaw.huygens.timbuctoo.storage.neo4j.SystemRelationshipType.VER
 import static org.neo4j.graphdb.Direction.INCOMING;
 
 import java.util.List;
-import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -28,14 +27,12 @@ import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 class Neo4JLowLevelAPI {
   static final String RELATIONSHIP_ID_INDEX = "Relationship id";
   static final String RELATIONSHIP_START_ID_INDEX = "Relationship start id";
   static final String RELATIONSHIP_END_ID_INDEX = "Relationship end id";
   private final GraphDatabaseService db;
-  private final Map<String, String> relationPropertyIndexNameMap;
   private RelationshipIndexes relationshipIndexesMock;
 
   public Neo4JLowLevelAPI(GraphDatabaseService db) {
@@ -45,11 +42,6 @@ class Neo4JLowLevelAPI {
   Neo4JLowLevelAPI(GraphDatabaseService db, RelationshipIndexes relationshipIndexesMock) {
     this.db = db;
     this.relationshipIndexesMock = relationshipIndexesMock;
-
-    relationPropertyIndexNameMap = Maps.newHashMap();
-    relationPropertyIndexNameMap.put(ID_PROPERTY_NAME, RELATIONSHIP_ID_INDEX);
-    relationPropertyIndexNameMap.put(SOURCE_ID, RELATIONSHIP_START_ID_INDEX);
-    relationPropertyIndexNameMap.put(TARGET_ID, RELATIONSHIP_END_ID_INDEX);
   }
 
   public static int getRevisionProperty(PropertyContainer propertyContainer) {
@@ -174,9 +166,9 @@ class Neo4JLowLevelAPI {
   }
 
   public void addRelationship(Relationship relationship, String id) {
-    db.index().forRelationships(RELATIONSHIP_ID_INDEX).add(relationship, ID_PROPERTY_NAME, id);
-    db.index().forRelationships(RELATIONSHIP_START_ID_INDEX).add(relationship, SOURCE_ID, getNodeId(relationship.getStartNode()));
-    db.index().forRelationships(RELATIONSHIP_END_ID_INDEX).add(relationship, TARGET_ID, getNodeId(relationship.getEndNode()));
+    relationshipIndexesMock.indexField(ID_PROPERTY_NAME, id);
+    relationshipIndexesMock.indexField(SOURCE_ID, getNodeId(relationship.getStartNode()));
+    relationshipIndexesMock.indexField(TARGET_ID, getNodeId(relationship.getEndNode()));
   }
 
   private Object getNodeId(Node node) {
@@ -214,6 +206,14 @@ class Neo4JLowLevelAPI {
   public Relationship findRelationshipByProperty(Class<? extends Relation> type, String propertyName, String propertyValue) {
     if (!relationshipIndexesMock.containsIndexFor(propertyName)) {
       throw propertyHasNoIndex(type, propertyName);
+    }
+
+    List<Relationship> foundRelationships = relationshipIndexesMock.getRelationshipsBy(propertyName, propertyValue);
+
+    for (Relationship relationship : foundRelationships) {
+      if (relationshipIndexesMock.isLatestVersion(relationship)) {
+        return relationship;
+      }
     }
 
     return null;

@@ -2,9 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.IndexManagerMockBuilder.anIndexManager;
-import static nl.knaw.huygens.timbuctoo.storage.neo4j.Neo4JLowLevelAPI.RELATIONSHIP_END_ID_INDEX;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.Neo4JLowLevelAPI.RELATIONSHIP_ID_INDEX;
-import static nl.knaw.huygens.timbuctoo.storage.neo4j.Neo4JLowLevelAPI.RELATIONSHIP_START_ID_INDEX;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeMockBuilder.aNode;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipIndexMockBuilder.aRelationshipIndex;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipMockBuilder.aRelationship;
@@ -84,22 +82,13 @@ public class Neo4JLowLevelAPITest {
         .withEndNode(aNode().withId(endNodeId).build()) //
         .build();
 
-    RelationshipIndex idIndexMock = aRelationshipIndex().build();
-    RelationshipIndex startIdIndexMock = aRelationshipIndex().build();
-    RelationshipIndex endIdIndexMock = aRelationshipIndex().build();
-
-    anIndexManager().containsRelationshipIndexWithName(idIndexMock, RELATIONSHIP_ID_INDEX) //
-        .containsRelationshipIndexWithName(startIdIndexMock, RELATIONSHIP_START_ID_INDEX) //
-        .containsRelationshipIndexWithName(endIdIndexMock, RELATIONSHIP_END_ID_INDEX) //
-        .foundInDB(dbMock);
-
     // action
     instance.addRelationship(relationship, ID);
 
     // verify
-    verify(idIndexMock).add(relationship, ID_PROPERTY_NAME, ID);
-    verify(startIdIndexMock).add(relationship, Relation.SOURCE_ID, startNodeId);
-    verify(endIdIndexMock).add(relationship, Relation.TARGET_ID, endNodeId);
+    verify(relationshipIndexesMock).indexField(ID_PROPERTY_NAME, ID);
+    verify(relationshipIndexesMock).indexField(Relation.SOURCE_ID, startNodeId);
+    verify(relationshipIndexesMock).indexField(Relation.TARGET_ID, endNodeId);
   }
 
   @Test
@@ -421,7 +410,7 @@ public class Neo4JLowLevelAPITest {
     Relationship latestVersionOfRelationship = aRelationship().build();
     Relationship notLatestVersionOfRelationship2 = aRelationship().build();
     List<Relationship> foundRelationships = Lists.newArrayList(latestVersionOfRelationship, notLatestVersionOfRelationship2);
-    foundRelationshipsFor(RELATION_PROPERTY_WITH_INDEX, foundRelationships, PROPERTY_VALUE);
+    foundRelationshipsFor(RELATION_PROPERTY_WITH_INDEX, PROPERTY_VALUE, foundRelationships);
 
     isLatestVersion(latestVersionOfRelationship);
     isNotLatestVersion(notLatestVersionOfRelationship2);
@@ -430,7 +419,7 @@ public class Neo4JLowLevelAPITest {
     Relationship foundRelationship = instance.findRelationshipByProperty(RELATION_TYPE, RELATION_PROPERTY_WITH_INDEX, PROPERTY_VALUE);
 
     // verify
-    assertThat(foundRelationship, is(nullValue()));
+    assertThat(foundRelationship, is(sameInstance(latestVersionOfRelationship)));
   }
 
   private void isLatestVersion(Relationship relationship) {
@@ -443,7 +432,7 @@ public class Neo4JLowLevelAPITest {
     Relationship notLatestVersionOfRelationship1 = aRelationship().build();
     Relationship notLatestVersionOfRelationship2 = aRelationship().build();
     List<Relationship> foundRelationships = Lists.newArrayList(notLatestVersionOfRelationship1, notLatestVersionOfRelationship2);
-    foundRelationshipsFor(RELATION_PROPERTY_WITH_INDEX, foundRelationships, PROPERTY_VALUE);
+    foundRelationshipsFor(RELATION_PROPERTY_WITH_INDEX, PROPERTY_VALUE, foundRelationships);
 
     isNotLatestVersion(notLatestVersionOfRelationship1);
     isNotLatestVersion(notLatestVersionOfRelationship2);
@@ -459,7 +448,7 @@ public class Neo4JLowLevelAPITest {
     when(relationshipIndexesMock.isLatestVersion(relationship)).thenReturn(false);
   }
 
-  private void foundRelationshipsFor(String propertyName, List<Relationship> foundRelationships, String propertyValue) {
+  private void foundRelationshipsFor(String propertyName, String propertyValue, List<Relationship> foundRelationships) {
     indexFor(propertyName);
     when(relationshipIndexesMock.getRelationshipsBy(propertyName, propertyValue)).thenReturn(foundRelationships);
   }
