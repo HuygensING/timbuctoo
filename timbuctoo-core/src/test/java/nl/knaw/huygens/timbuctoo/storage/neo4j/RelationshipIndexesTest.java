@@ -9,6 +9,8 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -187,5 +189,41 @@ public class RelationshipIndexesTest {
   public void indexFieldThrowsAPropertyNotIndexExceptionWhenThereIsNoIndexForTheProperty() {
     // action
     instance.indexByField(aRelationship().build(), PROPERTY_WITHOUT_INDEX, PROPERTY_VALUE);
+  }
+
+  @Test
+  public void getLatestRelationshipReturnsTheRelationshipWithTheHighestRevisionWithId() {
+    // setup
+    Relationship relationshipThirdRevision = aRelationship().withRevision(THIRD_REVISION).build();
+    RelationshipIndex index = aRelationshipIndex().containsForId(ID) //
+        .relationship(aRelationship().withRevision(FIRST_REVISION).build()) //
+        .andRelationship(relationshipThirdRevision) //
+        .andRelationship(aRelationship().withRevision(SECOND_REVISION).build()) //
+        .build();
+
+    anIndexManager().containsRelationshipIndexWithName(index, ID_PROPERTY_NAME) //
+        .foundInDB(dbMock);
+
+    // action
+    Relationship actualRelationship = instance.getLatestRelationshipById(ID);
+
+    // verify
+    assertThat(actualRelationship, is(sameInstance(relationshipThirdRevision)));
+    transactionSucceeded();
+  }
+
+  @Test
+  public void getLatestRelationshipReturnsNullWhenNoRelationshipsAreFoundForId() {
+    // setup
+    RelationshipIndex index = aRelationshipIndex().containsNothingForId(ID).build();
+    anIndexManager().containsRelationshipIndexWithName(index, ID_PROPERTY_NAME) //
+        .foundInDB(dbMock);
+
+    // action
+    Relationship actualRelationship = instance.getLatestRelationshipById(ID);
+
+    // verify
+    assertThat(actualRelationship, is(nullValue()));
+    transactionSucceeded();
   }
 }

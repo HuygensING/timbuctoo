@@ -311,39 +311,29 @@ public class Neo4JLowLevelAPITest {
   }
 
   @Test
-  public void getLatestRelationshipReturnsTheRelationshipWithTheHighestRevisionWithId() {
+  public void getLatestRelationshipDelegatesToRelationshipIndexes() {
     // setup
-    Relationship relationshipThirdRevision = aRelationship().withRevision(THIRD_REVISION).build();
-    RelationshipIndex index = aRelationshipIndex().containsForId(ID) //
-        .relationship(aRelationship().withRevision(FIRST_REVISION).build()) //
-        .andRelationship(relationshipThirdRevision) //
-        .andRelationship(aRelationship().withRevision(SECOND_REVISION).build()) //
-        .build();
-
-    anIndexManager().containsRelationshipIndexWithName(index, ID_PROPERTY_NAME) //
-        .foundInDB(dbMock);
+    Relationship relationship = aRelationship().withRevision(THIRD_REVISION).build();
+    when(relationshipIndexesMock.getLatestRelationshipById(ID)).thenReturn(relationship);
 
     // action
     Relationship actualRelationship = instance.getLatestRelationshipById(ID);
 
     // verify
-    assertThat(actualRelationship, is(sameInstance(relationshipThirdRevision)));
-    transactionSucceeded();
+    assertThat(actualRelationship, is(sameInstance(relationship)));
   }
 
   @Test
-  public void getLatestRelationshipReturnsNullWhenNoRelationshipsAreFoundForId() {
+  public void getLatestRelationshipByIdReturnsNullWhenNoRelationshipsAreFoundForId() {
     // setup
-    RelationshipIndex index = aRelationshipIndex().containsNothingForId(ID).build();
-    anIndexManager().containsRelationshipIndexWithName(index, ID_PROPERTY_NAME) //
-        .foundInDB(dbMock);
+    when(relationshipIndexesMock.getLatestRelationshipById(ID)).thenReturn(null);
 
     // action
     Relationship actualRelationship = instance.getLatestRelationshipById(ID);
 
     // verify
     assertThat(actualRelationship, is(nullValue()));
-    transactionSucceeded();
+    verify(relationshipIndexesMock).getLatestRelationshipById(ID);
   }
 
   @Test

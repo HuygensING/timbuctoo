@@ -92,4 +92,28 @@ class RelationshipIndexes {
     getRelationIndexshipFor(propertyName).add(relationship, propertyName, value);
   }
 
+  public Relationship getLatestRelationshipById(String id) {
+    try (Transaction transaction = db.beginTx()) {
+      ResourceIterator<Relationship> iterator = getFromIndexById(id);
+
+      Relationship relationshipWithHighestRevision = null;
+
+      for (; iterator.hasNext();) {
+        Relationship next = iterator.next();
+
+        if (getRevisionProperty(next) > getRevisionProperty(relationshipWithHighestRevision)) {
+          relationshipWithHighestRevision = next;
+        }
+      }
+      transaction.success();
+      return relationshipWithHighestRevision;
+    }
+  }
+
+  private ResourceIterator<Relationship> getFromIndexById(String id) {
+    IndexHits<Relationship> indexHits = getFromIndex(ID_PROPERTY_NAME, id);
+
+    ResourceIterator<Relationship> iterator = indexHits.iterator();
+    return iterator;
+  }
 }

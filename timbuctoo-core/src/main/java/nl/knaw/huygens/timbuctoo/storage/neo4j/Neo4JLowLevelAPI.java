@@ -120,21 +120,7 @@ class Neo4JLowLevelAPI {
   }
 
   public Relationship getLatestRelationshipById(String id) {
-    try (Transaction transaction = db.beginTx()) {
-      ResourceIterator<Relationship> iterator = getFromIndex(id);
-
-      Relationship relationshipWithHighestRevision = null;
-
-      for (; iterator.hasNext();) {
-        Relationship next = iterator.next();
-
-        if (getRevisionProperty(next) > getRevisionProperty(relationshipWithHighestRevision)) {
-          relationshipWithHighestRevision = next;
-        }
-      }
-      transaction.success();
-      return relationshipWithHighestRevision;
-    }
+    return relationshipIndexesMock.getLatestRelationshipById(id);
   }
 
   public <T extends Relation> Relationship getRelationshipWithRevision(Class<T> relationType, String id, int revision) {
