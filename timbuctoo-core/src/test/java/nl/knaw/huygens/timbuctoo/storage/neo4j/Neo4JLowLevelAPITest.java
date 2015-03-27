@@ -40,7 +40,11 @@ import org.neo4j.graphdb.index.RelationshipIndex;
 import test.model.projecta.SubADomainEntity;
 import test.model.projecta.SubARelation;
 
+import com.google.common.collect.Lists;
+
 public class Neo4JLowLevelAPITest {
+  private static final String RELATIONSHIP_PROPERTY_WITHOUT_INDEX = "nonIndexedProperty";
+  private static final String RELATION_PROPERTY_WITH_INDEX = "property";
   private static final String PROPERTY_VALUE = "test";
   private static final String DOMAIN_ENTITY_PROPERTY = SubADomainEntity.VALUEA2_NAME;
   private static final int FIRST_REVISION = 1;
@@ -54,11 +58,13 @@ public class Neo4JLowLevelAPITest {
   private Neo4JLowLevelAPI instance;
   private GraphDatabaseService dbMock;
   private Transaction transactionMock;
+  private RelationshipIndexes relationshipIndexesMock;
 
   @Before
   public void setup() {
+    relationshipIndexesMock = mock(RelationshipIndexes.class);
     setupDBMock();
-    instance = new Neo4JLowLevelAPI(dbMock);
+    instance = new Neo4JLowLevelAPI(dbMock, relationshipIndexesMock);
   }
 
   private void setupDBMock() {
@@ -154,10 +160,10 @@ public class Neo4JLowLevelAPITest {
     // verify
     assertThat(actualNode, is(sameInstance(nodeWithThirdRevision)));
 
-    transactionSuccess();
+    transactionSucceeded();
   }
 
-  private void transactionSuccess() {
+  private void transactionSucceeded() {
     verify(transactionMock).success();
   }
 
@@ -172,7 +178,7 @@ public class Neo4JLowLevelAPITest {
 
     // verify
     assertThat(actualNode, is(nullValue()));
-    transactionSuccess();
+    transactionSucceeded();
   }
 
   @Test
@@ -191,7 +197,7 @@ public class Neo4JLowLevelAPITest {
 
     // verify
     assertThat(actualNode, is(sameInstance(nodeWithThirdRevision)));
-    transactionSuccess();
+    transactionSucceeded();
   }
 
   @Test
@@ -205,7 +211,7 @@ public class Neo4JLowLevelAPITest {
 
     // verify
     assertThat(actualNode, is(nullValue()));
-    transactionSuccess();
+    transactionSucceeded();
   }
 
   @Test
@@ -220,7 +226,7 @@ public class Neo4JLowLevelAPITest {
 
     // verify
     assertThat(actualNode, is(nullValue()));
-    transactionSuccess();
+    transactionSucceeded();
   }
 
   @Test
@@ -330,11 +336,11 @@ public class Neo4JLowLevelAPITest {
         .foundInDB(dbMock);
 
     // action
-    Relationship actualRelationship = instance.getLatestRelationship(ID);
+    Relationship actualRelationship = instance.getLatestRelationshipById(ID);
 
     // verify
     assertThat(actualRelationship, is(sameInstance(relationshipThirdRevision)));
-    transactionSuccess();
+    transactionSucceeded();
   }
 
   @Test
@@ -345,11 +351,11 @@ public class Neo4JLowLevelAPITest {
         .foundInDB(dbMock);
 
     // action
-    Relationship actualRelationship = instance.getLatestRelationship(ID);
+    Relationship actualRelationship = instance.getLatestRelationshipById(ID);
 
     // verify
     assertThat(actualRelationship, is(nullValue()));
-    transactionSuccess();
+    transactionSucceeded();
   }
 
   @Test
@@ -370,7 +376,7 @@ public class Neo4JLowLevelAPITest {
 
     // verify
     assertThat(actualRelationship, is(sameInstance(relationshipThirdRevision)));
-    transactionSuccess();
+    transactionSucceeded();
   }
 
   @Test
@@ -387,7 +393,7 @@ public class Neo4JLowLevelAPITest {
 
     // verify
     assertThat(actualRelationship, is(nullValue()));
-    transactionSuccess();
+    transactionSucceeded();
   }
 
   @Test
@@ -406,7 +412,98 @@ public class Neo4JLowLevelAPITest {
 
     // verify
     assertThat(actualRelationship, is(nullValue()));
-    transactionSuccess();
+    transactionSucceeded();
+  }
+
+  @Test
+  public void findRelationshipByPropertyReturnsTheFirstRelationshipThatIsTheLatestVersion() {
+    // setup
+    Relationship latestVersionOfRelationship = aRelationship().build();
+    Relationship notLatestVersionOfRelationship2 = aRelationship().build();
+    List<Relationship> foundRelationships = Lists.newArrayList(latestVersionOfRelationship, notLatestVersionOfRelationship2);
+    foundRelationshipsFor(RELATION_PROPERTY_WITH_INDEX, foundRelationships, PROPERTY_VALUE);
+
+    isLatestVersion(latestVersionOfRelationship);
+    isNotLatestVersion(notLatestVersionOfRelationship2);
+
+    // action
+    Relationship foundRelationship = instance.findRelationshipByProperty(RELATION_TYPE, RELATION_PROPERTY_WITH_INDEX, PROPERTY_VALUE);
+
+    // verify
+    assertThat(foundRelationship, is(nullValue()));
+  }
+
+  private void isLatestVersion(Relationship relationship) {
+    when(relationshipIndexesMock.isLatestVersion(relationship)).thenReturn(true);
+  }
+
+  @Test
+  public void findRelationshipByPropertyReturnsNullIfNoLatestRelationsAreFound() {
+    // setup
+    Relationship notLatestVersionOfRelationship1 = aRelationship().build();
+    Relationship notLatestVersionOfRelationship2 = aRelationship().build();
+    List<Relationship> foundRelationships = Lists.newArrayList(notLatestVersionOfRelationship1, notLatestVersionOfRelationship2);
+    foundRelationshipsFor(RELATION_PROPERTY_WITH_INDEX, foundRelationships, PROPERTY_VALUE);
+
+    isNotLatestVersion(notLatestVersionOfRelationship1);
+    isNotLatestVersion(notLatestVersionOfRelationship2);
+
+    // action
+    Relationship foundRelationship = instance.findRelationshipByProperty(RELATION_TYPE, RELATION_PROPERTY_WITH_INDEX, PROPERTY_VALUE);
+
+    // verify
+    assertThat(foundRelationship, is(nullValue()));
+  }
+
+  private void isNotLatestVersion(Relationship relationship) {
+    when(relationshipIndexesMock.isLatestVersion(relationship)).thenReturn(false);
+  }
+
+  private void foundRelationshipsFor(String propertyName, List<Relationship> foundRelationships, String propertyValue) {
+    indexFor(propertyName);
+    when(relationshipIndexesMock.getRelationshipsBy(propertyName, propertyValue)).thenReturn(foundRelationships);
+  }
+
+  @Test
+  public void findRelationshipByPropertyReturnsNullIfNoRelationsAreFound() {
+    // setup
+    noRelationshipsFoundByProperty(RELATION_PROPERTY_WITH_INDEX, PROPERTY_VALUE);
+
+    // action
+    Relationship foundRelationship = instance.findRelationshipByProperty(RELATION_TYPE, RELATION_PROPERTY_WITH_INDEX, PROPERTY_VALUE);
+
+    // verify
+    assertThat(foundRelationship, is(nullValue()));
+  }
+
+  private void noRelationshipsFoundByProperty(String propertyName, String propertyValue) {
+    indexFor(propertyName);
+    List<Relationship> foundRelationships = Lists.newArrayList();
+    when(relationshipIndexesMock.getRelationshipsBy(propertyName, propertyValue)).thenReturn(foundRelationships);
+  }
+
+  private void indexFor(String propertyName) {
+    when(relationshipIndexesMock.containsIndexFor(propertyName)).thenReturn(true);
+  }
+
+  @Test(expected = PropertyNotSearchableException.class)
+  public void findRelationshipByProeprtyThrowsAnNoIndexForFieldExceptionInThereIsNoIndexForTheField() {
+    // setup
+    noIndexFor(RELATIONSHIP_PROPERTY_WITHOUT_INDEX);
+
+    // action
+    instance.findRelationshipByProperty(RELATION_TYPE, RELATIONSHIP_PROPERTY_WITHOUT_INDEX, PROPERTY_VALUE);
+
+    // verify
+    transactionFailed();
+  }
+
+  private void noIndexFor(String propertyName) {
+    when(relationshipIndexesMock.containsIndexFor(propertyName)).thenReturn(false);
+  }
+
+  private void transactionFailed() {
+    verify(transactionMock).failure();
   }
 
 }

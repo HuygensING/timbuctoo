@@ -199,7 +199,7 @@ public class Neo4JStorage {
 
   public <T extends Relation> T getRelation(Class<T> type, String id) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
-      Relationship relationshipWithHighestRevision = neo4jLowLevelAPI.getLatestRelationship(id);
+      Relationship relationshipWithHighestRevision = neo4jLowLevelAPI.getLatestRelationshipById(id);
 
       if (relationshipWithHighestRevision == null) {
         transaction.success();
@@ -270,7 +270,7 @@ public class Neo4JStorage {
   public <T extends Relation> void updateRelation(Class<T> type, Relation relation, Change change) throws StorageException {
 
     try (Transaction transaction = db.beginTx()) {
-      Relationship relationship = neo4jLowLevelAPI.getLatestRelationship(relation.getId());
+      Relationship relationship = neo4jLowLevelAPI.getLatestRelationshipById(relation.getId());
 
       T entity = (T) relation;
       if (relationship == null) {
@@ -458,7 +458,7 @@ public class Neo4JStorage {
 
   public <T extends Relation> void setRelationPID(Class<T> type, String id, String pid) throws NoSuchEntityException, ConversionException, StorageException {
     try (Transaction transaction = db.beginTx()) {
-      Relationship relationship = neo4jLowLevelAPI.getLatestRelationship(id);
+      Relationship relationship = neo4jLowLevelAPI.getLatestRelationshipById(id);
 
       if (relationship == null) {
         transaction.failure();
@@ -535,7 +535,7 @@ public class Neo4JStorage {
     try (Transaction transaction = db.beginTx()) {
       RelationshipConverter<T> relationshipConverter = propertyContainerConverterFactory.createForRelation(type);
       String propertyName = relationshipConverter.getPropertyName(field);
-      Relationship relationship = neo4jLowLevelAPI.findRelationshipByProperty(propertyName, value);
+      Relationship relationship = neo4jLowLevelAPI.findRelationshipByProperty(type, propertyName, value);
 
       if (relationship == null) {
         transaction.success();

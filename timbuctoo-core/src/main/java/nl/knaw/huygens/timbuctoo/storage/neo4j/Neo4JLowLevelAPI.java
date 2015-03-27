@@ -4,10 +4,12 @@ import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Relation.SOURCE_ID;
 import static nl.knaw.huygens.timbuctoo.model.Relation.TARGET_ID;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.PropertyNotSearchableException.propertyHasNoIndex;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SystemRelationshipType.VERSION_OF;
 import static org.neo4j.graphdb.Direction.INCOMING;
 
 import java.util.List;
+import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -26,15 +28,28 @@ import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 class Neo4JLowLevelAPI {
   static final String RELATIONSHIP_ID_INDEX = "Relationship id";
   static final String RELATIONSHIP_START_ID_INDEX = "Relationship start id";
   static final String RELATIONSHIP_END_ID_INDEX = "Relationship end id";
   private final GraphDatabaseService db;
+  private final Map<String, String> relationPropertyIndexNameMap;
+  private RelationshipIndexes relationshipIndexesMock;
 
   public Neo4JLowLevelAPI(GraphDatabaseService db) {
+    this(db, new RelationshipIndexes());
+  }
+
+  Neo4JLowLevelAPI(GraphDatabaseService db, RelationshipIndexes relationshipIndexesMock) {
     this.db = db;
+    this.relationshipIndexesMock = relationshipIndexesMock;
+
+    relationPropertyIndexNameMap = Maps.newHashMap();
+    relationPropertyIndexNameMap.put(ID_PROPERTY_NAME, RELATIONSHIP_ID_INDEX);
+    relationPropertyIndexNameMap.put(SOURCE_ID, RELATIONSHIP_START_ID_INDEX);
+    relationPropertyIndexNameMap.put(TARGET_ID, RELATIONSHIP_END_ID_INDEX);
   }
 
   public static int getRevisionProperty(PropertyContainer propertyContainer) {
@@ -112,7 +127,7 @@ class Neo4JLowLevelAPI {
     return nodes;
   }
 
-  public Relationship getLatestRelationship(String id) {
+  public Relationship getLatestRelationshipById(String id) {
     try (Transaction transaction = db.beginTx()) {
       ResourceIterator<Relationship> iterator = getFromIndex(id);
 
@@ -196,8 +211,12 @@ class Neo4JLowLevelAPI {
     }
   }
 
-  public Relationship findRelationshipByProperty(String propertyName, String propertyValue) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+  public Relationship findRelationshipByProperty(Class<? extends Relation> type, String propertyName, String propertyValue) {
+    if (!relationshipIndexesMock.containsIndexFor(propertyName)) {
+      throw propertyHasNoIndex(type, propertyName);
+    }
+
+    return null;
   }
 
 }

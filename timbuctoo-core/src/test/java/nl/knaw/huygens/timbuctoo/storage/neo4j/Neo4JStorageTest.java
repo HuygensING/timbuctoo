@@ -1254,11 +1254,11 @@ public class Neo4JStorageTest {
   }
 
   private void latestRelationshipFoundForId(String string, Relationship foundRelation) {
-    when(neo4JLowLevelAPIMock.getLatestRelationship(string)).thenReturn(foundRelation);
+    when(neo4JLowLevelAPIMock.getLatestRelationshipById(string)).thenReturn(foundRelation);
   }
 
   private void noLatestRelationshipFoundForId(String string) {
-    when(neo4JLowLevelAPIMock.getLatestRelationship(string)).thenReturn(null);
+    when(neo4JLowLevelAPIMock.getLatestRelationshipById(string)).thenReturn(null);
   }
 
   @Test
@@ -1738,7 +1738,7 @@ public class Neo4JStorageTest {
   }
 
   private void noRelationshipFoundFor(String propertyName, String propertyValue) {
-    when(neo4JLowLevelAPIMock.findRelationshipByProperty(propertyName, propertyValue)).thenReturn(null);
+    when(neo4JLowLevelAPIMock.findRelationshipByProperty(RELATION_TYPE, propertyName, propertyValue)).thenReturn(null);
   }
 
   @Test(expected = ConversionException.class)
@@ -1761,7 +1761,7 @@ public class Neo4JStorageTest {
   }
 
   private void relationshipFoundFor(String propertyName, String propertyValue, Relationship relationship) {
-    when(neo4JLowLevelAPIMock.findRelationshipByProperty(propertyName, propertyValue)).thenReturn(relationship);
+    when(neo4JLowLevelAPIMock.findRelationshipByProperty(RELATION_TYPE, propertyName, propertyValue)).thenReturn(relationship);
   }
 
   @Test(expected = StorageException.class)
