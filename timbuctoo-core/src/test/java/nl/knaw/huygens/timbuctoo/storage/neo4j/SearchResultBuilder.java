@@ -1,13 +1,8 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
-import static org.mockito.Mockito.when;
-
 import java.util.List;
 
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Label;
-import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.helpers.collection.Iterables;
@@ -15,46 +10,22 @@ import org.neo4j.helpers.collection.IteratorUtil;
 
 import com.google.common.collect.Lists;
 
-public class SearchResultBuilder {
-  private Label label;
-  private String value;
-  private final List<Node> nodes;
-  private String propertyName;
+public class SearchResultBuilder<U extends PropertyContainer, T extends SearchResultBuilder<U, T>> {
 
-  public static SearchResultBuilder anEmptySearchResult() {
-    return new SearchResultBuilder();
+  protected final List<U> propertyContainers;
+
+  protected SearchResultBuilder() {
+    propertyContainers = Lists.newArrayList();
   }
 
-  public static SearchResultBuilder aSearchResult() {
-    return new SearchResultBuilder();
-  }
-
-  private SearchResultBuilder() {
-    nodes = Lists.newArrayList();
-  }
-
-  public SearchResultBuilder andPropertyWithValue(String propertyName, String value) {
-    this.propertyName = propertyName;
-    this.value = value;
-    return this;
-  }
-
-  public SearchResultBuilder andId(String id) {
-    return andPropertyWithValue(ID_PROPERTY_NAME, id);
-  }
-
-  public SearchResultBuilder forLabel(Label label) {
-    this.label = label;
-    return this;
-  }
-
-  public SearchResultBuilder withNode(Node node) {
+  @SuppressWarnings("unchecked")
+  public T withNode(U node) {
     addNode(node);
-    return this;
+    return (T) this;
   }
 
-  private void addNode(Node node) {
-    nodes.add(node);
+  private void addNode(U node) {
+    propertyContainers.add(node);
   }
 
   /**
@@ -62,20 +33,17 @@ public class SearchResultBuilder {
    * @param node the node
    * @return this
    */
-  public SearchResultBuilder andNode(Node node) {
+  @SuppressWarnings("unchecked")
+  public T andNode(U node) {
     addNode(node);
-    return this;
+    return (T) this;
   }
 
-  public void foundInDB(GraphDatabaseService db) {
-    when(db.findNodesByLabelAndProperty(label, propertyName, value)).thenReturn(build());
-  }
+  public ResourceIterable<U> build() {
+    ResourceIterator<U> nodeIterator = IteratorUtil.asResourceIterator(propertyContainers.iterator());
 
-  public ResourceIterable<Node> build() {
-    ResourceIterator<Node> nodeIterator = IteratorUtil.asResourceIterator(nodes.iterator());
-
-    Iterable<Node> nodesIterable = IteratorUtil.asIterable(nodeIterator);
-    ResourceIterable<Node> foundNodes = Iterables.asResourceIterable(nodesIterable);
+    Iterable<U> nodesIterable = IteratorUtil.asIterable(nodeIterator);
+    ResourceIterable<U> foundNodes = Iterables.asResourceIterable(nodesIterable);
 
     return foundNodes;
   }
