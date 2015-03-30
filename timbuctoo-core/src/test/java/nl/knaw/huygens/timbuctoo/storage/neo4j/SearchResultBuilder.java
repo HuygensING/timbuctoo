@@ -68,11 +68,16 @@ public class SearchResultBuilder {
   }
 
   public void foundInDB(GraphDatabaseService db) {
+    when(db.findNodesByLabelAndProperty(label, propertyName, value)).thenReturn(build());
+  }
+
+  public ResourceIterable<Node> build() {
     ResourceIterator<Node> nodeIterator = IteratorUtil.asResourceIterator(nodes.iterator());
 
     Iterable<Node> nodesIterable = IteratorUtil.asIterable(nodeIterator);
     ResourceIterable<Node> foundNodes = Iterables.asResourceIterable(nodesIterable);
-    when(db.findNodesByLabelAndProperty(label, propertyName, value)).thenReturn(foundNodes);
+
+    return foundNodes;
   }
 
 }

@@ -164,7 +164,6 @@ public class Neo4JLegacyStorageWrapperIntegrationTest extends StorageIntegration
     super.findItemByPropertyForSystemEntityReturnsTheFirstFoundInTheDatabase();
   }
 
-  @Ignore
   @Test
   @Override
   public void countSystemEntityReturnsAllTheNumberOfEntitiseOfACertainType() throws Exception {

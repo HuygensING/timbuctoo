@@ -9,6 +9,7 @@ import static nl.knaw.huygens.timbuctoo.storage.neo4j.SystemRelationshipType.VER
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
@@ -28,7 +29,9 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.tooling.GlobalGraphOperations;
 
 import test.model.projecta.SubADomainEntity;
 import test.model.projecta.SubARelation;
@@ -50,14 +53,16 @@ public class Neo4JLowLevelAPITest {
 
   private Neo4JLowLevelAPI instance;
   private GraphDatabaseService dbMock;
+  private GlobalGraphOperations globalGraphOperationsMock;
   private Transaction transactionMock;
   private RelationshipIndexes relationshipIndexesMock;
 
   @Before
   public void setup() {
+    globalGraphOperationsMock = mock(GlobalGraphOperations.class);
     relationshipIndexesMock = mock(RelationshipIndexes.class);
     setupDBMock();
-    instance = new Neo4JLowLevelAPI(dbMock, relationshipIndexesMock);
+    instance = new Neo4JLowLevelAPI(dbMock, relationshipIndexesMock, globalGraphOperationsMock);
   }
 
   private void setupDBMock() {
@@ -411,4 +416,22 @@ public class Neo4JLowLevelAPITest {
     verify(transactionMock).failure();
   }
 
+  @Test
+  public void countNodesWithLabelReturnsTheNumberOfNodesThatExistWithACertainLabel() {
+    // setup
+    long two = 2l;
+    ResourceIterable<Node> searchResultWithTwoNodes = aSearchResult()//
+        .withNode(aNode().build())//
+        .andNode(aNode().build())//
+        .build();
+
+    when(globalGraphOperationsMock.getAllNodesWithLabel(DOMAIN_ENTITY_LABEL)).thenReturn(searchResultWithTwoNodes);
+
+    // action
+    long count = instance.countNodesWithLabel(DOMAIN_ENTITY_LABEL);
+
+    // verify
+    assertThat(count, is(equalTo(two)));
+    transactionSucceeded();
+  }
 }

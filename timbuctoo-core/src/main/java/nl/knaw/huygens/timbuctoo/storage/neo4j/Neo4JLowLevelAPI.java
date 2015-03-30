@@ -22,20 +22,23 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.tooling.GlobalGraphOperations;
 
 import com.google.common.collect.Lists;
 
 class Neo4JLowLevelAPI {
   private final GraphDatabaseService db;
-  private RelationshipIndexes relationshipIndexesMock;
+  private final RelationshipIndexes relationshipIndexesMock;
+  private final GlobalGraphOperations globalGraphOperations;
 
   public Neo4JLowLevelAPI(GraphDatabaseService db) {
-    this(db, new RelationshipIndexes(db));
+    this(db, new RelationshipIndexes(db), GlobalGraphOperations.at(db));
   }
 
-  Neo4JLowLevelAPI(GraphDatabaseService db, RelationshipIndexes relationshipIndexesMock) {
+  Neo4JLowLevelAPI(GraphDatabaseService db, RelationshipIndexes relationshipIndexesMock, GlobalGraphOperations globalGraphOperations) {
     this.db = db;
     this.relationshipIndexesMock = relationshipIndexesMock;
+    this.globalGraphOperations = globalGraphOperations;
   }
 
   /**
@@ -169,8 +172,12 @@ class Neo4JLowLevelAPI {
     return null;
   }
 
-  public long countNodesWithLabel(Label systemEntityLabel) {
-    throw new UnsupportedOperationException("Yet to be implemented");
-  }
+  public long countNodesWithLabel(Label label) {
+    try (Transaction transaction = db.beginTx()) {
+      int count = Lists.newArrayList(globalGraphOperations.getAllNodesWithLabel(label).iterator()).size();
 
+      transaction.success();
+      return count;
+    }
+  }
 }
