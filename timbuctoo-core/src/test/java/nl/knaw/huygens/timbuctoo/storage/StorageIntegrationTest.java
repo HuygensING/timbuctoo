@@ -53,6 +53,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import test.model.projecta.ProjectAPerson;
+import test.model.projectb.ProjectBPerson;
 import test.variation.model.projecta.ProjectARelation;
 
 import com.google.common.collect.Lists;
@@ -134,9 +135,7 @@ public abstract class StorageIntegrationTest {
 
   @Test
   public void addSystemEntityAddsASystemEntityToTheStorageAndReturnsItsId() throws Exception {
-    RelationType systemEntityToStore = createRelationType(REGULAR_NAME, INVERSE_NAME);
-
-    String id = instance.addSystemEntity(RelationType.class, systemEntityToStore);
+    String id = addSystemEntity(REGULAR_NAME, INVERSE_NAME);
 
     assertThat(id, startsWith(RelationType.ID_PREFIX));
 
@@ -157,8 +156,7 @@ public abstract class StorageIntegrationTest {
 
   @Test
   public void updateSystemEntityChangesTheExistingSystemEntity() throws Exception {
-    RelationType systemEntityToStore = createRelationType(REGULAR_NAME, INVERSE_NAME);
-    String id = instance.addSystemEntity(RelationType.class, systemEntityToStore);
+    String id = addSystemEntity(REGULAR_NAME, INVERSE_NAME);
     RelationType storedSystemEntity = instance.getEntity(RelationType.class, id);
     assertThat(storedSystemEntity, is(notNullValue()));
     storedSystemEntity.setRegularName(OTHER_REGULAR_NAME);
@@ -175,12 +173,9 @@ public abstract class StorageIntegrationTest {
 
   @Test
   public void getSystemEntitiesReturnsAllTheSystemEntitiesOfACertainType() throws Exception {
-    RelationType systemEntityToStore1 = createRelationType(REGULAR_NAME, INVERSE_NAME);
-    String id1 = instance.addSystemEntity(RelationType.class, systemEntityToStore1);
-    RelationType systemEntityToStore2 = createRelationType(REGULAR_NAME1, INVERSE_NAME1);
-    String id2 = instance.addSystemEntity(RelationType.class, systemEntityToStore2);
-    RelationType systemEntityToStore3 = createRelationType(REGULAR_NAME2, INVERSE_NAME2);
-    String id3 = instance.addSystemEntity(RelationType.class, systemEntityToStore3);
+    String id1 = addSystemEntity(REGULAR_NAME, INVERSE_NAME);
+    String id2 = addSystemEntity(REGULAR_NAME1, INVERSE_NAME1);
+    String id3 = addSystemEntity(REGULAR_NAME2, INVERSE_NAME2);
 
     List<RelationType> storedSystemEntities = instance.getSystemEntities(RelationType.class).getAll();
 
@@ -202,10 +197,15 @@ public abstract class StorageIntegrationTest {
     assertThat(storedSystemEntities, containsInAnyOrder(relationTypeMatchers.toArray(new RelationTypeMatcher[0])));
   }
 
+  private String addSystemEntity(String regularName, String inverseName) throws StorageException {
+    RelationType systemEntityToStore1 = createRelationType(regularName, inverseName);
+    String id1 = instance.addSystemEntity(RelationType.class, systemEntityToStore1);
+    return id1;
+  }
+
   @Test
   public void deleteSystemEntityRemovesAnEntityFromTheDatabase() throws StorageException {
-    RelationType systemEntityToStore = createRelationType(REGULAR_NAME, INVERSE_NAME);
-    String id = instance.addSystemEntity(RelationType.class, systemEntityToStore);
+    String id = addSystemEntity(REGULAR_NAME, INVERSE_NAME);
     assertThat(instance.getEntity(RelationType.class, id), is(notNullValue()));
 
     instance.deleteSystemEntity(RelationType.class, id);
@@ -215,9 +215,7 @@ public abstract class StorageIntegrationTest {
 
   @Test
   public void findItemByPropertyForSystemEntityReturnsTheFirstFoundInTheDatabase() throws Exception {
-    // setup
-    RelationType relationType = createRelationType(REGULAR_NAME, INVERSE_NAME);
-    String id = instance.addSystemEntity(RelationType.class, relationType);
+    String id = addSystemEntity(REGULAR_NAME, INVERSE_NAME);
 
     // action
     RelationType foundRelationType = instance.findItemByProperty(RelationType.class, RelationType.REGULAR_NAME, REGULAR_NAME);
@@ -229,13 +227,28 @@ public abstract class StorageIntegrationTest {
         .withRegularName(REGULAR_NAME));
   }
 
+  @Test
+  public void countSystemEntityReturnsAllTheNumberOfEntitiseOfACertainType() throws Exception {
+    // setup
+    addSystemEntity(REGULAR_NAME, INVERSE_NAME);
+    addSystemEntity(REGULAR_NAME1, INVERSE_NAME1);
+    addSystemEntity(REGULAR_NAME2, INVERSE_NAME2);
+
+    // action
+    long count = instance.count(RelationType.class);
+
+    // verify
+    long three = 3l;
+    assertThat(count, is(equalTo(three)));
+  }
+
   /* ******************************************************************************
    * DomainEntity
    * ******************************************************************************/
 
   @Test
   public void addDomainEntityAddsADomainEntityAndItsPrimitiveVersieToTheDatabase() throws Exception {
-    ProjectAPerson domainEntityToStore = createPerson(GENDER, PERSON_NAME, PROJECT_A_PERSON_PROPERTY, BIRTH_DATE, DEATH_DATE);
+    ProjectAPerson domainEntityToStore = createProjectAPerson(GENDER, PERSON_NAME, PROJECT_A_PERSON_PROPERTY, BIRTH_DATE, DEATH_DATE);
 
     // action
     String id = instance.addDomainEntity(DOMAIN_ENTITY_TYPE, domainEntityToStore, CHANGE_TO_SAVE);
@@ -456,7 +469,7 @@ public abstract class StorageIntegrationTest {
   @Test
   public void findItemByPropertyForDomainEntityReturnsTheFirstDomainEntityFound() throws StorageException {
     // setup
-    ProjectAPerson person = createPerson(GENDER, PERSON_NAME, PROJECT_A_PERSON_PROPERTY, BIRTH_DATE, DEATH_DATE);
+    ProjectAPerson person = createProjectAPerson(GENDER, PERSON_NAME, PROJECT_A_PERSON_PROPERTY, BIRTH_DATE, DEATH_DATE);
     String id = instance.addDomainEntity(ProjectAPerson.class, person, CHANGE_TO_SAVE);
 
     // action
@@ -468,21 +481,73 @@ public abstract class StorageIntegrationTest {
         .withGender(GENDER)//
         .withId(id)//
         .withNames(Lists.newArrayList(PERSON_NAME)));
+  }
 
+  @Test
+  public void countDomainEntityOnlyCountsTheLatestVersions() throws Exception {
+    // setup
+    // save person
+    String id = addDefaultProjectAPerson();
+    // create a new version of person.
+    ProjectAPerson person = instance.getEntity(ProjectAPerson.class, id);
+    person.setGender(GENDER1);
+    instance.updateDomainEntity(ProjectAPerson.class, person, UPDATE_CHANGE);
+    instance.setPID(ProjectAPerson.class, id, PID);
+
+    // action
+    long count = instance.count(ProjectAPerson.class);
+
+    // verify
+    long one = 1l;
+    assertThat(count, is(equalTo(one)));
+  }
+
+  @Test
+  public void countDomainEntityReturnsTheCountOfThePrimitive() throws Exception {
+    // setup
+    addDefaultProjectBPerson();
+    addDefaultProjectAPerson();
+
+    // action
+    long projectACount = instance.count(ProjectAPerson.class);
+    long projectBCount = instance.count(ProjectBPerson.class);
+    long primitiveCount = instance.count(Person.class);
+
+    // verify
+    long two = 2l;
+    assertThat(projectACount, is(equalTo(two)));
+    assertThat(projectBCount, is(equalTo(two)));
+    assertThat(primitiveCount, is(equalTo(two)));
   }
 
   // Person test helpers
 
-  private ProjectAPerson createPerson(Gender gender, PersonName name, String projectAPersonProperty, Datable birthDate, Datable deathDate) {
-    ProjectAPerson domainEntityToStore = new ProjectAPerson();
-    domainEntityToStore.setGender(gender);
-    domainEntityToStore.addName(name);
-    domainEntityToStore.setProjectAPersonProperty(projectAPersonProperty);
-    domainEntityToStore.setBirthDate(birthDate);
-    domainEntityToStore.setDeathDate(deathDate);
-    domainEntityToStore.setTypes(Lists.newArrayList("Test"));
+  private ProjectAPerson createProjectAPerson(Gender gender, PersonName name, String projectAPersonProperty, Datable birthDate, Datable deathDate) {
+    ProjectAPerson person = new ProjectAPerson();
+    person.setGender(gender);
+    person.addName(name);
+    person.setProjectAPersonProperty(projectAPersonProperty);
+    person.setBirthDate(birthDate);
+    person.setDeathDate(deathDate);
+    person.setTypes(Lists.newArrayList("Test"));
 
-    return domainEntityToStore;
+    return person;
+  }
+
+  private ProjectBPerson createProjectBPerson(Gender gender, PersonName name, Datable birthDate, Datable deathDate) {
+    ProjectBPerson person = new ProjectBPerson();
+    person.setGender(gender);
+    person.addName(name);
+    person.setBirthDate(birthDate);
+    person.setDeathDate(deathDate);
+    person.setTypes(Lists.newArrayList("Test"));
+
+    return person;
+  }
+
+  private void addDefaultProjectBPerson() throws StorageException {
+    ProjectBPerson entity = createProjectBPerson(GENDER, PERSON_NAME, BIRTH_DATE, DEATH_DATE);
+    instance.addDomainEntity(ProjectBPerson.class, entity, CHANGE_TO_SAVE);
   }
 
   private String addDefaultProjectAPerson() throws StorageException {
@@ -490,7 +555,7 @@ public abstract class StorageIntegrationTest {
   }
 
   private String addPerson(Gender gender, PersonName name, String projectAPersonProperty, Datable birthDate, Datable deathDate) throws StorageException {
-    ProjectAPerson domainEntityToStore = createPerson(gender, name, projectAPersonProperty, birthDate, deathDate);
+    ProjectAPerson domainEntityToStore = createProjectAPerson(gender, name, projectAPersonProperty, birthDate, deathDate);
     return instance.addDomainEntity(DOMAIN_ENTITY_TYPE, domainEntityToStore, CHANGE_TO_SAVE);
   }
 
@@ -511,41 +576,6 @@ public abstract class StorageIntegrationTest {
         .withGender(GENDER)//
         .withId(id)//
         .withNames(Lists.newArrayList(PERSON_NAME));
-  }
-
-  // Relation test helpers
-
-  private RelationMatcher likeDefaultNotAcceptionRelation(String sourceId) {
-    return likeRelation()//
-        .withSourceId(sourceId) //
-        .withSourceType(DEFAULT_SOURCE_TYPE) //
-        .withTargetId(DEFAULT_TARGET_ID) //
-        .withTargetType(DEFAULT_TARGET_TYPE) //
-        .withTypeId(DEFAULT_TYPE_ID) //
-        .isAccepted(NOT_ACCEPTED);
-  }
-
-  private RelationMatcher likeDefaultAcceptedRelation(String sourceId) {
-    return likeRelation()//
-        .withSourceId(sourceId) //
-        .withSourceType(DEFAULT_SOURCE_TYPE) //
-        .withTargetId(DEFAULT_TARGET_ID) //
-        .withTargetType(DEFAULT_TARGET_TYPE) //
-        .withTypeId(DEFAULT_TYPE_ID) //
-        .isAccepted(ACCEPTED);
-  }
-
-  private String addDefaultProjectARelation(String sourceId) throws StorageException {
-    ProjectARelation relation = new ProjectARelation();
-    relation.setAccepted(ACCEPTED);
-    relation.setSourceId(sourceId);
-    relation.setSourceType(DEFAULT_SOURCE_TYPE);
-    relation.setTargetId(DEFAULT_TARGET_ID);
-    relation.setTargetType(DEFAULT_TARGET_TYPE);
-    relation.setTypeId(DEFAULT_TYPE_ID);
-
-    String relationId = instance.addDomainEntity(PROJECT_RELATION_TYPE, relation, CHANGE_TO_SAVE);
-    return relationId;
   }
 
   /* *******************************************************************************
@@ -600,8 +630,7 @@ public abstract class StorageIntegrationTest {
   }
 
   private String addRelationType() throws StorageException {
-    RelationType relationType = createRelationType(REGULAR_NAME, INVERSE_NAME);
-    String typeId = instance.addSystemEntity(RelationType.class, relationType);
+    String typeId = addSystemEntity(REGULAR_NAME, INVERSE_NAME);
     return typeId;
   }
 
@@ -693,6 +722,64 @@ public abstract class StorageIntegrationTest {
         .withTypeId(typeId) //
         .isAccepted(ACCEPTED));
 
+  }
+
+  @Test
+  public void countRelationsOnlyCountsTheLatest() throws Exception {
+    // setup
+    String sourceId = addDefaultProjectAPerson();
+    String targetId = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+
+    String id = addDefaultRelation(sourceId, targetId, typeId);
+
+    ProjectARelation relation = instance.getEntity(ProjectARelation.class, id);
+    relation.setAccepted(NOT_ACCEPTED);
+    instance.updateDomainEntity(ProjectARelation.class, relation, UPDATE_CHANGE);
+    instance.setPID(ProjectARelation.class, id, PID);
+
+    // action
+    long count = instance.count(ProjectARelation.class);
+
+    // verify
+    long one = 1l;
+    assertThat(count, is(equalTo(one)));
+
+  }
+
+  //Relation test helpers
+
+  private RelationMatcher likeDefaultNotAcceptionRelation(String sourceId) {
+    return likeRelation()//
+        .withSourceId(sourceId) //
+        .withSourceType(DEFAULT_SOURCE_TYPE) //
+        .withTargetId(DEFAULT_TARGET_ID) //
+        .withTargetType(DEFAULT_TARGET_TYPE) //
+        .withTypeId(DEFAULT_TYPE_ID) //
+        .isAccepted(NOT_ACCEPTED);
+  }
+
+  private RelationMatcher likeDefaultAcceptedRelation(String sourceId) {
+    return likeRelation()//
+        .withSourceId(sourceId) //
+        .withSourceType(DEFAULT_SOURCE_TYPE) //
+        .withTargetId(DEFAULT_TARGET_ID) //
+        .withTargetType(DEFAULT_TARGET_TYPE) //
+        .withTypeId(DEFAULT_TYPE_ID) //
+        .isAccepted(ACCEPTED);
+  }
+
+  private String addDefaultProjectARelation(String sourceId) throws StorageException {
+    ProjectARelation relation = new ProjectARelation();
+    relation.setAccepted(ACCEPTED);
+    relation.setSourceId(sourceId);
+    relation.setSourceType(DEFAULT_SOURCE_TYPE);
+    relation.setTargetId(DEFAULT_TARGET_ID);
+    relation.setTargetType(DEFAULT_TARGET_TYPE);
+    relation.setTypeId(DEFAULT_TYPE_ID);
+
+    String relationId = instance.addDomainEntity(PROJECT_RELATION_TYPE, relation, CHANGE_TO_SAVE);
+    return relationId;
   }
 
   /* **************************************************************************

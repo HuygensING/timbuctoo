@@ -164,4 +164,32 @@ public class Neo4JLegacyStorageWrapperIntegrationTest extends StorageIntegration
     super.findItemByPropertyForSystemEntityReturnsTheFirstFoundInTheDatabase();
   }
 
+  @Ignore
+  @Test
+  @Override
+  public void countSystemEntityReturnsAllTheNumberOfEntitiseOfACertainType() throws Exception {
+    super.countSystemEntityReturnsAllTheNumberOfEntitiseOfACertainType();
+  }
+
+  @Ignore
+  @Test
+  @Override
+  public void countDomainEntityOnlyCountsTheLatestVersions() throws Exception {
+    super.countDomainEntityOnlyCountsTheLatestVersions();
+  }
+
+  @Ignore
+  @Test
+  @Override
+  public void countDomainEntityReturnsTheCountOfThePrimitive() throws Exception {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
+  @Ignore
+  @Test
+  @Override
+  public void countRelationsOnlyCountsTheLatest() throws Exception {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
 }
