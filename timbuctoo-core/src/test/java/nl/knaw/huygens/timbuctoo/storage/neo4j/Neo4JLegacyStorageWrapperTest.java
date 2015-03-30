@@ -468,6 +468,19 @@ public class Neo4JLegacyStorageWrapperTest {
   }
 
   @Test
+  public void countSystemEntityDelegatesToNeo4JStorage() {
+    // setup
+    long count = 2l;
+    when(neo4JStorageMock.countSystemEntity(SYSTEM_ENTITY_TYPE)).thenReturn(count);
+
+    // action
+    long actualCount = instance.count(SYSTEM_ENTITY_TYPE);
+
+    // verify
+    assertThat(actualCount, is(equalTo(count)));
+  }
+
+  @Test
   public void closeDelegatesToTheNeo4JStorage() {
     // action
     instance.close();

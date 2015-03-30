@@ -556,4 +556,8 @@ public class Neo4JStorage {
       }
     }
   }
+
+  public long countSystemEntity(Class<? extends SystemEntity> systemEntityType) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }
