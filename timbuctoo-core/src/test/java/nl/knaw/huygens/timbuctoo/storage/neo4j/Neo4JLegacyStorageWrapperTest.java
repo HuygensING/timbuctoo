@@ -373,6 +373,19 @@ public class Neo4JLegacyStorageWrapperTest {
   }
 
   @Test
+  public void countRelationDelegatesToNeo4JStorage() {
+    // setup
+    long count = 3l;
+    when(neo4JStorageMock.countRelation(RELATION_TYPE)).thenReturn(count);
+
+    // action
+    long actualCount = instance.count(RELATION_TYPE);
+
+    // verify
+    assertThat(actualCount, is(equalTo(count)));
+  }
+
+  @Test
   public void addSystemEntityDelegatesToNeo4JStorage() throws Exception {
     // setup
     TestSystemEntityWrapper entity = aSystemEntity().build();
