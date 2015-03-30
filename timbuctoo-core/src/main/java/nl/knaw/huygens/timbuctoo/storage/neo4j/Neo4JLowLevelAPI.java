@@ -23,15 +23,10 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.index.Index;
-import org.neo4j.graphdb.index.IndexHits;
 
 import com.google.common.collect.Lists;
 
 class Neo4JLowLevelAPI {
-  static final String RELATIONSHIP_ID_INDEX = "Relationship id";
-  static final String RELATIONSHIP_START_ID_INDEX = "Relationship start id";
-  static final String RELATIONSHIP_END_ID_INDEX = "Relationship end id";
   private final GraphDatabaseService db;
   private RelationshipIndexes relationshipIndexesMock;
 
@@ -125,15 +120,6 @@ class Neo4JLowLevelAPI {
 
   public <T extends Relation> Relationship getRelationshipWithRevision(Class<T> relationType, String id, int revision) {
     return relationshipIndexesMock.getRelationshipWithRevision(id, revision);
-  }
-
-  private ResourceIterator<Relationship> getFromIndex(String id) {
-    Index<Relationship> index = db.index().forRelationships(ID_PROPERTY_NAME);
-
-    IndexHits<Relationship> indexHits = index.get(ID_PROPERTY_NAME, id);
-
-    ResourceIterator<Relationship> iterator = indexHits.iterator();
-    return iterator;
   }
 
   public void addRelationship(Relationship relationship, String id) {
