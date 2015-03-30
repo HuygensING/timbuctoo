@@ -21,6 +21,7 @@ import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConve
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
@@ -560,6 +561,9 @@ public class Neo4JStorage {
   }
 
   public long countEntity(Class<? extends Entity> type) {
-    return neo4jLowLevelAPI.countNodesWithLabel(DynamicLabel.label(TypeNames.getInternalName(type)));
+    Class<? extends Entity> primitiveType = TypeRegistry.getBaseClass(type);
+    Label label = DynamicLabel.label(TypeNames.getInternalName(primitiveType));
+
+    return neo4jLowLevelAPI.countNodesWithLabel(label);
   }
 }

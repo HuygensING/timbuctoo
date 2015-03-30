@@ -66,6 +66,7 @@ public class Neo4JStorageTest {
   private static final String DOMAIN_ENTITY_FIELD = SubADomainEntity.VALUEA2_NAME;
   private static final Class<BaseDomainEntity> PRIMITIVE_DOMAIN_ENTITY_TYPE = BaseDomainEntity.class;
   private static final String PRIMITIVE_DOMAIN_ENTITY_NAME = TypeNames.getInternalName(PRIMITIVE_DOMAIN_ENTITY_TYPE);
+  private static final Label PRIMITIVE_DOMAIN_ENTITY_LABEL = DynamicLabel.label(PRIMITIVE_DOMAIN_ENTITY_NAME);
 
   private static final Class<TestSystemEntityWrapper> SYSTEM_ENTITY_TYPE = TestSystemEntityWrapper.class;
   private static final Label SYSTEM_ENTITY_LABEL = DynamicLabel.label(TypeNames.getInternalName(SYSTEM_ENTITY_TYPE));
@@ -990,13 +991,26 @@ public class Neo4JStorageTest {
   }
 
   @Test
-  public void countSystemEntityCallsDelegatesToNeo4JLowLevelAPICountNodesWithLabel() {
+  public void countEntityDelegatesToNeo4JLowLevelAPICountNodesWithLabel() {
     // setup
     long count = 5l;
     when(neo4JLowLevelAPIMock.countNodesWithLabel(SYSTEM_ENTITY_LABEL)).thenReturn(count);
 
     // action
     long actualCount = instance.countEntity(SYSTEM_ENTITY_TYPE);
+
+    // verify
+    assertThat(actualCount, is(equalTo(count)));
+  }
+
+  @Test
+  public void countEntityUsesThePrimitiveDomainEntity() {
+    // setup
+    long count = 5l;
+    when(neo4JLowLevelAPIMock.countNodesWithLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL)).thenReturn(count);
+
+    // action
+    long actualCount = instance.countEntity(DOMAIN_ENTITY_TYPE);
 
     // verify
     assertThat(actualCount, is(equalTo(count)));
