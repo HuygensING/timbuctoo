@@ -68,6 +68,7 @@ public class Neo4JStorageTest {
   private static final String PRIMITIVE_DOMAIN_ENTITY_NAME = TypeNames.getInternalName(PRIMITIVE_DOMAIN_ENTITY_TYPE);
 
   private static final Class<TestSystemEntityWrapper> SYSTEM_ENTITY_TYPE = TestSystemEntityWrapper.class;
+  private static final Label SYSTEM_ENTITY_LABEL = DynamicLabel.label(TypeNames.getInternalName(SYSTEM_ENTITY_TYPE));
   private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
   private static final Label DOMAIN_ENTITY_LABEL = DynamicLabel.label(TypeNames.getInternalName(DOMAIN_ENTITY_TYPE));
   private static final String ID = "id";
@@ -986,6 +987,19 @@ public class Neo4JStorageTest {
 
   private void nodeFoundFor(Class<SubADomainEntity> type, Node node, String propertyName, String propertyValue) {
     when(neo4JLowLevelAPIMock.findNodeByProperty(type, propertyName, propertyValue)).thenReturn(node);
+  }
+
+  @Test
+  public void countSystemEntityCallsDelegatesToNeo4JLowLevelAPICountNodesWithLabel() {
+    // setup
+    long count = 5l;
+    when(neo4JLowLevelAPIMock.countNodesWithLabel(SYSTEM_ENTITY_LABEL)).thenReturn(count);
+
+    // action
+    long actualCount = instance.countSystemEntity(SYSTEM_ENTITY_TYPE);
+
+    // verify
+    assertThat(actualCount, is(equalTo(count)));
   }
 
   /* *****************************************************************************

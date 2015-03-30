@@ -169,4 +169,8 @@ class Neo4JLowLevelAPI {
     return null;
   }
 
+  public long countNodesWithLabel(Label systemEntityLabel) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
 }

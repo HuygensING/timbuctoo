@@ -5,6 +5,7 @@ import static nl.knaw.huygens.timbuctoo.storage.neo4j.PropertyContainerHelper.ge
 import java.util.Iterator;
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -17,6 +18,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConverterFactory;
 
+import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -558,6 +560,6 @@ public class Neo4JStorage {
   }
 
   public long countSystemEntity(Class<? extends SystemEntity> systemEntityType) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return neo4jLowLevelAPI.countNodesWithLabel(DynamicLabel.label(TypeNames.getInternalName(systemEntityType)));
   }
 }
