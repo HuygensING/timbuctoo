@@ -996,7 +996,7 @@ public class Neo4JStorageTest {
     when(neo4JLowLevelAPIMock.countNodesWithLabel(SYSTEM_ENTITY_LABEL)).thenReturn(count);
 
     // action
-    long actualCount = instance.countSystemEntity(SYSTEM_ENTITY_TYPE);
+    long actualCount = instance.countEntity(SYSTEM_ENTITY_TYPE);
 
     // verify
     assertThat(actualCount, is(equalTo(count)));

@@ -559,7 +559,7 @@ public class Neo4JStorage {
     }
   }
 
-  public long countSystemEntity(Class<? extends SystemEntity> systemEntityType) {
-    return neo4jLowLevelAPI.countNodesWithLabel(DynamicLabel.label(TypeNames.getInternalName(systemEntityType)));
+  public long countEntity(Class<? extends Entity> type) {
+    return neo4jLowLevelAPI.countNodesWithLabel(DynamicLabel.label(TypeNames.getInternalName(type)));
   }
 }

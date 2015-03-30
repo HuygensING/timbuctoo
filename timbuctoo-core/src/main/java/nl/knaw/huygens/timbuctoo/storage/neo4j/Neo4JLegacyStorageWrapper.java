@@ -167,11 +167,10 @@ public class Neo4JLegacyStorageWrapper implements Storage {
     throw new UnsupportedOperationException("Yet to be implemented");
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public <T extends Entity> long count(Class<T> type) {
-    if (SystemEntity.class.isAssignableFrom(type)) {
-      return neo4JStorage.countSystemEntity((Class<? extends SystemEntity>) type);
+    if (Entity.class.isAssignableFrom(type)) {
+      return neo4JStorage.countEntity(type);
     }
     throw new UnsupportedOperationException("Yet to be implemented");
   }
