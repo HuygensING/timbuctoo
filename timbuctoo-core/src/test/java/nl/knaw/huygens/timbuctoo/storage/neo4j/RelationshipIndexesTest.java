@@ -283,4 +283,5 @@ public class RelationshipIndexesTest {
     assertThat(actualRelationship, is(nullValue()));
     transactionSucceeded();
   }
+
 }

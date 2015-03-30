@@ -31,6 +31,8 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.helpers.collection.Iterables;
+import org.neo4j.helpers.collection.IteratorUtil;
 import org.neo4j.tooling.GlobalGraphOperations;
 
 import test.model.projecta.SubADomainEntity;
@@ -445,15 +447,29 @@ public class Neo4JLowLevelAPITest {
   }
 
   @Test
-  public void countRelationshipsDelegatesToRelationshipIndexes() {
+  public void countRelationshipsReturnsTheNumberOfUniqueRelationship() {
     // setup
-    long count = 5l;
-    when(relationshipIndexesMock.countRelationships()).thenReturn(count);
+    long two = 2l;
+    Relationship rel1 = aRelationship().withProperty(ID_PROPERTY_NAME, ID).withRevision(FIRST_REVISION).build();
+    Relationship rel1V2 = aRelationship().withProperty(ID_PROPERTY_NAME, ID).withRevision(SECOND_REVISION).build();
+    when(relationshipIndexesMock.isLatestVersion(rel1V2)).thenReturn(true);
+
+    String otherId = "otherId";
+    Relationship rel2 = aRelationship().withProperty(ID_PROPERTY_NAME, otherId).withRevision(FIRST_REVISION).build();
+    Relationship rel2V2 = aRelationship().withProperty(ID_PROPERTY_NAME, otherId).withRevision(SECOND_REVISION).build();
+    when(relationshipIndexesMock.isLatestVersion(rel2V2)).thenReturn(true);
+
+    List<Relationship> relationships = Lists.newArrayList(rel1, rel1V2, rel2, rel2V2);
+    Iterable<Relationship> relationshipIterable = IteratorUtil.asIterable(relationships.iterator());
+    ResourceIterable<Relationship> foundRelationships = Iterables.asResourceIterable(relationshipIterable);
+
+    when(globalGraphOperationsMock.getAllRelationships()).thenReturn(foundRelationships);
 
     // action
     long actualCount = instance.countRelationships();
 
     // verify
-    assertThat(actualCount, is(equalTo(count)));
+    assertThat(actualCount, is(equalTo(two)));
+    transactionSucceeded();
   }
 }

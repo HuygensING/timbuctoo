@@ -182,7 +182,6 @@ public class Neo4JLegacyStorageWrapperIntegrationTest extends StorageIntegration
     super.countDomainEntityReturnsTheCountOfThePrimitive();
   }
 
-  @Ignore
   @Test
   @Override
   public void countRelationsOnlyCountsTheLatest() throws Exception {

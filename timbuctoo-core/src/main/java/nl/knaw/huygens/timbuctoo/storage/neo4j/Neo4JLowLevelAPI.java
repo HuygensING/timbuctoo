@@ -8,7 +8,6 @@ import static nl.knaw.huygens.timbuctoo.storage.neo4j.PropertyNotIndexedExceptio
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SystemRelationshipType.VERSION_OF;
 import static org.neo4j.graphdb.Direction.INCOMING;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -178,7 +177,7 @@ class Neo4JLowLevelAPI {
 
   public long countNodesWithLabel(Label label) {
     try (Transaction transaction = db.beginTx()) {
-      HashSet<Node> foundNodes = Sets.newHashSet(globalGraphOperations.getAllNodesWithLabel(label).iterator());
+      Set<Node> foundNodes = Sets.newHashSet(globalGraphOperations.getAllNodesWithLabel(label).iterator());
 
       Set<Node> latestNodes = Sets.filter(foundNodes, new Predicate<Node>() {
 
@@ -196,6 +195,26 @@ class Neo4JLowLevelAPI {
   }
 
   public long countRelationships() {
-    return relationshipIndexesMock.countRelationships();
+    try (Transaction transaction = db.beginTx()) {
+      Set<Relationship> foundRelationships = Sets.newHashSet(globalGraphOperations.getAllRelationships().iterator());
+
+      Set<Relationship> latestRelationships = Sets.filter(foundRelationships, new Predicate<Relationship>() {
+        private Set<Object> uniqueRelIds = Sets.newHashSet();
+
+        @Override
+        public boolean apply(Relationship relationship) {
+          Object id = relationship.hasProperty(ID_PROPERTY_NAME) ? relationship.getProperty(ID_PROPERTY_NAME) : null;
+          if (!uniqueRelIds.contains(id)) {
+            uniqueRelIds.add(id);
+            return true;
+          }
+
+          return false;
+        }
+      });
+
+      transaction.success();
+      return latestRelationships.size();
+    }
   }
 }
