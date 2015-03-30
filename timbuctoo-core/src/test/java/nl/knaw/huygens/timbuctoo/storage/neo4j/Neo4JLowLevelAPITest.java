@@ -397,7 +397,7 @@ public class Neo4JLowLevelAPITest {
   }
 
   @Test(expected = PropertyNotIndexedException.class)
-  public void findRelationshipByProeprtyThrowsAPropertyNotIndexedExceptionInThereIsNoIndexForTheField() {
+  public void findRelationshipByPropertyThrowsAPropertyNotIndexedExceptionInThereIsNoIndexForTheField() {
     // setup
     noIndexFor(RELATIONSHIP_PROPERTY_WITHOUT_INDEX);
 
@@ -416,6 +416,10 @@ public class Neo4JLowLevelAPITest {
     verify(transactionMock).failure();
   }
 
+  /*
+   * The nodes with an incoming versionOf relationship will not be counted,
+   *  because they are not the latest version.
+   */
   @Test
   public void countNodesWithLabelReturnsTheNumberOfUniqueNodesWithACertainLabel() {
     // setup
@@ -440,4 +444,16 @@ public class Neo4JLowLevelAPITest {
     transactionSucceeded();
   }
 
+  @Test
+  public void countRelationshipsDelegatesToRelationshipIndexes() {
+    // setup
+    long count = 5l;
+    when(relationshipIndexesMock.countRelationships()).thenReturn(count);
+
+    // action
+    long actualCount = instance.countRelationships();
+
+    // verify
+    assertThat(actualCount, is(equalTo(count)));
+  }
 }

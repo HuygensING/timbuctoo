@@ -130,4 +130,8 @@ class RelationshipIndexes {
       return relationshipWithRevsion;
     }
   }
+
+  public long countRelationships() {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }

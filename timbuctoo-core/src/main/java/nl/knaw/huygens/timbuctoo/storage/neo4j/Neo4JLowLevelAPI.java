@@ -196,6 +196,6 @@ class Neo4JLowLevelAPI {
   }
 
   public long countRelationships() {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return relationshipIndexesMock.countRelationships();
   }
 }
