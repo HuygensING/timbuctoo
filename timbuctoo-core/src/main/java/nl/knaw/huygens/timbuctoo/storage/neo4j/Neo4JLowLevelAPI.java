@@ -24,6 +24,7 @@ import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.tooling.GlobalGraphOperations;
 
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
 class Neo4JLowLevelAPI {
@@ -174,7 +175,7 @@ class Neo4JLowLevelAPI {
 
   public long countNodesWithLabel(Label label) {
     try (Transaction transaction = db.beginTx()) {
-      int count = Lists.newArrayList(globalGraphOperations.getAllNodesWithLabel(label).iterator()).size();
+      int count = Iterators.size(globalGraphOperations.getAllNodesWithLabel(label).iterator());
 
       transaction.success();
       return count;
