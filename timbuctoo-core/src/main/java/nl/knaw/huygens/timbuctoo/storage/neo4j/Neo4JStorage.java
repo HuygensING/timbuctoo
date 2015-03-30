@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
-import static nl.knaw.huygens.timbuctoo.storage.neo4j.Neo4JLowLevelAPI.getRevisionProperty;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.PropertyContainerHelper.getRevisionProperty;
 
 import java.util.Iterator;
 import java.util.List;

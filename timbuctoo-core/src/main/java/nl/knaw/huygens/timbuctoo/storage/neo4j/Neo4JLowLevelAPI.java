@@ -1,9 +1,9 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Relation.SOURCE_ID;
 import static nl.knaw.huygens.timbuctoo.model.Relation.TARGET_ID;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.PropertyContainerHelper.getRevisionProperty;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.PropertyNotIndexedException.propertyHasNoIndex;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SystemRelationshipType.VERSION_OF;
 import static org.neo4j.graphdb.Direction.INCOMING;
@@ -18,7 +18,6 @@ import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
@@ -37,12 +36,6 @@ class Neo4JLowLevelAPI {
   Neo4JLowLevelAPI(GraphDatabaseService db, RelationshipIndexes relationshipIndexesMock) {
     this.db = db;
     this.relationshipIndexesMock = relationshipIndexesMock;
-  }
-
-  public static int getRevisionProperty(PropertyContainer propertyContainer) {
-    return propertyContainer != null && propertyContainer.hasProperty(REVISION_PROPERTY_NAME) ? //
-    (int) propertyContainer.getProperty(REVISION_PROPERTY_NAME)
-        : 0;
   }
 
   /**

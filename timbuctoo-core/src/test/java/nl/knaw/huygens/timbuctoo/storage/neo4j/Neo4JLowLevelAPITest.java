@@ -9,7 +9,6 @@ import static nl.knaw.huygens.timbuctoo.storage.neo4j.SystemRelationshipType.VER
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
@@ -85,43 +84,6 @@ public class Neo4JLowLevelAPITest {
     verify(relationshipIndexesMock).indexByField(relationship, ID_PROPERTY_NAME, ID);
     verify(relationshipIndexesMock).indexByField(relationship, Relation.SOURCE_ID, startNodeId);
     verify(relationshipIndexesMock).indexByField(relationship, Relation.TARGET_ID, endNodeId);
-  }
-
-  @Test
-  public void getRevisionPropertyReturnsTheValueOfTheRevisionPropertyAsInt() {
-    // setup
-    int revision = 1;
-    Node node = aNode().withRevision(revision).build();
-
-    // action
-    int actualRevision = Neo4JLowLevelAPI.getRevisionProperty(node);
-
-    // verify
-    assertThat(actualRevision, is(equalTo(revision)));
-  }
-
-  @Test
-  public void getRevisionPropertyReturnsZeroIfThePropertyContainerHasNoPropertyRevision() {
-    // setup
-    Node nodeWithoutRevision = aNode().build();
-
-    // action
-    int actualRevision = Neo4JLowLevelAPI.getRevisionProperty(nodeWithoutRevision);
-
-    // verify
-    assertThat(actualRevision, is(equalTo(0)));
-  }
-
-  @Test
-  public void getRevisionPropertyReturnsZeroIfThePropertyContainerIsNull() {
-    // setup
-    Node nullNode = null;
-
-    // action
-    int actualRevision = Neo4JLowLevelAPI.getRevisionProperty(nullNode);
-
-    // verify
-    assertThat(actualRevision, is(equalTo(0)));
   }
 
   @Test

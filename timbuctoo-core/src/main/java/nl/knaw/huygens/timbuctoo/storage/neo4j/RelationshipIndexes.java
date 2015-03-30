@@ -1,16 +1,15 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Relation.SOURCE_ID;
 import static nl.knaw.huygens.timbuctoo.model.Relation.TARGET_ID;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.PropertyContainerHelper.getRevisionProperty;
 
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.Relation;
 
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
@@ -74,12 +73,6 @@ class RelationshipIndexes {
 
   private RelationshipIndex getRelationIndexshipFor(String propertyName) {
     return db.index().forRelationships(propertyName);
-  }
-
-  public static int getRevisionProperty(PropertyContainer propertyContainer) {
-    return propertyContainer != null && propertyContainer.hasProperty(REVISION_PROPERTY_NAME) ? //
-    (int) propertyContainer.getProperty(REVISION_PROPERTY_NAME)
-        : 0;
   }
 
   public void indexByField(Relationship relationship, String propertyName, Object value) {
