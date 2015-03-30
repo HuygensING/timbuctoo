@@ -417,12 +417,17 @@ public class Neo4JLowLevelAPITest {
   }
 
   @Test
-  public void countNodesWithLabelReturnsTheNumberOfNodesThatExistWithACertainLabel() {
+  public void countNodesWithLabelReturnsTheNumberOfUniqueNodesWithACertainLabel() {
     // setup
     long two = 2l;
+    Relationship versionOfRelationship = aRelationship().withType(VERSION_OF).build();
+    NodeMockBuilder nodeWithVersionOfRelationship = aNode().withIncomingRelationShip(versionOfRelationship);
+    String otherId = "otherId";
     ResourceIterable<Node> searchResultWithTwoNodes = aSearchResult()//
-        .withNode(aNode().build())//
-        .andNode(aNode().build())//
+        .withNode(aNode().withId(ID).build())//
+        .andNode(aNode().withId(otherId).build())//
+        .andNode(nodeWithVersionOfRelationship.withId(ID).build()) //
+        .andNode(nodeWithVersionOfRelationship.withId(otherId).build()) //
         .build();
 
     when(globalGraphOperationsMock.getAllNodesWithLabel(DOMAIN_ENTITY_LABEL)).thenReturn(searchResultWithTwoNodes);
@@ -434,4 +439,5 @@ public class Neo4JLowLevelAPITest {
     assertThat(count, is(equalTo(two)));
     transactionSucceeded();
   }
+
 }

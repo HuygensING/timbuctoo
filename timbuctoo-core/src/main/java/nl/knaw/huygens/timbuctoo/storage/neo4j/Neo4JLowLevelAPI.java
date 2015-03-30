@@ -8,7 +8,9 @@ import static nl.knaw.huygens.timbuctoo.storage.neo4j.PropertyNotIndexedExceptio
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SystemRelationshipType.VERSION_OF;
 import static org.neo4j.graphdb.Direction.INCOMING;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -24,8 +26,9 @@ import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.tooling.GlobalGraphOperations;
 
-import com.google.common.collect.Iterators;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 class Neo4JLowLevelAPI {
   private final GraphDatabaseService db;
@@ -175,7 +178,17 @@ class Neo4JLowLevelAPI {
 
   public long countNodesWithLabel(Label label) {
     try (Transaction transaction = db.beginTx()) {
-      int count = Iterators.size(globalGraphOperations.getAllNodesWithLabel(label).iterator());
+      HashSet<Node> foundNodes = Sets.newHashSet(globalGraphOperations.getAllNodesWithLabel(label).iterator());
+
+      Set<Node> latestNodes = Sets.filter(foundNodes, new Predicate<Node>() {
+
+        @Override
+        public boolean apply(Node node) {
+          return !node.hasRelationship(INCOMING, VERSION_OF);
+        }
+      });
+
+      int count = latestNodes.size();
 
       transaction.success();
       return count;
