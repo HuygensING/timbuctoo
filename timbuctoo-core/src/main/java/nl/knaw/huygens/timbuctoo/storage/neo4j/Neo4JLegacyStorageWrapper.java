@@ -171,9 +171,9 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   @Override
   public <T extends Entity> long count(Class<T> type) {
     if (Relation.class.isAssignableFrom(type)) {
-      return neo4JStorage.countRelation((Class<? extends Relation>) type);
+      return neo4JStorage.countRelations((Class<? extends Relation>) type);
     } else {
-      return neo4JStorage.countEntity(type);
+      return neo4JStorage.countEntities(type);
     }
   }
 

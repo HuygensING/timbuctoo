@@ -991,26 +991,26 @@ public class Neo4JStorageTest {
   }
 
   @Test
-  public void countEntityDelegatesToNeo4JLowLevelAPICountNodesWithLabel() {
+  public void countEntitiesDelegatesToNeo4JLowLevelAPICountNodesWithLabel() {
     // setup
     long count = 5l;
     when(neo4JLowLevelAPIMock.countNodesWithLabel(SYSTEM_ENTITY_LABEL)).thenReturn(count);
 
     // action
-    long actualCount = instance.countEntity(SYSTEM_ENTITY_TYPE);
+    long actualCount = instance.countEntities(SYSTEM_ENTITY_TYPE);
 
     // verify
     assertThat(actualCount, is(equalTo(count)));
   }
 
   @Test
-  public void countEntityUsesThePrimitiveDomainEntity() {
+  public void countEntitiesUsesThePrimitiveDomainEntity() {
     // setup
     long count = 5l;
     when(neo4JLowLevelAPIMock.countNodesWithLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL)).thenReturn(count);
 
     // action
-    long actualCount = instance.countEntity(DOMAIN_ENTITY_TYPE);
+    long actualCount = instance.countEntities(DOMAIN_ENTITY_TYPE);
 
     // verify
     assertThat(actualCount, is(equalTo(count)));
@@ -1809,6 +1809,19 @@ public class Neo4JStorageTest {
       // verify
       verifyTransactionFailed();
     }
+  }
+
+  @Test
+  public void countRelationDelegatesToNeo4JLowLevelAPI() {
+    // setup
+    long count = 5l;
+    when(neo4JLowLevelAPIMock.countRelationships()).thenReturn(count);
+
+    // action
+    long actualCount = instance.countRelations(RELATION_TYPE);
+
+    // verify
+    assertThat(actualCount, is(equalTo(count)));
   }
 
   /* *****************************************************************************

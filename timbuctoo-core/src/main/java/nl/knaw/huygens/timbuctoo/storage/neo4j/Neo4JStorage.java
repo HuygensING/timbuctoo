@@ -316,15 +316,15 @@ public class Neo4JStorage {
     return String.format("\"%s\" with id \"%s\" cannot be found.", type.getSimpleName(), entity.getId());
   }
 
-  public long countEntity(Class<? extends Entity> type) {
+  public long countEntities(Class<? extends Entity> type) {
     Class<? extends Entity> primitiveType = TypeRegistry.getBaseClass(type);
     Label label = DynamicLabel.label(TypeNames.getInternalName(primitiveType));
 
     return neo4jLowLevelAPI.countNodesWithLabel(label);
   }
 
-  public long countRelation(Class<? extends Relation> relationType) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+  public long countRelations(Class<? extends Relation> relationType) {
+    return neo4jLowLevelAPI.countRelationships();
   }
 
   // TODO: Make equal to deleteSystemEntity see TIM-54
