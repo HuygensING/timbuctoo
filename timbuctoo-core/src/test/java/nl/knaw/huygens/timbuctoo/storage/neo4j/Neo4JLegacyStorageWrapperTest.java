@@ -443,6 +443,15 @@ public class Neo4JLegacyStorageWrapperTest {
 
     // verify
     assertThat(actualSystemEntities, is(sameInstance(storageIteratorMock)));
+  }
+
+  @Test(expected = StorageException.class)
+  public void getSystemEntitiesThrowsAnExceptionWhenTheDelegateDoes() throws StorageException {
+    // setup
+    when(neo4JStorageMock.getSystemEntities(SYSTEM_ENTITY_TYPE)).thenThrow(new StorageException());
+
+    // action
+    instance.getSystemEntities(SYSTEM_ENTITY_TYPE);
 
   }
 
