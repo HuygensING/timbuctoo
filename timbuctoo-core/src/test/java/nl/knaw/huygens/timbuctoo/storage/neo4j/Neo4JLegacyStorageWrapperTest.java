@@ -17,6 +17,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConverterFactory;
 
 import org.junit.Before;
@@ -428,6 +429,21 @@ public class Neo4JLegacyStorageWrapperTest {
 
     // action
     instance.getEntity(SYSTEM_ENTITY_TYPE, ID);
+  }
+
+  @Test
+  public void getSystemEntitiesDelegatesToNeo4JStorage() throws StorageException {
+    // setup
+    @SuppressWarnings("unchecked")
+    StorageIterator<TestSystemEntityWrapper> storageIteratorMock = mock(StorageIterator.class);
+    when(neo4JStorageMock.getSystemEntities(SYSTEM_ENTITY_TYPE)).thenReturn(storageIteratorMock);
+
+    // action
+    StorageIterator<TestSystemEntityWrapper> actualSystemEntities = instance.getSystemEntities(SYSTEM_ENTITY_TYPE);
+
+    // verify
+    assertThat(actualSystemEntities, is(sameInstance(storageIteratorMock)));
+
   }
 
   @Test

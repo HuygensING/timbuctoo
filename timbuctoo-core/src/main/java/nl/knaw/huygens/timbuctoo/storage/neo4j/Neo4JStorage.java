@@ -15,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConverterFactory;
 
@@ -569,6 +570,10 @@ public class Neo4JStorage {
         throw new StorageException(e);
       }
     }
+  }
+
+  public <T extends SystemEntity> StorageIterator<T> getSystemEntities(Class<T> type) {
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
 }
