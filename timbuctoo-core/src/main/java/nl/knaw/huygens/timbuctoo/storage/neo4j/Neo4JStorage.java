@@ -600,4 +600,8 @@ public class Neo4JStorage {
     }
   }
 
+  public <T extends DomainEntity> List<T> getAllVariations(Class<T> primitiveDomainEntityType) throws StorageException {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
 }

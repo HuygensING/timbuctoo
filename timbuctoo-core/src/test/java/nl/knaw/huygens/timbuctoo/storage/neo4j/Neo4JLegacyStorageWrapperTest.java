@@ -13,6 +13,9 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.List;
+
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
@@ -34,6 +37,8 @@ import test.model.BaseDomainEntity;
 import test.model.TestSystemEntityWrapper;
 import test.model.projecta.SubADomainEntity;
 import test.model.projecta.SubARelation;
+
+import com.google.common.collect.Lists;
 
 public class Neo4JLegacyStorageWrapperTest {
 
@@ -149,6 +154,32 @@ public class Neo4JLegacyStorageWrapperTest {
 
     // action
     instance.getEntity(DOMAIN_ENTITY_TYPE, ID);
+  }
+
+  @Test
+  public void getAllVariationsDelegatesToNeo4JStorage() throws Exception {
+    // setup
+    List<BaseDomainEntity> variations = Lists.newArrayList();
+    when(neo4JStorageMock.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE)).thenReturn(variations);
+
+    // action
+    List<BaseDomainEntity> actualVariations = instance.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(actualVariations, is(sameInstance(variations)));
+  }
+
+  @Test(expected = StorageException.class)
+  public void getAllVariationsThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
+    // setup
+    List<BaseDomainEntity> variations = Lists.newArrayList();
+    when(neo4JStorageMock.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE)).thenThrow(new StorageException());
+
+    // action
+    List<BaseDomainEntity> actualVariations = instance.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(actualVariations, is(sameInstance(variations)));
   }
 
   @Test

@@ -192,7 +192,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return neo4JStorage.getAllVariations(type);
   }
 
   @SuppressWarnings("unchecked")
