@@ -33,7 +33,9 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends Entity> String getStatistics(Class<T> type) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    // FIXME TIM-121 What kind of information do we want to show?
+    // We cannot reproduce information similar to Mongo's.
+    return "";
   }
 
   @Override
