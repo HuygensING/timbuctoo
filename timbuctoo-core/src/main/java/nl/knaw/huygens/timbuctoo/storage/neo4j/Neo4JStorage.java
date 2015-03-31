@@ -25,10 +25,11 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.ResourceIterator;
+import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.Strings;
 
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 public class Neo4JStorage {
@@ -45,8 +46,7 @@ public class Neo4JStorage {
 
   @Inject
   public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, TypeRegistry typeRegistry) {
-    this(db, propertyContainerConverterFactory, new NodeDuplicator(db), new RelationshipDuplicator(db), new IdGenerator(), typeRegistry, new Neo4JLowLevelAPI(db), new Neo4JStorageIteratorFactory(
-        propertyContainerConverterFactory));
+    this(db, propertyContainerConverterFactory, new NodeDuplicator(db), new RelationshipDuplicator(db), new IdGenerator(), typeRegistry, new Neo4JLowLevelAPI(db), new Neo4JStorageIteratorFactory());
   }
 
   public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, NodeDuplicator nodeDuplicator, RelationshipDuplicator relationshipDuplicator,
@@ -205,10 +205,28 @@ public class Neo4JStorage {
     }
   }
 
-  public <T extends SystemEntity> StorageIterator<T> getSystemEntities(Class<T> type) {
-    ResourceIterator<Node> nodes = neo4jLowLevelAPI.getNodesOfType(type);
+  public <T extends SystemEntity> StorageIterator<T> getSystemEntities(Class<T> type) throws StorageException {
+    try (Transaction transaction = db.beginTx()) {
+      ResourceIterable<Node> nodes = neo4jLowLevelAPI.getNodesOfType(type);
 
-    return neo4jStorageIteratorFactory.create(type, nodes);
+      NodeConverter<T> nodeConverter = propertyContainerConverterFactory.createForType(type);
+
+      List<T> entities = Lists.newArrayList();
+      for (Node node : nodes) {
+        try {
+          entities.add(nodeConverter.convertToEntity(node));
+        } catch (ConversionException e) {
+          transaction.failure();
+          throw e;
+        } catch (InstantiationException e) {
+          transaction.failure();
+          throw new StorageException(e);
+        }
+      }
+
+      transaction.success();
+      return neo4jStorageIteratorFactory.create(type, entities);
+    }
   }
 
   public <T extends Relation> T getRelation(Class<T> type, String id) throws StorageException {
