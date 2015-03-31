@@ -94,8 +94,14 @@ class Neo4JLowLevelAPI {
     }
   }
 
-  public ResourceIterable<Node> getNodesOfType(Class<? extends Entity> type) {
-    return globalGraphOperations.getAllNodesWithLabel(labelFor(type));
+  public ResourceIterator<Node> getNodesOfType(Class<? extends Entity> type) {
+    try (Transaction transaction = db.beginTx()) {
+
+      ResourceIterable<Node> allNodesWithLabel = globalGraphOperations.getAllNodesWithLabel(labelFor(type));
+      ResourceIterator<Node> iterator = allNodesWithLabel.iterator();
+      transaction.success();
+      return iterator;
+    }
   }
 
   private Label labelFor(Class<? extends Entity> type) {

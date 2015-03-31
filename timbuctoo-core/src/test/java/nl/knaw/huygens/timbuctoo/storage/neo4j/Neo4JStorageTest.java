@@ -52,6 +52,7 @@ import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterable;
+import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 
 import test.model.BaseDomainEntity;
@@ -337,11 +338,12 @@ public class Neo4JStorageTest {
   public void getSystemEntitiesRetrieveAllTheNodesOfACertainTypeAndWrapsThemInAStorageIterator() {
     // setup
     ResourceIterable<Node> searchResult = aNodeSearchResult().build();
-    when(neo4JLowLevelAPIMock.getNodesOfType(SYSTEM_ENTITY_TYPE)).thenReturn(searchResult);
+    ResourceIterator<Node> iterator = searchResult.iterator();
+    when(neo4JLowLevelAPIMock.getNodesOfType(SYSTEM_ENTITY_TYPE)).thenReturn(iterator);
 
     @SuppressWarnings("unchecked")
     StorageIterator<TestSystemEntityWrapper> storageIterator = mock(StorageIterator.class);
-    when(neo4jStorageIteratorFactoryMock.create(SYSTEM_ENTITY_TYPE, searchResult)).thenReturn(storageIterator);
+    when(neo4jStorageIteratorFactoryMock.create(SYSTEM_ENTITY_TYPE, iterator)).thenReturn(storageIterator);
 
     // action
     StorageIterator<TestSystemEntityWrapper> actualStorageIterator = instance.getSystemEntities(SYSTEM_ENTITY_TYPE);

@@ -7,7 +7,6 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConverterFactory;
 
 import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
 
 class Neo4JStorageIteratorFactory {
@@ -18,9 +17,9 @@ class Neo4JStorageIteratorFactory {
     this.propertyContainerConverterFactory = propertyContainerConverterFactory;
   }
 
-  public <T extends Entity> StorageIterator<T> create(Class<T> type, ResourceIterable<Node> searchResult) {
+  public <T extends Entity> StorageIterator<T> create(Class<T> type, ResourceIterator<Node> searchResult) {
     NodeConverter<T> nodeConverter = propertyContainerConverterFactory.createForType(type);
-    return new Neo4JStorageIterator<T>(searchResult.iterator(), nodeConverter);
+    return new Neo4JStorageIterator<T>(searchResult, nodeConverter);
   }
 
   static class Neo4JStorageIterator<T extends Entity> implements StorageIterator<T> {

@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConve
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.ResourceIterable;
+import org.neo4j.graphdb.ResourceIterator;
 
 import test.model.TestSystemEntityWrapper;
 
@@ -29,9 +30,10 @@ public class Neo4JStorageIteratorFactoryTest {
 
     Neo4JStorageIteratorFactory instance = new Neo4JStorageIteratorFactory(pccf);
     ResourceIterable<Node> searchResult = aNodeSearchResult().build();
+    ResourceIterator<Node> iterator = searchResult.iterator();
 
     // action
-    StorageIterator<TestSystemEntityWrapper> storageIterator = instance.create(SYSTEM_ENTITY_TYPE, searchResult);
+    StorageIterator<TestSystemEntityWrapper> storageIterator = instance.create(SYSTEM_ENTITY_TYPE, iterator);
 
     // verify
     assertThat(storageIterator, is(instanceOf(Neo4JStorageIterator.class)));
@@ -39,6 +41,6 @@ public class Neo4JStorageIteratorFactoryTest {
     Neo4JStorageIterator<TestSystemEntityWrapper> neo4jStorageIterator = (Neo4JStorageIterator<TestSystemEntityWrapper>) storageIterator;
 
     assertThat(neo4jStorageIterator.converter, is(sameInstance(nodeConverterMock)));
-    assertThat(neo4jStorageIterator.delegate, is(sameInstance(searchResult.iterator())));
+    assertThat(neo4jStorageIterator.delegate, is(sameInstance(iterator)));
   }
 }
