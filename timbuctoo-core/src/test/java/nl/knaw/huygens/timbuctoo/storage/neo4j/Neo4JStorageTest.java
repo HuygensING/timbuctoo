@@ -3,9 +3,10 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.DomainEntityMatcher.likeDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.Neo4JStorage.REQUEST_TIMEOUT;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeMockBuilder.aNode;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeSearchResultBuilder.aNodeSearchResult;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeSearchResultBuilder.anEmptyNodeSearchResult;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipMockBuilder.aRelationship;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipTypeMatcher.likeRelationshipType;
-import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeSearchResultBuilder.anEmptyNodeSearchResult;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SubADomainEntityBuilder.aDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SubARelationBuilder.aRelation;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.TestSystemEntityWrapperBuilder.aSystemEntity;
@@ -38,6 +39,7 @@ import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConverterFactory;
 
@@ -49,6 +51,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.Transaction;
 
 import test.model.BaseDomainEntity;
@@ -94,9 +97,11 @@ public class Neo4JStorageTest {
   private RelationshipDuplicator relationshipDuplicatorMock;
   private IdGenerator idGeneratorMock;
   private Neo4JLowLevelAPI neo4JLowLevelAPIMock;
+  private Neo4JStorageIteratorFactory neo4jStorageIteratorFactoryMock;
 
   @Before
   public void setup() throws Exception {
+    neo4jStorageIteratorFactoryMock = mock(Neo4JStorageIteratorFactory.class);
     neo4JLowLevelAPIMock = mock(Neo4JLowLevelAPI.class);
     nodeDuplicatorMock = mock(NodeDuplicator.class);
     relationshipDuplicatorMock = mock(RelationshipDuplicator.class);
@@ -104,7 +109,8 @@ public class Neo4JStorageTest {
     setupEntityConverterFactory();
     setupDBTransaction();
     TypeRegistry typeRegistry = TypeRegistry.getInstance().init("timbuctoo.model test.model");
-    instance = new Neo4JStorage(dbMock, propertyContainerConverterFactoryMock, nodeDuplicatorMock, relationshipDuplicatorMock, idGeneratorMock, typeRegistry, neo4JLowLevelAPIMock);
+    instance = new Neo4JStorage(dbMock, propertyContainerConverterFactoryMock, nodeDuplicatorMock, relationshipDuplicatorMock, idGeneratorMock, typeRegistry, neo4JLowLevelAPIMock,
+        neo4jStorageIteratorFactoryMock);
   }
 
   private void setupDBTransaction() {
@@ -325,6 +331,23 @@ public class Neo4JStorageTest {
 
   private void latestNodeFoundFor(Class<? extends Entity> type, String id, Node foundNode) {
     when(neo4JLowLevelAPIMock.getLatestNodeById(type, id)).thenReturn(foundNode);
+  }
+
+  @Test
+  public void getSystemEntitiesRetrieveAllTheNodesOfACertainTypeAndWrapsThemInAStorageIterator() {
+    // setup
+    ResourceIterable<Node> searchResult = aNodeSearchResult().build();
+    when(neo4JLowLevelAPIMock.getNodesOfType(SYSTEM_ENTITY_TYPE)).thenReturn(searchResult);
+
+    @SuppressWarnings("unchecked")
+    StorageIterator<TestSystemEntityWrapper> storageIterator = mock(StorageIterator.class);
+    when(neo4jStorageIteratorFactoryMock.create(SYSTEM_ENTITY_TYPE, searchResult)).thenReturn(storageIterator);
+
+    // action
+    StorageIterator<TestSystemEntityWrapper> actualStorageIterator = instance.getSystemEntities(SYSTEM_ENTITY_TYPE);
+
+    // verify
+    assertThat(actualStorageIterator, is(sameInstance(storageIterator)));
   }
 
   @Test

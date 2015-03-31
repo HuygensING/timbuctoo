@@ -94,6 +94,10 @@ class Neo4JLowLevelAPI {
     }
   }
 
+  public ResourceIterable<Node> getNodesOfType(Class<? extends Entity> type) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
   private <T extends Entity> ResourceIterator<Node> findByProperty(Class<T> type, String propertyName, String value) {
     Label internalNameLabel = DynamicLabel.label(TypeNames.getInternalName(type));
     ResourceIterable<Node> foundNodes = db.findNodesByLabelAndProperty(internalNameLabel, propertyName, value);
@@ -217,4 +221,5 @@ class Neo4JLowLevelAPI {
       return latestRelationships.size();
     }
   }
+
 }

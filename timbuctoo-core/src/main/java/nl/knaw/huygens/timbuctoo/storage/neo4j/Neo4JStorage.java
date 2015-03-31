@@ -25,6 +25,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.Strings;
 
@@ -40,14 +41,15 @@ public class Neo4JStorage {
   private final IdGenerator idGenerator;
   private final TypeRegistry typeRegistry;
   private final Neo4JLowLevelAPI neo4jLowLevelAPI;
+  private final Neo4JStorageIteratorFactory neo4jStorageIteratorFactory;
 
   @Inject
   public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, TypeRegistry typeRegistry) {
-    this(db, propertyContainerConverterFactory, new NodeDuplicator(db), new RelationshipDuplicator(db), new IdGenerator(), typeRegistry, new Neo4JLowLevelAPI(db));
+    this(db, propertyContainerConverterFactory, new NodeDuplicator(db), new RelationshipDuplicator(db), new IdGenerator(), typeRegistry, new Neo4JLowLevelAPI(db), new Neo4JStorageIteratorFactory());
   }
 
   public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, NodeDuplicator nodeDuplicator, RelationshipDuplicator relationshipDuplicator,
-      IdGenerator idGenerator, TypeRegistry typeRegistry, Neo4JLowLevelAPI neo4jLowLevelAPI) {
+      IdGenerator idGenerator, TypeRegistry typeRegistry, Neo4JLowLevelAPI neo4jLowLevelAPI, Neo4JStorageIteratorFactory neo4jStorageIteratorFactory) {
     this.db = db;
     this.propertyContainerConverterFactory = propertyContainerConverterFactory;
     this.nodeDuplicator = nodeDuplicator;
@@ -55,6 +57,7 @@ public class Neo4JStorage {
     this.idGenerator = idGenerator;
     this.typeRegistry = typeRegistry;
     this.neo4jLowLevelAPI = neo4jLowLevelAPI;
+    this.neo4jStorageIteratorFactory = neo4jStorageIteratorFactory;
   }
 
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
@@ -199,6 +202,12 @@ public class Neo4JStorage {
         throw new StorageException(e);
       }
     }
+  }
+
+  public <T extends SystemEntity> StorageIterator<T> getSystemEntities(Class<T> type) {
+    ResourceIterable<Node> nodes = neo4jLowLevelAPI.getNodesOfType(type);
+
+    return neo4jStorageIteratorFactory.create(type, nodes);
   }
 
   public <T extends Relation> T getRelation(Class<T> type, String id) throws StorageException {
@@ -570,10 +579,6 @@ public class Neo4JStorage {
         throw new StorageException(e);
       }
     }
-  }
-
-  public <T extends SystemEntity> StorageIterator<T> getSystemEntities(Class<T> type) {
-    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
 }
