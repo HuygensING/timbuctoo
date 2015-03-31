@@ -95,11 +95,15 @@ class Neo4JLowLevelAPI {
   }
 
   public ResourceIterable<Node> getNodesOfType(Class<? extends Entity> type) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return globalGraphOperations.getAllNodesWithLabel(labelFor(type));
+  }
+
+  private Label labelFor(Class<? extends Entity> type) {
+    return DynamicLabel.label(TypeNames.getInternalName(type));
   }
 
   private <T extends Entity> ResourceIterator<Node> findByProperty(Class<T> type, String propertyName, String value) {
-    Label internalNameLabel = DynamicLabel.label(TypeNames.getInternalName(type));
+    Label internalNameLabel = labelFor(type);
     ResourceIterable<Node> foundNodes = db.findNodesByLabelAndProperty(internalNameLabel, propertyName, value);
 
     ResourceIterator<Node> iterator = foundNodes.iterator();

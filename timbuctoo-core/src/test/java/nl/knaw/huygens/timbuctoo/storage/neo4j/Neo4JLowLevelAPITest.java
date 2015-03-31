@@ -217,6 +217,19 @@ public class Neo4JLowLevelAPITest {
   }
 
   @Test
+  public void getNodesWithLabelOfTypeReturnsAResourceIteratorWithOfTheFoundNodes() {
+    // setup
+    ResourceIterable<Node> searchResult = aNodeSearchResult().build();
+    when(globalGraphOperationsMock.getAllNodesWithLabel(DOMAIN_ENTITY_LABEL)).thenReturn(searchResult);
+
+    // action
+    ResourceIterable<Node> actualSearchResult = instance.getNodesOfType(DOMAIN_ENTITY_TYPE);
+
+    // verify
+    assertThat(actualSearchResult, is(equalTo(searchResult)));
+  }
+
+  @Test
   public void findNodeByPropertyReturnsTheFirstFoundNodeWithThePropertyThatHasNoIncomingVersionOfRelations() {
     // setup
     Relationship versionOf = aRelationship().withType(VERSION_OF).build();
