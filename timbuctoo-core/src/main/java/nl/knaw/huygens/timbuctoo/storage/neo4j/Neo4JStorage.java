@@ -640,7 +640,12 @@ public class Neo4JStorage {
   }
 
   public boolean entityExists(Class<? extends Entity> type, String id) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    try (Transaction transaction = db.beginTx()) {
+      boolean exists = (neo4jLowLevelAPI.getLatestNodeById(type, id) != null);
+
+      transaction.success();
+      return exists;
+    }
   }
 
   public boolean relationExists(Class<? extends Relation> relationType, String id) {

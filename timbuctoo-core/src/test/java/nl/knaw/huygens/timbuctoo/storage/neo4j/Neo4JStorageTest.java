@@ -1152,6 +1152,33 @@ public class Neo4JStorageTest {
     assertThat(actualCount, is(equalTo(count)));
   }
 
+  @Test
+  public void entityExistsTriesToRetrieveTheNodeWithTheIdAndReturnsTrueIfTheNodeExists() {
+    // setup
+    Node aNode = aNode().build();
+    when(neo4JLowLevelAPIMock.getLatestNodeById(DOMAIN_ENTITY_TYPE, ID)).thenReturn(aNode);
+
+    // action
+    boolean exists = instance.entityExists(DOMAIN_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(exists, is(true));
+    verifyTransactionSucceeded();
+  }
+
+  @Test
+  public void entityExistsTriesToRetrieveTheNodeWithTheIdAndReturnsFalseIfTheNodeExists() {
+    // setup
+    when(neo4JLowLevelAPIMock.getLatestNodeById(DOMAIN_ENTITY_TYPE, ID)).thenReturn(null);
+
+    // action
+    boolean exists = instance.entityExists(DOMAIN_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(exists, is(false));
+    verifyTransactionSucceeded();
+  }
+
   /* *****************************************************************************
    * Relation
    * *****************************************************************************/
