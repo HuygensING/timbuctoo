@@ -222,7 +222,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends Relation> StorageIterator<T> getRelationsByEntityId(Class<T> type, String id) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return neo4JStorage.getRelationsByEntityId(type, id);
   }
 
   @Override

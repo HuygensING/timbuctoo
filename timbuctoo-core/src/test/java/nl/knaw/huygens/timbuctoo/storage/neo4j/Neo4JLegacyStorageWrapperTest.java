@@ -381,6 +381,29 @@ public class Neo4JLegacyStorageWrapperTest {
   }
 
   @Test
+  public void getRelationsByEntityIdDelegatesToNeo4JStorage() throws Exception {
+    // setup
+    @SuppressWarnings("unchecked")
+    StorageIterator<SubARelation> storageIteratorMock = mock(StorageIterator.class);
+    when(neo4JStorageMock.getRelationsByEntityId(RELATION_TYPE, ID)).thenReturn(storageIteratorMock);
+
+    // action
+    StorageIterator<SubARelation> actualStorageIterator = instance.getRelationsByEntityId(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(actualStorageIterator, is(sameInstance(storageIteratorMock)));
+  }
+
+  @Test(expected = StorageException.class)
+  public void getRelationsByEntityIdThrowsAnExceptionWhenTheDelegateDoes() throws Exception {
+    // setup
+    when(neo4JStorageMock.getRelationsByEntityId(RELATION_TYPE, ID)).thenThrow(new StorageException());
+
+    // action
+    instance.getRelationsByEntityId(RELATION_TYPE, ID);
+  }
+
+  @Test
   public void findItemByPropertyForRelationDelegatesToNeo4JStorageFindRelationByProperty() throws Exception {
     // setup
     SubARelation entity = aRelation().build();

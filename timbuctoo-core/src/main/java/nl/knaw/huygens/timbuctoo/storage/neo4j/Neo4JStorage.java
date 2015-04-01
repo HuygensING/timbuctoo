@@ -629,4 +629,8 @@ public class Neo4JStorage {
     }
 
   }
+
+  public <T extends Relation> StorageIterator<T> getRelationsByEntityId(Class<T> type, String id) throws StorageException {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }
