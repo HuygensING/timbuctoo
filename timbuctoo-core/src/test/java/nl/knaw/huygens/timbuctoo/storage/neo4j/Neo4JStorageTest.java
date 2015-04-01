@@ -348,16 +348,9 @@ public class Neo4JStorageTest {
         .build();
     when(neo4JLowLevelAPIMock.getNodesOfType(SYSTEM_ENTITY_TYPE)).thenReturn(searchResult);
 
-    NodeConverter<TestSystemEntityWrapper> nodeConverter = propertyContainerConverterFactoryHasANodeConverterTypeFor(SYSTEM_ENTITY_TYPE);
-
-    TestSystemEntityWrapper entity1 = aSystemEntity().build();
-    when(nodeConverter.convertToEntity(node1)).thenReturn(entity1);
-    TestSystemEntityWrapper entity2 = aSystemEntity().build();
-    when(nodeConverter.convertToEntity(node2)).thenReturn(entity2);
-
     @SuppressWarnings("unchecked")
     StorageIterator<TestSystemEntityWrapper> storageIterator = mock(StorageIterator.class);
-    when(neo4jStorageIteratorFactoryMock.create(argThat(equalTo(SYSTEM_ENTITY_TYPE)), argThat(containsInAnyOrder(entity1, entity2)))).thenReturn(storageIterator);
+    when(neo4jStorageIteratorFactoryMock.forNode(SYSTEM_ENTITY_TYPE, searchResult)).thenReturn(storageIterator);
 
     // action
     StorageIterator<TestSystemEntityWrapper> actualStorageIterator = instance.getSystemEntities(SYSTEM_ENTITY_TYPE);
@@ -367,32 +360,8 @@ public class Neo4JStorageTest {
     verify(transactionMock).success();
   }
 
-  @Test(expected = ConversionException.class)
-  public void getSystemEntitiesThrowAConversionExceptionWhenOneOfTheNodesCannotBeConverted() throws Exception {
-    // setup
-    Node node1 = aNode().build();
-    ResourceIterable<Node> searchResult = aNodeSearchResult()//
-        .withNode(node1)//
-        .andNode(aNode().build())//
-        .build();
-    when(neo4JLowLevelAPIMock.getNodesOfType(SYSTEM_ENTITY_TYPE)).thenReturn(searchResult);
-
-    NodeConverter<TestSystemEntityWrapper> nodeConverter = propertyContainerConverterFactoryHasANodeConverterTypeFor(SYSTEM_ENTITY_TYPE);
-    when(nodeConverter.convertToEntity(node1)).thenThrow(new ConversionException());
-
-    @SuppressWarnings("unchecked")
-    StorageIterator<TestSystemEntityWrapper> storageIterator = mock(StorageIterator.class);
-
-    // action
-    StorageIterator<TestSystemEntityWrapper> actualStorageIterator = instance.getSystemEntities(SYSTEM_ENTITY_TYPE);
-
-    // verify
-    assertThat(actualStorageIterator, is(sameInstance(storageIterator)));
-    verify(transactionMock).failure();
-  }
-
   @Test(expected = StorageException.class)
-  public void getSystemEntitiesThrowAConversionExceptionWhenOneOfTheEntitiesCannotBeInstantiated() throws Exception {
+  public void getSystemEntitiesThrowsAStorageExceptionWhenTheIteratorCannotBeCreated() throws Exception {
     // setup
     Node node1 = aNode().build();
     ResourceIterable<Node> searchResult = aNodeSearchResult()//
@@ -401,18 +370,15 @@ public class Neo4JStorageTest {
         .build();
     when(neo4JLowLevelAPIMock.getNodesOfType(SYSTEM_ENTITY_TYPE)).thenReturn(searchResult);
 
-    NodeConverter<TestSystemEntityWrapper> nodeConverter = propertyContainerConverterFactoryHasANodeConverterTypeFor(SYSTEM_ENTITY_TYPE);
-    when(nodeConverter.convertToEntity(node1)).thenThrow(new InstantiationException());
+    when(neo4jStorageIteratorFactoryMock.forNode(SYSTEM_ENTITY_TYPE, searchResult)).thenThrow(new StorageException());
 
-    @SuppressWarnings("unchecked")
-    StorageIterator<TestSystemEntityWrapper> storageIterator = mock(StorageIterator.class);
-
-    // action
-    StorageIterator<TestSystemEntityWrapper> actualStorageIterator = instance.getSystemEntities(SYSTEM_ENTITY_TYPE);
-
-    // verify
-    assertThat(actualStorageIterator, is(sameInstance(storageIterator)));
-    verify(transactionMock).failure();
+    try {
+      // action
+      instance.getSystemEntities(SYSTEM_ENTITY_TYPE);
+    } finally {
+      // verify
+      verify(transactionMock).failure();
+    }
   }
 
   @Test

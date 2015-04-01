@@ -1,10 +1,10 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeMockBuilder.aNode;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipMockBuilder.aRelationship;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.TestSystemEntityWrapperBuilder.aSystemEntity;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -17,6 +17,7 @@ import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConve
 
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
 import test.model.TestSystemEntityWrapper;
@@ -36,18 +37,56 @@ public class Neo4JStorageIteratorFactoryTest {
   }
 
   @Test
-  public void createCreatesANeo4JStorageIterator() {
-    List<TestSystemEntityWrapper> entities = Lists.newArrayList();
+  public void forNodeReturnsAStorageIteratorForEntities() throws Exception {
+    // setup
+    @SuppressWarnings("unchecked")
+    NodeConverter<TestSystemEntityWrapper> nodeConverter = mock(NodeConverter.class);
+    Node node1 = aNode().build();
+    Node node2 = aNode().build();
+
+    TestSystemEntityWrapper entity1 = aSystemEntity().build();
+    TestSystemEntityWrapper entity2 = aSystemEntity().build();
+    when(nodeConverter.convertToEntity(node1)).thenReturn(entity1);
+    when(nodeConverter.convertToEntity(node2)).thenReturn(entity2);
+
+    when(propertyContainerConverterFactoryMock.createForType(SYSTEM_ENTITY_TYPE)).thenReturn(nodeConverter);
+
+    List<Node> nodes = Lists.newArrayList(node1, node2);
 
     // action
-    StorageIterator<TestSystemEntityWrapper> storageIterator = instance.create(SYSTEM_ENTITY_TYPE, entities);
+    StorageIterator<TestSystemEntityWrapper> storageIterator = instance.forNode(SYSTEM_ENTITY_TYPE, nodes);
 
     // verify
-    assertThat(storageIterator, is(notNullValue()));
+    assertThat(storageIterator.getAll(), containsInAnyOrder(entity1, entity2));
+  }
+
+  @Test(expected = ConversionException.class)
+  public void forNodeThrowsAConversionExceptionWhenOneOfTheNodesCannotBeConverted() throws Exception {
+    forNodeThrowsAnException(new ConversionException());
+  }
+
+  @Test(expected = StorageException.class)
+  public void forNodeThrowsAStorageExceptionWhenTheEntityCannotBeInstantiated() throws Exception {
+    forNodeThrowsAnException(new InstantiationException());
+  }
+
+  private void forNodeThrowsAnException(Exception exceptionToThrow) throws ConversionException, InstantiationException, StorageException {
+    // setup
+    @SuppressWarnings("unchecked")
+    NodeConverter<TestSystemEntityWrapper> nodeConverter = mock(NodeConverter.class);
+    Node node = aNode().build();
+    when(nodeConverter.convertToEntity(node)).thenThrow(exceptionToThrow);
+
+    when(propertyContainerConverterFactoryMock.createForType(SYSTEM_ENTITY_TYPE)).thenReturn(nodeConverter);
+
+    List<Node> nodes = Lists.newArrayList(node);
+
+    // action
+    instance.forNode(SYSTEM_ENTITY_TYPE, nodes);
   }
 
   @Test
-  public void forRelationReturnsAStorageIteratorForRelations() throws Exception {
+  public void forRelationshipReturnsAStorageIteratorForRelations() throws Exception {
     // setup
     @SuppressWarnings("unchecked")
     RelationshipConverter<Relation> relationshipConverter = mock(RelationshipConverter.class);
@@ -70,7 +109,7 @@ public class Neo4JStorageIteratorFactoryTest {
   }
 
   @Test(expected = ConversionException.class)
-  public void forRelationThrowsAConversionExceptionWhenOneOfTheRelationshipsCannotBeConverted() throws Exception {
+  public void forRelationshipThrowsAConversionExceptionWhenOneOfTheRelationshipsCannotBeConverted() throws Exception {
     forRelationshipThrowsAnException(new ConversionException());
   }
 
@@ -90,7 +129,7 @@ public class Neo4JStorageIteratorFactoryTest {
   }
 
   @Test(expected = StorageException.class)
-  public void forRelationThrowsAStorageExceptionWhenOneOfTheRelationsCannotBeInstantiated() throws Exception {
+  public void forRelationshipThrowsAStorageExceptionWhenOneOfTheRelationsCannotBeInstantiated() throws Exception {
     forRelationshipThrowsAnException(new InstantiationException());
   }
 

@@ -211,23 +211,16 @@ public class Neo4JStorage {
     try (Transaction transaction = db.beginTx()) {
       ResourceIterable<Node> nodes = neo4jLowLevelAPI.getNodesOfType(type);
 
-      NodeConverter<T> nodeConverter = propertyContainerConverterFactory.createForType(type);
+      try {
+        StorageIterator<T> storageIterator = neo4jStorageIteratorFactory.forNode(type, nodes);
 
-      List<T> entities = Lists.newArrayList();
-      for (Node node : nodes) {
-        try {
-          entities.add(nodeConverter.convertToEntity(node));
-        } catch (ConversionException e) {
-          transaction.failure();
-          throw e;
-        } catch (InstantiationException e) {
-          transaction.failure();
-          throw new StorageException(e);
-        }
+        transaction.success();
+        return storageIterator;
+      } catch (StorageException e) {
+        transaction.failure();
+
+        throw e;
       }
-
-      transaction.success();
-      return neo4jStorageIteratorFactory.create(type, entities);
     }
   }
 
