@@ -784,6 +784,41 @@ public abstract class StorageIntegrationTest {
     return relationId;
   }
 
+  @SuppressWarnings("unchecked")
+  @Test
+  public void getRelationsByEntityIdReturnsAllTheIncomingAndOutgoingRelationsOfAnEntity() throws Exception {
+    String sourceId = addDefaultProjectAPerson();
+    String targetId = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+    String otherTypeId = addRelationType();
+
+    String id1 = addDefaultRelation(sourceId, targetId, typeId);
+    String id2 = addDefaultRelation(targetId, sourceId, otherTypeId);
+
+    // action
+    StorageIterator<Relation> relations = instance.getRelationsByEntityId(PRIMITIVE_RELATION_TYPE, sourceId);
+
+    // verify
+    assertThat(relations.getAll(), containsInAnyOrder( //
+        likeRelation()//
+            .withId(id1) //
+            .withSourceId(sourceId) //
+            .withSourceType(RELATION_SOURCE_TYPE) //
+            .withTargetId(targetId) //
+            .withTargetType(RELATION_TARGET_TYPE) //
+            .withTypeId(typeId) //
+            .isAccepted(ACCEPTED), //
+        likeRelation() //
+            .withId(id2) //
+            .withSourceId(targetId) //
+            .withSourceType(RELATION_TARGET_TYPE) //
+            .withTargetId(sourceId) //
+            .withTargetType(RELATION_SOURCE_TYPE) //
+            .withTypeId(otherTypeId) //
+            .isAccepted(ACCEPTED)));
+
+  }
+
   /* **************************************************************************
    * Other methods
    * **************************************************************************/

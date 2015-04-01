@@ -187,4 +187,11 @@ public class Neo4JLegacyStorageWrapperIntegrationTest extends StorageIntegration
     super.countRelationsOnlyCountsTheLatest();
   }
 
+  @Ignore
+  @Test
+  @Override
+  public void getRelationsByEntityIdReturnsAllTheIncomingAndOutgoingRelationsOfAnEntity() throws Exception {
+    super.getRelationsByEntityIdReturnsAllTheIncomingAndOutgoingRelationsOfAnEntity();
+  }
+
 }
