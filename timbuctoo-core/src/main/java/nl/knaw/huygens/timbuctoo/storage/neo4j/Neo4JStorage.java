@@ -661,4 +661,8 @@ public class Neo4JStorage {
   private boolean propertyContainerExists(PropertyContainer propertyContainer) {
     return propertyContainer != null;
   }
+
+  public <T extends Relation> T findRelation(Class<T> relationType, String sourceId, String targetId, String relationTypeId) throws StorageException {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }

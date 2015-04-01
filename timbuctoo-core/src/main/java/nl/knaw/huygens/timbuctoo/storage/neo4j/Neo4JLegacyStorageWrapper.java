@@ -217,7 +217,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends Relation> T findRelation(Class<T> type, String sourceId, String targetId, String relationTypeId) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return neo4JStorage.findRelation(type, sourceId, targetId, relationTypeId);
   }
 
   @Override

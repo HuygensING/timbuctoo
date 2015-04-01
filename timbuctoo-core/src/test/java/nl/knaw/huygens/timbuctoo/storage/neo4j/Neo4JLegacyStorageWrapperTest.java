@@ -480,6 +480,37 @@ public class Neo4JLegacyStorageWrapperTest {
     verify(neo4JStorageMock).addSystemEntity(SYSTEM_ENTITY_TYPE, entity);
   }
 
+  @Test
+  public void findRelationDelegatesToNeo4JStorage() throws Exception {
+    String sourceId = "sourceId";
+    String targetId = "targetId";
+    String relationTypeId = "relationTypeId";
+    SubARelation relation = aRelation().build();
+
+    when(neo4JStorageMock.findRelation(RELATION_TYPE, sourceId, targetId, relationTypeId))//
+        .thenReturn(relation);
+
+    // action
+    SubARelation foundRelation = instance.findRelation(RELATION_TYPE, sourceId, targetId, relationTypeId);
+
+    // verify
+    assertThat(foundRelation, is(sameInstance(relation)));
+  }
+
+  @Test(expected = StorageException.class)
+  public void findRelationThrowsAnExceptionIfTheDelegateDoes() throws Exception {
+    String sourceId = "sourceId";
+    String targetId = "targetId";
+    String relationTypeId = "relationTypeId";
+
+    when(neo4JStorageMock.findRelation(RELATION_TYPE, sourceId, targetId, relationTypeId)) //
+        .thenThrow(new StorageException());
+
+    // action
+    instance.findRelation(RELATION_TYPE, sourceId, targetId, relationTypeId);
+
+  }
+
   @Test(expected = StorageException.class)
   public void addSystemEntityThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     TestSystemEntityWrapper entity = aSystemEntity().build();
