@@ -638,4 +638,12 @@ public class Neo4JStorage {
       }
     }
   }
+
+  public boolean entityExists(Class<? extends Entity> type, String id) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
+  public boolean relationExists(Class<? extends Relation> relationType, String id) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }

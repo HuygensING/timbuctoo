@@ -280,6 +280,19 @@ public class Neo4JLegacyStorageWrapperTest {
   }
 
   @Test
+  public void entityExistsForDomainEntityDelegatesToNeo4JStorage() throws Exception {
+    // setup
+    boolean entityExists = true;
+    when(neo4JStorageMock.entityExists(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entityExists);
+
+    // action
+    boolean actualEntityExists = instance.entityExists(DOMAIN_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(actualEntityExists, is(entityExists));
+  }
+
+  @Test
   public void addDomainEntityForRelationDelegatesToNeo4JStorageAddRelation() throws Exception {
     // setup
     SubARelation relation = aRelation().build();
@@ -441,6 +454,19 @@ public class Neo4JLegacyStorageWrapperTest {
   }
 
   @Test
+  public void entityExistsForRelationDelegatesToNeo4JStorageRelationExists() throws Exception {
+    // setup
+    boolean relationExists = true;
+    when(neo4JStorageMock.relationExists(RELATION_TYPE, ID)).thenReturn(relationExists);
+
+    // action
+    boolean actualEntityExists = instance.entityExists(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(actualEntityExists, is(relationExists));
+  }
+
+  @Test
   public void addSystemEntityDelegatesToNeo4JStorage() throws Exception {
     // setup
     TestSystemEntityWrapper entity = aSystemEntity().build();
@@ -583,6 +609,19 @@ public class Neo4JLegacyStorageWrapperTest {
 
     // verify
     assertThat(actualCount, is(equalTo(count)));
+  }
+
+  @Test
+  public void entityExistsForSystemEntityDelegatesToNeo4JStorage() throws Exception {
+    // setup
+    boolean entityExists = true;
+    when(neo4JStorageMock.entityExists(SYSTEM_ENTITY_TYPE, ID)).thenReturn(entityExists);
+
+    // action
+    boolean actualEntityExists = instance.entityExists(SYSTEM_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(actualEntityExists, is(entityExists));
   }
 
   @Test

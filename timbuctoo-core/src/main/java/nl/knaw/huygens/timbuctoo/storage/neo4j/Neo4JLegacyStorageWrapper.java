@@ -132,9 +132,14 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public <T extends Entity> boolean entityExists(Class<T> type, String id) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    if (Relation.class.isAssignableFrom(type)) {
+      return neo4JStorage.relationExists((Class<? extends Relation>) type, id);
+    } else {
+      return neo4JStorage.entityExists(type, id);
+    }
   }
 
   @Override
