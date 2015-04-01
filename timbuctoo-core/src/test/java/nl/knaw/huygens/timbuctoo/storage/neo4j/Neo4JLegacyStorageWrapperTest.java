@@ -160,7 +160,7 @@ public class Neo4JLegacyStorageWrapperTest {
   public void getAllVariationsDelegatesToNeo4JStorage() throws Exception {
     // setup
     List<BaseDomainEntity> variations = Lists.newArrayList();
-    when(neo4JStorageMock.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE)).thenReturn(variations);
+    when(neo4JStorageMock.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(variations);
 
     // action
     List<BaseDomainEntity> actualVariations = instance.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
@@ -173,7 +173,7 @@ public class Neo4JLegacyStorageWrapperTest {
   public void getAllVariationsThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
     List<BaseDomainEntity> variations = Lists.newArrayList();
-    when(neo4JStorageMock.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE)).thenThrow(new StorageException());
+    when(neo4JStorageMock.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenThrow(new StorageException());
 
     // action
     List<BaseDomainEntity> actualVariations = instance.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);

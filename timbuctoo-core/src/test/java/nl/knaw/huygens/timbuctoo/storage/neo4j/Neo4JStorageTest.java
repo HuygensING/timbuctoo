@@ -45,7 +45,9 @@ import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConverterFactory;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.InOrder;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -109,7 +111,7 @@ public class Neo4JStorageTest {
     idGeneratorMock = mock(IdGenerator.class);
     setupEntityConverterFactory();
     setupDBTransaction();
-    TypeRegistry typeRegistry = TypeRegistry.getInstance().init("timbuctoo.model test.model");
+    TypeRegistry typeRegistry = TypeRegistry.getInstance().init("timbuctoo.model test.model test.model.projecta");
     instance = new Neo4JStorage(dbMock, propertyContainerConverterFactoryMock, nodeDuplicatorMock, relationshipDuplicatorMock, idGeneratorMock, typeRegistry, neo4JLowLevelAPIMock,
         neo4jStorageIteratorFactoryMock);
   }
@@ -849,6 +851,88 @@ public class Neo4JStorageTest {
       // verify
       verify(converter).convertToEntity(nodeWithSameRevision);
       verify(transactionMock).failure();
+    }
+  }
+
+  @Test
+  public void getAllVariationsReturnsAllVariationsOfANode() throws Exception {
+    // setup
+    Node node = aNode()//
+        .withLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL)//
+        .withLabel(DOMAIN_ENTITY_LABEL)//
+        .build();
+
+    when(neo4JLowLevelAPIMock.getLatestNodeById(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(node);
+
+    BaseDomainEntity primitive = new BaseDomainEntity();
+    NodeConverter<BaseDomainEntity> primitiveConverter = propertyContainerConverterFactoryHasANodeConverterTypeFor(PRIMITIVE_DOMAIN_ENTITY_TYPE);
+    when(primitiveConverter.convertToEntity(node)).thenReturn(primitive);
+
+    SubADomainEntity domainEntity = aDomainEntity().build();
+    NodeConverter<SubADomainEntity> converter = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
+    when(converter.convertToEntity(node)).thenReturn(domainEntity);
+
+    // action
+    List<BaseDomainEntity> allVariations = instance.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(allVariations, containsInAnyOrder(domainEntity, primitive));
+    verifyTransactionSucceeded();
+
+  }
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
+
+  @Test()
+  public void getAllVariationsThrowsAnIllegalArgumentExceptionWhenTheTypeIsNotAPrimitive() throws Exception {
+    // setup
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Nonprimitive type");
+    thrown.expectMessage("" + DOMAIN_ENTITY_TYPE);
+
+    // action
+    instance.getAllVariations(DOMAIN_ENTITY_TYPE, ID);
+  }
+
+  @Test(expected = ConversionException.class)
+  public void getAllVariationsThrowsAConversionExceptionWhenTheNodeCouldNotBeConverted() throws Exception {
+    // setup
+    Node node = aNode()//
+        .withLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL)//
+        .withLabel(DOMAIN_ENTITY_LABEL)//
+        .build();
+
+    when(neo4JLowLevelAPIMock.getLatestNodeById(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(node);
+
+    NodeConverter<BaseDomainEntity> primitiveConverter = propertyContainerConverterFactoryHasANodeConverterTypeFor(PRIMITIVE_DOMAIN_ENTITY_TYPE);
+    when(primitiveConverter.convertToEntity(node)).thenThrow(new ConversionException());
+    propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
+
+    try {
+      instance.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
+    } finally {
+      verifyTransactionFailed();
+    }
+  }
+
+  @Test(expected = StorageException.class)
+  public void getAllVariationsThrowsAStorageExceptionWhenTheEntityCouldNotInstantiated() throws Exception {
+    // setup
+    Node node = aNode()//
+        .withLabel(PRIMITIVE_DOMAIN_ENTITY_LABEL)//
+        .withLabel(DOMAIN_ENTITY_LABEL)//
+        .build();
+
+    when(neo4JLowLevelAPIMock.getLatestNodeById(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(node);
+
+    NodeConverter<BaseDomainEntity> primitiveConverter = propertyContainerConverterFactoryHasANodeConverterTypeFor(PRIMITIVE_DOMAIN_ENTITY_TYPE);
+    when(primitiveConverter.convertToEntity(node)).thenThrow(new InstantiationException());
+    propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
+    try {
+      instance.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
+    } finally {
+      verifyTransactionFailed();
     }
   }
 

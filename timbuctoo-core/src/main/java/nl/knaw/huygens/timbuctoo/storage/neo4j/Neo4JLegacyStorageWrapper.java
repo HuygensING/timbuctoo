@@ -192,7 +192,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws StorageException {
-    return neo4JStorage.getAllVariations(type);
+    return neo4JStorage.getAllVariations(type, id);
   }
 
   @SuppressWarnings("unchecked")

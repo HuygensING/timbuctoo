@@ -138,7 +138,7 @@ public class NodeMockBuilder {
 
     addPropertiesToNode(node, properties);
 
-    when(node.getLabels()).thenReturn(asIterable(getLabels().iterator()));
+    when(node.getLabels()).thenReturn(getLabels());
     addRelationships(node);
 
     return node;

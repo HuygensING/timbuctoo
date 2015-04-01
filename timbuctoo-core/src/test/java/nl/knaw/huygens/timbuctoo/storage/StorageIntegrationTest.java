@@ -46,7 +46,6 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 
-import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -452,18 +451,21 @@ public abstract class StorageIntegrationTest {
     assertThat(persons, containsInAnyOrder(personMatcher, personMatcher1, personMatcher2));
   }
 
-  @SuppressWarnings("unchecked")
   @Test
   public void getAllVariationsReturnsAllTheVariationsOfADomainEntity() throws Exception {
     String id = addDefaultProjectAPerson();
 
-    List<? extends Person> allVariations = instance.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, id);
-
-    @SuppressWarnings("rawtypes")
-    Matcher[] matchers = { likeDefaultPerson(id), likeDefaultProjectAPerson(id) };
+    List<Person> allVariations = instance.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, id);
 
     assertThat(allVariations, hasSize(2));
-    assertThat(allVariations, containsInAnyOrder(matchers));
+    // needed to do this, to be able to check if all the properties contain the right values.
+    for (Person person : allVariations) {
+      if (person instanceof ProjectAPerson) {
+        assertThat((ProjectAPerson) person, is(likeDefaultProjectAPerson(id)));
+      } else {
+        assertThat(person, is(likeDefaultPerson(id)));
+      }
+    }
   }
 
   @Test

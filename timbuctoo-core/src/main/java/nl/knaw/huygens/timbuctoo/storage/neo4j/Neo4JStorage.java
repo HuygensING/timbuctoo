@@ -29,6 +29,7 @@ import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.Strings;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
@@ -600,8 +601,32 @@ public class Neo4JStorage {
     }
   }
 
-  public <T extends DomainEntity> List<T> getAllVariations(Class<T> primitiveDomainEntityType) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
-  }
+  public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws StorageException {
+    Preconditions.checkArgument(TypeRegistry.isPrimitiveDomainEntity(type), "Nonprimitive type %s", type);
 
+    try (Transaction transaction = db.beginTx()) {
+      Node node = neo4jLowLevelAPI.getLatestNodeById(type, id);
+
+      List<T> variations = Lists.newArrayList();
+
+      for (Label label : node.getLabels()) {
+        Class<? extends DomainEntity> domainEntityType = typeRegistry.getDomainEntityType(label.name());
+        NodeConverter<? extends DomainEntity> converter = propertyContainerConverterFactory.createForType(domainEntityType);
+
+        try {
+          variations.add(type.cast(converter.convertToEntity(node)));
+        } catch (ConversionException e) {
+          transaction.failure();
+          throw e;
+        } catch (InstantiationException e) {
+          transaction.failure();
+          throw new StorageException(e);
+        }
+      }
+
+      transaction.success();
+      return variations;
+    }
+
+  }
 }
