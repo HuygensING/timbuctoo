@@ -193,4 +193,25 @@ public class Neo4JLegacyStorageWrapperIntegrationTest extends StorageIntegration
     super.getRelationsByEntityIdReturnsAllTheIncomingAndOutgoingRelationsOfAnEntity();
   }
 
+  @Ignore
+  @Test
+  @Override
+  public void entityExistsForDomainEntityShowsIfTheEntityExistsInTheDatabase() throws Exception {
+    super.entityExistsForDomainEntityShowsIfTheEntityExistsInTheDatabase();
+  }
+
+  @Ignore
+  @Test
+  @Override
+  public void entityExistsForRelationShowsIfTheEntityExistsInTheDatabase() throws Exception {
+    super.entityExistsForRelationShowsIfTheEntityExistsInTheDatabase();
+  }
+
+  @Ignore
+  @Test
+  @Override
+  public void entityExistsForSystemEntityShowsIfTheEntityExistsInTheDatabase() throws Exception {
+    super.entityExistsForSystemEntityShowsIfTheEntityExistsInTheDatabase();
+  }
+
 }

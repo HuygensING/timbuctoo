@@ -58,11 +58,13 @@ import test.variation.model.projecta.ProjectARelation;
 import com.google.common.collect.Lists;
 
 public abstract class StorageIntegrationTest {
+  private static final Class<RelationType> SYSTEM_ENTITY_TYPE = RelationType.class;
+  private static final Class<ProjectARelation> RELATION_TYPE = ProjectARelation.class;
   private static final String RELATION_TARGET_TYPE = "person";
   private static final String RELATION_SOURCE_TYPE = RELATION_TARGET_TYPE;
   private static final String RELATIONTYPE_TYPE_STRING = "relationtype";
   private static final boolean NOT_ACCEPTED = false;
-  private static final Class<ProjectARelation> PROJECT_RELATION_TYPE = ProjectARelation.class;
+  private static final Class<ProjectARelation> PROJECT_RELATION_TYPE = RELATION_TYPE;
   private static final Class<Relation> PRIMITIVE_RELATION_TYPE = Relation.class;
   private static final boolean ACCEPTED = true;
   private static final String DEFAULT_TYPE_ID = "typeId";
@@ -138,7 +140,7 @@ public abstract class StorageIntegrationTest {
 
     assertThat(id, startsWith(RelationType.ID_PREFIX));
 
-    assertThat(instance.getEntity(RelationType.class, id), //
+    assertThat(instance.getEntity(SYSTEM_ENTITY_TYPE, id), //
         matchesRelationType() //
             .withId(id)//
             .withInverseName(INVERSE_NAME)//
@@ -156,13 +158,13 @@ public abstract class StorageIntegrationTest {
   @Test
   public void updateSystemEntityChangesTheExistingSystemEntity() throws Exception {
     String id = addSystemEntity(REGULAR_NAME, INVERSE_NAME);
-    RelationType storedSystemEntity = instance.getEntity(RelationType.class, id);
+    RelationType storedSystemEntity = instance.getEntity(SYSTEM_ENTITY_TYPE, id);
     assertThat(storedSystemEntity, is(notNullValue()));
     storedSystemEntity.setRegularName(OTHER_REGULAR_NAME);
 
-    instance.updateSystemEntity(RelationType.class, storedSystemEntity);
+    instance.updateSystemEntity(SYSTEM_ENTITY_TYPE, storedSystemEntity);
 
-    assertThat(instance.getEntity(RelationType.class, id), //
+    assertThat(instance.getEntity(SYSTEM_ENTITY_TYPE, id), //
         matchesRelationType() //
             .withId(id)//
             .withInverseName(INVERSE_NAME)//
@@ -176,7 +178,7 @@ public abstract class StorageIntegrationTest {
     String id2 = addSystemEntity(REGULAR_NAME1, INVERSE_NAME1);
     String id3 = addSystemEntity(REGULAR_NAME2, INVERSE_NAME2);
 
-    List<RelationType> storedSystemEntities = instance.getSystemEntities(RelationType.class).getAll();
+    List<RelationType> storedSystemEntities = instance.getSystemEntities(SYSTEM_ENTITY_TYPE).getAll();
 
     List<RelationTypeMatcher> relationTypeMatchers = Lists.newArrayList(//
         matchesRelationType()//
@@ -198,18 +200,35 @@ public abstract class StorageIntegrationTest {
 
   private String addSystemEntity(String regularName, String inverseName) throws StorageException {
     RelationType systemEntityToStore1 = createRelationType(regularName, inverseName);
-    String id1 = instance.addSystemEntity(RelationType.class, systemEntityToStore1);
+    String id1 = instance.addSystemEntity(SYSTEM_ENTITY_TYPE, systemEntityToStore1);
     return id1;
   }
 
   @Test
   public void deleteSystemEntityRemovesAnEntityFromTheDatabase() throws StorageException {
+    // setup
     String id = addSystemEntity(REGULAR_NAME, INVERSE_NAME);
-    assertThat(instance.getEntity(RelationType.class, id), is(notNullValue()));
+    assertThat(instance.getEntity(SYSTEM_ENTITY_TYPE, id), is(notNullValue()));
 
-    instance.deleteSystemEntity(RelationType.class, id);
+    // action
+    instance.deleteSystemEntity(SYSTEM_ENTITY_TYPE, id);
 
-    assertThat(instance.getEntity(RelationType.class, id), is(nullValue()));
+    // verify
+    assertThat(instance.getEntity(SYSTEM_ENTITY_TYPE, id), is(nullValue()));
+  }
+
+  @Test
+  public void entityExistsForSystemEntityShowsIfTheEntityExistsInTheDatabase() throws Exception {
+    // setup
+    String id = "";
+    assertThat(instance.entityExists(SYSTEM_ENTITY_TYPE, id), is(false));
+    id = addSystemEntity(REGULAR_NAME, INVERSE_NAME);
+
+    // action
+    boolean exists = instance.entityExists(SYSTEM_ENTITY_TYPE, id);
+
+    // verify
+    assertThat(exists, is(true));
   }
 
   @Test
@@ -217,7 +236,7 @@ public abstract class StorageIntegrationTest {
     String id = addSystemEntity(REGULAR_NAME, INVERSE_NAME);
 
     // action
-    RelationType foundRelationType = instance.findItemByProperty(RelationType.class, RelationType.REGULAR_NAME, REGULAR_NAME);
+    RelationType foundRelationType = instance.findItemByProperty(SYSTEM_ENTITY_TYPE, RelationType.REGULAR_NAME, REGULAR_NAME);
 
     // verify
     assertThat(foundRelationType, matchesRelationType()//
@@ -234,7 +253,7 @@ public abstract class StorageIntegrationTest {
     addSystemEntity(REGULAR_NAME2, INVERSE_NAME2);
 
     // action
-    long count = instance.count(RelationType.class);
+    long count = instance.count(SYSTEM_ENTITY_TYPE);
 
     // verify
     long three = 3l;
@@ -414,6 +433,20 @@ public abstract class StorageIntegrationTest {
 
     assertThat(instance.getEntity(DOMAIN_ENTITY_TYPE, id), is(nullValue()));
     assertThat(instance.getEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), is(nullValue()));
+  }
+
+  @Test
+  public void entityExistsForDomainEntityShowsIfTheEntityExistsInTheDatabase() throws Exception {
+    // setup
+    String id = "";
+    assertThat(instance.entityExists(DOMAIN_ENTITY_TYPE, id), is(false));
+    id = addDefaultProjectAPerson();
+
+    // action
+    boolean exists = instance.entityExists(DOMAIN_ENTITY_TYPE, id);
+
+    // verify
+    assertThat(exists, is(true));
   }
 
   @SuppressWarnings("unchecked")
@@ -735,13 +768,13 @@ public abstract class StorageIntegrationTest {
 
     String id = addDefaultRelation(sourceId, targetId, typeId);
 
-    ProjectARelation relation = instance.getEntity(ProjectARelation.class, id);
+    ProjectARelation relation = instance.getEntity(RELATION_TYPE, id);
     relation.setAccepted(NOT_ACCEPTED);
-    instance.updateDomainEntity(ProjectARelation.class, relation, UPDATE_CHANGE);
-    instance.setPID(ProjectARelation.class, id, PID);
+    instance.updateDomainEntity(RELATION_TYPE, relation, UPDATE_CHANGE);
+    instance.setPID(RELATION_TYPE, id, PID);
 
     // action
-    long count = instance.count(ProjectARelation.class);
+    long count = instance.count(RELATION_TYPE);
 
     // verify
     long one = 1l;
@@ -817,6 +850,21 @@ public abstract class StorageIntegrationTest {
             .withTypeId(otherTypeId) //
             .isAccepted(ACCEPTED)));
 
+  }
+
+  @Test
+  public void entityExistsForRelationShowsIfTheEntityExistsInTheDatabase() throws Exception {
+    // setup
+    String id = "";
+    assertThat(instance.entityExists(RELATION_TYPE, id), is(false));
+    String sourceId = addDefaultProjectAPerson();
+    id = addDefaultProjectARelation(sourceId);
+
+    // action
+    boolean exists = instance.entityExists(RELATION_TYPE, id);
+
+    // verify
+    assertThat(exists, is(true));
   }
 
   /* **************************************************************************
