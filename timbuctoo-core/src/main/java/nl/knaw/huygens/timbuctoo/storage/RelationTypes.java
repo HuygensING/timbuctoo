@@ -67,7 +67,7 @@ public class RelationTypes {
     idCache = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<String, RelationType>() {
       @Override
       public RelationType load(String id) throws StorageException {
-        RelationType type = storage.getEntityOrDefaultVariation(RelationType.class, id);
+        RelationType type = storage.getEntity(RelationType.class, id);
         if (type == null) {
           // Not allowed to return null
           throw new StorageException("item does not exist");
