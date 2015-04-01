@@ -1627,7 +1627,7 @@ public class Neo4JStorageTest {
 
     @SuppressWarnings("unchecked")
     StorageIterator<SubARelation> storageIterator = mock(StorageIterator.class);
-    when(neo4jStorageIteratorFactoryMock.forRelation(RELATION_TYPE, relationships)).thenReturn(storageIterator);
+    when(neo4jStorageIteratorFactoryMock.forRelationship(RELATION_TYPE, relationships)).thenReturn(storageIterator);
 
     // action
     StorageIterator<SubARelation> actualStorageIterator = instance.getRelationsByEntityId(RELATION_TYPE, ID);
@@ -1644,7 +1644,7 @@ public class Neo4JStorageTest {
     ArrayList<Relationship> relationships = Lists.newArrayList();
     when(neo4JLowLevelAPIMock.getRelationshipsByNodeId(ID)).thenReturn(relationships);
 
-    when(neo4jStorageIteratorFactoryMock.forRelation(RELATION_TYPE, relationships)).thenThrow(new StorageException());
+    when(neo4jStorageIteratorFactoryMock.forRelationship(RELATION_TYPE, relationships)).thenThrow(new StorageException());
 
     try {
       // action

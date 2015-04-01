@@ -63,7 +63,7 @@ public class Neo4JStorageIteratorFactoryTest {
     List<Relationship> relationships = Lists.newArrayList(relationship1, relationship2);
 
     // action
-    StorageIterator<Relation> storageIterator = instance.forRelation(RELATION_TYPE, relationships);
+    StorageIterator<Relation> storageIterator = instance.forRelationship(RELATION_TYPE, relationships);
 
     // verify
     assertThat(storageIterator.getAll(), containsInAnyOrder(relation1, relation2));
@@ -86,7 +86,7 @@ public class Neo4JStorageIteratorFactoryTest {
     List<Relationship> relationships = Lists.newArrayList(relationship1);
 
     // action
-    instance.forRelation(RELATION_TYPE, relationships);
+    instance.forRelationship(RELATION_TYPE, relationships);
   }
 
   @Test(expected = StorageException.class)

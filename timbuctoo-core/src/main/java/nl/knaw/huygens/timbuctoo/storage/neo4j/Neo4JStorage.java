@@ -636,7 +636,7 @@ public class Neo4JStorage {
       List<Relationship> relationships = neo4jLowLevelAPI.getRelationshipsByNodeId(id);
 
       try {
-        StorageIterator<T> iterator = neo4jStorageIteratorFactory.forRelation(type, relationships);
+        StorageIterator<T> iterator = neo4jStorageIteratorFactory.forRelationship(type, relationships);
         transaction.success();
         return iterator;
       } catch (StorageException e) {

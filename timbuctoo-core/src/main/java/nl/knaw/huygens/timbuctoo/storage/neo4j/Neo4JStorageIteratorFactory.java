@@ -26,7 +26,7 @@ class Neo4JStorageIteratorFactory {
     return StorageIteratorStub.newInstance(Lists.newArrayList(iterable));
   }
 
-  public <T extends Relation> StorageIterator<T> forRelation(Class<T> relationType, List<Relationship> relationships) throws StorageException {
+  public <T extends Relation> StorageIterator<T> forRelationship(Class<T> relationType, List<Relationship> relationships) throws StorageException {
     RelationshipConverter<T> relationshipConverter = propertyContainerConverterFactory.createForRelation(relationType);
     List<T> relations = Lists.newArrayList();
 
