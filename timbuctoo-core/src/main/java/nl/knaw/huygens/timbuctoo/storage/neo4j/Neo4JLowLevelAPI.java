@@ -231,4 +231,8 @@ class Neo4JLowLevelAPI {
     }
   }
 
+  public List<Relationship> getRelationshipsByNodeId(String id) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
 }

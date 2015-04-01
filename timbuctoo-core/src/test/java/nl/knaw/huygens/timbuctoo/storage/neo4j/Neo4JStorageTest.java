@@ -29,6 +29,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
@@ -1614,6 +1615,42 @@ public class Neo4JStorageTest {
     } finally {
       // verify
       verify(converter).convertToEntity(relationshipWithPID);
+      verifyTransactionFailed();
+    }
+  }
+
+  @Test
+  public void getRelationsByEntityIdReturnsAStorageIteratorOfRelationForTheFoundRelationships() throws Exception {
+    // setup
+    ArrayList<Relationship> relationships = Lists.newArrayList();
+    when(neo4JLowLevelAPIMock.getRelationshipsByNodeId(ID)).thenReturn(relationships);
+
+    @SuppressWarnings("unchecked")
+    StorageIterator<SubARelation> storageIterator = mock(StorageIterator.class);
+    when(neo4jStorageIteratorFactoryMock.forRelation(RELATION_TYPE, relationships)).thenReturn(storageIterator);
+
+    // action
+    StorageIterator<SubARelation> actualStorageIterator = instance.getRelationsByEntityId(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(actualStorageIterator, is(sameInstance(storageIterator)));
+
+    verifyTransactionSucceeded();
+  }
+
+  @Test(expected = StorageException.class)
+  public void getRelationsByEntityIdThrowsAStorageExceptionWhenTheStorageIteratorCannotBeCreated() throws Exception {
+    // setup
+    ArrayList<Relationship> relationships = Lists.newArrayList();
+    when(neo4JLowLevelAPIMock.getRelationshipsByNodeId(ID)).thenReturn(relationships);
+
+    when(neo4jStorageIteratorFactoryMock.forRelation(RELATION_TYPE, relationships)).thenThrow(new StorageException());
+
+    try {
+      // action
+      instance.getRelationsByEntityId(RELATION_TYPE, ID);
+    } finally {
+      // verify
       verifyTransactionFailed();
     }
   }
