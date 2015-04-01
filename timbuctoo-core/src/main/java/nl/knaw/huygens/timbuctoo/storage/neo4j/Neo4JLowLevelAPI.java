@@ -232,7 +232,11 @@ class Neo4JLowLevelAPI {
   }
 
   public List<Relationship> getRelationshipsByNodeId(String id) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    List<Relationship> relationships = Lists.newArrayList();
+    relationships.addAll(relationshipIndexesMock.getRelationshipsBy(SOURCE_ID, id));
+    relationships.addAll(relationshipIndexesMock.getRelationshipsBy(TARGET_ID, id));
+
+    return relationships;
   }
 
 }

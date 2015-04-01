@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Relation.SOURCE_ID;
+import static nl.knaw.huygens.timbuctoo.model.Relation.TARGET_ID;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeMockBuilder.aNode;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeSearchResultBuilder.aNodeSearchResult;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeSearchResultBuilder.anEmptyNodeSearchResult;
@@ -11,6 +13,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
@@ -344,6 +348,35 @@ public class Neo4JLowLevelAPITest {
 
     // verify
     assertThat(actualRelationship, is(nullValue()));
+  }
+
+  @Test
+  public void getRelationshipsByNodeIdReturnsTheIncomingAndOutgoingRelationshipsOfTheNode() {
+    // setup
+    List<Relationship> outgoing = relationshipList(2);
+    when(relationshipIndexesMock.getRelationshipsBy(SOURCE_ID, ID)).thenReturn(outgoing);
+
+    List<Relationship> incoming = relationshipList(3);
+    when(relationshipIndexesMock.getRelationshipsBy(TARGET_ID, ID)).thenReturn(incoming);
+
+    // action
+    List<Relationship> foundRelationships = instance.getRelationshipsByNodeId(ID);
+
+    // verify
+    assertThat(foundRelationships, hasSize(5));
+    assertThat(foundRelationships, hasItems(outgoing.toArray(new Relationship[0])));
+    assertThat(foundRelationships, hasItems(incoming.toArray(new Relationship[0])));
+
+  }
+
+  private List<Relationship> relationshipList(int size) {
+    List<Relationship> relationships = Lists.newArrayList();
+
+    for (int i = 0; i < size; i++) {
+      relationships.add(aRelationship().build());
+    }
+
+    return relationships;
   }
 
   @Test
