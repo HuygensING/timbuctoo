@@ -867,6 +867,25 @@ public abstract class StorageIntegrationTest {
     assertThat(exists, is(true));
   }
 
+  @Test
+  public void findRelationSearchesARelationByClassSourceIdTargetIdAndTypeId() throws Exception {
+    String sourceId = addDefaultProjectAPerson();
+    String targetId = addDefaultProjectAPerson();
+    String relationTypeId = addRelationType();
+
+    String id = addDefaultRelation(sourceId, targetId, relationTypeId);
+
+    // action
+    ProjectARelation foundRelation = instance.findRelation(RELATION_TYPE, sourceId, targetId, relationTypeId);
+
+    // verify
+    assertThat(foundRelation, likeRelation() //
+        .withId(id) //
+        .withSourceId(sourceId) //
+        .withTargetId(targetId) //
+        .withTypeId(relationTypeId));
+  }
+
   /* **************************************************************************
    * Other methods
    * **************************************************************************/
