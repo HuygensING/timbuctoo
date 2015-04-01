@@ -207,7 +207,6 @@ public class Neo4JLegacyStorageWrapperIntegrationTest extends StorageIntegration
     super.entityExistsForRelationShowsIfTheEntityExistsInTheDatabase();
   }
 
-  @Ignore
   @Test
   @Override
   public void entityExistsForSystemEntityShowsIfTheEntityExistsInTheDatabase() throws Exception {
