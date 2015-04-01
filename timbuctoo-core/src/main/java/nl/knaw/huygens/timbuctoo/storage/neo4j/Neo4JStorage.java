@@ -24,6 +24,7 @@ import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.Transaction;
@@ -641,7 +642,7 @@ public class Neo4JStorage {
 
   public boolean entityExists(Class<? extends Entity> type, String id) {
     try (Transaction transaction = db.beginTx()) {
-      boolean exists = (neo4jLowLevelAPI.getLatestNodeById(type, id) != null);
+      boolean exists = propertyContainerExists(neo4jLowLevelAPI.getLatestNodeById(type, id));
 
       transaction.success();
       return exists;
@@ -649,6 +650,15 @@ public class Neo4JStorage {
   }
 
   public boolean relationExists(Class<? extends Relation> relationType, String id) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    try (Transaction transaction = db.beginTx()) {
+      boolean exists = propertyContainerExists(neo4jLowLevelAPI.getLatestRelationshipById(id));
+
+      transaction.success();
+      return exists;
+    }
+  }
+
+  private boolean propertyContainerExists(PropertyContainer propertyContainer) {
+    return propertyContainer != null;
   }
 }

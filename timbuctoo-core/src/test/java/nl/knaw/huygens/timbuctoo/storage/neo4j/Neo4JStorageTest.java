@@ -2023,6 +2023,33 @@ public class Neo4JStorageTest {
     assertThat(actualCount, is(equalTo(count)));
   }
 
+  @Test
+  public void relationExistsTriesToRetrieveTheRelationshipWithTheIdAndReturnsTrueIfTheRelationshipExists() {
+    // setup
+    Relationship aRelationship = aRelationship().build();
+    when(neo4JLowLevelAPIMock.getLatestRelationshipById(ID)).thenReturn(aRelationship);
+
+    // action
+    boolean exists = instance.relationExists(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(exists, is(true));
+    verifyTransactionSucceeded();
+  }
+
+  @Test
+  public void relationExistsTriesToRetrieveTheRelationshipWithTheIdAndReturnsFalseIfTheRelationshipExists() {
+    // setup
+    when(neo4JLowLevelAPIMock.getLatestRelationshipById(ID)).thenReturn(null);
+
+    // action
+    boolean exists = instance.relationExists(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(exists, is(false));
+    verifyTransactionSucceeded();
+  }
+
   /* *****************************************************************************
    * Other methods
    * *****************************************************************************/
