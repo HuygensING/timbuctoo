@@ -31,7 +31,7 @@ import com.google.common.collect.Sets;
 
 class Neo4JLowLevelAPI {
   private final GraphDatabaseService db;
-  private final RelationshipIndexes relationshipIndexesMock;
+  private final RelationshipIndexes relationshipIndexes;
   private final GlobalGraphOperations globalGraphOperations;
 
   public Neo4JLowLevelAPI(GraphDatabaseService db) {
@@ -40,7 +40,7 @@ class Neo4JLowLevelAPI {
 
   Neo4JLowLevelAPI(GraphDatabaseService db, RelationshipIndexes relationshipIndexesMock, GlobalGraphOperations globalGraphOperations) {
     this.db = db;
-    this.relationshipIndexesMock = relationshipIndexesMock;
+    this.relationshipIndexes = relationshipIndexesMock;
     this.globalGraphOperations = globalGraphOperations;
   }
 
@@ -127,17 +127,17 @@ class Neo4JLowLevelAPI {
   }
 
   public Relationship getLatestRelationshipById(String id) {
-    return relationshipIndexesMock.getLatestRelationshipById(id);
+    return relationshipIndexes.getLatestRelationshipById(id);
   }
 
   public <T extends Relation> Relationship getRelationshipWithRevision(Class<T> relationType, String id, int revision) {
-    return relationshipIndexesMock.getRelationshipWithRevision(id, revision);
+    return relationshipIndexes.getRelationshipWithRevision(id, revision);
   }
 
   public void addRelationship(Relationship relationship, String id) {
-    relationshipIndexesMock.indexByField(relationship, ID_PROPERTY_NAME, id);
-    relationshipIndexesMock.indexByField(relationship, SOURCE_ID, getNodeId(relationship.getStartNode()));
-    relationshipIndexesMock.indexByField(relationship, TARGET_ID, getNodeId(relationship.getEndNode()));
+    relationshipIndexes.indexByField(relationship, ID_PROPERTY_NAME, id);
+    relationshipIndexes.indexByField(relationship, SOURCE_ID, getNodeId(relationship.getStartNode()));
+    relationshipIndexes.indexByField(relationship, TARGET_ID, getNodeId(relationship.getEndNode()));
   }
 
   private Object getNodeId(Node node) {
@@ -173,14 +173,14 @@ class Neo4JLowLevelAPI {
   }
 
   public Relationship findRelationshipByProperty(Class<? extends Relation> type, String propertyName, String propertyValue) {
-    if (!relationshipIndexesMock.containsIndexFor(propertyName)) {
+    if (!relationshipIndexes.containsIndexFor(propertyName)) {
       throw propertyHasNoIndex(type, propertyName);
     }
 
-    List<Relationship> foundRelationships = relationshipIndexesMock.getRelationshipsBy(propertyName, propertyValue);
+    List<Relationship> foundRelationships = relationshipIndexes.getRelationshipsBy(propertyName, propertyValue);
 
     for (Relationship relationship : foundRelationships) {
-      if (relationshipIndexesMock.isLatestVersion(relationship)) {
+      if (relationshipIndexes.isLatestVersion(relationship)) {
         return relationship;
       }
     }
@@ -233,14 +233,14 @@ class Neo4JLowLevelAPI {
 
   public List<Relationship> getRelationshipsByNodeId(String id) {
     List<Relationship> relationships = Lists.newArrayList();
-    relationships.addAll(relationshipIndexesMock.getRelationshipsBy(SOURCE_ID, id));
-    relationships.addAll(relationshipIndexesMock.getRelationshipsBy(TARGET_ID, id));
+    relationships.addAll(relationshipIndexes.getRelationshipsBy(SOURCE_ID, id));
+    relationships.addAll(relationshipIndexes.getRelationshipsBy(TARGET_ID, id));
 
     return relationships;
   }
 
   public Relationship findLatestRelationshipFor(Class<? extends Relation> relationType, String sourceId, String targetId, String relationTypeId) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return relationshipIndexes.findLatestRelationshipFor(relationType, sourceId, targetId, relationTypeId);
   }
 
 }

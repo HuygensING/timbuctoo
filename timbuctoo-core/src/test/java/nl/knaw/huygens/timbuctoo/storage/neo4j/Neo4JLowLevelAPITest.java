@@ -44,6 +44,7 @@ import test.model.projecta.SubARelation;
 import com.google.common.collect.Lists;
 
 public class Neo4JLowLevelAPITest {
+  private static final String RELATION_TYPE_ID = "relationTypeId";
   private static final String RELATIONSHIP_PROPERTY_WITHOUT_INDEX = "nonIndexedProperty";
   private static final String RELATION_PROPERTY_WITH_INDEX = "property";
   private static final String PROPERTY_VALUE = "test";
@@ -521,5 +522,19 @@ public class Neo4JLowLevelAPITest {
     // verify
     assertThat(actualCount, is(equalTo(two)));
     transactionSucceeded();
+  }
+
+  @Test
+  public void findLatestRelationshipForDelegatesToRelationshipIndexes() {
+    // setup
+    Relationship relationship = aRelationship().build();
+    when(relationshipIndexesMock.findLatestRelationshipFor(RELATION_TYPE, SOURCE_ID, TARGET_ID, RELATION_TYPE_ID)).thenReturn(relationship);
+
+    // action
+    Relationship foundRelationship = instance.findLatestRelationshipFor(RELATION_TYPE, SOURCE_ID, TARGET_ID, RELATION_TYPE_ID);
+
+    // verify
+    assertThat(foundRelationship, is(sameInstance(relationship)));
+
   }
 }

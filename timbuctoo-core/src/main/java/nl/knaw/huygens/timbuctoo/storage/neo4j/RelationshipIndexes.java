@@ -131,4 +131,8 @@ class RelationshipIndexes {
     }
   }
 
+  public Relationship findLatestRelationshipFor(Class<? extends Relation> relationType, String sourceId, String targetId, String relationTypeId) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
 }
