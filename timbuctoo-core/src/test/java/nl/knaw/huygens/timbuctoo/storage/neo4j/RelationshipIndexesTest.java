@@ -1,7 +1,9 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Relation.SOURCE_ID;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.IndexManagerMockBuilder.anIndexManager;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeMockBuilder.aNode;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipIndexMockBuilder.aRelationshipIndex;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipMockBuilder.aRelationship;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -17,6 +19,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.model.Relation;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -28,6 +32,9 @@ import com.google.common.collect.Lists;
 
 public class RelationshipIndexesTest {
 
+  private static final String RELATION_TYPE_ID = "relationTypeId";
+  private static final String TARGET_ID_VALUE = "targetId";
+  private static final String SOURCE_ID_VALUE = "sourceId";
   private static final String PROPERTY_VALUE = "Test";
   private static final String PROPERTY_WITHOUT_INDEX = "test";
   private static final String PROPERTY_WITH_INDEX = "test2";
@@ -284,4 +291,92 @@ public class RelationshipIndexesTest {
     transactionSucceeded();
   }
 
+  @Test
+  public void findLatestRelationshipForSearchesTheSourceIdIndexAndChecksIfTheRelationshipContainsTheRequestedTargetAndType() {
+    // setup
+
+    Relationship latestRelationship = relationShipWithRightValuesWithRev(THIRD_REVISION);
+    RelationshipIndex index = aRelationshipIndex()//
+        .containsForPropertyWithValue(SOURCE_ID, SOURCE_ID_VALUE)//
+        .relationship(relationShipWithRightValuesWithRev(FIRST_REVISION)) //
+        .andRelationship(latestRelationship) //
+        .andRelationship(relationShipWithRightValuesWithRev(SECOND_REVISION)) //
+        .build();
+
+    anIndexManager().containsRelationshipIndexWithName(index, SOURCE_ID).foundInDB(dbMock);
+
+    // action
+    Relationship foundRelationship = instance.findLatestRelationshipFor(SOURCE_ID_VALUE, TARGET_ID_VALUE, RELATION_TYPE_ID);
+
+    // verify
+    assertThat(foundRelationship, is(sameInstance(latestRelationship)));
+    transactionSucceeded();
+  }
+
+  private Relationship relationShipWithRightValuesWithRev(int revision) {
+    Relationship relationship = aRelationship()//
+        .withProperty(SOURCE_ID, SOURCE_ID_VALUE)//
+        .withStartNode(aNode().withId(SOURCE_ID_VALUE).build())//
+        .withEndNode(aNode().withId(TARGET_ID_VALUE).build())//
+        .withProperty(Relation.TYPE_ID, RELATION_TYPE_ID)//
+        .withRevision(revision)//
+        .build();
+    return relationship;
+  }
+
+  @Test
+  public void findLatestRelationshipReturnsNullIfNoRelationsAreFoundForSourceId() {
+    // setup
+    RelationshipIndex emptyIndex = aRelationshipIndex()//
+        .containsNothingForPropertyWithValue(SOURCE_ID, SOURCE_ID_VALUE)//
+        .build();
+
+    anIndexManager().containsRelationshipIndexWithName(emptyIndex, SOURCE_ID).foundInDB(dbMock);
+
+    // action
+    Relationship foundRelationship = instance.findLatestRelationshipFor(SOURCE_ID_VALUE, TARGET_ID_VALUE, RELATION_TYPE_ID);
+
+    // verify
+    assertThat(foundRelationship, is(nullValue()));
+    transactionSucceeded();
+  }
+
+  @Test
+  public void findLatestRelationshipReturnsNullIfNoRelationsAreFoundForSourceIdTargetIdAndTypeId() {
+    // setup
+    RelationshipIndex index = aRelationshipIndex()//
+        .containsForPropertyWithValue(SOURCE_ID, SOURCE_ID_VALUE)//
+        .relationship(relationshipWithDifferentEndNode()) //
+        .andRelationship(relationshiptWithDifferentType()) //
+        .build();
+
+    anIndexManager().containsRelationshipIndexWithName(index, SOURCE_ID).foundInDB(dbMock);
+
+    // action
+    Relationship foundRelationship = instance.findLatestRelationshipFor(SOURCE_ID_VALUE, TARGET_ID_VALUE, RELATION_TYPE_ID);
+
+    // verify
+    assertThat(foundRelationship, is(nullValue()));
+    transactionSucceeded();
+  }
+
+  private Relationship relationshipWithDifferentEndNode() {
+    Relationship relationshipWithDifferentEndNode = aRelationship()//
+        .withProperty(SOURCE_ID, SOURCE_ID_VALUE)//
+        .withStartNode(aNode().withId(SOURCE_ID_VALUE).build())//
+        .withEndNode(aNode().withId("test").build())//
+        .withProperty(Relation.TYPE_ID, RELATION_TYPE_ID)//
+        .build();
+    return relationshipWithDifferentEndNode;
+  }
+
+  private Relationship relationshiptWithDifferentType() {
+    Relationship relationshipWithDifferentTypeId = aRelationship()//
+        .withProperty(SOURCE_ID, SOURCE_ID_VALUE)//
+        .withStartNode(aNode().withId(SOURCE_ID_VALUE).build())//
+        .withEndNode(aNode().withId(TARGET_ID_VALUE).build())//
+        .withProperty(Relation.TYPE_ID, "test")//
+        .build();
+    return relationshipWithDifferentTypeId;
+  }
 }

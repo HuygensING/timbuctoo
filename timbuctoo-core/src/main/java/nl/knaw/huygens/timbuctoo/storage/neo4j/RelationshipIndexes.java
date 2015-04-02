@@ -3,20 +3,27 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Relation.SOURCE_ID;
 import static nl.knaw.huygens.timbuctoo.model.Relation.TARGET_ID;
+import static nl.knaw.huygens.timbuctoo.model.Relation.TYPE_ID;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.PropertyContainerHelper.getRevisionProperty;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.model.Relation;
 
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.IndexHits;
 import org.neo4j.graphdb.index.RelationshipIndex;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 class RelationshipIndexes {
 
@@ -91,18 +98,23 @@ class RelationshipIndexes {
     try (Transaction transaction = db.beginTx()) {
       ResourceIterator<Relationship> iterator = getFromIndexById(id);
 
-      Relationship relationshipWithHighestRevision = null;
+      Relationship relationshipWithHighestRevision = getLatest(iterator);
 
-      for (; iterator.hasNext();) {
-        Relationship next = iterator.next();
-
-        if (getRevisionProperty(next) > getRevisionProperty(relationshipWithHighestRevision)) {
-          relationshipWithHighestRevision = next;
-        }
-      }
       transaction.success();
       return relationshipWithHighestRevision;
     }
+  }
+
+  private Relationship getLatest(Iterator<Relationship> iterator) {
+    Relationship relationshipWithHighestRevision = null;
+    for (; iterator.hasNext();) {
+      Relationship next = iterator.next();
+
+      if (getRevisionProperty(next) > getRevisionProperty(relationshipWithHighestRevision)) {
+        relationshipWithHighestRevision = next;
+      }
+    }
+    return relationshipWithHighestRevision;
   }
 
   private ResourceIterator<Relationship> getFromIndexById(String id) {
@@ -131,8 +143,46 @@ class RelationshipIndexes {
     }
   }
 
-  public Relationship findLatestRelationshipFor(Class<? extends Relation> relationType, String sourceId, String targetId, String relationTypeId) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+  public Relationship findLatestRelationshipFor(String sourceId, final String targetId, final String relationTypeId) {
+    try (Transaction transaction = db.beginTx()) {
+      IndexHits<Relationship> foundInIndex = getFromIndex(SOURCE_ID, sourceId);
+
+      Set<Relationship> foundRelationships = Sets.newHashSet(foundInIndex.iterator());
+
+      Set<Relationship> matching = Sets.filter(foundRelationships, new SameTargetAndType(relationTypeId, targetId));
+
+      Relationship latest = getLatest(matching.iterator());
+
+      transaction.success();
+      return latest;
+    }
+  }
+
+  private static final class SameTargetAndType implements Predicate<Relationship> {
+    private final String relationTypeId;
+    private final String targetId;
+
+    private SameTargetAndType(String relationTypeId, String targetId) {
+      this.relationTypeId = relationTypeId;
+      this.targetId = targetId;
+    }
+
+    @Override
+    public boolean apply(Relationship input) {
+      return hasSameTargetId(input, targetId) && hasSameTypeId(input, relationTypeId);
+    }
+
+    private boolean hasSameTypeId(Relationship input, String relationTypeId) {
+      return hasPropertyWithValue(input, TYPE_ID, relationTypeId);
+    }
+
+    private boolean hasPropertyWithValue(PropertyContainer input, String key, String value) {
+      return input.hasProperty(key) && Objects.equal(value, input.getProperty(key));
+    }
+
+    private boolean hasSameTargetId(Relationship input, final String targetId) {
+      return hasPropertyWithValue(input.getEndNode(), ID_PROPERTY_NAME, targetId);
+    }
   }
 
 }

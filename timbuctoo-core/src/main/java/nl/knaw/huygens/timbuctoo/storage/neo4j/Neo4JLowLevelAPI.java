@@ -240,7 +240,7 @@ class Neo4JLowLevelAPI {
   }
 
   public Relationship findLatestRelationshipFor(Class<? extends Relation> relationType, String sourceId, String targetId, String relationTypeId) {
-    return relationshipIndexes.findLatestRelationshipFor(relationType, sourceId, targetId, relationTypeId);
+    return relationshipIndexes.findLatestRelationshipFor(sourceId, targetId, relationTypeId);
   }
 
 }

@@ -528,7 +528,7 @@ public class Neo4JLowLevelAPITest {
   public void findLatestRelationshipForDelegatesToRelationshipIndexes() {
     // setup
     Relationship relationship = aRelationship().build();
-    when(relationshipIndexesMock.findLatestRelationshipFor(RELATION_TYPE, SOURCE_ID, TARGET_ID, RELATION_TYPE_ID)).thenReturn(relationship);
+    when(relationshipIndexesMock.findLatestRelationshipFor(SOURCE_ID, TARGET_ID, RELATION_TYPE_ID)).thenReturn(relationship);
 
     // action
     Relationship foundRelationship = instance.findLatestRelationshipFor(RELATION_TYPE, SOURCE_ID, TARGET_ID, RELATION_TYPE_ID);
