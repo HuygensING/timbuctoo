@@ -2050,6 +2050,66 @@ public class Neo4JStorageTest {
     verifyTransactionSucceeded();
   }
 
+  @Test
+  public void findRelationRetrievesTheLatestRelationWithTheSourceTargetAndType() throws Exception {
+    // setup
+    Relationship relationship = aRelationship().build();
+    when(neo4JLowLevelAPIMock.findLatestRelationshipFor(RELATION_TYPE, RELATION_SOURCE_ID, RELATION_TARGET_ID, RELATION_TYPE_ID)).thenReturn(relationship);
+
+    RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    SubARelation relation = aRelation().build();
+    when(converter.convertToEntity(relationship)).thenReturn(relation);
+
+    // action
+    SubARelation actualRelation = instance.findRelation(RELATION_TYPE, RELATION_SOURCE_ID, RELATION_TARGET_ID, RELATION_TYPE_ID);
+
+    // verify
+    assertThat(actualRelation, is(sameInstance(relation)));
+
+    verifyTransactionSucceeded();
+  }
+
+  @Test
+  public void findRelationReturnsNullWhenTheRelationIsNotFound() throws Exception {
+    // setup
+    when(neo4JLowLevelAPIMock.findLatestRelationshipFor(RELATION_TYPE, RELATION_SOURCE_ID, RELATION_TARGET_ID, RELATION_TYPE_ID)).thenReturn(null);
+
+    // action
+    SubARelation relation = instance.findRelation(RELATION_TYPE, RELATION_SOURCE_ID, RELATION_TARGET_ID, RELATION_TYPE_ID);
+
+    // verify
+    assertThat(relation, is(nullValue()));
+    verifyTransactionSucceeded();
+
+  }
+
+  @Test(expected = ConversionException.class)
+  public void findRelationThrowsAConversionExceptionWhenTheRelationshipCannotBeConverted() throws Exception {
+    findRelationRelationCannotBeConverted(new ConversionException());
+  }
+
+  private void findRelationRelationCannotBeConverted(Exception exceptionToThrow) throws Exception {
+    // setup
+    Relationship relationship = aRelationship().build();
+    when(neo4JLowLevelAPIMock.findLatestRelationshipFor(RELATION_TYPE, RELATION_SOURCE_ID, RELATION_TARGET_ID, RELATION_TYPE_ID)).thenReturn(relationship);
+
+    RelationshipConverter<SubARelation> converter = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
+    when(converter.convertToEntity(relationship)).thenThrow(exceptionToThrow);
+
+    try {
+      // action
+      instance.findRelation(RELATION_TYPE, RELATION_SOURCE_ID, RELATION_TARGET_ID, RELATION_TYPE_ID);
+    } finally {
+      // verify
+      verifyTransactionFailed();
+    }
+  }
+
+  @Test(expected = StorageException.class)
+  public void findRelationThrowsAStorageExceptionWhenTheRelationCannotBeInstantiated() throws Exception {
+    findRelationRelationCannotBeConverted(new InstantiationException());
+  }
+
   /* *****************************************************************************
    * Other methods
    * *****************************************************************************/

@@ -663,6 +663,27 @@ public class Neo4JStorage {
   }
 
   public <T extends Relation> T findRelation(Class<T> relationType, String sourceId, String targetId, String relationTypeId) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    try (Transaction transaction = db.beginTx()) {
+      Relationship relationship = neo4jLowLevelAPI.findLatestRelationshipFor(relationType, sourceId, targetId, relationTypeId);
+
+      if (relationship == null) {
+        transaction.success();
+        return null;
+      }
+
+      RelationshipConverter<T> converter = propertyContainerConverterFactory.createForRelation(relationType);
+
+      try {
+        T relation = converter.convertToEntity(relationship);
+        transaction.success();
+        return relation;
+      } catch (ConversionException e) {
+        transaction.failure();
+        throw e;
+      } catch (InstantiationException e) {
+        transaction.failure();
+        throw new StorageException(e);
+      }
+    }
   }
 }
