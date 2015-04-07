@@ -55,7 +55,6 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 
@@ -343,16 +342,16 @@ public class Neo4JStorageTest {
     // setup
     Node node1 = aNode().build();
     Node node2 = aNode().build();
-    ResourceIterable<Node> searchResult = aNodeSearchResult()//
+    ResourceIterator<Node> searchResult = aNodeSearchResult()//
         .withNode(node1)//
         .andNode(node2)//
-        .build();
-    ResourceIterator<Node> iterator = searchResult.iterator();
-    when(neo4JLowLevelAPIMock.getNodesOfType(SYSTEM_ENTITY_TYPE)).thenReturn(iterator);
+        .asIterator();
+
+    when(neo4JLowLevelAPIMock.getNodesOfType(SYSTEM_ENTITY_TYPE)).thenReturn(searchResult);
 
     @SuppressWarnings("unchecked")
     StorageIterator<TestSystemEntityWrapper> storageIterator = mock(StorageIterator.class);
-    when(neo4jStorageIteratorFactoryMock.forNode(SYSTEM_ENTITY_TYPE, iterator)).thenReturn(storageIterator);
+    when(neo4jStorageIteratorFactoryMock.forNode(SYSTEM_ENTITY_TYPE, searchResult)).thenReturn(storageIterator);
 
     // action
     StorageIterator<TestSystemEntityWrapper> actualStorageIterator = instance.getSystemEntities(SYSTEM_ENTITY_TYPE);
@@ -366,14 +365,13 @@ public class Neo4JStorageTest {
   public void getSystemEntitiesThrowsAStorageExceptionWhenTheIteratorCannotBeCreated() throws Exception {
     // setup
     Node node1 = aNode().build();
-    ResourceIterable<Node> searchResult = aNodeSearchResult()//
+    ResourceIterator<Node> searchResult = aNodeSearchResult()//
         .withNode(node1)//
         .andNode(aNode().build())//
-        .build();
-    ResourceIterator<Node> iterator = searchResult.iterator();
-    when(neo4JLowLevelAPIMock.getNodesOfType(SYSTEM_ENTITY_TYPE)).thenReturn(iterator);
+        .asIterator();
+    when(neo4JLowLevelAPIMock.getNodesOfType(SYSTEM_ENTITY_TYPE)).thenReturn(searchResult);
 
-    when(neo4jStorageIteratorFactoryMock.forNode(SYSTEM_ENTITY_TYPE, iterator)).thenThrow(new StorageException());
+    when(neo4jStorageIteratorFactoryMock.forNode(SYSTEM_ENTITY_TYPE, searchResult)).thenThrow(new StorageException());
 
     try {
       // action

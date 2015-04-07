@@ -39,13 +39,17 @@ public class SearchResultBuilder<U extends PropertyContainer, T extends SearchRe
     return (T) this;
   }
 
-  public ResourceIterable<U> build() {
-    ResourceIterator<U> nodeIterator = IteratorUtil.asResourceIterator(propertyContainers.iterator());
+  public ResourceIterable<U> asIterable() {
+    ResourceIterator<U> nodeIterator = asIterator();
 
     Iterable<U> nodesIterable = IteratorUtil.asIterable(nodeIterator);
     ResourceIterable<U> foundNodes = Iterables.asResourceIterable(nodesIterable);
 
     return foundNodes;
+  }
+
+  public ResourceIterator<U> asIterator() {
+    return IteratorUtil.asResourceIterator(propertyContainers.iterator());
   }
 
 }

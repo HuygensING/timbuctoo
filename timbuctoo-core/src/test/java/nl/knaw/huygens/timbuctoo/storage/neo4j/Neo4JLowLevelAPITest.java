@@ -227,11 +227,11 @@ public class Neo4JLowLevelAPITest {
     // setup
     Node node1 = aNode().build();
     Node node2 = aNode().build();
-    ResourceIterable<Node> searchResult = aNodeSearchResult() //
+    ResourceIterator<Node> searchResult = aNodeSearchResult() //
         .withNode(node1) //
         .andNode(node2) //
-        .build();
-    when(dbMock.findNodes(DOMAIN_ENTITY_LABEL)).thenReturn(searchResult.iterator());
+        .asIterator();
+    when(dbMock.findNodes(DOMAIN_ENTITY_LABEL)).thenReturn(searchResult);
 
     // action
     ResourceIterator<Node> actualSearchResult = instance.getNodesOfType(DOMAIN_ENTITY_TYPE);
@@ -483,14 +483,14 @@ public class Neo4JLowLevelAPITest {
     Relationship versionOfRelationship = aRelationship().withType(VERSION_OF).build();
     NodeMockBuilder nodeWithVersionOfRelationship = aNode().withIncomingRelationShip(versionOfRelationship);
     String otherId = "otherId";
-    ResourceIterable<Node> searchResultWithTwoNodes = aNodeSearchResult()//
+    ResourceIterator<Node> searchResultWithTwoNodes = aNodeSearchResult()//
         .withNode(aNode().withId(ID).build())//
         .andNode(aNode().withId(otherId).build())//
         .andNode(nodeWithVersionOfRelationship.withId(ID).build()) //
         .andNode(nodeWithVersionOfRelationship.withId(otherId).build()) //
-        .build();
+        .asIterator();
 
-    when(dbMock.findNodes(DOMAIN_ENTITY_LABEL)).thenReturn(searchResultWithTwoNodes.iterator());
+    when(dbMock.findNodes(DOMAIN_ENTITY_LABEL)).thenReturn(searchResultWithTwoNodes);
 
     // action
     long count = instance.countNodesWithLabel(DOMAIN_ENTITY_LABEL);
@@ -513,7 +513,7 @@ public class Neo4JLowLevelAPITest {
     Relationship rel2 = relationshipBuilderWithOtherId.withRevision(FIRST_REVISION).build();
     Relationship rel2V2 = relationshipBuilderWithOtherId.withRevision(SECOND_REVISION).build();
 
-    ResourceIterable<Relationship> foundRelationships = aRelationshipSearchResult().withNode(rel1).andNode(rel1V2).andNode(rel2).andNode(rel2V2).build();
+    ResourceIterable<Relationship> foundRelationships = aRelationshipSearchResult().withNode(rel1).andNode(rel1V2).andNode(rel2).andNode(rel2V2).asIterable();
 
     when(globalGraphOperationsMock.getAllRelationships()).thenReturn(foundRelationships);
 

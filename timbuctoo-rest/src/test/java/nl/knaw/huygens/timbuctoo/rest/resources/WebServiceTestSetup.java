@@ -64,7 +64,7 @@ import com.sun.jersey.test.framework.WebAppDescriptor;
 
 /*
  * Abstract class names should not end with Test, 
- * because the build script tries to execute all the classes with a Test suffix. 
+ * because the asIterable script tries to execute all the classes with a Test suffix.
  */
 public abstract class WebServiceTestSetup extends JerseyTest {
 
