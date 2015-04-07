@@ -130,6 +130,7 @@
       <groupId>org.neo4j</groupId>
       <artifactId>neo4j-lucene-index</artifactId>
       <version>${neo4j.version}</version>
+      <scope>test</scope>
     </dependency>
     <!-- ## End of test dependencies ## -->
   </dependencies>
