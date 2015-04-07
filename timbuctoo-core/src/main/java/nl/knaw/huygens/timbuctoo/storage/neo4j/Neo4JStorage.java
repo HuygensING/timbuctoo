@@ -26,7 +26,7 @@ import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.PropertyContainer;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.ResourceIterable;
+import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.Strings;
 
@@ -210,7 +210,7 @@ public class Neo4JStorage {
 
   public <T extends SystemEntity> StorageIterator<T> getSystemEntities(Class<T> type) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
-      ResourceIterable<Node> nodes = neo4jLowLevelAPI.getNodesOfType(type);
+      ResourceIterator<Node> nodes = neo4jLowLevelAPI.getNodesOfType(type);
 
       try {
         StorageIterator<T> storageIterator = neo4jStorageIteratorFactory.forNode(type, nodes);

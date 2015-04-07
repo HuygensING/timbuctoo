@@ -40,7 +40,7 @@ public class NodeSearchResultBuilder extends SearchResultBuilder<Node, NodeSearc
   }
 
   public void foundInDB(GraphDatabaseService db) {
-    when(db.findNodesByLabelAndProperty(label, propertyName, value)).thenReturn(build());
+    when(db.findNodes(label, propertyName, value)).thenReturn(build().iterator());
   }
 
 }

@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
+import java.util.Iterator;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -22,14 +23,14 @@ class Neo4JStorageIteratorFactory {
     this.propertyContainerConverterFactory = propertyContainerConverterFactory;
   }
 
-  public <T extends Entity> StorageIterator<T> forNode(Class<T> type, Iterable<Node> nodes) throws StorageException {
+  public <T extends Entity> StorageIterator<T> forNode(Class<T> type, Iterator<Node> nodes) throws StorageException {
     NodeConverter<T> nodeConverter = propertyContainerConverterFactory.createForType(type);
 
     List<T> entities = Lists.newArrayList();
 
-    for (Node node : nodes) {
+    for (; nodes.hasNext();) {
       try {
-        entities.add(nodeConverter.convertToEntity(node));
+        entities.add(nodeConverter.convertToEntity(nodes.next()));
       } catch (InstantiationException e) {
         throw new StorageException(e);
       }

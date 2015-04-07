@@ -20,7 +20,6 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.tooling.GlobalGraphOperations;
@@ -94,10 +93,10 @@ class Neo4JLowLevelAPI {
     }
   }
 
-  public ResourceIterable<Node> getNodesOfType(Class<? extends Entity> type) {
+  public ResourceIterator<Node> getNodesOfType(Class<? extends Entity> type) {
     try (Transaction transaction = db.beginTx()) {
 
-      ResourceIterable<Node> allNodesWithLabel = globalGraphOperations.getAllNodesWithLabel(labelFor(type));
+      ResourceIterator<Node> allNodesWithLabel = db.findNodes(labelFor(type));
       transaction.success();
       return allNodesWithLabel;
     }
@@ -109,10 +108,9 @@ class Neo4JLowLevelAPI {
 
   private <T extends Entity> ResourceIterator<Node> findByProperty(Class<T> type, String propertyName, String value) {
     Label internalNameLabel = labelFor(type);
-    ResourceIterable<Node> foundNodes = db.findNodesByLabelAndProperty(internalNameLabel, propertyName, value);
+    ResourceIterator<Node> foundNodes = db.findNodes(internalNameLabel, propertyName, value);
 
-    ResourceIterator<Node> iterator = foundNodes.iterator();
-    return iterator;
+    return foundNodes;
   }
 
   public <T extends Entity> List<Node> getNodesWithId(Class<T> type, String id) {
@@ -190,7 +188,7 @@ class Neo4JLowLevelAPI {
 
   public long countNodesWithLabel(Label label) {
     try (Transaction transaction = db.beginTx()) {
-      Set<Node> foundNodes = Sets.newHashSet(globalGraphOperations.getAllNodesWithLabel(label).iterator());
+      Set<Node> foundNodes = Sets.newHashSet(db.findNodes(label));
 
       Set<Node> latestNodes = Sets.filter(foundNodes, new Predicate<Node>() {
 

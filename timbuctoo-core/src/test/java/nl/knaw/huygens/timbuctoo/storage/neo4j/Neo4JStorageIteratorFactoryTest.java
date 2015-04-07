@@ -54,7 +54,7 @@ public class Neo4JStorageIteratorFactoryTest {
     List<Node> nodes = Lists.newArrayList(node1, node2);
 
     // action
-    StorageIterator<TestSystemEntityWrapper> storageIterator = instance.forNode(SYSTEM_ENTITY_TYPE, nodes);
+    StorageIterator<TestSystemEntityWrapper> storageIterator = instance.forNode(SYSTEM_ENTITY_TYPE, nodes.iterator());
 
     // verify
     assertThat(storageIterator.getAll(), containsInAnyOrder(entity1, entity2));
@@ -82,7 +82,7 @@ public class Neo4JStorageIteratorFactoryTest {
     List<Node> nodes = Lists.newArrayList(node);
 
     // action
-    instance.forNode(SYSTEM_ENTITY_TYPE, nodes);
+    instance.forNode(SYSTEM_ENTITY_TYPE, nodes.iterator());
   }
 
   @Test

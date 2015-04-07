@@ -35,6 +35,7 @@ import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterable;
+import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.tooling.GlobalGraphOperations;
 
@@ -230,10 +231,10 @@ public class Neo4JLowLevelAPITest {
         .withNode(node1) //
         .andNode(node2) //
         .build();
-    when(globalGraphOperationsMock.getAllNodesWithLabel(DOMAIN_ENTITY_LABEL)).thenReturn(searchResult);
+    when(dbMock.findNodes(DOMAIN_ENTITY_LABEL)).thenReturn(searchResult.iterator());
 
     // action
-    ResourceIterable<Node> actualSearchResult = instance.getNodesOfType(DOMAIN_ENTITY_TYPE);
+    ResourceIterator<Node> actualSearchResult = instance.getNodesOfType(DOMAIN_ENTITY_TYPE);
 
     // verify
     assertThat(Lists.newArrayList(actualSearchResult), containsInAnyOrder(node1, node2));
@@ -489,7 +490,7 @@ public class Neo4JLowLevelAPITest {
         .andNode(nodeWithVersionOfRelationship.withId(otherId).build()) //
         .build();
 
-    when(globalGraphOperationsMock.getAllNodesWithLabel(DOMAIN_ENTITY_LABEL)).thenReturn(searchResultWithTwoNodes);
+    when(dbMock.findNodes(DOMAIN_ENTITY_LABEL)).thenReturn(searchResultWithTwoNodes.iterator());
 
     // action
     long count = instance.countNodesWithLabel(DOMAIN_ENTITY_LABEL);

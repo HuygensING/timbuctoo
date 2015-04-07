@@ -56,6 +56,7 @@ import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterable;
+import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 
 import test.model.BaseDomainEntity;
@@ -346,11 +347,12 @@ public class Neo4JStorageTest {
         .withNode(node1)//
         .andNode(node2)//
         .build();
-    when(neo4JLowLevelAPIMock.getNodesOfType(SYSTEM_ENTITY_TYPE)).thenReturn(searchResult);
+    ResourceIterator<Node> iterator = searchResult.iterator();
+    when(neo4JLowLevelAPIMock.getNodesOfType(SYSTEM_ENTITY_TYPE)).thenReturn(iterator);
 
     @SuppressWarnings("unchecked")
     StorageIterator<TestSystemEntityWrapper> storageIterator = mock(StorageIterator.class);
-    when(neo4jStorageIteratorFactoryMock.forNode(SYSTEM_ENTITY_TYPE, searchResult)).thenReturn(storageIterator);
+    when(neo4jStorageIteratorFactoryMock.forNode(SYSTEM_ENTITY_TYPE, iterator)).thenReturn(storageIterator);
 
     // action
     StorageIterator<TestSystemEntityWrapper> actualStorageIterator = instance.getSystemEntities(SYSTEM_ENTITY_TYPE);
@@ -368,9 +370,10 @@ public class Neo4JStorageTest {
         .withNode(node1)//
         .andNode(aNode().build())//
         .build();
-    when(neo4JLowLevelAPIMock.getNodesOfType(SYSTEM_ENTITY_TYPE)).thenReturn(searchResult);
+    ResourceIterator<Node> iterator = searchResult.iterator();
+    when(neo4JLowLevelAPIMock.getNodesOfType(SYSTEM_ENTITY_TYPE)).thenReturn(iterator);
 
-    when(neo4jStorageIteratorFactoryMock.forNode(SYSTEM_ENTITY_TYPE, searchResult)).thenThrow(new StorageException());
+    when(neo4jStorageIteratorFactoryMock.forNode(SYSTEM_ENTITY_TYPE, iterator)).thenThrow(new StorageException());
 
     try {
       // action
