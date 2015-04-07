@@ -343,8 +343,8 @@ public class Neo4JStorageTest {
     Node node1 = aNode().build();
     Node node2 = aNode().build();
     ResourceIterator<Node> searchResult = aNodeSearchResult()//
-        .withNode(node1)//
-        .andNode(node2)//
+        .withPropertyContainer(node1)//
+        .andPropertyContainer(node2)//
         .asIterator();
 
     when(neo4JLowLevelAPIMock.getNodesOfType(SYSTEM_ENTITY_TYPE)).thenReturn(searchResult);
@@ -366,8 +366,8 @@ public class Neo4JStorageTest {
     // setup
     Node node1 = aNode().build();
     ResourceIterator<Node> searchResult = aNodeSearchResult()//
-        .withNode(node1)//
-        .andNode(aNode().build())//
+        .withPropertyContainer(node1)//
+        .andPropertyContainer(aNode().build())//
         .asIterator();
     when(neo4JLowLevelAPIMock.getNodesOfType(SYSTEM_ENTITY_TYPE)).thenReturn(searchResult);
 

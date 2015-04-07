@@ -19,23 +19,23 @@ public class SearchResultBuilder<U extends PropertyContainer, T extends SearchRe
   }
 
   @SuppressWarnings("unchecked")
-  public T withNode(U node) {
-    addNode(node);
+  public T withPropertyContainer(U propertyContainer) {
+    addPropertyContainer(propertyContainer);
     return (T) this;
   }
 
-  private void addNode(U node) {
-    propertyContainers.add(node);
+  private void addPropertyContainer(U propertyContainer) {
+    propertyContainers.add(propertyContainer);
   }
 
   /**
-   * Method for a better readable code. Does the same as withNode.
-   * @param node the node
+   * Method for a better readable code. Does the same as withPropertyContainer.
+   * @param propertyContainer the node
    * @return this
    */
   @SuppressWarnings("unchecked")
-  public T andNode(U node) {
-    addNode(node);
+  public T andPropertyContainer(U propertyContainer) {
+    addPropertyContainer(propertyContainer);
     return (T) this;
   }
 

@@ -107,10 +107,10 @@ public class Neo4JLowLevelAPITest {
     Node nodeWithThirdRevisionAndIncommingVersionOfRelationNode = nodeBuildWithThirdRevision.withIncomingRelationShip(versionOfRelationship).build();
 
     aNodeSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
-        .withNode(aNode().withRevision(FIRST_REVISION).build()) //
-        .andNode(nodeWithThirdRevisionAndIncommingVersionOfRelationNode) //
-        .andNode(nodeWithThirdRevision) //
-        .andNode(aNode().withRevision(SECOND_REVISION).build()) //
+        .withPropertyContainer(aNode().withRevision(FIRST_REVISION).build()) //
+        .andPropertyContainer(nodeWithThirdRevisionAndIncommingVersionOfRelationNode) //
+        .andPropertyContainer(nodeWithThirdRevision) //
+        .andPropertyContainer(aNode().withRevision(SECOND_REVISION).build()) //
         .foundInDB(dbMock);
 
     // action
@@ -146,9 +146,9 @@ public class Neo4JLowLevelAPITest {
     Node nodeWithThirdRevision = aNode().withRevision(THIRD_REVISION).build();
 
     aNodeSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
-        .withNode(aNode().withRevision(FIRST_REVISION).build()) //
-        .andNode(nodeWithThirdRevision) //
-        .andNode(aNode().withRevision(SECOND_REVISION).build()) //
+        .withPropertyContainer(aNode().withRevision(FIRST_REVISION).build()) //
+        .andPropertyContainer(nodeWithThirdRevision) //
+        .andPropertyContainer(aNode().withRevision(SECOND_REVISION).build()) //
         .foundInDB(dbMock);
 
     // action
@@ -177,7 +177,7 @@ public class Neo4JLowLevelAPITest {
   public void getNodeWithRevisionReturnsNullIfTheRevisionIsNotFound() {
     // setup
     aNodeSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
-        .withNode(aNode().withRevision(SECOND_REVISION).build()) //
+        .withPropertyContainer(aNode().withRevision(SECOND_REVISION).build()) //
         .foundInDB(dbMock);
 
     // action
@@ -196,9 +196,9 @@ public class Neo4JLowLevelAPITest {
     Node node3 = aNode().withRevision(THIRD_REVISION).build();
 
     aNodeSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
-        .withNode(node1) //
-        .andNode(node3) //
-        .andNode(node2) //
+        .withPropertyContainer(node1) //
+        .andPropertyContainer(node3) //
+        .andPropertyContainer(node2) //
         .foundInDB(dbMock);
 
     // action
@@ -228,8 +228,8 @@ public class Neo4JLowLevelAPITest {
     Node node1 = aNode().build();
     Node node2 = aNode().build();
     ResourceIterable<Node> searchResult = aNodeSearchResult() //
-        .withNode(node1) //
-        .andNode(node2) //
+        .withPropertyContainer(node1) //
+        .andPropertyContainer(node2) //
         .asIterable();
     when(globalGraphOperationsMock.getAllNodesWithLabel(DOMAIN_ENTITY_LABEL)).thenReturn(searchResult);
 
@@ -251,9 +251,9 @@ public class Neo4JLowLevelAPITest {
     Node otherNodeWithoutIncommingRelations = aNode().build();
 
     aNodeSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andPropertyWithValue(DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE) //
-        .withNode(aNodeWithIncomingVersionOfRelations) //
-        .andNode(aNodeWithoutIncommingRelations) //
-        .andNode(otherNodeWithoutIncommingRelations) //
+        .withPropertyContainer(aNodeWithIncomingVersionOfRelations) //
+        .andPropertyContainer(aNodeWithoutIncommingRelations) //
+        .andPropertyContainer(otherNodeWithoutIncommingRelations) //
         .foundInDB(dbMock);
 
     // action
@@ -289,7 +289,7 @@ public class Neo4JLowLevelAPITest {
 
     aNodeSearchResult().forLabel(DOMAIN_ENTITY_LABEL) //
         .andPropertyWithValue(DOMAIN_ENTITY_PROPERTY, PROPERTY_VALUE) //
-        .withNode(aNodeWithIncomingVersionOfRelations) //
+        .withPropertyContainer(aNodeWithIncomingVersionOfRelations) //
         .foundInDB(dbMock);
 
     // action
@@ -484,10 +484,10 @@ public class Neo4JLowLevelAPITest {
     NodeMockBuilder nodeWithVersionOfRelationship = aNode().withIncomingRelationShip(versionOfRelationship);
     String otherId = "otherId";
     ResourceIterable<Node> searchResultWithTwoNodes = aNodeSearchResult()//
-        .withNode(aNode().withId(ID).build())//
-        .andNode(aNode().withId(otherId).build())//
-        .andNode(nodeWithVersionOfRelationship.withId(ID).build()) //
-        .andNode(nodeWithVersionOfRelationship.withId(otherId).build()) //
+        .withPropertyContainer(aNode().withId(ID).build())//
+        .andPropertyContainer(aNode().withId(otherId).build())//
+        .andPropertyContainer(nodeWithVersionOfRelationship.withId(ID).build()) //
+        .andPropertyContainer(nodeWithVersionOfRelationship.withId(otherId).build()) //
         .asIterable();
 
     when(globalGraphOperationsMock.getAllNodesWithLabel(DOMAIN_ENTITY_LABEL)).thenReturn(searchResultWithTwoNodes);
@@ -513,7 +513,7 @@ public class Neo4JLowLevelAPITest {
     Relationship rel2 = relationshipBuilderWithOtherId.withRevision(FIRST_REVISION).build();
     Relationship rel2V2 = relationshipBuilderWithOtherId.withRevision(SECOND_REVISION).build();
 
-    ResourceIterable<Relationship> foundRelationships = aRelationshipSearchResult().withNode(rel1).andNode(rel1V2).andNode(rel2).andNode(rel2V2).asIterable();
+    ResourceIterable<Relationship> foundRelationships = aRelationshipSearchResult().withPropertyContainer(rel1).andPropertyContainer(rel1V2).andPropertyContainer(rel2).andPropertyContainer(rel2V2).asIterable();
 
     when(globalGraphOperationsMock.getAllRelationships()).thenReturn(foundRelationships);
 
