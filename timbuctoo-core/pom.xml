@@ -116,10 +116,9 @@
     </dependency>
     <!-- In-memory Neo4j -->
     <dependency>
-      <groupId>org.neo4j</groupId>
-      <artifactId>neo4j-kernel</artifactId>
+      <groupId>org.neo4j.test</groupId>
+      <artifactId>neo4j-harness</artifactId>
       <version>${neo4j.version}</version>
-      <type>test-jar</type>
       <scope>test</scope>
     </dependency>
     <!-- Lucene indexes for Neo4J needed for the in-memory Neo4J -->
