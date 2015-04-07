@@ -101,6 +101,69 @@
       <artifactId>neo4j-kernel</artifactId>
       <version>${neo4j.version}</version>
     </dependency>
+    
+    <!-- <dependency>
+      <groupId>org.neo4j</groupId>
+      <artifactId>neo4j-cypher</artifactId>
+      <version>${neo4j.version}</version>
+    </dependency> -->
+
+    <!-- Neo4j Spring data -->
+    <dependency>
+      <groupId>org.springframework.data</groupId>
+      <artifactId>spring-data-neo4j-rest</artifactId>
+      <version>${neo4j-spring-data-rest.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>spring-core</artifactId>
+          <groupId>org.springframework</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>spring-aop</artifactId>
+          <groupId>org.springframework</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>spring-data-commons</artifactId>
+          <groupId>org.springframework.data</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>spring-aspects</artifactId>
+          <groupId>org.springframework</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>spring-beans</artifactId>
+          <groupId>org.springframework</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>spring-context</artifactId>
+          <groupId>org.springframework</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>spring-tx</artifactId>
+          <groupId>org.springframework</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>neo4j</artifactId>
+          <groupId>org.neo4j</groupId>
+        </exclusion>
+        <!-- <exclusion>
+          <groupId>org.neo4j</groupId>
+          <artifactId>neo4j-kernel</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.neo4j</groupId>
+          <artifactId>neo4j-lucene-index</artifactId>
+        </exclusion> -->
+        <exclusion>
+          <artifactId>neo4j-cypher</artifactId>
+          <groupId>org.neo4j</groupId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.neo4j</groupId>
+          <artifactId>neo4j-cypher-dsl</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
 
     <!-- ## End of main dependencies ## -->
     <!-- ## Test dependencies ## -->

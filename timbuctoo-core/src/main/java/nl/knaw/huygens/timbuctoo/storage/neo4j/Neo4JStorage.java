@@ -46,6 +46,20 @@ public class Neo4JStorage {
   private final Neo4JLowLevelAPI neo4jLowLevelAPI;
   private final Neo4JStorageIteratorFactory neo4jStorageIteratorFactory;
 
+  //  @Inject
+  //  public Neo4JStorage(PropertyContainerConverterFactory propertyContainerConverterFactory, TypeRegistry typeRegistry) {
+  //    this(getDB(), propertyContainerConverterFactory, typeRegistry);
+  //  }
+  //
+  //  private static GraphDatabaseService getDB() {
+  //    RestAPI restApi = new RestAPIImpl("http://localhost:7474", "neo4j", "test123");
+  //    /* It is a wonder this works mapping a CypherRestGraphDatabase, that implements 
+  //     * CypherRestGraphDatabase of Neo4J 2.1.7, to a CypherRestGraphDatabase of Neo4J 2.2.0.
+  //     */
+  //    CypherRestGraphDatabase graphDb = new CypherRestGraphDatabase(restApi);
+  //    return graphDb;
+  //  }
+
   @Inject
   public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, TypeRegistry typeRegistry) {
     this(db, propertyContainerConverterFactory, new NodeDuplicator(db), new RelationshipDuplicator(db), new IdGenerator(), typeRegistry, new Neo4JLowLevelAPI(db), new Neo4JStorageIteratorFactory(

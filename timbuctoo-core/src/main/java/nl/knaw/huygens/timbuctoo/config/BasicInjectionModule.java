@@ -26,7 +26,6 @@ import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.Neo4JLegacyStorageWrapper;
 
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
@@ -62,6 +61,9 @@ public class BasicInjectionModule extends AbstractModule {
     //    bind(Properties.class).to(MongoProperties.class);
 
     bind(Storage.class).to(Neo4JLegacyStorageWrapper.class);
-    bind(GraphDatabaseService.class).toInstance(new GraphDatabaseFactory().newEmbeddedDatabase(config.getDirectory("admin_data.directory") + "/db"));
+
+    //    engine = new RestCypherQueryEngine(restApi);
+    bind(GraphDatabaseService.class).toProvider(GraphDatabaseServiceProvider.class);
+    //    bind(GraphDatabaseService.class).toInstance(new GraphDatabaseFactory().newEmbeddedDatabase(config.getDirectory("admin_data.directory") + "/db"));
   }
 }

@@ -227,11 +227,11 @@ public class Neo4JLowLevelAPITest {
     // setup
     Node node1 = aNode().build();
     Node node2 = aNode().build();
-    ResourceIterator<Node> searchResult = aNodeSearchResult() //
+    ResourceIterable<Node> searchResult = aNodeSearchResult() //
         .withNode(node1) //
         .andNode(node2) //
-        .asIterator();
-    when(dbMock.findNodes(DOMAIN_ENTITY_LABEL)).thenReturn(searchResult);
+        .asIterable();
+    when(globalGraphOperationsMock.getAllNodesWithLabel(DOMAIN_ENTITY_LABEL)).thenReturn(searchResult);
 
     // action
     ResourceIterator<Node> actualSearchResult = instance.getNodesOfType(DOMAIN_ENTITY_TYPE);
@@ -483,14 +483,14 @@ public class Neo4JLowLevelAPITest {
     Relationship versionOfRelationship = aRelationship().withType(VERSION_OF).build();
     NodeMockBuilder nodeWithVersionOfRelationship = aNode().withIncomingRelationShip(versionOfRelationship);
     String otherId = "otherId";
-    ResourceIterator<Node> searchResultWithTwoNodes = aNodeSearchResult()//
+    ResourceIterable<Node> searchResultWithTwoNodes = aNodeSearchResult()//
         .withNode(aNode().withId(ID).build())//
         .andNode(aNode().withId(otherId).build())//
         .andNode(nodeWithVersionOfRelationship.withId(ID).build()) //
         .andNode(nodeWithVersionOfRelationship.withId(otherId).build()) //
-        .asIterator();
+        .asIterable();
 
-    when(dbMock.findNodes(DOMAIN_ENTITY_LABEL)).thenReturn(searchResultWithTwoNodes);
+    when(globalGraphOperationsMock.getAllNodesWithLabel(DOMAIN_ENTITY_LABEL)).thenReturn(searchResultWithTwoNodes);
 
     // action
     long count = instance.countNodesWithLabel(DOMAIN_ENTITY_LABEL);
