@@ -27,6 +27,10 @@
           <artifactId>slf4j-log4j12</artifactId>
           <groupId>org.slf4j</groupId>
         </exclusion>
+        <exclusion>
+          <artifactId>solr-core</artifactId>
+          <groupId>org.apache.solr</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
 
