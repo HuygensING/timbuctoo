@@ -13,7 +13,7 @@ public class GraphDatabaseServiceProvider implements Provider<GraphDatabaseServi
 
   private static final String PASSWORD = "test123";
   private static final String USER = "neo4j";
-  private static final String URI = "http://localhost:7474";
+  private static final String URI = "http://localhost:7474/db/data";
 
   @Override
   public GraphDatabaseService get() {
