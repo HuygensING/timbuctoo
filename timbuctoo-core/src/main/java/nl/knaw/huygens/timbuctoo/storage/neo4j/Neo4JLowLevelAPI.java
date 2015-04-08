@@ -7,7 +7,9 @@ import static nl.knaw.huygens.timbuctoo.storage.neo4j.PropertyContainerHelper.ge
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.PropertyNotIndexedException.propertyHasNoIndex;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SystemRelationshipType.VERSION_OF;
 import static org.neo4j.graphdb.Direction.INCOMING;
+import static org.neo4j.graphdb.Direction.OUTGOING;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -23,14 +25,29 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.tooling.GlobalGraphOperations;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 class Neo4JLowLevelAPI {
+  static final String GET_ALL_QUERY = "*:*";
   static final String LABEL_PROPERTY = "label";
+
+  private static final class UniqueRelationshipPredicate implements Predicate<Relationship> {
+    private Set<Object> uniqueRelIds = Sets.newHashSet();
+
+    @Override
+    public boolean apply(Relationship relationship) {
+      Object id = relationship.hasProperty(ID_PROPERTY_NAME) ? relationship.getProperty(ID_PROPERTY_NAME) : null;
+      if (!uniqueRelIds.contains(id)) {
+        uniqueRelIds.add(id);
+        return true;
+      }
+
+      return false;
+    }
+  }
 
   private static final class IsLatestVersionOfNode implements Predicate<Node> {
     @Override
@@ -41,16 +58,14 @@ class Neo4JLowLevelAPI {
 
   private final GraphDatabaseService db;
   private final RelationshipIndexes relationshipIndexes;
-  private final GlobalGraphOperations globalGraphOperations;
 
   public Neo4JLowLevelAPI(GraphDatabaseService db) {
-    this(db, new RelationshipIndexes(db), GlobalGraphOperations.at(db));
+    this(db, new RelationshipIndexes(db));
   }
 
-  Neo4JLowLevelAPI(GraphDatabaseService db, RelationshipIndexes relationshipIndexesMock, GlobalGraphOperations globalGraphOperations) {
+  Neo4JLowLevelAPI(GraphDatabaseService db, RelationshipIndexes relationshipIndexesMock) {
     this.db = db;
     this.relationshipIndexes = relationshipIndexesMock;
-    this.globalGraphOperations = globalGraphOperations;
   }
 
   /**
@@ -222,25 +237,26 @@ class Neo4JLowLevelAPI {
 
   public long countRelationships() {
     try (Transaction transaction = db.beginTx()) {
-      Set<Relationship> foundRelationships = Sets.newHashSet(globalGraphOperations.getAllRelationships().iterator());
+      long count = 0;
+      UniqueRelationshipPredicate uniqueRelationship = new UniqueRelationshipPredicate();
+      IsLatestVersionOfNode isLatestNode = new IsLatestVersionOfNode();
 
-      Set<Relationship> latestRelationships = Sets.filter(foundRelationships, new Predicate<Relationship>() {
-        private Set<Object> uniqueRelIds = Sets.newHashSet();
+      ResourceIterator<Node> allNodes = db.index().forNodes(LABEL_PROPERTY).query(GET_ALL_QUERY).iterator();
 
-        @Override
-        public boolean apply(Relationship relationship) {
-          Object id = relationship.hasProperty(ID_PROPERTY_NAME) ? relationship.getProperty(ID_PROPERTY_NAME) : null;
-          if (!uniqueRelIds.contains(id)) {
-            uniqueRelIds.add(id);
-            return true;
+      for (; allNodes.hasNext();) {
+        Node node = allNodes.next();
+        if (isLatestNode.apply(node)) {
+          for (Iterator<Relationship> iterator = node.getRelationships(OUTGOING).iterator(); iterator.hasNext();) {
+            if (uniqueRelationship.apply(iterator.next())) {
+              count++;
+            }
           }
-
-          return false;
         }
-      });
+
+      }
 
       transaction.success();
-      return latestRelationships.size();
+      return count;
     }
   }
 

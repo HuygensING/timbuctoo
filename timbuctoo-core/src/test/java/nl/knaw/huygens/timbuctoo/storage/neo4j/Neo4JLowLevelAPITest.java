@@ -3,12 +3,12 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Relation.SOURCE_ID;
 import static nl.knaw.huygens.timbuctoo.model.Relation.TARGET_ID;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.Neo4JLowLevelAPI.GET_ALL_QUERY;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.Neo4JLowLevelAPI.LABEL_PROPERTY;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeMockBuilder.aNode;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeSearchResultBuilder.aNodeSearchResult;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.NodeSearchResultBuilder.anEmptyNodeSearchResult;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipMockBuilder.aRelationship;
-import static nl.knaw.huygens.timbuctoo.storage.neo4j.RelationshipSearchResultBuilder.aRelationshipSearchResult;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SystemRelationshipType.VERSION_OF;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -35,13 +35,11 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Label;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
 import org.neo4j.graphdb.index.IndexManager;
-import org.neo4j.tooling.GlobalGraphOperations;
 
 import test.model.projecta.SubADomainEntity;
 import test.model.projecta.SubARelation;
@@ -64,17 +62,15 @@ public class Neo4JLowLevelAPITest {
 
   private Neo4JLowLevelAPI instance;
   private GraphDatabaseService dbMock;
-  private GlobalGraphOperations globalGraphOperationsMock;
   private Transaction transactionMock;
   private RelationshipIndexes relationshipIndexesMock;
   private Index<Node> nodeIndexMock;
 
   @Before
   public void setup() {
-    globalGraphOperationsMock = mock(GlobalGraphOperations.class);
     relationshipIndexesMock = mock(RelationshipIndexes.class);
     setupDBMock();
-    instance = new Neo4JLowLevelAPI(dbMock, relationshipIndexesMock, globalGraphOperationsMock);
+    instance = new Neo4JLowLevelAPI(dbMock, relationshipIndexesMock);
   }
 
   private void setupDBMock() {
@@ -524,21 +520,34 @@ public class Neo4JLowLevelAPITest {
 
   @Test
   public void countRelationshipsReturnsTheNumberOfUniqueRelationship() {
-    // setup
+    // setup   
     long two = 2l;
+
+    Node node1 = aNode().withIncomingRelationShip(aRelationship().withType(VERSION_OF).build()).build();
+
     RelationshipMockBuilder relationshipBuilderWithId = aRelationship().withProperty(ID_PROPERTY_NAME, ID);
     Relationship rel1 = relationshipBuilderWithId.withRevision(FIRST_REVISION).build();
     Relationship rel1V2 = relationshipBuilderWithId.withRevision(SECOND_REVISION).build();
+
+    // latest nodes do not have incoming relationships of VERSION_OF type 
+    Node node1V2 = aNode().withRevision(SECOND_REVISION)//
+        .withOutgoingRelationShip(rel1) //
+        .andOutgoingRelationship(rel1V2)//
+        .build();
 
     String otherId = "otherId";
     RelationshipMockBuilder relationshipBuilderWithOtherId = aRelationship().withProperty(ID_PROPERTY_NAME, otherId);
     Relationship rel2 = relationshipBuilderWithOtherId.withRevision(FIRST_REVISION).build();
     Relationship rel2V2 = relationshipBuilderWithOtherId.withRevision(SECOND_REVISION).build();
 
-    ResourceIterable<Relationship> foundRelationships = aRelationshipSearchResult().withPropertyContainer(rel1).andPropertyContainer(rel1V2).andPropertyContainer(rel2).andPropertyContainer(rel2V2)
-        .asIterable();
+    Node node2 = aNode().withOutgoingRelationShip(rel2).andOutgoingRelationship(rel2V2).build();
 
-    when(globalGraphOperationsMock.getAllRelationships()).thenReturn(foundRelationships);
+    ResourceIterator<Node> searchResult = aNodeSearchResult().withPropertyContainer(node1V2).andPropertyContainer(node1).andPropertyContainer(node2).asIterator();
+
+    @SuppressWarnings("unchecked")
+    IndexHits<Node> indexHits = mock(IndexHits.class);
+    when(indexHits.iterator()).thenReturn(searchResult);
+    when(nodeIndexMock.query(GET_ALL_QUERY)).thenReturn(indexHits);
 
     // action
     long actualCount = instance.countRelationships();
