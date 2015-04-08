@@ -23,6 +23,7 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.index.IndexHits;
 import org.neo4j.tooling.GlobalGraphOperations;
 
 import com.google.common.base.Predicate;
@@ -30,6 +31,15 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 class Neo4JLowLevelAPI {
+  static final String LABEL_PROPERTY = "label";
+
+  private static final class IsLatestVersionOfNode implements Predicate<Node> {
+    @Override
+    public boolean apply(Node node) {
+      return !node.hasRelationship(INCOMING, VERSION_OF);
+    }
+  }
+
   private final GraphDatabaseService db;
   private final RelationshipIndexes relationshipIndexes;
   private final GlobalGraphOperations globalGraphOperations;
@@ -190,17 +200,17 @@ class Neo4JLowLevelAPI {
 
   public long countNodesWithLabel(Label label) {
     try (Transaction transaction = db.beginTx()) {
-      Set<Node> foundNodes = Sets.newHashSet(globalGraphOperations.getAllNodesWithLabel(label));
+      IndexHits<Node> indexHits = db.index().forNodes(LABEL_PROPERTY).get(LABEL_PROPERTY, label);
 
-      Set<Node> latestNodes = Sets.filter(foundNodes, new Predicate<Node>() {
+      IsLatestVersionOfNode isLatestVersion = new IsLatestVersionOfNode();
 
-        @Override
-        public boolean apply(Node node) {
-          return !node.hasRelationship(INCOMING, VERSION_OF);
+      long count = 0;
+
+      for (ResourceIterator<Node> iterator = indexHits.iterator(); iterator.hasNext();) {
+        if (isLatestVersion.apply(iterator.next())) {
+          count++;
         }
-      });
-
-      int count = latestNodes.size();
+      }
 
       transaction.success();
       return count;
