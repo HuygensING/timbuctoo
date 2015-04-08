@@ -25,6 +25,7 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
+import org.neo4j.graphdb.index.Index;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
@@ -129,7 +130,7 @@ class Neo4JLowLevelAPI {
   }
 
   private ResourceIterator<Node> findInIndex(Label label) {
-    return db.index().forNodes(LABEL_PROPERTY).get(LABEL_PROPERTY, label).iterator();
+    return indexFor(LABEL_PROPERTY).get(LABEL_PROPERTY, label).iterator();
   }
 
   private Label labelFor(Class<? extends Entity> type) {
@@ -241,7 +242,7 @@ class Neo4JLowLevelAPI {
       UniqueRelationshipPredicate uniqueRelationship = new UniqueRelationshipPredicate();
       IsLatestVersionOfNode isLatestNode = new IsLatestVersionOfNode();
 
-      ResourceIterator<Node> allNodes = db.index().forNodes(LABEL_PROPERTY).query(GET_ALL_QUERY).iterator();
+      ResourceIterator<Node> allNodes = indexFor(LABEL_PROPERTY).query(GET_ALL_QUERY).iterator();
 
       for (; allNodes.hasNext();) {
         Node node = allNodes.next();
@@ -273,7 +274,15 @@ class Neo4JLowLevelAPI {
   }
 
   public void index(Node node) {
+    Index<Node> index = indexFor(LABEL_PROPERTY);
 
+    for (Label label : node.getLabels()) {
+      index.add(node, LABEL_PROPERTY, label);
+    }
+  }
+
+  private Index<Node> indexFor(String indexName) {
+    return db.index().forNodes(indexName);
   }
 
 }

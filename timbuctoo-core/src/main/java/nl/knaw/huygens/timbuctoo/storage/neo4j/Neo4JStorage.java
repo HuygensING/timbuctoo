@@ -62,8 +62,7 @@ public class Neo4JStorage {
 
   @Inject
   public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, TypeRegistry typeRegistry) {
-    this(db, propertyContainerConverterFactory, new NodeDuplicator(db), new RelationshipDuplicator(db), new IdGenerator(), typeRegistry, new Neo4JLowLevelAPI(db), new Neo4JStorageIteratorFactory(
-        propertyContainerConverterFactory));
+    this(db, propertyContainerConverterFactory, new IdGenerator(), typeRegistry, new Neo4JLowLevelAPI(db), new Neo4JStorageIteratorFactory(propertyContainerConverterFactory));
   }
 
   public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, NodeDuplicator nodeDuplicator, RelationshipDuplicator relationshipDuplicator,
@@ -76,6 +75,11 @@ public class Neo4JStorage {
     this.typeRegistry = typeRegistry;
     this.neo4jLowLevelAPI = neo4jLowLevelAPI;
     this.neo4jStorageIteratorFactory = neo4jStorageIteratorFactory;
+  }
+
+  public Neo4JStorage(GraphDatabaseService db, PropertyContainerConverterFactory propertyContainerConverterFactory, IdGenerator idGenerator, TypeRegistry typeRegistry,
+      Neo4JLowLevelAPI neo4jLowLevelAPI, Neo4JStorageIteratorFactory neo4jStorageIteratorFactory) {
+    this(db, propertyContainerConverterFactory, new NodeDuplicator(db, neo4jLowLevelAPI), new RelationshipDuplicator(db), idGenerator, typeRegistry, neo4jLowLevelAPI, neo4jStorageIteratorFactory);
   }
 
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {

@@ -21,11 +21,13 @@ public class NodeDuplicatorTest {
 
   private GraphDatabaseService dbMock;
   private NodeDuplicator instance;
+  private Neo4JLowLevelAPI neo4jLowLevelAPIMock;
 
   @Before
   public void setup() {
+    neo4jLowLevelAPIMock = mock(Neo4JLowLevelAPI.class);
     dbMock = mock(GraphDatabaseService.class);
-    instance = new NodeDuplicator(dbMock);
+    instance = new NodeDuplicator(dbMock, neo4jLowLevelAPIMock);
   }
 
   @Test
@@ -102,5 +104,18 @@ public class NodeDuplicatorTest {
 
     // verify
     verify(duplicatedNode).createRelationshipTo(nodeToDuplicate, VERSION_OF);
+  }
+
+  @Test
+  public void saveDuplicateIndexesTheDuplicate() {
+    // setup
+    Node nodeToDuplicate = aNode().build();
+    Node duplicatedNode = aNode().createdBy(dbMock);
+
+    // action
+    instance.saveDuplicate(nodeToDuplicate);
+
+    // verify
+    verify(neo4jLowLevelAPIMock).index(duplicatedNode);
   }
 }

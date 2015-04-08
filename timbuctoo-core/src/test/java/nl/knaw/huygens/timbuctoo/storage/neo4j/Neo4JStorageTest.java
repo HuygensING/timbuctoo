@@ -404,7 +404,7 @@ public class Neo4JStorageTest {
     instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
 
     // verify
-    InOrder inOrder = inOrder(dbMock, domainEntityConverterMock, transactionMock, neo4JLowLevelAPIMock);
+    InOrder inOrder = inOrder(dbMock, domainEntityConverterMock, transactionMock);
     inOrder.verify(domainEntityConverterMock).updatePropertyContainer(argThat(equalTo(nodeMock)), //
         argThat(likeDomainEntity(SubADomainEntity.class) //
             .withAModifiedValueNotEqualTo(oldModified) //
@@ -415,7 +415,6 @@ public class Neo4JStorageTest {
             .withAModifiedValueNotEqualTo(oldModified) //
             .withRevision(SECOND_REVISION) //
             .withoutAPID()));
-    inOrder.verify(neo4JLowLevelAPIMock).index(nodeMock);
     inOrder.verify(transactionMock).success();
   }
 
@@ -506,7 +505,7 @@ public class Neo4JStorageTest {
     instance.updateSystemEntity(SYSTEM_ENTITY_TYPE, systemEntity);
 
     // verify
-    InOrder inOrder = inOrder(systemEntityConverterMock, transactionMock, neo4JLowLevelAPIMock);
+    InOrder inOrder = inOrder(systemEntityConverterMock, transactionMock);
     inOrder.verify(systemEntityConverterMock).updatePropertyContainer(argThat(equalTo(nodeMock)), //
         argThat(likeTestSystemEntityWrapper() //
             .withAModifiedValueNotEqualTo(oldModified) //
@@ -515,7 +514,6 @@ public class Neo4JStorageTest {
         argThat(likeTestSystemEntityWrapper() //
             .withAModifiedValueNotEqualTo(oldModified) //
             .withRevision(SECOND_REVISION)));
-    inOrder.verify(neo4JLowLevelAPIMock).index(nodeMock);
     inOrder.verify(transactionMock).success();
   }
 

@@ -568,6 +568,22 @@ public class Neo4JLowLevelAPITest {
 
     // verify
     assertThat(foundRelationship, is(sameInstance(relationship)));
+  }
 
+  @Test
+  public void indexIndexesTheNodeForAllItsLabels() {
+    // setup
+    Label otherLabel = DynamicLabel.label("otherLabel");
+    Label anotherLabel = DynamicLabel.label("anotherLabel");
+    Node nodeMock = aNode().withLabel(DOMAIN_ENTITY_LABEL)//
+        .withLabel(otherLabel).withLabel(anotherLabel).build();
+
+    // action
+    instance.index(nodeMock);
+
+    // verify
+    verify(nodeIndexMock).add(nodeMock, LABEL_PROPERTY, DOMAIN_ENTITY_LABEL);
+    verify(nodeIndexMock).add(nodeMock, LABEL_PROPERTY, otherLabel);
+    verify(nodeIndexMock).add(nodeMock, LABEL_PROPERTY, anotherLabel);
   }
 }

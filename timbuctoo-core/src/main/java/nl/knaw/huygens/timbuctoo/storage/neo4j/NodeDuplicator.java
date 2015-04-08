@@ -14,9 +14,11 @@ import org.neo4j.graphdb.Relationship;
 public class NodeDuplicator {
 
   private final GraphDatabaseService db;
+  private final Neo4JLowLevelAPI neo4jLowLevelAPI;
 
-  public NodeDuplicator(GraphDatabaseService db) {
+  public NodeDuplicator(GraphDatabaseService db, Neo4JLowLevelAPI neo4jLowLevelAPI) {
     this.db = db;
+    this.neo4jLowLevelAPI = neo4jLowLevelAPI;
   }
 
   /**
@@ -30,6 +32,8 @@ public class NodeDuplicator {
     addPropertiesToDuplicate(duplicate, original);
     addRelationshipsToDuplicate(duplicate, original);
     addVersionOfRelationToDuplicate(duplicate, original);
+
+    neo4jLowLevelAPI.index(duplicate);
   }
 
   private void addLabelsToDuplicate(Node duplicatedNode, Node original) {
