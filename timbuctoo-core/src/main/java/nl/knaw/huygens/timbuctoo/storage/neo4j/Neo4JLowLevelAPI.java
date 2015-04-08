@@ -272,4 +272,8 @@ class Neo4JLowLevelAPI {
     return relationshipIndexes.findLatestRelationshipFor(sourceId, targetId, relationTypeId);
   }
 
+  public void index(Node node) {
+
+  }
+
 }

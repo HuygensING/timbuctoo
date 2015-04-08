@@ -92,6 +92,7 @@ public class Neo4JStorage {
         transaction.failure();
         throw e;
       }
+      neo4jLowLevelAPI.index(node);
 
       transaction.success();
 
@@ -109,6 +110,7 @@ public class Neo4JStorage {
 
         propertyContainerConverter.addValuesToPropertyContainer(node, entity);
 
+        neo4jLowLevelAPI.index(node);
         transaction.success();
         return id;
       } catch (ConversionException e) {
@@ -300,6 +302,7 @@ public class Neo4JStorage {
         propertyContainerConverter.updatePropertyContainer(node, entity);
         propertyContainerConverter.updateModifiedAndRev(node, entity);
 
+        neo4jLowLevelAPI.index(node);
         transaction.success();
       } catch (ConversionException e) {
         transaction.failure();
