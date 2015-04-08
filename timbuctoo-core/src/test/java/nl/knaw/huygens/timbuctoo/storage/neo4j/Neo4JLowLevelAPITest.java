@@ -237,21 +237,26 @@ public class Neo4JLowLevelAPITest {
   }
 
   @Test
-  public void getNodesWithLabelOfTypeReturnsAResourceIteratorWithOfTheFoundNodes() {
+  public void getNodesOfTypeReturnsAResourceIteratorWithOfTheFoundNodes() {
     // setup
-    Node node1 = aNode().build();
-    Node node2 = aNode().build();
-    ResourceIterable<Node> searchResult = aNodeSearchResult() //
-        .withPropertyContainer(node1) //
-        .andPropertyContainer(node2) //
-        .asIterable();
-    when(globalGraphOperationsMock.getAllNodesWithLabel(DOMAIN_ENTITY_LABEL)).thenReturn(searchResult);
+    Node latestNode1 = aNode().build();
+    Node latestNode2 = aNode().build();
+    ResourceIterator<Node> searchResult = aNodeSearchResult() //
+        .withPropertyContainer(latestNode1) //
+        .andPropertyContainer(latestNode2) //
+        .asIterator();
+
+    @SuppressWarnings("unchecked")
+    IndexHits<Node> foudNodes = mock(IndexHits.class);
+    when(foudNodes.iterator()).thenReturn(searchResult);
+    when(nodeIndexMock.get(LABEL_PROPERTY, DOMAIN_ENTITY_LABEL)).thenReturn(foudNodes);
 
     // action
     ResourceIterator<Node> actualSearchResult = instance.getNodesOfType(DOMAIN_ENTITY_TYPE);
 
     // verify
-    assertThat(Lists.newArrayList(actualSearchResult), containsInAnyOrder(node1, node2));
+    assertThat(actualSearchResult, is(sameInstance(searchResult)));
+    assertThat(Lists.newArrayList(actualSearchResult), containsInAnyOrder(latestNode1, latestNode2));
 
     verify(transactionMock).success();
   }
@@ -508,8 +513,6 @@ public class Neo4JLowLevelAPITest {
     IndexHits<Node> indexHits = mock(IndexHits.class);
     when(indexHits.iterator()).thenReturn(searchResultWithTwoNodes);
     when(nodeIndexMock.get(LABEL_PROPERTY, DOMAIN_ENTITY_LABEL)).thenReturn(indexHits);
-
-    //    when(globalGraphOperationsMock.getAllNodesWithLabel(DOMAIN_ENTITY_LABEL)).thenReturn(searchResultWithTwoNodes);
 
     // action
     long count = instance.countNodesWithLabel(DOMAIN_ENTITY_LABEL);

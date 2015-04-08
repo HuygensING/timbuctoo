@@ -23,7 +23,6 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.ResourceIterable;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.index.IndexHits;
 import org.neo4j.tooling.GlobalGraphOperations;
 
 import com.google.common.base.Predicate;
@@ -106,12 +105,16 @@ class Neo4JLowLevelAPI {
 
   public ResourceIterator<Node> getNodesOfType(Class<? extends Entity> type) {
     try (Transaction transaction = db.beginTx()) {
-      ResourceIterable<Node> foundNodes = globalGraphOperations.getAllNodesWithLabel(labelFor(type));
-      ResourceIterator<Node> allNodesWithLabel = foundNodes.iterator();
+      Label label = labelFor(type);
+      ResourceIterator<Node> allNodesWithLabel = findInIndex(label);
 
       transaction.success();
       return allNodesWithLabel;
     }
+  }
+
+  private ResourceIterator<Node> findInIndex(Label label) {
+    return db.index().forNodes(LABEL_PROPERTY).get(LABEL_PROPERTY, label).iterator();
   }
 
   private Label labelFor(Class<? extends Entity> type) {
@@ -200,13 +203,13 @@ class Neo4JLowLevelAPI {
 
   public long countNodesWithLabel(Label label) {
     try (Transaction transaction = db.beginTx()) {
-      IndexHits<Node> indexHits = db.index().forNodes(LABEL_PROPERTY).get(LABEL_PROPERTY, label);
+      ResourceIterator<Node> iterator = findInIndex(label);
 
       IsLatestVersionOfNode isLatestVersion = new IsLatestVersionOfNode();
 
       long count = 0;
 
-      for (ResourceIterator<Node> iterator = indexHits.iterator(); iterator.hasNext();) {
+      for (; iterator.hasNext();) {
         if (isLatestVersion.apply(iterator.next())) {
           count++;
         }
