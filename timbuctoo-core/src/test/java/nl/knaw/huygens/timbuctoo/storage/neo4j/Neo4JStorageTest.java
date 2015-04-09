@@ -15,6 +15,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -2134,6 +2135,45 @@ public class Neo4JStorageTest {
   @Test(expected = StorageException.class)
   public void findRelationThrowsAStorageExceptionWhenTheRelationCannotBeInstantiated() throws Exception {
     findRelationRelationCannotBeConverted(new InstantiationException());
+  }
+
+  // TODO find a better implementation see TIM-143
+  @Test
+  public void getIdsOfNonPersistentRelationsReturnsTheIdsOfAllNoPersistenRelations() {
+    // setup
+    String nonPersistentId1 = "id1";
+    Relationship nonPersistentRelationship1 = aRelationship().withId(nonPersistentId1).build();
+    String persistentId1 = "id2";
+    Relationship persistentRelationship1 = aRelationship().withId(persistentId1).withAPID().build();
+    Node node1 = aNode()//
+        .withOutgoingRelationShip(nonPersistentRelationship1)//
+        .andOutgoingRelationship(persistentRelationship1)//
+        .build();
+
+    String nonPersistentId2 = "id3";
+    Relationship nonPersistentRelationship2 = aRelationship().withId(nonPersistentId2).build();
+    String persistentId2 = "id4";
+    Relationship persistentRelationship2 = aRelationship().withId(persistentId2).withAPID().build();
+    Node node2 = aNode()//
+        .withOutgoingRelationShip(persistentRelationship2)//
+        .andOutgoingRelationship(nonPersistentRelationship2)//
+        .build();
+
+    ResourceIterator<Node> foundNodes = aNodeSearchResult()//
+        .withPropertyContainer(node1)//
+        .andPropertyContainer(node2).asIterator();
+
+    when(neo4JLowLevelAPIMock.getAllNodes()).thenReturn(foundNodes);
+
+    // action
+    List<String> idsOfNonPersistentRelations = instance.getIdsOfNonPersistentRelations(RELATION_TYPE);
+
+    // verify
+    assertThat(idsOfNonPersistentRelations, containsInAnyOrder(nonPersistentId1, nonPersistentId2));
+    assertThat(idsOfNonPersistentRelations, not(hasItem(persistentId1)));
+    assertThat(idsOfNonPersistentRelations, not(hasItem(persistentId2)));
+
+    verify(transactionMock).success();
   }
 
   /* *****************************************************************************

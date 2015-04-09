@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
+import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.PropertyContainerHelper.getRevisionProperty;
 
 import java.util.Iterator;
@@ -19,6 +20,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConverterFactory;
 
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.DynamicRelationshipType;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -36,6 +38,7 @@ import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 public class Neo4JStorage {
+
   private static final String PID_PROPERTY_NAME = DomainEntity.PID;
 
   static final long REQUEST_TIMEOUT = 5000;
@@ -700,19 +703,13 @@ public class Neo4JStorage {
     try (Transaction transaction = db.beginTx()) {
       ResourceIterator<Node> foundNodes = neo4jLowLevelAPI.getNodesOfType(type);
 
-      Predicate<Node> isNonPersistent = new Predicate<Node>() {
-
-        @Override
-        public boolean apply(Node input) {
-          return !input.hasProperty(PID_PROPERTY_NAME);
-        }
-      };
+      Predicate<Node> isNonPersistent = new IsNonPersistent<Node>();
 
       List<String> ids = Lists.newArrayList();
       for (; foundNodes.hasNext();) {
         Node node = foundNodes.next();
         if (isNonPersistent.apply(node)) {
-          ids.add("" + node.getProperty(Entity.ID_PROPERTY_NAME));
+          ids.add("" + node.getProperty(ID_PROPERTY_NAME));
         }
       }
       transaction.success();
@@ -721,6 +718,32 @@ public class Neo4JStorage {
   }
 
   public <T extends Relation> List<String> getIdsOfNonPersistentRelations(Class<T> type) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    try (Transaction transaction = db.beginTx()) {
+      ResourceIterator<Node> allNodes = neo4jLowLevelAPI.getAllNodes();
+      List<String> ids = Lists.newArrayList();
+
+      Predicate<Relationship> isNonPersistent = new IsNonPersistent<Relationship>();
+
+      for (; allNodes.hasNext();) {
+        Node node = allNodes.next();
+
+        for (Iterator<Relationship> iterator = node.getRelationships(Direction.OUTGOING).iterator(); iterator.hasNext();) {
+          Relationship relationship = iterator.next();
+          if (isNonPersistent.apply(relationship)) {
+            ids.add("" + relationship.getProperty(ID_PROPERTY_NAME));
+          }
+        }
+      }
+
+      transaction.success();
+      return ids;
+    }
+  }
+
+  private static final class IsNonPersistent<T extends PropertyContainer> implements Predicate<T> {
+    @Override
+    public boolean apply(T input) {
+      return !input.hasProperty(PID_PROPERTY_NAME);
+    }
   }
 }

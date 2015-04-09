@@ -908,10 +908,12 @@ public abstract class StorageIntegrationTest {
   public void getAllIdsWithoutPIDForRelationReturnsTheIdsOfNonPersistentDomainEntities() throws Exception {
     // setup
     String sourceId = addDefaultProjectAPerson();
-    String id = addDefaultProjectARelation(sourceId);
+    String targetId = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+    String id = addDefaultRelation(sourceId, targetId, typeId);
     instance.setPID(PROJECT_RELATION_TYPE, id, PID);
 
-    String id2 = addDefaultProjectARelation(sourceId);
+    String id2 = addDefaultRelation(sourceId, targetId, typeId);
 
     // action
     List<String> idsOfNonRelations = instance.getAllIdsWithoutPIDOfType(PROJECT_RELATION_TYPE);

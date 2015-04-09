@@ -242,7 +242,7 @@ class Neo4JLowLevelAPI {
       UniqueRelationshipPredicate uniqueRelationship = new UniqueRelationshipPredicate();
       IsLatestVersionOfNode isLatestNode = new IsLatestVersionOfNode();
 
-      ResourceIterator<Node> allNodes = indexFor(LABEL_PROPERTY).query(GET_ALL_QUERY).iterator();
+      ResourceIterator<Node> allNodes = getAllNodes();
 
       for (; allNodes.hasNext();) {
         Node node = allNodes.next();
@@ -259,6 +259,10 @@ class Neo4JLowLevelAPI {
       transaction.success();
       return count;
     }
+  }
+
+  public ResourceIterator<Node> getAllNodes() {
+    return indexFor(LABEL_PROPERTY).query(GET_ALL_QUERY).iterator();
   }
 
   public List<Relationship> getRelationshipsByNodeId(String id) {
