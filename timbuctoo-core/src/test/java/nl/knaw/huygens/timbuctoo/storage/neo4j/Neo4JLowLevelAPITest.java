@@ -245,7 +245,7 @@ public class Neo4JLowLevelAPITest {
     @SuppressWarnings("unchecked")
     IndexHits<Node> foudNodes = mock(IndexHits.class);
     when(foudNodes.iterator()).thenReturn(searchResult);
-    when(nodeIndexMock.get(LABEL_PROPERTY, DOMAIN_ENTITY_LABEL)).thenReturn(foudNodes);
+    when(nodeIndexMock.get(LABEL_PROPERTY, DOMAIN_ENTITY_LABEL.name())).thenReturn(foudNodes);
 
     // action
     ResourceIterator<Node> actualSearchResult = instance.getNodesOfType(DOMAIN_ENTITY_TYPE);
@@ -508,7 +508,7 @@ public class Neo4JLowLevelAPITest {
     @SuppressWarnings("unchecked")
     IndexHits<Node> indexHits = mock(IndexHits.class);
     when(indexHits.iterator()).thenReturn(searchResultWithTwoNodes);
-    when(nodeIndexMock.get(LABEL_PROPERTY, DOMAIN_ENTITY_LABEL)).thenReturn(indexHits);
+    when(nodeIndexMock.get(LABEL_PROPERTY, DOMAIN_ENTITY_LABEL.name())).thenReturn(indexHits);
 
     // action
     long count = instance.countNodesWithLabel(DOMAIN_ENTITY_LABEL);
@@ -582,8 +582,8 @@ public class Neo4JLowLevelAPITest {
     instance.index(nodeMock);
 
     // verify
-    verify(nodeIndexMock).add(nodeMock, LABEL_PROPERTY, DOMAIN_ENTITY_LABEL);
-    verify(nodeIndexMock).add(nodeMock, LABEL_PROPERTY, otherLabel);
-    verify(nodeIndexMock).add(nodeMock, LABEL_PROPERTY, anotherLabel);
+    verify(nodeIndexMock).add(nodeMock, LABEL_PROPERTY, DOMAIN_ENTITY_LABEL.name());
+    verify(nodeIndexMock).add(nodeMock, LABEL_PROPERTY, otherLabel.name());
+    verify(nodeIndexMock).add(nodeMock, LABEL_PROPERTY, anotherLabel.name());
   }
 }

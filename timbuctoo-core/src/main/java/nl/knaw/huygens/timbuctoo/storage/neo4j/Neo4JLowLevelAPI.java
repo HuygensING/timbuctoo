@@ -130,7 +130,7 @@ class Neo4JLowLevelAPI {
   }
 
   private ResourceIterator<Node> findInIndex(Label label) {
-    return indexFor(LABEL_PROPERTY).get(LABEL_PROPERTY, label).iterator();
+    return indexFor(LABEL_PROPERTY).get(LABEL_PROPERTY, label.name()).iterator();
   }
 
   private Label labelFor(Class<? extends Entity> type) {
@@ -276,8 +276,9 @@ class Neo4JLowLevelAPI {
   public void index(Node node) {
     Index<Node> index = indexFor(LABEL_PROPERTY);
 
+    // use name because the neo4j spring data api does not support the serialization of the label.
     for (Label label : node.getLabels()) {
-      index.add(node, LABEL_PROPERTY, label);
+      index.add(node, LABEL_PROPERTY, label.name());
     }
   }
 
