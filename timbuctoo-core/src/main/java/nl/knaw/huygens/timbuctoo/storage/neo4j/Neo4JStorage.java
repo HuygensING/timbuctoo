@@ -292,7 +292,6 @@ public class Neo4JStorage {
         propertyContainerConverter.updatePropertyContainer(node, entity);
         propertyContainerConverter.updateModifiedAndRev(node, entity);
 
-        neo4jLowLevelAPI.index(node);
         transaction.success();
       } catch (ConversionException e) {
         transaction.failure();
