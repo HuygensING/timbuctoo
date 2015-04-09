@@ -13,7 +13,7 @@ public class GraphDatabaseServiceProvider implements Provider<GraphDatabaseServi
 
   private static final String PASSWORD = "test123";
   private static final String USER = "neo4j";
-  private static final String URI = "http://localhost:7474/db/data";
+  private static final String URI = "http://localhost:7474/db/data/";
 
   @Override
   public GraphDatabaseService get() {
@@ -23,7 +23,7 @@ public class GraphDatabaseServiceProvider implements Provider<GraphDatabaseServi
      */
     CypherRestGraphDatabase graphDb = new CypherRestGraphDatabase(restApi);
 
-    if (graphDb.isAvailable(5000)) {
+    if (!graphDb.isAvailable(5000)) {
       throw new RuntimeException("Database is not available on: " + URI);
     }
 
