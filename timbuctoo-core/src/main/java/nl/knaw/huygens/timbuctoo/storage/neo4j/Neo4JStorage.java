@@ -717,6 +717,7 @@ public class Neo4JStorage {
     }
   }
 
+  // FIXME filter with projectType see TIM-143
   public <T extends Relation> List<String> getIdsOfNonPersistentRelations(Class<T> type) {
     try (Transaction transaction = db.beginTx()) {
       ResourceIterator<Node> allNodes = neo4jLowLevelAPI.getAllNodes();
