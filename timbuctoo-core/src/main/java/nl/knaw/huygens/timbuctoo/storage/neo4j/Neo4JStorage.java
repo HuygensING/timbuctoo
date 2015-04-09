@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.PropertyContainerHelper.getIdProperty;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.PropertyContainerHelper.getRevisionProperty;
 
 import java.util.Iterator;
@@ -709,7 +709,7 @@ public class Neo4JStorage {
       for (; foundNodes.hasNext();) {
         Node node = foundNodes.next();
         if (isNonPersistent.apply(node)) {
-          ids.add("" + node.getProperty(ID_PROPERTY_NAME));
+          ids.add("" + getIdProperty(node));
         }
       }
       transaction.success();
@@ -730,7 +730,7 @@ public class Neo4JStorage {
         for (Iterator<Relationship> iterator = node.getRelationships(Direction.OUTGOING).iterator(); iterator.hasNext();) {
           Relationship relationship = iterator.next();
           if (isNonPersistent.apply(relationship)) {
-            ids.add("" + relationship.getProperty(ID_PROPERTY_NAME));
+            ids.add("" + getIdProperty(relationship));
           }
         }
       }
