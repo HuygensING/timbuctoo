@@ -29,8 +29,10 @@ import static nl.knaw.huygens.timbuctoo.storage.RelationTypeMatcher.matchesRelat
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
@@ -613,6 +615,22 @@ public abstract class StorageIntegrationTest {
         .withNames(Lists.newArrayList(PERSON_NAME));
   }
 
+  @Test
+  public void getAllIdsWithoutPIDForDomainEntityReturnsTheNonPersistentDomainEntities() throws Exception {
+    // setup
+    String id = addDefaultProjectAPerson();
+    instance.setPID(DOMAIN_ENTITY_TYPE, id, PID);
+
+    String id2 = addDefaultProjectAPerson();
+
+    // action
+    List<String> idsOfNonPersistentEntities = instance.getAllIdsWithoutPIDOfType(DOMAIN_ENTITY_TYPE);
+
+    // verify
+    assertThat(idsOfNonPersistentEntities, hasItem(id2));
+    assertThat(idsOfNonPersistentEntities, not(hasItem(id)));
+  }
+
   /* *******************************************************************************
    * Relation
    * ******************************************************************************/
@@ -884,6 +902,23 @@ public abstract class StorageIntegrationTest {
         .withSourceId(sourceId) //
         .withTargetId(targetId) //
         .withTypeId(relationTypeId));
+  }
+
+  @Test
+  public void getAllIdsWithoutPIDForRelationReturnsTheIdsOfNonPersistentDomainEntities() throws Exception {
+    // setup
+    String sourceId = addDefaultProjectAPerson();
+    String id = addDefaultProjectARelation(sourceId);
+    instance.setPID(PROJECT_RELATION_TYPE, id, PID);
+
+    String id2 = addDefaultProjectARelation(sourceId);
+
+    // action
+    List<String> idsOfNonRelations = instance.getAllIdsWithoutPIDOfType(PROJECT_RELATION_TYPE);
+
+    // verify
+    assertThat(idsOfNonRelations, hasItem(id2));
+    assertThat(idsOfNonRelations, not(hasItem(id)));
   }
 
   /* **************************************************************************
