@@ -230,9 +230,14 @@ public class Neo4JLegacyStorageWrapper implements Storage {
     return neo4JStorage.getRelationsByEntityId(type, id);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> List<String> getAllIdsWithoutPIDOfType(Class<T> type) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    if (Relation.class.isAssignableFrom(type)) {
+      return neo4JStorage.getIdsOfNonPersistentRelations((Class<Relation>) type);
+    } else {
+      return neo4JStorage.getIdsOfNonPersistentDomainEntities(type);
+    }
   }
 
   @Override

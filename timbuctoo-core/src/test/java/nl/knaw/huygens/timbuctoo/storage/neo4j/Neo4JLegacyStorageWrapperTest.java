@@ -243,6 +243,19 @@ public class Neo4JLegacyStorageWrapperTest {
   }
 
   @Test
+  public void getAllIdsWithoutPIDForDomainEntityDelegatesToNeo4JStorageGetIdsOfNonPersistentDomainEntities() throws Exception {
+    // setup
+    List<String> ids = Lists.newArrayList();
+    when(neo4JStorageMock.getIdsOfNonPersistentDomainEntities(DOMAIN_ENTITY_TYPE)).thenReturn(ids);
+
+    // action
+    List<String> foundIds = instance.getAllIdsWithoutPIDOfType(DOMAIN_ENTITY_TYPE);
+
+    // verify
+    assertThat(foundIds, is(sameInstance(ids)));
+  }
+
+  @Test
   public void findItemByPropertyForDomainEntityDelegatesToNeo4JStorageFindEntityByProperty() throws Exception {
     // setup
     SubADomainEntity entity = aDomainEntity().build();
@@ -414,6 +427,19 @@ public class Neo4JLegacyStorageWrapperTest {
 
     // action
     instance.getRelationsByEntityId(RELATION_TYPE, ID);
+  }
+
+  @Test
+  public void getAllIdsWithoutPIDForRelationDelegatesToNeo4JStorageGetIdsOfNonPersistentRelations() throws Exception {
+    // setup
+    List<String> ids = Lists.newArrayList();
+    when(neo4JStorageMock.getIdsOfNonPersistentRelations(RELATION_TYPE)).thenReturn(ids);
+
+    // action
+    List<String> foundIds = instance.getAllIdsWithoutPIDOfType(RELATION_TYPE);
+
+    // verify
+    assertThat(foundIds, is(sameInstance(ids)));
   }
 
   @Test

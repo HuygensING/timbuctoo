@@ -692,4 +692,12 @@ public class Neo4JStorage {
       }
     }
   }
+
+  public <T extends DomainEntity> List<String> getIdsOfNonPersistentDomainEntities(Class<T> type) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
+  public <T extends Relation> List<String> getIdsOfNonPersistentRelations(Class<T> type) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }
