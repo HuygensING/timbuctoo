@@ -219,7 +219,6 @@ public class Neo4JLegacyStorageWrapperIntegrationTest extends StorageIntegration
     super.findRelationSearchesARelationByClassSourceIdTargetIdAndTypeId();
   }
 
-  @Ignore
   @Test
   @Override
   public void getAllIdsWithoutPIDForDomainEntityReturnsTheNonPersistentDomainEntities() throws Exception {

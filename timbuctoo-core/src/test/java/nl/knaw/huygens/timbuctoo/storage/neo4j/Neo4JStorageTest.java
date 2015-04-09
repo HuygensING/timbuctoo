@@ -12,10 +12,12 @@ import static nl.knaw.huygens.timbuctoo.storage.neo4j.SubARelationBuilder.aRelat
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.TestSystemEntityWrapperBuilder.aSystemEntity;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.TestSystemEntityWrapperMatcher.likeTestSystemEntityWrapper;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Matchers.any;
@@ -1182,6 +1184,25 @@ public class Neo4JStorageTest {
     // verify
     assertThat(exists, is(false));
     verifyTransactionSucceeded();
+  }
+
+  @Test
+  public void getIdsOfNonPersistentDomainEntitiesFiltersTheIdsOfGetNodesOfType() {
+    // setup
+    Node nodeWithAPID = aNode().withId(ID).withAPID().build();
+    String id2 = "id2";
+    Node nodeWithoutAPID = aNode().withId(id2).build();
+    ResourceIterator<Node> foundNodes = aNodeSearchResult().withPropertyContainer(nodeWithoutAPID).andPropertyContainer(nodeWithAPID).asIterator();
+    when(neo4JLowLevelAPIMock.getNodesOfType(DOMAIN_ENTITY_TYPE)).thenReturn(foundNodes);
+
+    // action
+    List<String> ids = instance.getIdsOfNonPersistentDomainEntities(DOMAIN_ENTITY_TYPE);
+
+    // verify
+    assertThat(ids, contains(id2));
+    assertThat(ids, not(contains(ID)));
+
+    verify(transactionMock).success();
   }
 
   /* *****************************************************************************

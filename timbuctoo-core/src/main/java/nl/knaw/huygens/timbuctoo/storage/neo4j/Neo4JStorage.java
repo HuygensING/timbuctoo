@@ -31,10 +31,13 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.helpers.Strings;
 
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
 public class Neo4JStorage {
+  private static final String PID_PROPERTY_NAME = DomainEntity.PID;
+
   static final long REQUEST_TIMEOUT = 5000;
 
   private final GraphDatabaseService db;
@@ -694,7 +697,27 @@ public class Neo4JStorage {
   }
 
   public <T extends DomainEntity> List<String> getIdsOfNonPersistentDomainEntities(Class<T> type) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    try (Transaction transaction = db.beginTx()) {
+      ResourceIterator<Node> foundNodes = neo4jLowLevelAPI.getNodesOfType(type);
+
+      Predicate<Node> isNonPersistent = new Predicate<Node>() {
+
+        @Override
+        public boolean apply(Node input) {
+          return !input.hasProperty(PID_PROPERTY_NAME);
+        }
+      };
+
+      List<String> ids = Lists.newArrayList();
+      for (; foundNodes.hasNext();) {
+        Node node = foundNodes.next();
+        if (isNonPersistent.apply(node)) {
+          ids.add("" + node.getProperty(Entity.ID_PROPERTY_NAME));
+        }
+      }
+      transaction.success();
+      return ids;
+    }
   }
 
   public <T extends Relation> List<String> getIdsOfNonPersistentRelations(Class<T> type) {
