@@ -8,10 +8,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -222,6 +224,58 @@ public class Neo4JLegacyStorageWrapperTest {
 
     // action
     instance.deleteDomainEntity(DOMAIN_ENTITY_TYPE, ID, CHANGE);
+  }
+
+  @Test
+  public void deleteNonPersistentCallsDeleteDomainEntityOnNeo4JStorageMockForEveryIdInTheListWhenADomainEntityNeedsToBeDeleted() throws Exception {
+    // setup
+    String id1 = "id1";
+    String id2 = "id2";
+    List<String> ids = Lists.newArrayList(id1, id2);
+
+    // action
+    instance.deleteNonPersistent(DOMAIN_ENTITY_TYPE, ids);
+
+    // verify
+    verifyEntityDeleted(id1);
+    verifyEntityDeleted(id2);
+  }
+
+  private void verifyEntityDeleted(String id) throws StorageException {
+    verify(neo4JStorageMock).deleteDomainEntity(//
+        argThat(equalTo(PRIMITIVE_DOMAIN_ENTITY_TYPE)), //
+        argThat(equalTo(id)), //
+        any(Change.class));
+  }
+
+  @Test(expected = StorageException.class)
+  public void deleteNonPersistentThrowsAStorageExceptionWhenADomainEntityCannotBeDeleted() throws Exception {
+    // setup
+    String id1 = "id1";
+    String id2 = "id2";
+    List<String> ids = Lists.newArrayList(id1, id2);
+
+    doThrow(StorageException.class).when(neo4JStorageMock).deleteDomainEntity( //
+        argThat(equalTo(PRIMITIVE_DOMAIN_ENTITY_TYPE)), //
+        argThat(equalTo(id1)), //
+        any(Change.class));
+
+    // action
+    instance.deleteNonPersistent(DOMAIN_ENTITY_TYPE, ids);
+  }
+
+  @Test
+  public void deleteNonPersistentDoesNothingIfTheTypeIsARelationBecauseRelationsAreDeletedWithTheDomainEntity() throws Exception {
+    // setup
+    String id1 = "id1";
+    String id2 = "id2";
+    List<String> ids = Lists.newArrayList(id1, id2);
+
+    // action
+    instance.deleteNonPersistent(RELATION_TYPE, ids);
+
+    // verify
+    verifyZeroInteractions(neo4JStorageMock);
   }
 
   @Test

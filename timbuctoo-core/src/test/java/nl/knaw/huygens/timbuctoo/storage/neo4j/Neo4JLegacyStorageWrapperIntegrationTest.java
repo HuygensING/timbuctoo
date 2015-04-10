@@ -51,7 +51,6 @@ public class Neo4JLegacyStorageWrapperIntegrationTest extends StorageIntegration
   }
 
   @Test
-  @Ignore
   @Override
   public void deleteNonPersistentDomainEntityRemovesTheCompleteDomainEntity() throws Exception {
     // TODO Auto-generated method stub

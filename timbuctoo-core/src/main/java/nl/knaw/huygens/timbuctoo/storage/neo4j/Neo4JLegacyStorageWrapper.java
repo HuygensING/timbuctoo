@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 import java.util.Date;
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -108,10 +109,16 @@ public class Neo4JLegacyStorageWrapper implements Storage {
     neo4JStorage.deleteDomainEntity(type, id, change);
   }
 
+  // FIXME let this method find the non persistent and delete them. See TIM-145.
   @Override
   public <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
-
+    if (Relation.class.isAssignableFrom(type)) {
+      return;
+    }
+    Change change = Change.newInternalInstance();
+    for (String id : ids) {
+      neo4JStorage.deleteDomainEntity(TypeRegistry.toBaseDomainEntity(type), id, change);
+    }
   }
 
   @Override
