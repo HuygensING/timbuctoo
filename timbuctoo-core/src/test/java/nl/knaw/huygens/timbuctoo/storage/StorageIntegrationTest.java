@@ -867,7 +867,27 @@ public abstract class StorageIntegrationTest {
             .withTargetType(RELATION_SOURCE_TYPE) //
             .withTypeId(otherTypeId) //
             .isAccepted(ACCEPTED)));
+  }
 
+  @Test
+  public void getRelationIdsReturnsAListOfRelationIdsThatBelongToTheEntityIds() throws Exception {
+    // setup
+    String entityId1 = addDefaultProjectAPerson();
+    String entityId2 = addDefaultProjectAPerson();
+    String entityId3 = addDefaultProjectAPerson();
+    String entityId4 = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+
+    String relBetweenE1AndE2 = addDefaultRelation(entityId1, entityId2, typeId);
+    String relBetweenE2AndE3 = addDefaultRelation(entityId2, entityId3, typeId);
+    String relBetweenE3AndE4 = addDefaultRelation(entityId3, entityId4, typeId);
+
+    // action
+    List<String> foundIds = instance.getRelationIds(Lists.newArrayList(entityId1, entityId2));
+
+    // verify
+    assertThat(foundIds, containsInAnyOrder(relBetweenE1AndE2, relBetweenE2AndE3));
+    assertThat(foundIds, not(hasItem(relBetweenE3AndE4)));
   }
 
   @Test
