@@ -82,10 +82,12 @@ class Neo4JLowLevelAPI {
 
       Node nodeWithHighestRevision = null;
 
+      IsLatestVersionOfNode isLatestVersionOfNode = new IsLatestVersionOfNode();
+
       for (; iterator.hasNext();) {
         Node next = iterator.next();
 
-        if (newNodeHasHigherRevision(nodeWithHighestRevision, next) && !next.hasRelationship(INCOMING, VERSION_OF)) {
+        if (isLatestVersionOfNode.apply(next)) {
           nodeWithHighestRevision = next;
         }
       }
@@ -93,10 +95,6 @@ class Neo4JLowLevelAPI {
       transaction.success();
       return nodeWithHighestRevision;
     }
-  }
-
-  private boolean newNodeHasHigherRevision(Node nodeWithHighestRevision, Node next) {
-    return getRevisionProperty(next) > getRevisionProperty(nodeWithHighestRevision);
   }
 
   public <T extends Entity> Node getNodeWithRevision(Class<T> type, String id, int revision) {

@@ -117,10 +117,10 @@ public class Neo4JLowLevelAPITest {
     Node nodeWithThirdRevisionAndIncommingVersionOfRelationNode = nodeBuildWithThirdRevision.withIncomingRelationShip(versionOfRelationship).build();
 
     aNodeSearchResult().forLabel(DOMAIN_ENTITY_LABEL).andId(ID) //
-        .withPropertyContainer(aNode().withRevision(FIRST_REVISION).build()) //
+        .withPropertyContainer(aNode().withIncomingRelationShip(versionOfRelationship).withRevision(FIRST_REVISION).build()) //
         .andPropertyContainer(nodeWithThirdRevisionAndIncommingVersionOfRelationNode) //
         .andPropertyContainer(nodeWithThirdRevision) //
-        .andPropertyContainer(aNode().withRevision(SECOND_REVISION).build()) //
+        .andPropertyContainer(aNode().withIncomingRelationShip(versionOfRelationship).withRevision(SECOND_REVISION).build()) //
         .foundInDB(dbMock);
 
     // action
