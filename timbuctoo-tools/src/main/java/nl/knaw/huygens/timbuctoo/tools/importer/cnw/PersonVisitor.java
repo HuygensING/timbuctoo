@@ -602,14 +602,19 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 		}
 	}
 
+	Map<String, String> translations = ImmutableMap.of("onzeker", "Onzeker", "unknown", "Onbekend");
+
 	private class ValHandler extends CaptureHandler<PersonContext> {
 		@Override
 		public void handleContent(Element element, PersonContext context, String text) {
 			String greatgrandparent = element.getParent().getParent().getParent().getName();
+			if (!translations.containsKey(text)) {
+				LOG.error("unknown value {} for <val>", text);
+			}
 			if ("birth".equals(greatgrandparent)) {
-				context.person.setBirthDateQualifier(text);
+				context.person.setBirthDateQualifier(translations.get(text));
 			} else if ("death".equals(greatgrandparent)) {
-				context.person.setDeathDateQualifier(text);
+				context.person.setDeathDateQualifier(translations.get(text));
 			} else {
 				LOG.warn("unhandled <val> in {}/{}/{}", greatgrandparent, element.getParent().getParent().getName(), element.getParent().getName());
 			}
