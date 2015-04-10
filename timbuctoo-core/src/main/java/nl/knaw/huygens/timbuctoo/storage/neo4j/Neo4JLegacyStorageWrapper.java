@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -14,10 +15,13 @@ import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
 public class Neo4JLegacyStorageWrapper implements Storage {
 
+  private static final Class<Relation> RELATION_TYPE = Relation.class;
   private final Neo4JStorage neo4JStorage;
 
   @Inject
@@ -57,7 +61,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
-    if (Relation.class.isAssignableFrom(type)) {
+    if (RELATION_TYPE.isAssignableFrom(type)) {
       return neo4JStorage.addRelation((Class<? extends Relation>) type, (Relation) entity, change);
     } else {
       return neo4JStorage.addDomainEntity(type, entity, change);
@@ -72,7 +76,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
-    if (Relation.class.isAssignableFrom(type)) {
+    if (RELATION_TYPE.isAssignableFrom(type)) {
       neo4JStorage.updateRelation((Class<? extends Relation>) type, (Relation) entity, change);
     } else {
       neo4JStorage.updateDomainEntity(type, entity, change);
@@ -82,7 +86,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) throws StorageException {
-    if (Relation.class.isAssignableFrom(type)) {
+    if (RELATION_TYPE.isAssignableFrom(type)) {
       neo4JStorage.setRelationPID((Class<? extends Relation>) type, id, pid);
     } else {
       neo4JStorage.setDomainEntityPID(type, id, pid);
@@ -112,7 +116,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   // FIXME let this method find the non persistent and delete them. See TIM-145.
   @Override
   public <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws StorageException {
-    if (Relation.class.isAssignableFrom(type)) {
+    if (RELATION_TYPE.isAssignableFrom(type)) {
       return;
     }
     Change change = Change.newInternalInstance();
@@ -142,7 +146,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   @SuppressWarnings("unchecked")
   @Override
   public <T extends Entity> boolean entityExists(Class<T> type, String id) throws StorageException {
-    if (Relation.class.isAssignableFrom(type)) {
+    if (RELATION_TYPE.isAssignableFrom(type)) {
       return neo4JStorage.relationExists((Class<? extends Relation>) type, id);
     } else {
       return neo4JStorage.entityExists(type, id);
@@ -156,7 +160,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends Entity> T getEntity(Class<T> type, String id) throws StorageException {
-    if (Relation.class.isAssignableFrom(type)) {
+    if (RELATION_TYPE.isAssignableFrom(type)) {
       @SuppressWarnings("unchecked")
       T relationDomainEntity = (T) neo4JStorage.getRelation((Class<Relation>) type, id);
       return relationDomainEntity;
@@ -184,7 +188,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   @SuppressWarnings("unchecked")
   @Override
   public <T extends Entity> long count(Class<T> type) {
-    if (Relation.class.isAssignableFrom(type)) {
+    if (RELATION_TYPE.isAssignableFrom(type)) {
       return neo4JStorage.countRelations((Class<? extends Relation>) type);
     } else {
       return neo4JStorage.countEntities(type);
@@ -193,7 +197,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends Entity> T findItemByProperty(Class<T> type, String field, String value) throws StorageException {
-    if (Relation.class.isAssignableFrom(type)) {
+    if (RELATION_TYPE.isAssignableFrom(type)) {
       @SuppressWarnings("unchecked")
       T relation = (T) neo4JStorage.findRelationByProperty((Class<? extends Relation>) type, field, value);
       return relation;
@@ -210,7 +214,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> T getRevision(Class<T> type, String id, int revision) throws StorageException {
-    if (Relation.class.isAssignableFrom(type)) {
+    if (RELATION_TYPE.isAssignableFrom(type)) {
       return (T) neo4JStorage.getRelationRevision((Class<? extends Relation>) type, id, revision);
     } else {
       return neo4JStorage.getDomainEntityRevision(type, id, revision);
@@ -240,7 +244,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> List<String> getAllIdsWithoutPIDOfType(Class<T> type) throws StorageException {
-    if (Relation.class.isAssignableFrom(type)) {
+    if (RELATION_TYPE.isAssignableFrom(type)) {
       return neo4JStorage.getIdsOfNonPersistentRelations((Class<Relation>) type);
     } else {
       return neo4JStorage.getIdsOfNonPersistentDomainEntities(type);
@@ -249,7 +253,17 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   @Override
   public List<String> getRelationIds(List<String> ids) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    Set<String> relationIds = Sets.newHashSet();
+    for (String id : ids) {
+      StorageIterator<Relation> iterator = neo4JStorage.getRelationsByEntityId(RELATION_TYPE, id);
+
+      for (; iterator.hasNext();) {
+        relationIds.add(iterator.next().getId());
+      }
+
+    }
+
+    return Lists.newArrayList(relationIds);
   }
 
   @Override

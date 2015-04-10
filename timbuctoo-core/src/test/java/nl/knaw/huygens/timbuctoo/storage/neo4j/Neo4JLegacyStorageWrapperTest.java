@@ -4,7 +4,9 @@ import static nl.knaw.huygens.timbuctoo.storage.neo4j.SubADomainEntityBuilder.aD
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.SubARelationBuilder.aRelation;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.TestSystemEntityWrapperBuilder.aSystemEntity;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
@@ -20,6 +22,7 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
@@ -481,6 +484,44 @@ public class Neo4JLegacyStorageWrapperTest {
 
     // action
     instance.getRelationsByEntityId(RELATION_TYPE, ID);
+  }
+
+  @Test
+  public void getRelationIdsReturnsAListWithRelationsIdsThatBelongToTheEntities() throws Exception {
+    // setup
+    String relId1 = "relId1";
+    String relId2 = "relId2";
+    findsForIdRelationsWithId(ID, relId1, relId2);
+
+    String relId3 = "relId3";
+    String entityId2 = "entityId2";
+    findsForIdRelationsWithId(entityId2, relId3, relId2);
+
+    // action
+    List<String> foundIds = instance.getRelationIds(Lists.newArrayList(ID, entityId2));
+
+    // verify
+    assertThat(foundIds, hasSize(3));
+    assertThat(foundIds, containsInAnyOrder(relId1, relId2, relId3));
+  }
+
+  @Test(expected = StorageException.class)
+  public void getRelationsIdsThrowsAStorageExceptionWhenTheRetrievalCausesAnExceptionToBeThrown() throws Exception {
+    // setup
+    when(neo4JStorageMock.getRelationsByEntityId(Relation.class, ID)).thenThrow(new StorageException());
+
+    // action
+    instance.getRelationIds(Lists.newArrayList(ID));
+  }
+
+  private void findsForIdRelationsWithId(String entityId, String relId1, String relId2) throws StorageException {
+    @SuppressWarnings("unchecked")
+    StorageIterator<Relation> relationIterator = mock(StorageIterator.class);
+    SubARelation relation1 = aRelation().withId(relId1).build();
+    SubARelation relation2 = aRelation().withId(relId2).build();
+    when(relationIterator.hasNext()).thenReturn(true, true, false);
+    when(relationIterator.next()).thenReturn(relation1, relation2);
+    when(neo4JStorageMock.getRelationsByEntityId(Relation.class, entityId)).thenReturn(relationIterator);
   }
 
   @Test
