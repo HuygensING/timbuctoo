@@ -345,7 +345,7 @@ public class CNWPerson extends Person {
 		this.cnwBirthYear = new Datable(String.valueOf(cnwBirthYear));
 	}
 
-	@IndexAnnotation(fieldName = "dynamic_i_birthyear", facetType = FacetType.RANGE, isFaceted = true)
+	@IndexAnnotation(fieldName = "dynamic_i_birthyear", title = "Geboortejaar", facetType = FacetType.RANGE, isFaceted = true)
 	public Datable getCnwBirthYear() {
 		return cnwBirthYear;
 	}
@@ -354,7 +354,7 @@ public class CNWPerson extends Person {
 		birthdateQualifier = qualifier;
 	}
 
-	@IndexAnnotation(fieldName = "dynamic_i_deathyear", facetType = FacetType.RANGE, isFaceted = true)
+	@IndexAnnotation(fieldName = "dynamic_i_deathyear", title = "Sterfjaar", facetType = FacetType.RANGE, isFaceted = true)
 	public Datable getCnwDeathYear() {
 		return cnwDeathYear;
 	}
