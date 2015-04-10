@@ -335,9 +335,30 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 	private class DomeinHandler extends CaptureHandler<PersonContext> {
 		@Override
 		public void handleContent(Element element, PersonContext context, String text) {
-			context.person.getDomains().add(denormalized(text, "domains"));
+			String denormalized = denormalized(text, "domains");
+			context.person.getDomains().add(denormalized);
+			context.person.getCombinedDomains().add(denormalized);
 		}
 	}
+
+	Map<String, String> subdomainExtension = ImmutableMap.<String, String> builder()//
+			.put("Visuele kunsten", "Beeldende kunsten/Visuele kunsten") //
+			.put("Beeldhouwkunst", "Beeldende kunsten/Beeldhouwkunst") //
+			.put("Toegepaste kunst", "Beeldende kunsten/Toegepaste kunst") //
+			.put("Architectuur", "Beeldende kunsten/Architectuur") //
+			.put("Letteren", "Letteren en Taal/Letteren") //
+			.put("Taal", "Letteren en Taal/Taal") //
+			.put("Familie", "Maatschappij/Familie") //
+			.put("Biologie en Microbiologie", "Natuurwetenschappen/Biologie en Microbiologie") //
+			.put("Botanie", "Natuurwetenschappen/Botanie") //
+			.put("Astronomie", "Natuurwetenschappen/Astronomie") //
+			.put("Scheikunde", "Natuurwetenschappen/Scheikunde") //
+			.put("Wiskunde", "Natuurwetenschappen/Wiskunde") //
+			.put("Natuurkunde", "Natuurwetenschappen/Natuurkunde") //
+			.put("Industrie", "Economie en Financiën/Industrie") //
+			.put("Midden- en kleinbedrijf", "Economie en Financiën/Midden- en kleinbedrijf") //
+			.put("Financiën", "Economie en Financiën/Financiën") //
+			.build();
 
 	private class SubDomainHandler extends CaptureHandler<PersonContext> {
 		@Override
@@ -345,6 +366,9 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 			String denormalized = denormalized(text, "subdomains");
 			if (denormalized != null) {
 				context.person.getSubDomains().add(denormalized);
+				if (subdomainExtension.containsKey(denormalized)) {
+					context.person.getCombinedDomains().add(denormalized);
+				}
 			}
 		}
 	}

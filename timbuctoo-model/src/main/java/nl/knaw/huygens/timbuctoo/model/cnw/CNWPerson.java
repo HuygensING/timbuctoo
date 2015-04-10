@@ -24,6 +24,7 @@ public class CNWPerson extends Person {
 	private String koppelnaam = "";
 	private List<String> networkDomains = Lists.newArrayList();
 
+	private List<String> combinedDomains = Lists.newArrayList();
 	private List<String> domains = Lists.newArrayList();
 	private List<String> subdomains = Lists.newArrayList();
 	private List<String> characteristics = Lists.newArrayList();
@@ -109,6 +110,15 @@ public class CNWPerson extends Person {
 
 	public void setDbnlUrl(String dbnlUrl) {
 		this.dbnlUrl = dbnlUrl;
+	}
+
+	public void setCombinedDomains(List<String> combineddomains) {
+		this.combinedDomains = combineddomains;
+	}
+
+	@IndexAnnotation(title = "Domein/Subdomein", fieldName = "dynamic_s_combineddomain", canBeEmpty = false, isFaceted = true)
+	public List<String> getCombinedDomains() {
+		return combinedDomains;
 	}
 
 	public void setDomains(List<String> domains) {
