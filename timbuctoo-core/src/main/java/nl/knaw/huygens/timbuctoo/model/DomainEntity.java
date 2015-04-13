@@ -49,6 +49,8 @@ public abstract class DomainEntity extends Entity {
   public static final String DELETED = "^deleted";
   public static final String VARIATIONS = "^variations";
 
+  @JsonProperty("^displayName")
+  private String displayName; // Used for demo purposes with Neo4J database.
   private String pid; // the persistent identifier.
   private boolean deleted;
   private int relationCount;
@@ -235,6 +237,14 @@ public abstract class DomainEntity extends Entity {
 
   protected void addItemToRepresentation(Map<String, String> data, String key, Object value) {
     data.put(key, (value != null) ? value.toString() : "");
+  }
+
+  public String getDisplayName() {
+    return displayName;
+  }
+
+  public void setDisplayName(String displayName) {
+    this.displayName = displayName;
   }
 
 }

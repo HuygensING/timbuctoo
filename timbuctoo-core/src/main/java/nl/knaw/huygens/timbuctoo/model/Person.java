@@ -171,6 +171,8 @@ public class Person extends DomainEntity {
   public void addName(PersonName name) {
     if (name != null) {
       names.list.add(name);
+
+      setDisplayName(getIdentificationName());
     }
   }
 

@@ -45,6 +45,7 @@ public class Location extends DomainEntity {
   private static class Names {
     public String defLang;
     public Map<String, PlaceName> map;
+
     public Names() {
       map = Maps.newHashMap();
     }
@@ -112,6 +113,8 @@ public class Location extends DomainEntity {
   @JsonProperty("^names")
   public void setNames(Map<String, PlaceName> value) {
     names.map = value;
+    setDisplayName(getIndexedName());
+
   }
 
   public void addName(String lang, PlaceName name) {

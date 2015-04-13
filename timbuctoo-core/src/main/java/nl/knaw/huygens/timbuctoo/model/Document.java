@@ -94,6 +94,7 @@ public class Document extends DomainEntity {
 
   public void setTitle(String title) {
     this.title = title;
+    setDisplayName(title);
   }
 
   public String getDescription() {

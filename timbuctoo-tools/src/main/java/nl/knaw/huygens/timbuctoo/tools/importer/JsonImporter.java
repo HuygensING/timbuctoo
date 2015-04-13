@@ -55,173 +55,173 @@ import com.google.inject.Injector;
  */
 public class JsonImporter extends CSVImporter {
 
-	private static final Logger LOG = LoggerFactory.getLogger(JsonImporter.class);
+  private static final Logger LOG = LoggerFactory.getLogger(JsonImporter.class);
 
-	private static final String DEFAULT_VRE_ID = "base";
-	private static final String IMPORT_DIRECTORY_NAME = "../../timbuctoo-testdata/src/main/resources/import/";
-	private static final String CONTROL_FILE_NAME = "import.txt";
+  private static final String DEFAULT_VRE_ID = "base";
+  private static final String IMPORT_DIRECTORY_NAME = "../../timbuctoo-testdata/src/main/resources/import/";
+  private static final String CONTROL_FILE_NAME = "import.txt";
 
-	public static void main(String[] args) throws Exception {
-		Stopwatch stopWatch = Stopwatch.createStarted();
+  public static void main(String[] args) throws Exception {
+    Stopwatch stopWatch = Stopwatch.createStarted();
 
-		String vreId = (args.length > 0) ? args[0] : DEFAULT_VRE_ID;
-		LOG.info("VRE: {}", vreId);
+    String vreId = (args.length > 0) ? args[0] : DEFAULT_VRE_ID;
+    LOG.info("VRE: {}", vreId);
 
-		String directoryName = (args.length > 1) ? args[1] : IMPORT_DIRECTORY_NAME + vreId + "/";
-		LOG.info("Import directory: {}", directoryName);
+    String directoryName = (args.length > 1) ? args[1] : IMPORT_DIRECTORY_NAME + vreId + "/";
+    LOG.info("Import directory: {}", directoryName);
 
-		Injector injector = ToolsInjectionModule.createInjector();
-		Repository repository = injector.getInstance(Repository.class);
-		IndexManager indexManager = injector.getInstance(IndexManager.class);
+    Injector injector = ToolsInjectionModule.createInjectorWithoutSolr();
+    Repository repository = injector.getInstance(Repository.class);
+    IndexManager indexManager = injector.getInstance(IndexManager.class);
 
-		try {
-			File directory = new File(directoryName);
-			File file = new File(directory, CONTROL_FILE_NAME);
-			JsonImporter importer = new JsonImporter(repository, indexManager, vreId, directory);
-			importer.handleFile(file, 2, false);
-		} finally {
-			indexManager.close();
-			repository.close();
-			LOG.info("Time used: {}", stopWatch);
-		}
-	}
+    try {
+      File directory = new File(directoryName);
+      File file = new File(directory, CONTROL_FILE_NAME);
+      JsonImporter importer = new JsonImporter(repository, indexManager, vreId, directory);
+      importer.handleFile(file, 2, false);
+    } finally {
+      indexManager.close();
+      repository.close();
+      LOG.info("Time used: {}", stopWatch);
+    }
+  }
 
-	// ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
 
-	private final TypeRegistry registry;
-	private final File directory;
-	private final Handler handler;
+  private final TypeRegistry registry;
+  private final File directory;
+  private final Handler handler;
 
-	public JsonImporter(Repository repository, IndexManager indexManager, String vreId, File directory) {
-		registry = repository.getTypeRegistry();
-		this.directory = directory;
-		handler = new Handler(repository, indexManager, vreId);
-	}
+  public JsonImporter(Repository repository, IndexManager indexManager, String vreId, File directory) {
+    registry = repository.getTypeRegistry();
+    this.directory = directory;
+    handler = new Handler(repository, indexManager, vreId);
+  }
 
-	@Override
-	protected void initialize() throws Exception {
-		handler.importRelationTypes();
-	}
+  @Override
+  protected void initialize() throws Exception {
+    handler.importRelationTypes();
+  }
 
-	@Override
-	protected void handleLine(String[] items) throws Exception {
-		File file = new File(directory, items[0]);
-		Class<? extends DomainEntity> type = registry.getDomainEntityType(items[1]);
-		handler.handleFile(file, type);
-	}
+  @Override
+  protected void handleLine(String[] items) throws Exception {
+    File file = new File(directory, items[0]);
+    Class<? extends DomainEntity> type = registry.getDomainEntityType(items[1]);
+    handler.handleFile(file, type);
+  }
 
-	@Override
-	protected void handleEndOfFile() throws Exception {
-		handler.indexEntitiesWithRelations();
-		handler.displayErrorSummary();
-		handler.displayStatus();
-	};
+  @Override
+  protected void handleEndOfFile() throws Exception {
+    handler.indexEntitiesWithRelations();
+    handler.displayErrorSummary();
+    handler.displayStatus();
+  };
 
-	// ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
 
-	private static class Handler extends DefaultImporter {
+  private static class Handler extends DefaultImporter {
 
-		/** References of stored primitive entities */
-		private final Map<String, Reference> references;
-		private final ObjectMapper mapper;
+    /** References of stored primitive entities */
+    private final Map<String, Reference> references;
+    private final ObjectMapper mapper;
 
-		public Handler(Repository repository, IndexManager indexManager, String vreId) {
-			super(repository, indexManager, vreId);
-			references = Maps.newHashMap();
-			mapper = new ObjectMapper();
-		}
+    public Handler(Repository repository, IndexManager indexManager, String vreId) {
+      super(repository, indexManager, vreId);
+      references = Maps.newHashMap();
+      mapper = new ObjectMapper();
+    }
 
-		private void storeReference(String key, Class<? extends DomainEntity> type, String id) {
-			Reference reference = new Reference(TypeRegistry.toBaseDomainEntity(type), id);
-			if (references.put(key, reference) != null) {
-				log("Duplicate key '%s'%n", key);
-				System.exit(-1);
-			}
-		}
+    private void storeReference(String key, Class<? extends DomainEntity> type, String id) {
+      Reference reference = new Reference(TypeRegistry.toBaseDomainEntity(type), id);
+      if (references.put(key, reference) != null) {
+        log("Duplicate key '%s'%n", key);
+        System.exit(-1);
+      }
+    }
 
-		public <T extends DomainEntity> void handleFile(File file, Class<T> type) throws Exception {
-			printBoxedText("File: " + file.getName());
+    public <T extends DomainEntity> void handleFile(File file, Class<T> type) throws Exception {
+      printBoxedText("File: " + file.getName());
 
-			// Get rid of existing stuff
-			removeNonPersistentEntities(type);
+      // Get rid of existing stuff
+      removeNonPersistentEntities(type);
 
-			Progress progress = new Progress();
-			LineIterator iterator = Files.getLineIterator(file);
-			try {
-				while (iterator.hasNext()) {
-					String line = iterator.nextLine().trim();
-					if (!line.isEmpty()) {
-						progress.step();
-						handleEntity(type, line);
-					}
-				}
-			} finally {
-				LineIterator.closeQuietly(iterator);
-				progress.done();
-			}
-		}
+      Progress progress = new Progress();
+      LineIterator iterator = Files.getLineIterator(file);
+      try {
+        while (iterator.hasNext()) {
+          String line = iterator.nextLine().trim();
+          if (!line.isEmpty()) {
+            progress.step();
+            handleEntity(type, line);
+          }
+        }
+      } finally {
+        LineIterator.closeQuietly(iterator);
+        progress.done();
+      }
+    }
 
-		private <T extends DomainEntity> void handleEntity(Class<T> type, String line) throws Exception {
-			if (Relation.class.isAssignableFrom(type)) {
-				@SuppressWarnings("unchecked")
-				Class<? extends Relation> rtype = (Class<? extends Relation>) type;
-				handleRelation(rtype, line);
-			} else {
-				handleNonRelation(type, line);
-			}
-		}
+    private <T extends DomainEntity> void handleEntity(Class<T> type, String line) throws Exception {
+      if (Relation.class.isAssignableFrom(type)) {
+        @SuppressWarnings("unchecked")
+        Class<? extends Relation> rtype = (Class<? extends Relation>) type;
+        handleRelation(rtype, line);
+      } else {
+        handleNonRelation(type, line);
+      }
+    }
 
-		// First implementation: expect definition in terms of id's
-		private <T extends Relation> void handleRelation(Class<T> type, String line) throws Exception {
-			RelationDTO dto = mapper.readValue(line, RelationDTO.class);
+    // First implementation: expect definition in terms of id's
+    private <T extends Relation> void handleRelation(Class<T> type, String line) throws Exception {
+      RelationDTO dto = mapper.readValue(line, RelationDTO.class);
 
       RelationType relationType = repository.getRelationTypeByName(dto.getTypeName(), true);
-			Reference typeRef = new Reference(type, relationType.getId());
-			Reference sourceRef = resolveEntity(dto.getSourceType(), dto.getSourceKey(), dto.getSourceValue());
-			Reference targetRef = resolveEntity(dto.getTargetType(), dto.getTargetKey(), dto.getTargetValue());
+      Reference typeRef = new Reference(type, relationType.getId());
+      Reference sourceRef = resolveEntity(dto.getSourceType(), dto.getSourceKey(), dto.getSourceValue());
+      Reference targetRef = resolveEntity(dto.getTargetType(), dto.getTargetKey(), dto.getTargetValue());
 
-			if (typeRef != null && sourceRef != null && targetRef != null) {
-				String storedId = addRelation(type, typeRef, sourceRef, targetRef, change, line);
-				indexManager.addEntity(type, storedId);
-			} else {
-				System.err.printf("Error in: %s%n", line);
-			}
-		}
+      if (typeRef != null && sourceRef != null && targetRef != null) {
+        String storedId = addRelation(type, typeRef, sourceRef, targetRef, change, line);
+        indexManager.addEntity(type, storedId);
+      } else {
+        System.err.printf("Error in: %s%n", line);
+      }
+    }
 
-		private Reference resolveEntity(String iname, String key, String value) {
-			return references.get(value);
-		}
+    private Reference resolveEntity(String iname, String key, String value) {
+      return references.get(value);
+    }
 
-		private <T extends DomainEntity> void handleNonRelation(Class<T> type, String line) throws Exception {
-			//			LOG.info("line={}", line);
-			T entity = mapper.readValue(line, type);
-			String importId = entity.getId();
-			String storedId = addDomainEntity(type, entity);
-			if (importId != null) {
-				storeReference(importId, type, storedId);
-			} else {
-				// has no new relations, index immediately
-				indexManager.addEntity(type, storedId);
-			}
-		}
+    private <T extends DomainEntity> void handleNonRelation(Class<T> type, String line) throws Exception {
+      //			LOG.info("line={}", line);
+      T entity = mapper.readValue(line, type);
+      String importId = entity.getId();
+      String storedId = addDomainEntity(type, entity);
+      if (importId != null) {
+        storeReference(importId, type, storedId);
+      } else {
+        // has no new relations, index immediately
+        indexManager.addEntity(type, storedId);
+      }
+    }
 
-		private void indexEntitiesWithRelations() throws Exception {
-			if (!references.isEmpty()) {
-				printBoxedText("Index entities");
-				TypeRegistry registry = repository.getTypeRegistry();
-				Progress progress = new Progress();
-				try {
-					for (Reference reference : references.values()) {
-						progress.step();
-						String iname = reference.getType();
-						Class<? extends DomainEntity> type = registry.getDomainEntityType(iname);
-						indexManager.addEntity(type, reference.getId());
-					}
-				} finally {
-					progress.done();
-				}
-			}
-		}
-	}
+    private void indexEntitiesWithRelations() throws Exception {
+      if (!references.isEmpty()) {
+        printBoxedText("Index entities");
+        TypeRegistry registry = repository.getTypeRegistry();
+        Progress progress = new Progress();
+        try {
+          for (Reference reference : references.values()) {
+            progress.step();
+            String iname = reference.getType();
+            Class<? extends DomainEntity> type = registry.getDomainEntityType(iname);
+            indexManager.addEntity(type, reference.getId());
+          }
+        } finally {
+          progress.done();
+        }
+      }
+    }
+  }
 
 }

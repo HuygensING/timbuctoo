@@ -52,6 +52,7 @@ public class Keyword extends DomainEntity {
 
   public void setValue(String value) {
     this.value = value;
+    setDisplayName(value);
   }
 
 }

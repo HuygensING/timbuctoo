@@ -68,6 +68,7 @@ public class Collective extends DomainEntity {
 
   public void setName(String name) {
     this.name = name;
+    setDisplayName(name);
   }
 
   public String getAcronym() {

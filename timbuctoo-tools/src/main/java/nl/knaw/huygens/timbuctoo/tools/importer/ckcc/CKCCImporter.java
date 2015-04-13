@@ -87,7 +87,7 @@ public class CKCCImporter extends DefaultImporter {
 
     CKCCImporter importer = null;
     try {
-      Injector injector = ToolsInjectionModule.createInjector();
+      Injector injector = ToolsInjectionModule.createInjectorWithoutSolr();
       Repository repository = injector.getInstance(Repository.class);
       IndexManager indexManager = injector.getInstance(IndexManager.class);
 

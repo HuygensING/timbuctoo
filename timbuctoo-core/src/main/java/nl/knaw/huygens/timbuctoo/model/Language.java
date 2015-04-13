@@ -68,6 +68,7 @@ public class Language extends DomainEntity {
 
   public void setName(String name) {
     this.name = name;
+    setDisplayName(name);
   }
 
   public boolean isCore() {

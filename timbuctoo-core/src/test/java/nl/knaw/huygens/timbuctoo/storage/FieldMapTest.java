@@ -24,9 +24,9 @@ package nl.knaw.huygens.timbuctoo.storage;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 
 import java.util.Set;
 
@@ -53,7 +53,7 @@ public class FieldMapTest {
   @Test
   public void testSimpleDomainEntityFields() {
     Set<String> names = FieldMap.getInstance(DomainEntity.class).keySet();
-    assertThat(names, containsInAnyOrder("^pid", "^deleted", "^variations"));
+    assertThat(names, containsInAnyOrder("^pid", "^deleted", "^variations", "^displayName"));
     assertThat(names, not(contains("@properties")));
     assertThat(names, not(contains("@relations")));
     assertThat(names, not(contains("@relationCount")));
@@ -62,7 +62,7 @@ public class FieldMapTest {
   @Test
   public void testCombinedDomainEntityFields() {
     Set<String> names = FieldMap.getCombinedInstance(DomainEntity.class, Entity.class).keySet();
-    assertThat(names, containsInAnyOrder("_id", "^rev", "^created", "^modified", "^pid", "^deleted", "^variations"));
+    assertThat(names, containsInAnyOrder("_id", "^rev", "^created", "^modified", "^pid", "^deleted", "^variations", "^displayName"));
   }
 
   @Test
@@ -72,7 +72,7 @@ public class FieldMapTest {
   }
 
   // ---------------------------------------------------------------------------
-  
+
   private static final Class<? extends Entity> TYPE = MongoObjectMapperEntity.class;
 
   @Test
