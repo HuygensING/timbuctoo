@@ -309,11 +309,43 @@ public class Neo4JStorage {
   /**
    * Update a DomainEntity with a new variant.
    * @param type the type of the variant
-   * @param entity the instance of the variant
+   * @param variant the variant to add
    * @param change the update change
+   * @throws StorageException when the variant cannot be added
    */
-  public <T extends DomainEntity> void addVariant(Class<T> type, T entity, Change change) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+  @SuppressWarnings("unchecked")
+  public <T extends DomainEntity> void addVariant(Class<T> type, T variant, Change change) throws StorageException {
+    try (Transaction transaction = db.beginTx()) {
+      String id = variant.getId();
+
+      if (entityExists(type, id)) {
+        transaction.failure();
+        throw new UpdateException(String.format("Variant \"%s\" cannot be added when it already exists.", type));
+      }
+
+      Class<? extends DomainEntity> baseType = TypeRegistry.toBaseDomainEntity(type);
+      Node node = neo4jLowLevelAPI.getLatestNodeById(baseType, id);
+
+      if (node == null) {
+        transaction.failure();
+        throw new NoSuchEntityException(baseType, id);
+      }
+
+      if (getRevisionProperty(node) != variant.getRev()) {
+        transaction.failure();
+        throw new UpdateException(revisionNotFoundMessage((Class<? super T>) baseType, variant, variant.getRev()));
+      }
+
+      // update administrative values
+      removePID(variant);
+      updateAdministrativeValues(variant);
+
+      NodeConverter<T> converter = propertyContainerConverterFactory.createForType(type);
+      converter.addValuesToPropertyContainer(node, variant);
+      converter.updateModifiedAndRev(node, variant);
+
+      transaction.success();
+    }
   }
 
   @SuppressWarnings("unchecked")
@@ -355,7 +387,7 @@ public class Neo4JStorage {
     updateRevision(entity);
   }
 
-  private <T extends Entity> String revisionNotFoundMessage(Class<T> type, T entity, int actualLatestRev) {
+  private <T extends Entity> String revisionNotFoundMessage(Class<? super T> type, T entity, int actualLatestRev) {
     return String.format("\"%s\" with id \"%s\" and revision \"%d\" found. Revision \"%d\" wanted.", type.getSimpleName(), entity.getId(), entity.getRev(), actualLatestRev);
   }
 

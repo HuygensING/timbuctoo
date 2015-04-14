@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -394,7 +395,7 @@ public class Neo4JStorageTest {
     Node nodeMock = aNode().withRevision(FIRST_REVISION).build();
     latestNodeFoundFor(DOMAIN_ENTITY_TYPE, ID, nodeMock);
 
-    NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);;
+    NodeConverter<SubADomainEntity> domainEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
 
     Change oldModified = CHANGE;
     SubADomainEntity domainEntity = aDomainEntity() //
@@ -483,6 +484,118 @@ public class Neo4JStorageTest {
     try {
       // action
       instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
+    } finally {
+      // verify
+      verify(transactionMock).failure();
+    }
+  }
+
+  @Test
+  public void addVariantAddsANewVariantToTheExistingNodeOfTheBaseType() throws Exception {
+    // setup
+    SubADomainEntity entity = aDomainEntity().withId(ID).withRev(FIRST_REVISION).build();
+    Node node = aNode().withId(ID).withRevision(FIRST_REVISION).build();
+    when(neo4JLowLevelAPIMock.getLatestNodeById(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(node);
+
+    NodeConverter<SubADomainEntity> nodeConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
+
+    // action
+    instance.addVariant(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+
+    // verify
+    verify(nodeConverterMock).addValuesToPropertyContainer(node, entity);
+    verify(nodeConverterMock).updateModifiedAndRev(node, entity);
+    verify(transactionMock, atLeastOnce()).success();
+  }
+
+  @Test
+  public void addVariantAddsUpdatesTheAdministrativeValuesBeforeAddingTheValuesToTheNode() throws Exception {
+    // setup
+    SubADomainEntity entityWithPID = aDomainEntity()//
+        .withAPid()//
+        .withId(ID)//
+        .withRev(FIRST_REVISION)//
+        .build();
+    Node node = aNode().withId(ID).withRevision(FIRST_REVISION).build();
+    when(neo4JLowLevelAPIMock.getLatestNodeById(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(node);
+
+    NodeConverter<SubADomainEntity> nodeConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
+
+    // action
+    instance.addVariant(DOMAIN_ENTITY_TYPE, entityWithPID, CHANGE);
+
+    // verify
+    verify(nodeConverterMock).addValuesToPropertyContainer(//
+        argThat(equalTo(node)), //
+        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
+            .withAModifiedValueNotEqualTo(CHANGE) //
+            .withRevision(SECOND_REVISION)//
+            .withoutAPID()));
+    verify(nodeConverterMock).updateModifiedAndRev(//
+        argThat(equalTo(node)), //
+        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
+            .withAModifiedValueNotEqualTo(CHANGE) //
+            .withRevision(SECOND_REVISION)//
+            .withoutAPID()));
+    verify(transactionMock, atLeastOnce()).success();
+  }
+
+  @Test(expected = NoSuchEntityException.class)
+  public void addVariantThrowsANoSuchEntityExceptionWhenTheEntityDoesNotExist() throws Exception {
+    // setup
+    when(neo4JLowLevelAPIMock.getLatestNodeById(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(null);
+
+    try {
+      // action
+      instance.addVariant(DOMAIN_ENTITY_TYPE, aDomainEntity().build(), CHANGE);
+    } finally {
+      // verify
+      verify(transactionMock).failure();
+    }
+  }
+
+  @Test(expected = UpdateException.class)
+  public void addVariantThrowsAnUpdateExceptionWhenRevisionIsHigherThanTheRevisionOfTheNode() throws Exception {
+    // setup
+    SubADomainEntity entity = aDomainEntity().withId(ID).withRev(SECOND_REVISION).build();
+    Node node = aNode().withId(ID).withRevision(FIRST_REVISION).build();
+    when(neo4JLowLevelAPIMock.getLatestNodeById(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(node);
+
+    try {
+      // action
+      instance.addVariant(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+    } finally {
+      // verify
+      verify(transactionMock).failure();
+    }
+  }
+
+  @Test(expected = UpdateException.class)
+  public void addVariantThrowsAnUpdateExceptionWhenRevisionIsLowerThanTheRevisionOfTheNode() throws Exception {
+    // setup
+    SubADomainEntity entity = aDomainEntity().withId(ID).withRev(FIRST_REVISION).build();
+    Node node = aNode().withId(ID).withRevision(SECOND_REVISION).build();
+    when(neo4JLowLevelAPIMock.getLatestNodeById(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(node);
+
+    try {
+      // action
+      instance.addVariant(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+    } finally {
+      // verify
+      verify(transactionMock).failure();
+    }
+  }
+
+  @Test(expected = UpdateException.class)
+  public void addVariantThrowsAnUpdateExceptionWhenTheEntityAlreadyContainsTheVariant() throws Exception {
+    // setup
+    SubADomainEntity entity = aDomainEntity().withId(ID).withRev(FIRST_REVISION).build();
+    Node node = aNode().withId(ID).withLabel(DOMAIN_ENTITY_LABEL).withRevision(FIRST_REVISION).build();
+    when(neo4JLowLevelAPIMock.getLatestNodeById(DOMAIN_ENTITY_TYPE, ID)).thenReturn(node);
+
+    try {
+      // action
+      instance.addVariant(DOMAIN_ENTITY_TYPE, entity, CHANGE);
     } finally {
       // verify
       verify(transactionMock).failure();

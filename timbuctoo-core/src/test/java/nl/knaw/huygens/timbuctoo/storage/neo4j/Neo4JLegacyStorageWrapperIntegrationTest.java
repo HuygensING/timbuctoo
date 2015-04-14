@@ -236,7 +236,6 @@ public class Neo4JLegacyStorageWrapperIntegrationTest extends StorageIntegration
     super.getRelationIdsReturnsAListOfRelationIdsThatBelongToTheEntityIds();
   }
 
-  @Ignore
   @Test
   @Override
   public void updateDomainEntityWithADifferentTypeAddsTheNewFields() throws Exception {
