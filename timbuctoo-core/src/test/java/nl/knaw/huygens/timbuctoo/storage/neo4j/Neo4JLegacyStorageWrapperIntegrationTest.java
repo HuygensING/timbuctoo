@@ -112,9 +112,9 @@ public class Neo4JLegacyStorageWrapperIntegrationTest extends StorageIntegration
 
   @Test
   @Override
-  public void updateDomainIncreasesTheRevisionNumberAndChangesTheDomainEntityButDoesNotCreateANewVersion() throws Exception {
+  public void updateDomainEntityIncreasesTheRevisionNumberAndChangesTheDomainEntityButDoesNotCreateANewVersion() throws Exception {
     // TODO Auto-generated method stub
-    super.updateDomainIncreasesTheRevisionNumberAndChangesTheDomainEntityButDoesNotCreateANewVersion();
+    super.updateDomainEntityIncreasesTheRevisionNumberAndChangesTheDomainEntityButDoesNotCreateANewVersion();
   }
 
   @Test
@@ -234,6 +234,13 @@ public class Neo4JLegacyStorageWrapperIntegrationTest extends StorageIntegration
   @Override
   public void getRelationIdsReturnsAListOfRelationIdsThatBelongToTheEntityIds() throws Exception {
     super.getRelationIdsReturnsAListOfRelationIdsThatBelongToTheEntityIds();
+  }
+
+  @Ignore
+  @Test
+  @Override
+  public void updateDomainEntityWithADifferentTypeAddsTheNewFields() throws Exception {
+    super.updateDomainEntityWithADifferentTypeAddsTheNewFields();
   }
 
 }

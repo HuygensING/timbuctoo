@@ -27,6 +27,7 @@ import static nl.knaw.huygens.timbuctoo.storage.PersonMatcher.likeProjectAPerson
 import static nl.knaw.huygens.timbuctoo.storage.RelationMatcher.likeRelation;
 import static nl.knaw.huygens.timbuctoo.storage.RelationTypeMatcher.matchesRelationType;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -314,7 +315,7 @@ public abstract class StorageIntegrationTest {
   }
 
   @Test
-  public void updateDomainIncreasesTheRevisionNumberAndChangesTheDomainEntityButDoesNotCreateANewVersion() throws Exception {
+  public void updateDomainEntityIncreasesTheRevisionNumberAndChangesTheDomainEntityButDoesNotCreateANewVersion() throws Exception {
     String id = addDefaultProjectAPerson();
 
     // Store the entity
@@ -349,6 +350,32 @@ public abstract class StorageIntegrationTest {
     int secondRevision = updatedEntity.getRev();
     assertThat("No revision should be created for version 2",//
         instance.getRevision(DOMAIN_ENTITY_TYPE, id, secondRevision), is(nullValue()));
+  }
+
+  // FIXME this is a hack with Mongo update and should eventually be extracted to a different method.
+  // see TIM-156
+  @Test
+  public void updateDomainEntityWithADifferentTypeAddsTheNewFields() throws Exception {
+    // setup
+    String id = addDefaultProjectAPerson();
+
+    ProjectAPerson projectAPerson = instance.getEntity(ProjectAPerson.class, id);
+
+    ProjectBPerson projectBPerson = new ProjectBPerson();
+    projectBPerson.addName(PERSON_NAME2);
+    projectBPerson.setBirthDate(BIRTH_DATE2);
+    projectBPerson.setId(projectAPerson.getId());
+    projectBPerson.setRev(projectAPerson.getRev());
+
+    // action
+    instance.updateDomainEntity(ProjectBPerson.class, projectBPerson, UPDATE_CHANGE);
+
+    // verify
+    ProjectBPerson foundProjectBPerson = instance.getEntity(ProjectBPerson.class, id);
+
+    assertThat(foundProjectBPerson.getNames(), contains(PERSON_NAME2));
+    assertThat(foundProjectBPerson.getBirthDate(), is(BIRTH_DATE2));
+
   }
 
   @Test
