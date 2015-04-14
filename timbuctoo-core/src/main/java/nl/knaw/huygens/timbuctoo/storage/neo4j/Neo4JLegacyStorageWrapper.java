@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -79,8 +80,22 @@ public class Neo4JLegacyStorageWrapper implements Storage {
     if (RELATION_TYPE.isAssignableFrom(type)) {
       neo4JStorage.updateRelation((Class<? extends Relation>) type, (Relation) entity, change);
     } else {
-      neo4JStorage.updateDomainEntity(type, entity, change);
+      if (baseTypeExists(type, entity) && variantExists(type, entity)) {
+        neo4JStorage.updateDomainEntity(type, entity, change);
+      } else if (baseTypeExists(type, entity)) {
+        neo4JStorage.addVariant(type, entity, change);
+      } else {
+        throw new UpdateException(String.format("%s with id %s does not exist.", type, entity.getId()));
+      }
     }
+  }
+
+  private <T extends DomainEntity> boolean variantExists(Class<T> type, T entity) {
+    return neo4JStorage.entityExists(type, entity.getId());
+  }
+
+  private <T extends DomainEntity> boolean baseTypeExists(Class<T> type, T entity) {
+    return neo4JStorage.entityExists(TypeRegistry.getBaseClass(type), entity.getId());
   }
 
   @SuppressWarnings("unchecked")

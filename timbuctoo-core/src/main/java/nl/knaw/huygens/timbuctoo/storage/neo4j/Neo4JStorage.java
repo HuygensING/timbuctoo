@@ -306,6 +306,16 @@ public class Neo4JStorage {
     }
   }
 
+  /**
+   * Update a DomainEntity with a new variant.
+   * @param type the type of the variant
+   * @param entity the instance of the variant
+   * @param change the update change
+   */
+  public <T extends DomainEntity> void addVariant(Class<T> type, T entity, Change change) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
   @SuppressWarnings("unchecked")
   public <T extends Relation> void updateRelation(Class<T> type, Relation relation, Change change) throws StorageException {
 
@@ -652,6 +662,12 @@ public class Neo4JStorage {
     }
   }
 
+  /**
+   * Checks if a certain variant with a certain id exists.
+   * @param type the type of the variant
+   * @param id the id of the variant
+   * @return true if it exists, false if not
+   */
   public boolean entityExists(Class<? extends Entity> type, String id) {
     try (Transaction transaction = db.beginTx()) {
       boolean exists = propertyContainerExists(neo4jLowLevelAPI.getLatestNodeById(type, id));
@@ -747,4 +763,5 @@ public class Neo4JStorage {
       return !input.hasProperty(PID_PROPERTY_NAME);
     }
   }
+
 }

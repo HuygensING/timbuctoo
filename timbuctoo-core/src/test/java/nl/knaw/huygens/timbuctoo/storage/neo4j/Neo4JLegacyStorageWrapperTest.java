@@ -26,6 +26,7 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyContainerConverterFactory;
 
 import org.junit.Before;
@@ -190,7 +191,8 @@ public class Neo4JLegacyStorageWrapperTest {
   @Test
   public void updateDomainEntityDelegatesToNeo4JStorage() throws Exception {
     // setup
-    SubADomainEntity entity = aDomainEntity().build();
+    SubADomainEntity entity = aDomainEntity().withId(ID).build();
+    entityAndVariantExist();
 
     // action
     instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
@@ -199,16 +201,66 @@ public class Neo4JLegacyStorageWrapperTest {
     verify(neo4JStorageMock).updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
   }
 
+  private void entityAndVariantExist() {
+    when(neo4JStorageMock.entityExists(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(true);
+    when(neo4JStorageMock.entityExists(DOMAIN_ENTITY_TYPE, ID)).thenReturn(true);
+  }
+
   @Test(expected = StorageException.class)
   public void updateDomainEntityThrowAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
-    SubADomainEntity entity = aDomainEntity().build();
+    SubADomainEntity entity = aDomainEntity().withId(ID).build();
+    entityAndVariantExist();
 
     doThrow(StorageException.class).when(neo4JStorageMock).updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
 
     // action
     instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
 
+  }
+
+  @Test
+  public void updateDomainEntityDelegatesToNeo4JStoragesAddNewVariantWhenTheVariantDoesNotExist() throws Exception {
+    // setup
+    SubADomainEntity entity = aDomainEntity().withId(ID).build();
+    variantDoesNotExist();
+
+    // action
+    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+
+    // verify
+    verify(neo4JStorageMock).addVariant(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+  }
+
+  private void variantDoesNotExist() {
+    when(neo4JStorageMock.entityExists(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(true);
+    when(neo4JStorageMock.entityExists(DOMAIN_ENTITY_TYPE, ID)).thenReturn(false);
+  }
+
+  @Test(expected = StorageException.class)
+  public void updateDomainEntityThrowsAStorageExceptionWhenNeo4JStoragesAddNewVariantWhenTheVariantDoesNotExist() throws Exception {
+    // setup
+    SubADomainEntity entity = aDomainEntity().withId(ID).build();
+    variantDoesNotExist();
+
+    doThrow(StorageException.class).when(neo4JStorageMock).addVariant(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+
+    // action
+    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+  }
+
+  @Test(expected = UpdateException.class)
+  public void updateDomainEntityThrowsAnUpdateExceptionWhenTheEntityDoesNotExist() throws Exception {
+    // setup
+    SubADomainEntity entity = aDomainEntity().withId(ID).build();
+    entityDoesNotExist();
+
+    // action
+    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+  }
+
+  private void entityDoesNotExist() {
+    when(neo4JStorageMock.entityExists(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(false);
   }
 
   @Test
