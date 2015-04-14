@@ -220,7 +220,7 @@ public class Neo4JStorage {
     }
   }
 
-  public <T extends SystemEntity> StorageIterator<T> getSystemEntities(Class<T> type) throws StorageException {
+  public <T extends Entity> StorageIterator<T> getEntities(Class<T> type) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
       ResourceIterator<Node> nodes = neo4jLowLevelAPI.getNodesOfType(type);
 

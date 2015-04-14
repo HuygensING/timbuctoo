@@ -361,7 +361,7 @@ public class Neo4JStorageTest {
     when(neo4jStorageIteratorFactoryMock.forNode(SYSTEM_ENTITY_TYPE, searchResult)).thenReturn(storageIterator);
 
     // action
-    StorageIterator<TestSystemEntityWrapper> actualStorageIterator = instance.getSystemEntities(SYSTEM_ENTITY_TYPE);
+    StorageIterator<TestSystemEntityWrapper> actualStorageIterator = instance.getEntities(SYSTEM_ENTITY_TYPE);
 
     // verify
     assertThat(actualStorageIterator, is(sameInstance(storageIterator)));
@@ -382,7 +382,7 @@ public class Neo4JStorageTest {
 
     try {
       // action
-      instance.getSystemEntities(SYSTEM_ENTITY_TYPE);
+      instance.getEntities(SYSTEM_ENTITY_TYPE);
     } finally {
       // verify
       verify(transactionMock).failure();

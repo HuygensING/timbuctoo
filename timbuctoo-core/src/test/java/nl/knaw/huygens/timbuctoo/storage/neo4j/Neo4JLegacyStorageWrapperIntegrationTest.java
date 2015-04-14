@@ -88,7 +88,6 @@ public class Neo4JLegacyStorageWrapperIntegrationTest extends StorageIntegration
   }
 
   @Test
-  @Ignore
   @Override
   public void getDomainEntitiesReturnsAllDomainEntitiesOfTheRequestedType() throws Exception {
     // TODO Auto-generated method stub

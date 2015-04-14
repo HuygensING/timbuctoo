@@ -187,12 +187,12 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends SystemEntity> StorageIterator<T> getSystemEntities(Class<T> type) throws StorageException {
-    return neo4JStorage.getSystemEntities(type);
+    return neo4JStorage.getEntities(type);
   }
 
   @Override
   public <T extends DomainEntity> StorageIterator<T> getDomainEntities(Class<T> type) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return neo4JStorage.getEntities(type);
   }
 
   @Override

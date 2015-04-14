@@ -163,6 +163,30 @@ public class Neo4JLegacyStorageWrapperTest {
   }
 
   @Test
+  public void getDomainEntitiesDelegatesToNeo4JStorageGetEntities() throws StorageException {
+    // setup
+    @SuppressWarnings("unchecked")
+    StorageIterator<SubADomainEntity> storageIteratorMock = mock(StorageIterator.class);
+    when(neo4JStorageMock.getEntities(DOMAIN_ENTITY_TYPE)).thenReturn(storageIteratorMock);
+
+    // action
+    StorageIterator<SubADomainEntity> actualSystemEntities = instance.getDomainEntities(DOMAIN_ENTITY_TYPE);
+
+    // verify
+    assertThat(actualSystemEntities, is(sameInstance(storageIteratorMock)));
+  }
+
+  @Test(expected = StorageException.class)
+  public void getDomainEntitiesThrowsAnExceptionWhenTheDelegateDoes() throws StorageException {
+    // setup
+    when(neo4JStorageMock.getEntities(DOMAIN_ENTITY_TYPE)).thenThrow(new StorageException());
+
+    // action
+    instance.getDomainEntities(DOMAIN_ENTITY_TYPE);
+
+  }
+
+  @Test
   public void getAllVariationsDelegatesToNeo4JStorage() throws Exception {
     // setup
     List<BaseDomainEntity> variations = Lists.newArrayList();
@@ -716,11 +740,11 @@ public class Neo4JLegacyStorageWrapperTest {
   }
 
   @Test
-  public void getSystemEntitiesDelegatesToNeo4JStorage() throws StorageException {
+  public void getSystemEntitiesDelegatesToNeo4JStorageGetEntities() throws StorageException {
     // setup
     @SuppressWarnings("unchecked")
     StorageIterator<TestSystemEntityWrapper> storageIteratorMock = mock(StorageIterator.class);
-    when(neo4JStorageMock.getSystemEntities(SYSTEM_ENTITY_TYPE)).thenReturn(storageIteratorMock);
+    when(neo4JStorageMock.getEntities(SYSTEM_ENTITY_TYPE)).thenReturn(storageIteratorMock);
 
     // action
     StorageIterator<TestSystemEntityWrapper> actualSystemEntities = instance.getSystemEntities(SYSTEM_ENTITY_TYPE);
@@ -732,7 +756,7 @@ public class Neo4JLegacyStorageWrapperTest {
   @Test(expected = StorageException.class)
   public void getSystemEntitiesThrowsAnExceptionWhenTheDelegateDoes() throws StorageException {
     // setup
-    when(neo4JStorageMock.getSystemEntities(SYSTEM_ENTITY_TYPE)).thenThrow(new StorageException());
+    when(neo4JStorageMock.getEntities(SYSTEM_ENTITY_TYPE)).thenThrow(new StorageException());
 
     // action
     instance.getSystemEntities(SYSTEM_ENTITY_TYPE);
