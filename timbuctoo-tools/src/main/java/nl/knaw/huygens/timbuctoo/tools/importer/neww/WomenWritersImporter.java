@@ -89,7 +89,7 @@ public class WomenWritersImporter extends DefaultImporter {
 
     WomenWritersImporter importer = null;
     try {
-      Injector injector = ToolsInjectionModule.createInjectorWithoutSolr();
+      Injector injector = ToolsInjectionModule.createInjector();
       Repository repository = injector.getInstance(Repository.class);
       IndexManager indexManager = injector.getInstance(IndexManager.class);
 

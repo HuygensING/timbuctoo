@@ -70,7 +70,7 @@ public class JsonImporter extends CSVImporter {
     String directoryName = (args.length > 1) ? args[1] : IMPORT_DIRECTORY_NAME + vreId + "/";
     LOG.info("Import directory: {}", directoryName);
 
-    Injector injector = ToolsInjectionModule.createInjectorWithoutSolr();
+    Injector injector = ToolsInjectionModule.createInjector();
     Repository repository = injector.getInstance(Repository.class);
     IndexManager indexManager = injector.getInstance(IndexManager.class);
 
