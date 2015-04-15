@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.model.cnw;
 
 import java.text.MessageFormat;
+import java.util.Collections;
 import java.util.List;
 
 import nl.knaw.huygens.facetedsearch.model.FacetType;
@@ -23,6 +24,7 @@ public class CNWPerson extends Person {
 	private String koppelnaam = "";
 	private List<String> networkDomains = Lists.newArrayList();
 
+	private List<String> combinedDomains = Lists.newArrayList();
 	private List<String> domains = Lists.newArrayList();
 	private List<String> subdomains = Lists.newArrayList();
 	private List<String> characteristics = Lists.newArrayList();
@@ -53,7 +55,7 @@ public class CNWPerson extends Person {
 
 	}
 
-	@IndexAnnotation(title = "Geslacht", fieldName = "dynamic_s_gender", isFaceted = true, canBeEmpty = true)
+	@IndexAnnotation(title = "Geslacht", fieldName = "dynamic_s_gender", isFaceted = true, canBeEmpty = true, isSortable = true)
 	public Gender getGender() {
 		return super.getGender();
 	}
@@ -110,6 +112,15 @@ public class CNWPerson extends Person {
 		this.dbnlUrl = dbnlUrl;
 	}
 
+	public void setCombinedDomains(List<String> combineddomains) {
+		this.combinedDomains = combineddomains;
+	}
+
+	@IndexAnnotation(title = "Domein/Subdomein", fieldName = "dynamic_s_combineddomain", canBeEmpty = false, isFaceted = true)
+	public List<String> getCombinedDomains() {
+		return combinedDomains;
+	}
+
 	public void setDomains(List<String> domains) {
 		this.domains = domains;
 	}
@@ -134,6 +145,7 @@ public class CNWPerson extends Person {
 
 	@IndexAnnotation(title = "Karakteristiek(en)", fieldName = "dynamic_s_characteristic", canBeEmpty = false, isFaceted = true)
 	public List<String> getCharacteristics() {
+		Collections.sort(characteristics);
 		return characteristics;
 	}
 
@@ -200,7 +212,7 @@ public class CNWPerson extends Person {
 	}
 
 	@JsonIgnore
-	@IndexAnnotation(title = "Netwerk(en)", fieldName = "dynamic_s_networkdomain", canBeEmpty = false, isFaceted = true)
+	@IndexAnnotation(title = "Netwerk(en)", fieldName = "dynamic_s_networkdomain", canBeEmpty = false, isFaceted = true, isSortable = true)
 	public String getNetworkDomainString() {
 		return Joiner.on(" en ").join(networkDomains);
 	}
@@ -343,7 +355,7 @@ public class CNWPerson extends Person {
 		this.cnwBirthYear = new Datable(String.valueOf(cnwBirthYear));
 	}
 
-	@IndexAnnotation(fieldName = "dynamic_i_birthyear", facetType = FacetType.RANGE, isFaceted = false)
+	@IndexAnnotation(fieldName = "dynamic_i_birthyear", title = "Geboortejaar", facetType = FacetType.RANGE, isFaceted = true)
 	public Datable getCnwBirthYear() {
 		return cnwBirthYear;
 	}
@@ -352,7 +364,7 @@ public class CNWPerson extends Person {
 		birthdateQualifier = qualifier;
 	}
 
-	@IndexAnnotation(fieldName = "dynamic_i_deathyear", facetType = FacetType.RANGE, isFaceted = false)
+	@IndexAnnotation(fieldName = "dynamic_i_deathyear", title = "Sterfjaar", facetType = FacetType.RANGE, isFaceted = true)
 	public Datable getCnwDeathYear() {
 		return cnwDeathYear;
 	}

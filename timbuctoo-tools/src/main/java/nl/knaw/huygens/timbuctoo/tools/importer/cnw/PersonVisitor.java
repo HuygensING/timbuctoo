@@ -335,9 +335,30 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 	private class DomeinHandler extends CaptureHandler<PersonContext> {
 		@Override
 		public void handleContent(Element element, PersonContext context, String text) {
-			context.person.getDomains().add(denormalized(text, "domains"));
+			String denormalized = denormalized(text, "domains");
+			context.person.getDomains().add(denormalized);
+			context.person.getCombinedDomains().add(denormalized);
 		}
 	}
+
+	Map<String, String> subdomainExtension = ImmutableMap.<String, String> builder()//
+			.put("Visuele kunsten", "Beeldende kunsten/Visuele kunsten") //
+			.put("Beeldhouwkunst", "Beeldende kunsten/Beeldhouwkunst") //
+			.put("Toegepaste kunst", "Beeldende kunsten/Toegepaste kunst") //
+			.put("Architectuur", "Beeldende kunsten/Architectuur") //
+			.put("Letteren", "Letteren en Taal/Letteren") //
+			.put("Taal", "Letteren en Taal/Taal") //
+			.put("Familie", "Maatschappij/Familie") //
+			.put("Biologie en Microbiologie", "Natuurwetenschappen/Biologie en Microbiologie") //
+			.put("Botanie", "Natuurwetenschappen/Botanie") //
+			.put("Astronomie", "Natuurwetenschappen/Astronomie") //
+			.put("Scheikunde", "Natuurwetenschappen/Scheikunde") //
+			.put("Wiskunde", "Natuurwetenschappen/Wiskunde") //
+			.put("Natuurkunde", "Natuurwetenschappen/Natuurkunde") //
+			.put("Industrie", "Economie en Financiën/Industrie") //
+			.put("Midden- en kleinbedrijf", "Economie en Financiën/Midden- en kleinbedrijf") //
+			.put("Financiën", "Economie en Financiën/Financiën") //
+			.build();
 
 	private class SubDomainHandler extends CaptureHandler<PersonContext> {
 		@Override
@@ -345,6 +366,9 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 			String denormalized = denormalized(text, "subdomains");
 			if (denormalized != null) {
 				context.person.getSubDomains().add(denormalized);
+				if (subdomainExtension.containsKey(denormalized)) {
+					context.person.getCombinedDomains().add(denormalized);
+				}
 			}
 		}
 	}
@@ -602,14 +626,19 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 		}
 	}
 
+	Map<String, String> translations = ImmutableMap.of("onzeker", "Onzeker", "unknown", "Onbekend");
+
 	private class ValHandler extends CaptureHandler<PersonContext> {
 		@Override
 		public void handleContent(Element element, PersonContext context, String text) {
 			String greatgrandparent = element.getParent().getParent().getParent().getName();
+			if (!translations.containsKey(text)) {
+				LOG.error("unknown value {} for <val>", text);
+			}
 			if ("birth".equals(greatgrandparent)) {
-				context.person.setBirthDateQualifier(text);
+				context.person.setBirthDateQualifier(translations.get(text));
 			} else if ("death".equals(greatgrandparent)) {
-				context.person.setDeathDateQualifier(text);
+				context.person.setDeathDateQualifier(translations.get(text));
 			} else {
 				LOG.warn("unhandled <val> in {}/{}/{}", greatgrandparent, element.getParent().getParent().getName(), element.getParent().getName());
 			}
