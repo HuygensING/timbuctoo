@@ -55,6 +55,18 @@
       </dependencies>
     </profile>
     <profile>
+      <id>acc</id>
+      <dependencies>
+        <dependency>
+          <groupId>nl.knaw.huygens</groupId>
+          <artifactId>timbuctoo-war-config-acc</artifactId>
+          <version>${timbuctoo.config.version}</version>
+          <type>war</type>
+          <scope>runtime</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
       <id>prod</id>
       <dependencies>
         <dependency>

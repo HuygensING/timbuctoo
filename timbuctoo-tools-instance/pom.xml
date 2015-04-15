@@ -36,6 +36,13 @@
         <config.version>${timbuctoo.config.version}</config.version>
       </properties>
     </profile>
+     <profile>
+      <id>acc</id>
+      <properties>
+        <environment>acc</environment>
+        <config.version>${timbuctoo.config.version}</config.version>
+      </properties>
+    </profile>
     <profile>
       <id>prod</id>
       <properties>
