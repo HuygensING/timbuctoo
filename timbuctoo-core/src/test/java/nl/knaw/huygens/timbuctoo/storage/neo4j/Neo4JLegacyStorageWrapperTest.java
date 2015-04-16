@@ -163,6 +163,58 @@ public class Neo4JLegacyStorageWrapperTest {
   }
 
   @Test
+  public void getEntityOrDefaultVariationDelegatesToNeo4JStorageGetEntityIfTheVariantExists() throws Exception {
+    variantExists();
+    SubADomainEntity entity = aDomainEntity().build();
+    when(neo4JStorageMock.getEntity(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entity);
+
+    // action
+    SubADomainEntity foundEntity = instance.getEntityOrDefaultVariation(DOMAIN_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(foundEntity, is(sameInstance(entity)));
+  }
+
+  @Test(expected = StorageException.class)
+  public void getEntityOrDefaultVariationThrowsAStorageExceptionifNeo4JStorageGetEntityDoes() throws Exception {
+    // setup
+    variantExists();
+    when(neo4JStorageMock.getEntity(DOMAIN_ENTITY_TYPE, ID)).thenThrow(new StorageException());
+
+    // action
+    instance.getEntityOrDefaultVariation(DOMAIN_ENTITY_TYPE, ID);
+
+  }
+
+  private void variantExists() {
+    when(neo4JStorageMock.entityExists(DOMAIN_ENTITY_TYPE, ID)).thenReturn(true);
+  }
+
+  @Test
+  public void getEntityOrDefaultVariationDelegatesToNeo4JStorageGetDefaultVariationIfTheVariantDoesNotExist() throws Exception {
+    // setup
+    variantDoesNotExist();
+    SubADomainEntity entity = aDomainEntity().build();
+    when(neo4JStorageMock.getDefaultVariation(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entity);
+
+    // action
+    SubADomainEntity foundEntity = instance.getEntityOrDefaultVariation(DOMAIN_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(foundEntity, is(sameInstance(entity)));
+  }
+
+  @Test(expected = StorageException.class)
+  public void getEntityOrDefaultVariationThrowsAStorageExceptionifNeo4JStorageGetDefaultVariationDoes() throws Exception {
+    // setup
+    variantDoesNotExist();
+    when(neo4JStorageMock.getDefaultVariation(DOMAIN_ENTITY_TYPE, ID)).thenThrow(new StorageException());
+
+    // action
+    instance.getEntityOrDefaultVariation(DOMAIN_ENTITY_TYPE, ID);
+  }
+
+  @Test
   public void getDomainEntitiesDelegatesToNeo4JStorageGetEntities() throws StorageException {
     // setup
     @SuppressWarnings("unchecked")
@@ -227,7 +279,7 @@ public class Neo4JLegacyStorageWrapperTest {
 
   private void entityAndVariantExist() {
     when(neo4JStorageMock.entityExists(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(true);
-    when(neo4JStorageMock.entityExists(DOMAIN_ENTITY_TYPE, ID)).thenReturn(true);
+    variantExists();
   }
 
   @Test(expected = StorageException.class)

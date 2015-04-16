@@ -170,7 +170,11 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends Entity> T getEntityOrDefaultVariation(Class<T> type, String id) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    if (neo4JStorage.entityExists(type, id)) {
+      return neo4JStorage.getEntity(type, id);
+    } else {
+      return neo4JStorage.getDefaultVariation(type, id);
+    }
   }
 
   @Override

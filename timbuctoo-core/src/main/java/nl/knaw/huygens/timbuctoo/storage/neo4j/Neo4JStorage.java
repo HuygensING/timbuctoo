@@ -796,4 +796,9 @@ public class Neo4JStorage {
     }
   }
 
+  // TODO make only available for DomainEntities see TIM-162
+  public <T extends Entity> T getDefaultVariation(Class<T> type, String id) throws StorageException {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
 }
