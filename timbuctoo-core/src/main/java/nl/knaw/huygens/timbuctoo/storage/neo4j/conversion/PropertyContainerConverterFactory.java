@@ -67,10 +67,11 @@ public class PropertyContainerConverterFactory {
    * @param type a DomainEntity type to find the primitive class for
    * @return a NodeConverter for the primitive of type. This could be type itself.
    */
+  // TODO make only available for primitive see TIM-162
   @SuppressWarnings("unchecked")
-  private <T extends DomainEntity> NodeConverter<? super T> createForPrimitive(Class<T> type) {
-    Class<? extends DomainEntity> primitive = TypeRegistry.toBaseDomainEntity(type);
-    NodeConverter<? extends DomainEntity> nodeConverter = this.createForType(primitive);
+  public <T extends Entity> NodeConverter<? super T> createForPrimitive(Class<T> type) {
+    Class<? extends Entity> primitive = TypeRegistry.getBaseClass(type);
+    NodeConverter<? extends Entity> nodeConverter = this.createForType(primitive);
 
     return (NodeConverter<? super T>) nodeConverter;
   }

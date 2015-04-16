@@ -28,4 +28,9 @@ class ExtendableNodeConverter<T extends Entity> extends AbstractExtendableProper
   protected void executeCustomDeserializationActions(T entity, Node propertyContainer) {
     // nothing to do
   }
+
+  @Override
+  public <U extends T> U convertToSubType(Class<U> type, Node node) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }

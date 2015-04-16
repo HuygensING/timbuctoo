@@ -345,6 +345,66 @@ public class Neo4JStorageTest {
   }
 
   @Test
+  public void getDefaultVariationReturnsTheRequestedTypeWithTheValuesOfThePrimitiveVariant() throws Exception {
+    // setup
+    Node node = aNode().build();
+    latestNodeFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, node);
+
+    NodeConverter<? super SubADomainEntity> converter = propertyContainerConverterFactoryHasConverterForPrimitiveOf(DOMAIN_ENTITY_TYPE);
+
+    SubADomainEntity entity = aDomainEntity().build();
+    when(converter.convertToSubType(DOMAIN_ENTITY_TYPE, node)).thenReturn(entity);
+
+    // action
+    SubADomainEntity foundEntity = instance.getDefaultVariation(DOMAIN_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(foundEntity, is(sameInstance(entity)));
+    verifyTransactionSucceeded();
+  }
+
+  @Test
+  public void getDefaultVariationReturnsNullIfThePrimitiveCannotBeFound() throws Exception {
+    // setup
+    noLatestNodeFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
+
+    // action
+    SubADomainEntity defaultVariation = instance.getDefaultVariation(DOMAIN_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(defaultVariation, is(nullValue()));
+    verifyTransactionSucceeded();
+  }
+
+  @Test(expected = ConversionException.class)
+  public void getDefaultVariationThrowsAConversionExceptionWhenTheNodeCannotBeConverted() throws Exception {
+    // setup
+    Node node = aNode().build();
+    latestNodeFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, node);
+
+    NodeConverter<? super SubADomainEntity> converter = propertyContainerConverterFactoryHasConverterForPrimitiveOf(DOMAIN_ENTITY_TYPE);
+
+    when(converter.convertToSubType(DOMAIN_ENTITY_TYPE, node)).thenThrow(new ConversionException());
+
+    try {
+      // action
+      instance.getDefaultVariation(DOMAIN_ENTITY_TYPE, ID);
+    } finally {
+      verifyTransactionFailed();
+    }
+
+  }
+
+  private <T extends DomainEntity> NodeConverter<? super T> propertyContainerConverterFactoryHasConverterForPrimitiveOf(Class<T> type) {
+    @SuppressWarnings("unchecked")
+    NodeConverter<? super T> converter = mock(NodeConverter.class);
+
+    doReturn(converter).when(propertyContainerConverterFactoryMock).createForPrimitive(type);
+
+    return converter;
+  }
+
+  @Test
   public void getSystemEntitiesRetrieveAllTheNodesOfACertainTypeAndWrapsThemInAStorageIterator() throws Exception {
     // setup
     Node node1 = aNode().build();

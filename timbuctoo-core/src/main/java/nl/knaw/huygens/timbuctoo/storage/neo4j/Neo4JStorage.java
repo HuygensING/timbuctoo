@@ -798,7 +798,25 @@ public class Neo4JStorage {
 
   // TODO make only available for DomainEntities see TIM-162
   public <T extends Entity> T getDefaultVariation(Class<T> type, String id) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
-  }
+    try (Transaction transaction = db.beginTx()) {
+      T entity = null;
+      Class<? extends Entity> primitiveType = TypeRegistry.getBaseClass(type);
+      Node node = neo4jLowLevelAPI.getLatestNodeById(primitiveType, id);
 
+      if (node != null) {
+
+        NodeConverter<? super T> converter = propertyContainerConverterFactory.createForPrimitive(type);
+        try {
+          entity = converter.convertToSubType(type, node);
+        } catch (ConversionException ex) {
+          transaction.failure();
+          throw ex;
+        }
+      }
+
+      transaction.success();
+      return entity;
+    }
+
+  }
 }
