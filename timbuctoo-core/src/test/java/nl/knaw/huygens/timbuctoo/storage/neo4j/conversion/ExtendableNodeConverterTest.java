@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.neo4j.conversion;
 
+import static nl.knaw.huygens.timbuctoo.storage.neo4j.SubADomainEntityBuilder.aDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyConverterMockBuilder.newPropertyConverter;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -21,9 +22,13 @@ import org.junit.Test;
 import org.neo4j.graphdb.DynamicLabel;
 import org.neo4j.graphdb.Node;
 
+import test.model.BaseDomainEntity;
 import test.model.TestSystemEntityWrapper;
+import test.model.projecta.SubADomainEntity;
 
 public class ExtendableNodeConverterTest {
+  private static final Class<BaseDomainEntity> PRIMITIVE_DOMAIN_ENTITY_TYPE = BaseDomainEntity.class;
+  private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
   private static final String REGULAR_FIELD_NAME = "fieldConverter2";
   private static final String ADMINISTRATIVE_FIELD_NAME = "fieldConverter1";
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
@@ -44,9 +49,15 @@ public class ExtendableNodeConverterTest {
     administrativePropertyConverterMock = createPropertyConverterMock(ADMINISTRATIVE_FIELD_NAME, FieldType.ADMINISTRATIVE);
     regularPropertyConverterMock = createPropertyConverterMock(REGULAR_FIELD_NAME, FieldType.REGULAR);
 
-    instance = new ExtendableNodeConverter<TestSystemEntityWrapper>(TYPE, entityInstantiatorMock);
-    instance.addPropertyConverter(administrativePropertyConverterMock);
-    instance.addPropertyConverter(regularPropertyConverterMock);
+    instance = createInstance(TYPE);
+  }
+
+  private <T extends Entity> ExtendableNodeConverter<T> createInstance(Class<T> type) {
+    ExtendableNodeConverter<T> extendableNodeConverter = new ExtendableNodeConverter<T>(type, entityInstantiatorMock);
+    extendableNodeConverter.addPropertyConverter(administrativePropertyConverterMock);
+    extendableNodeConverter.addPropertyConverter(regularPropertyConverterMock);
+
+    return extendableNodeConverter;
   }
 
   private PropertyConverter createPropertyConverterMock(String name, FieldType fieldType) {
@@ -178,6 +189,43 @@ public class ExtendableNodeConverterTest {
 
     // action
     instance.convertToEntity(nodeMock);
+  }
+
+  @Test
+  public void convertToSubTypeCreatesAnInstanceOfTheUsedTypeAndAddsThePropertyValuesOfTheTypeOfTheNodeConverter() throws Exception {
+    // setup
+    SubADomainEntity domainEntity = aDomainEntity().build();
+    when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenReturn(domainEntity);
+    ExtendableNodeConverter<BaseDomainEntity> instance = createInstance(PRIMITIVE_DOMAIN_ENTITY_TYPE);
+
+    // action
+    instance.convertToSubType(DOMAIN_ENTITY_TYPE, nodeMock);
+
+    // verify
+    verify(administrativePropertyConverterMock).addValueToEntity(domainEntity, nodeMock);
+    verify(regularPropertyConverterMock).addValueToEntity(domainEntity, nodeMock);
+  }
+
+  @Test(expected = ConversionException.class)
+  public void convertToSubTypeThrowsAConversionExceptionExceptionWhenTheTypeCannotBeInstantiated() throws Exception {
+    // setup
+    when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenThrow(new InstantiationException());
+    ExtendableNodeConverter<BaseDomainEntity> instance = createInstance(PRIMITIVE_DOMAIN_ENTITY_TYPE);
+
+    // action
+    instance.convertToSubType(DOMAIN_ENTITY_TYPE, nodeMock);
+  }
+
+  @Test(expected = ConversionException.class)
+  public void convertToSubTypeThrowsAConverterExceptionWhenOneOfTheFieldsCannotBeConverted() throws Exception {
+    // setup
+    SubADomainEntity domainEntity = aDomainEntity().build();
+    doThrow(ConversionException.class).when(administrativePropertyConverterMock).addValueToEntity(domainEntity, nodeMock);
+    when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenReturn(domainEntity);
+    ExtendableNodeConverter<BaseDomainEntity> instance = createInstance(PRIMITIVE_DOMAIN_ENTITY_TYPE);
+
+    // action
+    instance.convertToSubType(DOMAIN_ENTITY_TYPE, nodeMock);
   }
 
   @Test

@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage.neo4j.conversion;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.neo4j.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.EntityInstantiator;
 import nl.knaw.huygens.timbuctoo.storage.neo4j.NodeConverter;
 
@@ -30,7 +31,17 @@ class ExtendableNodeConverter<T extends Entity> extends AbstractExtendableProper
   }
 
   @Override
-  public <U extends T> U convertToSubType(Class<U> type, Node node) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+  public <U extends T> U convertToSubType(Class<U> type, Node node) throws ConversionException {
+    U entity = null;
+    try {
+      entity = entityInstantiator.createInstanceOf(type);
+
+      addValuesToEntity(entity, node);
+
+    } catch (InstantiationException e) {
+      throw new ConversionException(e);
+    }
+
+    return entity;
   }
 }
