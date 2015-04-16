@@ -296,6 +296,24 @@ public abstract class StorageIntegrationTest {
   }
 
   @Test
+  public void getEntityOrDefaultVariationReturnsTheEntityAndItsValuesIfItExistsElseItReturnsTheEntityWithTheValuesOfTheDefaultVariation() throws Exception {
+    // setup
+    String id = addDefaultProjectAPerson();
+
+    // action
+    ProjectBPerson entityWithoutVariant = instance.getEntityOrDefaultVariation(ProjectBPerson.class, id);
+    Person primitive = instance.getEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, id);
+
+    // verify 
+    assertThat(entityWithoutVariant, likePerson()//
+        .withBirthDate(primitive.getBirthDate())//
+        .withDeathDate(primitive.getDeathDate())//
+        .withGender(primitive.getGender())//
+        .withId(id)//
+        .withNames(primitive.getNames()));
+  }
+
+  @Test
   public void setPIDGivesTheDomainEntityAPidAndCreatesAVersion() throws Exception {
     String id = addDefaultProjectAPerson();
     // Make sure the entity exist

@@ -241,4 +241,11 @@ public class Neo4JLegacyStorageWrapperIntegrationTest extends StorageIntegration
     super.updateDomainEntityWithADifferentTypeAddsTheNewFields();
   }
 
+  @Ignore
+  @Test
+  @Override
+  public void getEntityOrDefaultVariationReturnsTheEntityAndItsValuesIfItExistsElseItReturnsTheEntityWithTheValuesOfTheDefaultVariation() throws Exception {
+    super.getEntityOrDefaultVariationReturnsTheEntityAndItsValuesIfItExistsElseItReturnsTheEntityWithTheValuesOfTheDefaultVariation();
+  }
+
 }
