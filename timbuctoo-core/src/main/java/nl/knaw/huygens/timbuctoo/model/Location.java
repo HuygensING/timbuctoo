@@ -78,8 +78,14 @@ public class Location extends DomainEntity {
   @IndexAnnotation(fieldName = "dynamic_t_name", isFaceted = false)
   public String getIndexedName() {
     StringBuilder builder = new StringBuilder();
+    boolean isFirst = true;
     for (PlaceName name : names.map.values()) {
-      builder.append(' ').append(name.getDisplayName(locationType));
+      if (!isFirst) {
+        builder.append(' ');
+      } else {
+        isFirst = false;
+      }
+      builder.append(name.getDisplayName(locationType));
     }
     return builder.toString();
   }
