@@ -56,7 +56,7 @@ public class CNWPerson extends Person {
 	}
 
 	@IndexAnnotations({ @IndexAnnotation(title = "Geslacht", fieldName = "dynamic_s_gender", isFaceted = true, canBeEmpty = true),//
-			@IndexAnnotation(title = "Geslacht", fieldName = "dynamic_k_gender", canBeEmpty = true, isSortable = true) })
+			@IndexAnnotation(title = "Geslacht", fieldName = "dynamic_sort_gender", canBeEmpty = true, isSortable = true) })
 	public Gender getGender() {
 		return super.getGender();
 	}
@@ -213,8 +213,8 @@ public class CNWPerson extends Person {
 	}
 
 	@JsonIgnore
-	@IndexAnnotations({ @IndexAnnotation(title = "Netwerk(en)", fieldName = "dynamic_k_networkdomain", canBeEmpty = false, isFaceted = true, isSortable = true), //
-			@IndexAnnotation(title = "Netwerk(en)", fieldName = "dynamic_s_networkdomain", canBeEmpty = false, isFaceted = true, isSortable = true) })
+	@IndexAnnotations({ @IndexAnnotation(title = "Netwerk(en)", fieldName = "dynamic_s_networkdomain", canBeEmpty = false, isFaceted = true, isSortable = true), //
+			@IndexAnnotation(title = "Netwerk(en)", fieldName = "dynamic_sort_networkdomain", canBeEmpty = false, isFaceted = true, isSortable = true) })
 	public String getNetworkDomainString() {
 		return Joiner.on(" en ").join(networkDomains);
 	}
