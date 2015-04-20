@@ -3,9 +3,9 @@ package nl.knaw.huygens.timbuctoo.storage.graph.neo4j;
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Relation.SOURCE_ID;
 import static nl.knaw.huygens.timbuctoo.model.Relation.TARGET_ID;
+import static nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType.VERSION_OF;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.PropertyContainerHelper.getRevisionProperty;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.PropertyNotIndexedException.propertyHasNoIndex;
-import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.SystemRelationshipType.VERSION_OF;
 import static org.neo4j.graphdb.Direction.INCOMING;
 import static org.neo4j.graphdb.Direction.OUTGOING;
 

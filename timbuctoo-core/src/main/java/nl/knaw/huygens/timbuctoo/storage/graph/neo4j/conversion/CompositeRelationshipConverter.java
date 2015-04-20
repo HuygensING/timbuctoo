@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.ConversionException;
+import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.RelationshipConverter;
 
 import org.neo4j.graphdb.Relationship;

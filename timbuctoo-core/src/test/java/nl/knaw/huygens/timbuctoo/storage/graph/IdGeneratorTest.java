@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.neo4j;
+package nl.knaw.huygens.timbuctoo.storage.graph;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -7,7 +7,6 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.fail;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.IdGenerator;
 
 import org.junit.Before;
 import org.junit.Ignore;

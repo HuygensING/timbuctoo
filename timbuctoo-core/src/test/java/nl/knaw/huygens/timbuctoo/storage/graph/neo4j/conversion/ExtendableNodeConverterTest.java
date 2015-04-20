@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion;
 
-import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.SubADomainEntityBuilder.aDomainEntity;
+import static nl.knaw.huygens.timbuctoo.storage.graph.SubADomainEntityBuilder.aDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.PropertyConverterMockBuilder.newPropertyConverter;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -14,8 +14,8 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.ConversionException;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.EntityInstantiator;
+import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
+import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.ExtendableNodeConverter;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldNonExistingException;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;

@@ -2,13 +2,11 @@ package nl.knaw.huygens.timbuctoo.storage.graph.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType.VERSION_OF;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.NodeMockBuilder.aNode;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.RelationshipMockBuilder.aRelationship;
-import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.SystemRelationshipType.VERSION_OF;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.Neo4JLowLevelAPI;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.NodeDuplicator;
 
 import org.junit.Before;
 import org.junit.Test;

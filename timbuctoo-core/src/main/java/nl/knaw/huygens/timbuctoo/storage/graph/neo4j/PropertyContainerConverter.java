@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.neo4j;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 
 import org.neo4j.graphdb.PropertyContainer;
 

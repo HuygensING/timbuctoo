@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
-import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.SubADomainEntityBuilder.aDomainEntity;
-import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.SubARelationBuilder.aRelation;
-import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.TestSystemEntityWrapperBuilder.aSystemEntity;
+import static nl.knaw.huygens.timbuctoo.storage.graph.SubADomainEntityBuilder.aDomainEntity;
+import static nl.knaw.huygens.timbuctoo.storage.graph.SubARelationBuilder.aRelation;
+import static nl.knaw.huygens.timbuctoo.storage.graph.TestSystemEntityWrapperBuilder.aSystemEntity;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -27,8 +27,6 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
-import nl.knaw.huygens.timbuctoo.storage.graph.GraphLegacyStorageWrapper;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.IdGenerator;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.Neo4JStorage;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.NodeConverter;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.NodeDuplicator;
@@ -125,7 +123,7 @@ public class GraphLegacyStorageWrapperTest {
   @Test
   public void addDomainEntityDelegatesToNeo4JStorageAddDomainEntity() throws Exception {
     // setup
-    SubADomainEntity entity = aDomainEntity().build();
+    SubADomainEntity entity = aDomainEntity().withAPid().build();
     when(neo4JStorageMock.addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE)).thenReturn(ID);
 
     // action
@@ -133,6 +131,7 @@ public class GraphLegacyStorageWrapperTest {
 
     // verify
     assertThat(id, is(equalTo(ID)));
+
     verify(neo4JStorageMock).addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
   }
 

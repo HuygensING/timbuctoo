@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion;
 import java.lang.reflect.Field;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.ConversionException;
+import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 
 import org.neo4j.graphdb.PropertyContainer;
 

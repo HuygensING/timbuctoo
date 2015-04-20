@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.neo4j;
 
-import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.SystemRelationshipType.VERSION_OF;
+import static nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType.VERSION_OF;
 
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;

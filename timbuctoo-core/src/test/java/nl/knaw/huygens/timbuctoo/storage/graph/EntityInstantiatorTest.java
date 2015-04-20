@@ -1,10 +1,9 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.neo4j;
+package nl.knaw.huygens.timbuctoo.storage.graph;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.EntityInstantiator;
 
 import org.junit.Test;
 

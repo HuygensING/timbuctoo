@@ -8,8 +8,8 @@ import java.util.Collection;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.ConversionException;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.EntityInstantiator;
+import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
+import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.PropertyContainerConverter;
 
 import org.neo4j.graphdb.PropertyContainer;

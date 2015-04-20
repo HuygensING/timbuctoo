@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.neo4j;
+package nl.knaw.huygens.timbuctoo.storage.graph;
 
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import test.model.projecta.SubARelation;

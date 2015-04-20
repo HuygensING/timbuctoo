@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.neo4j;
 
+import static nl.knaw.huygens.timbuctoo.storage.graph.TestSystemEntityWrapperBuilder.aSystemEntity;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.NodeMockBuilder.aNode;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.RelationshipMockBuilder.aRelationship;
-import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.TestSystemEntityWrapperBuilder.aSystemEntity;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.Mockito.mock;
@@ -13,7 +13,7 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.ConversionException;
+import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.Neo4JStorageIteratorFactory;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.NodeConverter;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.RelationshipConverter;

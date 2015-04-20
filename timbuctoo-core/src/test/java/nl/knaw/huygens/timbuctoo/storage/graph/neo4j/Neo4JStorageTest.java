@@ -1,16 +1,16 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.neo4j;
 
-import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.DomainEntityMatcher.likeDomainEntity;
+import static nl.knaw.huygens.timbuctoo.storage.graph.DomainEntityMatcher.likeDomainEntity;
+import static nl.knaw.huygens.timbuctoo.storage.graph.SubADomainEntityBuilder.aDomainEntity;
+import static nl.knaw.huygens.timbuctoo.storage.graph.SubARelationBuilder.aRelation;
+import static nl.knaw.huygens.timbuctoo.storage.graph.TestSystemEntityWrapperBuilder.aSystemEntity;
+import static nl.knaw.huygens.timbuctoo.storage.graph.TestSystemEntityWrapperMatcher.likeTestSystemEntityWrapper;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.Neo4JStorage.REQUEST_TIMEOUT;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.NodeMockBuilder.aNode;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.NodeSearchResultBuilder.aNodeSearchResult;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.NodeSearchResultBuilder.anEmptyNodeSearchResult;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.RelationshipMockBuilder.aRelationship;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.RelationshipTypeMatcher.likeRelationshipType;
-import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.SubADomainEntityBuilder.aDomainEntity;
-import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.SubARelationBuilder.aRelation;
-import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.TestSystemEntityWrapperBuilder.aSystemEntity;
-import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.TestSystemEntityWrapperMatcher.likeTestSystemEntityWrapper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -47,6 +47,8 @@ import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
+import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
+import nl.knaw.huygens.timbuctoo.storage.graph.IdGenerator;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.PropertyContainerConverterFactory;
 
 import org.junit.Before;

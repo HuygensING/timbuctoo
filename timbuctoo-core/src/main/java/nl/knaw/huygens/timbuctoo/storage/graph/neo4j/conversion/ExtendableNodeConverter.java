@@ -2,8 +2,8 @@ package nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.ConversionException;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.EntityInstantiator;
+import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
+import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.NodeConverter;
 
 import org.neo4j.graphdb.DynamicLabel;

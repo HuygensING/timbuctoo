@@ -3,13 +3,13 @@ package nl.knaw.huygens.timbuctoo.storage.graph.neo4j;
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Relation.SOURCE_ID;
 import static nl.knaw.huygens.timbuctoo.model.Relation.TARGET_ID;
+import static nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType.VERSION_OF;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.Neo4JLowLevelAPI.GET_ALL_QUERY;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.Neo4JLowLevelAPI.LABEL_PROPERTY;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.NodeMockBuilder.aNode;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.NodeSearchResultBuilder.aNodeSearchResult;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.NodeSearchResultBuilder.anEmptyNodeSearchResult;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.RelationshipMockBuilder.aRelationship;
-import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.SystemRelationshipType.VERSION_OF;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -27,9 +27,6 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.Neo4JLowLevelAPI;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.PropertyNotIndexedException;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.RelationshipIndexes;
 
 import org.junit.Before;
 import org.junit.Test;

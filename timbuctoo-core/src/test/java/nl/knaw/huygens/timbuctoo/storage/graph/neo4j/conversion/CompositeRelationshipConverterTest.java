@@ -7,7 +7,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 
 import java.util.ArrayList;
 
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.ConversionException;
+import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.RelationshipConverter;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.CompositeRelationshipConverter;
 
