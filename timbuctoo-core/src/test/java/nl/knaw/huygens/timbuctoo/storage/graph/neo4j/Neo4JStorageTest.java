@@ -143,19 +143,12 @@ public class Neo4JStorageTest {
     SubADomainEntity domainEntity = aDomainEntity().build();
 
     // action
-    String actualId = instance.addDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
+    instance.addDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
 
     // verify
     verify(dbMock).beginTx();
     verify(dbMock).createNode();
-    verify(compositeConverter).addValuesToPropertyContainer( //
-        argThat(equalTo(nodeMock)), // 
-        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
-            .withId(actualId) //
-            .withACreatedValue() //
-            .withAModifiedValue() //
-            .withRevision(FIRST_REVISION)//
-            .withoutAPID()));
+    verify(compositeConverter).addValuesToPropertyContainer(nodeMock, domainEntity);
     verify(neo4JLowLevelAPIMock).index(nodeMock);
     verify(transactionMock).success();
   }
@@ -185,13 +178,7 @@ public class Neo4JStorageTest {
       // verify
       verify(dbMock).beginTx();
       verify(dbMock).createNode();
-      verify(compositeConverter).addValuesToPropertyContainer( //
-          argThat(equalTo(nodeMock)), // 
-          argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
-              .withId(ID) //
-              .withACreatedValue() //
-              .withAModifiedValue() //
-              .withRevision(FIRST_REVISION)));
+      verify(compositeConverter).addValuesToPropertyContainer(nodeMock, domainEntity);
       verify(transactionMock).failure();
       verifyNoMoreInteractions(compositeConverter);
     }
@@ -204,18 +191,15 @@ public class Neo4JStorageTest {
 
     NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(SYSTEM_ENTITY_TYPE);
     // action
-    String actualId = instance.addSystemEntity(SYSTEM_ENTITY_TYPE, aSystemEntity().build());
+    TestSystemEntityWrapper systemEntity = aSystemEntity().build();
+    instance.addSystemEntity(SYSTEM_ENTITY_TYPE, systemEntity);
 
     // verify
     InOrder inOrder = inOrder(dbMock, transactionMock, systemEntityConverterMock, neo4JLowLevelAPIMock);
     inOrder.verify(dbMock).beginTx();
     inOrder.verify(systemEntityConverterMock).addValuesToPropertyContainer(//
-        argThat(equalTo(nodeMock)), // 
-        argThat(likeTestSystemEntityWrapper() //
-            .withId(actualId) //
-            .withACreatedValue() //
-            .withAModifiedValue() //
-            .withRevision(FIRST_REVISION)));
+        nodeMock, // 
+        systemEntity);
     inOrder.verify(neo4JLowLevelAPIMock).index(nodeMock);
     inOrder.verify(transactionMock).success();
     verifyNoMoreInteractions(systemEntityConverterMock);
@@ -1380,6 +1364,7 @@ public class Neo4JStorageTest {
     when(sourceNodeMock.createRelationshipTo(argThat(equalTo(targetNodeMock)), argThat(likeRelationshipType().withName(name)))).thenReturn(relationShipMock);
     when(idGeneratorMock.nextIdFor(RELATION_TYPE)).thenReturn(ID);
     SubARelation relation = aRelation()//
+        .withId(ID)//
         .withSourceId(RELATION_SOURCE_ID) //
         .withSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME) //
         .withTargetId(RELATION_TARGET_ID) //
@@ -1388,24 +1373,18 @@ public class Neo4JStorageTest {
         .withTypeType(RELATION_TYPE_NAME).build();
 
     // action
-    String id = instance.addRelation(RELATION_TYPE, relation, new Change());
-    // verify
-    assertThat(id, is(equalTo(ID)));
+    instance.addRelation(RELATION_TYPE, relation, new Change());
 
+    // verify
     InOrder inOrder = inOrder(dbMock, sourceNodeMock, relationConverterMock, transactionMock, neo4JLowLevelAPIMock);
 
     inOrder.verify(dbMock).beginTx();
     inOrder.verify(sourceNodeMock).createRelationshipTo(argThat(equalTo(targetNodeMock)), argThat(likeRelationshipType().withName(name)));
 
     inOrder.verify(relationConverterMock).addValuesToPropertyContainer( //
-        argThat(equalTo(relationShipMock)), //
-        argThat(likeDomainEntity(RELATION_TYPE) //
-            .withId(ID) //
-            .withACreatedValue() //
-            .withAModifiedValue() //
-            .withRevision(FIRST_REVISION)));
-
-    inOrder.verify(neo4JLowLevelAPIMock).addRelationship(relationShipMock, id);
+        relationShipMock, //
+        relation);
+    inOrder.verify(neo4JLowLevelAPIMock).addRelationship(relationShipMock, ID);
     inOrder.verify(transactionMock).success();
   }
 
@@ -1445,12 +1424,8 @@ public class Neo4JStorageTest {
       verify(sourceNodeMock).createRelationshipTo(argThat(equalTo(targetNodeMock)), argThat(likeRelationshipType().withName(name)));
 
       verify(relationConverterMock).addValuesToPropertyContainer( //
-          argThat(equalTo(relationShipMock)), //
-          argThat(likeDomainEntity(RELATION_TYPE) //
-              .withId(ID) //
-              .withACreatedValue() //
-              .withAModifiedValue() //
-              .withRevision(FIRST_REVISION)));
+          relationShipMock, //
+          relation);
       verifyTransactionFailed();
     }
   }

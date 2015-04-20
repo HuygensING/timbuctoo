@@ -13,11 +13,11 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
 public interface GraphStorage {
 
-  <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException;
+  <T extends DomainEntity> void addDomainEntity(Class<T> type, T entity, Change change) throws StorageException;
 
-  <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws StorageException;
+  <T extends SystemEntity> void addSystemEntity(Class<T> type, T entity) throws StorageException;
 
-  <T extends Relation> String addRelation(Class<T> type, Relation relation, Change change) throws StorageException;
+  <T extends Relation> void addRelation(Class<T> type, Relation relation, Change change) throws StorageException;
 
   <T extends Entity> T getEntity(Class<T> type, String id) throws StorageException;
 

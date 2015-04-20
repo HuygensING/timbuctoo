@@ -50,7 +50,6 @@ public class Neo4JStorage implements GraphStorage {
   private final PropertyContainerConverterFactory propertyContainerConverterFactory;
   private final NodeDuplicator nodeDuplicator;
   private final RelationshipDuplicator relationshipDuplicator;
-  private final IdGenerator idGenerator;
   private final TypeRegistry typeRegistry;
   private final Neo4JLowLevelAPI neo4jLowLevelAPI;
   private final Neo4JStorageIteratorFactory neo4jStorageIteratorFactory;
@@ -66,7 +65,6 @@ public class Neo4JStorage implements GraphStorage {
     this.propertyContainerConverterFactory = propertyContainerConverterFactory;
     this.nodeDuplicator = nodeDuplicator;
     this.relationshipDuplicator = relationshipDuplicator;
-    this.idGenerator = idGenerator;
     this.typeRegistry = typeRegistry;
     this.neo4jLowLevelAPI = neo4jLowLevelAPI;
     this.neo4jStorageIteratorFactory = neo4jStorageIteratorFactory;
@@ -78,9 +76,8 @@ public class Neo4JStorage implements GraphStorage {
   }
 
   @Override
-  public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
+  public <T extends DomainEntity> void addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
-      String id = addAdministrativeValues(type, entity);
       Node node = db.createNode();
 
       NodeConverter<? super T> compositeNodeConverter = propertyContainerConverterFactory.createCompositeForType(type);
@@ -94,16 +91,13 @@ public class Neo4JStorage implements GraphStorage {
       neo4jLowLevelAPI.index(node);
 
       transaction.success();
-
-      return id;
     }
   }
 
   @Override
-  public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws StorageException {
+  public <T extends SystemEntity> void addSystemEntity(Class<T> type, T entity) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
       try {
-        String id = addAdministrativeValues(type, entity);
 
         NodeConverter<T> propertyContainerConverter = propertyContainerConverterFactory.createForType(type);
         Node node = db.createNode();
@@ -112,7 +106,6 @@ public class Neo4JStorage implements GraphStorage {
 
         neo4jLowLevelAPI.index(node);
         transaction.success();
-        return id;
       } catch (ConversionException e) {
         transaction.failure();
         throw e;
@@ -122,7 +115,7 @@ public class Neo4JStorage implements GraphStorage {
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends Relation> String addRelation(Class<T> type, Relation relation, Change change) throws StorageException {
+  public <T extends Relation> void addRelation(Class<T> type, Relation relation, Change change) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
       Node source = getRelationPart(transaction, typeRegistry.getDomainEntityType(relation.getSourceType()), "Source", relation.getSourceId());
       Node target = getRelationPart(transaction, typeRegistry.getDomainEntityType(relation.getTargetType()), "Target", relation.getTargetId());
@@ -130,15 +123,13 @@ public class Neo4JStorage implements GraphStorage {
 
       RelationshipConverter<T> relationConverter = propertyContainerConverterFactory.createCompositeForRelation(type);
 
-      String id = addAdministrativeValues(type, (T) relation);
-
       try {
         String relationTypeName = getRegularRelationName(relationTypeNode);
         Relationship relationship = source.createRelationshipTo(target, DynamicRelationshipType.withName(relationTypeName));
 
         relationConverter.addValuesToPropertyContainer(relationship, (T) relation);
 
-        neo4jLowLevelAPI.addRelationship(relationship, id);
+        neo4jLowLevelAPI.addRelationship(relationship, relation.getId());
         transaction.success();
       } catch (ConversionException e) {
         transaction.failure();
@@ -148,7 +139,6 @@ public class Neo4JStorage implements GraphStorage {
         throw new StorageException(e);
       }
 
-      return id;
     }
   }
 
@@ -171,24 +161,6 @@ public class Neo4JStorage implements GraphStorage {
 
   private String createCannotFindString(String relationPart, Class<? extends Entity> type, String id) {
     return String.format("%s of type \"%s\" with id \"%s\" could not be found.", relationPart, type, id);
-  }
-
-  /**
-   * Adds the administrative values to the entity.
-   * @param type the type to generate the id for
-   * @param entity the entity to add the values to
-   * @return the generated id
-   */
-  private <T extends Entity> String addAdministrativeValues(Class<T> type, T entity) {
-    String id = idGenerator.nextIdFor(type);
-    Change change = Change.newInternalInstance();
-
-    entity.setCreated(change);
-    entity.setModified(change);
-    entity.setId(id);
-    updateRevision(entity);
-
-    return id;
   }
 
   private <T extends Entity> void updateRevision(T entity) {

@@ -4,6 +4,7 @@ import static nl.knaw.huygens.timbuctoo.storage.graph.DomainEntityMatcher.likeDo
 import static nl.knaw.huygens.timbuctoo.storage.graph.SubADomainEntityBuilder.aDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.graph.SubARelationBuilder.aRelation;
 import static nl.knaw.huygens.timbuctoo.storage.graph.TestSystemEntityWrapperBuilder.aSystemEntity;
+import static nl.knaw.huygens.timbuctoo.storage.graph.TestSystemEntityWrapperMatcher.likeTestSystemEntityWrapper;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -90,7 +91,7 @@ public class GraphLegacyStorageWrapperTest {
     nodeDuplicatorMock = mock(NodeDuplicator.class);
     idGeneratorMock = mock(IdGenerator.class);
 
-    instance = new GraphLegacyStorageWrapper(neo4JStorageMock);
+    instance = new GraphLegacyStorageWrapper(neo4JStorageMock, idGeneratorMock);
   }
 
   private void setupDBTransaction() {
@@ -117,15 +118,15 @@ public class GraphLegacyStorageWrapperTest {
     inOrder.verify(node).delete();
   }
 
-  protected void idGeneratorMockCreatesIDFor(Class<? extends Entity> type, String id) {
+  private void idGeneratorMockCreatesIDFor(Class<? extends Entity> type, String id) {
     when(idGeneratorMock.nextIdFor(type)).thenReturn(id);
   }
 
   @Test
-  public void addDomainEntityDelegatesToNeo4JStorageAddDomainEntity() throws Exception {
+  public void addDomainEntityManagesTheLifeCycleAndDelegatesToNeo4JStorageAddDomainEntity() throws Exception {
     // setup
     SubADomainEntity entity = aDomainEntity().withAPid().build();
-    when(neo4JStorageMock.addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE)).thenReturn(ID);
+    idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
 
     // action
     String id = instance.addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
@@ -135,7 +136,12 @@ public class GraphLegacyStorageWrapperTest {
 
     verify(neo4JStorageMock).addDomainEntity(//
         argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
-        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE).withoutAPID()), //
+        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE)//
+            .withoutAPID()//
+            .withId(ID) //
+            .withACreatedValue() //
+            .withAModifiedValue() //
+            .withRevision(FIRST_REVISION)), //
         argThat(is(CHANGE)));
   }
 
@@ -143,7 +149,7 @@ public class GraphLegacyStorageWrapperTest {
   public void addDomainEntityThrowsAnExceptionWhenTheDelegateDoes() throws Exception {
     // setup
     SubADomainEntity entity = aDomainEntity().build();
-    when(neo4JStorageMock.addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE)).thenThrow(new StorageException());
+    doThrow(StorageException.class).when(neo4JStorageMock).addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
 
     // action
     instance.addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
@@ -506,10 +512,11 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void addDomainEntityForRelationDelegatesToNeo4JStorageAddRelation() throws Exception {
+  public void addDomainEntityForRelationManagesTheLifeCylceDelegatesToNeo4JStorageAddRelation() throws Exception {
     // setup
     SubARelation relation = aRelation().withAPID().build();
-    when(neo4JStorageMock.addRelation(RELATION_TYPE, relation, CHANGE)).thenReturn(ID);
+
+    idGeneratorMockCreatesIDFor(RELATION_TYPE, ID);
 
     // action
     String id = instance.addDomainEntity(RELATION_TYPE, relation, CHANGE);
@@ -518,7 +525,12 @@ public class GraphLegacyStorageWrapperTest {
     assertThat(id, is(equalTo(ID)));
     verify(neo4JStorageMock).addRelation(//
         argThat(is(equalTo(RELATION_TYPE))), //
-        argThat(likeDomainEntity(RELATION_TYPE).withoutAPID()), //
+        argThat(likeDomainEntity(RELATION_TYPE)//
+            .withId(ID) //
+            .withACreatedValue() //
+            .withAModifiedValue() //
+            .withRevision(FIRST_REVISION)//
+            .withoutAPID()), //
         argThat(is(CHANGE)));
   }
 
@@ -526,7 +538,7 @@ public class GraphLegacyStorageWrapperTest {
   public void addDomainEntityForRelationThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
     SubARelation relation = aRelation().build();
-    when(neo4JStorageMock.addRelation(RELATION_TYPE, relation, CHANGE)).thenThrow(new StorageException());
+    doThrow(StorageException.class).when(neo4JStorageMock).addRelation(RELATION_TYPE, relation, CHANGE);
 
     // action
     instance.addDomainEntity(RELATION_TYPE, relation, CHANGE);
@@ -737,17 +749,24 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void addSystemEntityDelegatesToNeo4JStorage() throws Exception {
+  public void addSystemEntityManagesLifeCyleDelegatesToNeo4JStorage() throws Exception {
     // setup
     TestSystemEntityWrapper entity = aSystemEntity().build();
-    when(neo4JStorageMock.addSystemEntity(SYSTEM_ENTITY_TYPE, entity)).thenReturn(ID);
+
+    idGeneratorMockCreatesIDFor(SYSTEM_ENTITY_TYPE, ID);
 
     // action
     String actualId = instance.addSystemEntity(SYSTEM_ENTITY_TYPE, entity);
 
     // verify
     assertThat(actualId, is(equalTo(ID)));
-    verify(neo4JStorageMock).addSystemEntity(SYSTEM_ENTITY_TYPE, entity);
+    verify(neo4JStorageMock).addSystemEntity(//
+        argThat(is(equalTo(SYSTEM_ENTITY_TYPE))), //
+        argThat(likeTestSystemEntityWrapper() //
+            .withId(actualId) //
+            .withACreatedValue() //
+            .withAModifiedValue() //
+            .withRevision(FIRST_REVISION)));
   }
 
   @Test
@@ -784,7 +803,7 @@ public class GraphLegacyStorageWrapperTest {
   @Test(expected = StorageException.class)
   public void addSystemEntityThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     TestSystemEntityWrapper entity = aSystemEntity().build();
-    when(neo4JStorageMock.addSystemEntity(SYSTEM_ENTITY_TYPE, entity)).thenThrow(new StorageException());
+    doThrow(StorageException.class).when(neo4JStorageMock).addSystemEntity(SYSTEM_ENTITY_TYPE, entity);
 
     // action
     instance.addSystemEntity(SYSTEM_ENTITY_TYPE, entity);

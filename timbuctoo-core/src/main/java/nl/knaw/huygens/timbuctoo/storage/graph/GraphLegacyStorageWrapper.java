@@ -24,10 +24,16 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   private static final Class<Relation> RELATION_TYPE = Relation.class;
   private final GraphStorage graphStorage;
+  private final IdGenerator idGenerator;
 
   @Inject
   public GraphLegacyStorageWrapper(GraphStorage graphStorage) {
+    this(graphStorage, new IdGenerator());
+  }
+
+  public GraphLegacyStorageWrapper(GraphStorage graphStorage, IdGenerator idGenerator) {
     this.graphStorage = graphStorage;
+    this.idGenerator = idGenerator;
   }
 
   @Override
@@ -56,19 +62,24 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws StorageException {
-    return graphStorage.addSystemEntity(type, entity);
+    String id = addAdministrativeValues(type, entity);
+    graphStorage.addSystemEntity(type, entity);
+    return id;
   }
 
   @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
     removePID(entity);
+    String id = addAdministrativeValues(type, entity);
 
     if (RELATION_TYPE.isAssignableFrom(type)) {
-      return graphStorage.addRelation((Class<? extends Relation>) type, (Relation) entity, change);
+      graphStorage.addRelation((Class<? extends Relation>) type, (Relation) entity, change);
     } else {
-      return graphStorage.addDomainEntity(type, entity, change);
+      graphStorage.addDomainEntity(type, entity, change);
     }
+
+    return id;
   }
 
   private <T extends DomainEntity> void removePID(T entity) {
@@ -95,6 +106,29 @@ public class GraphLegacyStorageWrapper implements Storage {
         throw new UpdateException(String.format("%s with id %s does not exist.", type, entity.getId()));
       }
     }
+  }
+
+  /**
+   * Adds the administrative values to the entity.
+   * @param type the type to generate the id for
+   * @param entity the entity to add the values to
+   * @return the generated id
+   */
+  private <T extends Entity> String addAdministrativeValues(Class<T> type, T entity) {
+    String id = idGenerator.nextIdFor(type);
+    Change change = Change.newInternalInstance();
+
+    entity.setCreated(change);
+    entity.setModified(change);
+    entity.setId(id);
+    updateRevision(entity);
+
+    return id;
+  }
+
+  private <T extends Entity> void updateRevision(T entity) {
+    int rev = entity.getRev();
+    entity.setRev(++rev);
   }
 
   private <T extends DomainEntity> boolean variantExists(Class<T> type, T entity) {
