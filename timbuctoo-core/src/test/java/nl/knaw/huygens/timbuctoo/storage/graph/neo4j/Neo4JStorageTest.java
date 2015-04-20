@@ -134,7 +134,7 @@ public class Neo4JStorageTest {
   }
 
   @Test
-  public void addDomainEntitySavesTheProjectVersionAndThePrimitiveAndReturnsTheId() throws Exception {
+  public void addDomainEntitySavesTheProjectVersionAndThePrimitive() throws Exception {
     // setup
     Node nodeMock = aNode().createdBy(dbMock);
     idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
@@ -185,7 +185,7 @@ public class Neo4JStorageTest {
   }
 
   @Test
-  public void addSystemEntitySavesTheSystemAsNodeAndReturnsItsId() throws Exception {
+  public void addSystemEntitySavesTheSystemAsNode() throws Exception {
     Node nodeMock = aNode().createdBy(dbMock);
     idGeneratorMockCreatesIDFor(SYSTEM_ENTITY_TYPE, ID);
 
@@ -1311,7 +1311,7 @@ public class Neo4JStorageTest {
    * *****************************************************************************/
 
   @Test
-  public void addRelationAddsARelationshipToTheSourceAndReturnsTheId() throws Exception {
+  public void addRelationAddsARelationshipToTheSource() throws Exception {
     // setup
     String name = "regularTypeName";
 
