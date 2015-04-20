@@ -27,8 +27,8 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
+import nl.knaw.huygens.timbuctoo.storage.graph.GraphLegacyStorageWrapper;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.IdGenerator;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.Neo4JLegacyStorageWrapper;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.Neo4JStorage;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.NodeConverter;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.NodeDuplicator;
@@ -74,7 +74,7 @@ public class Neo4JLegacyStorageWrapperTest {
 
   protected GraphDatabaseService dbMock;
   protected PropertyContainerConverterFactory propertyContainerConverterFactoryMock;
-  protected Neo4JLegacyStorageWrapper instance;
+  protected GraphLegacyStorageWrapper instance;
   protected Transaction transactionMock;
   protected IdGenerator idGeneratorMock;
   protected NodeDuplicator nodeDuplicatorMock;
@@ -91,7 +91,7 @@ public class Neo4JLegacyStorageWrapperTest {
     nodeDuplicatorMock = mock(NodeDuplicator.class);
     idGeneratorMock = mock(IdGenerator.class);
 
-    instance = new Neo4JLegacyStorageWrapper(neo4JStorageMock);
+    instance = new GraphLegacyStorageWrapper(neo4JStorageMock);
   }
 
   private void setupDBTransaction() {

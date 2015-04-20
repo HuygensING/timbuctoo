@@ -4,7 +4,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.storage.DBIntegrationTestHelper;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.Neo4JLegacyStorageWrapper;
+import nl.knaw.huygens.timbuctoo.storage.graph.GraphLegacyStorageWrapper;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.Neo4JStorage;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.PropertyContainerConverterFactory;
 
@@ -29,7 +29,7 @@ public class Neo4JDBIntegrationTestHelper implements DBIntegrationTestHelper {
   @Override
   public Storage createStorage(TypeRegistry typeRegistry) throws ModelException {
     propertyContainerConverterFactory = new PropertyContainerConverterFactory(typeRegistry);
-    return new Neo4JLegacyStorageWrapper(new Neo4JStorage(db, propertyContainerConverterFactory, typeRegistry));
+    return new GraphLegacyStorageWrapper(new Neo4JStorage(db, propertyContainerConverterFactory, typeRegistry));
   }
 
 }

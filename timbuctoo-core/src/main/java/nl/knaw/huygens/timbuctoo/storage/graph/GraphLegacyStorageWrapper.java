@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.neo4j;
+package nl.knaw.huygens.timbuctoo.storage.graph;
 
 import java.util.Date;
 import java.util.List;
@@ -20,14 +20,14 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 
-public class Neo4JLegacyStorageWrapper implements Storage {
+public class GraphLegacyStorageWrapper implements Storage {
 
   private static final Class<Relation> RELATION_TYPE = Relation.class;
-  private final Neo4JStorage neo4JStorage;
+  private final GraphStorage graphStorage;
 
   @Inject
-  public Neo4JLegacyStorageWrapper(Neo4JStorage neo4JStorage) {
-    this.neo4JStorage = neo4JStorage;
+  public GraphLegacyStorageWrapper(GraphStorage graphStorage) {
+    this.graphStorage = graphStorage;
   }
 
   @Override
@@ -46,44 +46,44 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   @Override
   public void close() {
-    neo4JStorage.close();
+    graphStorage.close();
   }
 
   @Override
   public boolean isAvailable() {
-    return neo4JStorage.isAvailable();
+    return graphStorage.isAvailable();
   }
 
   @Override
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws StorageException {
-    return neo4JStorage.addSystemEntity(type, entity);
+    return graphStorage.addSystemEntity(type, entity);
   }
 
   @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
     if (RELATION_TYPE.isAssignableFrom(type)) {
-      return neo4JStorage.addRelation((Class<? extends Relation>) type, (Relation) entity, change);
+      return graphStorage.addRelation((Class<? extends Relation>) type, (Relation) entity, change);
     } else {
-      return neo4JStorage.addDomainEntity(type, entity, change);
+      return graphStorage.addDomainEntity(type, entity, change);
     }
   }
 
   @Override
   public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws StorageException {
-    neo4JStorage.updateSystemEntity(type, entity);
+    graphStorage.updateSystemEntity(type, entity);
   }
 
   @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
     if (RELATION_TYPE.isAssignableFrom(type)) {
-      neo4JStorage.updateRelation((Class<? extends Relation>) type, (Relation) entity, change);
+      graphStorage.updateRelation((Class<? extends Relation>) type, (Relation) entity, change);
     } else {
       if (baseTypeExists(type, entity) && variantExists(type, entity)) {
-        neo4JStorage.updateDomainEntity(type, entity, change);
+        graphStorage.updateDomainEntity(type, entity, change);
       } else if (baseTypeExists(type, entity)) {
-        neo4JStorage.addVariant(type, entity, change);
+        graphStorage.addVariant(type, entity, change);
       } else {
         throw new UpdateException(String.format("%s with id %s does not exist.", type, entity.getId()));
       }
@@ -91,26 +91,26 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   }
 
   private <T extends DomainEntity> boolean variantExists(Class<T> type, T entity) {
-    return neo4JStorage.entityExists(type, entity.getId());
+    return graphStorage.entityExists(type, entity.getId());
   }
 
   private <T extends DomainEntity> boolean baseTypeExists(Class<T> type, T entity) {
-    return neo4JStorage.entityExists(TypeRegistry.getBaseClass(type), entity.getId());
+    return graphStorage.entityExists(TypeRegistry.getBaseClass(type), entity.getId());
   }
 
   @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) throws StorageException {
     if (RELATION_TYPE.isAssignableFrom(type)) {
-      neo4JStorage.setRelationPID((Class<? extends Relation>) type, id, pid);
+      graphStorage.setRelationPID((Class<? extends Relation>) type, id, pid);
     } else {
-      neo4JStorage.setDomainEntityPID(type, id, pid);
+      graphStorage.setDomainEntityPID(type, id, pid);
     }
   }
 
   @Override
   public <T extends SystemEntity> int deleteSystemEntity(Class<T> type, String id) throws StorageException {
-    return neo4JStorage.deleteSystemEntity(type, id);
+    return graphStorage.deleteSystemEntity(type, id);
   }
 
   @Override
@@ -125,7 +125,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws StorageException {
-    neo4JStorage.deleteDomainEntity(type, id, change);
+    graphStorage.deleteDomainEntity(type, id, change);
   }
 
   // FIXME let this method find the non persistent and delete them. See TIM-145.
@@ -136,7 +136,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
     }
     Change change = Change.newInternalInstance();
     for (String id : ids) {
-      neo4JStorage.deleteDomainEntity(TypeRegistry.toBaseDomainEntity(type), id, change);
+      graphStorage.deleteDomainEntity(TypeRegistry.toBaseDomainEntity(type), id, change);
     }
   }
 
@@ -162,18 +162,18 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   @Override
   public <T extends Entity> boolean entityExists(Class<T> type, String id) throws StorageException {
     if (RELATION_TYPE.isAssignableFrom(type)) {
-      return neo4JStorage.relationExists((Class<? extends Relation>) type, id);
+      return graphStorage.relationExists((Class<? extends Relation>) type, id);
     } else {
-      return neo4JStorage.entityExists(type, id);
+      return graphStorage.entityExists(type, id);
     }
   }
 
   @Override
   public <T extends Entity> T getEntityOrDefaultVariation(Class<T> type, String id) throws StorageException {
-    if (neo4JStorage.entityExists(type, id)) {
-      return neo4JStorage.getEntity(type, id);
+    if (graphStorage.entityExists(type, id)) {
+      return graphStorage.getEntity(type, id);
     } else {
-      return neo4JStorage.getDefaultVariation(type, id);
+      return graphStorage.getDefaultVariation(type, id);
     }
   }
 
@@ -181,22 +181,22 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   public <T extends Entity> T getEntity(Class<T> type, String id) throws StorageException {
     if (RELATION_TYPE.isAssignableFrom(type)) {
       @SuppressWarnings("unchecked")
-      T relationDomainEntity = (T) neo4JStorage.getRelation((Class<Relation>) type, id);
+      T relationDomainEntity = (T) graphStorage.getRelation((Class<Relation>) type, id);
       return relationDomainEntity;
     } else {
-      return neo4JStorage.getEntity(type, id);
+      return graphStorage.getEntity(type, id);
     }
 
   }
 
   @Override
   public <T extends SystemEntity> StorageIterator<T> getSystemEntities(Class<T> type) throws StorageException {
-    return neo4JStorage.getEntities(type);
+    return graphStorage.getEntities(type);
   }
 
   @Override
   public <T extends DomainEntity> StorageIterator<T> getDomainEntities(Class<T> type) throws StorageException {
-    return neo4JStorage.getEntities(type);
+    return graphStorage.getEntities(type);
   }
 
   @Override
@@ -208,9 +208,9 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   @Override
   public <T extends Entity> long count(Class<T> type) {
     if (RELATION_TYPE.isAssignableFrom(type)) {
-      return neo4JStorage.countRelations((Class<? extends Relation>) type);
+      return graphStorage.countRelations((Class<? extends Relation>) type);
     } else {
-      return neo4JStorage.countEntities(type);
+      return graphStorage.countEntities(type);
     }
   }
 
@@ -218,25 +218,25 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   public <T extends Entity> T findItemByProperty(Class<T> type, String field, String value) throws StorageException {
     if (RELATION_TYPE.isAssignableFrom(type)) {
       @SuppressWarnings("unchecked")
-      T relation = (T) neo4JStorage.findRelationByProperty((Class<? extends Relation>) type, field, value);
+      T relation = (T) graphStorage.findRelationByProperty((Class<? extends Relation>) type, field, value);
       return relation;
     } else {
-      return neo4JStorage.findEntityByProperty(type, field, value);
+      return graphStorage.findEntityByProperty(type, field, value);
     }
   }
 
   @Override
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws StorageException {
-    return neo4JStorage.getAllVariations(type, id);
+    return graphStorage.getAllVariations(type, id);
   }
 
   @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> T getRevision(Class<T> type, String id, int revision) throws StorageException {
     if (RELATION_TYPE.isAssignableFrom(type)) {
-      return (T) neo4JStorage.getRelationRevision((Class<? extends Relation>) type, id, revision);
+      return (T) graphStorage.getRelationRevision((Class<? extends Relation>) type, id, revision);
     } else {
-      return neo4JStorage.getDomainEntityRevision(type, id, revision);
+      return graphStorage.getDomainEntityRevision(type, id, revision);
     }
   }
 
@@ -247,7 +247,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends Relation> T findRelation(Class<T> type, String sourceId, String targetId, String relationTypeId) throws StorageException {
-    return neo4JStorage.findRelation(type, sourceId, targetId, relationTypeId);
+    return graphStorage.findRelation(type, sourceId, targetId, relationTypeId);
   }
 
   @Override
@@ -257,16 +257,16 @@ public class Neo4JLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends Relation> StorageIterator<T> getRelationsByEntityId(Class<T> type, String id) throws StorageException {
-    return neo4JStorage.getRelationsByEntityId(type, id);
+    return graphStorage.getRelationsByEntityId(type, id);
   }
 
   @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> List<String> getAllIdsWithoutPIDOfType(Class<T> type) throws StorageException {
     if (RELATION_TYPE.isAssignableFrom(type)) {
-      return neo4JStorage.getIdsOfNonPersistentRelations((Class<Relation>) type);
+      return graphStorage.getIdsOfNonPersistentRelations((Class<Relation>) type);
     } else {
-      return neo4JStorage.getIdsOfNonPersistentDomainEntities(type);
+      return graphStorage.getIdsOfNonPersistentDomainEntities(type);
     }
   }
 
@@ -274,7 +274,7 @@ public class Neo4JLegacyStorageWrapper implements Storage {
   public List<String> getRelationIds(List<String> ids) throws StorageException {
     Set<String> relationIds = Sets.newHashSet();
     for (String id : ids) {
-      StorageIterator<Relation> iterator = neo4JStorage.getRelationsByEntityId(RELATION_TYPE, id);
+      StorageIterator<Relation> iterator = graphStorage.getRelationsByEntityId(RELATION_TYPE, id);
 
       for (; iterator.hasNext();) {
         relationIds.add(iterator.next().getId());

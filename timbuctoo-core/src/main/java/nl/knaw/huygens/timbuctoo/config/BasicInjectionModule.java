@@ -23,7 +23,7 @@ package nl.knaw.huygens.timbuctoo.config;
  */
 
 import nl.knaw.huygens.timbuctoo.storage.Storage;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.Neo4JLegacyStorageWrapper;
+import nl.knaw.huygens.timbuctoo.storage.graph.GraphLegacyStorageWrapper;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
@@ -61,7 +61,7 @@ public class BasicInjectionModule extends AbstractModule {
     //    bind(Storage.class).to(MongoStorage.class);
     //    bind(Properties.class).to(MongoProperties.class);
 
-    bind(Storage.class).to(Neo4JLegacyStorageWrapper.class);
+    bind(Storage.class).to(GraphLegacyStorageWrapper.class);
 
     //    engine = new RestCypherQueryEngine(restApi);
     //    bind(GraphDatabaseService.class).toProvider(GraphDatabaseServiceProvider.class);
