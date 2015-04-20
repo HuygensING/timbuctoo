@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
+import static nl.knaw.huygens.timbuctoo.storage.graph.DomainEntityMatcher.likeDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.graph.SubADomainEntityBuilder.aDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.graph.SubARelationBuilder.aRelation;
 import static nl.knaw.huygens.timbuctoo.storage.graph.TestSystemEntityWrapperBuilder.aSystemEntity;
@@ -132,7 +133,10 @@ public class GraphLegacyStorageWrapperTest {
     // verify
     assertThat(id, is(equalTo(ID)));
 
-    verify(neo4JStorageMock).addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+    verify(neo4JStorageMock).addDomainEntity(//
+        argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
+        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE).withoutAPID()), //
+        argThat(is(CHANGE)));
   }
 
   @Test(expected = StorageException.class)
@@ -272,14 +276,17 @@ public class GraphLegacyStorageWrapperTest {
   @Test
   public void updateDomainEntityDelegatesToNeo4JStorage() throws Exception {
     // setup
-    SubADomainEntity entity = aDomainEntity().withId(ID).build();
+    SubADomainEntity entity = aDomainEntity().withId(ID).withAPid().build();
     entityAndVariantExist();
 
     // action
     instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
 
     // verify
-    verify(neo4JStorageMock).updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+    verify(neo4JStorageMock).updateDomainEntity(//
+        argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
+        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE).withId(ID).withoutAPID()), // 
+        argThat(is(CHANGE)));
   }
 
   private void entityAndVariantExist() {
@@ -303,14 +310,17 @@ public class GraphLegacyStorageWrapperTest {
   @Test
   public void updateDomainEntityDelegatesToNeo4JStoragesAddNewVariantWhenTheVariantDoesNotExist() throws Exception {
     // setup
-    SubADomainEntity entity = aDomainEntity().withId(ID).build();
+    SubADomainEntity entity = aDomainEntity().withId(ID).withAPid().build();
     variantDoesNotExist();
 
     // action
     instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
 
     // verify
-    verify(neo4JStorageMock).addVariant(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+    verify(neo4JStorageMock).addVariant(//
+        argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
+        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE).withId(ID).withoutAPID()), // 
+        argThat(is(CHANGE)));
   }
 
   private void variantDoesNotExist() {
@@ -498,7 +508,7 @@ public class GraphLegacyStorageWrapperTest {
   @Test
   public void addDomainEntityForRelationDelegatesToNeo4JStorageAddRelation() throws Exception {
     // setup
-    SubARelation relation = aRelation().build();
+    SubARelation relation = aRelation().withAPID().build();
     when(neo4JStorageMock.addRelation(RELATION_TYPE, relation, CHANGE)).thenReturn(ID);
 
     // action
@@ -506,7 +516,10 @@ public class GraphLegacyStorageWrapperTest {
 
     // verify
     assertThat(id, is(equalTo(ID)));
-    verify(neo4JStorageMock).addRelation(RELATION_TYPE, relation, CHANGE);
+    verify(neo4JStorageMock).addRelation(//
+        argThat(is(equalTo(RELATION_TYPE))), //
+        argThat(likeDomainEntity(RELATION_TYPE).withoutAPID()), //
+        argThat(is(CHANGE)));
   }
 
   @Test(expected = StorageException.class)
@@ -535,13 +548,16 @@ public class GraphLegacyStorageWrapperTest {
   @Test
   public void updateDomainEntityForRelationDelegatesToNeo4JStorageAddRelation() throws Exception {
     // setup
-    SubARelation entity = aRelation().build();
+    SubARelation entity = aRelation().withId(ID).withAPID().build();
 
     // action
     instance.updateDomainEntity(RELATION_TYPE, entity, CHANGE);
 
     // verify
-    verify(neo4JStorageMock).updateRelation(RELATION_TYPE, entity, CHANGE);
+    verify(neo4JStorageMock).updateRelation( //
+        argThat(is(equalTo(RELATION_TYPE))), //
+        argThat(likeDomainEntity(RELATION_TYPE).withId(ID).withoutAPID()), //
+        argThat(is(CHANGE)));
   }
 
   @Test(expected = StorageException.class)

@@ -77,9 +77,9 @@ public class Neo4JStorage implements GraphStorage {
     this(db, propertyContainerConverterFactory, new NodeDuplicator(db, neo4jLowLevelAPI), new RelationshipDuplicator(db), idGenerator, typeRegistry, neo4jLowLevelAPI, neo4jStorageIteratorFactory);
   }
 
+  @Override
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
-      removePID(entity);
       String id = addAdministrativeValues(type, entity);
       Node node = db.createNode();
 
@@ -99,6 +99,7 @@ public class Neo4JStorage implements GraphStorage {
     }
   }
 
+  @Override
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
       try {
@@ -119,6 +120,7 @@ public class Neo4JStorage implements GraphStorage {
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public <T extends Relation> String addRelation(Class<T> type, Relation relation, Change change) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
@@ -194,10 +196,7 @@ public class Neo4JStorage implements GraphStorage {
     entity.setRev(++rev);
   }
 
-  private <T extends DomainEntity> void removePID(T entity) {
-    entity.setPid(null);
-  }
-
+  @Override
   public <T extends Entity> T getEntity(Class<T> type, String id) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
       Node nodeWithHighestRevision = neo4jLowLevelAPI.getLatestNodeById(type, id);
@@ -223,6 +222,7 @@ public class Neo4JStorage implements GraphStorage {
     }
   }
 
+  @Override
   public <T extends Entity> StorageIterator<T> getEntities(Class<T> type) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
       ResourceIterator<Node> nodes = neo4jLowLevelAPI.getNodesOfType(type);
@@ -240,6 +240,7 @@ public class Neo4JStorage implements GraphStorage {
     }
   }
 
+  @Override
   public <T extends Relation> T getRelation(Class<T> type, String id) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
       Relationship relationshipWithHighestRevision = neo4jLowLevelAPI.getLatestRelationshipById(id);
@@ -266,11 +267,12 @@ public class Neo4JStorage implements GraphStorage {
     }
   }
 
+  @Override
   public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
-    removePID(entity);
     updateEntity(type, entity, change);
   }
 
+  @Override
   public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws StorageException {
     updateEntity(type, entity, Change.newInternalInstance());
   }
@@ -316,6 +318,7 @@ public class Neo4JStorage implements GraphStorage {
    * @param change the update change
    * @throws StorageException when the variant cannot be added
    */
+  @Override
   @SuppressWarnings("unchecked")
   public <T extends DomainEntity> void addVariant(Class<T> type, T variant, Change change) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
@@ -340,7 +343,6 @@ public class Neo4JStorage implements GraphStorage {
       }
 
       // update administrative values
-      removePID(variant);
       updateAdministrativeValues(variant);
 
       NodeConverter<T> converter = propertyContainerConverterFactory.createForType(type);
@@ -351,6 +353,7 @@ public class Neo4JStorage implements GraphStorage {
     }
   }
 
+  @Override
   @SuppressWarnings("unchecked")
   public <T extends Relation> void updateRelation(Class<T> type, Relation relation, Change change) throws StorageException {
 
@@ -369,7 +372,6 @@ public class Neo4JStorage implements GraphStorage {
         throw new UpdateException(revisionNotFoundMessage(type, entity, rev));
       }
 
-      removePID(relation);
       updateAdministrativeValues(relation);
 
       RelationshipConverter<T> converter = propertyContainerConverterFactory.createForRelation(type);
@@ -398,6 +400,7 @@ public class Neo4JStorage implements GraphStorage {
     return String.format("\"%s\" with id \"%s\" cannot be found.", type.getSimpleName(), entity.getId());
   }
 
+  @Override
   public long countEntities(Class<? extends Entity> type) {
     Class<? extends Entity> primitiveType = TypeRegistry.getBaseClass(type);
     Label label = DynamicLabel.label(TypeNames.getInternalName(primitiveType));
@@ -405,11 +408,13 @@ public class Neo4JStorage implements GraphStorage {
     return neo4jLowLevelAPI.countNodesWithLabel(label);
   }
 
+  @Override
   public long countRelations(Class<? extends Relation> relationType) {
     return neo4jLowLevelAPI.countRelationships();
   }
 
   // TODO: Make equal to deleteSystemEntity see TIM-54
+  @Override
   public <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws StorageException {
     if (!TypeRegistry.isPrimitiveDomainEntity(type)) {
       throw new IllegalArgumentException("Only primitive DomainEntities can be deleted. " + type.getSimpleName() + " is not a primitive DomainEntity.");
@@ -428,6 +433,7 @@ public class Neo4JStorage implements GraphStorage {
     }
   }
 
+  @Override
   public <T extends SystemEntity> int deleteSystemEntity(Class<T> type, String id) throws StorageException {
     int numDeleted = 0;
     try (Transaction transaction = db.beginTx()) {
@@ -452,6 +458,7 @@ public class Neo4JStorage implements GraphStorage {
     return numDeleted;
   }
 
+  @Override
   public <T extends DomainEntity> T getDomainEntityRevision(Class<T> type, String id, int revision) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
       Node node = neo4jLowLevelAPI.getNodeWithRevision(type, id, revision);
@@ -484,6 +491,7 @@ public class Neo4JStorage implements GraphStorage {
     }
   }
 
+  @Override
   public <T extends Relation> T getRelationRevision(Class<T> type, String id, int revision) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
 
@@ -520,6 +528,7 @@ public class Neo4JStorage implements GraphStorage {
     return !Strings.isBlank(entity.getPid());
   }
 
+  @Override
   public <T extends DomainEntity> void setDomainEntityPID(Class<T> type, String id, String pid) throws NoSuchEntityException, ConversionException, StorageException {
     try (Transaction transaction = db.beginTx()) {
       Node node = neo4jLowLevelAPI.getLatestNodeById(type, id);
@@ -552,6 +561,7 @@ public class Neo4JStorage implements GraphStorage {
     }
   }
 
+  @Override
   public <T extends Relation> void setRelationPID(Class<T> type, String id, String pid) throws NoSuchEntityException, ConversionException, StorageException {
     try (Transaction transaction = db.beginTx()) {
       Relationship relationship = neo4jLowLevelAPI.getLatestRelationshipById(id);
@@ -592,14 +602,17 @@ public class Neo4JStorage implements GraphStorage {
     }
   }
 
+  @Override
   public void close() {
     db.shutdown();
   }
 
+  @Override
   public boolean isAvailable() {
     return db.isAvailable(REQUEST_TIMEOUT);
   }
 
+  @Override
   public <T extends Entity> T findEntityByProperty(Class<T> type, String field, String value) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
       NodeConverter<T> converter = propertyContainerConverterFactory.createForType(type);
@@ -627,6 +640,7 @@ public class Neo4JStorage implements GraphStorage {
     }
   }
 
+  @Override
   public <T extends Relation> T findRelationByProperty(Class<T> type, String field, String value) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
       RelationshipConverter<T> relationshipConverter = propertyContainerConverterFactory.createForRelation(type);
@@ -653,6 +667,7 @@ public class Neo4JStorage implements GraphStorage {
     }
   }
 
+  @Override
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws StorageException {
     Preconditions.checkArgument(TypeRegistry.isPrimitiveDomainEntity(type), "Nonprimitive type %s", type);
 
@@ -682,6 +697,7 @@ public class Neo4JStorage implements GraphStorage {
 
   }
 
+  @Override
   public <T extends Relation> StorageIterator<T> getRelationsByEntityId(Class<T> type, String id) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
       List<Relationship> relationships = neo4jLowLevelAPI.getRelationshipsByNodeId(id);
@@ -703,6 +719,7 @@ public class Neo4JStorage implements GraphStorage {
    * @param id the id of the variant
    * @return true if it exists, false if not
    */
+  @Override
   public boolean entityExists(Class<? extends Entity> type, String id) {
     try (Transaction transaction = db.beginTx()) {
       boolean exists = propertyContainerExists(neo4jLowLevelAPI.getLatestNodeById(type, id));
@@ -712,6 +729,7 @@ public class Neo4JStorage implements GraphStorage {
     }
   }
 
+  @Override
   public boolean relationExists(Class<? extends Relation> relationType, String id) {
     try (Transaction transaction = db.beginTx()) {
       boolean exists = propertyContainerExists(neo4jLowLevelAPI.getLatestRelationshipById(id));
@@ -725,6 +743,7 @@ public class Neo4JStorage implements GraphStorage {
     return propertyContainer != null;
   }
 
+  @Override
   public <T extends Relation> T findRelation(Class<T> relationType, String sourceId, String targetId, String relationTypeId) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
       Relationship relationship = neo4jLowLevelAPI.findLatestRelationshipFor(relationType, sourceId, targetId, relationTypeId);
@@ -750,6 +769,7 @@ public class Neo4JStorage implements GraphStorage {
     }
   }
 
+  @Override
   public <T extends DomainEntity> List<String> getIdsOfNonPersistentDomainEntities(Class<T> type) {
     try (Transaction transaction = db.beginTx()) {
       ResourceIterator<Node> foundNodes = neo4jLowLevelAPI.getNodesOfType(type);
@@ -769,6 +789,7 @@ public class Neo4JStorage implements GraphStorage {
   }
 
   // FIXME filter with projectType see TIM-143
+  @Override
   public <T extends Relation> List<String> getIdsOfNonPersistentRelations(Class<T> type) {
     try (Transaction transaction = db.beginTx()) {
       ResourceIterator<Node> allNodes = neo4jLowLevelAPI.getAllNodes();
@@ -800,6 +821,7 @@ public class Neo4JStorage implements GraphStorage {
   }
 
   // TODO make only available for DomainEntities see TIM-162
+  @Override
   public <T extends Entity> T getDefaultVariation(Class<T> type, String id) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
       T entity = null;

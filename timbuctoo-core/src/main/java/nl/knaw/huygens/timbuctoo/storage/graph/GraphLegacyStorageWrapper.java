@@ -62,11 +62,17 @@ public class GraphLegacyStorageWrapper implements Storage {
   @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
+    removePID(entity);
+
     if (RELATION_TYPE.isAssignableFrom(type)) {
       return graphStorage.addRelation((Class<? extends Relation>) type, (Relation) entity, change);
     } else {
       return graphStorage.addDomainEntity(type, entity, change);
     }
+  }
+
+  private <T extends DomainEntity> void removePID(T entity) {
+    entity.setPid(null);
   }
 
   @Override
@@ -77,6 +83,7 @@ public class GraphLegacyStorageWrapper implements Storage {
   @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
+    removePID(entity);
     if (RELATION_TYPE.isAssignableFrom(type)) {
       graphStorage.updateRelation((Class<? extends Relation>) type, (Relation) entity, change);
     } else {

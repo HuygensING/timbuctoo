@@ -160,29 +160,6 @@ public class Neo4JStorageTest {
     verify(transactionMock).success();
   }
 
-  @Test
-  public void addDomainEntityRemovesThePIDBeforeSaving() throws Exception {
-    // setup
-    Node nodeMock = aNode().createdBy(dbMock);
-    idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
-
-    NodeConverter<? super SubADomainEntity> compositeConverter = propertyContainerConverterFactoryHasCompositeConverterFor(DOMAIN_ENTITY_TYPE);
-    SubADomainEntity domainEntityWithAPID = aDomainEntity().withAPid().build();
-
-    // action
-    instance.addDomainEntity(DOMAIN_ENTITY_TYPE, domainEntityWithAPID, CHANGE);
-
-    // verify
-    verify(dbMock).beginTx();
-    verify(dbMock).createNode();
-    verify(compositeConverter).addValuesToPropertyContainer( //
-        argThat(equalTo(nodeMock)), // 
-        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
-            .withoutAPID()));
-    verify(neo4JLowLevelAPIMock).index(nodeMock);
-    verify(transactionMock).success();
-  }
-
   private <T extends DomainEntity> NodeConverter<? super T> propertyContainerConverterFactoryHasCompositeConverterFor(Class<T> type) {
     @SuppressWarnings("unchecked")
     NodeConverter<? super T> converter = mock(NodeConverter.class);
@@ -463,7 +440,6 @@ public class Neo4JStorageTest {
     SubADomainEntity domainEntity = aDomainEntity() //
         .withId(ID) //
         .withRev(FIRST_REVISION)//
-        .withAPid()//
         .withModified(oldModified)//
         .build();
 
@@ -573,8 +549,7 @@ public class Neo4JStorageTest {
   @Test
   public void addVariantAddsUpdatesTheAdministrativeValuesBeforeAddingTheValuesToTheNode() throws Exception {
     // setup
-    SubADomainEntity entityWithPID = aDomainEntity()//
-        .withAPid()//
+    SubADomainEntity entity = aDomainEntity()//
         .withId(ID)//
         .withRev(FIRST_REVISION)//
         .build();
@@ -584,7 +559,7 @@ public class Neo4JStorageTest {
     NodeConverter<SubADomainEntity> nodeConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
 
     // action
-    instance.addVariant(DOMAIN_ENTITY_TYPE, entityWithPID, CHANGE);
+    instance.addVariant(DOMAIN_ENTITY_TYPE, entity, CHANGE);
 
     // verify
     verify(nodeConverterMock).addValuesToPropertyContainer(//
@@ -1882,34 +1857,6 @@ public class Neo4JStorageTest {
             .withAModifiedValueNotEqualTo(oldModified) //
             .withRevision(SECOND_REVISION)));
     verifyTransactionSucceeded();
-  }
-
-  @Test
-  public void updateRelationRemovesThePIDOfTheRelationBeforeTheUpdate() throws Exception {
-    // setup
-    Relationship relationship = aRelationship().withRevision(FIRST_REVISION).build();
-    latestRelationshipFoundForId(ID, relationship);
-
-    Change oldModified = CHANGE;
-    SubARelation relation = aRelation()//
-        .withId(ID) //
-        .withRevision(FIRST_REVISION) //
-        .withModified(oldModified) //
-        .withAPID() //
-        .build();
-
-    RelationshipConverter<SubARelation> converterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
-
-    // action
-    instance.updateRelation(RELATION_TYPE, relation, CHANGE);
-
-    // verify
-    verify(converterMock).updatePropertyContainer( //
-        argThat(equalTo(relationship)), //
-        argThat(likeDomainEntity(RELATION_TYPE).withoutAPID()));
-    verify(converterMock).updateModifiedAndRev( //
-        argThat(equalTo(relationship)), //
-        argThat(likeDomainEntity(RELATION_TYPE).withoutAPID()));
   }
 
   @Test(expected = UpdateException.class)
