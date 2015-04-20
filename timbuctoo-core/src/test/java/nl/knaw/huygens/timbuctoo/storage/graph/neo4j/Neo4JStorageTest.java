@@ -4,7 +4,6 @@ import static nl.knaw.huygens.timbuctoo.storage.graph.DomainEntityMatcher.likeDo
 import static nl.knaw.huygens.timbuctoo.storage.graph.SubADomainEntityBuilder.aDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.graph.SubARelationBuilder.aRelation;
 import static nl.knaw.huygens.timbuctoo.storage.graph.TestSystemEntityWrapperBuilder.aSystemEntity;
-import static nl.knaw.huygens.timbuctoo.storage.graph.TestSystemEntityWrapperMatcher.likeTestSystemEntityWrapper;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.Neo4JStorage.REQUEST_TIMEOUT;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.NodeMockBuilder.aNode;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.NodeSearchResultBuilder.aNodeSearchResult;
@@ -88,6 +87,7 @@ public class Neo4JStorageTest {
   private static final String ID = "id";
   private static final int FIRST_REVISION = 1;
   private static final int SECOND_REVISION = 2;
+  private static final int THIRD_REVISION = 3;
   private static final String PID = "pid";
   private static final Change CHANGE = Change.newInternalInstance();
 
@@ -423,7 +423,7 @@ public class Neo4JStorageTest {
     Change oldModified = CHANGE;
     SubADomainEntity domainEntity = aDomainEntity() //
         .withId(ID) //
-        .withRev(FIRST_REVISION)//
+        .withRev(SECOND_REVISION)//
         .withModified(oldModified)//
         .build();
 
@@ -431,16 +431,12 @@ public class Neo4JStorageTest {
 
     // verify
     InOrder inOrder = inOrder(dbMock, domainEntityConverterMock, transactionMock);
-    inOrder.verify(domainEntityConverterMock).updatePropertyContainer(argThat(equalTo(nodeMock)), //
-        argThat(likeDomainEntity(SubADomainEntity.class) //
-            .withAModifiedValueNotEqualTo(oldModified) //
-            .withRevision(SECOND_REVISION) //
-            .withoutAPID()));
-    inOrder.verify(domainEntityConverterMock).updateModifiedAndRev(argThat(equalTo(nodeMock)), //
-        argThat(likeDomainEntity(SubADomainEntity.class) //
-            .withAModifiedValueNotEqualTo(oldModified) //
-            .withRevision(SECOND_REVISION) //
-            .withoutAPID()));
+    inOrder.verify(domainEntityConverterMock).updatePropertyContainer( //
+        nodeMock, //
+        domainEntity);
+    inOrder.verify(domainEntityConverterMock).updateModifiedAndRev( //
+        nodeMock, //
+        domainEntity);
     inOrder.verify(transactionMock).success();
   }
 
@@ -467,38 +463,29 @@ public class Neo4JStorageTest {
   }
 
   @Test(expected = UpdateException.class)
-  public void updateDomainEntityThrowsAnUpdateExceptionWhenRevOfTheNodeIsHigherThanThatOfTheEntity() throws Exception {
-    // setup
-    Node nodeWithHigherRef = aNode().withRevision(SECOND_REVISION).build();
-    latestNodeFoundFor(DOMAIN_ENTITY_TYPE, ID, nodeWithHigherRef);
-
-    Change oldModified = CHANGE;
-    SubADomainEntity domainEntity = aDomainEntity() //
-        .withId(ID) //
-        .withRev(FIRST_REVISION)//
-        .withAPid()//
-        .withModified(oldModified)//
-        .build();
-
-    try {
-      // action
-      instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
-    } finally {
-      // verify
-      verify(transactionMock).failure();
-    }
+  public void updateDomainEntityThrowsAnUpdateExceptionWhenRevOfTheNodeIsHigherThatnOfTheEntity() throws Exception {
+    testUpdateDomainEntityRevUpdateException(FIRST_REVISION, FIRST_REVISION);
   }
 
   @Test(expected = UpdateException.class)
-  public void updateDomainEntityThrowsAnUpdateExceptionWhenRevOfTheNodeIsLowerThanThatOfTheEntity() throws Exception {
+  public void updateDomainEntityThrowsAnUpdateExceptionWhenRevOfTheNodeIsEqualToThatOfTheEntity() throws Exception {
+    testUpdateDomainEntityRevUpdateException(FIRST_REVISION, FIRST_REVISION);
+  }
+
+  @Test(expected = UpdateException.class)
+  public void updateDomainEntityThrowsAnUpdateExceptionWhenRevOfTheNodeIsMoreThanOneLowerThanThatOfTheEntity() throws Exception {
+    testUpdateDomainEntityRevUpdateException(THIRD_REVISION, FIRST_REVISION);
+  }
+
+  private void testUpdateDomainEntityRevUpdateException(int entityRev, int nodeRev) throws StorageException {
     // setup
-    Node nodeWithLowerRev = aNode().withRevision(SECOND_REVISION).build();
-    latestNodeFoundFor(DOMAIN_ENTITY_TYPE, ID, nodeWithLowerRev);
+    Node node = aNode().withRevision(entityRev).build();
+    latestNodeFoundFor(DOMAIN_ENTITY_TYPE, ID, node);
 
     Change oldModified = CHANGE;
     SubADomainEntity domainEntity = aDomainEntity() //
         .withId(ID) //
-        .withRev(FIRST_REVISION)//
+        .withRev(nodeRev)//
         .withAPid()//
         .withModified(oldModified)//
         .build();
@@ -515,7 +502,7 @@ public class Neo4JStorageTest {
   @Test
   public void addVariantAddsANewVariantToTheExistingNodeOfTheBaseType() throws Exception {
     // setup
-    SubADomainEntity entity = aDomainEntity().withId(ID).withRev(FIRST_REVISION).build();
+    SubADomainEntity entity = aDomainEntity().withId(ID).withRev(SECOND_REVISION).build();
     Node node = aNode().withId(ID).withRevision(FIRST_REVISION).build();
     when(neo4JLowLevelAPIMock.getLatestNodeById(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(node);
 
@@ -535,7 +522,7 @@ public class Neo4JStorageTest {
     // setup
     SubADomainEntity entity = aDomainEntity()//
         .withId(ID)//
-        .withRev(FIRST_REVISION)//
+        .withRev(SECOND_REVISION)//
         .build();
     Node node = aNode().withId(ID).withRevision(FIRST_REVISION).build();
     when(neo4JLowLevelAPIMock.getLatestNodeById(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(node);
@@ -547,17 +534,11 @@ public class Neo4JStorageTest {
 
     // verify
     verify(nodeConverterMock).addValuesToPropertyContainer(//
-        argThat(equalTo(node)), //
-        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
-            .withAModifiedValueNotEqualTo(CHANGE) //
-            .withRevision(SECOND_REVISION)//
-            .withoutAPID()));
+        node, //
+        entity);
     verify(nodeConverterMock).updateModifiedAndRev(//
-        argThat(equalTo(node)), //
-        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
-            .withAModifiedValueNotEqualTo(CHANGE) //
-            .withRevision(SECOND_REVISION)//
-            .withoutAPID()));
+        node, //
+        entity);
     verify(transactionMock, atLeastOnce()).success();
   }
 
@@ -576,26 +557,24 @@ public class Neo4JStorageTest {
   }
 
   @Test(expected = UpdateException.class)
-  public void addVariantThrowsAnUpdateExceptionWhenRevisionIsHigherThanTheRevisionOfTheNode() throws Exception {
-    // setup
-    SubADomainEntity entity = aDomainEntity().withId(ID).withRev(SECOND_REVISION).build();
-    Node node = aNode().withId(ID).withRevision(FIRST_REVISION).build();
-    when(neo4JLowLevelAPIMock.getLatestNodeById(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(node);
+  public void addVariantThrowsAnUpdateExceptionWhenRevisionIsHigherMoreThanOneTheTheRevisionOfTheNode() throws Exception {
+    addVariantThrowsUpdateExceptionForRevisionMismatch(FIRST_REVISION, THIRD_REVISION);
+  }
 
-    try {
-      // action
-      instance.addVariant(DOMAIN_ENTITY_TYPE, entity, CHANGE);
-    } finally {
-      // verify
-      verify(transactionMock).failure();
-    }
+  @Test(expected = UpdateException.class)
+  public void addVariantThrowsAnUpdateExceptionWhenRevisionIsEqualToTheRevisionOfTheNode() throws Exception {
+    addVariantThrowsUpdateExceptionForRevisionMismatch(THIRD_REVISION, THIRD_REVISION);
   }
 
   @Test(expected = UpdateException.class)
   public void addVariantThrowsAnUpdateExceptionWhenRevisionIsLowerThanTheRevisionOfTheNode() throws Exception {
+    addVariantThrowsUpdateExceptionForRevisionMismatch(THIRD_REVISION, SECOND_REVISION);
+  }
+
+  private void addVariantThrowsUpdateExceptionForRevisionMismatch(int nodeRev, int entityRev) throws StorageException {
     // setup
-    SubADomainEntity entity = aDomainEntity().withId(ID).withRev(FIRST_REVISION).build();
-    Node node = aNode().withId(ID).withRevision(SECOND_REVISION).build();
+    SubADomainEntity entity = aDomainEntity().withId(ID).withRev(entityRev).build();
+    Node node = aNode().withId(ID).withRevision(nodeRev).build();
     when(neo4JLowLevelAPIMock.getLatestNodeById(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(node);
 
     try {
@@ -631,11 +610,9 @@ public class Neo4JStorageTest {
 
     NodeConverter<TestSystemEntityWrapper> systemEntityConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(SYSTEM_ENTITY_TYPE);
 
-    Change oldModified = new Change();
     TestSystemEntityWrapper systemEntity = aSystemEntity() //
         .withId(ID)//
-        .withRev(FIRST_REVISION)//
-        .withModified(oldModified)//
+        .withRev(SECOND_REVISION)//
         .build();
 
     // action
@@ -643,46 +620,35 @@ public class Neo4JStorageTest {
 
     // verify
     InOrder inOrder = inOrder(systemEntityConverterMock, transactionMock);
-    inOrder.verify(systemEntityConverterMock).updatePropertyContainer(argThat(equalTo(nodeMock)), //
-        argThat(likeTestSystemEntityWrapper() //
-            .withAModifiedValueNotEqualTo(oldModified) //
-            .withRevision(SECOND_REVISION)));
-    inOrder.verify(systemEntityConverterMock).updateModifiedAndRev(argThat(equalTo(nodeMock)), //
-        argThat(likeTestSystemEntityWrapper() //
-            .withAModifiedValueNotEqualTo(oldModified) //
-            .withRevision(SECOND_REVISION)));
+    inOrder.verify(systemEntityConverterMock).updatePropertyContainer( //
+        nodeMock, //
+        systemEntity);
+
+    inOrder.verify(systemEntityConverterMock).updateModifiedAndRev( //
+        nodeMock, //
+        systemEntity);
     inOrder.verify(transactionMock).success();
   }
 
   @Test(expected = UpdateException.class)
   public void updateSystemEntityThrowsAnUpdateExceptionIfTheNodeIsNewerThanTheEntityWithTheUpdatedInformation() throws Exception {
-    // setup
-    Node nodeWithNewerRevision = aNode().withRevision(SECOND_REVISION).build();
-    latestNodeFoundFor(SYSTEM_ENTITY_TYPE, ID, nodeWithNewerRevision);
-
-    TestSystemEntityWrapper systemEntity = aSystemEntity() //
-        .withId(ID)//
-        .withRev(FIRST_REVISION)//
-        .build();
-
-    try {
-      // action
-      instance.updateSystemEntity(SYSTEM_ENTITY_TYPE, systemEntity);
-    } finally {
-      // verify
-      verify(transactionMock).failure();
-    }
+    testUpdateSystemEntityRevisionUpdateException(SECOND_REVISION, SECOND_REVISION);
   }
 
   @Test(expected = UpdateException.class)
   public void updateSystemEntityThrowsAnUpdateExceptionIfTheNodeIsOlderThanTheEntityWithTheUpdatedInformation() throws Exception {
+    testUpdateSystemEntityRevisionUpdateException(FIRST_REVISION, THIRD_REVISION);
+  }
+
+  private void testUpdateSystemEntityRevisionUpdateException(int nodeRev, int entityRevision) throws StorageException {
     // setup
-    Node nodeWithLowerRev = aNode().withRevision(FIRST_REVISION).build();
-    latestNodeFoundFor(SYSTEM_ENTITY_TYPE, ID, nodeWithLowerRev);
+    Node nodeWithNewerRevision = aNode().withRevision(nodeRev).build();
+    latestNodeFoundFor(SYSTEM_ENTITY_TYPE, ID, nodeWithNewerRevision);
 
     TestSystemEntityWrapper systemEntity = aSystemEntity() //
         .withId(ID)//
-        .withRev(SECOND_REVISION).build();
+        .withRev(entityRevision)//
+        .build();
 
     try {
       // action
@@ -722,7 +688,7 @@ public class Neo4JStorageTest {
     Change oldModified = new Change();
     TestSystemEntityWrapper systemEntity = aSystemEntity() //
         .withId(ID)//
-        .withRev(FIRST_REVISION)//
+        .withRev(SECOND_REVISION)//
         .withModified(oldModified)//
         .build();
 
@@ -1806,11 +1772,9 @@ public class Neo4JStorageTest {
     Relationship relationship = aRelationship().withRevision(FIRST_REVISION).build();
     latestRelationshipFoundForId(ID, relationship);
 
-    Change oldModified = CHANGE;
     SubARelation relation = aRelation()//
         .withId(ID) //
-        .withRevision(FIRST_REVISION) //
-        .withModified(oldModified) //
+        .withRevision(SECOND_REVISION) //
         .build();
 
     RelationshipConverter<SubARelation> converterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);
@@ -1820,17 +1784,11 @@ public class Neo4JStorageTest {
 
     // verify
     verify(converterMock).updatePropertyContainer( //
-        argThat(equalTo(relationship)), //
-        argThat(likeDomainEntity(RELATION_TYPE) //
-            .withId(ID) //
-            .withAModifiedValueNotEqualTo(oldModified) //
-            .withRevision(SECOND_REVISION)));
+        relationship, //
+        relation);
     verify(converterMock).updateModifiedAndRev( //
-        argThat(equalTo(relationship)), //
-        argThat(likeDomainEntity(RELATION_TYPE) //
-            .withId(ID) //
-            .withAModifiedValueNotEqualTo(oldModified) //
-            .withRevision(SECOND_REVISION)));
+        relationship, //
+        relation);
     verifyTransactionSucceeded();
   }
 
@@ -1854,35 +1812,27 @@ public class Neo4JStorageTest {
 
   @Test(expected = UpdateException.class)
   public void updateRelationThrowsAnUpdateExceptionWhenRevOfTheRelationshipIsHigherThanThatOfTheEntity() throws Exception {
+    testUpdateRelationRevisionUpdateException(SECOND_REVISION, FIRST_REVISION);
+  }
+
+  @Test(expected = UpdateException.class)
+  public void updateRelationThrowsAnUpdateExceptionWhenRevOfTheRelationshipMoreThanOneIsLowerThanThatOfTheEntity() throws Exception {
+    testUpdateRelationRevisionUpdateException(FIRST_REVISION, THIRD_REVISION);
+  }
+
+  @Test(expected = UpdateException.class)
+  public void updateRelationThrowsAnUpdateExceptionWhenRevOfTheRelationshipIsEqualToThatOfTheEntity() throws Exception {
+    testUpdateRelationRevisionUpdateException(FIRST_REVISION, FIRST_REVISION);
+  }
+
+  private void testUpdateRelationRevisionUpdateException(int relationshipRev, int relationRev) throws StorageException {
     // setup
-    Relationship relationshipWithHigherRev = aRelationship().withRevision(SECOND_REVISION).build();
+    Relationship relationshipWithHigherRev = aRelationship().withRevision(relationshipRev).build();
     latestRelationshipFoundForId(ID, relationshipWithHigherRev);
 
     SubARelation relation = aRelation()//
         .withId(ID)//
-        .withRevision(FIRST_REVISION) //
-        .build();
-
-    try {
-      // action
-      instance.updateRelation(RELATION_TYPE, relation, CHANGE);
-    } finally {
-      // verify
-      verify(dbMock).beginTx();
-
-      verifyTransactionFailed();
-    }
-  }
-
-  @Test(expected = UpdateException.class)
-  public void updateRelationThrowsAnUpdateExceptionWhenRevOfTheRelationshipIsLowerThanThatOfTheEntity() throws Exception {
-    // setup
-    Relationship relationshipWithLowerRev = aRelationship().withRevision(FIRST_REVISION).build();
-    latestRelationshipFoundForId(ID, relationshipWithLowerRev);
-
-    SubARelation relation = aRelation()//
-        .withId(ID)//
-        .withRevision(SECOND_REVISION) //
+        .withRevision(relationRev) //
         .build();
 
     try {
@@ -1905,7 +1855,7 @@ public class Neo4JStorageTest {
     Change oldModified = CHANGE;
     SubARelation relation = aRelation()//
         .withId(ID) //
-        .withRevision(FIRST_REVISION) //
+        .withRevision(SECOND_REVISION) //
         .build();
 
     RelationshipConverter<SubARelation> converterMock = propertyContainerConverterFactoryHasRelationshipConverterFor(RELATION_TYPE);

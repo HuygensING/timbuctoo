@@ -282,16 +282,26 @@ public class GraphLegacyStorageWrapperTest {
   @Test
   public void updateDomainEntityDelegatesToNeo4JStorage() throws Exception {
     // setup
-    SubADomainEntity entity = aDomainEntity().withId(ID).withAPid().build();
+    Change oldModified = new Change();
+    SubADomainEntity entity = aDomainEntity() //
+        .withId(ID) //
+        .withAPid() //
+        .withModified(oldModified)//
+        .withRev(FIRST_REVISION) //
+        .build();
     entityAndVariantExist();
 
     // action
     instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
 
     // verify
-    verify(graphStorageMock).updateDomainEntity(//
+    verify(graphStorageMock).updateDomainEntity( //
         argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
-        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE).withId(ID).withoutAPID()), // 
+        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
+            .withId(ID) //
+            .withoutAPID() //
+            .withRevision(SECOND_REVISION) //
+            .withAModifiedValueNotEqualTo(oldModified)), // 
         argThat(is(CHANGE)));
   }
 
@@ -316,7 +326,14 @@ public class GraphLegacyStorageWrapperTest {
   @Test
   public void updateDomainEntityDelegatesToNeo4JStoragesAddNewVariantWhenTheVariantDoesNotExist() throws Exception {
     // setup
-    SubADomainEntity entity = aDomainEntity().withId(ID).withAPid().build();
+    Change oldModified = new Change();
+    SubADomainEntity entity = aDomainEntity() //
+        .withId(ID) //
+        .withAPid() //
+        .withModified(oldModified)//
+        .withRev(FIRST_REVISION) //
+        .build();
+    entityAndVariantExist();
     variantDoesNotExist();
 
     // action
@@ -325,7 +342,11 @@ public class GraphLegacyStorageWrapperTest {
     // verify
     verify(graphStorageMock).addVariant(//
         argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
-        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE).withId(ID).withoutAPID()), // 
+        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
+            .withId(ID) //
+            .withoutAPID() //
+            .withRevision(SECOND_REVISION) //
+            .withAModifiedValueNotEqualTo(oldModified)), // 
         argThat(is(CHANGE)));
   }
 
@@ -560,7 +581,13 @@ public class GraphLegacyStorageWrapperTest {
   @Test
   public void updateDomainEntityForRelationDelegatesToNeo4JStorageAddRelation() throws Exception {
     // setup
-    SubARelation entity = aRelation().withId(ID).withAPID().build();
+    Change oldModified = new Change();
+    SubARelation entity = aRelation() //
+        .withId(ID) //
+        .withAPID() //
+        .withModified(oldModified) //
+        .withRevision(FIRST_REVISION) //
+        .build();
 
     // action
     instance.updateDomainEntity(RELATION_TYPE, entity, CHANGE);
@@ -568,7 +595,11 @@ public class GraphLegacyStorageWrapperTest {
     // verify
     verify(graphStorageMock).updateRelation( //
         argThat(is(equalTo(RELATION_TYPE))), //
-        argThat(likeDomainEntity(RELATION_TYPE).withId(ID).withoutAPID()), //
+        argThat(likeDomainEntity(RELATION_TYPE) //
+            .withId(ID) //
+            .withoutAPID() //
+            .withAModifiedValueNotEqualTo(oldModified) //
+            .withRevision(SECOND_REVISION)), //
         argThat(is(CHANGE)));
   }
 
@@ -858,13 +889,23 @@ public class GraphLegacyStorageWrapperTest {
   @Test
   public void updateSystemEntityDelegatesToNeo4JStorage() throws Exception {
     // setup
-    TestSystemEntityWrapper entity = aSystemEntity().build();
+    Change oldModified = new Change();
+    TestSystemEntityWrapper entity = aSystemEntity() //
+        .withId(ID) //
+        .withModified(oldModified) //
+        .withRev(FIRST_REVISION) //
+        .build();
 
     // action
     instance.updateSystemEntity(SYSTEM_ENTITY_TYPE, entity);
 
     // verify
-    verify(graphStorageMock).updateSystemEntity(SYSTEM_ENTITY_TYPE, entity);
+    verify(graphStorageMock).updateSystemEntity( //
+        argThat(is(equalTo(SYSTEM_ENTITY_TYPE))), //
+        argThat(likeTestSystemEntityWrapper() //
+            .withId(ID) //
+            .withAModifiedValueNotEqualTo(oldModified) //
+            .withRevision(SECOND_REVISION)));
   }
 
   @Test(expected = StorageException.class)

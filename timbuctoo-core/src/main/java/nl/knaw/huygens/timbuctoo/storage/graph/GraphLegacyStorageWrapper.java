@@ -82,32 +82,6 @@ public class GraphLegacyStorageWrapper implements Storage {
     return id;
   }
 
-  private <T extends DomainEntity> void removePID(T entity) {
-    entity.setPid(null);
-  }
-
-  @Override
-  public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws StorageException {
-    graphStorage.updateSystemEntity(type, entity);
-  }
-
-  @SuppressWarnings("unchecked")
-  @Override
-  public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
-    removePID(entity);
-    if (RELATION_TYPE.isAssignableFrom(type)) {
-      graphStorage.updateRelation((Class<? extends Relation>) type, (Relation) entity, change);
-    } else {
-      if (baseTypeExists(type, entity) && variantExists(type, entity)) {
-        graphStorage.updateDomainEntity(type, entity, change);
-      } else if (baseTypeExists(type, entity)) {
-        graphStorage.addVariant(type, entity, change);
-      } else {
-        throw new UpdateException(String.format("%s with id %s does not exist.", type, entity.getId()));
-      }
-    }
-  }
-
   /**
    * Adds the administrative values to the entity.
    * @param type the type to generate the id for
@@ -126,9 +100,42 @@ public class GraphLegacyStorageWrapper implements Storage {
     return id;
   }
 
+  private <T extends DomainEntity> void removePID(T entity) {
+    entity.setPid(null);
+  }
+
+  private <T extends Entity> void updateAdministrativeValues(T entity) {
+    entity.setModified(Change.newInternalInstance());
+    updateRevision(entity);
+  }
+
   private <T extends Entity> void updateRevision(T entity) {
     int rev = entity.getRev();
     entity.setRev(++rev);
+  }
+
+  @Override
+  public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws StorageException {
+    updateAdministrativeValues(entity);
+    graphStorage.updateSystemEntity(type, entity);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
+    removePID(entity);
+    updateAdministrativeValues(entity);
+    if (RELATION_TYPE.isAssignableFrom(type)) {
+      graphStorage.updateRelation((Class<? extends Relation>) type, (Relation) entity, change);
+    } else {
+      if (baseTypeExists(type, entity) && variantExists(type, entity)) {
+        graphStorage.updateDomainEntity(type, entity, change);
+      } else if (baseTypeExists(type, entity)) {
+        graphStorage.addVariant(type, entity, change);
+      } else {
+        throw new UpdateException(String.format("%s with id %s does not exist.", type, entity.getId()));
+      }
+    }
   }
 
   private <T extends DomainEntity> boolean variantExists(Class<T> type, T entity) {

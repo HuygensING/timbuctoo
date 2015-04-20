@@ -163,11 +163,6 @@ public class Neo4JStorage implements GraphStorage {
     return String.format("%s of type \"%s\" with id \"%s\" could not be found.", relationPart, type, id);
   }
 
-  private <T extends Entity> void updateRevision(T entity) {
-    int rev = entity.getRev();
-    entity.setRev(++rev);
-  }
-
   @Override
   public <T extends Entity> T getEntity(Class<T> type, String id) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
@@ -258,13 +253,10 @@ public class Neo4JStorage implements GraphStorage {
         throw new UpdateException(entityNotFoundMessageFor(type, entity));
       }
 
-      int rev = getRevisionProperty(node);
-      if (rev != entity.getRev()) {
+      if (isMatchingRev(entity, node)) {
         transaction.failure();
-        throw new UpdateException(revisionNotFoundMessage(type, entity, rev));
+        throw new UpdateException(revisionNotFoundMessage(type, entity, getRevisionProperty(node)));
       }
-
-      updateAdministrativeValues(entity);
 
       try {
         NodeConverter<T> propertyContainerConverter = propertyContainerConverterFactory.createForType(type);
@@ -309,20 +301,25 @@ public class Neo4JStorage implements GraphStorage {
         throw new NoSuchEntityException(baseType, id);
       }
 
-      if (getRevisionProperty(node) != variant.getRev()) {
+      if (isMatchingRev(variant, node)) {
         transaction.failure();
         throw new UpdateException(revisionNotFoundMessage((Class<? super T>) baseType, variant, variant.getRev()));
       }
 
       // update administrative values
-      updateAdministrativeValues(variant);
-
       NodeConverter<T> converter = propertyContainerConverterFactory.createForType(type);
       converter.addValuesToPropertyContainer(node, variant);
       converter.updateModifiedAndRev(node, variant);
 
       transaction.success();
     }
+  }
+
+  private <T extends Entity> boolean isMatchingRev(T entity, PropertyContainer propertyContainer) {
+    // The difference between the reference of the entity and the property container should be one.
+    // This is because the life cycle management is done outside this class.
+    // So the revision should be updated before update is called.
+    return (entity.getRev() - getRevisionProperty(propertyContainer)) != 1;
   }
 
   @Override
@@ -338,13 +335,10 @@ public class Neo4JStorage implements GraphStorage {
         throw new UpdateException(entityNotFoundMessageFor(type, entity));
       }
 
-      int rev = getRevisionProperty(relationship);
-      if (rev != relation.getRev()) {
+      if (isMatchingRev(entity, relationship)) {
         transaction.failure();
-        throw new UpdateException(revisionNotFoundMessage(type, entity, rev));
+        throw new UpdateException(revisionNotFoundMessage(type, entity, getRevisionProperty(relationship)));
       }
-
-      updateAdministrativeValues(relation);
 
       RelationshipConverter<T> converter = propertyContainerConverterFactory.createForRelation(type);
       try {
@@ -359,13 +353,8 @@ public class Neo4JStorage implements GraphStorage {
     }
   }
 
-  private <T extends Entity> void updateAdministrativeValues(T entity) {
-    entity.setModified(Change.newInternalInstance());
-    updateRevision(entity);
-  }
-
   private <T extends Entity> String revisionNotFoundMessage(Class<? super T> type, T entity, int actualLatestRev) {
-    return String.format("\"%s\" with id \"%s\" and revision \"%d\" found. Revision \"%d\" wanted.", type.getSimpleName(), entity.getId(), entity.getRev(), actualLatestRev);
+    return String.format("\"%s\" with id \"%s\" and revision \"%d\" found. Revision \"%d\" wanted.", type.getSimpleName(), entity.getId(), entity.getRev() - 1, actualLatestRev);
   }
 
   private <T extends Entity> String entityNotFoundMessageFor(Class<T> type, T entity) {
