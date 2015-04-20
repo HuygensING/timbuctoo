@@ -79,19 +79,19 @@ public class GraphLegacyStorageWrapperTest {
   protected IdGenerator idGeneratorMock;
   protected NodeDuplicator nodeDuplicatorMock;
   protected RelationshipDuplicator relationshipDuplicatorMock;
-  protected Neo4JStorage neo4JStorageMock;
+  protected GraphStorage graphStorageMock;
 
   @Before
   public void setUp() throws Exception {
     setupDBTransaction();
     setupEntityConverterFactory();
 
-    neo4JStorageMock = mock(Neo4JStorage.class);
+    graphStorageMock = mock(Neo4JStorage.class);
     relationshipDuplicatorMock = mock(RelationshipDuplicator.class);
     nodeDuplicatorMock = mock(NodeDuplicator.class);
     idGeneratorMock = mock(IdGenerator.class);
 
-    instance = new GraphLegacyStorageWrapper(neo4JStorageMock, idGeneratorMock);
+    instance = new GraphLegacyStorageWrapper(graphStorageMock, idGeneratorMock);
   }
 
   private void setupDBTransaction() {
@@ -134,7 +134,7 @@ public class GraphLegacyStorageWrapperTest {
     // verify
     assertThat(id, is(equalTo(ID)));
 
-    verify(neo4JStorageMock).addDomainEntity(//
+    verify(graphStorageMock).addDomainEntity(//
         argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
         argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE)//
             .withoutAPID()//
@@ -149,7 +149,7 @@ public class GraphLegacyStorageWrapperTest {
   public void addDomainEntityThrowsAnExceptionWhenTheDelegateDoes() throws Exception {
     // setup
     SubADomainEntity entity = aDomainEntity().build();
-    doThrow(StorageException.class).when(neo4JStorageMock).addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+    doThrow(StorageException.class).when(graphStorageMock).addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
 
     // action
     instance.addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
@@ -159,7 +159,7 @@ public class GraphLegacyStorageWrapperTest {
   public void getEntityForDomainEntityDelegatesToNeo4JStorageGetEntity() throws Exception {
     // setup
     SubADomainEntity entity = aDomainEntity().build();
-    when(neo4JStorageMock.getEntity(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entity);
+    when(graphStorageMock.getEntity(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entity);
 
     // action
     SubADomainEntity actualEntity = instance.getEntity(DOMAIN_ENTITY_TYPE, ID);
@@ -171,7 +171,7 @@ public class GraphLegacyStorageWrapperTest {
   @Test(expected = StorageException.class)
   public void getEntityForDomainEntityThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
-    when(neo4JStorageMock.getEntity(DOMAIN_ENTITY_TYPE, ID)).thenThrow(new StorageException());
+    when(graphStorageMock.getEntity(DOMAIN_ENTITY_TYPE, ID)).thenThrow(new StorageException());
 
     // action
     instance.getEntity(DOMAIN_ENTITY_TYPE, ID);
@@ -181,7 +181,7 @@ public class GraphLegacyStorageWrapperTest {
   public void getEntityOrDefaultVariationDelegatesToNeo4JStorageGetEntityIfTheVariantExists() throws Exception {
     variantExists();
     SubADomainEntity entity = aDomainEntity().build();
-    when(neo4JStorageMock.getEntity(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entity);
+    when(graphStorageMock.getEntity(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entity);
 
     // action
     SubADomainEntity foundEntity = instance.getEntityOrDefaultVariation(DOMAIN_ENTITY_TYPE, ID);
@@ -194,7 +194,7 @@ public class GraphLegacyStorageWrapperTest {
   public void getEntityOrDefaultVariationThrowsAStorageExceptionifNeo4JStorageGetEntityDoes() throws Exception {
     // setup
     variantExists();
-    when(neo4JStorageMock.getEntity(DOMAIN_ENTITY_TYPE, ID)).thenThrow(new StorageException());
+    when(graphStorageMock.getEntity(DOMAIN_ENTITY_TYPE, ID)).thenThrow(new StorageException());
 
     // action
     instance.getEntityOrDefaultVariation(DOMAIN_ENTITY_TYPE, ID);
@@ -202,7 +202,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   private void variantExists() {
-    when(neo4JStorageMock.entityExists(DOMAIN_ENTITY_TYPE, ID)).thenReturn(true);
+    when(graphStorageMock.entityExists(DOMAIN_ENTITY_TYPE, ID)).thenReturn(true);
   }
 
   @Test
@@ -210,7 +210,7 @@ public class GraphLegacyStorageWrapperTest {
     // setup
     variantDoesNotExist();
     SubADomainEntity entity = aDomainEntity().build();
-    when(neo4JStorageMock.getDefaultVariation(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entity);
+    when(graphStorageMock.getDefaultVariation(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entity);
 
     // action
     SubADomainEntity foundEntity = instance.getEntityOrDefaultVariation(DOMAIN_ENTITY_TYPE, ID);
@@ -223,7 +223,7 @@ public class GraphLegacyStorageWrapperTest {
   public void getEntityOrDefaultVariationThrowsAStorageExceptionifNeo4JStorageGetDefaultVariationDoes() throws Exception {
     // setup
     variantDoesNotExist();
-    when(neo4JStorageMock.getDefaultVariation(DOMAIN_ENTITY_TYPE, ID)).thenThrow(new StorageException());
+    when(graphStorageMock.getDefaultVariation(DOMAIN_ENTITY_TYPE, ID)).thenThrow(new StorageException());
 
     // action
     instance.getEntityOrDefaultVariation(DOMAIN_ENTITY_TYPE, ID);
@@ -234,7 +234,7 @@ public class GraphLegacyStorageWrapperTest {
     // setup
     @SuppressWarnings("unchecked")
     StorageIterator<SubADomainEntity> storageIteratorMock = mock(StorageIterator.class);
-    when(neo4JStorageMock.getEntities(DOMAIN_ENTITY_TYPE)).thenReturn(storageIteratorMock);
+    when(graphStorageMock.getEntities(DOMAIN_ENTITY_TYPE)).thenReturn(storageIteratorMock);
 
     // action
     StorageIterator<SubADomainEntity> actualSystemEntities = instance.getDomainEntities(DOMAIN_ENTITY_TYPE);
@@ -246,7 +246,7 @@ public class GraphLegacyStorageWrapperTest {
   @Test(expected = StorageException.class)
   public void getDomainEntitiesThrowsAnExceptionWhenTheDelegateDoes() throws StorageException {
     // setup
-    when(neo4JStorageMock.getEntities(DOMAIN_ENTITY_TYPE)).thenThrow(new StorageException());
+    when(graphStorageMock.getEntities(DOMAIN_ENTITY_TYPE)).thenThrow(new StorageException());
 
     // action
     instance.getDomainEntities(DOMAIN_ENTITY_TYPE);
@@ -257,7 +257,7 @@ public class GraphLegacyStorageWrapperTest {
   public void getAllVariationsDelegatesToNeo4JStorage() throws Exception {
     // setup
     List<BaseDomainEntity> variations = Lists.newArrayList();
-    when(neo4JStorageMock.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(variations);
+    when(graphStorageMock.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(variations);
 
     // action
     List<BaseDomainEntity> actualVariations = instance.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
@@ -270,7 +270,7 @@ public class GraphLegacyStorageWrapperTest {
   public void getAllVariationsThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
     List<BaseDomainEntity> variations = Lists.newArrayList();
-    when(neo4JStorageMock.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenThrow(new StorageException());
+    when(graphStorageMock.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenThrow(new StorageException());
 
     // action
     List<BaseDomainEntity> actualVariations = instance.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
@@ -289,14 +289,14 @@ public class GraphLegacyStorageWrapperTest {
     instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
 
     // verify
-    verify(neo4JStorageMock).updateDomainEntity(//
+    verify(graphStorageMock).updateDomainEntity(//
         argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
         argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE).withId(ID).withoutAPID()), // 
         argThat(is(CHANGE)));
   }
 
   private void entityAndVariantExist() {
-    when(neo4JStorageMock.entityExists(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(true);
+    when(graphStorageMock.entityExists(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(true);
     variantExists();
   }
 
@@ -306,7 +306,7 @@ public class GraphLegacyStorageWrapperTest {
     SubADomainEntity entity = aDomainEntity().withId(ID).build();
     entityAndVariantExist();
 
-    doThrow(StorageException.class).when(neo4JStorageMock).updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+    doThrow(StorageException.class).when(graphStorageMock).updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
 
     // action
     instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
@@ -323,15 +323,15 @@ public class GraphLegacyStorageWrapperTest {
     instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
 
     // verify
-    verify(neo4JStorageMock).addVariant(//
+    verify(graphStorageMock).addVariant(//
         argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
         argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE).withId(ID).withoutAPID()), // 
         argThat(is(CHANGE)));
   }
 
   private void variantDoesNotExist() {
-    when(neo4JStorageMock.entityExists(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(true);
-    when(neo4JStorageMock.entityExists(DOMAIN_ENTITY_TYPE, ID)).thenReturn(false);
+    when(graphStorageMock.entityExists(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(true);
+    when(graphStorageMock.entityExists(DOMAIN_ENTITY_TYPE, ID)).thenReturn(false);
   }
 
   @Test(expected = StorageException.class)
@@ -340,7 +340,7 @@ public class GraphLegacyStorageWrapperTest {
     SubADomainEntity entity = aDomainEntity().withId(ID).build();
     variantDoesNotExist();
 
-    doThrow(StorageException.class).when(neo4JStorageMock).addVariant(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+    doThrow(StorageException.class).when(graphStorageMock).addVariant(DOMAIN_ENTITY_TYPE, entity, CHANGE);
 
     // action
     instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
@@ -357,7 +357,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   private void entityDoesNotExist() {
-    when(neo4JStorageMock.entityExists(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(false);
+    when(graphStorageMock.entityExists(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(false);
   }
 
   @Test
@@ -366,13 +366,13 @@ public class GraphLegacyStorageWrapperTest {
     instance.deleteDomainEntity(DOMAIN_ENTITY_TYPE, ID, CHANGE);
 
     // verify
-    verify(neo4JStorageMock).deleteDomainEntity(DOMAIN_ENTITY_TYPE, ID, CHANGE);
+    verify(graphStorageMock).deleteDomainEntity(DOMAIN_ENTITY_TYPE, ID, CHANGE);
   }
 
   @Test(expected = StorageException.class)
   public void deleteDomainEntityThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
-    doThrow(StorageException.class).when(neo4JStorageMock).deleteDomainEntity(DOMAIN_ENTITY_TYPE, ID, CHANGE);
+    doThrow(StorageException.class).when(graphStorageMock).deleteDomainEntity(DOMAIN_ENTITY_TYPE, ID, CHANGE);
 
     // action
     instance.deleteDomainEntity(DOMAIN_ENTITY_TYPE, ID, CHANGE);
@@ -394,7 +394,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   private void verifyEntityDeleted(String id) throws StorageException {
-    verify(neo4JStorageMock).deleteDomainEntity(//
+    verify(graphStorageMock).deleteDomainEntity(//
         argThat(equalTo(PRIMITIVE_DOMAIN_ENTITY_TYPE)), //
         argThat(equalTo(id)), //
         any(Change.class));
@@ -407,7 +407,7 @@ public class GraphLegacyStorageWrapperTest {
     String id2 = "id2";
     List<String> ids = Lists.newArrayList(id1, id2);
 
-    doThrow(StorageException.class).when(neo4JStorageMock).deleteDomainEntity( //
+    doThrow(StorageException.class).when(graphStorageMock).deleteDomainEntity( //
         argThat(equalTo(PRIMITIVE_DOMAIN_ENTITY_TYPE)), //
         argThat(equalTo(id1)), //
         any(Change.class));
@@ -427,7 +427,7 @@ public class GraphLegacyStorageWrapperTest {
     instance.deleteNonPersistent(RELATION_TYPE, ids);
 
     // verify
-    verifyZeroInteractions(neo4JStorageMock);
+    verifyZeroInteractions(graphStorageMock);
   }
 
   @Test
@@ -436,13 +436,13 @@ public class GraphLegacyStorageWrapperTest {
     instance.setPID(DOMAIN_ENTITY_TYPE, ID, PID);
 
     // verify
-    verify(neo4JStorageMock).setDomainEntityPID(DOMAIN_ENTITY_TYPE, ID, PID);
+    verify(graphStorageMock).setDomainEntityPID(DOMAIN_ENTITY_TYPE, ID, PID);
   }
 
   @Test(expected = StorageException.class)
   public void setPIDThrowsAStorageExceptionIfTheDelegateDoes() throws Exception {
     // setup
-    doThrow(StorageException.class).when(neo4JStorageMock).setDomainEntityPID(DOMAIN_ENTITY_TYPE, ID, PID);
+    doThrow(StorageException.class).when(graphStorageMock).setDomainEntityPID(DOMAIN_ENTITY_TYPE, ID, PID);
 
     // action
     instance.setPID(DOMAIN_ENTITY_TYPE, ID, PID);
@@ -452,7 +452,7 @@ public class GraphLegacyStorageWrapperTest {
   public void getAllIdsWithoutPIDForDomainEntityDelegatesToNeo4JStorageGetIdsOfNonPersistentDomainEntities() throws Exception {
     // setup
     List<String> ids = Lists.newArrayList();
-    when(neo4JStorageMock.getIdsOfNonPersistentDomainEntities(DOMAIN_ENTITY_TYPE)).thenReturn(ids);
+    when(graphStorageMock.getIdsOfNonPersistentDomainEntities(DOMAIN_ENTITY_TYPE)).thenReturn(ids);
 
     // action
     List<String> foundIds = instance.getAllIdsWithoutPIDOfType(DOMAIN_ENTITY_TYPE);
@@ -465,7 +465,7 @@ public class GraphLegacyStorageWrapperTest {
   public void findItemByPropertyForDomainEntityDelegatesToNeo4JStorageFindEntityByProperty() throws Exception {
     // setup
     SubADomainEntity entity = aDomainEntity().build();
-    when(neo4JStorageMock.findEntityByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY_NAME, PROPERTY_VALUE))//
+    when(graphStorageMock.findEntityByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY_NAME, PROPERTY_VALUE))//
         .thenReturn(entity);
 
     // action
@@ -478,7 +478,7 @@ public class GraphLegacyStorageWrapperTest {
   @Test(expected = StorageException.class)
   public void findItemByPropertyForDomainEntityThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
-    when(neo4JStorageMock.findEntityByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY_NAME, PROPERTY_VALUE))//
+    when(graphStorageMock.findEntityByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY_NAME, PROPERTY_VALUE))//
         .thenThrow(new StorageException());
 
     // action
@@ -489,7 +489,7 @@ public class GraphLegacyStorageWrapperTest {
   public void countDomainEntityDelegatesToNeo4JStorage() {
     // setup
     long count = 2l;
-    when(neo4JStorageMock.countEntities(DOMAIN_ENTITY_TYPE)).thenReturn(count);
+    when(graphStorageMock.countEntities(DOMAIN_ENTITY_TYPE)).thenReturn(count);
 
     // action
     long actualCount = instance.count(DOMAIN_ENTITY_TYPE);
@@ -502,7 +502,7 @@ public class GraphLegacyStorageWrapperTest {
   public void entityExistsForDomainEntityDelegatesToNeo4JStorage() throws Exception {
     // setup
     boolean entityExists = true;
-    when(neo4JStorageMock.entityExists(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entityExists);
+    when(graphStorageMock.entityExists(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entityExists);
 
     // action
     boolean actualEntityExists = instance.entityExists(DOMAIN_ENTITY_TYPE, ID);
@@ -523,7 +523,7 @@ public class GraphLegacyStorageWrapperTest {
 
     // verify
     assertThat(id, is(equalTo(ID)));
-    verify(neo4JStorageMock).addRelation(//
+    verify(graphStorageMock).addRelation(//
         argThat(is(equalTo(RELATION_TYPE))), //
         argThat(likeDomainEntity(RELATION_TYPE)//
             .withId(ID) //
@@ -538,7 +538,7 @@ public class GraphLegacyStorageWrapperTest {
   public void addDomainEntityForRelationThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
     SubARelation relation = aRelation().build();
-    doThrow(StorageException.class).when(neo4JStorageMock).addRelation(RELATION_TYPE, relation, CHANGE);
+    doThrow(StorageException.class).when(graphStorageMock).addRelation(RELATION_TYPE, relation, CHANGE);
 
     // action
     instance.addDomainEntity(RELATION_TYPE, relation, CHANGE);
@@ -548,7 +548,7 @@ public class GraphLegacyStorageWrapperTest {
   public void getEntityForRelationDelegatesToNeo4JStorageGetRelation() throws Exception {
     // setup
     SubARelation relation = aRelation().build();
-    when(neo4JStorageMock.getRelation(RELATION_TYPE, ID)).thenReturn(relation);
+    when(graphStorageMock.getRelation(RELATION_TYPE, ID)).thenReturn(relation);
 
     // action
     SubARelation actualRelation = instance.getEntity(RELATION_TYPE, ID);
@@ -566,7 +566,7 @@ public class GraphLegacyStorageWrapperTest {
     instance.updateDomainEntity(RELATION_TYPE, entity, CHANGE);
 
     // verify
-    verify(neo4JStorageMock).updateRelation( //
+    verify(graphStorageMock).updateRelation( //
         argThat(is(equalTo(RELATION_TYPE))), //
         argThat(likeDomainEntity(RELATION_TYPE).withId(ID).withoutAPID()), //
         argThat(is(CHANGE)));
@@ -577,7 +577,7 @@ public class GraphLegacyStorageWrapperTest {
     // setup
     SubARelation entity = aRelation().build();
 
-    doThrow(StorageException.class).when(neo4JStorageMock).updateRelation(RELATION_TYPE, entity, CHANGE);
+    doThrow(StorageException.class).when(graphStorageMock).updateRelation(RELATION_TYPE, entity, CHANGE);
 
     // action
     instance.updateDomainEntity(RELATION_TYPE, entity, CHANGE);
@@ -589,13 +589,13 @@ public class GraphLegacyStorageWrapperTest {
     instance.setPID(RELATION_TYPE, ID, PID);
 
     // verify
-    verify(neo4JStorageMock).setRelationPID(RELATION_TYPE, ID, PID);
+    verify(graphStorageMock).setRelationPID(RELATION_TYPE, ID, PID);
   }
 
   @Test(expected = StorageException.class)
   public void setPIDForRelationThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
-    doThrow(StorageException.class).when(neo4JStorageMock).setRelationPID(RELATION_TYPE, ID, PID);
+    doThrow(StorageException.class).when(graphStorageMock).setRelationPID(RELATION_TYPE, ID, PID);
 
     // action
     instance.setPID(RELATION_TYPE, ID, PID);
@@ -604,7 +604,7 @@ public class GraphLegacyStorageWrapperTest {
   @Test
   public void getRevisionForRelationDelegatesTheCallToNeo4JStorageGetRelationRevision() throws Exception {
     // setup
-    when(neo4JStorageMock.getRelationRevision(RELATION_TYPE, ID, FIRST_REVISION)).thenReturn(aRelation().build());
+    when(graphStorageMock.getRelationRevision(RELATION_TYPE, ID, FIRST_REVISION)).thenReturn(aRelation().build());
 
     // action
     SubARelation relation = instance.getRevision(RELATION_TYPE, ID, FIRST_REVISION);
@@ -612,13 +612,13 @@ public class GraphLegacyStorageWrapperTest {
     // verify
     assertThat(relation, is(notNullValue()));
 
-    verify(neo4JStorageMock).getRelationRevision(RELATION_TYPE, ID, FIRST_REVISION);
+    verify(graphStorageMock).getRelationRevision(RELATION_TYPE, ID, FIRST_REVISION);
   }
 
   @Test(expected = StorageException.class)
   public void getRevisionThrowsAStorageExceptionWhenNeo4JStorageGetRelationRevisionDoes() throws Exception {
     // setup
-    when(neo4JStorageMock.getRelationRevision(RELATION_TYPE, ID, FIRST_REVISION)).thenThrow(new StorageException());
+    when(graphStorageMock.getRelationRevision(RELATION_TYPE, ID, FIRST_REVISION)).thenThrow(new StorageException());
 
     // action
     instance.getRevision(RELATION_TYPE, ID, FIRST_REVISION);
@@ -629,7 +629,7 @@ public class GraphLegacyStorageWrapperTest {
     // setup
     @SuppressWarnings("unchecked")
     StorageIterator<SubARelation> storageIteratorMock = mock(StorageIterator.class);
-    when(neo4JStorageMock.getRelationsByEntityId(RELATION_TYPE, ID)).thenReturn(storageIteratorMock);
+    when(graphStorageMock.getRelationsByEntityId(RELATION_TYPE, ID)).thenReturn(storageIteratorMock);
 
     // action
     StorageIterator<SubARelation> actualStorageIterator = instance.getRelationsByEntityId(RELATION_TYPE, ID);
@@ -641,7 +641,7 @@ public class GraphLegacyStorageWrapperTest {
   @Test(expected = StorageException.class)
   public void getRelationsByEntityIdThrowsAnExceptionWhenTheDelegateDoes() throws Exception {
     // setup
-    when(neo4JStorageMock.getRelationsByEntityId(RELATION_TYPE, ID)).thenThrow(new StorageException());
+    when(graphStorageMock.getRelationsByEntityId(RELATION_TYPE, ID)).thenThrow(new StorageException());
 
     // action
     instance.getRelationsByEntityId(RELATION_TYPE, ID);
@@ -669,7 +669,7 @@ public class GraphLegacyStorageWrapperTest {
   @Test(expected = StorageException.class)
   public void getRelationsIdsThrowsAStorageExceptionWhenTheRetrievalCausesAnExceptionToBeThrown() throws Exception {
     // setup
-    when(neo4JStorageMock.getRelationsByEntityId(Relation.class, ID)).thenThrow(new StorageException());
+    when(graphStorageMock.getRelationsByEntityId(Relation.class, ID)).thenThrow(new StorageException());
 
     // action
     instance.getRelationIds(Lists.newArrayList(ID));
@@ -682,14 +682,14 @@ public class GraphLegacyStorageWrapperTest {
     SubARelation relation2 = aRelation().withId(relId2).build();
     when(relationIterator.hasNext()).thenReturn(true, true, false);
     when(relationIterator.next()).thenReturn(relation1, relation2);
-    when(neo4JStorageMock.getRelationsByEntityId(Relation.class, entityId)).thenReturn(relationIterator);
+    when(graphStorageMock.getRelationsByEntityId(Relation.class, entityId)).thenReturn(relationIterator);
   }
 
   @Test
   public void getAllIdsWithoutPIDForRelationDelegatesToNeo4JStorageGetIdsOfNonPersistentRelations() throws Exception {
     // setup
     List<String> ids = Lists.newArrayList();
-    when(neo4JStorageMock.getIdsOfNonPersistentRelations(RELATION_TYPE)).thenReturn(ids);
+    when(graphStorageMock.getIdsOfNonPersistentRelations(RELATION_TYPE)).thenReturn(ids);
 
     // action
     List<String> foundIds = instance.getAllIdsWithoutPIDOfType(RELATION_TYPE);
@@ -702,7 +702,7 @@ public class GraphLegacyStorageWrapperTest {
   public void findItemByPropertyForRelationDelegatesToNeo4JStorageFindRelationByProperty() throws Exception {
     // setup
     SubARelation entity = aRelation().build();
-    when(neo4JStorageMock.findRelationByProperty(RELATION_TYPE, RELATION_PROPERTY_NAME, PROPERTY_VALUE))//
+    when(graphStorageMock.findRelationByProperty(RELATION_TYPE, RELATION_PROPERTY_NAME, PROPERTY_VALUE))//
         .thenReturn(entity);
 
     // action
@@ -715,7 +715,7 @@ public class GraphLegacyStorageWrapperTest {
   @Test(expected = StorageException.class)
   public void findItemByPropertyForRelationThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
-    when(neo4JStorageMock.findRelationByProperty(RELATION_TYPE, RELATION_PROPERTY_NAME, PROPERTY_VALUE))//
+    when(graphStorageMock.findRelationByProperty(RELATION_TYPE, RELATION_PROPERTY_NAME, PROPERTY_VALUE))//
         .thenThrow(new StorageException());
 
     // action
@@ -726,7 +726,7 @@ public class GraphLegacyStorageWrapperTest {
   public void countRelationDelegatesToNeo4JStorage() {
     // setup
     long count = 3l;
-    when(neo4JStorageMock.countRelations(RELATION_TYPE)).thenReturn(count);
+    when(graphStorageMock.countRelations(RELATION_TYPE)).thenReturn(count);
 
     // action
     long actualCount = instance.count(RELATION_TYPE);
@@ -739,7 +739,7 @@ public class GraphLegacyStorageWrapperTest {
   public void entityExistsForRelationDelegatesToNeo4JStorageRelationExists() throws Exception {
     // setup
     boolean relationExists = true;
-    when(neo4JStorageMock.relationExists(RELATION_TYPE, ID)).thenReturn(relationExists);
+    when(graphStorageMock.relationExists(RELATION_TYPE, ID)).thenReturn(relationExists);
 
     // action
     boolean actualEntityExists = instance.entityExists(RELATION_TYPE, ID);
@@ -760,7 +760,7 @@ public class GraphLegacyStorageWrapperTest {
 
     // verify
     assertThat(actualId, is(equalTo(ID)));
-    verify(neo4JStorageMock).addSystemEntity(//
+    verify(graphStorageMock).addSystemEntity(//
         argThat(is(equalTo(SYSTEM_ENTITY_TYPE))), //
         argThat(likeTestSystemEntityWrapper() //
             .withId(actualId) //
@@ -776,7 +776,7 @@ public class GraphLegacyStorageWrapperTest {
     String relationTypeId = "relationTypeId";
     SubARelation relation = aRelation().build();
 
-    when(neo4JStorageMock.findRelation(RELATION_TYPE, sourceId, targetId, relationTypeId))//
+    when(graphStorageMock.findRelation(RELATION_TYPE, sourceId, targetId, relationTypeId))//
         .thenReturn(relation);
 
     // action
@@ -792,7 +792,7 @@ public class GraphLegacyStorageWrapperTest {
     String targetId = "targetId";
     String relationTypeId = "relationTypeId";
 
-    when(neo4JStorageMock.findRelation(RELATION_TYPE, sourceId, targetId, relationTypeId)) //
+    when(graphStorageMock.findRelation(RELATION_TYPE, sourceId, targetId, relationTypeId)) //
         .thenThrow(new StorageException());
 
     // action
@@ -803,7 +803,7 @@ public class GraphLegacyStorageWrapperTest {
   @Test(expected = StorageException.class)
   public void addSystemEntityThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     TestSystemEntityWrapper entity = aSystemEntity().build();
-    doThrow(StorageException.class).when(neo4JStorageMock).addSystemEntity(SYSTEM_ENTITY_TYPE, entity);
+    doThrow(StorageException.class).when(graphStorageMock).addSystemEntity(SYSTEM_ENTITY_TYPE, entity);
 
     // action
     instance.addSystemEntity(SYSTEM_ENTITY_TYPE, entity);
@@ -813,7 +813,7 @@ public class GraphLegacyStorageWrapperTest {
   public void getEntityForSystemEntityDelegatesToNeo4JStorageGetEntity() throws Exception {
     // setup
     TestSystemEntityWrapper entity = aSystemEntity().build();
-    when(neo4JStorageMock.getEntity(SYSTEM_ENTITY_TYPE, ID)).thenReturn(entity);
+    when(graphStorageMock.getEntity(SYSTEM_ENTITY_TYPE, ID)).thenReturn(entity);
 
     // action
     TestSystemEntityWrapper actualEntity = instance.getEntity(SYSTEM_ENTITY_TYPE, ID);
@@ -825,7 +825,7 @@ public class GraphLegacyStorageWrapperTest {
   @Test(expected = StorageException.class)
   public void getEntityForSystemEntityThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
-    when(neo4JStorageMock.getEntity(SYSTEM_ENTITY_TYPE, ID)).thenThrow(new StorageException());
+    when(graphStorageMock.getEntity(SYSTEM_ENTITY_TYPE, ID)).thenThrow(new StorageException());
 
     // action
     instance.getEntity(SYSTEM_ENTITY_TYPE, ID);
@@ -836,7 +836,7 @@ public class GraphLegacyStorageWrapperTest {
     // setup
     @SuppressWarnings("unchecked")
     StorageIterator<TestSystemEntityWrapper> storageIteratorMock = mock(StorageIterator.class);
-    when(neo4JStorageMock.getEntities(SYSTEM_ENTITY_TYPE)).thenReturn(storageIteratorMock);
+    when(graphStorageMock.getEntities(SYSTEM_ENTITY_TYPE)).thenReturn(storageIteratorMock);
 
     // action
     StorageIterator<TestSystemEntityWrapper> actualSystemEntities = instance.getSystemEntities(SYSTEM_ENTITY_TYPE);
@@ -848,7 +848,7 @@ public class GraphLegacyStorageWrapperTest {
   @Test(expected = StorageException.class)
   public void getSystemEntitiesThrowsAnExceptionWhenTheDelegateDoes() throws StorageException {
     // setup
-    when(neo4JStorageMock.getEntities(SYSTEM_ENTITY_TYPE)).thenThrow(new StorageException());
+    when(graphStorageMock.getEntities(SYSTEM_ENTITY_TYPE)).thenThrow(new StorageException());
 
     // action
     instance.getSystemEntities(SYSTEM_ENTITY_TYPE);
@@ -864,14 +864,14 @@ public class GraphLegacyStorageWrapperTest {
     instance.updateSystemEntity(SYSTEM_ENTITY_TYPE, entity);
 
     // verify
-    verify(neo4JStorageMock).updateSystemEntity(SYSTEM_ENTITY_TYPE, entity);
+    verify(graphStorageMock).updateSystemEntity(SYSTEM_ENTITY_TYPE, entity);
   }
 
   @Test(expected = StorageException.class)
   public void updateSystemEntityThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
     TestSystemEntityWrapper entity = aSystemEntity().build();
-    doThrow(StorageException.class).when(neo4JStorageMock).updateSystemEntity(SYSTEM_ENTITY_TYPE, entity);
+    doThrow(StorageException.class).when(graphStorageMock).updateSystemEntity(SYSTEM_ENTITY_TYPE, entity);
 
     // action
     instance.updateSystemEntity(SYSTEM_ENTITY_TYPE, entity);
@@ -883,13 +883,13 @@ public class GraphLegacyStorageWrapperTest {
     instance.deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID);
 
     // verify
-    verify(neo4JStorageMock).deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID);
+    verify(graphStorageMock).deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID);
   }
 
   @Test(expected = StorageException.class)
   public void deleteSystemEntityThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
-    when(neo4JStorageMock.deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID)).thenThrow(new StorageException());
+    when(graphStorageMock.deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID)).thenThrow(new StorageException());
     // action
     instance.deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID);
   }
@@ -898,7 +898,7 @@ public class GraphLegacyStorageWrapperTest {
   public void findItemByPropertyForSystemEntityDelegatesToNeo4JStorageFindEntityByProperty() throws Exception {
     // setup
     TestSystemEntityWrapper entity = aSystemEntity().build();
-    when(neo4JStorageMock.findEntityByProperty(SYSTEM_ENTITY_TYPE, SYSTEM_ENTITY_PROPERTY, PROPERTY_VALUE))//
+    when(graphStorageMock.findEntityByProperty(SYSTEM_ENTITY_TYPE, SYSTEM_ENTITY_PROPERTY, PROPERTY_VALUE))//
         .thenReturn(entity);
 
     // action
@@ -911,7 +911,7 @@ public class GraphLegacyStorageWrapperTest {
   @Test(expected = StorageException.class)
   public void findItemByPropertyForSystemEntityThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
-    when(neo4JStorageMock.findEntityByProperty(SYSTEM_ENTITY_TYPE, SYSTEM_ENTITY_PROPERTY, PROPERTY_VALUE))//
+    when(graphStorageMock.findEntityByProperty(SYSTEM_ENTITY_TYPE, SYSTEM_ENTITY_PROPERTY, PROPERTY_VALUE))//
         .thenThrow(new StorageException());
 
     // action
@@ -922,7 +922,7 @@ public class GraphLegacyStorageWrapperTest {
   public void countSystemEntityDelegatesToNeo4JStorage() {
     // setup
     long count = 2l;
-    when(neo4JStorageMock.countEntities(SYSTEM_ENTITY_TYPE)).thenReturn(count);
+    when(graphStorageMock.countEntities(SYSTEM_ENTITY_TYPE)).thenReturn(count);
 
     // action
     long actualCount = instance.count(SYSTEM_ENTITY_TYPE);
@@ -935,7 +935,7 @@ public class GraphLegacyStorageWrapperTest {
   public void entityExistsForSystemEntityDelegatesToNeo4JStorage() throws Exception {
     // setup
     boolean entityExists = true;
-    when(neo4JStorageMock.entityExists(SYSTEM_ENTITY_TYPE, ID)).thenReturn(entityExists);
+    when(graphStorageMock.entityExists(SYSTEM_ENTITY_TYPE, ID)).thenReturn(entityExists);
 
     // action
     boolean actualEntityExists = instance.entityExists(SYSTEM_ENTITY_TYPE, ID);
@@ -950,14 +950,14 @@ public class GraphLegacyStorageWrapperTest {
     instance.close();
 
     // verify
-    verify(neo4JStorageMock).close();
+    verify(graphStorageMock).close();
   }
 
   @Test
   public void isAvailableReturnsTheValueTheNeo4JStorageReturns() {
     boolean available = true;
     // setup
-    when(neo4JStorageMock.isAvailable()).thenReturn(available);
+    when(graphStorageMock.isAvailable()).thenReturn(available);
 
     // action
     boolean actualAvailable = instance.isAvailable();
@@ -965,7 +965,7 @@ public class GraphLegacyStorageWrapperTest {
     // verify
     assertThat(actualAvailable, is(equalTo(available)));
 
-    verify(neo4JStorageMock).isAvailable();
+    verify(graphStorageMock).isAvailable();
   }
 
 }
