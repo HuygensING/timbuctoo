@@ -23,7 +23,7 @@ package nl.knaw.huygens.timbuctoo.config;
  */
 
 import nl.knaw.huygens.timbuctoo.storage.Storage;
-import nl.knaw.huygens.timbuctoo.storage.neo4j.Neo4JLegacyStorageWrapper;
+import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.Neo4JLegacyStorageWrapper;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
