@@ -13,7 +13,17 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 
+import com.google.inject.Inject;
+import com.tinkerpop.blueprints.Graph;
+
 public class TinkerpopStorage implements GraphStorage {
+
+  private final Graph db;
+
+  @Inject
+  public TinkerpopStorage(Graph db) {
+    this.db = db;
+  }
 
   @Override
   public <T extends DomainEntity> void addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {

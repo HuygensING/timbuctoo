@@ -6,17 +6,26 @@ import nl.knaw.huygens.timbuctoo.storage.DBIntegrationTestHelper;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.graph.GraphLegacyStorageWrapper;
 
+import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.impls.tg.TinkerGraph;
+
 public class TinkerpopDBIntegrationTestHelper implements DBIntegrationTestHelper {
 
-  @Override
-  public void startCleanDB() throws Exception {}
+  private Graph graph;
 
   @Override
-  public void stopDB() {}
+  public void startCleanDB() throws Exception {
+    graph = new TinkerGraph();
+  }
+
+  @Override
+  public void stopDB() {
+    graph.shutdown();
+  }
 
   @Override
   public Storage createStorage(TypeRegistry typeRegistry) throws ModelException {
-    return new GraphLegacyStorageWrapper(new TinkerpopStorage());
+    return new GraphLegacyStorageWrapper(new TinkerpopStorage(graph));
   }
 
 }
