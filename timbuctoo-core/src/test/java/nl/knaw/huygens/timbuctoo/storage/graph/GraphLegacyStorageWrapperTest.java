@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.neo4j;
+package nl.knaw.huygens.timbuctoo.storage.graph;
 
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.SubADomainEntityBuilder.aDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.SubARelationBuilder.aRelation;
@@ -52,7 +52,7 @@ import test.model.projecta.SubARelation;
 
 import com.google.common.collect.Lists;
 
-public class Neo4JLegacyStorageWrapperTest {
+public class GraphLegacyStorageWrapperTest {
 
   private static final String RELATION_PROPERTY_NAME = SubARelation.SOURCE_ID;
   private static final String SYSTEM_ENTITY_PROPERTY = TestSystemEntityWrapper.ANOTATED_PROPERTY_NAME;

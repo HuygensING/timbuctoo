@@ -47,15 +47,6 @@ import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.ConversionException;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.IdGenerator;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.Neo4JLowLevelAPI;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.Neo4JStorage;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.Neo4JStorageIteratorFactory;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.NodeConverter;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.NodeDuplicator;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.RelationshipConverter;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.RelationshipDuplicator;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.PropertyContainerConverterFactory;
 
 import org.junit.Before;
@@ -832,7 +823,7 @@ public class Neo4JStorageTest {
     nodesFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, nodeMock, nodeMock2, nodeMock3);
 
     // action
-    instance.deleteDomainEntity(Neo4JLegacyStorageWrapperTest.PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, CHANGE);
+    instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, CHANGE);
 
     // verify
     InOrder inOrder = inOrder(dbMock, nodeMock, relMock1, relMock2, nodeMock2, relMock3, relMock4, nodeMock3, relMock5, relMock6, transactionMock);
