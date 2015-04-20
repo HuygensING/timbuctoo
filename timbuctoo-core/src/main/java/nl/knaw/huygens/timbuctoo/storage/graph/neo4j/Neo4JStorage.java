@@ -18,6 +18,7 @@ import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
+import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.PropertyContainerConverterFactory;
 
 import org.neo4j.graphdb.Direction;
@@ -37,7 +38,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 
-public class Neo4JStorage {
+public class Neo4JStorage implements GraphStorage {
 
   private static final String PID_PROPERTY_NAME = DomainEntity.PID;
 
