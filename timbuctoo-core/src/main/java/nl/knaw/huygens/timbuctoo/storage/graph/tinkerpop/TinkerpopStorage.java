@@ -15,14 +15,21 @@ import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 
 import com.google.inject.Inject;
 import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.Vertex;
 
 public class TinkerpopStorage implements GraphStorage {
 
   private final Graph db;
+  private final ElementConverterFactory elementConverterFactory;
 
   @Inject
   public TinkerpopStorage(Graph db) {
+    this(db, new ElementConverterFactory());
+  }
+
+  public TinkerpopStorage(Graph db, ElementConverterFactory elementConverterFactory) {
     this.db = db;
+    this.elementConverterFactory = elementConverterFactory;
   }
 
   @Override
@@ -32,7 +39,16 @@ public class TinkerpopStorage implements GraphStorage {
 
   @Override
   public <T extends SystemEntity> void addSystemEntity(Class<T> type, T entity) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    Vertex vertex = db.addVertex(null);
+
+    VertexConverter<T> converter = elementConverterFactory.forType(type);
+    try {
+      converter.addValuesToVertex(vertex, entity);
+    } catch (ConversionException e) {
+      db.removeVertex(vertex);
+      throw e;
+    }
+
   }
 
   @Override
