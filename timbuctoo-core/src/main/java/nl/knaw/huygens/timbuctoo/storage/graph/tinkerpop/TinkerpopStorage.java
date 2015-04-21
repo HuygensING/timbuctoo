@@ -39,16 +39,30 @@ public class TinkerpopStorage implements GraphStorage {
 
   @Override
   public <T extends SystemEntity> void addSystemEntity(Class<T> type, T entity) throws StorageException {
-    Vertex vertex = db.addVertex(null);
+    new RevertableAddition<T>().execute(type, entity);
+  }
 
-    VertexConverter<T> converter = elementConverterFactory.forType(type);
-    try {
-      converter.addValuesToVertex(vertex, entity);
-    } catch (ConversionException e) {
-      db.removeVertex(vertex);
-      throw e;
+  private class RevertableAddition<T extends Entity> {
+    public final void execute(Class<T> type, T entity) throws StorageException {
+      Vertex vertex = db.addVertex(null);
+
+      VertexConverter<T> converter = createVertexConverter(type);
+      try {
+        converter.addValuesToVertex(vertex, entity);
+      } catch (ConversionException e) {
+        rollback(vertex);
+        throw e;
+      }
     }
 
+    protected void rollback(Vertex vertex) {
+      db.removeVertex(vertex);
+    }
+
+    protected VertexConverter<T> createVertexConverter(Class<T> type) {
+      VertexConverter<T> converter = elementConverterFactory.forType(type);
+      return converter;
+    }
   }
 
   @Override
