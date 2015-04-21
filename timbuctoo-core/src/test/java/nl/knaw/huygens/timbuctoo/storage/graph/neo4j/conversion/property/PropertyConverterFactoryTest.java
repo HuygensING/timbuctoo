@@ -12,13 +12,8 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Field;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.FieldType;
-import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.PropertyConverter;
-import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.property.NoOpPropertyConverter;
-import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.property.ObjectValuePropertyConverter;
-import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.property.PropertyConverterFactory;
-import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.property.SimpleCollectionPropertyConverter;
-import nl.knaw.huygens.timbuctoo.storage.neo4j.conversion.property.SimpleValuePropertyConverter;
+import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
+import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.PropertyConverter;
 
 import org.junit.Before;
 import org.junit.Test;

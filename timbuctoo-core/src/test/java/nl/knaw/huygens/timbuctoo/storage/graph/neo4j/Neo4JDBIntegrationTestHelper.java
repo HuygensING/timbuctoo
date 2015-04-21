@@ -5,7 +5,6 @@ import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.storage.DBIntegrationTestHelper;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.graph.GraphLegacyStorageWrapper;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.Neo4JStorage;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.PropertyContainerConverterFactory;
 
 import org.neo4j.graphdb.GraphDatabaseService;
