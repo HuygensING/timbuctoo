@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.property;
+package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType.REGULAR;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType.VIRTUAL;
@@ -14,7 +14,6 @@ import java.lang.reflect.Field;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.PropertyConverter;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -27,7 +26,6 @@ public class PropertyConverterFactoryTest {
   private static final Class<ObjectValuePropertyConverter> OBJECT_CONVERTER_TYPE = ObjectValuePropertyConverter.class;
   private static final Class<SimpleValuePropertyConverter> SIMPLE_VALUE_CONVERTER_TYPE = SimpleValuePropertyConverter.class;
   private static final Class<NoOpPropertyConverter> NO_OP_CONVERTER_TYPE = NoOpPropertyConverter.class;
-  @SuppressWarnings("rawtypes")
   private static final Class<SimpleCollectionPropertyConverter> SIMPLE_COLLECTION_FIELD_CONVERTER_TYPE = SimpleCollectionPropertyConverter.class;
   private PropertyConverterFactory instance;
   private PropertyBusinessRules propertyBusinessRulesMock;
@@ -128,7 +126,7 @@ public class PropertyConverterFactoryTest {
     when(propertyBusinessRulesMock.getFieldName(TYPE, field)).thenReturn(FIELD_NAME);
 
     // action
-    PropertyConverter propertyConverter = instance.createFor(TYPE, field);
+    PropertyConverter propertyConverter = instance.createPropertyConverter(TYPE, field);
 
     // verify
     assertThat(propertyConverter, is(instanceOf(expectedConverterType)));

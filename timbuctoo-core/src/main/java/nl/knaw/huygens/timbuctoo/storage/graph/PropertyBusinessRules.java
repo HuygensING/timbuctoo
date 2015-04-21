@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.property;
+package nl.knaw.huygens.timbuctoo.storage.graph;
 
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType.ADMINISTRATIVE;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType.REGULAR;
@@ -16,7 +16,7 @@ import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-class PropertyBusinessRules {
+public class PropertyBusinessRules {
 
   private boolean isAdministrativeProperty(Class<? extends Entity> containingType, Field field) {
     String fieldName = getFieldName(containingType, field);

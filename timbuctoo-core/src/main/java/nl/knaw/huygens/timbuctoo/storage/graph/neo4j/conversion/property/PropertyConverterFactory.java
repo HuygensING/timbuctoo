@@ -8,6 +8,7 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.PropertyConverter;
 
