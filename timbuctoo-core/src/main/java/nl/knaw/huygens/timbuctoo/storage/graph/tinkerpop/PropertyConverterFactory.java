@@ -99,7 +99,7 @@ public class PropertyConverterFactory {
   }
 
   protected <T> PropertyConverter createSimpleCollectionPropertyConverter(Class<T> componentType) {
-    return new SimpleCollectionPropertyConverter();
+    return new SimpleCollectionPropertyConverter<T>(componentType);
   }
 
 }

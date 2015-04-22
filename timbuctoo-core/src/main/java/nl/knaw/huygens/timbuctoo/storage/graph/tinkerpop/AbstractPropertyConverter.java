@@ -40,7 +40,7 @@ public abstract class AbstractPropertyConverter implements PropertyConverter {
       Object value = getValue(entity);
 
       if (isLegalValue(value)) {
-        vertex.setProperty(propertyName(), value);
+        vertex.setProperty(propertyName(), format(value));
       }
 
     } catch (IllegalArgumentException | IllegalAccessException e) {
@@ -48,7 +48,9 @@ public abstract class AbstractPropertyConverter implements PropertyConverter {
     }
   }
 
-  private boolean isLegalValue(Object value) {
+  protected abstract Object format(Object value);
+
+  protected boolean isLegalValue(Object value) {
     return value != null;
   }
 
@@ -59,7 +61,7 @@ public abstract class AbstractPropertyConverter implements PropertyConverter {
 
   protected Object getValue(Entity entity) throws IllegalAccessException, IllegalArgumentException {
     field.setAccessible(true);
-    Object value = field.get(entity);
-    return value;
+    return field.get(entity);
   }
+
 }
