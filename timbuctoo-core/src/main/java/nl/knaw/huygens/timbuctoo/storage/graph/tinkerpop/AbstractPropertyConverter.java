@@ -48,7 +48,7 @@ public abstract class AbstractPropertyConverter implements PropertyConverter {
     }
   }
 
-  protected abstract Object format(Object value);
+  protected abstract Object format(Object value) throws IllegalArgumentException;
 
   protected boolean isLegalValue(Object value) {
     return value != null;

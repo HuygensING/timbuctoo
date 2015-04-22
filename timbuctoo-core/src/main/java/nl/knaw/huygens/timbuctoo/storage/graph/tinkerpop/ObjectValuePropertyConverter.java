@@ -1,15 +1,23 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ObjectValuePropertyConverter extends AbstractPropertyConverter {
 
-  protected String getFieldName() {
-    return null;
+  private final ObjectMapper objectMapper;
+
+  public ObjectValuePropertyConverter() {
+    objectMapper = new ObjectMapper();
   }
 
   @Override
-  protected Object format(Object value) {
-    return value;
+  protected Object format(Object value) throws IllegalArgumentException {
+    try {
+      return objectMapper.writeValueAsString(value);
+    } catch (JsonProcessingException e) {
+      throw new IllegalArgumentException(e);
+    }
   }
 
 }
