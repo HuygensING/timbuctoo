@@ -3,33 +3,63 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 import java.lang.reflect.Field;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
 
 import com.tinkerpop.blueprints.Vertex;
 
 public abstract class AbstractPropertyConverter implements PropertyConverter {
+  private Field field;
+  private Class<? extends Entity> type;
+  private FieldType fieldType;
+  private String fieldName;
+
   @Override
   public void setField(Field field) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    this.field = field;
   }
 
   @Override
   public void setContainingType(Class<? extends Entity> type) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    this.type = type;
   }
 
   @Override
   public void setFieldType(FieldType fieldType) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    this.fieldType = fieldType;
   }
 
   @Override
   public void setName(String fieldName) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    this.fieldName = fieldName;
   }
 
   @Override
-  public void setValueOfVertex(Vertex vertex, Entity entity) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+  public void setValueOfVertex(Vertex vertex, Entity entity) throws ConversionException {
+    try {
+      Object value = getValue(entity);
+
+      if (isLegalValue(value)) {
+        vertex.setProperty(propertyName(), value);
+      }
+
+    } catch (IllegalArgumentException | IllegalAccessException e) {
+      throw new ConversionException(e);
+    }
+  }
+
+  private boolean isLegalValue(Object value) {
+    return value != null;
+  }
+
+  private String propertyName() {
+    String propertyName = fieldType.propertyName(type, fieldName);
+    return propertyName;
+  }
+
+  protected Object getValue(Entity entity) throws IllegalAccessException, IllegalArgumentException {
+    field.setAccessible(true);
+    Object value = field.get(entity);
+    return value;
   }
 }

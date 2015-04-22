@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 import java.lang.reflect.Field;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
 
 import com.tinkerpop.blueprints.Vertex;
@@ -17,5 +18,5 @@ public interface PropertyConverter {
 
   void setName(String fieldName);
 
-  void setValueOfVertex(Vertex vertex, Entity entity);
+  void setValueOfVertex(Vertex vertex, Entity entity) throws ConversionException;
 }
