@@ -1,15 +1,28 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
+import java.lang.reflect.Field;
 
-public class NoOpPropertyConverter extends AbstractPropertyConverter {
+import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
+import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
 
-  protected String getFieldName() {
-    return null;
-  }
+import com.tinkerpop.blueprints.Vertex;
+
+public class NoOpPropertyConverter implements PropertyConverter {
 
   @Override
-  protected Object format(Object value) {
-    return value;
-  }
+  public void setField(Field field) {}
+
+  @Override
+  public void setContainingType(Class<? extends Entity> type) {}
+
+  @Override
+  public void setFieldType(FieldType fieldType) {}
+
+  @Override
+  public void setName(String fieldName) {}
+
+  @Override
+  public void setValueOfVertex(Vertex vertex, Entity entity) throws ConversionException {}
 
 }
