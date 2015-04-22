@@ -23,7 +23,7 @@ public class NoOpPropertyConverter implements PropertyConverter {
   public void setName(String fieldName) {}
 
   @Override
-  public void setValueOfVertex(Vertex vertex, Entity entity) throws ConversionException {}
+  public void setPropertyOfVertex(Vertex vertex, Entity entity) throws ConversionException {}
 
   @Override
   public void addValueToEntity(Entity entity, Vertex vertex) throws ConversionException {}

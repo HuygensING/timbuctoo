@@ -30,7 +30,7 @@ class ExtendableVertexConverter<T extends Entity> implements VertexConverter<T> 
   public void addValuesToVertex(Vertex vertex, T entity) throws ConversionException {
     addVariation(vertex, entity.getClass());
     for (PropertyConverter propertyConverter : propertyConverters) {
-      propertyConverter.setValueOfVertex(vertex, entity);
+      propertyConverter.setPropertyOfVertex(vertex, entity);
     }
   }
 

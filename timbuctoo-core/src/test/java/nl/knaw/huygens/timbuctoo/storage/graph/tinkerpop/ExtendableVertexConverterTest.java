@@ -53,8 +53,8 @@ public class ExtendableVertexConverterTest {
 
     // verify
     verifyTypeIsSet(vertexMock);
-    verify(propertyConverter1).setValueOfVertex(vertexMock, entity);
-    verify(propertyConverter2).setValueOfVertex(vertexMock, entity);
+    verify(propertyConverter1).setPropertyOfVertex(vertexMock, entity);
+    verify(propertyConverter2).setPropertyOfVertex(vertexMock, entity);
 
   }
 
@@ -65,14 +65,14 @@ public class ExtendableVertexConverterTest {
   @Test(expected = ConversionException.class)
   public void addValuesToNodeFieldMapperThrowsAConversionException() throws Exception {
     // setup
-    doThrow(ConversionException.class).when(propertyConverter1).setValueOfVertex(vertexMock, entity);
+    doThrow(ConversionException.class).when(propertyConverter1).setPropertyOfVertex(vertexMock, entity);
 
     try {
       // action
       instance.addValuesToVertex(vertexMock, entity);
     } finally {
       // verify
-      verify(propertyConverter1).setValueOfVertex(vertexMock, entity);
+      verify(propertyConverter1).setPropertyOfVertex(vertexMock, entity);
       verifyZeroInteractions(propertyConverter2);
     }
   }

@@ -53,7 +53,7 @@ public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
     entity.setObjectValue(DEFAULT_VALUE);
 
     // action
-    instance.setValueOfVertex(vertexMock, entity);
+    instance.setPropertyOfVertex(vertexMock, entity);
 
     // verify
     verify(vertexMock).setProperty(propertyName, serializedValue);
@@ -72,7 +72,7 @@ public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
     entity.setObjectValue(null);
 
     // action
-    instance.setValueOfVertex(vertexMock, entity);
+    instance.setPropertyOfVertex(vertexMock, entity);
 
     // verify
     verifyZeroInteractions(vertexMock);
@@ -91,7 +91,7 @@ public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
 
     setupInstance(instance);
 
-    instance.setValueOfVertex(vertexMock, entity);
+    instance.setPropertyOfVertex(vertexMock, entity);
   }
 
   @Test(expected = ConversionException.class)
@@ -108,7 +108,7 @@ public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
     setupInstance(instance);
 
     // action
-    instance.setValueOfVertex(vertexMock, entity);
+    instance.setPropertyOfVertex(vertexMock, entity);
   }
 
   @Test(expected = ConversionException.class)
@@ -126,6 +126,6 @@ public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
     setupInstance(instance);
 
     // action
-    instance.setValueOfVertex(vertexMock, entity);
+    instance.setPropertyOfVertex(vertexMock, entity);
   }
 }

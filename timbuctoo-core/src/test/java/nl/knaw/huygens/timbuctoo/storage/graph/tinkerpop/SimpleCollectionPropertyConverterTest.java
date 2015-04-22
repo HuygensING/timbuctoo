@@ -62,7 +62,7 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
     entity.setPrimitiveCollection(value);
 
     // action
-    instance.setValueOfVertex(vertexMock, entity);
+    instance.setPropertyOfVertex(vertexMock, entity);
 
     // verify
     verify(vertexMock).setProperty(argThat(equalTo(propertyName)), //
@@ -77,7 +77,7 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
     entity.setPrimitiveCollection(null);
 
     // action
-    instance.setValueOfVertex(vertexMock, entity);
+    instance.setPropertyOfVertex(vertexMock, entity);
 
     // verify
     verifyZeroInteractions(vertexMock);
@@ -89,7 +89,7 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
     entity.setPrimitiveCollection(Lists.<Integer> newArrayList());
 
     // action
-    instance.setValueOfVertex(vertexMock, entity);
+    instance.setPropertyOfVertex(vertexMock, entity);
 
     // verify
     verifyZeroInteractions(vertexMock);
@@ -109,7 +109,7 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
     setupInstance(instance);
 
     // action
-    instance.setValueOfVertex(vertexMock, entity);
+    instance.setPropertyOfVertex(vertexMock, entity);
 
   }
 
@@ -127,7 +127,7 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
     setupInstance(instance);
 
     // action
-    instance.setValueOfVertex(vertexMock, entity);
+    instance.setPropertyOfVertex(vertexMock, entity);
   }
 
 }

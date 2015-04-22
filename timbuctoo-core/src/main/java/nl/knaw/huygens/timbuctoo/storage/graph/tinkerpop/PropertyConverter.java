@@ -18,7 +18,7 @@ public interface PropertyConverter {
 
   void setName(String fieldName);
 
-  void setValueOfVertex(Vertex vertex, Entity entity) throws ConversionException;
+  void setPropertyOfVertex(Vertex vertex, Entity entity) throws ConversionException;
 
   void addValueToEntity(Entity entity, Vertex vertex) throws ConversionException;
 }

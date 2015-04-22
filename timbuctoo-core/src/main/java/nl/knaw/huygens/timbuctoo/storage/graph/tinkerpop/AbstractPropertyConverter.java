@@ -35,7 +35,7 @@ public abstract class AbstractPropertyConverter implements PropertyConverter {
   }
 
   @Override
-  public void setValueOfVertex(Vertex vertex, Entity entity) throws ConversionException {
+  public void setPropertyOfVertex(Vertex vertex, Entity entity) throws ConversionException {
     try {
       Object value = getValue(entity);
 
@@ -65,8 +65,19 @@ public abstract class AbstractPropertyConverter implements PropertyConverter {
   }
 
   @Override
-  public void addValueToEntity(Entity entity, Vertex vertex) throws ConversionException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+  public final void addValueToEntity(Entity entity, Vertex vertex) throws ConversionException {
+    Object value = vertex.getProperty(propertyName());
+
+    try {
+      fillField(entity, value);
+    } catch (IllegalArgumentException | IllegalAccessException e) {
+      throw new ConversionException(e);
+    }
+  }
+
+  protected void fillField(Entity entity, Object value) throws IllegalAccessException, IllegalArgumentException {
+    field.setAccessible(true);
+    field.set(entity, value);
   }
 
 }
