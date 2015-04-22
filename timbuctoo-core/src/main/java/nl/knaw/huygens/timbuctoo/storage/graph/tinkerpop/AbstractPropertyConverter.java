@@ -64,4 +64,9 @@ public abstract class AbstractPropertyConverter implements PropertyConverter {
     return field.get(entity);
   }
 
+  @Override
+  public void addValueToEntity(Entity entity, Vertex vertex) throws ConversionException {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
 }

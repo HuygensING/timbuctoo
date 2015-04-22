@@ -25,4 +25,7 @@ public class NoOpPropertyConverter implements PropertyConverter {
   @Override
   public void setValueOfVertex(Vertex vertex, Entity entity) throws ConversionException {}
 
+  @Override
+  public void addValueToEntity(Entity entity, Vertex vertex) throws ConversionException {}
+
 }

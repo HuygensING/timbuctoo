@@ -5,25 +5,28 @@ import java.util.Collection;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
 
 import com.google.common.collect.Sets;
 
 public class ElementConverterFactory {
 
   private final PropertyConverterFactory propertyConverterFactory;
+  private final EntityInstantiator entityInstantiator;
 
   public ElementConverterFactory() {
-    this(new PropertyConverterFactory());
+    this(new PropertyConverterFactory(), new EntityInstantiator());
   }
 
-  public ElementConverterFactory(PropertyConverterFactory propertyConverterFactory) {
+  public ElementConverterFactory(PropertyConverterFactory propertyConverterFactory, EntityInstantiator entityInstantiator) {
     this.propertyConverterFactory = propertyConverterFactory;
+    this.entityInstantiator = entityInstantiator;
   }
 
   public <T extends Entity> VertexConverter<T> forType(Class<T> type) {
     Collection<PropertyConverter> propertyConverters = createPropertyConverters(type);
 
-    return new ExtendableVertexConverter<T>(propertyConverters);
+    return new ExtendableVertexConverter<T>(type, propertyConverters, entityInstantiator);
   }
 
   @SuppressWarnings("unchecked")

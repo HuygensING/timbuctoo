@@ -10,6 +10,10 @@ public class ConversionException extends StorageException {
 
   public ConversionException() {}
 
+  public ConversionException(String message) {
+    super(message);
+  }
+
   /**
    * 
    */

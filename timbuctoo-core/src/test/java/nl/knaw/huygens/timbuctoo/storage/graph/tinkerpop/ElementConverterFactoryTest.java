@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 import java.lang.reflect.Field;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
 
 import org.junit.Test;
 
@@ -27,7 +28,7 @@ public class ElementConverterFactoryTest {
     PropertyConverterFactory propertyConverterFactoryMock = mock(PropertyConverterFactory.class);
     when(propertyConverterFactoryMock.createPropertyConverter(argThat(equalTo(TestSystemEntityWrapper.class)), any(Field.class))).thenReturn(mock(PropertyConverter.class));
 
-    ElementConverterFactory instance = new ElementConverterFactory(propertyConverterFactoryMock);
+    ElementConverterFactory instance = new ElementConverterFactory(propertyConverterFactoryMock, mock(EntityInstantiator.class));
 
     int numberOfFields = countFieldsOfTypeAndSuperTypes(TestSystemEntityWrapper.class);
 
