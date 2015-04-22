@@ -21,14 +21,14 @@ public class TinkerpopStorage implements GraphStorage {
 
   private final Graph db;
   private final ElementConverterFactory elementConverterFactory;
-  private final LowLevelTinkerpopAPI lowLevelAPI;
+  private final TinkerpopLowLevelAPI lowLevelAPI;
 
   @Inject
   public TinkerpopStorage(Graph db) {
-    this(db, new ElementConverterFactory(), new LowLevelTinkerpopAPI());
+    this(db, new ElementConverterFactory(), new TinkerpopLowLevelAPI(db));
   }
 
-  public TinkerpopStorage(Graph db, ElementConverterFactory elementConverterFactory, LowLevelTinkerpopAPI lowLevelAPI) {
+  public TinkerpopStorage(Graph db, ElementConverterFactory elementConverterFactory, TinkerpopLowLevelAPI lowLevelAPI) {
     this.db = db;
     this.elementConverterFactory = elementConverterFactory;
     this.lowLevelAPI = lowLevelAPI;

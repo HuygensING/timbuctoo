@@ -31,12 +31,12 @@ public class TinkerpopStorageTest {
   private TinkerpopStorage instance;
   private ElementConverterFactory elementConverterFactoryMock;
   private Vertex createdVertex;
-  private LowLevelTinkerpopAPI lowLevelAPIMock;
+  private TinkerpopLowLevelAPI lowLevelAPIMock;
 
   @Before
   public void setup() {
     dbMock = mock(Graph.class);
-    lowLevelAPIMock = mock(LowLevelTinkerpopAPI.class);
+    lowLevelAPIMock = mock(TinkerpopLowLevelAPI.class);
     elementConverterFactoryMock = mock(ElementConverterFactory.class);
     instance = new TinkerpopStorage(dbMock, elementConverterFactoryMock, lowLevelAPIMock);
 

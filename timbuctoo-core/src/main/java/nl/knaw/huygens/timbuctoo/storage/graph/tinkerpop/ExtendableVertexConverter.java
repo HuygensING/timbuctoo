@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexFields.VERTEX_TYPE;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -11,7 +13,6 @@ import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.Vertex;
 
 class ExtendableVertexConverter<T extends Entity> implements VertexConverter<T> {
-  static final String VERTEX_TYPE = "^vertexType";
 
   private Collection<PropertyConverter> propertyConverters;
 
