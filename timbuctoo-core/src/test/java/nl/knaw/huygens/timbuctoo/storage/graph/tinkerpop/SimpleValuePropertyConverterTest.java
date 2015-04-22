@@ -14,7 +14,7 @@ import test.model.TestSystemEntityWrapper;
 
 import com.tinkerpop.blueprints.Vertex;
 
-public class SimpleValuePropertyConverterTest {
+public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
   private static final String FIELD_VALUE = "test";
   private static final FieldType FIELD_TYPE = FieldType.REGULAR;
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
