@@ -9,4 +9,6 @@ public interface VertexConverter<T extends Entity> {
 
   void addValuesToVertex(Vertex vertex, T entity) throws ConversionException;
 
+  T convertToEntity(Vertex foundVertex) throws ConversionException;
+
 }

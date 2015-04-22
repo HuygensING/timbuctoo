@@ -21,15 +21,17 @@ public class TinkerpopStorage implements GraphStorage {
 
   private final Graph db;
   private final ElementConverterFactory elementConverterFactory;
+  private final LowLevelTinkerpopAPI lowLevelAPI;
 
   @Inject
   public TinkerpopStorage(Graph db) {
-    this(db, new ElementConverterFactory());
+    this(db, new ElementConverterFactory(), new LowLevelTinkerpopAPI());
   }
 
-  public TinkerpopStorage(Graph db, ElementConverterFactory elementConverterFactory) {
+  public TinkerpopStorage(Graph db, ElementConverterFactory elementConverterFactory, LowLevelTinkerpopAPI lowLevelAPI) {
     this.db = db;
     this.elementConverterFactory = elementConverterFactory;
+    this.lowLevelAPI = lowLevelAPI;
   }
 
   @Override
@@ -72,7 +74,16 @@ public class TinkerpopStorage implements GraphStorage {
 
   @Override
   public <T extends Entity> T getEntity(Class<T> type, String id) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    T entity = null;
+    Vertex vertex = lowLevelAPI.getLatestVertexById(type, id);
+
+    if (vertex != null) {
+      VertexConverter<T> converter = elementConverterFactory.forType(type);
+
+      entity = converter.convertToEntity(vertex);
+    }
+
+    return entity;
   }
 
   @Override

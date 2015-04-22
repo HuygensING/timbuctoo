@@ -1,6 +1,10 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import static nl.knaw.huygens.timbuctoo.storage.graph.TestSystemEntityWrapperBuilder.aSystemEntity;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -22,16 +26,19 @@ import com.tinkerpop.blueprints.Vertex;
 public class TinkerpopStorageTest {
 
   private static final Class<TestSystemEntityWrapper> SYSTEM_ENTITY_TYPE = TestSystemEntityWrapper.class;
+  private static final String ID = "id";
   private Graph dbMock;
   private TinkerpopStorage instance;
   private ElementConverterFactory elementConverterFactoryMock;
   private Vertex createdVertex;
+  private LowLevelTinkerpopAPI lowLevelAPIMock;
 
   @Before
   public void setup() {
     dbMock = mock(Graph.class);
+    lowLevelAPIMock = mock(LowLevelTinkerpopAPI.class);
     elementConverterFactoryMock = mock(ElementConverterFactory.class);
-    instance = new TinkerpopStorage(dbMock, elementConverterFactoryMock);
+    instance = new TinkerpopStorage(dbMock, elementConverterFactoryMock, lowLevelAPIMock);
 
     createdVertex = mock(Vertex.class);
     when(dbMock.addVertex(null)).thenReturn(createdVertex);
@@ -80,6 +87,57 @@ public class TinkerpopStorageTest {
       // verify
       verify(dbMock).removeVertex(createdVertex);
     }
+  }
+
+  @Test
+  public void getEntityReturnsTheItemWhenFound() throws Exception {
+    // setup
+    Vertex foundVertex = latestVertexFoundFor();
+
+    VertexConverter<TestSystemEntityWrapper> vertexConverter = vertexConverterCreatedFor(SYSTEM_ENTITY_TYPE);
+    TestSystemEntityWrapper entity = new TestSystemEntityWrapper();
+    when(vertexConverter.convertToEntity(foundVertex)).thenReturn(entity);
+
+    // action
+    TestSystemEntityWrapper foundEntity = instance.getEntity(SYSTEM_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(foundEntity, is(sameInstance(entity)));
+  }
+
+  @Test
+  public void getEntityReturnsNullIfNoItemIsFound() throws Exception {
+    // setup
+    noLatestVertexFoundFor(SYSTEM_ENTITY_TYPE, ID);
+
+    // action
+    TestSystemEntityWrapper entity = instance.getEntity(SYSTEM_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(entity, is(nullValue()));
+  }
+
+  private void noLatestVertexFoundFor(Class<? extends Entity> type, String id) {
+    when(lowLevelAPIMock.getLatestVertexById(type, id)).thenReturn(null);
+  }
+
+  @Test(expected = ConversionException.class)
+  public void getEntityThrowsConversionExceptionIfTheFoundVertexCannotBeConvertedToTheEntity() throws Exception {
+    // setup
+    Vertex foundVertex = latestVertexFoundFor();
+
+    VertexConverter<TestSystemEntityWrapper> vertexConverter = vertexConverterCreatedFor(SYSTEM_ENTITY_TYPE);
+    when(vertexConverter.convertToEntity(foundVertex)).thenThrow(new ConversionException());
+
+    // action
+    instance.getEntity(SYSTEM_ENTITY_TYPE, ID);
+
+  }
+
+  private Vertex latestVertexFoundFor() {
+    Vertex foundVertex = mock(Vertex.class);
+    when(lowLevelAPIMock.getLatestVertexById(SYSTEM_ENTITY_TYPE, ID)).thenReturn(foundVertex);
+    return foundVertex;
   }
 
   private <T extends Entity> VertexConverter<T> vertexConverterCreatedFor(Class<T> type) {

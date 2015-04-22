@@ -36,4 +36,9 @@ class ExtendableVertexConverter<T extends Entity> implements VertexConverter<T> 
     vertex.setProperty(VERTEX_TYPE, typeList.toArray(new String[typeList.size()]));
   }
 
+  @Override
+  public T convertToEntity(Vertex foundVertex) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
 }
