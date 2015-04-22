@@ -2,6 +2,9 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
+import java.util.List;
+
+import com.google.common.collect.Lists;
 
 public class SimpleCollectionPropertyConverter<T> extends AbstractPropertyConverter {
 
@@ -24,6 +27,17 @@ public class SimpleCollectionPropertyConverter<T> extends AbstractPropertyConver
   @Override
   protected boolean isLegalValue(Object value) {
     return value != null && !((Collection<?>) value).isEmpty();
+  }
+
+  @Override
+  protected Object convert(Object value) {
+    List<Object> list = Lists.newArrayList();
+
+    for (int i = 0; i < Array.getLength(value); i++) {
+      list.add(Array.get(value, i));
+    }
+
+    return list;
   }
 
 }

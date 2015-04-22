@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -34,7 +35,7 @@ public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
     setupInstance(instance);
 
     entity = new TestSystemEntityWrapper();
-    entity.setStringValue(FIELD_VALUE);
+
     vertexMock = mock(Vertex.class);
   }
 
@@ -48,6 +49,9 @@ public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
   @Override
   @Test
   public void setValueOfVertexSetsThePropertyWithTheFieldNameToTheValueOfTheNode() throws Exception {
+    // setup
+    entity.setStringValue(FIELD_VALUE);
+
     // action
     instance.setPropertyOfVertex(vertexMock, entity);
 
@@ -103,6 +107,7 @@ public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
   }
 
   @Test
+  @Override
   public void addValueToEntitySetTheFieldOfTheEntityWithTheValue() throws Exception {
     // setup
     when(vertexMock.getProperty(PROPERTY_NAME)).thenReturn(FIELD_VALUE);
@@ -114,7 +119,21 @@ public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
     assertThat(entity.getStringValue(), is(equalTo(FIELD_VALUE)));
   }
 
+  @Test
+  @Override
+  public void addValueToEntityAddsNullWhenTheValueIsNull() throws Exception {
+    // setup
+    when(vertexMock.getProperty(PROPERTY_NAME)).thenReturn(null);
+
+    // action
+    instance.addValueToEntity(entity, vertexMock);
+
+    // verify
+    assertThat(entity.getStringValue(), is(nullValue()));
+  }
+
   @Test(expected = ConversionException.class)
+  @Override
   public void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnIllegalAccessExceptionIsThrown() throws Exception {
     // setup
     SimpleValuePropertyConverter instance = new SimpleValuePropertyConverter() {
@@ -130,6 +149,7 @@ public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
   }
 
   @Test(expected = ConversionException.class)
+  @Override
   public void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnAnIllegalArgumentExceptionIsThrown() throws Exception {
     SimpleValuePropertyConverter instance = new SimpleValuePropertyConverter() {
       @Override

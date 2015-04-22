@@ -1,11 +1,16 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.property.SimpleArrayMatcher.isSimpleArrayOfType;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 
@@ -128,6 +133,69 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
 
     // action
     instance.setPropertyOfVertex(vertexMock, entity);
+  }
+
+  @Test
+  @Override
+  public void addValueToEntitySetTheFieldOfTheEntityWithTheValue() throws Exception {
+    // setup
+    when(vertexMock.getProperty(propertyName)).thenReturn(new int[] { VALUE_1, VALUE_2, VALUE_3, VALUE_4 });
+
+    // action
+    instance.addValueToEntity(entity, vertexMock);
+
+    // verify
+    assertThat(entity.getPrimitiveCollection(), contains(VALUE_1, VALUE_2, VALUE_3, VALUE_4));
+  }
+
+  @Test
+  @Override
+  public void addValueToEntityAddsNullWhenTheValueIsNull() throws Exception {
+    // setup
+    when(vertexMock.getProperty(propertyName)).thenReturn(null);
+
+    // action
+    instance.addValueToEntity(entity, vertexMock);
+
+    // verify
+    assertThat(entity.getPrimitiveCollection(), is(nullValue()));
+
+  }
+
+  @Test(expected = ConversionException.class)
+  @Override
+  public void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnIllegalAccessExceptionIsThrown() throws Exception {
+    // setup
+    SimpleCollectionPropertyConverter<Integer> instance = new SimpleCollectionPropertyConverter<Integer>(COMPONENT_TYPE) {
+      @Override
+      protected void fillField(Entity entity, Object value) throws IllegalAccessException, IllegalArgumentException {
+        throw new IllegalArgumentException();
+      }
+
+    };
+
+    setupInstance(instance);
+
+    // action
+    instance.addValueToEntity(entity, vertexMock);
+  }
+
+  @Test(expected = ConversionException.class)
+  @Override
+  public void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnAnIllegalArgumentExceptionIsThrown() throws Exception {
+    // setup
+    SimpleCollectionPropertyConverter<Integer> instance = new SimpleCollectionPropertyConverter<Integer>(COMPONENT_TYPE) {
+      @Override
+      protected void fillField(Entity entity, Object value) throws IllegalAccessException, IllegalArgumentException {
+        throw new IllegalArgumentException();
+      }
+
+    };
+
+    setupInstance(instance);
+
+    // action
+    instance.addValueToEntity(entity, vertexMock);
   }
 
 }

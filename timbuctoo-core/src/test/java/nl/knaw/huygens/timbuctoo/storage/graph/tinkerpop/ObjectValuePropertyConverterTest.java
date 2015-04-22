@@ -128,4 +128,24 @@ public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
     // action
     instance.setPropertyOfVertex(vertexMock, entity);
   }
+
+  @Override
+  public void addValueToEntitySetTheFieldOfTheEntityWithTheValue() throws Exception {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
+  @Override
+  public void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnIllegalAccessExceptionIsThrown() throws Exception {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
+  @Override
+  public void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnAnIllegalArgumentExceptionIsThrown() throws Exception {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
+  @Override
+  public void addValueToEntityAddsNullWhenTheValueIsNull() throws Exception {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }

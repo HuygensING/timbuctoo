@@ -10,4 +10,12 @@ public interface PropertyConverterTest {
 
   void setValueOfVertexThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalArgumentExceptionIsThrown() throws Exception;
 
+  void addValueToEntitySetTheFieldOfTheEntityWithTheValue() throws Exception;
+
+  void addValueToEntityAddsNullWhenTheValueIsNull() throws Exception;
+
+  void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnIllegalAccessExceptionIsThrown() throws Exception;
+
+  void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnAnIllegalArgumentExceptionIsThrown() throws Exception;
+
 }

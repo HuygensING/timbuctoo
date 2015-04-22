@@ -12,4 +12,9 @@ public class SimpleValuePropertyConverter extends AbstractPropertyConverter {
     return value;
   }
 
+  @Override
+  protected Object convert(Object value) {
+    return value;
+  }
+
 }

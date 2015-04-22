@@ -75,9 +75,13 @@ public abstract class AbstractPropertyConverter implements PropertyConverter {
     }
   }
 
+  protected abstract Object convert(Object value);
+
   protected void fillField(Entity entity, Object value) throws IllegalAccessException, IllegalArgumentException {
-    field.setAccessible(true);
-    field.set(entity, value);
+    if (value != null) {
+      field.setAccessible(true);
+      field.set(entity, convert(value));
+    }
   }
 
 }

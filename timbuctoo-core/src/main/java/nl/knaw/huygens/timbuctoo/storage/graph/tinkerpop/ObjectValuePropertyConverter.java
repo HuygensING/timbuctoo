@@ -20,4 +20,9 @@ public class ObjectValuePropertyConverter extends AbstractPropertyConverter {
     }
   }
 
+  @Override
+  protected Object convert(Object value) {
+    return value;
+  }
+
 }
