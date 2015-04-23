@@ -10,9 +10,9 @@ import com.tinkerpop.blueprints.Vertex;
 
 public class CompositeVertexConverter<T extends Entity> implements VertexConverter<T> {
 
-  private Collection<VertexConverter<T>> delegates;
+  private Collection<VertexConverter<? super T>> delegates;
 
-  public CompositeVertexConverter(Collection<VertexConverter<T>> delegates) {
+  public CompositeVertexConverter(Collection<VertexConverter<? super T>> delegates) {
     this.delegates = delegates;
   }
 
@@ -43,9 +43,12 @@ public class CompositeVertexConverter<T extends Entity> implements VertexConvert
 
   @Override
   public void addValuesToVertex(Vertex vertex, T entity) throws ConversionException {
-    for (VertexConverter<T> vertexConverter : delegates) {
+    for (VertexConverter<? super T> vertexConverter : delegates) {
       vertexConverter.addValuesToVertex(vertex, entity);
     }
   }
 
+  int getNumberOfDelegates() {
+    return delegates.size();
+  }
 }

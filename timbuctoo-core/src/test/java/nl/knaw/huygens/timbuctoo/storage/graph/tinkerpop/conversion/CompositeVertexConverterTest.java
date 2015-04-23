@@ -30,7 +30,7 @@ public class CompositeVertexConverterTest {
     vertexConverter1 = mock(VertexConverter.class);
     vertexConverter2 = mock(VertexConverter.class);
 
-    List<VertexConverter<SubADomainEntity>> delegates = Lists.newArrayList();
+    List<VertexConverter<? super SubADomainEntity>> delegates = Lists.newArrayList();
     delegates.add(vertexConverter1);
     delegates.add(vertexConverter2);
 

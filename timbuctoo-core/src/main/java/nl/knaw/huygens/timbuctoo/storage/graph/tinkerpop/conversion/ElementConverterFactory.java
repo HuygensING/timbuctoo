@@ -2,13 +2,17 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexConverter;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property.PropertyConverterFactory;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 public class ElementConverterFactory {
@@ -29,6 +33,22 @@ public class ElementConverterFactory {
     Collection<PropertyConverter> propertyConverters = createPropertyConverters(type);
 
     return new ExtendableVertexConverter<T>(type, propertyConverters, entityInstantiator);
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T extends DomainEntity> VertexConverter<? super T> forPrimitiveOf(Class<T> type) {
+    Class<? extends Entity> primitive = TypeRegistry.getBaseClass(type);
+    VertexConverter<? extends Entity> converter = forType(primitive);
+
+    return (VertexConverter<? super T>) converter;
+  }
+
+  public <T extends DomainEntity> VertexConverter<T> compositeForType(Class<T> type) {
+    List<VertexConverter<? super T>> vertexConverters = Lists.newArrayList();
+    vertexConverters.add(forType(type));
+    vertexConverters.add(forPrimitiveOf(type));
+
+    return new CompositeVertexConverter<T>(vertexConverters);
   }
 
   @SuppressWarnings("unchecked")
