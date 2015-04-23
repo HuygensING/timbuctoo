@@ -295,7 +295,7 @@ public class GraphLegacyStorageWrapperTest {
     instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
 
     // verify
-    verify(graphStorageMock).updateDomainEntity( //
+    verify(graphStorageMock).updateEntity( //
         argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
         argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
             .withId(ID) //
@@ -315,7 +315,7 @@ public class GraphLegacyStorageWrapperTest {
     SubADomainEntity entity = aDomainEntity().withId(ID).build();
     entityAndVariantExist();
 
-    doThrow(StorageException.class).when(graphStorageMock).updateDomainEntity(DOMAIN_ENTITY_TYPE, entity);
+    doThrow(StorageException.class).when(graphStorageMock).updateEntity(DOMAIN_ENTITY_TYPE, entity);
 
     // action
     instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
@@ -899,7 +899,7 @@ public class GraphLegacyStorageWrapperTest {
     instance.updateSystemEntity(SYSTEM_ENTITY_TYPE, entity);
 
     // verify
-    verify(graphStorageMock).updateSystemEntity( //
+    verify(graphStorageMock).updateEntity( //
         argThat(is(equalTo(SYSTEM_ENTITY_TYPE))), //
         argThat(likeTestSystemEntityWrapper() //
             .withId(ID) //
@@ -911,7 +911,7 @@ public class GraphLegacyStorageWrapperTest {
   public void updateSystemEntityThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
     TestSystemEntityWrapper entity = aSystemEntity().build();
-    doThrow(StorageException.class).when(graphStorageMock).updateSystemEntity(SYSTEM_ENTITY_TYPE, entity);
+    doThrow(StorageException.class).when(graphStorageMock).updateEntity(SYSTEM_ENTITY_TYPE, entity);
 
     // action
     instance.updateSystemEntity(SYSTEM_ENTITY_TYPE, entity);

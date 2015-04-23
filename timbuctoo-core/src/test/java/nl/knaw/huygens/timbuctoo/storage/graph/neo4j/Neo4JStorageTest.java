@@ -427,7 +427,7 @@ public class Neo4JStorageTest {
         .withModified(oldModified)//
         .build();
 
-    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity);
+    instance.updateEntity(DOMAIN_ENTITY_TYPE, domainEntity);
 
     // verify
     InOrder inOrder = inOrder(dbMock, domainEntityConverterMock, transactionMock);
@@ -455,7 +455,7 @@ public class Neo4JStorageTest {
 
     try {
       // action
-      instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity);
+      instance.updateEntity(DOMAIN_ENTITY_TYPE, domainEntity);
     } finally {
       // verify
       verify(transactionMock).failure();
@@ -492,7 +492,7 @@ public class Neo4JStorageTest {
 
     try {
       // action
-      instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity);
+      instance.updateEntity(DOMAIN_ENTITY_TYPE, domainEntity);
     } finally {
       // verify
       verify(transactionMock).failure();
@@ -616,7 +616,7 @@ public class Neo4JStorageTest {
         .build();
 
     // action
-    instance.updateSystemEntity(SYSTEM_ENTITY_TYPE, systemEntity);
+    instance.updateEntity(SYSTEM_ENTITY_TYPE, systemEntity);
 
     // verify
     InOrder inOrder = inOrder(systemEntityConverterMock, transactionMock);
@@ -652,7 +652,7 @@ public class Neo4JStorageTest {
 
     try {
       // action
-      instance.updateSystemEntity(SYSTEM_ENTITY_TYPE, systemEntity);
+      instance.updateEntity(SYSTEM_ENTITY_TYPE, systemEntity);
     } finally {
       // verify
       verify(transactionMock).failure();
@@ -670,7 +670,7 @@ public class Neo4JStorageTest {
 
     try {
       // action
-      instance.updateSystemEntity(SYSTEM_ENTITY_TYPE, systemEntity);
+      instance.updateEntity(SYSTEM_ENTITY_TYPE, systemEntity);
     } finally {
       // verify
       verify(transactionMock).failure();
@@ -696,7 +696,7 @@ public class Neo4JStorageTest {
 
     try {
       // action
-      instance.updateSystemEntity(SYSTEM_ENTITY_TYPE, systemEntity);
+      instance.updateEntity(SYSTEM_ENTITY_TYPE, systemEntity);
     } finally {
       // verify
       verify(transactionMock).failure();

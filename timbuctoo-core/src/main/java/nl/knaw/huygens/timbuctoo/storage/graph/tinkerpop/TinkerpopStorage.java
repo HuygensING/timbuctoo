@@ -103,12 +103,7 @@ public class TinkerpopStorage implements GraphStorage {
   }
 
   @Override
-  public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
-  }
-
-  @Override
-  public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws StorageException {
+  public <T extends Entity> void updateEntity(Class<T> type, T entity) throws StorageException {
     throw new UnsupportedOperationException("Yet to be implemented");
   }
 

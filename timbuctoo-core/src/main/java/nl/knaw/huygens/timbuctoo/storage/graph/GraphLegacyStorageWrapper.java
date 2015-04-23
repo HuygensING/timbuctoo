@@ -117,7 +117,7 @@ public class GraphLegacyStorageWrapper implements Storage {
   @Override
   public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws StorageException {
     updateAdministrativeValues(entity);
-    graphStorage.updateSystemEntity(type, entity);
+    graphStorage.updateEntity(type, entity);
   }
 
   @SuppressWarnings("unchecked")
@@ -129,7 +129,7 @@ public class GraphLegacyStorageWrapper implements Storage {
       graphStorage.updateRelation((Class<? extends Relation>) type, (Relation) entity, change);
     } else {
       if (baseTypeExists(type, entity) && variantExists(type, entity)) {
-        graphStorage.updateDomainEntity(type, entity);
+        graphStorage.updateEntity(type, entity);
       } else if (baseTypeExists(type, entity)) {
         graphStorage.addVariant(type, entity, change);
       } else {

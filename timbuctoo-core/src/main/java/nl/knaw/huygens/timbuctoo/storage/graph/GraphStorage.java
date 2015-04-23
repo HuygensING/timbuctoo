@@ -25,9 +25,7 @@ public interface GraphStorage {
 
   <T extends Relation> T getRelation(Class<T> type, String id) throws StorageException;
 
-  <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity) throws StorageException;
-
-  <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws StorageException;
+  <T extends Entity> void updateEntity(Class<T> type, T entity) throws StorageException;
 
   /**
    * Update a DomainEntity with a new variant.
