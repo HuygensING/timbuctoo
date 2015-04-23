@@ -45,7 +45,7 @@ public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
     objectValueFieldWrapper.setContainingType(TYPE);
     objectValueFieldWrapper.setField(TYPE.getDeclaredField(FIELD_NAME));
     objectValueFieldWrapper.setFieldType(FIELD_TYPE);
-    objectValueFieldWrapper.setName(FIELD_NAME);
+    objectValueFieldWrapper.setFieldName(FIELD_NAME);
   }
 
   @Test

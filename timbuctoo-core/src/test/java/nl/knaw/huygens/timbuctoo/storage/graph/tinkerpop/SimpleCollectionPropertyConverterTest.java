@@ -56,7 +56,7 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
     simpleCollectionFieldWrapper.setField(CONTAINING_TYPE.getDeclaredField(FIELD_NAME));
     simpleCollectionFieldWrapper.setFieldType(FIELD_TYPE);
     simpleCollectionFieldWrapper.setContainingType(CONTAINING_TYPE);
-    simpleCollectionFieldWrapper.setName(FIELD_NAME);
+    simpleCollectionFieldWrapper.setFieldName(FIELD_NAME);
   }
 
   @Test

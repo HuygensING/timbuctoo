@@ -10,6 +10,9 @@ import com.tinkerpop.blueprints.Vertex;
 
 public class NoOpPropertyConverter implements PropertyConverter {
 
+  private String fieldName;
+  private FieldType fieldType;
+
   @Override
   public void setField(Field field) {}
 
@@ -17,15 +20,34 @@ public class NoOpPropertyConverter implements PropertyConverter {
   public void setContainingType(Class<? extends Entity> type) {}
 
   @Override
-  public void setFieldType(FieldType fieldType) {}
+  public void setFieldType(FieldType fieldType) {
+    this.fieldType = fieldType;
+  }
 
   @Override
-  public void setName(String fieldName) {}
+  public FieldType getFieldType() {
+    return this.fieldType;
+  }
+
+  @Override
+  public void setFieldName(String fieldName) {
+    this.fieldName = fieldName;
+  }
+
+  @Override
+  public String getFieldName() {
+    return fieldName;
+  }
 
   @Override
   public void setPropertyOfVertex(Vertex vertex, Entity entity) throws ConversionException {}
 
   @Override
   public void addValueToEntity(Entity entity, Vertex vertex) throws ConversionException {}
+
+  @Override
+  public String propertyName() {
+    return "";
+  }
 
 }

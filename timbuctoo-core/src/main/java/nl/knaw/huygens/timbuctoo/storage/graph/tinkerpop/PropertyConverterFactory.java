@@ -32,7 +32,7 @@ public class PropertyConverterFactory {
     propertyConverter.setField(field);
     propertyConverter.setContainingType(type);
     propertyConverter.setFieldType(fieldType);
-    propertyConverter.setName(propertyBusinessRules.getFieldName(type, field));
+    propertyConverter.setFieldName(propertyBusinessRules.getFieldName(type, field));
 
     return propertyConverter;
   }

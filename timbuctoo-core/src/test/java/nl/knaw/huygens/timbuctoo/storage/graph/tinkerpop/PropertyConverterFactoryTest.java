@@ -135,7 +135,7 @@ public class PropertyConverterFactoryTest {
     verify(propertyConverter).setField(field);
     verify(propertyConverter).setContainingType(TYPE);
     verify(propertyConverter).setFieldType(fieldType);
-    verify(propertyConverter).setName(FIELD_NAME);
+    verify(propertyConverter).setFieldName(FIELD_NAME);
   }
 
   private Field getField(Class<? extends Entity> type, String fieldName) throws NoSuchFieldException {

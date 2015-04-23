@@ -43,7 +43,7 @@ public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
     instance.setContainingType(TYPE);
     instance.setField(TYPE.getDeclaredField(FIELD_NAME));
     instance.setFieldType(FIELD_TYPE);
-    instance.setName(FIELD_NAME);
+    instance.setFieldName(FIELD_NAME);
   }
 
   @Override

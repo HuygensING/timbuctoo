@@ -30,8 +30,18 @@ public abstract class AbstractPropertyConverter implements PropertyConverter {
   }
 
   @Override
-  public void setName(String fieldName) {
+  public FieldType getFieldType() {
+    return fieldType;
+  }
+
+  @Override
+  public void setFieldName(String fieldName) {
     this.fieldName = fieldName;
+  }
+
+  @Override
+  public String getFieldName() {
+    return fieldName;
   }
 
   @Override
@@ -54,9 +64,9 @@ public abstract class AbstractPropertyConverter implements PropertyConverter {
     return value != null;
   }
 
-  private String propertyName() {
-    String propertyName = fieldType.propertyName(type, fieldName);
-    return propertyName;
+  @Override
+  public String propertyName() {
+    return fieldType.propertyName(type, fieldName);
   }
 
   protected Object getValue(Entity entity) throws IllegalAccessException, IllegalArgumentException {
