@@ -129,7 +129,7 @@ public class GraphLegacyStorageWrapper implements Storage {
       graphStorage.updateRelation((Class<? extends Relation>) type, (Relation) entity, change);
     } else {
       if (baseTypeExists(type, entity) && variantExists(type, entity)) {
-        graphStorage.updateDomainEntity(type, entity, change);
+        graphStorage.updateDomainEntity(type, entity);
       } else if (baseTypeExists(type, entity)) {
         graphStorage.addVariant(type, entity, change);
       } else {

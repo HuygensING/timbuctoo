@@ -427,7 +427,7 @@ public class Neo4JStorageTest {
         .withModified(oldModified)//
         .build();
 
-    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
+    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity);
 
     // verify
     InOrder inOrder = inOrder(dbMock, domainEntityConverterMock, transactionMock);
@@ -455,7 +455,7 @@ public class Neo4JStorageTest {
 
     try {
       // action
-      instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
+      instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity);
     } finally {
       // verify
       verify(transactionMock).failure();
@@ -492,7 +492,7 @@ public class Neo4JStorageTest {
 
     try {
       // action
-      instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
+      instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, domainEntity);
     } finally {
       // verify
       verify(transactionMock).failure();

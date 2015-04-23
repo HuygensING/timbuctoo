@@ -235,16 +235,16 @@ public class Neo4JStorage implements GraphStorage {
   }
 
   @Override
-  public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
-    updateEntity(type, entity, change);
+  public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity) throws StorageException {
+    updateEntity(type, entity);
   }
 
   @Override
   public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws StorageException {
-    updateEntity(type, entity, Change.newInternalInstance());
+    updateEntity(type, entity);
   }
 
-  private <T extends Entity> void updateEntity(Class<T> type, T entity, Change change) throws UpdateException, ConversionException {
+  private <T extends Entity> void updateEntity(Class<T> type, T entity) throws UpdateException, ConversionException {
     try (Transaction transaction = db.beginTx()) {
       Node node = neo4jLowLevelAPI.getLatestNodeById(type, entity.getId());
 
