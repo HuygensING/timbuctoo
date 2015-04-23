@@ -1,31 +1,35 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
+import static nl.knaw.huygens.timbuctoo.storage.graph.SubADomainEntityBuilder.aDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.graph.TestSystemEntityWrapperBuilder.aSystemEntity;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import test.model.TestSystemEntityWrapper;
+import test.model.projecta.SubADomainEntity;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 
 public class TinkerpopStorageTest {
 
+  private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
+  private static final Change CHANGE = new Change();
   private static final Class<TestSystemEntityWrapper> SYSTEM_ENTITY_TYPE = TestSystemEntityWrapper.class;
   private static final String ID = "id";
   private Graph dbMock;
@@ -49,10 +53,30 @@ public class TinkerpopStorageTest {
    * DomainEntity
    * ************************************************************/
 
-  @Ignore
   @Test
-  public void addDomainEntitySavesTheProjectVersionAndThePrimitive() {
-    fail("Yet to be implemented");
+  public void addDomainEntitySavesTheProjectVersionAndThePrimitive() throws Exception {
+    // setup
+    SubADomainEntity entity = aDomainEntity().build();
+
+    VertexConverter<SubADomainEntity> converter = compositeVertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+
+    // action
+    instance.addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+
+    // verify
+    verify(converter).addValuesToVertex(createdVertex, entity);
+  }
+
+  @Test(expected = ConversionException.class)
+  public void addDomainEntityRollsBackTheTransactionAndThrowsAConversionExceptionWhenTheDomainEntityConverterThrowsAConversionException() throws Exception {
+    // setup
+    SubADomainEntity entity = aDomainEntity().build();
+
+    VertexConverter<SubADomainEntity> converter = compositeVertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+    doThrow(ConversionException.class).when(converter).addValuesToVertex(createdVertex, entity);
+
+    // action
+    instance.addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
   }
 
   /* ***********************************************************
@@ -145,6 +169,13 @@ public class TinkerpopStorageTest {
     @SuppressWarnings("unchecked")
     VertexConverter<T> vertexConverter = mock(VertexConverter.class);
     when(elementConverterFactoryMock.forType(type)).thenReturn(vertexConverter);
+    return vertexConverter;
+  }
+
+  private <T extends DomainEntity> VertexConverter<T> compositeVertexConverterCreatedFor(Class<T> type) {
+    @SuppressWarnings("unchecked")
+    VertexConverter<T> vertexConverter = mock(VertexConverter.class);
+    when(elementConverterFactoryMock.compositeForType(type)).thenReturn(vertexConverter);
     return vertexConverter;
   }
 }

@@ -37,7 +37,12 @@ public class TinkerpopStorage implements GraphStorage {
 
   @Override
   public <T extends DomainEntity> void addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    new RevertableAddition<T>() {
+      @Override
+      protected VertexConverter<T> createVertexConverter(Class<T> type) {
+        return elementConverterFactory.compositeForType(type);
+      }
+    }.execute(type, entity);
   }
 
   @Override
