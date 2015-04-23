@@ -213,7 +213,7 @@ public class TinkerpopStorage implements GraphStorage {
 
   @Override
   public boolean entityExists(Class<? extends Entity> type, String id) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return lowLevelAPI.getLatestVertexById(type, id) != null;
   }
 
   @Override

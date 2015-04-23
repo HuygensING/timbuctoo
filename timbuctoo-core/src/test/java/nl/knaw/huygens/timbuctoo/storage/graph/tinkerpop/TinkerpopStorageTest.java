@@ -4,6 +4,7 @@ import static nl.knaw.huygens.timbuctoo.storage.graph.SubADomainEntityBuilder.aD
 import static nl.knaw.huygens.timbuctoo.storage.graph.TestSystemEntityWrapperBuilder.aSystemEntity;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilder.aVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
@@ -110,6 +111,30 @@ public class TinkerpopStorageTest {
       // verify
       verify(dbMock).removeVertex(createdVertex);
     }
+  }
+
+  @Test
+  public void entityExistsTriesToRetrieveTheVertextWithTheIdAndReturnsTrueIfTheVertextExists() {
+    // setup
+    latestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID, aVertex().build());
+
+    // action
+    boolean entityExists = instance.entityExists(DOMAIN_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(entityExists, is(equalTo(true)));
+  }
+
+  @Test
+  public void entityExistsTriesToRetrieveTheVertextWithTheIdAndReturnsFalseIfTheVertextDoesNotExist() {
+    // setup
+    noLatestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID);
+
+    // action
+    boolean entityExists = instance.entityExists(DOMAIN_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(entityExists, is(equalTo(false)));
   }
 
   @Test
