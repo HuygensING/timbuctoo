@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
+import java.io.IOException;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -21,8 +23,15 @@ public class ObjectValuePropertyConverter extends AbstractPropertyConverter {
   }
 
   @Override
-  protected Object convert(Object value) {
-    return value;
+  protected Object convert(Object value, Class<?> fieldType) {
+    if (!(value instanceof String)) {
+      throw new IllegalArgumentException("Value should be a String");
+    }
+    try {
+      return objectMapper.readValue(value.toString(), fieldType);
+    } catch (IOException e) {
+      throw new IllegalArgumentException("Value could not be read.");
+    }
   }
 
 }

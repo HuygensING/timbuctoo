@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
-
 public class SimpleValuePropertyConverter extends AbstractPropertyConverter {
 
   protected String getFieldName() {
@@ -13,7 +12,7 @@ public class SimpleValuePropertyConverter extends AbstractPropertyConverter {
   }
 
   @Override
-  protected Object convert(Object value) {
+  protected Object convert(Object value, Class<?> fieldType) {
     return value;
   }
 

@@ -1,8 +1,12 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
@@ -129,23 +133,64 @@ public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
     instance.setPropertyOfVertex(vertexMock, entity);
   }
 
+  @Test
   @Override
   public void addValueToEntitySetTheFieldOfTheEntityWithTheValue() throws Exception {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    // setup
+    when(vertexMock.getProperty(propertyName)).thenReturn(serializeValue(DEFAULT_VALUE));
+
+    // action
+    instance.addValueToEntity(entity, vertexMock);
+
+    // verify
+    assertThat(entity.getObjectValue(), is(DEFAULT_VALUE));
   }
 
-  @Override
-  public void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnIllegalAccessExceptionIsThrown() throws Exception {
-    throw new UnsupportedOperationException("Yet to be implemented");
-  }
-
-  @Override
-  public void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnAnIllegalArgumentExceptionIsThrown() throws Exception {
-    throw new UnsupportedOperationException("Yet to be implemented");
-  }
-
+  @Test
   @Override
   public void addValueToEntityAddsNullWhenTheValueIsNull() throws Exception {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    // setup
+    when(vertexMock.getProperty(propertyName)).thenReturn(null);
+
+    // action
+    instance.addValueToEntity(entity, vertexMock);
+
+    // verify
+    assertThat(entity.getObjectValue(), is(nullValue()));
   }
+
+  @Test(expected = ConversionException.class)
+  @Override
+  public void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnIllegalAccessExceptionIsThrown() throws Exception {
+    // setup
+    ObjectValuePropertyConverter instance = new ObjectValuePropertyConverter() {
+      @Override
+      protected void fillField(Entity entity, Object value) throws IllegalAccessException, IllegalArgumentException {
+        throw new IllegalAccessException();
+      }
+    };
+
+    setupInstance(instance);
+
+    // action
+    instance.addValueToEntity(entity, vertexMock);
+  }
+
+  @Test(expected = ConversionException.class)
+  @Override
+  public void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnAnIllegalArgumentExceptionIsThrown() throws Exception {
+    // setup
+    ObjectValuePropertyConverter instance = new ObjectValuePropertyConverter() {
+      @Override
+      protected void fillField(Entity entity, Object value) throws IllegalAccessException, IllegalArgumentException {
+        throw new IllegalArgumentException();
+      }
+    };
+
+    setupInstance(instance);
+
+    // action
+    instance.addValueToEntity(entity, vertexMock);
+  }
+
 }

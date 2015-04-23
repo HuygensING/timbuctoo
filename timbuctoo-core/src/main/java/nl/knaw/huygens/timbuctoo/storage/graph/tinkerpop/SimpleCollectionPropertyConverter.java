@@ -30,7 +30,7 @@ public class SimpleCollectionPropertyConverter<T> extends AbstractPropertyConver
   }
 
   @Override
-  protected Object convert(Object value) {
+  protected Object convert(Object value, Class<?> fieldType) {
     List<Object> list = Lists.newArrayList();
 
     for (int i = 0; i < Array.getLength(value); i++) {
