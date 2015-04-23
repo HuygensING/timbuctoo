@@ -250,7 +250,6 @@ public class TinkerpopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.updateRelationUpdatesTheValuesOfTheRelationAndIncreasesTheRevButDoesNotCreateANewRevision();
   }
 
-  @Ignore
   @Test
   @Override
   public void updateSystemEntityChangesTheExistingSystemEntity() throws Exception {
