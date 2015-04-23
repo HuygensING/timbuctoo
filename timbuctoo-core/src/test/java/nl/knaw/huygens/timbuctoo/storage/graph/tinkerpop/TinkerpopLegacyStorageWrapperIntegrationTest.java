@@ -229,7 +229,6 @@ public class TinkerpopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.setPIDGivesTheDomainEntityAPidAndCreatesAVersion();
   }
 
-  @Ignore
   @Test
   @Override
   public void updateDomainEntityIncreasesTheRevisionNumberAndChangesTheDomainEntityButDoesNotCreateANewVersion() throws Exception {
