@@ -31,7 +31,7 @@
   <logger name="com.sun.jersey" level="WARN"/>
   <logger name="org.apache.activemq" level="WARN"/>
   <logger name="org.apache.solr" level="WARN"/>
-  <root level="warn">
+  <root level="info">
     <appender-ref ref="CON"/>
   </root>
 </configuration>

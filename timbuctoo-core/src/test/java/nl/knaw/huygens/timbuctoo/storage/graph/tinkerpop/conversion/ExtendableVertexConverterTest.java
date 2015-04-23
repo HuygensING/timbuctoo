@@ -19,9 +19,6 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ExtendableVertexConverter;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.FieldNonExistingException;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.PropertyConverter;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -82,23 +79,35 @@ public class ExtendableVertexConverterTest {
   }
 
   @Test
-  public void addValuesToNodeLetsThePropertyConvertersAddTheirValuesToTheNode() throws Exception {
+  public void addValuesToVertexLetsThePropertyConvertersAddTheirValuesToTheNode() throws Exception {
     // action
     instance.addValuesToVertex(vertexMock, entity);
 
     // verify
-    verifyTypeIsSet(vertexMock);
+    verifyTypeIsSet(vertexMock, TYPE);
     verify(propertyConverter1).setPropertyOfVertex(vertexMock, entity);
     verify(propertyConverter2).setPropertyOfVertex(vertexMock, entity);
+  }
+
+  @Test
+  public void addValuesToVertexAddsTheTypeOfTheVertexConverter() throws Exception {
+    // action
+
+    ExtendableVertexConverter<BaseDomainEntity> instance = createInstance(BASE_DOMAIN_ENTITY_TYPE);
+
+    instance.addValuesToVertex(vertexMock, aDomainEntity().build());
+
+    // verify
+    verifyTypeIsSet(vertexMock, BASE_DOMAIN_ENTITY_TYPE);
 
   }
 
-  private void verifyTypeIsSet(Vertex vertexMock) {
-    verify(vertexMock).setProperty(VERTEX_TYPE, new String[] { TypeNames.getInternalName(TYPE) });
+  private void verifyTypeIsSet(Vertex vertexMock, Class<? extends Entity> type) {
+    verify(vertexMock).setProperty(VERTEX_TYPE, new String[] { TypeNames.getInternalName(type) });
   }
 
   @Test(expected = ConversionException.class)
-  public void addValuesToNodeFieldMapperThrowsAConversionException() throws Exception {
+  public void addValuesToVertexThrowsAConversionExceptionWhenOneOfThePropertyConvertersDoes() throws Exception {
     // setup
     doThrow(ConversionException.class).when(propertyConverter1).setPropertyOfVertex(vertexMock, entity);
 

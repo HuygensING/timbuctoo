@@ -14,7 +14,6 @@ public class TinkerpopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     return new TinkerpopDBIntegrationTestHelper();
   }
 
-  @Ignore
   @Test
   @Override
   public void addDomainEntityAddsADomainEntityAndItsPrimitiveVersieToTheDatabase() throws Exception {

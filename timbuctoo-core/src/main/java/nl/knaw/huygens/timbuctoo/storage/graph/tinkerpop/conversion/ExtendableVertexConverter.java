@@ -15,11 +15,15 @@ import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexConverter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.tinkerpop.blueprints.Vertex;
 
 class ExtendableVertexConverter<T extends Entity> implements VertexConverter<T> {
+  private static Logger LOG = LoggerFactory.getLogger(ExtendableVertexConverter.class);
 
   private final EntityInstantiator entityInstantiator;
   private final Class<T> type;
@@ -40,16 +44,21 @@ class ExtendableVertexConverter<T extends Entity> implements VertexConverter<T> 
 
   @Override
   public void addValuesToVertex(Vertex vertex, T entity) throws ConversionException {
-    addVariation(vertex, entity.getClass());
+    addVariation(vertex, type);
     for (PropertyConverter propertyConverter : propertyConverters()) {
       propertyConverter.setPropertyOfVertex(vertex, entity);
     }
   }
 
   private void addVariation(Vertex vertex, Class<? extends Entity> variationType) {
+    LOG.info("add variation \"{}\"", variationType);
+
     String[] types = (String[]) (vertex.getProperty(VERTEX_TYPE) != null ? vertex.getProperty(VERTEX_TYPE) : new String[] {});
+
     Set<String> typeSet = Sets.newHashSet(types);
     typeSet.add(TypeNames.getInternalName(variationType));
+
+    LOG.info("new variations \"{}\"", typeSet);
 
     vertex.setProperty(VERTEX_TYPE, typeSet.toArray(new String[typeSet.size()]));
   }
