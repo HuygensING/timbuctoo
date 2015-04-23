@@ -479,13 +479,13 @@ public class Neo4JStorageTest {
 
   private void testUpdateDomainEntityRevUpdateException(int entityRev, int nodeRev) throws StorageException {
     // setup
-    Node node = aNode().withRevision(entityRev).build();
+    Node node = aNode().withRevision(nodeRev).build();
     latestNodeFoundFor(DOMAIN_ENTITY_TYPE, ID, node);
 
     Change oldModified = CHANGE;
     SubADomainEntity domainEntity = aDomainEntity() //
         .withId(ID) //
-        .withRev(nodeRev)//
+        .withRev(entityRev)//
         .withAPid()//
         .withModified(oldModified)//
         .build();
