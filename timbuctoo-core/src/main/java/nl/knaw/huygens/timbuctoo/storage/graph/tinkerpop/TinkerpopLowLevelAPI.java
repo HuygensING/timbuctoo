@@ -4,6 +4,7 @@ import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType.VERSION_OF;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexFields.VERTEX_TYPE;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import com.google.common.base.Predicate;
@@ -56,6 +57,10 @@ class TinkerpopLowLevelAPI {
       Iterable<Edge> incomingVersionOfEdges = vertex.getEdges(Direction.IN, VERSION_OF.name());
       return incomingVersionOfEdges == null || !incomingVersionOfEdges.iterator().hasNext();
     }
+  }
+
+  public Vertex getVertexWithRevision(Class<? extends DomainEntity> type, String id, int revision) {
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
 }

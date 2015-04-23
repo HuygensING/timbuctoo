@@ -138,6 +138,70 @@ public class TinkerpopStorageTest {
   }
 
   @Test
+  public void getDomainEntityRevisionReturnsTheDomainEntityWithTheRequestedRevision() throws Exception {
+    // setup
+    Vertex vertex = vertexWithRevisionFound(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION);
+    VertexConverter<SubADomainEntity> vertexConverter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+    SubADomainEntity entity = aDomainEntity().withAPid().build();
+    when(vertexConverter.convertToEntity(vertex)).thenReturn(entity);
+
+    // instance
+    SubADomainEntity revision = instance.getDomainEntityRevision(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION);
+
+    // verify
+    assertThat(revision, is(sameInstance(entity)));
+  }
+
+  @Test
+  public void getDomainEntityRevisionReturnsNullIfTheFoundEntityHasNoPID() throws Exception {
+    // setup
+    Vertex vertex = vertexWithRevisionFound(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION);
+    VertexConverter<SubADomainEntity> vertexConverter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+    SubADomainEntity entityWithoutAPID = aDomainEntity().build();
+    when(vertexConverter.convertToEntity(vertex)).thenReturn(entityWithoutAPID);
+
+    // instance
+    SubADomainEntity revision = instance.getDomainEntityRevision(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION);
+
+    // verify
+    assertThat(revision, is(nullValue()));
+  }
+
+  @Test
+  public void getDomainEntityRevisionReturnsNullIfTheRevisionCannotBeFound() throws Exception {
+    // setup
+    noVertexWithRevisionFound(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION);
+
+    // instance
+    SubADomainEntity foundRevision = instance.getDomainEntityRevision(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION);
+
+    // verify
+    assertThat(foundRevision, is(nullValue()));
+
+  }
+
+  @Test(expected = ConversionException.class)
+  public void getDomainEntityRevisionThrowsAConversionExceptionIfTheEntityCannotBeConverted() throws Exception {
+    // setup
+    Vertex vertex = vertexWithRevisionFound(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION);
+    VertexConverter<SubADomainEntity> vertexConverter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+    when(vertexConverter.convertToEntity(vertex)).thenThrow(new ConversionException());
+
+    // instance
+    instance.getDomainEntityRevision(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION);
+  }
+
+  private void noVertexWithRevisionFound(Class<SubADomainEntity> type, String id, int rev) {
+    when(lowLevelAPIMock.getVertexWithRevision(type, id, rev)).thenReturn(null);
+  }
+
+  private Vertex vertexWithRevisionFound(Class<SubADomainEntity> type, String id, int rev) {
+    Vertex vertex = aVertex().build();
+    when(lowLevelAPIMock.getVertexWithRevision(type, id, rev)).thenReturn(vertex);
+    return vertex;
+  }
+
+  @Test
   public void getEntityReturnsTheItemWhenFound() throws Exception {
     // setup
     Vertex vertex = aVertex().build();

@@ -163,7 +163,21 @@ public class TinkerpopStorage implements GraphStorage {
 
   @Override
   public <T extends DomainEntity> T getDomainEntityRevision(Class<T> type, String id, int revision) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    Vertex vertex = lowLevelAPI.getVertexWithRevision(type, id, revision);
+
+    if (vertex == null) {
+      return null;
+    }
+
+    VertexConverter<T> converter = elementConverterFactory.forType(type);
+
+    T entity = converter.convertToEntity(vertex);
+
+    return hasPID(entity) ? entity : null;
+  }
+
+  private <T extends DomainEntity> boolean hasPID(T entity) {
+    return entity.getPid() != null;
   }
 
   @Override
