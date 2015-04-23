@@ -1,8 +1,12 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType.VERSION_OF;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexFields.VERTEX_TYPE;
+
+import java.util.Iterator;
+
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -12,6 +16,7 @@ import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.GraphQuery;
 import com.tinkerpop.blueprints.Vertex;
 
 class TinkerpopLowLevelAPI {
@@ -24,20 +29,7 @@ class TinkerpopLowLevelAPI {
 
   public <T extends Entity> Vertex getLatestVertexById(Class<T> type, String id) {
     // this is needed to check if the type array contains the value requeste type
-    com.tinkerpop.blueprints.Predicate containsValuePredicate = new com.tinkerpop.blueprints.Predicate() {
-      @Override
-      public boolean evaluate(Object first, Object second) {
-        if (first != null && first.getClass().isArray()) {
-          Object[] array = (Object[]) first;
-          return Lists.newArrayList(array).contains(second);
-        }
-        return false;
-      }
-    };
-
-    Iterable<Vertex> foundVertices = db.query() //
-        .has(VERTEX_TYPE, containsValuePredicate, TypeNames.getInternalName(type)) //
-        .has(ID_PROPERTY_NAME, id) //
+    Iterable<Vertex> foundVertices = queryByType(type).has(ID_PROPERTY_NAME, id) //
         .vertices();
 
     IsLatestVersionOfVertex isLatestVersionOfVertex = new IsLatestVersionOfVertex();
@@ -51,6 +43,25 @@ class TinkerpopLowLevelAPI {
     return null;
   }
 
+  private <T extends Entity> GraphQuery queryByType(Class<T> type) {
+    return db.query() //
+        .has(VERTEX_TYPE, isOfType(), TypeNames.getInternalName(type)) //
+    ;
+  }
+
+  private com.tinkerpop.blueprints.Predicate isOfType() {
+    return new com.tinkerpop.blueprints.Predicate() {
+      @Override
+      public boolean evaluate(Object first, Object second) {
+        if (first != null && first.getClass().isArray()) {
+          Object[] array = (Object[]) first;
+          return Lists.newArrayList(array).contains(second);
+        }
+        return false;
+      }
+    };
+  }
+
   private static final class IsLatestVersionOfVertex implements Predicate<Vertex> {
     @Override
     public boolean apply(Vertex vertex) {
@@ -60,7 +71,19 @@ class TinkerpopLowLevelAPI {
   }
 
   public Vertex getVertexWithRevision(Class<? extends DomainEntity> type, String id, int revision) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    Vertex vertex = null;
+    Iterable<Vertex> vertices = queryByType(type)//
+        .has(ID_PROPERTY_NAME, id)//
+        .has(REVISION_PROPERTY_NAME, revision)//
+        .vertices();
+
+    Iterator<Vertex> iterator = vertices.iterator();
+
+    if (iterator.hasNext()) {
+      vertex = iterator.next();
+    }
+
+    return vertex;
   }
 
 }

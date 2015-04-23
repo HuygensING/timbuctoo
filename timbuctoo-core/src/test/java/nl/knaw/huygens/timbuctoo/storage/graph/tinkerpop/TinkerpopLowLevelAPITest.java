@@ -14,11 +14,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import test.model.TestSystemEntityWrapper;
+import test.model.projecta.SubADomainEntity;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 
 public class TinkerpopLowLevelAPITest {
+  private static final int FIRST_REVISION = 1;
+  private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
   private static final Class<TestSystemEntityWrapper> SYSTEM_ENTITY_TYPE = TestSystemEntityWrapper.class;
   private static final String ID = "id";
   private Graph dbMock;
@@ -47,7 +50,7 @@ public class TinkerpopLowLevelAPITest {
   }
 
   @Test
-  public void getLatestVertexByIdReturnsNullIfNoNodesAreFound() {
+  public void getLatestVertexByIdReturnsNullIfNoVerticesAreFound() {
     // setup
     anEmptyVertexSearchResult().forType(SYSTEM_ENTITY_TYPE).forId(ID).foundInDatabase(dbMock);
 
@@ -59,4 +62,30 @@ public class TinkerpopLowLevelAPITest {
 
   }
 
+  @Test
+  public void getVertexWithRevisionReturnsTheVertexWithTheRevision() {
+    // setup
+    Vertex foundVertex = aVertex().build();
+    aVertexSearchResult().forType(DOMAIN_ENTITY_TYPE).forId(ID).forRevision(FIRST_REVISION)//
+        .containsVertex(foundVertex) //
+        .foundInDatabase(dbMock);
+
+    // action
+    Vertex actualVertex = instance.getVertexWithRevision(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION);
+
+    // verify
+    assertThat(actualVertex, is(sameInstance(foundVertex)));
+  }
+
+  @Test
+  public void getVertexWithRevisionReturnsNullIfNoVerticesAreFound() {
+    // setup
+    anEmptyVertexSearchResult().forType(DOMAIN_ENTITY_TYPE).forId(ID).forRevision(FIRST_REVISION).foundInDatabase(dbMock);
+
+    // action
+    Vertex vertex = instance.getVertexWithRevision(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION);
+
+    // verify
+    assertThat(vertex, is(nullValue()));
+  }
 }

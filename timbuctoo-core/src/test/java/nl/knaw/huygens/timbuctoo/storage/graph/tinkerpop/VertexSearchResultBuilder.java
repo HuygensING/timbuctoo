@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexFields.VERTEX_TYPE;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
@@ -66,6 +67,11 @@ public class VertexSearchResultBuilder {
     return this.forProperty(VERTEX_TYPE, TypeNames.getInternalName(type));
   }
 
+  public VertexSearchResultBuilder forRevision(int value) {
+    this.forProperty(REVISION_PROPERTY_NAME, value);
+    return this;
+  }
+
   public void foundInDatabase(Graph db) {
     GraphQuery graphQueryMock = mock(GraphQuery.class);
     when(db.query()).thenReturn(graphQueryMock);
@@ -84,4 +90,5 @@ public class VertexSearchResultBuilder {
     when(graphQueryMock.vertices()).thenReturn(vertices);
 
   }
+
 }
