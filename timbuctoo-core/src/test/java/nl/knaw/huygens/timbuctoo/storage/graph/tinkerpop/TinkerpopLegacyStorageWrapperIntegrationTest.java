@@ -28,7 +28,6 @@ public class TinkerpopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.addRelationAddsARelationAndItsPrimitiveVersionToTheDatabase();
   }
 
-  @Ignore
   @Test
   @Override
   public void addSystemEntityAddsASystemEntityToTheStorageAndReturnsItsId() throws Exception {

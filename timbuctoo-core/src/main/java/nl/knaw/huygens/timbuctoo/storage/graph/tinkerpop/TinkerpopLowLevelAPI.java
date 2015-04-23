@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
@@ -21,8 +22,20 @@ public class TinkerpopLowLevelAPI {
   }
 
   public <T extends Entity> Vertex getLatestVertexById(Class<T> type, String id) {
+    // this is needed to check if the type array contains the value requeste type
+    com.tinkerpop.blueprints.Predicate containsValuePredicate = new com.tinkerpop.blueprints.Predicate() {
+      @Override
+      public boolean evaluate(Object first, Object second) {
+        if (first != null && first.getClass().isArray()) {
+          Object[] array = (Object[]) first;
+          return Lists.newArrayList(array).contains(second);
+        }
+        return false;
+      }
+    };
+
     Iterable<Vertex> foundVertices = db.query() //
-        .has(VERTEX_TYPE, TypeNames.getInternalName(type)) //
+        .has(VERTEX_TYPE, containsValuePredicate, TypeNames.getInternalName(type)) //
         .has(ID_PROPERTY_NAME, id) //
         .vertices();
 

@@ -2,6 +2,9 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexFields.VERTEX_TYPE;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -16,6 +19,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.GraphQuery;
+import com.tinkerpop.blueprints.Predicate;
 import com.tinkerpop.blueprints.Vertex;
 
 public class VertexSearchResultBuilder {
@@ -67,7 +71,14 @@ public class VertexSearchResultBuilder {
     when(db.query()).thenReturn(graphQueryMock);
 
     for (Entry<String, Object> searchProperty : searchProperties.entrySet()) {
-      when(graphQueryMock.has(searchProperty.getKey(), searchProperty.getValue())).thenReturn(graphQueryMock);
+      String key = searchProperty.getKey();
+      Object value = searchProperty.getValue();
+      if (VERTEX_TYPE.equals(key)) {
+        when(graphQueryMock.has(argThat(is(key)), any(Predicate.class), argThat(is(value)))).thenReturn(graphQueryMock);
+      } else {
+        when(graphQueryMock.has(key, value)).thenReturn(graphQueryMock);
+      }
+
     }
 
     when(graphQueryMock.vertices()).thenReturn(vertices);
