@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getRevisionProperty;
+
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -10,11 +12,13 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
 
 import com.google.inject.Inject;
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -104,7 +108,27 @@ public class TinkerpopStorage implements GraphStorage {
 
   @Override
   public <T extends Entity> void updateEntity(Class<T> type, T entity) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    Vertex vertex = lowLevelAPI.getLatestVertexById(type, entity.getId());
+
+    if (vertex == null) {
+      throw UpdateException.entityNotFound(type, entity);
+    }
+
+    if (!isMatchingRev(entity, vertex)) {
+      throw UpdateException.revisionNotFound(type, entity, entity.getRev());
+    }
+
+    VertexConverter<T> converter = elementConverterFactory.forType(type);
+    converter.updateModifiedAndRev(vertex, entity);
+    converter.updateVertex(vertex, entity);
+
+  }
+
+  private <T extends Entity> boolean isMatchingRev(T entity, Element element) {
+    // The difference between the reference of the entity and the property container should be one.
+    // This is because the life cycle management is done outside this class.
+    // So the revision should be updated before update is called.
+    return (entity.getRev() - getRevisionProperty(element)) == 1;
   }
 
   @Override

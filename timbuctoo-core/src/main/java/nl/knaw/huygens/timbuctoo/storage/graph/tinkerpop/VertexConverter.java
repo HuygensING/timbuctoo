@@ -9,7 +9,7 @@ public interface VertexConverter<T extends Entity> {
 
   void updateVertex(Vertex vertex, Entity entity) throws ConversionException;
 
-  void updateModifiedAndRev(Vertex vertexMock, Entity entity) throws ConversionException;
+  void updateModifiedAndRev(Vertex vertex, Entity entity) throws ConversionException;
 
   String getPropertyName(String fieldName);
 

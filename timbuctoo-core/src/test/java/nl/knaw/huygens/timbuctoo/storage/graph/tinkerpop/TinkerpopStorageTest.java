@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import static nl.knaw.huygens.timbuctoo.storage.graph.SubADomainEntityBuilder.aDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.graph.TestSystemEntityWrapperBuilder.aSystemEntity;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilder.aVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -14,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
 
@@ -27,6 +29,10 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 
 public class TinkerpopStorageTest {
+
+  private static final int FIRST_REVISION = 1;
+  private static final int SECOND_REVISION = 2;
+  private static final int THIRD_REVISION = 3;
 
   private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
   private static final Change CHANGE = new Change();
@@ -109,11 +115,12 @@ public class TinkerpopStorageTest {
   @Test
   public void getEntityReturnsTheItemWhenFound() throws Exception {
     // setup
-    Vertex foundVertex = latestVertexFoundFor();
+    Vertex vertex = aVertex().build();
+    latestVertexFoundFor(SYSTEM_ENTITY_TYPE, ID, vertex);
 
     VertexConverter<TestSystemEntityWrapper> vertexConverter = vertexConverterCreatedFor(SYSTEM_ENTITY_TYPE);
     TestSystemEntityWrapper entity = new TestSystemEntityWrapper();
-    when(vertexConverter.convertToEntity(foundVertex)).thenReturn(entity);
+    when(vertexConverter.convertToEntity(vertex)).thenReturn(entity);
 
     // action
     TestSystemEntityWrapper foundEntity = instance.getEntity(SYSTEM_ENTITY_TYPE, ID);
@@ -141,20 +148,91 @@ public class TinkerpopStorageTest {
   @Test(expected = ConversionException.class)
   public void getEntityThrowsConversionExceptionIfTheFoundVertexCannotBeConvertedToTheEntity() throws Exception {
     // setup
-    Vertex foundVertex = latestVertexFoundFor();
+    Vertex vertex = aVertex().build();
+    latestVertexFoundFor(SYSTEM_ENTITY_TYPE, ID, vertex);
 
     VertexConverter<TestSystemEntityWrapper> vertexConverter = vertexConverterCreatedFor(SYSTEM_ENTITY_TYPE);
-    when(vertexConverter.convertToEntity(foundVertex)).thenThrow(new ConversionException());
+    when(vertexConverter.convertToEntity(vertex)).thenThrow(new ConversionException());
 
     // action
     instance.getEntity(SYSTEM_ENTITY_TYPE, ID);
 
   }
 
-  private Vertex latestVertexFoundFor() {
-    Vertex foundVertex = mock(Vertex.class);
-    when(lowLevelAPIMock.getLatestVertexById(SYSTEM_ENTITY_TYPE, ID)).thenReturn(foundVertex);
-    return foundVertex;
+  @Test
+  public void updateEntityRetrievesTheEntityAndUpdatesTheData() throws Exception {
+    // setup
+    Vertex vertex = aVertex().withRev(FIRST_REVISION).build();
+    latestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID, vertex);
+    SubADomainEntity entity = aDomainEntity().withId(ID).withRev(SECOND_REVISION).build();
+
+    VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+
+    // action
+    instance.updateEntity(DOMAIN_ENTITY_TYPE, entity);
+
+    // verify
+    verify(converter).updateModifiedAndRev(vertex, entity);
+    verify(converter).updateVertex(vertex, entity);
+  }
+
+  @Test(expected = ConversionException.class)
+  public void updateEntityThrowsAConversionExceptionWhenTheVertexConverterThrowsOne() throws Exception {
+    // setup
+    Vertex vertex = aVertex().withRev(FIRST_REVISION).build();
+    latestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID, vertex);
+    SubADomainEntity entity = aDomainEntity().withId(ID).withRev(SECOND_REVISION).build();
+
+    VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+    doThrow(ConversionException.class).when(converter).updateVertex(vertex, entity);
+
+    // action
+    instance.updateEntity(DOMAIN_ENTITY_TYPE, entity);
+
+  }
+
+  @Test(expected = UpdateException.class)
+  public void updateEntityThrowsAnUpdateExceptionIfTheVertexCannotBeFound() throws Exception {
+    // setup
+    noLatestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID);
+
+    // action
+    instance.updateEntity(DOMAIN_ENTITY_TYPE, aDomainEntity().withId(ID).build());
+  }
+
+  @Test(expected = UpdateException.class)
+  public void updateEntityThrowsAnUpdateExceptionIfTheVertexHasAHigherRevThanTheEntity() throws Exception {
+    testUpdateEntityRevisionExceptions(SECOND_REVISION, FIRST_REVISION);
+  }
+
+  @Test(expected = UpdateException.class)
+  public void updateEntityThrowsAnUpdateExceptionWhenRevOfTheVertexIsEqualToThatOfTheEntity() throws Exception {
+    testUpdateEntityRevisionExceptions(FIRST_REVISION, FIRST_REVISION);
+  }
+
+  @Test(expected = UpdateException.class)
+  public void updateEntityThrowsAnUpdateExceptionWhenRevOfTheVertexIsMoreThanOneLowerThanThatOfTheEntity() throws Exception {
+    testUpdateEntityRevisionExceptions(FIRST_REVISION, THIRD_REVISION);
+  }
+
+  public void testUpdateEntityRevisionExceptions(int nodeRev, int entityRev) throws Exception {
+    // setup
+    Vertex vertex = aVertex().withRev(nodeRev).build();
+    latestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID, vertex);
+
+    Change oldModified = CHANGE;
+    SubADomainEntity domainEntity = aDomainEntity() //
+        .withId(ID) //
+        .withRev(entityRev)//
+        .withAPid()//
+        .withModified(oldModified)//
+        .build();
+
+    instance.updateEntity(DOMAIN_ENTITY_TYPE, domainEntity);
+  }
+
+  private void latestVertexFoundFor(Class<? extends Entity> type, String id, Vertex vertex) {
+    when(lowLevelAPIMock.getLatestVertexById(type, id)).thenReturn(vertex);
   }
 
   private <T extends Entity> VertexConverter<T> vertexConverterCreatedFor(Class<T> type) {
