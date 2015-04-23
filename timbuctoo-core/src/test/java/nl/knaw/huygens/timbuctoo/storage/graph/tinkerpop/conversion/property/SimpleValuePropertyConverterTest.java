@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
+package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -11,6 +11,8 @@ import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.PropertyConverterTest;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property.SimpleValuePropertyConverter;
 
 import org.junit.Before;
 import org.junit.Test;

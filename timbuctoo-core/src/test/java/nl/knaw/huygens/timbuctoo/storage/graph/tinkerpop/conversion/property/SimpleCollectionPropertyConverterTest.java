@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
+package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property;
 
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.property.SimpleArrayMatcher.isSimpleArrayOfType;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -17,6 +17,8 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.PropertyConverterTest;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property.SimpleCollectionPropertyConverter;
 
 import org.junit.Before;
 import org.junit.Test;

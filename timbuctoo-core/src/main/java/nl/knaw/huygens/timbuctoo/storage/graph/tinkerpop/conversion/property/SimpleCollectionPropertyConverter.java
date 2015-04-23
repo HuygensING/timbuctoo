@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
+package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-public class SimpleCollectionPropertyConverter<T> extends AbstractPropertyConverter {
+class SimpleCollectionPropertyConverter<T> extends AbstractPropertyConverter {
 
   private final Class<T> componentType;
 

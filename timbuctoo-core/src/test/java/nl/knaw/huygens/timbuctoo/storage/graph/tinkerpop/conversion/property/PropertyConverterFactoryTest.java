@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
+package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property;
 
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType.REGULAR;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType.VIRTUAL;
@@ -14,6 +14,12 @@ import java.lang.reflect.Field;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.PropertyConverter;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property.NoOpPropertyConverter;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property.ObjectValuePropertyConverter;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property.PropertyConverterFactory;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property.SimpleCollectionPropertyConverter;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property.SimpleValuePropertyConverter;
 
 import org.junit.Before;
 import org.junit.Test;

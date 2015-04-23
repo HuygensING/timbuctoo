@@ -13,7 +13,7 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 
-public class TinkerpopLowLevelAPI {
+class TinkerpopLowLevelAPI {
 
   private final Graph db;
 

@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
+package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
@@ -6,6 +6,8 @@ import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexConverter;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property.PropertyConverterFactory;
 
 import com.google.common.collect.Sets;
 

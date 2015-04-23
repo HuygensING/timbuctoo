@@ -1,11 +1,11 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
+package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property;
 
 import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class ObjectValuePropertyConverter extends AbstractPropertyConverter {
+class ObjectValuePropertyConverter extends AbstractPropertyConverter {
 
   private final ObjectMapper objectMapper;
 

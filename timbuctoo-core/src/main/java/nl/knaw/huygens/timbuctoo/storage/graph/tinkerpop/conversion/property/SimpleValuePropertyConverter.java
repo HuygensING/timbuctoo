@@ -1,6 +1,6 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
+package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property;
 
-public class SimpleValuePropertyConverter extends AbstractPropertyConverter {
+class SimpleValuePropertyConverter extends AbstractPropertyConverter {
 
   @Override
   protected Object format(Object value) {

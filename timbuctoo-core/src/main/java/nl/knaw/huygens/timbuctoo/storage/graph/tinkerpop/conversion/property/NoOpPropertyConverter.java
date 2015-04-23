@@ -1,14 +1,15 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
+package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property;
 
 import java.lang.reflect.Field;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.PropertyConverter;
 
 import com.tinkerpop.blueprints.Vertex;
 
-public class NoOpPropertyConverter implements PropertyConverter {
+class NoOpPropertyConverter implements PropertyConverter {
 
   private String fieldName;
   private FieldType fieldType;
