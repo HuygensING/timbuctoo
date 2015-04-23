@@ -49,10 +49,6 @@ public class TinkerpopStorageTest {
     when(dbMock.addVertex(null)).thenReturn(createdVertex);
   }
 
-  /* ************************************************************
-   * DomainEntity
-   * ************************************************************/
-
   @Test
   public void addDomainEntitySavesTheProjectVersionAndThePrimitive() throws Exception {
     // setup
@@ -78,10 +74,6 @@ public class TinkerpopStorageTest {
     // action
     instance.addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
   }
-
-  /* ***********************************************************
-   * SystemEntity
-   * ***********************************************************/
 
   @Test
   public void addSystemEntitySavesTheSystemAsVertex() throws Exception {
