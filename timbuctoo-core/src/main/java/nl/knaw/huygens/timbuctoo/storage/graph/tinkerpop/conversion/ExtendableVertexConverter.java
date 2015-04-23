@@ -69,6 +69,7 @@ class ExtendableVertexConverter<T extends Entity> implements VertexConverter<T> 
 
   }
 
+  @Override
   public <U extends T> U convertToSubType(Class<U> type, Vertex vertex) throws ConversionException {
     try {
       U entity = entityInstantiator.createInstanceOf(type);
@@ -92,6 +93,7 @@ class ExtendableVertexConverter<T extends Entity> implements VertexConverter<T> 
     return fieldNamePropertyConverterMap.values();
   }
 
+  @Override
   public String getPropertyName(String fieldName) {
     if (!hasPropertyContainerForField(fieldName)) {
       throw new FieldNonExistingException(type, fieldName);
@@ -107,11 +109,13 @@ class ExtendableVertexConverter<T extends Entity> implements VertexConverter<T> 
     return fieldNamePropertyConverterMap.containsKey(fieldName);
   }
 
+  @Override
   public void updateModifiedAndRev(Vertex vertexMock, Entity entity) throws ConversionException {
     getPropertyConverterByFieldName(MODIFIED_PROPERTY_NAME).setPropertyOfVertex(vertexMock, entity);
     getPropertyConverterByFieldName(REVISION_PROPERTY_NAME).setPropertyOfVertex(vertexMock, entity);
   }
 
+  @Override
   public void updateVertex(Vertex vertex, Entity entity) throws ConversionException {
     for (PropertyConverter propertyConverter : propertyConverters()) {
 
