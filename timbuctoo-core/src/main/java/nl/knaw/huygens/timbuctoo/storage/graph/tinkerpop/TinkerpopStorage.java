@@ -60,7 +60,7 @@ public class TinkerpopStorage implements GraphStorage {
 
       VertexConverter<T> converter = createVertexConverter(type);
       try {
-        converter.addValuesToVertex(vertex, entity);
+        converter.addValuesToElement(vertex, entity);
       } catch (ConversionException e) {
         rollback(vertex);
         throw e;
@@ -120,7 +120,7 @@ public class TinkerpopStorage implements GraphStorage {
 
     VertexConverter<T> converter = elementConverterFactory.forType(type);
     converter.updateModifiedAndRev(vertex, entity);
-    converter.updateVertex(vertex, entity);
+    converter.updateElement(vertex, entity);
 
   }
 

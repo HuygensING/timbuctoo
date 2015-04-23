@@ -67,7 +67,7 @@ public class TinkerpopStorageTest {
     instance.addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
 
     // verify
-    verify(converter).addValuesToVertex(createdVertex, entity);
+    verify(converter).addValuesToElement(createdVertex, entity);
   }
 
   @Test(expected = ConversionException.class)
@@ -76,7 +76,7 @@ public class TinkerpopStorageTest {
     SubADomainEntity entity = aDomainEntity().build();
 
     VertexConverter<SubADomainEntity> converter = compositeVertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
-    doThrow(ConversionException.class).when(converter).addValuesToVertex(createdVertex, entity);
+    doThrow(ConversionException.class).when(converter).addValuesToElement(createdVertex, entity);
 
     // action
     instance.addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
@@ -93,7 +93,7 @@ public class TinkerpopStorageTest {
 
     // verify
     verify(dbMock).addVertex(null);
-    verify(vertexConverter).addValuesToVertex(createdVertex, entity);
+    verify(vertexConverter).addValuesToElement(createdVertex, entity);
   }
 
   @Test(expected = StorageException.class)
@@ -101,7 +101,7 @@ public class TinkerpopStorageTest {
     // setup
     TestSystemEntityWrapper entity = aSystemEntity().build();
     VertexConverter<TestSystemEntityWrapper> vertexConverter = vertexConverterCreatedFor(SYSTEM_ENTITY_TYPE);
-    doThrow(ConversionException.class).when(vertexConverter).addValuesToVertex(createdVertex, entity);
+    doThrow(ConversionException.class).when(vertexConverter).addValuesToElement(createdVertex, entity);
 
     try {
       // action
@@ -262,7 +262,7 @@ public class TinkerpopStorageTest {
 
     // verify
     verify(converter).updateModifiedAndRev(vertex, entity);
-    verify(converter).updateVertex(vertex, entity);
+    verify(converter).updateElement(vertex, entity);
   }
 
   @Test(expected = ConversionException.class)
@@ -273,7 +273,7 @@ public class TinkerpopStorageTest {
     SubADomainEntity entity = aDomainEntity().withId(ID).withRev(SECOND_REVISION).build();
 
     VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
-    doThrow(ConversionException.class).when(converter).updateVertex(vertex, entity);
+    doThrow(ConversionException.class).when(converter).updateElement(vertex, entity);
 
     // action
     instance.updateEntity(DOMAIN_ENTITY_TYPE, entity);

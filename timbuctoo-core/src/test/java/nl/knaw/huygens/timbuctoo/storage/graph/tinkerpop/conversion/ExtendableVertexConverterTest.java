@@ -81,7 +81,7 @@ public class ExtendableVertexConverterTest {
   @Test
   public void addValuesToVertexLetsThePropertyConvertersAddTheirValuesToTheNode() throws Exception {
     // action
-    instance.addValuesToVertex(vertexMock, entity);
+    instance.addValuesToElement(vertexMock, entity);
 
     // verify
     verifyTypeIsSet(vertexMock, TYPE);
@@ -95,7 +95,7 @@ public class ExtendableVertexConverterTest {
 
     ExtendableVertexConverter<BaseDomainEntity> instance = createInstance(BASE_DOMAIN_ENTITY_TYPE);
 
-    instance.addValuesToVertex(vertexMock, aDomainEntity().build());
+    instance.addValuesToElement(vertexMock, aDomainEntity().build());
 
     // verify
     verifyTypeIsSet(vertexMock, BASE_DOMAIN_ENTITY_TYPE);
@@ -113,7 +113,7 @@ public class ExtendableVertexConverterTest {
 
     try {
       // action
-      instance.addValuesToVertex(vertexMock, entity);
+      instance.addValuesToElement(vertexMock, entity);
     } finally {
       // verify
       verify(propertyConverter1).setPropertyOfVertex(vertexMock, entity);
@@ -243,7 +243,7 @@ public class ExtendableVertexConverterTest {
   public void updateVertexSetsTheValuesOfTheNonAdministrativeFields() throws Exception {
 
     // action
-    instance.updateVertex(vertexMock, entity);
+    instance.updateElement(vertexMock, entity);
 
     // verify
     verify(propertyConverter1).setPropertyOfVertex(vertexMock, entity);
@@ -259,6 +259,6 @@ public class ExtendableVertexConverterTest {
     doThrow(ConversionException.class).when(propertyConverter1).setPropertyOfVertex(vertexMock, entity);
 
     // action
-    instance.updateVertex(vertexMock, entity);
+    instance.updateElement(vertexMock, entity);
   }
 }

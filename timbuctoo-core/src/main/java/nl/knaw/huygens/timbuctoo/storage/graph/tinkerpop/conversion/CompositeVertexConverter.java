@@ -17,7 +17,7 @@ public class CompositeVertexConverter<T extends Entity> implements VertexConvert
   }
 
   @Override
-  public void updateVertex(Vertex vertex, Entity entity) throws ConversionException {
+  public void updateElement(Vertex vertex, Entity entity) throws ConversionException {
     throw new UnsupportedOperationException("Yet to be implemented");
   }
 
@@ -42,9 +42,9 @@ public class CompositeVertexConverter<T extends Entity> implements VertexConvert
   }
 
   @Override
-  public void addValuesToVertex(Vertex vertex, T entity) throws ConversionException {
+  public void addValuesToElement(Vertex vertex, T entity) throws ConversionException {
     for (VertexConverter<? super T> vertexConverter : delegates) {
-      vertexConverter.addValuesToVertex(vertex, entity);
+      vertexConverter.addValuesToElement(vertex, entity);
     }
   }
 

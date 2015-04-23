@@ -44,21 +44,21 @@ public class CompositeVertexConverterTest {
   public void addValuesToVertexDelegatesToTheWrappedVertexConverters() throws Exception {
 
     // action
-    instance.addValuesToVertex(vertexMock, entity);
+    instance.addValuesToElement(vertexMock, entity);
 
     // verify
-    verify(vertexConverter1).addValuesToVertex(vertexMock, entity);
-    verify(vertexConverter2).addValuesToVertex(vertexMock, entity);
+    verify(vertexConverter1).addValuesToElement(vertexMock, entity);
+    verify(vertexConverter2).addValuesToElement(vertexMock, entity);
 
   }
 
   @Test(expected = ConversionException.class)
   public void addValuesToVertexThrowsAConversionExceptionWhenOneOfTheDelegatesDoes() throws Exception {
     // setup
-    doThrow(ConversionException.class).when(vertexConverter1).addValuesToVertex(vertexMock, entity);
+    doThrow(ConversionException.class).when(vertexConverter1).addValuesToElement(vertexMock, entity);
 
     // action
-    instance.addValuesToVertex(vertexMock, entity);
+    instance.addValuesToElement(vertexMock, entity);
 
   }
 }
