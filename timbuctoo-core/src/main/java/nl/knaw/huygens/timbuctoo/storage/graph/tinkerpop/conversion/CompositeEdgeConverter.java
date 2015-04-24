@@ -44,4 +44,7 @@ public class CompositeEdgeConverter<T extends Relation> implements EdgeConverter
     }
   }
 
+  int getNumberOfDelegates() {
+    return delegates.size();
+  }
 }

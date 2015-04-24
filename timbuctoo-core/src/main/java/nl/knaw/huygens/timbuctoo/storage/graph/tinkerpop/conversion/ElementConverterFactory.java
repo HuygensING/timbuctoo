@@ -8,7 +8,9 @@ import java.util.Set;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeConverter;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexConverter;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property.PropertyConverterFactory;
 
@@ -49,6 +51,27 @@ public class ElementConverterFactory {
     vertexConverters.add(forPrimitiveOf(type));
 
     return new CompositeVertexConverter<T>(vertexConverters);
+  }
+
+  public <T extends Relation> EdgeConverter<T> forRelation(Class<T> type) {
+    Collection<PropertyConverter> propertyConverters = createPropertyConverters(type);
+
+    return new ExtendableEdgeConverter<T>(type, propertyConverters, entityInstantiator);
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T extends Relation> EdgeConverter<? super T> forPrimitiveRelationOf(Class<T> type) {
+    Class<? extends Relation> primitive = (Class<? extends Relation>) TypeRegistry.toBaseDomainEntity(type);
+    EdgeConverter<? extends Relation> converter = forRelation(primitive);
+
+    return (EdgeConverter<? super T>) converter;
+  }
+
+  public <T extends Relation> EdgeConverter<T> compositeForRelation(Class<T> relationType) {
+    List<EdgeConverter<? super T>> delegates = Lists.newArrayList();
+    delegates.add(forRelation(relationType));
+    delegates.add(forPrimitiveRelationOf(relationType));
+    return new CompositeEdgeConverter<T>(delegates);
   }
 
   @SuppressWarnings("unchecked")
