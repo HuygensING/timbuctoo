@@ -24,7 +24,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import test.model.BaseDomainEntity;
-import test.model.TestSystemEntityWrapper;
 import test.model.projecta.SubADomainEntity;
 
 import com.google.common.collect.Lists;
@@ -37,13 +36,12 @@ public class ExtendableVertexConverterTest {
   private static final String FIELD2_NAME = "field2Name";
   private static final Class<BaseDomainEntity> BASE_DOMAIN_ENTITY_TYPE = BaseDomainEntity.class;
   private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
-  private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
   private PropertyConverter propertyConverter1;
   private PropertyConverter propertyConverter2;
   private List<PropertyConverter> propertyConverters;
-  private ExtendableVertexConverter<TestSystemEntityWrapper> instance;
+  private ExtendableVertexConverter<SubADomainEntity> instance;
   private Vertex vertexMock;
-  private TestSystemEntityWrapper entity;
+  private SubADomainEntity entity;
   private EntityInstantiator entityInstantiatorMock;
   private PropertyConverter modifiedConverterMock;
   private PropertyConverter revConverterMock;
@@ -55,11 +53,13 @@ public class ExtendableVertexConverterTest {
     modifiedConverterMock = createPropertyConverter(Entity.MODIFIED_PROPERTY_NAME, Entity.MODIFIED_PROPERTY_NAME, FieldType.ADMINISTRATIVE);
     revConverterMock = createPropertyConverter(Entity.REVISION_PROPERTY_NAME, Entity.REVISION_PROPERTY_NAME, FieldType.ADMINISTRATIVE);
     propertyConverters = Lists.newArrayList(propertyConverter1, propertyConverter2, modifiedConverterMock, revConverterMock);
+
     entityInstantiatorMock = mock(EntityInstantiator.class);
-    instance = createInstance(TYPE, propertyConverters);
+
+    instance = createInstance(DOMAIN_ENTITY_TYPE, propertyConverters);
 
     vertexMock = mock(Vertex.class);
-    entity = new TestSystemEntityWrapper();
+    entity = new SubADomainEntity();
   }
 
   private <T extends Entity> ExtendableVertexConverter<T> createInstance(Class<T> type, List<PropertyConverter> propertyConverters) {
@@ -84,9 +84,10 @@ public class ExtendableVertexConverterTest {
     instance.addValuesToElement(vertexMock, entity);
 
     // verify
-    verifyTypeIsSet(vertexMock, TYPE);
     verify(propertyConverter1).setPropertyOfElement(vertexMock, entity);
     verify(propertyConverter2).setPropertyOfElement(vertexMock, entity);
+    verify(modifiedConverterMock).setPropertyOfElement(vertexMock, entity);
+    verify(revConverterMock).setPropertyOfElement(vertexMock, entity);
   }
 
   @Test
@@ -123,10 +124,10 @@ public class ExtendableVertexConverterTest {
   @Test
   public void convertToEntityCreatesAnInstanceOfTheEntityThenLetThePropertyConvertersAddTheValues() throws Exception {
     // setup
-    when(entityInstantiatorMock.createInstanceOf(TYPE)).thenReturn(entity);
+    when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenReturn(entity);
 
     // action
-    TestSystemEntityWrapper createdEntity = instance.convertToEntity(vertexMock);
+    SubADomainEntity createdEntity = instance.convertToEntity(vertexMock);
 
     // verify
     assertThat(createdEntity, is(sameInstance(entity)));
@@ -139,7 +140,7 @@ public class ExtendableVertexConverterTest {
   @Test(expected = ConversionException.class)
   public void convertToEntityThrowsAConversionExceptionWhenTheEntityCannotBeInstatiated() throws Exception {
     // setup
-    when(entityInstantiatorMock.createInstanceOf(TYPE)).thenThrow(new InstantiationException());
+    when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenThrow(new InstantiationException());
 
     // action
     instance.convertToEntity(vertexMock);
@@ -149,7 +150,7 @@ public class ExtendableVertexConverterTest {
   @Test(expected = ConversionException.class)
   public void convertToEntityThrowsAConversionExceptionWhenOneOfTheValuesCannotBeConverted() throws Exception {
     // setup
-    when(entityInstantiatorMock.createInstanceOf(TYPE)).thenReturn(entity);
+    when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenReturn(entity);
     doThrow(ConversionException.class).when(propertyConverter1).addValueToEntity(entity, vertexMock);
 
     // action
