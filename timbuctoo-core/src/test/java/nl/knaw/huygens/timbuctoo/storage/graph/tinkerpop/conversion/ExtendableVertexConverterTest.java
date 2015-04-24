@@ -85,8 +85,8 @@ public class ExtendableVertexConverterTest {
 
     // verify
     verifyTypeIsSet(vertexMock, TYPE);
-    verify(propertyConverter1).setPropertyOfVertex(vertexMock, entity);
-    verify(propertyConverter2).setPropertyOfVertex(vertexMock, entity);
+    verify(propertyConverter1).setPropertyOfElement(vertexMock, entity);
+    verify(propertyConverter2).setPropertyOfElement(vertexMock, entity);
   }
 
   @Test
@@ -109,14 +109,14 @@ public class ExtendableVertexConverterTest {
   @Test(expected = ConversionException.class)
   public void addValuesToVertexThrowsAConversionExceptionWhenOneOfThePropertyConvertersDoes() throws Exception {
     // setup
-    doThrow(ConversionException.class).when(propertyConverter1).setPropertyOfVertex(vertexMock, entity);
+    doThrow(ConversionException.class).when(propertyConverter1).setPropertyOfElement(vertexMock, entity);
 
     try {
       // action
       instance.addValuesToElement(vertexMock, entity);
     } finally {
       // verify
-      verify(propertyConverter1).setPropertyOfVertex(vertexMock, entity);
+      verify(propertyConverter1).setPropertyOfElement(vertexMock, entity);
     }
   }
 
@@ -224,16 +224,16 @@ public class ExtendableVertexConverterTest {
     instance.updateModifiedAndRev(vertexMock, entity);
 
     // verify
-    verify(modifiedConverterMock).setPropertyOfVertex(vertexMock, entity);
-    verify(revConverterMock).setPropertyOfVertex(vertexMock, entity);
-    verify(propertyConverter1, times(0)).setPropertyOfVertex(vertexMock, entity);
-    verify(propertyConverter2, times(0)).setPropertyOfVertex(vertexMock, entity);
+    verify(modifiedConverterMock).setPropertyOfElement(vertexMock, entity);
+    verify(revConverterMock).setPropertyOfElement(vertexMock, entity);
+    verify(propertyConverter1, times(0)).setPropertyOfElement(vertexMock, entity);
+    verify(propertyConverter2, times(0)).setPropertyOfElement(vertexMock, entity);
   }
 
   @Test(expected = ConversionException.class)
   public void updateModifiedAndRevThrowsAConversionExceptionIfOneOfTheFieldsCannotBeConverted() throws Exception {
     // setup
-    doThrow(ConversionException.class).when(modifiedConverterMock).setPropertyOfVertex(vertexMock, entity);
+    doThrow(ConversionException.class).when(modifiedConverterMock).setPropertyOfElement(vertexMock, entity);
 
     // action
     instance.updateModifiedAndRev(vertexMock, entity);
@@ -246,17 +246,17 @@ public class ExtendableVertexConverterTest {
     instance.updateElement(vertexMock, entity);
 
     // verify
-    verify(propertyConverter1).setPropertyOfVertex(vertexMock, entity);
-    verify(propertyConverter2).setPropertyOfVertex(vertexMock, entity);
+    verify(propertyConverter1).setPropertyOfElement(vertexMock, entity);
+    verify(propertyConverter2).setPropertyOfElement(vertexMock, entity);
 
-    verify(modifiedConverterMock, times(0)).setPropertyOfVertex(vertexMock, entity);
-    verify(revConverterMock, times(0)).setPropertyOfVertex(vertexMock, entity);
+    verify(modifiedConverterMock, times(0)).setPropertyOfElement(vertexMock, entity);
+    verify(revConverterMock, times(0)).setPropertyOfElement(vertexMock, entity);
   }
 
   @Test(expected = ConversionException.class)
   public void updateVertexThrowsAConversionExceptionWhenAFieldConverterThrowsOne() throws Exception {
     // setup
-    doThrow(ConversionException.class).when(propertyConverter1).setPropertyOfVertex(vertexMock, entity);
+    doThrow(ConversionException.class).when(propertyConverter1).setPropertyOfElement(vertexMock, entity);
 
     // action
     instance.updateElement(vertexMock, entity);

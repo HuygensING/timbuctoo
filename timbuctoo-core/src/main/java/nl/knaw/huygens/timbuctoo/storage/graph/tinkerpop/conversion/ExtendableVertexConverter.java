@@ -46,7 +46,7 @@ class ExtendableVertexConverter<T extends Entity> implements VertexConverter<T> 
   public void addValuesToElement(Vertex vertex, T entity) throws ConversionException {
     addVariation(vertex, type);
     for (PropertyConverter propertyConverter : propertyConverters()) {
-      propertyConverter.setPropertyOfVertex(vertex, entity);
+      propertyConverter.setPropertyOfElement(vertex, entity);
     }
   }
 
@@ -120,8 +120,8 @@ class ExtendableVertexConverter<T extends Entity> implements VertexConverter<T> 
 
   @Override
   public void updateModifiedAndRev(Vertex vertexMock, Entity entity) throws ConversionException {
-    getPropertyConverterByFieldName(MODIFIED_PROPERTY_NAME).setPropertyOfVertex(vertexMock, entity);
-    getPropertyConverterByFieldName(REVISION_PROPERTY_NAME).setPropertyOfVertex(vertexMock, entity);
+    getPropertyConverterByFieldName(MODIFIED_PROPERTY_NAME).setPropertyOfElement(vertexMock, entity);
+    getPropertyConverterByFieldName(REVISION_PROPERTY_NAME).setPropertyOfElement(vertexMock, entity);
   }
 
   @Override
@@ -129,7 +129,7 @@ class ExtendableVertexConverter<T extends Entity> implements VertexConverter<T> 
     for (PropertyConverter propertyConverter : propertyConverters()) {
 
       if (propertyConverter.getFieldType() != FieldType.ADMINISTRATIVE) {
-        propertyConverter.setPropertyOfVertex(vertex, entity);
+        propertyConverter.setPropertyOfElement(vertex, entity);
       }
     }
   }

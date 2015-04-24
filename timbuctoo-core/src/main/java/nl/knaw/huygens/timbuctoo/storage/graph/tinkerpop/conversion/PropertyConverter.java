@@ -6,7 +6,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
 
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.Element;
 
 public interface PropertyConverter {
 
@@ -18,9 +18,9 @@ public interface PropertyConverter {
 
   void setFieldName(String fieldName);
 
-  void setPropertyOfVertex(Vertex vertex, Entity entity) throws ConversionException;
+  void setPropertyOfElement(Element element, Entity entity) throws ConversionException;
 
-  void addValueToEntity(Entity entity, Vertex vertex) throws ConversionException;
+  void addValueToEntity(Entity entity, Element element) throws ConversionException;
 
   String propertyName();
 

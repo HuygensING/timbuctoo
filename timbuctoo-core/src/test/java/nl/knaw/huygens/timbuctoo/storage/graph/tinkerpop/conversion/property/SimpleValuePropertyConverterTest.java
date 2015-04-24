@@ -55,7 +55,7 @@ public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
     entity.setStringValue(FIELD_VALUE);
 
     // action
-    instance.setPropertyOfVertex(vertexMock, entity);
+    instance.setPropertyOfElement(vertexMock, entity);
 
     // verify
     verify(vertexMock).setProperty(PROPERTY_NAME, FIELD_VALUE);
@@ -68,7 +68,7 @@ public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
     entity.setStringValue(null);
 
     // action
-    instance.setPropertyOfVertex(vertexMock, entity);
+    instance.setPropertyOfElement(vertexMock, entity);
 
     // verify
     verifyZeroInteractions(vertexMock);
@@ -88,7 +88,7 @@ public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
     setupInstance(instance);
 
     // action
-    instance.setPropertyOfVertex(vertexMock, entity);
+    instance.setPropertyOfElement(vertexMock, entity);
   }
 
   @Override
@@ -105,7 +105,7 @@ public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
     setupInstance(instance);
 
     // action
-    instance.setPropertyOfVertex(vertexMock, entity);
+    instance.setPropertyOfElement(vertexMock, entity);
   }
 
   @Test

@@ -7,7 +7,7 @@ import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.PropertyConverter;
 
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.Element;
 
 class NoOpPropertyConverter implements PropertyConverter {
 
@@ -41,10 +41,10 @@ class NoOpPropertyConverter implements PropertyConverter {
   }
 
   @Override
-  public void setPropertyOfVertex(Vertex vertex, Entity entity) throws ConversionException {}
+  public void setPropertyOfElement(Element element, Entity entity) throws ConversionException {}
 
   @Override
-  public void addValueToEntity(Entity entity, Vertex vertex) throws ConversionException {}
+  public void addValueToEntity(Entity entity, Element element) throws ConversionException {}
 
   @Override
   public String propertyName() {

@@ -7,7 +7,7 @@ import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.PropertyConverter;
 
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.Element;
 
 abstract class AbstractPropertyConverter implements PropertyConverter {
   private Field field;
@@ -46,12 +46,12 @@ abstract class AbstractPropertyConverter implements PropertyConverter {
   }
 
   @Override
-  public void setPropertyOfVertex(Vertex vertex, Entity entity) throws ConversionException {
+  public void setPropertyOfElement(Element element, Entity entity) throws ConversionException {
     try {
       Object value = getValue(entity);
 
       if (isLegalValue(value)) {
-        vertex.setProperty(propertyName(), format(value));
+        element.setProperty(propertyName(), format(value));
       }
 
     } catch (IllegalArgumentException | IllegalAccessException e) {
@@ -76,8 +76,8 @@ abstract class AbstractPropertyConverter implements PropertyConverter {
   }
 
   @Override
-  public final void addValueToEntity(Entity entity, Vertex vertex) throws ConversionException {
-    Object value = vertex.getProperty(propertyName());
+  public final void addValueToEntity(Entity entity, Element element) throws ConversionException {
+    Object value = element.getProperty(propertyName());
 
     try {
       fillField(entity, value);
