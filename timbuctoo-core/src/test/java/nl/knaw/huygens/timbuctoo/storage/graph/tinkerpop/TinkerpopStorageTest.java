@@ -304,7 +304,7 @@ public class TinkerpopStorageTest {
     testUpdateEntityRevisionExceptions(FIRST_REVISION, THIRD_REVISION);
   }
 
-  public void testUpdateEntityRevisionExceptions(int nodeRev, int entityRev) throws Exception {
+  private void testUpdateEntityRevisionExceptions(int nodeRev, int entityRev) throws Exception {
     // setup
     Vertex vertex = aVertex().withRev(nodeRev).build();
     latestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID, vertex);
@@ -337,4 +337,5 @@ public class TinkerpopStorageTest {
     when(elementConverterFactoryMock.compositeForType(type)).thenReturn(vertexConverter);
     return vertexConverter;
   }
+
 }
