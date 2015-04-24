@@ -7,14 +7,14 @@ import com.tinkerpop.blueprints.Element;
 
 public interface ElementConverter<T extends Entity, U extends Element> {
 
-  void updateElement(U vertex, Entity entity) throws ConversionException;
+  void updateElement(U element, Entity entity) throws ConversionException;
 
-  void updateModifiedAndRev(U vertex, Entity entity) throws ConversionException;
+  void updateModifiedAndRev(U element, Entity entity) throws ConversionException;
 
   String getPropertyName(String fieldName);
 
-  T convertToEntity(U vertex) throws ConversionException;
+  T convertToEntity(U element) throws ConversionException;
 
-  void addValuesToElement(U vertex, T entity) throws ConversionException;
+  void addValuesToElement(U element, T entity) throws ConversionException;
 
 }
