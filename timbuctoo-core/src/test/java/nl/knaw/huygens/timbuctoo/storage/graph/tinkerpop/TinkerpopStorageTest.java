@@ -523,4 +523,65 @@ public class TinkerpopStorageTest {
     instance.addRelation(RELATION_TYPE, relation, new Change());
   }
 
+  @Test
+  public void getRelationReturnsTheRelationThatBelongsToTheId() throws Exception {
+    // setup
+    Edge edge = latestEdgeFoundWithId(ID);
+
+    EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
+    SubARelation relation = aRelation().build();
+    when(converter.convertToEntity(edge)).thenReturn(relation);
+
+    // action
+    SubARelation foundRelation = instance.getRelation(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(foundRelation, is(sameInstance(relation)));
+  }
+
+  @Test
+  public void getRelationReturnsNullIfTheRelationIsNotFound() throws Exception {
+    // setup
+    noLatestEdgeFoundWithId(ID);
+
+    // action
+    SubARelation foundRelation = instance.getRelation(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(foundRelation, is(nullValue()));
+  }
+
+  private void noLatestEdgeFoundWithId(String id) {
+    when(lowLevelAPIMock.getLatestEdgeById(RELATION_TYPE, id)).thenReturn(null);
+  }
+
+  @Test(expected = ConversionException.class)
+  public void getRelationThrowsAConversionExceptionWhenTheEdgeCannotBeConverted() throws Exception {
+    // setup
+    Edge edge = latestEdgeFoundWithId(ID);
+
+    EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
+    when(converter.convertToEntity(edge)).thenThrow(new ConversionException());
+
+    // action
+    instance.getRelation(RELATION_TYPE, ID);
+
+  }
+
+  private <T extends Relation> EdgeConverter<T> createEdgeConverterFor(Class<T> type) {
+    @SuppressWarnings("unchecked")
+    EdgeConverter<T> edgeConverter = mock(EdgeConverter.class);
+
+    when(elementConverterFactoryMock.forRelation(type)).thenReturn(edgeConverter);
+
+    return edgeConverter;
+  }
+
+  private Edge latestEdgeFoundWithId(String id) {
+    Edge edge = mock(Edge.class);
+
+    when(lowLevelAPIMock.getLatestEdgeById(RELATION_TYPE, id)).thenReturn(edge);
+
+    return edge;
+  }
 }

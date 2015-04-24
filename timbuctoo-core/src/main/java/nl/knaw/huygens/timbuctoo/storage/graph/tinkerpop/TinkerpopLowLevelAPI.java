@@ -10,6 +10,7 @@ import java.util.Iterator;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
@@ -84,6 +85,10 @@ class TinkerpopLowLevelAPI {
     }
 
     return vertex;
+  }
+
+  public Edge getLatestEdgeById(Class<? extends Relation> relationType, String id) {
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
 }
