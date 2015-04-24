@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexFields.VERTEX_TYPE;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
@@ -64,7 +64,7 @@ public class VertexSearchResultBuilder {
   }
 
   public VertexSearchResultBuilder forType(Class<? extends Entity> type) {
-    return this.forProperty(VERTEX_TYPE, TypeNames.getInternalName(type));
+    return this.forProperty(ELEMENT_TYPES, TypeNames.getInternalName(type));
   }
 
   public VertexSearchResultBuilder forRevision(int value) {
@@ -79,7 +79,7 @@ public class VertexSearchResultBuilder {
     for (Entry<String, Object> searchProperty : searchProperties.entrySet()) {
       String key = searchProperty.getKey();
       Object value = searchProperty.getValue();
-      if (VERTEX_TYPE.equals(key)) {
+      if (ELEMENT_TYPES.equals(key)) {
         when(graphQueryMock.has(argThat(is(key)), any(Predicate.class), argThat(is(value)))).thenReturn(graphQueryMock);
       } else {
         when(graphQueryMock.has(key, value)).thenReturn(graphQueryMock);

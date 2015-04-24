@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion;
 
 import static nl.knaw.huygens.timbuctoo.storage.graph.SubADomainEntityBuilder.aDomainEntity;
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexFields.VERTEX_TYPE;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -103,7 +103,7 @@ public class ExtendableVertexConverterTest {
   }
 
   private void verifyTypeIsSet(Vertex vertexMock, Class<? extends Entity> type) {
-    verify(vertexMock).setProperty(VERTEX_TYPE, new String[] { TypeNames.getInternalName(type) });
+    verify(vertexMock).setProperty(ELEMENT_TYPES, new String[] { TypeNames.getInternalName(type) });
   }
 
   @Test(expected = ConversionException.class)

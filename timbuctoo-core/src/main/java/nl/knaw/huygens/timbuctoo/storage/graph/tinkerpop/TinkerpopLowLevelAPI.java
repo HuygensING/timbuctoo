@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType.VERSION_OF;
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexFields.VERTEX_TYPE;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
 
 import java.util.Iterator;
 
@@ -45,7 +45,7 @@ class TinkerpopLowLevelAPI {
 
   private <T extends Entity> GraphQuery queryByType(Class<T> type) {
     return db.query() //
-        .has(VERTEX_TYPE, isOfType(), TypeNames.getInternalName(type)) //
+        .has(ELEMENT_TYPES, isOfType(), TypeNames.getInternalName(type)) //
     ;
   }
 

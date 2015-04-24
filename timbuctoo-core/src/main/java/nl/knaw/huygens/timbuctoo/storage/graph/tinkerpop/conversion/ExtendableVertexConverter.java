@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.MODIFIED_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexFields.VERTEX_TYPE;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
 
 import java.util.Collection;
 import java.util.Map;
@@ -53,14 +53,14 @@ class ExtendableVertexConverter<T extends Entity> implements VertexConverter<T> 
   private void addVariation(Vertex vertex, Class<? extends Entity> variationType) {
     LOG.info("add variation \"{}\"", variationType);
 
-    String[] types = (String[]) (vertex.getProperty(VERTEX_TYPE) != null ? vertex.getProperty(VERTEX_TYPE) : new String[] {});
+    String[] types = (String[]) (vertex.getProperty(ELEMENT_TYPES) != null ? vertex.getProperty(ELEMENT_TYPES) : new String[] {});
 
     Set<String> typeSet = Sets.newHashSet(types);
     typeSet.add(TypeNames.getInternalName(variationType));
 
     LOG.info("new variations \"{}\"", typeSet);
 
-    vertex.setProperty(VERTEX_TYPE, typeSet.toArray(new String[typeSet.size()]));
+    vertex.setProperty(ELEMENT_TYPES, typeSet.toArray(new String[typeSet.size()]));
   }
 
   @Override
