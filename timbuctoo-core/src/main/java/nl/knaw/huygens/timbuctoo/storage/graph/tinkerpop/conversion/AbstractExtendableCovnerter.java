@@ -68,7 +68,9 @@ abstract class AbstractExtendableCovnerter<T extends Entity, E extends Element> 
     try {
       T entity = entityInstantiator.createInstanceOf(type);
 
-      addValuesToEntity(element, entity);
+      addValuesToEntity(entity, element);
+
+      executeCustomDeserializationActions(entity, element);
 
       return entity;
 
@@ -78,7 +80,9 @@ abstract class AbstractExtendableCovnerter<T extends Entity, E extends Element> 
 
   }
 
-  protected <U extends T> void addValuesToEntity(E element, U entity) throws ConversionException {
+  protected abstract void executeCustomDeserializationActions(T entity, E element);
+
+  protected <U extends T> void addValuesToEntity(U entity, E element) throws ConversionException {
     for (PropertyConverter propertyConverter : propertyConverters()) {
       propertyConverter.addValueToEntity(entity, element);
     }

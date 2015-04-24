@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
@@ -42,7 +43,7 @@ public class ElementConverterFactoryTest {
   public void setup() {
     propertyConverterFactoryMock = mock(PropertyConverterFactory.class);
 
-    instance = new ElementConverterFactory(propertyConverterFactoryMock, mock(EntityInstantiator.class));
+    instance = new ElementConverterFactory(propertyConverterFactoryMock, mock(EntityInstantiator.class), mock(TypeRegistry.class));
   }
 
   @Test

@@ -19,12 +19,17 @@ class ExtendableVertexConverter<T extends Entity> extends AbstractExtendableCovn
     try {
       U entity = entityInstantiator.createInstanceOf(type);
 
-      addValuesToEntity(vertex, entity);
+      addValuesToEntity(entity, vertex);
 
       return entity;
 
     } catch (InstantiationException e) {
       throw new ConversionException(e);
     }
+  }
+
+  @Override
+  protected void executeCustomDeserializationActions(T entity, Vertex element) {
+    // nothing to do
   }
 }

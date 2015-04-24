@@ -21,14 +21,16 @@ public class ElementConverterFactory {
 
   private final PropertyConverterFactory propertyConverterFactory;
   private final EntityInstantiator entityInstantiator;
+  private final TypeRegistry typeRegistry;
 
-  public ElementConverterFactory() {
-    this(new PropertyConverterFactory(), new EntityInstantiator());
+  public ElementConverterFactory(TypeRegistry typeRegistry) {
+    this(new PropertyConverterFactory(), new EntityInstantiator(), typeRegistry);
   }
 
-  public ElementConverterFactory(PropertyConverterFactory propertyConverterFactory, EntityInstantiator entityInstantiator) {
+  public ElementConverterFactory(PropertyConverterFactory propertyConverterFactory, EntityInstantiator entityInstantiator, TypeRegistry typeRegistry) {
     this.propertyConverterFactory = propertyConverterFactory;
     this.entityInstantiator = entityInstantiator;
+    this.typeRegistry = typeRegistry;
   }
 
   public <T extends Entity> VertexConverter<T> forType(Class<T> type) {
@@ -56,7 +58,7 @@ public class ElementConverterFactory {
   public <T extends Relation> EdgeConverter<T> forRelation(Class<T> type) {
     Collection<PropertyConverter> propertyConverters = createPropertyConverters(type);
 
-    return new ExtendableEdgeConverter<T>(type, propertyConverters, entityInstantiator);
+    return new ExtendableEdgeConverter<T>(type, propertyConverters, entityInstantiator, typeRegistry);
   }
 
   @SuppressWarnings("unchecked")

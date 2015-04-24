@@ -1,10 +1,12 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion;
 
+import static nl.knaw.huygens.timbuctoo.storage.RelationMatcher.likeRelation;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeMockBuilder.anEdge;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilder.aVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -14,7 +16,10 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
@@ -23,11 +28,15 @@ import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
 import org.junit.Before;
 import org.junit.Test;
 
+import test.model.BaseDomainEntity;
+import test.model.projecta.ProjectAPerson;
+import test.model.projecta.SubADomainEntity;
 import test.model.projecta.SubARelation;
 
 import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Vertex;
 
 public class ExtendableEdgeConverterTest {
 
@@ -46,9 +55,13 @@ public class ExtendableEdgeConverterTest {
   private SubARelation entity;
   private List<PropertyConverter> propertyConverters;
   private EntityInstantiator entityInstantiatorMock;
+  private TypeRegistry typeRegistry;
 
   @Before
-  public void setup() {
+  public void setup() throws Exception {
+    typeRegistry = TypeRegistry.getInstance();
+    typeRegistry.init(getPackageName(SubADomainEntity.class) + " " + getPackageName(BaseDomainEntity.class) + " " + getPackageName(Person.class));
+
     propertyConverter1 = createPropertyConverter(PROPERTY1_NAME, FIELD1_NAME, FieldType.REGULAR);
     propertyConverter2 = createPropertyConverter(PROPERTY2_NAME, FIELD2_NAME, FieldType.REGULAR);
     modifiedConverterMock = createPropertyConverter(Entity.MODIFIED_PROPERTY_NAME, Entity.MODIFIED_PROPERTY_NAME, FieldType.ADMINISTRATIVE);
@@ -63,8 +76,12 @@ public class ExtendableEdgeConverterTest {
     entity = new SubARelation();
   }
 
+  private String getPackageName(Class<? extends DomainEntity> type) {
+    return type.getPackage().getName();
+  }
+
   private <T extends Relation> ExtendableEdgeConverter<T> createInstance(Class<T> type, List<PropertyConverter> propertyConverters, EntityInstantiator entityInstantiator) {
-    return new ExtendableEdgeConverter<T>(type, propertyConverters, entityInstantiator);
+    return new ExtendableEdgeConverter<T>(type, propertyConverters, entityInstantiator, typeRegistry);
   }
 
   private PropertyConverter createPropertyConverter(String propertyName, String fieldName, FieldType fieldType) {
@@ -118,11 +135,33 @@ public class ExtendableEdgeConverterTest {
     // setup
     when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenReturn(entity);
 
+    String sourceId = "sourceId";
+    String sourceType = TypeNames.getInternalName(BaseDomainEntity.class);
+    Vertex source = aVertex()//
+        .withId(sourceId)//
+        .withType(BaseDomainEntity.class)//
+        .withType(SubADomainEntity.class)//
+        .build();
+
+    String targetId = "targetId";
+    String targetType = TypeNames.getInternalName(Person.class);
+    Vertex target = aVertex()//
+        .withId(targetId)//
+        .withType(Person.class)//
+        .withType(ProjectAPerson.class) //
+        .build();
+
+    Edge edgeMock = anEdge().withSource(source).withTarget(target).build();
+
     // action
     SubARelation createdEntity = instance.convertToEntity(edgeMock);
 
     // verify
-    assertThat(createdEntity, is(sameInstance(entity)));
+    assertThat(createdEntity, likeRelation() //
+        .withSourceId(sourceId) //
+        .withSourceType(sourceType) //
+        .withTargetId(targetId) //
+        .withTargetType(targetType));
 
     verify(propertyConverter1).addValueToEntity(entity, edgeMock);
     verify(propertyConverter2).addValueToEntity(entity, edgeMock);
