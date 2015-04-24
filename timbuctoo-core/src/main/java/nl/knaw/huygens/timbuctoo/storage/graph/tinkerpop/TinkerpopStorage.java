@@ -4,9 +4,11 @@ import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.ge
 
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
@@ -18,6 +20,7 @@ import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
 
 import com.google.inject.Inject;
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
@@ -27,16 +30,18 @@ public class TinkerpopStorage implements GraphStorage {
   private final Graph db;
   private final ElementConverterFactory elementConverterFactory;
   private final TinkerpopLowLevelAPI lowLevelAPI;
+  private final TypeRegistry typeRegistry;
 
   @Inject
-  public TinkerpopStorage(Graph db) {
-    this(db, new ElementConverterFactory(), new TinkerpopLowLevelAPI(db));
+  public TinkerpopStorage(Graph db, TypeRegistry typeRegistry) {
+    this(db, new ElementConverterFactory(), new TinkerpopLowLevelAPI(db), typeRegistry);
   }
 
-  public TinkerpopStorage(Graph db, ElementConverterFactory elementConverterFactory, TinkerpopLowLevelAPI lowLevelAPI) {
+  public TinkerpopStorage(Graph db, ElementConverterFactory elementConverterFactory, TinkerpopLowLevelAPI lowLevelAPI, TypeRegistry typeRegistry) {
     this.db = db;
     this.elementConverterFactory = elementConverterFactory;
     this.lowLevelAPI = lowLevelAPI;
+    this.typeRegistry = typeRegistry;
   }
 
   @Override
@@ -77,9 +82,55 @@ public class TinkerpopStorage implements GraphStorage {
     }
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public <T extends Relation> void addRelation(Class<T> type, Relation relation, Change change) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    Vertex sourceVertex = getDomainEntityRelationPart(relation.getSourceType(), relation.getSourceId());
+    Vertex targetVertex = getDomainEntityRelationPart(relation.getTargetType(), relation.getTargetId());
+    Vertex relationTypeVertex = getSystemEntityRelationPart(relation.getTypeType(), relation.getTypeId());
+
+    String regularRelationName = getRegularRelationName(relationTypeVertex);
+
+    Edge edge = db.addEdge(null, sourceVertex, targetVertex, regularRelationName);
+    EdgeConverter<T> converter = elementConverterFactory.compositeForRelation(type);
+
+    converter.addValuesToElement(edge, (T) relation);
+  }
+
+  private String getRegularRelationName(Vertex relationTypeVertex) throws ConversionException {
+    VertexConverter<RelationType> relationTypeConverter = elementConverterFactory.forType(RelationType.class);
+    RelationType relationType = relationTypeConverter.convertToEntity(relationTypeVertex);
+
+    String relationTypeName = relationType.getRegularName();
+    return relationTypeName;
+  }
+
+  private Vertex getSystemEntityRelationPart(String typeType, String typeId) throws StorageException {
+    return getRelationPart(getSystemEntityType(typeType), typeType, typeId);
+  }
+
+  private Class<? extends SystemEntity> getSystemEntityType(String typeType) {
+    return typeRegistry.getSystemEntityType(typeType);
+  }
+
+  private Vertex getDomainEntityRelationPart(String partType, String partId) throws StorageException {
+    return getRelationPart(getDomainEntityType(partType), partType, partId);
+  }
+
+  private Class<? extends DomainEntity> getDomainEntityType(String typeString) {
+    return typeRegistry.getDomainEntityType(typeString);
+  }
+
+  private Vertex getRelationPart(Class<? extends Entity> type, String partName, String partId) throws StorageException {
+    Vertex part = lowLevelAPI.getLatestVertexById(type, partId);
+    if (part == null) {
+      throw new StorageException(createCannotFindString(partName, type, partId));
+    }
+    return part;
+  }
+
+  private String createCannotFindString(String relationPart, Class<? extends Entity> type, String id) {
+    return String.format("%s of type \"%s\" with id \"%s\" could not be found.", relationPart, type, id);
   }
 
   @Override

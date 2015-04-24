@@ -25,7 +25,7 @@ public class TinkerpopDBIntegrationTestHelper implements DBIntegrationTestHelper
 
   @Override
   public Storage createStorage(TypeRegistry typeRegistry) throws ModelException {
-    return new GraphLegacyStorageWrapper(new TinkerpopStorage(graph));
+    return new GraphLegacyStorageWrapper(new TinkerpopStorage(graph, typeRegistry));
   }
 
 }
