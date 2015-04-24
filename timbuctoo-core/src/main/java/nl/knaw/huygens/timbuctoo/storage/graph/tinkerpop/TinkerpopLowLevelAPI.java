@@ -88,7 +88,30 @@ class TinkerpopLowLevelAPI {
   }
 
   public Edge getLatestEdgeById(Class<? extends Relation> relationType, String id) {
-    throw new UnsupportedOperationException("Yet to be implemented");
-  }
+    Edge latestEdge = null;
+    Iterable<Edge> edges = db.query().has(ID_PROPERTY_NAME, id).edges();
 
+    Predicate<Edge> isLatestVersion = new Predicate<Edge>() {
+      private int latestRev = 0;
+
+      @Override
+      public boolean apply(Edge edge) {
+        int rev = ElementHelper.getRevisionProperty(edge);
+        if (rev > latestRev) {
+          latestRev = rev;
+          return true;
+        }
+        return false;
+      }
+    };
+
+    for (Iterator<Edge> iterator = edges.iterator(); iterator.hasNext();) {
+      Edge edge = iterator.next();
+      if (isLatestVersion.apply(edge)) {
+        latestEdge = edge;
+      }
+    }
+
+    return latestEdge;
+  }
 }

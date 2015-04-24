@@ -1,6 +1,9 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import static nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType.VERSION_OF;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeMockBuilder.anEdge;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeSearchResultBuilder.anEdgeSearchResult;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeSearchResultBuilder.anEmptyEdgeSearchResult;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilder.aVertex;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexSearchResultBuilder.aVertexSearchResult;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexSearchResultBuilder.anEmptyVertexSearchResult;
@@ -15,11 +18,16 @@ import org.junit.Test;
 
 import test.model.TestSystemEntityWrapper;
 import test.model.projecta.SubADomainEntity;
+import test.model.projecta.SubARelation;
 
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 
 public class TinkerpopLowLevelAPITest {
+  private static final int SECOND_REVISION = 2;
+  private static final int THIRD_REVISION = 3;
+  private static final Class<SubARelation> RELATION_TYPE = SubARelation.class;
   private static final int FIRST_REVISION = 1;
   private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
   private static final Class<TestSystemEntityWrapper> SYSTEM_ENTITY_TYPE = TestSystemEntityWrapper.class;
@@ -87,5 +95,35 @@ public class TinkerpopLowLevelAPITest {
 
     // verify
     assertThat(vertex, is(nullValue()));
+  }
+
+  @Test
+  public void getLatestEdgeByIdReturnsTheEdgeWithTheHighestRevisionForACertainId() {
+    // setup
+    Edge edgeWithHighestRevision = anEdge().withRev(THIRD_REVISION).build();
+    anEdgeSearchResult().forId(ID)//
+        .containsEdge(anEdge().withRev(FIRST_REVISION).build())//
+        .andEdge(edgeWithHighestRevision)//
+        .andEdge(anEdge().withRev(SECOND_REVISION).build())//
+        .foundInDatabase(dbMock);
+
+    // action
+    Edge foundEdge = instance.getLatestEdgeById(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(foundEdge, is(sameInstance(edgeWithHighestRevision)));
+
+  }
+
+  @Test
+  public void getLatestEdgeByIdReturnsNullIfNoEdgesAreFound() {
+    // setup
+    anEmptyEdgeSearchResult().forId(ID).foundInDatabase(dbMock);
+
+    // action
+    Edge foundEdge = instance.getLatestEdgeById(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(foundEdge, is(nullValue()));
   }
 }
