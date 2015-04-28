@@ -38,7 +38,6 @@ public class TinkerpopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.closeClosesTheDatabaseconnection();
   }
 
-  @Ignore
   @Test
   @Override
   public void countDomainEntityOnlyCountsTheLatestVersions() throws Exception {
