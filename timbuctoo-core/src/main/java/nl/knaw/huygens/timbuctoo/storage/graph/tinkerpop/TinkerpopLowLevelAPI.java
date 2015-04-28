@@ -129,4 +129,8 @@ class TinkerpopLowLevelAPI {
     return latestVertices.iterator();
 
   }
+
+  public void duplicate(Vertex vertex) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }

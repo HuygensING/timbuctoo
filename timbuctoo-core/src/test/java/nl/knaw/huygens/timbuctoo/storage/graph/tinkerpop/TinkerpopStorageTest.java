@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
+import static nl.knaw.huygens.timbuctoo.storage.graph.DomainEntityMatcher.likeDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.graph.SubADomainEntityBuilder.aDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.graph.SubARelationBuilder.aRelation;
 import static nl.knaw.huygens.timbuctoo.storage.graph.TestSystemEntityWrapperBuilder.aSystemEntity;
@@ -9,6 +10,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -23,6 +25,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
@@ -43,6 +46,7 @@ import com.tinkerpop.blueprints.Vertex;
 
 public class TinkerpopStorageTest {
 
+  private static final String PID = "pid";
   private static final String REGULAR_RELATION_NAME = "regularTypeName";
   private static final int FIRST_REVISION = 1;
   private static final int SECOND_REVISION = 2;
@@ -368,6 +372,82 @@ public class TinkerpopStorageTest {
         .build();
 
     instance.updateEntity(DOMAIN_ENTITY_TYPE, domainEntity);
+  }
+
+  @Test
+  public void setDomainEntityPIDAddsAPIDToTheNodeAndDuplicatesTheNode() throws Exception {
+    // setup
+    Vertex foundVertex = aVertex().build();
+    latestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID, foundVertex);
+
+    SubADomainEntity entityWithoutPID = aDomainEntity().build();
+
+    VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+    when(converter.convertToEntity(foundVertex)).thenReturn(entityWithoutPID);
+
+    // action
+    instance.setDomainEntityPID(DOMAIN_ENTITY_TYPE, ID, PID);
+
+    // verify
+    verify(converter).updateElement( //
+        argThat(is(foundVertex)), //
+        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE).withPID(PID)));
+    verify(lowLevelAPIMock).duplicate(foundVertex);
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void setDomainEntityPIDThrowsAnIllegalStateExceptionWhenTheEntityAlreadyHasAPID() throws Exception {
+    // setup
+    Vertex foundVertex = aVertex().build();
+    latestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID, foundVertex);
+
+    SubADomainEntity entityWithPID = aDomainEntity().withAPid().build();
+
+    VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+    when(converter.convertToEntity(foundVertex)).thenReturn(entityWithPID);
+
+    // action
+    instance.setDomainEntityPID(DOMAIN_ENTITY_TYPE, ID, PID);
+
+  }
+
+  @Test(expected = ConversionException.class)
+  public void setDomainEntityPIDThrowsAConversionExceptionWhenTheVertexCannotBeConverted() throws Exception {
+    // setup
+    Vertex foundVertex = aVertex().build();
+    latestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID, foundVertex);
+
+    VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+    when(converter.convertToEntity(foundVertex)).thenThrow(new ConversionException());
+
+    // action
+    instance.setDomainEntityPID(DOMAIN_ENTITY_TYPE, ID, PID);
+
+  }
+
+  @Test(expected = ConversionException.class)
+  public void setDomainEntityPIDThrowsAConversionsExceptionWhenTheUpdatedEntityCannotBeCovnverted() throws Exception {
+    // setup
+    Vertex foundVertex = aVertex().build();
+    latestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID, foundVertex);
+
+    SubADomainEntity entityWithoutPID = aDomainEntity().build();
+
+    VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+    when(converter.convertToEntity(foundVertex)).thenReturn(entityWithoutPID);
+    doThrow(ConversionException.class).when(converter).updateElement(foundVertex, entityWithoutPID);
+
+    // action
+    instance.setDomainEntityPID(DOMAIN_ENTITY_TYPE, ID, PID);
+  }
+
+  @Test(expected = NoSuchEntityException.class)
+  public void setDomainEntityPIDThrowsANoSuchEntityExceptionWhenTheEntityDoesNotExist() throws Exception {
+    // setup
+    noLatestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID);
+
+    // action
+    instance.setDomainEntityPID(DOMAIN_ENTITY_TYPE, ID, PID);
   }
 
   private void latestVertexFoundFor(Class<? extends Entity> type, String id, Vertex vertex) {
