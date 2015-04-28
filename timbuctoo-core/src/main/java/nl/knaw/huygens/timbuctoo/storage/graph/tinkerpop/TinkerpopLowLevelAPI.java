@@ -28,7 +28,7 @@ class TinkerpopLowLevelAPI {
   private final VertexDuplicator vertexDuplicator;
 
   public TinkerpopLowLevelAPI(Graph db) {
-    this(db, new VertexDuplicator());
+    this(db, new VertexDuplicator(db));
   }
 
   public TinkerpopLowLevelAPI(Graph db, VertexDuplicator vertexDuplicator) {

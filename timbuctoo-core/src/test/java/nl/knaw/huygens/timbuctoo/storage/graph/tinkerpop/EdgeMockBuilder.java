@@ -12,6 +12,7 @@ public class EdgeMockBuilder {
   private int revision;
   private Vertex source;
   private Vertex target;
+  private String label;
 
   private EdgeMockBuilder() {}
 
@@ -27,6 +28,7 @@ public class EdgeMockBuilder {
   public Edge build() {
     Edge edge = mock(Edge.class);
 
+    when(edge.getLabel()).thenReturn(label);
     when(edge.getProperty(REVISION_PROPERTY_NAME)).thenReturn(revision);
     when(edge.getVertex(Direction.OUT)).thenReturn(source);
     when(edge.getVertex(Direction.IN)).thenReturn(target);
@@ -41,6 +43,11 @@ public class EdgeMockBuilder {
 
   public EdgeMockBuilder withTarget(Vertex target) {
     this.target = target;
+    return this;
+  }
+
+  public EdgeMockBuilder withLabel(String label) {
+    this.label = label;
     return this;
   }
 }
