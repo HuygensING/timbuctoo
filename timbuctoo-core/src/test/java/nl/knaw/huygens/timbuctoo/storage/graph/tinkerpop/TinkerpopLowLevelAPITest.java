@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.util.Iterator;
 
@@ -40,11 +41,25 @@ public class TinkerpopLowLevelAPITest {
   private static final String ID = "id";
   private Graph dbMock;
   private TinkerpopLowLevelAPI instance;
+  private VertexDuplicator vertexDuplicator;
 
   @Before
   public void setup() {
+    vertexDuplicator = mock(VertexDuplicator.class);
     dbMock = mock(Graph.class);
-    instance = new TinkerpopLowLevelAPI(dbMock);
+    instance = new TinkerpopLowLevelAPI(dbMock, vertexDuplicator);
+  }
+
+  @Test
+  public void duplicateVertexDelegatesToVertexDuplicator() {
+    // setup
+    Vertex vertexToDuplicate = aVertex().build();
+
+    // action
+    instance.duplicate(vertexToDuplicate);
+
+    // verify
+    verify(vertexDuplicator).duplicate(vertexToDuplicate);
   }
 
   @Test
