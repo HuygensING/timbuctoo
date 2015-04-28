@@ -282,7 +282,21 @@ public class TinkerpopStorage implements GraphStorage {
 
   @Override
   public <T extends Relation> void setRelationPID(Class<T> type, String id, String pid) throws NoSuchEntityException, ConversionException, StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    Edge edge = lowLevelAPI.getLatestEdgeById(type, id);
+    if (edge == null) {
+      throw new NoSuchEntityException(type, id);
+    }
+
+    EdgeConverter<T> converter = elementConverterFactory.forRelation(type);
+    T relation = converter.convertToEntity(edge);
+
+    validateEntityHasNoPID(type, relation);
+
+    relation.setPid(pid);
+    converter.addValuesToElement(edge, relation);
+
+    lowLevelAPI.duplicate(edge);
+
   }
 
   @Override

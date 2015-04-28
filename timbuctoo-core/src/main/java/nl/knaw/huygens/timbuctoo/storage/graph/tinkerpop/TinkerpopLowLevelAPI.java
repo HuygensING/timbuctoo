@@ -139,4 +139,8 @@ class TinkerpopLowLevelAPI {
   public void duplicate(Vertex vertex) {
     vertexDuplicator.duplicate(vertex);
   }
+
+  public void duplicate(Edge edge) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }

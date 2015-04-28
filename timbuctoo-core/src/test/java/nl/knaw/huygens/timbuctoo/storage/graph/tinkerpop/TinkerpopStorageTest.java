@@ -695,6 +695,72 @@ public class TinkerpopStorageTest {
     return edge;
   }
 
+  @Test
+  public void setRelationPIDSetsThePIDOfTheRelationAndDuplicatesIt() throws Exception {
+    // setup
+    Edge edge = latestEdgeFoundWithId(ID);
+    SubARelation relationWithoutAPID = aRelation().build();
+
+    EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
+    when(converter.convertToEntity(edge)).thenReturn(relationWithoutAPID);
+
+    // action
+    instance.setRelationPID(RELATION_TYPE, ID, PID);
+
+    // verify
+    verify(converter).addValuesToElement( //
+        argThat(is(edge)), //
+        argThat(likeDomainEntity(RELATION_TYPE).withPID(PID)));
+    verify(lowLevelAPIMock).duplicate(edge);
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void setRelationPIDThrowsAnIllegalStateExceptionIfTheRelationAlreadyHasAPID() throws Exception {
+    // setup
+    Edge edge = latestEdgeFoundWithId(ID);
+    SubARelation relationWithAPID = aRelation().withAPID().build();
+
+    EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
+    when(converter.convertToEntity(edge)).thenReturn(relationWithAPID);
+
+    // action
+    instance.setRelationPID(RELATION_TYPE, ID, PID);
+  }
+
+  @Test(expected = ConversionException.class)
+  public void setRelationPIDThrowsAConversionExceptionIfTheEdgeCannotBeConverted() throws Exception {
+    // setup
+    Edge edge = latestEdgeFoundWithId(ID);
+
+    EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
+    when(converter.convertToEntity(edge)).thenThrow(new ConversionException());
+
+    // action
+    instance.setRelationPID(RELATION_TYPE, ID, PID);
+
+  }
+
+  @Test(expected = ConversionException.class)
+  public void setRelationPIDThrowsAConversionsExceptionWhenTheUpdatedEntityCannotBeConvertedToAnEdge() throws Exception {
+    // setup
+    Edge edge = latestEdgeFoundWithId(ID);
+    SubARelation relationWithoutAPID = aRelation().build();
+
+    EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
+    when(converter.convertToEntity(edge)).thenReturn(relationWithoutAPID);
+    doThrow(ConversionException.class).when(converter).addValuesToElement(edge, relationWithoutAPID);
+
+    // action
+    instance.setRelationPID(RELATION_TYPE, ID, PID);
+  }
+
+  @Test(expected = NoSuchEntityException.class)
+  public void setRelationPIDThrowsANoSuchEntityExceptionIfTheRelationshipCannotBeFound() throws Exception {
+    noLatestEdgeFoundWithId(ID);
+
+    instance.setRelationPID(RELATION_TYPE, ID, PID);
+  }
+
   /* ********************************************************************
    * Other methods
    * ********************************************************************/

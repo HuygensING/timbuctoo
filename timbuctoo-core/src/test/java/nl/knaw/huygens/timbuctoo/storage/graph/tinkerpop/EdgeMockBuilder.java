@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
+import static nl.knaw.huygens.timbuctoo.model.DomainEntity.PID;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -13,6 +14,7 @@ public class EdgeMockBuilder {
   private Vertex source;
   private Vertex target;
   private String label;
+  private String pid;
 
   private EdgeMockBuilder() {}
 
@@ -30,6 +32,7 @@ public class EdgeMockBuilder {
 
     when(edge.getLabel()).thenReturn(label);
     when(edge.getProperty(REVISION_PROPERTY_NAME)).thenReturn(revision);
+    when(edge.getProperty(PID)).thenReturn(pid);
     when(edge.getVertex(Direction.OUT)).thenReturn(source);
     when(edge.getVertex(Direction.IN)).thenReturn(target);
 
@@ -48,6 +51,11 @@ public class EdgeMockBuilder {
 
   public EdgeMockBuilder withLabel(String label) {
     this.label = label;
+    return this;
+  }
+
+  public EdgeMockBuilder withAPID() {
+    this.pid = "pid";
     return this;
   }
 }
