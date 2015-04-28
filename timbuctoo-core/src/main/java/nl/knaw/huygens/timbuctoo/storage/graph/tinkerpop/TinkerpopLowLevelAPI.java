@@ -26,14 +26,16 @@ class TinkerpopLowLevelAPI {
   private static final IsLatestVersionOfVertex IS_LATEST_VERSION_OF_VERTEX = new IsLatestVersionOfVertex();
   private final Graph db;
   private final VertexDuplicator vertexDuplicator;
+  private final EdgeDuplicator edgeDuplicator;
 
   public TinkerpopLowLevelAPI(Graph db) {
-    this(db, new VertexDuplicator(db));
+    this(db, new VertexDuplicator(db), new EdgeDuplicator());
   }
 
-  public TinkerpopLowLevelAPI(Graph db, VertexDuplicator vertexDuplicator) {
+  public TinkerpopLowLevelAPI(Graph db, VertexDuplicator vertexDuplicator, EdgeDuplicator edgeDuplicator) {
     this.db = db;
     this.vertexDuplicator = vertexDuplicator;
+    this.edgeDuplicator = edgeDuplicator;
   }
 
   public <T extends Entity> Vertex getLatestVertexById(Class<T> type, String id) {
@@ -141,6 +143,6 @@ class TinkerpopLowLevelAPI {
   }
 
   public void duplicate(Edge edge) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    edgeDuplicator.duplicate(edge);
   }
 }

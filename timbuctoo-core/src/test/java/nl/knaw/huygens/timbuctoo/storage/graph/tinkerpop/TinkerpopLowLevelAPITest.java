@@ -42,13 +42,19 @@ public class TinkerpopLowLevelAPITest {
   private Graph dbMock;
   private TinkerpopLowLevelAPI instance;
   private VertexDuplicator vertexDuplicator;
+  private EdgeDuplicator edgeDuplicator;
 
   @Before
   public void setup() {
+    edgeDuplicator = mock(EdgeDuplicator.class);
     vertexDuplicator = mock(VertexDuplicator.class);
     dbMock = mock(Graph.class);
-    instance = new TinkerpopLowLevelAPI(dbMock, vertexDuplicator);
+    instance = new TinkerpopLowLevelAPI(dbMock, vertexDuplicator, edgeDuplicator);
   }
+
+  /* ************************************************************
+   * Vertex
+   * ************************************************************/
 
   @Test
   public void duplicateVertexDelegatesToVertexDuplicator() {
@@ -149,6 +155,22 @@ public class TinkerpopLowLevelAPITest {
 
     // verify
     assertThat(vertex, is(nullValue()));
+  }
+
+  /* ************************************************************
+   * Edge
+   * ************************************************************/
+
+  @Test
+  public void duplicateEdgeDelegatesToEdgeDuplicator() {
+    // setup
+    Edge edge = anEdge().build();
+
+    // action
+    instance.duplicate(edge);
+
+    // verify
+    verify(edgeDuplicator).duplicate(edge);
   }
 
   @Test
