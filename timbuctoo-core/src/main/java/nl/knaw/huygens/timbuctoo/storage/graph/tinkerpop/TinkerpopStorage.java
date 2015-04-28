@@ -267,7 +267,8 @@ public class TinkerpopStorage implements GraphStorage {
     validateEntityHasNoPID(type, entity);
 
     entity.setPid(pid);
-    converter.updateElement(vertex, entity);
+    // TODO create a method to update the pid. see TIM-178
+    converter.addValuesToElement(vertex, entity);
 
     lowLevelAPI.duplicate(vertex);
 

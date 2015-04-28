@@ -389,7 +389,7 @@ public class TinkerpopStorageTest {
     instance.setDomainEntityPID(DOMAIN_ENTITY_TYPE, ID, PID);
 
     // verify
-    verify(converter).updateElement( //
+    verify(converter).addValuesToElement( //
         argThat(is(foundVertex)), //
         argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE).withPID(PID)));
     verify(lowLevelAPIMock).duplicate(foundVertex);
@@ -435,7 +435,7 @@ public class TinkerpopStorageTest {
 
     VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
     when(converter.convertToEntity(foundVertex)).thenReturn(entityWithoutPID);
-    doThrow(ConversionException.class).when(converter).updateElement(foundVertex, entityWithoutPID);
+    doThrow(ConversionException.class).when(converter).addValuesToElement(foundVertex, entityWithoutPID);
 
     // action
     instance.setDomainEntityPID(DOMAIN_ENTITY_TYPE, ID, PID);
