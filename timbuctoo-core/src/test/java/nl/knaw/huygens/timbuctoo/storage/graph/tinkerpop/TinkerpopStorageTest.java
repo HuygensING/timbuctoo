@@ -584,4 +584,39 @@ public class TinkerpopStorageTest {
 
     return edge;
   }
+
+  /* ********************************************************************
+   * Other methods
+   * ********************************************************************/
+
+  @Test
+  public void closeDelegatesShutdownToTheGraphAndSetsTheAvailableBooleanToFalse() {
+    // action
+    instance.close();
+
+    // verify
+    verify(dbMock).shutdown();
+
+  }
+
+  @Test
+  public void isAvailableReturnsTrueByDefault() {
+    // action
+    boolean available = instance.isAvailable();
+
+    // verify
+    assertThat(available, is(true));
+  }
+
+  @Test
+  public void isAvailableReturnsFalseWhenCloseIsCalled() {
+    // setup
+    instance.close();
+
+    // action
+    boolean available = instance.isAvailable();
+
+    // verify
+    assertThat(available, is(false));
+  }
 }

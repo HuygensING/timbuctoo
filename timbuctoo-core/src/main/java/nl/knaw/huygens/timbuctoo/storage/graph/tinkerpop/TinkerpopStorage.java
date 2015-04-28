@@ -31,6 +31,7 @@ public class TinkerpopStorage implements GraphStorage {
   private final ElementConverterFactory elementConverterFactory;
   private final TinkerpopLowLevelAPI lowLevelAPI;
   private final TypeRegistry typeRegistry;
+  private boolean available = true;
 
   @Inject
   public TinkerpopStorage(Graph db, TypeRegistry typeRegistry) {
@@ -259,12 +260,15 @@ public class TinkerpopStorage implements GraphStorage {
 
   @Override
   public void close() {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    db.shutdown();
+    available = false;
   }
 
   @Override
   public boolean isAvailable() {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    // Tinkerpop has no way to check if the database is available, 
+    // so we use a boolean that is set when close is called.
+    return available;
   }
 
   @Override
