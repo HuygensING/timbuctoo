@@ -6,6 +6,7 @@ import static nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType.VERSION
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
 
 import java.util.Iterator;
+import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -22,6 +23,7 @@ import com.tinkerpop.blueprints.Vertex;
 
 class TinkerpopLowLevelAPI {
 
+  private static final IsLatestVersionOfVertex IS_LATEST_VERSION_OF_VERTEX = new IsLatestVersionOfVertex();
   private final Graph db;
 
   public TinkerpopLowLevelAPI(Graph db) {
@@ -33,10 +35,8 @@ class TinkerpopLowLevelAPI {
     Iterable<Vertex> foundVertices = queryByType(type).has(ID_PROPERTY_NAME, id) //
         .vertices();
 
-    IsLatestVersionOfVertex isLatestVersionOfVertex = new IsLatestVersionOfVertex();
-
     for (Vertex vertex : foundVertices) {
-      if (isLatestVersionOfVertex.apply(vertex)) {
+      if (IS_LATEST_VERSION_OF_VERTEX.apply(vertex)) {
         return vertex;
       }
     }
@@ -116,6 +116,17 @@ class TinkerpopLowLevelAPI {
   }
 
   public Iterator<Vertex> getLatestVerticesOf(Class<? extends Entity> type) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    List<Vertex> latestVertices = Lists.newArrayList();
+    Iterable<Vertex> allVertices = queryByType(type).vertices();
+
+    for (Iterator<Vertex> iterator = allVertices.iterator(); iterator.hasNext();) {
+      Vertex vertex = iterator.next();
+      if (IS_LATEST_VERSION_OF_VERTEX.apply(vertex)) {
+        latestVertices.add(vertex);
+      }
+    }
+
+    return latestVertices.iterator();
+
   }
 }

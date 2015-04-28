@@ -8,10 +8,14 @@ import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilde
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexSearchResultBuilder.aVertexSearchResult;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexSearchResultBuilder.anEmptyVertexSearchResult;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.mock;
+
+import java.util.Iterator;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -20,6 +24,8 @@ import test.model.TestSystemEntityWrapper;
 import test.model.projecta.SubADomainEntity;
 import test.model.projecta.SubARelation;
 
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
@@ -68,6 +74,39 @@ public class TinkerpopLowLevelAPITest {
     // verify
     assertThat(foundVertex, is(nullValue()));
 
+  }
+
+  @Test
+  public void getLatestVerticesFiltersReturnsOnlyTheLatestVersions() {
+    // setup
+    Vertex latestVertex1 = aVertex().build();
+    Vertex latestVertex2 = aVertex().build();
+    aVertexSearchResult().forType(SYSTEM_ENTITY_TYPE) //
+        .containsVertex(latestVertex1) //
+        .andVertex(aVertex().withIncomingEdgeWithLabel(VERSION_OF).build()) //
+        .andVertex(aVertex().withIncomingEdgeWithLabel(VERSION_OF).build()) //
+        .andVertex(latestVertex2) //
+        .foundInDatabase(dbMock);
+
+    // action
+    Iterator<Vertex> foundVertices = instance.getLatestVerticesOf(SYSTEM_ENTITY_TYPE);
+
+    // verify
+    assertThat(foundVertices, is(notNullValue()));
+    assertThat(Lists.newArrayList(foundVertices), contains(latestVertex1, latestVertex2));
+  }
+
+  @Test
+  public void getLatestVerticesReturnsAnEmptyIteratorWhenNoVerticesAreFound() {
+    // setup
+    anEmptyVertexSearchResult().forType(SYSTEM_ENTITY_TYPE).foundInDatabase(dbMock);
+
+    // action
+    Iterator<Vertex> foundVertices = instance.getLatestVerticesOf(SYSTEM_ENTITY_TYPE);
+
+    // verify
+    assertThat(foundVertices, is(notNullValue()));
+    assertThat(Iterators.size(foundVertices), is(0));
   }
 
   @Test
