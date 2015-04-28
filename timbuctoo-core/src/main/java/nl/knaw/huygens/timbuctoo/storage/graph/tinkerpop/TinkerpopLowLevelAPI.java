@@ -114,4 +114,8 @@ class TinkerpopLowLevelAPI {
 
     return latestEdge;
   }
+
+  public Iterator<Vertex> getLatestVerticesOf(Class<? extends Entity> type) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }

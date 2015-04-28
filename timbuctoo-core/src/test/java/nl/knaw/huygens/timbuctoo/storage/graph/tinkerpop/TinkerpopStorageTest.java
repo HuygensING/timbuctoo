@@ -13,6 +13,9 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.List;
+
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -33,6 +36,7 @@ import test.model.TestSystemEntityWrapper;
 import test.model.projecta.SubADomainEntity;
 import test.model.projecta.SubARelation;
 
+import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
@@ -131,6 +135,32 @@ public class TinkerpopStorageTest {
       // verify
       verify(dbMock).removeVertex(createdVertex);
     }
+  }
+
+  @Test
+  public void countEntitiesRequestsAnIteratorWithTheLatestEntitiesOfTheLowLevelAPI() {
+    // setup
+    List<Vertex> foundVertices = Lists.newArrayList(aVertex().build(), aVertex().build());
+    when(lowLevelAPIMock.getLatestVerticesOf(SYSTEM_ENTITY_TYPE)).thenReturn(foundVertices.iterator());
+
+    // action
+    long numberOfEntities = instance.countEntities(SYSTEM_ENTITY_TYPE);
+
+    // verify
+    assertThat(numberOfEntities, is((long) foundVertices.size()));
+  }
+
+  @Test
+  public void countEntitiesCountsThePrimitiveDomainEntities() {
+    // setup
+    List<Vertex> foundVertices = Lists.newArrayList(aVertex().build(), aVertex().build());
+    when(lowLevelAPIMock.getLatestVerticesOf(PRIMITIVE_DOMAIN_ENTITY_TYPE)).thenReturn(foundVertices.iterator());
+
+    // action
+    instance.countEntities(DOMAIN_ENTITY_TYPE);
+
+    // verify
+    verify(lowLevelAPIMock).getLatestVerticesOf(PRIMITIVE_DOMAIN_ENTITY_TYPE);
   }
 
   @Test

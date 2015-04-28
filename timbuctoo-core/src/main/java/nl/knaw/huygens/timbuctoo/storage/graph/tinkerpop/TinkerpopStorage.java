@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getRevisionProperty;
 
+import java.util.Iterator;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -19,6 +20,7 @@ import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
 
+import com.google.common.collect.Iterators;
 import com.google.inject.Inject;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
@@ -206,7 +208,10 @@ public class TinkerpopStorage implements GraphStorage {
 
   @Override
   public long countEntities(Class<? extends Entity> type) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    Class<? extends Entity> baseClass = TypeRegistry.getBaseClass(type);
+    Iterator<Vertex> vertices = lowLevelAPI.getLatestVerticesOf(baseClass);
+
+    return Iterators.size(vertices);
   }
 
   @Override
