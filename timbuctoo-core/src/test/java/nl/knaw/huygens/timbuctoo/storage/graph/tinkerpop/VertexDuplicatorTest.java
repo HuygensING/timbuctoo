@@ -40,9 +40,9 @@ public class VertexDuplicatorTest {
   }
 
   private Vertex setupVertexToDuplicate() {
-    Edge incomingEdge = anEdge().withLabel(INCOMING_EDGE_LABEL).withTarget(duplicate).withSource(otherVertex).build();
-    Edge outgoingEdge = anEdge().withLabel(OUTGOING_EDGE_LABEL).withSource(duplicate).withTarget(otherVertex).build();
-    Edge versionOfEdge = anEdge().withLabel(VERSION_OF_EDGE_LABEL).withSource(duplicate).withTarget(otherVertex).build();
+    Edge incomingEdge = anEdge().withLabel(INCOMING_EDGE_LABEL).withSource(otherVertex).withTarget(vertexToDuplicate).build();
+    Edge outgoingEdge = anEdge().withLabel(OUTGOING_EDGE_LABEL).withSource(vertexToDuplicate).withTarget(otherVertex).build();
+    Edge versionOfEdge = anEdge().withLabel(VERSION_OF_EDGE_LABEL).withSource(otherVertex).withTarget(vertexToDuplicate).build();
 
     return aVertex() //
         .withId(ID) //

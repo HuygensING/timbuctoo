@@ -492,7 +492,7 @@ public class TinkerpopStorageTest {
     relationTypeWithRegularNameExists(REGULAR_RELATION_NAME);
 
     Edge edge = mock(Edge.class);
-    when(dbMock.addEdge(null, sourceVertex, targetVertex, REGULAR_RELATION_NAME)).thenReturn(edge);
+    when(sourceVertex.addEdge(REGULAR_RELATION_NAME, targetVertex)).thenReturn(edge);
 
     EdgeConverter<SubARelation> converter = createCompositeEdgeConverterFor(RELATION_TYPE);
 
@@ -523,7 +523,7 @@ public class TinkerpopStorageTest {
     relationTypeWithRegularNameExists(REGULAR_RELATION_NAME);
 
     Edge edge = mock(Edge.class);
-    when(dbMock.addEdge(null, sourceVertex, targetVertex, REGULAR_RELATION_NAME)).thenReturn(edge);
+    when(sourceVertex.addEdge(REGULAR_RELATION_NAME, targetVertex)).thenReturn(edge);
 
     EdgeConverter<SubARelation> edgeConverter = createCompositeEdgeConverterFor(RELATION_TYPE);
     doThrow(ConversionException.class).when(edgeConverter).addValuesToElement(edge, relation);

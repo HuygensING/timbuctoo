@@ -94,7 +94,8 @@ public class TinkerpopStorage implements GraphStorage {
 
     String regularRelationName = getRegularRelationName(relationTypeVertex);
 
-    Edge edge = db.addEdge(null, sourceVertex, targetVertex, regularRelationName);
+    Edge edge = sourceVertex.addEdge(regularRelationName, targetVertex);
+
     EdgeConverter<T> converter = elementConverterFactory.compositeForRelation(type);
 
     converter.addValuesToElement(edge, (T) relation);

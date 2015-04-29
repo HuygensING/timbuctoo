@@ -1,5 +1,8 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.sourceOfEdge;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.targetOfEdge;
+
 import java.util.Iterator;
 import java.util.Objects;
 
@@ -36,7 +39,7 @@ public class VertexDuplicator {
     for (Iterator<Edge> iterator = vertexToDuplicate.getEdges(Direction.IN).iterator(); iterator.hasNext();) {
       Edge edge = iterator.next();
 
-      edge.getVertex(Direction.OUT).addEdge(edge.getLabel(), duplicate);
+      sourceOfEdge(edge).addEdge(edge.getLabel(), duplicate);
     }
   }
 
@@ -45,7 +48,7 @@ public class VertexDuplicator {
       Edge edge = iterator.next();
 
       if (!Objects.equals(edge.getLabel(), VERSION_OF_LABEL)) {
-        duplicate.addEdge(edge.getLabel(), edge.getVertex(Direction.IN));
+        duplicate.addEdge(edge.getLabel(), targetOfEdge(edge));
       }
     }
   }

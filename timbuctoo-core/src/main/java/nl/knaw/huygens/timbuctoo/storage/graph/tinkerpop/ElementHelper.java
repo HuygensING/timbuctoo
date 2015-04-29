@@ -3,7 +3,10 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Vertex;
 
 public class ElementHelper {
   /**
@@ -26,5 +29,13 @@ public class ElementHelper {
     return containsProperty(propertyContainer, ID_PROPERTY_NAME) ? //
     (String) propertyContainer.getProperty(ID_PROPERTY_NAME) //
         : null;
+  }
+
+  public static Vertex sourceOfEdge(Edge edge) {
+    return edge.getVertex(Direction.OUT);
+  }
+
+  public static Vertex targetOfEdge(Edge edge) {
+    return edge.getVertex(Direction.IN);
   }
 }
