@@ -210,7 +210,6 @@ public class TinkerpopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.getSystemEntitiesReturnsAllTheSystemEntitiesOfACertainType();
   }
 
-  @Ignore
   @Test
   @Override
   public void setPIDForRelationCreatesANewRevisionAndFillsThePID() throws Exception {
