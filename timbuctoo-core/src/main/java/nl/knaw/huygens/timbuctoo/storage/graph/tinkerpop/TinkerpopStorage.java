@@ -180,14 +180,18 @@ public class TinkerpopStorage implements GraphStorage {
       throw UpdateException.entityNotFound(type, entity);
     }
 
-    if (!isMatchingRev(entity, vertex)) {
-      throw UpdateException.revisionNotFound(type, entity, entity.getRev());
-    }
+    validateIsMatchingRev(type, entity, vertex);
 
     VertexConverter<T> converter = elementConverterFactory.forType(type);
     converter.updateModifiedAndRev(vertex, entity);
     converter.updateElement(vertex, entity);
 
+  }
+
+  private <T extends Entity> void validateIsMatchingRev(Class<T> type, T entity, Element element) throws UpdateException {
+    if (!isMatchingRev(entity, element)) {
+      throw UpdateException.revisionNotFound(type, entity, getRevisionProperty(element));
+    }
   }
 
   private <T extends Entity> boolean isMatchingRev(T entity, Element element) {
@@ -202,9 +206,20 @@ public class TinkerpopStorage implements GraphStorage {
     throw new UnsupportedOperationException("Yet to be implemented");
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public <T extends Relation> void updateRelation(Class<T> type, Relation relation, Change change) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    Edge edge = lowLevelAPI.getLatestEdgeById(type, relation.getId());
+    if (edge == null) {
+      throw UpdateException.entityNotFound(type, (T) relation);
+    }
+
+    validateIsMatchingRev(type, (T) relation, edge);
+
+    EdgeConverter<T> converter = elementConverterFactory.forRelation(type);
+
+    converter.updateModifiedAndRev(edge, relation);
+    converter.updateElement(edge, relation);
   }
 
   @Override
