@@ -5,38 +5,53 @@ import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
+import com.google.common.collect.Maps;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
 public class EdgeMockBuilder {
-  private int revision;
   private Vertex source;
   private Vertex target;
   private String label;
-  private String pid;
+  private Map<String, Object> properties;
 
-  private EdgeMockBuilder() {}
+  private EdgeMockBuilder() {
+    properties = Maps.newHashMap();
+  }
 
   public static EdgeMockBuilder anEdge() {
     return new EdgeMockBuilder();
   }
 
   public EdgeMockBuilder withRev(int revision) {
-    this.revision = revision;
+    return addProperty(REVISION_PROPERTY_NAME, revision);
+  }
+
+  private EdgeMockBuilder addProperty(String name, Object value) {
+    properties.put(name, value);
     return this;
   }
 
   public Edge build() {
     Edge edge = mock(Edge.class);
-
     when(edge.getLabel()).thenReturn(label);
-    when(edge.getProperty(REVISION_PROPERTY_NAME)).thenReturn(revision);
-    when(edge.getProperty(PID)).thenReturn(pid);
     when(edge.getVertex(Direction.OUT)).thenReturn(source);
     when(edge.getVertex(Direction.IN)).thenReturn(target);
 
+    addProperties(edge);
+
     return edge;
+  }
+
+  private void addProperties(Edge edge) {
+    when(edge.getPropertyKeys()).thenReturn(properties.keySet());
+    for (Entry<String, Object> entry : properties.entrySet()) {
+      when(edge.getProperty(entry.getKey())).thenReturn(entry.getValue());
+    }
   }
 
   public EdgeMockBuilder withSource(Vertex source) {
@@ -55,7 +70,10 @@ public class EdgeMockBuilder {
   }
 
   public EdgeMockBuilder withAPID() {
-    this.pid = "pid";
-    return this;
+    return withPID("pid");
+  }
+
+  public EdgeMockBuilder withPID(String pid) {
+    return this.addProperty(PID, pid);
   }
 }
