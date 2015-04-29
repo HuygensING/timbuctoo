@@ -17,6 +17,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.GraphQuery;
 import com.tinkerpop.blueprints.Vertex;
@@ -80,19 +81,23 @@ class TinkerpopLowLevelAPI {
   }
 
   public Vertex getVertexWithRevision(Class<? extends DomainEntity> type, String id, int revision) {
-    Vertex vertex = null;
     Iterable<Vertex> vertices = queryByType(type)//
         .has(ID_PROPERTY_NAME, id)//
         .has(REVISION_PROPERTY_NAME, revision)//
         .vertices();
 
-    Iterator<Vertex> iterator = vertices.iterator();
+    return getFirstFromIterable(vertices);
+  }
+
+  private <T extends Element> T getFirstFromIterable(Iterable<T> elements) {
+    T element = null;
+    Iterator<T> iterator = elements.iterator();
 
     if (iterator.hasNext()) {
-      vertex = iterator.next();
+      element = iterator.next();
     }
 
-    return vertex;
+    return element;
   }
 
   public Edge getLatestEdgeById(Class<? extends Relation> relationType, String id) {
@@ -148,13 +153,6 @@ class TinkerpopLowLevelAPI {
 
   public Edge getEdgeWithRevision(Class<? extends Relation> relationType, String id, int revision) {
     Iterable<Edge> edges = db.query().has(ID_PROPERTY_NAME, id).has(REVISION_PROPERTY_NAME, revision).edges();
-
-    Iterator<Edge> iterator = edges.iterator();
-
-    if (iterator.hasNext()) {
-      return iterator.next();
-    }
-
-    return null;
+    return getFirstFromIterable(edges);
   }
 }
