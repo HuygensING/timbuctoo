@@ -99,7 +99,7 @@ class TinkerpopLowLevelAPI {
     Edge latestEdge = null;
     Iterable<Edge> edges = db.query().has(ID_PROPERTY_NAME, id).edges();
 
-    Predicate<Edge> isLatestVersion = new Predicate<Edge>() {
+    Predicate<Edge> isLaterVersion = new Predicate<Edge>() {
       private int latestRev = 0;
 
       @Override
@@ -115,7 +115,7 @@ class TinkerpopLowLevelAPI {
 
     for (Iterator<Edge> iterator = edges.iterator(); iterator.hasNext();) {
       Edge edge = iterator.next();
-      if (isLatestVersion.apply(edge)) {
+      if (isLaterVersion.apply(edge)) {
         latestEdge = edge;
       }
     }
