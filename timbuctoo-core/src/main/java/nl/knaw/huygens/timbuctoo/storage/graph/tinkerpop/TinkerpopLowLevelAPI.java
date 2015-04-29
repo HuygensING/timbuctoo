@@ -145,4 +145,8 @@ class TinkerpopLowLevelAPI {
   public void duplicate(Edge edge) {
     edgeDuplicator.duplicate(edge);
   }
+
+  public Edge getEdgeWithRevision(Class<? extends Relation> relationType, String id, int revision) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }

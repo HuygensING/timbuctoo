@@ -675,7 +675,74 @@ public class TinkerpopStorageTest {
 
     // action
     instance.getRelation(RELATION_TYPE, ID);
+  }
 
+  @Test
+  public void getRelationRevisionReturnsTheRelationForTheRequestedRevision() throws Exception {
+    // setup
+    Edge edge = edgeFoundForIdAndRevision(ID, FIRST_REVISION);
+
+    EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
+    SubARelation relationWithAPID = aRelation().withAPID().build();
+    when(converter.convertToEntity(edge)).thenReturn(relationWithAPID);
+
+    // action
+    SubARelation foundRelation = instance.getRelationRevision(RELATION_TYPE, ID, FIRST_REVISION);
+
+    // verify
+    assertThat(foundRelation, is(sameInstance(relationWithAPID)));
+  }
+
+  @Test
+  public void getRelationRevisionReturnsNullIfTheFoundEdgeHasNoPID() throws Exception {
+    // setup
+    Edge edge = edgeFoundForIdAndRevision(ID, FIRST_REVISION);
+
+    EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
+    SubARelation relationWithoutAPID = aRelation().build();
+    when(converter.convertToEntity(edge)).thenReturn(relationWithoutAPID);
+
+    // action
+    SubARelation foundRelation = instance.getRelationRevision(RELATION_TYPE, ID, FIRST_REVISION);
+
+    // verify
+    assertThat(foundRelation, is(nullValue()));
+  }
+
+  @Test
+  public void getRelationRevisionReturnsNullIfTheEdgeDoesNotExist() throws Exception {
+    // setup
+    noEdgeFoundWithIdAndRevision(ID, FIRST_REVISION);
+
+    // action
+    SubARelation foundRelation = instance.getRelationRevision(RELATION_TYPE, ID, FIRST_REVISION);
+
+    // verify
+    assertThat(foundRelation, is(nullValue()));
+  }
+
+  @Test(expected = ConversionException.class)
+  public void getRelationRevisionThrowsAStorageExceptionIfTheRelationCannotBeConverted() throws Exception {
+    // setup
+    Edge edge = edgeFoundForIdAndRevision(ID, FIRST_REVISION);
+
+    EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
+    when(converter.convertToEntity(edge)).thenThrow(new ConversionException());
+
+    // action
+    instance.getRelationRevision(RELATION_TYPE, ID, FIRST_REVISION);
+  }
+
+  private void noEdgeFoundWithIdAndRevision(String id, int revision) {
+    when(lowLevelAPIMock.getEdgeWithRevision(RELATION_TYPE, id, revision)).thenReturn(null);
+  }
+
+  private Edge edgeFoundForIdAndRevision(String id, int revision) {
+    Edge edge = mock(Edge.class);
+
+    when(lowLevelAPIMock.getEdgeWithRevision(RELATION_TYPE, id, revision)).thenReturn(edge);
+
+    return edge;
   }
 
   private <T extends Relation> EdgeConverter<T> createEdgeConverterFor(Class<T> type) {

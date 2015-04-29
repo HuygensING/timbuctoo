@@ -3,8 +3,7 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion;
 import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.isPrimitiveDomainEntity;
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.sourceOfEdge;
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.targetOfEdge;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.*;
 
 import java.util.Collection;
 
@@ -15,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.CorruptNodeException;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeConverter;
 
+import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
