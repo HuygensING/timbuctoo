@@ -235,7 +235,6 @@ public class TinkerpopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.updateDomainEntityWithADifferentTypeAddsTheNewFields();
   }
 
-  @Ignore
   @Test
   @Override
   public void updateRelationUpdatesTheValuesOfTheRelationAndIncreasesTheRevButDoesNotCreateANewRevision() throws Exception {
