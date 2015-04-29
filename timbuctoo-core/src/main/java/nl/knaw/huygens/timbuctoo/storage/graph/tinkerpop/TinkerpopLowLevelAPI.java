@@ -155,4 +155,8 @@ class TinkerpopLowLevelAPI {
     Iterable<Edge> edges = db.query().has(ID_PROPERTY_NAME, id).has(REVISION_PROPERTY_NAME, revision).edges();
     return getFirstFromIterable(edges);
   }
+
+  public Iterator<Edge> getLatestEdgesOf(Class<? extends Relation> type) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }

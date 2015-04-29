@@ -47,6 +47,7 @@ import com.tinkerpop.blueprints.Vertex;
 
 public class TinkerpopStorageTest {
 
+  private static final Class<Relation> PRIMITIVE_RELATION_TYPE = Relation.class;
   private static final String PID = "pid";
   private static final String REGULAR_RELATION_NAME = "regularTypeName";
   private static final int FIRST_REVISION = 1;
@@ -909,6 +910,34 @@ public class TinkerpopStorageTest {
 
     // action
     instance.updateRelation(RELATION_TYPE, entity, CHANGE);
+  }
+
+  @Test
+  public void countRelationsCountsTheItemsOfTheIteratorOfTheLowLevelAPI() {
+    // setup
+    List<Edge> twoEdges = Lists.newArrayList(anEdge().build(), anEdge().build());
+
+    when(lowLevelAPIMock.getLatestEdgesOf(PRIMITIVE_RELATION_TYPE)).thenReturn(twoEdges.iterator());
+
+    // action
+    long numberOfRelations = instance.countRelations(RELATION_TYPE);
+
+    // verify
+    assertThat(numberOfRelations, is(2l));
+  }
+
+  @Test
+  public void countRelationsCountsThePrimitiveRelations() {
+    // setup
+    List<Edge> twoEdges = Lists.newArrayList(anEdge().build(), anEdge().build());
+
+    when(lowLevelAPIMock.getLatestEdgesOf(PRIMITIVE_RELATION_TYPE)).thenReturn(twoEdges.iterator());
+
+    // action
+    instance.countRelations(RELATION_TYPE);
+
+    // verify
+    verify(lowLevelAPIMock).getLatestEdgesOf(PRIMITIVE_RELATION_TYPE);
   }
 
   /* ********************************************************************

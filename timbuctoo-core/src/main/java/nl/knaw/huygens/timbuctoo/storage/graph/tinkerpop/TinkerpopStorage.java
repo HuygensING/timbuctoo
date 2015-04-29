@@ -232,7 +232,12 @@ public class TinkerpopStorage implements GraphStorage {
 
   @Override
   public long countRelations(Class<? extends Relation> relationType) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    @SuppressWarnings("unchecked")
+    Class<? extends Relation> baseClass = (Class<? extends Relation>) TypeRegistry.toBaseDomainEntity(relationType);
+
+    Iterator<Edge> edges = lowLevelAPI.getLatestEdgesOf(baseClass);
+
+    return Iterators.size(edges);
   }
 
   @Override
