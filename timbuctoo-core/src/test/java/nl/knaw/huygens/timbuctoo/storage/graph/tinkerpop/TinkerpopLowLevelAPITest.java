@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
+import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType.VERSION_OF;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeMockBuilder.anEdge;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeSearchResultBuilder.anEdgeSearchResult;
@@ -171,6 +172,39 @@ public class TinkerpopLowLevelAPITest {
 
     // verify
     verify(edgeDuplicator).duplicate(edge);
+  }
+
+  @Test
+  public void getEdgeWithRevisionReturnsTheEdgeWithACertainRevision() {
+    // setup
+    Edge edge = anEdge().build();
+    anEdgeSearchResult() //
+        .forId(ID) //
+        .forProperty(REVISION_PROPERTY_NAME, FIRST_REVISION) //
+        .containsEdge(edge) //
+        .foundInDatabase(dbMock);
+
+    // action
+    Edge foundEdge = instance.getEdgeWithRevision(RELATION_TYPE, ID, FIRST_REVISION);
+
+    // verify
+    assertThat(foundEdge, is(sameInstance(edge)));
+  }
+
+  @Test
+  public void getEdgeWithRevisionReturnsNullIfTheEdgeIsNotFound() {
+    // setup
+    anEmptyEdgeSearchResult() //
+        .forId(ID) //
+        .forProperty(REVISION_PROPERTY_NAME, FIRST_REVISION) //
+        .foundInDatabase(dbMock);
+
+    // action
+    Edge foundEdge = instance.getEdgeWithRevision(RELATION_TYPE, ID, FIRST_REVISION);
+
+    // verify
+    assertThat(foundEdge, is(nullValue()));
+
   }
 
   @Test

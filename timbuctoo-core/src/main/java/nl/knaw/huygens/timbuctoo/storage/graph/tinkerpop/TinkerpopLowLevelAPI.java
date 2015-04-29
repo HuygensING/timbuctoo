@@ -147,6 +147,14 @@ class TinkerpopLowLevelAPI {
   }
 
   public Edge getEdgeWithRevision(Class<? extends Relation> relationType, String id, int revision) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    Iterable<Edge> edges = db.query().has(ID_PROPERTY_NAME, id).has(REVISION_PROPERTY_NAME, revision).edges();
+
+    Iterator<Edge> iterator = edges.iterator();
+
+    if (iterator.hasNext()) {
+      return iterator.next();
+    }
+
+    return null;
   }
 }
