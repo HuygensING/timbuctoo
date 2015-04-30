@@ -713,7 +713,7 @@ public class Neo4JStorageTest {
     nodesFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, nodeMock);
 
     // action
-    instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, CHANGE);
+    instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
 
     // verify
     InOrder inOrder = inOrder(dbMock, nodeMock, relMock1, relMock2, transactionMock);
@@ -750,7 +750,7 @@ public class Neo4JStorageTest {
     nodesFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, nodeMock, nodeMock2, nodeMock3);
 
     // action
-    instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, CHANGE);
+    instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
 
     // verify
     InOrder inOrder = inOrder(dbMock, nodeMock, relMock1, relMock2, nodeMock2, relMock3, relMock4, nodeMock3, relMock5, relMock6, transactionMock);
@@ -773,7 +773,7 @@ public class Neo4JStorageTest {
     noNodesFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
     try {
       // action
-      instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, CHANGE);
+      instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
     } finally {
       // verify
       verify(transactionMock).failure();
@@ -785,7 +785,7 @@ public class Neo4JStorageTest {
 
     try {
       // action
-      instance.deleteDomainEntity(DOMAIN_ENTITY_TYPE, ID, CHANGE);
+      instance.deleteDomainEntity(DOMAIN_ENTITY_TYPE, ID);
     } finally {
       // verify
       verifyZeroInteractions(dbMock);

@@ -366,7 +366,7 @@ public class Neo4JStorage implements GraphStorage {
 
   // TODO: Make equal to deleteSystemEntity see TIM-54
   @Override
-  public <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws StorageException {
+  public <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id) throws StorageException {
     if (!TypeRegistry.isPrimitiveDomainEntity(type)) {
       throw new IllegalArgumentException("Only primitive DomainEntities can be deleted. " + type.getSimpleName() + " is not a primitive DomainEntity.");
     }

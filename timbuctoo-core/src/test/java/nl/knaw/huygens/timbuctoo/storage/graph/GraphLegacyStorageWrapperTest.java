@@ -12,7 +12,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -385,13 +384,13 @@ public class GraphLegacyStorageWrapperTest {
     instance.deleteDomainEntity(DOMAIN_ENTITY_TYPE, ID, CHANGE);
 
     // verify
-    verify(graphStorageMock).deleteDomainEntity(DOMAIN_ENTITY_TYPE, ID, CHANGE);
+    verify(graphStorageMock).deleteDomainEntity(DOMAIN_ENTITY_TYPE, ID);
   }
 
   @Test(expected = StorageException.class)
   public void deleteDomainEntityThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
-    doThrow(StorageException.class).when(graphStorageMock).deleteDomainEntity(DOMAIN_ENTITY_TYPE, ID, CHANGE);
+    doThrow(StorageException.class).when(graphStorageMock).deleteDomainEntity(DOMAIN_ENTITY_TYPE, ID);
 
     // action
     instance.deleteDomainEntity(DOMAIN_ENTITY_TYPE, ID, CHANGE);
@@ -415,8 +414,7 @@ public class GraphLegacyStorageWrapperTest {
   private void verifyEntityDeleted(String id) throws StorageException {
     verify(graphStorageMock).deleteDomainEntity(//
         argThat(equalTo(PRIMITIVE_DOMAIN_ENTITY_TYPE)), //
-        argThat(equalTo(id)), //
-        any(Change.class));
+        argThat(equalTo(id)));
   }
 
   @Test(expected = StorageException.class)
@@ -428,8 +426,7 @@ public class GraphLegacyStorageWrapperTest {
 
     doThrow(StorageException.class).when(graphStorageMock).deleteDomainEntity( //
         argThat(equalTo(PRIMITIVE_DOMAIN_ENTITY_TYPE)), //
-        argThat(equalTo(id1)), //
-        any(Change.class));
+        argThat(equalTo(id1)));
 
     // action
     instance.deleteNonPersistent(DOMAIN_ENTITY_TYPE, ids);

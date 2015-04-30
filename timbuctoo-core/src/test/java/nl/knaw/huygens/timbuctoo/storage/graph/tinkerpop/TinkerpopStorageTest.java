@@ -183,7 +183,7 @@ public class TinkerpopStorageTest {
     verticesFoundWithTypeAndId(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, vertex1, vertex2);
 
     // action
-    instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, CHANGE);
+    instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
 
     // verify
     verify(dbMock).removeEdge(incomingEdge1);
@@ -201,13 +201,13 @@ public class TinkerpopStorageTest {
     noVerticesWithTypeAndIdFound(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
 
     // action
-    instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, CHANGE);
+    instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void deleteThrowsAnIllegalArgumentExceptionWhenTheEntityIsNotAPrimitiveDomainEntity() throws Exception {
     // action
-    instance.deleteDomainEntity(DOMAIN_ENTITY_TYPE, ID, CHANGE);
+    instance.deleteDomainEntity(DOMAIN_ENTITY_TYPE, ID);
   }
 
   @Test

@@ -173,7 +173,7 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws StorageException {
-    graphStorage.deleteDomainEntity(type, id, change);
+    graphStorage.deleteDomainEntity(type, id);
   }
 
   // FIXME let this method find the non persistent and delete them. See TIM-145.
@@ -184,7 +184,7 @@ public class GraphLegacyStorageWrapper implements Storage {
     }
     Change change = Change.newInternalInstance();
     for (String id : ids) {
-      graphStorage.deleteDomainEntity(TypeRegistry.toBaseDomainEntity(type), id, change);
+      graphStorage.deleteDomainEntity(TypeRegistry.toBaseDomainEntity(type), id);
     }
   }
 

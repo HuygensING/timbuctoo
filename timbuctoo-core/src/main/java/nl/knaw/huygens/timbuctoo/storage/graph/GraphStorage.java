@@ -42,7 +42,7 @@ public interface GraphStorage {
   long countRelations(Class<? extends Relation> relationType);
 
   // TODO: Make equal to deleteSystemEntity see TIM-54
-  <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws StorageException;
+  <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id) throws StorageException;
 
   <T extends SystemEntity> int deleteSystemEntity(Class<T> type, String id) throws StorageException;
 
