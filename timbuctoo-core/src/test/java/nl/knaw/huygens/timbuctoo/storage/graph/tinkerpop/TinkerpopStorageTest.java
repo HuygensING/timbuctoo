@@ -17,6 +17,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Iterator;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
@@ -28,6 +29,7 @@ import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
@@ -74,6 +76,7 @@ public class TinkerpopStorageTest {
   private ElementConverterFactory elementConverterFactoryMock;
   private Vertex createdVertex;
   private TinkerpopLowLevelAPI lowLevelAPIMock;
+  private StorageIteratorFactory storageIteratorFactoryMock;
 
   @Before
   public void setup() throws Exception {
@@ -81,7 +84,8 @@ public class TinkerpopStorageTest {
     lowLevelAPIMock = mock(TinkerpopLowLevelAPI.class);
     elementConverterFactoryMock = mock(ElementConverterFactory.class);
     TypeRegistry typeRegistry = TypeRegistry.getInstance().init("timbuctoo.model test.model test.model.projecta");
-    instance = new TinkerpopStorage(dbMock, elementConverterFactoryMock, lowLevelAPIMock, typeRegistry);
+    storageIteratorFactoryMock = mock(StorageIteratorFactory.class);
+    instance = new TinkerpopStorage(dbMock, elementConverterFactoryMock, lowLevelAPIMock, typeRegistry, storageIteratorFactoryMock);
 
     createdVertex = mock(Vertex.class);
     when(dbMock.addVertex(null)).thenReturn(createdVertex);
@@ -386,6 +390,36 @@ public class TinkerpopStorageTest {
 
     // action
     instance.getEntity(SYSTEM_ENTITY_TYPE, ID);
+
+  }
+
+  @Test
+  public void getEntitiesRetrieveWrapsAllTheVerticesOfACertainTypeInAStorageIterator() throws Exception {
+    // setup
+    Iterator<Vertex> iterator = Lists.<Vertex> newArrayList().iterator();
+    when(lowLevelAPIMock.getLatestVerticesOf(SYSTEM_ENTITY_TYPE)).thenReturn(iterator);
+
+    @SuppressWarnings("unchecked")
+    StorageIterator<TestSystemEntityWrapper> storageIterator = mock(StorageIterator.class);
+    when(storageIteratorFactoryMock.create(SYSTEM_ENTITY_TYPE, iterator)).thenReturn(storageIterator);
+
+    // action
+    StorageIterator<TestSystemEntityWrapper> actualStorageIterator = instance.getEntities(SYSTEM_ENTITY_TYPE);
+
+    // verify
+    assertThat(actualStorageIterator, is(sameInstance(storageIterator)));
+  }
+
+  @Test(expected = StorageException.class)
+  public void getEntitiesThrowsAStorageExceptionWhenTheIteratorCannotBeCreated() throws Exception {
+    // setup
+    Iterator<Vertex> iterator = Lists.<Vertex> newArrayList().iterator();
+    when(lowLevelAPIMock.getLatestVerticesOf(SYSTEM_ENTITY_TYPE)).thenReturn(iterator);
+
+    when(storageIteratorFactoryMock.create(SYSTEM_ENTITY_TYPE, iterator)).thenThrow(new StorageException());
+
+    // action
+    instance.getEntities(SYSTEM_ENTITY_TYPE);
 
   }
 
