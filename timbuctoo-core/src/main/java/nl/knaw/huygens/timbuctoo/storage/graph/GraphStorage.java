@@ -31,10 +31,9 @@ public interface GraphStorage {
    * Update a DomainEntity with a new variant.
    * @param type the type of the variant
    * @param variant the variant to add
-   * @param change the update change
    * @throws StorageException when the variant cannot be added
    */
-  <T extends DomainEntity> void addVariant(Class<T> type, T variant, Change change) throws StorageException;
+  <T extends DomainEntity> void addVariant(Class<T> type, T variant) throws StorageException;
 
   <T extends Relation> void updateRelation(Class<T> type, Relation relation, Change change) throws StorageException;
 

@@ -131,7 +131,7 @@ public class GraphLegacyStorageWrapper implements Storage {
       if (baseTypeExists(type, entity) && variantExists(type, entity)) {
         graphStorage.updateEntity(type, entity);
       } else if (baseTypeExists(type, entity)) {
-        graphStorage.addVariant(type, entity, change);
+        graphStorage.addVariant(type, entity);
       } else {
         throw new UpdateException(String.format("%s with id %s does not exist.", type, entity.getId()));
       }

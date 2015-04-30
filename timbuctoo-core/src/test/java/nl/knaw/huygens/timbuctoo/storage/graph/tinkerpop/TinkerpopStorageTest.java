@@ -391,7 +391,7 @@ public class TinkerpopStorageTest {
     VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
 
     // action
-    instance.addVariant(DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
+    instance.addVariant(DOMAIN_ENTITY_TYPE, domainEntity);
 
     // verify
     verify(converter).updateModifiedAndRev(vertex, domainEntity);
@@ -405,7 +405,7 @@ public class TinkerpopStorageTest {
     noLatestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
 
     // action
-    instance.addVariant(DOMAIN_ENTITY_TYPE, aDomainEntity().build(), CHANGE);
+    instance.addVariant(DOMAIN_ENTITY_TYPE, aDomainEntity().build());
 
   }
 
@@ -437,7 +437,7 @@ public class TinkerpopStorageTest {
         .withModified(oldModified)//
         .build();
 
-    instance.addVariant(DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
+    instance.addVariant(DOMAIN_ENTITY_TYPE, domainEntity);
   }
 
   @Test(expected = UpdateException.class)
@@ -446,7 +446,7 @@ public class TinkerpopStorageTest {
     latestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID, aVertex().build());
 
     // action
-    instance.addVariant(DOMAIN_ENTITY_TYPE, aDomainEntity().withId(ID).build(), CHANGE);
+    instance.addVariant(DOMAIN_ENTITY_TYPE, aDomainEntity().withId(ID).build());
   }
 
   @Test(expected = ConversionException.class)
@@ -465,7 +465,7 @@ public class TinkerpopStorageTest {
     doThrow(new ConversionException()).when(converter).updateModifiedAndRev(vertex, domainEntity);
 
     // action
-    instance.addVariant(DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
+    instance.addVariant(DOMAIN_ENTITY_TYPE, domainEntity);
   }
 
   @Test(expected = ConversionException.class)
@@ -484,7 +484,7 @@ public class TinkerpopStorageTest {
     doThrow(new ConversionException()).when(converter).addValuesToElement(vertex, domainEntity);
 
     // action
-    instance.addVariant(DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
+    instance.addVariant(DOMAIN_ENTITY_TYPE, domainEntity);
   }
 
   @Test

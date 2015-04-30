@@ -207,7 +207,7 @@ public class TinkerpopStorage implements GraphStorage {
   }
 
   @Override
-  public <T extends DomainEntity> void addVariant(Class<T> type, T variant, Change change) throws StorageException {
+  public <T extends DomainEntity> void addVariant(Class<T> type, T variant) throws StorageException {
     Class<? extends DomainEntity> primitive = TypeRegistry.toBaseDomainEntity(type);
 
     String id = variant.getId();

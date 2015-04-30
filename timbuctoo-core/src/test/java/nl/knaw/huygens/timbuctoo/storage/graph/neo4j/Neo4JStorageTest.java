@@ -509,7 +509,7 @@ public class Neo4JStorageTest {
     NodeConverter<SubADomainEntity> nodeConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
 
     // action
-    instance.addVariant(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+    instance.addVariant(DOMAIN_ENTITY_TYPE, entity);
 
     // verify
     verify(nodeConverterMock).addValuesToPropertyContainer(node, entity);
@@ -530,7 +530,7 @@ public class Neo4JStorageTest {
     NodeConverter<SubADomainEntity> nodeConverterMock = propertyContainerConverterFactoryHasANodeConverterTypeFor(DOMAIN_ENTITY_TYPE);
 
     // action
-    instance.addVariant(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+    instance.addVariant(DOMAIN_ENTITY_TYPE, entity);
 
     // verify
     verify(nodeConverterMock).addValuesToPropertyContainer(//
@@ -549,7 +549,7 @@ public class Neo4JStorageTest {
 
     try {
       // action
-      instance.addVariant(DOMAIN_ENTITY_TYPE, aDomainEntity().build(), CHANGE);
+      instance.addVariant(DOMAIN_ENTITY_TYPE, aDomainEntity().build());
     } finally {
       // verify
       verify(transactionMock).failure();
@@ -579,7 +579,7 @@ public class Neo4JStorageTest {
 
     try {
       // action
-      instance.addVariant(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+      instance.addVariant(DOMAIN_ENTITY_TYPE, entity);
     } finally {
       // verify
       verify(transactionMock).failure();
@@ -595,7 +595,7 @@ public class Neo4JStorageTest {
 
     try {
       // action
-      instance.addVariant(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+      instance.addVariant(DOMAIN_ENTITY_TYPE, entity);
     } finally {
       // verify
       verify(transactionMock).failure();

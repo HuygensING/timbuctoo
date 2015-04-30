@@ -345,8 +345,7 @@ public class GraphLegacyStorageWrapperTest {
             .withId(ID) //
             .withoutAPID() //
             .withRevision(SECOND_REVISION) //
-            .withAModifiedValueNotEqualTo(oldModified)), // 
-        argThat(is(CHANGE)));
+            .withAModifiedValueNotEqualTo(oldModified)));
   }
 
   private void variantDoesNotExist() {
@@ -360,7 +359,7 @@ public class GraphLegacyStorageWrapperTest {
     SubADomainEntity entity = aDomainEntity().withId(ID).build();
     variantDoesNotExist();
 
-    doThrow(StorageException.class).when(graphStorageMock).addVariant(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+    doThrow(StorageException.class).when(graphStorageMock).addVariant(DOMAIN_ENTITY_TYPE, entity);
 
     // action
     instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);

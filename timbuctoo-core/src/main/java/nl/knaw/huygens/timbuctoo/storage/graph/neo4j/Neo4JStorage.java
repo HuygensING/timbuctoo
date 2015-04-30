@@ -270,12 +270,11 @@ public class Neo4JStorage implements GraphStorage {
    * Update a DomainEntity with a new variant.
    * @param type the type of the variant
    * @param variant the variant to add
-   * @param change the update change
    * @throws StorageException when the variant cannot be added
    */
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends DomainEntity> void addVariant(Class<T> type, T variant, Change change) throws StorageException {
+  public <T extends DomainEntity> void addVariant(Class<T> type, T variant) throws StorageException {
     try (Transaction transaction = db.beginTx()) {
       String id = variant.getId();
 
