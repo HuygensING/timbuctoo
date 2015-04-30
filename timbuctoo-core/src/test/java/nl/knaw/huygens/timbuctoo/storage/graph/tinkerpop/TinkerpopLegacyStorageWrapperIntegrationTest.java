@@ -104,7 +104,6 @@ public class TinkerpopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.deleteVariationRemovesTheVariationFromTheEntity();
   }
 
-  @Ignore
   @Test
   @Override
   public void entityExistsForDomainEntityShowsIfTheEntityExistsInTheDatabase() throws Exception {
