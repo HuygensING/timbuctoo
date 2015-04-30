@@ -161,6 +161,41 @@ public class TinkerpopLowLevelAPITest {
     assertThat(vertex, is(nullValue()));
   }
 
+  @Test
+  public void getVerticesWithIdReturnsAnIteratorWithAllTheVerticesWithTheId() {
+    // setup
+    Vertex vertex1 = aVertex().build();
+    Vertex vertex2 = aVertex().build();
+    aVertexSearchResult() //
+        .forType(DOMAIN_ENTITY_TYPE) //
+        .forId(ID) //
+        .containsVertex(vertex1) //
+        .andVertex(vertex2) //
+        .foundInDatabase(dbMock);
+
+    // action
+    Iterator<Vertex> iterator = instance.getVerticesWithId(DOMAIN_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(Lists.newArrayList(iterator), containsInAnyOrder(vertex1, vertex2));
+  }
+
+  @Test
+  public void getVerticesWithIdReturnsAnEmptyIteratorWhenNoneAreFound() {
+    // setup
+    anEmptyVertexSearchResult() //
+        .forType(DOMAIN_ENTITY_TYPE) //
+        .forId(ID) //
+        .foundInDatabase(dbMock);
+
+    // action
+    Iterator<Vertex> iterator = instance.getVerticesWithId(DOMAIN_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(iterator, is(notNullValue()));
+    assertThat(Iterators.size(iterator), is(0));
+  }
+
   /* ************************************************************
    * Edge
    * ************************************************************/

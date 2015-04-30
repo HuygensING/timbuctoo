@@ -90,7 +90,6 @@ public class TinkerpopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.deleteRelationsOfEntityRemovesAllTheRelationsConnectedToTheEntity();
   }
 
-  @Ignore
   @Test
   @Override
   public void deleteSystemEntityRemovesAnEntityFromTheDatabase() throws StorageException {
