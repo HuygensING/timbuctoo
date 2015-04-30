@@ -177,7 +177,7 @@ public class TinkerpopStorage implements GraphStorage {
     Vertex vertex = lowLevelAPI.getLatestVertexById(type, entity.getId());
 
     if (vertex == null) {
-      throw UpdateException.entityNotFound(type, entity);
+      throw new NoSuchEntityException(type, entity.getId());
     }
 
     validateIsMatchingRev(type, entity, vertex);

@@ -336,8 +336,8 @@ public class TinkerpopStorageTest {
 
   }
 
-  @Test(expected = UpdateException.class)
-  public void updateEntityThrowsAnUpdateExceptionIfTheVertexCannotBeFound() throws Exception {
+  @Test(expected = NoSuchEntityException.class)
+  public void updateEntityThrowsANoSuchEntityExceptionIfTheVertexCannotBeFound() throws Exception {
     // setup
     noLatestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID);
 

@@ -32,28 +32,12 @@ public class NoSuchEntityException extends StorageException {
 
   private static final long serialVersionUID = 1L;
 
-  public NoSuchEntityException() {
-    super();
-  }
-
-  public NoSuchEntityException(String message) {
-    super(message);
-  }
-
   public NoSuchEntityException(Class<? extends Entity> type, String id) {
     this("\"%s\" with \"%s\" does not exist.", TypeNames.getExternalName(type), id);
   }
 
   public NoSuchEntityException(String format, Object... args) {
     super(String.format(format, args));
-  }
-
-  public NoSuchEntityException(Throwable cause) {
-    super(cause);
-  }
-
-  public NoSuchEntityException(String message, Throwable cause) {
-    super(message, cause);
   }
 
 }
