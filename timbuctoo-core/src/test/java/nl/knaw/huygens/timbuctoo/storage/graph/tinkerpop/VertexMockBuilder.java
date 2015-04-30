@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
+import static com.tinkerpop.blueprints.Direction.BOTH;
 import static com.tinkerpop.blueprints.Direction.IN;
 import static com.tinkerpop.blueprints.Direction.OUT;
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
@@ -69,6 +70,7 @@ public class VertexMockBuilder {
 
     addOutGoingEdges(vertex);
     addIncomingEdges(vertex);
+    addEdges(vertex);
     addProperties(vertex);
 
     when(vertex.getProperty(ELEMENT_TYPES)).thenReturn(types.toArray(new String[types.size()]));
@@ -82,6 +84,14 @@ public class VertexMockBuilder {
     for (Entry<String, Object> property : properties.entrySet()) {
       when(vertex.getProperty(property.getKey())).thenReturn(property.getValue());
     }
+  }
+
+  private void addEdges(Vertex vertex) {
+    List<Edge> allEdges = Lists.newArrayList();
+    allEdges.addAll(getAllEdges(incomingEdges));
+    allEdges.addAll(getAllEdges(outgoingEdges));
+
+    when(vertex.getEdges(BOTH)).thenReturn(allEdges);
   }
 
   private void addIncomingEdges(Vertex vertex) {
@@ -129,4 +139,13 @@ public class VertexMockBuilder {
     return this;
   }
 
+  public VertexMockBuilder withIncomingEdge(Edge edge) {
+    addEdge(edge, edge.getLabel(), incomingEdges);
+    return this;
+  }
+
+  public VertexMockBuilder withOutgoingEdge(Edge edge) {
+    addEdge(edge, edge.getLabel(), outgoingEdges);
+    return this;
+  }
 }

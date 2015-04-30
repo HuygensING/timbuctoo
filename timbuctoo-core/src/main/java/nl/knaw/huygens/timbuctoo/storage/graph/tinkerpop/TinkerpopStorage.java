@@ -22,6 +22,7 @@ import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConve
 
 import com.google.common.collect.Iterators;
 import com.google.inject.Inject;
+import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
@@ -270,7 +271,20 @@ public class TinkerpopStorage implements GraphStorage {
 
   @Override
   public <T extends SystemEntity> int deleteSystemEntity(Class<T> type, String id) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    int numberOfDeletedEntities = 0;
+
+    for (Iterator<Vertex> iterator = lowLevelAPI.getVerticesWithId(type, id); iterator.hasNext();) {
+      Vertex vertex = iterator.next();
+
+      for (Edge edge : vertex.getEdges(Direction.BOTH)) {
+        db.removeEdge(edge);
+      }
+
+      db.removeVertex(vertex);
+      numberOfDeletedEntities++;
+    }
+
+    return numberOfDeletedEntities;
   }
 
   @Override

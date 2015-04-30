@@ -183,4 +183,8 @@ class TinkerpopLowLevelAPI {
   private boolean isLaterEdge(Edge edge, Edge mappedEdge) {
     return getRevisionProperty(edge) > getRevisionProperty(mappedEdge);
   }
+
+  public Iterator<Vertex> getVerticesWithId(Class<? extends Entity> type, String id) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }

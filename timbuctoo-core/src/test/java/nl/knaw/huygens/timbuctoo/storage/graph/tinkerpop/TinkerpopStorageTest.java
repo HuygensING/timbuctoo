@@ -47,6 +47,7 @@ import com.tinkerpop.blueprints.Vertex;
 
 public class TinkerpopStorageTest {
 
+  private static final String A_LABEL = "aLabel";
   private static final Class<Relation> PRIMITIVE_RELATION_TYPE = Relation.class;
   private static final String PID = "pid";
   private static final String REGULAR_RELATION_NAME = "regularTypeName";
@@ -167,6 +168,50 @@ public class TinkerpopStorageTest {
 
     // verify
     verify(lowLevelAPIMock).getLatestVerticesOf(PRIMITIVE_DOMAIN_ENTITY_TYPE);
+  }
+
+  @Test
+  public void deleteSystemEntityFirstRemovesTheVerticesWithItsEdgesFromTheDatabase() throws Exception {
+    // setup
+    Edge incomingEdge1 = anEdge().withLabel(A_LABEL).build();
+    Edge outgoingEdge1 = anEdge().withLabel(A_LABEL).build();
+    Vertex vertex1 = aVertex().withIncomingEdge(incomingEdge1).withOutgoingEdge(outgoingEdge1).build();
+    Edge incomingEdge2 = anEdge().withLabel(A_LABEL).build();
+    Edge outgoingEdge2 = anEdge().withLabel(A_LABEL).build();
+    Vertex vertex2 = aVertex().withIncomingEdge(incomingEdge2).withOutgoingEdge(outgoingEdge2).build();
+
+    verticesFoundWithTypeAndId(SYSTEM_ENTITY_TYPE, ID, vertex1, vertex2);
+
+    // action
+    int numberOfDeletedEntities = instance.deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(numberOfDeletedEntities, is(2));
+    verify(dbMock).removeEdge(incomingEdge1);
+    verify(dbMock).removeEdge(outgoingEdge1);
+    verify(dbMock).removeVertex(vertex1);
+    verify(dbMock).removeEdge(incomingEdge2);
+    verify(dbMock).removeEdge(outgoingEdge2);
+    verify(dbMock).removeVertex(vertex2);
+
+  }
+
+  private void verticesFoundWithTypeAndId(Class<? extends Entity> type, String id, Vertex... vertices) {
+    List<Vertex> vertexList = Lists.newArrayList(vertices);
+
+    when(lowLevelAPIMock.getVerticesWithId(type, id)).thenReturn(vertexList.iterator());
+  }
+
+  @Test
+  public void deleteSystemEntityReturns0WhenTheEntityCannotBeFound() throws Exception {
+    noVerticesWithIdAndTypeFound(ID, SYSTEM_ENTITY_TYPE);
+
+    instance.deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID);
+  }
+
+  private void noVerticesWithIdAndTypeFound(String id, Class<? extends Entity> type) {
+    List<Vertex> entitiesFound = Lists.newArrayList();
+    when(lowLevelAPIMock.getVerticesWithId(type, id)).thenReturn(entitiesFound.iterator());
   }
 
   @Test
