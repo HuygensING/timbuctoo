@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import static nl.knaw.huygens.timbuctoo.model.DomainEntity.PID;
+import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -75,5 +76,9 @@ public class EdgeMockBuilder {
 
   public EdgeMockBuilder withPID(String pid) {
     return this.addProperty(PID, pid);
+  }
+
+  public EdgeMockBuilder withID(String id) {
+    return this.addProperty(ID_PROPERTY_NAME, id);
   }
 }

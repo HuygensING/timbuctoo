@@ -10,6 +10,7 @@ import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexSearchResu
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexSearchResultBuilder.anEmptyVertexSearchResult;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -17,6 +18,7 @@ import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.junit.Before;
@@ -33,6 +35,7 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 
 public class TinkerpopLowLevelAPITest {
+  private static final String ID2 = "id2";
   private static final int SECOND_REVISION = 2;
   private static final int THIRD_REVISION = 3;
   private static final Class<SubARelation> RELATION_TYPE = SubARelation.class;
@@ -99,7 +102,7 @@ public class TinkerpopLowLevelAPITest {
   }
 
   @Test
-  public void getLatestVerticesFiltersReturnsOnlyTheLatestVersions() {
+  public void getLatestVerticesOfReturnsOnlyTheLatestVersions() {
     // setup
     Vertex latestVertex1 = aVertex().build();
     Vertex latestVertex2 = aVertex().build();
@@ -119,7 +122,7 @@ public class TinkerpopLowLevelAPITest {
   }
 
   @Test
-  public void getLatestVerticesReturnsAnEmptyIteratorWhenNoVerticesAreFound() {
+  public void getLatestVerticesOfReturnsAnEmptyIteratorWhenNoVerticesAreFound() {
     // setup
     anEmptyVertexSearchResult().forType(SYSTEM_ENTITY_TYPE).foundInDatabase(dbMock);
 
@@ -235,5 +238,38 @@ public class TinkerpopLowLevelAPITest {
 
     // verify
     assertThat(foundEdge, is(nullValue()));
+  }
+
+  @Test
+  public void getLatestEdgesOfReturnsOnlyTheLatestVersions() {
+    // setup
+    Edge edgeWithLatestRev1 = anEdge().withID(ID).withRev(SECOND_REVISION).build();
+    Edge edgeWithLatestRev2 = anEdge().withID(ID2).withRev(SECOND_REVISION).build();
+    anEdgeSearchResult() //
+        .containsEdge(anEdge().withID(ID).withRev(FIRST_REVISION).build()) //
+        .andEdge(edgeWithLatestRev1) //
+        .andEdge(anEdge().withID(ID2).withRev(FIRST_REVISION).build()) //
+        .andEdge(edgeWithLatestRev2) //
+        .foundInDatabase(dbMock);
+
+    // action
+    Iterator<Edge> actualEdges = instance.getLatestEdgesOf(RELATION_TYPE);
+
+    // verify
+    ArrayList<Edge> edgesList = Lists.newArrayList(actualEdges);
+    assertThat(edgesList.size(), is(2));
+    assertThat(edgesList, containsInAnyOrder(edgeWithLatestRev1, edgeWithLatestRev2));
+  }
+
+  @Test
+  public void getLatestEdgesOfReturnsAnEmptyIteratorWhenNoEdgesAreFound() {
+    // setup
+    anEmptyEdgeSearchResult().foundInDatabase(dbMock);
+
+    // action
+    Iterator<Edge> actualEdges = instance.getLatestEdgesOf(RELATION_TYPE);
+
+    // verify
+    assertThat(actualEdges.hasNext(), is(false));
   }
 }

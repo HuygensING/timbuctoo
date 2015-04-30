@@ -25,9 +25,9 @@ public class ElementHelper {
     return element != null && element.getProperty(propertyName) != null;
   }
 
-  public static String getIdProperty(Element propertyContainer) {
-    return containsProperty(propertyContainer, ID_PROPERTY_NAME) ? //
-    (String) propertyContainer.getProperty(ID_PROPERTY_NAME) //
+  public static String getIdProperty(Element element) {
+    return containsProperty(element, ID_PROPERTY_NAME) ? //
+    (String) element.getProperty(ID_PROPERTY_NAME) //
         : null;
   }
 

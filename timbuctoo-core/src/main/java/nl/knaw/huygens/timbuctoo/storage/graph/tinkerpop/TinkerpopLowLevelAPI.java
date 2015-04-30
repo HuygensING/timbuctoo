@@ -4,9 +4,12 @@ import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType.VERSION_OF;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getIdProperty;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getRevisionProperty;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -15,6 +18,7 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
@@ -103,8 +107,7 @@ class TinkerpopLowLevelAPI {
   public Edge getLatestEdgeById(Class<? extends Relation> relationType, String id) {
     Edge latestEdge = null;
     Iterable<Edge> edges = db.query().has(ID_PROPERTY_NAME, id).edges();
-
-    Predicate<Edge> isLaterVersion = new Predicate<Edge>() {
+    Predicate<Edge> isLaterEdge = new Predicate<Edge>() {
       private int latestRev = 0;
 
       @Override
@@ -120,7 +123,7 @@ class TinkerpopLowLevelAPI {
 
     for (Iterator<Edge> iterator = edges.iterator(); iterator.hasNext();) {
       Edge edge = iterator.next();
-      if (isLaterVersion.apply(edge)) {
+      if (isLaterEdge.apply(edge)) {
         latestEdge = edge;
       }
     }
@@ -157,6 +160,27 @@ class TinkerpopLowLevelAPI {
   }
 
   public Iterator<Edge> getLatestEdgesOf(Class<? extends Relation> type) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    Map<String, Edge> idEdgeMap = Maps.newHashMap();
+
+    Iterable<Edge> edges = db.query().edges();
+
+    for (Iterator<Edge> iterator = edges.iterator(); iterator.hasNext();) {
+      Edge edge = iterator.next();
+
+      String id = getIdProperty(edge);
+
+      Edge mappedEdge = idEdgeMap.get(id);
+
+      if (mappedEdge == null || isLaterEdge(edge, mappedEdge)) {
+        idEdgeMap.put(id, edge);
+      }
+
+    }
+
+    return idEdgeMap.values().iterator();
+  }
+
+  private boolean isLaterEdge(Edge edge, Edge mappedEdge) {
+    return getRevisionProperty(edge) > getRevisionProperty(mappedEdge);
   }
 }

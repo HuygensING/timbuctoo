@@ -50,7 +50,6 @@ public class TinkerpopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.countDomainEntityReturnsTheCountOfThePrimitive();
   }
 
-  @Ignore
   @Test
   @Override
   public void countRelationsOnlyCountsTheLatest() throws Exception {
