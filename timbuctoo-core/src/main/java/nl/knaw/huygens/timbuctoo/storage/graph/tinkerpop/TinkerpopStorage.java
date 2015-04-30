@@ -392,7 +392,7 @@ public class TinkerpopStorage implements GraphStorage {
 
   @Override
   public boolean relationExists(Class<? extends Relation> relationType, String id) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return lowLevelAPI.getLatestEdgeById(relationType, id) != null;
   }
 
   @Override

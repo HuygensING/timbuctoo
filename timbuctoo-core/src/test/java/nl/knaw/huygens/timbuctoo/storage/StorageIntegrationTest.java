@@ -70,10 +70,6 @@ public abstract class StorageIntegrationTest {
   private static final Class<ProjectARelation> PROJECT_RELATION_TYPE = RELATION_TYPE;
   private static final Class<Relation> PRIMITIVE_RELATION_TYPE = Relation.class;
   private static final boolean ACCEPTED = true;
-  private static final String DEFAULT_TYPE_ID = "typeId";
-  private static final String DEFAULT_TARGET_TYPE = "targetType";
-  private static final String DEFAULT_TARGET_ID = "targetid";
-  private static final String DEFAULT_SOURCE_TYPE = "sourceType";
   // General constants
   private static final Change CHANGE_TO_SAVE = new Change();
   private static final Change UPDATE_CHANGE = new Change();
@@ -437,29 +433,35 @@ public abstract class StorageIntegrationTest {
   public void declineRelationsOfEntitySetsAcceptedToFalseForTheVariation() throws Exception {
     // setup
     String sourceId = addDefaultProjectAPerson();
-    String relationId = addDefaultProjectARelation(sourceId);
+    String targetId = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+
+    String relationId = addDefaultRelation(sourceId, targetId, typeId);
 
     // check if the relation is added
-    assertThat(instance.getEntity(PROJECT_RELATION_TYPE, relationId), likeDefaultAcceptedRelation(sourceId));
-    assertThat(instance.getEntity(PRIMITIVE_RELATION_TYPE, relationId), likeDefaultAcceptedRelation(sourceId));
+    assertThat(instance.getEntity(PROJECT_RELATION_TYPE, relationId), likeDefaultAcceptedRelation(sourceId, targetId, typeId));
+    assertThat(instance.getEntity(PRIMITIVE_RELATION_TYPE, relationId), likeDefaultAcceptedRelation(sourceId, targetId, typeId));
 
     // action
     instance.declineRelationsOfEntity(PROJECT_RELATION_TYPE, sourceId);
 
     // verify
-    assertThat(instance.getEntity(PROJECT_RELATION_TYPE, relationId), likeDefaultNotAcceptionRelation(sourceId));
-    assertThat(instance.getEntity(PRIMITIVE_RELATION_TYPE, relationId), likeDefaultAcceptedRelation(sourceId));
+    assertThat(instance.getEntity(PROJECT_RELATION_TYPE, relationId), likeDefaultNotAcceptionRelation(sourceId, targetId, typeId));
+    assertThat(instance.getEntity(PRIMITIVE_RELATION_TYPE, relationId), likeDefaultAcceptedRelation(sourceId, targetId, typeId));
   }
 
   @Test
   public void deleteRelationsOfEntityRemovesAllTheRelationsConnectedToTheEntity() throws Exception {
     // setup
     String sourceId = addDefaultProjectAPerson();
-    String relationId = addDefaultProjectARelation(sourceId);
+    String targetId = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+
+    String relationId = addDefaultRelation(sourceId, targetId, typeId);
 
     // check if the relation is added
-    assertThat(instance.getEntity(PROJECT_RELATION_TYPE, relationId), likeDefaultAcceptedRelation(sourceId));
-    assertThat(instance.getEntity(PRIMITIVE_RELATION_TYPE, relationId), likeDefaultAcceptedRelation(sourceId));
+    assertThat(instance.getEntity(PROJECT_RELATION_TYPE, relationId), likeDefaultAcceptedRelation(sourceId, targetId, typeId));
+    assertThat(instance.getEntity(PRIMITIVE_RELATION_TYPE, relationId), likeDefaultAcceptedRelation(sourceId, targetId, typeId));
 
     // action
     instance.deleteRelationsOfEntity(PRIMITIVE_RELATION_TYPE, sourceId);
@@ -847,37 +849,24 @@ public abstract class StorageIntegrationTest {
 
   //Relation test helpers
 
-  private RelationMatcher likeDefaultNotAcceptionRelation(String sourceId) {
+  private RelationMatcher likeDefaultNotAcceptionRelation(String sourceId, String targetId, String typeId) {
     return likeRelation()//
         .withSourceId(sourceId) //
-        .withSourceType(DEFAULT_SOURCE_TYPE) //
-        .withTargetId(DEFAULT_TARGET_ID) //
-        .withTargetType(DEFAULT_TARGET_TYPE) //
-        .withTypeId(DEFAULT_TYPE_ID) //
+        .withSourceType(RELATION_SOURCE_TYPE) //
+        .withTargetId(targetId) //
+        .withTargetType(RELATION_TARGET_TYPE) //
+        .withTypeId(typeId) //
         .isAccepted(NOT_ACCEPTED);
   }
 
-  private RelationMatcher likeDefaultAcceptedRelation(String sourceId) {
+  private RelationMatcher likeDefaultAcceptedRelation(String sourceId, String targetId, String typeId) {
     return likeRelation()//
         .withSourceId(sourceId) //
-        .withSourceType(DEFAULT_SOURCE_TYPE) //
-        .withTargetId(DEFAULT_TARGET_ID) //
-        .withTargetType(DEFAULT_TARGET_TYPE) //
-        .withTypeId(DEFAULT_TYPE_ID) //
+        .withSourceType(RELATION_SOURCE_TYPE) //
+        .withTargetId(targetId) //
+        .withTargetType(RELATION_TARGET_TYPE) //
+        .withTypeId(typeId) //
         .isAccepted(ACCEPTED);
-  }
-
-  private String addDefaultProjectARelation(String sourceId) throws StorageException {
-    ProjectARelation relation = new ProjectARelation();
-    relation.setAccepted(ACCEPTED);
-    relation.setSourceId(sourceId);
-    relation.setSourceType(DEFAULT_SOURCE_TYPE);
-    relation.setTargetId(DEFAULT_TARGET_ID);
-    relation.setTargetType(DEFAULT_TARGET_TYPE);
-    relation.setTypeId(DEFAULT_TYPE_ID);
-
-    String relationId = instance.addDomainEntity(PROJECT_RELATION_TYPE, relation, CHANGE_TO_SAVE);
-    return relationId;
   }
 
   @SuppressWarnings("unchecked")
@@ -938,10 +927,11 @@ public abstract class StorageIntegrationTest {
   @Test
   public void entityExistsForRelationShowsIfTheEntityExistsInTheDatabase() throws Exception {
     // setup
-    String id = "";
-    assertThat(instance.entityExists(RELATION_TYPE, id), is(false));
     String sourceId = addDefaultProjectAPerson();
-    id = addDefaultProjectARelation(sourceId);
+    String targetId = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+
+    String id = addDefaultRelation(sourceId, targetId, typeId);
 
     // action
     boolean exists = instance.entityExists(RELATION_TYPE, id);

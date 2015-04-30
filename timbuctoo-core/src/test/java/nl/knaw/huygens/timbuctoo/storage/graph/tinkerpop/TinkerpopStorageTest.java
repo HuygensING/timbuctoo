@@ -874,6 +874,24 @@ public class TinkerpopStorageTest {
   }
 
   @Test
+  public void relationReturnsTrueIfTheEdgeCanBeFound() {
+    latestEdgeFoundWithId(ID, anEdge().build());
+
+    boolean relationExists = instance.relationExists(RELATION_TYPE, ID);
+
+    assertThat(relationExists, is(true));
+  }
+
+  @Test
+  public void relationReturnsFalseIfTheEdgeCannotBeFound() {
+    noLatestEdgeFoundWithId(ID);
+
+    boolean relationExists = instance.relationExists(RELATION_TYPE, ID);
+
+    assertThat(relationExists, is(false));
+  }
+
+  @Test
   public void setRelationPIDSetsThePIDOfTheRelationAndDuplicatesIt() throws Exception {
     // setup
     Edge edge = latestEdgeFoundWithId(ID, anEdge().build());

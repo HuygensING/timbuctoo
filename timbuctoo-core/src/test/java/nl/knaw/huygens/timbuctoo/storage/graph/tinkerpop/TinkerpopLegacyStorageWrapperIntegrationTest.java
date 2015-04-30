@@ -110,7 +110,6 @@ public class TinkerpopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.entityExistsForDomainEntityShowsIfTheEntityExistsInTheDatabase();
   }
 
-  @Ignore
   @Test
   @Override
   public void entityExistsForRelationShowsIfTheEntityExistsInTheDatabase() throws Exception {
