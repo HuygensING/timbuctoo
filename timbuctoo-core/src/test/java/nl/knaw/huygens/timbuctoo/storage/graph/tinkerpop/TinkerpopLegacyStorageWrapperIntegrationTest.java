@@ -69,14 +69,12 @@ public class TinkerpopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.declineRelationsOfEntitySetsAcceptedToFalseForTheVariation();
   }
 
-  @Ignore
   @Test
   @Override
   public void deleteDomainEntityRemovesTheEntityFromTheDatabase() throws Exception {
     super.deleteDomainEntityRemovesTheEntityFromTheDatabase();
   }
 
-  @Ignore
   @Test
   @Override
   public void deleteNonPersistentDomainEntityRemovesTheCompleteDomainEntity() throws Exception {

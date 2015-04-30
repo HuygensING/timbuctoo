@@ -266,11 +266,27 @@ public class TinkerpopStorage implements GraphStorage {
 
   @Override
   public <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    if (!TypeRegistry.isPrimitiveDomainEntity(type)) {
+      throw new IllegalArgumentException("Only primitive DomainEntities can be deleted. " + type.getSimpleName() + " is not a primitive DomainEntity.");
+    }
+
+    Iterator<Vertex> vertices = lowLevelAPI.getVerticesWithId(type, id);
+
+    if (!vertices.hasNext()) {
+      throw new NoSuchEntityException(type, id);
+    }
+
+    this.deleteEntities(type, id);
   }
 
   @Override
   public <T extends SystemEntity> int deleteSystemEntity(Class<T> type, String id) throws StorageException {
+    int numberOfDeletedEntities = deleteEntities(type, id);
+
+    return numberOfDeletedEntities;
+  }
+
+  private <T extends Entity> int deleteEntities(Class<T> type, String id) {
     int numberOfDeletedEntities = 0;
 
     for (Iterator<Vertex> iterator = lowLevelAPI.getVerticesWithId(type, id); iterator.hasNext();) {
@@ -283,7 +299,6 @@ public class TinkerpopStorage implements GraphStorage {
       db.removeVertex(vertex);
       numberOfDeletedEntities++;
     }
-
     return numberOfDeletedEntities;
   }
 

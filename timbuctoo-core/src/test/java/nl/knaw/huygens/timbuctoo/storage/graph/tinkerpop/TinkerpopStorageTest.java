@@ -171,6 +171,46 @@ public class TinkerpopStorageTest {
   }
 
   @Test
+  public void deleteDomainEntityFirstRemovesTheVerticesWithItsEdgesFromTheDatabase() throws Exception {
+    // setup
+    Edge incomingEdge1 = anEdge().withLabel(A_LABEL).build();
+    Edge outgoingEdge1 = anEdge().withLabel(A_LABEL).build();
+    Vertex vertex1 = aVertex().withIncomingEdge(incomingEdge1).withOutgoingEdge(outgoingEdge1).build();
+    Edge incomingEdge2 = anEdge().withLabel(A_LABEL).build();
+    Edge outgoingEdge2 = anEdge().withLabel(A_LABEL).build();
+    Vertex vertex2 = aVertex().withIncomingEdge(incomingEdge2).withOutgoingEdge(outgoingEdge2).build();
+
+    verticesFoundWithTypeAndId(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, vertex1, vertex2);
+
+    // action
+    instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, CHANGE);
+
+    // verify
+    verify(dbMock).removeEdge(incomingEdge1);
+    verify(dbMock).removeEdge(outgoingEdge1);
+    verify(dbMock).removeVertex(vertex1);
+    verify(dbMock).removeEdge(incomingEdge2);
+    verify(dbMock).removeEdge(outgoingEdge2);
+    verify(dbMock).removeVertex(vertex2);
+
+  }
+
+  @Test(expected = NoSuchEntityException.class)
+  public void deleteDomainEntityThrowsANoSuchEntityExceptionWhenTheEntityCannotBeFound() throws Exception {
+    // setup
+    noVerticesWithTypeAndIdFound(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
+
+    // action
+    instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, CHANGE);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void deleteThrowsAnIllegalArgumentExceptionWhenTheEntityIsNotAPrimitiveDomainEntity() throws Exception {
+    // action
+    instance.deleteDomainEntity(DOMAIN_ENTITY_TYPE, ID, CHANGE);
+  }
+
+  @Test
   public void deleteSystemEntityFirstRemovesTheVerticesWithItsEdgesFromTheDatabase() throws Exception {
     // setup
     Edge incomingEdge1 = anEdge().withLabel(A_LABEL).build();
@@ -204,12 +244,12 @@ public class TinkerpopStorageTest {
 
   @Test
   public void deleteSystemEntityReturns0WhenTheEntityCannotBeFound() throws Exception {
-    noVerticesWithIdAndTypeFound(ID, SYSTEM_ENTITY_TYPE);
+    noVerticesWithTypeAndIdFound(SYSTEM_ENTITY_TYPE, ID);
 
     instance.deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID);
   }
 
-  private void noVerticesWithIdAndTypeFound(String id, Class<? extends Entity> type) {
+  private void noVerticesWithTypeAndIdFound(Class<? extends Entity> type, String id) {
     List<Vertex> entitiesFound = Lists.newArrayList();
     when(lowLevelAPIMock.getVerticesWithId(type, id)).thenReturn(entitiesFound.iterator());
   }
