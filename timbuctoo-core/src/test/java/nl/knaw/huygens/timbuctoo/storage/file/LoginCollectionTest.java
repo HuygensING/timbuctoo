@@ -32,6 +32,7 @@ import nl.knaw.huygens.timbuctoo.model.Login;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
 public class LoginCollectionTest extends FileCollectionTest<Login> {
@@ -204,7 +205,7 @@ public class LoginCollectionTest extends FileCollectionTest<Login> {
     LoginCollection loginCollection = new LoginCollection(Lists.newArrayList(login, otherLogin));
 
     // verify
-    assertThat(loginCollection.getAll().size(), is(equalTo(2)));
+    assertThat(Iterators.size(loginCollection.getAll()), is(equalTo(2)));
   }
 
 }

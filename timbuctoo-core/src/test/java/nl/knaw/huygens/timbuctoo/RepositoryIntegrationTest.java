@@ -46,6 +46,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.collect.Iterators;
+
 public class RepositoryIntegrationTest {
   private static final Class<SearchResult> SEARCH_RESULT_TYPE = SearchResult.class;
   private Repository instance;
@@ -109,7 +111,7 @@ public class RepositoryIntegrationTest {
     StorageIterator<T> foundResults = instance.getSystemEntities(type);
 
     assertThat(foundResults, is(notNullValue()));
-    assertThat(foundResults.size(), is(equalTo(size)));
+    assertThat(Iterators.size(foundResults), is(equalTo(size)));
   }
 
   private Date getDateDaysFromToday(int daysFromToday) {

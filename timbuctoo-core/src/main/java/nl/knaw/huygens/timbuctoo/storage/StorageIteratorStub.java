@@ -64,7 +64,7 @@ public class StorageIteratorStub<T> implements StorageIterator<T> {
   public T next() {
     if (hasNext()) {
       return list.get(pos++);
-    } 
+    }
     throw new NoSuchElementException();
   }
 
@@ -73,7 +73,6 @@ public class StorageIteratorStub<T> implements StorageIterator<T> {
     throw new UnsupportedOperationException();
   }
 
-  @Override
   public int size() {
     return list.size();
   }
