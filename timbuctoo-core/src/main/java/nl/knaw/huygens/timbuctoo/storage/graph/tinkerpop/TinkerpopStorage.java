@@ -174,11 +174,7 @@ public class TinkerpopStorage implements GraphStorage {
 
   @Override
   public <T extends Entity> void updateEntity(Class<T> type, T entity) throws StorageException {
-    Vertex vertex = lowLevelAPI.getLatestVertexById(type, entity.getId());
-
-    if (vertex == null) {
-      throw new NoSuchEntityException(type, entity.getId());
-    }
+    Vertex vertex = getVertexIfExists(type, entity.getId());
 
     validateIsMatchingRev(type, entity, vertex);
 
@@ -186,6 +182,15 @@ public class TinkerpopStorage implements GraphStorage {
     converter.updateModifiedAndRev(vertex, entity);
     converter.updateElement(vertex, entity);
 
+  }
+
+  private <T extends Entity> Vertex getVertexIfExists(Class<T> type, String id) throws NoSuchEntityException {
+    Vertex vertex = lowLevelAPI.getLatestVertexById(type, id);
+
+    if (vertex == null) {
+      throw new NoSuchEntityException(type, id);
+    }
+    return vertex;
   }
 
   private <T extends Entity> void validateIsMatchingRev(Class<T> type, T entity, Element element) throws UpdateException {
@@ -203,7 +208,25 @@ public class TinkerpopStorage implements GraphStorage {
 
   @Override
   public <T extends DomainEntity> void addVariant(Class<T> type, T variant, Change change) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    Class<? extends DomainEntity> primitive = TypeRegistry.toBaseDomainEntity(type);
+
+    String id = variant.getId();
+    validateEntityDoesNotContainVariant(type, id);
+
+    Vertex vertex = getVertexIfExists(primitive, variant.getId());
+
+    validateIsMatchingRev(type, variant, vertex);
+
+    VertexConverter<T> converter = elementConverterFactory.forType(type);
+    converter.updateModifiedAndRev(vertex, variant);
+    converter.addValuesToElement(vertex, variant);
+
+  }
+
+  private <T extends DomainEntity> void validateEntityDoesNotContainVariant(Class<T> type, String id) throws UpdateException {
+    if (entityExists(type, id)) {
+      throw UpdateException.variantAlreadyExists(type, id);
+    }
   }
 
   @SuppressWarnings("unchecked")

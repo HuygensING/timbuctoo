@@ -226,7 +226,6 @@ public class TinkerpopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.updateDomainEntityIncreasesTheRevisionNumberAndChangesTheDomainEntityButDoesNotCreateANewVersion();
   }
 
-  @Ignore
   @Test
   @Override
   public void updateDomainEntityWithADifferentTypeAddsTheNewFields() throws Exception {

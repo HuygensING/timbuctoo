@@ -377,6 +377,117 @@ public class TinkerpopStorageTest {
   }
 
   @Test
+  public void addVariantAddsANewVariantToTheExistingNodeOfTheBaseType() throws Exception {
+    // setup
+    SubADomainEntity domainEntity = aDomainEntity() //
+        .withId(ID) //
+        .withRev(SECOND_REVISION)//
+        .withAPid()//
+        .build();
+
+    Vertex vertex = aVertex().withRev(FIRST_REVISION).build();
+    latestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, vertex);
+
+    VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+
+    // action
+    instance.addVariant(DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
+
+    // verify
+    verify(converter).updateModifiedAndRev(vertex, domainEntity);
+    verify(converter).addValuesToElement(vertex, domainEntity);
+
+  }
+
+  @Test(expected = NoSuchEntityException.class)
+  public void addVariantThrowsANoSuchEntityExceptionWhenTheEntityDoesNotExist() throws Exception {
+    // setup
+    noLatestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
+
+    // action
+    instance.addVariant(DOMAIN_ENTITY_TYPE, aDomainEntity().build(), CHANGE);
+
+  }
+
+  @Test(expected = UpdateException.class)
+  public void addVariantThrowsAnUpdateExceptionWhenRevisionIsHigherMoreThanOneTheTheRevisionOfTheNode() throws Exception {
+    addVariantThrowsUpdateExceptionForRevisionMismatch(FIRST_REVISION, THIRD_REVISION);
+  }
+
+  @Test(expected = UpdateException.class)
+  public void addVariantThrowsAnUpdateExceptionWhenRevisionIsEqualToTheRevisionOfTheNode() throws Exception {
+    addVariantThrowsUpdateExceptionForRevisionMismatch(THIRD_REVISION, THIRD_REVISION);
+  }
+
+  @Test(expected = UpdateException.class)
+  public void addVariantThrowsAnUpdateExceptionWhenRevisionIsLowerThanTheRevisionOfTheNode() throws Exception {
+    addVariantThrowsUpdateExceptionForRevisionMismatch(THIRD_REVISION, SECOND_REVISION);
+  }
+
+  private void addVariantThrowsUpdateExceptionForRevisionMismatch(int vertexRevision, int entityRevision) throws Exception {
+    // setup
+    Vertex vertex = aVertex().withRev(vertexRevision).build();
+    latestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, vertex);
+
+    Change oldModified = CHANGE;
+    SubADomainEntity domainEntity = aDomainEntity() //
+        .withId(ID) //
+        .withRev(entityRevision)//
+        .withAPid()//
+        .withModified(oldModified)//
+        .build();
+
+    instance.addVariant(DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
+  }
+
+  @Test(expected = UpdateException.class)
+  public void addVariantThrowsAnUpdateExceptionWhenTheEntityAlreadyContainsTheVariant() throws Exception {
+    // setup
+    latestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID, aVertex().build());
+
+    // action
+    instance.addVariant(DOMAIN_ENTITY_TYPE, aDomainEntity().withId(ID).build(), CHANGE);
+  }
+
+  @Test(expected = ConversionException.class)
+  public void addVariantThrowsAConversionExceptionWhenTheModifiedOrRevCannotBeUpdated() throws Exception {
+    // setup
+    SubADomainEntity domainEntity = aDomainEntity() //
+        .withId(ID) //
+        .withRev(SECOND_REVISION)//
+        .withAPid()//
+        .build();
+
+    Vertex vertex = aVertex().withRev(FIRST_REVISION).build();
+    latestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, vertex);
+
+    VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+    doThrow(new ConversionException()).when(converter).updateModifiedAndRev(vertex, domainEntity);
+
+    // action
+    instance.addVariant(DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
+  }
+
+  @Test(expected = ConversionException.class)
+  public void addVariantThrowsAConversionExceptionWhenTheVertexCannotBeUpdated() throws Exception {
+    // setup
+    SubADomainEntity domainEntity = aDomainEntity() //
+        .withId(ID) //
+        .withRev(SECOND_REVISION)//
+        .withAPid()//
+        .build();
+
+    Vertex vertex = aVertex().withRev(FIRST_REVISION).build();
+    latestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, vertex);
+
+    VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+    doThrow(new ConversionException()).when(converter).addValuesToElement(vertex, domainEntity);
+
+    // action
+    instance.addVariant(DOMAIN_ENTITY_TYPE, domainEntity, CHANGE);
+  }
+
+  @Test
   public void setDomainEntityPIDAddsAPIDToTheNodeAndDuplicatesTheNode() throws Exception {
     // setup
     Vertex foundVertex = aVertex().build();
