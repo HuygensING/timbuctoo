@@ -119,7 +119,6 @@ public class TinkerpopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.entityExistsForSystemEntityShowsIfTheEntityExistsInTheDatabase();
   }
 
-  @Ignore
   @Test
   @Override
   public void findItemByPropertyForDomainEntityReturnsTheFirstDomainEntityFound() throws StorageException {
@@ -133,7 +132,6 @@ public class TinkerpopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.findItemByPropertyForRelationReturnsTheFirstRelationFound();
   }
 
-  @Ignore
   @Test
   @Override
   public void findItemByPropertyForSystemEntityReturnsTheFirstFoundInTheDatabase() throws Exception {
