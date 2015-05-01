@@ -13,12 +13,15 @@ class NoOpPropertyConverter implements PropertyConverter {
 
   private String fieldName;
   private FieldType fieldType;
+  private Class<? extends Entity> type;
 
   @Override
   public void setField(Field field) {}
 
   @Override
-  public void setContainingType(Class<? extends Entity> type) {}
+  public void setContainingType(Class<? extends Entity> type) {
+    this.type = type;
+  }
 
   @Override
   public void setFieldType(FieldType fieldType) {
@@ -48,7 +51,7 @@ class NoOpPropertyConverter implements PropertyConverter {
 
   @Override
   public String propertyName() {
-    return "";
+    return fieldType.propertyName(type, fieldName);
   }
 
 }
