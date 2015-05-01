@@ -35,6 +35,8 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 
 public class TinkerpopLowLevelAPITest {
+  private static final String PROPERTY_VALUE = "propertyValue";
+  private static final String PROPERTY_NAME = "propertyName";
   private static final String ID2 = "id2";
   private static final int SECOND_REVISION = 2;
   private static final int THIRD_REVISION = 3;
@@ -70,6 +72,40 @@ public class TinkerpopLowLevelAPITest {
 
     // verify
     verify(vertexDuplicator).duplicate(vertexToDuplicate);
+  }
+
+  @Test
+  public void findVerticesByPropertyReturnsAnIteratorWithTheLatestFoundVertices() {
+    Vertex latestVertex1 = aVertex().build();
+    Vertex latestVertex2 = aVertex().build();
+    Vertex notLatestVertex = aVertex().withIncomingEdgeWithLabel(VERSION_OF).build();
+    aVertexSearchResult() //
+        .forType(DOMAIN_ENTITY_TYPE) //
+        .forProperty(PROPERTY_NAME, PROPERTY_VALUE) //
+        .containsVertex(latestVertex1) //
+        .containsVertex(notLatestVertex) //
+        .containsVertex(latestVertex2) //
+        .foundInDatabase(dbMock);
+
+    // action
+    Iterator<Vertex> vertices = instance.findVerticesByProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE);
+
+    // verify
+    assertThat(Lists.newArrayList(vertices), containsInAnyOrder(latestVertex1, latestVertex2));
+  }
+
+  @Test
+  public void findVerticesByPropertyReturnsAnEmptuIteratorWhenNoVerticesAreFound() {
+    anEmptyVertexSearchResult()//
+        .forType(DOMAIN_ENTITY_TYPE)//
+        .forProperty(PROPERTY_NAME, PROPERTY_VALUE)//
+        .foundInDatabase(dbMock);
+
+    // action
+    Iterator<Vertex> vertices = instance.findVerticesByProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE);
+
+    // verify
+    assertThat(Iterators.size(vertices), is(0));
   }
 
   @Test

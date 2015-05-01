@@ -132,18 +132,23 @@ class TinkerpopLowLevelAPI {
   }
 
   public Iterator<Vertex> getLatestVerticesOf(Class<? extends Entity> type) {
-    List<Vertex> latestVertices = Lists.newArrayList();
     Iterable<Vertex> allVertices = queryByType(type).vertices();
 
+    List<Vertex> latestVertices = getLatestVertices(allVertices);
+
+    return latestVertices.iterator();
+
+  }
+
+  private List<Vertex> getLatestVertices(Iterable<Vertex> allVertices) {
+    List<Vertex> latestVertices = Lists.newArrayList();
     for (Iterator<Vertex> iterator = allVertices.iterator(); iterator.hasNext();) {
       Vertex vertex = iterator.next();
       if (IS_LATEST_VERSION_OF_VERTEX.apply(vertex)) {
         latestVertices.add(vertex);
       }
     }
-
-    return latestVertices.iterator();
-
+    return latestVertices;
   }
 
   public void duplicate(Vertex vertex) {
@@ -188,7 +193,9 @@ class TinkerpopLowLevelAPI {
     return queryByType(type).has(ID_PROPERTY_NAME, id).vertices().iterator();
   }
 
-  public Iterator<Vertex> findVerticesByProperty(String propertyName, String propertyValue) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+  public Iterator<Vertex> findVerticesByProperty(Class<? extends Entity> type, String propertyName, String propertyValue) {
+    Iterable<Vertex> vertices = queryByType(type).has(propertyName, propertyValue).vertices();
+
+    return getLatestVertices(vertices).iterator();
   }
 }

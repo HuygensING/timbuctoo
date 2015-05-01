@@ -290,7 +290,7 @@ public class TinkerpopStorageTest {
     // setup
     Vertex foundVertex = aVertex().build();
     Iterator<Vertex> vertexIterator = Lists.<Vertex> newArrayList(foundVertex).iterator();
-    when(lowLevelAPIMock.findVerticesByProperty(PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(vertexIterator);
+    when(lowLevelAPIMock.findVerticesByProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(vertexIterator);
 
     VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
     when(converter.getPropertyName(FIELD_NAME)).thenReturn(PROPERTY_NAME);
@@ -307,7 +307,7 @@ public class TinkerpopStorageTest {
   @Test
   public void findEntityByPropertyReturnsNullIfNoNodeIsFound() throws Exception {
     // setup
-    noEntitiesFoundByPropertyWithValue(PROPERTY_NAME, PROPERTY_VALUE);
+    noEntitiesFoundByPropertyWithValue(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE);
 
     VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
     when(converter.getPropertyName(FIELD_NAME)).thenReturn(PROPERTY_NAME);
@@ -320,9 +320,9 @@ public class TinkerpopStorageTest {
 
   }
 
-  private void noEntitiesFoundByPropertyWithValue(String name, String value) {
+  private void noEntitiesFoundByPropertyWithValue(Class<? extends Entity> type, String name, String value) {
     Iterator<Vertex> vertexIterator = Lists.<Vertex> newArrayList().iterator();
-    when(lowLevelAPIMock.findVerticesByProperty(name, value)).thenReturn(vertexIterator);
+    when(lowLevelAPIMock.findVerticesByProperty(type, name, value)).thenReturn(vertexIterator);
   }
 
   @Test(expected = ConversionException.class)
@@ -330,7 +330,7 @@ public class TinkerpopStorageTest {
     // setup
     Vertex foundVertex = aVertex().build();
     Iterator<Vertex> vertexIterator = Lists.<Vertex> newArrayList(foundVertex).iterator();
-    when(lowLevelAPIMock.findVerticesByProperty(PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(vertexIterator);
+    when(lowLevelAPIMock.findVerticesByProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(vertexIterator);
 
     VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
     when(converter.getPropertyName(FIELD_NAME)).thenReturn(PROPERTY_NAME);
