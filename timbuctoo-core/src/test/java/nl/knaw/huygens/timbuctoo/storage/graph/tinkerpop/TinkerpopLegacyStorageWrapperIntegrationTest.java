@@ -168,7 +168,6 @@ public class TinkerpopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.getAllVariationsReturnsAllTheVariationsOfADomainEntity();
   }
 
-  @Ignore
   @Test
   @Override
   public void getDomainEntitiesReturnsAllDomainEntitiesOfTheRequestedType() throws Exception {
@@ -196,7 +195,6 @@ public class TinkerpopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.getRelationsByEntityIdReturnsAllTheIncomingAndOutgoingRelationsOfAnEntity();
   }
 
-  @Ignore
   @Test
   @Override
   public void getSystemEntitiesReturnsAllTheSystemEntitiesOfACertainType() throws Exception {
