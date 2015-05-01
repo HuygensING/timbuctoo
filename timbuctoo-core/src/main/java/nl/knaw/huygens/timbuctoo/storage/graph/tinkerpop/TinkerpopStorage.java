@@ -403,7 +403,17 @@ public class TinkerpopStorage implements GraphStorage {
 
   @Override
   public <T extends Entity> T findEntityByProperty(Class<T> type, String field, String value) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    T entity = null;
+    VertexConverter<T> converter = elementConverterFactory.forType(type);
+    String propertyName = converter.getPropertyName(field);
+
+    Iterator<Vertex> iterator = lowLevelAPI.findVerticesByProperty(propertyName, value);
+
+    if (iterator.hasNext()) {
+      entity = converter.convertToEntity(iterator.next());
+    }
+
+    return entity;
   }
 
   @Override

@@ -187,4 +187,8 @@ class TinkerpopLowLevelAPI {
   public Iterator<Vertex> getVerticesWithId(Class<? extends Entity> type, String id) {
     return queryByType(type).has(ID_PROPERTY_NAME, id).vertices().iterator();
   }
+
+  public Iterator<Vertex> findVerticesByProperty(String propertyName, String propertyValue) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }

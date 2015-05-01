@@ -49,6 +49,9 @@ import com.tinkerpop.blueprints.Vertex;
 
 public class TinkerpopStorageTest {
 
+  private static final String FIELD_NAME = "fieldName";
+  private static final String PROPERTY_NAME = "propertyName";
+  private static final String PROPERTY_VALUE = "propertyValue";
   private static final String A_LABEL = "aLabel";
   private static final Class<Relation> PRIMITIVE_RELATION_TYPE = Relation.class;
   private static final String PID = "pid";
@@ -280,6 +283,62 @@ public class TinkerpopStorageTest {
 
     // verify
     assertThat(entityExists, is(equalTo(false)));
+  }
+
+  @Test
+  public void findEntityByPropertyConvertsTheFirstNodeFoundWithProperty() throws Exception {
+    // setup
+    Vertex foundVertex = aVertex().build();
+    Iterator<Vertex> vertexIterator = Lists.<Vertex> newArrayList(foundVertex).iterator();
+    when(lowLevelAPIMock.findVerticesByProperty(PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(vertexIterator);
+
+    VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+    when(converter.getPropertyName(FIELD_NAME)).thenReturn(PROPERTY_NAME);
+    SubADomainEntity entity = aDomainEntity().build();
+    when(converter.convertToEntity(foundVertex)).thenReturn(entity);
+
+    // action
+    SubADomainEntity actualEntity = instance.findEntityByProperty(DOMAIN_ENTITY_TYPE, FIELD_NAME, PROPERTY_VALUE);
+
+    // verify
+    assertThat(actualEntity, is(sameInstance(entity)));
+  }
+
+  @Test
+  public void findEntityByPropertyReturnsNullIfNoNodeIsFound() throws Exception {
+    // setup
+    noEntitiesFoundByPropertyWithValue(PROPERTY_NAME, PROPERTY_VALUE);
+
+    VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+    when(converter.getPropertyName(FIELD_NAME)).thenReturn(PROPERTY_NAME);
+
+    // action
+    SubADomainEntity entity = instance.findEntityByProperty(DOMAIN_ENTITY_TYPE, FIELD_NAME, PROPERTY_VALUE);
+
+    // verify
+    assertThat(entity, is(nullValue()));
+
+  }
+
+  private void noEntitiesFoundByPropertyWithValue(String name, String value) {
+    Iterator<Vertex> vertexIterator = Lists.<Vertex> newArrayList().iterator();
+    when(lowLevelAPIMock.findVerticesByProperty(name, value)).thenReturn(vertexIterator);
+  }
+
+  @Test(expected = ConversionException.class)
+  public void findEntityByPropertyThrowsAConversionExceptionWhenTheNodeCannotBeConverted() throws Exception {
+    // setup
+    Vertex foundVertex = aVertex().build();
+    Iterator<Vertex> vertexIterator = Lists.<Vertex> newArrayList(foundVertex).iterator();
+    when(lowLevelAPIMock.findVerticesByProperty(PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(vertexIterator);
+
+    VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+    when(converter.getPropertyName(FIELD_NAME)).thenReturn(PROPERTY_NAME);
+    when(converter.convertToEntity(foundVertex)).thenThrow(new ConversionException());
+
+    // action
+    instance.findEntityByProperty(DOMAIN_ENTITY_TYPE, FIELD_NAME, PROPERTY_VALUE);
+
   }
 
   @Test
