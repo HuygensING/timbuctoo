@@ -422,7 +422,19 @@ public class TinkerpopStorage implements GraphStorage {
     EdgeConverter<T> converter = elementConverterFactory.forRelation(type);
     String propertyName = converter.getPropertyName(field);
 
-    Iterator<Edge> edges = lowLevelAPI.findEdgesByProperty(type, propertyName, value);
+    Iterator<Edge> edges = null;
+
+    switch (propertyName) {
+      case Relation.SOURCE_ID:
+        edges = lowLevelAPI.findEdgesBySource(type, value);
+        break;
+      case Relation.TARGET_ID:
+        edges = lowLevelAPI.findEdgesByTarget(type, value);
+        break;
+      default:
+        edges = lowLevelAPI.findEdgesByProperty(type, propertyName, value);
+        break;
+    }
 
     if (edges.hasNext()) {
       relation = converter.convertToEntity(edges.next());

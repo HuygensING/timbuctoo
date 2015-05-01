@@ -208,4 +208,26 @@ class TinkerpopLowLevelAPI {
 
     return getLatestEdges(edges);
   }
+
+  /**
+   * Returns all the latest outgoing edges of the latest version of 
+   * the vertex with the id property with the value of sourceId. 
+   * @param type the type of the relation to find
+   * @param sourceId the id of the vertex to find the edges for
+   * @return the found edges or an empty iterator non are found
+   */
+  public Iterator<Edge> findEdgesBySource(Class<? extends Relation> type, String sourceId) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
+  /**
+   * Returns all the latest incoming edges of the latest version of 
+   * the vertex with the id property with the value of targetId. 
+   * @param type the type of the relation to find
+   * @param targetId the id of the vertex to find the edges for
+   * @return the found edges or an empty iterator non are found
+   */
+  public Iterator<Edge> findEdgesByTarget(Class<? extends Relation> type, String targetId) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }

@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
+import static nl.knaw.huygens.timbuctoo.model.Relation.SOURCE_ID;
+import static nl.knaw.huygens.timbuctoo.model.Relation.TARGET_ID;
 import static nl.knaw.huygens.timbuctoo.storage.graph.DomainEntityMatcher.likeDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.graph.SubADomainEntityBuilder.aDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.graph.SubARelationBuilder.aRelation;
@@ -958,7 +960,6 @@ public class TinkerpopStorageTest {
 
     // verify
     assertThat(foundRelation, is(nullValue()));
-
   }
 
   @Test(expected = ConversionException.class)
@@ -974,6 +975,42 @@ public class TinkerpopStorageTest {
 
     // action
     instance.findRelationByProperty(RELATION_TYPE, FIELD_NAME, PROPERTY_VALUE);
+  }
+
+  @Test
+  public void findRelationByCallsGetRelationsByEntityIfThePropertyIsSourceId() throws Exception {
+    // setup
+    Edge foundEdge = anEdge().build();
+    Iterator<Edge> iterator = Lists.<Edge> newArrayList(foundEdge).iterator();
+    when(lowLevelAPIMock.findEdgesBySource(RELATION_TYPE, PROPERTY_VALUE)).thenReturn(iterator);
+    EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
+    when(converter.getPropertyName(SOURCE_ID)).thenReturn(SOURCE_ID);
+    SubARelation foundRelation = aRelation().build();
+    when(converter.convertToEntity(foundEdge)).thenReturn(foundRelation);
+
+    // action
+    SubARelation actualRelation = instance.findRelationByProperty(RELATION_TYPE, SOURCE_ID, PROPERTY_VALUE);
+
+    // verify
+    assertThat(actualRelation, is(sameInstance(actualRelation)));
+  }
+
+  @Test
+  public void findRelationByCallsGetRelationsByEntityIfThePropertyIsTargetId() throws Exception {
+    // setup
+    Edge foundEdge = anEdge().build();
+    Iterator<Edge> iterator = Lists.<Edge> newArrayList(foundEdge).iterator();
+    when(lowLevelAPIMock.findEdgesByTarget(RELATION_TYPE, PROPERTY_VALUE)).thenReturn(iterator);
+    EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
+    when(converter.getPropertyName(TARGET_ID)).thenReturn(TARGET_ID);
+    SubARelation foundRelation = aRelation().build();
+    when(converter.convertToEntity(foundEdge)).thenReturn(foundRelation);
+
+    // action
+    SubARelation actualRelation = instance.findRelationByProperty(RELATION_TYPE, TARGET_ID, PROPERTY_VALUE);
+
+    // verify
+    assertThat(actualRelation, is(sameInstance(actualRelation)));
   }
 
   @Test

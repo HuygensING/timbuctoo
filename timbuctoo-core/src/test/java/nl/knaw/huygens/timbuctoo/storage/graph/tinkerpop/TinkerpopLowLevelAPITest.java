@@ -134,7 +134,6 @@ public class TinkerpopLowLevelAPITest {
 
     // verify
     assertThat(foundVertex, is(nullValue()));
-
   }
 
   @Test
