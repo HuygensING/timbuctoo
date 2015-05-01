@@ -198,4 +198,8 @@ class TinkerpopLowLevelAPI {
 
     return getLatestVertices(vertices).iterator();
   }
+
+  public Iterator<Edge> findEdgesByProperty(Class<? extends Relation> type, String propertyName, String propertyValue) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }

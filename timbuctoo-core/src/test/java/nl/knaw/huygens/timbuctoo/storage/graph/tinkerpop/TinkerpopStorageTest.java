@@ -305,7 +305,7 @@ public class TinkerpopStorageTest {
   }
 
   @Test
-  public void findEntityByPropertyReturnsNullIfNoNodeIsFound() throws Exception {
+  public void findEntityByPropertyReturnsNullIfNoVertexIsFound() throws Exception {
     // setup
     noEntitiesFoundByPropertyWithValue(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE);
 
@@ -922,6 +922,58 @@ public class TinkerpopStorageTest {
 
     // action
     instance.addRelation(RELATION_TYPE, relation, new Change());
+  }
+
+  @Test
+  public void findRelationByPropertyReturnsTheConvertedFirstFoundEdge() throws Exception {
+    // setup
+    Edge firstEdge = anEdge().build();
+    Edge secondEdge = anEdge().build();
+    Iterator<Edge> iterator = Lists.<Edge> newArrayList(firstEdge, secondEdge).iterator();
+    when(lowLevelAPIMock.findEdgesByProperty(RELATION_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(iterator);
+
+    EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
+    when(converter.getPropertyName(FIELD_NAME)).thenReturn(PROPERTY_NAME);
+    SubARelation foundRelation = aRelation().build();
+    when(converter.convertToEntity(firstEdge)).thenReturn(foundRelation);
+
+    // action
+    SubARelation actualRelation = instance.findRelationByProperty(RELATION_TYPE, FIELD_NAME, PROPERTY_VALUE);
+
+    // verify
+    assertThat(actualRelation, is(sameInstance(foundRelation)));
+  }
+
+  @Test
+  public void findRelationByPropertyReturnsNullIfNoEdgesCanBeFound() throws Exception {
+    // setup
+    Iterator<Edge> iterator = Lists.<Edge> newArrayList().iterator();
+    when(lowLevelAPIMock.findEdgesByProperty(RELATION_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(iterator);
+
+    EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
+    when(converter.getPropertyName(FIELD_NAME)).thenReturn(PROPERTY_NAME);
+
+    // action
+    SubARelation foundRelation = instance.findRelationByProperty(RELATION_TYPE, FIELD_NAME, PROPERTY_VALUE);
+
+    // verify
+    assertThat(foundRelation, is(nullValue()));
+
+  }
+
+  @Test(expected = ConversionException.class)
+  public void findRelationByPropertyThrowsAConversionExceptionIfTheRelationshipCannotBeConverted() throws Exception {
+    // setup
+    Edge foundEdge = anEdge().build();
+    Iterator<Edge> iterator = Lists.<Edge> newArrayList(foundEdge).iterator();
+    when(lowLevelAPIMock.findEdgesByProperty(RELATION_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(iterator);
+
+    EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
+    when(converter.getPropertyName(FIELD_NAME)).thenReturn(PROPERTY_NAME);
+    when(converter.convertToEntity(foundEdge)).thenThrow(new ConversionException());
+
+    // action
+    instance.findRelationByProperty(RELATION_TYPE, FIELD_NAME, PROPERTY_VALUE);
   }
 
   @Test
