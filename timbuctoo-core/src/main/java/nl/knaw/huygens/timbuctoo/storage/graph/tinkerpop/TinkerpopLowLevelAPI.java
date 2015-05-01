@@ -165,24 +165,28 @@ class TinkerpopLowLevelAPI {
   }
 
   public Iterator<Edge> getLatestEdgesOf(Class<? extends Relation> type) {
-    Map<String, Edge> idEdgeMap = Maps.newHashMap();
 
     Iterable<Edge> edges = db.query().edges();
 
+    return getLatestEdges(edges);
+  }
+
+  private Iterator<Edge> getLatestEdges(Iterable<Edge> edges) {
+    Map<String, Edge> latestEdgeMap = Maps.newHashMap();
     for (Iterator<Edge> iterator = edges.iterator(); iterator.hasNext();) {
       Edge edge = iterator.next();
 
       String id = getIdProperty(edge);
 
-      Edge mappedEdge = idEdgeMap.get(id);
+      Edge mappedEdge = latestEdgeMap.get(id);
 
       if (mappedEdge == null || isLaterEdge(edge, mappedEdge)) {
-        idEdgeMap.put(id, edge);
+        latestEdgeMap.put(id, edge);
       }
 
     }
 
-    return idEdgeMap.values().iterator();
+    return latestEdgeMap.values().iterator();
   }
 
   private boolean isLaterEdge(Edge edge, Edge mappedEdge) {
@@ -200,6 +204,8 @@ class TinkerpopLowLevelAPI {
   }
 
   public Iterator<Edge> findEdgesByProperty(Class<? extends Relation> type, String propertyName, String propertyValue) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    Iterable<Edge> edges = db.query().has(propertyName, propertyValue).edges();
+
+    return getLatestEdges(edges);
   }
 }
