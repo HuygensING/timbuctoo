@@ -15,7 +15,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -23,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import test.model.TestSystemEntityWrapper;
@@ -353,28 +351,77 @@ public class TinkerpopLowLevelAPITest {
     assertThat(Iterators.size(edges), is(0));
   }
 
-  @Ignore
   @Test
   public void findEdgesByTargeReturnsTheIncomingEdgesOfTheTargetVertex() {
-    fail("Yet to be implemented");
+    // setup
+    Edge latestEdge1 = anEdge().withID(ID).withRev(SECOND_REVISION).build();
+    Edge notLatestEdge1 = anEdge().withID(ID).withRev(FIRST_REVISION).build();
+    Edge latestEdge2 = anEdge().withID(ID2).withRev(FIRST_REVISION).build();
+    Vertex latestVertexWithEdges = aVertex()//
+        .withIncomingEdge(latestEdge1)//
+        .withIncomingEdge(notLatestEdge1)//
+        .withIncomingEdge(latestEdge2)//
+        .build();
+    Vertex notLatestVertex = aVertex() //
+        .withIncomingEdgeWithLabel(VERSION_OF)//
+        .withIncomingEdge(anEdge().build())//
+        .build();
+    aVertexSearchResult()//
+        .forId(ID)//
+        .containsVertex(latestVertexWithEdges)//
+        .andVertex(notLatestVertex) //
+        .foundInDatabase(dbMock);
+
+    // action
+    Iterator<Edge> edges = instance.findEdgesByTarget(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(Lists.newArrayList(edges), containsInAnyOrder(latestEdge1, latestEdge2));
   }
 
-  @Ignore
   @Test
-  public void findEdgesBySourceReturnsAnEmptyIteratorIfTheTargetVertexCannotBeFound() {
-    fail("Yet to be implemented");
+  public void findEdgesByTargetReturnsAnEmptyIteratorIfTheTargetVertexCannotBeFound() {
+    // setup
+    anEmptyVertexSearchResult().forId(ID).foundInDatabase(dbMock);
+
+    // action
+    Iterator<Edge> edges = instance.findEdgesByTarget(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(Iterators.size(edges), is(0));
   }
 
-  @Ignore
   @Test
-  public void findEdgesBySourceReturnsAnEmptyIteratorIfTheTargetVertexHasNoIncomingEdges() {
-    fail("Yet to be implemented");
+  public void findEdgesByTargetReturnsAnEmptyIteratorIfTheTargetVertexHasNoIncomingEdges() {
+    // setup
+    Vertex latestVertexWithoutEdges = aVertex().build();
+    aVertexSearchResult().containsVertex(latestVertexWithoutEdges).forId(ID).foundInDatabase(dbMock);;
+
+    // action
+    Iterator<Edge> edges = instance.findEdgesByTarget(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(Iterators.size(edges), is(0));
   }
 
-  @Ignore
   @Test
-  public void findEdgesBySourceReturnsAnEmptyIteratorIfTheLatestTargetVertexHasNoIncomingEdges() {
-    fail("Yet to be implemented");
+  public void findEdgesByTargetReturnsAnEmptyIteratorIfTheLatestTargetVertexHasNoIncomingEdges() {
+    // setup
+    Vertex latestVertexWithout = aVertex().build();
+    Vertex notlatestVertexWithEdges = aVertex()//
+        .withIncomingEdgeWithLabel(VERSION_OF)//
+        .withIncomingEdge(anEdge().build())//
+        .build();
+    aVertexSearchResult().forId(ID) //
+        .containsVertex(latestVertexWithout) //
+        .andVertex(notlatestVertexWithEdges) //
+        .foundInDatabase(dbMock);
+
+    // action
+    Iterator<Edge> edges = instance.findEdgesByTarget(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(Iterators.size(edges), is(0));
   }
 
   @Test
