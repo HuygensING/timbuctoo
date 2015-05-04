@@ -574,6 +574,33 @@ public class TinkerpopStorageTest {
     verify(converter).updateElement(vertex, entity);
   }
 
+  @Test
+  public void getIdsOfNonPersistentDomainEntitiesFiltersTheIdsOfGetVerticesOfType() {
+    // setup
+    String id2 = "id2";
+    List<Vertex> vertices = Lists.newArrayList(aVertex().withId(ID).build(), aVertex().withId(id2).build());
+    when(lowLevelAPIMock.getVerticesWithoutProperty(DOMAIN_ENTITY_TYPE, DomainEntity.PID)).thenReturn(vertices.iterator());
+
+    // action
+    List<String> ids = instance.getIdsOfNonPersistentDomainEntities(DOMAIN_ENTITY_TYPE);
+
+    // verify
+    assertThat(Lists.newArrayList(ids), containsInAnyOrder(ID, id2));
+  }
+
+  @Test
+  public void getIdsOfNonPersistentDomainEntitiesReturnsAnEmptyListIfNoVerticesAreFound() {
+    // setup
+    List<Vertex> vertices = Lists.newArrayList();
+    when(lowLevelAPIMock.getVerticesWithoutProperty(DOMAIN_ENTITY_TYPE, DomainEntity.PID)).thenReturn(vertices.iterator());
+
+    // action
+    List<String> ids = instance.getIdsOfNonPersistentDomainEntities(DOMAIN_ENTITY_TYPE);
+
+    // verify
+    assertThat(Lists.newArrayList(ids), is(emptyCollectionOf(String.class)));
+  }
+
   @Test(expected = ConversionException.class)
   public void updateEntityThrowsAConversionExceptionWhenTheVertexConverterThrowsOne() throws Exception {
     // setup

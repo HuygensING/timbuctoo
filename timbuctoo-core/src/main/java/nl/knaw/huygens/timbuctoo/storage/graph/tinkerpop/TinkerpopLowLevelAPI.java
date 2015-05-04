@@ -256,4 +256,8 @@ class TinkerpopLowLevelAPI {
     return getLatestEdges(outgoingEdges);
   }
 
+  public Iterator<Vertex> getVerticesWithoutProperty(Class<? extends DomainEntity> domainEntityType, String propertyName) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
 }

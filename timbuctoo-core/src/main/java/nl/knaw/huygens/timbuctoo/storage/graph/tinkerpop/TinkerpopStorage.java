@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getIdProperty;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getRevisionProperty;
 
 import java.util.Iterator;
@@ -520,7 +521,14 @@ public class TinkerpopStorage implements GraphStorage {
 
   @Override
   public <T extends DomainEntity> List<String> getIdsOfNonPersistentDomainEntities(Class<T> type) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    List<String> ids = Lists.newArrayList();
+    Iterator<Vertex> vertices = lowLevelAPI.getVerticesWithoutProperty(type, DomainEntity.PID);
+
+    for (; vertices.hasNext();) {
+      ids.add(getIdProperty(vertices.next()));
+    }
+
+    return ids;
   }
 
   @Override
