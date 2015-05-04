@@ -217,7 +217,16 @@ class TinkerpopLowLevelAPI {
    * @return the found edges or an empty iterator non are found
    */
   public Iterator<Edge> findEdgesBySource(Class<? extends Relation> type, String sourceId) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    Iterable<Vertex> vertices = db.query().has(ID_PROPERTY_NAME, sourceId).vertices();
+
+    List<Vertex> latestVertices = this.getLatestVertices(vertices);
+    if (latestVertices.isEmpty()) {
+      return Lists.<Edge> newArrayList().iterator();
+    }
+
+    Iterable<Edge> outgoingEdges = latestVertices.get(0).getEdges(Direction.OUT);
+
+    return getLatestEdges(outgoingEdges);
   }
 
   /**
