@@ -59,7 +59,7 @@ public class TinkerPopStorage implements GraphStorage {
 
   @Override
   public <T extends DomainEntity> void addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
-    new RevertableAddition<T>() {
+    new RevertableVertexAddition<T>() {
       @Override
       protected VertexConverter<T> createVertexConverter(Class<T> type) {
         return elementConverterFactory.compositeForType(type);
@@ -69,10 +69,10 @@ public class TinkerPopStorage implements GraphStorage {
 
   @Override
   public <T extends SystemEntity> void addSystemEntity(Class<T> type, T entity) throws StorageException {
-    new RevertableAddition<T>().execute(type, entity);
+    new RevertableVertexAddition<T>().execute(type, entity);
   }
 
-  private class RevertableAddition<T extends Entity> {
+  private class RevertableVertexAddition<T extends Entity> {
     public final void execute(Class<T> type, T entity) throws StorageException {
       Vertex vertex = db.addVertex(null);
 
@@ -95,7 +95,6 @@ public class TinkerPopStorage implements GraphStorage {
     }
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public <T extends Relation> void addRelation(Class<T> type, Relation relation, Change change) throws StorageException {
     Vertex sourceVertex = getDomainEntityRelationPart(relation.getSourceType(), relation.getSourceId());
@@ -106,9 +105,28 @@ public class TinkerPopStorage implements GraphStorage {
 
     Edge edge = sourceVertex.addEdge(regularRelationName, targetVertex);
 
-    EdgeConverter<T> converter = elementConverterFactory.compositeForRelation(type);
+    new RevertableEdgeAddition<T>().execute(type, type.cast(relation), edge);
+  }
 
-    converter.addValuesToElement(edge, (T) relation);
+  private class RevertableEdgeAddition<T extends Relation> {
+    public final void execute(Class<T> type, T entity, Edge edge) throws StorageException {
+      EdgeConverter<T> converter = createEdgeConverter(type);
+      try {
+        converter.addValuesToElement(edge, entity);
+      } catch (ConversionException e) {
+        rollback(edge);
+        throw e;
+      }
+    }
+
+    protected void rollback(Edge vertex) {
+      db.removeEdge(vertex);
+    }
+
+    protected EdgeConverter<T> createEdgeConverter(Class<T> type) {
+      EdgeConverter<T> converter = elementConverterFactory.compositeForRelation(type);
+      return converter;
+    }
   }
 
   private String getRegularRelationName(Vertex relationTypeVertex) throws ConversionException {

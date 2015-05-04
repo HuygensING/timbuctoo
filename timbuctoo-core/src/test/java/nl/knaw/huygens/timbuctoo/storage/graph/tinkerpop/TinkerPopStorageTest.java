@@ -953,7 +953,7 @@ public class TinkerPopStorageTest {
   }
 
   @Test(expected = ConversionException.class)
-  public void addRelationThrowsAConversionExceptionWhenRelationCannotBeConverted() throws Exception {
+  public void addRelationThrowsAConversionExceptionWhenRelationCannotBeConvertedAndDeletesTheCreatedEdge() throws Exception {
     // setup
     SubARelation relation = aRelation()//
         .withSourceId(RELATION_SOURCE_ID)//
@@ -981,7 +981,7 @@ public class TinkerPopStorageTest {
       // action
       instance.addRelation(RELATION_TYPE, relation, new Change());
     } finally {
-      dbMock.removeEdge(edge);
+      verify(dbMock).removeEdge(edge);
     }
   }
 
