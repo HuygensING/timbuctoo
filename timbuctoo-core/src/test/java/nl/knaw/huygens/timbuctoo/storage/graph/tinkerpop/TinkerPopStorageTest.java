@@ -124,8 +124,12 @@ public class TinkerPopStorageTest {
     VertexConverter<SubADomainEntity> converter = compositeVertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
     doThrow(ConversionException.class).when(converter).addValuesToElement(createdVertex, entity);
 
-    // action
-    instance.addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+    try {
+      // action
+      instance.addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+    } finally {
+      verify(dbMock).removeVertex(createdVertex);
+    }
   }
 
   @Test
