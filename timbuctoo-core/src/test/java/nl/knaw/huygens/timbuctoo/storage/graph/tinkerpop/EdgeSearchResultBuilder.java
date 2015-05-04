@@ -26,9 +26,11 @@ import com.tinkerpop.blueprints.Predicate;
 public class EdgeSearchResultBuilder {
   private Map<String, Object> searchProperties;
   private List<Edge> edges;
+  private List<String> withoutProperties;
 
   private EdgeSearchResultBuilder() {
     searchProperties = Maps.newHashMap();
+    withoutProperties = Lists.newArrayList();
     edges = Lists.newArrayList();
   }
 
@@ -87,7 +89,17 @@ public class EdgeSearchResultBuilder {
 
     }
 
+    for (String withoutProperty : withoutProperties) {
+      when(graphQueryMock.hasNot(withoutProperty)).thenReturn(graphQueryMock);
+    }
+
     when(graphQueryMock.edges()).thenReturn(edges);
 
+  }
+
+  public EdgeSearchResultBuilder withoutProperty(String propertyName) {
+    withoutProperties.add(propertyName);
+
+    return this;
   }
 }

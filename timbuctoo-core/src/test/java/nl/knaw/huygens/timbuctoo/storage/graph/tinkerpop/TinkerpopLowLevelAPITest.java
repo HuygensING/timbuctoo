@@ -514,6 +514,36 @@ public class TinkerpopLowLevelAPITest {
   }
 
   @Test
+  public void findEdgesWithoutPropertyReturnsVerticesDoNotContainACertainProperty() {
+    // setup
+    Edge edge1 = anEdge().build();
+    Edge edge2 = anEdge().build();
+    anEdgeSearchResult()//
+        .withoutProperty(PROPERTY_NAME)//
+        .containsEdge(edge1) //
+        .containsEdge(edge2) //
+        .foundInDatabase(dbMock);
+
+    // action
+    Iterator<Edge> vertices = instance.findEdgesWithoutProperty(RELATION_TYPE, PROPERTY_NAME);
+
+    // verify
+    assertThat(Lists.newArrayList(vertices), containsInAnyOrder(edge1, edge2));
+  }
+
+  @Test
+  public void findEdgesWithoutPropertyReturnsAnEmptyIteratorWhenNoneAreFound() {
+    // setup
+    anEmptyEdgeSearchResult().withoutProperty(PROPERTY_NAME).foundInDatabase(dbMock);
+
+    // action
+    Iterator<Edge> vertices = instance.findEdgesWithoutProperty(RELATION_TYPE, PROPERTY_NAME);
+
+    // verify
+    assertThat(Iterators.size(vertices), is(0));
+  }
+
+  @Test
   public void getLatestEdgeByIdReturnsTheEdgeWithTheHighestRevisionForACertainId() {
     // setup
     Edge edgeWithHighestRevision = anEdge().withRev(THIRD_REVISION).build();

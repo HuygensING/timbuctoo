@@ -220,6 +220,12 @@ class TinkerpopLowLevelAPI {
     return vertices.iterator();
   }
 
+  public Iterator<Edge> findEdgesWithoutProperty(Class<? extends Relation> relationType, String propertyName) {
+    Iterable<Edge> edges = db.query().hasNot(propertyName).edges();
+
+    return edges.iterator();
+  }
+
   public Iterator<Edge> findEdgesByProperty(Class<? extends Relation> type, String propertyName, String propertyValue) {
     Iterable<Edge> edges = db.query().has(propertyName, propertyValue).edges();
 
@@ -259,10 +265,6 @@ class TinkerpopLowLevelAPI {
     Iterable<Edge> outgoingEdges = latestVertices.get(0).getEdges(direction);
 
     return getLatestEdges(outgoingEdges);
-  }
-
-  public Iterator<Edge> findEdgesWithoutProperty(Class<? extends Relation> relationType, String propertyName) {
-    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
 }
