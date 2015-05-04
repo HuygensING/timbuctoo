@@ -184,7 +184,6 @@ public class TinkerpopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.getRelationIdsReturnsAListOfRelationIdsThatBelongToTheEntityIds();
   }
 
-  @Ignore
   @Test
   @Override
   public void getRelationsByEntityIdReturnsAllTheIncomingAndOutgoingRelationsOfAnEntity() throws Exception {
