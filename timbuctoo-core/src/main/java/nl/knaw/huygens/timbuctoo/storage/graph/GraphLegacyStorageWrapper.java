@@ -182,7 +182,6 @@ public class GraphLegacyStorageWrapper implements Storage {
     if (RELATION_TYPE.isAssignableFrom(type)) {
       return;
     }
-    Change change = Change.newInternalInstance();
     for (String id : ids) {
       graphStorage.deleteDomainEntity(TypeRegistry.toBaseDomainEntity(type), id);
     }
