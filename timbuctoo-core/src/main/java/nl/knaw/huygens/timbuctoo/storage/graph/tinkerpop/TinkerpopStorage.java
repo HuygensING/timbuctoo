@@ -499,15 +499,20 @@ public class TinkerpopStorage implements GraphStorage {
     String edgeLabel = getRegularRelationName(lowLevelAPI.getLatestVertexById(RelationType.class, relationTypeId));
 
     if (source != null) {
+      Edge latestEdge = null;
       for (Edge edge : source.getEdges(Direction.OUT, edgeLabel)) {
         if (edge.getVertex(Direction.IN) == target) {
-          EdgeConverter<T> converter = elementConverterFactory.forRelation(relationType);
-
-          relation = converter.convertToEntity(edge);
-          break;
+          if (latestEdge == null || getRevisionProperty(edge) > getRevisionProperty(latestEdge)) {
+            latestEdge = edge;
+          }
         }
       }
 
+      EdgeConverter<T> converter = elementConverterFactory.forRelation(relationType);
+
+      if (latestEdge != null) {
+        relation = converter.convertToEntity(latestEdge);
+      }
     }
 
     return relation;

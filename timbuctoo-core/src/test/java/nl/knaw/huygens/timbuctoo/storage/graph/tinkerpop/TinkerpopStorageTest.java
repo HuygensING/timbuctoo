@@ -1003,8 +1003,9 @@ public class TinkerpopStorageTest {
   public void findRelationReturnsTheLatestRelation() throws Exception {
     // setup
     Vertex target = aVertex().build();
-    Edge edge = anEdge().withLabel(REGULAR_RELATION_NAME).withTarget(target).build();
-    Vertex source = aVertex().withOutgoingEdge(edge).build();
+    Edge edge = anEdge().withLabel(REGULAR_RELATION_NAME).withRev(FIRST_REVISION).withTarget(target).build();
+    Edge latestEdge = anEdge().withLabel(REGULAR_RELATION_NAME).withRev(SECOND_REVISION).withTarget(target).build();
+    Vertex source = aVertex().withOutgoingEdge(edge).withOutgoingEdge(latestEdge).build();
 
     relationTypeWithRegularNameExists(REGULAR_RELATION_NAME, RELATION_TYPE_ID);
 
@@ -1013,7 +1014,7 @@ public class TinkerpopStorageTest {
 
     EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
     SubARelation relation = aRelation().build();
-    when(converter.convertToEntity(edge)).thenReturn(relation);
+    when(converter.convertToEntity(latestEdge)).thenReturn(relation);
 
     // action
     SubARelation actualRelation = instance.findRelation(RELATION_TYPE, SOURCE_ID, TARGET_ID, RELATION_TYPE_ID);
