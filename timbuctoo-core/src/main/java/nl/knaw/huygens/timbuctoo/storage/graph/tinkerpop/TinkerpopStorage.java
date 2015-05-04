@@ -468,7 +468,16 @@ public class TinkerpopStorage implements GraphStorage {
 
   @Override
   public <T extends Relation> StorageIterator<T> getRelationsByEntityId(Class<T> type, String id) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    Vertex vertex = lowLevelAPI.getLatestVertexById(id);
+
+    Iterable<Edge> edges = null;
+    if (vertex == null) {
+      edges = Lists.newArrayList();
+    } else {
+      edges = vertex.getEdges(Direction.BOTH);
+    }
+
+    return storageIteratorFactory.createForRelation(type, edges);
   }
 
   @Override

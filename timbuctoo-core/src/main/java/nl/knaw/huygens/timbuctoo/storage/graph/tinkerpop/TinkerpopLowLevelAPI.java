@@ -244,4 +244,8 @@ class TinkerpopLowLevelAPI {
 
     return getLatestEdges(outgoingEdges);
   }
+
+  public Vertex getLatestVertexById(String id) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }

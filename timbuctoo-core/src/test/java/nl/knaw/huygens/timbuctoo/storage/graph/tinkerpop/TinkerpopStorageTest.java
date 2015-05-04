@@ -49,6 +49,7 @@ import test.model.projecta.SubADomainEntity;
 import test.model.projecta.SubARelation;
 
 import com.google.common.collect.Lists;
+import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
@@ -1053,8 +1054,7 @@ public class TinkerpopStorageTest {
   public void findRelationByCallsGetRelationsByEntityIfThePropertyIsSourceId() throws Exception {
     // setup
     Edge foundEdge = anEdge().build();
-    Iterator<Edge> iterator = Lists.<Edge> newArrayList(foundEdge).iterator();
-    when(lowLevelAPIMock.findEdgesBySource(RELATION_TYPE, PROPERTY_VALUE)).thenReturn(iterator);
+    edgesFoundBySource(foundEdge);
     EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
     when(converter.getPropertyName(SOURCE_ID)).thenReturn(SOURCE_ID);
     SubARelation foundRelation = aRelation().build();
@@ -1067,12 +1067,16 @@ public class TinkerpopStorageTest {
     assertThat(actualRelation, is(sameInstance(actualRelation)));
   }
 
+  private void edgesFoundBySource(Edge... foundEdges) {
+    Iterator<Edge> iterator = Lists.<Edge> newArrayList(foundEdges).iterator();
+    when(lowLevelAPIMock.findEdgesBySource(RELATION_TYPE, PROPERTY_VALUE)).thenReturn(iterator);
+  }
+
   @Test
   public void findRelationByCallsGetRelationsByEntityIfThePropertyIsTargetId() throws Exception {
     // setup
     Edge foundEdge = anEdge().build();
-    Iterator<Edge> iterator = Lists.<Edge> newArrayList(foundEdge).iterator();
-    when(lowLevelAPIMock.findEdgesByTarget(RELATION_TYPE, PROPERTY_VALUE)).thenReturn(iterator);
+    edgesFoundByTarget(foundEdge);
     EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
     when(converter.getPropertyName(TARGET_ID)).thenReturn(TARGET_ID);
     SubARelation foundRelation = aRelation().build();
@@ -1083,6 +1087,11 @@ public class TinkerpopStorageTest {
 
     // verify
     assertThat(actualRelation, is(sameInstance(actualRelation)));
+  }
+
+  private void edgesFoundByTarget(Edge... foundEdges) {
+    Iterator<Edge> iterator = Lists.<Edge> newArrayList(foundEdges).iterator();
+    when(lowLevelAPIMock.findEdgesByTarget(RELATION_TYPE, PROPERTY_VALUE)).thenReturn(iterator);
   }
 
   @Test
@@ -1213,7 +1222,45 @@ public class TinkerpopStorageTest {
   }
 
   @Test
-  public void relationReturnsTrueIfTheEdgeCanBeFound() {
+  public void getRelationsByEntityIdReturnsAStorageIteratorOfRelationForTheFoundEdges() throws Exception {
+    // setup
+    Vertex vertex = aVertex().build();
+    List<Edge> edges = Lists.newArrayList(anEdge().build(), anEdge().build());
+    when(vertex.getEdges(Direction.BOTH)).thenReturn(edges);
+    when(lowLevelAPIMock.getLatestVertexById(ID)).thenReturn(vertex);
+
+    @SuppressWarnings("unchecked")
+    StorageIterator<SubARelation> storageIterator = mock(StorageIterator.class);
+
+    when(storageIteratorFactoryMock.createForRelation(RELATION_TYPE, edges)).thenReturn(storageIterator);
+
+    // action 
+    StorageIterator<SubARelation> actualStorageIterator = instance.getRelationsByEntityId(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(actualStorageIterator, is(sameInstance(storageIterator)));
+  }
+
+  @Test
+  public void getRelationsByEntityIdReturnsAStorageIteratorOfAnEmptyListIfTheEntityIfNotFound() throws Exception {
+    // setup
+    when(lowLevelAPIMock.getLatestVertexById(ID)).thenReturn(null);
+
+    @SuppressWarnings("unchecked")
+    StorageIterator<SubARelation> storageIterator = mock(StorageIterator.class);
+
+    when(storageIteratorFactoryMock.createForRelation(argThat(equalTo(RELATION_TYPE)), argThat(is(emptyCollectionOf(Edge.class))))).thenReturn(storageIterator);
+
+    // action 
+    StorageIterator<SubARelation> actualStorageIterator = instance.getRelationsByEntityId(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(actualStorageIterator, is(sameInstance(storageIterator)));
+    verify(storageIteratorFactoryMock).createForRelation(argThat(equalTo(RELATION_TYPE)), argThat(is(emptyCollectionOf(Edge.class))));
+  }
+
+  @Test
+  public void relationExistsReturnsTrueIfTheEdgeCanBeFound() {
     latestEdgeFoundWithId(ID, anEdge().build());
 
     boolean relationExists = instance.relationExists(RELATION_TYPE, ID);
@@ -1222,7 +1269,7 @@ public class TinkerpopStorageTest {
   }
 
   @Test
-  public void relationReturnsFalseIfTheEdgeCannotBeFound() {
+  public void relationExistsReturnsFalseIfTheEdgeCannotBeFound() {
     noLatestEdgeFoundWithId(ID);
 
     boolean relationExists = instance.relationExists(RELATION_TYPE, ID);

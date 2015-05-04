@@ -3,10 +3,12 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 import java.util.Iterator;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
 
+import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
 class StorageIteratorFactory {
@@ -21,6 +23,10 @@ class StorageIteratorFactory {
     VertexConverter<T> converter = elementConverterFactory.forType(type);
 
     return new TinkerpopIterator<T>(converter, iterator);
+  }
+
+  public <T extends Relation> StorageIterator<T> createForRelation(Class<T> relationType, Iterable<Edge> edges) {
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
 }
