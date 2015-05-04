@@ -217,16 +217,7 @@ class TinkerpopLowLevelAPI {
    * @return the found edges or an empty iterator non are found
    */
   public Iterator<Edge> findEdgesBySource(Class<? extends Relation> type, String sourceId) {
-    Iterable<Vertex> vertices = db.query().has(ID_PROPERTY_NAME, sourceId).vertices();
-
-    List<Vertex> latestVertices = this.getLatestVertices(vertices);
-    if (latestVertices.isEmpty()) {
-      return Lists.<Edge> newArrayList().iterator();
-    }
-
-    Iterable<Edge> outgoingEdges = latestVertices.get(0).getEdges(Direction.OUT);
-
-    return getLatestEdges(outgoingEdges);
+    return getRelationsByVertex(sourceId, Direction.OUT);
   }
 
   /**
@@ -237,16 +228,20 @@ class TinkerpopLowLevelAPI {
    * @return the found edges or an empty iterator non are found
    */
   public Iterator<Edge> findEdgesByTarget(Class<? extends Relation> type, String targetId) {
-    Iterable<Vertex> vertices = db.query().has(ID_PROPERTY_NAME, targetId).vertices();
+    return getRelationsByVertex(targetId, Direction.IN);
+
+  }
+
+  private Iterator<Edge> getRelationsByVertex(String vertexId, Direction direction) {
+    Iterable<Vertex> vertices = db.query().has(ID_PROPERTY_NAME, vertexId).vertices();
 
     List<Vertex> latestVertices = this.getLatestVertices(vertices);
     if (latestVertices.isEmpty()) {
       return Lists.<Edge> newArrayList().iterator();
     }
 
-    Iterable<Edge> outgoingEdges = latestVertices.get(0).getEdges(Direction.IN);
+    Iterable<Edge> outgoingEdges = latestVertices.get(0).getEdges(direction);
 
     return getLatestEdges(outgoingEdges);
-
   }
 }
