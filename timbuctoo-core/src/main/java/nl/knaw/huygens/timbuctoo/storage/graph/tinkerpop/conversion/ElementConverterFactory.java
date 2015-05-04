@@ -39,8 +39,9 @@ public class ElementConverterFactory {
     return new ExtendableVertexConverter<T>(type, propertyConverters, entityInstantiator);
   }
 
+  // TODO make only available for DomainEntities see TIM-162
   @SuppressWarnings("unchecked")
-  private <T extends DomainEntity> VertexConverter<? super T> forPrimitiveOf(Class<T> type) {
+  public <T extends Entity> VertexConverter<? super T> forPrimitiveOf(Class<T> type) {
     Class<? extends Entity> primitive = TypeRegistry.getBaseClass(type);
     VertexConverter<? extends Entity> converter = forType(primitive);
 

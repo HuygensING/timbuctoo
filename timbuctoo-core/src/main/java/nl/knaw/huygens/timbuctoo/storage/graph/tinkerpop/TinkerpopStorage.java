@@ -543,9 +543,21 @@ public class TinkerpopStorage implements GraphStorage {
     return ids;
   }
 
+  // TODO make only available for DomainEntities see TIM-162
   @Override
   public <T extends Entity> T getDefaultVariation(Class<T> type, String id) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    T entity = null;
+    Class<? extends Entity> primitiveType = TypeRegistry.getBaseClass(type);
+
+    Vertex vertex = lowLevelAPI.getLatestVertexById(primitiveType, id);
+
+    if (vertex != null) {
+      VertexConverter<? super T> converter = elementConverterFactory.forPrimitiveOf(type);
+
+      entity = converter.convertToSubType(type, vertex);
+    }
+
+    return entity;
   }
 
 }

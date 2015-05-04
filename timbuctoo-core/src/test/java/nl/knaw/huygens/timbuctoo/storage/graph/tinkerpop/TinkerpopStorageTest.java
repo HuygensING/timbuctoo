@@ -16,6 +16,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -414,6 +415,57 @@ public class TinkerpopStorageTest {
     // action
     instance.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
 
+  }
+
+  @Test
+  public void getDefaultVariationReturnsTheRequestedTypeWithTheValuesOfThePrimitiveVariant() throws Exception {
+    // setup
+    Vertex vertex = aVertex().build();
+    latestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, vertex);
+
+    VertexConverter<? super SubADomainEntity> converter = createVertexConverterForPrimitive(DOMAIN_ENTITY_TYPE);
+    SubADomainEntity entity = aDomainEntity().build();
+    when(converter.convertToSubType(DOMAIN_ENTITY_TYPE, vertex)).thenReturn(entity);
+
+    // action
+    SubADomainEntity defaultVariation = instance.getDefaultVariation(DOMAIN_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(defaultVariation, is(sameInstance(entity)));
+  }
+
+  @Test
+  public void getDefaultVariationReturnsNullIfThePrimitiveCannotBeFound() throws Exception {
+    // setup
+    noLatestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
+
+    // action
+    SubADomainEntity defaultVariation = instance.getDefaultVariation(DOMAIN_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(defaultVariation, is(nullValue()));
+
+  }
+
+  @Test(expected = ConversionException.class)
+  public void getDefaultVariationThrowsAConversionExceptionWhenTheNodeCannotBeConverted() throws Exception {
+    // setup
+    Vertex vertex = aVertex().build();
+    latestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, vertex);
+
+    VertexConverter<? super SubADomainEntity> converter = createVertexConverterForPrimitive(DOMAIN_ENTITY_TYPE);
+    when(converter.convertToSubType(DOMAIN_ENTITY_TYPE, vertex)).thenThrow(new ConversionException());
+
+    // action
+    instance.getDefaultVariation(DOMAIN_ENTITY_TYPE, ID);
+  }
+
+  private <T extends DomainEntity> VertexConverter<? super T> createVertexConverterForPrimitive(Class<T> type) {
+    @SuppressWarnings("unchecked")
+    VertexConverter<? super T> converter = mock(VertexConverter.class);
+    doReturn(converter).when(elementConverterFactoryMock).forPrimitiveOf(type);
+
+    return converter;
   }
 
   @Test
