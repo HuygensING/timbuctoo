@@ -167,7 +167,6 @@ public class TinkerpopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.getDomainEntitiesReturnsAllDomainEntitiesOfTheRequestedType();
   }
 
-  @Ignore
   @Test
   @Override
   public void getEntityOrDefaultVariationReturnsTheEntityAndItsValuesIfItExistsElseItReturnsTheEntityWithTheValuesOfTheDefaultVariation() throws Exception {
