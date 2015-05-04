@@ -117,7 +117,7 @@ public class CNWPerson extends Person {
 		this.combinedDomains = combineddomains;
 	}
 
-	@IndexAnnotation(title = "Domein/Subdomein", fieldName = "dynamic_s_combineddomain", canBeEmpty = false, isFaceted = true)
+	@IndexAnnotation(title = "(Sub)domein", fieldName = "dynamic_s_combineddomain", canBeEmpty = false, isFaceted = true)
 	public List<String> getCombinedDomains() {
 		return combinedDomains;
 	}

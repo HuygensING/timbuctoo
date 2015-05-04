@@ -116,27 +116,10 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 
 		@Override
 		public Traversal leaveElement(Element element, PersonContext context) {
-			try {
-				//				String personId = context.person.getKoppelnaam();
-				//				LOG.info("{} - {}", personId, context.person.getShortDescription());
-
-				//				if (context.birthPlaceId != null) {
-				//					Reference brelType = getRelationTypeRef("hasBirthPlace", true);
-				//					Reference bsourceRef = new Reference(Person.class, personId);
-				//					Reference btargetRef = new Reference(Location.class, context.birthPlaceId);
-				//					addRelation(CNWRelation.class, brelType, bsourceRef, btargetRef, change, "");
-				//				}
-				//
-				//				if (context.deathPlaceId != null) {
-				//					Reference drelType = getRelationTypeRef("hasDeathPlace", true);
-				//					Reference dsourceRef = new Reference(Person.class, personId);
-				//					Reference dtargetRef = new Reference(Location.class, context.deathPlaceId);
-				//					addRelation(CNWRelation.class, drelType, dsourceRef, dtargetRef, change, "");
-				//				}
-			} catch (Exception e) {
-				e.printStackTrace();
+			if (context.person.getCombinedDomains().isEmpty()) {
+				context.person.getCombinedDomains().add("(leeg)");
 			}
-			//			LOG.info("person={}", context.person);
+			LOG.info("person={}", context.person);
 			return Traversal.NEXT;
 		}
 	}
@@ -337,7 +320,7 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 		public void handleContent(Element element, PersonContext context, String text) {
 			String denormalized = denormalized(text, "domains");
 			context.person.getDomains().add(denormalized);
-			context.person.getCombinedDomains().add(denormalized);
+			context.person.getCombinedDomains().add(denormalized + "/*");
 		}
 	}
 
@@ -367,7 +350,7 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 			if (denormalized != null) {
 				context.person.getSubDomains().add(denormalized);
 				if (subdomainExtension.containsKey(denormalized)) {
-					context.person.getCombinedDomains().add(denormalized);
+					context.person.getCombinedDomains().add(subdomainExtension.get(denormalized));
 				}
 			}
 		}
