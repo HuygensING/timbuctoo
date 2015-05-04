@@ -246,7 +246,6 @@ class TinkerpopLowLevelAPI {
    */
   public Iterator<Edge> findEdgesByTarget(Class<? extends Relation> type, String targetId) {
     return getRelationsByVertex(targetId, Direction.IN);
-
   }
 
   private Iterator<Edge> getRelationsByVertex(String vertexId, Direction direction) {
@@ -260,6 +259,10 @@ class TinkerpopLowLevelAPI {
     Iterable<Edge> outgoingEdges = latestVertices.get(0).getEdges(direction);
 
     return getLatestEdges(outgoingEdges);
+  }
+
+  public Iterator<Edge> findEdgesWithoutProperty(Class<? extends Relation> relationType, String propertyName) {
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
 }

@@ -1368,6 +1368,33 @@ public class TinkerpopStorageTest {
   }
 
   @Test
+  public void getIdsOfNonPersistentRelationsFiltersTheIdsOfGetEdgesOfType() {
+    // setup
+    String id2 = "id2";
+    List<Edge> edges = Lists.newArrayList(anEdge().withID(ID).build(), anEdge().withID(id2).build());
+    when(lowLevelAPIMock.findEdgesWithoutProperty(RELATION_TYPE, DomainEntity.PID)).thenReturn(edges.iterator());
+
+    // action
+    List<String> ids = instance.getIdsOfNonPersistentRelations(RELATION_TYPE);
+
+    // verify
+    assertThat(Lists.newArrayList(ids), containsInAnyOrder(ID, id2));
+  }
+
+  @Test
+  public void getIdsOfNonPersistentRelationsReturnsAnEmptyListIfNoEdgessAreFound() {
+    // setup
+    List<Edge> edges = Lists.newArrayList();
+    when(lowLevelAPIMock.findEdgesWithoutProperty(RELATION_TYPE, DomainEntity.PID)).thenReturn(edges.iterator());
+
+    // action
+    List<String> ids = instance.getIdsOfNonPersistentRelations(RELATION_TYPE);
+
+    // verify
+    assertThat(Lists.newArrayList(ids), is(emptyCollectionOf(String.class)));
+  }
+
+  @Test
   public void relationExistsReturnsTrueIfTheEdgeCanBeFound() {
     latestEdgeFoundWithId(ID, anEdge().build());
 

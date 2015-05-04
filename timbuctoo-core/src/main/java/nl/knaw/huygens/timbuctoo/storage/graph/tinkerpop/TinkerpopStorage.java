@@ -533,7 +533,14 @@ public class TinkerpopStorage implements GraphStorage {
 
   @Override
   public <T extends Relation> List<String> getIdsOfNonPersistentRelations(Class<T> type) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    List<String> ids = Lists.newArrayList();
+    Iterator<Edge> edges = lowLevelAPI.findEdgesWithoutProperty(type, DomainEntity.PID);
+
+    for (; edges.hasNext();) {
+      ids.add(getIdProperty(edges.next()));
+    }
+
+    return ids;
   }
 
   @Override
