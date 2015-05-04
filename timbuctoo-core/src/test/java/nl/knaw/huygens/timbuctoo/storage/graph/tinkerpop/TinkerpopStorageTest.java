@@ -855,7 +855,7 @@ public class TinkerpopStorageTest {
     Vertex targetVertex = aVertex().build();
     latestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, RELATION_TARGET_ID, targetVertex);
 
-    relationTypeWithRegularNameExists(REGULAR_RELATION_NAME);
+    relationTypeWithRegularNameExists(REGULAR_RELATION_NAME, RELATION_TYPE_ID);
 
     Edge edge = anEdge().build();
     when(sourceVertex.addEdge(REGULAR_RELATION_NAME, targetVertex)).thenReturn(edge);
@@ -886,7 +886,7 @@ public class TinkerpopStorageTest {
     Vertex targetVertex = aVertex().build();
     latestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, RELATION_TARGET_ID, targetVertex);
 
-    relationTypeWithRegularNameExists(REGULAR_RELATION_NAME);
+    relationTypeWithRegularNameExists(REGULAR_RELATION_NAME, RELATION_TYPE_ID);
 
     Edge edge = anEdge().build();
     when(sourceVertex.addEdge(REGULAR_RELATION_NAME, targetVertex)).thenReturn(edge);
@@ -911,9 +911,9 @@ public class TinkerpopStorageTest {
     return edgeConverter;
   }
 
-  private VertexConverter<RelationType> relationTypeWithRegularNameExists(String name) throws Exception {
+  private VertexConverter<RelationType> relationTypeWithRegularNameExists(String name, String id) throws Exception {
     Vertex relationTypeNodeMock = aVertex().build();
-    latestVertexFoundFor(RELATIONTYPE_TYPE, RELATION_TYPE_ID, relationTypeNodeMock);
+    latestVertexFoundFor(RELATIONTYPE_TYPE, id, relationTypeNodeMock);
 
     VertexConverter<RelationType> relationTypeConverter = vertexConverterCreatedFor(RELATIONTYPE_TYPE);
     RelationType relationType = new RelationType();
@@ -997,6 +997,86 @@ public class TinkerpopStorageTest {
 
     // action
     instance.addRelation(RELATION_TYPE, relation, new Change());
+  }
+
+  @Test
+  public void findRelationReturnsTheLatestRelation() throws Exception {
+    // setup
+    Vertex target = aVertex().build();
+    Edge edge = anEdge().withLabel(REGULAR_RELATION_NAME).withTarget(target).build();
+    Vertex source = aVertex().withOutgoingEdge(edge).build();
+
+    relationTypeWithRegularNameExists(REGULAR_RELATION_NAME, RELATION_TYPE_ID);
+
+    vertexFoundForId(SOURCE_ID, source);
+    vertexFoundForId(TARGET_ID, target);
+
+    EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
+    SubARelation relation = aRelation().build();
+    when(converter.convertToEntity(edge)).thenReturn(relation);
+
+    // action
+    SubARelation actualRelation = instance.findRelation(RELATION_TYPE, SOURCE_ID, TARGET_ID, RELATION_TYPE_ID);
+
+    // verify
+    assertThat(actualRelation, is(sameInstance(relation)));
+  }
+
+  @Test
+  public void findRelationReturnsNullIfTheSourceCannotBeFound() throws Exception {
+    // setup
+    when(lowLevelAPIMock.getLatestVertexById(ID)).thenReturn(null);
+    relationTypeWithRegularNameExists(REGULAR_RELATION_NAME, RELATION_TYPE_ID);
+
+    // action
+    SubARelation relation = instance.findRelation(RELATION_TYPE, SOURCE_ID, TARGET_ID, RELATION_TYPE_ID);
+
+    // verify
+    assertThat(relation, is(nullValue()));
+  }
+
+  @Test
+  public void findRelationReturnsNullIfTheVertexCannotBeFound() throws Exception {
+    // setup
+    Vertex notRequestTarget = aVertex().build();
+    Edge edge = anEdge().withLabel(REGULAR_RELATION_NAME).withTarget(notRequestTarget).build();
+    Vertex source = aVertex().withOutgoingEdge(edge).build();
+    Vertex target = aVertex().build();
+
+    relationTypeWithRegularNameExists(REGULAR_RELATION_NAME, RELATION_TYPE_ID);
+
+    vertexFoundForId(SOURCE_ID, source);
+    when(lowLevelAPIMock.getLatestVertexById(TARGET_ID)).thenReturn(target);
+
+    // action
+    SubARelation relation = instance.findRelation(RELATION_TYPE, SOURCE_ID, TARGET_ID, RELATION_TYPE_ID);
+
+    // verify
+    assertThat(relation, is(nullValue()));
+  }
+
+  @Test(expected = ConversionException.class)
+  public void findRelationThrowsAConversionExceptionWhenTheRelationsCannotBeConverted() throws Exception {
+    // setup
+    Vertex target = aVertex().build();
+    Edge edge = anEdge().withLabel(REGULAR_RELATION_NAME).withTarget(target).build();
+    Vertex source = aVertex().withOutgoingEdge(edge).build();
+
+    relationTypeWithRegularNameExists(REGULAR_RELATION_NAME, RELATION_TYPE_ID);
+
+    vertexFoundForId(SOURCE_ID, source);
+    vertexFoundForId(TARGET_ID, target);
+
+    EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
+    when(converter.convertToEntity(edge)).thenThrow(new ConversionException());
+
+    // action
+    instance.findRelation(RELATION_TYPE, SOURCE_ID, TARGET_ID, RELATION_TYPE_ID);
+
+  }
+
+  private void vertexFoundForId(String id, Vertex vertex) {
+    when(lowLevelAPIMock.getLatestVertexById(id)).thenReturn(vertex);
   }
 
   @Test

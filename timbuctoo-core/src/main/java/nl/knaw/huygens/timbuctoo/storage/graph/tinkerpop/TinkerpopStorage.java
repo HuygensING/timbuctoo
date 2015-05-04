@@ -492,7 +492,25 @@ public class TinkerpopStorage implements GraphStorage {
 
   @Override
   public <T extends Relation> T findRelation(Class<T> relationType, String sourceId, String targetId, String relationTypeId) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    T relation = null;
+    Vertex source = lowLevelAPI.getLatestVertexById(sourceId);
+    Vertex target = lowLevelAPI.getLatestVertexById(targetId);
+
+    String edgeLabel = getRegularRelationName(lowLevelAPI.getLatestVertexById(RelationType.class, relationTypeId));
+
+    if (source != null) {
+      for (Edge edge : source.getEdges(Direction.OUT, edgeLabel)) {
+        if (edge.getVertex(Direction.IN) == target) {
+          EdgeConverter<T> converter = elementConverterFactory.forRelation(relationType);
+
+          relation = converter.convertToEntity(edge);
+          break;
+        }
+      }
+
+    }
+
+    return relation;
   }
 
   @Override

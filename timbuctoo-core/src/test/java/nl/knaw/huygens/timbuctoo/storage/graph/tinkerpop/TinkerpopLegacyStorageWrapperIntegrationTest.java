@@ -137,7 +137,6 @@ public class TinkerpopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.findItemByPropertyForSystemEntityReturnsTheFirstFoundInTheDatabase();
   }
 
-  @Ignore
   @Test
   @Override
   public void findRelationSearchesARelationByClassSourceIdTargetIdAndTypeId() throws Exception {
