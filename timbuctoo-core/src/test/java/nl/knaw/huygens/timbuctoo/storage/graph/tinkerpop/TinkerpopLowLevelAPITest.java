@@ -109,6 +109,36 @@ public class TinkerpopLowLevelAPITest {
   }
 
   @Test
+  public void findVerticesWithoutPropertyReturnsVerticesDoNotContainACertainProperty() {
+    // setup
+    Vertex vertex1 = aVertex().build();
+    Vertex vertex2 = aVertex().build();
+    aVertexSearchResult()//
+        .forType(DOMAIN_ENTITY_TYPE).withoutProperty(PROPERTY_NAME)//
+        .containsVertex(vertex1) //
+        .containsVertex(vertex2) //
+        .foundInDatabase(dbMock);
+
+    // action
+    Iterator<Vertex> vertices = instance.findVerticesWithoutProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME);
+
+    // verify
+    assertThat(Lists.newArrayList(vertices), containsInAnyOrder(vertex1, vertex2));
+  }
+
+  @Test
+  public void findVerticesWithoutPropertyReturnsAnEmptyIteratorWhenNoneAreFound() {
+    // setup
+    anEmptyVertexSearchResult().forType(DOMAIN_ENTITY_TYPE).withoutProperty(PROPERTY_NAME).foundInDatabase(dbMock);
+
+    // action
+    Iterator<Vertex> vertices = instance.findVerticesWithoutProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME);
+
+    // verify
+    assertThat(Iterators.size(vertices), is(0));
+  }
+
+  @Test
   public void getLatestVertexByIdReturnsTheVertexWithoutIncomingIsVersionOfRelation() {
     Vertex latestVertex = aVertex().build();
     aVertexSearchResult().forType(SYSTEM_ENTITY_TYPE).forId(ID) //

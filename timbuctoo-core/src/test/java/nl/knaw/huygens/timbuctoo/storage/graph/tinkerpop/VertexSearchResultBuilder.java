@@ -26,8 +26,10 @@ import com.tinkerpop.blueprints.Vertex;
 public class VertexSearchResultBuilder {
   private Map<String, Object> searchProperties;
   private List<Vertex> vertices;
+  private List<String> withoutProperties;
 
   private VertexSearchResultBuilder() {
+    withoutProperties = Lists.newArrayList();
     searchProperties = Maps.newHashMap();
     vertices = Lists.newArrayList();
   }
@@ -87,8 +89,19 @@ public class VertexSearchResultBuilder {
 
     }
 
+    for (String property : withoutProperties) {
+      when(graphQueryMock.hasNot(property)).thenReturn(graphQueryMock);
+    }
+
     when(graphQueryMock.vertices()).thenReturn(vertices);
 
+  }
+
+  public VertexSearchResultBuilder withoutProperty(String propertyName) {
+
+    withoutProperties.add(propertyName);
+
+    return this;
   }
 
 }

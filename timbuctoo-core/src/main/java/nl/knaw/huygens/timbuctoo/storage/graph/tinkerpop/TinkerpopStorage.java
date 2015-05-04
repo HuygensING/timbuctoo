@@ -522,7 +522,7 @@ public class TinkerpopStorage implements GraphStorage {
   @Override
   public <T extends DomainEntity> List<String> getIdsOfNonPersistentDomainEntities(Class<T> type) {
     List<String> ids = Lists.newArrayList();
-    Iterator<Vertex> vertices = lowLevelAPI.getVerticesWithoutProperty(type, DomainEntity.PID);
+    Iterator<Vertex> vertices = lowLevelAPI.findVerticesWithoutProperty(type, DomainEntity.PID);
 
     for (; vertices.hasNext();) {
       ids.add(getIdProperty(vertices.next()));

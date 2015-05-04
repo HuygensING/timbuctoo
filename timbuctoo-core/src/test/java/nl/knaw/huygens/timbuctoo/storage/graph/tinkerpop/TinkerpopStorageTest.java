@@ -579,7 +579,7 @@ public class TinkerpopStorageTest {
     // setup
     String id2 = "id2";
     List<Vertex> vertices = Lists.newArrayList(aVertex().withId(ID).build(), aVertex().withId(id2).build());
-    when(lowLevelAPIMock.getVerticesWithoutProperty(DOMAIN_ENTITY_TYPE, DomainEntity.PID)).thenReturn(vertices.iterator());
+    when(lowLevelAPIMock.findVerticesWithoutProperty(DOMAIN_ENTITY_TYPE, DomainEntity.PID)).thenReturn(vertices.iterator());
 
     // action
     List<String> ids = instance.getIdsOfNonPersistentDomainEntities(DOMAIN_ENTITY_TYPE);
@@ -592,7 +592,7 @@ public class TinkerpopStorageTest {
   public void getIdsOfNonPersistentDomainEntitiesReturnsAnEmptyListIfNoVerticesAreFound() {
     // setup
     List<Vertex> vertices = Lists.newArrayList();
-    when(lowLevelAPIMock.getVerticesWithoutProperty(DOMAIN_ENTITY_TYPE, DomainEntity.PID)).thenReturn(vertices.iterator());
+    when(lowLevelAPIMock.findVerticesWithoutProperty(DOMAIN_ENTITY_TYPE, DomainEntity.PID)).thenReturn(vertices.iterator());
 
     // action
     List<String> ids = instance.getIdsOfNonPersistentDomainEntities(DOMAIN_ENTITY_TYPE);
