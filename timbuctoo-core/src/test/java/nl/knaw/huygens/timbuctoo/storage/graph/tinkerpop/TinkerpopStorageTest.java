@@ -558,23 +558,6 @@ public class TinkerpopStorageTest {
   }
 
   @Test
-  public void updateEntityRetrievesTheEntityAndUpdatesTheData() throws Exception {
-    // setup
-    Vertex vertex = aVertex().withRev(FIRST_REVISION).build();
-    latestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID, vertex);
-    SubADomainEntity entity = aDomainEntity().withId(ID).withRev(SECOND_REVISION).build();
-
-    VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
-
-    // action
-    instance.updateEntity(DOMAIN_ENTITY_TYPE, entity);
-
-    // verify
-    verify(converter).updateModifiedAndRev(vertex, entity);
-    verify(converter).updateElement(vertex, entity);
-  }
-
-  @Test
   public void getIdsOfNonPersistentDomainEntitiesFiltersTheIdsOfGetVerticesOfType() {
     // setup
     String id2 = "id2";
@@ -599,6 +582,23 @@ public class TinkerpopStorageTest {
 
     // verify
     assertThat(Lists.newArrayList(ids), is(emptyCollectionOf(String.class)));
+  }
+
+  @Test
+  public void updateEntityRetrievesTheEntityAndUpdatesTheData() throws Exception {
+    // setup
+    Vertex vertex = aVertex().withRev(FIRST_REVISION).build();
+    latestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID, vertex);
+    SubADomainEntity entity = aDomainEntity().withId(ID).withRev(SECOND_REVISION).build();
+
+    VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+
+    // action
+    instance.updateEntity(DOMAIN_ENTITY_TYPE, entity);
+
+    // verify
+    verify(converter).updateModifiedAndRev(vertex, entity);
+    verify(converter).updateElement(vertex, entity);
   }
 
   @Test(expected = ConversionException.class)
