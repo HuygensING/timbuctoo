@@ -20,7 +20,9 @@ import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
@@ -445,7 +447,23 @@ public class TinkerpopStorage implements GraphStorage {
 
   @Override
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    Preconditions.checkArgument(TypeRegistry.isPrimitiveDomainEntity(type), "Nonprimitive type %s", type);
+
+    List<T> variations = Lists.newArrayList();
+    Vertex vertex = lowLevelAPI.getLatestVertexById(type, id);
+
+    if (vertex != null) {
+      String[] typeNames = (String[]) vertex.getProperty(ElementFields.ELEMENT_TYPES);
+
+      for (String typeName : typeNames) {
+        Class<? extends DomainEntity> domainEntityType = typeRegistry.getDomainEntityType(typeName);
+        VertexConverter<? extends DomainEntity> converter = elementConverterFactory.forType(domainEntityType);
+
+        variations.add(type.cast(converter.convertToEntity(vertex)));
+      }
+    }
+
+    return variations;
   }
 
   @Override

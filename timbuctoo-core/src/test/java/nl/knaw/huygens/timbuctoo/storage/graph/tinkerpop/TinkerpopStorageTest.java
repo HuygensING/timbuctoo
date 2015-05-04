@@ -9,6 +9,8 @@ import static nl.knaw.huygens.timbuctoo.storage.graph.TestSystemEntityWrapperBui
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeMockBuilder.anEdge;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilder.aVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.emptyCollectionOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -37,7 +39,9 @@ import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import test.model.BaseDomainEntity;
 import test.model.TestSystemEntityWrapper;
@@ -340,6 +344,74 @@ public class TinkerpopStorageTest {
 
     // action
     instance.findEntityByProperty(DOMAIN_ENTITY_TYPE, FIELD_NAME, PROPERTY_VALUE);
+
+  }
+
+  @Test
+  public void getAllVariationsReturnsAllVariationsOfANode() throws Exception {
+    // setup
+    Vertex vertex = aVertex()//
+        .withType(PRIMITIVE_DOMAIN_ENTITY_TYPE)//
+        .withType(DOMAIN_ENTITY_TYPE)//
+        .build();
+    latestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, vertex);
+
+    VertexConverter<BaseDomainEntity> primitiveConverter = vertexConverterCreatedFor(PRIMITIVE_DOMAIN_ENTITY_TYPE);
+    BaseDomainEntity baseDomainEntity = new BaseDomainEntity();
+    when(primitiveConverter.convertToEntity(vertex)).thenReturn(baseDomainEntity);
+    VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+    SubADomainEntity domainEntity = aDomainEntity().build();
+    when(converter.convertToEntity(vertex)).thenReturn(domainEntity);
+
+    // action
+    List<BaseDomainEntity> variations = instance.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(variations, containsInAnyOrder(baseDomainEntity, domainEntity));
+  }
+
+  @Test
+  public void getAllVariationsReturnsAnEmptyListWhenNoVariationsCouldBeFound() throws StorageException {
+    // setup
+    noLatestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
+
+    // action
+    List<BaseDomainEntity> allVariations = instance.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(allVariations, is(emptyCollectionOf(PRIMITIVE_DOMAIN_ENTITY_TYPE)));
+  }
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
+
+  @Test
+  public void getAllVariationsThrowsAnIllegalArgumentExceptionWhenTheTypeIsNotAPrimitive() throws Exception {
+    // setup
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Nonprimitive type");
+    thrown.expectMessage("" + DOMAIN_ENTITY_TYPE);
+
+    // action
+    instance.getAllVariations(DOMAIN_ENTITY_TYPE, ID);
+  }
+
+  @Test(expected = ConversionException.class)
+  public void getAllVariationsThrowsAConversionExceptionWhenTheNodeCouldNotBeConverted() throws Exception {
+    // setup
+    Vertex vertex = aVertex()//
+        .withType(PRIMITIVE_DOMAIN_ENTITY_TYPE)//
+        .withType(DOMAIN_ENTITY_TYPE)//
+        .build();
+    latestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, vertex);
+
+    VertexConverter<BaseDomainEntity> primitiveConverter = vertexConverterCreatedFor(PRIMITIVE_DOMAIN_ENTITY_TYPE);
+    when(primitiveConverter.convertToEntity(vertex)).thenThrow(new ConversionException());
+    VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+    when(converter.convertToEntity(vertex)).thenReturn(aDomainEntity().build());
+
+    // action
+    instance.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
 
   }
 
