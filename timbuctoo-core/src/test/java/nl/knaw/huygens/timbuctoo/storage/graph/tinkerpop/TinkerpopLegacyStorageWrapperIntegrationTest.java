@@ -149,7 +149,6 @@ public class TinkerpopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.getAllIdsWithoutPIDForDomainEntityReturnsTheNonPersistentDomainEntities();
   }
 
-  @Ignore
   @Test
   @Override
   public void getAllIdsWithoutPIDForRelationReturnsTheIdsOfNonPersistentDomainEntities() throws Exception {
