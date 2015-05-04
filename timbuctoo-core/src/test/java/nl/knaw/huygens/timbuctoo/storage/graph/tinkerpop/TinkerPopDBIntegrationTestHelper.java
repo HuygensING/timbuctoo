@@ -9,7 +9,7 @@ import nl.knaw.huygens.timbuctoo.storage.graph.GraphLegacyStorageWrapper;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.impls.tg.TinkerGraph;
 
-public class TinkerpopDBIntegrationTestHelper implements DBIntegrationTestHelper {
+public class TinkerPopDBIntegrationTestHelper implements DBIntegrationTestHelper {
 
   private Graph graph;
 
@@ -25,7 +25,7 @@ public class TinkerpopDBIntegrationTestHelper implements DBIntegrationTestHelper
 
   @Override
   public Storage createStorage(TypeRegistry typeRegistry) throws ModelException {
-    return new GraphLegacyStorageWrapper(new TinkerpopStorage(graph, typeRegistry));
+    return new GraphLegacyStorageWrapper(new TinkerPopStorage(graph, typeRegistry));
   }
 
 }

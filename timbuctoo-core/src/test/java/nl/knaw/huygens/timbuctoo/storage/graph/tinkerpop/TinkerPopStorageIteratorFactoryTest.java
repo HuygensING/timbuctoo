@@ -22,18 +22,18 @@ import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
-public class StorageIteratorFactoryTest {
+public class TinkerPopStorageIteratorFactoryTest {
   private static final Class<TestSystemEntityWrapper> ENTITY_TYPE = TestSystemEntityWrapper.class;
   @SuppressWarnings("rawtypes")
-  private static final Class<TinkerpopIterator> TINKERPOP_ITERATOR_TYPE = TinkerpopIterator.class;
+  private static final Class<TinkerPopIterator> TINKERPOP_ITERATOR_TYPE = TinkerPopIterator.class;
   private static final Class<SubARelation> RELATION_TYPE = SubARelation.class;
   private ElementConverterFactory elementConverterFactory;
-  private StorageIteratorFactory instance;
+  private TinkerPopStorageIteratorFactory instance;
 
   @Before
   public void setup() {
     elementConverterFactory = mock(ElementConverterFactory.class);
-    instance = new StorageIteratorFactory(elementConverterFactory);
+    instance = new TinkerPopStorageIteratorFactory(elementConverterFactory);
   }
 
   @Test

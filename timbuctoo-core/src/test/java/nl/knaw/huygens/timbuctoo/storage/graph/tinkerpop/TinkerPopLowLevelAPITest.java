@@ -34,7 +34,7 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 
-public class TinkerpopLowLevelAPITest {
+public class TinkerPopLowLevelAPITest {
   private static final String PROPERTY_VALUE = "propertyValue";
   private static final String PROPERTY_NAME = "propertyName";
   private static final String ID2 = "id2";
@@ -46,7 +46,7 @@ public class TinkerpopLowLevelAPITest {
   private static final Class<TestSystemEntityWrapper> SYSTEM_ENTITY_TYPE = TestSystemEntityWrapper.class;
   private static final String ID = "id";
   private Graph dbMock;
-  private TinkerpopLowLevelAPI instance;
+  private TinkerPopLowLevelAPI instance;
   private VertexDuplicator vertexDuplicator;
   private EdgeDuplicator edgeDuplicator;
 
@@ -55,7 +55,7 @@ public class TinkerpopLowLevelAPITest {
     edgeDuplicator = mock(EdgeDuplicator.class);
     vertexDuplicator = mock(VertexDuplicator.class);
     dbMock = mock(Graph.class);
-    instance = new TinkerpopLowLevelAPI(dbMock, vertexDuplicator, edgeDuplicator);
+    instance = new TinkerPopLowLevelAPI(dbMock, vertexDuplicator, edgeDuplicator);
   }
 
   /* ************************************************************

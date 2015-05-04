@@ -26,18 +26,18 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.GraphQuery;
 import com.tinkerpop.blueprints.Vertex;
 
-class TinkerpopLowLevelAPI {
+class TinkerPopLowLevelAPI {
 
   private static final IsLatestVersionOfVertex IS_LATEST_VERSION_OF_VERTEX = new IsLatestVersionOfVertex();
   private final Graph db;
   private final VertexDuplicator vertexDuplicator;
   private final EdgeDuplicator edgeDuplicator;
 
-  public TinkerpopLowLevelAPI(Graph db) {
+  public TinkerPopLowLevelAPI(Graph db) {
     this(db, new VertexDuplicator(db), new EdgeDuplicator());
   }
 
-  public TinkerpopLowLevelAPI(Graph db, VertexDuplicator vertexDuplicator, EdgeDuplicator edgeDuplicator) {
+  public TinkerPopLowLevelAPI(Graph db, VertexDuplicator vertexDuplicator, EdgeDuplicator edgeDuplicator) {
     this.db = db;
     this.vertexDuplicator = vertexDuplicator;
     this.edgeDuplicator = edgeDuplicator;

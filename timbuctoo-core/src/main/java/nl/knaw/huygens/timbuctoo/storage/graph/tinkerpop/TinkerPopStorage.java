@@ -31,25 +31,25 @@ import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 
-public class TinkerpopStorage implements GraphStorage {
+public class TinkerPopStorage implements GraphStorage {
 
   private final Graph db;
   private final ElementConverterFactory elementConverterFactory;
-  private final TinkerpopLowLevelAPI lowLevelAPI;
+  private final TinkerPopLowLevelAPI lowLevelAPI;
   private final TypeRegistry typeRegistry;
   private boolean available = true;
-  private final StorageIteratorFactory storageIteratorFactory;
+  private final TinkerPopStorageIteratorFactory storageIteratorFactory;
 
   @Inject
-  public TinkerpopStorage(Graph db, TypeRegistry typeRegistry) {
-    this(db, new ElementConverterFactory(typeRegistry), new TinkerpopLowLevelAPI(db), typeRegistry);
+  public TinkerPopStorage(Graph db, TypeRegistry typeRegistry) {
+    this(db, new ElementConverterFactory(typeRegistry), new TinkerPopLowLevelAPI(db), typeRegistry);
   }
 
-  public TinkerpopStorage(Graph db, ElementConverterFactory elementConverterFactory, TinkerpopLowLevelAPI lowLevelAPI, TypeRegistry typeRegistry) {
-    this(db, elementConverterFactory, lowLevelAPI, typeRegistry, new StorageIteratorFactory(elementConverterFactory));
+  public TinkerPopStorage(Graph db, ElementConverterFactory elementConverterFactory, TinkerPopLowLevelAPI lowLevelAPI, TypeRegistry typeRegistry) {
+    this(db, elementConverterFactory, lowLevelAPI, typeRegistry, new TinkerPopStorageIteratorFactory(elementConverterFactory));
   }
 
-  public TinkerpopStorage(Graph db, ElementConverterFactory elementConverterFactory, TinkerpopLowLevelAPI lowLevelAPI, TypeRegistry typeRegistry, StorageIteratorFactory storageIteratorFactory) {
+  public TinkerPopStorage(Graph db, ElementConverterFactory elementConverterFactory, TinkerPopLowLevelAPI lowLevelAPI, TypeRegistry typeRegistry, TinkerPopStorageIteratorFactory storageIteratorFactory) {
     this.db = db;
     this.elementConverterFactory = elementConverterFactory;
     this.lowLevelAPI = lowLevelAPI;

@@ -55,7 +55,7 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 
-public class TinkerpopStorageTest {
+public class TinkerPopStorageTest {
 
   private static final String FIELD_NAME = "fieldName";
   private static final String PROPERTY_NAME = "propertyName";
@@ -83,20 +83,20 @@ public class TinkerpopStorageTest {
   private static final String PRIMITIVE_DOMAIN_ENTITY_NAME = TypeNames.getInternalName(PRIMITIVE_DOMAIN_ENTITY_TYPE);
 
   private Graph dbMock;
-  private TinkerpopStorage instance;
+  private TinkerPopStorage instance;
   private ElementConverterFactory elementConverterFactoryMock;
   private Vertex createdVertex;
-  private TinkerpopLowLevelAPI lowLevelAPIMock;
-  private StorageIteratorFactory storageIteratorFactoryMock;
+  private TinkerPopLowLevelAPI lowLevelAPIMock;
+  private TinkerPopStorageIteratorFactory storageIteratorFactoryMock;
 
   @Before
   public void setup() throws Exception {
     dbMock = mock(Graph.class);
-    lowLevelAPIMock = mock(TinkerpopLowLevelAPI.class);
+    lowLevelAPIMock = mock(TinkerPopLowLevelAPI.class);
     elementConverterFactoryMock = mock(ElementConverterFactory.class);
     TypeRegistry typeRegistry = TypeRegistry.getInstance().init("timbuctoo.model test.model test.model.projecta");
-    storageIteratorFactoryMock = mock(StorageIteratorFactory.class);
-    instance = new TinkerpopStorage(dbMock, elementConverterFactoryMock, lowLevelAPIMock, typeRegistry, storageIteratorFactoryMock);
+    storageIteratorFactoryMock = mock(TinkerPopStorageIteratorFactory.class);
+    instance = new TinkerPopStorage(dbMock, elementConverterFactoryMock, lowLevelAPIMock, typeRegistry, storageIteratorFactoryMock);
 
     createdVertex = mock(Vertex.class);
     when(dbMock.addVertex(null)).thenReturn(createdVertex);

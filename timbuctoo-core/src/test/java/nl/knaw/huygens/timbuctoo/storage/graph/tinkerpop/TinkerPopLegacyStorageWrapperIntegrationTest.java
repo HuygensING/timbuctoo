@@ -7,11 +7,11 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIntegrationTest;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class TinkerpopLegacyStorageWrapperIntegrationTest extends StorageIntegrationTest {
+public class TinkerPopLegacyStorageWrapperIntegrationTest extends StorageIntegrationTest {
 
   @Override
   protected DBIntegrationTestHelper createDBIntegrationTestHelper() {
-    return new TinkerpopDBIntegrationTestHelper();
+    return new TinkerPopDBIntegrationTestHelper();
   }
 
   @Test

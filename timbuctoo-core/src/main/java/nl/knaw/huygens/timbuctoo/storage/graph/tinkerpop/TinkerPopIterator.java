@@ -13,12 +13,12 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.Element;
 
-public class TinkerpopIterator<T extends Entity, U extends Element> implements StorageIterator<T> {
-  private static final Logger LOG = LoggerFactory.getLogger(TinkerpopIterator.class);
+public class TinkerPopIterator<T extends Entity, U extends Element> implements StorageIterator<T> {
+  private static final Logger LOG = LoggerFactory.getLogger(TinkerPopIterator.class);
   private final Iterator<U> delegate;
   private final ElementConverter<T, U> converter;
 
-  public TinkerpopIterator(ElementConverter<T, U> converter, Iterator<U> delegate) {
+  public TinkerPopIterator(ElementConverter<T, U> converter, Iterator<U> delegate) {
     this.converter = converter;
     this.delegate = delegate;
   }
