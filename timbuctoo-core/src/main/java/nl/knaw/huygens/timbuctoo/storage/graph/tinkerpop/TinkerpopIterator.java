@@ -11,14 +11,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.Element;
 
-public class TinkerpopIterator<T extends Entity> implements StorageIterator<T> {
+public class TinkerpopIterator<T extends Entity, U extends Element> implements StorageIterator<T> {
   private static final Logger LOG = LoggerFactory.getLogger(TinkerpopIterator.class);
-  private Iterator<Vertex> delegate;
-  private VertexConverter<T> converter;
+  private final Iterator<U> delegate;
+  private final ElementConverter<T, U> converter;
 
-  public TinkerpopIterator(VertexConverter<T> converter, Iterator<Vertex> delegate) {
+  public TinkerpopIterator(ElementConverter<T, U> converter, Iterator<U> delegate) {
     this.converter = converter;
     this.delegate = delegate;
   }
@@ -31,7 +31,7 @@ public class TinkerpopIterator<T extends Entity> implements StorageIterator<T> {
   @Override
   public T next() {
     T item = null;
-    Vertex element = delegate.next();
+    U element = delegate.next();
     try {
       item = converter.convertToEntity(element);
     } catch (ConversionException e) {

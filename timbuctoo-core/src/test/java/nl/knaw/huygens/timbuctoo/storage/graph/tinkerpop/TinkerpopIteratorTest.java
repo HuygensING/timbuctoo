@@ -29,7 +29,7 @@ import com.tinkerpop.blueprints.Vertex;
 public class TinkerpopIteratorTest {
 
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
-  private TinkerpopIterator<TestSystemEntityWrapper> instanceWith3Elements;
+  private TinkerpopIterator<TestSystemEntityWrapper, Vertex> instanceWith3Elements;
   private VertexConverter<TestSystemEntityWrapper> converter;
   private Iterator<Vertex> delegate;
   private Vertex vertex1;
@@ -38,7 +38,7 @@ public class TinkerpopIteratorTest {
   private TestSystemEntityWrapper entity1;
   private TestSystemEntityWrapper entity2;
   private TestSystemEntityWrapper entity3;
-  private TinkerpopIterator<TestSystemEntityWrapper> instanceWithoutElements;
+  private TinkerpopIterator<TestSystemEntityWrapper, Vertex> instanceWithoutElements;
 
   @Before
   public void setup() throws Exception {
@@ -47,10 +47,10 @@ public class TinkerpopIteratorTest {
     initializeDelegateWith3Elements();
     initializeConverter();
 
-    instanceWith3Elements = new TinkerpopIterator<TestSystemEntityWrapper>(converter, delegate);
+    instanceWith3Elements = new TinkerpopIterator<TestSystemEntityWrapper, Vertex>(converter, delegate);
 
     Iterator<Vertex> deletegateWithoutElements = Lists.<Vertex> newArrayList().iterator();
-    instanceWithoutElements = new TinkerpopIterator<TestSystemEntityWrapper>(converter, deletegateWithoutElements);
+    instanceWithoutElements = new TinkerpopIterator<TestSystemEntityWrapper, Vertex>(converter, deletegateWithoutElements);
   }
 
   @SuppressWarnings("unchecked")

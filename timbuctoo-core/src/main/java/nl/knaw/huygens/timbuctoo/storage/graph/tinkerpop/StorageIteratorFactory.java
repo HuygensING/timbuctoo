@@ -22,11 +22,13 @@ class StorageIteratorFactory {
   public <T extends Entity> StorageIterator<T> create(Class<T> type, Iterator<Vertex> iterator) throws StorageException {
     VertexConverter<T> converter = elementConverterFactory.forType(type);
 
-    return new TinkerpopIterator<T>(converter, iterator);
+    return new TinkerpopIterator<T, Vertex>(converter, iterator);
   }
 
-  public <T extends Relation> StorageIterator<T> createForRelation(Class<T> relationType, Iterable<Edge> edges) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+  public <T extends Relation> StorageIterator<T> createForRelation(Class<T> type, Iterable<Edge> edges) {
+    EdgeConverter<T> converter = elementConverterFactory.forRelation(type);
+
+    return new TinkerpopIterator<T, Edge>(converter, edges.iterator());
   }
 
 }
