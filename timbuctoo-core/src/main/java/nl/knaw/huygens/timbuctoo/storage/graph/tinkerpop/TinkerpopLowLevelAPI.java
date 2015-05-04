@@ -48,6 +48,11 @@ class TinkerpopLowLevelAPI {
     Iterable<Vertex> foundVertices = queryByType(type).has(ID_PROPERTY_NAME, id) //
         .vertices();
 
+    return getLatestVertex(foundVertices);
+
+  }
+
+  private Vertex getLatestVertex(Iterable<Vertex> foundVertices) {
     for (Vertex vertex : foundVertices) {
       if (IS_LATEST_VERSION_OF_VERTEX.apply(vertex)) {
         return vertex;
@@ -55,6 +60,12 @@ class TinkerpopLowLevelAPI {
     }
 
     return null;
+  }
+
+  public Vertex getLatestVertexById(String id) {
+    Iterable<Vertex> vertices = db.query().has(ID_PROPERTY_NAME, id).vertices();
+
+    return getLatestVertex(vertices);
   }
 
   private <T extends Entity> GraphQuery queryByType(Class<T> type) {
@@ -245,7 +256,4 @@ class TinkerpopLowLevelAPI {
     return getLatestEdges(outgoingEdges);
   }
 
-  public Vertex getLatestVertexById(String id) {
-    throw new UnsupportedOperationException("Yet to be implemented");
-  }
 }

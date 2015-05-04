@@ -137,6 +137,32 @@ public class TinkerpopLowLevelAPITest {
   }
 
   @Test
+  public void getLatestVertexByIdReturnsTheLatestVertexWithACertainId() {
+    Vertex latestVertex = aVertex().build();
+    aVertexSearchResult().forId(ID) //
+        .containsVertex(aVertex().withIncomingEdgeWithLabel(VERSION_OF).build()) //
+        .andVertex(latestVertex) //
+        .andVertex(aVertex().withIncomingEdgeWithLabel(VERSION_OF).build())//
+        .foundInDatabase(dbMock);
+
+    // action
+    Vertex foundVertex = instance.getLatestVertexById(ID);
+
+    // verify
+    assertThat(foundVertex, is(sameInstance(latestVertex)));
+  }
+
+  @Test
+  public void getLatestVertexByIdReturnsNullIfNoVerticesAreFoundWithACertainId() {
+    anEmptyVertexSearchResult().forId(ID).foundInDatabase(dbMock);
+
+    Vertex foundVertex = instance.getLatestVertexById(ID);
+
+    // verify
+    assertThat(foundVertex, is(nullValue()));
+  }
+
+  @Test
   public void getLatestVerticesOfReturnsOnlyTheLatestVersions() {
     // setup
     Vertex latestVertex1 = aVertex().build();
