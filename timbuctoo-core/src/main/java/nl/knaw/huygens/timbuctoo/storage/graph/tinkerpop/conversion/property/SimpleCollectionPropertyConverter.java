@@ -4,10 +4,10 @@ import java.util.Collection;
 
 class SimpleCollectionPropertyConverter<T> extends ObjectValuePropertyConverter {
 
-  private final Class<T> componentType;
+  //  private final Class<T> componentType;
 
   public SimpleCollectionPropertyConverter(Class<T> componentType) {
-    this.componentType = componentType;
+    //    this.componentType = componentType;
   }
 
   //  @Override
