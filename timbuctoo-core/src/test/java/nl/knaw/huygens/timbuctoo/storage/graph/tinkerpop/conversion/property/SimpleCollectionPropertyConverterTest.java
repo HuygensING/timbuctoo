@@ -63,7 +63,7 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
 
   @Test
   @Override
-  public void setValueOfVertexSetsThePropertyWithTheFieldNameToTheValueOfTheNode() throws Exception {
+  public void setPropertyOfElementSetsThePropertyWithTheFieldNameToTheValueOfTheNode() throws Exception {
     // setup
     List<Integer> value = Lists.newArrayList(VALUE_1, VALUE_2, VALUE_3, VALUE_4);
     entity.setPrimitiveCollection(value);
@@ -79,7 +79,7 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
 
   @Test
   @Override
-  public void setValueOfVertexDoesNotSetIfTheValueIsNull() throws Exception {
+  public void setPropertyOfElementDoesNotSetIfTheValueIsNull() throws Exception {
     // setup
     entity.setPrimitiveCollection(null);
 
@@ -104,7 +104,7 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
 
   @Test(expected = ConversionException.class)
   @Override
-  public void setValueOfVertexThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalAccessException() throws Exception {
+  public void setPropertyOfElementThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalAccessException() throws Exception {
     // setup
     SimpleCollectionPropertyConverter<Integer> instance = new SimpleCollectionPropertyConverter<Integer>(COMPONENT_TYPE) {
       @Override

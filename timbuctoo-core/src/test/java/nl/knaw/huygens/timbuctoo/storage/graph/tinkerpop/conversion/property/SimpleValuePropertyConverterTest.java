@@ -50,7 +50,7 @@ public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
 
   @Override
   @Test
-  public void setValueOfVertexSetsThePropertyWithTheFieldNameToTheValueOfTheNode() throws Exception {
+  public void setPropertyOfElementSetsThePropertyWithTheFieldNameToTheValueOfTheNode() throws Exception {
     // setup
     entity.setStringValue(FIELD_VALUE);
 
@@ -63,7 +63,7 @@ public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
 
   @Override
   @Test
-  public void setValueOfVertexDoesNotSetIfTheValueIsNull() throws Exception {
+  public void setPropertyOfElementDoesNotSetIfTheValueIsNull() throws Exception {
     // setup
     entity.setStringValue(null);
 
@@ -76,7 +76,7 @@ public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
 
   @Override
   @Test(expected = ConversionException.class)
-  public void setValueOfVertexThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalAccessException() throws Exception {
+  public void setPropertyOfElementThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalAccessException() throws Exception {
     // setup
     SimpleValuePropertyConverter instance = new SimpleValuePropertyConverter() {
       @Override

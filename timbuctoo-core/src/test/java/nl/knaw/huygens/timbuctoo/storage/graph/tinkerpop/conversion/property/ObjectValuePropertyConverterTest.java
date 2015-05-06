@@ -52,7 +52,7 @@ public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
 
   @Test
   @Override
-  public void setValueOfVertexSetsThePropertyWithTheFieldNameToTheValueOfTheNode() throws Exception {
+  public void setPropertyOfElementSetsThePropertyWithTheFieldNameToTheValueOfTheNode() throws Exception {
     // setup
     String serializedValue = serializeValue(DEFAULT_VALUE);
 
@@ -73,7 +73,7 @@ public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
 
   @Test
   @Override
-  public void setValueOfVertexDoesNotSetIfTheValueIsNull() throws Exception {
+  public void setPropertyOfElementDoesNotSetIfTheValueIsNull() throws Exception {
     // setup
     entity.setObjectValue(null);
 
@@ -86,7 +86,7 @@ public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
 
   @Test(expected = ConversionException.class)
   @Override
-  public void setValueOfVertexThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalAccessException() throws Exception {
+  public void setPropertyOfElementThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalAccessException() throws Exception {
     // setup
     ObjectValuePropertyConverter instance = new ObjectValuePropertyConverter() {
       @Override

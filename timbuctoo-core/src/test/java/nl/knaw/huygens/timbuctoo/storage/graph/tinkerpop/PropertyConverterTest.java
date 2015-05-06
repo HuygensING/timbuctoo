@@ -2,11 +2,11 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 public interface PropertyConverterTest {
 
-  void setValueOfVertexSetsThePropertyWithTheFieldNameToTheValueOfTheNode() throws Exception;
+  void setPropertyOfElementSetsThePropertyWithTheFieldNameToTheValueOfTheNode() throws Exception;
 
-  void setValueOfVertexDoesNotSetIfTheValueIsNull() throws Exception;
+  void setPropertyOfElementDoesNotSetIfTheValueIsNull() throws Exception;
 
-  void setValueOfVertexThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalAccessException() throws Exception;
+  void setPropertyOfElementThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalAccessException() throws Exception;
 
   void setValueOfVertexThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalArgumentExceptionIsThrown() throws Exception;
 
