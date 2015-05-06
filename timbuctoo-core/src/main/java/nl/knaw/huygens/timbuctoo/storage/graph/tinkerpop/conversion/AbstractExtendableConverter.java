@@ -3,8 +3,8 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion;
 import static nl.knaw.huygens.timbuctoo.model.Entity.MODIFIED_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getTypes;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -61,11 +60,7 @@ abstract class AbstractExtendableConverter<T extends Entity, E extends Element> 
 
     List<String> types = null;
     if (element.getProperty(ELEMENT_TYPES) != null) {
-      try {
-        types = objectMapper.readValue((String) element.getProperty(ELEMENT_TYPES), new TypeReference<List<String>>() {});
-      } catch (IOException e) {
-        throw new IllegalArgumentException("Value could not be read.");
-      }
+      types = getTypes(element);
     } else {
       types = Lists.newArrayList();
     }
