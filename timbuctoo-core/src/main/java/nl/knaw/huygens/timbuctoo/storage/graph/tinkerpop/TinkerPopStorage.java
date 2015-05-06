@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getIdProperty;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getRevisionProperty;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getTypes;
 
 import java.util.Iterator;
 import java.util.List;
@@ -532,7 +533,7 @@ public class TinkerPopStorage implements GraphStorage {
     Vertex vertex = lowLevelAPI.getLatestVertexById(type, id);
 
     if (vertex != null) {
-      String[] typeNames = (String[]) vertex.getProperty(ElementFields.ELEMENT_TYPES);
+      List<String> typeNames = getTypes(vertex);
 
       for (String typeName : typeNames) {
         Class<? extends DomainEntity> domainEntityType = typeRegistry.getDomainEntityType(typeName);

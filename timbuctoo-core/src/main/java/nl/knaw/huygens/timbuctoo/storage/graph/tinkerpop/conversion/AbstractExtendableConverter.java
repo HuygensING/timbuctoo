@@ -4,9 +4,10 @@ import static nl.knaw.huygens.timbuctoo.model.Entity.MODIFIED_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
 
+import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -18,12 +19,16 @@ import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.tinkerpop.blueprints.Element;
 
 abstract class AbstractExtendableConverter<T extends Entity, E extends Element> implements ElementConverter<T, E> {
 
+  private ObjectMapper objectMapper;
   private static Logger LOG = LoggerFactory.getLogger(ExtendableVertexConverter.class);
   protected final EntityInstantiator entityInstantiator;
   protected final Class<T> type;
@@ -33,6 +38,7 @@ abstract class AbstractExtendableConverter<T extends Entity, E extends Element> 
     this.type = type;
     this.entityInstantiator = entityInstantiator;
     mapPropertyConverters(propertyConverters);
+    objectMapper = new ObjectMapper();
   }
 
   protected void mapPropertyConverters(Collection<PropertyConverter> propertyConverters) {
@@ -53,14 +59,25 @@ abstract class AbstractExtendableConverter<T extends Entity, E extends Element> 
   private void addVariation(E element, Class<? extends Entity> variationType) {
     LOG.debug("add variation \"{}\"", variationType);
 
-    String[] types = (String[]) (element.getProperty(ELEMENT_TYPES) != null ? element.getProperty(ELEMENT_TYPES) : new String[] {});
+    List<String> types = null;
+    if (element.getProperty(ELEMENT_TYPES) != null) {
+      try {
+        types = objectMapper.readValue((String) element.getProperty(ELEMENT_TYPES), new TypeReference<List<String>>() {});
+      } catch (IOException e) {
+        throw new IllegalArgumentException("Value could not be read.");
+      }
+    } else {
+      types = Lists.newArrayList();
+    }
 
-    Set<String> typeSet = Sets.newHashSet(types);
-    typeSet.add(TypeNames.getInternalName(variationType));
+    types.add(TypeNames.getInternalName(variationType));
 
-    LOG.debug("new variations \"{}\"", typeSet);
+    try {
+      element.setProperty(ELEMENT_TYPES, objectMapper.writeValueAsString(types));
+    } catch (JsonProcessingException e) {
+      throw new IllegalArgumentException(e);
+    }
 
-    element.setProperty(ELEMENT_TYPES, typeSet.toArray(new String[typeSet.size()]));
   }
 
   @Override

@@ -33,6 +33,7 @@ import test.model.projecta.ProjectAPerson;
 import test.model.projecta.SubADomainEntity;
 import test.model.projecta.SubARelation;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
@@ -116,8 +117,13 @@ public class ExtendableEdgeConverterTest {
     verifyTypeIsAdded(edgeMock, PRIMITIVE_TYPE);
   }
 
-  private void verifyTypeIsAdded(Element elementMock, Class<? extends Entity> type) {
-    verify(elementMock).setProperty(ELEMENT_TYPES, new String[] { TypeNames.getInternalName(type) });
+  private void verifyTypeIsAdded(Element elementMock, Class<? extends Entity> type) throws Exception {
+    List<String> types = Lists.newArrayList(TypeNames.getInternalName(type));
+
+    ObjectMapper objectMapper = new ObjectMapper();
+    String value = objectMapper.writeValueAsString(types);
+
+    verify(elementMock).setProperty(ELEMENT_TYPES, value);
   }
 
   @Test(expected = ConversionException.class)

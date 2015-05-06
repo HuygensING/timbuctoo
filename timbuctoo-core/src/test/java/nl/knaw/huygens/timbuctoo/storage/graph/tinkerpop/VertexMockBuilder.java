@@ -18,6 +18,8 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.tinkerpop.blueprints.Edge;
@@ -72,10 +74,20 @@ public class VertexMockBuilder {
     addIncomingEdges(vertex);
     addEdges(vertex);
     addProperties(vertex);
-
-    when(vertex.getProperty(ELEMENT_TYPES)).thenReturn(types.toArray(new String[types.size()]));
+    addTypes(vertex);
 
     return vertex;
+  }
+
+  private void addTypes(Vertex vertex) {
+    ObjectMapper objectMapper = new ObjectMapper();
+    String value;
+    try {
+      value = objectMapper.writeValueAsString(types);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+    when(vertex.getProperty(ELEMENT_TYPES)).thenReturn(value);
   }
 
   private void addProperties(Vertex vertex) {

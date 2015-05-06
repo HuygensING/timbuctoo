@@ -78,9 +78,8 @@ class TinkerPopLowLevelAPI {
     return new com.tinkerpop.blueprints.Predicate() {
       @Override
       public boolean evaluate(Object first, Object second) {
-        if (first != null && first.getClass().isArray()) {
-          Object[] array = (Object[]) first;
-          return Lists.newArrayList(array).contains(second);
+        if (first != null && (first instanceof String)) {
+          return ((String) first).contains((String) second);
         }
         return false;
       }

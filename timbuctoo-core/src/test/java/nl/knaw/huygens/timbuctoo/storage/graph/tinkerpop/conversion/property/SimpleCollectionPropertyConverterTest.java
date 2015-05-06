@@ -1,12 +1,9 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property;
 
-import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.property.SimpleArrayMatcher.isSimpleArrayOfType;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,6 +25,7 @@ import com.tinkerpop.blueprints.Vertex;
 
 public class SimpleCollectionPropertyConverterTest implements PropertyConverterTest {
 
+  private static final String STRINGIFIED_COLLECTION = "[1,2,3,4]";
   private static final Class<Integer> COMPONENT_TYPE = Integer.class;
   private static final int VALUE_4 = 4;
   private static final int VALUE_3 = 3;
@@ -70,9 +68,7 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
     instance.setPropertyOfElement(vertexMock, entity);
 
     // verify
-    verify(vertexMock).setProperty(argThat(equalTo(propertyName)), //
-        argThat(isSimpleArrayOfType(COMPONENT_TYPE) //
-            .withValues(VALUE_1, VALUE_2, VALUE_3, VALUE_4)));
+    verify(vertexMock).setProperty(propertyName, STRINGIFIED_COLLECTION);
   }
 
   @Test
@@ -139,7 +135,7 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
   @Override
   public void addValueToEntitySetTheFieldOfTheEntityWithTheValue() throws Exception {
     // setup
-    when(vertexMock.getProperty(propertyName)).thenReturn(new int[] { VALUE_1, VALUE_2, VALUE_3, VALUE_4 });
+    when(vertexMock.getProperty(propertyName)).thenReturn(STRINGIFIED_COLLECTION);
 
     // action
     instance.addValueToEntity(entity, vertexMock);

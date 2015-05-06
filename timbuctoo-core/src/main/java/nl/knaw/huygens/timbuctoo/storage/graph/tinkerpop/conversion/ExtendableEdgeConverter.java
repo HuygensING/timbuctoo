@@ -6,7 +6,9 @@ import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.EL
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.sourceOfEdge;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.targetOfEdge;
 
+import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -15,6 +17,9 @@ import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.CorruptNodeException;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeConverter;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -40,7 +45,7 @@ public class ExtendableEdgeConverter<T extends Relation> extends AbstractExtenda
   }
 
   private String getPrimitiveType(Vertex vertex) {
-    String[] types = vertex.<String[]> getProperty(ELEMENT_TYPES);
+    List<String> types = getTypes(vertex);
 
     for (String type : types) {
       Class<? extends DomainEntity> entity = typeRegistry.getDomainEntityType(type);
@@ -49,5 +54,18 @@ public class ExtendableEdgeConverter<T extends Relation> extends AbstractExtenda
       }
     }
     throw new CorruptNodeException(vertex.getProperty(ID_DB_PROPERTY_NAME));
+  }
+
+  protected List<String> getTypes(Vertex vertex) {
+    ObjectMapper objectMapper = new ObjectMapper();
+
+    List<String> types = null;
+    try {
+      types = objectMapper.readValue((String) vertex.getProperty(ELEMENT_TYPES), new TypeReference<List<String>>() {});
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    return types != null ? types : Lists.<String> newArrayList();
   }
 }

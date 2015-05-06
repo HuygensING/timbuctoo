@@ -2,7 +2,14 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
 
+import java.io.IOException;
+import java.util.List;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
@@ -37,5 +44,18 @@ public class ElementHelper {
 
   public static Vertex targetOfEdge(Edge edge) {
     return edge.getVertex(Direction.IN);
+  }
+
+  public static List<String> getTypes(Element element) {
+    ObjectMapper objectMapper = new ObjectMapper();
+
+    List<String> types = null;
+    try {
+      types = objectMapper.readValue((String) element.getProperty(ELEMENT_TYPES), new TypeReference<List<String>>() {});
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+    return types != null ? types : Lists.<String> newArrayList();
   }
 }
