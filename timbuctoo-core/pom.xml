@@ -143,9 +143,6 @@
           <artifactId>neo4j</artifactId>
           <groupId>org.neo4j</groupId>
         </exclusion>
-        <!-- <exclusion> <groupId>org.neo4j</groupId> <artifactId>neo4j-kernel</artifactId> 
-          </exclusion> <exclusion> <groupId>org.neo4j</groupId> <artifactId>neo4j-lucene-index</artifactId> 
-          </exclusion> -->
         <exclusion>
           <artifactId>neo4j-cypher</artifactId>
           <groupId>org.neo4j</groupId>
@@ -154,6 +151,10 @@
           <groupId>org.neo4j</groupId>
           <artifactId>neo4j-cypher-dsl</artifactId>
         </exclusion>
+        <exclusion>
+          <artifactId>neo4j-lucene-index</artifactId>
+          <groupId>org.neo4j</groupId>
+        </exclusion>
       </exclusions>
     </dependency>
 
@@ -161,6 +162,11 @@
     <dependency>
       <groupId>com.tinkerpop.blueprints</groupId>
       <artifactId>blueprints-core</artifactId>
+      <version>${tinkerpop.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.tinkerpop.blueprints</groupId>
+      <artifactId>blueprints-rexster-graph</artifactId>
       <version>${tinkerpop.version}</version>
     </dependency>
 
@@ -188,14 +194,8 @@
       <scope>test</scope>
     </dependency>
     <!-- Lucene indexes for Neo4J needed for the in-memory Neo4J -->
-    <dependency>
-      <groupId>org.neo4j</groupId>
-      <artifactId>neo4j-lucene-index</artifactId>
-      <version>${neo4j.version}</version>
-      <!-- <scope>test</scope> -->
-    </dependency>
-  
-    
+
+
     <!-- ## End of test dependencies ## -->
   </dependencies>
 

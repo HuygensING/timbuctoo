@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.neo4j;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Relation.SOURCE_ID;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.IndexManagerMockBuilder.anIndexManager;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.NodeMockBuilder.aNode;
@@ -123,14 +123,14 @@ public class RelationshipIndexesTest {
   @Test
   public void isLatestVersionRequestsAllTheRelationshipsWithTheSameIdAndChecksIfTheVersionIsTheSameAsTheHighest() {
     // setup
-    RelationshipMockBuilder aRelationshipWithId = aRelationship().withProperty(ID_PROPERTY_NAME, ID);
+    RelationshipMockBuilder aRelationshipWithId = aRelationship().withProperty(ID_DB_PROPERTY_NAME, ID);
     RelationshipIndex index = aRelationshipIndex().containsForId(ID) //
         .relationship(aRelationshipWithId.withRevision(FIRST_REVISION).build()) //
         .andRelationship(aRelationshipWithId.withRevision(THIRD_REVISION).build()) //
         .andRelationship(aRelationshipWithId.withRevision(SECOND_REVISION).build()) //
         .build();
 
-    anIndexManager().containsRelationshipIndexWithName(index, ID_PROPERTY_NAME) //
+    anIndexManager().containsRelationshipIndexWithName(index, ID_DB_PROPERTY_NAME) //
         .foundInDB(dbMock);
 
     Relationship relationToCheck = aRelationshipWithId//
@@ -149,14 +149,14 @@ public class RelationshipIndexesTest {
   @Test
   public void isLatestVersionReturnsFalseIfTheRelationshipDoesNotHaveTheHighestRevision() {
     // setup
-    RelationshipMockBuilder relationshipWithId = aRelationship().withProperty(ID_PROPERTY_NAME, ID);
+    RelationshipMockBuilder relationshipWithId = aRelationship().withProperty(ID_DB_PROPERTY_NAME, ID);
     RelationshipIndex index = aRelationshipIndex().containsForId(ID) //
         .relationship(relationshipWithId.withRevision(FIRST_REVISION).build()) //
         .andRelationship(relationshipWithId.withRevision(THIRD_REVISION).build()) //
         .andRelationship(relationshipWithId.withRevision(SECOND_REVISION).build()) //
         .build();
 
-    anIndexManager().containsRelationshipIndexWithName(index, ID_PROPERTY_NAME) //
+    anIndexManager().containsRelationshipIndexWithName(index, ID_DB_PROPERTY_NAME) //
         .foundInDB(dbMock);
 
     Relationship relationToCheck = relationshipWithId//
@@ -210,7 +210,7 @@ public class RelationshipIndexesTest {
         .andRelationship(aRelationship().withRevision(SECOND_REVISION).build()) //
         .build();
 
-    anIndexManager().containsRelationshipIndexWithName(index, ID_PROPERTY_NAME) //
+    anIndexManager().containsRelationshipIndexWithName(index, ID_DB_PROPERTY_NAME) //
         .foundInDB(dbMock);
 
     // action
@@ -225,7 +225,7 @@ public class RelationshipIndexesTest {
   public void getLatestRelationshipReturnsNullWhenNoRelationshipsAreFoundForId() {
     // setup
     RelationshipIndex index = aRelationshipIndex().containsNothingForId(ID).build();
-    anIndexManager().containsRelationshipIndexWithName(index, ID_PROPERTY_NAME) //
+    anIndexManager().containsRelationshipIndexWithName(index, ID_DB_PROPERTY_NAME) //
         .foundInDB(dbMock);
 
     // action
@@ -246,7 +246,7 @@ public class RelationshipIndexesTest {
         .andRelationship(aRelationship().withRevision(SECOND_REVISION).build()) //
         .build();
 
-    anIndexManager().containsRelationshipIndexWithName(index, ID_PROPERTY_NAME) //
+    anIndexManager().containsRelationshipIndexWithName(index, ID_DB_PROPERTY_NAME) //
         .foundInDB(dbMock);
 
     // action
@@ -263,7 +263,7 @@ public class RelationshipIndexesTest {
     RelationshipIndex index = aRelationshipIndex().containsNothingForId(ID) //
         .build();
 
-    anIndexManager().containsRelationshipIndexWithName(index, ID_PROPERTY_NAME) //
+    anIndexManager().containsRelationshipIndexWithName(index, ID_DB_PROPERTY_NAME) //
         .foundInDB(dbMock);
 
     // action
@@ -282,7 +282,7 @@ public class RelationshipIndexesTest {
         .andRelationship(aRelationship().withRevision(SECOND_REVISION).build()) //
         .build();
 
-    anIndexManager().containsRelationshipIndexWithName(index, ID_PROPERTY_NAME) //
+    anIndexManager().containsRelationshipIndexWithName(index, ID_DB_PROPERTY_NAME) //
         .foundInDB(dbMock);
 
     // action

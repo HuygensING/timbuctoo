@@ -26,6 +26,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.annotations.DBProperty;
 import nl.knaw.huygens.timbuctoo.annotations.JsonViews;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TimbuctooTypeIdResolver;
@@ -51,11 +52,14 @@ public abstract class Entity {
 
   public static final String REVISION_PROPERTY_NAME = "^rev";
 
+  public static final String ID_DB_PROPERTY_NAME = "^id";
+
   public static final String ID_PROPERTY_NAME = "_id";
 
   @NotNull
   @Pattern(regexp = Paths.ID_REGEX)
   @JsonProperty(ID_PROPERTY_NAME)
+  @DBProperty(ID_DB_PROPERTY_NAME)
   private String id;
 
   /** Revison number; also used for integrity of updates. */

@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 import static com.tinkerpop.blueprints.Direction.BOTH;
 import static com.tinkerpop.blueprints.Direction.IN;
 import static com.tinkerpop.blueprints.Direction.OUT;
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
 import static org.mockito.Mockito.mock;
@@ -130,7 +130,7 @@ public class VertexMockBuilder {
   }
 
   public VertexMockBuilder withId(String id) {
-    addProperty(ID_PROPERTY_NAME, id);
+    addProperty(ID_DB_PROPERTY_NAME, id);
     return this;
   }
 

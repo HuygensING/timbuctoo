@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.annotations.DBIgnore;
+import nl.knaw.huygens.timbuctoo.annotations.DBProperty;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
@@ -43,6 +44,7 @@ public class TestSystemEntityWrapper extends SystemEntity {
   public static final String ID_PREFIX = "TSYW";
   public static final String ANNOTED_GETTER_NAME = "annotedGetter";
   public static final String ANOTATED_PROPERTY_NAME = "something";
+  public static final String DB_PROPERTY_ANNOTATED = "dbProperty";
 
   private static String staticField;
 
@@ -58,6 +60,9 @@ public class TestSystemEntityWrapper extends SystemEntity {
 
   @JsonProperty(ANOTATED_PROPERTY_NAME)
   private String annotatedProperty;
+
+  @DBProperty(DB_PROPERTY_ANNOTATED)
+  private String dbPropertyAnnotated;
 
   private String propertyWithAnnotatedGetter;
 

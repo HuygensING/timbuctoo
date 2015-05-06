@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion;
 
 import static nl.knaw.huygens.timbuctoo.model.DomainEntity.DELETED;
 import static nl.knaw.huygens.timbuctoo.model.DomainEntity.PID;
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Relation.SOURCE_ID;
 import static nl.knaw.huygens.timbuctoo.model.Relation.SOURCE_TYPE;
@@ -62,7 +62,7 @@ public class RelationConversionTest {
     converter.addValuesToPropertyContainer(relationshipMock, relation);
 
     // verify
-    verify(relationshipMock).setProperty(ID_PROPERTY_NAME, A_STRING);
+    verify(relationshipMock).setProperty(ID_DB_PROPERTY_NAME, A_STRING);
     verify(relationshipMock).setProperty(argThat(equalTo(PID)), anyString());
     verify(relationshipMock).setProperty(argThat(equalTo(DELETED)), anyBoolean());
     verify(relationshipMock).setProperty(argThat(endsWith("accepted")), anyBoolean());

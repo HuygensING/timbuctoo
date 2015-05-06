@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.neo4j;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Relation.SOURCE_ID;
 import static nl.knaw.huygens.timbuctoo.model.Relation.TARGET_ID;
 import static nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType.VERSION_OF;
@@ -40,7 +40,7 @@ class Neo4JLowLevelAPI {
 
     @Override
     public boolean apply(Relationship relationship) {
-      Object id = relationship.hasProperty(ID_PROPERTY_NAME) ? relationship.getProperty(ID_PROPERTY_NAME) : null;
+      Object id = relationship.hasProperty(ID_DB_PROPERTY_NAME) ? relationship.getProperty(ID_DB_PROPERTY_NAME) : null;
       if (!uniqueRelIds.contains(id)) {
         uniqueRelIds.add(id);
         return true;
@@ -78,7 +78,7 @@ class Neo4JLowLevelAPI {
    */
   public <T extends Entity> Node getLatestNodeById(Class<T> type, String id) {
     try (Transaction transaction = db.beginTx()) {
-      ResourceIterator<Node> iterator = findByProperty(type, ID_PROPERTY_NAME, id);
+      ResourceIterator<Node> iterator = findByProperty(type, ID_DB_PROPERTY_NAME, id);
 
       Node nodeWithHighestRevision = null;
 
@@ -99,7 +99,7 @@ class Neo4JLowLevelAPI {
 
   public <T extends Entity> Node getNodeWithRevision(Class<T> type, String id, int revision) {
     try (Transaction transaction = db.beginTx()) {
-      ResourceIterator<Node> iterator = findByProperty(type, ID_PROPERTY_NAME, id);
+      ResourceIterator<Node> iterator = findByProperty(type, ID_DB_PROPERTY_NAME, id);
 
       Node nodeWithRevision = null;
 
@@ -144,7 +144,7 @@ class Neo4JLowLevelAPI {
 
   public <T extends Entity> List<Node> getNodesWithId(Class<T> type, String id) {
     List<Node> nodes = Lists.newArrayList();
-    ResourceIterator<Node> iterator = findByProperty(type, ID_PROPERTY_NAME, id);
+    ResourceIterator<Node> iterator = findByProperty(type, ID_DB_PROPERTY_NAME, id);
 
     for (; iterator.hasNext();) {
       nodes.add(iterator.next());
@@ -162,13 +162,13 @@ class Neo4JLowLevelAPI {
   }
 
   public void addRelationship(Relationship relationship, String id) {
-    relationshipIndexes.indexByField(relationship, ID_PROPERTY_NAME, id);
+    relationshipIndexes.indexByField(relationship, ID_DB_PROPERTY_NAME, id);
     relationshipIndexes.indexByField(relationship, SOURCE_ID, getNodeId(relationship.getStartNode()));
     relationshipIndexes.indexByField(relationship, TARGET_ID, getNodeId(relationship.getEndNode()));
   }
 
   private Object getNodeId(Node node) {
-    return node.getProperty(ID_PROPERTY_NAME);
+    return node.getProperty(ID_DB_PROPERTY_NAME);
   }
 
   /**

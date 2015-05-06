@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 
 import com.tinkerpop.blueprints.Direction;
@@ -26,8 +26,8 @@ public class ElementHelper {
   }
 
   public static String getIdProperty(Element element) {
-    return containsProperty(element, ID_PROPERTY_NAME) ? //
-    (String) element.getProperty(ID_PROPERTY_NAME) //
+    return containsProperty(element, ID_DB_PROPERTY_NAME) ? //
+    (String) element.getProperty(ID_DB_PROPERTY_NAME) //
         : null;
   }
 

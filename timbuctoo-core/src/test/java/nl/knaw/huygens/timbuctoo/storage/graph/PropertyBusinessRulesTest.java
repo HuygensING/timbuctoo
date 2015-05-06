@@ -8,12 +8,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static test.model.TestSystemEntityWrapper.ANNOTED_GETTER_NAME;
 import static test.model.TestSystemEntityWrapper.ANOTATED_PROPERTY_NAME;
+import static test.model.TestSystemEntityWrapper.DB_PROPERTY_ANNOTATED;
 
 import java.lang.reflect.Field;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
 
 import org.junit.Before;
@@ -100,6 +100,11 @@ public class PropertyBusinessRulesTest {
   @Test
   public void getFieldNameReturnsTheValueOfTheJsonPropertyAnnotationOfTheField() throws Exception {
     verifyThatFieldWithNameReturnsName("annotatedProperty", ANOTATED_PROPERTY_NAME);
+  }
+
+  @Test
+  public void getFieldNameReturnsTheValueOfTheDBProeprtyAnnotationOfTheField() throws Exception {
+    verifyThatFieldWithNameReturnsName("dbPropertyAnnotated", DB_PROPERTY_ANNOTATED);
   }
 
   @Test

@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.neo4j;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Relation.SOURCE_ID;
 import static nl.knaw.huygens.timbuctoo.model.Relation.TARGET_ID;
 import static nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType.VERSION_OF;
@@ -94,7 +94,7 @@ public class Neo4JLowLevelAPITest {
     String startNodeId = "startNodeId";
     String endNodeId = "endNodeId";
     Relationship relationship = aRelationship() //
-        .withProperty(ID_PROPERTY_NAME, ID)//
+        .withProperty(ID_DB_PROPERTY_NAME, ID)//
         .withStartNode(aNode().withId(startNodeId).build()) //
         .withEndNode(aNode().withId(endNodeId).build()) //
         .build();
@@ -103,7 +103,7 @@ public class Neo4JLowLevelAPITest {
     instance.addRelationship(relationship, ID);
 
     // verify
-    verify(relationshipIndexesMock).indexByField(relationship, ID_PROPERTY_NAME, ID);
+    verify(relationshipIndexesMock).indexByField(relationship, ID_DB_PROPERTY_NAME, ID);
     verify(relationshipIndexesMock).indexByField(relationship, Relation.SOURCE_ID, startNodeId);
     verify(relationshipIndexesMock).indexByField(relationship, Relation.TARGET_ID, endNodeId);
   }
@@ -525,7 +525,7 @@ public class Neo4JLowLevelAPITest {
 
     Node node1 = aNode().withIncomingRelationShip(aRelationship().withType(VERSION_OF).build()).build();
 
-    RelationshipMockBuilder relationshipBuilderWithId = aRelationship().withProperty(ID_PROPERTY_NAME, ID);
+    RelationshipMockBuilder relationshipBuilderWithId = aRelationship().withProperty(ID_DB_PROPERTY_NAME, ID);
     Relationship rel1 = relationshipBuilderWithId.withRevision(FIRST_REVISION).build();
     Relationship rel1V2 = relationshipBuilderWithId.withRevision(SECOND_REVISION).build();
 
@@ -536,7 +536,7 @@ public class Neo4JLowLevelAPITest {
         .build();
 
     String otherId = "otherId";
-    RelationshipMockBuilder relationshipBuilderWithOtherId = aRelationship().withProperty(ID_PROPERTY_NAME, otherId);
+    RelationshipMockBuilder relationshipBuilderWithOtherId = aRelationship().withProperty(ID_DB_PROPERTY_NAME, otherId);
     Relationship rel2 = relationshipBuilderWithOtherId.withRevision(FIRST_REVISION).build();
     Relationship rel2V2 = relationshipBuilderWithOtherId.withRevision(SECOND_REVISION).build();
 

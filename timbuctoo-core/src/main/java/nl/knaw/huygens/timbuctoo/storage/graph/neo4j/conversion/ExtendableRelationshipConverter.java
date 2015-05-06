@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -31,15 +31,15 @@ class ExtendableRelationshipConverter<T extends Relation> extends AbstractExtend
   @Override
   protected void executeCustomDeserializationActions(T entity, Relationship propertyContainer) {
     Node startNode = propertyContainer.getStartNode();
-    if (startNode.hasProperty(ID_PROPERTY_NAME)) {
-      entity.setSourceId((String) startNode.getProperty(ID_PROPERTY_NAME));
+    if (startNode.hasProperty(ID_DB_PROPERTY_NAME)) {
+      entity.setSourceId((String) startNode.getProperty(ID_DB_PROPERTY_NAME));
     }
 
     entity.setSourceType(getPrimitiveType(startNode));
 
     Node endNode = propertyContainer.getEndNode();
-    if (endNode.hasProperty(ID_PROPERTY_NAME)) {
-      entity.setTargetId((String) endNode.getProperty(ID_PROPERTY_NAME));
+    if (endNode.hasProperty(ID_DB_PROPERTY_NAME)) {
+      entity.setTargetId((String) endNode.getProperty(ID_DB_PROPERTY_NAME));
     }
     entity.setTargetType(getPrimitiveType(endNode));
   }
@@ -54,7 +54,7 @@ class ExtendableRelationshipConverter<T extends Relation> extends AbstractExtend
       }
     }
 
-    throw new CorruptNodeException(node.getProperty(ID_PROPERTY_NAME));
+    throw new CorruptNodeException(node.getProperty(ID_DB_PROPERTY_NAME));
   }
 
 }

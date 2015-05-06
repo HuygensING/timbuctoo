@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.neo4j;
 
 import static nl.knaw.huygens.timbuctoo.model.DomainEntity.PID;
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -47,7 +47,7 @@ public class NodeMockBuilder {
   }
 
   public NodeMockBuilder withId(String id) {
-    addProperty(ID_PROPERTY_NAME, id);
+    addProperty(ID_DB_PROPERTY_NAME, id);
     return this;
   }
 

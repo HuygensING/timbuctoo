@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.neo4j;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -42,12 +42,12 @@ public class RelationshipIndexMockBuilder {
   }
 
   public RelationshipIndexMockBuilder containsForId(String id) {
-    containsForPropertyWithValue(ID_PROPERTY_NAME, id);
+    containsForPropertyWithValue(ID_DB_PROPERTY_NAME, id);
     return this;
   }
 
   public RelationshipIndexMockBuilder containsNothingForId(String id) {
-    containsForPropertyWithValue(ID_PROPERTY_NAME, id);
+    containsForPropertyWithValue(ID_DB_PROPERTY_NAME, id);
     return this;
   }
 

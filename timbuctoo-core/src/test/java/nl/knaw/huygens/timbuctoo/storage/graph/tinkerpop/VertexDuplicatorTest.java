@@ -69,7 +69,7 @@ public class VertexDuplicatorTest {
   }
 
   private void verifyIdIsSet(Vertex duplicate) {
-    verify(duplicate).setProperty(Entity.ID_PROPERTY_NAME, ID);
+    verify(duplicate).setProperty(Entity.ID_DB_PROPERTY_NAME, ID);
   }
 
   @Test

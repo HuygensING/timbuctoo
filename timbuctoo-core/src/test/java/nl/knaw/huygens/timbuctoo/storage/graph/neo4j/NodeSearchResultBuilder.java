@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.neo4j;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
 import static org.mockito.Mockito.when;
 
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -31,7 +31,7 @@ public class NodeSearchResultBuilder extends SearchResultBuilder<Node, NodeSearc
   }
 
   public NodeSearchResultBuilder andId(String id) {
-    return andPropertyWithValue(ID_PROPERTY_NAME, id);
+    return andPropertyWithValue(ID_DB_PROPERTY_NAME, id);
   }
 
   public NodeSearchResultBuilder forLabel(Label label) {

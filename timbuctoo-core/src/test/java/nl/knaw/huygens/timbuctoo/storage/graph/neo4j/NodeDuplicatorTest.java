@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.neo4j;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType.VERSION_OF;
 import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.NodeMockBuilder.aNode;
@@ -58,7 +58,7 @@ public class NodeDuplicatorTest {
     instance.saveDuplicate(nodeToDuplicate);
 
     // verify
-    verify(duplicatedNode).setProperty(ID_PROPERTY_NAME, id);
+    verify(duplicatedNode).setProperty(ID_DB_PROPERTY_NAME, id);
     verify(duplicatedNode).setProperty(REVISION_PROPERTY_NAME, revision);
   }
 

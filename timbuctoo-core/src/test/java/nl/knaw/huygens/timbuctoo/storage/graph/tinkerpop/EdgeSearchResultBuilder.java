@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
 import static org.hamcrest.Matchers.is;
@@ -61,7 +61,7 @@ public class EdgeSearchResultBuilder {
   }
 
   public EdgeSearchResultBuilder forId(Object value) {
-    return this.forProperty(ID_PROPERTY_NAME, value);
+    return this.forProperty(ID_DB_PROPERTY_NAME, value);
 
   }
 

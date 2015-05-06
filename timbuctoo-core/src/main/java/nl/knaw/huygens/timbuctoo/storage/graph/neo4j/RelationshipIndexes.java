@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.neo4j;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Relation.SOURCE_ID;
 import static nl.knaw.huygens.timbuctoo.model.Relation.TARGET_ID;
 import static nl.knaw.huygens.timbuctoo.model.Relation.TYPE_ID;
@@ -31,7 +31,7 @@ class RelationshipIndexes {
   private final GraphDatabaseService db;
 
   public RelationshipIndexes(GraphDatabaseService db) {
-    this(db, Lists.newArrayList(SOURCE_ID, TARGET_ID, ID_PROPERTY_NAME));
+    this(db, Lists.newArrayList(SOURCE_ID, TARGET_ID, ID_DB_PROPERTY_NAME));
   }
 
   public RelationshipIndexes(GraphDatabaseService db, List<String> indexedProperties) {
@@ -59,7 +59,7 @@ class RelationshipIndexes {
 
   public boolean isLatestVersion(Relationship relationship) {
     try (Transaction transaction = db.beginTx()) {
-      IndexHits<Relationship> indexHits = getFromIndex(ID_PROPERTY_NAME, relationship.getProperty(ID_PROPERTY_NAME));
+      IndexHits<Relationship> indexHits = getFromIndex(ID_DB_PROPERTY_NAME, relationship.getProperty(ID_DB_PROPERTY_NAME));
 
       int revisionToCheck = getRevisionProperty(relationship);
 
@@ -118,7 +118,7 @@ class RelationshipIndexes {
   }
 
   private ResourceIterator<Relationship> getFromIndexById(String id) {
-    IndexHits<Relationship> indexHits = getFromIndex(ID_PROPERTY_NAME, id);
+    IndexHits<Relationship> indexHits = getFromIndex(ID_DB_PROPERTY_NAME, id);
 
     ResourceIterator<Relationship> iterator = indexHits.iterator();
     return iterator;
@@ -181,7 +181,7 @@ class RelationshipIndexes {
     }
 
     private boolean hasSameTargetId(Relationship input, final String targetId) {
-      return hasPropertyWithValue(input.getEndNode(), ID_PROPERTY_NAME, targetId);
+      return hasPropertyWithValue(input.getEndNode(), ID_DB_PROPERTY_NAME, targetId);
     }
   }
 

@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 import nl.knaw.huygens.timbuctoo.annotations.DBIgnore;
+import nl.knaw.huygens.timbuctoo.annotations.DBProperty;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
 
@@ -45,6 +46,11 @@ public class PropertyBusinessRules {
   }
 
   public String getFieldName(Class<? extends Entity> containingType, Field field) {
+    DBProperty dbProperty = field.getAnnotation(DBProperty.class);
+    if (dbProperty != null) {
+      return dbProperty.value();
+    }
+
     JsonProperty annotation = field.getAnnotation(JsonProperty.class);
     if (annotation != null) {
       return annotation.value();

@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion;
 
 import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.isPrimitiveDomainEntity;
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.sourceOfEdge;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.targetOfEdge;
@@ -31,11 +31,11 @@ public class ExtendableEdgeConverter<T extends Relation> extends AbstractExtenda
   protected void executeCustomDeserializationActions(T entity, Edge element) {
 
     Vertex source = sourceOfEdge(element);
-    entity.setSourceId(source.<String> getProperty(ID_PROPERTY_NAME));
+    entity.setSourceId(source.<String> getProperty(ID_DB_PROPERTY_NAME));
     entity.setSourceType(getPrimitiveType(source));
 
     Vertex target = targetOfEdge(element);
-    entity.setTargetId(target.<String> getProperty(ID_PROPERTY_NAME));
+    entity.setTargetId(target.<String> getProperty(ID_DB_PROPERTY_NAME));
     entity.setTargetType(getPrimitiveType(target));
   }
 
@@ -48,6 +48,6 @@ public class ExtendableEdgeConverter<T extends Relation> extends AbstractExtenda
         return type;
       }
     }
-    throw new CorruptNodeException(vertex.getProperty(ID_PROPERTY_NAME));
+    throw new CorruptNodeException(vertex.getProperty(ID_DB_PROPERTY_NAME));
   }
 }

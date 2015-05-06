@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.neo4j;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 
 import org.neo4j.graphdb.PropertyContainer;
@@ -23,8 +23,8 @@ public class PropertyContainerHelper {
   }
 
   public static String getIdProperty(PropertyContainer propertyContainer) {
-    return containsProperty(propertyContainer, ID_PROPERTY_NAME) ? //
-    (String) propertyContainer.getProperty(ID_PROPERTY_NAME) //
+    return containsProperty(propertyContainer, ID_DB_PROPERTY_NAME) ? //
+    (String) propertyContainer.getProperty(ID_DB_PROPERTY_NAME) //
         : null;
   }
 }
