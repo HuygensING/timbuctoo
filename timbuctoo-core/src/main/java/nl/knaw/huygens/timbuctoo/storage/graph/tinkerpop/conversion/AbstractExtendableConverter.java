@@ -22,14 +22,14 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.tinkerpop.blueprints.Element;
 
-abstract class AbstractExtendableCovnerter<T extends Entity, E extends Element> implements ElementConverter<T, E> {
+abstract class AbstractExtendableConverter<T extends Entity, E extends Element> implements ElementConverter<T, E> {
 
   private static Logger LOG = LoggerFactory.getLogger(ExtendableVertexConverter.class);
   protected final EntityInstantiator entityInstantiator;
   protected final Class<T> type;
   private Map<String, PropertyConverter> fieldNamePropertyConverterMap;
 
-  public AbstractExtendableCovnerter(Class<T> type, Collection<PropertyConverter> propertyConverters, EntityInstantiator entityInstantiator) {
+  public AbstractExtendableConverter(Class<T> type, Collection<PropertyConverter> propertyConverters, EntityInstantiator entityInstantiator) {
     this.type = type;
     this.entityInstantiator = entityInstantiator;
     mapPropertyConverters(propertyConverters);
@@ -51,14 +51,14 @@ abstract class AbstractExtendableCovnerter<T extends Entity, E extends Element> 
   }
 
   private void addVariation(E element, Class<? extends Entity> variationType) {
-    LOG.info("add variation \"{}\"", variationType);
+    LOG.debug("add variation \"{}\"", variationType);
 
     String[] types = (String[]) (element.getProperty(ELEMENT_TYPES) != null ? element.getProperty(ELEMENT_TYPES) : new String[] {});
 
     Set<String> typeSet = Sets.newHashSet(types);
     typeSet.add(TypeNames.getInternalName(variationType));
 
-    LOG.info("new variations \"{}\"", typeSet);
+    LOG.debug("new variations \"{}\"", typeSet);
 
     element.setProperty(ELEMENT_TYPES, typeSet.toArray(new String[typeSet.size()]));
   }

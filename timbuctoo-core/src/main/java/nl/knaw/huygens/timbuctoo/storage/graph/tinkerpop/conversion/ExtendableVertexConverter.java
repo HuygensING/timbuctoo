@@ -9,7 +9,7 @@ import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexConverter;
 
 import com.tinkerpop.blueprints.Vertex;
 
-class ExtendableVertexConverter<T extends Entity> extends AbstractExtendableCovnerter<T, Vertex> implements VertexConverter<T> {
+class ExtendableVertexConverter<T extends Entity> extends AbstractExtendableConverter<T, Vertex> implements VertexConverter<T> {
   ExtendableVertexConverter(Class<T> type, Collection<PropertyConverter> propertyConverters, EntityInstantiator entityInstantiator) {
     super(type, propertyConverters, entityInstantiator);
   }
