@@ -46,7 +46,7 @@ abstract class AbstractPropertyConverter implements PropertyConverter {
   }
 
   @Override
-  public void setPropertyOfElement(Element element, Entity entity) throws ConversionException {
+  public final void setPropertyOfElement(Element element, Entity entity) throws ConversionException {
     try {
       Object value = getValue(entity);
 
