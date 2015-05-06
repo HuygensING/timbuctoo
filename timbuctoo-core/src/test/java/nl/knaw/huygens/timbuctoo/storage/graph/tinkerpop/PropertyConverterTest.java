@@ -4,7 +4,7 @@ public interface PropertyConverterTest {
 
   void setPropertyOfElementSetsThePropertyWithTheFieldNameToTheValueOfTheNode() throws Exception;
 
-  void setPropertyOfElementDoesNotSetIfTheValueIsNull() throws Exception;
+  void setPropertyOfElementRemovesThePropertyIfTheValueIsNull() throws Exception;
 
   void setPropertyOfElementThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalAccessException() throws Exception;
 

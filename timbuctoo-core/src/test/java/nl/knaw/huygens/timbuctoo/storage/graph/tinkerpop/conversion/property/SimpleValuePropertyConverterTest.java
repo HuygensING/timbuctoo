@@ -6,13 +6,11 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.PropertyConverterTest;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property.SimpleValuePropertyConverter;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -63,7 +61,7 @@ public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
 
   @Override
   @Test
-  public void setPropertyOfElementDoesNotSetIfTheValueIsNull() throws Exception {
+  public void setPropertyOfElementRemovesThePropertyIfTheValueIsNull() throws Exception {
     // setup
     entity.setStringValue(null);
 
@@ -71,7 +69,7 @@ public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
     instance.setPropertyOfElement(vertexMock, entity);
 
     // verify
-    verifyZeroInteractions(vertexMock);
+    verify(vertexMock).removeProperty(PROPERTY_NAME);
   }
 
   @Override

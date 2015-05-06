@@ -50,8 +50,11 @@ abstract class AbstractPropertyConverter implements PropertyConverter {
     try {
       Object value = getValue(entity);
 
+      String propertyName = propertyName();
       if (isLegalValue(value)) {
-        element.setProperty(propertyName(), format(value));
+        element.setProperty(propertyName, format(value));
+      } else {
+        element.removeProperty(propertyName);
       }
 
     } catch (IllegalArgumentException | IllegalAccessException e) {

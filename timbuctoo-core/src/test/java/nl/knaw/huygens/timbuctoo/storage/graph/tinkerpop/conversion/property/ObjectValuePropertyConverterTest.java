@@ -5,14 +5,12 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.PropertyConverterTest;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property.ObjectValuePropertyConverter;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -73,7 +71,7 @@ public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
 
   @Test
   @Override
-  public void setPropertyOfElementDoesNotSetIfTheValueIsNull() throws Exception {
+  public void setPropertyOfElementRemovesThePropertyIfTheValueIsNull() throws Exception {
     // setup
     entity.setObjectValue(null);
 
@@ -81,7 +79,7 @@ public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
     instance.setPropertyOfElement(vertexMock, entity);
 
     // verify
-    verifyZeroInteractions(vertexMock);
+    verify(vertexMock).removeProperty(propertyName);
   }
 
   @Test(expected = ConversionException.class)

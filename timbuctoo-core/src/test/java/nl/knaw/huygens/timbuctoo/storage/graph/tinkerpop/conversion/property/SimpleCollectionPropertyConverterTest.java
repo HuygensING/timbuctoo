@@ -9,7 +9,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -18,7 +17,6 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.PropertyConverterTest;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property.SimpleCollectionPropertyConverter;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -79,7 +77,7 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
 
   @Test
   @Override
-  public void setPropertyOfElementDoesNotSetIfTheValueIsNull() throws Exception {
+  public void setPropertyOfElementRemovesThePropertyIfTheValueIsNull() throws Exception {
     // setup
     entity.setPrimitiveCollection(null);
 
@@ -87,7 +85,7 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
     instance.setPropertyOfElement(vertexMock, entity);
 
     // verify
-    verifyZeroInteractions(vertexMock);
+    verify(vertexMock).removeProperty(propertyName);
   }
 
   @Test
@@ -99,7 +97,7 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
     instance.setPropertyOfElement(vertexMock, entity);
 
     // verify
-    verifyZeroInteractions(vertexMock);
+    verify(vertexMock).removeProperty(propertyName);
   }
 
   @Test(expected = ConversionException.class)
