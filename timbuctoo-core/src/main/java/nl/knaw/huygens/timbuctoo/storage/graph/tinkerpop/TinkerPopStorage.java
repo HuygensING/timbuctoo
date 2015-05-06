@@ -59,40 +59,68 @@ public class TinkerPopStorage implements GraphStorage {
 
   @Override
   public <T extends DomainEntity> void addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
-    new RevertableVertexAddition<T>() {
+    Vertex vertex = db.addVertex(null);
+    VertexAddAction<T> addAction = new VertexAddAction<T>(type, entity, vertex) {
       @Override
-      protected VertexConverter<T> createVertexConverter(Class<T> type) {
-        return elementConverterFactory.compositeForType(type);
+      protected VertexConverter<T> converter() {
+        return elementConverterFactory.compositeForType(getType());
       }
-    }.execute(type, entity);
+    };
+
+    VertexRollbackAction rollbackAction = new VertexRollbackAction(vertex);
+
+    new RevertableAddition().execute(addAction, rollbackAction);
+
   }
 
   @Override
   public <T extends SystemEntity> void addSystemEntity(Class<T> type, T entity) throws StorageException {
-    new RevertableVertexAddition<T>().execute(type, entity);
+    Vertex vertex = db.addVertex(null);
+
+    VertexAddAction<T> addAction = new VertexAddAction<T>(type, entity, vertex);
+    VertexRollbackAction rollbackAction = new VertexRollbackAction(vertex);
+
+    new RevertableAddition().execute(addAction, rollbackAction);
   }
 
-  private class RevertableVertexAddition<T extends Entity> {
-    public final void execute(Class<T> type, T entity) throws StorageException {
-      Vertex vertex = db.addVertex(null);
+  private class VertexRollbackAction implements RollbackAction {
+    private final Vertex vertex;
 
-      VertexConverter<T> converter = createVertexConverter(type);
-      try {
-        converter.addValuesToElement(vertex, entity);
-      } catch (ConversionException e) {
-        rollback(vertex);
-        throw e;
-      }
+    public VertexRollbackAction(Vertex vertex) {
+      this.vertex = vertex;
     }
 
-    protected void rollback(Vertex vertex) {
+    @Override
+    public void execute() {
       db.removeVertex(vertex);
     }
+  }
 
-    protected VertexConverter<T> createVertexConverter(Class<T> type) {
-      VertexConverter<T> converter = elementConverterFactory.forType(type);
+  private class VertexAddAction<T extends Entity> implements AddAction {
+    private final Class<T> type;
+    private final T entity;
+    private final Vertex vertex;
+
+    public VertexAddAction(Class<T> type, T entity, Vertex vertex) {
+      this.type = type;
+      this.entity = entity;
+      this.vertex = vertex;
+    }
+
+    @Override
+    public void execute() throws ConversionException {
+      converter().addValuesToElement(vertex, entity);
+    }
+
+    protected VertexConverter<T> converter() {
+      VertexConverter<T> converter = elementConverterFactory.forType(getType());
       return converter;
     }
+
+    protected Class<T> getType() {
+      return type;
+    }
+
   }
 
   @Override
@@ -105,27 +133,59 @@ public class TinkerPopStorage implements GraphStorage {
 
     Edge edge = sourceVertex.addEdge(regularRelationName, targetVertex);
 
-    new RevertableEdgeAddition<T>().execute(type, type.cast(relation), edge);
+    EdgeAddAction<T> addAction = new EdgeAddAction<T>(type, type.cast(relation), edge);
+    EdgeRollbackAction rollbackAction = new EdgeRollbackAction(edge);
+
+    new RevertableAddition().execute(addAction, rollbackAction);
   }
 
-  private class RevertableEdgeAddition<T extends Relation> {
-    public final void execute(Class<T> type, T entity, Edge edge) throws StorageException {
-      EdgeConverter<T> converter = createEdgeConverter(type);
+  private class EdgeRollbackAction implements RollbackAction {
+    private final Edge edge;
+
+    public EdgeRollbackAction(Edge edge) {
+      this.edge = edge;
+    }
+
+    @Override
+    public void execute() {
+      db.removeEdge(edge);
+    }
+  }
+
+  private static interface RollbackAction {
+    public void execute();
+  }
+
+  private class EdgeAddAction<T extends Relation> implements AddAction {
+    private final Class<T> type;
+    private final T entity;
+    private final Edge edge;
+
+    public EdgeAddAction(Class<T> type, T entity, Edge edge) {
+      this.type = type;
+      this.entity = entity;
+      this.edge = edge;
+    }
+
+    @Override
+    public void execute() throws ConversionException {
+      EdgeConverter<T> converter = elementConverterFactory.compositeForRelation(type);
+      converter.addValuesToElement(edge, entity);
+    }
+  }
+
+  private static interface AddAction {
+    public void execute() throws ConversionException;
+  }
+
+  private class RevertableAddition {
+    public final void execute(AddAction addAction, RollbackAction rollbackAction) throws StorageException {
       try {
-        converter.addValuesToElement(edge, entity);
+        addAction.execute();
       } catch (ConversionException e) {
-        rollback(edge);
+        rollbackAction.execute();
         throw e;
       }
-    }
-
-    protected void rollback(Edge vertex) {
-      db.removeEdge(vertex);
-    }
-
-    protected EdgeConverter<T> createEdgeConverter(Class<T> type) {
-      EdgeConverter<T> converter = elementConverterFactory.compositeForRelation(type);
-      return converter;
     }
   }
 
