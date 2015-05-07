@@ -67,14 +67,13 @@ public class GraphLegacyStorageWrapper implements Storage {
     return id;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
     removePID(entity);
     String id = addAdministrativeValues(type, entity);
 
-    if (RELATION_TYPE.isAssignableFrom(type)) {
-      graphStorage.addRelation((Class<? extends Relation>) type, (Relation) entity, change);
+    if (isRelation(type)) {
+      graphStorage.addRelation(asRelation(type), (Relation) entity, change);
     } else {
       graphStorage.addDomainEntity(type, entity, change);
     }
@@ -120,13 +119,12 @@ public class GraphLegacyStorageWrapper implements Storage {
     graphStorage.updateEntity(type, entity);
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
     removePID(entity);
     updateAdministrativeValues(entity);
-    if (RELATION_TYPE.isAssignableFrom(type)) {
-      graphStorage.updateRelation((Class<? extends Relation>) type, (Relation) entity, change);
+    if (isRelation(type)) {
+      graphStorage.updateRelation(asRelation(type), (Relation) entity, change);
     } else {
       if (baseTypeExists(type, entity) && variantExists(type, entity)) {
         graphStorage.updateEntity(type, entity);
@@ -146,11 +144,10 @@ public class GraphLegacyStorageWrapper implements Storage {
     return graphStorage.entityExists(TypeRegistry.getBaseClass(type), entity.getId());
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> void setPID(Class<T> type, String id, String pid) throws StorageException {
-    if (RELATION_TYPE.isAssignableFrom(type)) {
-      graphStorage.setRelationPID((Class<? extends Relation>) type, id, pid);
+    if (isRelation(type)) {
+      graphStorage.setRelationPID(asRelation(type), id, pid);
     } else {
       graphStorage.setDomainEntityPID(type, id, pid);
     }
@@ -179,7 +176,7 @@ public class GraphLegacyStorageWrapper implements Storage {
   // FIXME let this method find the non persistent and delete them. See TIM-145.
   @Override
   public <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws StorageException {
-    if (RELATION_TYPE.isAssignableFrom(type)) {
+    if (isRelation(type)) {
       return;
     }
     for (String id : ids) {
@@ -205,11 +202,10 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public <T extends Entity> boolean entityExists(Class<T> type, String id) throws StorageException {
-    if (RELATION_TYPE.isAssignableFrom(type)) {
-      return graphStorage.relationExists((Class<? extends Relation>) type, id);
+    if (isRelation(type)) {
+      return graphStorage.relationExists(asRelation(type), id);
     } else {
       return graphStorage.entityExists(type, id);
     }
@@ -226,7 +222,7 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends Entity> T getEntity(Class<T> type, String id) throws StorageException {
-    if (RELATION_TYPE.isAssignableFrom(type)) {
+    if (isRelation(type)) {
       @SuppressWarnings("unchecked")
       T relationDomainEntity = (T) graphStorage.getRelation((Class<Relation>) type, id);
       return relationDomainEntity;
@@ -251,11 +247,10 @@ public class GraphLegacyStorageWrapper implements Storage {
     throw new UnsupportedOperationException("Yet to be implemented");
   }
 
-  @SuppressWarnings("unchecked")
   @Override
   public <T extends Entity> long count(Class<T> type) {
-    if (RELATION_TYPE.isAssignableFrom(type)) {
-      return graphStorage.countRelations((Class<? extends Relation>) type);
+    if (isRelation(type)) {
+      return graphStorage.countRelations(asRelation(type));
     } else {
       return graphStorage.countEntities(type);
     }
@@ -263,31 +258,40 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends Entity> T findItemByProperty(Class<T> type, String field, String value) throws StorageException {
-    if (RELATION_TYPE.isAssignableFrom(type)) {
+    if (isRelation(type)) {
       @SuppressWarnings("unchecked")
-      T relation = (T) graphStorage.findRelationByProperty((Class<? extends Relation>) type, field, value);
+      T relation = (T) graphStorage.findRelationByProperty(asRelation(type), field, value);
       return relation;
     } else {
       return graphStorage.findEntityByProperty(type, field, value);
     }
   }
 
+  @SuppressWarnings("unchecked")
+  private <T extends Entity> Class<? extends Relation> asRelation(Class<T> type) {
+    return (Class<? extends Relation>) type;
+  }
+
   @Override
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws StorageException {
-    if (RELATION_TYPE.isAssignableFrom(type)) {
+    if (isRelation(type)) {
       @SuppressWarnings("unchecked")
-      List<T> variations = (List<T>) graphStorage.getAllVariationsOfRelation((Class<? extends Relation>) type, id);
+      List<T> variations = (List<T>) graphStorage.getAllVariationsOfRelation(asRelation(type), id);
       return variations;
     }
 
     return graphStorage.getAllVariations(type, id);
   }
 
+  private <T extends Entity> boolean isRelation(Class<T> type) {
+    return RELATION_TYPE.isAssignableFrom(type);
+  }
+
   @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> T getRevision(Class<T> type, String id, int revision) throws StorageException {
-    if (RELATION_TYPE.isAssignableFrom(type)) {
-      return (T) graphStorage.getRelationRevision((Class<? extends Relation>) type, id, revision);
+    if (isRelation(type)) {
+      return (T) graphStorage.getRelationRevision(asRelation(type), id, revision);
     } else {
       return graphStorage.getDomainEntityRevision(type, id, revision);
     }
@@ -316,7 +320,7 @@ public class GraphLegacyStorageWrapper implements Storage {
   @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> List<String> getAllIdsWithoutPIDOfType(Class<T> type) throws StorageException {
-    if (RELATION_TYPE.isAssignableFrom(type)) {
+    if (isRelation(type)) {
       return graphStorage.getIdsOfNonPersistentRelations((Class<Relation>) type);
     } else {
       return graphStorage.getIdsOfNonPersistentDomainEntities(type);
