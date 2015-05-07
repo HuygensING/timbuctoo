@@ -79,12 +79,12 @@
   </licenses>
 
   <issueManagement>
-    <system>Redmine</system>
-    <url>http://suzanna.huygens.knaw.nl/projects/datarepositories</url>
+    <system>Jira</system>
+    <url>http://jira.huygens.knaw.nl/secure/RapidBoard.jspa?rapidView=3</url>
   </issueManagement>
 
   <ciManagement>
-    <system>cruisecontrolrb</system>
+    <system>Jenkins</system>
     <url>http://ci.huygens.knaw.nl/job/timbuctoo_develop</url>
   </ciManagement>
 
