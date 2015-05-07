@@ -29,8 +29,8 @@ import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.TinkerPopStorage;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
+import com.lambdazen.bitsy.BitsyGraph;
 import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.impls.tg.TinkerGraph;
 
 public class BasicInjectionModule extends AbstractModule {
 
@@ -64,6 +64,15 @@ public class BasicInjectionModule extends AbstractModule {
 
     bind(Storage.class).to(GraphLegacyStorageWrapper.class);
     bind(GraphStorage.class).to(TinkerPopStorage.class);
-    bind(Graph.class).toInstance(new TinkerGraph("/home/martijnm/repository/data/db"));
+    bind(Graph.class).toInstance(createDB());
+
+  }
+
+  private Graph createDB() {
+    return new BitsyGraph(java.nio.file.Paths.get(getDirectoryString()));
+  }
+
+  private String getDirectoryString() {
+    return "/home/martijnm/repository/data/db";
   }
 }
