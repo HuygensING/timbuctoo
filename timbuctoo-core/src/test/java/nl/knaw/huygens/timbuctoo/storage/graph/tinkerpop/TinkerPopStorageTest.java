@@ -298,7 +298,7 @@ public class TinkerPopStorageTest {
   }
 
   @Test
-  public void findEntityByPropertyConvertsTheFirstNodeFoundWithProperty() throws Exception {
+  public void findEntityByPropertyConvertsTheFirstVertexFoundWithProperty() throws Exception {
     // setup
     Vertex foundVertex = aVertex().build();
     Iterator<Vertex> vertexIterator = Lists.<Vertex> newArrayList(foundVertex).iterator();
@@ -338,7 +338,7 @@ public class TinkerPopStorageTest {
   }
 
   @Test(expected = ConversionException.class)
-  public void findEntityByPropertyThrowsAConversionExceptionWhenTheNodeCannotBeConverted() throws Exception {
+  public void findEntityByPropertyThrowsAConversionExceptionWhenTheVertexCannotBeConverted() throws Exception {
     // setup
     Vertex foundVertex = aVertex().build();
     Iterator<Vertex> vertexIterator = Lists.<Vertex> newArrayList(foundVertex).iterator();
@@ -354,7 +354,7 @@ public class TinkerPopStorageTest {
   }
 
   @Test
-  public void getAllVariationsReturnsAllVariationsOfANode() throws Exception {
+  public void getAllVariationsReturnsAllVariationsOfAVertex() throws Exception {
     // setup
     Vertex vertex = aVertex()//
         .withType(PRIMITIVE_DOMAIN_ENTITY_TYPE)//
@@ -403,7 +403,7 @@ public class TinkerPopStorageTest {
   }
 
   @Test(expected = ConversionException.class)
-  public void getAllVariationsThrowsAConversionExceptionWhenTheNodeCouldNotBeConverted() throws Exception {
+  public void getAllVariationsThrowsAConversionExceptionWhenTheVertexCouldNotBeConverted() throws Exception {
     // setup
     Vertex vertex = aVertex()//
         .withType(PRIMITIVE_DOMAIN_ENTITY_TYPE)//
@@ -452,7 +452,7 @@ public class TinkerPopStorageTest {
   }
 
   @Test(expected = ConversionException.class)
-  public void getDefaultVariationThrowsAConversionExceptionWhenTheNodeCannotBeConverted() throws Exception {
+  public void getDefaultVariationThrowsAConversionExceptionWhenTheVertexCannotBeConverted() throws Exception {
     // setup
     Vertex vertex = aVertex().build();
     latestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, vertex);
@@ -713,7 +713,7 @@ public class TinkerPopStorageTest {
   }
 
   @Test
-  public void addVariantAddsANewVariantToTheExistingNodeOfTheBaseType() throws Exception {
+  public void addVariantAddsANewVariantToTheExistingVertexOfTheBaseType() throws Exception {
     // setup
     SubADomainEntity domainEntity = aDomainEntity() //
         .withId(ID) //
@@ -746,17 +746,17 @@ public class TinkerPopStorageTest {
   }
 
   @Test(expected = UpdateException.class)
-  public void addVariantThrowsAnUpdateExceptionWhenRevisionIsHigherMoreThanOneTheTheRevisionOfTheNode() throws Exception {
+  public void addVariantThrowsAnUpdateExceptionWhenRevisionIsHigherMoreThanOneTheTheRevisionOfTheVertex() throws Exception {
     addVariantThrowsUpdateExceptionForRevisionMismatch(FIRST_REVISION, THIRD_REVISION);
   }
 
   @Test(expected = UpdateException.class)
-  public void addVariantThrowsAnUpdateExceptionWhenRevisionIsEqualToTheRevisionOfTheNode() throws Exception {
+  public void addVariantThrowsAnUpdateExceptionWhenRevisionIsEqualToTheRevisionOfTheVertex() throws Exception {
     addVariantThrowsUpdateExceptionForRevisionMismatch(THIRD_REVISION, THIRD_REVISION);
   }
 
   @Test(expected = UpdateException.class)
-  public void addVariantThrowsAnUpdateExceptionWhenRevisionIsLowerThanTheRevisionOfTheNode() throws Exception {
+  public void addVariantThrowsAnUpdateExceptionWhenRevisionIsLowerThanTheRevisionOfTheVertex() throws Exception {
     addVariantThrowsUpdateExceptionForRevisionMismatch(THIRD_REVISION, SECOND_REVISION);
   }
 
@@ -824,7 +824,7 @@ public class TinkerPopStorageTest {
   }
 
   @Test
-  public void setDomainEntityPIDAddsAPIDToTheNodeAndDuplicatesTheNode() throws Exception {
+  public void setDomainEntityPIDAddsAPIDToTheVertexAndDuplicatesTheVertex() throws Exception {
     // setup
     Vertex foundVertex = aVertex().build();
     latestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID, foundVertex);
@@ -995,13 +995,13 @@ public class TinkerPopStorageTest {
   }
 
   private VertexConverter<RelationType> relationTypeWithRegularNameExists(String name, String id) throws Exception {
-    Vertex relationTypeNodeMock = aVertex().build();
-    latestVertexFoundFor(RELATIONTYPE_TYPE, id, relationTypeNodeMock);
+    Vertex relationTypeVertexMock = aVertex().build();
+    latestVertexFoundFor(RELATIONTYPE_TYPE, id, relationTypeVertexMock);
 
     VertexConverter<RelationType> relationTypeConverter = vertexConverterCreatedFor(RELATIONTYPE_TYPE);
     RelationType relationType = new RelationType();
     relationType.setRegularName(name);
-    when(relationTypeConverter.convertToEntity(relationTypeNodeMock)).thenReturn(relationType);
+    when(relationTypeConverter.convertToEntity(relationTypeVertexMock)).thenReturn(relationType);
 
     return relationTypeConverter;
   }
