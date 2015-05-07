@@ -55,19 +55,19 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import test.model.projecta.ProjectAPerson;
+import test.model.projecta.SubARelation;
 import test.model.projectb.ProjectBPerson;
-import test.variation.model.projecta.ProjectARelation;
 
 import com.google.common.collect.Lists;
 
 public abstract class StorageIntegrationTest {
   private static final Class<RelationType> SYSTEM_ENTITY_TYPE = RelationType.class;
-  private static final Class<ProjectARelation> RELATION_TYPE = ProjectARelation.class;
+  private static final Class<SubARelation> RELATION_TYPE = SubARelation.class;
   private static final String RELATION_TARGET_TYPE = "person";
   private static final String RELATION_SOURCE_TYPE = RELATION_TARGET_TYPE;
   private static final String RELATIONTYPE_TYPE_STRING = "relationtype";
   private static final boolean NOT_ACCEPTED = false;
-  private static final Class<ProjectARelation> PROJECT_RELATION_TYPE = RELATION_TYPE;
+  private static final Class<SubARelation> PROJECT_RELATION_TYPE = RELATION_TYPE;
   private static final Class<Relation> PRIMITIVE_RELATION_TYPE = Relation.class;
   private static final boolean ACCEPTED = true;
   // General constants
@@ -718,7 +718,7 @@ public abstract class StorageIntegrationTest {
   }
 
   private String addDefaultRelation(String sourceId, String targetId, String typeId) throws StorageException {
-    ProjectARelation relation = new ProjectARelation();
+    SubARelation relation = new SubARelation();
     relation.setAccepted(ACCEPTED);
     relation.setSourceId(sourceId);
     relation.setSourceType(RELATION_SOURCE_TYPE);
@@ -744,7 +744,7 @@ public abstract class StorageIntegrationTest {
     String typeId = addRelationType();
 
     String id = addDefaultRelation(sourceId, targetId, typeId);
-    ProjectARelation relation = instance.getEntity(PROJECT_RELATION_TYPE, id);
+    SubARelation relation = instance.getEntity(PROJECT_RELATION_TYPE, id);
     // assert the relation is stored
     assertThat(relation, is(notNullValue()));
 
@@ -756,7 +756,7 @@ public abstract class StorageIntegrationTest {
     instance.updateDomainEntity(PROJECT_RELATION_TYPE, relation, UPDATE_CHANGE);
 
     // verify
-    ProjectARelation updateRelation = instance.getEntity(PROJECT_RELATION_TYPE, id);
+    SubARelation updateRelation = instance.getEntity(PROJECT_RELATION_TYPE, id);
 
     assertThat("Relation is not updated", updateRelation, //
         is(likeRelation()//
@@ -793,7 +793,7 @@ public abstract class StorageIntegrationTest {
     instance.setPID(PROJECT_RELATION_TYPE, id, PID);
 
     // verify
-    ProjectARelation updatedEntity = instance.getEntity(PROJECT_RELATION_TYPE, id);
+    SubARelation updatedEntity = instance.getEntity(PROJECT_RELATION_TYPE, id);
     assertThat("Entity has no pid", updatedEntity.getPid(), is(equalTo(PID)));
 
     int rev = updatedEntity.getRev();
@@ -813,7 +813,7 @@ public abstract class StorageIntegrationTest {
     addDefaultRelation(sourceId, targetId, typeId);
 
     // action
-    ProjectARelation foundRelation = instance.findItemByProperty(PROJECT_RELATION_TYPE, Relation.SOURCE_ID, sourceId);
+    SubARelation foundRelation = instance.findItemByProperty(PROJECT_RELATION_TYPE, Relation.SOURCE_ID, sourceId);
 
     // verify
     assertThat(foundRelation, likeRelation()//
@@ -835,7 +835,7 @@ public abstract class StorageIntegrationTest {
 
     String id = addDefaultRelation(sourceId, targetId, typeId);
 
-    ProjectARelation relation = instance.getEntity(RELATION_TYPE, id);
+    SubARelation relation = instance.getEntity(RELATION_TYPE, id);
     relation.setAccepted(NOT_ACCEPTED);
     instance.updateDomainEntity(RELATION_TYPE, relation, UPDATE_CHANGE);
     instance.setPID(RELATION_TYPE, id, PID);
@@ -951,7 +951,7 @@ public abstract class StorageIntegrationTest {
     String id = addDefaultRelation(sourceId, targetId, relationTypeId);
 
     // action
-    ProjectARelation foundRelation = instance.findRelation(RELATION_TYPE, sourceId, targetId, relationTypeId);
+    SubARelation foundRelation = instance.findRelation(RELATION_TYPE, sourceId, targetId, relationTypeId);
 
     // verify
     assertThat(foundRelation, likeRelation() //
