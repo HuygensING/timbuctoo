@@ -139,4 +139,16 @@ public class RelationMatcher extends CompositeMatcher<Relation> {
     });
     return this;
   }
+
+  public RelationMatcher withType(Class<? extends Relation> type) {
+    addMatcher(new PropertyEqualtityMatcher<Relation, Class<? extends Relation>>("type", type) {
+
+      @Override
+      protected Class<? extends Relation> getItemValue(Relation item) {
+        return item.getClass();
+      }
+
+    });
+    return this;
+  }
 }

@@ -696,6 +696,7 @@ public abstract class StorageIntegrationTest {
 
   private RelationMatcher likeDefaultPrimitiveRelation(String id, String sourceId, String targetId, String typeId) {
     return likeRelation()//
+        .withType(PRIMITIVE_RELATION_TYPE) //
         .withId(id) //
         .withSourceId(sourceId) //
         .withSourceType(RELATION_SOURCE_TYPE) //
@@ -706,7 +707,8 @@ public abstract class StorageIntegrationTest {
   }
 
   private RelationMatcher likeDefaultRelation(String sourceId, String targetId, String typeId) {
-    return likeRelation()//
+    return likeRelation() //
+        .withType(RELATION_TYPE) //
         .withSourceId(sourceId) //
         .withSourceType(RELATION_SOURCE_TYPE) //
         .withTargetId(targetId) //
@@ -976,6 +978,21 @@ public abstract class StorageIntegrationTest {
     // verify
     assertThat(idsOfNonRelations, hasItem(id2));
     assertThat(idsOfNonRelations, not(hasItem(id)));
+  }
+
+  @Test
+  public void getAllVariationsForRelationsReturnsAllTheVariationsOfARelation() throws Exception {
+    // setup
+    String sourceId = addDefaultProjectAPerson();
+    String targetId = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+    String id = addDefaultRelation(sourceId, targetId, typeId);
+
+    // action
+    List<Relation> allVariations = instance.getAllVariations(PRIMITIVE_RELATION_TYPE, id);
+
+    // needed to do this, to be able to check if all the properties contain the right values.
+    assertThat(allVariations, contains(likeDefaultAcceptedRelation(sourceId, targetId, typeId)));
   }
 
   /* **************************************************************************
