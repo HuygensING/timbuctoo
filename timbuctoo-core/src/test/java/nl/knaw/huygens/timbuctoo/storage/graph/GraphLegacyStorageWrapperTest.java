@@ -227,6 +227,28 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
+  public void getAllVariationsForRelationDelegatesToGraphStorage() throws Exception {
+    // setup
+    List<Relation> variations = Lists.newArrayList();
+    when(graphStorageMock.getAllVariationsOfRelation(PRIMITIVE_RELATION_TYPE, ID)).thenReturn(variations);
+
+    // action
+    List<Relation> actualVariations = instance.getAllVariations(PRIMITIVE_RELATION_TYPE, ID);
+
+    // verify
+    assertThat(actualVariations, is(sameInstance(variations)));
+  }
+
+  @Test(expected = StorageException.class)
+  public void getAllVariationsForRelationThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
+    // setup
+    when(graphStorageMock.getAllVariationsOfRelation(PRIMITIVE_RELATION_TYPE, ID)).thenThrow(new StorageException());
+
+    // action
+    instance.getAllVariations(PRIMITIVE_RELATION_TYPE, ID);
+  }
+
+  @Test
   public void updateDomainEntityDelegatesToGraphStorage() throws Exception {
     // setup
     Change oldModified = new Change();

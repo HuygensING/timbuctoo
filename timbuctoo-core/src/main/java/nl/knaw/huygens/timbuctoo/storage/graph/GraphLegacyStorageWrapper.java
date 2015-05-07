@@ -274,6 +274,12 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws StorageException {
+    if (RELATION_TYPE.isAssignableFrom(type)) {
+      @SuppressWarnings("unchecked")
+      List<T> variations = (List<T>) graphStorage.getAllVariationsOfRelation((Class<? extends Relation>) type, id);
+      return variations;
+    }
+
     return graphStorage.getAllVariations(type, id);
   }
 

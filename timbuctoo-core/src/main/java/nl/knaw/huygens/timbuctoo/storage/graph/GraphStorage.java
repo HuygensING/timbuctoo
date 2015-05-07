@@ -64,6 +64,8 @@ public interface GraphStorage {
 
   <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws StorageException;
 
+  <T extends Relation> List<T> getAllVariationsOfRelation(Class<T> type, String id) throws StorageException;
+
   <T extends Relation> StorageIterator<T> getRelationsByEntityId(Class<T> type, String id) throws StorageException;
 
   /**
