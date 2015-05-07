@@ -102,6 +102,9 @@ public class TinkerPopStorageTest {
     when(dbMock.addVertex(null)).thenReturn(createdVertex);
   }
 
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
+
   @Test
   public void addDomainEntitySavesTheProjectVersionAndThePrimitive() throws Exception {
     // setup
@@ -387,9 +390,6 @@ public class TinkerPopStorageTest {
     // verify
     assertThat(allVariations, is(emptyCollectionOf(PRIMITIVE_DOMAIN_ENTITY_TYPE)));
   }
-
-  @Rule
-  public ExpectedException thrown = ExpectedException.none();
 
   @Test
   public void getAllVariationsThrowsAnIllegalArgumentExceptionWhenTheTypeIsNotAPrimitive() throws Exception {
@@ -1259,9 +1259,76 @@ public class TinkerPopStorageTest {
   }
 
   @Test
+  public void getAllVariationsOfRelationReturnsAllVariationsOfAnEdge() throws Exception {
+    // setup
+    Edge edge = anEdge() //
+        .withType(PRIMITIVE_RELATION_TYPE) //
+        .withType(RELATION_TYPE) //
+        .build();
+
+    latestEdgeFoundWithId(PRIMITIVE_RELATION_TYPE, ID, edge);
+
+    EdgeConverter<Relation> primitiveConverter = createEdgeConverterFor(PRIMITIVE_RELATION_TYPE);
+    Relation baseRelation = new Relation();
+    when(primitiveConverter.convertToEntity(edge)).thenReturn(baseRelation);
+    EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
+    SubARelation relation = aRelation().build();
+    when(converter.convertToEntity(edge)).thenReturn(relation);
+
+    // action
+    List<Relation> allVariations = instance.getAllVariationsOfRelation(PRIMITIVE_RELATION_TYPE, ID);
+
+    // verify
+    assertThat(allVariations, containsInAnyOrder(baseRelation, relation));
+  }
+
+  @Test
+  public void getAllVariationsOfRelationReturnsAnEmptyListWhenNoVariationsCouldBeFound() throws StorageException {
+    // setup
+    noLatestEdgeFoundWithId(PRIMITIVE_RELATION_TYPE, ID);
+
+    // action
+    List<Relation> allVariations = instance.getAllVariationsOfRelation(PRIMITIVE_RELATION_TYPE, ID);
+
+    // verify
+    assertThat(allVariations, is(emptyCollectionOf(PRIMITIVE_RELATION_TYPE)));
+  }
+
+  @Test
+  public void getAllVariationsOfRelationThrowsAnIllegalArgumentExceptionWhenTheTypeIsNotAPrimitive() throws Exception {
+    // setup
+    thrown.expect(IllegalArgumentException.class);
+    thrown.expectMessage("Nonprimitive type");
+    thrown.expectMessage("" + RELATION_TYPE);
+
+    // action
+    instance.getAllVariationsOfRelation(RELATION_TYPE, ID);
+  }
+
+  @Test(expected = ConversionException.class)
+  public void getAllVariationsOfRelationThrowsAConversionExceptionWhenTheEdgeCouldNotBeConverted() throws Exception {
+    // setup
+    Edge edge = anEdge() //
+        .withType(PRIMITIVE_RELATION_TYPE) //
+        .withType(RELATION_TYPE) //
+        .build();
+
+    latestEdgeFoundWithId(PRIMITIVE_RELATION_TYPE, ID, edge);
+
+    EdgeConverter<Relation> primitiveConverter = createEdgeConverterFor(PRIMITIVE_RELATION_TYPE);
+    when(primitiveConverter.convertToEntity(edge)).thenThrow(new ConversionException());
+    EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
+    when(converter.convertToEntity(edge)).thenReturn(aRelation().build());
+
+    // action
+    instance.getAllVariationsOfRelation(PRIMITIVE_RELATION_TYPE, ID);
+
+  }
+
+  @Test
   public void getRelationReturnsTheRelationThatBelongsToTheId() throws Exception {
     // setup
-    Edge edge = latestEdgeFoundWithId(ID, anEdge().build());
+    Edge edge = latestEdgeFoundWithId(RELATION_TYPE, ID, anEdge().build());
 
     EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
     SubARelation relation = aRelation().build();
@@ -1277,7 +1344,7 @@ public class TinkerPopStorageTest {
   @Test
   public void getRelationReturnsNullIfTheRelationIsNotFound() throws Exception {
     // setup
-    noLatestEdgeFoundWithId(ID);
+    noLatestEdgeFoundWithId(RELATION_TYPE, ID);
 
     // action
     SubARelation foundRelation = instance.getRelation(RELATION_TYPE, ID);
@@ -1286,14 +1353,14 @@ public class TinkerPopStorageTest {
     assertThat(foundRelation, is(nullValue()));
   }
 
-  private void noLatestEdgeFoundWithId(String id) {
-    when(lowLevelAPIMock.getLatestEdgeById(RELATION_TYPE, id)).thenReturn(null);
+  private void noLatestEdgeFoundWithId(Class<? extends Relation> type, String id) {
+    when(lowLevelAPIMock.getLatestEdgeById(type, id)).thenReturn(null);
   }
 
   @Test(expected = ConversionException.class)
   public void getRelationThrowsAConversionExceptionWhenTheEdgeCannotBeConverted() throws Exception {
     // setup
-    Edge edge = latestEdgeFoundWithId(ID, anEdge().build());
+    Edge edge = latestEdgeFoundWithId(RELATION_TYPE, ID, anEdge().build());
 
     EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
     when(converter.convertToEntity(edge)).thenThrow(new ConversionException());
@@ -1379,8 +1446,8 @@ public class TinkerPopStorageTest {
     return edgeConverter;
   }
 
-  private Edge latestEdgeFoundWithId(String id, Edge edge) {
-    when(lowLevelAPIMock.getLatestEdgeById(RELATION_TYPE, id)).thenReturn(edge);
+  private Edge latestEdgeFoundWithId(Class<? extends Relation> type, String id, Edge edge) {
+    when(lowLevelAPIMock.getLatestEdgeById(type, id)).thenReturn(edge);
 
     return edge;
   }
@@ -1452,7 +1519,7 @@ public class TinkerPopStorageTest {
 
   @Test
   public void relationExistsReturnsTrueIfTheEdgeCanBeFound() {
-    latestEdgeFoundWithId(ID, anEdge().build());
+    latestEdgeFoundWithId(RELATION_TYPE, ID, anEdge().build());
 
     boolean relationExists = instance.relationExists(RELATION_TYPE, ID);
 
@@ -1461,7 +1528,7 @@ public class TinkerPopStorageTest {
 
   @Test
   public void relationExistsReturnsFalseIfTheEdgeCannotBeFound() {
-    noLatestEdgeFoundWithId(ID);
+    noLatestEdgeFoundWithId(RELATION_TYPE, ID);
 
     boolean relationExists = instance.relationExists(RELATION_TYPE, ID);
 
@@ -1471,7 +1538,7 @@ public class TinkerPopStorageTest {
   @Test
   public void setRelationPIDSetsThePIDOfTheRelationAndDuplicatesIt() throws Exception {
     // setup
-    Edge edge = latestEdgeFoundWithId(ID, anEdge().build());
+    Edge edge = latestEdgeFoundWithId(RELATION_TYPE, ID, anEdge().build());
     SubARelation relationWithoutAPID = aRelation().build();
 
     EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
@@ -1490,7 +1557,7 @@ public class TinkerPopStorageTest {
   @Test(expected = IllegalStateException.class)
   public void setRelationPIDThrowsAnIllegalStateExceptionIfTheRelationAlreadyHasAPID() throws Exception {
     // setup
-    Edge edge = latestEdgeFoundWithId(ID, anEdge().build());
+    Edge edge = latestEdgeFoundWithId(RELATION_TYPE, ID, anEdge().build());
     SubARelation relationWithAPID = aRelation().withAPID().build();
 
     EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
@@ -1503,7 +1570,7 @@ public class TinkerPopStorageTest {
   @Test(expected = ConversionException.class)
   public void setRelationPIDThrowsAConversionExceptionIfTheEdgeCannotBeConverted() throws Exception {
     // setup
-    Edge edge = latestEdgeFoundWithId(ID, anEdge().build());
+    Edge edge = latestEdgeFoundWithId(RELATION_TYPE, ID, anEdge().build());
 
     EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
     when(converter.convertToEntity(edge)).thenThrow(new ConversionException());
@@ -1516,7 +1583,7 @@ public class TinkerPopStorageTest {
   @Test(expected = ConversionException.class)
   public void setRelationPIDThrowsAConversionsExceptionWhenTheUpdatedEntityCannotBeConvertedToAnEdge() throws Exception {
     // setup
-    Edge edge = latestEdgeFoundWithId(ID, anEdge().build());
+    Edge edge = latestEdgeFoundWithId(RELATION_TYPE, ID, anEdge().build());
     SubARelation relationWithoutAPID = aRelation().build();
 
     EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
@@ -1529,7 +1596,7 @@ public class TinkerPopStorageTest {
 
   @Test(expected = NoSuchEntityException.class)
   public void setRelationPIDThrowsANoSuchEntityExceptionIfTheRelationshipCannotBeFound() throws Exception {
-    noLatestEdgeFoundWithId(ID);
+    noLatestEdgeFoundWithId(RELATION_TYPE, ID);
 
     instance.setRelationPID(RELATION_TYPE, ID, PID);
   }
@@ -1538,7 +1605,7 @@ public class TinkerPopStorageTest {
   public void updateRelationRetrievesTheEdgeAndUpdateItsValuesAndAdministrativeValues() throws Exception {
     // setup
     Edge edge = anEdge().withRev(FIRST_REVISION).build();
-    latestEdgeFoundWithId(ID, edge);
+    latestEdgeFoundWithId(RELATION_TYPE, ID, edge);
 
     SubARelation entity = aRelation().withId(ID).withRevision(SECOND_REVISION).build();
 
@@ -1555,7 +1622,7 @@ public class TinkerPopStorageTest {
   @Test(expected = UpdateException.class)
   public void updateRelationThrowsAnUpdateExceptionWhenTheEdgeToUpdateCannotBeFound() throws Exception {
     // setup
-    noLatestEdgeFoundWithId(ID);
+    noLatestEdgeFoundWithId(RELATION_TYPE, ID);
 
     // action
     instance.updateRelation(RELATION_TYPE, aRelation().build(), CHANGE);
@@ -1580,7 +1647,7 @@ public class TinkerPopStorageTest {
   private void testUpdateRelationRevisionUpdateException(int edgeRevision, int entityRevision) throws Exception {
     // setup
     Edge edge = anEdge().withRev(edgeRevision).build();
-    latestEdgeFoundWithId(ID, edge);
+    latestEdgeFoundWithId(RELATION_TYPE, ID, edge);
 
     SubARelation entity = aRelation().withId(ID).withRevision(entityRevision).build();
 
@@ -1592,7 +1659,7 @@ public class TinkerPopStorageTest {
   public void updateRelationThrowsAConversionExceptionWhenTheEdgeCannotBeConverted() throws Exception {
     // setup
     Edge edge = anEdge().withRev(FIRST_REVISION).build();
-    latestEdgeFoundWithId(ID, edge);
+    latestEdgeFoundWithId(RELATION_TYPE, ID, edge);
 
     SubARelation entity = aRelation().withId(ID).withRevision(SECOND_REVISION).build();
 
@@ -1607,7 +1674,7 @@ public class TinkerPopStorageTest {
   public void updateRelationThrowsAConversionExceptionWhenModifiedAndRevCannotBeUpdated() throws Exception {
     // setup
     Edge edge = anEdge().withRev(FIRST_REVISION).build();
-    latestEdgeFoundWithId(ID, edge);
+    latestEdgeFoundWithId(RELATION_TYPE, ID, edge);
 
     SubARelation entity = aRelation().withId(ID).withRevision(SECOND_REVISION).build();
 

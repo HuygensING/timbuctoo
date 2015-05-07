@@ -527,7 +527,7 @@ public class TinkerPopStorage implements GraphStorage {
 
   @Override
   public <T extends DomainEntity> List<T> getAllVariations(Class<T> type, String id) throws StorageException {
-    Preconditions.checkArgument(TypeRegistry.isPrimitiveDomainEntity(type), "Nonprimitive type %s", type);
+    validateIsPrimitive(type);
 
     List<T> variations = Lists.newArrayList();
     Vertex vertex = lowLevelAPI.getLatestVertexById(type, id);
@@ -548,7 +548,29 @@ public class TinkerPopStorage implements GraphStorage {
 
   @Override
   public <T extends Relation> List<T> getAllVariationsOfRelation(Class<T> type, String id) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    validateIsPrimitive(type);
+    List<T> relations = Lists.newArrayList();
+
+    Edge edge = lowLevelAPI.getLatestEdgeById(type, id);
+
+    if (edge != null) {
+      for (String typeName : getTypes(edge)) {
+        EdgeConverter<? extends Relation> converter = elementConverterFactory.forRelation(getRelationType(typeName));
+        relations.add(type.cast(converter.convertToEntity(edge)));
+      }
+    }
+
+    return relations;
+  }
+
+  // TODO move to TypeRegistry
+  @SuppressWarnings("unchecked")
+  private Class<? extends Relation> getRelationType(String typeName) {
+    return (Class<? extends Relation>) typeRegistry.getDomainEntityType(typeName);
+  }
+
+  private <T extends Entity> void validateIsPrimitive(Class<T> type) {
+    Preconditions.checkArgument(TypeRegistry.isPrimitiveDomainEntity(type), "Nonprimitive type %s", type);
   }
 
   @Override
