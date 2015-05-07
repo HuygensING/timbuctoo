@@ -991,8 +991,10 @@ public abstract class StorageIntegrationTest {
     // action
     List<Relation> allVariations = instance.getAllVariations(PRIMITIVE_RELATION_TYPE, id);
 
-    // needed to do this, to be able to check if all the properties contain the right values.
-    assertThat(allVariations, contains(likeDefaultAcceptedRelation(sourceId, targetId, typeId)));
+    // verify
+    assertThat(allVariations.size(), is(2));
+    assertThat(allVariations, hasItem(likeDefaultAcceptedRelation(sourceId, targetId, typeId)));
+    assertThat(allVariations, hasItem(likeDefaultPrimitiveRelation(id, sourceId, targetId, typeId)));
   }
 
   /* **************************************************************************

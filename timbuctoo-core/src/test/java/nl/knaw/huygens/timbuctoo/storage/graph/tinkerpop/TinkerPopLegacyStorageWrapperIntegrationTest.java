@@ -228,7 +228,6 @@ public class TinkerPopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.updateSystemEntityChangesTheExistingSystemEntity();
   }
 
-  @Ignore
   @Test
   @Override
   public void getAllVariationsForRelationsReturnsAllTheVariationsOfARelation() throws Exception {
