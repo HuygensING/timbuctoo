@@ -72,7 +72,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void addDomainEntityManagesTheLifeCycleAndDelegatesToNeo4JStorageAddDomainEntity() throws Exception {
+  public void addDomainEntityManagesTheLifeCycleAndDelegatesToGraphStorageAddDomainEntity() throws Exception {
     // setup
     SubADomainEntity entity = aDomainEntity().withAPid().build();
     idGeneratorMockCreatesIDFor(DOMAIN_ENTITY_TYPE, ID);
@@ -105,7 +105,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void getEntityForDomainEntityDelegatesToNeo4JStorageGetEntity() throws Exception {
+  public void getEntityForDomainEntityDelegatesToGraphStorageGetEntity() throws Exception {
     // setup
     SubADomainEntity entity = aDomainEntity().build();
     when(graphStorageMock.getEntity(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entity);
@@ -127,7 +127,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void getEntityOrDefaultVariationDelegatesToNeo4JStorageGetEntityIfTheVariantExists() throws Exception {
+  public void getEntityOrDefaultVariationDelegatesToGraphStorageGetEntityIfTheVariantExists() throws Exception {
     variantExists();
     SubADomainEntity entity = aDomainEntity().build();
     when(graphStorageMock.getEntity(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entity);
@@ -140,7 +140,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test(expected = StorageException.class)
-  public void getEntityOrDefaultVariationThrowsAStorageExceptionifNeo4JStorageGetEntityDoes() throws Exception {
+  public void getEntityOrDefaultVariationThrowsAStorageExceptionifGraphStorageGetEntityDoes() throws Exception {
     // setup
     variantExists();
     when(graphStorageMock.getEntity(DOMAIN_ENTITY_TYPE, ID)).thenThrow(new StorageException());
@@ -155,7 +155,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void getEntityOrDefaultVariationDelegatesToNeo4JStorageGetDefaultVariationIfTheVariantDoesNotExist() throws Exception {
+  public void getEntityOrDefaultVariationDelegatesToGraphStorageGetDefaultVariationIfTheVariantDoesNotExist() throws Exception {
     // setup
     variantDoesNotExist();
     SubADomainEntity entity = aDomainEntity().build();
@@ -169,7 +169,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test(expected = StorageException.class)
-  public void getEntityOrDefaultVariationThrowsAStorageExceptionifNeo4JStorageGetDefaultVariationDoes() throws Exception {
+  public void getEntityOrDefaultVariationThrowsAStorageExceptionifGraphStorageGetDefaultVariationDoes() throws Exception {
     // setup
     variantDoesNotExist();
     when(graphStorageMock.getDefaultVariation(DOMAIN_ENTITY_TYPE, ID)).thenThrow(new StorageException());
@@ -179,7 +179,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void getDomainEntitiesDelegatesToNeo4JStorageGetEntities() throws StorageException {
+  public void getDomainEntitiesDelegatesToGraphStorageGetEntities() throws StorageException {
     // setup
     @SuppressWarnings("unchecked")
     StorageIterator<SubADomainEntity> storageIteratorMock = mock(StorageIterator.class);
@@ -203,7 +203,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void getAllVariationsDelegatesToNeo4JStorage() throws Exception {
+  public void getAllVariationsDelegatesToGraphStorage() throws Exception {
     // setup
     List<BaseDomainEntity> variations = Lists.newArrayList();
     when(graphStorageMock.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(variations);
@@ -229,7 +229,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void updateDomainEntityDelegatesToNeo4JStorage() throws Exception {
+  public void updateDomainEntityDelegatesToGraphStorage() throws Exception {
     // setup
     Change oldModified = new Change();
     SubADomainEntity entity = aDomainEntity() //
@@ -272,7 +272,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void updateDomainEntityDelegatesToNeo4JStoragesAddNewVariantWhenTheVariantDoesNotExist() throws Exception {
+  public void updateDomainEntityDelegatesToGraphStoragesAddNewVariantWhenTheVariantDoesNotExist() throws Exception {
     // setup
     Change oldModified = new Change();
     SubADomainEntity entity = aDomainEntity() //
@@ -303,7 +303,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test(expected = StorageException.class)
-  public void updateDomainEntityThrowsAStorageExceptionWhenNeo4JStoragesAddNewVariantWhenTheVariantDoesNotExist() throws Exception {
+  public void updateDomainEntityThrowsAStorageExceptionWhenGraphStoragesAddNewVariantWhenTheVariantDoesNotExist() throws Exception {
     // setup
     SubADomainEntity entity = aDomainEntity().withId(ID).build();
     variantDoesNotExist();
@@ -329,7 +329,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void deleteDomainEntityIsDelegatedToNeo4JStorage() throws Exception {
+  public void deleteDomainEntityIsDelegatedToGraphStorage() throws Exception {
     // action
     instance.deleteDomainEntity(DOMAIN_ENTITY_TYPE, ID, CHANGE);
 
@@ -347,7 +347,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void deleteNonPersistentCallsDeleteDomainEntityOnNeo4JStorageMockForEveryIdInTheListWhenADomainEntityNeedsToBeDeleted() throws Exception {
+  public void deleteNonPersistentCallsDeleteDomainEntityOnGraphStorageMockForEveryIdInTheListWhenADomainEntityNeedsToBeDeleted() throws Exception {
     // setup
     String id1 = "id1";
     String id2 = "id2";
@@ -397,7 +397,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void setPIDDelegatesToNeo4JStorageSetDomainEntityPID() throws Exception {
+  public void setPIDDelegatesToGraphStorageSetDomainEntityPID() throws Exception {
     // action
     instance.setPID(DOMAIN_ENTITY_TYPE, ID, PID);
 
@@ -415,7 +415,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void getAllIdsWithoutPIDForDomainEntityDelegatesToNeo4JStorageGetIdsOfNonPersistentDomainEntities() throws Exception {
+  public void getAllIdsWithoutPIDForDomainEntityDelegatesToGraphStorageGetIdsOfNonPersistentDomainEntities() throws Exception {
     // setup
     List<String> ids = Lists.newArrayList();
     when(graphStorageMock.getIdsOfNonPersistentDomainEntities(DOMAIN_ENTITY_TYPE)).thenReturn(ids);
@@ -428,7 +428,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void findItemByPropertyForDomainEntityDelegatesToNeo4JStorageFindEntityByProperty() throws Exception {
+  public void findItemByPropertyForDomainEntityDelegatesToGraphStorageFindEntityByProperty() throws Exception {
     // setup
     SubADomainEntity entity = aDomainEntity().build();
     when(graphStorageMock.findEntityByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY_NAME, PROPERTY_VALUE))//
@@ -452,7 +452,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void countDomainEntityDelegatesToNeo4JStorage() {
+  public void countDomainEntityDelegatesToGraphStorage() {
     // setup
     long count = 2l;
     when(graphStorageMock.countEntities(DOMAIN_ENTITY_TYPE)).thenReturn(count);
@@ -465,7 +465,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void entityExistsForDomainEntityDelegatesToNeo4JStorage() throws Exception {
+  public void entityExistsForDomainEntityDelegatesToGraphStorage() throws Exception {
     // setup
     boolean entityExists = true;
     when(graphStorageMock.entityExists(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entityExists);
@@ -478,7 +478,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void addDomainEntityForRelationManagesTheLifeCylceDelegatesToNeo4JStorageAddRelation() throws Exception {
+  public void addDomainEntityForRelationManagesTheLifeCylceDelegatesToGraphStorageAddRelation() throws Exception {
     // setup
     SubARelation relation = aRelation().withAPID().build();
 
@@ -511,7 +511,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void getEntityForRelationDelegatesToNeo4JStorageGetRelation() throws Exception {
+  public void getEntityForRelationDelegatesToGraphStorageGetRelation() throws Exception {
     // setup
     SubARelation relation = aRelation().build();
     when(graphStorageMock.getRelation(RELATION_TYPE, ID)).thenReturn(relation);
@@ -524,7 +524,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void updateDomainEntityForRelationDelegatesToNeo4JStorageAddRelation() throws Exception {
+  public void updateDomainEntityForRelationDelegatesToGraphStorageAddRelation() throws Exception {
     // setup
     Change oldModified = new Change();
     SubARelation entity = aRelation() //
@@ -560,7 +560,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void setPIDForRelationDelegatesToNeo4JStorageSetRelationPID() throws Exception {
+  public void setPIDForRelationDelegatesToGraphStorageSetRelationPID() throws Exception {
     // action
     instance.setPID(RELATION_TYPE, ID, PID);
 
@@ -578,7 +578,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void getRevisionForRelationDelegatesTheCallToNeo4JStorageGetRelationRevision() throws Exception {
+  public void getRevisionForRelationDelegatesTheCallToGraphStorageGetRelationRevision() throws Exception {
     // setup
     when(graphStorageMock.getRelationRevision(RELATION_TYPE, ID, FIRST_REVISION)).thenReturn(aRelation().build());
 
@@ -592,7 +592,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test(expected = StorageException.class)
-  public void getRevisionThrowsAStorageExceptionWhenNeo4JStorageGetRelationRevisionDoes() throws Exception {
+  public void getRevisionThrowsAStorageExceptionWhenGraphStorageGetRelationRevisionDoes() throws Exception {
     // setup
     when(graphStorageMock.getRelationRevision(RELATION_TYPE, ID, FIRST_REVISION)).thenThrow(new StorageException());
 
@@ -601,7 +601,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void getRelationsByEntityIdDelegatesToNeo4JStorage() throws Exception {
+  public void getRelationsByEntityIdDelegatesToGraphStorage() throws Exception {
     // setup
     @SuppressWarnings("unchecked")
     StorageIterator<SubARelation> storageIteratorMock = mock(StorageIterator.class);
@@ -662,7 +662,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void getAllIdsWithoutPIDForRelationDelegatesToNeo4JStorageGetIdsOfNonPersistentRelations() throws Exception {
+  public void getAllIdsWithoutPIDForRelationDelegatesToGraphStorageGetIdsOfNonPersistentRelations() throws Exception {
     // setup
     List<String> ids = Lists.newArrayList();
     when(graphStorageMock.getIdsOfNonPersistentRelations(RELATION_TYPE)).thenReturn(ids);
@@ -675,7 +675,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void findItemByPropertyForRelationDelegatesToNeo4JStorageFindRelationByProperty() throws Exception {
+  public void findItemByPropertyForRelationDelegatesToGraphStorageFindRelationByProperty() throws Exception {
     // setup
     SubARelation entity = aRelation().build();
     when(graphStorageMock.findRelationByProperty(RELATION_TYPE, RELATION_PROPERTY_NAME, PROPERTY_VALUE))//
@@ -699,7 +699,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void countRelationDelegatesToNeo4JStorage() {
+  public void countRelationDelegatesToGraphStorage() {
     // setup
     long count = 3l;
     when(graphStorageMock.countRelations(RELATION_TYPE)).thenReturn(count);
@@ -712,7 +712,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void entityExistsForRelationDelegatesToNeo4JStorageRelationExists() throws Exception {
+  public void entityExistsForRelationDelegatesToGraphStorageRelationExists() throws Exception {
     // setup
     boolean relationExists = true;
     when(graphStorageMock.relationExists(RELATION_TYPE, ID)).thenReturn(relationExists);
@@ -725,7 +725,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void addSystemEntityManagesLifeCyleDelegatesToNeo4JStorage() throws Exception {
+  public void addSystemEntityManagesLifeCyleDelegatesToGraphStorage() throws Exception {
     // setup
     TestSystemEntityWrapper entity = aSystemEntity().build();
 
@@ -746,7 +746,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void findRelationDelegatesToNeo4JStorage() throws Exception {
+  public void findRelationDelegatesToGraphStorage() throws Exception {
     String sourceId = "sourceId";
     String targetId = "targetId";
     String relationTypeId = "relationTypeId";
@@ -786,7 +786,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void getEntityForSystemEntityDelegatesToNeo4JStorageGetEntity() throws Exception {
+  public void getEntityForSystemEntityDelegatesToGraphStorageGetEntity() throws Exception {
     // setup
     TestSystemEntityWrapper entity = aSystemEntity().build();
     when(graphStorageMock.getEntity(SYSTEM_ENTITY_TYPE, ID)).thenReturn(entity);
@@ -808,7 +808,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void getSystemEntitiesDelegatesToNeo4JStorageGetEntities() throws StorageException {
+  public void getSystemEntitiesDelegatesToGraphStorageGetEntities() throws StorageException {
     // setup
     @SuppressWarnings("unchecked")
     StorageIterator<TestSystemEntityWrapper> storageIteratorMock = mock(StorageIterator.class);
@@ -832,7 +832,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void updateSystemEntityDelegatesToNeo4JStorage() throws Exception {
+  public void updateSystemEntityDelegatesToGraphStorage() throws Exception {
     // setup
     Change oldModified = new Change();
     TestSystemEntityWrapper entity = aSystemEntity() //
@@ -864,7 +864,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void deleteSystemEntityDelegatesToNeo4JStorage() throws Exception {
+  public void deleteSystemEntityDelegatesToGraphStorage() throws Exception {
     // action
     instance.deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID);
 
@@ -881,7 +881,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void findItemByPropertyForSystemEntityDelegatesToNeo4JStorageFindEntityByProperty() throws Exception {
+  public void findItemByPropertyForSystemEntityDelegatesToGraphStorageFindEntityByProperty() throws Exception {
     // setup
     TestSystemEntityWrapper entity = aSystemEntity().build();
     when(graphStorageMock.findEntityByProperty(SYSTEM_ENTITY_TYPE, SYSTEM_ENTITY_PROPERTY, PROPERTY_VALUE))//
@@ -905,7 +905,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void countSystemEntityDelegatesToNeo4JStorage() {
+  public void countSystemEntityDelegatesToGraphStorage() {
     // setup
     long count = 2l;
     when(graphStorageMock.countEntities(SYSTEM_ENTITY_TYPE)).thenReturn(count);
@@ -918,7 +918,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void entityExistsForSystemEntityDelegatesToNeo4JStorage() throws Exception {
+  public void entityExistsForSystemEntityDelegatesToGraphStorage() throws Exception {
     // setup
     boolean entityExists = true;
     when(graphStorageMock.entityExists(SYSTEM_ENTITY_TYPE, ID)).thenReturn(entityExists);
@@ -931,7 +931,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void closeDelegatesToTheNeo4JStorage() {
+  public void closeDelegatesToTheGraphStorage() {
     // action
     instance.close();
 
@@ -940,7 +940,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void isAvailableReturnsTheValueTheNeo4JStorageReturns() {
+  public void isAvailableReturnsTheValueTheGraphStorageReturns() {
     boolean available = true;
     // setup
     when(graphStorageMock.isAvailable()).thenReturn(available);
