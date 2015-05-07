@@ -21,28 +21,15 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.Neo4JStorage;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.NodeConverter;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.NodeDuplicator;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.RelationshipDuplicator;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.PropertyContainerConverterFactory;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InOrder;
-import org.neo4j.graphdb.DynamicLabel;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Label;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.Transaction;
 
 import test.model.BaseDomainEntity;
 import test.model.TestSystemEntityWrapper;
@@ -57,64 +44,27 @@ public class GraphLegacyStorageWrapperTest {
   private static final String SYSTEM_ENTITY_PROPERTY = TestSystemEntityWrapper.ANOTATED_PROPERTY_NAME;
   private static final String PROPERTY_VALUE = "TEST";
   private static final String DOMAIN_ENTITY_PROPERTY_NAME = SubADomainEntity.VALUEA2_NAME;
-  protected static final Class<BaseDomainEntity> PRIMITIVE_DOMAIN_ENTITY_TYPE = BaseDomainEntity.class;
-  protected static final String PRIMITIVE_DOMAIN_ENTITY_NAME = TypeNames.getInternalName(PRIMITIVE_DOMAIN_ENTITY_TYPE);
-  protected static final Label PRIMITIVE_DOMAIN_ENTITY_LABEL = DynamicLabel.label(PRIMITIVE_DOMAIN_ENTITY_NAME);
+  private static final Class<BaseDomainEntity> PRIMITIVE_DOMAIN_ENTITY_TYPE = BaseDomainEntity.class;
 
-  protected static final int FIRST_REVISION = 1;
-  protected static final int SECOND_REVISION = 2;
-  protected static final int THIRD_REVISION = 3;
-  protected static final String ID = "id";
-  protected static final Change CHANGE = new Change();
-  protected static final String PID = "pid";
+  private static final int FIRST_REVISION = 1;
+  private static final int SECOND_REVISION = 2;
+  private static final String ID = "id";
+  private static final Change CHANGE = new Change();
+  private static final String PID = "pid";
   private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
   private static final Class<SubARelation> RELATION_TYPE = SubARelation.class;
   private static final Class<TestSystemEntityWrapper> SYSTEM_ENTITY_TYPE = TestSystemEntityWrapper.class;
 
-  protected GraphDatabaseService dbMock;
-  protected PropertyContainerConverterFactory propertyContainerConverterFactoryMock;
-  protected GraphLegacyStorageWrapper instance;
-  protected Transaction transactionMock;
-  protected IdGenerator idGeneratorMock;
-  protected NodeDuplicator nodeDuplicatorMock;
-  protected RelationshipDuplicator relationshipDuplicatorMock;
-  protected GraphStorage graphStorageMock;
+  private GraphLegacyStorageWrapper instance;
+  private IdGenerator idGeneratorMock;
+  private GraphStorage graphStorageMock;
 
   @Before
   public void setUp() throws Exception {
-    setupDBTransaction();
-    setupEntityConverterFactory();
-
-    graphStorageMock = mock(Neo4JStorage.class);
-    relationshipDuplicatorMock = mock(RelationshipDuplicator.class);
-    nodeDuplicatorMock = mock(NodeDuplicator.class);
+    graphStorageMock = mock(GraphStorage.class);
     idGeneratorMock = mock(IdGenerator.class);
 
     instance = new GraphLegacyStorageWrapper(graphStorageMock, idGeneratorMock);
-  }
-
-  private void setupDBTransaction() {
-    transactionMock = mock(Transaction.class);
-    dbMock = mock(GraphDatabaseService.class);
-    when(dbMock.beginTx()).thenReturn(transactionMock);
-  }
-
-  private void setupEntityConverterFactory() throws Exception {
-    propertyContainerConverterFactoryMock = mock(PropertyContainerConverterFactory.class);
-  }
-
-  protected <T extends Entity> NodeConverter<T> propertyContainerConverterFactoryHasANodeConverterTypeFor(Class<T> type) {
-    @SuppressWarnings("unchecked")
-    NodeConverter<T> nodeConverter = mock(NodeConverter.class);
-    when(propertyContainerConverterFactoryMock.createForType(argThat(equalTo(type)))).thenReturn(nodeConverter);
-    return nodeConverter;
-  }
-
-  protected void verifyNodeAndItsRelationAreDelete(Node node, Relationship relMock1, Relationship relMock2, InOrder inOrder) {
-    inOrder.verify(node).getRelationships();
-    inOrder.verify(relMock1).delete();
-    inOrder.verify(relMock2).delete();
-    inOrder.verify(node).delete();
   }
 
   private void idGeneratorMockCreatesIDFor(Class<? extends Entity> type, String id) {
