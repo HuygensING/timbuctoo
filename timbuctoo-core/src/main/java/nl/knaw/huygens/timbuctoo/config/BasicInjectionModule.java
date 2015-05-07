@@ -24,12 +24,13 @@ package nl.knaw.huygens.timbuctoo.config;
 
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.graph.GraphLegacyStorageWrapper;
-
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.TinkerPopStorage;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
+import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.impls.tg.TinkerGraph;
 
 public class BasicInjectionModule extends AbstractModule {
 
@@ -62,9 +63,7 @@ public class BasicInjectionModule extends AbstractModule {
     //    bind(Properties.class).to(MongoProperties.class);
 
     bind(Storage.class).to(GraphLegacyStorageWrapper.class);
-
-    //    engine = new RestCypherQueryEngine(restApi);
-    //    bind(GraphDatabaseService.class).toProvider(GraphDatabaseServiceProvider.class);
-    bind(GraphDatabaseService.class).toInstance(new GraphDatabaseFactory().newEmbeddedDatabase(config.getDirectory("admin_data.directory") + "/db"));
+    bind(GraphStorage.class).to(TinkerPopStorage.class);
+    bind(Graph.class).toInstance(new TinkerGraph("/home/martijnm/repository/data/db"));
   }
 }
