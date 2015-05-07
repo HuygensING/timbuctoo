@@ -40,6 +40,7 @@ import com.google.common.collect.Lists;
 
 public class GraphLegacyStorageWrapperTest {
 
+  private static final Class<Relation> PRIMITIVE_RELATION_TYPE = Relation.class;
   private static final String RELATION_PROPERTY_NAME = SubARelation.SOURCE_ID;
   private static final String SYSTEM_ENTITY_PROPERTY = TestSystemEntityWrapper.ANOTATED_PROPERTY_NAME;
   private static final String PROPERTY_VALUE = "TEST";
@@ -218,14 +219,11 @@ public class GraphLegacyStorageWrapperTest {
   @Test(expected = StorageException.class)
   public void getAllVariationsThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
-    List<BaseDomainEntity> variations = Lists.newArrayList();
     when(graphStorageMock.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenThrow(new StorageException());
 
     // action
-    List<BaseDomainEntity> actualVariations = instance.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
+    instance.getAllVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
 
-    // verify
-    assertThat(actualVariations, is(sameInstance(variations)));
   }
 
   @Test
@@ -645,7 +643,7 @@ public class GraphLegacyStorageWrapperTest {
   @Test(expected = StorageException.class)
   public void getRelationsIdsThrowsAStorageExceptionWhenTheRetrievalCausesAnExceptionToBeThrown() throws Exception {
     // setup
-    when(graphStorageMock.getRelationsByEntityId(Relation.class, ID)).thenThrow(new StorageException());
+    when(graphStorageMock.getRelationsByEntityId(PRIMITIVE_RELATION_TYPE, ID)).thenThrow(new StorageException());
 
     // action
     instance.getRelationIds(Lists.newArrayList(ID));
@@ -658,7 +656,7 @@ public class GraphLegacyStorageWrapperTest {
     SubARelation relation2 = aRelation().withId(relId2).build();
     when(relationIterator.hasNext()).thenReturn(true, true, false);
     when(relationIterator.next()).thenReturn(relation1, relation2);
-    when(graphStorageMock.getRelationsByEntityId(Relation.class, entityId)).thenReturn(relationIterator);
+    when(graphStorageMock.getRelationsByEntityId(PRIMITIVE_RELATION_TYPE, entityId)).thenReturn(relationIterator);
   }
 
   @Test
