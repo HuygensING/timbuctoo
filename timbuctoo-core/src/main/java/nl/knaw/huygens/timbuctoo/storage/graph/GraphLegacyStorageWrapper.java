@@ -38,7 +38,7 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public void createIndex(boolean unique, Class<? extends Entity> type, String... fields) throws StorageException {
-    // FIXME indexes should be created in a different way for Neo4J TIM-109
+    // FIXME indexes should be created in a different way for GraphStorage TIM-109
     //    throw new UnsupportedOperationException("Yet to be implemented");
 
   }
