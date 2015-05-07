@@ -95,7 +95,6 @@
       </exclusions>
     </dependency>
 
-
     <!-- Tinkerpop graph database stack -->
     <dependency>
       <groupId>com.tinkerpop.blueprints</groupId>
@@ -124,15 +123,6 @@
       <version>1.46.1</version>
       <scope>test</scope>
     </dependency>
-    <!-- In-memory Neo4j -->
-    <dependency>
-      <groupId>org.neo4j.test</groupId>
-      <artifactId>neo4j-harness</artifactId>
-      <version>${neo4j.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <!-- Lucene indexes for Neo4J needed for the in-memory Neo4J -->
-
 
     <!-- ## End of test dependencies ## -->
   </dependencies>
