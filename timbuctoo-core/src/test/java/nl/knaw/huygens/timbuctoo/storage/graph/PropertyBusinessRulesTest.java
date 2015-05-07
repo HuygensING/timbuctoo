@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
-import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType.ADMINISTRATIVE;
-import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType.REGULAR;
-import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType.VIRTUAL;
+import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.ADMINISTRATIVE;
+import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.REGULAR;
+import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.VIRTUAL;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -14,7 +14,6 @@ import java.lang.reflect.Field;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
 
 import org.junit.Before;
 import org.junit.Test;

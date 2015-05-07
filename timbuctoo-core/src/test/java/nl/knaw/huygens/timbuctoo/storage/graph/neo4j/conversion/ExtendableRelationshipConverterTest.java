@@ -19,7 +19,9 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
+import nl.knaw.huygens.timbuctoo.storage.graph.CorruptVertexException;
 import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
+import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -147,7 +149,7 @@ public class ExtendableRelationshipConverterTest {
     }
   }
 
-  @Test(expected = CorruptNodeException.class)
+  @Test(expected = CorruptVertexException.class)
   public void addValuesToEntityThrowsACorruptNodeExceptionWhenTheSourceNodeHasNoLabelWithThePrimitiveName() throws Exception {
     // setup
     String sourceId = "sourceId";
@@ -170,7 +172,7 @@ public class ExtendableRelationshipConverterTest {
 
   }
 
-  @Test(expected = CorruptNodeException.class)
+  @Test(expected = CorruptVertexException.class)
   public void addValuesToEntityThrowsACorruptNodeExceptionWhenTheTargetNodeHasNoLabelWithThePrimitiveName() throws Exception {
     // setup
     Label startNodeBaseTypeLabel = getLabelOfType(BaseDomainEntity.class);

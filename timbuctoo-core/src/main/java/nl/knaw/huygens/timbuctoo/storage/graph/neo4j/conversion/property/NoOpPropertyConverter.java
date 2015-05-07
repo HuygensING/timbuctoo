@@ -4,7 +4,7 @@ import java.lang.reflect.Field;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
+import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.PropertyConverter;
 
 import org.neo4j.graphdb.PropertyContainer;

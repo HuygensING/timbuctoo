@@ -12,7 +12,7 @@ import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
+import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.PropertyConverterTest;
 
 import org.junit.Before;

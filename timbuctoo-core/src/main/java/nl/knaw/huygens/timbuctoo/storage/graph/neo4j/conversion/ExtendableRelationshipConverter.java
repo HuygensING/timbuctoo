@@ -4,6 +4,7 @@ import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.storage.graph.CorruptVertexException;
 import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.RelationshipConverter;
 
@@ -54,7 +55,7 @@ class ExtendableRelationshipConverter<T extends Relation> extends AbstractExtend
       }
     }
 
-    throw new CorruptNodeException(node.getProperty(ID_DB_PROPERTY_NAME));
+    throw new CorruptVertexException(node.getProperty(ID_DB_PROPERTY_NAME));
   }
 
 }

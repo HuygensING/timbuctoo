@@ -23,7 +23,7 @@ import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
+import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
 
 import org.junit.Before;
 import org.junit.Test;

@@ -12,8 +12,8 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.storage.graph.CorruptVertexException;
 import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.CorruptNodeException;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeConverter;
 
 import com.tinkerpop.blueprints.Edge;
@@ -49,7 +49,7 @@ public class ExtendableEdgeConverter<T extends Relation> extends AbstractExtenda
         return type;
       }
     }
-    throw new CorruptNodeException(vertex.getProperty(ID_DB_PROPERTY_NAME));
+    throw new CorruptVertexException(vertex.getProperty(ID_DB_PROPERTY_NAME));
   }
 
 }

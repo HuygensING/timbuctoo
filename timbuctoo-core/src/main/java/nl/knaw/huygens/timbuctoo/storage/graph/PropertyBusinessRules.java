@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
-import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType.ADMINISTRATIVE;
-import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType.REGULAR;
-import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType.VIRTUAL;
+import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.ADMINISTRATIVE;
+import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.REGULAR;
+import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.VIRTUAL;
 import static org.apache.commons.lang3.StringUtils.startsWith;
 import static org.apache.commons.lang3.StringUtils.startsWithAny;
 
@@ -13,7 +13,6 @@ import java.lang.reflect.Modifier;
 import nl.knaw.huygens.timbuctoo.annotations.DBIgnore;
 import nl.knaw.huygens.timbuctoo.annotations.DBProperty;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

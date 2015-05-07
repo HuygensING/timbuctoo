@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
+import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.PropertyConverter;
 
 public class PropertyConverterMockBuilder {

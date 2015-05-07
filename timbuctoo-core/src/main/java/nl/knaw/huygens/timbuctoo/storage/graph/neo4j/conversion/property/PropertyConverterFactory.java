@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.property;
 
-import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType.VIRTUAL;
+import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.VIRTUAL;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
@@ -8,8 +8,8 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
 import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
-import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType;
 import nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.PropertyConverter;
 
 import org.apache.commons.lang3.ClassUtils;

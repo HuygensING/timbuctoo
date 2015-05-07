@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.MODIFIED_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.storage.graph.neo4j.conversion.FieldType.ADMINISTRATIVE;
+import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.ADMINISTRATIVE;
 
 import java.util.Collection;
 import java.util.Map;
