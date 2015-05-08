@@ -267,7 +267,9 @@ class TinkerPopLowLevelAPI {
   }
 
   public Iterator<Edge> findLatestEdges(TinkerPopQuery query) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    Iterable<Edge> edges = query.createGraphQuery(db).edges();
+
+    return getLatestEdges(edges);
   }
 
 }

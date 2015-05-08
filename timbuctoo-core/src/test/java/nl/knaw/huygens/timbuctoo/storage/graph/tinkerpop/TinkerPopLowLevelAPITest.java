@@ -5,6 +5,7 @@ import static nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType.VERSION
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeMockBuilder.anEdge;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeSearchResultBuilder.anEdgeSearchResult;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeSearchResultBuilder.anEmptyEdgeSearchResult;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.TinkerPopQueryMockBuilder.aQuery;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilder.aVertex;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexSearchResultBuilder.aVertexSearchResult;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexSearchResultBuilder.anEmptyVertexSearchResult;
@@ -32,6 +33,7 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.GraphQuery;
 import com.tinkerpop.blueprints.Vertex;
 
 public class TinkerPopLowLevelAPITest {
@@ -571,6 +573,44 @@ public class TinkerPopLowLevelAPITest {
 
     // verify
     assertThat(foundEdge, is(nullValue()));
+  }
+
+  @Test
+  public void findLatestEdgesBuildsGraphQueryFromATinkerPopQueryAndReturnsTheLatestEdgesFromTheResult() {
+    // setup
+    GraphQuery graphQuery = mock(GraphQuery.class);
+
+    Edge latestEdge1 = anEdge().withID(ID).withRev(SECOND_REVISION).build();
+    Edge latestEdge2 = anEdge().withID(ID2).withRev(FIRST_REVISION).build();
+
+    anEdgeSearchResult()//
+        .containsEdge(anEdge().withID(ID).withRev(FIRST_REVISION).build())//
+        .andEdge(latestEdge1)//
+        .andEdge(latestEdge2)//
+        .foundByGraphQuery(graphQuery);
+
+    TinkerPopQuery query = aQuery().createsGraphQueryForDB(dbMock, graphQuery).build();
+
+    // action
+    Iterator<Edge> edges = instance.findLatestEdges(query);
+
+    // verify
+    assertThat(Lists.newArrayList(edges), containsInAnyOrder(latestEdge1, latestEdge2));
+  }
+
+  @Test
+  public void findLatestEdgesReturnsAnEmptyIteratorWhenNoEdgesAreFound() {
+    // setup
+    GraphQuery graphQuery = mock(GraphQuery.class);
+    anEmptyEdgeSearchResult().foundByGraphQuery(graphQuery);
+
+    TinkerPopQuery query = aQuery().createsGraphQueryForDB(dbMock, graphQuery).build();
+
+    // action
+    Iterator<Edge> edges = instance.findLatestEdges(query);
+
+    // verify
+    assertThat(Iterators.size(edges), is(0));
   }
 
   @Test

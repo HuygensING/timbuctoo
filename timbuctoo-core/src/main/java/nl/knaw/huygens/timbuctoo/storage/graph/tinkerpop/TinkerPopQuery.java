@@ -3,6 +3,8 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
+import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.GraphQuery;
 
 class TinkerPopQuery {
 
@@ -27,6 +29,10 @@ class TinkerPopQuery {
       hasProperties.put(name, value);
     }
     return this;
+  }
+
+  public GraphQuery createGraphQuery(Graph db) {
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
 }

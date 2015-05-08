@@ -93,7 +93,7 @@ public class EdgeSearchResultBuilder {
       when(graphQueryMock.hasNot(withoutProperty)).thenReturn(graphQueryMock);
     }
 
-    when(graphQueryMock.edges()).thenReturn(edges);
+    foundByGraphQuery(graphQueryMock);
 
   }
 
@@ -101,5 +101,9 @@ public class EdgeSearchResultBuilder {
     withoutProperties.add(propertyName);
 
     return this;
+  }
+
+  public void foundByGraphQuery(GraphQuery graphQuery) {
+    when(graphQuery.edges()).thenReturn(edges);
   }
 }
