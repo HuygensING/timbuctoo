@@ -31,8 +31,4 @@ class TinkerPopStorageIteratorFactory {
     return new TinkerPopIterator<T, Edge>(converter, edges.iterator());
   }
 
-  public <T extends Relation> StorageIterator<T> createForRelation(Class<T> type, Iterator<Edge> foundEdges) {
-    throw new UnsupportedOperationException("Yet to be implemented");
-  }
-
 }
