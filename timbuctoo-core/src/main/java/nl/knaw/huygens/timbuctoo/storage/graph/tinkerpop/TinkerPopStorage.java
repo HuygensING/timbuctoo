@@ -630,16 +630,32 @@ public class TinkerPopStorage implements GraphStorage {
 
   @Override
   public <T extends Relation> StorageIterator<T> findRelations(Class<T> relationType, String sourceId, String targetId, String relationTypeId) {
-    TinkerPopQuery query = queryFactory.newQuery();
+    List<Edge> edges = Lists.newArrayList();
 
-    query//
-        .hasNotNullProperty(Relation.SOURCE_ID, sourceId)//
-        .hasNotNullProperty(Relation.TARGET_ID, targetId)//
-        .hasNotNullProperty(Relation.TYPE_ID, relationTypeId);
+    TinkerPopQuery query = queryFactory.newQuery();
+    query.hasNotNullProperty(Relation.TYPE_ID, relationTypeId);
+
+    Vertex source = getVertexIfIdIsNotNull(sourceId);
+    Vertex target = getVertexIfIdIsNotNull(targetId);
 
     Iterator<Edge> foundEdges = lowLevelAPI.findLatestEdges(query);
 
-    return storageIteratorFactory.createForRelation(relationType, foundEdges);
+    for (; foundEdges.hasNext();) {
+      Edge edge = foundEdges.next();
+      if (vertexIsEqualOrNull(source, edge, Direction.OUT) && vertexIsEqualOrNull(target, edge, Direction.IN)) {
+        edges.add(edge);
+      }
+    }
+
+    return storageIteratorFactory.createForRelation(relationType, edges);
+  }
+
+  private Vertex getVertexIfIdIsNotNull(String targetId) {
+    return targetId != null ? lowLevelAPI.getLatestVertexById(targetId) : null;
+  }
+
+  private boolean vertexIsEqualOrNull(Vertex vertex, Edge edge, Direction direction) {
+    return vertex == null || edge.getVertex(direction).equals(vertex);
   }
 
   @Override
