@@ -626,6 +626,11 @@ public class TinkerPopStorage implements GraphStorage {
   }
 
   @Override
+  public <T extends Relation> StorageIterator<T> findRelations(Class<T> relationType, String sourceId, String targetId, String relationTypeId) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
+  @Override
   public <T extends DomainEntity> List<String> getIdsOfNonPersistentDomainEntities(Class<T> type) {
     List<String> ids = Lists.newArrayList();
     Iterator<Vertex> vertices = lowLevelAPI.findVerticesWithoutProperty(type, DomainEntity.PID);

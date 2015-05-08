@@ -88,4 +88,6 @@ public interface GraphStorage {
   // TODO make only available for DomainEntities see TIM-162
   <T extends Entity> T getDefaultVariation(Class<T> type, String id) throws StorageException;
 
+  <T extends Relation> StorageIterator<T> findRelations(Class<T> relationType, String sourceId, String targetId, String relationTypeId);
+
 }

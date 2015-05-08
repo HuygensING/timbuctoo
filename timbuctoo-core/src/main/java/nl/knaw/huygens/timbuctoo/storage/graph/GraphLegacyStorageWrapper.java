@@ -309,7 +309,7 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends Relation> StorageIterator<T> findRelations(Class<T> type, String sourceId, String targetId, String relationTypeId) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return graphStorage.findRelations(type, sourceId, targetId, relationTypeId);
   }
 
   @Override

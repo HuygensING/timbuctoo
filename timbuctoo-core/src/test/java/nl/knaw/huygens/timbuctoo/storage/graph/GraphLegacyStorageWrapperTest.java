@@ -796,6 +796,25 @@ public class GraphLegacyStorageWrapperTest {
 
   }
 
+  @Test
+  public void findRelationsDelegatesToGraphStorage() throws Exception {
+    String sourceId = "sourceId";
+    String targetId = "targetId";
+    String relationTypeId = "relationTypeId";
+
+    @SuppressWarnings("unchecked")
+    StorageIterator<SubARelation> relations = mock(StorageIterator.class);
+
+    when(graphStorageMock.findRelations(RELATION_TYPE, sourceId, targetId, relationTypeId))//
+        .thenReturn(relations);
+
+    // action
+    StorageIterator<SubARelation> actualRelations = instance.findRelations(RELATION_TYPE, sourceId, targetId, relationTypeId);
+
+    // verify
+    assertThat(actualRelations, is(sameInstance(relations)));
+  }
+
   @Test(expected = StorageException.class)
   public void addSystemEntityThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     TestSystemEntityWrapper entity = aSystemEntity().build();
