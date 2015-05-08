@@ -982,7 +982,7 @@ public abstract class StorageIntegrationTest {
     // verify
     List<SubARelation> relationList = Lists.newArrayList(relations);
     assertThat(relationList, contains(likeRelation().withId(relId1)));
-    assertThat(relationList, not(contains( //
+    assertThat(relationList, not(containsInAnyOrder( //
         likeRelation().withId(relId2), //
         likeRelation().withId(relId3), //
         likeRelation().withId(relId4))));
@@ -1010,7 +1010,7 @@ public abstract class StorageIntegrationTest {
     // verify
     List<SubARelation> relationList = Lists.newArrayList(relations);
     assertThat(relationList, contains(likeRelation().withId(relId4)));
-    assertThat(relationList, not(contains( //
+    assertThat(relationList, not(containsInAnyOrder( //
         likeRelation().withId(relId2), //
         likeRelation().withId(relId3), //
         likeRelation().withId(relId1))));
@@ -1037,10 +1037,10 @@ public abstract class StorageIntegrationTest {
 
     // verify
     List<SubARelation> relationList = Lists.newArrayList(relations);
-    assertThat(relationList, contains( //
+    assertThat(relationList, containsInAnyOrder( //
         likeRelation().withId(relId2), //
         likeRelation().withId(relId4)));
-    assertThat(relationList, not(contains( //
+    assertThat(relationList, not(containsInAnyOrder( //
         likeRelation().withId(relId1), //
         likeRelation().withId(relId3))));
   }
@@ -1065,10 +1065,10 @@ public abstract class StorageIntegrationTest {
 
     // verify
     List<SubARelation> relationList = Lists.newArrayList(relations);
-    assertThat(relationList, contains( //
+    assertThat(relationList, containsInAnyOrder( //
         likeRelation().withId(relId1), //
         likeRelation().withId(relId3)));
-    assertThat(relationList, not(contains( //
+    assertThat(relationList, not(containsInAnyOrder( //
         likeRelation().withId(relId2), //
         likeRelation().withId(relId4))));
   }

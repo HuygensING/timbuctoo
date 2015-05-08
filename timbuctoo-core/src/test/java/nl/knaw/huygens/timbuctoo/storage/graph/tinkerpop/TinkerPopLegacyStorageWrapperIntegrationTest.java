@@ -234,28 +234,24 @@ public class TinkerPopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.getAllVariationsForRelationsReturnsAllTheVariationsOfARelation();
   }
 
-  @Ignore
   @Test
   @Override
   public void findRelationsReturnsAnIteratorOfAllTheRelationsOfACertainTypeBetweenTwoEntities() throws Exception {
     super.findRelationsReturnsAnIteratorOfAllTheRelationsOfACertainTypeBetweenTwoEntities();
   }
 
-  @Ignore
   @Test
   @Override
   public void findRelationsReturnsAnIteratorOfAllTheRelationsOfACertainTypeForTheSourceIfTheTargetIsNull() throws Exception {
     super.findRelationsReturnsAnIteratorOfAllTheRelationsOfACertainTypeForTheSourceIfTheTargetIsNull();
   }
 
-  @Ignore
   @Test
   @Override
   public void findRelationsReturnsAnIteratorOfAllTheRelationsOfACertainTypeForTheTargetIfTheSourceIsNull() throws Exception {
     super.findRelationsReturnsAnIteratorOfAllTheRelationsOfACertainTypeForTheTargetIfTheSourceIsNull();
   }
 
-  @Ignore
   @Test
   @Override
   public void findRelationsReturnsAnIteratorOfAllTheRelationsOfBetweenTheSourceAndTargetIfTheTypeIsNull() throws Exception {
