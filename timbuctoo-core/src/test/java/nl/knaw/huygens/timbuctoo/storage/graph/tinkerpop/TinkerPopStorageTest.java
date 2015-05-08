@@ -7,6 +7,7 @@ import static nl.knaw.huygens.timbuctoo.storage.graph.SubADomainEntityBuilder.aD
 import static nl.knaw.huygens.timbuctoo.storage.graph.SubARelationBuilder.aRelation;
 import static nl.knaw.huygens.timbuctoo.storage.graph.TestSystemEntityWrapperBuilder.aSystemEntity;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeMockBuilder.anEdge;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.TinkerPopQueryMockBuilder.aQuery;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilder.aVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -91,12 +92,13 @@ public class TinkerPopStorageTest {
 
   @Before
   public void setup() throws Exception {
+    queryFactory = mock(TinkerPopQueryFactory.class);
     dbMock = mock(Graph.class);
     lowLevelAPIMock = mock(TinkerPopLowLevelAPI.class);
     elementConverterFactoryMock = mock(ElementConverterFactory.class);
     TypeRegistry typeRegistry = TypeRegistry.getInstance().init("timbuctoo.model test.model test.model.projecta");
     storageIteratorFactoryMock = mock(TinkerPopStorageIteratorFactory.class);
-    instance = new TinkerPopStorage(dbMock, elementConverterFactoryMock, lowLevelAPIMock, typeRegistry, storageIteratorFactoryMock);
+    instance = new TinkerPopStorage(dbMock, elementConverterFactoryMock, lowLevelAPIMock, typeRegistry, storageIteratorFactoryMock, queryFactory);
 
     createdVertex = mock(Vertex.class);
     when(dbMock.addVertex(null)).thenReturn(createdVertex);
@@ -104,6 +106,7 @@ public class TinkerPopStorageTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
+  private TinkerPopQueryFactory queryFactory;
 
   @Test
   public void addDomainEntitySavesTheProjectVersionAndThePrimitive() throws Exception {
@@ -1256,6 +1259,39 @@ public class TinkerPopStorageTest {
   private void edgesFoundByTarget(Edge... foundEdges) {
     Iterator<Edge> iterator = Lists.<Edge> newArrayList(foundEdges).iterator();
     when(lowLevelAPIMock.findEdgesByTarget(RELATION_TYPE, PROPERTY_VALUE)).thenReturn(iterator);
+  }
+
+  @Test
+  public void findRelationsWrapsTheQueryResultOfTheLowLevelAPIInAStorageIterator() throws Exception {
+    // setup
+    TinkerPopQuery queryMock = aQuery().build();
+    when(queryFactory.newQuery()).thenReturn(queryMock);
+
+    Iterator<Edge> foundEdges = edgesFoundFor(queryMock);
+
+    StorageIterator<SubARelation> relations = relationIteratorCreatedFor(foundEdges);
+
+    // action
+    StorageIterator<SubARelation> foundRelations = instance.findRelations(RELATION_TYPE, RELATION_SOURCE_ID, RELATION_TARGET_ID, RELATION_TYPE_ID);
+
+    // verify
+    assertThat(foundRelations, is(sameInstance(relations)));
+    verify(queryMock).hasNotNullProperty(Relation.SOURCE_ID, RELATION_SOURCE_ID);
+    verify(queryMock).hasNotNullProperty(Relation.TARGET_ID, RELATION_TARGET_ID);
+    verify(queryMock).hasNotNullProperty(Relation.TYPE_ID, RELATION_TYPE_ID);
+  }
+
+  private StorageIterator<SubARelation> relationIteratorCreatedFor(Iterator<Edge> foundEdges) {
+    @SuppressWarnings("unchecked")
+    StorageIterator<SubARelation> relations = mock(StorageIterator.class);
+    when(storageIteratorFactoryMock.createForRelation(RELATION_TYPE, foundEdges)).thenReturn(relations);
+    return relations;
+  }
+
+  private Iterator<Edge> edgesFoundFor(TinkerPopQuery query) {
+    Iterator<Edge> foundEdges = Lists.<Edge> newArrayList().iterator();
+    when(lowLevelAPIMock.findLatestEdges(query)).thenReturn(foundEdges);
+    return foundEdges;
   }
 
   @Test

@@ -34,12 +34,13 @@ import com.tinkerpop.blueprints.Vertex;
 
 public class TinkerPopStorage implements GraphStorage {
 
+  private boolean available = true;
   private final Graph db;
   private final ElementConverterFactory elementConverterFactory;
   private final TinkerPopLowLevelAPI lowLevelAPI;
   private final TypeRegistry typeRegistry;
-  private boolean available = true;
   private final TinkerPopStorageIteratorFactory storageIteratorFactory;
+  private final TinkerPopQueryFactory queryFactory;
 
   @Inject
   public TinkerPopStorage(Graph db, TypeRegistry typeRegistry) {
@@ -47,15 +48,17 @@ public class TinkerPopStorage implements GraphStorage {
   }
 
   public TinkerPopStorage(Graph db, ElementConverterFactory elementConverterFactory, TinkerPopLowLevelAPI lowLevelAPI, TypeRegistry typeRegistry) {
-    this(db, elementConverterFactory, lowLevelAPI, typeRegistry, new TinkerPopStorageIteratorFactory(elementConverterFactory));
+    this(db, elementConverterFactory, lowLevelAPI, typeRegistry, new TinkerPopStorageIteratorFactory(elementConverterFactory), new TinkerPopQueryFactory());
   }
 
-  public TinkerPopStorage(Graph db, ElementConverterFactory elementConverterFactory, TinkerPopLowLevelAPI lowLevelAPI, TypeRegistry typeRegistry, TinkerPopStorageIteratorFactory storageIteratorFactory) {
+  public TinkerPopStorage(Graph db, ElementConverterFactory elementConverterFactory, TinkerPopLowLevelAPI lowLevelAPI, TypeRegistry typeRegistry,
+      TinkerPopStorageIteratorFactory storageIteratorFactory, TinkerPopQueryFactory queryFactory) {
     this.db = db;
     this.elementConverterFactory = elementConverterFactory;
     this.lowLevelAPI = lowLevelAPI;
     this.typeRegistry = typeRegistry;
     this.storageIteratorFactory = storageIteratorFactory;
+    this.queryFactory = queryFactory;
   }
 
   @Override
@@ -627,7 +630,16 @@ public class TinkerPopStorage implements GraphStorage {
 
   @Override
   public <T extends Relation> StorageIterator<T> findRelations(Class<T> relationType, String sourceId, String targetId, String relationTypeId) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    TinkerPopQuery query = queryFactory.newQuery();
+
+    query//
+        .hasNotNullProperty(Relation.SOURCE_ID, sourceId)//
+        .hasNotNullProperty(Relation.TARGET_ID, targetId)//
+        .hasNotNullProperty(Relation.TYPE_ID, relationTypeId);
+
+    Iterator<Edge> foundEdges = lowLevelAPI.findLatestEdges(query);
+
+    return storageIteratorFactory.createForRelation(relationType, foundEdges);
   }
 
   @Override
