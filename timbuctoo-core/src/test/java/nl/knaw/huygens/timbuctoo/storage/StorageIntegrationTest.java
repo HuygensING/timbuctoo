@@ -961,6 +961,118 @@ public abstract class StorageIntegrationTest {
         .withTypeId(relationTypeId));
   }
 
+  @SuppressWarnings("unchecked")
+  @Test
+  public void findRelationsReturnsAnIteratorOfAllTheRelationsOfACertainTypeBetweenTwoEntities() throws Exception {
+    // setup
+    String entityId1 = addDefaultProjectAPerson();
+    String entityId2 = addDefaultProjectAPerson();
+    String entityId3 = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+    String typeId2 = addRelationType();
+
+    String relId1 = addDefaultRelation(entityId1, entityId2, typeId);
+    String relId2 = addDefaultRelation(entityId1, entityId3, typeId);
+    String relId3 = addDefaultRelation(entityId1, entityId2, typeId2);
+    String relId4 = addDefaultRelation(entityId2, entityId3, typeId);
+
+    // action
+    StorageIterator<SubARelation> relations = instance.findRelations(RELATION_TYPE, entityId1, entityId2, typeId);
+
+    // verify
+    List<SubARelation> relationList = Lists.newArrayList(relations);
+    assertThat(relationList, contains(likeRelation().withId(relId1)));
+    assertThat(relationList, not(contains( //
+        likeRelation().withId(relId2), //
+        likeRelation().withId(relId3), //
+        likeRelation().withId(relId4))));
+
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void findRelationsReturnsAnIteratorOfAllTheRelationsOfACertainTypeForTheSourceIfTheTargetIsNull() throws Exception {
+    // setup
+    String entityId1 = addDefaultProjectAPerson();
+    String entityId2 = addDefaultProjectAPerson();
+    String entityId3 = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+    String typeId2 = addRelationType();
+
+    String relId1 = addDefaultRelation(entityId1, entityId2, typeId);
+    String relId2 = addDefaultRelation(entityId1, entityId3, typeId);
+    String relId3 = addDefaultRelation(entityId1, entityId2, typeId2);
+    String relId4 = addDefaultRelation(entityId2, entityId3, typeId);
+
+    // action
+    StorageIterator<SubARelation> relations = instance.findRelations(RELATION_TYPE, entityId2, null, typeId);
+
+    // verify
+    List<SubARelation> relationList = Lists.newArrayList(relations);
+    assertThat(relationList, contains(likeRelation().withId(relId4)));
+    assertThat(relationList, not(contains( //
+        likeRelation().withId(relId2), //
+        likeRelation().withId(relId3), //
+        likeRelation().withId(relId1))));
+
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void findRelationsReturnsAnIteratorOfAllTheRelationsOfACertainTypeForTheTargetIfTheSourceIsNull() throws Exception {
+    // setup
+    String entityId1 = addDefaultProjectAPerson();
+    String entityId2 = addDefaultProjectAPerson();
+    String entityId3 = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+    String typeId2 = addRelationType();
+
+    String relId1 = addDefaultRelation(entityId1, entityId2, typeId);
+    String relId2 = addDefaultRelation(entityId1, entityId3, typeId);
+    String relId3 = addDefaultRelation(entityId1, entityId2, typeId2);
+    String relId4 = addDefaultRelation(entityId2, entityId3, typeId);
+
+    // action
+    StorageIterator<SubARelation> relations = instance.findRelations(RELATION_TYPE, null, entityId3, typeId);
+
+    // verify
+    List<SubARelation> relationList = Lists.newArrayList(relations);
+    assertThat(relationList, contains( //
+        likeRelation().withId(relId2), //
+        likeRelation().withId(relId4)));
+    assertThat(relationList, not(contains( //
+        likeRelation().withId(relId1), //
+        likeRelation().withId(relId3))));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void findRelationsReturnsAnIteratorOfAllTheRelationsOfBetweenTheSourceAndTargetIfTheTypeIsNull() throws Exception {
+    // setup
+    String entityId1 = addDefaultProjectAPerson();
+    String entityId2 = addDefaultProjectAPerson();
+    String entityId3 = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+    String typeId2 = addRelationType();
+
+    String relId1 = addDefaultRelation(entityId1, entityId2, typeId);
+    String relId2 = addDefaultRelation(entityId1, entityId3, typeId);
+    String relId3 = addDefaultRelation(entityId1, entityId2, typeId2);
+    String relId4 = addDefaultRelation(entityId2, entityId3, typeId);
+
+    // action
+    StorageIterator<SubARelation> relations = instance.findRelations(RELATION_TYPE, entityId1, entityId2, null);
+
+    // verify
+    List<SubARelation> relationList = Lists.newArrayList(relations);
+    assertThat(relationList, contains( //
+        likeRelation().withId(relId1), //
+        likeRelation().withId(relId3)));
+    assertThat(relationList, not(contains( //
+        likeRelation().withId(relId2), //
+        likeRelation().withId(relId4))));
+  }
+
   @Test
   public void getAllIdsWithoutPIDForRelationReturnsTheIdsOfNonPersistentDomainEntities() throws Exception {
     // setup
