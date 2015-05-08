@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.google.common.collect.Maps;
 import com.tinkerpop.blueprints.Graph;
@@ -32,7 +33,14 @@ class TinkerPopQuery {
   }
 
   public GraphQuery createGraphQuery(Graph db) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    GraphQuery query = db.query();
+
+    for (Entry<String, Object> entry : hasProperties.entrySet()) {
+      query.has(entry.getKey(), entry.getValue());
+    }
+
+    return query;
+
   }
 
 }

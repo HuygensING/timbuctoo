@@ -5,6 +5,9 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Map;
 
@@ -12,6 +15,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.Maps;
+import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.GraphQuery;
 
 public class TinkerPopQueryTest {
 
@@ -54,4 +59,22 @@ public class TinkerPopQueryTest {
     assertThat(hasProperties.keySet(), not(contains(NAME)));
   }
 
+  @Test
+  public void createGraphQueryLetsDBCreateAGraphQueryAndAddsTheAddedProperties() {
+    // setup
+    instance.hasNotNullProperty(NAME, VALUE);
+    String name2 = "name2";
+    Object value2 = "value2";
+    instance.hasNotNullProperty(name2, value2);
+
+    Graph db = mock(Graph.class);
+    when(db.query()).thenReturn(mock(GraphQuery.class));
+
+    // action
+    GraphQuery query = instance.createGraphQuery(db);
+
+    // verify
+    verify(query).has(NAME, VALUE);
+    verify(query).has(name2, value2);
+  }
 }
