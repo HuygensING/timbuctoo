@@ -46,6 +46,7 @@ import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
+import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
@@ -122,7 +123,7 @@ public class SearchResource extends ResourceBase {
   }
 
   @GET
-  @Path("/{id: " + SearchResult.ID_PREFIX + "\\d+}")
+  @Path("/{id: " + SearchResult.ID_PREFIX + Paths.ID_VALUE_REGEX + "}")
   @APIDesc("Returns (paged) search results Query params: \"start\" (default: 0) \"rows\" (default: 10)")
   @Produces({ MediaType.APPLICATION_JSON })
   public Response regularGet( //
@@ -179,7 +180,7 @@ public class SearchResource extends ResourceBase {
 
   @APIDesc("Returns (paged) search results Query params: \"start\" (default: 0) \"rows\" (default: 10)")
   @GET
-  @Path("/" + RELATION_SEARCH_PREFIX + "/{id: " + SearchResult.ID_PREFIX + "\\d+}")
+  @Path("/" + RELATION_SEARCH_PREFIX + "/{id: " + SearchResult.ID_PREFIX + Paths.ID_VALUE_REGEX + "}")
   @Produces({ MediaType.APPLICATION_JSON })
   public Response relationGet( //
       @PathParam("id") String queryId, //

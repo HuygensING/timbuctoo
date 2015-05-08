@@ -52,6 +52,7 @@ import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -159,7 +160,7 @@ public class SearchResourceV1 extends ResourceBase {
   }
 
   @GET
-  @Path("/{id: " + SearchResult.ID_PREFIX + "\\d+}")
+  @Path("/{id: " + SearchResult.ID_PREFIX + Paths.ID_VALUE_REGEX + "}")
   @Produces({ MediaType.APPLICATION_JSON })
   @APIDesc("Returns (paged) search results Query params: \"start\" (default: 0) \"rows\" (default: 10)")
   public Response get( //
@@ -181,7 +182,7 @@ public class SearchResourceV1 extends ResourceBase {
   }
 
   @GET
-  @Path("/{id: " + SearchResult.ID_PREFIX + "\\d+}/csv")
+  @Path("/{id: " + SearchResult.ID_PREFIX + Paths.ID_VALUE_REGEX + "}/csv")
   @Produces({ CSVProvider.TEXT_CSV })
   public Response getRelationSearchResultAsCSV(@PathParam("id") String queryId) {
     SearchResult result = getSearchResult(queryId);
@@ -200,7 +201,7 @@ public class SearchResourceV1 extends ResourceBase {
 
   @APIDesc("Exports a search result to an Excel format.")
   @GET
-  @Path("/{id: " + SearchResult.ID_PREFIX + "\\d+}/xls")
+  @Path("/{id: " + SearchResult.ID_PREFIX + Paths.ID_VALUE_REGEX + "}/xls")
   @Produces({ XLSProvider.EXCEL_TYPE_STRING })
   public Response getRelationSearchResultAsXLS(@PathParam("id") String queryId) {
     SearchResult result = getSearchResult(queryId);
