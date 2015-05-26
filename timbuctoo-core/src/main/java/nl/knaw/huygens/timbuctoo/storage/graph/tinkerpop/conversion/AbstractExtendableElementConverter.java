@@ -25,7 +25,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.tinkerpop.blueprints.Element;
 
-abstract class AbstractExtendableConverter<T extends Entity, E extends Element> implements ElementConverter<T, E> {
+abstract class AbstractExtendableElementConverter<T extends Entity, E extends Element> implements ElementConverter<T, E> {
 
   private ObjectMapper objectMapper;
   private static Logger LOG = LoggerFactory.getLogger(ExtendableVertexConverter.class);
@@ -33,7 +33,7 @@ abstract class AbstractExtendableConverter<T extends Entity, E extends Element> 
   protected final Class<T> type;
   private Map<String, PropertyConverter> fieldNamePropertyConverterMap;
 
-  public AbstractExtendableConverter(Class<T> type, Collection<PropertyConverter> propertyConverters, EntityInstantiator entityInstantiator) {
+  public AbstractExtendableElementConverter(Class<T> type, Collection<PropertyConverter> propertyConverters, EntityInstantiator entityInstantiator) {
     this.type = type;
     this.entityInstantiator = entityInstantiator;
     mapPropertyConverters(propertyConverters);

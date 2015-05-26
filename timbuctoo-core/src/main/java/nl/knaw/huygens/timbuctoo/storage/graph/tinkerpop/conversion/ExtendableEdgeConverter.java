@@ -19,7 +19,7 @@ import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeConverter;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
-public class ExtendableEdgeConverter<T extends Relation> extends AbstractExtendableConverter<T, Edge> implements EdgeConverter<T> {
+public class ExtendableEdgeConverter<T extends Relation> extends AbstractExtendableElementConverter<T, Edge> implements EdgeConverter<T> {
 
   private final TypeRegistry typeRegistry;
 
