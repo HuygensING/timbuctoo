@@ -193,4 +193,12 @@ public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
     instance.addValueToEntity(entity, vertexMock);
   }
 
+  @Test
+  public void removeFromRemovesThePropertyFromTheElement() {
+    // action
+    instance.removeFrom(vertexMock);
+
+    // verify
+    verify(vertexMock).removeProperty(propertyName);
+  }
 }

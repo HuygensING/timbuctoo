@@ -163,4 +163,13 @@ public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
     instance.addValueToEntity(entity, vertexMock);
   }
 
+  @Test
+  public void removeFromRemovesThePropertyFromTheElement() {
+    // action
+    instance.removeFrom(vertexMock);
+
+    // verify
+    verify(vertexMock).removeProperty(PROPERTY_NAME);
+  }
+
 }

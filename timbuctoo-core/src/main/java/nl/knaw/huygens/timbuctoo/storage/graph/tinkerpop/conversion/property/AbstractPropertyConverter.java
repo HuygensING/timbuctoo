@@ -98,4 +98,8 @@ abstract class AbstractPropertyConverter implements PropertyConverter {
     }
   }
 
+  @Override
+  public void removeFrom(Element element) {
+    element.removeProperty(propertyName());
+  }
 }
