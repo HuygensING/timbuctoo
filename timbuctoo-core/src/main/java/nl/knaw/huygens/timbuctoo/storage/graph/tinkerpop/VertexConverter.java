@@ -9,4 +9,6 @@ public interface VertexConverter<T extends Entity> extends ElementConverter<T, V
 
   <U extends T> U convertToSubType(Class<U> type, Vertex vertex) throws ConversionException;
 
+  void removeVariant(Vertex vertex);
+
 }

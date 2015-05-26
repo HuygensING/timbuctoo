@@ -277,6 +277,36 @@ public class TinkerPopStorageTest {
     instance.deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID);
   }
 
+  @Test
+  public void deleteVariationRemovesTheFieldsOfTheVariationOfADomainEntity() throws Exception {
+    // setup
+    Vertex vertex = aVertex().build();
+    latestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID, vertex);
+
+    VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+
+    // action
+    instance.deleteVariation(DOMAIN_ENTITY_TYPE, ID);
+
+    // verify
+    verify(converter).removeVariant(vertex);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void deleteVariationThrowsAnIllegalArgumentExceptionWhenTheTypeIsAPrimitive() throws Exception {
+    // action
+    instance.deleteVariation(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
+  }
+
+  @Test(expected = NoSuchEntityException.class)
+  public void deleteVariationThrowsANoSuchEntityExceptionWhenTheEntityCannotBeFound() throws Exception {
+    // setup
+    noLatestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID);
+
+    // action
+    instance.deleteVariation(DOMAIN_ENTITY_TYPE, ID);
+  }
+
   private void noVerticesWithTypeAndIdFound(Class<? extends Entity> type, String id) {
     List<Vertex> entitiesFound = Lists.newArrayList();
     when(lowLevelAPIMock.getVerticesWithId(type, id)).thenReturn(entitiesFound.iterator());

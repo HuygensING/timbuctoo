@@ -32,4 +32,9 @@ class ExtendableVertexConverter<T extends Entity> extends AbstractExtendableConv
   protected void executeCustomDeserializationActions(T entity, Vertex element) {
     // nothing to do
   }
+
+  @Override
+  public void removeVariant(Vertex vertex) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }

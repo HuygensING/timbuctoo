@@ -51,4 +51,9 @@ public class CompositeVertexConverter<T extends Entity> implements VertexConvert
   int getNumberOfDelegates() {
     return delegates.size();
   }
+
+  @Override
+  public void removeVariant(Vertex vertex) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }
