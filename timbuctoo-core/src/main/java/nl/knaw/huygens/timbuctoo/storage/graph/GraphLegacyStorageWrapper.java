@@ -186,8 +186,7 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public void deleteVariation(Class<? extends DomainEntity> type, String id, Change change) throws IllegalArgumentException, NoSuchEntityException, StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
-
+    graphStorage.deleteVariation(type, id);
   }
 
   @Override

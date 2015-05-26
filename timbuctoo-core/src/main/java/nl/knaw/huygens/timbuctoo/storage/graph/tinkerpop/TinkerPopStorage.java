@@ -357,6 +357,11 @@ public class TinkerPopStorage implements GraphStorage {
   }
 
   @Override
+  public void deleteVariation(Class<? extends DomainEntity> domainEntityType, String id) throws StorageException, NoSuchEntityException, IllegalArgumentException {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
+  @Override
   public <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id) throws StorageException {
     if (!TypeRegistry.isPrimitiveDomainEntity(type)) {
       throw new IllegalArgumentException("Only primitive DomainEntities can be deleted. " + type.getSimpleName() + " is not a primitive DomainEntity.");

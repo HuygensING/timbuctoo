@@ -24,6 +24,7 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
@@ -414,6 +415,34 @@ public class GraphLegacyStorageWrapperTest {
 
     // verify
     verifyZeroInteractions(graphStorageMock);
+  }
+
+  @Test
+  public void deleteVariationDelegatesToGraphStorage() throws Exception {
+    instance.deleteVariation(DOMAIN_ENTITY_TYPE, ID, CHANGE);
+
+    verify(graphStorageMock).deleteVariation(DOMAIN_ENTITY_TYPE, ID);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void deleteVariationThrowsAnIllegalArgumentExceptionWhenGraphStorageDoes() throws Exception {
+    deleteVariationThrowsAnExceptionWhenTheGraphStorageDoes(IllegalArgumentException.class);
+  }
+
+  @Test(expected = NoSuchEntityException.class)
+  public void deleteVariationThrowsANoSuchEntityExceptionWhenGraphStorageDoes() throws Exception {
+    deleteVariationThrowsAnExceptionWhenTheGraphStorageDoes(NoSuchEntityException.class);
+  }
+
+  @Test(expected = StorageException.class)
+  public void deleteVariationThrowsAStorageExceptionWhenGraphStorageDoes() throws Exception {
+    deleteVariationThrowsAnExceptionWhenTheGraphStorageDoes(StorageException.class);
+  }
+
+  private void deleteVariationThrowsAnExceptionWhenTheGraphStorageDoes(Class<? extends Exception> exceptionToThrow) throws StorageException, NoSuchEntityException {
+    doThrow(exceptionToThrow).when(graphStorageMock).deleteVariation(DOMAIN_ENTITY_TYPE, ID);
+
+    instance.deleteVariation(DOMAIN_ENTITY_TYPE, ID, CHANGE);
   }
 
   @Test
