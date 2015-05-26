@@ -8,7 +8,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -227,6 +227,19 @@ public class ExtendableVertexConverterTest {
   }
 
   @Test
+  public void removeVariantRemovesAllTheFieldsOfTheVariantFromTheVertex() {
+    // action
+    instance.removeVariant(vertexMock);
+
+    // verify
+    verify(propertyConverter1).removeFrom(vertexMock);
+    verify(propertyConverter2).removeFrom(vertexMock);
+
+    verify(modifiedConverterMock, never()).removeFrom(vertexMock);
+    verify(revConverterMock, never()).removeFrom(vertexMock);
+  }
+
+  @Test
   public void updateModifiedAndRevLetTheFieldConvertersSetTheValuesForRevisionAndModified() throws Exception {
     // action
     instance.updateModifiedAndRev(vertexMock, entity);
@@ -234,8 +247,8 @@ public class ExtendableVertexConverterTest {
     // verify
     verify(modifiedConverterMock).setPropertyOfElement(vertexMock, entity);
     verify(revConverterMock).setPropertyOfElement(vertexMock, entity);
-    verify(propertyConverter1, times(0)).setPropertyOfElement(vertexMock, entity);
-    verify(propertyConverter2, times(0)).setPropertyOfElement(vertexMock, entity);
+    verify(propertyConverter1, never()).setPropertyOfElement(vertexMock, entity);
+    verify(propertyConverter2, never()).setPropertyOfElement(vertexMock, entity);
   }
 
   @Test(expected = ConversionException.class)
@@ -257,8 +270,8 @@ public class ExtendableVertexConverterTest {
     verify(propertyConverter1).setPropertyOfElement(vertexMock, entity);
     verify(propertyConverter2).setPropertyOfElement(vertexMock, entity);
 
-    verify(modifiedConverterMock, times(0)).setPropertyOfElement(vertexMock, entity);
-    verify(revConverterMock, times(0)).setPropertyOfElement(vertexMock, entity);
+    verify(modifiedConverterMock, never()).setPropertyOfElement(vertexMock, entity);
+    verify(revConverterMock, never()).setPropertyOfElement(vertexMock, entity);
   }
 
   @Test(expected = ConversionException.class)

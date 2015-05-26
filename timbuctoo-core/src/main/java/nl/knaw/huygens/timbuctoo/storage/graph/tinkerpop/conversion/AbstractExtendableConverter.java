@@ -100,7 +100,7 @@ abstract class AbstractExtendableConverter<T extends Entity, E extends Element> 
     }
   }
 
-  private Collection<PropertyConverter> propertyConverters() {
+  protected Collection<PropertyConverter> propertyConverters() {
     return fieldNamePropertyConverterMap.values();
   }
 

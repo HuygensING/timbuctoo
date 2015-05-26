@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tinkerpop.blueprints.Element;
 
 class ObjectValuePropertyConverter extends AbstractPropertyConverter {
 
@@ -32,6 +33,11 @@ class ObjectValuePropertyConverter extends AbstractPropertyConverter {
     } catch (IOException e) {
       throw new IllegalArgumentException("Value could not be read.");
     }
+  }
+
+  @Override
+  public void removeFrom(Element element) {
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
 }

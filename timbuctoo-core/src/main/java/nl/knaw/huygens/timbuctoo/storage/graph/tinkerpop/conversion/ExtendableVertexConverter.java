@@ -5,6 +5,7 @@ import java.util.Collection;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
+import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexConverter;
 
 import com.tinkerpop.blueprints.Vertex;
@@ -35,6 +36,10 @@ class ExtendableVertexConverter<T extends Entity> extends AbstractExtendableConv
 
   @Override
   public void removeVariant(Vertex vertex) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    for (PropertyConverter propertyConverter : propertyConverters()) {
+      if (propertyConverter.getFieldType() != FieldType.ADMINISTRATIVE) {
+        propertyConverter.removeFrom(vertex);
+      }
+    }
   }
 }

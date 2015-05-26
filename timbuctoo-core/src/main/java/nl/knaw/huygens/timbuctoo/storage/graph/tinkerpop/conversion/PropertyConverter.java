@@ -27,4 +27,10 @@ public interface PropertyConverter {
   String getFieldName();
 
   FieldType getFieldType();
+
+  /**
+   * Removes the property from the element.
+   * @param element the element to remove the property from
+   */
+  void removeFrom(Element element);
 }

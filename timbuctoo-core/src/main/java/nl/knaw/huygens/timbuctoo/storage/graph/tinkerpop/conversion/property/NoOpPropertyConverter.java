@@ -54,4 +54,7 @@ class NoOpPropertyConverter implements PropertyConverter {
     return fieldType.propertyName(type, fieldName);
   }
 
+  @Override
+  public void removeFrom(Element element) {}
+
 }
