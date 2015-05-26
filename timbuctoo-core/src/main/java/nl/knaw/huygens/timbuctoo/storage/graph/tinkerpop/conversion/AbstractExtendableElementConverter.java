@@ -58,21 +58,30 @@ abstract class AbstractExtendableElementConverter<T extends Entity, E extends El
   private void addVariation(E element, Class<? extends Entity> variationType) {
     LOG.debug("add variation \"{}\"", variationType);
 
+    List<String> types = getTypesProperty(element);
+
+    types.add(TypeNames.getInternalName(variationType));
+
+    setTypesProperty(element, types);
+
+  }
+
+  protected final void setTypesProperty(E element, List<String> types) {
+    try {
+      element.setProperty(ELEMENT_TYPES, objectMapper.writeValueAsString(types));
+    } catch (JsonProcessingException e) {
+      throw new IllegalArgumentException(e);
+    }
+  }
+
+  protected final List<String> getTypesProperty(E element) {
     List<String> types = null;
     if (element.getProperty(ELEMENT_TYPES) != null) {
       types = getTypes(element);
     } else {
       types = Lists.newArrayList();
     }
-
-    types.add(TypeNames.getInternalName(variationType));
-
-    try {
-      element.setProperty(ELEMENT_TYPES, objectMapper.writeValueAsString(types));
-    } catch (JsonProcessingException e) {
-      throw new IllegalArgumentException(e);
-    }
-
+    return types;
   }
 
   @Override

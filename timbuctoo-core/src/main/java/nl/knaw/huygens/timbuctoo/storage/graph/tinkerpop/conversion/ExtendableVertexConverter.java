@@ -1,7 +1,9 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion;
 
 import java.util.Collection;
+import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
@@ -36,6 +38,19 @@ class ExtendableVertexConverter<T extends Entity> extends AbstractExtendableElem
 
   @Override
   public void removeVariant(Vertex vertex) {
+    removeVariation(vertex);
+    removeProperties(vertex);
+  }
+
+  private void removeVariation(Vertex vertex) {
+    List<String> types = getTypesProperty(vertex);
+
+    types.remove(TypeNames.getInternalName(type));
+
+    setTypesProperty(vertex, types);
+  }
+
+  private void removeProperties(Vertex vertex) {
     for (PropertyConverter propertyConverter : propertyConverters()) {
       if (propertyConverter.getFieldType() != FieldType.ADMINISTRATIVE) {
         propertyConverter.removeFrom(vertex);

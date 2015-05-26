@@ -26,6 +26,7 @@ import org.junit.Test;
 import test.model.BaseDomainEntity;
 import test.model.projecta.SubADomainEntity;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.Element;
@@ -95,7 +96,6 @@ public class ExtendableVertexConverterTest {
   @Test
   public void addValuesToVertexAddsTheTypeOfTheVertexConverter() throws Exception {
     // action
-
     ExtendableVertexConverter<BaseDomainEntity> instance = createInstance(BASE_DOMAIN_ENTITY_TYPE);
 
     instance.addValuesToElement(vertexMock, aDomainEntity().build());
@@ -106,12 +106,20 @@ public class ExtendableVertexConverterTest {
   }
 
   private void verifyTypeIsSet(Element elementMock, Class<? extends Entity> type) throws Exception {
-    List<String> types = Lists.newArrayList(TypeNames.getInternalName(type));
+    String internalName = TypeNames.getInternalName(type);
+
+    String value = getTypesAsString(elementMock, internalName);
+
+    verify(elementMock).setProperty(ELEMENT_TYPES, value);
+  }
+
+  private String getTypesAsString(Element elementMock, String... internalNames) throws JsonProcessingException {
+    List<String> types = Lists.newArrayList(internalNames);
 
     ObjectMapper objectMapper = new ObjectMapper();
     String value = objectMapper.writeValueAsString(types);
 
-    verify(elementMock).setProperty(ELEMENT_TYPES, value);
+    return value;
   }
 
   @Test(expected = ConversionException.class)
@@ -227,7 +235,7 @@ public class ExtendableVertexConverterTest {
   }
 
   @Test
-  public void removeVariantRemovesAllTheFieldsOfTheVariantFromTheVertex() {
+  public void removeVariantRemovesAllTheFieldsOfTheVariant() {
     // action
     instance.removeVariant(vertexMock);
 
@@ -237,6 +245,22 @@ public class ExtendableVertexConverterTest {
 
     verify(modifiedConverterMock, never()).removeFrom(vertexMock);
     verify(revConverterMock, never()).removeFrom(vertexMock);
+  }
+
+  @Test
+  public void removeVariantRemovesTheTypeFromTheTypesProperty() throws Exception {
+    // setup
+    String entityName = TypeNames.getInternalName(DOMAIN_ENTITY_TYPE);
+    String baseEntityName = TypeNames.getInternalName(BASE_DOMAIN_ENTITY_TYPE);
+    when(vertexMock.getProperty(ELEMENT_TYPES)).thenReturn(getTypesAsString(vertexMock, entityName, baseEntityName));
+
+    instance = createInstance(DOMAIN_ENTITY_TYPE, propertyConverters);
+
+    // action
+    instance.removeVariant(vertexMock);
+
+    // verify that only the base type is set
+    verifyTypeIsSet(vertexMock, BASE_DOMAIN_ENTITY_TYPE);
   }
 
   @Test
