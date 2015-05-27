@@ -20,6 +20,7 @@ import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -47,6 +48,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 
 import test.model.BaseDomainEntity;
 import test.model.TestSystemEntityWrapper;
@@ -290,6 +292,26 @@ public class TinkerPopStorageTest {
     instance.deleteVariant(entity);
 
     // verify
+    InOrder inOrder = inOrder(converter);
+    inOrder.verify(converter).updateModifiedAndRev(vertex, entity);
+    inOrder.verify(converter).removeVariant(vertex);
+  }
+
+  @Test(expected = ConversionException.class)
+  public void deleteVariantThrowsAConversionExceptionWhenTheModifiedAndRevCannotBeUpdated() throws Exception {
+    // setup
+    Vertex vertex = aVertex().build();
+    SubADomainEntity entity = aDomainEntity().withId(ID).build();
+    latestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID, vertex);
+
+    VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+    doThrow(ConversionException.class).when(converter).updateModifiedAndRev(vertex, entity);
+
+    // action
+    instance.deleteVariant(entity);
+
+    // verify
+    verify(converter).updateModifiedAndRev(vertex, entity);
     verify(converter).removeVariant(vertex);
   }
 

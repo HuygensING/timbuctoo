@@ -94,7 +94,6 @@ public class TinkerPopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.deleteSystemEntityRemovesAnEntityFromTheDatabase();
   }
 
-  @Ignore
   @Test
   @Override
   public void deleteVariationRemovesTheVariationFromTheEntity() throws Exception {

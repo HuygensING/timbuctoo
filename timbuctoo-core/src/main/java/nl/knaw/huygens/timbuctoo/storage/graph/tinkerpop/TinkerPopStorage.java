@@ -357,7 +357,7 @@ public class TinkerPopStorage implements GraphStorage {
   }
 
   @Override
-  public <T extends DomainEntity> void deleteVariant(T variant) throws NoSuchEntityException {
+  public <T extends DomainEntity> void deleteVariant(T variant) throws NoSuchEntityException, StorageException {
     @SuppressWarnings("unchecked")
     Class<T> type = (Class<T>) variant.getClass();
 
@@ -369,7 +369,7 @@ public class TinkerPopStorage implements GraphStorage {
     }
 
     VertexConverter<T> converter = elementConverterFactory.forType(type);
-
+    converter.updateModifiedAndRev(vertex, variant);
     converter.removeVariant(vertex);
   }
 
