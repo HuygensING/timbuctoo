@@ -281,30 +281,26 @@ public class TinkerPopStorageTest {
   public void deleteVariationRemovesTheFieldsOfTheVariationOfADomainEntity() throws Exception {
     // setup
     Vertex vertex = aVertex().build();
+    SubADomainEntity entity = aDomainEntity().withId(ID).build();
     latestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID, vertex);
 
     VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
 
     // action
-    instance.deleteVariation(DOMAIN_ENTITY_TYPE, ID);
+    instance.deleteVariation(entity);
 
     // verify
     verify(converter).removeVariant(vertex);
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void deleteVariationThrowsAnIllegalArgumentExceptionWhenTheTypeIsAPrimitive() throws Exception {
-    // action
-    instance.deleteVariation(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID);
-  }
-
   @Test(expected = NoSuchEntityException.class)
   public void deleteVariationThrowsANoSuchEntityExceptionWhenTheEntityCannotBeFound() throws Exception {
     // setup
+    SubADomainEntity entity = aDomainEntity().withId(ID).build();
     noLatestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID);
 
     // action
-    instance.deleteVariation(DOMAIN_ENTITY_TYPE, ID);
+    instance.deleteVariation(entity);
   }
 
   private void noVerticesWithTypeAndIdFound(Class<? extends Entity> type, String id) {

@@ -357,23 +357,18 @@ public class TinkerPopStorage implements GraphStorage {
   }
 
   @Override
-  public <T extends DomainEntity> void deleteVariation(T variationToDelete) {
-    throw new UnsupportedOperationException("Yet to be implemented");
-  }
+  public <T extends DomainEntity> void deleteVariation(T variant) throws NoSuchEntityException {
+    @SuppressWarnings("unchecked")
+    Class<T> type = (Class<T>) variant.getClass();
 
-  //  @Override
-  public void deleteVariation(Class<? extends DomainEntity> variant, String id) throws StorageException, NoSuchEntityException, IllegalArgumentException {
-    if (TypeRegistry.isPrimitiveDomainEntity(variant)) {
-      throw new IllegalArgumentException("Use deleteDomainEntity for removing primitives.");
-    }
-
-    Vertex vertex = lowLevelAPI.getLatestVertexById(variant, id);
+    String id = variant.getId();
+    Vertex vertex = lowLevelAPI.getLatestVertexById(type, id);
 
     if (vertex == null) {
-      throw new NoSuchEntityException(variant, id);
+      throw new NoSuchEntityException(type, id);
     }
 
-    VertexConverter<? extends DomainEntity> converter = elementConverterFactory.forType(variant);
+    VertexConverter<T> converter = elementConverterFactory.forType(type);
 
     converter.removeVariant(vertex);
   }
