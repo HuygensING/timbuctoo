@@ -393,6 +393,32 @@ public abstract class StorageIntegrationTest {
   }
 
   @Test
+  public void updateDomainEntityRemovesThePIDIfTheEntityHasOne() throws Exception {
+    String id = addDefaultProjectAPerson();
+
+    // Store the entity
+    ProjectAPerson storedDomainEntity = instance.getEntity(DOMAIN_ENTITY_TYPE, id);
+    // Make sure the entity is stored
+    assertThat(storedDomainEntity, is(notNullValue()));
+
+    // set the pid
+    instance.setPID(DOMAIN_ENTITY_TYPE, id, PID);
+
+    // check if the entity has a PID
+    ProjectAPerson entity = instance.getEntity(DOMAIN_ENTITY_TYPE, id);
+    assertThat("Entity has no PID", entity.getPid(), is(PID));
+
+    //  Update The entity
+    storedDomainEntity.setBirthDate(BIRTH_DATE2);
+    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, storedDomainEntity, UPDATE_CHANGE);
+
+    ProjectAPerson updatedEntity = instance.getEntity(DOMAIN_ENTITY_TYPE, id);
+
+    // check if the PID is removed 
+    assertThat(updatedEntity.getPid(), is(nullValue()));
+  }
+
+  @Test
   public void deleteDomainEntityRemovesTheEntityFromTheDatabase() throws Exception {
     String id = addDefaultProjectAPerson();
 
@@ -421,6 +447,7 @@ public abstract class StorageIntegrationTest {
         likeDefaultPerson(id)//
             .withDeletedFlag(false));
 
+    // action
     instance.deleteVariation(DOMAIN_ENTITY_TYPE, id, UPDATE_CHANGE);
 
     int expectedRevision = 2;

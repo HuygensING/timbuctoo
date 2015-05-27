@@ -22,10 +22,15 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+
 import java.util.List;
 
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualtityMatcher;
+import nl.knaw.huygens.hamcrest.PropertyMatcher;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Person.Gender;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
@@ -115,6 +120,18 @@ public class PersonMatcher<T extends Person> extends CompositeMatcher<T> {
         return item.isDeleted();
       }
     });
+    return this;
+  }
+
+  public PersonMatcher<T> withoutPID() {
+    this.addMatcher(new PropertyMatcher<T, String>(DomainEntity.PID, is(nullValue(String.class))) {
+
+      @Override
+      protected String getItemValue(T item) {
+        return item.getPid();
+      }
+    });
+
     return this;
   }
 
