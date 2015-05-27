@@ -419,9 +419,41 @@ public class GraphLegacyStorageWrapperTest {
 
   @Test
   public void deleteVariationDelegatesToGraphStorage() throws Exception {
+    // setup
+    Change oldModified = new Change();
+    SubADomainEntity entity = aDomainEntity() //
+        .withId(ID) //
+        .withAPid() //
+        .withModified(oldModified)//
+        .withRev(FIRST_REVISION) //
+        .build();
+    when(graphStorageMock.getEntity(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entity);
+
+    // action
     instance.deleteVariation(DOMAIN_ENTITY_TYPE, ID, CHANGE);
 
-    verify(graphStorageMock).deleteVariation(DOMAIN_ENTITY_TYPE, ID);
+    // verify
+    verify(graphStorageMock).deleteVariation(argThat(//
+        likeDomainEntity(DOMAIN_ENTITY_TYPE) //
+            .withId(ID) //
+            .withoutAPID() //
+            .withRevision(SECOND_REVISION) //
+            .withAModifiedValueNotEqualTo(oldModified)));
+  }
+
+  @Test(expected = StorageException.class)
+  public void deleteVariationThrowsAStorageExceptionWhenGetEntityDoes() throws Exception {
+    // setup
+    when(graphStorageMock.getEntity(DOMAIN_ENTITY_TYPE, ID)).thenThrow(new StorageException());
+
+    // action
+    instance.deleteVariation(DOMAIN_ENTITY_TYPE, ID, CHANGE);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void deleteVariationThrowsAnIllegalArgumentExceptionWhenTheTypeIsAPrimitive() throws Exception {
+    // action
+    instance.deleteVariation(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, CHANGE);
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -434,13 +466,25 @@ public class GraphLegacyStorageWrapperTest {
     deleteVariationThrowsAnExceptionWhenTheGraphStorageDoes(NoSuchEntityException.class);
   }
 
+  @Test(expected = NoSuchEntityException.class)
+  public void deleteVariationThrowsANoSuchEntityExceptionWhenTheEntityCannotBeFound() throws Exception {
+    // setup
+    when(graphStorageMock.getEntity(DOMAIN_ENTITY_TYPE, ID)).thenReturn(null);
+
+    // action
+    instance.deleteVariation(DOMAIN_ENTITY_TYPE, ID, CHANGE);
+  }
+
   @Test(expected = StorageException.class)
   public void deleteVariationThrowsAStorageExceptionWhenGraphStorageDoes() throws Exception {
     deleteVariationThrowsAnExceptionWhenTheGraphStorageDoes(StorageException.class);
   }
 
   private void deleteVariationThrowsAnExceptionWhenTheGraphStorageDoes(Class<? extends Exception> exceptionToThrow) throws StorageException, NoSuchEntityException {
-    doThrow(exceptionToThrow).when(graphStorageMock).deleteVariation(DOMAIN_ENTITY_TYPE, ID);
+    // setup
+    SubADomainEntity entity = aDomainEntity().build();
+    when(graphStorageMock.getEntity(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entity);
+    doThrow(exceptionToThrow).when(graphStorageMock).deleteVariation(argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE)));
 
     instance.deleteVariation(DOMAIN_ENTITY_TYPE, ID, CHANGE);
   }

@@ -185,8 +185,25 @@ public class GraphLegacyStorageWrapper implements Storage {
   }
 
   @Override
-  public void deleteVariation(Class<? extends DomainEntity> type, String id, Change change) throws IllegalArgumentException, NoSuchEntityException, StorageException {
-    graphStorage.deleteVariation(type, id);
+  public <T extends DomainEntity> void deleteVariation(Class<T> type, String id, Change change) throws IllegalArgumentException, NoSuchEntityException, StorageException {
+    if (TypeRegistry.isPrimitiveDomainEntity(type)) {
+      throw new IllegalArgumentException("Use deleteDomainEntity for removing primitives.");
+    }
+
+    /* 
+     * A strange way to remove a variation, this is due to the fact that we have 
+     * to to decide how to organize the life cycle management. See TIM-196
+     */
+    T entity = graphStorage.getEntity(type, id);
+
+    if (entity == null) {
+      throw new NoSuchEntityException(type, id);
+    }
+
+    removePID(entity);
+    updateAdministrativeValues(entity);
+
+    graphStorage.deleteVariation(entity);
   }
 
   @Override

@@ -389,7 +389,7 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public void deleteVariation(Class<? extends DomainEntity> type, String id, Change change) throws StorageException {
+  public <T extends DomainEntity> void deleteVariation(Class<T> type, String id, Change change) throws StorageException {
     String variationToDelete = TypeNames.getInternalName(type);
     if (TypeRegistry.isPrimitiveDomainEntity(type)) {
       throwTypeIsAPrimitiveException(type);

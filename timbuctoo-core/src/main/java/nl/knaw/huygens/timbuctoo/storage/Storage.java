@@ -118,7 +118,7 @@ public interface Storage {
    * @throws NoSuchEntityException is thrown when the (variation) type does not exist for this entity.
    * @throws StorageException is thrown when the delete of the variation fails.
    */
-  void deleteVariation(Class<? extends DomainEntity> type, String id, Change change) throws IllegalArgumentException, NoSuchEntityException, StorageException;
+  <T extends DomainEntity> void deleteVariation(Class<T> type, String id, Change change) throws IllegalArgumentException, NoSuchEntityException, StorageException;
 
   /**
    * Deletes all the relations linked to the DomainEntity with {@code id}.

@@ -47,12 +47,11 @@ public interface GraphStorage {
   /**
    * Delete a variant of a DomainEntity.
    * @param variant the variant to delete
-   * @param id the id of the entity to delete the variant from
    * @throws StorageException when the deletion cannot be executed
    * @throws NoSuchEntityException when the entity does not exist
    * @throws IllegalArgumentException when the variant is a primitive
    */
-  void deleteVariation(Class<? extends DomainEntity> variant, String id) throws StorageException, NoSuchEntityException, IllegalArgumentException;
+  <T extends DomainEntity> void deleteVariation(T variant) throws StorageException, NoSuchEntityException, IllegalArgumentException;
 
   <T extends SystemEntity> int deleteSystemEntity(Class<T> type, String id) throws StorageException;
 
