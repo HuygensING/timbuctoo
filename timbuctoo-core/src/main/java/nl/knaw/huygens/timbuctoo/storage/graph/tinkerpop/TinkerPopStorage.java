@@ -357,7 +357,7 @@ public class TinkerPopStorage implements GraphStorage {
   }
 
   @Override
-  public <T extends DomainEntity> void deleteVariation(T variant) throws NoSuchEntityException {
+  public <T extends DomainEntity> void deleteVariant(T variant) throws NoSuchEntityException {
     @SuppressWarnings("unchecked")
     Class<T> type = (Class<T>) variant.getClass();
 

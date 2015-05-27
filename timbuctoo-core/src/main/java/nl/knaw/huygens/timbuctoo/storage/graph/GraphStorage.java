@@ -51,7 +51,7 @@ public interface GraphStorage {
    * @throws NoSuchEntityException when the entity does not exist
    * @throws IllegalArgumentException when the variant is a primitive
    */
-  <T extends DomainEntity> void deleteVariation(T variant) throws StorageException, NoSuchEntityException, IllegalArgumentException;
+  <T extends DomainEntity> void deleteVariant(T variant) throws StorageException, NoSuchEntityException, IllegalArgumentException;
 
   <T extends SystemEntity> int deleteSystemEntity(Class<T> type, String id) throws StorageException;
 
