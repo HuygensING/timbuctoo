@@ -59,7 +59,11 @@ class ExtendableVertexConverter<T extends Entity> extends AbstractExtendableElem
   }
 
   @Override
-  public void removePropertyFromVertexByFieldName(Vertex vertex, String fieldName) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+  public void removePropertyByFieldName(Vertex vertex, String fieldName) {
+    if (!hasPropertyConverterForField(fieldName)) {
+      throw new NoSuchFieldException(type, fieldName);
+    }
+
+    getPropertyConverterByFieldName(fieldName).removeFrom(vertex);
   }
 }

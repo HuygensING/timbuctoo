@@ -206,7 +206,7 @@ public class ExtendableEdgeConverterTest {
     assertThat(actualPropertyName, is(equalTo(PROPERTY1_NAME)));
   }
 
-  @Test(expected = FieldNonExistingException.class)
+  @Test(expected = NoSuchFieldException.class)
   public void getPropertyNameThrowsARuntimeExceptionWhenThePropertyIsNotFound() {
     // setup
     String nonExistingFieldName = "nonExistingPropertyName";

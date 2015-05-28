@@ -33,6 +33,7 @@ import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 
 public class ExtendableVertexConverterTest {
+  private static final String NON_EXISTING_FIELD_NAME = "nonExistingFieldName";
   private static final String PROPERTY1_NAME = "property1Name";
   private static final String PROPERTY2_NAME = "property2Name";
   private static final String FIELD1_NAME = "field1Name";
@@ -225,13 +226,25 @@ public class ExtendableVertexConverterTest {
     assertThat(actualPropertyName, is(equalTo(PROPERTY1_NAME)));
   }
 
-  @Test(expected = FieldNonExistingException.class)
+  @Test(expected = NoSuchFieldException.class)
   public void getPropertyNameThrowsARuntimeExceptionWhenThePropertyIsNotFound() {
-    // setup
-    String nonExistingFieldName = "nonExistingPropertyName";
-
     // action
-    instance.getPropertyName(nonExistingFieldName);
+    instance.getPropertyName(NON_EXISTING_FIELD_NAME);
+  }
+
+  @Test
+  public void removePropertyByFieldNameRemovesThePropertyFromTheVertex() {
+    // action
+    instance.removePropertyByFieldName(vertexMock, FIELD1_NAME);
+
+    // verify
+    verify(propertyConverter1).removeFrom(vertexMock);
+  }
+
+  @Test(expected = NoSuchFieldException.class)
+  public void removePropertyByFieldNameThrowsANoSuchFieldExceptionIfTheFieldDoesNotExistInTheType() {
+    // action
+    instance.removePropertyByFieldName(vertexMock, NON_EXISTING_FIELD_NAME);
   }
 
   @Test

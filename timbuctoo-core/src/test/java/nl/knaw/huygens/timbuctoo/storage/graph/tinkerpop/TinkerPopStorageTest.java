@@ -982,7 +982,7 @@ public class TinkerPopStorageTest {
     instance.removePropertyFromEntity(DOMAIN_ENTITY_TYPE, ID, FIELD_NAME);
 
     // verify
-    verify(converter).removePropertyFromVertexByFieldName(vertex, FIELD_NAME);
+    verify(converter).removePropertyByFieldName(vertex, FIELD_NAME);
 
   }
 

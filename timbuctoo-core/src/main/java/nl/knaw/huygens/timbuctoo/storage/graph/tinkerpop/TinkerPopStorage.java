@@ -722,7 +722,7 @@ public class TinkerPopStorage implements GraphStorage {
 
     VertexConverter<T> converter = elementConverterFactory.forType(type);
 
-    converter.removePropertyFromVertexByFieldName(vertex, fieldName);
+    converter.removePropertyByFieldName(vertex, fieldName);
   }
 
   @Override

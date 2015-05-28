@@ -115,17 +115,17 @@ abstract class AbstractExtendableElementConverter<T extends Entity, E extends El
 
   @Override
   public String getPropertyName(String fieldName) {
-    if (!hasPropertyContainerForField(fieldName)) {
-      throw new FieldNonExistingException(type, fieldName);
+    if (!hasPropertyConverterForField(fieldName)) {
+      throw new NoSuchFieldException(type, fieldName);
     }
     return getPropertyConverterByFieldName(fieldName).propertyName();
   }
 
-  private PropertyConverter getPropertyConverterByFieldName(String fieldName) {
+  protected final PropertyConverter getPropertyConverterByFieldName(String fieldName) {
     return fieldNamePropertyConverterMap.get(fieldName);
   }
 
-  private boolean hasPropertyContainerForField(String fieldName) {
+  protected final boolean hasPropertyConverterForField(String fieldName) {
     return fieldNamePropertyConverterMap.containsKey(fieldName);
   }
 

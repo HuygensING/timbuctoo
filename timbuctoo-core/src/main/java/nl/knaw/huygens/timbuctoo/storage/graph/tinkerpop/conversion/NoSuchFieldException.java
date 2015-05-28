@@ -1,12 +1,12 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion;
 
-class FieldNonExistingException extends RuntimeException {
+class NoSuchFieldException extends RuntimeException {
   /**
    * 
    */
   private static final long serialVersionUID = 1L;
 
-  public FieldNonExistingException(Class<?> type, String fieldName) {
+  public NoSuchFieldException(Class<?> type, String fieldName) {
     super(String.format("\"%s\" has no field with name \"%s\"", type, fieldName));
   }
 }
