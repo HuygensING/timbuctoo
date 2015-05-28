@@ -135,7 +135,7 @@ public interface Storage {
    * @throws IllegalArgumentException when the variation type is a primitive.  
    * @throws StorageException is thrown when the update fails.
    */
-  void declineRelationsOfEntity(Class<? extends Relation> type, String id) throws IllegalArgumentException, StorageException;
+  <T extends Relation> void declineRelationsOfEntity(Class<T> type, String id) throws IllegalArgumentException, StorageException;
 
   // -------------------------------------------------------------------
 

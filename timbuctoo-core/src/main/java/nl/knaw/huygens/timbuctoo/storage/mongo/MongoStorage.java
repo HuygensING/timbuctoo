@@ -430,7 +430,7 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public void declineRelationsOfEntity(Class<? extends Relation> type, String id) throws StorageException {
+  public <T extends Relation> void declineRelationsOfEntity(Class<T> type, String id) throws StorageException {
     if (TypeRegistry.isPrimitiveDomainEntity(type)) {
       throwTypeIsAPrimitiveException(type);
     }

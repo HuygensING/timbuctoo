@@ -76,6 +76,13 @@ public interface GraphStorage {
 
   <T extends Relation> List<T> getAllVariationsOfRelation(Class<T> type, String id) throws StorageException;
 
+  /**
+   * Find the relations where the entity of the id is the source or target.
+   * @param type the type of the relation to find
+   * @param id the id of entity that should contain the relations
+   * @return the found relations
+   * @throws StorageException 
+   */
   <T extends Relation> StorageIterator<T> getRelationsByEntityId(Class<T> type, String id) throws StorageException;
 
   /**

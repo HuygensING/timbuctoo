@@ -221,9 +221,21 @@ public class GraphLegacyStorageWrapper implements Storage {
   }
 
   @Override
-  public void declineRelationsOfEntity(Class<? extends Relation> type, String id) throws IllegalArgumentException, StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+  public <T extends Relation> void declineRelationsOfEntity(Class<T> type, String id) throws IllegalArgumentException, StorageException {
+    if (TypeRegistry.isPrimitiveDomainEntity(type)) {
+      throw new IllegalArgumentException("Use deleteRelation for removing primitive relation.");
+    }
 
+    for (StorageIterator<T> relationsOfEntity = graphStorage.getRelationsByEntityId(type, id); relationsOfEntity.hasNext();) {
+      T relation = relationsOfEntity.next();
+      graphStorage.removePropertyFromRelation(type, relation.getId(), PID);
+      declineRelation(type, relation);
+    }
+  }
+
+  private <T extends Relation> void declineRelation(Class<T> type, T relation) throws StorageException {
+    relation.setAccepted(false);
+    graphStorage.updateRelation(type, relation, Change.newInternalInstance());
   }
 
   @Override

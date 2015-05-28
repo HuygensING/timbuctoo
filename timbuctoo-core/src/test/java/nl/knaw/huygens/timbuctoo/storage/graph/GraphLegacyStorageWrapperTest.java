@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
+import static nl.knaw.huygens.timbuctoo.storage.RelationMatcher.likeRelation;
 import static nl.knaw.huygens.timbuctoo.storage.graph.DomainEntityMatcher.likeDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.graph.SubADomainEntityBuilder.aDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.graph.SubARelationBuilder.aRelation;
@@ -12,6 +13,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -29,6 +31,7 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
 import org.junit.Before;
@@ -44,6 +47,7 @@ import com.google.common.collect.Lists;
 
 public class GraphLegacyStorageWrapperTest {
 
+  private static final String PID_FIELD_NAME = DomainEntity.PID;
   private static final Class<Relation> PRIMITIVE_RELATION_TYPE = Relation.class;
   private static final String RELATION_PROPERTY_NAME = SubARelation.SOURCE_ID;
   private static final String SYSTEM_ENTITY_PROPERTY = TestSystemEntityWrapper.ANOTATED_PROPERTY_NAME;
@@ -269,7 +273,7 @@ public class GraphLegacyStorageWrapperTest {
 
     // verify
     InOrder inOrder = inOrder(graphStorageMock);
-    inOrder.verify(graphStorageMock).removePropertyFromEntity(DOMAIN_ENTITY_TYPE, ID, DomainEntity.PID);
+    inOrder.verify(graphStorageMock).removePropertyFromEntity(DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
     inOrder.verify(graphStorageMock).updateEntity( //
         argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
         argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
@@ -315,7 +319,7 @@ public class GraphLegacyStorageWrapperTest {
 
     // verify
     InOrder inOrder = inOrder(graphStorageMock);
-    inOrder.verify(graphStorageMock).removePropertyFromEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, DomainEntity.PID);
+    inOrder.verify(graphStorageMock).removePropertyFromEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
     verify(graphStorageMock).addVariant(//
         argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
         argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
@@ -441,7 +445,7 @@ public class GraphLegacyStorageWrapperTest {
 
     // verify
     InOrder inOrder = inOrder(graphStorageMock);
-    inOrder.verify(graphStorageMock).removePropertyFromEntity(DOMAIN_ENTITY_TYPE, ID, DomainEntity.PID);
+    inOrder.verify(graphStorageMock).removePropertyFromEntity(DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
     inOrder.verify(graphStorageMock).deleteVariant(argThat(//
         likeDomainEntity(DOMAIN_ENTITY_TYPE) //
             .withId(ID) //
@@ -641,7 +645,7 @@ public class GraphLegacyStorageWrapperTest {
 
     // verify
     InOrder inOrder = inOrder(graphStorageMock);
-    inOrder.verify(graphStorageMock).removePropertyFromRelation(RELATION_TYPE, ID, DomainEntity.PID);
+    inOrder.verify(graphStorageMock).removePropertyFromRelation(RELATION_TYPE, ID, PID_FIELD_NAME);
     inOrder.verify(graphStorageMock).updateRelation( //
         argThat(is(equalTo(RELATION_TYPE))), //
         argThat(likeDomainEntity(RELATION_TYPE) //
@@ -661,6 +665,70 @@ public class GraphLegacyStorageWrapperTest {
 
     // action
     instance.updateDomainEntity(RELATION_TYPE, entity, CHANGE);
+  }
+
+  @Test
+  public void declineRelationsOfEntitySearchesTheRelationsOfTheEntityAndDeclinesThemOneByOne() throws Exception {
+    // setup
+    String relId1 = "relationId1";
+    SubARelation relation1 = aRelation().withId(relId1).build();
+    String relId2 = "relationId2";
+    SubARelation relation2 = aRelation().withId(relId2).build();
+
+    StorageIteratorStub<SubARelation> foundRelations = StorageIteratorStub.newInstance(relation1, relation2);
+    when(graphStorageMock.getRelationsByEntityId(RELATION_TYPE, ID)).thenReturn(foundRelations);
+
+    // action
+    instance.declineRelationsOfEntity(RELATION_TYPE, ID);
+
+    // verify
+    verifyRelationIsDeclined(relId1);
+    verifyRelationIsDeclined(relId2);
+  }
+
+  private void verifyRelationIsDeclined(String relId) throws NoSuchEntityException, StorageException {
+    InOrder inOrder1 = inOrder(graphStorageMock);
+    inOrder1.verify(graphStorageMock).removePropertyFromRelation(RELATION_TYPE, relId, PID_FIELD_NAME);
+    inOrder1.verify(graphStorageMock).updateRelation( //
+        argThat(equalTo(RELATION_TYPE)), //
+        argThat(likeRelation().withId(relId).isAccepted(false)), //
+        any(Change.class));
+  }
+
+  @Test(expected = StorageException.class)
+  public void declineRelationsOfEntityThrowsAStorageExceptionWhenOneOfTheRelationsCannotBeDeclined() throws StorageException {
+    // setup
+    String relId1 = "relationId1";
+    SubARelation relation1 = aRelation().withId(relId1).build();
+    String relId2 = "relationId2";
+    SubARelation relation2 = aRelation().withId(relId2).build();
+
+    StorageIteratorStub<SubARelation> foundRelations = StorageIteratorStub.newInstance(relation1, relation2);
+    when(graphStorageMock.getRelationsByEntityId(RELATION_TYPE, ID)).thenReturn(foundRelations);
+
+    doThrow(StorageException.class).when(graphStorageMock).updateRelation(//
+        argThat(equalTo(RELATION_TYPE)), //
+        argThat(is(aRelation().withId(relId1).build())), //
+        any(Change.class));
+
+    // action
+    instance.declineRelationsOfEntity(RELATION_TYPE, ID);
+
+  }
+
+  @Test(expected = StorageException.class)
+  public void declineRelationsOfEntityThrowsAStorageExceptionsWhenFindRelationsByEntityDoes() throws Exception {
+    // setup
+    when(graphStorageMock.getRelationsByEntityId(RELATION_TYPE, ID)).thenThrow(new StorageException());
+
+    // action
+    instance.declineRelationsOfEntity(RELATION_TYPE, ID);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void declineRelationsOfEntityThrowsAnIllegalArgumentExceptionWhenTheTypeIsAPrimitive() throws Exception {
+    // action
+    instance.declineRelationsOfEntity(PRIMITIVE_RELATION_TYPE, ID);
   }
 
   @Test
