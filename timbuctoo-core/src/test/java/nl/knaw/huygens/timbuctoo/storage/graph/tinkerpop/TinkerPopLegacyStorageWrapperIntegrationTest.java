@@ -257,7 +257,6 @@ public class TinkerPopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.findRelationsReturnsAnIteratorOfAllTheRelationsOfBetweenTheSourceAndTargetIfTheTypeIsNull();
   }
 
-  @Ignore
   @Test
   @Override
   public void updateDomainEntityRemovesThePIDIfTheEntityHasOne() throws Exception {
