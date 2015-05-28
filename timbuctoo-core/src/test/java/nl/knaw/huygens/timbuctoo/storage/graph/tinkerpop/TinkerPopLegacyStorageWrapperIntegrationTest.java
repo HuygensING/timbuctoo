@@ -273,4 +273,17 @@ public class TinkerPopLegacyStorageWrapperIntegrationTest extends StorageIntegra
   public void deleteVariationRemovesThePIDWhenTheEntityHasOne() throws Exception {
     super.deleteVariationRemovesThePIDWhenTheEntityHasOne();
   }
+
+  @Test
+  @Override
+  public void getRelationsByEntityIdReturnsTheLatestRelationsOfAnEntity() throws Exception {
+    super.getRelationsByEntityIdReturnsTheLatestRelationsOfAnEntity();
+  }
+
+  @Ignore
+  @Test
+  @Override
+  public void deleteDomainEntityForRelationsRemovesTheRelationsFromTheDatabase() throws Exception {
+    super.deleteDomainEntityForRelationsRemovesTheRelationsFromTheDatabase();
+  }
 }

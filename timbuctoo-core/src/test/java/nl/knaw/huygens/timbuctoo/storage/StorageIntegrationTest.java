@@ -1236,6 +1236,22 @@ public abstract class StorageIntegrationTest {
     assertThat(allVariations, hasItem(likeDefaultPrimitiveRelation(id, sourceId, targetId, typeId)));
   }
 
+  @Test
+  public void deleteDomainEntityForRelationsRemovesTheRelationsFromTheDatabase() throws Exception {
+    // setup
+    String sourceId = addDefaultProjectAPerson();
+    String targetId = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+    String id = addDefaultRelation(sourceId, targetId, typeId);
+
+    // action
+    instance.deleteDomainEntity(PRIMITIVE_RELATION_TYPE, id, UPDATE_CHANGE);
+
+    // verify
+    assertThat(instance.getEntity(RELATION_TYPE, id), is(nullValue()));
+
+  }
+
   /* **************************************************************************
    * Other methods
    * **************************************************************************/
