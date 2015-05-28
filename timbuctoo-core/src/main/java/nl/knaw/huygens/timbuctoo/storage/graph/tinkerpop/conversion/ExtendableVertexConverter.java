@@ -60,10 +60,9 @@ class ExtendableVertexConverter<T extends Entity> extends AbstractExtendableElem
 
   @Override
   public void removePropertyByFieldName(Vertex vertex, String fieldName) {
-    if (!hasPropertyConverterForField(fieldName)) {
-      throw new NoSuchFieldException(type, fieldName);
-    }
+    verifyTypeContainsField(fieldName);
 
     getPropertyConverterByFieldName(fieldName).removeFrom(vertex);
   }
+
 }
