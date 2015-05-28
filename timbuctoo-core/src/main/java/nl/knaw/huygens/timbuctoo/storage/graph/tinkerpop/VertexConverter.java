@@ -11,6 +11,4 @@ public interface VertexConverter<T extends Entity> extends ElementConverter<T, V
 
   void removeVariant(Vertex vertex);
 
-  void removePropertyByFieldName(Vertex vertex, String fieldName);
-
 }

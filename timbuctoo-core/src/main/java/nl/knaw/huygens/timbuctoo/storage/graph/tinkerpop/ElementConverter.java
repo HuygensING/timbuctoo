@@ -5,16 +5,18 @@ import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 
 import com.tinkerpop.blueprints.Element;
 
-public interface ElementConverter<T extends Entity, U extends Element> {
+public interface ElementConverter<T extends Entity, E extends Element> {
 
-  void updateElement(U element, Entity entity) throws ConversionException;
+  void updateElement(E element, Entity entity) throws ConversionException;
 
-  void updateModifiedAndRev(U element, Entity entity) throws ConversionException;
+  void updateModifiedAndRev(E element, Entity entity) throws ConversionException;
 
   String getPropertyName(String fieldName);
 
-  T convertToEntity(U element) throws ConversionException;
+  T convertToEntity(E element) throws ConversionException;
 
-  void addValuesToElement(U element, T entity) throws ConversionException;
+  void addValuesToElement(E element, T entity) throws ConversionException;
+
+  void removePropertyByFieldName(E element, String fieldName);
 
 }

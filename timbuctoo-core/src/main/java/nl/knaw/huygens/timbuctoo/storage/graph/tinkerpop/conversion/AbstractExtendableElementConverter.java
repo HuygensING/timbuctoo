@@ -150,4 +150,11 @@ abstract class AbstractExtendableElementConverter<T extends Entity, E extends El
     }
   }
 
+  @Override
+  public void removePropertyByFieldName(E element, String fieldName) {
+    verifyTypeContainsField(fieldName);
+
+    getPropertyConverterByFieldName(fieldName).removeFrom(element);
+  }
+
 }

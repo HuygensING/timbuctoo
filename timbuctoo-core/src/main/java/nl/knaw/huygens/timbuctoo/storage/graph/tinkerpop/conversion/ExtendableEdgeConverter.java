@@ -52,11 +52,4 @@ public class ExtendableEdgeConverter<T extends Relation> extends AbstractExtenda
     throw new CorruptVertexException(vertex.getProperty(ID_DB_PROPERTY_NAME));
   }
 
-  @Override
-  public void removePropertyByFieldName(Edge edge, String fieldName) {
-    verifyTypeContainsField(fieldName);
-
-    getPropertyConverterByFieldName(fieldName).removeFrom(edge);
-  }
-
 }
