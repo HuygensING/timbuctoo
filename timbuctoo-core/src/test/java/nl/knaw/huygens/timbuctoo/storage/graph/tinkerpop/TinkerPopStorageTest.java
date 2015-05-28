@@ -37,6 +37,7 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
+import nl.knaw.huygens.timbuctoo.storage.NoSuchRelationException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
@@ -987,7 +988,7 @@ public class TinkerPopStorageTest {
   }
 
   @Test(expected = NoSuchEntityException.class)
-  public void removePRopertyFromEntityThrowsANoSuchEntityExceptionWhenTheEntityCannotBeFound() throws Exception {
+  public void removePropertyFromEntityThrowsANoSuchEntityExceptionWhenTheEntityCannotBeFound() throws Exception {
     // setup
     noLatestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID);
 
@@ -1731,6 +1732,30 @@ public class TinkerPopStorageTest {
     boolean relationExists = instance.relationExists(RELATION_TYPE, ID);
 
     assertThat(relationExists, is(false));
+  }
+
+  @Test
+  public void removePropertyFromRelationLetsTheEdgeConverterRemoveThePropertyFromTheFoundEdge() throws Exception {
+    // setup
+    Edge edge = anEdge().build();
+    latestEdgeFoundWithId(RELATION_TYPE, ID, edge);
+
+    EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
+
+    // action
+    instance.removePropertyFromRelation(RELATION_TYPE, ID, FIELD_NAME);
+
+    // verify
+    verify(converter).removePropertyByFieldName(edge, FIELD_NAME);
+  }
+
+  @Test(expected = NoSuchRelationException.class)
+  public void removePropertyFromRelationThrowsANoSuchRelationExceptionIfTheEdgeCannotBeFound() throws Exception {
+    // setup
+    noLatestEdgeFoundWithId(RELATION_TYPE, ID);
+
+    // action
+    instance.removePropertyFromRelation(RELATION_TYPE, ID, FIELD_NAME);
   }
 
   @Test

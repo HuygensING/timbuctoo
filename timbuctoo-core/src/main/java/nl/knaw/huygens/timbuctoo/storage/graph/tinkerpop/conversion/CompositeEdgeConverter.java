@@ -47,4 +47,9 @@ public class CompositeEdgeConverter<T extends Relation> implements EdgeConverter
   int getNumberOfDelegates() {
     return delegates.size();
   }
+
+  @Override
+  public void removePropertyByFieldName(Edge edge, String fieldName) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }

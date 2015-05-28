@@ -6,4 +6,6 @@ import com.tinkerpop.blueprints.Edge;
 
 public interface EdgeConverter<T extends Relation> extends ElementConverter<T, Edge> {
 
+  void removePropertyByFieldName(Edge edge, String fieldName);
+
 }

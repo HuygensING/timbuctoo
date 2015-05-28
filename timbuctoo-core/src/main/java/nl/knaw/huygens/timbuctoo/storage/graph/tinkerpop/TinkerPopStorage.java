@@ -15,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
+import nl.knaw.huygens.timbuctoo.storage.NoSuchRelationException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
@@ -726,8 +727,17 @@ public class TinkerPopStorage implements GraphStorage {
   }
 
   @Override
-  public <T extends DomainEntity> void removePropertyFromRelation(Class<T> type, String id, String fieldName) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+  public <T extends Relation> void removePropertyFromRelation(Class<T> type, String id, String fieldName) throws NoSuchRelationException {
+    Edge edge = lowLevelAPI.getLatestEdgeById(type, id);
+
+    if (edge == null) {
+      throw new NoSuchRelationException(type, id);
+    }
+
+    EdgeConverter<T> converter = elementConverterFactory.forRelation(type);
+
+    converter.removePropertyByFieldName(edge, fieldName);
+
   }
 
 }
