@@ -497,6 +497,32 @@ public abstract class StorageIntegrationTest {
   }
 
   @Test
+  public void declineRelationsOfEntityRemovesThePIDOfTheRelationsIfTheyHaveOne() throws Exception {
+    // setup
+    String sourceId = addDefaultProjectAPerson();
+    String targetId = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+
+    String id = addDefaultRelation(sourceId, targetId, typeId);
+
+    // set the PID and check if it's added
+    instance.setPID(RELATION_TYPE, id, PID);
+    SubARelation relation = instance.getEntity(RELATION_TYPE, id);
+    assertThat(relation, //
+        likeDefaultAcceptedRelation(sourceId, targetId, typeId) //
+            .withPID());
+
+    // action
+    instance.declineRelationsOfEntity(PROJECT_RELATION_TYPE, sourceId);
+
+    // verify
+    SubARelation declinedRelation = instance.getEntity(RELATION_TYPE, id);
+    assertThat(declinedRelation, //
+        likeDefaultNotAcceptionRelation(sourceId, targetId, typeId) //
+            .withoutPID());
+  }
+
+  @Test
   public void deleteRelationsOfEntityRemovesAllTheRelationsConnectedToTheEntity() throws Exception {
     // setup
     String sourceId = addDefaultProjectAPerson();
