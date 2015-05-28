@@ -742,4 +742,9 @@ public class TinkerPopStorage implements GraphStorage {
 
   }
 
+  @Override
+  public <T extends Relation> void deleteRelation(Class<T> type, String id) throws StorageException {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
 }

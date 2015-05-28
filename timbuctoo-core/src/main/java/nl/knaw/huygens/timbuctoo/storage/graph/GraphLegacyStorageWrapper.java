@@ -175,8 +175,12 @@ public class GraphLegacyStorageWrapper implements Storage {
     throw new UnsupportedOperationException("Yet to be implemented");
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws StorageException {
+    if (RELATION_TYPE.isAssignableFrom(type)) {
+      graphStorage.deleteRelation((Class<? extends Relation>) type, id);
+    }
     graphStorage.deleteDomainEntity(type, id);
   }
 
