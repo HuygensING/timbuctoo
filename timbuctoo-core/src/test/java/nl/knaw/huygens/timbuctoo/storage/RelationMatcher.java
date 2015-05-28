@@ -22,8 +22,12 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualtityMatcher;
+import nl.knaw.huygens.hamcrest.PropertyMatcher;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 
 public class RelationMatcher extends CompositeMatcher<Relation> {
@@ -149,6 +153,30 @@ public class RelationMatcher extends CompositeMatcher<Relation> {
       }
 
     });
+    return this;
+  }
+
+  public RelationMatcher withPID() {
+    addMatcher(new PropertyMatcher<Relation, String>("pid", is(not(nullValue(String.class)))) {
+
+      @Override
+      protected String getItemValue(Relation item) {
+        return item.getPid();
+      }
+    });
+
+    return this;
+  }
+
+  public RelationMatcher withoutPID() {
+    addMatcher(new PropertyMatcher<Relation, String>("pid", is(nullValue(String.class))) {
+
+      @Override
+      protected String getItemValue(Relation item) {
+        return item.getPid();
+      }
+    });
+
     return this;
   }
 }

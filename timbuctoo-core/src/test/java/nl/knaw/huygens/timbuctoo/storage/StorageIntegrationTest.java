@@ -808,6 +808,32 @@ public abstract class StorageIntegrationTest {
   }
 
   @Test
+  public void updateRelationRemovesThePIDWhenItHasOne() throws Exception {
+    // setup
+    String sourceId = addDefaultProjectAPerson();
+    String targetId = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+
+    String id = addDefaultRelation(sourceId, targetId, typeId);
+
+    // set PID and check if the PID is really set
+    instance.setPID(RELATION_TYPE, id, PID);
+    SubARelation entity = instance.getEntity(RELATION_TYPE, id);
+    assertThat(entity, //
+        likeDefaultAcceptedRelation(sourceId, targetId, typeId) //
+            .withPID());
+
+    // action
+    instance.updateDomainEntity(RELATION_TYPE, entity, UPDATE_CHANGE);
+
+    // verify
+    SubARelation updatedEntity = instance.getEntity(RELATION_TYPE, id);
+    assertThat(updatedEntity, //
+        likeDefaultAcceptedRelation(sourceId, targetId, typeId) //
+            .withoutPID());
+  }
+
+  @Test
   public void setPIDForRelationCreatesANewRevisionAndFillsThePID() throws Exception {
     // setup
     String sourceId = addDefaultProjectAPerson();
