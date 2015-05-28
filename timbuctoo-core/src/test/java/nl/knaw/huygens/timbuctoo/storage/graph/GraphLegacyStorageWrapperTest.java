@@ -440,7 +440,9 @@ public class GraphLegacyStorageWrapperTest {
     instance.deleteVariation(DOMAIN_ENTITY_TYPE, ID, CHANGE);
 
     // verify
-    verify(graphStorageMock).deleteVariant(argThat(//
+    InOrder inOrder = inOrder(graphStorageMock);
+    inOrder.verify(graphStorageMock).removePropertyFromEntity(DOMAIN_ENTITY_TYPE, ID, DomainEntity.PID);
+    inOrder.verify(graphStorageMock).deleteVariant(argThat(//
         likeDomainEntity(DOMAIN_ENTITY_TYPE) //
             .withId(ID) //
             .withoutAPID() //

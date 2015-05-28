@@ -23,7 +23,7 @@ public abstract class PropertyMatcher<T, V> extends TypeSafeMatcher<T> {
 
   @Override
   protected void describeMismatchSafely(T item, Description mismatchDescription) {
-    mismatchDescription.appendText(propertyName);
+    mismatchDescription.appendText(propertyName).appendText(" ");
     matcher.describeMismatch(getItemValue(item), mismatchDescription);
   }
 

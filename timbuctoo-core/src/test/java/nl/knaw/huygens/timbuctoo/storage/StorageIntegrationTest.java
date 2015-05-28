@@ -457,6 +457,25 @@ public abstract class StorageIntegrationTest {
   }
 
   @Test
+  public void deleteVariationRemovesThePIDWhenTheEntityHasOne() throws Exception {
+    // setup
+    String id = addDefaultProjectAPerson();
+
+    // set PID and check if the PID is set
+    instance.setPID(DOMAIN_ENTITY_TYPE, id, PID);
+    ProjectAPerson entity = instance.getEntity(DOMAIN_ENTITY_TYPE, id);
+    assertThat(entity, likeDefaultProjectAPerson(id).withPID());
+
+    // action
+    instance.deleteVariation(DOMAIN_ENTITY_TYPE, id, UPDATE_CHANGE);
+
+    // verify
+    Person updatedEntity = instance.getEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, id);
+    assertThat(updatedEntity, likeDefaultPerson(id).withoutPID());
+
+  }
+
+  @Test
   public void declineRelationsOfEntitySetsAcceptedToFalseForTheVariation() throws Exception {
     // setup
     String sourceId = addDefaultProjectAPerson();
