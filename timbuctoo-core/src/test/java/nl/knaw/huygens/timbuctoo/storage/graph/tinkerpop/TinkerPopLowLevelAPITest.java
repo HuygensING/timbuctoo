@@ -614,6 +614,24 @@ public class TinkerPopLowLevelAPITest {
   }
 
   @Test
+  public void getLatestEdgesReturnsAnIteratorOfTheLatestEdgesOfTheIterableInput() {
+    // setup
+    Edge latestEdge1 = anEdge().withID(ID).withRev(SECOND_REVISION).build();
+    Edge edge2 = anEdge().withID(ID).withRev(FIRST_REVISION).build();
+    Edge latestEdge2 = anEdge().withID(ID2).withRev(SECOND_REVISION).build();
+
+    ArrayList<Edge> edges = Lists.newArrayList(latestEdge1, edge2, latestEdge2);
+
+    // action
+    Iterator<Edge> latestEdges = instance.getLatestEdges(edges);
+
+    // verify
+    assertThat(Lists.newArrayList(latestEdges), //
+        containsInAnyOrder(latestEdge1, latestEdge2));
+
+  }
+
+  @Test
   public void getLatestEdgesOfReturnsOnlyTheLatestVersions() {
     // setup
     Edge edgeWithLatestRev1 = anEdge().withID(ID).withRev(SECOND_REVISION).build();
