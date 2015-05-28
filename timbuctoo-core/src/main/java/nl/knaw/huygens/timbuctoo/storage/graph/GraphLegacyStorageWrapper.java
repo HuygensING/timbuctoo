@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
+import static nl.knaw.huygens.timbuctoo.model.DomainEntity.PID;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -124,8 +126,11 @@ public class GraphLegacyStorageWrapper implements Storage {
     removePID(entity);
     updateAdministrativeValues(entity);
     if (isRelation(type)) {
-      graphStorage.updateRelation(asRelation(type), (Relation) entity, change);
+      Class<? extends Relation> relationType = asRelation(type);
+      graphStorage.removePropertyFromRelation(relationType, entity.getId(), PID);
+      graphStorage.updateRelation(relationType, (Relation) entity, change);
     } else {
+      graphStorage.removePropertyFromEntity(type, entity.getId(), PID);
       if (baseTypeExists(type, entity) && variantExists(type, entity)) {
         graphStorage.updateEntity(type, entity);
       } else if (baseTypeExists(type, entity)) {

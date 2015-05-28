@@ -99,4 +99,21 @@ public interface GraphStorage {
 
   <T extends Relation> StorageIterator<T> findRelations(Class<T> relationType, String sourceId, String targetId, String relationTypeId);
 
+  /**
+   * Remove a property from a DomainEntity.
+   * @param type the type of the Entity to remove from
+   * @param id the id of the Entity to remove from
+   * @param fieldName the property name to remove
+   * @throws NoSuchEntityException when the entity cannot be found
+   */
+  <T extends DomainEntity> void removePropertyFromEntity(Class<T> type, String id, String fieldName) throws NoSuchEntityException;
+
+  /**
+   * Remove a property from a Relation.
+   * @param type the type of the Relation to remove from
+   * @param id the id of the Relation to remove from
+   * @param fieldName the property name to remove
+   */
+  <T extends DomainEntity> void removePropertyFromRelation(Class<T> type, String id, String fieldName);
+
 }

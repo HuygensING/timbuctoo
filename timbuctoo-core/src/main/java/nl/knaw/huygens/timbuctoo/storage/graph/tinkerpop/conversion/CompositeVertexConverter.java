@@ -56,4 +56,10 @@ public class CompositeVertexConverter<T extends Entity> implements VertexConvert
   public void removeVariant(Vertex vertex) {
     throw new UnsupportedOperationException("Yet to be implemented");
   }
+
+  @Override
+  public void removePropertyFromVertexByFieldName(Vertex vertex, String fieldName) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
 }

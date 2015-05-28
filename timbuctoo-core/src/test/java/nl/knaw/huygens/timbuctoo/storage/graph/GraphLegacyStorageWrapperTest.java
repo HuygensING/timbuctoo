@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -21,6 +22,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
@@ -31,6 +33,7 @@ import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InOrder;
 
 import test.model.BaseDomainEntity;
 import test.model.TestSystemEntityWrapper;
@@ -265,7 +268,9 @@ public class GraphLegacyStorageWrapperTest {
     instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
 
     // verify
-    verify(graphStorageMock).updateEntity( //
+    InOrder inOrder = inOrder(graphStorageMock);
+    inOrder.verify(graphStorageMock).removePropertyFromEntity(DOMAIN_ENTITY_TYPE, ID, DomainEntity.PID);
+    inOrder.verify(graphStorageMock).updateEntity( //
         argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
         argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
             .withId(ID) //
@@ -309,6 +314,8 @@ public class GraphLegacyStorageWrapperTest {
     instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
 
     // verify
+    InOrder inOrder = inOrder(graphStorageMock);
+    inOrder.verify(graphStorageMock).removePropertyFromEntity(DOMAIN_ENTITY_TYPE, ID, DomainEntity.PID);
     verify(graphStorageMock).addVariant(//
         argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
         argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
@@ -631,7 +638,9 @@ public class GraphLegacyStorageWrapperTest {
     instance.updateDomainEntity(RELATION_TYPE, entity, CHANGE);
 
     // verify
-    verify(graphStorageMock).updateRelation( //
+    InOrder inOrder = inOrder(graphStorageMock);
+    inOrder.verify(graphStorageMock).removePropertyFromRelation(RELATION_TYPE, ID, DomainEntity.PID);
+    inOrder.verify(graphStorageMock).updateRelation( //
         argThat(is(equalTo(RELATION_TYPE))), //
         argThat(likeDomainEntity(RELATION_TYPE) //
             .withId(ID) //

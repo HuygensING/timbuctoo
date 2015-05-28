@@ -716,4 +716,18 @@ public class TinkerPopStorage implements GraphStorage {
     return entity;
   }
 
+  @Override
+  public <T extends DomainEntity> void removePropertyFromEntity(Class<T> type, String id, String fieldName) throws NoSuchEntityException {
+    Vertex vertex = getVertexIfExists(type, id);
+
+    VertexConverter<T> converter = elementConverterFactory.forType(type);
+
+    converter.removePropertyFromVertexByFieldName(vertex, fieldName);
+  }
+
+  @Override
+  public <T extends DomainEntity> void removePropertyFromRelation(Class<T> type, String id, String fieldName) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
 }

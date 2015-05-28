@@ -971,6 +971,30 @@ public class TinkerPopStorageTest {
     return vertexConverter;
   }
 
+  @Test
+  public void removePropertyFromEntityLetsTheVertexConverterRemoveThePropertyFromTheFoundVertex() throws Exception {
+    // setup
+    Vertex vertex = aVertex().build();
+    latestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID, vertex);
+    VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+
+    // action
+    instance.removePropertyFromEntity(DOMAIN_ENTITY_TYPE, ID, FIELD_NAME);
+
+    // verify
+    verify(converter).removePropertyFromVertexByFieldName(vertex, FIELD_NAME);
+
+  }
+
+  @Test(expected = NoSuchEntityException.class)
+  public void removePRopertyFromEntityThrowsANoSuchEntityExceptionWhenTheEntityCannotBeFound() throws Exception {
+    // setup
+    noLatestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID);
+
+    // action
+    instance.removePropertyFromEntity(DOMAIN_ENTITY_TYPE, ID, FIELD_NAME);
+  }
+
   /* ********************************************************************
    * Relation
    * ********************************************************************/
