@@ -315,7 +315,7 @@ public class GraphLegacyStorageWrapperTest {
 
     // verify
     InOrder inOrder = inOrder(graphStorageMock);
-    inOrder.verify(graphStorageMock).removePropertyFromEntity(DOMAIN_ENTITY_TYPE, ID, DomainEntity.PID);
+    inOrder.verify(graphStorageMock).removePropertyFromEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, DomainEntity.PID);
     verify(graphStorageMock).addVariant(//
         argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
         argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //

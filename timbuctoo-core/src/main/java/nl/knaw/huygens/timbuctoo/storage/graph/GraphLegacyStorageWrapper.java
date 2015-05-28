@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
+import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
 import static nl.knaw.huygens.timbuctoo.model.DomainEntity.PID;
 
 import java.util.Date;
@@ -130,10 +131,11 @@ public class GraphLegacyStorageWrapper implements Storage {
       graphStorage.removePropertyFromRelation(relationType, entity.getId(), PID);
       graphStorage.updateRelation(relationType, (Relation) entity, change);
     } else {
-      graphStorage.removePropertyFromEntity(type, entity.getId(), PID);
       if (baseTypeExists(type, entity) && variantExists(type, entity)) {
+        graphStorage.removePropertyFromEntity(type, entity.getId(), PID);
         graphStorage.updateEntity(type, entity);
       } else if (baseTypeExists(type, entity)) {
+        graphStorage.removePropertyFromEntity(toBaseDomainEntity(type), entity.getId(), PID);
         graphStorage.addVariant(type, entity);
       } else {
         throw new UpdateException(String.format("%s with id %s does not exist.", type, entity.getId()));
