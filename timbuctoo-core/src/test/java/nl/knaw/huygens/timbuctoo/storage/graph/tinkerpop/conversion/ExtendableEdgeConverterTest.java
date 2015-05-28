@@ -41,6 +41,7 @@ import com.tinkerpop.blueprints.Vertex;
 
 public class ExtendableEdgeConverterTest {
 
+  private static final String NON_EXISTING_FIELD_NAME = "nonExistingFieldName";
   private static final Class<Relation> PRIMITIVE_TYPE = Relation.class;
   private static final Class<SubARelation> DOMAIN_ENTITY_TYPE = SubARelation.class;
   private static final String PROPERTY1_NAME = "property1Name";
@@ -208,11 +209,23 @@ public class ExtendableEdgeConverterTest {
 
   @Test(expected = NoSuchFieldException.class)
   public void getPropertyNameThrowsARuntimeExceptionWhenThePropertyIsNotFound() {
-    // setup
-    String nonExistingFieldName = "nonExistingPropertyName";
-
     // action
-    instance.getPropertyName(nonExistingFieldName);
+    instance.getPropertyName(NON_EXISTING_FIELD_NAME);
+  }
+
+  @Test
+  public void removePropertyByFieldNameRemovesThePropertyFromTheEdge() {
+    // action
+    instance.removePropertyByFieldName(edgeMock, FIELD1_NAME);
+
+    // verify
+    verify(propertyConverter1).removeFrom(edgeMock);
+  }
+
+  @Test(expected = NoSuchFieldException.class)
+  public void removePropertyByFieldNameThrowsANoSuchFieldException() {
+    // action
+    instance.removePropertyByFieldName(edgeMock, NON_EXISTING_FIELD_NAME);
   }
 
   @Test

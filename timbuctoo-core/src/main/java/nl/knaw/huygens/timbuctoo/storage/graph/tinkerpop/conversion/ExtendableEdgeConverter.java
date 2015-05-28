@@ -54,7 +54,9 @@ public class ExtendableEdgeConverter<T extends Relation> extends AbstractExtenda
 
   @Override
   public void removePropertyByFieldName(Edge edge, String fieldName) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    verifyTypeContainsField(fieldName);
+
+    getPropertyConverterByFieldName(fieldName).removeFrom(edge);
   }
 
 }
