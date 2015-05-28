@@ -54,7 +54,7 @@ public class TinkerPopStorageIteratorFactoryTest {
     Iterable<Edge> edges = Lists.newArrayList();
 
     // action
-    StorageIterator<SubARelation> storageIterator = instance.createForRelation(RELATION_TYPE, edges);
+    StorageIterator<SubARelation> storageIterator = instance.createForRelation(RELATION_TYPE, edges.iterator());
 
     // verify
     assertThat(storageIterator, is(instanceOf(TINKERPOP_ITERATOR_TYPE)));

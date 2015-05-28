@@ -16,7 +16,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.mockito.Matchers.anyListOf;
+import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -50,6 +50,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
+import org.mockito.Matchers;
 
 import test.model.BaseDomainEntity;
 import test.model.TestSystemEntityWrapper;
@@ -1373,15 +1374,15 @@ public class TinkerPopStorageTest {
 
   private void verifyEdgesIsUsedForStorageIterator(Edge... edges) {
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    ArgumentCaptor<List<Edge>> filteredEdges = ArgumentCaptor.forClass((Class) List.class);
+    ArgumentCaptor<Iterator<Edge>> filteredEdges = ArgumentCaptor.forClass((Class) Iterator.class);
     verify(storageIteratorFactoryMock).createForRelation(argThat(equalTo(RELATION_TYPE)), filteredEdges.capture());
-    assertThat(filteredEdges.getValue(), containsInAnyOrder(edges));
+    assertThat(Lists.newArrayList(filteredEdges.getValue()), containsInAnyOrder(edges));
   }
 
   private StorageIterator<SubARelation> storageIteratorFound() {
     @SuppressWarnings("unchecked")
     StorageIterator<SubARelation> relations = mock(StorageIterator.class);
-    when(storageIteratorFactoryMock.createForRelation(argThat(equalTo(RELATION_TYPE)), anyListOf(Edge.class))).thenReturn(relations);
+    when(storageIteratorFactoryMock.createForRelation(argThat(equalTo(RELATION_TYPE)), Matchers.<Iterator<Edge>> any())).thenReturn(relations);
     return relations;
   }
 
@@ -1659,10 +1660,14 @@ public class TinkerPopStorageTest {
     when(vertex.getEdges(Direction.BOTH)).thenReturn(edges);
     when(lowLevelAPIMock.getLatestVertexById(ID)).thenReturn(vertex);
 
+    List<Edge> latestEdges = Lists.newArrayList(anEdge().build());
+    Iterator<Edge> latestEdgeIterator = latestEdges.iterator();
+    when(lowLevelAPIMock.getLatestEdges(edges)).thenReturn(latestEdgeIterator);
+
     @SuppressWarnings("unchecked")
     StorageIterator<SubARelation> storageIterator = mock(StorageIterator.class);
 
-    when(storageIteratorFactoryMock.createForRelation(RELATION_TYPE, edges)).thenReturn(storageIterator);
+    when(storageIteratorFactoryMock.createForRelation(RELATION_TYPE, latestEdgeIterator)).thenReturn(storageIterator);
 
     // action 
     StorageIterator<SubARelation> actualStorageIterator = instance.getRelationsByEntityId(RELATION_TYPE, ID);
@@ -1679,14 +1684,18 @@ public class TinkerPopStorageTest {
     @SuppressWarnings("unchecked")
     StorageIterator<SubARelation> storageIterator = mock(StorageIterator.class);
 
-    when(storageIteratorFactoryMock.createForRelation(argThat(equalTo(RELATION_TYPE)), argThat(is(emptyCollectionOf(Edge.class))))).thenReturn(storageIterator);
+    List<Edge> latestEdges = Lists.newArrayList(anEdge().build());
+    Iterator<Edge> latestEdgeIterator = latestEdges.iterator();
+    when(lowLevelAPIMock.getLatestEdges(anyCollectionOf(Edge.class))).thenReturn(latestEdgeIterator);
+
+    when(storageIteratorFactoryMock.createForRelation(RELATION_TYPE, latestEdgeIterator)).thenReturn(storageIterator);
 
     // action 
     StorageIterator<SubARelation> actualStorageIterator = instance.getRelationsByEntityId(RELATION_TYPE, ID);
 
     // verify
     assertThat(actualStorageIterator, is(sameInstance(storageIterator)));
-    verify(storageIteratorFactoryMock).createForRelation(argThat(equalTo(RELATION_TYPE)), argThat(is(emptyCollectionOf(Edge.class))));
+    verify(storageIteratorFactoryMock).createForRelation(RELATION_TYPE, latestEdgeIterator);
   }
 
   @Test

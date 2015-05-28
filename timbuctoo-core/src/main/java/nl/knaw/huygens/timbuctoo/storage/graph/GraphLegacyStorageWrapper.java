@@ -228,14 +228,13 @@ public class GraphLegacyStorageWrapper implements Storage {
 
     for (StorageIterator<T> relationsOfEntity = graphStorage.getRelationsByEntityId(type, id); relationsOfEntity.hasNext();) {
       T relation = relationsOfEntity.next();
-      graphStorage.removePropertyFromRelation(type, relation.getId(), PID);
       declineRelation(type, relation);
     }
   }
 
   private <T extends Relation> void declineRelation(Class<T> type, T relation) throws StorageException {
     relation.setAccepted(false);
-    graphStorage.updateRelation(type, relation, Change.newInternalInstance());
+    this.updateDomainEntity(type, relation, Change.newInternalInstance());
   }
 
   @Override

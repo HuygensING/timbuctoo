@@ -1004,6 +1004,35 @@ public abstract class StorageIntegrationTest {
   }
 
   @Test
+  public void getRelationsByEntityIdReturnsTheLatestRelationsOfAnEntity() throws Exception {
+    // setup
+    String sourceId = addDefaultProjectAPerson();
+    String targetId = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+
+    String id = addDefaultRelation(sourceId, targetId, typeId);
+
+    // create a duplicate
+    instance.setPID(RELATION_TYPE, id, PID);
+
+    // action
+    StorageIterator<Relation> relations = instance.getRelationsByEntityId(PRIMITIVE_RELATION_TYPE, sourceId);
+
+    // verify
+    List<Relation> allRelations = relations.getAll();
+    assertThat(allRelations.size(), is(1));
+    assertThat(allRelations, contains( //
+        likeRelation()//
+            .withId(id) //
+            .withSourceId(sourceId) //
+            .withSourceType(RELATION_SOURCE_TYPE) //
+            .withTargetId(targetId) //
+            .withTargetType(RELATION_TARGET_TYPE) //
+            .withTypeId(typeId) //
+            .isAccepted(ACCEPTED)));
+  }
+
+  @Test
   public void getRelationIdsReturnsAListOfRelationIdsThatBelongToTheEntityIds() throws Exception {
     // setup
     String entityId1 = addDefaultProjectAPerson();

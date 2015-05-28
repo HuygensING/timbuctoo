@@ -25,10 +25,10 @@ class TinkerPopStorageIteratorFactory {
     return new TinkerPopIterator<T, Vertex>(converter, iterator);
   }
 
-  public <T extends Relation> StorageIterator<T> createForRelation(Class<T> type, Iterable<Edge> edges) {
-    EdgeConverter<T> converter = elementConverterFactory.forRelation(type);
+  public <T extends Relation> StorageIterator<T> createForRelation(Class<T> relationType, Iterator<Edge> latestEdges) {
+    EdgeConverter<T> converter = elementConverterFactory.forRelation(relationType);
 
-    return new TinkerPopIterator<T, Edge>(converter, edges.iterator());
+    return new TinkerPopIterator<T, Edge>(converter, latestEdges);
   }
 
 }

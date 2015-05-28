@@ -62,7 +62,6 @@ public class TinkerPopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.countSystemEntityReturnsAllTheNumberOfEntitiseOfACertainType();
   }
 
-  @Ignore
   @Test
   @Override
   public void declineRelationsOfEntitySetsAcceptedToFalseForTheVariation() throws Exception {
@@ -263,7 +262,6 @@ public class TinkerPopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.updateDomainEntityRemovesThePIDIfTheEntityHasOne();
   }
 
-  @Ignore
   @Test
   @Override
   public void declineRelationsOfEntityRemovesThePIDOfTheRelationsIfTheyHaveOne() throws Exception {

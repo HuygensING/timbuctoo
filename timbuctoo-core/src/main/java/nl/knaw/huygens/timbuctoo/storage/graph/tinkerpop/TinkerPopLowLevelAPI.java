@@ -181,7 +181,7 @@ class TinkerPopLowLevelAPI {
     return getLatestEdges(edges);
   }
 
-  private Iterator<Edge> getLatestEdges(Iterable<Edge> edges) {
+  public Iterator<Edge> getLatestEdges(Iterable<Edge> edges) {
     Map<String, Edge> latestEdgeMap = Maps.newHashMap();
     for (Iterator<Edge> iterator = edges.iterator(); iterator.hasNext();) {
       Edge edge = iterator.next();

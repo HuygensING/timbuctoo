@@ -605,7 +605,9 @@ public class TinkerPopStorage implements GraphStorage {
       edges = vertex.getEdges(Direction.BOTH);
     }
 
-    return storageIteratorFactory.createForRelation(type, edges);
+    Iterator<Edge> latestEdges = lowLevelAPI.getLatestEdges(edges);
+
+    return storageIteratorFactory.createForRelation(type, latestEdges);
   }
 
   @Override
@@ -665,7 +667,7 @@ public class TinkerPopStorage implements GraphStorage {
       }
     }
 
-    return storageIteratorFactory.createForRelation(relationType, edges);
+    return storageIteratorFactory.createForRelation(relationType, edges.iterator());
   }
 
   private Vertex getVertexIfIdIsNotNull(String targetId) {
