@@ -38,7 +38,6 @@ public class TinkerPopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.closeClosesTheDatabaseconnection();
   }
 
-  @Ignore
   @Test
   @Override
   public void countDomainEntityOnlyCountsTheLatestVersions() throws Exception {
@@ -51,7 +50,6 @@ public class TinkerPopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.countDomainEntityReturnsTheCountOfThePrimitive();
   }
 
-  @Ignore
   @Test
   @Override
   public void countRelationsOnlyCountsTheLatest() throws Exception {
@@ -205,21 +203,18 @@ public class TinkerPopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.setPIDGivesTheDomainEntityAPidAndCreatesAVersion();
   }
 
-  @Ignore
   @Test
   @Override
   public void updateDomainEntityIncreasesTheRevisionNumberAndChangesTheDomainEntityButDoesNotCreateANewVersion() throws Exception {
     super.updateDomainEntityIncreasesTheRevisionNumberAndChangesTheDomainEntityButDoesNotCreateANewVersion();
   }
 
-  @Ignore
   @Test
   @Override
   public void updateDomainEntityWithADifferentTypeAddsTheNewFields() throws Exception {
     super.updateDomainEntityWithADifferentTypeAddsTheNewFields();
   }
 
-  @Ignore
   @Test
   @Override
   public void updateRelationUpdatesTheValuesOfTheRelationAndIncreasesTheRevButDoesNotCreateANewRevision() throws Exception {
