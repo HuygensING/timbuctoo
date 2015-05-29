@@ -743,6 +743,40 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
+  public void deleteRelationsOfEntityRemovesTheFoundRelationsOfTheEntity() throws Exception {
+    // setup
+    String relId1 = "relId1";
+    Relation relation1 = createRelationWithId(relId1);
+    String relId2 = "relId2";
+    Relation relation2 = createRelationWithId(relId2);
+
+    StorageIteratorStub<Relation> relations = StorageIteratorStub.newInstance(relation1, relation2);
+    when(graphStorageMock.getRelationsByEntityId(PRIMITIVE_RELATION_TYPE, ID)).thenReturn(relations);
+
+    // action
+    instance.deleteRelationsOfEntity(PRIMITIVE_RELATION_TYPE, ID);
+
+    // verify
+    verify(graphStorageMock).deleteRelation(PRIMITIVE_RELATION_TYPE, relId1);
+    verify(graphStorageMock).deleteRelation(PRIMITIVE_RELATION_TYPE, relId2);
+  }
+
+  private Relation createRelationWithId(String relId) {
+    Relation relation2 = new Relation();
+    relation2.setId(relId);
+    return relation2;
+  }
+
+  @Test(expected = StorageException.class)
+  public void deleteRelationsOfEntityThrowsAnStorageExceptionIfTheRelationsCannotBeRetreived() throws Exception {
+    // setup
+    when(graphStorageMock.getRelationsByEntityId(PRIMITIVE_RELATION_TYPE, ID)).thenThrow(new StorageException());
+
+    // action
+    instance.deleteRelationsOfEntity(PRIMITIVE_RELATION_TYPE, ID);
+  }
+
+  @Test
   public void setPIDForRelationDelegatesToGraphStorageSetRelationPID() throws Exception {
     // action
     instance.setPID(RELATION_TYPE, ID, PID);

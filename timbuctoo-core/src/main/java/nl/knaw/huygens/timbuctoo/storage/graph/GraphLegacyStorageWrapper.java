@@ -220,7 +220,9 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public void deleteRelationsOfEntity(Class<Relation> type, String id) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    for (StorageIterator<Relation> relations = graphStorage.getRelationsByEntityId(type, id); relations.hasNext();) {
+      graphStorage.deleteRelation(RELATION_TYPE, relations.next().getId());
+    }
 
   }
 
