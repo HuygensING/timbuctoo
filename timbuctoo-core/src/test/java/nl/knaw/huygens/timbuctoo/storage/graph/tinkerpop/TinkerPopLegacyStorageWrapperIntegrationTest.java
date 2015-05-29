@@ -80,7 +80,6 @@ public class TinkerPopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.deleteNonPersistentDomainEntityRemovesTheCompleteDomainEntity();
   }
 
-  @Ignore
   @Test
   @Override
   public void deleteRelationsOfEntityRemovesAllTheRelationsConnectedToTheEntity() throws Exception {
