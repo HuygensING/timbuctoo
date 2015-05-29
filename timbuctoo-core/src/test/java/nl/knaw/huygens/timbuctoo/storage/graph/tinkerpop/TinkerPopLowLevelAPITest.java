@@ -546,33 +546,42 @@ public class TinkerPopLowLevelAPITest {
   }
 
   @Test
-  public void getLatestEdgeByIdReturnsTheEdgeWithTheHighestRevisionForACertainId() {
+  public void findEdgesBuildsGraphQueryFromATinkerPopQueryAndReturnsTheEdgesFromTheResult() {
     // setup
-    Edge edgeWithHighestRevision = anEdge().withRev(THIRD_REVISION).build();
-    anEdgeSearchResult().forId(ID)//
-        .containsEdge(anEdge().withRev(FIRST_REVISION).build())//
-        .andEdge(edgeWithHighestRevision)//
-        .andEdge(anEdge().withRev(SECOND_REVISION).build())//
-        .foundInDatabase(dbMock);
+    GraphQuery graphQuery = mock(GraphQuery.class);
+
+    Edge edge1 = anEdge().withID(ID).withRev(FIRST_REVISION).build();
+    Edge edge2 = anEdge().withID(ID).withRev(SECOND_REVISION).build();
+    Edge edge3 = anEdge().withID(ID2).withRev(FIRST_REVISION).build();
+
+    anEdgeSearchResult()//
+        .containsEdge(edge1)//
+        .andEdge(edge2)//
+        .andEdge(edge3)//
+        .foundByGraphQuery(graphQuery);
+
+    TinkerPopQuery query = aQuery().createsGraphQueryForDB(dbMock, graphQuery).build();
 
     // action
-    Edge foundEdge = instance.getLatestEdgeById(RELATION_TYPE, ID);
+    Iterator<Edge> edges = instance.findEdges(query);
 
     // verify
-    assertThat(foundEdge, is(sameInstance(edgeWithHighestRevision)));
-
+    assertThat(Lists.newArrayList(edges), containsInAnyOrder(edge1, edge2, edge3));
   }
 
   @Test
-  public void getLatestEdgeByIdReturnsNullIfNoEdgesAreFound() {
+  public void findEdgesReturnsAnEmptyIteratorWhenNoEdgesAreFound() {
     // setup
-    anEmptyEdgeSearchResult().forId(ID).foundInDatabase(dbMock);
+    GraphQuery graphQuery = mock(GraphQuery.class);
+    anEmptyEdgeSearchResult().foundByGraphQuery(graphQuery);
+
+    TinkerPopQuery query = aQuery().createsGraphQueryForDB(dbMock, graphQuery).build();
 
     // action
-    Edge foundEdge = instance.getLatestEdgeById(RELATION_TYPE, ID);
+    Iterator<Edge> edges = instance.findEdges(query);
 
     // verify
-    assertThat(foundEdge, is(nullValue()));
+    assertThat(Iterators.size(edges), is(0));
   }
 
   @Test
@@ -611,6 +620,35 @@ public class TinkerPopLowLevelAPITest {
 
     // verify
     assertThat(Iterators.size(edges), is(0));
+  }
+
+  @Test
+  public void getLatestEdgeByIdReturnsTheEdgeWithTheHighestRevisionForACertainId() {
+    // setup
+    Edge edgeWithHighestRevision = anEdge().withRev(THIRD_REVISION).build();
+    anEdgeSearchResult().forId(ID)//
+        .containsEdge(anEdge().withRev(FIRST_REVISION).build())//
+        .andEdge(edgeWithHighestRevision)//
+        .andEdge(anEdge().withRev(SECOND_REVISION).build())//
+        .foundInDatabase(dbMock);
+
+    // action
+    Edge foundEdge = instance.getLatestEdgeById(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(foundEdge, is(sameInstance(edgeWithHighestRevision)));
+  }
+
+  @Test
+  public void getLatestEdgeByIdReturnsNullIfNoEdgesAreFound() {
+    // setup
+    anEmptyEdgeSearchResult().forId(ID).foundInDatabase(dbMock);
+
+    // action
+    Edge foundEdge = instance.getLatestEdgeById(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(foundEdge, is(nullValue()));
   }
 
   @Test
