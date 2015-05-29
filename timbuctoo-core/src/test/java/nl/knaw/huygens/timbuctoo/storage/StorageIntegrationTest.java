@@ -54,6 +54,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import test.model.TestSystemEntityWrapper;
 import test.model.projecta.ProjectAPerson;
 import test.model.projecta.SubARelation;
 import test.model.projectb.ProjectBPerson;
@@ -214,6 +215,24 @@ public abstract class StorageIntegrationTest {
 
     // verify
     assertThat(instance.getEntity(SYSTEM_ENTITY_TYPE, id), is(nullValue()));
+  }
+
+  @Test
+  public void deleteSystemEntitiesRemovesAllSystemEntitiesOfACertainType() throws Exception {
+    // setup
+    String id = addSystemEntity("test", "tset");
+    String id2 = addSystemEntity("test2", "2tset");
+
+    TestSystemEntityWrapper otherTypeSystemEntity = new TestSystemEntityWrapper();
+    String id3 = instance.addSystemEntity(TestSystemEntityWrapper.class, otherTypeSystemEntity);
+
+    // action
+    instance.deleteSystemEntities(SYSTEM_ENTITY_TYPE);
+
+    // verify : check that only the SystemEntites of a certain type are removed
+    assertThat(instance.getEntity(SYSTEM_ENTITY_TYPE, id), is(nullValue()));
+    assertThat(instance.getEntity(SYSTEM_ENTITY_TYPE, id2), is(nullValue()));
+    assertThat(instance.getEntity(TestSystemEntityWrapper.class, id3), is(not(nullValue())));
   }
 
   @Test

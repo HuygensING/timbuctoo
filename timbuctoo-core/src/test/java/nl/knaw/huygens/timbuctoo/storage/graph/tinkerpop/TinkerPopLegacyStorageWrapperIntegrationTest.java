@@ -284,4 +284,11 @@ public class TinkerPopLegacyStorageWrapperIntegrationTest extends StorageIntegra
   public void deleteDomainEntityForRelationsRemovesTheRelationsFromTheDatabase() throws Exception {
     super.deleteDomainEntityForRelationsRemovesTheRelationsFromTheDatabase();
   }
+
+  @Ignore
+  @Test
+  @Override
+  public void deleteSystemEntitiesRemovesAllSystemEntitiesOfACertainType() throws Exception {
+    super.deleteSystemEntitiesRemovesAllSystemEntitiesOfACertainType();
+  }
 }
