@@ -225,7 +225,7 @@ class TinkerPopLowLevelAPI {
     return edges.iterator();
   }
 
-  public Iterator<Edge> findEdgesByProperty(Class<? extends Relation> type, String propertyName, String propertyValue) {
+  public Iterator<Edge> findLatestEdgesByProperty(Class<? extends Relation> type, String propertyName, String propertyValue) {
     Iterable<Edge> edges = db.query().has(propertyName, propertyValue).edges();
 
     return getLatestEdges(edges);

@@ -306,7 +306,7 @@ public class TinkerPopLowLevelAPITest {
   }
 
   @Test
-  public void findEdgesByPropertyReturnsAnIteratorWithTheLatestEdges() {
+  public void findLatestEdgesByPropertyReturnsAnIteratorWithTheLatestEdges() {
     // setup
     Edge latestEdgeWithId = anEdge().withID(ID).withRev(FIRST_REVISION).build();
     Edge latestEdgeWithId2 = anEdge().withID(ID2).withRev(SECOND_REVISION).build();
@@ -318,19 +318,19 @@ public class TinkerPopLowLevelAPITest {
         .foundInDatabase(dbMock);
 
     // action
-    Iterator<Edge> edges = instance.findEdgesByProperty(RELATION_TYPE, PROPERTY_NAME, PROPERTY_VALUE);
+    Iterator<Edge> edges = instance.findLatestEdgesByProperty(RELATION_TYPE, PROPERTY_NAME, PROPERTY_VALUE);
 
     // verify
     assertThat(Lists.newArrayList(edges), containsInAnyOrder(latestEdgeWithId, latestEdgeWithId2));
   }
 
   @Test
-  public void findEdgesByPropertyReturnsAnEmptyIteratorWhenNoEdgesAreFound() {
+  public void findLatestEdgesByPropertyReturnsAnEmptyIteratorWhenNoEdgesAreFound() {
     // setup
     anEmptyEdgeSearchResult().forProperty(PROPERTY_NAME, PROPERTY_VALUE).foundInDatabase(dbMock);
 
     // action
-    Iterator<Edge> edges = instance.findEdgesByProperty(RELATION_TYPE, PROPERTY_NAME, PROPERTY_VALUE);
+    Iterator<Edge> edges = instance.findLatestEdgesByProperty(RELATION_TYPE, PROPERTY_NAME, PROPERTY_VALUE);
 
     // verify
     assertThat(Iterators.size(edges), is(0));

@@ -1249,7 +1249,7 @@ public class TinkerPopStorageTest {
     Edge firstEdge = anEdge().build();
     Edge secondEdge = anEdge().build();
     Iterator<Edge> iterator = Lists.<Edge> newArrayList(firstEdge, secondEdge).iterator();
-    when(lowLevelAPIMock.findEdgesByProperty(RELATION_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(iterator);
+    when(lowLevelAPIMock.findLatestEdgesByProperty(RELATION_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(iterator);
 
     EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
     when(converter.getPropertyName(FIELD_NAME)).thenReturn(PROPERTY_NAME);
@@ -1267,7 +1267,7 @@ public class TinkerPopStorageTest {
   public void findRelationByPropertyReturnsNullIfNoEdgesCanBeFound() throws Exception {
     // setup
     Iterator<Edge> iterator = Lists.<Edge> newArrayList().iterator();
-    when(lowLevelAPIMock.findEdgesByProperty(RELATION_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(iterator);
+    when(lowLevelAPIMock.findLatestEdgesByProperty(RELATION_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(iterator);
 
     EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
     when(converter.getPropertyName(FIELD_NAME)).thenReturn(PROPERTY_NAME);
@@ -1284,7 +1284,7 @@ public class TinkerPopStorageTest {
     // setup
     Edge foundEdge = anEdge().build();
     Iterator<Edge> iterator = Lists.<Edge> newArrayList(foundEdge).iterator();
-    when(lowLevelAPIMock.findEdgesByProperty(RELATION_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(iterator);
+    when(lowLevelAPIMock.findLatestEdgesByProperty(RELATION_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(iterator);
 
     EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
     when(converter.getPropertyName(FIELD_NAME)).thenReturn(PROPERTY_NAME);

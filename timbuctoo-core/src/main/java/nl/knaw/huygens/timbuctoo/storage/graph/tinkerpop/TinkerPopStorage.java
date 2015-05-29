@@ -535,7 +535,7 @@ public class TinkerPopStorage implements GraphStorage {
         edges = lowLevelAPI.findEdgesByTarget(type, value);
         break;
       default:
-        edges = lowLevelAPI.findEdgesByProperty(type, propertyName, value);
+        edges = lowLevelAPI.findLatestEdgesByProperty(type, propertyName, value);
         break;
     }
 
