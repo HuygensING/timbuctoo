@@ -389,15 +389,6 @@ public class GraphLegacyStorageWrapperTest {
     verifyNoMoreInteractions(graphStorageMock);
   }
 
-  @Test(expected = StorageException.class)
-  public void deleteDomainEntityForRelationThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
-    // setup
-    doThrow(StorageException.class).when(graphStorageMock).deleteRelation(RELATION_TYPE, ID);
-
-    // action
-    instance.deleteDomainEntity(RELATION_TYPE, ID, CHANGE);
-  }
-
   @Test
   public void deleteNonPersistentCallsDeleteDomainEntityOnGraphStorageMockForEveryIdInTheListWhenADomainEntityNeedsToBeDeleted() throws Exception {
     // setup

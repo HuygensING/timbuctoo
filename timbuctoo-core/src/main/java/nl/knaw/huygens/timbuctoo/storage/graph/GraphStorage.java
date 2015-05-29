@@ -125,6 +125,6 @@ public interface GraphStorage {
    */
   <T extends Relation> void removePropertyFromRelation(Class<T> type, String id, String fieldName) throws NoSuchRelationException;
 
-  <T extends Relation> void deleteRelation(Class<T> type, String id) throws StorageException;
+  <T extends Relation> void deleteRelation(Class<T> type, String id);
 
 }
