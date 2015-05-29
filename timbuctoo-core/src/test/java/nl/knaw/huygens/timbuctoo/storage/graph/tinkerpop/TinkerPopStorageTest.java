@@ -1163,6 +1163,34 @@ public class TinkerPopStorageTest {
   }
 
   @Test
+  public void deleteRelationRemovesAllTheEdgesFoundByTheId() throws Exception {
+    // setup
+    TinkerPopQuery query = aQuery().build();
+    when(queryFactory.newQuery()).thenReturn(query);
+
+    Edge edge1 = anEdge().build();
+    Edge edge2 = anEdge().build();
+    Iterator<Edge> edgeIterator = Lists.newArrayList(edge1, edge2).iterator();
+    when(lowLevelAPIMock.findEdges(query)).thenReturn(edgeIterator);
+
+    // action
+    instance.deleteRelation(PRIMITIVE_RELATION_TYPE, ID);
+
+    // verify
+    InOrder inOrder = inOrder(query, dbMock);
+    inOrder.verify(query).hasNotNullProperty(Entity.ID_DB_PROPERTY_NAME, ID);
+    inOrder.verify(dbMock).removeEdge(edge1);
+    inOrder.verify(dbMock).removeEdge(edge2);
+
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void deleteRelationThrowsAnIllegalArgumentExceptionIfTheTypeToDeleteIsNotAPrimitive() throws Exception {
+    // action
+    instance.deleteRelation(RELATION_TYPE, ID);
+  }
+
+  @Test
   public void findRelationReturnsTheLatestRelation() throws Exception {
     // setup
     Vertex target = aVertex().build();
@@ -1356,7 +1384,7 @@ public class TinkerPopStorageTest {
     Edge edgeWithOtherTarget = anEdge().withSource(source).withTarget(otherTarget).build();
     Edge edgeWithOtherSource = anEdge().withSource(otherSource).withTarget(target).build();
 
-    edgesFoundByQuery(queryMock, edge, edgeWithOtherTarget, edgeWithOtherSource);
+    latestEdgesFoundByQuery(queryMock, edge, edgeWithOtherTarget, edgeWithOtherSource);
 
     StorageIterator<SubARelation> relations = storageIteratorFound();
 
@@ -1386,7 +1414,7 @@ public class TinkerPopStorageTest {
     return relations;
   }
 
-  private void edgesFoundByQuery(TinkerPopQuery queryMock, Edge... edges) {
+  private void latestEdgesFoundByQuery(TinkerPopQuery queryMock, Edge... edges) {
     List<Edge> edgesList = Lists.<Edge> newArrayList(edges);
     Iterator<Edge> foundEdges = edgesList.iterator();
     when(lowLevelAPIMock.findLatestEdges(queryMock)).thenReturn(foundEdges);
@@ -1409,7 +1437,7 @@ public class TinkerPopStorageTest {
     Edge edgeWithOtherTarget = anEdge().withSource(source).withTarget(otherTarget).build();
     Edge edgeWithOtherSource = anEdge().withSource(otherSource).withTarget(target).build();
 
-    edgesFoundByQuery(queryMock, edge, edgeWithOtherTarget, edgeWithOtherSource);
+    latestEdgesFoundByQuery(queryMock, edge, edgeWithOtherTarget, edgeWithOtherSource);
 
     StorageIterator<SubARelation> relations = storageIteratorFound();
 
@@ -1442,7 +1470,7 @@ public class TinkerPopStorageTest {
     Edge edgeWithOtherTarget = anEdge().withSource(source).withTarget(otherTarget).build();
     Edge edgeWithOtherSource = anEdge().withSource(otherSource).withTarget(target).build();
 
-    edgesFoundByQuery(queryMock, edge, edgeWithOtherTarget, edgeWithOtherSource);
+    latestEdgesFoundByQuery(queryMock, edge, edgeWithOtherTarget, edgeWithOtherSource);
 
     StorageIterator<SubARelation> relations = storageIteratorFound();
 

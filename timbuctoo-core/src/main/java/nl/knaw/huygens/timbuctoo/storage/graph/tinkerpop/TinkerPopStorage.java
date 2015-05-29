@@ -744,7 +744,15 @@ public class TinkerPopStorage implements GraphStorage {
 
   @Override
   public <T extends Relation> void deleteRelation(Class<T> type, String id) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
-  }
+    if (!TypeRegistry.isPrimitiveDomainEntity(type)) {
+      throw new IllegalArgumentException("Only primitive Relations can be deleted. " + type.getSimpleName() + " is not a primitive Relation.");
+    }
 
+    TinkerPopQuery query = queryFactory.newQuery()//
+        .hasNotNullProperty(Relation.ID_DB_PROPERTY_NAME, id);
+
+    for (Iterator<Edge> edges = lowLevelAPI.findEdges(query); edges.hasNext();) {
+      db.removeEdge(edges.next());
+    }
+  }
 }

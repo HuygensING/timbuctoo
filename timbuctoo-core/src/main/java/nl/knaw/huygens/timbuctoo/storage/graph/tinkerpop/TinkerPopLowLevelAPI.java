@@ -272,4 +272,8 @@ class TinkerPopLowLevelAPI {
     return getLatestEdges(edges);
   }
 
+  public Iterator<Edge> findEdges(TinkerPopQuery query) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
 }
