@@ -19,6 +19,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
@@ -385,6 +386,7 @@ public class GraphLegacyStorageWrapperTest {
 
     // verify
     verify(graphStorageMock).deleteRelation(RELATION_TYPE, ID);
+    verifyNoMoreInteractions(graphStorageMock);
   }
 
   @Test(expected = StorageException.class)

@@ -180,8 +180,9 @@ public class GraphLegacyStorageWrapper implements Storage {
   public <T extends DomainEntity> void deleteDomainEntity(Class<T> type, String id, Change change) throws StorageException {
     if (RELATION_TYPE.isAssignableFrom(type)) {
       graphStorage.deleteRelation((Class<? extends Relation>) type, id);
+    } else {
+      graphStorage.deleteDomainEntity(type, id);
     }
-    graphStorage.deleteDomainEntity(type, id);
   }
 
   // FIXME let this method find the non persistent and delete them. See TIM-145.

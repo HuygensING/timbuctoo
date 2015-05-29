@@ -280,7 +280,6 @@ public class TinkerPopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.getRelationsByEntityIdReturnsTheLatestRelationsOfAnEntity();
   }
 
-  @Ignore
   @Test
   @Override
   public void deleteDomainEntityForRelationsRemovesTheRelationsFromTheDatabase() throws Exception {
