@@ -107,10 +107,17 @@
       <version>${tinkerpop.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.lambdazen.bitsy</groupId>
-      <artifactId>bitsy</artifactId>
-      <version>1.5.1</version>
+      <groupId>com.tinkerpop.blueprints</groupId>
+      <artifactId>blueprints-neo4j-graph</artifactId>
+      <version>${tinkerpop.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>neo4j-lucene-index</artifactId>
+          <groupId>org.neo4j</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
+    
 
     <!-- ## End of main dependencies ## -->
     <!-- ## Test dependencies ## -->

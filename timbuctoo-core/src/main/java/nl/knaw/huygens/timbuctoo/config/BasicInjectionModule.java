@@ -29,8 +29,8 @@ import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.TinkerPopStorage;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
-import com.lambdazen.bitsy.BitsyGraph;
 import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.impls.neo4j.Neo4jGraph;
 
 public class BasicInjectionModule extends AbstractModule {
 
@@ -69,10 +69,6 @@ public class BasicInjectionModule extends AbstractModule {
   }
 
   private Graph createDB() {
-    return new BitsyGraph(java.nio.file.Paths.get(getDirectoryString()));
-  }
-
-  private String getDirectoryString() {
-    return "/home/martijnm/repository/data/db";
+    return new Neo4jGraph(config.pathInUserHome("repository/database"));
   }
 }
