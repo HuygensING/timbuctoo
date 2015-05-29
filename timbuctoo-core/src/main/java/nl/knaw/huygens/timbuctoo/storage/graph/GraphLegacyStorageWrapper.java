@@ -192,6 +192,12 @@ public class GraphLegacyStorageWrapper implements Storage {
   // FIXME let this method find the non persistent and delete them. See TIM-145.
   @Override
   public <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws StorageException {
+    /* 
+     * deleteNonPersistent for relations is always used in combination with 
+     * deleteNonPersistent for entities. Because the deletion of an entity makes sure
+     * the relations of that entity are deleted as well, this method has no need for 
+     * for functionality for deleting non persistent relations.  
+     */
     if (isRelation(type)) {
       return;
     }
