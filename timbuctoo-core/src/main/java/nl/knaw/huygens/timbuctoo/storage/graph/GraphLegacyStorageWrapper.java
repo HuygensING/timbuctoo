@@ -167,7 +167,12 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends SystemEntity> int deleteSystemEntities(Class<T> type) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    int numberOfDeletions = 0;
+    for (StorageIterator<T> iterator = graphStorage.getEntities(type); iterator.hasNext();) {
+      numberOfDeletions += graphStorage.deleteSystemEntity(type, iterator.next().getId());
+    }
+
+    return numberOfDeletions;
   }
 
   @Override

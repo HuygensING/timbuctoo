@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -1114,6 +1115,36 @@ public class GraphLegacyStorageWrapperTest {
     when(graphStorageMock.deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID)).thenThrow(new StorageException());
     // action
     instance.deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID);
+  }
+
+  @Test
+  public void deleteSystemEntitiesDeletesTheRetrievedSystemEntities() throws Exception {
+    // setup
+    TestSystemEntityWrapper systemEntity1 = aSystemEntity().withId(ID).build();
+    String id2 = "id2";
+    TestSystemEntityWrapper systemEntity2 = aSystemEntity().withId(id2).build();
+    StorageIteratorStub<TestSystemEntityWrapper> iterator = StorageIteratorStub.newInstance(systemEntity1, systemEntity2);
+    when(graphStorageMock.getEntities(SYSTEM_ENTITY_TYPE)).thenReturn(iterator);
+
+    when(graphStorageMock.deleteSystemEntity(argThat(equalTo(SYSTEM_ENTITY_TYPE)), anyString())).thenReturn(1);
+
+    // action
+    int numberOfDeletions = instance.deleteSystemEntities(SYSTEM_ENTITY_TYPE);
+
+    // verify
+    assertThat(numberOfDeletions, is(2));
+    verify(graphStorageMock).deleteSystemEntity(SYSTEM_ENTITY_TYPE, ID);
+    verify(graphStorageMock).deleteSystemEntity(SYSTEM_ENTITY_TYPE, id2);
+
+  }
+
+  @Test(expected = StorageException.class)
+  public void deleteSystemEntitiesThrowsAStorageExceptionWhenTheSystemEntitiesCouldNotBeRetrieved() throws Exception {
+    // setup
+    when(graphStorageMock.getEntities(SYSTEM_ENTITY_TYPE)).thenThrow(new StorageException());
+
+    // action
+    instance.deleteSystemEntities(SYSTEM_ENTITY_TYPE);
   }
 
   @Test
