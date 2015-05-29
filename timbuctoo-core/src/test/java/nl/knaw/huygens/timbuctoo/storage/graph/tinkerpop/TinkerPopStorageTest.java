@@ -1295,7 +1295,7 @@ public class TinkerPopStorageTest {
   }
 
   @Test
-  public void findRelationByCallsGetRelationsByEntityIfThePropertyIsSourceId() throws Exception {
+  public void findRelationByPropertyCallsGetRelationsByEntityIfThePropertyIsSourceId() throws Exception {
     // setup
     Edge foundEdge = anEdge().build();
     edgesFoundBySource(foundEdge);
