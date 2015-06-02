@@ -28,15 +28,17 @@ public class GraphLegacyStorageWrapper implements Storage {
   private static final Class<Relation> RELATION_TYPE = Relation.class;
   private final GraphStorage graphStorage;
   private final IdGenerator idGenerator;
+  private TimbuctooQueryFactory queryFactory;
 
   @Inject
-  public GraphLegacyStorageWrapper(GraphStorage graphStorage) {
-    this(graphStorage, new IdGenerator());
+  public GraphLegacyStorageWrapper(GraphStorage graphStorage, TimbuctooQueryFactory queryFactory) {
+    this(graphStorage, queryFactory, new IdGenerator());
   }
 
-  public GraphLegacyStorageWrapper(GraphStorage graphStorage, IdGenerator idGenerator) {
+  public GraphLegacyStorageWrapper(GraphStorage graphStorage, TimbuctooQueryFactory queryFactory, IdGenerator idGenerator) {
     this.graphStorage = graphStorage;
     this.idGenerator = idGenerator;
+    this.queryFactory = queryFactory;
   }
 
   @Override
@@ -308,7 +310,10 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends Entity> StorageIterator<T> getEntitiesByProperty(Class<T> type, String field, String value) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    TimbuctooQuery query = queryFactory.newQuery();
+    query.hasNotNullProperty(field, value);
+
+    return graphStorage.findEntities(type, query);
   }
 
   @Override

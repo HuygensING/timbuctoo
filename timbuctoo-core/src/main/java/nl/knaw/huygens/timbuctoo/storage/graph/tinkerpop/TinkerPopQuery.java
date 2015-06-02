@@ -3,11 +3,13 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQuery;
+
 import com.google.common.collect.Maps;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.GraphQuery;
 
-class TinkerPopQuery {
+public class TinkerPopQuery implements TimbuctooQuery {
 
   private Map<String, Object> hasProperties;
 

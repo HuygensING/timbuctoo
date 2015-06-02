@@ -12,10 +12,12 @@ import com.tinkerpop.blueprints.impls.tg.TinkerGraph;
 public class TinkerPopDBIntegrationTestHelper implements DBIntegrationTestHelper {
 
   private Graph graph;
+  private TinkerPopQueryFactory tinkerPopQueryFactory;
 
   @Override
   public void startCleanDB() throws Exception {
     graph = new TinkerGraph();
+    tinkerPopQueryFactory = new TinkerPopQueryFactory();
   }
 
   @Override
@@ -25,7 +27,7 @@ public class TinkerPopDBIntegrationTestHelper implements DBIntegrationTestHelper
 
   @Override
   public Storage createStorage(TypeRegistry typeRegistry) throws ModelException {
-    return new GraphLegacyStorageWrapper(new TinkerPopStorage(graph, typeRegistry));
+    return new GraphLegacyStorageWrapper(new TinkerPopStorage(graph, typeRegistry), tinkerPopQueryFactory);
   }
 
 }

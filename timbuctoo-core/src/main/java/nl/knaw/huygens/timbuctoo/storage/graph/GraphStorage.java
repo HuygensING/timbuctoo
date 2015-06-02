@@ -127,4 +127,12 @@ public interface GraphStorage {
 
   <T extends Relation> void deleteRelation(Class<T> type, String id);
 
+  /**
+   * Find entities of a certain type that match with the query.
+   * @param type the type to find the entities for
+   * @param query the query to match
+   * @return a StorageIterator with the found entities
+   */
+  <T extends Entity> StorageIterator<T> findEntities(Class<T> type, TimbuctooQuery query);
+
 }

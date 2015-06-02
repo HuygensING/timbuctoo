@@ -72,13 +72,23 @@ public class GraphLegacyStorageWrapperTest {
   private GraphLegacyStorageWrapper instance;
   private IdGenerator idGeneratorMock;
   private GraphStorage graphStorageMock;
+  private TimbuctooQueryFactory queryFactoryMock;
+  private TimbuctooQuery queryMock;
 
   @Before
   public void setUp() throws Exception {
     graphStorageMock = mock(GraphStorage.class);
     idGeneratorMock = mock(IdGenerator.class);
 
-    instance = new GraphLegacyStorageWrapper(graphStorageMock, idGeneratorMock);
+    setupQueryFactory();
+
+    instance = new GraphLegacyStorageWrapper(graphStorageMock, queryFactoryMock, idGeneratorMock);
+  }
+
+  private void setupQueryFactory() {
+    queryMock = mock(TimbuctooQuery.class);
+    queryFactoryMock = mock(TimbuctooQueryFactory.class);
+    when(queryFactoryMock.newQuery()).thenReturn(queryMock);
   }
 
   private void idGeneratorMockCreatesIDFor(Class<? extends Entity> type, String id) {
@@ -1226,6 +1236,26 @@ public class GraphLegacyStorageWrapperTest {
 
     // action
     instance.findItemByProperty(SYSTEM_ENTITY_TYPE, SYSTEM_ENTITY_PROPERTY, PROPERTY_VALUE);
+  }
+
+  @Test
+  public void getEntitiesByPropertyCreatesQueryAndSendsItToTheGraphStorage() throws Exception {
+    // setup
+    TestSystemEntityWrapper entity1 = aSystemEntity().build();
+    TestSystemEntityWrapper entity2 = aSystemEntity().build();
+    StorageIteratorStub<TestSystemEntityWrapper> iterator = StorageIteratorStub.newInstance(entity1, entity2);
+    when(graphStorageMock.findEntities(SYSTEM_ENTITY_TYPE, queryMock)).thenReturn(iterator);
+
+    // action
+    StorageIterator<TestSystemEntityWrapper> entities = instance.getEntitiesByProperty(SYSTEM_ENTITY_TYPE, SYSTEM_ENTITY_PROPERTY, PROPERTY_VALUE);
+
+    // verify
+    List<TestSystemEntityWrapper> all = entities.getAll();
+    assertThat(all, containsInAnyOrder(entity1, entity2));
+
+    verify(queryFactoryMock).newQuery();
+    verify(queryMock).hasNotNullProperty(SYSTEM_ENTITY_PROPERTY, PROPERTY_VALUE);
+    verify(graphStorageMock).findEntities(SYSTEM_ENTITY_TYPE, queryMock);
   }
 
   @Test

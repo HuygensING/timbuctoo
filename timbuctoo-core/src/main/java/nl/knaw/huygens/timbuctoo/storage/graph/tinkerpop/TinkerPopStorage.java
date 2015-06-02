@@ -21,6 +21,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
+import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQuery;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
 
 import com.google.common.base.Preconditions;
@@ -754,5 +755,10 @@ public class TinkerPopStorage implements GraphStorage {
     for (Iterator<Edge> edges = lowLevelAPI.findEdges(query); edges.hasNext();) {
       db.removeEdge(edges.next());
     }
+  }
+
+  @Override
+  public <T extends Entity> StorageIterator<T> findEntities(Class<T> type, TimbuctooQuery query) {
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 }
