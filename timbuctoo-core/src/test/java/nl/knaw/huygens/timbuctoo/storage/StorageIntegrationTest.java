@@ -37,6 +37,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
+import static test.model.projecta.ProjectAPerson.PROJECT_A_PERSON_PROPERTY_NAME;
 
 import java.util.Date;
 import java.util.List;
@@ -346,6 +347,24 @@ public abstract class StorageIntegrationTest {
         .withGender(primitive.getGender())//
         .withId(id)//
         .withNames(primitive.getNames()));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void getEntitiesByPropertyReturnsAStorageIteratorWithEntitesWithTheGivenPropertyAndValue() throws Exception {
+    // setup
+    String id = addPerson(GENDER, PERSON_NAME, PROJECT_A_PERSON_PROPERTY, BIRTH_DATE, DEATH_DATE);
+    String id2 = addPerson(GENDER2, PERSON_NAME2, PROJECT_A_PERSON_PROPERTY, BIRTH_DATE2, DEATH_DATE2);
+    addPerson(GENDER1, PERSON_NAME1, PROJECT_A_PERSON_PROPERTY1, BIRTH_DATE1, DEATH_DATE1);
+
+    // action
+    StorageIterator<ProjectAPerson> iterator = instance.getEntitiesByProperty(DOMAIN_ENTITY_TYPE, PROJECT_A_PERSON_PROPERTY_NAME, PROJECT_A_PERSON_PROPERTY);
+
+    // verify 
+    List<ProjectAPerson> all = iterator.getAll();
+    assertThat(all.size(), is(2));
+    assertThat(all, containsInAnyOrder(likePerson().withId(id), likePerson().withId(id2)));
+
   }
 
   @Test
