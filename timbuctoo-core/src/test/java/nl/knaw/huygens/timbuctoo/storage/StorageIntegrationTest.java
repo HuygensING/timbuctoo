@@ -38,6 +38,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 
+import java.util.Date;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -233,6 +234,25 @@ public abstract class StorageIntegrationTest {
     assertThat(instance.getEntity(SYSTEM_ENTITY_TYPE, id), is(nullValue()));
     assertThat(instance.getEntity(SYSTEM_ENTITY_TYPE, id2), is(nullValue()));
     assertThat(instance.getEntity(TestSystemEntityWrapper.class, id3), is(not(nullValue())));
+  }
+
+  @Test
+  public void deleteByModifiedRemovesTheSystemEntityThatAreLastModifiedBeforeACertainDate() throws Exception {
+    // setup
+    String idOfEntityBefore = addSystemEntity(REGULAR_NAME, INVERSE_NAME);
+    Thread.sleep(1000); // sleep to make sure the dates are not the same
+    Date deleteBefore = new Date();
+    Thread.sleep(1000); // sleep to make sure the dates are not the same
+    String idOfEntityAfter = addSystemEntity(REGULAR_NAME1, INVERSE_NAME1);
+
+    // action
+    instance.deleteByModifiedDate(SYSTEM_ENTITY_TYPE, deleteBefore);
+
+    // verify
+    RelationType entityCreatedBeforeDate = instance.getEntity(SYSTEM_ENTITY_TYPE, idOfEntityBefore);
+    assertThat(entityCreatedBeforeDate, is(nullValue()));
+    RelationType entityCreateAfterDate = instance.getEntity(SYSTEM_ENTITY_TYPE, idOfEntityAfter);
+    assertThat(entityCreateAfterDate, is(not(nullValue())));
   }
 
   @Test
