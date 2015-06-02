@@ -12,6 +12,7 @@ import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexSearchResu
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -287,6 +288,45 @@ public class TinkerPopLowLevelAPITest {
     // verify
     assertThat(iterator, is(notNullValue()));
     assertThat(Iterators.size(iterator), is(0));
+  }
+
+  @Test
+  public void findLatestVerticesReturnsTheLatestVerticesFoundByTheQuery() {
+    // setup
+    GraphQuery graphQuery = mock(GraphQuery.class);
+    TinkerPopQuery query = aQuery().createsGraphQueryForDB(dbMock, graphQuery).build();
+
+    // setup
+    Vertex latestVertex1 = aVertex().build();
+    Vertex latestVertex2 = aVertex().build();
+    aVertexSearchResult() //
+        .containsVertex(latestVertex1) //
+        .andVertex(aVertex().withIncomingEdgeWithLabel(VERSION_OF).build()) //
+        .andVertex(aVertex().withIncomingEdgeWithLabel(VERSION_OF).build()) //
+        .andVertex(latestVertex2) //
+        .foundByGraphQuery(graphQuery);
+
+    // action
+    Iterator<Vertex> iterator = instance.findLatestVertices(DOMAIN_ENTITY_TYPE, query);
+
+    // verify
+    assertThat(Lists.newArrayList(iterator), containsInAnyOrder(latestVertex1, latestVertex2));
+  }
+
+  @Test
+  public void findLatestVerticesReturnsAnEmptyIteratorWhenNoResultsAreFound() {
+    // setup
+    GraphQuery graphQuery = mock(GraphQuery.class);
+    TinkerPopQuery query = aQuery().createsGraphQueryForDB(dbMock, graphQuery).build();
+
+    anEmptyVertexSearchResult() //
+        .foundByGraphQuery(graphQuery);
+
+    // action
+    Iterator<Vertex> iterator = instance.findLatestVertices(DOMAIN_ENTITY_TYPE, query);
+
+    // verify
+    assertThat(Lists.newArrayList(iterator), is(emptyIterable()));
   }
 
   /* ************************************************************
@@ -701,4 +741,5 @@ public class TinkerPopLowLevelAPITest {
     // verify
     assertThat(actualEdges.hasNext(), is(false));
   }
+
 }

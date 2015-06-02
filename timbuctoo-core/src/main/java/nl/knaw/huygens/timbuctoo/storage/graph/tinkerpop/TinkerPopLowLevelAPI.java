@@ -280,7 +280,9 @@ class TinkerPopLowLevelAPI {
   }
 
   public <T extends Entity> Iterator<Vertex> findLatestVertices(Class<T> type, TimbuctooQuery query) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    Iterable<Vertex> vertices = query.createGraphQuery(db).vertices();
+
+    return getLatestVertices(vertices).iterator();
   }
 
 }

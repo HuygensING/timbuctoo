@@ -104,4 +104,7 @@ public class VertexSearchResultBuilder {
     return this;
   }
 
+  public void foundByGraphQuery(GraphQuery query) {
+    when(query.vertices()).thenReturn(vertices);
+  }
 }
