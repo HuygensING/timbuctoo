@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.TinkerPopQuery;
+import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.GraphQuery;
@@ -13,7 +13,14 @@ public interface TimbuctooQuery {
    * @param value the value of the property
    * @return the current instance
    */
-  TinkerPopQuery hasNotNullProperty(String name, Object value);
+  TimbuctooQuery hasNotNullProperty(String name, Object value);
+
+  /**
+   * A method to search of a certain type
+   * @param type the type to search for
+   * @return the current instance
+   */
+  TimbuctooQuery hasType(Class<? extends Entity> type);
 
   // TODO: make graph database independent 
   GraphQuery createGraphQuery(Graph db);

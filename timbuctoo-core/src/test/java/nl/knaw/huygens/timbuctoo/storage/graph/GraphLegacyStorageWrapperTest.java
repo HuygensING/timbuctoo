@@ -85,8 +85,12 @@ public class GraphLegacyStorageWrapperTest {
     instance = new GraphLegacyStorageWrapper(graphStorageMock, queryFactoryMock, idGeneratorMock);
   }
 
+  @SuppressWarnings("unchecked")
   private void setupQueryFactory() {
     queryMock = mock(TimbuctooQuery.class);
+    when(queryMock.hasNotNullProperty(anyString(), any())).thenReturn(queryMock);
+    when(queryMock.hasType(any(Class.class))).thenReturn(queryMock);
+
     queryFactoryMock = mock(TimbuctooQueryFactory.class);
     when(queryFactoryMock.newQuery()).thenReturn(queryMock);
   }
@@ -1255,6 +1259,7 @@ public class GraphLegacyStorageWrapperTest {
 
     verify(queryFactoryMock).newQuery();
     verify(queryMock).hasNotNullProperty(SYSTEM_ENTITY_PROPERTY, PROPERTY_VALUE);
+    verify(queryMock).hasType(SYSTEM_ENTITY_TYPE);
     verify(graphStorageMock).findEntities(SYSTEM_ENTITY_TYPE, queryMock);
   }
 

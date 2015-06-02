@@ -312,6 +312,7 @@ public class GraphLegacyStorageWrapper implements Storage {
   public <T extends Entity> StorageIterator<T> getEntitiesByProperty(Class<T> type, String field, String value) throws StorageException {
     TimbuctooQuery query = queryFactory.newQuery();
     query.hasNotNullProperty(field, value);
+    query.hasType(type);
 
     return graphStorage.findEntities(type, query);
   }
