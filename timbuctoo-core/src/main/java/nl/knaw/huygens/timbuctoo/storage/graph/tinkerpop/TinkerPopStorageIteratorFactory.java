@@ -4,7 +4,6 @@ import java.util.Iterator;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
 
@@ -19,7 +18,7 @@ class TinkerPopStorageIteratorFactory {
     this.elementConverterFactory = elementConverterFactory;
   }
 
-  public <T extends Entity> StorageIterator<T> create(Class<T> type, Iterator<Vertex> iterator) throws StorageException {
+  public <T extends Entity> StorageIterator<T> create(Class<T> type, Iterator<Vertex> iterator) {
     VertexConverter<T> converter = elementConverterFactory.forType(type);
 
     return new TinkerPopIterator<T, Vertex>(converter, iterator);

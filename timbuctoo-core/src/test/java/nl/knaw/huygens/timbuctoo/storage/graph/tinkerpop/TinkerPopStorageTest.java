@@ -674,19 +674,6 @@ public class TinkerPopStorageTest {
     assertThat(actualStorageIterator, is(sameInstance(storageIterator)));
   }
 
-  @Test(expected = StorageException.class)
-  public void getEntitiesThrowsAStorageExceptionWhenTheIteratorCannotBeCreated() throws Exception {
-    // setup
-    Iterator<Vertex> iterator = Lists.<Vertex> newArrayList().iterator();
-    when(lowLevelAPIMock.getLatestVerticesOf(SYSTEM_ENTITY_TYPE)).thenReturn(iterator);
-
-    when(storageIteratorFactoryMock.create(SYSTEM_ENTITY_TYPE, iterator)).thenThrow(new StorageException());
-
-    // action
-    instance.getEntities(SYSTEM_ENTITY_TYPE);
-
-  }
-
   @Test
   public void getIdsOfNonPersistentDomainEntitiesFiltersTheIdsOfGetVerticesOfType() {
     // setup

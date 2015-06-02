@@ -246,7 +246,7 @@ public class TinkerPopStorage implements GraphStorage {
   }
 
   @Override
-  public <T extends Entity> StorageIterator<T> getEntities(Class<T> type) throws StorageException {
+  public <T extends Entity> StorageIterator<T> getEntities(Class<T> type) {
     Iterator<Vertex> vertices = lowLevelAPI.getLatestVerticesOf(type);
     return storageIteratorFactory.create(type, vertices);
   }
@@ -761,13 +761,6 @@ public class TinkerPopStorage implements GraphStorage {
   public <T extends Entity> StorageIterator<T> findEntities(Class<T> type, TimbuctooQuery query) {
     Iterator<Vertex> veritices = lowLevelAPI.findLatestVertices(type, query);
 
-    try {
-      return storageIteratorFactory.create(type, veritices);
-    } catch (StorageException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-
-    return null;
+    return storageIteratorFactory.create(type, veritices);
   }
 }
