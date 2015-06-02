@@ -291,7 +291,6 @@ public class TinkerPopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.deleteSystemEntitiesRemovesAllSystemEntitiesOfACertainType();
   }
 
-  @Ignore
   @Test
   @Override
   public void deleteByModifiedRemovesTheSystemEntityThatAreLastModifiedBeforeACertainDate() throws Exception {
