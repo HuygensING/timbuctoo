@@ -1,11 +1,13 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQuery;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.GraphQuery;
@@ -13,26 +15,28 @@ import com.tinkerpop.blueprints.GraphQuery;
 public class TinkerPopQuery implements TimbuctooQuery {
 
   private Map<String, Object> hasProperties;
+  private List<Class<? extends Entity>> hasTypes;
 
   public TinkerPopQuery() {
-    this(Maps.<String, Object> newHashMap());
+    this(Lists.<Class<? extends Entity>> newArrayList(), Maps.<String, Object> newHashMap());
   }
 
-  public TinkerPopQuery(Map<String, Object> hasProperties) {
+  TinkerPopQuery(List<Class<? extends Entity>> hasTypes, Map<String, Object> hasProperties) {
+    this.hasTypes = hasTypes;
     this.hasProperties = hasProperties;
   }
 
-  /**
-   * Uses the property only when the value is not null.
-   * @param name the name of the property
-   * @param value the value of the property
-   * @return the current instance
-   */
   @Override
   public TinkerPopQuery hasNotNullProperty(String name, Object value) {
     if (value != null) {
       hasProperties.put(name, value);
     }
+    return this;
+  }
+
+  @Override
+  public TinkerPopQuery hasType(Class<? extends Entity> type) {
+    hasTypes.add(type);
     return this;
   }
 
@@ -46,11 +50,6 @@ public class TinkerPopQuery implements TimbuctooQuery {
 
     return query;
 
-  }
-
-  @Override
-  public TimbuctooQuery hasType(Class<? extends Entity> any) {
-    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
 }
