@@ -759,6 +759,15 @@ public class TinkerPopStorage implements GraphStorage {
 
   @Override
   public <T extends Entity> StorageIterator<T> findEntities(Class<T> type, TimbuctooQuery query) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    Iterator<Vertex> veritices = lowLevelAPI.findLatestVertices(type, query);
+
+    try {
+      return storageIteratorFactory.create(type, veritices);
+    } catch (StorageException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+
+    return null;
   }
 }

@@ -40,6 +40,7 @@ import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchRelationException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
@@ -389,6 +390,23 @@ public class TinkerPopStorageTest {
     // verify
     assertThat(entity, is(nullValue()));
 
+  }
+
+  @Test
+  public void findEntitiesQueriesForVerticesAndReturnsAStorageIteratorWithTheResult() throws Exception {
+    // setup
+    Iterator<Vertex> vertices = Lists.<Vertex> newArrayList().iterator();
+    TinkerPopQuery query = aQuery().build();
+    when(lowLevelAPIMock.findLatestVertices(DOMAIN_ENTITY_TYPE, query)).thenReturn(vertices);
+
+    StorageIterator<SubADomainEntity> storageIterator = StorageIteratorStub.newInstance();
+    when(storageIteratorFactoryMock.create(DOMAIN_ENTITY_TYPE, vertices)).thenReturn(storageIterator);
+
+    // action
+    StorageIterator<SubADomainEntity> actualIterator = instance.findEntities(DOMAIN_ENTITY_TYPE, query);
+
+    // verify
+    assertThat(actualIterator, is(sameInstance(storageIterator)));
   }
 
   private void noEntitiesFoundByPropertyWithValue(Class<? extends Entity> type, String name, String value) {

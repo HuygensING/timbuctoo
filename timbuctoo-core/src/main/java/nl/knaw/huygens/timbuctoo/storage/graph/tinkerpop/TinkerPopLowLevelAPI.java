@@ -15,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQuery;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
@@ -276,6 +277,10 @@ class TinkerPopLowLevelAPI {
     Iterable<Edge> edges = query.createGraphQuery(db).edges();
 
     return edges.iterator();
+  }
+
+  public <T extends Entity> Iterator<Vertex> findLatestVertices(Class<T> type, TimbuctooQuery query) {
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
 }
