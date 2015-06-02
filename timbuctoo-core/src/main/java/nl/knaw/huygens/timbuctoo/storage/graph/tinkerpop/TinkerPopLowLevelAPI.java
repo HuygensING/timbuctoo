@@ -76,15 +76,7 @@ class TinkerPopLowLevelAPI {
   }
 
   private com.tinkerpop.blueprints.Predicate isOfType() {
-    return new com.tinkerpop.blueprints.Predicate() {
-      @Override
-      public boolean evaluate(Object first, Object second) {
-        if (first != null && (first instanceof String)) {
-          return ((String) first).contains((String) second);
-        }
-        return false;
-      }
-    };
+    return new IsOfTypePredicate();
   }
 
   private static final class IsLatestVersionOfVertex implements Predicate<Vertex> {

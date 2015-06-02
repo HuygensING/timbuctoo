@@ -1,44 +1,50 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import test.model.projecta.SubADomainEntity;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.GraphQuery;
 
 public class TinkerPopQueryTest {
 
-  private static final Class<? extends Entity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
+  private static final Class<SubADomainEntity> TYPE = SubADomainEntity.class;
+  private static final String INTERNAL_NAME = TypeNames.getInternalName(TYPE);
   private static final Object VALUE = "value";
   private static final String NAME = "name";
   private Map<String, Object> hasProperties;
-  private List<Class<? extends Entity>> hasTypes;
   private TinkerPopQuery instance;
+  private Graph db;
 
   @Before
   public void setup() {
-    hasTypes = Lists.newArrayList();
     hasProperties = Maps.newHashMap();
-    instance = new TinkerPopQuery(hasTypes, hasProperties);
+    instance = new TinkerPopQuery(hasProperties);
+    setupGraphDB();
+  }
+
+  private void setupGraphDB() {
+    db = mock(Graph.class);
+    when(db.query()).thenReturn(mock(GraphQuery.class));
   }
 
   @Test
@@ -70,17 +76,6 @@ public class TinkerPopQueryTest {
   }
 
   @Test
-  public void hasTypeSetsATypeToQueryOn() {
-    // action
-    TinkerPopQuery returnValue = instance.hasType(DOMAIN_ENTITY_TYPE);
-
-    // verify
-    assertThat(returnValue, is(sameInstance(instance)));
-    assertThat(hasTypes.size(), is(1));
-    assertThat(hasTypes, hasItem(DOMAIN_ENTITY_TYPE));
-  }
-
-  @Test
   public void createGraphQueryLetsDBCreateAGraphQueryAndAddsTheAddedProperties() {
     // setup
     instance.hasNotNullProperty(NAME, VALUE);
@@ -88,14 +83,25 @@ public class TinkerPopQueryTest {
     Object value2 = "value2";
     instance.hasNotNullProperty(name2, value2);
 
-    Graph db = mock(Graph.class);
-    when(db.query()).thenReturn(mock(GraphQuery.class));
-
     // action
     GraphQuery query = instance.createGraphQuery(db);
 
     // verify
     verify(query).has(NAME, VALUE);
     verify(query).has(name2, value2);
+  }
+
+  @Test
+  public void createGraphQueryAddsTheTypeIfTheValueIsNotNull() {
+    instance.hasType(TYPE);
+
+    GraphQuery query = instance.createGraphQuery(db);
+
+    // verify
+    verify(query).has( //
+        argThat(is(ELEMENT_TYPES)), //
+        any(IsOfTypePredicate.class), //
+        argThat(is(INTERNAL_NAME)));
+
   }
 }
