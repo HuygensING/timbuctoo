@@ -177,7 +177,19 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends SystemEntity> int deleteByModifiedDate(Class<T> type, Date dateValue) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    int numberOfDeletions = 0;
+    long timeStampToDelete = dateValue.getTime();
+    for (StorageIterator<T> entities = graphStorage.getEntities(type); entities.hasNext();) {
+      T entity = entities.next();
+      Change modified = entity.getModified();
+
+      if (modified.getTimeStamp() <= timeStampToDelete) {
+        graphStorage.deleteSystemEntity(type, entity.getId());
+        numberOfDeletions++;
+      }
+    }
+
+    return numberOfDeletions;
   }
 
   @Override

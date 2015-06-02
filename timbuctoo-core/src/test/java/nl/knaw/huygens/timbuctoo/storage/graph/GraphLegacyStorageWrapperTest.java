@@ -19,11 +19,14 @@ import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -1145,6 +1148,60 @@ public class GraphLegacyStorageWrapperTest {
 
     // action
     instance.deleteSystemEntities(SYSTEM_ENTITY_TYPE);
+  }
+
+  @Test
+  public void deleteByModifiedByDeletesTheSystemEntitiesModifiedBeforeACertainDate() throws Exception {
+    // setup
+    Date deletionDate = newDate(2015, 05, 02);
+    Date afterDeletionDate = newDate(2015, 8, 5);
+    Date beforeDeletionDate = newDate(2015, 3, 5);
+
+    String beforeId = "beforeId";
+    String afterId = "afterId";
+    String onId = "onId";
+
+    TestSystemEntityWrapper beforeEntity = createFoundEntityWithModified(beforeDeletionDate, beforeId);
+    TestSystemEntityWrapper afterEntity = createFoundEntityWithModified(afterDeletionDate, afterId);
+    TestSystemEntityWrapper onEntity = createFoundEntityWithModified(deletionDate, onId);
+
+    StorageIterator<TestSystemEntityWrapper> value = StorageIteratorStub.newInstance(beforeEntity, afterEntity, onEntity);
+    when(graphStorageMock.getEntities(SYSTEM_ENTITY_TYPE)).thenReturn(value);
+
+    // action
+    int numberOfDeletions = instance.deleteByModifiedDate(SYSTEM_ENTITY_TYPE, deletionDate);
+
+    // verify
+    assertThat(numberOfDeletions, is(2));
+
+    verify(graphStorageMock).deleteSystemEntity(SYSTEM_ENTITY_TYPE, beforeId);
+    verify(graphStorageMock).deleteSystemEntity(SYSTEM_ENTITY_TYPE, onId);
+    verify(graphStorageMock, never()).deleteSystemEntity(SYSTEM_ENTITY_TYPE, afterId);
+  }
+
+  private TestSystemEntityWrapper createFoundEntityWithModified(Date modifiedDate, String id) {
+    Change change = new Change();
+    change.setTimeStamp(modifiedDate.getTime());
+
+    TestSystemEntityWrapper entity = aSystemEntity().withId(id).withModified(change).build();
+    return entity;
+  }
+
+  private Date newDate(int year, int month, int day) {
+    Calendar cal = Calendar.getInstance();
+
+    cal.set(year, month, day);
+
+    return cal.getTime();
+  }
+
+  @Test(expected = StorageException.class)
+  public void deleteByModifiedThrowsAStorageExceptionIfTheEntitiesToDeleteCannotBeCreated() throws Exception {
+    // setup
+    when(graphStorageMock.getEntities(SYSTEM_ENTITY_TYPE)).thenThrow(new StorageException());
+
+    // action
+    instance.deleteByModifiedDate(SYSTEM_ENTITY_TYPE, new Date());
   }
 
   @Test
