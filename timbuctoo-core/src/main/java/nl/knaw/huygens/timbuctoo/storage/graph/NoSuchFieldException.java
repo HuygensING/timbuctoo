@@ -1,6 +1,6 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion;
+package nl.knaw.huygens.timbuctoo.storage.graph;
 
-class NoSuchFieldException extends RuntimeException {
+public class NoSuchFieldException extends RuntimeException {
   /**
    * 
    */

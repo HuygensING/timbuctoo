@@ -13,6 +13,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.graph.NoSuchFieldException;
 import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
 
 import org.junit.Before;
@@ -33,11 +34,13 @@ public class TinkerPopGraphQueryBuilderTest {
   private TinkerPopGraphQueryBuilder instance;
   private PropertyBusinessRules businessRules;
   private Graph db;
+  private Map<String, Object> properties;
 
   @Before
   public void setup() {
     this.setupGraphDB();
 
+    properties = Maps.newHashMap();
     businessRules = new PropertyBusinessRules();
     instance = new TinkerPopGraphQueryBuilder(TYPE, businessRules, db);
   }
@@ -48,9 +51,8 @@ public class TinkerPopGraphQueryBuilderTest {
   }
 
   @Test
-  public void createGraphQueryLetsDBCreateAGraphQueryAndAddsTheAddedProperties() throws Exception {
+  public void buildLetsDBCreateAGraphQueryAndAddsTheAddedProperties() throws Exception {
     // setup
-    Map<String, Object> properties = Maps.newHashMap();
     properties.put(NAME, VALUE);
     String administrativeProperty = Entity.ID_DB_PROPERTY_NAME;
     Object value2 = "value2";
@@ -65,6 +67,16 @@ public class TinkerPopGraphQueryBuilderTest {
     verify(query).has(administrativeProperty, value2);
   }
 
+  @Test(expected = NoSuchFieldException.class)
+  public void buildThrowsANoSuchFieldExceptionIfHasPropertiesContainsANonExistingField() {
+    // setup
+    properties.put("nonExistingField", VALUE);
+    instance.setHasProperties(properties);
+
+    // action
+    instance.build();
+  }
+
   private String getExpectedPropertyName(Class<SubADomainEntity> type, String name) throws Exception {
     Field field = type.getDeclaredField(name);
     String fieldName = businessRules.getFieldName(type, field);
@@ -72,7 +84,7 @@ public class TinkerPopGraphQueryBuilderTest {
   }
 
   @Test
-  public void createGraphQueryAddsTheTypeIfTheValueIsNotNull() {
+  public void buildAddsTheTypeIfTheValueIsNotNull() {
     instance.setType(TYPE);
 
     GraphQuery query = instance.build();
@@ -83,4 +95,5 @@ public class TinkerPopGraphQueryBuilderTest {
         any(IsOfTypePredicate.class), //
         argThat(is(INTERNAL_NAME)));
   }
+
 }

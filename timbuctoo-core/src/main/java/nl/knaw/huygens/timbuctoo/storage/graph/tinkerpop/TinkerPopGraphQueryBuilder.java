@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.AbstractGraphQueryBuilder;
+import nl.knaw.huygens.timbuctoo.storage.graph.NoSuchFieldException;
 import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
 
 import com.google.common.collect.Maps;
@@ -28,7 +29,7 @@ class TinkerPopGraphQueryBuilder extends AbstractGraphQueryBuilder<GraphQuery> {
   }
 
   @Override
-  public GraphQuery build() {
+  public GraphQuery build() throws NoSuchFieldException {
     GraphQuery query = db.query();
 
     for (Entry<String, Object> entry : hasProperties.entrySet()) {

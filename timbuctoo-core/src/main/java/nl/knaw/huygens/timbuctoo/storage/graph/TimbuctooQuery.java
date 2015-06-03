@@ -44,7 +44,7 @@ public class TimbuctooQuery {
     return this;
   }
 
-  public <T> T createGraphQuery(AbstractGraphQueryBuilder<T> queryCreator) {
+  public <T> T createGraphQuery(AbstractGraphQueryBuilder<T> queryCreator) throws NoSuchFieldException {
     queryCreator.setHasProperties(hasProperties);
 
     if (type != null) {

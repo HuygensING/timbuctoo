@@ -39,6 +39,10 @@ public abstract class AbstractGraphQueryBuilder<T> {
   protected String getPropertyName(String name) {
     Field field = fields.get(name);
 
+    if (field == null) {
+      throw new NoSuchFieldException(type, name);
+    }
+
     String fieldName = businessRules.getFieldName(type, field);
     return businessRules.getFieldType(type, field).propertyName(type, fieldName);
   }
@@ -51,6 +55,6 @@ public abstract class AbstractGraphQueryBuilder<T> {
     this.type = type;
   }
 
-  public abstract T build();
+  public abstract T build() throws NoSuchFieldException;
 
 }

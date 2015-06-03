@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -71,7 +72,6 @@ public class TimbuctooQueryTest {
   @Test
   public void createGraphQuerySetsTheTypeAndHasPropertiesToTheQueryBuilder() throws Exception {
     // setup
-    instance.hasNotNullProperty(NAME, VALUE);
     instance.hasType(TYPE);
 
     String administrativeProperty = Entity.ID_DB_PROPERTY_NAME;
@@ -84,5 +84,15 @@ public class TimbuctooQueryTest {
     assertThat(query, is(not(nullValue())));
     verify(queryBuilderMock).setHasProperties(hasProperties);
     verify(queryBuilderMock).setType(TYPE);
+    verify(queryBuilderMock).build();
+  }
+
+  @Test(expected = NoSuchFieldException.class)
+  public void createGraphQueryThrowsANoSuchFieldExceptionWhenTheGraphQueryBuilderThrowsOne() {
+    // setup
+    doThrow(NoSuchFieldException.class).when(queryBuilderMock).build();
+
+    // action
+    instance.createGraphQuery(queryBuilderMock);
   }
 }
