@@ -126,7 +126,6 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
-    removePID(entity);
     updateAdministrativeValues(entity);
     if (isRelation(type)) {
       Class<? extends Relation> relationType = asRelation(type);
@@ -236,7 +235,6 @@ public class GraphLegacyStorageWrapper implements Storage {
       throw new NoSuchEntityException(type, id);
     }
 
-    removePID(entity);
     graphStorage.removePropertyFromEntity(type, id, PID);
     updateAdministrativeValues(entity);
 
