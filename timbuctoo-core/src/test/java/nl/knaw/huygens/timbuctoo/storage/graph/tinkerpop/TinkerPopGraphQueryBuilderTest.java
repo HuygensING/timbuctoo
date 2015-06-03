@@ -84,8 +84,8 @@ public class TinkerPopGraphQueryBuilderTest {
   }
 
   @Test
-  public void buildAddsTheTypeIfTheValueIsNotNull() {
-    instance.setType(TYPE);
+  public void buildAddsTheTypeIfSearchByTypeIsTrue() {
+    instance.setSearchByType(true);
 
     GraphQuery query = instance.build();
 

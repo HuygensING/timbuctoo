@@ -36,7 +36,7 @@ class TinkerPopGraphQueryBuilder extends AbstractGraphQueryBuilder<GraphQuery> {
       query.has(getPropertyName(entry.getKey()), entry.getValue());
     }
 
-    if (type != null) {
+    if (searchByType) {
       query.has(ELEMENT_TYPES, IS_OF_TYPE, TypeNames.getInternalName(type));
     }
 

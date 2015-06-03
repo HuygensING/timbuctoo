@@ -25,7 +25,6 @@ import com.tinkerpop.blueprints.GraphQuery;
 
 public class TimbuctooQueryTest {
 
-  private static final Class<SubADomainEntity> TYPE = SubADomainEntity.class;
   private static final Object VALUE = "value";
   private static final String NAME = SubADomainEntity.VALUEA3_NAME;
   private Map<String, Object> hasProperties;
@@ -38,7 +37,7 @@ public class TimbuctooQueryTest {
     queryBuilderMock = mock(AbstractGraphQueryBuilder.class);
     when(queryBuilderMock.build()).thenReturn(mock(GraphQuery.class));
     hasProperties = Maps.newHashMap();
-    instance = new TimbuctooQuery(TYPE, hasProperties);
+    instance = new TimbuctooQuery(hasProperties);
   }
 
   @Test
@@ -72,7 +71,7 @@ public class TimbuctooQueryTest {
   @Test
   public void createGraphQuerySetsTheTypeAndHasPropertiesToTheQueryBuilder() throws Exception {
     // setup
-    instance.hasType(TYPE);
+    instance.setSearchByType(true);
 
     String administrativeProperty = Entity.ID_DB_PROPERTY_NAME;
     Object value2 = "value2";
@@ -83,7 +82,7 @@ public class TimbuctooQueryTest {
     // verify
     assertThat(query, is(not(nullValue())));
     verify(queryBuilderMock).setHasProperties(hasProperties);
-    verify(queryBuilderMock).setType(TYPE);
+    verify(queryBuilderMock).setSearchByType(true);
     verify(queryBuilderMock).build();
   }
 

@@ -14,6 +14,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doThrow;
@@ -89,7 +90,7 @@ public class GraphLegacyStorageWrapperTest {
   private void setupQueryFactory() {
     queryMock = mock(TimbuctooQuery.class);
     when(queryMock.hasNotNullProperty(anyString(), any())).thenReturn(queryMock);
-    when(queryMock.hasType(any(Class.class))).thenReturn(queryMock);
+    when(queryMock.setSearchByType(anyBoolean())).thenReturn(queryMock);
 
     queryFactoryMock = mock(TimbuctooQueryFactory.class);
     when(queryFactoryMock.newQuery(any(Class.class))).thenReturn(queryMock);
@@ -1259,7 +1260,7 @@ public class GraphLegacyStorageWrapperTest {
 
     verify(queryFactoryMock).newQuery(SYSTEM_ENTITY_TYPE);
     verify(queryMock).hasNotNullProperty(SYSTEM_ENTITY_PROPERTY, PROPERTY_VALUE);
-    verify(queryMock).hasType(SYSTEM_ENTITY_TYPE);
+    verify(queryMock).setSearchByType(true);
     verify(graphStorageMock).findEntities(SYSTEM_ENTITY_TYPE, queryMock);
   }
 

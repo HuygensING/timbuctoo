@@ -2,23 +2,20 @@ package nl.knaw.huygens.timbuctoo.storage.graph;
 
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.model.Entity;
-
 import com.google.common.collect.Maps;
 
 public class TimbuctooQuery {
 
   private Map<String, Object> hasProperties;
-  private Class<? extends Entity> type;
+  private boolean searchByType;
 
-  public TimbuctooQuery(Class<? extends Entity> type, PropertyBusinessRules businessRules) {
-    this(type, Maps.<String, Object> newHashMap());
+  public TimbuctooQuery() {
+    this(Maps.<String, Object> newHashMap());
 
   }
 
-  TimbuctooQuery(Class<? extends Entity> type, Map<String, Object> hasProperties) {
+  TimbuctooQuery(Map<String, Object> hasProperties) {
     this.hasProperties = hasProperties;
-    this.type = type;
   }
 
   /**
@@ -36,20 +33,17 @@ public class TimbuctooQuery {
 
   /**
    * A method to search of a certain type
-   * @param type the type to search for
+   * @param b the type to search for
    * @return the current instance
    */
-  public TimbuctooQuery hasType(Class<? extends Entity> type) {
-    this.type = type;
+  public TimbuctooQuery setSearchByType(boolean searchByType) {
+    this.searchByType = searchByType;
     return this;
   }
 
   public <T> T createGraphQuery(AbstractGraphQueryBuilder<T> queryCreator) throws NoSuchFieldException {
     queryCreator.setHasProperties(hasProperties);
-
-    if (type != null) {
-      queryCreator.setType(type);
-    }
+    queryCreator.setSearchByType(searchByType);
 
     return queryCreator.build();
 

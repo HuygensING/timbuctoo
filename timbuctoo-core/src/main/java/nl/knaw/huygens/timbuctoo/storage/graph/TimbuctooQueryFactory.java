@@ -14,7 +14,7 @@ public class TimbuctooQueryFactory {
   }
 
   public TimbuctooQuery newQuery(Class<? extends Entity> type) {
-    return new TimbuctooQuery(type, businessRules);
+    return new TimbuctooQuery();
   }
 
 }

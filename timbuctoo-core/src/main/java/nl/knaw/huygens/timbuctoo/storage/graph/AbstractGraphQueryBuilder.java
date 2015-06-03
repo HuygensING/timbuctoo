@@ -11,8 +11,9 @@ public abstract class AbstractGraphQueryBuilder<T> {
 
   protected final PropertyBusinessRules businessRules;
   protected final Map<String, Field> fields;
-  protected Class<? extends Entity> type;
+  protected final Class<? extends Entity> type;
   protected Map<String, Object> hasProperties;
+  protected boolean searchByType;
 
   public AbstractGraphQueryBuilder(Class<? extends Entity> type, PropertyBusinessRules businessRules) {
     this.type = type;
@@ -51,8 +52,8 @@ public abstract class AbstractGraphQueryBuilder<T> {
     this.hasProperties = hasProperties;
   }
 
-  public void setType(Class<? extends Entity> type) {
-    this.type = type;
+  public void setSearchByType(boolean searchByType) {
+    this.searchByType = searchByType;
   }
 
   public abstract T build() throws NoSuchFieldException;
