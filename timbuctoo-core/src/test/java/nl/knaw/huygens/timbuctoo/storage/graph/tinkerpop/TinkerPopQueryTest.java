@@ -12,9 +12,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -30,15 +33,17 @@ public class TinkerPopQueryTest {
   private static final Class<SubADomainEntity> TYPE = SubADomainEntity.class;
   private static final String INTERNAL_NAME = TypeNames.getInternalName(TYPE);
   private static final Object VALUE = "value";
-  private static final String NAME = "name";
+  private static final String NAME = SubADomainEntity.VALUEA3_NAME;
   private Map<String, Object> hasProperties;
   private TinkerPopQuery instance;
   private Graph db;
+  private PropertyBusinessRules businessRules;
 
   @Before
   public void setup() {
+    businessRules = new PropertyBusinessRules();
     hasProperties = Maps.newHashMap();
-    instance = new TinkerPopQuery(hasProperties);
+    instance = new TinkerPopQuery(TYPE, businessRules, hasProperties);
     setupGraphDB();
   }
 
@@ -57,13 +62,19 @@ public class TinkerPopQueryTest {
   }
 
   @Test
-  public void hasNotNullPropertyAddsTheValueToHasProperties() {
+  public void hasNotNullPropertyAddsTheValueToHasProperties() throws Exception {
     // action
     instance.hasNotNullProperty(NAME, VALUE);
 
     // verify
     assertThat(hasProperties.keySet(), contains(NAME));
     assertThat(hasProperties.get(NAME), is(VALUE));
+  }
+
+  private String getExpectedPropertyName(Class<SubADomainEntity> type, String name) throws Exception {
+    Field field = type.getDeclaredField(name);
+    String fieldName = businessRules.getFieldName(type, field);
+    return businessRules.getFieldType(type, field).propertyName(type, fieldName);
   }
 
   @Test
@@ -76,19 +87,19 @@ public class TinkerPopQueryTest {
   }
 
   @Test
-  public void createGraphQueryLetsDBCreateAGraphQueryAndAddsTheAddedProperties() {
+  public void createGraphQueryLetsDBCreateAGraphQueryAndAddsTheAddedProperties() throws Exception {
     // setup
     instance.hasNotNullProperty(NAME, VALUE);
-    String name2 = "name2";
+    String administrativeProperty = Entity.ID_DB_PROPERTY_NAME;
     Object value2 = "value2";
-    instance.hasNotNullProperty(name2, value2);
+    instance.hasNotNullProperty(administrativeProperty, value2);
 
     // action
     GraphQuery query = instance.createGraphQuery(db);
 
     // verify
-    verify(query).has(NAME, VALUE);
-    verify(query).has(name2, value2);
+    verify(query).has(getExpectedPropertyName(TYPE, NAME), VALUE);
+    verify(query).has(administrativeProperty, value2);
   }
 
   @Test

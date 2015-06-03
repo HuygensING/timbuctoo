@@ -653,7 +653,7 @@ public class TinkerPopStorage implements GraphStorage {
   public <T extends Relation> StorageIterator<T> findRelations(Class<T> relationType, String sourceId, String targetId, String relationTypeId) {
     List<Edge> edges = Lists.newArrayList();
 
-    TinkerPopQuery query = queryFactory.newQuery();
+    TinkerPopQuery query = queryFactory.newQuery(relationType);
     query.hasNotNullProperty(Relation.TYPE_ID, relationTypeId);
 
     Vertex source = getVertexIfIdIsNotNull(sourceId);
@@ -749,7 +749,7 @@ public class TinkerPopStorage implements GraphStorage {
       throw new IllegalArgumentException("Only primitive Relations can be deleted. " + type.getSimpleName() + " is not a primitive Relation.");
     }
 
-    TinkerPopQuery query = queryFactory.newQuery()//
+    TinkerPopQuery query = queryFactory.newQuery(type)//
         .hasNotNullProperty(Relation.ID_DB_PROPERTY_NAME, id);
 
     for (Iterator<Edge> edges = lowLevelAPI.findEdges(query); edges.hasNext();) {

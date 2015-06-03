@@ -57,7 +57,7 @@ public class GraphLegacyStorageWrapperTest {
   private static final String RELATION_PROPERTY_NAME = SubARelation.SOURCE_ID;
   private static final String SYSTEM_ENTITY_PROPERTY = TestSystemEntityWrapper.ANOTATED_PROPERTY_NAME;
   private static final String PROPERTY_VALUE = "TEST";
-  private static final String DOMAIN_ENTITY_PROPERTY_NAME = SubADomainEntity.VALUEA2_NAME;
+  private static final String DOMAIN_ENTITY_PROPERTY_NAME = SubADomainEntity.VALUEA3_NAME;
   private static final Class<BaseDomainEntity> PRIMITIVE_DOMAIN_ENTITY_TYPE = BaseDomainEntity.class;
 
   private static final int FIRST_REVISION = 1;
@@ -92,7 +92,7 @@ public class GraphLegacyStorageWrapperTest {
     when(queryMock.hasType(any(Class.class))).thenReturn(queryMock);
 
     queryFactoryMock = mock(TimbuctooQueryFactory.class);
-    when(queryFactoryMock.newQuery()).thenReturn(queryMock);
+    when(queryFactoryMock.newQuery(any(Class.class))).thenReturn(queryMock);
   }
 
   private void idGeneratorMockCreatesIDFor(Class<? extends Entity> type, String id) {
@@ -1257,7 +1257,7 @@ public class GraphLegacyStorageWrapperTest {
     List<TestSystemEntityWrapper> all = entities.getAll();
     assertThat(all, containsInAnyOrder(entity1, entity2));
 
-    verify(queryFactoryMock).newQuery();
+    verify(queryFactoryMock).newQuery(SYSTEM_ENTITY_TYPE);
     verify(queryMock).hasNotNullProperty(SYSTEM_ENTITY_PROPERTY, PROPERTY_VALUE);
     verify(queryMock).hasType(SYSTEM_ENTITY_TYPE);
     verify(graphStorageMock).findEntities(SYSTEM_ENTITY_TYPE, queryMock);

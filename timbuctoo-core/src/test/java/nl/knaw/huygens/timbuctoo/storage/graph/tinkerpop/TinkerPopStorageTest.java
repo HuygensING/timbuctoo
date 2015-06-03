@@ -1171,7 +1171,7 @@ public class TinkerPopStorageTest {
   public void deleteRelationRemovesAllTheEdgesFoundByTheId() throws Exception {
     // setup
     TinkerPopQuery query = aQuery().build();
-    when(queryFactory.newQuery()).thenReturn(query);
+    when(queryFactory.newQuery(PRIMITIVE_RELATION_TYPE)).thenReturn(query);
 
     Edge edge1 = anEdge().build();
     Edge edge2 = anEdge().build();
@@ -1375,7 +1375,7 @@ public class TinkerPopStorageTest {
   public void findRelationsWrapsTheQueryResultOfTheLowLevelAPIInAStorageIterator() throws Exception {
     // setup
     TinkerPopQuery queryMock = aQuery().build();
-    when(queryFactory.newQuery()).thenReturn(queryMock);
+    when(queryFactory.newQuery(RELATION_TYPE)).thenReturn(queryMock);
 
     Vertex target = aVertex().build();
     Vertex source = aVertex().build();
@@ -1429,7 +1429,7 @@ public class TinkerPopStorageTest {
   public void findRelationsDoesNotFilterBySourceIfSourceIdIsNull() throws Exception {
     // setup
     TinkerPopQuery queryMock = aQuery().build();
-    when(queryFactory.newQuery()).thenReturn(queryMock);
+    when(queryFactory.newQuery(RELATION_TYPE)).thenReturn(queryMock);
 
     Vertex target = aVertex().build();
     Vertex source = aVertex().build();
@@ -1462,7 +1462,7 @@ public class TinkerPopStorageTest {
   public void findRelationsDoesNotFilterByTargetIfTargetIdIsNull() throws Exception {
     // setup
     TinkerPopQuery queryMock = aQuery().build();
-    when(queryFactory.newQuery()).thenReturn(queryMock);
+    when(queryFactory.newQuery(RELATION_TYPE)).thenReturn(queryMock);
 
     Vertex target = aVertex().build();
     Vertex source = aVertex().build();
