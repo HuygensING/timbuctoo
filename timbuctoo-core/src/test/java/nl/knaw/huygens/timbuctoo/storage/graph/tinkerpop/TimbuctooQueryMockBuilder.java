@@ -6,12 +6,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQuery;
 
-import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.GraphQuery;
 
 public class TimbuctooQueryMockBuilder {
-  private Graph db;
   private GraphQuery graphQuery;
+  private TinkerPopGraphQueryBuilder queryBuilder;
 
   private TimbuctooQueryMockBuilder() {
 
@@ -24,12 +23,12 @@ public class TimbuctooQueryMockBuilder {
   public TimbuctooQuery build() {
     TimbuctooQuery query = mock(TimbuctooQuery.class);
     when(query.hasNotNullProperty(anyString(), anyObject())).thenReturn(query);
-    when(query.createGraphQuery(db)).thenReturn(graphQuery);
+    when(query.createGraphQuery(queryBuilder)).thenReturn(graphQuery);
     return query;
   }
 
-  public TimbuctooQueryMockBuilder createsGraphQueryForDB(Graph db, GraphQuery graphQuery) {
-    this.db = db;
+  public TimbuctooQueryMockBuilder createsGraphQueryForDB(TinkerPopGraphQueryBuilder queryBuilder, GraphQuery graphQuery) {
+    this.queryBuilder = queryBuilder;
     this.graphQuery = graphQuery;
     return this;
   }

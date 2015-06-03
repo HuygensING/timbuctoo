@@ -660,7 +660,7 @@ public class TinkerPopStorage implements GraphStorage {
     Vertex source = getVertexIfIdIsNotNull(sourceId);
     Vertex target = getVertexIfIdIsNotNull(targetId);
 
-    Iterator<Edge> foundEdges = lowLevelAPI.findLatestEdges(query);
+    Iterator<Edge> foundEdges = lowLevelAPI.findLatestEdges(relationType, query);
 
     for (; foundEdges.hasNext();) {
       Edge edge = foundEdges.next();
@@ -753,7 +753,7 @@ public class TinkerPopStorage implements GraphStorage {
     TimbuctooQuery query = queryFactory.newQuery(type)//
         .hasNotNullProperty(Relation.ID_DB_PROPERTY_NAME, id);
 
-    for (Iterator<Edge> edges = lowLevelAPI.findEdges(query); edges.hasNext();) {
+    for (Iterator<Edge> edges = lowLevelAPI.findEdges(type, query); edges.hasNext();) {
       db.removeEdge(edges.next());
     }
   }

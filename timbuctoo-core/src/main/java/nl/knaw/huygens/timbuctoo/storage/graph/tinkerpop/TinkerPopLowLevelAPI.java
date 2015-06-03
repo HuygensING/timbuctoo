@@ -33,15 +33,17 @@ class TinkerPopLowLevelAPI {
   private final Graph db;
   private final VertexDuplicator vertexDuplicator;
   private final EdgeDuplicator edgeDuplicator;
+  private TinkerPopGraphQueryBuilderFactory queryBuilderFactory;
 
   public TinkerPopLowLevelAPI(Graph db) {
-    this(db, new VertexDuplicator(db), new EdgeDuplicator());
+    this(db, new VertexDuplicator(db), new EdgeDuplicator(), new TinkerPopGraphQueryBuilderFactory(db));
   }
 
-  public TinkerPopLowLevelAPI(Graph db, VertexDuplicator vertexDuplicator, EdgeDuplicator edgeDuplicator) {
+  public TinkerPopLowLevelAPI(Graph db, VertexDuplicator vertexDuplicator, EdgeDuplicator edgeDuplicator, TinkerPopGraphQueryBuilderFactory queryBuilderFactory) {
     this.db = db;
     this.vertexDuplicator = vertexDuplicator;
     this.edgeDuplicator = edgeDuplicator;
+    this.queryBuilderFactory = queryBuilderFactory;
   }
 
   public <T extends Entity> Vertex getLatestVertexById(Class<T> type, String id) {
@@ -259,20 +261,20 @@ class TinkerPopLowLevelAPI {
     return getLatestEdges(outgoingEdges);
   }
 
-  public Iterator<Edge> findLatestEdges(TimbuctooQuery query) {
-    Iterable<Edge> edges = query.createGraphQuery(db).edges();
+  public Iterator<Edge> findLatestEdges(Class<? extends Relation> type, TimbuctooQuery query) {
+    Iterable<Edge> edges = query.createGraphQuery(queryBuilderFactory.newQueryBuilder(type)).edges();
 
     return getLatestEdges(edges);
   }
 
-  public Iterator<Edge> findEdges(TimbuctooQuery query) {
-    Iterable<Edge> edges = query.createGraphQuery(db).edges();
+  public Iterator<Edge> findEdges(Class<? extends Relation> type, TimbuctooQuery query) {
+    Iterable<Edge> edges = query.createGraphQuery(queryBuilderFactory.newQueryBuilder(type)).edges();
 
     return edges.iterator();
   }
 
   public <T extends Entity> Iterator<Vertex> findLatestVertices(Class<T> type, TimbuctooQuery query) {
-    Iterable<Vertex> vertices = query.createGraphQuery(db).vertices();
+    Iterable<Vertex> vertices = query.createGraphQuery(queryBuilderFactory.newQueryBuilder(type)).vertices();
 
     return getLatestVertices(vertices).iterator();
   }

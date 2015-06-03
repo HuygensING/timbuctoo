@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -54,13 +55,24 @@ public class TinkerPopLowLevelAPITest {
   private TinkerPopLowLevelAPI instance;
   private VertexDuplicator vertexDuplicator;
   private EdgeDuplicator edgeDuplicator;
+  private TinkerPopGraphQueryBuilder queryBuilder;
+  private TinkerPopGraphQueryBuilderFactory queryBuilderFactory;
 
   @Before
   public void setup() {
     edgeDuplicator = mock(EdgeDuplicator.class);
     vertexDuplicator = mock(VertexDuplicator.class);
     dbMock = mock(Graph.class);
-    instance = new TinkerPopLowLevelAPI(dbMock, vertexDuplicator, edgeDuplicator);
+    setupQueryBuilderFactory();
+    instance = new TinkerPopLowLevelAPI(dbMock, vertexDuplicator, edgeDuplicator, queryBuilderFactory);
+  }
+
+  private void setupQueryBuilderFactory() {
+    queryBuilderFactory = mock(TinkerPopGraphQueryBuilderFactory.class);
+    queryBuilder = mock(TinkerPopGraphQueryBuilder.class);
+    when(queryBuilderFactory.newQueryBuilder(DOMAIN_ENTITY_TYPE)).thenReturn(queryBuilder);
+    when(queryBuilderFactory.newQueryBuilder(SYSTEM_ENTITY_TYPE)).thenReturn(queryBuilder);
+    when(queryBuilderFactory.newQueryBuilder(RELATION_TYPE)).thenReturn(queryBuilder);
   }
 
   /* ************************************************************
@@ -296,7 +308,7 @@ public class TinkerPopLowLevelAPITest {
   public void findLatestVerticesReturnsTheLatestVerticesFoundByTheQuery() {
     // setup
     GraphQuery graphQuery = mock(GraphQuery.class);
-    TimbuctooQuery query = aQuery().createsGraphQueryForDB(dbMock, graphQuery).build();
+    TimbuctooQuery query = aQuery().createsGraphQueryForDB(queryBuilder, graphQuery).build();
 
     // setup
     Vertex latestVertex1 = aVertex().build();
@@ -319,7 +331,7 @@ public class TinkerPopLowLevelAPITest {
   public void findLatestVerticesReturnsAnEmptyIteratorWhenNoResultsAreFound() {
     // setup
     GraphQuery graphQuery = mock(GraphQuery.class);
-    TimbuctooQuery query = aQuery().createsGraphQueryForDB(dbMock, graphQuery).build();
+    TimbuctooQuery query = aQuery().createsGraphQueryForDB(queryBuilder, graphQuery).build();
 
     anEmptyVertexSearchResult() //
         .foundByGraphQuery(graphQuery);
@@ -602,10 +614,10 @@ public class TinkerPopLowLevelAPITest {
         .andEdge(edge3)//
         .foundByGraphQuery(graphQuery);
 
-    TimbuctooQuery query = aQuery().createsGraphQueryForDB(dbMock, graphQuery).build();
+    TimbuctooQuery query = aQuery().createsGraphQueryForDB(queryBuilder, graphQuery).build();
 
     // action
-    Iterator<Edge> edges = instance.findEdges(query);
+    Iterator<Edge> edges = instance.findEdges(RELATION_TYPE, query);
 
     // verify
     assertThat(Lists.newArrayList(edges), containsInAnyOrder(edge1, edge2, edge3));
@@ -617,10 +629,10 @@ public class TinkerPopLowLevelAPITest {
     GraphQuery graphQuery = mock(GraphQuery.class);
     anEmptyEdgeSearchResult().foundByGraphQuery(graphQuery);
 
-    TimbuctooQuery query = aQuery().createsGraphQueryForDB(dbMock, graphQuery).build();
+    TimbuctooQuery query = aQuery().createsGraphQueryForDB(queryBuilder, graphQuery).build();
 
     // action
-    Iterator<Edge> edges = instance.findEdges(query);
+    Iterator<Edge> edges = instance.findEdges(RELATION_TYPE, query);
 
     // verify
     assertThat(Iterators.size(edges), is(0));
@@ -640,10 +652,10 @@ public class TinkerPopLowLevelAPITest {
         .andEdge(latestEdge2)//
         .foundByGraphQuery(graphQuery);
 
-    TimbuctooQuery query = aQuery().createsGraphQueryForDB(dbMock, graphQuery).build();
+    TimbuctooQuery query = aQuery().createsGraphQueryForDB(queryBuilder, graphQuery).build();
 
     // action
-    Iterator<Edge> edges = instance.findLatestEdges(query);
+    Iterator<Edge> edges = instance.findLatestEdges(RELATION_TYPE, query);
 
     // verify
     assertThat(Lists.newArrayList(edges), containsInAnyOrder(latestEdge1, latestEdge2));
@@ -655,10 +667,10 @@ public class TinkerPopLowLevelAPITest {
     GraphQuery graphQuery = mock(GraphQuery.class);
     anEmptyEdgeSearchResult().foundByGraphQuery(graphQuery);
 
-    TimbuctooQuery query = aQuery().createsGraphQueryForDB(dbMock, graphQuery).build();
+    TimbuctooQuery query = aQuery().createsGraphQueryForDB(queryBuilder, graphQuery).build();
 
     // action
-    Iterator<Edge> edges = instance.findLatestEdges(query);
+    Iterator<Edge> edges = instance.findLatestEdges(RELATION_TYPE, query);
 
     // verify
     assertThat(Iterators.size(edges), is(0));

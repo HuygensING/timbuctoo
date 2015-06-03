@@ -7,7 +7,7 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import com.google.common.collect.Maps;
 
-public class AbstractGraphQueryBuilder {
+public abstract class AbstractGraphQueryBuilder<T> {
 
   protected final PropertyBusinessRules businessRules;
   protected final Map<String, Field> fields;
@@ -50,5 +50,7 @@ public class AbstractGraphQueryBuilder {
   public void setType(Class<? extends Entity> type) {
     this.type = type;
   }
+
+  public abstract T build();
 
 }

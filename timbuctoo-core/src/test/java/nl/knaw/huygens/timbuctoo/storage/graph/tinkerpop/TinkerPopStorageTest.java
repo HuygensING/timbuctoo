@@ -1178,7 +1178,7 @@ public class TinkerPopStorageTest {
     Edge edge1 = anEdge().build();
     Edge edge2 = anEdge().build();
     Iterator<Edge> edgeIterator = Lists.newArrayList(edge1, edge2).iterator();
-    when(lowLevelAPIMock.findEdges(query)).thenReturn(edgeIterator);
+    when(lowLevelAPIMock.findEdges(PRIMITIVE_RELATION_TYPE, query)).thenReturn(edgeIterator);
 
     // action
     instance.deleteRelation(PRIMITIVE_RELATION_TYPE, ID);
@@ -1424,7 +1424,7 @@ public class TinkerPopStorageTest {
   private void latestEdgesFoundByQuery(TimbuctooQuery queryMock, Edge... edges) {
     List<Edge> edgesList = Lists.<Edge> newArrayList(edges);
     Iterator<Edge> foundEdges = edgesList.iterator();
-    when(lowLevelAPIMock.findLatestEdges(queryMock)).thenReturn(foundEdges);
+    when(lowLevelAPIMock.findLatestEdges(RELATION_TYPE, queryMock)).thenReturn(foundEdges);
   }
 
   @Test
