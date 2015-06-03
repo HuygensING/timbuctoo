@@ -22,6 +22,7 @@ import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQuery;
+import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQueryFactory;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
 
 import com.google.common.base.Preconditions;
@@ -42,7 +43,7 @@ public class TinkerPopStorage implements GraphStorage {
   private final TinkerPopLowLevelAPI lowLevelAPI;
   private final TypeRegistry typeRegistry;
   private final TinkerPopStorageIteratorFactory storageIteratorFactory;
-  private final TinkerPopQueryFactory queryFactory;
+  private final TimbuctooQueryFactory queryFactory;
 
   @Inject
   public TinkerPopStorage(Graph db, TypeRegistry typeRegistry) {
@@ -50,11 +51,11 @@ public class TinkerPopStorage implements GraphStorage {
   }
 
   public TinkerPopStorage(Graph db, ElementConverterFactory elementConverterFactory, TinkerPopLowLevelAPI lowLevelAPI, TypeRegistry typeRegistry) {
-    this(db, elementConverterFactory, lowLevelAPI, typeRegistry, new TinkerPopStorageIteratorFactory(elementConverterFactory), new TinkerPopQueryFactory());
+    this(db, elementConverterFactory, lowLevelAPI, typeRegistry, new TinkerPopStorageIteratorFactory(elementConverterFactory), new TimbuctooQueryFactory());
   }
 
   public TinkerPopStorage(Graph db, ElementConverterFactory elementConverterFactory, TinkerPopLowLevelAPI lowLevelAPI, TypeRegistry typeRegistry,
-      TinkerPopStorageIteratorFactory storageIteratorFactory, TinkerPopQueryFactory queryFactory) {
+      TinkerPopStorageIteratorFactory storageIteratorFactory, TimbuctooQueryFactory queryFactory) {
     this.db = db;
     this.elementConverterFactory = elementConverterFactory;
     this.lowLevelAPI = lowLevelAPI;
@@ -653,7 +654,7 @@ public class TinkerPopStorage implements GraphStorage {
   public <T extends Relation> StorageIterator<T> findRelations(Class<T> relationType, String sourceId, String targetId, String relationTypeId) {
     List<Edge> edges = Lists.newArrayList();
 
-    TinkerPopQuery query = queryFactory.newQuery(relationType);
+    TimbuctooQuery query = queryFactory.newQuery(relationType);
     query.hasNotNullProperty(Relation.TYPE_ID, relationTypeId);
 
     Vertex source = getVertexIfIdIsNotNull(sourceId);
@@ -749,7 +750,7 @@ public class TinkerPopStorage implements GraphStorage {
       throw new IllegalArgumentException("Only primitive Relations can be deleted. " + type.getSimpleName() + " is not a primitive Relation.");
     }
 
-    TinkerPopQuery query = queryFactory.newQuery(type)//
+    TimbuctooQuery query = queryFactory.newQuery(type)//
         .hasNotNullProperty(Relation.ID_DB_PROPERTY_NAME, id);
 
     for (Iterator<Edge> edges = lowLevelAPI.findEdges(query); edges.hasNext();) {

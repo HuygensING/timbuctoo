@@ -259,13 +259,13 @@ class TinkerPopLowLevelAPI {
     return getLatestEdges(outgoingEdges);
   }
 
-  public Iterator<Edge> findLatestEdges(TinkerPopQuery query) {
+  public Iterator<Edge> findLatestEdges(TimbuctooQuery query) {
     Iterable<Edge> edges = query.createGraphQuery(db).edges();
 
     return getLatestEdges(edges);
   }
 
-  public Iterator<Edge> findEdges(TinkerPopQuery query) {
+  public Iterator<Edge> findEdges(TimbuctooQuery query) {
     Iterable<Edge> edges = query.createGraphQuery(db).edges();
 
     return edges.iterator();

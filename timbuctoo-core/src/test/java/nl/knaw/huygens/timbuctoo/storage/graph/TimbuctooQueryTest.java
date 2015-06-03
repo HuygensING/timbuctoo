@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
+package nl.knaw.huygens.timbuctoo.storage.graph;
 
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -17,7 +17,7 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.IsOfTypePredicate;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,14 +28,14 @@ import com.google.common.collect.Maps;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.GraphQuery;
 
-public class TinkerPopQueryTest {
+public class TimbuctooQueryTest {
 
   private static final Class<SubADomainEntity> TYPE = SubADomainEntity.class;
   private static final String INTERNAL_NAME = TypeNames.getInternalName(TYPE);
   private static final Object VALUE = "value";
   private static final String NAME = SubADomainEntity.VALUEA3_NAME;
   private Map<String, Object> hasProperties;
-  private TinkerPopQuery instance;
+  private TimbuctooQuery instance;
   private Graph db;
   private PropertyBusinessRules businessRules;
 
@@ -43,7 +43,7 @@ public class TinkerPopQueryTest {
   public void setup() {
     businessRules = new PropertyBusinessRules();
     hasProperties = Maps.newHashMap();
-    instance = new TinkerPopQuery(TYPE, businessRules, hasProperties);
+    instance = new TimbuctooQuery(TYPE, businessRules, hasProperties);
     setupGraphDB();
   }
 
@@ -55,7 +55,7 @@ public class TinkerPopQueryTest {
   @Test
   public void hasNotNullPropertyReturnsItsInstance() {
     // action
-    TinkerPopQuery returnValue = instance.hasNotNullProperty(NAME, VALUE);
+    TimbuctooQuery returnValue = instance.hasNotNullProperty(NAME, VALUE);
 
     // verify
     assertThat(returnValue, is(sameInstance(instance)));

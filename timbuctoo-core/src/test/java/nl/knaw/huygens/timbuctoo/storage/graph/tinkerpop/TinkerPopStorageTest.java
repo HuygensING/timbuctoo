@@ -7,7 +7,7 @@ import static nl.knaw.huygens.timbuctoo.storage.graph.SubADomainEntityBuilder.aD
 import static nl.knaw.huygens.timbuctoo.storage.graph.SubARelationBuilder.aRelation;
 import static nl.knaw.huygens.timbuctoo.storage.graph.TestSystemEntityWrapperBuilder.aSystemEntity;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeMockBuilder.anEdge;
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.TinkerPopQueryMockBuilder.aQuery;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.TimbuctooQueryMockBuilder.aQuery;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilder.aVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -43,6 +43,8 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
+import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQuery;
+import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQueryFactory;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
 
 import org.junit.Before;
@@ -100,7 +102,7 @@ public class TinkerPopStorageTest {
 
   @Before
   public void setup() throws Exception {
-    queryFactory = mock(TinkerPopQueryFactory.class);
+    queryFactory = mock(TimbuctooQueryFactory.class);
     dbMock = mock(Graph.class);
     lowLevelAPIMock = mock(TinkerPopLowLevelAPI.class);
     elementConverterFactoryMock = mock(ElementConverterFactory.class);
@@ -114,7 +116,7 @@ public class TinkerPopStorageTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
-  private TinkerPopQueryFactory queryFactory;
+  private TimbuctooQueryFactory queryFactory;
 
   @Test
   public void addDomainEntitySavesTheProjectVersionAndThePrimitive() throws Exception {
@@ -396,7 +398,7 @@ public class TinkerPopStorageTest {
   public void findEntitiesQueriesForVerticesAndReturnsAStorageIteratorWithTheResult() throws Exception {
     // setup
     Iterator<Vertex> vertices = Lists.<Vertex> newArrayList().iterator();
-    TinkerPopQuery query = aQuery().build();
+    TimbuctooQuery query = aQuery().build();
     when(lowLevelAPIMock.findLatestVertices(DOMAIN_ENTITY_TYPE, query)).thenReturn(vertices);
 
     StorageIterator<SubADomainEntity> storageIterator = StorageIteratorStub.newInstance();
@@ -1170,7 +1172,7 @@ public class TinkerPopStorageTest {
   @Test
   public void deleteRelationRemovesAllTheEdgesFoundByTheId() throws Exception {
     // setup
-    TinkerPopQuery query = aQuery().build();
+    TimbuctooQuery query = aQuery().build();
     when(queryFactory.newQuery(PRIMITIVE_RELATION_TYPE)).thenReturn(query);
 
     Edge edge1 = anEdge().build();
@@ -1374,7 +1376,7 @@ public class TinkerPopStorageTest {
   @Test
   public void findRelationsWrapsTheQueryResultOfTheLowLevelAPIInAStorageIterator() throws Exception {
     // setup
-    TinkerPopQuery queryMock = aQuery().build();
+    TimbuctooQuery queryMock = aQuery().build();
     when(queryFactory.newQuery(RELATION_TYPE)).thenReturn(queryMock);
 
     Vertex target = aVertex().build();
@@ -1419,7 +1421,7 @@ public class TinkerPopStorageTest {
     return relations;
   }
 
-  private void latestEdgesFoundByQuery(TinkerPopQuery queryMock, Edge... edges) {
+  private void latestEdgesFoundByQuery(TimbuctooQuery queryMock, Edge... edges) {
     List<Edge> edgesList = Lists.<Edge> newArrayList(edges);
     Iterator<Edge> foundEdges = edgesList.iterator();
     when(lowLevelAPIMock.findLatestEdges(queryMock)).thenReturn(foundEdges);
@@ -1428,7 +1430,7 @@ public class TinkerPopStorageTest {
   @Test
   public void findRelationsDoesNotFilterBySourceIfSourceIdIsNull() throws Exception {
     // setup
-    TinkerPopQuery queryMock = aQuery().build();
+    TimbuctooQuery queryMock = aQuery().build();
     when(queryFactory.newQuery(RELATION_TYPE)).thenReturn(queryMock);
 
     Vertex target = aVertex().build();
@@ -1461,7 +1463,7 @@ public class TinkerPopStorageTest {
   @Test
   public void findRelationsDoesNotFilterByTargetIfTargetIdIsNull() throws Exception {
     // setup
-    TinkerPopQuery queryMock = aQuery().build();
+    TimbuctooQuery queryMock = aQuery().build();
     when(queryFactory.newQuery(RELATION_TYPE)).thenReturn(queryMock);
 
     Vertex target = aVertex().build();

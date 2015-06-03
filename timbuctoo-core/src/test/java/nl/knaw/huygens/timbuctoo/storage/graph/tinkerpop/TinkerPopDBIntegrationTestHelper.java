@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.storage.DBIntegrationTestHelper;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.graph.GraphLegacyStorageWrapper;
+import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQueryFactory;
 
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.impls.tg.TinkerGraph;
@@ -12,12 +13,12 @@ import com.tinkerpop.blueprints.impls.tg.TinkerGraph;
 public class TinkerPopDBIntegrationTestHelper implements DBIntegrationTestHelper {
 
   private Graph graph;
-  private TinkerPopQueryFactory tinkerPopQueryFactory;
+  private TimbuctooQueryFactory tinkerPopQueryFactory;
 
   @Override
   public void startCleanDB() throws Exception {
     graph = new TinkerGraph();
-    tinkerPopQueryFactory = new TinkerPopQueryFactory();
+    tinkerPopQueryFactory = new TimbuctooQueryFactory();
   }
 
   @Override

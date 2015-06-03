@@ -2,8 +2,19 @@ package nl.knaw.huygens.timbuctoo.storage.graph;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
-public interface TimbuctooQueryFactory {
+import com.google.inject.Inject;
 
-  TimbuctooQuery newQuery(Class<? extends Entity> type);
+public class TimbuctooQueryFactory {
+
+  private PropertyBusinessRules businessRules;
+
+  @Inject
+  public TimbuctooQueryFactory() {
+    this.businessRules = new PropertyBusinessRules();
+  }
+
+  public TimbuctooQuery newQuery(Class<? extends Entity> type) {
+    return new TimbuctooQuery(type, businessRules);
+  }
 
 }
