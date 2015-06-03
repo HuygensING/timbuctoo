@@ -102,6 +102,7 @@ public abstract class StorageIntegrationTest {
   private static final PersonName PERSON_NAME1 = PersonName.newInstance("Maria", "Reigersberch");
   private static final PersonName PERSON_NAME2 = PersonName.newInstance("James", "Petiver");
   private static final String PID = "pid";
+  private static final String PID2 = "pid2";
   private static final String PROJECT_A_PERSON_PROPERTY = "projectAPersonProperty";
   private static final String PROJECT_A_PERSON_PROPERTY1 = "projectAPersonProperty1";
   private static final String PROJECT_A_PERSON_PROPERTY2 = "projectAPersonProperty2";
@@ -329,6 +330,25 @@ public abstract class StorageIntegrationTest {
             .withGender(GENDER)//
             .withBirthDate(BIRTH_DATE)//
             .withDeathDate(DEATH_DATE));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void getAllRevisionsReturnsAllTheRevisionsOfADomainEntity() throws StorageException {
+    // setup
+    String id = addDefaultProjectAPerson();
+    instance.setPID(DOMAIN_ENTITY_TYPE, id, PID);
+    ProjectAPerson entity = instance.getEntity(DOMAIN_ENTITY_TYPE, id);
+    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, UPDATE_CHANGE);
+    instance.setPID(DOMAIN_ENTITY_TYPE, id, PID2);
+
+    // action
+    List<ProjectAPerson> revisions = instance.getAllRevisions(DOMAIN_ENTITY_TYPE, id);
+
+    // verify
+    assertThat(revisions, containsInAnyOrder( //
+        likeDefaultPerson(id).withRevision(1), //
+        likeDefaultPerson(id).withRevision(2)));
   }
 
   @Test
@@ -1109,6 +1129,28 @@ public abstract class StorageIntegrationTest {
     // verify
     assertThat(foundIds, containsInAnyOrder(relBetweenE1AndE2, relBetweenE2AndE3));
     assertThat(foundIds, not(hasItem(relBetweenE3AndE4)));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void getAllRevisionsForRelationReturnsAllTheRevisionsOfARelation() throws StorageException {
+    // setup
+    String sourceId = addDefaultProjectAPerson();
+    String targetId = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+
+    String id = addDefaultRelation(sourceId, targetId, typeId);
+    instance.setPID(RELATION_TYPE, id, PID);
+    instance.declineRelationsOfEntity(RELATION_TYPE, sourceId);
+    instance.setPID(RELATION_TYPE, id, PID2);
+
+    // action
+    List<SubARelation> revisions = instance.getAllRevisions(RELATION_TYPE, id);
+
+    // verify
+    assertThat(revisions, containsInAnyOrder(//
+        likeDefaultAcceptedRelation(sourceId, targetId, typeId).withRevision(1), //
+        likeDefaultNotAcceptionRelation(sourceId, targetId, typeId).withRevision(2)));
   }
 
   @Test
