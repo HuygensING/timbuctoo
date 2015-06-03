@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
+import nl.knaw.huygens.timbuctoo.storage.NoSuchRelationException;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
@@ -74,7 +75,7 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
-    removePID(entity);
+    removePIDFromEntity(entity); // to make sure no bogus PID is set to the entity
     String id = addAdministrativeValues(type, entity);
 
     if (isRelation(type)) {
@@ -104,7 +105,7 @@ public class GraphLegacyStorageWrapper implements Storage {
     return id;
   }
 
-  private <T extends DomainEntity> void removePID(T entity) {
+  private <T extends DomainEntity> void removePIDFromEntity(T entity) {
     entity.setPid(null);
   }
 
@@ -129,14 +130,14 @@ public class GraphLegacyStorageWrapper implements Storage {
     updateAdministrativeValues(entity);
     if (isRelation(type)) {
       Class<? extends Relation> relationType = asRelation(type);
-      graphStorage.removePropertyFromRelation(relationType, entity.getId(), PID);
+      removePIDFromDatabase(type, entity.getId());
       graphStorage.updateRelation(relationType, (Relation) entity, change);
     } else {
       if (baseTypeExists(type, entity) && variantExists(type, entity)) {
-        graphStorage.removePropertyFromEntity(type, entity.getId(), PID);
+        removePIDFromDatabase(type, entity.getId());
         graphStorage.updateEntity(type, entity);
       } else if (baseTypeExists(type, entity)) {
-        graphStorage.removePropertyFromEntity(toBaseDomainEntity(type), entity.getId(), PID);
+        removePIDFromDatabase(toBaseDomainEntity(type), entity.getId());
         graphStorage.addVariant(type, entity);
       } else {
         throw new UpdateException(String.format("%s with id %s does not exist.", type, entity.getId()));
@@ -235,10 +236,26 @@ public class GraphLegacyStorageWrapper implements Storage {
       throw new NoSuchEntityException(type, id);
     }
 
-    graphStorage.removePropertyFromEntity(type, id, PID);
+    removePIDFromDatabase(type, id);
     updateAdministrativeValues(entity);
 
     graphStorage.deleteVariant(entity);
+  }
+
+  /**
+   * Remove the PID from the database of Entity or Relation.
+   * @param type the type of the to remove the PID from 
+   * @param id the id to remove the PID from
+   * @throws NoSuchEntityException when the Entity could not be found
+   * @throws NoSuchRelationException when the Relation could not be found
+   */
+  @SuppressWarnings("unchecked")
+  private <T extends DomainEntity> void removePIDFromDatabase(Class<T> type, String id) throws NoSuchEntityException, NoSuchRelationException {
+    if (RELATION_TYPE.isAssignableFrom(type)) {
+      graphStorage.removePropertyFromRelation((Class<? extends Relation>) type, id, PID);
+    } else {
+      graphStorage.removePropertyFromEntity(type, id, PID);
+    }
   }
 
   @Override

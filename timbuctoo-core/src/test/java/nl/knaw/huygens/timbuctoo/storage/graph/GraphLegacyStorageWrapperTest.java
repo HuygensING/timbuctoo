@@ -298,7 +298,6 @@ public class GraphLegacyStorageWrapperTest {
         argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
         argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
             .withId(ID) //
-            .withoutAPID() //
             .withRevision(SECOND_REVISION) //
             .withAModifiedValueNotEqualTo(oldModified)));
   }
@@ -344,7 +343,6 @@ public class GraphLegacyStorageWrapperTest {
         argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
         argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
             .withId(ID) //
-            .withoutAPID() //
             .withRevision(SECOND_REVISION) //
             .withAModifiedValueNotEqualTo(oldModified)));
   }
@@ -479,7 +477,6 @@ public class GraphLegacyStorageWrapperTest {
     inOrder.verify(graphStorageMock).deleteVariant(argThat(//
         likeDomainEntity(DOMAIN_ENTITY_TYPE) //
             .withId(ID) //
-            .withoutAPID() //
             .withRevision(SECOND_REVISION) //
             .withAModifiedValueNotEqualTo(oldModified)));
   }
@@ -680,7 +677,6 @@ public class GraphLegacyStorageWrapperTest {
         argThat(is(equalTo(RELATION_TYPE))), //
         argThat(likeDomainEntity(RELATION_TYPE) //
             .withId(ID) //
-            .withoutAPID() //
             .withAModifiedValueNotEqualTo(oldModified) //
             .withRevision(SECOND_REVISION)), //
         argThat(is(CHANGE)));
