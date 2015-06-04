@@ -346,6 +346,7 @@ public abstract class StorageIntegrationTest {
     List<ProjectAPerson> revisions = instance.getAllRevisions(DOMAIN_ENTITY_TYPE, id);
 
     // verify
+    assertThat(revisions, hasSize(2));
     assertThat(revisions, containsInAnyOrder( //
         likeDefaultPerson(id).withRevision(1), //
         likeDefaultPerson(id).withRevision(2)));
@@ -1148,6 +1149,7 @@ public abstract class StorageIntegrationTest {
     List<SubARelation> revisions = instance.getAllRevisions(RELATION_TYPE, id);
 
     // verify
+    assertThat(revisions, hasSize(2));
     assertThat(revisions, containsInAnyOrder(//
         likeDefaultAcceptedRelation(sourceId, targetId, typeId).withRevision(1), //
         likeDefaultNotAcceptionRelation(sourceId, targetId, typeId).withRevision(2)));
