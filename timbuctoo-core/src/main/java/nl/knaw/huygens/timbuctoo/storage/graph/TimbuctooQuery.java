@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.storage.graph;
 import java.util.Map;
 import java.util.Set;
 
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.TinkerPopResultFilter;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.TinkerPopResultFilterBuilder;
 
@@ -15,13 +16,15 @@ public class TimbuctooQuery {
   private boolean searchByType;
   private Set<String> distinctValues;
   private boolean searchLatestOnly;
+  private Class<? extends Entity> type;
 
-  public TimbuctooQuery() {
-    this(Maps.<String, Object> newHashMap());
+  public TimbuctooQuery(Class<? extends Entity> type) {
+    this(type, Maps.<String, Object> newHashMap());
 
   }
 
-  TimbuctooQuery(Map<String, Object> hasProperties) {
+  TimbuctooQuery(Class<? extends Entity> type, Map<String, Object> hasProperties) {
+    this.type = type;
     this.searchLatestOnly(true);
     this.hasProperties = hasProperties;
     this.distinctValues = Sets.newHashSet();
@@ -86,7 +89,9 @@ public class TimbuctooQuery {
   }
 
   public TinkerPopResultFilter createResultFilter(TinkerPopResultFilterBuilder resultFilterBuilder) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    resultFilterBuilder.setHasDistinctValues(distinctValues);
+
+    return resultFilterBuilder.buildFor(type);
   }
 
 }

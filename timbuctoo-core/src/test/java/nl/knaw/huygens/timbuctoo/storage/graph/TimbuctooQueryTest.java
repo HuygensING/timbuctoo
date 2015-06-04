@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -14,6 +15,8 @@ import static org.mockito.Mockito.when;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.TinkerPopResultFilter;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.TinkerPopResultFilterBuilder;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -25,6 +28,7 @@ import com.tinkerpop.blueprints.GraphQuery;
 
 public class TimbuctooQueryTest {
 
+  private static final Class<SubADomainEntity> TYPE = SubADomainEntity.class;
   private static final Object VALUE = "value";
   private static final String NAME = SubADomainEntity.VALUEA3_NAME;
   private Map<String, Object> hasProperties;
@@ -37,7 +41,7 @@ public class TimbuctooQueryTest {
     queryBuilderMock = mock(AbstractGraphQueryBuilder.class);
     when(queryBuilderMock.build()).thenReturn(mock(GraphQuery.class));
     hasProperties = Maps.newHashMap();
-    instance = new TimbuctooQuery(hasProperties);
+    instance = new TimbuctooQuery(TYPE, hasProperties);
   }
 
   @Test
@@ -93,5 +97,23 @@ public class TimbuctooQueryTest {
 
     // action
     instance.createGraphQuery(queryBuilderMock);
+  }
+
+  @Test
+  public void createResultFilterAddsTheDistinctFieldsToTheResultFiterBuilderAndLetTheBuilderCreateAFilter() {
+    // setup
+    TinkerPopResultFilterBuilder resultFilterBuilder = mock(TinkerPopResultFilterBuilder.class);
+    instance.hasDistinctValue(NAME);
+
+    TinkerPopResultFilter resultFilter = mock(TinkerPopResultFilter.class);
+    when(resultFilterBuilder.buildFor(TYPE)).thenReturn(resultFilter);
+
+    // action
+    TinkerPopResultFilter actualResultFilter = instance.createResultFilter(resultFilterBuilder);
+
+    // verify
+    assertThat(actualResultFilter, is(sameInstance(resultFilter)));
+
+    verify(resultFilterBuilder).setHasDistinctValues(argThat(contains(NAME)));
   }
 }
