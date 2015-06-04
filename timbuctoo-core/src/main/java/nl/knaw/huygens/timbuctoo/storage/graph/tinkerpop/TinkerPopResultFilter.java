@@ -8,7 +8,7 @@ import com.tinkerpop.pipes.PipeFunction;
 
 public class TinkerPopResultFilter {
 
-  public TinkerPopResultFilter(List<PipeFunction<Vertex, String>> pipeFunctions) {
+  public TinkerPopResultFilter(List<PipeFunction<Vertex, Object>> pipeFunctions) {
     // TODO Auto-generated constructor stub
   }
 

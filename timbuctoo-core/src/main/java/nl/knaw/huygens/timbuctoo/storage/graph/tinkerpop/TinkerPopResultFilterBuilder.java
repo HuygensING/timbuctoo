@@ -34,7 +34,7 @@ public class TinkerPopResultFilterBuilder {
 
   public TinkerPopResultFilter buildFor(Class<? extends Entity> type) {
     Map<String, Field> fields = collectAllFields(type);
-    List<PipeFunction<Vertex, String>> pipeFunctions = Lists.newArrayList();
+    List<PipeFunction<Vertex, Object>> pipeFunctions = Lists.newArrayList();
 
     for (String field : fieldsWithDistinctValues) {
       String propertyName = getPropertyName(fields, type, field);
