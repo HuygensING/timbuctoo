@@ -399,7 +399,7 @@ public class TinkerPopStorageTest {
     // setup
     Iterator<Vertex> vertices = Lists.<Vertex> newArrayList().iterator();
     TimbuctooQuery query = aQuery().build();
-    when(lowLevelAPIMock.findLatestVertices(DOMAIN_ENTITY_TYPE, query)).thenReturn(vertices);
+    when(lowLevelAPIMock.findVertices(DOMAIN_ENTITY_TYPE, query)).thenReturn(vertices);
 
     StorageIterator<SubADomainEntity> storageIterator = StorageIteratorStub.newInstance();
     when(storageIteratorFactoryMock.create(DOMAIN_ENTITY_TYPE, vertices)).thenReturn(storageIterator);

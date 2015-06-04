@@ -760,7 +760,7 @@ public class TinkerPopStorage implements GraphStorage {
 
   @Override
   public <T extends Entity> StorageIterator<T> findEntities(Class<T> type, TimbuctooQuery query) {
-    Iterator<Vertex> veritices = lowLevelAPI.findLatestVertices(type, query);
+    Iterator<Vertex> veritices = lowLevelAPI.findVertices(type, query);
 
     return storageIteratorFactory.create(type, veritices);
   }

@@ -305,10 +305,12 @@ public class TinkerPopLowLevelAPITest {
   }
 
   @Test
-  public void findLatestVerticesReturnsTheLatestVerticesFoundByTheQuery() {
+  public void findVerticesReturnsTheLatestVerticesIfTheQueryHasTheOptionSearchLatestOnlyOnTrue() {
     // setup
     GraphQuery graphQuery = mock(GraphQuery.class);
-    TimbuctooQuery query = aQuery().createsGraphQueryForDB(queryBuilder, graphQuery).build();
+    TimbuctooQuery query = aQuery() //
+        .searchesLatestOnly(true) //
+        .createsGraphQueryForDB(queryBuilder, graphQuery).build();
 
     // setup
     Vertex latestVertex1 = aVertex().build();
@@ -321,14 +323,42 @@ public class TinkerPopLowLevelAPITest {
         .foundByGraphQuery(graphQuery);
 
     // action
-    Iterator<Vertex> iterator = instance.findLatestVertices(DOMAIN_ENTITY_TYPE, query);
+    Iterator<Vertex> iterator = instance.findVertices(DOMAIN_ENTITY_TYPE, query);
 
     // verify
     assertThat(Lists.newArrayList(iterator), containsInAnyOrder(latestVertex1, latestVertex2));
   }
 
   @Test
-  public void findLatestVerticesReturnsAnEmptyIteratorWhenNoResultsAreFound() {
+  public void findVerticesReturnsTheAllTheFoundVerticesIfTheQueryHasTheOptionSearchLatestOnlyOnFalse() {
+    // setup
+    GraphQuery graphQuery = mock(GraphQuery.class);
+    TimbuctooQuery query = aQuery() //
+        .searchesLatestOnly(false) //
+        .createsGraphQueryForDB(queryBuilder, graphQuery).build();
+
+    // setup
+    Vertex latestVertex1 = aVertex().build();
+    Vertex latestVertex2 = aVertex().build();
+    Vertex otherVertex1 = aVertex().withIncomingEdgeWithLabel(VERSION_OF).build();
+    Vertex otherVertex2 = aVertex().withIncomingEdgeWithLabel(VERSION_OF).build();
+    aVertexSearchResult() //
+        .containsVertex(latestVertex1) //
+        .andVertex(otherVertex1) //
+        .andVertex(otherVertex2) //
+        .andVertex(latestVertex2) //
+        .foundByGraphQuery(graphQuery);
+
+    // action
+    Iterator<Vertex> iterator = instance.findVertices(DOMAIN_ENTITY_TYPE, query);
+
+    // verify
+    assertThat(Lists.newArrayList(iterator), //
+        containsInAnyOrder(latestVertex1, latestVertex2, otherVertex1, otherVertex2));
+  }
+
+  @Test
+  public void findVerticesReturnsAnEmptyIteratorWhenNoResultsAreFound() {
     // setup
     GraphQuery graphQuery = mock(GraphQuery.class);
     TimbuctooQuery query = aQuery().createsGraphQueryForDB(queryBuilder, graphQuery).build();
@@ -337,7 +367,7 @@ public class TinkerPopLowLevelAPITest {
         .foundByGraphQuery(graphQuery);
 
     // action
-    Iterator<Vertex> iterator = instance.findLatestVertices(DOMAIN_ENTITY_TYPE, query);
+    Iterator<Vertex> iterator = instance.findVertices(DOMAIN_ENTITY_TYPE, query);
 
     // verify
     assertThat(Lists.newArrayList(iterator), is(emptyIterable()));

@@ -273,10 +273,10 @@ class TinkerPopLowLevelAPI {
     return edges.iterator();
   }
 
-  public <T extends Entity> Iterator<Vertex> findLatestVertices(Class<T> type, TimbuctooQuery query) {
+  public <T extends Entity> Iterator<Vertex> findVertices(Class<T> type, TimbuctooQuery query) {
     Iterable<Vertex> vertices = query.createGraphQuery(queryBuilderFactory.newQueryBuilder(type)).vertices();
 
-    return getLatestVertices(vertices).iterator();
+    return query.searchLatestOnly() ? getLatestVertices(vertices).iterator() : vertices.iterator();
   }
 
 }

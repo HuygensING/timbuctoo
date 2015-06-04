@@ -11,6 +11,7 @@ import com.tinkerpop.blueprints.GraphQuery;
 public class TimbuctooQueryMockBuilder {
   private GraphQuery graphQuery;
   private TinkerPopGraphQueryBuilder queryBuilder;
+  private boolean searchLatestOnly;
 
   private TimbuctooQueryMockBuilder() {
 
@@ -24,12 +25,18 @@ public class TimbuctooQueryMockBuilder {
     TimbuctooQuery query = mock(TimbuctooQuery.class);
     when(query.hasNotNullProperty(anyString(), anyObject())).thenReturn(query);
     when(query.createGraphQuery(queryBuilder)).thenReturn(graphQuery);
+    when(query.searchLatestOnly()).thenReturn(searchLatestOnly);
     return query;
   }
 
   public TimbuctooQueryMockBuilder createsGraphQueryForDB(TinkerPopGraphQueryBuilder queryBuilder, GraphQuery graphQuery) {
     this.queryBuilder = queryBuilder;
     this.graphQuery = graphQuery;
+    return this;
+  }
+
+  public TimbuctooQueryMockBuilder searchesLatestOnly(boolean searchLatestOnly) {
+    this.searchLatestOnly = searchLatestOnly;
     return this;
   }
 
