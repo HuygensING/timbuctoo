@@ -26,7 +26,8 @@ public class TimbuctooQuery {
 
   /**
    * Uses the property only when the value is not null.
-   * @param name the name of the property
+   * @param name the name of the property,
+   *    if the property has a @DBProperty-annotation use that name
    * @param value the value of the property
    * @return the current instance
    */
@@ -34,6 +35,18 @@ public class TimbuctooQuery {
     if (value != null) {
       hasProperties.put(name, value);
     }
+    return this;
+  }
+
+  /**
+   * Method to add a filter to make sure a certain property and a value combination 
+   * exists only once in a search result.  
+   * @param propertyName the name of the property that should have a distinct value,
+   *    if the property has a @DBProperty-annotation use that name
+   * @return the current instance
+   */
+  public TimbuctooQuery hasDistinctValue(String propertyName) {
+    this.distinctValues.add(propertyName);
     return this;
   }
 
@@ -59,17 +72,6 @@ public class TimbuctooQuery {
 
   public boolean searchLatestOnly() {
     return searchLatestOnly;
-  }
-
-  /**
-   * Method to add a filter to make sure a certain property and a value combination 
-   * exists only once in a search result.  
-   * @param propertyName the name of the property that should have a distinct value
-   * @return the current instance
-   */
-  public TimbuctooQuery hasDistinctValue(String propertyName) {
-    this.distinctValues.add(propertyName);
-    return this;
   }
 
   public <T> T createGraphQuery(AbstractGraphQueryBuilder<T> queryCreator) throws NoSuchFieldException {

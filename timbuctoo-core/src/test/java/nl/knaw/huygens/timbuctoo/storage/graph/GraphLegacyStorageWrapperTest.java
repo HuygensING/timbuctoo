@@ -249,7 +249,7 @@ public class GraphLegacyStorageWrapperTest {
 
     verify(queryMock).searchByType(true);
     verify(queryMock).searchLatestOnly(false);
-    verify(queryMock).hasNotNullProperty(Entity.ID_PROPERTY_NAME, ID);
+    verify(queryMock).hasNotNullProperty(Entity.ID_DB_PROPERTY_NAME, ID);
     verify(queryMock).hasDistinctValue(Entity.REVISION_PROPERTY_NAME);
   }
 

@@ -385,7 +385,7 @@ public class GraphLegacyStorageWrapper implements Storage {
   @Override
   public <T extends DomainEntity> List<T> getAllRevisions(Class<T> type, String id) throws StorageException {
     TimbuctooQuery query = queryFactory.newQuery(type) //
-        .hasNotNullProperty(Entity.ID_PROPERTY_NAME, id)//
+        .hasNotNullProperty(Entity.ID_DB_PROPERTY_NAME, id)//
         .hasDistinctValue(Entity.REVISION_PROPERTY_NAME) //
         .searchByType(true) //
         .searchLatestOnly(false);
