@@ -384,7 +384,12 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends DomainEntity> List<T> getAllRevisions(Class<T> type, String id) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    TimbuctooQuery query = queryFactory.newQuery(type) //
+        .hasNotNullProperty(Entity.ID_PROPERTY_NAME, id)//
+        .hasDistinctValue(Entity.REVISION_PROPERTY_NAME) //
+        .setSearchByType(true);
+
+    return graphStorage.findEntities(type, query).getAll();
   }
 
   @Override

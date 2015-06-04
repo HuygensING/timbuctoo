@@ -91,6 +91,7 @@ public class GraphLegacyStorageWrapperTest {
     queryMock = mock(TimbuctooQuery.class);
     when(queryMock.hasNotNullProperty(anyString(), any())).thenReturn(queryMock);
     when(queryMock.setSearchByType(anyBoolean())).thenReturn(queryMock);
+    when(queryMock.hasDistinctValue(anyString())).thenReturn(queryMock);
 
     queryFactoryMock = mock(TimbuctooQueryFactory.class);
     when(queryFactoryMock.newQuery(any(Class.class))).thenReturn(queryMock);
@@ -229,6 +230,24 @@ public class GraphLegacyStorageWrapperTest {
     // action
     instance.getDomainEntities(DOMAIN_ENTITY_TYPE);
 
+  }
+
+  @Test
+  public void getAllRevisionsCreatesAQueryAndCallsFindEntities() throws Exception {
+    // setup
+    SubADomainEntity entity1 = aDomainEntity().build();
+    SubADomainEntity entity2 = aDomainEntity().build();
+    StorageIteratorStub<SubADomainEntity> iterator = StorageIteratorStub.newInstance(entity1, entity2);
+    when(graphStorageMock.findEntities(DOMAIN_ENTITY_TYPE, queryMock)).thenReturn(iterator);
+
+    // action
+    List<SubADomainEntity> revisions = instance.getAllRevisions(DOMAIN_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(revisions, containsInAnyOrder(entity1, entity2));
+    verify(queryMock).setSearchByType(true);
+    verify(queryMock).hasNotNullProperty(Entity.ID_PROPERTY_NAME, ID);
+    verify(queryMock).hasDistinctValue(Entity.REVISION_PROPERTY_NAME);
   }
 
   @Test
