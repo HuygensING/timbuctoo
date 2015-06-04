@@ -296,7 +296,6 @@ public class TinkerPopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.deleteByModifiedRemovesTheSystemEntityThatAreLastModifiedBeforeACertainDate();
   }
 
-  @Ignore
   @Test
   @Override
   public void getEntitiesByPropertyReturnsAStorageIteratorWithEntitesWithTheGivenPropertyAndValue() throws Exception {
@@ -310,7 +309,6 @@ public class TinkerPopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.getAllRevisionsForRelationReturnsAllTheRevisionsOfARelation();
   }
 
-  @Ignore
   @Test
   @Override
   public void getAllRevisionsReturnsAllTheRevisionsOfADomainEntity() throws StorageException {
