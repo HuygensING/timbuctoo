@@ -3,6 +3,9 @@ package nl.knaw.huygens.timbuctoo.storage.graph;
 import java.util.Map;
 import java.util.Set;
 
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.TinkerPopResultFilter;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.TinkerPopResultFilterBuilder;
+
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -80,6 +83,10 @@ public class TimbuctooQuery {
 
     return queryCreator.build();
 
+  }
+
+  public TinkerPopResultFilter createResultFilter(TinkerPopResultFilterBuilder resultFilterBuilder) {
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
 }

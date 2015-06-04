@@ -34,16 +34,19 @@ class TinkerPopLowLevelAPI {
   private final VertexDuplicator vertexDuplicator;
   private final EdgeDuplicator edgeDuplicator;
   private TinkerPopGraphQueryBuilderFactory queryBuilderFactory;
+  private TinkerPopResultFilterBuilder resultFilterBuilder;
 
   public TinkerPopLowLevelAPI(Graph db) {
-    this(db, new VertexDuplicator(db), new EdgeDuplicator(), new TinkerPopGraphQueryBuilderFactory(db));
+    this(db, new VertexDuplicator(db), new EdgeDuplicator(), new TinkerPopGraphQueryBuilderFactory(db), new TinkerPopResultFilterBuilder());
   }
 
-  public TinkerPopLowLevelAPI(Graph db, VertexDuplicator vertexDuplicator, EdgeDuplicator edgeDuplicator, TinkerPopGraphQueryBuilderFactory queryBuilderFactory) {
+  public TinkerPopLowLevelAPI(Graph db, VertexDuplicator vertexDuplicator, EdgeDuplicator edgeDuplicator, TinkerPopGraphQueryBuilderFactory queryBuilderFactory,
+      TinkerPopResultFilterBuilder resultFilterBuilder) {
     this.db = db;
     this.vertexDuplicator = vertexDuplicator;
     this.edgeDuplicator = edgeDuplicator;
     this.queryBuilderFactory = queryBuilderFactory;
+    this.resultFilterBuilder = resultFilterBuilder;
   }
 
   public <T extends Entity> Vertex getLatestVertexById(Class<T> type, String id) {
@@ -276,7 +279,11 @@ class TinkerPopLowLevelAPI {
   public <T extends Entity> Iterator<Vertex> findVertices(Class<T> type, TimbuctooQuery query) {
     Iterable<Vertex> vertices = query.createGraphQuery(queryBuilderFactory.newQueryBuilder(type)).vertices();
 
-    return query.searchLatestOnly() ? getLatestVertices(vertices).iterator() : vertices.iterator();
+    TinkerPopResultFilter resultFilter = query.createResultFilter(resultFilterBuilder);
+
+    Iterable<Vertex> filteredVertices = resultFilter.filter(vertices);
+
+    return query.searchLatestOnly() ? getLatestVertices(filteredVertices).iterator() : filteredVertices.iterator();
   }
 
 }

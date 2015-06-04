@@ -96,6 +96,7 @@
     </dependency>
 
     <!-- Tinkerpop graph database stack -->
+    <!-- Blue prints and implementations for database communication -->
     <dependency>
       <groupId>com.tinkerpop.blueprints</groupId>
       <artifactId>blueprints-core</artifactId>
@@ -117,7 +118,19 @@
         </exclusion>
       </exclusions>
     </dependency>
-    
+    <!-- Gremlin and Pipes for graph traversal -->
+    <dependency>
+      <groupId>com.tinkerpop.gremlin</groupId>
+      <artifactId>gremlin-java</artifactId>
+      <version>${tinkerpop.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.tinkerpop</groupId>
+      <artifactId>pipes</artifactId>
+      <version>${tinkerpop.version}</version>
+    </dependency>
+
+
 
     <!-- ## End of main dependencies ## -->
     <!-- ## Test dependencies ## -->

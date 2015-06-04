@@ -12,6 +12,8 @@ public class TimbuctooQueryMockBuilder {
   private GraphQuery graphQuery;
   private TinkerPopGraphQueryBuilder queryBuilder;
   private boolean searchLatestOnly;
+  private TinkerPopResultFilterBuilder resultFilterBuilder;
+  private TinkerPopResultFilter resultFilter;
 
   private TimbuctooQueryMockBuilder() {
 
@@ -26,6 +28,7 @@ public class TimbuctooQueryMockBuilder {
     when(query.hasNotNullProperty(anyString(), anyObject())).thenReturn(query);
     when(query.createGraphQuery(queryBuilder)).thenReturn(graphQuery);
     when(query.searchLatestOnly()).thenReturn(searchLatestOnly);
+    when(query.createResultFilter(resultFilterBuilder)).thenReturn(resultFilter);
     return query;
   }
 
@@ -37,6 +40,13 @@ public class TimbuctooQueryMockBuilder {
 
   public TimbuctooQueryMockBuilder searchesLatestOnly(boolean searchLatestOnly) {
     this.searchLatestOnly = searchLatestOnly;
+    return this;
+  }
+
+  public TimbuctooQueryMockBuilder createsResultFilter(TinkerPopResultFilterBuilder resultFilterBuilder, TinkerPopResultFilter resultFilter) {
+    this.resultFilterBuilder = resultFilterBuilder;
+    this.resultFilter = resultFilter;
+
     return this;
   }
 
