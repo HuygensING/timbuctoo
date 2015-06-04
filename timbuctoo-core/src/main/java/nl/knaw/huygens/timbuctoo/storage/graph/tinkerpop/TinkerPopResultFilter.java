@@ -3,17 +3,24 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 import java.util.List;
 
 import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.gremlin.java.GremlinPipeline;
 import com.tinkerpop.pipes.PipeFunction;
 
-public class TinkerPopResultFilter {
+public class TinkerPopResultFilter<T extends Element> {
 
-  public TinkerPopResultFilter(List<PipeFunction<Vertex, Object>> pipeFunctions) {
-    // TODO Auto-generated constructor stub
+  private List<PipeFunction<T, Object>> distinctPropertyFunctions;
+
+  public TinkerPopResultFilter(List<PipeFunction<T, Object>> distinctPropertyFunctions) {
+    this.distinctPropertyFunctions = distinctPropertyFunctions;
   }
 
-  public <T extends Element> Iterable<T> filter(Iterable<T> iterableToFilter) {
-    throw new UnsupportedOperationException("Yet to be implemented");
-  }
+  public Iterable<T> filter(Iterable<T> iterableToFilter) {
+    GremlinPipeline<Iterable<T>, T> pipeline = new GremlinPipeline<Iterable<T>, T>(iterableToFilter);
 
+    for (PipeFunction<T, Object> function : distinctPropertyFunctions) {
+      pipeline.dedup(function);
+    }
+
+    return pipeline.toList();
+  }
 }
