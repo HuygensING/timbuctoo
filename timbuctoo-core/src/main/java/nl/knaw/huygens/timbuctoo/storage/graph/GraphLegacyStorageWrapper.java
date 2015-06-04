@@ -327,7 +327,7 @@ public class GraphLegacyStorageWrapper implements Storage {
   public <T extends Entity> StorageIterator<T> getEntitiesByProperty(Class<T> type, String field, String value) throws StorageException {
     TimbuctooQuery query = queryFactory.newQuery(type);
     query.hasNotNullProperty(field, value);
-    query.setSearchByType(true);
+    query.searchByType(true);
 
     return graphStorage.findEntities(type, query);
   }
@@ -387,7 +387,8 @@ public class GraphLegacyStorageWrapper implements Storage {
     TimbuctooQuery query = queryFactory.newQuery(type) //
         .hasNotNullProperty(Entity.ID_PROPERTY_NAME, id)//
         .hasDistinctValue(Entity.REVISION_PROPERTY_NAME) //
-        .setSearchByType(true);
+        .searchByType(true) //
+        .searchLatestOnly(false);
 
     return graphStorage.findEntities(type, query).getAll();
   }

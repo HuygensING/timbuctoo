@@ -11,6 +11,7 @@ public class TimbuctooQuery {
   private Map<String, Object> hasProperties;
   private boolean searchByType;
   private Set<String> distinctValues;
+  private boolean searchLatestOnly;
 
   public TimbuctooQuery() {
     this(Maps.<String, Object> newHashMap());
@@ -18,6 +19,7 @@ public class TimbuctooQuery {
   }
 
   TimbuctooQuery(Map<String, Object> hasProperties) {
+    this.searchLatestOnly(true);
     this.hasProperties = hasProperties;
     this.distinctValues = Sets.newHashSet();
   }
@@ -36,13 +38,27 @@ public class TimbuctooQuery {
   }
 
   /**
-   * A method to search of a certain type
-   * @param b the type to search for
+   * A method to search of the type the query is created for or not. Default is false.
+   * @param searchByType boolean true or false
    * @return the current instance
    */
-  public TimbuctooQuery setSearchByType(boolean searchByType) {
+  public TimbuctooQuery searchByType(boolean searchByType) {
     this.searchByType = searchByType;
     return this;
+  }
+
+  /**
+   * Be able to search for the latest version of a type only. Default is true.
+   * @param searchLatestOnly the value true or false
+   * @return the current instance
+   */
+  public TimbuctooQuery searchLatestOnly(boolean searchLatestOnly) {
+    this.searchLatestOnly = searchLatestOnly;
+    return this;
+  }
+
+  public boolean searchLatestOnly() {
+    return searchLatestOnly;
   }
 
   /**

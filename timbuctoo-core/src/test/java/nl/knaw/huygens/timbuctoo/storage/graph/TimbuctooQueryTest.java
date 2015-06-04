@@ -71,7 +71,7 @@ public class TimbuctooQueryTest {
   @Test
   public void createGraphQuerySetsTheTypeAndHasPropertiesToTheQueryBuilder() throws Exception {
     // setup
-    instance.setSearchByType(true);
+    instance.searchByType(true);
 
     String administrativeProperty = Entity.ID_DB_PROPERTY_NAME;
     Object value2 = "value2";

@@ -90,7 +90,8 @@ public class GraphLegacyStorageWrapperTest {
   private void setupQueryFactory() {
     queryMock = mock(TimbuctooQuery.class);
     when(queryMock.hasNotNullProperty(anyString(), any())).thenReturn(queryMock);
-    when(queryMock.setSearchByType(anyBoolean())).thenReturn(queryMock);
+    when(queryMock.searchByType(anyBoolean())).thenReturn(queryMock);
+    when(queryMock.searchLatestOnly(anyBoolean())).thenReturn(queryMock);
     when(queryMock.hasDistinctValue(anyString())).thenReturn(queryMock);
 
     queryFactoryMock = mock(TimbuctooQueryFactory.class);
@@ -245,7 +246,9 @@ public class GraphLegacyStorageWrapperTest {
 
     // verify
     assertThat(revisions, containsInAnyOrder(entity1, entity2));
-    verify(queryMock).setSearchByType(true);
+
+    verify(queryMock).searchByType(true);
+    verify(queryMock).searchLatestOnly(false);
     verify(queryMock).hasNotNullProperty(Entity.ID_PROPERTY_NAME, ID);
     verify(queryMock).hasDistinctValue(Entity.REVISION_PROPERTY_NAME);
   }
@@ -1275,7 +1278,7 @@ public class GraphLegacyStorageWrapperTest {
 
     verify(queryFactoryMock).newQuery(SYSTEM_ENTITY_TYPE);
     verify(queryMock).hasNotNullProperty(SYSTEM_ENTITY_PROPERTY, PROPERTY_VALUE);
-    verify(queryMock).setSearchByType(true);
+    verify(queryMock).searchByType(true);
     verify(graphStorageMock).findEntities(SYSTEM_ENTITY_TYPE, queryMock);
   }
 
