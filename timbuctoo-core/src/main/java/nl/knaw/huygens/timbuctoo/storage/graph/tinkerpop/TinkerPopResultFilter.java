@@ -1,12 +1,15 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import java.util.List;
+import java.util.Set;
+
+import nl.knaw.huygens.timbuctoo.storage.graph.ResultFilter;
 
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.gremlin.java.GremlinPipeline;
 import com.tinkerpop.pipes.PipeFunction;
 
-public class TinkerPopResultFilter<T extends Element> {
+public class TinkerPopResultFilter<T extends Element> implements ResultFilter {
 
   private List<PipeFunction<T, Object>> distinctPropertyFunctions;
 
@@ -20,5 +23,10 @@ public class TinkerPopResultFilter<T extends Element> {
     }
 
     return pipeline.toList();
+  }
+
+  @Override
+  public void setDistinctProperties(Set<String> disitinctProperties) {
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 }

@@ -4,8 +4,6 @@ import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.TinkerPopResultFilter;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.TinkerPopResultFilterBuilder;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -19,15 +17,15 @@ public class TimbuctooQuery {
   private Class<? extends Entity> type;
 
   public TimbuctooQuery(Class<? extends Entity> type) {
-    this(type, Maps.<String, Object> newHashMap());
+    this(type, Maps.<String, Object> newHashMap(), Sets.<String> newHashSet());
 
   }
 
-  TimbuctooQuery(Class<? extends Entity> type, Map<String, Object> hasProperties) {
+  TimbuctooQuery(Class<? extends Entity> type, Map<String, Object> hasProperties, Set<String> distinctProperties) {
     this.type = type;
     this.searchLatestOnly(true);
     this.hasProperties = hasProperties;
-    this.distinctValues = Sets.newHashSet();
+    this.distinctValues = distinctProperties;
   }
 
   /**
@@ -88,16 +86,8 @@ public class TimbuctooQuery {
 
   }
 
-  public TinkerPopResultFilter createResultFilter(TinkerPopResultFilterBuilder resultFilterBuilder) {
-    //    resultFilterBuilder.setHasDistinctValues(distinctValues);
-    //
-    //    return resultFilterBuilder.buildFor(type);
-
-    throw new UnsupportedOperationException();
-  }
-
-  public void addFilterOptionsToResultFilter(TinkerPopResultFilter resultFilter) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+  public void addFilterOptionsToResultFilter(ResultFilter resultFilter) {
+    resultFilter.setDistinctProperties(distinctValues);
   }
 
 }
