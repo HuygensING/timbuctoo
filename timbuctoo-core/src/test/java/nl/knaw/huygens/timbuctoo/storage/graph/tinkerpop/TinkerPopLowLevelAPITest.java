@@ -310,17 +310,17 @@ public class TinkerPopLowLevelAPITest {
     assertThat(Iterators.size(iterator), is(0));
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void findVerticesReturnsTheLatestVerticesIfTheQueryHasTheOptionSearchLatestOnlyOnTrue() {
     // setup
     GraphQuery graphQuery = mock(GraphQuery.class);
-    TinkerPopResultFilter resultFilter = mock(TinkerPopResultFilter.class);
     TimbuctooQuery query = aQuery() //
         .searchesLatestOnly(true) //
         .createsGraphQueryForDB(queryBuilder, graphQuery) //
         .build();
 
-    when(resultFilterBuilder.buildFor(query)).thenReturn(resultFilter);
+    TinkerPopResultFilter<Vertex> resultFilter = resultFilterCreatedForQuery(query);
 
     Vertex latestVertex1 = aVertex().build();
     Vertex latestVertex2 = aVertex().build();
@@ -328,7 +328,7 @@ public class TinkerPopLowLevelAPITest {
     Vertex otherVertex2 = aVertex().withIncomingEdgeWithLabel(VERSION_OF).build();
 
     List<Vertex> vertices = Lists.newArrayList(latestVertex1, latestVertex2, otherVertex1, otherVertex2);
-    doReturn(vertices).when(resultFilter).filter(argThat(containsInAnyOrder(latestVertex1, latestVertex2, otherVertex1, otherVertex2)));
+    doReturn(vertices).when(resultFilter).filter((Iterable<Vertex>) argThat(containsInAnyOrder(latestVertex1, latestVertex2, otherVertex1, otherVertex2)));
 
     aVertexSearchResult() //
         .containsVertex(latestVertex1) //
@@ -343,20 +343,20 @@ public class TinkerPopLowLevelAPITest {
     // verify
     assertThat(Lists.newArrayList(iterator), containsInAnyOrder(latestVertex1, latestVertex2));
 
-    verify(resultFilter).filter(argThat(containsInAnyOrder(latestVertex1, latestVertex2, otherVertex1, otherVertex2)));
+    verify(resultFilter).filter((Iterable<Vertex>) argThat(containsInAnyOrder(latestVertex1, latestVertex2, otherVertex1, otherVertex2)));
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void findVerticesReturnsTheAllTheFoundVerticesIfTheQueryHasTheOptionSearchLatestOnlyOnFalse() {
     // setup
     GraphQuery graphQuery = mock(GraphQuery.class);
-    TinkerPopResultFilter resultFilter = mock(TinkerPopResultFilter.class);
     TimbuctooQuery query = aQuery() //
         .searchesLatestOnly(false) //
         .createsGraphQueryForDB(queryBuilder, graphQuery) //
         .build();
 
-    when(resultFilterBuilder.buildFor(query)).thenReturn(resultFilter);
+    TinkerPopResultFilter<Vertex> resultFilter = resultFilterCreatedForQuery(query);
 
     Vertex latestVertex1 = aVertex().build();
     Vertex latestVertex2 = aVertex().build();
@@ -364,7 +364,7 @@ public class TinkerPopLowLevelAPITest {
     Vertex otherVertex2 = aVertex().withIncomingEdgeWithLabel(VERSION_OF).build();
 
     List<Vertex> vertices = Lists.newArrayList(latestVertex1, latestVertex2, otherVertex1, otherVertex2);
-    doReturn(vertices).when(resultFilter).filter(argThat(containsInAnyOrder(latestVertex1, latestVertex2, otherVertex1, otherVertex2)));
+    doReturn(vertices).when(resultFilter).filter((List<Vertex>) argThat(containsInAnyOrder(latestVertex1, latestVertex2, otherVertex1, otherVertex2)));
 
     aVertexSearchResult() //
         .containsVertex(latestVertex1) //
@@ -380,20 +380,19 @@ public class TinkerPopLowLevelAPITest {
     assertThat(Lists.newArrayList(iterator), //
         containsInAnyOrder(latestVertex1, latestVertex2, otherVertex1, otherVertex2));
 
-    verify(resultFilter).filter(argThat(containsInAnyOrder(latestVertex1, latestVertex2, otherVertex1, otherVertex2)));
+    verify(resultFilter).filter((List<Vertex>) argThat(containsInAnyOrder(latestVertex1, latestVertex2, otherVertex1, otherVertex2)));
   }
 
   @Test
   public void findVerticesReturnsAnEmptyIteratorWhenNoResultsAreFound() {
     // setup
     GraphQuery graphQuery = mock(GraphQuery.class);
-    TinkerPopResultFilter resultFilter = mock(TinkerPopResultFilter.class);
     TimbuctooQuery query = aQuery() //
         .createsGraphQueryForDB(queryBuilder, graphQuery) //
         .createsGraphQueryForDB(queryBuilder, graphQuery) //
         .build();
 
-    when(resultFilterBuilder.buildFor(query)).thenReturn(resultFilter);
+    TinkerPopResultFilter<Vertex> resultFilter = resultFilterCreatedForQuery(query);
 
     when(resultFilter.filter(Matchers.<List<Vertex>> any())).thenReturn(Lists.<Vertex> newArrayList());
 
@@ -405,6 +404,13 @@ public class TinkerPopLowLevelAPITest {
 
     // verify
     assertThat(Lists.newArrayList(iterator), is(emptyIterable()));
+  }
+
+  private TinkerPopResultFilter<Vertex> resultFilterCreatedForQuery(TimbuctooQuery query) {
+    @SuppressWarnings("unchecked")
+    TinkerPopResultFilter<Vertex> resultFilter = mock(TinkerPopResultFilter.class);
+    when(resultFilterBuilder.<Vertex> buildFor(query)).thenReturn(resultFilter);
+    return resultFilter;
   }
 
   /* ************************************************************

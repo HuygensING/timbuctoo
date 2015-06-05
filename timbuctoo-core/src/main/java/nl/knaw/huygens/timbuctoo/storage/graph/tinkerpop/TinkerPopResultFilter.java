@@ -13,8 +13,11 @@ import com.tinkerpop.pipes.PipeFunction;
 public class TinkerPopResultFilter<T extends Element> implements ResultFilter {
 
   private List<PipeFunction<T, Object>> distinctPropertyFunctions;
+  private final PipeFunctionFactory pipeFunctionFactory;
 
-  public TinkerPopResultFilter() {}
+  public TinkerPopResultFilter(PipeFunctionFactory pipeFunctionFactory) {
+    this.pipeFunctionFactory = pipeFunctionFactory;
+  }
 
   public Iterable<T> filter(Iterable<T> iterableToFilter) {
     GremlinPipeline<Iterable<T>, T> pipeline = new GremlinPipeline<Iterable<T>, T>(iterableToFilter);

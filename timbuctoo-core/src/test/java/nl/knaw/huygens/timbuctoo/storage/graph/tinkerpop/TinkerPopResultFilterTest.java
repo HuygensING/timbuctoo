@@ -5,6 +5,7 @@ import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilde
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.mock;
 
 import java.util.List;
 
@@ -34,9 +35,7 @@ public class TinkerPopResultFilterTest {
 
     List<Vertex> result = Lists.newArrayList(vertex1WithId1, vertex1WithId2, vertex2WithId1, vertex2WithId2);
 
-    List<PipeFunction<Vertex, Object>> distinctPropertyFilters = Lists.newArrayList(filterByIdFunction());
-
-    TinkerPopResultFilter<Vertex> instance = new TinkerPopResultFilter<Vertex>();
+    TinkerPopResultFilter<Vertex> instance = new TinkerPopResultFilter<Vertex>(mock(PipeFunctionFactory.class));
 
     // action
     Iterable<Vertex> filteredResult = instance.filter(result);

@@ -25,8 +25,8 @@ public class TinkerPopResultFilterBuilder {
     this.pipeFunctionFactory = pipeFunctionFactory;
   }
 
-  public TinkerPopResultFilter buildFor(TimbuctooQuery query) {
-    TinkerPopResultFilter<Element> resultFilter = new TinkerPopResultFilter<Element>();
+  public <T extends Element> TinkerPopResultFilter<T> buildFor(TimbuctooQuery query) {
+    TinkerPopResultFilter<T> resultFilter = new TinkerPopResultFilter<T>(pipeFunctionFactory);
 
     query.addFilterOptionsToResultFilter(resultFilter);
 
