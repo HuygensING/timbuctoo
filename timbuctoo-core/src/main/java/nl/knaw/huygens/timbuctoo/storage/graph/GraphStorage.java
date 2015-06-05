@@ -135,4 +135,12 @@ public interface GraphStorage {
    */
   <T extends Entity> StorageIterator<T> findEntities(Class<T> type, TimbuctooQuery query);
 
+  /**
+   * Find relations of a certain type that match with the query.
+   * @param type the type to find the relations for
+   * @param query the query to match
+   * @return a StorageIterator with the found relations
+   */
+  <T extends Relation> StorageIterator<T> findRelations(Class<T> type, TimbuctooQuery query);
+
 }

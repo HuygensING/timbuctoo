@@ -387,9 +387,15 @@ public class GraphLegacyStorageWrapper implements Storage {
     TimbuctooQuery query = queryFactory.newQuery(type) //
         .hasNotNullProperty(Entity.ID_DB_PROPERTY_NAME, id)//
         .hasDistinctValue(Entity.REVISION_PROPERTY_NAME) //
-        .searchByType(true) //
         .searchLatestOnly(false);
 
+    if (RELATION_TYPE.isAssignableFrom(type)) {
+      query.searchByType(false);
+      @SuppressWarnings("unchecked")
+      List<T> revisions = (List<T>) graphStorage.findRelations(asRelation(type), query).getAll();
+      return revisions;
+    }
+    query.searchByType(true);
     return graphStorage.findEntities(type, query).getAll();
   }
 

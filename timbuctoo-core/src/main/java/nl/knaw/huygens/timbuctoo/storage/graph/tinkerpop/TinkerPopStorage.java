@@ -764,4 +764,9 @@ public class TinkerPopStorage implements GraphStorage {
 
     return storageIteratorFactory.create(type, veritices);
   }
+
+  @Override
+  public <T extends Relation> StorageIterator<T> findRelations(Class<T> type, TimbuctooQuery query) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }

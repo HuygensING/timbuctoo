@@ -679,6 +679,27 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
+  public void getAllRevisionsForRelationCreatesAQueryCallsFindRelationsOnGraphStorage() throws Exception {
+    SubARelation relation1 = aRelation().build();
+    SubARelation relation2 = aRelation().build();
+    // setup
+    StorageIterator<SubARelation> iterator = StorageIteratorStub.newInstance(relation1, relation2);
+
+    when(graphStorageMock.findRelations(RELATION_TYPE, queryMock)).thenReturn(iterator);
+
+    // action
+    List<SubARelation> revisions = instance.getAllRevisions(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(revisions, containsInAnyOrder(relation1, relation2));
+
+    verify(queryMock).searchByType(false);
+    verify(queryMock).searchLatestOnly(false);
+    verify(queryMock).hasNotNullProperty(Entity.ID_DB_PROPERTY_NAME, ID);
+    verify(queryMock).hasDistinctValue(Entity.REVISION_PROPERTY_NAME);
+  }
+
+  @Test
   public void updateDomainEntityForRelationDelegatesToGraphStorageAddRelation() throws Exception {
     // setup
     Change oldModified = new Change();
