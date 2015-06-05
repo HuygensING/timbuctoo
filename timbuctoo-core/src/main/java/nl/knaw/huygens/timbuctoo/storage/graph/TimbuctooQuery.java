@@ -89,9 +89,15 @@ public class TimbuctooQuery {
   }
 
   public TinkerPopResultFilter createResultFilter(TinkerPopResultFilterBuilder resultFilterBuilder) {
-    resultFilterBuilder.setHasDistinctValues(distinctValues);
+    //    resultFilterBuilder.setHasDistinctValues(distinctValues);
+    //
+    //    return resultFilterBuilder.buildFor(type);
 
-    return resultFilterBuilder.buildFor(type);
+    throw new UnsupportedOperationException();
+  }
+
+  public void addFilterOptionsToResultFilter(TinkerPopResultFilter resultFilter) {
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
 }

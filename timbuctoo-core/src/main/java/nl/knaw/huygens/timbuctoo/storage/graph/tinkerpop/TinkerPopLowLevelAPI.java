@@ -279,7 +279,7 @@ class TinkerPopLowLevelAPI {
   public <T extends Entity> Iterator<Vertex> findVertices(Class<T> type, TimbuctooQuery query) {
     Iterable<Vertex> vertices = query.createGraphQuery(queryBuilderFactory.newQueryBuilder(type)).vertices();
 
-    TinkerPopResultFilter resultFilter = query.createResultFilter(resultFilterBuilder);
+    TinkerPopResultFilter resultFilter = resultFilterBuilder.buildFor(type, query);
 
     Iterable<Vertex> filteredVertices = resultFilter.filter(vertices);
 

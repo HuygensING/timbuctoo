@@ -10,9 +10,7 @@ public class TinkerPopResultFilter<T extends Element> {
 
   private List<PipeFunction<T, Object>> distinctPropertyFunctions;
 
-  public TinkerPopResultFilter(List<PipeFunction<T, Object>> distinctPropertyFunctions) {
-    this.distinctPropertyFunctions = distinctPropertyFunctions;
-  }
+  public TinkerPopResultFilter() {}
 
   public Iterable<T> filter(Iterable<T> iterableToFilter) {
     GremlinPipeline<Iterable<T>, T> pipeline = new GremlinPipeline<Iterable<T>, T>(iterableToFilter);

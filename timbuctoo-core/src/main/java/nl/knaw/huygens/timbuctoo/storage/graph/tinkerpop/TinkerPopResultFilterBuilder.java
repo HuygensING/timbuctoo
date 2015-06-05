@@ -1,17 +1,15 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import java.lang.reflect.Field;
-import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.NoSuchFieldException;
 import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
+import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQuery;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.pipes.PipeFunction;
+import com.tinkerpop.blueprints.Element;
 
 public class TinkerPopResultFilterBuilder {
 
@@ -32,17 +30,12 @@ public class TinkerPopResultFilterBuilder {
     this.fieldsWithDistinctValues = fieldsWithDistinctValues;
   }
 
-  public TinkerPopResultFilter buildFor(Class<? extends Entity> type) {
-    Map<String, Field> fields = collectAllFields(type);
-    List<PipeFunction<Vertex, Object>> pipeFunctions = Lists.newArrayList();
+  public TinkerPopResultFilter buildFor(Class<? extends Entity> type, TimbuctooQuery query) {
+    TinkerPopResultFilter<Element> resultFilter = new TinkerPopResultFilter<Element>();
 
-    for (String field : fieldsWithDistinctValues) {
-      String propertyName = getPropertyName(fields, type, field);
-      pipeFunctions.add(pipeFunctionFactory.forDistinctProperty(propertyName));
-    }
+    query.addFilterOptionsToResultFilter(resultFilter);
 
-    return new TinkerPopResultFilter(pipeFunctions);
-
+    return resultFilter;
   }
 
   @SuppressWarnings("unchecked")

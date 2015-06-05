@@ -318,8 +318,9 @@ public class TinkerPopLowLevelAPITest {
     TimbuctooQuery query = aQuery() //
         .searchesLatestOnly(true) //
         .createsGraphQueryForDB(queryBuilder, graphQuery) //
-        .createsResultFilter(resultFilterBuilder, resultFilter)//
         .build();
+
+    when(resultFilterBuilder.buildFor(DOMAIN_ENTITY_TYPE, query)).thenReturn(resultFilter);
 
     Vertex latestVertex1 = aVertex().build();
     Vertex latestVertex2 = aVertex().build();
@@ -353,8 +354,9 @@ public class TinkerPopLowLevelAPITest {
     TimbuctooQuery query = aQuery() //
         .searchesLatestOnly(false) //
         .createsGraphQueryForDB(queryBuilder, graphQuery) //
-        .createsResultFilter(resultFilterBuilder, resultFilter)//
         .build();
+
+    when(resultFilterBuilder.buildFor(DOMAIN_ENTITY_TYPE, query)).thenReturn(resultFilter);
 
     Vertex latestVertex1 = aVertex().build();
     Vertex latestVertex2 = aVertex().build();
@@ -388,8 +390,10 @@ public class TinkerPopLowLevelAPITest {
     TinkerPopResultFilter resultFilter = mock(TinkerPopResultFilter.class);
     TimbuctooQuery query = aQuery() //
         .createsGraphQueryForDB(queryBuilder, graphQuery) //
-        .createsResultFilter(resultFilterBuilder, resultFilter)//
+        .createsGraphQueryForDB(queryBuilder, graphQuery) //
         .build();
+
+    when(resultFilterBuilder.buildFor(DOMAIN_ENTITY_TYPE, query)).thenReturn(resultFilter);
 
     when(resultFilter.filter(Matchers.<List<Vertex>> any())).thenReturn(Lists.<Vertex> newArrayList());
 
