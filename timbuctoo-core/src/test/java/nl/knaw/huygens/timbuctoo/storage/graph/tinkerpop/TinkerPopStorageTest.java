@@ -1173,6 +1173,7 @@ public class TinkerPopStorageTest {
   public void deleteRelationRemovesAllTheEdgesFoundByTheId() throws Exception {
     // setup
     TimbuctooQuery query = aQuery().build();
+
     when(queryFactory.newQuery(PRIMITIVE_RELATION_TYPE)).thenReturn(query);
 
     Edge edge1 = anEdge().build();
@@ -1186,6 +1187,7 @@ public class TinkerPopStorageTest {
     // verify
     InOrder inOrder = inOrder(query, dbMock);
     inOrder.verify(query).hasNotNullProperty(Entity.ID_DB_PROPERTY_NAME, ID);
+    inOrder.verify(query).searchLatestOnly(false);
     inOrder.verify(dbMock).removeEdge(edge1);
     inOrder.verify(dbMock).removeEdge(edge2);
 
@@ -1425,6 +1427,24 @@ public class TinkerPopStorageTest {
     List<Edge> edgesList = Lists.<Edge> newArrayList(edges);
     Iterator<Edge> foundEdges = edgesList.iterator();
     when(lowLevelAPIMock.findLatestEdges(RELATION_TYPE, queryMock)).thenReturn(foundEdges);
+  }
+
+  @Test
+  public void findRelationsQueriesForEdgesAndReturnsAStorageIteratorWithTheResult() {
+    // setup
+    Iterator<Edge> edges = Lists.<Edge> newArrayList().iterator();
+    TimbuctooQuery query = aQuery().build();
+    when(lowLevelAPIMock.findEdges(RELATION_TYPE, query)).thenReturn(edges);
+
+    StorageIterator<SubARelation> storageIterator = StorageIteratorStub.newInstance();
+
+    when(storageIteratorFactoryMock.createForRelation(RELATION_TYPE, edges)).thenReturn(storageIterator);
+
+    // action
+    StorageIterator<SubARelation> actualIterator = instance.findRelations(RELATION_TYPE, query);
+
+    // verify
+    assertThat(actualIterator, is(sameInstance(storageIterator)));
   }
 
   @Test

@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -24,6 +25,7 @@ public class TimbuctooQueryMockBuilder {
   public TimbuctooQuery build() {
     TimbuctooQuery query = mock(TimbuctooQuery.class);
     when(query.hasNotNullProperty(anyString(), anyObject())).thenReturn(query);
+    when(query.searchLatestOnly(anyBoolean())).thenReturn(query);
     when(query.createGraphQuery(queryBuilder)).thenReturn(graphQuery);
     when(query.searchLatestOnly()).thenReturn(searchLatestOnly);
     return query;

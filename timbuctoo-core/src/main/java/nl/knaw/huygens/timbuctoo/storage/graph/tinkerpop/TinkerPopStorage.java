@@ -751,7 +751,8 @@ public class TinkerPopStorage implements GraphStorage {
     }
 
     TimbuctooQuery query = queryFactory.newQuery(type)//
-        .hasNotNullProperty(Relation.ID_DB_PROPERTY_NAME, id);
+        .hasNotNullProperty(Relation.ID_DB_PROPERTY_NAME, id) // 
+        .searchLatestOnly(false);
 
     for (Iterator<Edge> edges = lowLevelAPI.findEdges(type, query); edges.hasNext();) {
       db.removeEdge(edges.next());
@@ -767,6 +768,8 @@ public class TinkerPopStorage implements GraphStorage {
 
   @Override
   public <T extends Relation> StorageIterator<T> findRelations(Class<T> type, TimbuctooQuery query) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    Iterator<Edge> edges = lowLevelAPI.findEdges(type, query);
+
+    return storageIteratorFactory.createForRelation(type, edges);
   }
 }
