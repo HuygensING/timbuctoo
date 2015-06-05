@@ -11,12 +11,9 @@ import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQuery;
 import org.junit.Before;
 import org.junit.Test;
 
-import test.model.projecta.SubADomainEntity;
+import com.tinkerpop.blueprints.Vertex;
 
 public class TinkerPopResultFilterBuilderTest {
-  private static final Class<SubADomainEntity> TYPE = SubADomainEntity.class;
-  private static final String REGULAR_FIELD = SubADomainEntity.VALUEA3_NAME;
-  private static final String ADMINISTRATIVE_FIELD = SubADomainEntity.ID_DB_PROPERTY_NAME;
   private PropertyBusinessRules businessRules;
   private PipeFunctionFactory pipeLineFunctionFactory;
   private TinkerPopResultFilterBuilder instance;
@@ -34,7 +31,7 @@ public class TinkerPopResultFilterBuilderTest {
   @Test
   public void buildCreatesAnIsDistinctFilterForEveryFieldName() throws Exception {
     // action
-    TinkerPopResultFilter resultFilter = instance.buildFor(queryMock);
+    TinkerPopResultFilter<Vertex> resultFilter = instance.buildFor(queryMock);
 
     // verify
     assertThat(resultFilter, is(notNullValue()));
