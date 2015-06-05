@@ -109,7 +109,7 @@ public class TimbuctooQueryTest {
     instance.addFilterOptionsToResultFilter(resultFilter);
 
     // verify
-    verify(resultFilter).setDistinctProperties(disitinctValues);
+    verify(resultFilter).setDistinctFields(disitinctValues);
   }
 
   @Test

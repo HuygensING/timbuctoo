@@ -1,13 +1,12 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.pipes.PipeFunction;
 
 public class PipeFunctionFactory {
 
-  public <T> PipeFunction<Vertex, T> forDistinctProperty(String propertyName) {
-    return new DistinctPropertyFunction<Vertex, T>(propertyName);
+  public <E extends Element, P> PipeFunction<E, P> forDistinctProperty(String propertyName) {
+    return new DistinctPropertyFunction<E, P>(propertyName);
   }
 
   private static class DistinctPropertyFunction<E extends Element, P> implements PipeFunction<E, P> {

@@ -10,7 +10,7 @@ public interface ResultFilter {
    * Set the properties that must have distinct values. 
    * @param disitinctProperties the properties
    */
-  void setDistinctProperties(Set<String> disitinctProperties);
+  void setDistinctFields(Set<String> disitinctProperties);
 
   void setType(Class<? extends Entity> type);
 

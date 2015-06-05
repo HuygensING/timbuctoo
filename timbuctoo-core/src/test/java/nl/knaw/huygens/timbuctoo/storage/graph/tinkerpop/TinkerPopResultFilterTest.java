@@ -1,62 +1,105 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMatcher.likeVertex;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilder.aVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.graph.NoSuchFieldException;
+import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
 
-import org.junit.Ignore;
+import org.junit.Before;
 import org.junit.Test;
 
+import test.model.projecta.SubADomainEntity;
+
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.gremlin.java.GremlinPipeline;
 import com.tinkerpop.pipes.PipeFunction;
 
 public class TinkerPopResultFilterTest {
-  private static final String ID2 = "id2";
-  private static final String ID1 = "id1";
+  private static final Class<SubADomainEntity> TYPE = SubADomainEntity.class;
+  private static final String REGULAR_FIELD = SubADomainEntity.VALUEA3_NAME;
+  private static final String ADMIN_FIELD = Entity.ID_DB_PROPERTY_NAME;
+  private PipeFunctionFactory pipeFunctionFactory;
+  private PropertyBusinessRules businessRules;
+  private TinkerPopResultFilter<Vertex> instance;
+  private GremlinPipeline<Iterable<Vertex>, Vertex> pipeline;
 
-  @Ignore
   @SuppressWarnings("unchecked")
+  @Before
+  public void setup() {
+    pipeFunctionFactory = mock(PipeFunctionFactory.class);
+    businessRules = new PropertyBusinessRules();
+    pipeline = mock(GremlinPipeline.class);
+
+    instance = new TinkerPopResultFilter<Vertex>(pipeFunctionFactory, businessRules) {
+      @Override
+      GremlinPipeline<Iterable<Vertex>, Vertex> createPipeline(Iterable<Vertex> iterableToFilter) {
+        return pipeline;
+      }
+    };
+  }
+
   @Test
-  public void filterCreatesAPipeLineAndFiltersTheIncommingResults() {
+  public void filterCreatesAPipeFunctionForEachDistinctFieldAndExecutesItThrowAPipeLine() throws Exception {
     // setup
-    Vertex vertex1WithId1 = aVertex().withId(ID1).build();
-    Vertex vertex2WithId1 = aVertex().withId(ID1).build();
+    Vertex vertex1 = aVertex().withId("id1").build();
+    Vertex vertex2 = aVertex().withId("id2").build();
+    List<Vertex> result = Lists.newArrayList(vertex1, vertex2);
 
-    Vertex vertex1WithId2 = aVertex().withId(ID2).build();
-    Vertex vertex2WithId2 = aVertex().withId(ID2).build();
+    instance.setDistinctFields(Sets.newHashSet(ADMIN_FIELD, REGULAR_FIELD));
+    instance.setType(TYPE);
 
-    List<Vertex> result = Lists.newArrayList(vertex1WithId1, vertex1WithId2, vertex2WithId1, vertex2WithId2);
-
-    TinkerPopResultFilter<Vertex> instance = new TinkerPopResultFilter<Vertex>(mock(PipeFunctionFactory.class));
+    PipeFunction<Vertex, Object> adminPipeFunction = pipeFunctionfor(ADMIN_FIELD);
+    PipeFunction<Vertex, Object> regularPipeFunction = pipeFunctionfor(getPropertyNameFor(REGULAR_FIELD));
 
     // action
     Iterable<Vertex> filteredResult = instance.filter(result);
 
     // verify
-    List<Vertex> filteredResultList = Lists.newArrayList(filteredResult);
+    assertThat(filteredResult, is(notNullValue()));
 
-    assertThat(filteredResultList, hasSize(2));
-    assertThat(filteredResultList, containsInAnyOrder(//
-        likeVertex().withId(ID1), //
-        likeVertex().withId(ID2)));
+    verify(pipeline).dedup(adminPipeFunction);
+    verify(pipeline).dedup(regularPipeFunction);
+
   }
 
-  private PipeFunction<Vertex, Object> filterByIdFunction() {
-    return new PipeFunction<Vertex, Object>() {
+  @Test(expected = NoSuchFieldException.class)
+  public void filterThrowsANoSuchFieldExceptionWhenAnUnknownFieldIsAddedToTheDistinctProperties() throws Exception {
+    // setup
+    Vertex vertex1 = aVertex().build();
+    Vertex vertex2 = aVertex().build();
+    List<Vertex> result = Lists.newArrayList(vertex1, vertex2);
 
-      @Override
-      public Object compute(Vertex argument) {
-        return argument.getProperty(Entity.ID_DB_PROPERTY_NAME);
-      }
-    };
+    instance.setDistinctFields(Sets.newHashSet("unknownField"));
+    instance.setType(TYPE);
+
+    // action
+    instance.filter(result);
+
   }
 
+  private String getPropertyNameFor(String regularField) throws Exception {
+    Field field = TYPE.getDeclaredField(regularField);
+    String fieldName = businessRules.getFieldName(TYPE, field);
+    return businessRules.getFieldType(TYPE, field).propertyName(TYPE, fieldName);
+  }
+
+  private PipeFunction<Vertex, Object> pipeFunctionfor(String property) {
+    @SuppressWarnings("unchecked")
+    PipeFunction<Vertex, Object> pipefunction = mock(PipeFunction.class);
+    when(pipeFunctionFactory.<Vertex, Object> forDistinctProperty(property)).thenReturn(pipefunction);
+
+    return pipefunction;
+  }
 }
