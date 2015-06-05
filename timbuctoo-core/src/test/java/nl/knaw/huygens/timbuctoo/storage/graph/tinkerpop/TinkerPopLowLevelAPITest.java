@@ -320,7 +320,7 @@ public class TinkerPopLowLevelAPITest {
         .createsGraphQueryForDB(queryBuilder, graphQuery) //
         .build();
 
-    when(resultFilterBuilder.buildFor(DOMAIN_ENTITY_TYPE, query)).thenReturn(resultFilter);
+    when(resultFilterBuilder.buildFor(query)).thenReturn(resultFilter);
 
     Vertex latestVertex1 = aVertex().build();
     Vertex latestVertex2 = aVertex().build();
@@ -356,7 +356,7 @@ public class TinkerPopLowLevelAPITest {
         .createsGraphQueryForDB(queryBuilder, graphQuery) //
         .build();
 
-    when(resultFilterBuilder.buildFor(DOMAIN_ENTITY_TYPE, query)).thenReturn(resultFilter);
+    when(resultFilterBuilder.buildFor(query)).thenReturn(resultFilter);
 
     Vertex latestVertex1 = aVertex().build();
     Vertex latestVertex2 = aVertex().build();
@@ -393,7 +393,7 @@ public class TinkerPopLowLevelAPITest {
         .createsGraphQueryForDB(queryBuilder, graphQuery) //
         .build();
 
-    when(resultFilterBuilder.buildFor(DOMAIN_ENTITY_TYPE, query)).thenReturn(resultFilter);
+    when(resultFilterBuilder.buildFor(query)).thenReturn(resultFilter);
 
     when(resultFilter.filter(Matchers.<List<Vertex>> any())).thenReturn(Lists.<Vertex> newArrayList());
 

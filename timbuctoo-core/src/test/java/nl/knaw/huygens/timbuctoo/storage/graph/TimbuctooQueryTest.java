@@ -111,4 +111,16 @@ public class TimbuctooQueryTest {
     // verify
     verify(resultFilter).setDistinctProperties(disitinctValues);
   }
+
+  @Test
+  public void addFilterOptionsToResultFilterAddsTheTypeToTheResultFilter() {
+    // setup
+    ResultFilter resultFilter = mock(ResultFilter.class);
+
+    // action
+    instance.addFilterOptionsToResultFilter(resultFilter);
+
+    // verify
+    verify(resultFilter).setType(TYPE);
+  }
 }

@@ -88,6 +88,7 @@ public class TimbuctooQuery {
 
   public void addFilterOptionsToResultFilter(ResultFilter resultFilter) {
     resultFilter.setDistinctProperties(distinctValues);
+    resultFilter.setType(type);
   }
 
 }

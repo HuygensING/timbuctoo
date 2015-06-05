@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 import java.util.List;
 import java.util.Set;
 
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.ResultFilter;
 
 import com.tinkerpop.blueprints.Element;
@@ -27,6 +28,11 @@ public class TinkerPopResultFilter<T extends Element> implements ResultFilter {
 
   @Override
   public void setDistinctProperties(Set<String> disitinctProperties) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
+
+  @Override
+  public void setType(Class<? extends Entity> type) {
     throw new UnsupportedOperationException("Yet to be implemented");
   }
 }

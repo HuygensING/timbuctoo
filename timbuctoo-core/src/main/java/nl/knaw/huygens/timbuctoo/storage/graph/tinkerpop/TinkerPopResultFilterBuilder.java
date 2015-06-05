@@ -13,7 +13,6 @@ import com.tinkerpop.blueprints.Element;
 
 public class TinkerPopResultFilterBuilder {
 
-  private Iterable<? extends String> fieldsWithDistinctValues;
   private final PropertyBusinessRules businessRules;
   private final PipeFunctionFactory pipeFunctionFactory;
 
@@ -26,11 +25,7 @@ public class TinkerPopResultFilterBuilder {
     this.pipeFunctionFactory = pipeFunctionFactory;
   }
 
-  public void setHasDistinctValues(Iterable<? extends String> fieldsWithDistinctValues) {
-    this.fieldsWithDistinctValues = fieldsWithDistinctValues;
-  }
-
-  public TinkerPopResultFilter buildFor(Class<? extends Entity> type, TimbuctooQuery query) {
+  public TinkerPopResultFilter buildFor(TimbuctooQuery query) {
     TinkerPopResultFilter<Element> resultFilter = new TinkerPopResultFilter<Element>();
 
     query.addFilterOptionsToResultFilter(resultFilter);

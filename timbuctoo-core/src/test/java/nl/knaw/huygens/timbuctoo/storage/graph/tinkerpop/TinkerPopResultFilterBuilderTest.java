@@ -34,7 +34,7 @@ public class TinkerPopResultFilterBuilderTest {
   @Test
   public void buildCreatesAnIsDistinctFilterForEveryFieldName() throws Exception {
     // action
-    TinkerPopResultFilter resultFilter = instance.buildFor(TYPE, queryMock);
+    TinkerPopResultFilter resultFilter = instance.buildFor(queryMock);
 
     // verify
     assertThat(resultFilter, is(notNullValue()));

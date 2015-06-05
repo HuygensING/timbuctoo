@@ -2,6 +2,8 @@ package nl.knaw.huygens.timbuctoo.storage.graph;
 
 import java.util.Set;
 
+import nl.knaw.huygens.timbuctoo.model.Entity;
+
 public interface ResultFilter {
 
   /**
@@ -9,5 +11,7 @@ public interface ResultFilter {
    * @param disitinctProperties the properties
    */
   void setDistinctProperties(Set<String> disitinctProperties);
+
+  void setType(Class<? extends Entity> type);
 
 }
