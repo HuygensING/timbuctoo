@@ -114,7 +114,7 @@ class TinkerPopLowLevelAPI {
 
   public Edge getLatestEdgeById(Class<? extends Relation> relationType, String id) {
     Edge latestEdge = null;
-    Iterable<Edge> edges = db.query().has(ID_DB_PROPERTY_NAME, id).edges();
+    Iterable<Edge> edges = queryByType(relationType).has(ID_DB_PROPERTY_NAME, id).edges();
     Predicate<Edge> isLaterEdge = new Predicate<Edge>() {
       private int latestRev = 0;
 

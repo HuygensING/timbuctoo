@@ -766,7 +766,7 @@ public class TinkerPopLowLevelAPITest {
   public void getLatestEdgeByIdReturnsTheEdgeWithTheHighestRevisionForACertainId() {
     // setup
     Edge edgeWithHighestRevision = anEdge().withRev(THIRD_REVISION).build();
-    anEdgeSearchResult().forId(ID)//
+    anEdgeSearchResult().forId(ID).forType(RELATION_TYPE)//
         .containsEdge(anEdge().withRev(FIRST_REVISION).build())//
         .andEdge(edgeWithHighestRevision)//
         .andEdge(anEdge().withRev(SECOND_REVISION).build())//
@@ -782,7 +782,7 @@ public class TinkerPopLowLevelAPITest {
   @Test
   public void getLatestEdgeByIdReturnsNullIfNoEdgesAreFound() {
     // setup
-    anEmptyEdgeSearchResult().forId(ID).foundInDatabase(dbMock);
+    anEmptyEdgeSearchResult().forId(ID).forType(RELATION_TYPE).foundInDatabase(dbMock);
 
     // action
     Edge foundEdge = instance.getLatestEdgeById(RELATION_TYPE, ID);
