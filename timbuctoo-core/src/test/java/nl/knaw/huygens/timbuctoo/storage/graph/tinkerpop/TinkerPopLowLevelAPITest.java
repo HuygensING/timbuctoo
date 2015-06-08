@@ -669,6 +669,7 @@ public class TinkerPopLowLevelAPITest {
     assertThat(Iterators.size(vertices), is(0));
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void findEdgesBuildsGraphQueryFromATinkerPopQueryAndReturnsTheEdgesFromTheResult() {
     // setup
@@ -686,11 +687,55 @@ public class TinkerPopLowLevelAPITest {
 
     TimbuctooQuery query = aQuery().createsGraphQueryForDB(queryBuilder, graphQuery).build();
 
+    TinkerPopResultFilter<Edge> resultFilter = mock(TinkerPopResultFilter.class);
+    when(resultFilterBuilder.<Edge> buildFor(query)).thenReturn(resultFilter);
+
+    List<Edge> edges = Lists.<Edge> newArrayList(edge1, edge2, edge3);
+    when(resultFilter.filter(Matchers.anyCollectionOf(Edge.class))).thenReturn(edges);
+
     // action
-    Iterator<Edge> edges = instance.findEdges(RELATION_TYPE, query);
+    Iterator<Edge> foundEdges = instance.findEdges(RELATION_TYPE, query);
 
     // verify
-    assertThat(Lists.newArrayList(edges), containsInAnyOrder(edge1, edge2, edge3));
+    assertThat(Lists.newArrayList(foundEdges), containsInAnyOrder(edge1, edge2, edge3));
+
+    verify(resultFilter).filter((Iterable<Edge>) argThat(contains(edge1, edge2, edge3)));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void findEdgesReturnsTheLatestOnlyIfTheQueryRequestIt() {
+    // setup
+    GraphQuery graphQuery = mock(GraphQuery.class);
+
+    Edge edge1 = anEdge().withID(ID).withRev(FIRST_REVISION).build();
+    Edge edge2 = anEdge().withID(ID).withRev(SECOND_REVISION).build();
+    Edge edge3 = anEdge().withID(ID2).withRev(FIRST_REVISION).build();
+
+    anEdgeSearchResult()//
+        .containsEdge(edge1)//
+        .andEdge(edge2)//
+        .andEdge(edge3)//
+        .foundByGraphQuery(graphQuery);
+
+    TimbuctooQuery query = aQuery()//
+        .searchesLatestOnly(true)//
+        .createsGraphQueryForDB(queryBuilder, graphQuery)//
+        .build();
+
+    TinkerPopResultFilter<Edge> resultFilter = mock(TinkerPopResultFilter.class);
+    when(resultFilterBuilder.<Edge> buildFor(query)).thenReturn(resultFilter);
+
+    List<Edge> edges = Lists.<Edge> newArrayList(edge1, edge2, edge3);
+    when(resultFilter.filter(Matchers.anyCollectionOf(Edge.class))).thenReturn(edges);
+
+    // action
+    Iterator<Edge> foundEdges = instance.findEdges(RELATION_TYPE, query);
+
+    // verify
+    assertThat(Lists.newArrayList(foundEdges), containsInAnyOrder(edge2, edge3));
+
+    verify(resultFilter).filter((Iterable<Edge>) argThat(contains(edge1, edge2, edge3)));
   }
 
   @Test
@@ -701,11 +746,20 @@ public class TinkerPopLowLevelAPITest {
 
     TimbuctooQuery query = aQuery().createsGraphQueryForDB(queryBuilder, graphQuery).build();
 
+    @SuppressWarnings("unchecked")
+    TinkerPopResultFilter<Edge> resultFilter = mock(TinkerPopResultFilter.class);
+    when(resultFilterBuilder.<Edge> buildFor(query)).thenReturn(resultFilter);
+
+    List<Edge> edges = Lists.<Edge> newArrayList();
+    when(resultFilter.filter(Matchers.anyCollectionOf(Edge.class))).thenReturn(edges);
+
     // action
-    Iterator<Edge> edges = instance.findEdges(RELATION_TYPE, query);
+    Iterator<Edge> foundEdges = instance.findEdges(RELATION_TYPE, query);
 
     // verify
-    assertThat(Iterators.size(edges), is(0));
+    assertThat(Iterators.size(foundEdges), is(0));
+
+    verify(resultFilter).filter(Matchers.anyCollectionOf(Edge.class));
   }
 
   @Test

@@ -273,7 +273,11 @@ class TinkerPopLowLevelAPI {
   public Iterator<Edge> findEdges(Class<? extends Relation> type, TimbuctooQuery query) {
     Iterable<Edge> edges = query.createGraphQuery(queryBuilderFactory.newQueryBuilder(type)).edges();
 
-    return edges.iterator();
+    TinkerPopResultFilter<Edge> filter = resultFilterBuilder.buildFor(query);
+
+    Iterable<Edge> filteredEdges = filter.filter(edges);
+
+    return query.searchLatestOnly() ? getLatestEdges(filteredEdges) : filteredEdges.iterator();
   }
 
   public <T extends Entity> Iterator<Vertex> findVertices(Class<T> type, TimbuctooQuery query) {
