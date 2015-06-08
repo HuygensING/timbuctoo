@@ -60,6 +60,7 @@ import test.model.TestSystemEntityWrapper;
 import test.model.projecta.ProjectAPerson;
 import test.model.projecta.SubARelation;
 import test.model.projectb.ProjectBPerson;
+import test.model.projectb.SubBRelation;
 
 import com.google.common.collect.Lists;
 
@@ -561,7 +562,7 @@ public abstract class StorageIntegrationTest {
     String targetId = addDefaultProjectAPerson();
     String typeId = addRelationType();
 
-    String relationId = addDefaultRelation(sourceId, targetId, typeId);
+    String relationId = addDefaultSubARelation(sourceId, targetId, typeId);
 
     // check if the relation is added
     assertThat(instance.getEntity(PROJECT_RELATION_TYPE, relationId), likeDefaultAcceptedRelation(sourceId, targetId, typeId));
@@ -582,7 +583,7 @@ public abstract class StorageIntegrationTest {
     String targetId = addDefaultProjectAPerson();
     String typeId = addRelationType();
 
-    String id = addDefaultRelation(sourceId, targetId, typeId);
+    String id = addDefaultSubARelation(sourceId, targetId, typeId);
 
     // set the PID and check if it's added
     instance.setPID(RELATION_TYPE, id, PID);
@@ -608,7 +609,7 @@ public abstract class StorageIntegrationTest {
     String targetId = addDefaultProjectAPerson();
     String typeId = addRelationType();
 
-    String relationId = addDefaultRelation(sourceId, targetId, typeId);
+    String relationId = addDefaultSubARelation(sourceId, targetId, typeId);
 
     // check if the relation is added
     assertThat(instance.getEntity(PROJECT_RELATION_TYPE, relationId), likeDefaultAcceptedRelation(sourceId, targetId, typeId));
@@ -829,6 +830,21 @@ public abstract class StorageIntegrationTest {
     assertThat(idsOfNonPersistentEntities, not(hasItem(id)));
   }
 
+  @Test
+  public void doesVariationExistReturnsIfAVariationExistsForADomainEntity() throws Exception {
+    // setup
+    String id = addDefaultProjectAPerson();
+
+    // action
+    boolean projectAVariantExists = instance.doesVariationExist(DOMAIN_ENTITY_TYPE, id);
+    boolean projectBVariantExists = instance.doesVariationExist(ProjectBPerson.class, id);
+
+    // verify
+    assertThat(projectAVariantExists, is(true));
+    assertThat(projectBVariantExists, is(false));
+
+  }
+
   /* *******************************************************************************
    * Relation
    * ******************************************************************************/
@@ -838,7 +854,7 @@ public abstract class StorageIntegrationTest {
     String targetId = addDefaultProjectAPerson();
     String typeId = addRelationType();
 
-    String id = addDefaultRelation(sourceId, targetId, typeId);
+    String id = addDefaultSubARelation(sourceId, targetId, typeId);
 
     // check if the relation is added
     assertThat(instance.getEntity(PROJECT_RELATION_TYPE, id), likeDefaultRelation(sourceId, targetId, typeId));
@@ -868,7 +884,7 @@ public abstract class StorageIntegrationTest {
         .isAccepted(ACCEPTED);
   }
 
-  private String addDefaultRelation(String sourceId, String targetId, String typeId) throws StorageException {
+  private String addDefaultSubARelation(String sourceId, String targetId, String typeId) throws StorageException {
     SubARelation relation = new SubARelation();
     relation.setAccepted(ACCEPTED);
     relation.setSourceId(sourceId);
@@ -894,7 +910,7 @@ public abstract class StorageIntegrationTest {
     String targetId = addDefaultProjectAPerson();
     String typeId = addRelationType();
 
-    String id = addDefaultRelation(sourceId, targetId, typeId);
+    String id = addDefaultSubARelation(sourceId, targetId, typeId);
     SubARelation relation = instance.getEntity(PROJECT_RELATION_TYPE, id);
     // assert the relation is stored
     assertThat(relation, is(notNullValue()));
@@ -938,7 +954,7 @@ public abstract class StorageIntegrationTest {
     String targetId = addDefaultProjectAPerson();
     String typeId = addRelationType();
 
-    String id = addDefaultRelation(sourceId, targetId, typeId);
+    String id = addDefaultSubARelation(sourceId, targetId, typeId);
 
     // set PID and check if the PID is really set
     instance.setPID(RELATION_TYPE, id, PID);
@@ -964,7 +980,7 @@ public abstract class StorageIntegrationTest {
     String targetId = addDefaultProjectAPerson();
     String typeId = addRelationType();
 
-    String id = addDefaultRelation(sourceId, targetId, typeId);
+    String id = addDefaultSubARelation(sourceId, targetId, typeId);
 
     // action
     instance.setPID(PROJECT_RELATION_TYPE, id, PID);
@@ -987,7 +1003,7 @@ public abstract class StorageIntegrationTest {
     String targetId = addDefaultProjectAPerson();
     String typeId = addRelationType();
 
-    addDefaultRelation(sourceId, targetId, typeId);
+    addDefaultSubARelation(sourceId, targetId, typeId);
 
     // action
     SubARelation foundRelation = instance.findItemByProperty(PROJECT_RELATION_TYPE, Relation.SOURCE_ID, sourceId);
@@ -1010,7 +1026,7 @@ public abstract class StorageIntegrationTest {
     String targetId = addDefaultProjectAPerson();
     String typeId = addRelationType();
 
-    String id = addDefaultRelation(sourceId, targetId, typeId);
+    String id = addDefaultSubARelation(sourceId, targetId, typeId);
 
     SubARelation relation = instance.getEntity(RELATION_TYPE, id);
     relation.setAccepted(NOT_ACCEPTED);
@@ -1056,8 +1072,8 @@ public abstract class StorageIntegrationTest {
     String typeId = addRelationType();
     String otherTypeId = addRelationType();
 
-    String id1 = addDefaultRelation(sourceId, targetId, typeId);
-    String id2 = addDefaultRelation(targetId, sourceId, otherTypeId);
+    String id1 = addDefaultSubARelation(sourceId, targetId, typeId);
+    String id2 = addDefaultSubARelation(targetId, sourceId, otherTypeId);
 
     // action
     StorageIterator<Relation> relations = instance.getRelationsByEntityId(PRIMITIVE_RELATION_TYPE, sourceId);
@@ -1089,7 +1105,7 @@ public abstract class StorageIntegrationTest {
     String targetId = addDefaultProjectAPerson();
     String typeId = addRelationType();
 
-    String id = addDefaultRelation(sourceId, targetId, typeId);
+    String id = addDefaultSubARelation(sourceId, targetId, typeId);
 
     // create a duplicate
     instance.setPID(RELATION_TYPE, id, PID);
@@ -1120,9 +1136,9 @@ public abstract class StorageIntegrationTest {
     String entityId4 = addDefaultProjectAPerson();
     String typeId = addRelationType();
 
-    String relBetweenE1AndE2 = addDefaultRelation(entityId1, entityId2, typeId);
-    String relBetweenE2AndE3 = addDefaultRelation(entityId2, entityId3, typeId);
-    String relBetweenE3AndE4 = addDefaultRelation(entityId3, entityId4, typeId);
+    String relBetweenE1AndE2 = addDefaultSubARelation(entityId1, entityId2, typeId);
+    String relBetweenE2AndE3 = addDefaultSubARelation(entityId2, entityId3, typeId);
+    String relBetweenE3AndE4 = addDefaultSubARelation(entityId3, entityId4, typeId);
 
     // action
     List<String> foundIds = instance.getRelationIds(Lists.newArrayList(entityId1, entityId2));
@@ -1140,7 +1156,7 @@ public abstract class StorageIntegrationTest {
     String targetId = addDefaultProjectAPerson();
     String typeId = addRelationType();
 
-    String id = addDefaultRelation(sourceId, targetId, typeId);
+    String id = addDefaultSubARelation(sourceId, targetId, typeId);
     instance.setPID(RELATION_TYPE, id, PID);
     instance.declineRelationsOfEntity(RELATION_TYPE, sourceId);
     instance.setPID(RELATION_TYPE, id, PID2);
@@ -1162,7 +1178,7 @@ public abstract class StorageIntegrationTest {
     String targetId = addDefaultProjectAPerson();
     String typeId = addRelationType();
 
-    String id = addDefaultRelation(sourceId, targetId, typeId);
+    String id = addDefaultSubARelation(sourceId, targetId, typeId);
 
     // action
     boolean exists = instance.entityExists(RELATION_TYPE, id);
@@ -1177,7 +1193,7 @@ public abstract class StorageIntegrationTest {
     String targetId = addDefaultProjectAPerson();
     String relationTypeId = addRelationType();
 
-    String id = addDefaultRelation(sourceId, targetId, relationTypeId);
+    String id = addDefaultSubARelation(sourceId, targetId, relationTypeId);
 
     // action
     SubARelation foundRelation = instance.findRelation(RELATION_TYPE, sourceId, targetId, relationTypeId);
@@ -1200,10 +1216,10 @@ public abstract class StorageIntegrationTest {
     String typeId = addRelationType();
     String typeId2 = addRelationType();
 
-    String relId1 = addDefaultRelation(entityId1, entityId2, typeId);
-    String relId2 = addDefaultRelation(entityId1, entityId3, typeId);
-    String relId3 = addDefaultRelation(entityId1, entityId2, typeId2);
-    String relId4 = addDefaultRelation(entityId2, entityId3, typeId);
+    String relId1 = addDefaultSubARelation(entityId1, entityId2, typeId);
+    String relId2 = addDefaultSubARelation(entityId1, entityId3, typeId);
+    String relId3 = addDefaultSubARelation(entityId1, entityId2, typeId2);
+    String relId4 = addDefaultSubARelation(entityId2, entityId3, typeId);
 
     // action
     StorageIterator<SubARelation> relations = instance.findRelations(RELATION_TYPE, entityId1, entityId2, typeId);
@@ -1228,10 +1244,10 @@ public abstract class StorageIntegrationTest {
     String typeId = addRelationType();
     String typeId2 = addRelationType();
 
-    String relId1 = addDefaultRelation(entityId1, entityId2, typeId);
-    String relId2 = addDefaultRelation(entityId1, entityId3, typeId);
-    String relId3 = addDefaultRelation(entityId1, entityId2, typeId2);
-    String relId4 = addDefaultRelation(entityId2, entityId3, typeId);
+    String relId1 = addDefaultSubARelation(entityId1, entityId2, typeId);
+    String relId2 = addDefaultSubARelation(entityId1, entityId3, typeId);
+    String relId3 = addDefaultSubARelation(entityId1, entityId2, typeId2);
+    String relId4 = addDefaultSubARelation(entityId2, entityId3, typeId);
 
     // action
     StorageIterator<SubARelation> relations = instance.findRelations(RELATION_TYPE, entityId2, null, typeId);
@@ -1256,10 +1272,10 @@ public abstract class StorageIntegrationTest {
     String typeId = addRelationType();
     String typeId2 = addRelationType();
 
-    String relId1 = addDefaultRelation(entityId1, entityId2, typeId);
-    String relId2 = addDefaultRelation(entityId1, entityId3, typeId);
-    String relId3 = addDefaultRelation(entityId1, entityId2, typeId2);
-    String relId4 = addDefaultRelation(entityId2, entityId3, typeId);
+    String relId1 = addDefaultSubARelation(entityId1, entityId2, typeId);
+    String relId2 = addDefaultSubARelation(entityId1, entityId3, typeId);
+    String relId3 = addDefaultSubARelation(entityId1, entityId2, typeId2);
+    String relId4 = addDefaultSubARelation(entityId2, entityId3, typeId);
 
     // action
     StorageIterator<SubARelation> relations = instance.findRelations(RELATION_TYPE, null, entityId3, typeId);
@@ -1284,10 +1300,10 @@ public abstract class StorageIntegrationTest {
     String typeId = addRelationType();
     String typeId2 = addRelationType();
 
-    String relId1 = addDefaultRelation(entityId1, entityId2, typeId);
-    String relId2 = addDefaultRelation(entityId1, entityId3, typeId);
-    String relId3 = addDefaultRelation(entityId1, entityId2, typeId2);
-    String relId4 = addDefaultRelation(entityId2, entityId3, typeId);
+    String relId1 = addDefaultSubARelation(entityId1, entityId2, typeId);
+    String relId2 = addDefaultSubARelation(entityId1, entityId3, typeId);
+    String relId3 = addDefaultSubARelation(entityId1, entityId2, typeId2);
+    String relId4 = addDefaultSubARelation(entityId2, entityId3, typeId);
 
     // action
     StorageIterator<SubARelation> relations = instance.findRelations(RELATION_TYPE, entityId1, entityId2, null);
@@ -1308,10 +1324,10 @@ public abstract class StorageIntegrationTest {
     String sourceId = addDefaultProjectAPerson();
     String targetId = addDefaultProjectAPerson();
     String typeId = addRelationType();
-    String id = addDefaultRelation(sourceId, targetId, typeId);
+    String id = addDefaultSubARelation(sourceId, targetId, typeId);
     instance.setPID(PROJECT_RELATION_TYPE, id, PID);
 
-    String id2 = addDefaultRelation(sourceId, targetId, typeId);
+    String id2 = addDefaultSubARelation(sourceId, targetId, typeId);
 
     // action
     List<String> idsOfNonRelations = instance.getAllIdsWithoutPIDOfType(PROJECT_RELATION_TYPE);
@@ -1327,7 +1343,7 @@ public abstract class StorageIntegrationTest {
     String sourceId = addDefaultProjectAPerson();
     String targetId = addDefaultProjectAPerson();
     String typeId = addRelationType();
-    String id = addDefaultRelation(sourceId, targetId, typeId);
+    String id = addDefaultSubARelation(sourceId, targetId, typeId);
 
     // action
     List<Relation> allVariations = instance.getAllVariations(PRIMITIVE_RELATION_TYPE, id);
@@ -1344,13 +1360,32 @@ public abstract class StorageIntegrationTest {
     String sourceId = addDefaultProjectAPerson();
     String targetId = addDefaultProjectAPerson();
     String typeId = addRelationType();
-    String id = addDefaultRelation(sourceId, targetId, typeId);
+    String id = addDefaultSubARelation(sourceId, targetId, typeId);
 
     // action
     instance.deleteDomainEntity(PRIMITIVE_RELATION_TYPE, id, UPDATE_CHANGE);
 
     // verify
     assertThat(instance.getEntity(RELATION_TYPE, id), is(nullValue()));
+
+  }
+
+  @Test
+  public void doesVariationExistForRelationReturnsIfAVariationExistsForARelation() throws Exception {
+    // setup
+    String sourceId = addDefaultProjectAPerson();
+    String targetId = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+
+    String id = addDefaultSubARelation(sourceId, targetId, typeId);
+
+    // action
+    boolean subARelationExists = instance.doesVariationExist(RELATION_TYPE, id);
+    boolean subBRelationExists = instance.doesVariationExist(SubBRelation.class, id);
+
+    // verify
+    assertThat(subARelationExists, is(true));
+    assertThat(subBRelationExists, is(false));
 
   }
 
