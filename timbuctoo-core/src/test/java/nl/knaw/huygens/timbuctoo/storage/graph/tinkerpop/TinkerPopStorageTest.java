@@ -1426,7 +1426,7 @@ public class TinkerPopStorageTest {
   private void latestEdgesFoundByQuery(TimbuctooQuery queryMock, Edge... edges) {
     List<Edge> edgesList = Lists.<Edge> newArrayList(edges);
     Iterator<Edge> foundEdges = edgesList.iterator();
-    when(lowLevelAPIMock.findLatestEdges(RELATION_TYPE, queryMock)).thenReturn(foundEdges);
+    when(lowLevelAPIMock.findEdges(RELATION_TYPE, queryMock)).thenReturn(foundEdges);
   }
 
   @Test

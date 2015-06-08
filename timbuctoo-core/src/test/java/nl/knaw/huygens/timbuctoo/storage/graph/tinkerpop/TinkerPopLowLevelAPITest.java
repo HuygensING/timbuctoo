@@ -763,44 +763,6 @@ public class TinkerPopLowLevelAPITest {
   }
 
   @Test
-  public void findLatestEdgesBuildsGraphQueryFromATinkerPopQueryAndReturnsTheLatestEdgesFromTheResult() {
-    // setup
-    GraphQuery graphQuery = mock(GraphQuery.class);
-
-    Edge latestEdge1 = anEdge().withID(ID).withRev(SECOND_REVISION).build();
-    Edge latestEdge2 = anEdge().withID(ID2).withRev(FIRST_REVISION).build();
-
-    anEdgeSearchResult()//
-        .containsEdge(anEdge().withID(ID).withRev(FIRST_REVISION).build())//
-        .andEdge(latestEdge1)//
-        .andEdge(latestEdge2)//
-        .foundByGraphQuery(graphQuery);
-
-    TimbuctooQuery query = aQuery().createsGraphQueryForDB(queryBuilder, graphQuery).build();
-
-    // action
-    Iterator<Edge> edges = instance.findLatestEdges(RELATION_TYPE, query);
-
-    // verify
-    assertThat(Lists.newArrayList(edges), containsInAnyOrder(latestEdge1, latestEdge2));
-  }
-
-  @Test
-  public void findLatestEdgesReturnsAnEmptyIteratorWhenNoEdgesAreFound() {
-    // setup
-    GraphQuery graphQuery = mock(GraphQuery.class);
-    anEmptyEdgeSearchResult().foundByGraphQuery(graphQuery);
-
-    TimbuctooQuery query = aQuery().createsGraphQueryForDB(queryBuilder, graphQuery).build();
-
-    // action
-    Iterator<Edge> edges = instance.findLatestEdges(RELATION_TYPE, query);
-
-    // verify
-    assertThat(Iterators.size(edges), is(0));
-  }
-
-  @Test
   public void getLatestEdgeByIdReturnsTheEdgeWithTheHighestRevisionForACertainId() {
     // setup
     Edge edgeWithHighestRevision = anEdge().withRev(THIRD_REVISION).build();

@@ -660,7 +660,7 @@ public class TinkerPopStorage implements GraphStorage {
     Vertex source = getVertexIfIdIsNotNull(sourceId);
     Vertex target = getVertexIfIdIsNotNull(targetId);
 
-    Iterator<Edge> foundEdges = lowLevelAPI.findLatestEdges(relationType, query);
+    Iterator<Edge> foundEdges = lowLevelAPI.findEdges(relationType, query);
 
     for (; foundEdges.hasNext();) {
       Edge edge = foundEdges.next();
