@@ -1386,6 +1386,30 @@ public abstract class StorageIntegrationTest {
     // verify
     assertThat(subARelationExists, is(true));
     assertThat(subBRelationExists, is(false));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void getRelationsByTypeSearchesTheRelationsByRelationType() throws Exception {
+    // setup
+    String sourceId = addDefaultProjectAPerson();
+    String targetId = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+    String typeId2 = addRelationType();
+    String typeId3 = addRelationType();
+
+    addDefaultSubARelation(sourceId, targetId, typeId);
+    addDefaultSubARelation(sourceId, targetId, typeId2);
+    addDefaultSubARelation(sourceId, targetId, typeId3);
+
+    // action
+    List<SubARelation> relations = instance.getRelationsByType(RELATION_TYPE, Lists.newArrayList(typeId, typeId2));
+
+    // verify
+    assertThat(relations, hasSize(2));
+    assertThat(relations, containsInAnyOrder(//
+        likeDefaultAcceptedRelation(sourceId, targetId, typeId), //
+        likeDefaultAcceptedRelation(sourceId, targetId, typeId2)));
 
   }
 
