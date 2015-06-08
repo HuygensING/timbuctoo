@@ -441,7 +441,10 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends Relation> List<T> getRelationsByType(Class<T> type, List<String> relationTypeIds) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    TimbuctooQuery query = queryFactory.newQuery(type);
+    query.inCollection(Relation.TYPE_ID, relationTypeIds);
+
+    return graphStorage.findRelations(type, query).getAll();
   }
 
   @SuppressWarnings("unchecked")

@@ -15,6 +15,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doThrow;
@@ -93,6 +94,7 @@ public class GraphLegacyStorageWrapperTest {
     when(queryMock.searchByType(anyBoolean())).thenReturn(queryMock);
     when(queryMock.searchLatestOnly(anyBoolean())).thenReturn(queryMock);
     when(queryMock.hasDistinctValue(anyString())).thenReturn(queryMock);
+    when(queryMock.inCollection(anyString(), anyList())).thenReturn(queryMock);
 
     queryFactoryMock = mock(TimbuctooQueryFactory.class);
     when(queryFactoryMock.newQuery(any(Class.class))).thenReturn(queryMock);
@@ -694,9 +696,9 @@ public class GraphLegacyStorageWrapperTest {
 
   @Test
   public void getAllRevisionsForRelationCreatesAQueryCallsFindRelationsOnGraphStorage() throws Exception {
+    // setup
     SubARelation relation1 = aRelation().build();
     SubARelation relation2 = aRelation().build();
-    // setup
     StorageIterator<SubARelation> iterator = StorageIteratorStub.newInstance(relation1, relation2);
 
     when(graphStorageMock.findRelations(RELATION_TYPE, queryMock)).thenReturn(iterator);
@@ -711,6 +713,28 @@ public class GraphLegacyStorageWrapperTest {
     verify(queryMock).searchLatestOnly(false);
     verify(queryMock).hasNotNullProperty(Entity.ID_DB_PROPERTY_NAME, ID);
     verify(queryMock).hasDistinctValue(Entity.REVISION_PROPERTY_NAME);
+  }
+
+  @Test
+  public void getRelationsByTypeCreatesAQueryAndCallsFindRelations() throws Exception {
+    // setup
+    SubARelation relation1 = aRelation().build();
+    SubARelation relation2 = aRelation().build();
+    StorageIterator<SubARelation> iterator = StorageIteratorStub.newInstance(relation1, relation2);
+
+    when(graphStorageMock.findRelations(RELATION_TYPE, queryMock)).thenReturn(iterator);
+
+    List<String> relationTypeIds = Lists.newArrayList("typeId1", "typeId2");
+
+    // action
+    List<SubARelation> foundRelations = instance.getRelationsByType(RELATION_TYPE, relationTypeIds);
+
+    // verify
+    assertThat(foundRelations, containsInAnyOrder(relation1, relation2));
+
+    verify(queryFactoryMock).newQuery(RELATION_TYPE);
+    verify(queryMock).inCollection(Relation.TYPE_ID, relationTypeIds);
+
   }
 
   @Test

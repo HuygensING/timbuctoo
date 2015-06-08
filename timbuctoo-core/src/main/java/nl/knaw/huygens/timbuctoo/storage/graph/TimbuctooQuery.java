@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,17 +16,19 @@ public class TimbuctooQuery {
   private Set<String> distinctValues;
   private boolean searchLatestOnly;
   private Class<? extends Entity> type;
+  private Map<String, List<?>> inCollectionProperties;
 
   public TimbuctooQuery(Class<? extends Entity> type) {
-    this(type, Maps.<String, Object> newHashMap(), Sets.<String> newHashSet());
+    this(type, Maps.<String, Object> newHashMap(), Sets.<String> newHashSet(), Maps.<String, List<?>> newHashMap());
 
   }
 
-  TimbuctooQuery(Class<? extends Entity> type, Map<String, Object> hasProperties, Set<String> distinctProperties) {
+  TimbuctooQuery(Class<? extends Entity> type, Map<String, Object> hasProperties, Set<String> distinctProperties, Map<String, List<?>> inCollectionProperties) {
     this.type = type;
     this.searchLatestOnly(true);
     this.hasProperties = hasProperties;
     this.distinctValues = distinctProperties;
+    this.inCollectionProperties = inCollectionProperties;
   }
 
   /**
@@ -89,6 +92,17 @@ public class TimbuctooQuery {
   public void addFilterOptionsToResultFilter(ResultFilter resultFilter) {
     resultFilter.setDistinctFields(distinctValues);
     resultFilter.setType(type);
+  }
+
+  /**
+   * A method that makes it possible to search on multiple values at once.
+   * @param fieldName the field that should contain one of the values
+   * @param allowedValues the possible values the field should contain
+   * @return the current instance
+   */
+  public TimbuctooQuery inCollection(String fieldName, List<?> allowedValues) {
+    inCollectionProperties.put(fieldName, allowedValues);
+    return this;
   }
 
 }

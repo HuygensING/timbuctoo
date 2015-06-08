@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,7 +43,7 @@ public class TimbuctooQueryTest {
     when(queryBuilderMock.build()).thenReturn(mock(GraphQuery.class));
     hasProperties = Maps.newHashMap();
     disitinctValues = Sets.newHashSet();
-    instance = new TimbuctooQuery(TYPE, hasProperties, disitinctValues);
+    instance = new TimbuctooQuery(TYPE, hasProperties, disitinctValues, Maps.<String, List<?>> newHashMap());
   }
 
   @Test
