@@ -4,7 +4,6 @@ import nl.knaw.huygens.timbuctoo.storage.DBIntegrationTestHelper;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIntegrationTest;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TinkerPopLegacyStorageWrapperIntegrationTest extends StorageIntegrationTest {
@@ -326,7 +325,6 @@ public class TinkerPopLegacyStorageWrapperIntegrationTest extends StorageIntegra
     super.doesVariationExistReturnsIfAVariationExistsForADomainEntity();
   }
 
-  @Ignore
   @Test
   @Override
   public void getRelationsByTypeSearchesTheRelationsByRelationType() throws Exception {
