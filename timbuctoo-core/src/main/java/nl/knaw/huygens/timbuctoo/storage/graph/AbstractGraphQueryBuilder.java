@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -14,11 +15,14 @@ public abstract class AbstractGraphQueryBuilder<T> {
   protected final Class<? extends Entity> type;
   protected Map<String, Object> hasProperties;
   protected boolean searchByType;
+  protected Map<String, List<?>> inCollectionProperties;
 
   public AbstractGraphQueryBuilder(Class<? extends Entity> type, PropertyBusinessRules businessRules) {
     this.type = type;
     this.businessRules = businessRules;
     this.fields = collectAllFields(type);
+    this.hasProperties = Maps.newHashMap();
+    this.inCollectionProperties = Maps.newHashMap();
   }
 
   @SuppressWarnings("unchecked")
@@ -57,5 +61,9 @@ public abstract class AbstractGraphQueryBuilder<T> {
   }
 
   public abstract T build() throws NoSuchFieldException;
+
+  public void setInCollectionProperties(Map<String, List<?>> inCollectionProperties) {
+    this.inCollectionProperties = inCollectionProperties;
+  }
 
 }

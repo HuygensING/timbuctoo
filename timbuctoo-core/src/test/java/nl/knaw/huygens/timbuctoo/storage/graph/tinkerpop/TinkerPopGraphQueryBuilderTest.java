@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
@@ -9,27 +10,33 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.NoSuchFieldException;
 import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.TinkerPopGraphQueryBuilder.InCollectionPredicate;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import test.model.projecta.SubADomainEntity;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.GraphQuery;
 
 public class TinkerPopGraphQueryBuilderTest {
+  private static final String VALUE2 = "value2";
+  private static final String ADMINISTRATIVE_PROPERTY = Entity.ID_DB_PROPERTY_NAME;
   private static final Class<SubADomainEntity> TYPE = SubADomainEntity.class;
   private static final String INTERNAL_NAME = TypeNames.getInternalName(TYPE);
   private static final Object VALUE = "value";
-  private static final String NAME = SubADomainEntity.VALUEA3_NAME;
+  private static final String REGULAR_PROPERTY = SubADomainEntity.VALUEA3_NAME;
 
   private TinkerPopGraphQueryBuilder instance;
   private PropertyBusinessRules businessRules;
@@ -53,18 +60,16 @@ public class TinkerPopGraphQueryBuilderTest {
   @Test
   public void buildLetsDBCreateAGraphQueryAndAddsTheAddedProperties() throws Exception {
     // setup
-    properties.put(NAME, VALUE);
-    String administrativeProperty = Entity.ID_DB_PROPERTY_NAME;
-    Object value2 = "value2";
-    properties.put(administrativeProperty, value2);
+    properties.put(REGULAR_PROPERTY, VALUE);
+    properties.put(ADMINISTRATIVE_PROPERTY, VALUE2);
     instance.setHasProperties(properties);
 
     // action
     GraphQuery query = instance.build();
 
     // verify
-    verify(query).has(getExpectedPropertyName(TYPE, NAME), VALUE);
-    verify(query).has(administrativeProperty, value2);
+    verify(query).has(getExpectedPropertyName(TYPE, REGULAR_PROPERTY), VALUE);
+    verify(query).has(ADMINISTRATIVE_PROPERTY, VALUE2);
   }
 
   @Test(expected = NoSuchFieldException.class)
@@ -96,4 +101,53 @@ public class TinkerPopGraphQueryBuilderTest {
         argThat(is(INTERNAL_NAME)));
   }
 
+  @Test
+  public void buildAddsAHasPropertyWithAInCollectionPredicateForEachEntryInTheInCollectionProperties() throws Exception {
+    // setup
+    Map<String, List<?>> inCollectionProperties = Maps.newHashMap();
+    ArrayList<Object> collection1 = Lists.newArrayList(VALUE);
+    inCollectionProperties.put(REGULAR_PROPERTY, collection1);
+    ArrayList<String> collection2 = Lists.newArrayList(VALUE2);
+    inCollectionProperties.put(ADMINISTRATIVE_PROPERTY, collection2);
+    instance.setInCollectionProperties(inCollectionProperties);
+
+    // action
+    GraphQuery query = instance.build();
+
+    // verify
+    verify(query).has(argThat(is(getExpectedPropertyName(TYPE, REGULAR_PROPERTY))), any(InCollectionPredicate.class), argThat(is(collection1)));
+    verify(query).has(argThat(is(ADMINISTRATIVE_PROPERTY)), any(InCollectionPredicate.class), argThat(is(collection2)));
+
+  }
+
+  @Test
+  public void inCollectionPredicatesEvaluateReturnsTrueIfTheSecondValueContainsTheFirst() {
+    // setup
+    String first = "firstValue";
+    List<String> second = Lists.newArrayList(first);
+
+    InCollectionPredicate inCollectionPredicate = new InCollectionPredicate();
+
+    // action
+    boolean evaluate = inCollectionPredicate.evaluate(first, second);
+
+    // verify
+    assertThat(evaluate, is(true));
+
+  }
+
+  @Test
+  public void inCollectionPredicatesEvaluateReturnsFalseIfTheSecondValueDoesNotContainTheFirst() {
+    // setup
+    String first = "firstValue";
+    List<String> second = Lists.newArrayList("other");
+
+    InCollectionPredicate inCollectionPredicate = new InCollectionPredicate();
+
+    // action
+    boolean evaluate = inCollectionPredicate.evaluate(first, second);
+
+    // verify
+    assertThat(evaluate, is(false));
+  }
 }

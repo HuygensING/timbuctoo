@@ -83,6 +83,7 @@ public class TimbuctooQuery {
 
   public <T> T createGraphQuery(AbstractGraphQueryBuilder<T> queryCreator) throws NoSuchFieldException {
     queryCreator.setHasProperties(hasProperties);
+    queryCreator.setInCollectionProperties(inCollectionProperties);
     queryCreator.setSearchByType(searchByType);
 
     return queryCreator.build();

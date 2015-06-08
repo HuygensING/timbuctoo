@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,6 +36,7 @@ public class TimbuctooQueryTest {
   private TimbuctooQuery instance;
   private AbstractGraphQueryBuilder<Object> queryBuilderMock;
   private Set<String> disitinctValues;
+  private HashMap<String, List<?>> inCollectionProperties;
 
   @SuppressWarnings("unchecked")
   @Before
@@ -43,7 +45,8 @@ public class TimbuctooQueryTest {
     when(queryBuilderMock.build()).thenReturn(mock(GraphQuery.class));
     hasProperties = Maps.newHashMap();
     disitinctValues = Sets.newHashSet();
-    instance = new TimbuctooQuery(TYPE, hasProperties, disitinctValues, Maps.<String, List<?>> newHashMap());
+    inCollectionProperties = Maps.<String, List<?>> newHashMap();
+    instance = new TimbuctooQuery(TYPE, hasProperties, disitinctValues, inCollectionProperties);
   }
 
   @Test
@@ -88,6 +91,7 @@ public class TimbuctooQueryTest {
     // verify
     assertThat(query, is(not(nullValue())));
     verify(queryBuilderMock).setHasProperties(hasProperties);
+    verify(queryBuilderMock).setInCollectionProperties(inCollectionProperties);
     verify(queryBuilderMock).setSearchByType(true);
     verify(queryBuilderMock).build();
   }
@@ -124,4 +128,5 @@ public class TimbuctooQueryTest {
     // verify
     verify(resultFilter).setType(TYPE);
   }
+
 }
