@@ -552,6 +552,20 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
+  public void testDoesVariationExistCallsTheGraphStorageEntityExists() throws Exception {
+    // setup
+    boolean entityExists = true;
+    when(graphStorageMock.entityExists(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entityExists);
+
+    // action
+    boolean variationExists = instance.doesVariationExist(DOMAIN_ENTITY_TYPE, ID);
+
+    // verify
+    assertThat(variationExists, is(entityExists));
+
+  }
+
+  @Test
   public void setPIDDelegatesToGraphStorageSetDomainEntityPID() throws Exception {
     // action
     instance.setPID(DOMAIN_ENTITY_TYPE, ID, PID);
@@ -832,6 +846,19 @@ public class GraphLegacyStorageWrapperTest {
 
     // action
     instance.deleteRelationsOfEntity(PRIMITIVE_RELATION_TYPE, ID);
+  }
+
+  @Test
+  public void doesVariationExistForRelationDelegatesToGraphStorageRelationExists() throws Exception {
+    // setup
+    boolean relationExists = true;
+    when(graphStorageMock.relationExists(RELATION_TYPE, ID)).thenReturn(relationExists);
+
+    // action
+    boolean variationExists = instance.doesVariationExist(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(variationExists, is(relationExists));
   }
 
   @Test

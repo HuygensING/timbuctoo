@@ -444,9 +444,14 @@ public class GraphLegacyStorageWrapper implements Storage {
     throw new UnsupportedOperationException("Yet to be implemented");
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public boolean doesVariationExist(Class<? extends DomainEntity> type, String id) throws StorageException {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    if (RELATION_TYPE.isAssignableFrom(type)) {
+      return graphStorage.relationExists((Class<? extends Relation>) type, id);
+    }
+
+    return graphStorage.entityExists(type, id);
   }
 
 }
