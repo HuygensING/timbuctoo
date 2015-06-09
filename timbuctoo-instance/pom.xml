@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>nl.knaw.huygens</groupId>
@@ -9,13 +10,17 @@
   <name>Repository instance</name>
   <packaging>war</packaging>
 
+  <properties>
+    <jetty.version>9.2.11.v20150529</jetty.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>nl.knaw.huygens</groupId>
       <artifactId>timbuctoo-rest</artifactId>
       <version>${project.version}</version>
     </dependency>
-    
+
     <!-- The timbuctoo test pages -->
     <dependency>
       <groupId>nl.knaw.huygens</groupId>
@@ -24,8 +29,31 @@
       <type>war</type>
       <scope>runtime</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-servlet</artifactId>
+      <version>${jetty.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.jersey.contribs</groupId>
+      <artifactId>jersey-guice</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-json</artifactId>
+      <version>${jersey.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.1.0</version>
+    </dependency>
+
   </dependencies>
-  
+
   <profiles>
     <profile>
       <id>dev</id>
@@ -91,7 +119,7 @@
       </dependencies>
     </profile>
   </profiles>
-  
+
   <build>
     <plugins>
       <plugin>
@@ -107,5 +135,5 @@
       </plugin>
     </plugins>
   </build>
-  
+
 </project>

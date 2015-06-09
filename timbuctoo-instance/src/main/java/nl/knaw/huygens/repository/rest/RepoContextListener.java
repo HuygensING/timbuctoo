@@ -26,4 +26,11 @@ import nl.knaw.huygens.timbuctoo.rest.TimbuctooContextListener;
 
 public class RepoContextListener extends TimbuctooContextListener {
 
+  public RepoContextListener() {
+    super();
+  }
+
+  public RepoContextListener(String configFile) {
+    super(configFile);
+  }
 }

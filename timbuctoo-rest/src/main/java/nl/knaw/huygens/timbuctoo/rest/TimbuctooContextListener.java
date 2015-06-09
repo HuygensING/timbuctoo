@@ -66,11 +66,20 @@ public abstract class TimbuctooContextListener extends GuiceServletContextListen
   private PersistenceService persistenceService;
   private ExecutorService persistenceThreadExecutor;
   private RepoScheduler scheduler;
+  private String configFile;
+
+  public TimbuctooContextListener() {
+    this(Configuration.DEFAULT_CONFIG_FILE);
+  }
+
+  public TimbuctooContextListener(String configFile) {
+    this.configFile = configFile;
+  }
 
   @Override
   protected Injector getInjector() {
     try {
-      config = new Configuration();
+      config = new Configuration(configFile);
       Module baseModule = new RESTInjectionModule(config);
       Module servletModule = new ServletInjectionModule();
       injector = Guice.createInjector(baseModule, servletModule);
