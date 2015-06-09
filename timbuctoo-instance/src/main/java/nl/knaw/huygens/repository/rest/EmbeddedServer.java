@@ -33,7 +33,7 @@ public class EmbeddedServer {
   public void setupContext(Server server) {
     ServletContextHandler context = new ServletContextHandler(server, PATH, ServletContextHandler.SESSIONS);
     context.addFilter(GuiceFilter.class, "/*", EnumSet.<javax.servlet.DispatcherType> of(javax.servlet.DispatcherType.REQUEST, javax.servlet.DispatcherType.ASYNC));
-    context.addEventListener(new RepoContextListener("config.xml"));
+    context.addEventListener(new RepoContextListener());
     context.addServlet(DefaultServlet.class, "/*");
 
     ResourceHandler resourceHandler = new ResourceHandler();

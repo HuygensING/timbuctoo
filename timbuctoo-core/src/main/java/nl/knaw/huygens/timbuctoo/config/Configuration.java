@@ -39,7 +39,7 @@ import com.google.common.collect.Maps;
 
 public class Configuration {
 
-  public static final String DEFAULT_CONFIG_FILE = "../config.xml";
+  public static final String DEFAULT_CONFIG_FILE = "config.xml";
 
   private static final String SETTINGS_PREFIX = "settings.";
   public static final String KEY_HOME_DIR = "home.directory";
