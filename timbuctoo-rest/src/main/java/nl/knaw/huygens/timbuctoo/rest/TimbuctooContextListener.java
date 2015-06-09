@@ -66,7 +66,6 @@ public abstract class TimbuctooContextListener extends GuiceServletContextListen
   private PersistenceService persistenceService;
   private ExecutorService persistenceThreadExecutor;
   private RepoScheduler scheduler;
-  private String configFile;
 
   @Override
   protected Injector getInjector() {

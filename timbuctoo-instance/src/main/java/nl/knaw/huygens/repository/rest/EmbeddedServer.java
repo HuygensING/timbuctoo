@@ -7,9 +7,15 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.DefaultServlet;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.util.resource.ResourceCollection;
 
 import com.google.inject.servlet.GuiceFilter;
 
+/**
+ * 
+ * 
+ *
+ */
 // inspired by: https://hajix.wordpress.com/2014/08/07/starting-a-simple-server-with-jettyjerseyguicejackson-stack/
 public class EmbeddedServer {
 
@@ -17,35 +23,46 @@ public class EmbeddedServer {
   private static final int PORT_NUMBER = 8080;
 
   public static void main(String[] args) throws Exception {
-    new EmbeddedServer().start();
+    if (args.length < 1) {
+      throw new RuntimeException("Add a relative path to config.js as first argument for example: ../timbuctoo-war-config-example/src/main/webapp/");
+    }
+
+    new EmbeddedServer().start(args[0]);
   }
 
-  public void start() throws Exception, InterruptedException {
+  public void start(String relativePathToJsConfig) throws Exception, InterruptedException {
     Server server = new Server(PORT_NUMBER);
 
-    setupContext(server);
+    setupContext(server, relativePathToJsConfig);
 
     server.start();
     server.join();
   }
 
-  // static content inspired by: http://stackoverflow.com/questions/9385432/how-do-i-set-up-static-resources-and-custom-services-with-embedded-jetty
-  public void setupContext(Server server) {
+  public void setupContext(Server server, String relativePathToJSConfig) {
     ServletContextHandler context = new ServletContextHandler(server, PATH, ServletContextHandler.SESSIONS);
     context.addFilter(GuiceFilter.class, "/*", EnumSet.<javax.servlet.DispatcherType> of(javax.servlet.DispatcherType.REQUEST, javax.servlet.DispatcherType.ASYNC));
     context.addEventListener(new RepoContextListener());
     context.addServlet(DefaultServlet.class, "/*");
 
-    ResourceHandler resourceHandler = new ResourceHandler();
-    resourceHandler.setResourceBase(getHtmlLocation());
-    resourceHandler.setDirectoriesListed(true);
-    resourceHandler.setWelcomeFiles(new String[] { "static/index.html" });
+    ResourceHandler resourceHandler = createResourceHandler(relativePathToJSConfig);
 
     context.setHandler(resourceHandler);
+  }
 
-    String htmlLoc = getHtmlLocation();
+  private ResourceHandler createResourceHandler(String relativePathToJSConfig) {
+    ResourceCollection resourceCollection = new ResourceCollection(new String[] { getHtmlLocation(), getJSConfigLocation(relativePathToJSConfig) });
 
-    System.out.println("html location: " + htmlLoc);
+    ResourceHandler resourceHandler = new ResourceHandler();
+    resourceHandler.setBaseResource(resourceCollection);
+    resourceHandler.setDirectoriesListed(true);
+    resourceHandler.setWelcomeFiles(new String[] { "static/index.html" });
+    return resourceHandler;
+  }
+
+  private String getJSConfigLocation(String relativePathToJSConfig) {
+    File file = new File(relativePathToJSConfig);
+    return file.getAbsolutePath();
   }
 
   public String getHtmlLocation() {
