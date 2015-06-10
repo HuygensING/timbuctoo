@@ -31,6 +31,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.impls.neo4j.Neo4jGraph;
+import com.tinkerpop.blueprints.impls.rexster.RexsterGraph;
 
 public class BasicInjectionModule extends AbstractModule {
 
@@ -69,6 +70,20 @@ public class BasicInjectionModule extends AbstractModule {
   }
 
   private Graph createDB() {
-    return new Neo4jGraph(config.getDirectory("graph.path"));
+    GraphTypes type = GraphTypes.valueOf(config.getSetting("graph.type"));
+    if (type == GraphTypes.NEO4J) {
+      return new Neo4jGraph(config.getDirectory("graph.path"));
+    } else if (type == GraphTypes.REXSTER) {
+      return createRexsterGraph();
+    }
+    throw new RuntimeException("Database" + type + " is not supported yet.");
+  }
+
+  public Graph createRexsterGraph() {
+    String user = config.getSetting("graph.user", null);
+    String password = config.getSetting("graph.password", null);
+    String url = config.getSetting("graph.url");
+
+    return new RexsterGraph(url, user, password);
   }
 }
