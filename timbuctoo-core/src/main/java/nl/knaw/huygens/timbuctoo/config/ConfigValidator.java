@@ -61,6 +61,7 @@ public class ConfigValidator {
     checkSettingExists(Configuration.KEY_HOME_DIR);
     validateSolrDirectory();
     validateAdminDataDirectory();
+    validateGraphDatabase();
   }
 
   /**
@@ -84,6 +85,18 @@ public class ConfigValidator {
     String key = "admin_data.directory";
     if (checkSettingExists(key)) {
       checkDirectoryExists(key);
+    }
+  }
+
+  private void validateGraphDatabase() {
+    String key = "graph.type";
+    if (checkSettingExists(key)) {
+      String type = config.getSetting(key);
+      if (GraphTypes.valueOf(type) == GraphTypes.NEO4J) {
+        checkSettingExists("graph.path");
+      } else if (GraphTypes.valueOf(type) == GraphTypes.REXSTER) {
+        checkSettingExists("graph.url");
+      }
     }
   }
 
