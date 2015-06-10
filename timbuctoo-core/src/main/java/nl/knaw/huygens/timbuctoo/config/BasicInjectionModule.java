@@ -69,6 +69,6 @@ public class BasicInjectionModule extends AbstractModule {
   }
 
   private Graph createDB() {
-    return new Neo4jGraph(config.pathInUserHome("repository/database"));
+    return new Neo4jGraph(config.getDirectory("graph.path"));
   }
 }
