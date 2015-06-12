@@ -24,6 +24,8 @@ import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQuery;
 import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQueryFactory;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.graphwrapper.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.graphwrapper.GraphWrapperFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
@@ -51,10 +53,10 @@ public class TinkerPopStorage implements GraphStorage {
   }
 
   public TinkerPopStorage(Graph db, ElementConverterFactory elementConverterFactory, TinkerPopLowLevelAPI lowLevelAPI, TypeRegistry typeRegistry) {
-    this(db, elementConverterFactory, lowLevelAPI, typeRegistry, new TinkerPopStorageIteratorFactory(elementConverterFactory), new TimbuctooQueryFactory());
+    this(new GraphWrapperFactory().wrap(db), elementConverterFactory, lowLevelAPI, typeRegistry, new TinkerPopStorageIteratorFactory(elementConverterFactory), new TimbuctooQueryFactory());
   }
 
-  public TinkerPopStorage(Graph db, ElementConverterFactory elementConverterFactory, TinkerPopLowLevelAPI lowLevelAPI, TypeRegistry typeRegistry,
+  TinkerPopStorage(GraphWrapper db, ElementConverterFactory elementConverterFactory, TinkerPopLowLevelAPI lowLevelAPI, TypeRegistry typeRegistry,
       TinkerPopStorageIteratorFactory storageIteratorFactory, TimbuctooQueryFactory queryFactory) {
     this.db = db;
     this.elementConverterFactory = elementConverterFactory;

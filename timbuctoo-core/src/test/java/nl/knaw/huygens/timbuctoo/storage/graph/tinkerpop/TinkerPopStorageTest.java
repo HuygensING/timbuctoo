@@ -46,6 +46,7 @@ import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQuery;
 import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQueryFactory;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.graphwrapper.GraphWrapper;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -63,7 +64,6 @@ import test.model.projecta.SubARelation;
 import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 
 public class TinkerPopStorageTest {
@@ -93,7 +93,7 @@ public class TinkerPopStorageTest {
   private static final Class<BaseDomainEntity> PRIMITIVE_DOMAIN_ENTITY_TYPE = BaseDomainEntity.class;
   private static final String PRIMITIVE_DOMAIN_ENTITY_NAME = TypeNames.getInternalName(PRIMITIVE_DOMAIN_ENTITY_TYPE);
 
-  private Graph dbMock;
+  private GraphWrapper dbMock;
   private TinkerPopStorage instance;
   private ElementConverterFactory elementConverterFactoryMock;
   private Vertex createdVertex;
@@ -103,7 +103,7 @@ public class TinkerPopStorageTest {
   @Before
   public void setup() throws Exception {
     queryFactory = mock(TimbuctooQueryFactory.class);
-    dbMock = mock(Graph.class);
+    dbMock = mock(GraphWrapper.class);
     lowLevelAPIMock = mock(TinkerPopLowLevelAPI.class);
     elementConverterFactoryMock = mock(ElementConverterFactory.class);
     TypeRegistry typeRegistry = TypeRegistry.getInstance().init("timbuctoo.model test.model test.model.projecta");
