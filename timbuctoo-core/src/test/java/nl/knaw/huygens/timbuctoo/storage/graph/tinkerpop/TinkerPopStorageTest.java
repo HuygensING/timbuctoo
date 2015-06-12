@@ -130,6 +130,7 @@ public class TinkerPopStorageTest {
 
     // verify
     verify(converter).addValuesToElement(createdVertex, entity);
+    verify(dbMock).commit();
   }
 
   @Test(expected = ConversionException.class)
@@ -158,8 +159,8 @@ public class TinkerPopStorageTest {
     instance.addSystemEntity(SYSTEM_ENTITY_TYPE, entity);
 
     // verify
-    verify(dbMock).addVertex(null);
     verify(vertexConverter).addValuesToElement(createdVertex, entity);
+    verify(dbMock).commit();
   }
 
   @Test(expected = StorageException.class)
@@ -227,7 +228,7 @@ public class TinkerPopStorageTest {
     verify(dbMock).removeEdge(incomingEdge2);
     verify(dbMock).removeEdge(outgoingEdge2);
     verify(dbMock).removeVertex(vertex2);
-
+    verify(dbMock).commit();
   }
 
   @Test(expected = NoSuchEntityException.class)
@@ -240,7 +241,7 @@ public class TinkerPopStorageTest {
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void deleteThrowsAnIllegalArgumentExceptionWhenTheEntityIsNotAPrimitiveDomainEntity() throws Exception {
+  public void deleteDomainEntityThrowsAnIllegalArgumentExceptionWhenTheEntityIsNotAPrimitiveDomainEntity() throws Exception {
     // action
     instance.deleteDomainEntity(DOMAIN_ENTITY_TYPE, ID);
   }
@@ -268,7 +269,7 @@ public class TinkerPopStorageTest {
     verify(dbMock).removeEdge(incomingEdge2);
     verify(dbMock).removeEdge(outgoingEdge2);
     verify(dbMock).removeVertex(vertex2);
-
+    verify(dbMock).commit();
   }
 
   private void verticesFoundWithTypeAndId(Class<? extends Entity> type, String id, Vertex... vertices) {
@@ -300,6 +301,7 @@ public class TinkerPopStorageTest {
     InOrder inOrder = inOrder(converter);
     inOrder.verify(converter).updateModifiedAndRev(vertex, entity);
     inOrder.verify(converter).removeVariant(vertex);
+    verify(dbMock).commit();
   }
 
   @Test(expected = ConversionException.class)
@@ -718,6 +720,7 @@ public class TinkerPopStorageTest {
     // verify
     verify(converter).updateModifiedAndRev(vertex, entity);
     verify(converter).updateElement(vertex, entity);
+    verify(dbMock).commit();
   }
 
   @Test(expected = ConversionException.class)
@@ -795,7 +798,7 @@ public class TinkerPopStorageTest {
     // verify
     verify(converter).updateModifiedAndRev(vertex, domainEntity);
     verify(converter).addValuesToElement(vertex, domainEntity);
-
+    verify(dbMock).commit();
   }
 
   @Test(expected = NoSuchEntityException.class)
@@ -901,10 +904,12 @@ public class TinkerPopStorageTest {
     instance.setDomainEntityPID(DOMAIN_ENTITY_TYPE, ID, PID);
 
     // verify
-    verify(converter).addValuesToElement( //
+    InOrder inOrder = inOrder(converter, lowLevelAPIMock, dbMock);
+    inOrder.verify(converter).addValuesToElement( //
         argThat(is(foundVertex)), //
         argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE).withPID(PID)));
-    verify(lowLevelAPIMock).duplicate(foundVertex);
+    inOrder.verify(lowLevelAPIMock).duplicate(foundVertex);
+    inOrder.verify(dbMock).commit();
   }
 
   @Test(expected = IllegalStateException.class)
@@ -992,7 +997,7 @@ public class TinkerPopStorageTest {
 
     // verify
     verify(converter).removePropertyByFieldName(vertex, FIELD_NAME);
-
+    verify(dbMock).commit();
   }
 
   @Test(expected = NoSuchEntityException.class)
@@ -1037,6 +1042,7 @@ public class TinkerPopStorageTest {
 
     // verify
     converter.addValuesToElement(edge, relation);
+    verify(dbMock).commit();
   }
 
   @Test(expected = ConversionException.class)
@@ -1190,7 +1196,7 @@ public class TinkerPopStorageTest {
     inOrder.verify(query).searchLatestOnly(false);
     inOrder.verify(dbMock).removeEdge(edge1);
     inOrder.verify(dbMock).removeEdge(edge2);
-
+    inOrder.verify(dbMock).commit();
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -1811,6 +1817,7 @@ public class TinkerPopStorageTest {
 
     // verify
     verify(converter).removePropertyByFieldName(edge, FIELD_NAME);
+    verify(dbMock).commit();
   }
 
   @Test(expected = NoSuchRelationException.class)
@@ -1835,10 +1842,12 @@ public class TinkerPopStorageTest {
     instance.setRelationPID(RELATION_TYPE, ID, PID);
 
     // verify
-    verify(converter).addValuesToElement( //
+    InOrder inOrder = inOrder(converter, lowLevelAPIMock, dbMock);
+    inOrder.verify(converter).addValuesToElement( //
         argThat(is(edge)), //
         argThat(likeDomainEntity(RELATION_TYPE).withPID(PID)));
-    verify(lowLevelAPIMock).duplicate(edge);
+    inOrder.verify(lowLevelAPIMock).duplicate(edge);
+    inOrder.verify(dbMock).commit();
   }
 
   @Test(expected = IllegalStateException.class)
@@ -1904,6 +1913,7 @@ public class TinkerPopStorageTest {
     // verify
     verify(converter).updateModifiedAndRev(edge, entity);
     verify(converter).updateElement(edge, entity);
+    verify(dbMock).commit();
   }
 
   @Test(expected = UpdateException.class)

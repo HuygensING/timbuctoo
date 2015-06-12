@@ -40,7 +40,7 @@ import com.tinkerpop.blueprints.Vertex;
 public class TinkerPopStorage implements GraphStorage {
 
   private boolean available = true;
-  private final Graph db;
+  private final GraphWrapper db;
   private final ElementConverterFactory elementConverterFactory;
   private final TinkerPopLowLevelAPI lowLevelAPI;
   private final TypeRegistry typeRegistry;
@@ -191,6 +191,7 @@ public class TinkerPopStorage implements GraphStorage {
     public final void execute(AddAction addAction, RollbackAction rollbackAction) throws StorageException {
       try {
         addAction.execute();
+        db.commit();
       } catch (ConversionException e) {
         rollbackAction.execute();
         throw e;
@@ -279,7 +280,7 @@ public class TinkerPopStorage implements GraphStorage {
     VertexConverter<T> converter = elementConverterFactory.forType(type);
     converter.updateModifiedAndRev(vertex, entity);
     converter.updateElement(vertex, entity);
-
+    db.commit();
   }
 
   private <T extends Entity> Vertex getVertexIfExists(Class<T> type, String id) throws NoSuchEntityException {
@@ -318,6 +319,7 @@ public class TinkerPopStorage implements GraphStorage {
     VertexConverter<T> converter = elementConverterFactory.forType(type);
     converter.updateModifiedAndRev(vertex, variant);
     converter.addValuesToElement(vertex, variant);
+    db.commit();
 
   }
 
@@ -341,6 +343,7 @@ public class TinkerPopStorage implements GraphStorage {
 
     converter.updateModifiedAndRev(edge, relation);
     converter.updateElement(edge, relation);
+    db.commit();
   }
 
   @Override
@@ -376,6 +379,7 @@ public class TinkerPopStorage implements GraphStorage {
     VertexConverter<T> converter = elementConverterFactory.forType(type);
     converter.updateModifiedAndRev(vertex, variant);
     converter.removeVariant(vertex);
+    db.commit();
   }
 
   @Override
@@ -413,6 +417,8 @@ public class TinkerPopStorage implements GraphStorage {
       db.removeVertex(vertex);
       numberOfDeletedEntities++;
     }
+
+    db.commit();
     return numberOfDeletedEntities;
   }
 
@@ -467,7 +473,7 @@ public class TinkerPopStorage implements GraphStorage {
     converter.addValuesToElement(vertex, entity);
 
     lowLevelAPI.duplicate(vertex);
-
+    db.commit();
   }
 
   private <T extends DomainEntity> void validateEntityHasNoPID(Class<T> type, T entity) {
@@ -492,7 +498,7 @@ public class TinkerPopStorage implements GraphStorage {
     converter.addValuesToElement(edge, relation);
 
     lowLevelAPI.duplicate(edge);
-
+    db.commit();
   }
 
   @Override
@@ -730,6 +736,7 @@ public class TinkerPopStorage implements GraphStorage {
     VertexConverter<T> converter = elementConverterFactory.forType(type);
 
     converter.removePropertyByFieldName(vertex, fieldName);
+    db.commit();
   }
 
   @Override
@@ -743,7 +750,7 @@ public class TinkerPopStorage implements GraphStorage {
     EdgeConverter<T> converter = elementConverterFactory.forRelation(type);
 
     converter.removePropertyByFieldName(edge, fieldName);
-
+    db.commit();
   }
 
   @Override
@@ -759,6 +766,7 @@ public class TinkerPopStorage implements GraphStorage {
     for (Iterator<Edge> edges = lowLevelAPI.findEdges(type, query); edges.hasNext();) {
       db.removeEdge(edges.next());
     }
+    db.commit();
   }
 
   @Override
