@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
+package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query;
 
 import java.lang.reflect.Field;
 import java.util.Map;

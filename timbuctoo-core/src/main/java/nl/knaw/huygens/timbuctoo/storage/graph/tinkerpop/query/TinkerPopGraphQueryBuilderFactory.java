@@ -1,10 +1,10 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
+package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query;
 
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import com.tinkerpop.blueprints.Graph;
 
-class TinkerPopGraphQueryBuilderFactory {
+public class TinkerPopGraphQueryBuilderFactory {
   private Graph db;
 
   public TinkerPopGraphQueryBuilderFactory(Graph db) {

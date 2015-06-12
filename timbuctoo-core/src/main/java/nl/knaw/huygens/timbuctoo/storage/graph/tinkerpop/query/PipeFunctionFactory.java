@@ -1,9 +1,9 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
+package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query;
 
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.pipes.PipeFunction;
 
-public class PipeFunctionFactory {
+class PipeFunctionFactory {
 
   public <E extends Element, P> PipeFunction<E, P> forDistinctProperty(String propertyName) {
     return new DistinctPropertyFunction<E, P>(propertyName);

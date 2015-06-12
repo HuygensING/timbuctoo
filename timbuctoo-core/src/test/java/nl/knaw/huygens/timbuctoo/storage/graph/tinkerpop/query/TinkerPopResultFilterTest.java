@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
+package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query;
 
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilder.aVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -14,6 +14,8 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.NoSuchFieldException;
 import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.PipeFunctionFactory;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TinkerPopResultFilter;
 
 import org.junit.Before;
 import org.junit.Test;

@@ -7,8 +7,8 @@ import static nl.knaw.huygens.timbuctoo.storage.graph.SubADomainEntityBuilder.aD
 import static nl.knaw.huygens.timbuctoo.storage.graph.SubARelationBuilder.aRelation;
 import static nl.knaw.huygens.timbuctoo.storage.graph.TestSystemEntityWrapperBuilder.aSystemEntity;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeMockBuilder.anEdge;
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.TimbuctooQueryMockBuilder.aQuery;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilder.aVertex;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TimbuctooQueryMockBuilder.aQuery;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyCollectionOf;

@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
+package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query;
 
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
 
@@ -16,7 +16,7 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.GraphQuery;
 import com.tinkerpop.blueprints.Predicate;
 
-class TinkerPopGraphQueryBuilder extends AbstractGraphQueryBuilder<GraphQuery> {
+public class TinkerPopGraphQueryBuilder extends AbstractGraphQueryBuilder<GraphQuery> {
   static class InCollectionPredicate implements Predicate {
 
     @Override
