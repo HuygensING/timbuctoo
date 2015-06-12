@@ -8,89 +8,93 @@ import com.tinkerpop.blueprints.Vertex;
 
 class TransactionalGraphWrapper implements GraphWrapper {
 
-  public TransactionalGraphWrapper(TransactionalGraph graph) {
-    // TODO Auto-generated constructor stub
+  private TransactionalGraph delegate;
+
+  public TransactionalGraphWrapper(TransactionalGraph delegate) {
+    this.delegate = delegate;
   }
 
   @Override
   public Features getFeatures() {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return delegate.getFeatures();
   }
 
   @Override
   public Vertex addVertex(Object id) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return delegate.addVertex(id);
   }
 
   @Override
   public Vertex getVertex(Object id) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return delegate.getVertex(id);
   }
 
   @Override
   public void removeVertex(Vertex vertex) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    delegate.removeVertex(vertex);
   }
 
   @Override
   public Iterable<Vertex> getVertices() {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return delegate.getVertices();
   }
 
   @Override
   public Iterable<Vertex> getVertices(String key, Object value) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return delegate.getVertices(key, value);
   }
 
   @Override
   public Edge addEdge(Object id, Vertex outVertex, Vertex inVertex, String label) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return delegate.addEdge(id, outVertex, inVertex, label);
   }
 
   @Override
   public Edge getEdge(Object id) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return delegate.getEdge(id);
   }
 
   @Override
   public void removeEdge(Edge edge) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    delegate.removeEdge(edge);
   }
 
   @Override
   public Iterable<Edge> getEdges() {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return delegate.getEdges();
   }
 
   @Override
   public Iterable<Edge> getEdges(String key, Object value) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return delegate.getEdges(key, value);
   }
 
   @Override
   public GraphQuery query() {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return delegate.query();
   }
 
   @Override
   public void shutdown() {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    delegate.shutdown();
   }
+
+  static final String STOP_TRANSACTION_EXCEPTION_MESSAGE = "Use commit or rollback to close the transaction";
 
   @SuppressWarnings("deprecation")
   @Override
   public void stopTransaction(Conclusion conclusion) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    throw new UnsupportedOperationException(STOP_TRANSACTION_EXCEPTION_MESSAGE);
   }
 
   @Override
   public void commit() {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    delegate.commit();
   }
 
   @Override
   public void rollback() {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    delegate.rollback();
   }
 
 }
