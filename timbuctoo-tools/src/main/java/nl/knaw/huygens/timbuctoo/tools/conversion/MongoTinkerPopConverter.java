@@ -56,6 +56,7 @@ public class MongoTinkerPopConverter {
     converter.convertSystemEntities();
 
     graph.shutdown();
+    mongoStorage.close();
 
   }
 
