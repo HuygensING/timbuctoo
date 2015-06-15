@@ -22,10 +22,12 @@ package nl.knaw.huygens.timbuctoo.config;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.storage.Properties;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.graph.GraphLegacyStorageWrapper;
 import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.TinkerPopStorage;
+import nl.knaw.huygens.timbuctoo.storage.mongo.MongoProperties;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
@@ -61,7 +63,7 @@ public class BasicInjectionModule extends AbstractModule {
     bind(TypeRegistry.class).toInstance(registry);
 
     //    bind(Storage.class).to(MongoStorage.class);
-    //    bind(Properties.class).to(MongoProperties.class);
+    bind(Properties.class).to(MongoProperties.class);
 
     bind(Storage.class).to(GraphLegacyStorageWrapper.class);
     bind(GraphStorage.class).to(TinkerPopStorage.class);
