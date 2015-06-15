@@ -1,9 +1,6 @@
 package nl.knaw.huygens.timbuctoo.tools.conversion;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -94,7 +91,20 @@ public class RelationTypeConversionCheckerTest {
     instance.verifyConversion(mongoId, graphId);
 
     // action
-    verify(propertyVerifier, times(10)).check(anyString(), any(), any());
+    verifyCheck("created", defaultCreated, defaultCreated);
+    verifyCheck("derived", defaultDerived, defaultDerived);
+    verifyCheck("inverseName", defaultInverseName, defaultInverseName);
+    verifyCheck("modified", defaultModified, defaultModified);
+    verifyCheck("reflexive", defaultReflexive, defaultReflexive);
+    verifyCheck("regularName", defaultRegularName, defaultRegularName);
+    verifyCheck("rev", defaultRev, defaultRev);
+    verifyCheck("sourceTypeName", defaultSourceTypeName, defaultSourceTypeName);
+    verifyCheck("symmetric", defaultSymmetric, defaultSymmetric);
+    verifyCheck("targetTypeName", defaultTargetTypeName, defaultTargetTypeName);
+  }
+
+  public void verifyCheck(String fieldName, Object oldValue, Object newValue) {
+    verify(propertyVerifier).check(fieldName, oldValue, newValue);
   }
 
   public void setDefaultProperties(RelationType relationType) {
