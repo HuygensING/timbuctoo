@@ -1,6 +1,10 @@
 package nl.knaw.huygens.timbuctoo.tools.conversion;
 
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -85,12 +89,16 @@ public class RelationTypeConversionCheckerTest {
   public void verifyConversionVerifiesAllTheFieldsExceptId() throws Exception {
     // setup
     setDefaultProperties(mongoType);
+    mongoType.setId(mongoId);
     setDefaultProperties(graphType);
+    graphType.setId(graphId);
 
     // action
     instance.verifyConversion(mongoId, graphId);
 
     // action
+    verify(propertyVerifier, never()).check(argThat(is("id")), anyString(), anyString());
+
     verifyCheck("created", defaultCreated, defaultCreated);
     verifyCheck("derived", defaultDerived, defaultDerived);
     verifyCheck("inverseName", defaultInverseName, defaultInverseName);
