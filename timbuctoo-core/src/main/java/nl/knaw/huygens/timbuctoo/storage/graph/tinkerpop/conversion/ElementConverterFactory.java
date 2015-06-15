@@ -16,6 +16,7 @@ import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property.Pro
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.inject.Inject;
 
 public class ElementConverterFactory {
 
@@ -23,6 +24,7 @@ public class ElementConverterFactory {
   private final EntityInstantiator entityInstantiator;
   private final TypeRegistry typeRegistry;
 
+  @Inject
   public ElementConverterFactory(TypeRegistry typeRegistry) {
     this(new PropertyConverterFactory(), new EntityInstantiator(), typeRegistry);
   }
