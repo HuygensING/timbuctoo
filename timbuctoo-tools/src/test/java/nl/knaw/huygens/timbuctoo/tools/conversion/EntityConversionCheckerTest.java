@@ -23,7 +23,7 @@ import org.junit.rules.ExpectedException;
 
 import com.google.common.collect.Lists;
 
-public class RelationTypeConversionCheckerTest {
+public class EntityConversionCheckerTest {
 
   private static final Class<RelationType> TYPE = RelationType.class;
   private RelationType mongoType;
@@ -32,7 +32,7 @@ public class RelationTypeConversionCheckerTest {
   private String mongoId;
   private GraphStorage graphStorage;
   private String graphId;
-  private RelationTypeConversionChecker instance;
+  private EntityConversionChecker<RelationType> instance;
   private Change defaultCreated;
   private boolean defaultDerived;
   private String defaultInverseName;
@@ -72,7 +72,7 @@ public class RelationTypeConversionCheckerTest {
 
     propertyVerifier = mock(PropertyVerifier.class);
 
-    instance = new RelationTypeConversionChecker(mongoStorage, graphStorage, propertyVerifier);
+    instance = new EntityConversionChecker<RelationType>(RelationType.class, mongoStorage, graphStorage, propertyVerifier);
   }
 
   @Test

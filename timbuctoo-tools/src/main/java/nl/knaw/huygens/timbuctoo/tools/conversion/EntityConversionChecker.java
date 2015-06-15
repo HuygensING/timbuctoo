@@ -6,7 +6,6 @@ import java.util.Objects;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorage;
@@ -16,29 +15,30 @@ import com.google.common.collect.Lists;
 /**
  * A class that checks if the RelationType is correctly converted.
  */
-public class RelationTypeConversionChecker {
+public class EntityConversionChecker<T extends Entity> {
 
   private final MongoStorage mongoStorage;
   private final GraphStorage graphStorage;
   private PropertyVerifier propertyVerifier;
   private List<Field> fields;
+  private Class<T> type;
 
-  public RelationTypeConversionChecker(MongoStorage mongoStorage, GraphStorage graphStorage) {
-    this(mongoStorage, graphStorage, new PropertyVerifier());
+  public EntityConversionChecker(Class<T> type, MongoStorage mongoStorage, GraphStorage graphStorage) {
+    this(type, mongoStorage, graphStorage, new PropertyVerifier());
   }
 
-  public RelationTypeConversionChecker(MongoStorage mongoStorage, GraphStorage graphStorage, PropertyVerifier propertyVerifier) {
+  public EntityConversionChecker(Class<T> type, MongoStorage mongoStorage, GraphStorage graphStorage, PropertyVerifier propertyVerifier) {
+    this.type = type;
     this.mongoStorage = mongoStorage;
     this.graphStorage = graphStorage;
     this.propertyVerifier = propertyVerifier;
 
-    fields = collectAllFields(RelationType.class);
+    fields = collectAllFields(type);
   }
 
   public void verifyConversion(String oldId, String newId) throws StorageException, IllegalArgumentException, IllegalAccessException {
-    Class<RelationType> type = RelationType.class;
-    RelationType mongoEntity = mongoStorage.getEntity(type, oldId);
-    RelationType graphEntity = graphStorage.getEntity(type, newId);
+    T mongoEntity = mongoStorage.getEntity(type, oldId);
+    T graphEntity = graphStorage.getEntity(type, newId);
 
     for (Field field : fields) {
       field.setAccessible(true);

@@ -57,7 +57,7 @@ public class MongoTinkerPopConverter {
 
   private void convertSystemEntities() throws Exception {
     Stopwatch stopwatch = Stopwatch.createStarted();
-    RelationTypeConversionChecker conversionChecker = new RelationTypeConversionChecker(mongoStorage, graphStorage);
+    EntityConversionChecker conversionChecker = new EntityConversionChecker(RelationType.class, mongoStorage, graphStorage);
     for (StorageIterator<RelationType> iterator = mongoStorage.getSystemEntities(RelationType.class); iterator.hasNext();) {
       RelationType relationType = iterator.next();
 
