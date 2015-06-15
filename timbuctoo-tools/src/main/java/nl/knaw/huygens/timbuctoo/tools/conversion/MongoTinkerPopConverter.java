@@ -65,27 +65,31 @@ public class MongoTinkerPopConverter {
 
     for (Class<? extends SystemEntity> type : registry.getSystemEntityTypes()) {
       LOG.info("converting {}", type.getSimpleName());
-      convertEntity(type);
+      convertSystemEntitiesOf(type);
     }
 
     LOG.info("Done in {}", stopwatch.stop());
 
   }
 
-  public <T extends SystemEntity> void convertEntity(Class<T> type) throws StorageException, ConversionException, IllegalAccessException {
-    EntityConversionChecker<T> conversionChecker = new EntityConversionChecker<T>(type, mongoStorage, graphStorage);
+  private <T extends SystemEntity> void convertSystemEntitiesOf(Class<T> type) throws StorageException, ConversionException, IllegalAccessException {
     for (StorageIterator<T> iterator = mongoStorage.getSystemEntities(type); iterator.hasNext();) {
       T entity = iterator.next();
 
-      String oldId = entity.getId();
-      String newId = addNewId(type, entity);
-
-      LOG.info("Converting \"{}\" with old id \"{}\" and new id \"{}\"", type.getSimpleName(), oldId, newId);
-
-      addToGraph(type, entity);
-
-      conversionChecker.verifyConversion(oldId, newId);
+      convertEntity(type, entity);
     }
+  }
+
+  private <T extends Entity> void convertEntity(Class<T> type, T entity) throws ConversionException, StorageException, IllegalAccessException {
+    EntityConversionChecker<T> conversionChecker = new EntityConversionChecker<T>(type, mongoStorage, graphStorage);
+    String oldId = entity.getId();
+    String newId = addNewId(type, entity);
+
+    LOG.info("Converting \"{}\" with old id \"{}\" and new id \"{}\"", type.getSimpleName(), oldId, newId);
+
+    addToGraph(type, entity);
+
+    conversionChecker.verifyConversion(oldId, newId);
   }
 
   public <T extends Entity> void addToGraph(Class<T> type, T relationType) throws ConversionException {
