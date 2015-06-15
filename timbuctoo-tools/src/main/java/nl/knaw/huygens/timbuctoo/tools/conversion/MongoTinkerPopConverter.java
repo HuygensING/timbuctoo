@@ -1,7 +1,9 @@
 package nl.knaw.huygens.timbuctoo.tools.conversion;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
@@ -53,39 +55,49 @@ public class MongoTinkerPopConverter {
 
     converter.convertSystemEntities();
 
+    graph.shutdown();
+
   }
 
   private void convertSystemEntities() throws Exception {
     Stopwatch stopwatch = Stopwatch.createStarted();
-    EntityConversionChecker conversionChecker = new EntityConversionChecker(RelationType.class, mongoStorage, graphStorage);
-    for (StorageIterator<RelationType> iterator = mongoStorage.getSystemEntities(RelationType.class); iterator.hasNext();) {
-      RelationType relationType = iterator.next();
 
-      String oldId = relationType.getId();
-      String newId = addNewId(relationType);
-
-      LOG.info("Converting \"{}\" with old id \"{}\" and new id \"{}\"", RelationType.class.getSimpleName(), oldId, newId);
-
-      addToGraph(relationType);
-
-      conversionChecker.verifyConversion(oldId, newId);
+    for (Class<? extends SystemEntity> type : registry.getSystemEntityTypes()) {
+      LOG.info("converting {}", type.getSimpleName());
+      convertEntity(type);
     }
 
     LOG.info("Done in {}", stopwatch.stop());
 
   }
 
-  public void addToGraph(RelationType relationType) throws ConversionException {
-    VertexConverter<RelationType> converter = converterFactory.forType(RelationType.class);
+  public <T extends SystemEntity> void convertEntity(Class<T> type) throws StorageException, ConversionException, IllegalAccessException {
+    EntityConversionChecker<T> conversionChecker = new EntityConversionChecker<T>(type, mongoStorage, graphStorage);
+    for (StorageIterator<T> iterator = mongoStorage.getSystemEntities(type); iterator.hasNext();) {
+      T entity = iterator.next();
+
+      String oldId = entity.getId();
+      String newId = addNewId(type, entity);
+
+      LOG.info("Converting \"{}\" with old id \"{}\" and new id \"{}\"", type.getSimpleName(), oldId, newId);
+
+      addToGraph(type, entity);
+
+      conversionChecker.verifyConversion(oldId, newId);
+    }
+  }
+
+  public <T extends Entity> void addToGraph(Class<T> type, T relationType) throws ConversionException {
+    VertexConverter<T> converter = converterFactory.forType(type);
 
     Vertex vertex = graph.addVertex(null);
     converter.addValuesToElement(vertex, relationType);
   }
 
-  public String addNewId(RelationType relationType) {
+  public <T extends Entity> String addNewId(Class<T> type, T entity) {
     // add a new id, the old Id range was not dependable enough
-    String newId = idGenerator.nextIdFor(RelationType.class);
-    relationType.setId(newId);
+    String newId = idGenerator.nextIdFor(type);
+    entity.setId(newId);
     return newId;
   }
 }
