@@ -51,7 +51,8 @@ public class SystemEntityConverter<T extends SystemEntity> {
   private Vertex convertSystemEntity(Class<T> type, T entity) throws ConversionException, StorageException, IllegalAccessException {
     SystemEntityConversionVerifier<T> conversionChecker = new SystemEntityConversionVerifier<T>(type, mongoStorage, graphStorage);
     String oldId = entity.getId();
-    String newId = addNewIdToEntity(type, entity);
+    String newId = mapOldIdtoNewId(type, entity);
+    entity.setId(newId);
 
     Vertex vertex = graph.addVertex(null);
     addPropertiesToVertex(type, entity, vertex);
@@ -67,14 +68,7 @@ public class SystemEntityConverter<T extends SystemEntity> {
     converter.addValuesToElement(vertex, entity);
   }
 
-  private <U extends Entity> String addNewIdToEntity(Class<T> type, T entity) {
-    String newId = mapOldIdtoNewId(type, entity);
-
-    entity.setId(newId);
-    return newId;
-  }
-
-  public <U extends Entity> String mapOldIdtoNewId(Class<T> type, T entity) {
+  private <U extends Entity> String mapOldIdtoNewId(Class<T> type, T entity) {
     String oldId = entity.getId();
 
     String newId = idGenerator.nextIdFor(type);
