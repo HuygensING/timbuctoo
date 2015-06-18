@@ -23,7 +23,7 @@ import org.junit.rules.ExpectedException;
 
 import com.google.common.collect.Lists;
 
-public class EntityConversionCheckerTest {
+public class SystemEntityConversionVerifierTest {
 
   private static final Class<RelationType> TYPE = RelationType.class;
   private RelationType mongoType;
@@ -32,7 +32,7 @@ public class EntityConversionCheckerTest {
   private String mongoId;
   private GraphStorage graphStorage;
   private String graphId;
-  private EntityConversionChecker<RelationType> instance;
+  private SystemEntityConversionVerifier<RelationType> instance;
   private Change defaultCreated;
   private boolean defaultDerived;
   private String defaultInverseName;
@@ -72,7 +72,7 @@ public class EntityConversionCheckerTest {
 
     propertyVerifier = mock(PropertyVerifier.class);
 
-    instance = new EntityConversionChecker<RelationType>(RelationType.class, mongoStorage, graphStorage, propertyVerifier);
+    instance = new SystemEntityConversionVerifier<RelationType>(RelationType.class, mongoStorage, graphStorage, propertyVerifier);
   }
 
   @Test
@@ -111,11 +111,11 @@ public class EntityConversionCheckerTest {
     verifyCheck("targetTypeName", defaultTargetTypeName, defaultTargetTypeName);
   }
 
-  public void verifyCheck(String fieldName, Object oldValue, Object newValue) {
+  private void verifyCheck(String fieldName, Object oldValue, Object newValue) {
     verify(propertyVerifier).check(fieldName, oldValue, newValue);
   }
 
-  public void setDefaultProperties(RelationType relationType) {
+  private void setDefaultProperties(RelationType relationType) {
     relationType.setCreated(defaultCreated);
     relationType.setDerived(defaultDerived);
     relationType.setInverseName(defaultInverseName);

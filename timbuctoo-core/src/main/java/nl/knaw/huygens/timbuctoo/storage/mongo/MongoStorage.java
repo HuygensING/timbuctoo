@@ -76,7 +76,7 @@ public class MongoStorage implements Storage {
   private final MongoDB mongoDB;
   private final EntityIds entityIds;
   private final EntityInducer inducer;
-  private final EntityReducer reducer;
+  protected final EntityReducer reducer;
   private final MongoQueries queries;
   private final ObjectMapper objectMapper;
   private final Properties properties;
@@ -133,7 +133,7 @@ public class MongoStorage implements Storage {
 
   private final Map<Class<? extends Entity>, DBCollection> collectionCache = Maps.newHashMap();
 
-  private <T extends Entity> DBCollection getDBCollection(Class<T> type) {
+  protected <T extends Entity> DBCollection getDBCollection(Class<T> type) {
     DBCollection collection = collectionCache.get(type);
     if (collection == null) {
       Class<? extends Entity> baseType = getBaseClass(type);
@@ -146,7 +146,7 @@ public class MongoStorage implements Storage {
     return collection;
   }
 
-  private <T extends Entity> DBCollection getVersionCollection(Class<T> type) {
+  protected <T extends Entity> DBCollection getVersionCollection(Class<T> type) {
     Class<? extends Entity> baseType = getBaseClass(type);
     String collectionName = getInternalName(baseType) + "_versions";
     DBCollection collection = mongoDB.getCollection(collectionName);
@@ -164,7 +164,7 @@ public class MongoStorage implements Storage {
   }
 
   @SuppressWarnings("unchecked")
-  private JsonNode toJsonNode(DBObject object) throws StorageException {
+  protected JsonNode toJsonNode(DBObject object) throws StorageException {
     if (object instanceof JacksonDBObject) {
       return (((JacksonDBObject<JsonNode>) object).getObject());
     } else if (object instanceof DBJsonNode) {

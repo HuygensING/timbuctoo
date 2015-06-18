@@ -76,7 +76,7 @@ public class MongoDB {
   }
 
   @VisibleForTesting
-  MongoDB(Mongo mongo, DB db) {
+  public MongoDB(Mongo mongo, DB db) {
     this.mongo = mongo;
     this.db = db;
   }

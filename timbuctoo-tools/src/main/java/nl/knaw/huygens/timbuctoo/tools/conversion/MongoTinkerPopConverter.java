@@ -15,7 +15,6 @@ import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 import nl.knaw.huygens.timbuctoo.storage.graph.IdGenerator;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexConverter;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
-import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorage;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 
 import org.slf4j.Logger;
@@ -34,11 +33,11 @@ public class MongoTinkerPopConverter {
   private GraphStorage graphStorage;
   private TypeRegistry registry;
   private ElementConverterFactory converterFactory;
-  private MongoStorage mongoStorage;
+  private MongoConversionStorage mongoStorage;
   private IdGenerator idGenerator;
   private HashMap<String, String> oldIdNewIdMap;
 
-  public MongoTinkerPopConverter(GraphStorage graphStorage, Graph graph, IdGenerator idGenerator, ElementConverterFactory converterFactory, TypeRegistry registry, MongoStorage mongoStorage) {
+  public MongoTinkerPopConverter(GraphStorage graphStorage, Graph graph, IdGenerator idGenerator, ElementConverterFactory converterFactory, TypeRegistry registry, MongoConversionStorage mongoStorage) {
     this.graphStorage = graphStorage;
     this.idGenerator = idGenerator;
     this.graph = graph;
@@ -56,7 +55,7 @@ public class MongoTinkerPopConverter {
     IdGenerator idGenerator = injector.getInstance(IdGenerator.class);
     GraphStorage graphStorage = injector.getInstance(GraphStorage.class);
 
-    MongoStorage mongoStorage = injector.getInstance(MongoStorage.class);
+    MongoConversionStorage mongoStorage = injector.getInstance(MongoConversionStorage.class);
     TypeRegistry registry = injector.getInstance(TypeRegistry.class);
 
     MongoTinkerPopConverter converter = new MongoTinkerPopConverter(graphStorage, graph, idGenerator, converterFactory, registry, mongoStorage);
@@ -83,45 +82,48 @@ public class MongoTinkerPopConverter {
 
   private <T extends DomainEntity> void convertDomainEntitiesOf(Class<T> type) throws StorageException, IllegalAccessException {
     VertexConverter<T> converter = converterFactory.forType(type);
-    EntityConversionChecker<T> conversionChecker = new EntityConversionChecker<T>(type, mongoStorage, graphStorage);
-
     LOG.info("Converting {}", type.getSimpleName());
 
     for (StorageIterator<T> iterator = mongoStorage.getDomainEntities(type); iterator.hasNext();) {
-      List<Class<? extends DomainEntity>> variantTypes = Lists.newArrayList();
       T entity = iterator.next();
-
       String oldId = entity.getId();
-      String newId = addNewIdToEntity(type, entity);
+      String newId = mapOldIdtoNewId(type, entity);
 
-      Vertex vertex = graph.addVertex(null);
+      AllVersionVariationMap<T> versions = mongoStorage.getAllVersionVariationsMapOf(type, oldId);
+      for (Integer revision : versions.revisionsInOrder()) {
 
-      converter.addValuesToElement(vertex, entity);
-
-      for (T variant : mongoStorage.getAllVariations(type, oldId)) {
-        variant.setId(newId);
-        addVariantToVertex(vertex, variant);
-        variantTypes.add(variant.getClass());
+        addVariationsToVertex(type, converter, versions.get(revision), oldId, newId, revision);
       }
-
-      verifyConversion(oldId, newId, variantTypes);
-      conversionChecker.verifyConversion(oldId, newId);
-
     }
 
     System.out.println();
   }
 
-  private void verifyConversion(String oldId, String newId, List<Class<? extends DomainEntity>> variantTypes) throws IllegalArgumentException, IllegalAccessException, StorageException {
-    for (Class<? extends DomainEntity> type : variantTypes) {
-      EntityConversionChecker<? extends DomainEntity> entityConversionChecker = getEntityConverter(type);
+  private <T extends DomainEntity> void addVariationsToVertex(Class<T> type, VertexConverter<T> converter, List<T> allVariations, String oldId, String newId, Integer revision)
+      throws ConversionException, StorageException, IllegalAccessException {
+    List<Class<? extends DomainEntity>> variantTypes = Lists.newArrayList();
 
-      entityConversionChecker.verifyConversion(oldId, newId);
+    Vertex vertex = graph.addVertex(null);
+
+    for (T variant : allVariations) {
+      variant.setId(newId);
+      addVariantToVertex(vertex, variant);
+      variantTypes.add(variant.getClass());
+    }
+
+    verifyConversion(variantTypes, oldId, newId, revision);
+  }
+
+  private void verifyConversion(List<Class<? extends DomainEntity>> variantTypes, String oldId, String newId, Integer revision) throws IllegalArgumentException, IllegalAccessException,
+      StorageException {
+    for (Class<? extends DomainEntity> type : variantTypes) {
+      DomainEntityConversionVerifier<? extends DomainEntity> conversionVerifier = getEntityConverter(type, revision);
+      conversionVerifier.verifyConversion(oldId, newId);
     }
   }
 
-  private <T extends DomainEntity> EntityConversionChecker<T> getEntityConverter(Class<T> type) {
-    return new EntityConversionChecker<T>(type, mongoStorage, graphStorage);
+  private <T extends DomainEntity> DomainEntityConversionVerifier<T> getEntityConverter(Class<T> type, int revision) {
+    return new DomainEntityConversionVerifier<T>(type, mongoStorage, graphStorage, revision);
   }
 
   private <T extends DomainEntity> void addVariantToVertex(Vertex vertex, T variant) throws ConversionException {
@@ -150,11 +152,9 @@ public class MongoTinkerPopConverter {
   }
 
   private <T extends SystemEntity> Vertex convertSystemEntity(Class<T> type, T entity) throws ConversionException, StorageException, IllegalAccessException {
-    EntityConversionChecker<T> conversionChecker = new EntityConversionChecker<T>(type, mongoStorage, graphStorage);
+    SystemEntityConversionVerifier<T> conversionChecker = new SystemEntityConversionVerifier<T>(type, mongoStorage, graphStorage);
     String oldId = entity.getId();
     String newId = addNewIdToEntity(type, entity);
-
-    LOG.info("Converting \"{}\" with old id \"{}\" and new id \"{}\"", type.getSimpleName(), oldId, newId);
 
     Vertex vertex = graph.addVertex(null);
     addPropertiesToVertex(type, entity, vertex);
@@ -171,12 +171,17 @@ public class MongoTinkerPopConverter {
   }
 
   private <T extends Entity> String addNewIdToEntity(Class<T> type, T entity) {
+    String newId = mapOldIdtoNewId(type, entity);
+
+    entity.setId(newId);
+    return newId;
+  }
+
+  public <T extends Entity> String mapOldIdtoNewId(Class<T> type, T entity) {
     String oldId = entity.getId();
 
     String newId = idGenerator.nextIdFor(type);
     oldIdNewIdMap.put(oldId, newId);
-
-    entity.setId(newId);
     return newId;
   }
 }
