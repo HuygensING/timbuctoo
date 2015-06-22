@@ -29,7 +29,7 @@ public class RevisionConverter {
 
   }
 
-  public <T extends DomainEntity> void convert(String oldId, String newId, List<T> variations, int revision) throws IllegalArgumentException, IllegalAccessException, StorageException {
+  public <T extends DomainEntity> Vertex convert(String oldId, String newId, List<T> variations, int revision) throws IllegalArgumentException, IllegalAccessException, StorageException {
     Vertex vertex = graph.addVertex(null);
     List<Class<? extends DomainEntity>> variantTypes = Lists.newArrayList();
     for (T variant : variations) {
@@ -42,6 +42,8 @@ public class RevisionConverter {
       EntityConversionVerifier verifier = verifierFactory.createFor(type, revision);
       verifier.verifyConversion(oldId, newId);
     }
+
+    return vertex;
 
   }
 }

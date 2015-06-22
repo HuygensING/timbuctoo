@@ -47,7 +47,6 @@ public class DomainEntityCollectionConverter<T extends DomainEntity> {
     for (StorageIterator<T> iterator = mongoStorage.getDomainEntities(type); iterator.hasNext();) {
       T entity = iterator.next();
       String oldId = entity.getId();
-      LOG.info("Convert with id \"{}\"", oldId);
       mapOldIdtoNewId(type, entity.getId());
 
       String newId = entityConverter.convert(type, oldId);
