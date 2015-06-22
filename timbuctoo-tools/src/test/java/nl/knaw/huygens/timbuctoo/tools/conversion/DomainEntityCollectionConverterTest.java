@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
@@ -37,7 +38,7 @@ public class DomainEntityCollectionConverterTest {
     mongoStorage = mock(MongoConversionStorage.class);
     oldIdNewIdMap = Maps.newHashMap();
     entityConverter = mock(DomainEntityConverter.class);
-    instance = new DomainEntityCollectionConverter<Person>(TYPE, idGenerator, mongoStorage, oldIdNewIdMap, entityConverter);
+    instance = new DomainEntityCollectionConverter<Person>(TYPE, idGenerator, mongoStorage, oldIdNewIdMap, entityConverter, mock(CountDownLatch.class));
   }
 
   @Test
