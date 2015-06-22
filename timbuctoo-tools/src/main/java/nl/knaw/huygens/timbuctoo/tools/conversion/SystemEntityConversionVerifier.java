@@ -8,7 +8,7 @@ import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorage;
 /**
  * A class that checks if the RelationType is correctly converted.
  */
-public class SystemEntityConversionVerifier<T extends SystemEntity> extends EntityConversionVerifier<T> {
+public class SystemEntityConversionVerifier<T extends SystemEntity> extends AbstractEntityConversionVerifier<T> {
 
   public SystemEntityConversionVerifier(Class<T> type, MongoStorage mongoStorage, GraphStorage graphStorage) {
     this(type, mongoStorage, graphStorage, new PropertyVerifier());

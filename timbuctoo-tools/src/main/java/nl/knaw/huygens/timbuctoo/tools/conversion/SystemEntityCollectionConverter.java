@@ -18,8 +18,8 @@ import org.slf4j.LoggerFactory;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 
-public class SystemEntityConverter<T extends SystemEntity> {
-  private static final Logger LOG = LoggerFactory.getLogger(SystemEntityConverter.class);
+public class SystemEntityCollectionConverter<T extends SystemEntity> {
+  private static final Logger LOG = LoggerFactory.getLogger(SystemEntityCollectionConverter.class);
   private final Class<T> type;
   private final MongoConversionStorage mongoStorage;
   private final Graph graph;
@@ -28,7 +28,7 @@ public class SystemEntityConverter<T extends SystemEntity> {
   private final IdGenerator idGenerator;
   private final Map<String, String> oldIdNewIdMap;
 
-  public SystemEntityConverter(Class<T> type, MongoConversionStorage mongoStorage, Graph graph, GraphStorage graphStorage, ElementConverterFactory converterFactory, IdGenerator idGenerator,
+  public SystemEntityCollectionConverter(Class<T> type, MongoConversionStorage mongoStorage, Graph graph, GraphStorage graphStorage, ElementConverterFactory converterFactory, IdGenerator idGenerator,
       Map<String, String> oldIdNewIdMap) {
     this.type = type;
     this.mongoStorage = mongoStorage;

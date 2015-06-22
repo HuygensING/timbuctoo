@@ -5,7 +5,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorage;
 
-public class DomainEntityConversionVerifier<T extends DomainEntity> extends EntityConversionVerifier<T> {
+public class DomainEntityConversionVerifier<T extends DomainEntity> extends AbstractEntityConversionVerifier<T> {
 
   private final int revision;
 

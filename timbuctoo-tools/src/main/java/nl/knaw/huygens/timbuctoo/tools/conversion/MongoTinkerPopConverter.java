@@ -68,28 +68,28 @@ public class MongoTinkerPopConverter {
     for (Class<? extends DomainEntity> type : registry.getPrimitiveDomainEntityTypes()) {
 
       if (!Relation.class.isAssignableFrom(type)) {
-        DomainEntityConverter<? extends DomainEntity> domainEntityConverter = createDomainEntityConverter(type);
+        DomainEntityCollectionConverter<? extends DomainEntity> domainEntityConverter = createDomainEntityConverter(type);
         domainEntityConverter.convert();
       }
     }
 
   }
 
-  private <T extends DomainEntity> DomainEntityConverter<T> createDomainEntityConverter(Class<T> type) {
-    return new DomainEntityConverter<T>(type, graph, graphStorage, idGenerator, converterFactory, mongoStorage, oldIdNewIdMap);
+  private <T extends DomainEntity> DomainEntityCollectionConverter<T> createDomainEntityConverter(Class<T> type) {
+    return new DomainEntityCollectionConverter<T>(type, graph, graphStorage, idGenerator, converterFactory, mongoStorage, oldIdNewIdMap, registry);
   }
 
   private void convertSystemEntities() throws Exception {
 
     for (Class<? extends SystemEntity> type : registry.getSystemEntityTypes()) {
-      SystemEntityConverter<? extends SystemEntity> systemEntityConverter = createSystemEntityConverter(type);
+      SystemEntityCollectionConverter<? extends SystemEntity> systemEntityConverter = createSystemEntityConverter(type);
       systemEntityConverter.convert();
     }
 
   }
 
-  private <T extends SystemEntity> SystemEntityConverter<T> createSystemEntityConverter(Class<T> type) {
-    return new SystemEntityConverter<T>(type, mongoStorage, graph, graphStorage, converterFactory, idGenerator, oldIdNewIdMap);
+  private <T extends SystemEntity> SystemEntityCollectionConverter<T> createSystemEntityConverter(Class<T> type) {
+    return new SystemEntityCollectionConverter<T>(type, mongoStorage, graph, graphStorage, converterFactory, idGenerator, oldIdNewIdMap);
   }
 
 }

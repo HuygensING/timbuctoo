@@ -1,80 +1,13 @@
 package nl.knaw.huygens.timbuctoo.tools.conversion;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.List;
-import java.util.Objects;
 
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
-import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorage;
 
-import com.google.common.collect.Lists;
+public interface EntityConversionVerifier {
 
-public abstract class EntityConversionVerifier<T extends Entity> {
+  boolean isIdField(Field field);
 
-  protected abstract T getOldItem(String oldId) throws StorageException;
-
-  protected abstract T getNewItem(String newId) throws StorageException;
-
-  protected final MongoStorage mongoStorage;
-  protected final GraphStorage graphStorage;
-  protected final PropertyVerifier propertyVerifier;
-  protected final List<Field> fields;
-  protected final Class<T> type;
-
-  public EntityConversionVerifier(Class<T> type, MongoStorage mongoStorage, GraphStorage graphStorage, PropertyVerifier propertyVerifier) {
-    this.type = type;
-    this.mongoStorage = mongoStorage;
-    this.graphStorage = graphStorage;
-    this.propertyVerifier = propertyVerifier;
-    this.fields = collectAllFields(type);
-  }
-
-  protected PropertyVerifier getPropertyVerifier() {
-    return propertyVerifier;
-  }
-
-  protected List<Field> getFields() {
-    return fields;
-  }
-
-  @SuppressWarnings("unchecked")
-  private List<Field> collectAllFields(Class<? extends Entity> type) {
-    List<Field> fields = Lists.newArrayList();
-    for (Class<? extends Entity> typeToGetFieldsFrom = type; TypeRegistry.isEntity(typeToGetFieldsFrom); typeToGetFieldsFrom = (Class<? extends Entity>) typeToGetFieldsFrom.getSuperclass()) {
-
-      for (Field field : typeToGetFieldsFrom.getDeclaredFields()) {
-        if (!isIdField(field) && !Modifier.isStatic(field.getModifiers())) {
-          fields.add(field);
-        }
-      }
-    }
-    return fields;
-  }
-
-  public boolean isIdField(Field field) {
-    return Objects.equals(field.getName(), "id");
-  }
-
-  public final void verifyConversion(String oldId, String newId) throws StorageException, IllegalArgumentException, IllegalAccessException {
-    T mongoEntity = getOldItem(oldId);
-    T graphEntity = getNewItem(newId);
-
-    for (Field field : getFields()) {
-      field.setAccessible(true);
-
-      Object oldValue = field.get(mongoEntity);
-      Object newValue = field.get(graphEntity);
-
-      getPropertyVerifier().check(field.getName(), oldValue, newValue);
-    }
-
-    if (getPropertyVerifier().hasInconsistentProperties()) {
-      throw new VerificationException(oldId, newId, getPropertyVerifier().getMismatches());
-    }
-  }
+  void verifyConversion(String oldId, String newId) throws StorageException, IllegalArgumentException, IllegalAccessException;
 
 }
