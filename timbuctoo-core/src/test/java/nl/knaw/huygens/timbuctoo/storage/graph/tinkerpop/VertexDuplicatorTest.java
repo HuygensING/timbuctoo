@@ -27,9 +27,11 @@ public class VertexDuplicatorTest {
   private Vertex duplicate;
   private VertexDuplicator instance;
   private Vertex otherVertex;
+  private Vertex sourceIncomingVersionOfEdge;
 
   @Before
   public void setup() {
+    sourceIncomingVersionOfEdge = aVertex().build();
     otherVertex = aVertex().build();
     vertexToDuplicate = setupVertexToDuplicate();
     duplicate = aVertex().build();
@@ -42,13 +44,15 @@ public class VertexDuplicatorTest {
   private Vertex setupVertexToDuplicate() {
     Edge incomingEdge = anEdge().withLabel(INCOMING_EDGE_LABEL).withSource(otherVertex).withTarget(vertexToDuplicate).build();
     Edge outgoingEdge = anEdge().withLabel(OUTGOING_EDGE_LABEL).withSource(vertexToDuplicate).withTarget(otherVertex).build();
-    Edge versionOfEdge = anEdge().withLabel(VERSION_OF_EDGE_LABEL).withSource(otherVertex).withTarget(vertexToDuplicate).build();
+    Edge versionOfOutgoingEdge = anEdge().withLabel(VERSION_OF_EDGE_LABEL).withSource(otherVertex).withTarget(vertexToDuplicate).build();
+    Edge versionOfIncomingEdge = anEdge().withLabel(VERSION_OF_EDGE_LABEL).withSource(sourceIncomingVersionOfEdge).withTarget(otherVertex).build();
 
     return aVertex() //
         .withId(ID) //
         .withRev(REV) //
         .withIncomingEdgeWithLabel(INCOMING_EDGE_LABEL, incomingEdge) //
-        .withOutgoingEdgeWithLabel(VERSION_OF_EDGE_LABEL, versionOfEdge)//
+        .withIncomingEdgeWithLabel(VERSION_OF_EDGE_LABEL, versionOfIncomingEdge) //
+        .withOutgoingEdgeWithLabel(VERSION_OF_EDGE_LABEL, versionOfOutgoingEdge)//
         .withOutgoingEdgeWithLabel(OUTGOING_EDGE_LABEL, outgoingEdge)//
         .build();
   }
@@ -81,6 +85,7 @@ public class VertexDuplicatorTest {
     verify(duplicate).addEdge(OUTGOING_EDGE_LABEL, otherVertex);
     verify(otherVertex).addEdge(INCOMING_EDGE_LABEL, duplicate);
     verify(duplicate, times(0)).addEdge(VERSION_OF_EDGE_LABEL, otherVertex);
+    verify(sourceIncomingVersionOfEdge, times(0)).addEdge(VERSION_OF_EDGE_LABEL, duplicate);
   }
 
   @Test
@@ -89,6 +94,6 @@ public class VertexDuplicatorTest {
     instance.duplicate(vertexToDuplicate);
 
     // verify
-    verify(duplicate).addEdge(VERSION_OF_EDGE_LABEL, vertexToDuplicate);
+    verify(vertexToDuplicate).addEdge(VERSION_OF_EDGE_LABEL, duplicate);
   }
 }

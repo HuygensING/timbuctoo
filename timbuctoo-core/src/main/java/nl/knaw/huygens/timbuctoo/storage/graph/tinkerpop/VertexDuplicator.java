@@ -32,14 +32,16 @@ public class VertexDuplicator {
 
     duplicateIncomingEdges(vertexToDuplicate, duplicate);
 
-    duplicate.addEdge(VERSION_OF_LABEL, vertexToDuplicate);
+    vertexToDuplicate.addEdge(VERSION_OF_LABEL, duplicate);
   }
 
   private void duplicateIncomingEdges(Vertex vertexToDuplicate, Vertex duplicate) {
     for (Iterator<Edge> iterator = vertexToDuplicate.getEdges(Direction.IN).iterator(); iterator.hasNext();) {
       Edge edge = iterator.next();
 
-      sourceOfEdge(edge).addEdge(edge.getLabel(), duplicate);
+      if (!isVersionOfEdge(edge)) {
+        sourceOfEdge(edge).addEdge(edge.getLabel(), duplicate);
+      }
     }
   }
 
@@ -47,10 +49,14 @@ public class VertexDuplicator {
     for (Iterator<Edge> iterator = vertexToDuplicate.getEdges(Direction.OUT).iterator(); iterator.hasNext();) {
       Edge edge = iterator.next();
 
-      if (!Objects.equals(edge.getLabel(), VERSION_OF_LABEL)) {
+      if (!isVersionOfEdge(edge)) {
         duplicate.addEdge(edge.getLabel(), targetOfEdge(edge));
       }
     }
+  }
+
+  private boolean isVersionOfEdge(Edge edge) {
+    return Objects.equals(edge.getLabel(), VERSION_OF_LABEL);
   }
 
   private void duplicateProperties(Vertex vertexToDuplicate, Vertex duplicate) {
