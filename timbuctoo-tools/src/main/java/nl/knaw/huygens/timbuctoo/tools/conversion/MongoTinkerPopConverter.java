@@ -1,9 +1,6 @@
 package nl.knaw.huygens.timbuctoo.tools.conversion;
 
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -68,25 +65,15 @@ public class MongoTinkerPopConverter {
   }
 
   private void convertDomainEntities() throws StorageException, IllegalAccessException, InterruptedException {
-
-    int numberOfTasks = registry.getPrimitiveDomainEntityTypes().size() - 1;
-    int numberOfProcessors = Runtime.getRuntime().availableProcessors();
-    LOG.info("Indexing {} collections, using {} processes", numberOfTasks, numberOfProcessors);
-
-    CountDownLatch countDownLatch = new CountDownLatch(numberOfTasks);
-    ExecutorService executor = Executors.newFixedThreadPool(numberOfProcessors);
     for (Class<? extends DomainEntity> type : registry.getPrimitiveDomainEntityTypes()) {
       if (!Relation.class.isAssignableFrom(type)) {
-        Runnable converter = createDomainEntityConverter(type, countDownLatch);
-        executor.execute(converter);
+        createDomainEntityConverter(type).convert();
       }
     }
-    executor.shutdown();
-    countDownLatch.await(); // wait until all tasks are completed
   }
 
-  private <T extends DomainEntity> DomainEntityCollectionConverter<T> createDomainEntityConverter(Class<T> type, CountDownLatch countDownLatch) {
-    return new DomainEntityCollectionConverter<T>(type, graph, graphStorage, idGenerator, converterFactory, mongoStorage, oldIdNewIdMap, registry, countDownLatch);
+  private <T extends DomainEntity> DomainEntityCollectionConverter<T> createDomainEntityConverter(Class<T> type) {
+    return new DomainEntityCollectionConverter<T>(type, graph, graphStorage, idGenerator, converterFactory, mongoStorage, oldIdNewIdMap, registry);
   }
 
   private void convertSystemEntities() throws Exception {

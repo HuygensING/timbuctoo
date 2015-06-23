@@ -1,12 +1,14 @@
 package nl.knaw.huygens.timbuctoo.tools.conversion;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
@@ -19,6 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.tinkerpop.blueprints.Vertex;
 
 public class DomainEntityConverterTest {
@@ -28,7 +31,6 @@ public class DomainEntityConverterTest {
   private MongoConversionStorage mongoStorage;
   private IdGenerator idGenerator;
   private RevisionConverter revisionConverter;
-  private DomainEntityConverter instance;
   private int revision1;
   private int revision2;
   private List<Person> variationsOfRevision1;
@@ -37,6 +39,8 @@ public class DomainEntityConverterTest {
   private VertexDuplicator vertexDuplicator;
   private Vertex vertexRev1;
   private Vertex vertexRev2;
+  private DomainEntityConverter<Person> instance;
+  private Map<String, String> oldIdNewIdMap;
 
   @Before
   public void setup() throws StorageException, IllegalAccessException {
@@ -44,7 +48,8 @@ public class DomainEntityConverterTest {
     idGenerator = mock(IdGenerator.class);
     revisionConverter = mock(RevisionConverter.class);
     vertexDuplicator = mock(VertexDuplicator.class);
-    instance = new DomainEntityConverter(mongoStorage, idGenerator, revisionConverter, vertexDuplicator);
+    oldIdNewIdMap = Maps.newHashMap();
+    instance = new DomainEntityConverter<Person>(TYPE, OLD_ID, mongoStorage, idGenerator, revisionConverter, vertexDuplicator, oldIdNewIdMap);
 
     setupRevisionVariationMap();
     setupIdGenerator();
@@ -81,10 +86,11 @@ public class DomainEntityConverterTest {
 
   @Test
   public void convertRetrievesTheVersionsAndLetsTheVersionConverterHandleEachOne() throws Exception {
-    String actualNewId = instance.convert(TYPE, OLD_ID);
+    instance.convert();
 
     // verify
-    assertThat(actualNewId, is(NEW_ID));
+    assertThat(oldIdNewIdMap.keySet(), contains(OLD_ID));
+    assertThat(oldIdNewIdMap.get(OLD_ID), is(NEW_ID));
 
     verify(revisionConverter).convert(OLD_ID, NEW_ID, variationsOfRevision1, revision1);
     verify(revisionConverter).convert(OLD_ID, NEW_ID, variationsOfRevision2, revision2);
@@ -93,7 +99,7 @@ public class DomainEntityConverterTest {
   @Test
   public void convertLinksTheVersionsAndDuplicatesTheLatestNode() throws IllegalArgumentException, IllegalAccessException, StorageException {
     // action
-    instance.convert(TYPE, OLD_ID);
+    instance.convert();
 
     // verify
     verify(vertexRev1).addEdge(SystemRelationType.VERSION_OF.name(), vertexRev2);

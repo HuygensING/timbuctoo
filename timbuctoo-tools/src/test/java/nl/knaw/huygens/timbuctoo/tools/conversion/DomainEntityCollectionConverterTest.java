@@ -1,65 +1,59 @@
 package nl.knaw.huygens.timbuctoo.tools.conversion;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
-import nl.knaw.huygens.timbuctoo.storage.graph.IdGenerator;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.collect.Maps;
+import com.tinkerpop.blueprints.Graph;
 
 public class DomainEntityCollectionConverterTest {
 
   private static final String ID1 = "id1";
   private static final String ID2 = "id2";
-  private static final String NEW_ID2 = "newId2";
-  private static final String NEW_ID1 = "newId1";
   private static final Class<Person> TYPE = Person.class;
-  private IdGenerator idGenerator;
   private MongoConversionStorage mongoStorage;
-  private Map<String, String> oldIdNewIdMap;
-  private DomainEntityConverter entityConverter;
   private DomainEntityCollectionConverter<Person> instance;
+  private DomainEntityConverterFactory entityConverterFactory;
 
   @Before
   public void setup() {
-    idGenerator = new IdGenerator();
     mongoStorage = mock(MongoConversionStorage.class);
-    oldIdNewIdMap = Maps.newHashMap();
-    entityConverter = mock(DomainEntityConverter.class);
-    instance = new DomainEntityCollectionConverter<Person>(TYPE, idGenerator, mongoStorage, oldIdNewIdMap, entityConverter, mock(CountDownLatch.class));
+    entityConverterFactory = mock(DomainEntityConverterFactory.class);
+    instance = new DomainEntityCollectionConverter<Person>(TYPE, mongoStorage, entityConverterFactory, mock(Graph.class));
   }
 
   @Test
-  public void convertConvertsAllTheDomainEntitiesOfACertainType() throws Exception {
+  public void convertCreatesAJobForEachEntity() throws Exception {
+    // setup
     Person person1 = createPersonWithId(ID1);
-
     Person person2 = createPersonWithId(ID2);
+
+    DomainEntityConverter<Person> converter1 = createConverterFor(TYPE, ID1);
+    DomainEntityConverter<Person> converter2 = createConverterFor(TYPE, ID2);
 
     StorageIterator<Person> iterator = StorageIteratorStub.newInstance(person1, person2);
     when(mongoStorage.getDomainEntities(TYPE)).thenReturn(iterator);
-
-    when(entityConverter.convert(TYPE, ID1)).thenReturn(NEW_ID1);
-    when(entityConverter.convert(TYPE, ID2)).thenReturn(NEW_ID2);
 
     // action
     instance.convert();
 
     // verify
-    assertThat(oldIdNewIdMap.keySet(), containsInAnyOrder(ID1, ID2));
-    assertThat(oldIdNewIdMap.get(ID1), is(NEW_ID1));
-    assertThat(oldIdNewIdMap.get(ID2), is(NEW_ID2));
+    verify(converter1).convert();
+    verify(converter2).convert();
+
+  }
+
+  @SuppressWarnings("unchecked")
+  private DomainEntityConverter<Person> createConverterFor(Class<Person> type, String id) {
+    DomainEntityConverter<Person> converter = mock(DomainEntityConverter.class);
+    when(entityConverterFactory.create(type, id)).thenReturn(converter);
+    return converter;
   }
 
   private Person createPersonWithId(String id1) {
