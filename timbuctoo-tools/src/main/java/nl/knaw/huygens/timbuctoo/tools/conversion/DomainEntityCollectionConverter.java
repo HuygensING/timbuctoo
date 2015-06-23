@@ -1,6 +1,9 @@
 package nl.knaw.huygens.timbuctoo.tools.conversion;
 
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -18,6 +21,7 @@ import com.tinkerpop.blueprints.TransactionalGraph;
 
 public class DomainEntityCollectionConverter<T extends DomainEntity> {
   private static final Logger LOG = LoggerFactory.getLogger(DomainEntityCollectionConverter.class);
+  private static final int NUMBER_OF_PROCESSORS = Runtime.getRuntime().availableProcessors();
 
   private final Class<T> type;
   private final MongoConversionStorage mongoStorage;
@@ -39,20 +43,23 @@ public class DomainEntityCollectionConverter<T extends DomainEntity> {
 
   public void convert() {
     String simpleName = type.getSimpleName();
-    LOG.info("Start converting for {}", simpleName);
+    ExecutorService executor = Executors.newFixedThreadPool(NUMBER_OF_PROCESSORS);
+
+    LOG.info("Start converting for {} on {} processors", simpleName, NUMBER_OF_PROCESSORS);
     try {
       for (StorageIterator<T> iterator = mongoStorage.getDomainEntities(type); iterator.hasNext();) {
         T entity = iterator.next();
         String oldId = entity.getId();
-
-        try {
-          entityConverterFactory.create(type, oldId).convert();
-        } catch (IllegalArgumentException | IllegalAccessException e) {
-          LOG.error("Could not convert \"{}\" with id \"{}\"", simpleName, oldId);
-        }
+        executor.execute(entityConverterFactory.createConverterRunnable(type, oldId));
       }
+
+      executor.shutdown();
+      executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+
     } catch (StorageException e) {
       LOG.error("Could not retrieve DomainEntities of type \"{}\"", simpleName);
+    } catch (InterruptedException e) {
+      LOG.error("Executor failed", e);
     } finally {
       LOG.info("End converting for {}.", simpleName);
       if (graph instanceof TransactionalGraph) {
