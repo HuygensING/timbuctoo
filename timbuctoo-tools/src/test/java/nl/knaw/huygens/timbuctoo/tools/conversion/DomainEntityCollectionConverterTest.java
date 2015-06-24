@@ -34,8 +34,8 @@ public class DomainEntityCollectionConverterTest {
     Person person1 = createPersonWithId(ID1);
     Person person2 = createPersonWithId(ID2);
 
-    Runnable converter1 = createConverterFor(TYPE, ID1);
-    Runnable converter2 = createConverterFor(TYPE, ID2);
+    DomainEntityConverter<Person> converter1 = createConverterFor(TYPE, ID1);
+    DomainEntityConverter<Person> converter2 = createConverterFor(TYPE, ID2);
 
     StorageIterator<Person> iterator = StorageIteratorStub.newInstance(person1, person2);
     when(mongoStorage.getDomainEntities(TYPE)).thenReturn(iterator);
@@ -44,16 +44,16 @@ public class DomainEntityCollectionConverterTest {
     instance.convert();
 
     // verify
-    verify(converter1).run();
-    verify(converter2).run();
+    verify(converter1).convert();
+    verify(converter2).convert();
 
   }
 
   @SuppressWarnings("unchecked")
-  private Runnable createConverterFor(Class<Person> type, String id) {
-    Runnable runnable = mock(Runnable.class);
-    when(entityConverterFactory.createConverterRunnable(type, id)).thenReturn(runnable);
-    return runnable;
+  private DomainEntityConverter<Person> createConverterFor(Class<Person> type, String id) {
+    DomainEntityConverter<Person> converter = mock(DomainEntityConverter.class);
+    when(entityConverterFactory.create(type, id)).thenReturn(converter);
+    return converter;
   }
 
   private Person createPersonWithId(String id1) {

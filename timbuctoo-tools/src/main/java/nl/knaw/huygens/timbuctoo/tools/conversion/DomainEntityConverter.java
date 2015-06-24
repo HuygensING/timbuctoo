@@ -61,4 +61,8 @@ public class DomainEntityConverter<T extends DomainEntity> {
       vertexDuplicator.duplicate(prev);
     }
   }
+
+  public String getOldId() {
+    return oldId;
+  }
 }

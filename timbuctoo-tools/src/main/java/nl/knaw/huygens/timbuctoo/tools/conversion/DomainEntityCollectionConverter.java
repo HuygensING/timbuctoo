@@ -1,9 +1,7 @@
 package nl.knaw.huygens.timbuctoo.tools.conversion;
 
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -16,12 +14,12 @@ import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConve
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.TransactionalGraph;
 
 public class DomainEntityCollectionConverter<T extends DomainEntity> {
   private static final Logger LOG = LoggerFactory.getLogger(DomainEntityCollectionConverter.class);
-  private static final int NUMBER_OF_PROCESSORS = Runtime.getRuntime().availableProcessors();
 
   private final Class<T> type;
   private final MongoConversionStorage mongoStorage;
@@ -43,23 +41,28 @@ public class DomainEntityCollectionConverter<T extends DomainEntity> {
 
   public void convert() {
     String simpleName = type.getSimpleName();
-    ExecutorService executor = Executors.newFixedThreadPool(NUMBER_OF_PROCESSORS);
-
-    LOG.info("Start converting for {} on {} processors", simpleName, NUMBER_OF_PROCESSORS);
+    LOG.info("Start converting for {}", simpleName);
+    List<DomainEntityConverter<T>> converters = Lists.newArrayList();
     try {
       for (StorageIterator<T> iterator = mongoStorage.getDomainEntities(type); iterator.hasNext();) {
         T entity = iterator.next();
         String oldId = entity.getId();
-        executor.execute(entityConverterFactory.createConverterRunnable(type, oldId));
+        //        executor.execute(entityConverterFactory.createConverterRunnable(type, oldId));
+
+        converters.add(entityConverterFactory.create(type, oldId));
+
       }
 
-      executor.shutdown();
-      executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-
+      for (DomainEntityConverter<T> converter : converters) {
+        String oldId = converter.getOldId();
+        try {
+          converter.convert();
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+          LOG.error("Could not convert {} with id \"{}\"", simpleName, oldId);
+        }
+      }
     } catch (StorageException e) {
       LOG.error("Could not retrieve DomainEntities of type \"{}\"", simpleName);
-    } catch (InterruptedException e) {
-      LOG.error("Executor failed", e);
     } finally {
       LOG.info("End converting for {}.", simpleName);
       if (graph instanceof TransactionalGraph) {
