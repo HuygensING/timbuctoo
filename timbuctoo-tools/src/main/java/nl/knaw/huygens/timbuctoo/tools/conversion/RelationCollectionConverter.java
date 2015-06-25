@@ -10,10 +10,10 @@ import com.google.common.collect.Lists;
 
 public class RelationCollectionConverter {
 
-  private RelationVersionConverter versionConverter;
+  private RelationConverter versionConverter;
   private MongoConversionStorage mongoStorage;
 
-  public RelationCollectionConverter(RelationVersionConverter versionConverter, MongoConversionStorage mongoStorage) {
+  public RelationCollectionConverter(RelationConverter versionConverter, MongoConversionStorage mongoStorage) {
     this.versionConverter = versionConverter;
     this.mongoStorage = mongoStorage;
 

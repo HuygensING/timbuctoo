@@ -19,7 +19,7 @@ public class RelationCollectionConverterTest {
   @Test
   public void converLetsTheRelationVersionConverterConvertEachRelation() throws Exception {
     // setup
-    RelationVersionConverter versionConverter = mock(RelationVersionConverter.class);
+    RelationConverter relationConverter = mock(RelationConverter.class);
     MongoConversionStorage mongoStorage = mock(MongoConversionStorage.class);
 
     Relation relation1 = aRelationWithId(ID1);
@@ -27,14 +27,14 @@ public class RelationCollectionConverterTest {
 
     storageReturnsAllRelations(mongoStorage, relation1, relation2);
 
-    RelationCollectionConverter instance = new RelationCollectionConverter(versionConverter, mongoStorage);
+    RelationCollectionConverter instance = new RelationCollectionConverter(relationConverter, mongoStorage);
 
     // action
     instance.convert();
 
     // verify
-    verify(versionConverter).convert(ID1);
-    verify(versionConverter).convert(ID2);
+    verify(relationConverter).convert(ID1);
+    verify(relationConverter).convert(ID2);
   }
 
   private void storageReturnsAllRelations(MongoConversionStorage mongoStorage, Relation relation1, Relation relation2) throws StorageException {
