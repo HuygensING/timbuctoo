@@ -64,20 +64,25 @@ public class MongoTinkerPopConverter {
     LOG.info("Done in {}", stopwatch.stop());
   }
 
-  private void convertDomainEntities() throws StorageException, IllegalAccessException, InterruptedException {
+  public void convertDomainEntities() throws StorageException, IllegalAccessException, InterruptedException {
     for (Class<? extends DomainEntity> type : registry.getPrimitiveDomainEntityTypes()) {
-      if (!Relation.class.isAssignableFrom(type)) {
+      if (Relation.class.isAssignableFrom(type)) {
+        createRelationConverter().convert();
+      } else {
         createDomainEntityConverter(type).convert();
       }
     }
+  }
+
+  private RelationCollectionConverter createRelationConverter() {
+    return null;
   }
 
   private <T extends DomainEntity> DomainEntityCollectionConverter<T> createDomainEntityConverter(Class<T> type) {
     return new DomainEntityCollectionConverter<T>(type, graph, graphStorage, idGenerator, converterFactory, mongoStorage, oldIdNewIdMap, registry);
   }
 
-  private void convertSystemEntities() throws Exception {
-
+  public void convertSystemEntities() throws Exception {
     for (Class<? extends SystemEntity> type : registry.getSystemEntityTypes()) {
       SystemEntityCollectionConverter<? extends SystemEntity> systemEntityConverter = createSystemEntityConverter(type);
       systemEntityConverter.convert();
