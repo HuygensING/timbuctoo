@@ -44,11 +44,10 @@ public class DomainEntityCollectionConverter<T extends DomainEntity> {
     LOG.info("Start converting for {}", simpleName);
     List<DomainEntityConverter<T>> converters = Lists.newArrayList();
     try {
+      //first create the jobs to prevent a mongo cursor timeout exception.      
       for (StorageIterator<T> iterator = mongoStorage.getDomainEntities(type); iterator.hasNext();) {
         T entity = iterator.next();
         String oldId = entity.getId();
-        //        executor.execute(entityConverterFactory.createConverterRunnable(type, oldId));
-
         converters.add(entityConverterFactory.create(type, oldId));
 
       }

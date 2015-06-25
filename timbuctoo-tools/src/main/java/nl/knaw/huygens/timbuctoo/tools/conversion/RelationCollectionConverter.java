@@ -22,6 +22,7 @@ public class RelationCollectionConverter {
   public void convert() throws StorageException {
     List<String> relationIds = Lists.newArrayList();
 
+    //first create the jobs to prevent a mongo cursor timeout exception.
     for (StorageIterator<Relation> relations = mongoStorage.getDomainEntities(Relation.class); relations.hasNext();) {
       relationIds.add(relations.next().getId());
     }
