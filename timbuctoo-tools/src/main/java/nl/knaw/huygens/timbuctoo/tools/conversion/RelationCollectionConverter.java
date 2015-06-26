@@ -19,7 +19,7 @@ public class RelationCollectionConverter {
 
   }
 
-  public void convert() throws StorageException {
+  public void convert() throws StorageException, IllegalArgumentException, IllegalAccessException {
     List<String> relationIds = Lists.newArrayList();
 
     //first create the jobs to prevent a mongo cursor timeout exception.
