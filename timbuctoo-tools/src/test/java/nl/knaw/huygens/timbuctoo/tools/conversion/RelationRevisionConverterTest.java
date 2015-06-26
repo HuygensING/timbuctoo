@@ -36,7 +36,7 @@ public class RelationRevisionConverterTest {
   private static final String REGULAR_NAME = "regularName";
   private static final String NEW_SOURCE_ID = "newSourceId";
   private static final String OLD_SOURCE_ID = "oldSourceId";
-  private RelationVariantConverter variantConverter;
+  private RelationVariationConverter variantConverter;
   private Edge edge;
   private VertexFinder vertexFinder;
   private Map<String, String> oldIdNewIdMap;
@@ -48,7 +48,7 @@ public class RelationRevisionConverterTest {
   public void setup() {
     verifierFactory = mock(ConversionVerifierFactory.class);
     vertexFinder = mock(VertexFinder.class);
-    variantConverter = mock(RelationVariantConverter.class);
+    variantConverter = mock(RelationVariationConverter.class);
     mongoStorage = mock(MongoConversionStorage.class);
     edge = mock(Edge.class);
     setupOldIdNewIdMap();

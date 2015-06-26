@@ -14,13 +14,13 @@ import com.tinkerpop.blueprints.Vertex;
 
 public class RelationRevisionConverter {
 
-  private RelationVariantConverter variantConverter;
+  private RelationVariationConverter variantConverter;
   private VertexFinder vertexFinder;
   private Map<String, String> oldIdNewIdMap;
   private MongoConversionStorage mongoStorage;
   private ConversionVerifierFactory verifierFactory;
 
-  public RelationRevisionConverter(RelationVariantConverter variantConverter, VertexFinder vertexFinder, Map<String, String> oldIdNewIdMap, MongoConversionStorage mongoStorage,
+  public RelationRevisionConverter(RelationVariationConverter variantConverter, VertexFinder vertexFinder, Map<String, String> oldIdNewIdMap, MongoConversionStorage mongoStorage,
       ConversionVerifierFactory verifierFactory) {
     this.variantConverter = variantConverter;
     this.vertexFinder = vertexFinder;
