@@ -2,9 +2,13 @@ package nl.knaw.huygens.timbuctoo.tools.conversion;
 
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 import nl.knaw.huygens.timbuctoo.storage.graph.IdGenerator;
+
+import com.tinkerpop.blueprints.Graph;
 
 public class RelationConverter {
 
@@ -14,7 +18,11 @@ public class RelationConverter {
   private final IdGenerator idGenerator;
   private Map<String, String> oldIdNewIdMap;
 
-  public RelationConverter(MongoConversionStorage mongoStorage, RelationRevisionConverter revisionConverter, IdGenerator idGenerator, Map<String, String> oldIdNewIdMap) {
+  public RelationConverter(MongoConversionStorage mongoStorage, Graph graph, GraphStorage graphStorage, TypeRegistry typeRegistry, Map<String, String> oldIdNewIdMap, IdGenerator idGenerator) {
+    this(mongoStorage, new RelationRevisionConverter(graph, mongoStorage, graphStorage, typeRegistry, oldIdNewIdMap), idGenerator, oldIdNewIdMap);
+  }
+
+  RelationConverter(MongoConversionStorage mongoStorage, RelationRevisionConverter revisionConverter, IdGenerator idGenerator, Map<String, String> oldIdNewIdMap) {
     this.mongoStorage = mongoStorage;
     this.revisionConverter = revisionConverter;
     this.idGenerator = idGenerator;

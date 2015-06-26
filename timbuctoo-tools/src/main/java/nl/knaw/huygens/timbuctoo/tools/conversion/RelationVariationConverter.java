@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.tools.conversion;
 
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeConverter;
@@ -11,7 +12,11 @@ public class RelationVariationConverter {
 
   private ElementConverterFactory converterFactory;
 
-  public RelationVariationConverter(ElementConverterFactory converterFactory) {
+  public RelationVariationConverter(TypeRegistry typeRegistry) {
+    this(new ElementConverterFactory(typeRegistry));
+  }
+
+  RelationVariationConverter(ElementConverterFactory converterFactory) {
     this.converterFactory = converterFactory;
   }
 

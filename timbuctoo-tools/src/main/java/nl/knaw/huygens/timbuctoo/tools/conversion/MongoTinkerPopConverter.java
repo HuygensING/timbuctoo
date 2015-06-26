@@ -75,7 +75,7 @@ public class MongoTinkerPopConverter {
   }
 
   private RelationCollectionConverter createRelationConverter() {
-    return null;
+    return new RelationCollectionConverter(mongoStorage, graph, graphStorage, registry, oldIdNewIdMap, idGenerator);
   }
 
   private <T extends DomainEntity> DomainEntityCollectionConverter<T> createDomainEntityConverter(Class<T> type) {

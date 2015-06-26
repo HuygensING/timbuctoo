@@ -3,13 +3,17 @@ package nl.knaw.huygens.timbuctoo.tools.conversion;
 import java.util.List;
 import java.util.Map;
 
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
+import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorage;
 
 import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 
 public class RelationRevisionConverter {
@@ -17,10 +21,14 @@ public class RelationRevisionConverter {
   private RelationVariationConverter variantConverter;
   private VertexFinder vertexFinder;
   private Map<String, String> oldIdNewIdMap;
-  private MongoConversionStorage mongoStorage;
+  private MongoStorage mongoStorage;
   private ConversionVerifierFactory verifierFactory;
 
-  public RelationRevisionConverter(RelationVariationConverter variantConverter, VertexFinder vertexFinder, Map<String, String> oldIdNewIdMap, MongoConversionStorage mongoStorage,
+  public RelationRevisionConverter(Graph graph, MongoStorage mongoStorage, GraphStorage graphStorage, TypeRegistry typeRegistry, Map<String, String> oldIdNewIdMap) {
+    this(new RelationVariationConverter(typeRegistry), new VertexFinder(graph), oldIdNewIdMap, mongoStorage, new ConversionVerifierFactory(mongoStorage, graphStorage));
+  }
+
+  RelationRevisionConverter(RelationVariationConverter variantConverter, VertexFinder vertexFinder, Map<String, String> oldIdNewIdMap, MongoStorage mongoStorage,
       ConversionVerifierFactory verifierFactory) {
     this.variantConverter = variantConverter;
     this.vertexFinder = vertexFinder;
