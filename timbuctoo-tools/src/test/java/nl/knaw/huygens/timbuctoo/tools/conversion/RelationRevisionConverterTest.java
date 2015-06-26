@@ -88,8 +88,8 @@ public class RelationRevisionConverterTest {
     instance.convert(OLD_ID, NEW_ID, variations, REVISION);
 
     // verify
-    verify(variantConverter).addToEdge(argThat(is(edge)), argThat(likeRelation().ofType(VARIANT_TYPE1)));
-    verify(variantConverter).addToEdge(argThat(is(edge)), argThat(likeRelation().ofType(VARIANT_TYPE2)));
+    verify(variantConverter).addToEdge(argThat(is(edge)), argThat(likeRelation().ofType(VARIANT_TYPE1).withId(NEW_ID)));
+    verify(variantConverter).addToEdge(argThat(is(edge)), argThat(likeRelation().ofType(VARIANT_TYPE2).withId(NEW_ID)));
 
     verify(verifier1).verifyConversion(OLD_ID, NEW_ID);
     verify(verifier2).verifyConversion(OLD_ID, NEW_ID);

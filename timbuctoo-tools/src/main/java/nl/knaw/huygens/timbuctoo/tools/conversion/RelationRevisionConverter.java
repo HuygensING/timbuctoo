@@ -41,6 +41,7 @@ public class RelationRevisionConverter {
     Edge edge = null;
     List<Class<? extends Relation>> variantTypes = Lists.newArrayList();
     for (Relation variant : variants) {
+      variant.setId(newId);
       if (edge == null) {
         edge = createEdge(variant);
       }
