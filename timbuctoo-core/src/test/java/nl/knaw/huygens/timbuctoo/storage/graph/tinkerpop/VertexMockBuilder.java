@@ -67,6 +67,11 @@ public class VertexMockBuilder {
     return this;
   }
 
+  public VertexMockBuilder withOutgoingEdgeWithLabel(SystemRelationType label) {
+    addEdge(mock(Edge.class), label.name(), outgoingEdges);
+    return this;
+  }
+
   public Vertex build() {
     Vertex vertex = mock(Vertex.class);
 

@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType.VERSION_OF;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getIdProperty;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getRevisionProperty;
@@ -86,14 +85,6 @@ class TinkerPopLowLevelAPI {
 
   private com.tinkerpop.blueprints.Predicate isOfType() {
     return new IsOfTypePredicate();
-  }
-
-  private static final class IsLatestVersionOfVertex implements Predicate<Vertex> {
-    @Override
-    public boolean apply(Vertex vertex) {
-      Iterable<Edge> incomingVersionOfEdges = vertex.getEdges(Direction.IN, VERSION_OF.name());
-      return incomingVersionOfEdges == null || !incomingVersionOfEdges.iterator().hasNext();
-    }
   }
 
   public Vertex getVertexWithRevision(Class<? extends DomainEntity> type, String id, int revision) {

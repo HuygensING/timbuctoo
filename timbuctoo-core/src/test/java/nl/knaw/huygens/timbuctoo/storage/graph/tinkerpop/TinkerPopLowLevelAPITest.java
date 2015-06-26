@@ -105,7 +105,7 @@ public class TinkerPopLowLevelAPITest {
   public void findVerticesByPropertyReturnsAnIteratorWithTheLatestFoundVertices() {
     Vertex latestVertex1 = aVertex().build();
     Vertex latestVertex2 = aVertex().build();
-    Vertex notLatestVertex = aVertex().withIncomingEdgeWithLabel(VERSION_OF).build();
+    Vertex notLatestVertex = aVertex().withOutgoingEdgeWithLabel(VERSION_OF).build();
     aVertexSearchResult() //
         .forType(DOMAIN_ENTITY_TYPE) //
         .forProperty(PROPERTY_NAME, PROPERTY_VALUE) //
@@ -166,10 +166,10 @@ public class TinkerPopLowLevelAPITest {
   }
 
   @Test
-  public void getLatestVertexByIdReturnsTheVertexWithoutIncomingIsVersionOfRelation() {
+  public void getLatestVertexByIdReturnsTheVertexWithoutOutgoingIsVersionOfRelation() {
     Vertex latestVertex = aVertex().build();
     aVertexSearchResult().forType(SYSTEM_ENTITY_TYPE).forId(ID) //
-        .containsVertex(aVertex().withIncomingEdgeWithLabel(VERSION_OF).build()) //
+        .containsVertex(aVertex().withOutgoingEdgeWithLabel(VERSION_OF).build()) //
         .andVertex(latestVertex) //
         .andVertex(aVertex().withIncomingEdgeWithLabel(VERSION_OF).build())//
         .foundInDatabase(dbMock);
@@ -197,9 +197,9 @@ public class TinkerPopLowLevelAPITest {
   public void getLatestVertexByIdReturnsTheLatestVertexWithACertainId() {
     Vertex latestVertex = aVertex().build();
     aVertexSearchResult().forId(ID) //
-        .containsVertex(aVertex().withIncomingEdgeWithLabel(VERSION_OF).build()) //
+        .containsVertex(aVertex().withOutgoingEdgeWithLabel(VERSION_OF).build()) //
         .andVertex(latestVertex) //
-        .andVertex(aVertex().withIncomingEdgeWithLabel(VERSION_OF).build())//
+        .andVertex(aVertex().withOutgoingEdgeWithLabel(VERSION_OF).build())//
         .foundInDatabase(dbMock);
 
     // action
@@ -226,8 +226,8 @@ public class TinkerPopLowLevelAPITest {
     Vertex latestVertex2 = aVertex().build();
     aVertexSearchResult().forType(SYSTEM_ENTITY_TYPE) //
         .containsVertex(latestVertex1) //
-        .andVertex(aVertex().withIncomingEdgeWithLabel(VERSION_OF).build()) //
-        .andVertex(aVertex().withIncomingEdgeWithLabel(VERSION_OF).build()) //
+        .andVertex(aVertex().withOutgoingEdgeWithLabel(VERSION_OF).build()) //
+        .andVertex(aVertex().withOutgoingEdgeWithLabel(VERSION_OF).build()) //
         .andVertex(latestVertex2) //
         .foundInDatabase(dbMock);
 
@@ -328,8 +328,8 @@ public class TinkerPopLowLevelAPITest {
 
     Vertex latestVertex1 = aVertex().build();
     Vertex latestVertex2 = aVertex().build();
-    Vertex otherVertex1 = aVertex().withIncomingEdgeWithLabel(VERSION_OF).build();
-    Vertex otherVertex2 = aVertex().withIncomingEdgeWithLabel(VERSION_OF).build();
+    Vertex otherVertex1 = aVertex().withOutgoingEdgeWithLabel(VERSION_OF).build();
+    Vertex otherVertex2 = aVertex().withOutgoingEdgeWithLabel(VERSION_OF).build();
 
     List<Vertex> vertices = Lists.newArrayList(latestVertex1, latestVertex2, otherVertex1, otherVertex2);
     doReturn(vertices).when(resultFilter).filter((Iterable<Vertex>) argThat(containsInAnyOrder(latestVertex1, latestVertex2, otherVertex1, otherVertex2)));
