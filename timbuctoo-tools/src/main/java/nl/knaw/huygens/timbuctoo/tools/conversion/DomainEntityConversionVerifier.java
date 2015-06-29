@@ -7,7 +7,7 @@ import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorage;
 
 public class DomainEntityConversionVerifier<T extends DomainEntity> extends AbstractEntityConversionVerifier<T> {
 
-  private final int revision;
+  protected final int revision;
 
   public DomainEntityConversionVerifier(Class<T> type, MongoStorage mongoStorage, GraphStorage graphStorage, int revision) {
     this(type, mongoStorage, graphStorage, new PropertyVerifier(), revision);

@@ -27,7 +27,7 @@ public class DomainEntityConverterFactory {
     this.mongoStorage = mongoStorage;
     this.oldIdNewIdMap = oldIdNewIdMap;
     this.idGenerator = new IdGenerator();
-    this.revisionConverter = new RevisionConverter(graph, new VariationConverter(new ElementConverterFactory(typeRegistry)), new ConversionVerifierFactory(mongoStorage, graphStorage));
+    this.revisionConverter = new RevisionConverter(graph, new VariationConverter(new ElementConverterFactory(typeRegistry)), new ConversionVerifierFactory(mongoStorage, graphStorage, oldIdNewIdMap));
     this.vertexDuplicator = new VertexDuplicator(graph);
   }
 

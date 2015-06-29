@@ -2,11 +2,8 @@ package nl.knaw.huygens.timbuctoo.tools.conversion;
 
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
-import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorage;
 
 import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.Graph;
@@ -17,10 +14,6 @@ public class RevisionConverter {
   private Graph graph;
   private VariationConverter variationConverter;
   private ConversionVerifierFactory verifierFactory;
-
-  public RevisionConverter(Graph graph, MongoStorage mongoStorage, GraphStorage graphStorage, TypeRegistry typeRegistry) {
-    this(graph, new VariationConverter(typeRegistry), new ConversionVerifierFactory(mongoStorage, graphStorage));
-  }
 
   public RevisionConverter(Graph graph, VariationConverter variationConverter, ConversionVerifierFactory verifierFactory) {
     this.graph = graph;

@@ -14,11 +14,21 @@ public class PropertyVerifierTest {
   private static final String NEW_VALUE = "newValue";
   private static final String OLD_VALUE = "oldValue";
   private static final String FIELD_NAME = "fieldName";
-  private PropertyVerifier instance;
+  protected PropertyVerifier instance;
 
   @Before
   public void setup() {
     instance = new PropertyVerifier();
+  }
+
+  @Test
+  public void addNoMismatchIfTheValuesMatch() {
+    // action
+    instance.check(FIELD_NAME, NEW_VALUE, NEW_VALUE);
+
+    // verify
+    assertThat(instance.hasInconsistentProperties(), is(false));
+    assertThat(instance.getMismatches(), hasSize(0));
   }
 
   @Test

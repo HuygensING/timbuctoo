@@ -15,9 +15,13 @@ public class PropertyVerifier {
   }
 
   public void check(String fieldName, Object oldValue, Object newValue) {
-    if (!Objects.equals(oldValue, newValue)) {
+    if (!areEqual(fieldName, oldValue, newValue)) {
       addMismatch(fieldName, oldValue, newValue);
     }
+  }
+
+  protected boolean areEqual(String fieldName, Object oldValue, Object newValue) {
+    return Objects.equals(oldValue, newValue);
   }
 
   private void addMismatch(String fieldName, Object oldValue, Object newValue) {

@@ -21,8 +21,8 @@ public abstract class AbstractEntityConversionVerifier<T extends Entity> impleme
 
   protected final MongoStorage mongoStorage;
   protected final GraphStorage graphStorage;
-  protected final PropertyVerifier propertyVerifier;
-  protected final List<Field> fields;
+  private final PropertyVerifier propertyVerifier;
+  private final List<Field> fields;
   protected final Class<T> type;
 
   public AbstractEntityConversionVerifier(Class<T> type, MongoStorage mongoStorage, GraphStorage graphStorage, PropertyVerifier propertyVerifier) {

@@ -25,7 +25,7 @@ public class RelationRevisionConverter {
   private ConversionVerifierFactory verifierFactory;
 
   public RelationRevisionConverter(Graph graph, MongoStorage mongoStorage, GraphStorage graphStorage, TypeRegistry typeRegistry, Map<String, String> oldIdNewIdMap) {
-    this(new RelationVariationConverter(typeRegistry), new VertexFinder(graph), oldIdNewIdMap, mongoStorage, new ConversionVerifierFactory(mongoStorage, graphStorage));
+    this(new RelationVariationConverter(typeRegistry), new VertexFinder(graph), oldIdNewIdMap, mongoStorage, new ConversionVerifierFactory(mongoStorage, graphStorage, oldIdNewIdMap));
   }
 
   RelationRevisionConverter(RelationVariationConverter variantConverter, VertexFinder vertexFinder, Map<String, String> oldIdNewIdMap, MongoStorage mongoStorage,
