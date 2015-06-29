@@ -10,11 +10,14 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 import nl.knaw.huygens.timbuctoo.storage.graph.IdGenerator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.Graph;
 
 public class RelationCollectionConverter {
-
+  private static final Logger LOG = LoggerFactory.getLogger(RelationCollectionConverter.class);
   private RelationConverter versionConverter;
   private MongoConversionStorage mongoStorage;
 
@@ -29,15 +32,20 @@ public class RelationCollectionConverter {
   }
 
   public void convert() throws StorageException, IllegalArgumentException, IllegalAccessException {
-    List<String> relationIds = Lists.newArrayList();
+    LOG.info("Start converting for Relation");
+    try {
+      List<String> relationIds = Lists.newArrayList();
 
-    //first create the jobs to prevent a mongo cursor timeout exception.
-    for (StorageIterator<Relation> relations = mongoStorage.getDomainEntities(Relation.class); relations.hasNext();) {
-      relationIds.add(relations.next().getId());
-    }
+      //first create the jobs to prevent a mongo cursor timeout exception.
+      for (StorageIterator<Relation> relations = mongoStorage.getDomainEntities(Relation.class); relations.hasNext();) {
+        relationIds.add(relations.next().getId());
+      }
 
-    for (String id : relationIds) {
-      versionConverter.convert(id);
+      for (String id : relationIds) {
+        versionConverter.convert(id);
+      }
+    } finally {
+      LOG.info("End converting for Relation");
     }
 
   }
