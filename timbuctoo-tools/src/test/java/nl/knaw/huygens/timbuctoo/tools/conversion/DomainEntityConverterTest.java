@@ -86,6 +86,7 @@ public class DomainEntityConverterTest {
 
   @Test
   public void convertRetrievesTheVersionsAndLetsTheVersionConverterHandleEachOne() throws Exception {
+    // action
     instance.convert();
 
     // verify

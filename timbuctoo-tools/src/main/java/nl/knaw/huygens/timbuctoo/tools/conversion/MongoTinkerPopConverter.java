@@ -7,7 +7,6 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 import nl.knaw.huygens.timbuctoo.storage.graph.IdGenerator;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
@@ -23,14 +22,15 @@ import com.tinkerpop.blueprints.Graph;
 public class MongoTinkerPopConverter {
   private static final Logger LOG = LoggerFactory.getLogger(MongoTinkerPopConverter.class);
   private Graph graph;
-  private GraphStorage graphStorage;
+  private TinkerPopConversionStorage graphStorage;
   private TypeRegistry registry;
   private ElementConverterFactory converterFactory;
   private MongoConversionStorage mongoStorage;
   private IdGenerator idGenerator;
   private Map<String, String> oldIdNewIdMap;
 
-  public MongoTinkerPopConverter(GraphStorage graphStorage, Graph graph, IdGenerator idGenerator, ElementConverterFactory converterFactory, TypeRegistry registry, MongoConversionStorage mongoStorage) {
+  public MongoTinkerPopConverter(TinkerPopConversionStorage graphStorage, Graph graph, IdGenerator idGenerator, ElementConverterFactory converterFactory, TypeRegistry registry,
+      MongoConversionStorage mongoStorage) {
     this.graphStorage = graphStorage;
     this.idGenerator = idGenerator;
     this.graph = graph;
@@ -46,7 +46,7 @@ public class MongoTinkerPopConverter {
     Graph graph = injector.getInstance(Graph.class);
     ElementConverterFactory converterFactory = injector.getInstance(ElementConverterFactory.class);
     IdGenerator idGenerator = injector.getInstance(IdGenerator.class);
-    GraphStorage graphStorage = injector.getInstance(GraphStorage.class);
+    TinkerPopConversionStorage graphStorage = injector.getInstance(TinkerPopConversionStorage.class);
 
     MongoConversionStorage mongoStorage = injector.getInstance(MongoConversionStorage.class);
     TypeRegistry registry = injector.getInstance(TypeRegistry.class);

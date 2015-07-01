@@ -8,7 +8,6 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorage;
 
 import com.google.common.collect.Lists;
@@ -24,8 +23,8 @@ public class RelationRevisionConverter {
   private MongoStorage mongoStorage;
   private ConversionVerifierFactory verifierFactory;
 
-  public RelationRevisionConverter(Graph graph, MongoStorage mongoStorage, GraphStorage graphStorage, TypeRegistry typeRegistry, Map<String, String> oldIdNewIdMap) {
-    this(new RelationVariationConverter(typeRegistry), new VertexFinder(graph), oldIdNewIdMap, mongoStorage, new ConversionVerifierFactory(mongoStorage, graphStorage, oldIdNewIdMap));
+  public RelationRevisionConverter(Graph graph, MongoStorage mongoStorage, TinkerPopConversionStorage graphStorage, TypeRegistry typeRegistry, Map<String, String> oldIdNewIdMap) {
+    this(new RelationVariationConverter(typeRegistry), new VertexFinder(graph), oldIdNewIdMap, mongoStorage, new ConversionVerifierFactory(mongoStorage, graphStorage, graph, oldIdNewIdMap));
   }
 
   RelationRevisionConverter(RelationVariationConverter variantConverter, VertexFinder vertexFinder, Map<String, String> oldIdNewIdMap, MongoStorage mongoStorage,
@@ -39,25 +38,27 @@ public class RelationRevisionConverter {
 
   public void convert(String oldId, String newId, List<Relation> variants, int revision) throws StorageException, IllegalArgumentException, IllegalAccessException {
     Edge edge = null;
+    Object edgeId = null;
     List<Class<? extends Relation>> variantTypes = Lists.newArrayList();
     for (Relation variant : variants) {
       variant.setId(newId);
       if (edge == null) {
         edge = createEdge(variant);
+        edgeId = edge.getId();
       }
 
       variantConverter.addToEdge(edge, variant);
       variantTypes.add(variant.getClass());
     }
 
-    checkIfVariantsAreCorrectlyStored(oldId, newId, revision, variantTypes);
+    checkIfVariantsAreCorrectlyStored(oldId, newId, edgeId, revision, variantTypes);
 
   }
 
-  private void checkIfVariantsAreCorrectlyStored(String oldId, String newId, int revision, List<Class<? extends Relation>> variantTypes) throws StorageException, IllegalAccessException {
+  private void checkIfVariantsAreCorrectlyStored(String oldId, String newId, Object edgeId, int revision, List<Class<? extends Relation>> variantTypes) throws StorageException, IllegalAccessException {
     for (Class<? extends DomainEntity> type : variantTypes) {
       EntityConversionVerifier verifier = verifierFactory.createFor(type, revision);
-      verifier.verifyConversion(oldId, newId);
+      verifier.verifyConversion(oldId, newId, edgeId);
     }
   }
 

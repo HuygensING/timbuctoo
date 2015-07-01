@@ -4,14 +4,15 @@ import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorage;
+
+import com.tinkerpop.blueprints.Graph;
 
 public class RelationConversionVerifier<T extends Relation> extends DomainEntityConversionVerifier<T> implements EntityConversionVerifier {
 
   private RelationPropertyVerifier propertyVerifier;
 
-  public RelationConversionVerifier(Class<T> type, MongoStorage mongoStorage, GraphStorage graphStorage, int revision, Map<String, String> oldIdNewIdMap) {
+  public RelationConversionVerifier(Class<T> type, MongoStorage mongoStorage, TinkerPopConversionStorage graphStorage, Graph graph, int revision, Map<String, String> oldIdNewIdMap) {
     super(type, mongoStorage, graphStorage, revision);
     propertyVerifier = new RelationPropertyVerifier(oldIdNewIdMap);
   }
@@ -22,8 +23,8 @@ public class RelationConversionVerifier<T extends Relation> extends DomainEntity
   }
 
   @Override
-  protected T getNewItem(String newId) throws StorageException {
-    T revEntity = graphStorage.getRelationRevision(type, newId, revision);
-    return revEntity != null ? revEntity : graphStorage.getRelation(type, newId);
+  protected T getNewItem(Object newId) throws StorageException {
+
+    return graphStorage.getRelationByEdgeId(type, newId);
   }
 }

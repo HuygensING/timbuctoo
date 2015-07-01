@@ -8,7 +8,6 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 import nl.knaw.huygens.timbuctoo.storage.graph.IdGenerator;
 
 import org.slf4j.Logger;
@@ -25,7 +24,8 @@ public class RelationCollectionConverter {
   private MongoConversionStorage mongoStorage;
   private Graph graph;
 
-  public RelationCollectionConverter(MongoConversionStorage mongoStorage, Graph graph, GraphStorage graphStorage, TypeRegistry typeRegistry, Map<String, String> oldIdNewIdMap, IdGenerator idGenerator) {
+  public RelationCollectionConverter(MongoConversionStorage mongoStorage, Graph graph, TinkerPopConversionStorage graphStorage, TypeRegistry typeRegistry, Map<String, String> oldIdNewIdMap,
+      IdGenerator idGenerator) {
     this(new RelationConverter(mongoStorage, graph, graphStorage, typeRegistry, oldIdNewIdMap, idGenerator), mongoStorage);
     this.graph = graph;
   }

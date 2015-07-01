@@ -8,7 +8,6 @@ import java.util.Objects;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorage;
 
 import com.google.common.collect.Lists;
@@ -17,15 +16,17 @@ public abstract class AbstractEntityConversionVerifier<T extends Entity> impleme
 
   protected abstract T getOldItem(String oldId) throws StorageException;
 
-  protected abstract T getNewItem(String newId) throws StorageException;
+  protected T getNewItem(Object internalId) throws StorageException {
+    return graphStorage.getEntityByVertexId(type, internalId);
+  }
 
   protected final MongoStorage mongoStorage;
-  protected final GraphStorage graphStorage;
+  protected final TinkerPopConversionStorage graphStorage;
   private final PropertyVerifier propertyVerifier;
   private final List<Field> fields;
   protected final Class<T> type;
 
-  public AbstractEntityConversionVerifier(Class<T> type, MongoStorage mongoStorage, GraphStorage graphStorage, PropertyVerifier propertyVerifier) {
+  public AbstractEntityConversionVerifier(Class<T> type, MongoStorage mongoStorage, TinkerPopConversionStorage graphStorage, PropertyVerifier propertyVerifier) {
     this.type = type;
     this.mongoStorage = mongoStorage;
     this.graphStorage = graphStorage;
@@ -61,9 +62,9 @@ public abstract class AbstractEntityConversionVerifier<T extends Entity> impleme
   }
 
   @Override
-  public final void verifyConversion(String oldId, String newId) throws StorageException, IllegalArgumentException, IllegalAccessException {
+  public final void verifyConversion(String oldId, String newId, Object newInternalId) throws StorageException, IllegalArgumentException, IllegalAccessException {
     T mongoEntity = getOldItem(oldId);
-    T graphEntity = getNewItem(newId);
+    T graphEntity = getNewItem(newInternalId);
 
     for (Field field : getFields()) {
       field.setAccessible(true);

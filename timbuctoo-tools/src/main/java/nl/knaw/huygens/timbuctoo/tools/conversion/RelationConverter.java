@@ -5,7 +5,6 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 import nl.knaw.huygens.timbuctoo.storage.graph.IdGenerator;
 
 import com.tinkerpop.blueprints.Graph;
@@ -18,7 +17,8 @@ public class RelationConverter {
   private final IdGenerator idGenerator;
   private Map<String, String> oldIdNewIdMap;
 
-  public RelationConverter(MongoConversionStorage mongoStorage, Graph graph, GraphStorage graphStorage, TypeRegistry typeRegistry, Map<String, String> oldIdNewIdMap, IdGenerator idGenerator) {
+  public RelationConverter(MongoConversionStorage mongoStorage, Graph graph, TinkerPopConversionStorage graphStorage, TypeRegistry typeRegistry, Map<String, String> oldIdNewIdMap,
+      IdGenerator idGenerator) {
     this(mongoStorage, new RelationRevisionConverter(graph, mongoStorage, graphStorage, typeRegistry, oldIdNewIdMap), idGenerator, oldIdNewIdMap);
   }
 

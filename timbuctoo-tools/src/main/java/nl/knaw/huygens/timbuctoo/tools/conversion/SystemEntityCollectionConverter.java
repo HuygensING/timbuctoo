@@ -7,7 +7,6 @@ import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
-import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 import nl.knaw.huygens.timbuctoo.storage.graph.IdGenerator;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexConverter;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
@@ -23,13 +22,13 @@ public class SystemEntityCollectionConverter<T extends SystemEntity> {
   private final Class<T> type;
   private final MongoConversionStorage mongoStorage;
   private final Graph graph;
-  private final GraphStorage graphStorage;
+  private final TinkerPopConversionStorage graphStorage;
   private final ElementConverterFactory converterFactory;
   private final IdGenerator idGenerator;
   private final Map<String, String> oldIdNewIdMap;
 
-  public SystemEntityCollectionConverter(Class<T> type, MongoConversionStorage mongoStorage, Graph graph, GraphStorage graphStorage, ElementConverterFactory converterFactory, IdGenerator idGenerator,
-      Map<String, String> oldIdNewIdMap) {
+  public SystemEntityCollectionConverter(Class<T> type, MongoConversionStorage mongoStorage, Graph graph, TinkerPopConversionStorage graphStorage, ElementConverterFactory converterFactory,
+      IdGenerator idGenerator, Map<String, String> oldIdNewIdMap) {
     this.type = type;
     this.mongoStorage = mongoStorage;
     this.graph = graph;
@@ -57,7 +56,7 @@ public class SystemEntityCollectionConverter<T extends SystemEntity> {
     Vertex vertex = graph.addVertex(null);
     addPropertiesToVertex(type, entity, vertex);
 
-    conversionChecker.verifyConversion(oldId, newId);
+    conversionChecker.verifyConversion(oldId, newId, vertex.getId());
 
     return vertex;
   }

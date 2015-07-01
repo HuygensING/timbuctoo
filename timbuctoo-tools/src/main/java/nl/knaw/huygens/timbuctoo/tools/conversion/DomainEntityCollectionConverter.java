@@ -8,7 +8,6 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 import nl.knaw.huygens.timbuctoo.storage.graph.IdGenerator;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
 
@@ -28,8 +27,8 @@ public class DomainEntityCollectionConverter<T extends DomainEntity> {
   private final Graph graph;
   private final DomainEntityConverterFactory entityConverterFactory;
 
-  public DomainEntityCollectionConverter(Class<T> type, Graph graph, GraphStorage graphStorage, IdGenerator idGenerator, ElementConverterFactory converterFactory, MongoConversionStorage mongoStorage,
-      Map<String, String> oldIdNewIdMap, TypeRegistry typeRegistry) {
+  public DomainEntityCollectionConverter(Class<T> type, Graph graph, TinkerPopConversionStorage graphStorage, IdGenerator idGenerator, ElementConverterFactory converterFactory,
+      MongoConversionStorage mongoStorage, Map<String, String> oldIdNewIdMap, TypeRegistry typeRegistry) {
     this(type, mongoStorage, new DomainEntityConverterFactory(mongoStorage, graph, typeRegistry, graphStorage, oldIdNewIdMap), graph);
 
   }

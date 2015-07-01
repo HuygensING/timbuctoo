@@ -21,6 +21,9 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 
 public class RevisionConverterTest {
+  private static final String OLD_ID = "oldId";
+  private static final String NEW_ID = "newId";
+  private static final Object NEW_INTERNAL_ID = "newInternalId";
   private static final int REVISION = 1;
   private static final Class<ProjectAPerson> TYPE2 = ProjectAPerson.class;
   private static final Class<Person> TYPE1 = Person.class;
@@ -41,6 +44,7 @@ public class RevisionConverterTest {
   private void setupGraph() {
     graph = mock(Graph.class);
     vertex = mock(Vertex.class);
+    when(vertex.getId()).thenReturn(NEW_INTERNAL_ID);
     when(graph.addVertex(null)).thenReturn(vertex);
   }
 
@@ -56,19 +60,17 @@ public class RevisionConverterTest {
     when(verifierFactory.createFor(TYPE2, REVISION)).thenReturn(conversionVerifier2);
 
     // action
-    String newId = "newId";
-    String oldId = "oldId";
-    instance.convert(oldId, newId, Lists.newArrayList(variant1, variant2), REVISION);
+    instance.convert(OLD_ID, NEW_ID, Lists.newArrayList(variant1, variant2), REVISION);
 
     // verify
     InOrder inOrder1 = inOrder(variationConverter, conversionVerifier1);
     inOrder1.verify(variationConverter).addDataToVertex(//
         argThat(is(vertex)), //
-        argThat(likePerson().withId(newId)));
-    inOrder1.verify(conversionVerifier1).verifyConversion(oldId, newId);
+        argThat(likePerson().withId(NEW_ID)));
+    inOrder1.verify(conversionVerifier1).verifyConversion(OLD_ID, NEW_ID, NEW_INTERNAL_ID);
 
     InOrder inOrder2 = inOrder(variationConverter, conversionVerifier2);
-    inOrder2.verify(variationConverter).addDataToVertex(argThat(is(vertex)), argThat(likeProjectAPerson().withId(newId)));
-    inOrder2.verify(conversionVerifier2).verifyConversion(oldId, newId);
+    inOrder2.verify(variationConverter).addDataToVertex(argThat(is(vertex)), argThat(likeProjectAPerson().withId(NEW_ID)));
+    inOrder2.verify(conversionVerifier2).verifyConversion(OLD_ID, NEW_ID, NEW_INTERNAL_ID);
   }
 }

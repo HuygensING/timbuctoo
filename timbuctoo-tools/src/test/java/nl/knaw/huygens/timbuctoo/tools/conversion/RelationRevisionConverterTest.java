@@ -33,6 +33,7 @@ public class RelationRevisionConverterTest {
   private static final String NEW_TARGET_ID = "newTargetId";
   private static final String OLD_ID = "oldId";
   private static final String NEW_ID = "newId";
+  private static final Object NEW_INTERNAL_ID = "newInternalId";
   private static final String REGULAR_NAME = "regularName";
   private static final String NEW_SOURCE_ID = "newSourceId";
   private static final String OLD_SOURCE_ID = "oldSourceId";
@@ -51,6 +52,7 @@ public class RelationRevisionConverterTest {
     variantConverter = mock(RelationVariationConverter.class);
     mongoStorage = mock(MongoConversionStorage.class);
     edge = mock(Edge.class);
+    when(edge.getId()).thenReturn(NEW_INTERNAL_ID);
     setupOldIdNewIdMap();
 
     instance = new RelationRevisionConverter(variantConverter, vertexFinder, oldIdNewIdMap, mongoStorage, verifierFactory);
@@ -91,8 +93,8 @@ public class RelationRevisionConverterTest {
     verify(variantConverter).addToEdge(argThat(is(edge)), argThat(likeRelation().ofType(VARIANT_TYPE1).withId(NEW_ID)));
     verify(variantConverter).addToEdge(argThat(is(edge)), argThat(likeRelation().ofType(VARIANT_TYPE2).withId(NEW_ID)));
 
-    verify(verifier1).verifyConversion(OLD_ID, NEW_ID);
-    verify(verifier2).verifyConversion(OLD_ID, NEW_ID);
+    verify(verifier1).verifyConversion(OLD_ID, NEW_ID, NEW_INTERNAL_ID);
+    verify(verifier2).verifyConversion(OLD_ID, NEW_ID, NEW_INTERNAL_ID);
 
   }
 

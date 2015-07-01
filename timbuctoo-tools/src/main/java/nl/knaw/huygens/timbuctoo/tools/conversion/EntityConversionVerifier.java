@@ -8,6 +8,6 @@ public interface EntityConversionVerifier {
 
   boolean isIdField(Field field);
 
-  void verifyConversion(String oldId, String newId) throws StorageException, IllegalArgumentException, IllegalAccessException;
+  void verifyConversion(String oldId, String newId, Object newInternalId) throws StorageException, IllegalArgumentException, IllegalAccessException;
 
 }

@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorage;
 
 import org.junit.Before;
@@ -25,13 +24,14 @@ import com.google.common.collect.Lists;
 
 public class SystemEntityConversionVerifierTest {
 
+  private static final String MONGO_ID = "mongoId";
+  private static final String GRAPH_ID = "graphId";
+  private static final Object NEW_INTERNAL_ID = "newInternalId";
   private static final Class<RelationType> TYPE = RelationType.class;
   private RelationType mongoType;
   private RelationType graphType;
   private MongoStorage mongoStorage;
-  private String mongoId;
-  private GraphStorage graphStorage;
-  private String graphId;
+  private TinkerPopConversionStorage graphStorage;
   private SystemEntityConversionVerifier<RelationType> instance;
   private Change defaultCreated;
   private boolean defaultDerived;
@@ -63,12 +63,10 @@ public class SystemEntityConversionVerifierTest {
     graphType = new RelationType();
 
     mongoStorage = mock(MongoStorage.class);
-    mongoId = "mongoId";
-    when(mongoStorage.getEntity(TYPE, mongoId)).thenReturn(mongoType);
+    when(mongoStorage.getEntity(TYPE, MONGO_ID)).thenReturn(mongoType);
 
-    graphStorage = mock(GraphStorage.class);
-    graphId = "graphId";
-    when(graphStorage.getEntity(TYPE, graphId)).thenReturn(graphType);
+    graphStorage = mock(TinkerPopConversionStorage.class);
+    when(graphStorage.getEntityByVertexId(TYPE, NEW_INTERNAL_ID)).thenReturn(graphType);
 
     propertyVerifier = mock(PropertyVerifier.class);
 
@@ -78,23 +76,23 @@ public class SystemEntityConversionVerifierTest {
   @Test
   public void verifyConversionRetrievesTheMongoVersionAndTheGraphVersionOfAnObject() throws Exception {
     // action
-    instance.verifyConversion(mongoId, graphId);
+    instance.verifyConversion(MONGO_ID, GRAPH_ID, NEW_INTERNAL_ID);
 
     // verify
-    verify(mongoStorage).getEntity(TYPE, mongoId);
-    verify(graphStorage).getEntity(TYPE, graphId);
+    verify(mongoStorage).getEntity(TYPE, MONGO_ID);
+    verify(graphStorage).getEntityByVertexId(TYPE, NEW_INTERNAL_ID);
   }
 
   @Test
   public void verifyConversionVerifiesAllTheFieldsExceptId() throws Exception {
     // setup
     setDefaultProperties(mongoType);
-    mongoType.setId(mongoId);
+    mongoType.setId(MONGO_ID);
     setDefaultProperties(graphType);
-    graphType.setId(graphId);
+    graphType.setId(GRAPH_ID);
 
     // action
-    instance.verifyConversion(mongoId, graphId);
+    instance.verifyConversion(MONGO_ID, GRAPH_ID, NEW_INTERNAL_ID);
 
     // action
     verify(propertyVerifier, never()).check(argThat(is("id")), anyString(), anyString());
@@ -143,7 +141,7 @@ public class SystemEntityConversionVerifierTest {
     exception.expectMessage(mismatch.toString());
 
     // instance
-    instance.verifyConversion(mongoId, graphId);
+    instance.verifyConversion(MONGO_ID, GRAPH_ID, NEW_INTERNAL_ID);
 
   }
 }

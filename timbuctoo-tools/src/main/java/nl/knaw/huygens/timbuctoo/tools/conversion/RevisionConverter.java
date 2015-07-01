@@ -33,7 +33,7 @@ public class RevisionConverter {
 
     for (Class<? extends DomainEntity> type : variantTypes) {
       EntityConversionVerifier verifier = verifierFactory.createFor(type, revision);
-      verifier.verifyConversion(oldId, newId);
+      verifier.verifyConversion(oldId, newId, vertex.getId());
     }
 
     return vertex;

@@ -9,8 +9,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 
-import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,13 +20,14 @@ import com.google.common.collect.Lists;
 
 public class DomainEntityConversionVerifierTest {
   private MongoConversionStorage mongoStorage;
-  private GraphStorage graphStorage;
+  private TinkerPopConversionStorage graphStorage;
   private PropertyVerifier propertyVerifier;
   private DomainEntityConversionVerifier<ProjectBPerson> instance;
   private ProjectBPerson mongoVersion;
   private ProjectBPerson graphVersion;
 
   private static final String NEW_ID = "newId";
+  private static final Object NEW_INTERNAL_ID = "newInternalId";
   private static final int REVISION = 12;
   private static final String OLD_ID = "oldId";
   private static final Class<ProjectBPerson> TYPE = ProjectBPerson.class;
@@ -37,24 +36,24 @@ public class DomainEntityConversionVerifierTest {
   public void setup() throws Exception {
 
     mongoStorage = mock(MongoConversionStorage.class);
-    graphStorage = mock(GraphStorage.class);
+    graphStorage = mock(TinkerPopConversionStorage.class);
     propertyVerifier = mock(PropertyVerifier.class);
     instance = new DomainEntityConversionVerifier<ProjectBPerson>(TYPE, mongoStorage, graphStorage, propertyVerifier, REVISION);
 
     mongoVersion = new ProjectBPerson();
     when(mongoStorage.getRevision(TYPE, OLD_ID, REVISION)).thenReturn(mongoVersion);
     graphVersion = new ProjectBPerson();
-    when(graphStorage.getDomainEntityRevision(TYPE, NEW_ID, REVISION)).thenReturn(graphVersion);
+    when(graphStorage.getEntityByVertexId(TYPE, NEW_INTERNAL_ID)).thenReturn(graphVersion);
   }
 
   @Test
   public void verifyConversionRetrievesTheMongoVersionAndTheGraphVersionOfAnObject() throws Exception {
     // action
-    instance.verifyConversion(OLD_ID, NEW_ID);
+    instance.verifyConversion(OLD_ID, NEW_ID, NEW_INTERNAL_ID);
 
     // verify
     verify(mongoStorage).getRevision(TYPE, OLD_ID, REVISION);
-    verify(graphStorage).getDomainEntityRevision(TYPE, NEW_ID, REVISION);
+    verify(graphStorage).getEntityByVertexId(TYPE, NEW_INTERNAL_ID);
   }
 
   @Test
@@ -64,33 +63,18 @@ public class DomainEntityConversionVerifierTest {
     when(mongoStorage.getEntity(TYPE, OLD_ID)).thenReturn(mongoVersion);
 
     // action
-    instance.verifyConversion(OLD_ID, NEW_ID);
+    instance.verifyConversion(OLD_ID, NEW_ID, NEW_INTERNAL_ID);
 
     // verify
     verify(mongoStorage).getRevision(TYPE, OLD_ID, REVISION);
     verify(mongoStorage).getEntity(TYPE, OLD_ID);
-    verify(graphStorage).getDomainEntityRevision(TYPE, NEW_ID, REVISION);
-  }
-
-  @Test
-  public void verifyConversionGetsTheLatestVersionFromTheGraphIfTheRevisionHasNoPID() throws Exception {
-    // setup
-    when(graphStorage.getDomainEntityRevision(TYPE, NEW_ID, REVISION)).thenReturn(null);
-    when(graphStorage.getEntity(TYPE, NEW_ID)).thenReturn(graphVersion);
-
-    // action
-    instance.verifyConversion(OLD_ID, NEW_ID);
-
-    // verify
-    verify(mongoStorage).getRevision(TYPE, OLD_ID, REVISION);
-    verify(graphStorage).getDomainEntityRevision(TYPE, NEW_ID, REVISION);
-    verify(graphStorage).getEntity(TYPE, NEW_ID);
+    verify(graphStorage).getEntityByVertexId(TYPE, NEW_INTERNAL_ID);
   }
 
   @Test
   public void verifyConversionVerifiesAllTheFieldsExceptId() throws Exception {
     // action
-    instance.verifyConversion(OLD_ID, NEW_ID);
+    instance.verifyConversion(OLD_ID, NEW_ID, NEW_INTERNAL_ID);
 
     // verify
 
@@ -139,6 +123,6 @@ public class DomainEntityConversionVerifierTest {
     exception.expectMessage(mismatch.toString());
 
     // instance
-    instance.verifyConversion(OLD_ID, NEW_ID);
+    instance.verifyConversion(OLD_ID, NEW_ID, NEW_INTERNAL_ID);
   }
 }
