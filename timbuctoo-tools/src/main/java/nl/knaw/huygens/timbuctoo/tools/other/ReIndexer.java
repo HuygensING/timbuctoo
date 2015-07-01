@@ -31,7 +31,6 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
-import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
@@ -73,14 +72,12 @@ public class ReIndexer {
 
     CountDownLatch countDownLatch = new CountDownLatch(numberOfTasks);
     ExecutorService executor = Executors.newFixedThreadPool(numberOfProcessors);
-    //    for (Class<? extends DomainEntity> type : registry.getPrimitiveDomainEntityTypes()) {
-    //      Runnable indexer = new Indexer(type, repository, indexManager, countDownLatch);
-    //      executor.execute(indexer);
-    //    }
-    //    executor.shutdown();
-    //    countDownLatch.await(); // wait until all tasks are completed
-    Runnable indexer = new Indexer(Document.class, repository, indexManager, countDownLatch);
-    indexer.run();
+    for (Class<? extends DomainEntity> type : registry.getPrimitiveDomainEntityTypes()) {
+      Runnable indexer = new Indexer(type, repository, indexManager, countDownLatch);
+      executor.execute(indexer);
+    }
+    executor.shutdown();
+    countDownLatch.await(); // wait until all tasks are completed
   }
 
   protected static class Indexer implements Runnable {

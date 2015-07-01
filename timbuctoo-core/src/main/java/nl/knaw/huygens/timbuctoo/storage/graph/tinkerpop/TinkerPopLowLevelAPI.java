@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType;
 import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQuery;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.IsOfTypePredicate;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TinkerPopGraphQueryBuilderFactory;
@@ -32,6 +33,7 @@ import com.tinkerpop.blueprints.Vertex;
 
 class TinkerPopLowLevelAPI {
 
+  private static final String VERSION_OF_LABEL = SystemRelationType.VERSION_OF.name();
   private static final IsLatestVersionOfVertex IS_LATEST_VERSION_OF_VERTEX = new IsLatestVersionOfVertex();
   private final Graph db;
   private final VertexDuplicator vertexDuplicator;
@@ -183,13 +185,17 @@ class TinkerPopLowLevelAPI {
 
       Edge mappedEdge = latestEdgeMap.get(id);
 
-      if (mappedEdge == null || isLaterEdge(edge, mappedEdge)) {
+      if (!isVersionOfEdge(edge) && (mappedEdge == null || isLaterEdge(edge, mappedEdge))) {
         latestEdgeMap.put(id, edge);
       }
 
     }
 
     return latestEdgeMap.values().iterator();
+  }
+
+  private boolean isVersionOfEdge(Edge edge) {
+    return VERSION_OF_LABEL.equals(edge.getLabel());
   }
 
   private boolean isLaterEdge(Edge edge, Edge mappedEdge) {

@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType;
 import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQuery;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TinkerPopGraphQueryBuilder;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TinkerPopGraphQueryBuilderFactory;
@@ -810,7 +811,23 @@ public class TinkerPopLowLevelAPITest {
     // verify
     assertThat(Lists.newArrayList(latestEdges), //
         containsInAnyOrder(latestEdge1, latestEdge2));
+  }
 
+  @Test
+  public void getLatestEdgesIgnoresTheVersionOfEdges() {
+    // setup
+    Edge latestEdge1 = anEdge().withID(ID).withRev(SECOND_REVISION).build();
+    Edge edge2 = anEdge().withID(ID).withRev(FIRST_REVISION).build();
+    Edge versionOfEdge = anEdge().withLabel(SystemRelationType.VERSION_OF.name()).build();
+
+    ArrayList<Edge> edges = Lists.newArrayList(latestEdge1, edge2, versionOfEdge);
+
+    // action
+    Iterator<Edge> latestEdges = instance.getLatestEdges(edges);
+
+    // verify
+    assertThat(Lists.newArrayList(latestEdges), //
+        containsInAnyOrder(latestEdge1));
   }
 
   @Test
