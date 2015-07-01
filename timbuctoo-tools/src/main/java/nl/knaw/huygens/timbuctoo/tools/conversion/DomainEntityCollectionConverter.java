@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.tools.conversion;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -14,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConve
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.TransactionalGraph;
@@ -51,11 +53,19 @@ public class DomainEntityCollectionConverter<T extends DomainEntity> {
         converters.add(entityConverterFactory.create(type, oldId));
 
       }
-
+      Stopwatch stopwatch = Stopwatch.createStarted();
+      int number = 0;
       for (DomainEntityConverter<T> converter : converters) {
         String oldId = converter.getOldId();
         try {
           converter.convert();
+
+          if (graph instanceof TransactionalGraph && number % 1000 == 0) {
+            ((TransactionalGraph) graph).commit();
+            LOG.info("Time per conversion: {} ms, number of conversions {}", (double) stopwatch.elapsed(TimeUnit.MILLISECONDS) / number, number);
+          }
+
+          number++;
         } catch (IllegalArgumentException | IllegalAccessException e) {
           LOG.error("Could not convert {} with id \"{}\"", simpleName, oldId);
         }
