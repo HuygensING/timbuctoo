@@ -28,6 +28,7 @@ public class MongoTinkerPopConverter {
   private MongoConversionStorage mongoStorage;
   private IdGenerator idGenerator;
   private Map<String, String> oldIdNewIdMap;
+  private Map<String, Object> oldIdLatestVertexIdMap;
 
   public MongoTinkerPopConverter(TinkerPopConversionStorage graphStorage, Graph graph, IdGenerator idGenerator, ElementConverterFactory converterFactory, TypeRegistry registry,
       MongoConversionStorage mongoStorage) {
@@ -37,7 +38,9 @@ public class MongoTinkerPopConverter {
     this.converterFactory = converterFactory;
     this.registry = registry;
     this.mongoStorage = mongoStorage;
-    oldIdNewIdMap = Maps.newConcurrentMap();
+    this.oldIdNewIdMap = Maps.newHashMap();
+    oldIdLatestVertexIdMap = Maps.newHashMap();
+
   }
 
   public static void main(String[] args) throws Exception {
@@ -75,11 +78,11 @@ public class MongoTinkerPopConverter {
   }
 
   private RelationCollectionConverter createRelationConverter() {
-    return new RelationCollectionConverter(mongoStorage, graph, graphStorage, registry, oldIdNewIdMap, idGenerator);
+    return new RelationCollectionConverter(mongoStorage, graph, graphStorage, registry, idGenerator, oldIdNewIdMap, oldIdLatestVertexIdMap);
   }
 
   private <T extends DomainEntity> DomainEntityCollectionConverter<T> createDomainEntityConverter(Class<T> type) {
-    return new DomainEntityCollectionConverter<T>(type, graph, graphStorage, idGenerator, converterFactory, mongoStorage, oldIdNewIdMap, registry);
+    return new DomainEntityCollectionConverter<T>(type, graph, graphStorage, idGenerator, converterFactory, mongoStorage, registry, oldIdNewIdMap, oldIdLatestVertexIdMap);
   }
 
   public void convertSystemEntities() throws Exception {

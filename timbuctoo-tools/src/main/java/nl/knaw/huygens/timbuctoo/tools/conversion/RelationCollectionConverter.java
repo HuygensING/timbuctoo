@@ -24,9 +24,9 @@ public class RelationCollectionConverter {
   private MongoConversionStorage mongoStorage;
   private Graph graph;
 
-  public RelationCollectionConverter(MongoConversionStorage mongoStorage, Graph graph, TinkerPopConversionStorage graphStorage, TypeRegistry typeRegistry, Map<String, String> oldIdNewIdMap,
-      IdGenerator idGenerator) {
-    this(new RelationConverter(mongoStorage, graph, graphStorage, typeRegistry, oldIdNewIdMap, idGenerator), mongoStorage);
+  public RelationCollectionConverter(MongoConversionStorage mongoStorage, Graph graph, TinkerPopConversionStorage graphStorage, TypeRegistry typeRegistry, IdGenerator idGenerator,
+      Map<String, String> oldIdNewIdMap, Map<String, Object> oldIdLatestVertexIdMap) {
+    this(new RelationConverter(mongoStorage, graph, graphStorage, typeRegistry, oldIdNewIdMap, oldIdLatestVertexIdMap, idGenerator), mongoStorage);
     this.graph = graph;
   }
 
@@ -51,16 +51,23 @@ public class RelationCollectionConverter {
       Stopwatch stopwatch = Stopwatch.createStarted();
       for (String id : relationIds) {
         versionConverter.convert(id);
-        if (graph instanceof TransactionalGraph && number % 1000 == 0) {
-          ((TransactionalGraph) graph).commit();
+        if (number % 1000 == 0) {
+          commit();
           LOG.info("Time per conversion: {} ms, number of conversions {}", (double) stopwatch.elapsed(TimeUnit.MILLISECONDS) / number, number);
         }
         number++;
 
       }
     } finally {
+      commit();
       LOG.info("End converting for Relation");
     }
 
+  }
+
+  private void commit() {
+    if (graph instanceof TransactionalGraph) {
+      ((TransactionalGraph) graph).commit();
+    }
   }
 }

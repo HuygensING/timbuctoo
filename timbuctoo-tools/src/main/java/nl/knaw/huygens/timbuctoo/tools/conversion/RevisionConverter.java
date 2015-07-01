@@ -19,7 +19,6 @@ public class RevisionConverter {
     this.graph = graph;
     this.variationConverter = variationConverter;
     this.verifierFactory = verifierFactory;
-
   }
 
   public <T extends DomainEntity> Vertex convert(String oldId, String newId, List<T> variations, int revision) throws IllegalArgumentException, IllegalAccessException, StorageException {

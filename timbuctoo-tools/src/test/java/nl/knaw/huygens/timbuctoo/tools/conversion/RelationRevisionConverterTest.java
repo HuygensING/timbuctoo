@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,9 +23,12 @@ import test.model.projecta.SubARelation;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 
 public class RelationRevisionConverterTest {
+  private static final String LATEST_SOURCE_VERTEX_ID = "latestSourceVertexID";
+  private static final String LATEST_TARGET_VERTEX_ID = "latestTargetVertexId";
   private static final Class<SubARelation> VARIANT_TYPE2 = SubARelation.class;
   private static final Class<Relation> VARIANT_TYPE1 = Relation.class;
   private static final int REVISION = 1;
@@ -39,23 +43,40 @@ public class RelationRevisionConverterTest {
   private static final String OLD_SOURCE_ID = "oldSourceId";
   private RelationVariationConverter variantConverter;
   private Edge edge;
-  private VertexFinder vertexFinder;
   private Map<String, String> oldIdNewIdMap;
   private RelationRevisionConverter instance;
   private MongoConversionStorage mongoStorage;
   private ConversionVerifierFactory verifierFactory;
+  private HashMap<String, Object> oldIdLatestVertexIdMap;
+  private Graph graph;
+  private Vertex sourceVertex;
+  private Vertex targetVertex;
 
   @Before
   public void setup() {
+    graph = mock(Graph.class);
     verifierFactory = mock(ConversionVerifierFactory.class);
-    vertexFinder = mock(VertexFinder.class);
     variantConverter = mock(RelationVariationConverter.class);
     mongoStorage = mock(MongoConversionStorage.class);
     edge = mock(Edge.class);
     when(edge.getId()).thenReturn(NEW_INTERNAL_ID);
-    setupOldIdNewIdMap();
 
-    instance = new RelationRevisionConverter(variantConverter, vertexFinder, oldIdNewIdMap, mongoStorage, verifierFactory);
+    setupOldIdNewIdMap();
+    setupOldIdLatestVertexIdMap();
+    setupVertices();
+
+    instance = new RelationRevisionConverter(variantConverter, mongoStorage, graph, verifierFactory, oldIdLatestVertexIdMap);
+  }
+
+  private void setupVertices() {
+    sourceVertex = findVertexById(LATEST_SOURCE_VERTEX_ID);
+    targetVertex = findVertexById(LATEST_TARGET_VERTEX_ID);
+  }
+
+  private void setupOldIdLatestVertexIdMap() {
+    oldIdLatestVertexIdMap = Maps.newHashMap();
+    oldIdLatestVertexIdMap.put(OLD_TARGET_ID, LATEST_TARGET_VERTEX_ID);
+    oldIdLatestVertexIdMap.put(OLD_SOURCE_ID, LATEST_SOURCE_VERTEX_ID);
   }
 
   private void setupOldIdNewIdMap() {
@@ -77,9 +98,6 @@ public class RelationRevisionConverterTest {
     variations.add(variant2);
 
     findRelationTypeIdGivesName(OLD_REL_TYPE_ID, REGULAR_NAME);
-
-    Vertex sourceVertex = findVertexById(NEW_SOURCE_ID);
-    Vertex targetVertex = findVertexById(NEW_TARGET_ID);
 
     when(sourceVertex.addEdge(REGULAR_NAME, targetVertex)).thenReturn(edge);
 
@@ -112,7 +130,7 @@ public class RelationRevisionConverterTest {
 
   private Vertex findVertexById(String id) {
     Vertex vertex = mock(Vertex.class);
-    when(vertexFinder.getLatestVertexById(id)).thenReturn(vertex);
+    when(graph.getVertex(id)).thenReturn(vertex);
 
     return vertex;
   }

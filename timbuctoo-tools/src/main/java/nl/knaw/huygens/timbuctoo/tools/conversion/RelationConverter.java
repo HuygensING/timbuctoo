@@ -18,8 +18,8 @@ public class RelationConverter {
   private Map<String, String> oldIdNewIdMap;
 
   public RelationConverter(MongoConversionStorage mongoStorage, Graph graph, TinkerPopConversionStorage graphStorage, TypeRegistry typeRegistry, Map<String, String> oldIdNewIdMap,
-      IdGenerator idGenerator) {
-    this(mongoStorage, new RelationRevisionConverter(graph, mongoStorage, graphStorage, typeRegistry, oldIdNewIdMap), idGenerator, oldIdNewIdMap);
+      Map<String, Object> oldIdLatestVertexIdMap, IdGenerator idGenerator) {
+    this(mongoStorage, new RelationRevisionConverter(graph, mongoStorage, graphStorage, typeRegistry, oldIdNewIdMap, oldIdLatestVertexIdMap), idGenerator, oldIdNewIdMap);
   }
 
   RelationConverter(MongoConversionStorage mongoStorage, RelationRevisionConverter revisionConverter, IdGenerator idGenerator, Map<String, String> oldIdNewIdMap) {

@@ -18,22 +18,22 @@ import com.tinkerpop.blueprints.Vertex;
 public class RelationRevisionConverter {
 
   private RelationVariationConverter variantConverter;
-  private VertexFinder vertexFinder;
-  private Map<String, String> oldIdNewIdMap;
   private MongoStorage mongoStorage;
   private ConversionVerifierFactory verifierFactory;
+  private Map<String, Object> oldIdLatestVertexIdMap;
+  private Graph graph;
 
-  public RelationRevisionConverter(Graph graph, MongoStorage mongoStorage, TinkerPopConversionStorage graphStorage, TypeRegistry typeRegistry, Map<String, String> oldIdNewIdMap) {
-    this(new RelationVariationConverter(typeRegistry), new VertexFinder(graph), oldIdNewIdMap, mongoStorage, new ConversionVerifierFactory(mongoStorage, graphStorage, graph, oldIdNewIdMap));
+  public RelationRevisionConverter(Graph graph, MongoStorage mongoStorage, TinkerPopConversionStorage graphStorage, TypeRegistry typeRegistry, Map<String, String> oldIdNewIdMap,
+      Map<String, Object> oldIdLatestVertexIdMap) {
+    this(new RelationVariationConverter(typeRegistry), mongoStorage, graph, new ConversionVerifierFactory(mongoStorage, graphStorage, graph, oldIdNewIdMap), oldIdLatestVertexIdMap);
   }
 
-  RelationRevisionConverter(RelationVariationConverter variantConverter, VertexFinder vertexFinder, Map<String, String> oldIdNewIdMap, MongoStorage mongoStorage,
-      ConversionVerifierFactory verifierFactory) {
+  RelationRevisionConverter(RelationVariationConverter variantConverter, MongoStorage mongoStorage, Graph graph, ConversionVerifierFactory verifierFactory, Map<String, Object> oldIdLatestVertexIdMap2) {
     this.variantConverter = variantConverter;
-    this.vertexFinder = vertexFinder;
-    this.oldIdNewIdMap = oldIdNewIdMap;
     this.mongoStorage = mongoStorage;
+    this.graph = graph;
     this.verifierFactory = verifierFactory;
+    this.oldIdLatestVertexIdMap = oldIdLatestVertexIdMap2;
   }
 
   public void convert(String oldId, String newId, List<Relation> variants, int revision) throws StorageException, IllegalArgumentException, IllegalAccessException {
@@ -75,9 +75,8 @@ public class RelationRevisionConverter {
   }
 
   private Vertex getVertex(String oldId) {
-    String newId = oldIdNewIdMap.get(oldId);
+    Object vertexId = oldIdLatestVertexIdMap.get(oldId);
 
-    return vertexFinder.getLatestVertexById(newId);
+    return graph.getVertex(vertexId);
   }
-
 }

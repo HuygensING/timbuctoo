@@ -25,6 +25,7 @@ import com.google.common.collect.Maps;
 import com.tinkerpop.blueprints.Vertex;
 
 public class DomainEntityConverterTest {
+  private static final Object LATEST_VERTEX_ID = "latestVertexId";
   private static final String NEW_ID = "newId";
   private static final String OLD_ID = "oldId";
   private static final Class<Person> TYPE = Person.class;
@@ -41,6 +42,7 @@ public class DomainEntityConverterTest {
   private Vertex vertexRev2;
   private DomainEntityConverter<Person> instance;
   private Map<String, String> oldIdNewIdMap;
+  private Map<String, Object> oldIdLatestVertexId;
 
   @Before
   public void setup() throws StorageException, IllegalAccessException {
@@ -49,7 +51,8 @@ public class DomainEntityConverterTest {
     revisionConverter = mock(RevisionConverter.class);
     vertexDuplicator = mock(VertexDuplicator.class);
     oldIdNewIdMap = Maps.newHashMap();
-    instance = new DomainEntityConverter<Person>(TYPE, OLD_ID, mongoStorage, idGenerator, revisionConverter, vertexDuplicator, oldIdNewIdMap);
+    oldIdLatestVertexId = Maps.newHashMap();
+    instance = new DomainEntityConverter<Person>(TYPE, OLD_ID, mongoStorage, idGenerator, revisionConverter, vertexDuplicator, oldIdNewIdMap, oldIdLatestVertexId);
 
     setupRevisionVariationMap();
     setupIdGenerator();
@@ -77,11 +80,17 @@ public class DomainEntityConverterTest {
   }
 
   private void setupRevisionConverter() throws IllegalAccessException, StorageException {
-    vertexRev1 = mock(Vertex.class);
+    vertexRev1 = vertexWithId("vertexId1");
     when(revisionConverter.convert(OLD_ID, NEW_ID, variationsOfRevision1, revision1)).thenReturn(vertexRev1);
-    vertexRev2 = mock(Vertex.class);
+    vertexRev2 = vertexWithId(LATEST_VERTEX_ID);
     when(vertexRev2.getProperty(DomainEntity.PID)).thenReturn("pid");
     when(revisionConverter.convert(OLD_ID, NEW_ID, variationsOfRevision2, revision2)).thenReturn(vertexRev2);
+  }
+
+  private Vertex vertexWithId(Object id) {
+    Vertex vertex = mock(Vertex.class);
+    when(vertex.getId()).thenReturn(id);
+    return vertex;
   }
 
   @Test
@@ -90,11 +99,17 @@ public class DomainEntityConverterTest {
     instance.convert();
 
     // verify
-    assertThat(oldIdNewIdMap.keySet(), contains(OLD_ID));
-    assertThat(oldIdNewIdMap.get(OLD_ID), is(NEW_ID));
+    verifyMapContainsKeyWithValue(oldIdNewIdMap, OLD_ID, NEW_ID);
+    verifyMapContainsKeyWithValue(oldIdLatestVertexId, OLD_ID, LATEST_VERTEX_ID);
 
     verify(revisionConverter).convert(OLD_ID, NEW_ID, variationsOfRevision1, revision1);
     verify(revisionConverter).convert(OLD_ID, NEW_ID, variationsOfRevision2, revision2);
+  }
+
+  @SuppressWarnings("unchecked")
+  private <T, U> void verifyMapContainsKeyWithValue(Map<T, U> map, T key, U value) {
+    assertThat(map.keySet(), contains(key));
+    assertThat(map.get(key), is(value));
   }
 
   @Test

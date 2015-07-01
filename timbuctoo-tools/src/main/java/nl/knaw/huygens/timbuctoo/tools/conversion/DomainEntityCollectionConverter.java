@@ -28,8 +28,8 @@ public class DomainEntityCollectionConverter<T extends DomainEntity> {
   private final DomainEntityConverterFactory entityConverterFactory;
 
   public DomainEntityCollectionConverter(Class<T> type, Graph graph, TinkerPopConversionStorage graphStorage, IdGenerator idGenerator, ElementConverterFactory converterFactory,
-      MongoConversionStorage mongoStorage, Map<String, String> oldIdNewIdMap, TypeRegistry typeRegistry) {
-    this(type, mongoStorage, new DomainEntityConverterFactory(mongoStorage, graph, typeRegistry, graphStorage, oldIdNewIdMap), graph);
+      MongoConversionStorage mongoStorage, TypeRegistry typeRegistry, Map<String, String> oldIdNewIdMap, Map<String, Object> oldIdLatestVertexIdMap) {
+    this(type, mongoStorage, new DomainEntityConverterFactory(mongoStorage, graph, typeRegistry, graphStorage, oldIdNewIdMap, oldIdLatestVertexIdMap), graph);
 
   }
 
@@ -59,8 +59,8 @@ public class DomainEntityCollectionConverter<T extends DomainEntity> {
         try {
           converter.convert();
 
-          if (graph instanceof TransactionalGraph && number % 1000 == 0) {
-            ((TransactionalGraph) graph).commit();
+          if (number % 1000 == 0) {
+            commit();
             LOG.info("Time per conversion: {} ms, number of conversions {}", (double) stopwatch.elapsed(TimeUnit.MILLISECONDS) / number, number);
           }
 
@@ -73,9 +73,13 @@ public class DomainEntityCollectionConverter<T extends DomainEntity> {
       LOG.error("Could not retrieve DomainEntities of type \"{}\"", simpleName);
     } finally {
       LOG.info("End converting for {}.", simpleName);
-      if (graph instanceof TransactionalGraph) {
-        ((TransactionalGraph) graph).commit();
-      }
+      commit();
+    }
+  }
+
+  private void commit() {
+    if (graph instanceof TransactionalGraph) {
+      ((TransactionalGraph) graph).commit();
     }
   }
 }

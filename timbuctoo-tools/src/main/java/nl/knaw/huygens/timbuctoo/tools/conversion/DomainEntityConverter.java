@@ -20,9 +20,10 @@ public class DomainEntityConverter<T extends DomainEntity> {
   private Class<T> type;
   private String oldId;
   private Map<String, String> oldIdNewIdMap;
+  private Map<String, Object> oldIdLatestVertexIdMap;
 
   public DomainEntityConverter(Class<T> type, String oldId, MongoConversionStorage mongoStorage, IdGenerator idGenerator, RevisionConverter revisionConverter, VertexDuplicator vertexDuplicator,
-      Map<String, String> oldIdNewIdMap) {
+      Map<String, String> oldIdNewIdMap, Map<String, Object> oldIdLatestVertexIdMap) {
     this.type = type;
     this.oldId = oldId;
     this.mongoStorage = mongoStorage;
@@ -30,6 +31,7 @@ public class DomainEntityConverter<T extends DomainEntity> {
     this.revisionConverter = revisionConverter;
     this.vertexDuplicator = vertexDuplicator;
     this.oldIdNewIdMap = oldIdNewIdMap;
+    this.oldIdLatestVertexIdMap = oldIdLatestVertexIdMap;
   }
 
   public void convert() throws StorageException, IllegalArgumentException, IllegalAccessException {
@@ -37,13 +39,16 @@ public class DomainEntityConverter<T extends DomainEntity> {
     AllVersionVariationMap<T> versions = mongoStorage.getAllVersionVariationsMapOf(type, oldId);
     List<Vertex> revisions = Lists.newArrayList();
 
+    Object latestVertexId = null;
     for (Integer revision : versions.revisionsInOrder()) {
       Vertex vertex = revisionConverter.convert(oldId, newId, versions.get(revision), revision);
       revisions.add(vertex);
+      latestVertexId = vertex.getId();
     }
 
     linkRevisions(revisions);
 
+    oldIdLatestVertexIdMap.put(oldId, latestVertexId);
     oldIdNewIdMap.put(oldId, newId);
   }
 
