@@ -17,7 +17,7 @@ public class RelationPropertyVerifier extends PropertyVerifier {
 
   @Override
   protected boolean areEqual(String fieldName, Object oldValue, Object newValue) {
-    if (isSourceOrTargetField(fieldName)) {
+    if (isSourceIdField(fieldName) || isTargetIdField(fieldName) || isTypeIdField(fieldName)) {
 
       String mappedValue = oldIdNewIdMap.get(oldValue);
       return Objects.equal(mappedValue, newValue);
@@ -26,7 +26,15 @@ public class RelationPropertyVerifier extends PropertyVerifier {
     return super.areEqual(fieldName, oldValue, newValue);
   }
 
-  private boolean isSourceOrTargetField(String fieldName) {
-    return Objects.equal(fieldName, "sourceId") || Objects.equal(fieldName, "targetId");
+  private boolean isTypeIdField(String fieldName) {
+    return Objects.equal(fieldName, "typeId");
+  }
+
+  private boolean isTargetIdField(String fieldName) {
+    return Objects.equal(fieldName, "targetId");
+  }
+
+  private boolean isSourceIdField(String fieldName) {
+    return Objects.equal(fieldName, "sourceId");
   }
 }

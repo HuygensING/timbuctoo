@@ -22,37 +22,48 @@ public class RelationRevisionConverter {
   private ConversionVerifierFactory verifierFactory;
   private Map<String, Object> oldIdLatestVertexIdMap;
   private Graph graph;
+  private Map<String, String> oldIdNewIdMap;
 
   public RelationRevisionConverter(Graph graph, MongoStorage mongoStorage, TinkerPopConversionStorage graphStorage, TypeRegistry typeRegistry, Map<String, String> oldIdNewIdMap,
       Map<String, Object> oldIdLatestVertexIdMap) {
-    this(new RelationVariationConverter(typeRegistry), mongoStorage, graph, new ConversionVerifierFactory(mongoStorage, graphStorage, graph, oldIdNewIdMap), oldIdLatestVertexIdMap);
+    this(new RelationVariationConverter(typeRegistry), mongoStorage, graph, new ConversionVerifierFactory(mongoStorage, graphStorage, graph, oldIdNewIdMap), oldIdNewIdMap, oldIdLatestVertexIdMap);
   }
 
-  RelationRevisionConverter(RelationVariationConverter variantConverter, MongoStorage mongoStorage, Graph graph, ConversionVerifierFactory verifierFactory, Map<String, Object> oldIdLatestVertexIdMap2) {
+  RelationRevisionConverter(RelationVariationConverter variantConverter, MongoStorage mongoStorage, Graph graph, ConversionVerifierFactory verifierFactory, Map<String, String> oldIdNewIdMap,
+      Map<String, Object> oldIdLatestVertexIdMap) {
     this.variantConverter = variantConverter;
     this.mongoStorage = mongoStorage;
     this.graph = graph;
     this.verifierFactory = verifierFactory;
-    this.oldIdLatestVertexIdMap = oldIdLatestVertexIdMap2;
+    this.oldIdNewIdMap = oldIdNewIdMap;
+    this.oldIdLatestVertexIdMap = oldIdLatestVertexIdMap;
   }
 
   public void convert(String oldId, String newId, List<Relation> variants, int revision) throws StorageException, IllegalArgumentException, IllegalAccessException {
     Edge edge = null;
     Object edgeId = null;
     List<Class<? extends Relation>> variantTypes = Lists.newArrayList();
+    String newRelationTypeId = null;
     for (Relation variant : variants) {
-      variant.setId(newId);
       if (edge == null) {
+        newRelationTypeId = getNewRelationTypeId(variant);
         edge = createEdge(variant);
         edgeId = edge.getId();
       }
 
+      variant.setId(newId);
+      variant.setTypeId(newRelationTypeId);
       variantConverter.addToEdge(edge, variant);
       variantTypes.add(variant.getClass());
     }
 
     checkIfVariantsAreCorrectlyStored(oldId, newId, edgeId, revision, variantTypes);
 
+  }
+
+  private String getNewRelationTypeId(Relation variant) {
+
+    return oldIdNewIdMap.get(variant.getTypeId());
   }
 
   private void checkIfVariantsAreCorrectlyStored(String oldId, String newId, Object edgeId, int revision, List<Class<? extends Relation>> variantTypes) throws StorageException, IllegalAccessException {

@@ -27,6 +27,7 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 
 public class RelationRevisionConverterTest {
+  private static final String NEW_REL_TYPE_ID = "typeId";
   private static final String LATEST_SOURCE_VERTEX_ID = "latestSourceVertexID";
   private static final String LATEST_TARGET_VERTEX_ID = "latestTargetVertexId";
   private static final Class<SubARelation> VARIANT_TYPE2 = SubARelation.class;
@@ -65,7 +66,7 @@ public class RelationRevisionConverterTest {
     setupOldIdLatestVertexIdMap();
     setupVertices();
 
-    instance = new RelationRevisionConverter(variantConverter, mongoStorage, graph, verifierFactory, oldIdLatestVertexIdMap);
+    instance = new RelationRevisionConverter(variantConverter, mongoStorage, graph, verifierFactory, oldIdNewIdMap, oldIdLatestVertexIdMap);
   }
 
   private void setupVertices() {
@@ -83,6 +84,7 @@ public class RelationRevisionConverterTest {
     oldIdNewIdMap = Maps.newHashMap();
     oldIdNewIdMap.put(OLD_TARGET_ID, NEW_TARGET_ID);
     oldIdNewIdMap.put(OLD_SOURCE_ID, NEW_SOURCE_ID);
+    oldIdNewIdMap.put(OLD_REL_TYPE_ID, NEW_REL_TYPE_ID);
   }
 
   @Test
@@ -108,8 +110,8 @@ public class RelationRevisionConverterTest {
     instance.convert(OLD_ID, NEW_ID, variations, REVISION);
 
     // verify
-    verify(variantConverter).addToEdge(argThat(is(edge)), argThat(likeRelation().ofType(VARIANT_TYPE1).withId(NEW_ID)));
-    verify(variantConverter).addToEdge(argThat(is(edge)), argThat(likeRelation().ofType(VARIANT_TYPE2).withId(NEW_ID)));
+    verify(variantConverter).addToEdge(argThat(is(edge)), argThat(likeRelation().ofType(VARIANT_TYPE1).withId(NEW_ID).withTypeId(NEW_REL_TYPE_ID)));
+    verify(variantConverter).addToEdge(argThat(is(edge)), argThat(likeRelation().ofType(VARIANT_TYPE2).withId(NEW_ID).withTypeId(NEW_REL_TYPE_ID)));
 
     verify(verifier1).verifyConversion(OLD_ID, NEW_ID, NEW_INTERNAL_ID);
     verify(verifier2).verifyConversion(OLD_ID, NEW_ID, NEW_INTERNAL_ID);

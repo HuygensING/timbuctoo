@@ -31,6 +31,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
@@ -72,12 +73,14 @@ public class ReIndexer {
 
     CountDownLatch countDownLatch = new CountDownLatch(numberOfTasks);
     ExecutorService executor = Executors.newFixedThreadPool(numberOfProcessors);
-    for (Class<? extends DomainEntity> type : registry.getPrimitiveDomainEntityTypes()) {
-      Runnable indexer = new Indexer(type, repository, indexManager, countDownLatch);
-      executor.execute(indexer);
-    }
-    executor.shutdown();
-    countDownLatch.await(); // wait until all tasks are completed
+    //    for (Class<? extends DomainEntity> type : registry.getPrimitiveDomainEntityTypes()) {
+    //      Runnable indexer = new Indexer(type, repository, indexManager, countDownLatch);
+    //      executor.execute(indexer);
+    //    }
+    //    executor.shutdown();
+    //    countDownLatch.await(); // wait until all tasks are completed
+    Runnable indexer = new Indexer(Document.class, repository, indexManager, countDownLatch);
+    indexer.run();
   }
 
   protected static class Indexer implements Runnable {
@@ -98,21 +101,25 @@ public class ReIndexer {
     public void run() {
       String typeName = TypeNames.getInternalName(type);
       LOG.info("Start indexing for {}.", typeName);
-      try {
-        StorageIterator<? extends DomainEntity> iterator = repository.getDomainEntities(type);
-        while (iterator.hasNext()) {
-          indexManager.addEntity(type, iterator.next().getId());
+      StorageIterator<? extends DomainEntity> iterator = repository.getDomainEntities(type);
+      while (iterator.hasNext()) {
+
+        String id = iterator.next().getId();
+        try {
+          indexManager.addEntity(type, id);
+        } catch (IndexException e) {
+          LOG.error("Error indexing for {} with id {}.", typeName, id);
+          LOG.debug("Error: {}", e);
+        } catch (RuntimeException e) {
+          LOG.error("Error indexing for {} with id {}.", typeName, id);
+          LOG.debug("Error: {}", e);
+          countDownLatch.countDown();
+          throw e;
         }
-        iterator.close();
-      } catch (RuntimeException e) {
-        LOG.error("Error indexing for {}.", typeName);
-        LOG.debug("Error: {}", e);
-        countDownLatch.countDown();
-        throw e;
-      } catch (IndexException e) {
-        LOG.error("Error indexing for {}.", typeName);
-        LOG.debug("Error: {}", e);
       }
+
+      iterator.close();
+
       LOG.info("End indexing for {}.", typeName);
       countDownLatch.countDown();
       LOG.info("Incomplete tasks: {}", countDownLatch.getCount());

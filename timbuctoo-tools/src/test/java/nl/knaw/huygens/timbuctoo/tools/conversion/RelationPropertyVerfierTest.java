@@ -44,4 +44,14 @@ public class RelationPropertyVerfierTest extends PropertyVerifierTest {
     assertThat(instance.hasInconsistentProperties(), is(false));
     assertThat(instance.getMismatches(), hasSize(0));
   }
+
+  @Test
+  public void checkRetrievesTheMappedNewIdFormTheOldIdNewIdMapForTheFieldTypeId() {
+    // action
+    instance.check("typeId", OLD_ID, NEW_ID);
+
+    // verify
+    assertThat(instance.hasInconsistentProperties(), is(false));
+    assertThat(instance.getMismatches(), hasSize(0));
+  }
 }
