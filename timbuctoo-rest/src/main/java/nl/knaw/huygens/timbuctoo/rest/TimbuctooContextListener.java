@@ -118,6 +118,14 @@ public abstract class TimbuctooContextListener extends GuiceServletContextListen
 
   @Override
   public void contextDestroyed(ServletContextEvent event) {
+    shutdown();
+    super.contextDestroyed(event);
+  }
+
+  /**
+   * A method to stop the embedded server gracefully.
+   */
+  public void shutdown() {
     closeIndexManager();
 
     if (scheduler != null) {
@@ -158,7 +166,6 @@ public abstract class TimbuctooContextListener extends GuiceServletContextListen
       broker.close();
       broker = null;
     }
-    super.contextDestroyed(event);
   }
 
   private void closeIndexManager() {

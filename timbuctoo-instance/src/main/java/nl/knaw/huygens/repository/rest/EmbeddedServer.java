@@ -42,12 +42,21 @@ public class EmbeddedServer {
   public void setupContext(Server server, String relativePathToJSConfig) {
     ServletContextHandler context = new ServletContextHandler(server, PATH, ServletContextHandler.SESSIONS);
     context.addFilter(GuiceFilter.class, "/*", EnumSet.<javax.servlet.DispatcherType> of(javax.servlet.DispatcherType.REQUEST, javax.servlet.DispatcherType.ASYNC));
-    context.addEventListener(new RepoContextListener());
+    final RepoContextListener contextListener = new RepoContextListener();
+    context.addEventListener(contextListener);
     context.addServlet(DefaultServlet.class, "/*");
+
+    Runtime.getRuntime().addShutdownHook(new Thread() {
+      @Override
+      public void run() {
+        contextListener.shutdown();
+      }
+    });
 
     ResourceHandler resourceHandler = createResourceHandler(relativePathToJSConfig);
 
     context.setHandler(resourceHandler);
+
   }
 
   private ResourceHandler createResourceHandler(String relativePathToJSConfig) {
