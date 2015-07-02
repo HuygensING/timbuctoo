@@ -49,14 +49,14 @@ public class DomainEntityConverterTest {
     mongoStorage = mock(MongoConversionStorage.class);
     idGenerator = mock(IdGenerator.class);
     revisionConverter = mock(RevisionConverter.class);
-    vertexDuplicator = mock(VertexDuplicator.class);
+    setupRevisionVariationMap();
+    setupIdGenerator();
+    setupRevisionConverter();
+    setupVertexDuplicator();
     oldIdNewIdMap = Maps.newHashMap();
     oldIdLatestVertexId = Maps.newHashMap();
     instance = new DomainEntityConverter<Person>(TYPE, OLD_ID, mongoStorage, idGenerator, revisionConverter, vertexDuplicator, oldIdNewIdMap, oldIdLatestVertexId);
 
-    setupRevisionVariationMap();
-    setupIdGenerator();
-    setupRevisionConverter();
   }
 
   @SuppressWarnings("unchecked")
@@ -82,9 +82,15 @@ public class DomainEntityConverterTest {
   private void setupRevisionConverter() throws IllegalAccessException, StorageException {
     vertexRev1 = vertexWithId("vertexId1");
     when(revisionConverter.convert(OLD_ID, NEW_ID, variationsOfRevision1, revision1)).thenReturn(vertexRev1);
-    vertexRev2 = vertexWithId(LATEST_VERTEX_ID);
+    vertexRev2 = vertexWithId("vertexId2");
     when(vertexRev2.getProperty(DomainEntity.PID)).thenReturn("pid");
     when(revisionConverter.convert(OLD_ID, NEW_ID, variationsOfRevision2, revision2)).thenReturn(vertexRev2);
+  }
+
+  private void setupVertexDuplicator() {
+    vertexDuplicator = mock(VertexDuplicator.class);
+    Vertex latestVertex = vertexWithId(LATEST_VERTEX_ID);
+    when(vertexDuplicator.duplicate(vertexRev2)).thenReturn(latestVertex);
   }
 
   private Vertex vertexWithId(Object id) {

@@ -2,6 +2,9 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeMockBuilder.anEdge;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilder.aVertex;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -95,5 +98,14 @@ public class VertexDuplicatorTest {
 
     // verify
     verify(vertexToDuplicate).addEdge(VERSION_OF_EDGE_LABEL, duplicate);
+  }
+
+  @Test
+  public void duplicateReturnsTheDuplicateVertex() {
+    // action
+    Vertex actualDuplicate = instance.duplicate(vertexToDuplicate);
+
+    // verify 
+    assertThat(actualDuplicate, is(sameInstance(duplicate)));
   }
 }

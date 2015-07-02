@@ -23,7 +23,7 @@ public class VertexDuplicator {
 
   }
 
-  public void duplicate(Vertex vertexToDuplicate) {
+  public Vertex duplicate(Vertex vertexToDuplicate) {
     Vertex duplicate = db.addVertex(null);
 
     duplicateProperties(vertexToDuplicate, duplicate);
@@ -33,6 +33,8 @@ public class VertexDuplicator {
     duplicateIncomingEdges(vertexToDuplicate, duplicate);
 
     vertexToDuplicate.addEdge(VERSION_OF_LABEL, duplicate);
+
+    return duplicate;
   }
 
   private void duplicateIncomingEdges(Vertex vertexToDuplicate, Vertex duplicate) {
