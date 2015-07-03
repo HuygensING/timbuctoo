@@ -14,7 +14,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import edu.emory.mathcs.backport.java.util.Collections;
+import java.util.Collections;
 
 public class AllVersionVariationMap<T extends DomainEntity> {
 
