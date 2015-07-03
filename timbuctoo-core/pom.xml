@@ -109,15 +109,12 @@
     </dependency>
     <dependency>
       <groupId>com.tinkerpop.blueprints</groupId>
-      <artifactId>blueprints-neo4j-graph</artifactId>
+      <artifactId>blueprints-neo4j2-graph</artifactId>
       <version>${tinkerpop.version}</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>neo4j-lucene-index</artifactId>
-          <groupId>org.neo4j</groupId>
-        </exclusion>
-      </exclusions>
+      <!-- <exclusions> <exclusion> <artifactId>neo4j-lucene-index</artifactId> 
+        <groupId>org.neo4j</groupId> </exclusion> </exclusions> -->
     </dependency>
+    
     <!-- Gremlin and Pipes for graph traversal -->
     <dependency>
       <groupId>com.tinkerpop.gremlin</groupId>
@@ -151,5 +148,31 @@
 
     <!-- ## End of test dependencies ## -->
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>2.4</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <relocations>
+                <relocation>
+                  <pattern>org.apache.lucene</pattern>
+                  <shadedPattern>org.apache.neo4jdep.lucene</shadedPattern>
+                </relocation>
+              </relocations>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

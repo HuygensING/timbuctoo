@@ -32,7 +32,7 @@ import nl.knaw.huygens.timbuctoo.storage.mongo.MongoProperties;
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
 import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.impls.neo4j.Neo4jGraph;
+import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
 import com.tinkerpop.blueprints.impls.rexster.RexsterGraph;
 
 public class BasicInjectionModule extends AbstractModule {
@@ -74,7 +74,7 @@ public class BasicInjectionModule extends AbstractModule {
   private Graph createDB() {
     GraphTypes type = GraphTypes.valueOf(config.getSetting("graph.type"));
     if (type == GraphTypes.NEO4J) {
-      return new Neo4jGraph(config.getDirectory("graph.path"));
+      return new Neo4j2Graph(config.getDirectory("graph.path"));
     } else if (type == GraphTypes.REXSTER) {
       return createRexsterGraph();
     }
