@@ -7,3 +7,5 @@ target/*
 **/bin
 .settings/
 .project
+
+**/*.iml
