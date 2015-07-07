@@ -1,5 +1,5 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>nl.knaw.huygens</groupId>
@@ -10,15 +10,17 @@
   <name>Repository instance</name>
   <packaging>war</packaging>
 
-  <properties>
-    <jetty.version>9.2.11.v20150529</jetty.version>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>nl.knaw.huygens</groupId>
       <artifactId>timbuctoo-rest</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>concurrentlinkedhashmap-lru</artifactId>
+          <groupId>com.googlecode.concurrentlinkedhashmap</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- The timbuctoo test pages -->
@@ -119,21 +121,5 @@
       </dependencies>
     </profile>
   </profiles>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.tomcat.maven</groupId>
-        <artifactId>tomcat6-maven-plugin</artifactId>
-        <version>${tomcat6_plugin.version}</version>
-        <configuration>
-          <url>http://localhost:8080/manager</url>
-          <server>localhost</server>
-          <path>/timbuctoo</path>
-          <warDirectory>target/</warDirectory>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 
 </project>
