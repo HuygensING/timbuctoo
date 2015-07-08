@@ -9,6 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType;
 
@@ -31,6 +32,8 @@ public class VertexDuplicatorTest {
   private VertexDuplicator instance;
   private Vertex otherVertex;
   private Vertex sourceIncomingVersionOfEdge;
+  private Edge incomingEdge;
+  private Edge outgoingEdge;
 
   @Before
   public void setup() {
@@ -45,8 +48,8 @@ public class VertexDuplicatorTest {
   }
 
   private Vertex setupVertexToDuplicate() {
-    Edge incomingEdge = anEdge().withLabel(INCOMING_EDGE_LABEL).withSource(otherVertex).withTarget(vertexToDuplicate).build();
-    Edge outgoingEdge = anEdge().withLabel(OUTGOING_EDGE_LABEL).withSource(vertexToDuplicate).withTarget(otherVertex).build();
+    incomingEdge = anEdge().withLabel(INCOMING_EDGE_LABEL).withSource(otherVertex).withTarget(vertexToDuplicate).build();
+    outgoingEdge = anEdge().withLabel(OUTGOING_EDGE_LABEL).withSource(vertexToDuplicate).withTarget(otherVertex).build();
     Edge versionOfOutgoingEdge = anEdge().withLabel(VERSION_OF_EDGE_LABEL).withSource(otherVertex).withTarget(vertexToDuplicate).build();
     Edge versionOfIncomingEdge = anEdge().withLabel(VERSION_OF_EDGE_LABEL).withSource(sourceIncomingVersionOfEdge).withTarget(otherVertex).build();
 
@@ -80,7 +83,7 @@ public class VertexDuplicatorTest {
   }
 
   @Test
-  public void duplicateCopiesAllTheEdgesOftheNodeExceptIsVersionOf() {
+  public void duplicateCopiesAllTheEdgesOfTheNodeExceptIsVersionOf() {
     // action
     instance.duplicate(vertexToDuplicate);
 
@@ -89,6 +92,16 @@ public class VertexDuplicatorTest {
     verify(otherVertex).addEdge(INCOMING_EDGE_LABEL, duplicate);
     verify(duplicate, times(0)).addEdge(VERSION_OF_EDGE_LABEL, otherVertex);
     verify(sourceIncomingVersionOfEdge, times(0)).addEdge(VERSION_OF_EDGE_LABEL, duplicate);
+  }
+
+  @Test
+  public void duplicateRemovesTheEdgesOfTheDuplicatedVertexExceptIsVersionOf() {
+    // action
+    instance.duplicate(vertexToDuplicate);
+
+    // verify
+    verify(incomingEdge).remove();
+    verify(outgoingEdge).remove();
   }
 
   @Test
@@ -108,4 +121,6 @@ public class VertexDuplicatorTest {
     // verify 
     assertThat(actualDuplicate, is(sameInstance(duplicate)));
   }
+
+
 }

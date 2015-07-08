@@ -44,6 +44,8 @@ public class VertexDuplicator {
       if (!isVersionOfEdge(edge)) {
         sourceOfEdge(edge).addEdge(edge.getLabel(), duplicate);
       }
+
+      edge.remove();
     }
   }
 
@@ -54,6 +56,8 @@ public class VertexDuplicator {
       if (!isVersionOfEdge(edge)) {
         duplicate.addEdge(edge.getLabel(), targetOfEdge(edge));
       }
+
+      edge.remove();
     }
   }
 
