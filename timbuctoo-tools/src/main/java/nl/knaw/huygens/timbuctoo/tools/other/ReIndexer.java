@@ -53,7 +53,7 @@ public class ReIndexer {
     IndexManager indexManager = injector.getInstance(IndexManager.class);
 
     try {
-      new ReIndexer().indexAsynchrounous(repository, indexManager);
+      new ReIndexer().indexAsynchronous(repository, indexManager);
     } finally {
       repository.close();
       indexManager.close();
@@ -61,7 +61,7 @@ public class ReIndexer {
     }
   }
 
-  public void indexAsynchrounous(Repository repository, IndexManager indexManager) throws InterruptedException, IndexException {
+  public void indexAsynchronous(Repository repository, IndexManager indexManager) throws InterruptedException, IndexException {
     LOG.info("Clearing index");
     indexManager.deleteAllEntities();
 
