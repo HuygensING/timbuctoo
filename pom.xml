@@ -319,12 +319,7 @@
         <artifactId>jetty-maven-plugin</artifactId>
         <version>${jetty.version}</version>
         <configuration>
-          <contextHandlers>
-            <contextHandler implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
-              <war>timbuctoo-instance/target/timbuctoo-instance-2.13.0-SNAPSHOT.war</war>
-              <contextPath>/timbuctoo</contextPath>
-            </contextHandler>
-          </contextHandlers>
+          <war>timbuctoo-instance/target/timbuctoo-instance-2.13.0-SNAPSHOT.war</war>
         </configuration>
       </plugin>
     </plugins>
