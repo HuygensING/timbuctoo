@@ -2,94 +2,51 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.graphwrapper;
 
 import com.tinkerpop.blueprints.*;
 
-class CompositeGraphWrapper implements GraphWrapper {
-  private final TransactionalGraph transactionalGraph;
-  private KeyIndexableGraph keyIndexableGraph;
-  private TransactionalGraph tranactionalGraph;
+import java.util.Set;
 
-  public CompositeGraphWrapper(TransactionalGraph transactionalGraph, KeyIndexableGraph keyIndexableGraph) {
+class CompositeGraphWrapper extends AbstractGraphWrapper implements GraphWrapper {
+  private final Graph graph;
+  private final TransactionalGraph transactionalGraph;
+  private final KeyIndexableGraph keyIndexableGraph;
+
+  public CompositeGraphWrapper(Graph graph, TransactionalGraph transactionalGraph, KeyIndexableGraph keyIndexableGraph) {
+    this.graph = graph;
     this.transactionalGraph = transactionalGraph;
     this.keyIndexableGraph = keyIndexableGraph;
   }
 
   @Override
+  protected Graph getDelegate() {
+    return this.graph;
+  }
+
+  @Override
   public void stopTransaction(Conclusion conclusion) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    this.transactionalGraph.stopTransaction(conclusion);
   }
 
   @Override
   public void commit() {
-    throw new UnsupportedOperationException("Not implemented yet");
+    this.transactionalGraph.commit();
   }
 
   @Override
   public void rollback() {
-    throw new UnsupportedOperationException("Not implemented yet");
+    this.transactionalGraph.rollback();
   }
 
   @Override
-  public Features getFeatures() {
-    throw new UnsupportedOperationException("Not implemented yet");
+  public <T extends Element> void dropKeyIndex(String key, Class<T> elementClass) {
+    this.keyIndexableGraph.dropKeyIndex(key, elementClass);
   }
 
   @Override
-  public Vertex addVertex(Object id) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  public <T extends Element> void createKeyIndex(String key, Class<T> elementClass, Parameter... indexParameters) {
+    this.keyIndexableGraph.createKeyIndex(key, elementClass);
   }
 
   @Override
-  public Vertex getVertex(Object id) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  public <T extends Element> Set<String> getIndexedKeys(Class<T> elementClass) {
+    return this.keyIndexableGraph.getIndexedKeys(elementClass);
   }
-
-  @Override
-  public void removeVertex(Vertex vertex) {
-    throw new UnsupportedOperationException("Not implemented yet");
-  }
-
-  @Override
-  public Iterable<Vertex> getVertices() {
-    throw new UnsupportedOperationException("Not implemented yet");
-  }
-
-  @Override
-  public Iterable<Vertex> getVertices(String key, Object value) {
-    throw new UnsupportedOperationException("Not implemented yet");
-  }
-
-  @Override
-  public Edge addEdge(Object id, Vertex outVertex, Vertex inVertex, String label) {
-    throw new UnsupportedOperationException("Not implemented yet");
-  }
-
-  @Override
-  public Edge getEdge(Object id) {
-    throw new UnsupportedOperationException("Not implemented yet");
-  }
-
-  @Override
-  public void removeEdge(Edge edge) {
-    throw new UnsupportedOperationException("Not implemented yet");
-  }
-
-  @Override
-  public Iterable<Edge> getEdges() {
-    throw new UnsupportedOperationException("Not implemented yet");
-  }
-
-  @Override
-  public Iterable<Edge> getEdges(String key, Object value) {
-    throw new UnsupportedOperationException("Not implemented yet");
-  }
-
-  @Override
-  public GraphQuery query() {
-    throw new UnsupportedOperationException("Not implemented yet");
-  }
-
-  @Override
-  public void shutdown() {
-    throw new UnsupportedOperationException("Not implemented yet");
-  }
-
 }

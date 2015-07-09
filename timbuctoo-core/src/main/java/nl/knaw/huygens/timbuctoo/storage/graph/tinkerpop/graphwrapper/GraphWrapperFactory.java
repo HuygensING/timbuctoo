@@ -22,7 +22,7 @@ public class GraphWrapperFactory {
     TransactionalGraph transactionalGraph = transactionGraphWrapperFactory.wrap(graph);
     KeyIndexableGraph keyIndexableGraph = keyIndexableGraphWrapperFactory.wrap(graph);
 
-    CompositeGraphWrapper graphWrapper = new CompositeGraphWrapper(transactionalGraph, keyIndexableGraph);
+    CompositeGraphWrapper graphWrapper = new CompositeGraphWrapper(graph, transactionalGraph, keyIndexableGraph);
 
     return graphWrapper;
   }
