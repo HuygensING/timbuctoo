@@ -5,11 +5,25 @@ import com.tinkerpop.blueprints.TransactionalGraph;
 
 public class GraphWrapperFactory {
 
+  private TransactionalGraphWrapperFactory transactionGraphWrapperFactory;
+  private KeyIndexableGraphWrapperFactory keyIndexableGraphWrapperFactory;
+
+  public GraphWrapperFactory(){
+    this(new TransactionalGraphWrapperFactory(), new KeyIndexableGraphWrapperFactory());
+  }
+
+  public GraphWrapperFactory(TransactionalGraphWrapperFactory transactionalGraphWrapperFactory, KeyIndexableGraphWrapperFactory keyIndexableGraphWrapperFactory) {
+    this.transactionGraphWrapperFactory = transactionalGraphWrapperFactory;
+    this.keyIndexableGraphWrapperFactory = keyIndexableGraphWrapperFactory;
+  }
+
   public GraphWrapper wrap(Graph graph) {
-    if (graph instanceof TransactionalGraph) {
-      return new TransactionalGraphWrapper((TransactionalGraph) graph);
-    }
-    return new NonTransactionalGraphWrapper(graph);
+    CompositeGraphWrapper graphWrapper = new CompositeGraphWrapper();
+
+    transactionGraphWrapperFactory.addTransactionalGraph(graphWrapper, graph);
+    keyIndexableGraphWrapperFactory.addKeyIndexableGraph(graphWrapper, graph);
+
+    return graphWrapper;
   }
 
 }
