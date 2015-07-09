@@ -1,25 +1,17 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.graphwrapper;
 
+import com.google.common.collect.Lists;
+import com.tinkerpop.blueprints.*;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeMockBuilder.anEdge;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilder.aVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
-import com.google.common.collect.Lists;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Features;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.GraphQuery;
-import com.tinkerpop.blueprints.TransactionalGraph.Conclusion;
-import com.tinkerpop.blueprints.Vertex;
+import static org.mockito.Mockito.*;
 
 @SuppressWarnings("deprecation")
 public abstract class AbstractGraphWrapperTest {
@@ -216,17 +208,6 @@ public abstract class AbstractGraphWrapperTest {
 
   public AbstractGraphWrapperTest() {
     super();
-  }
-
-  @Test
-  public void stopTransactionThrowsAnUnsupportedOperationException() {
-    // setup
-    expectedException.expect(UnsupportedOperationException.class);
-    expectedException.expectMessage(TransactionalGraphWrapper.STOP_TRANSACTION_EXCEPTION_MESSAGE);
-
-    // action
-    getInstance().stopTransaction(Conclusion.SUCCESS);
-
   }
 
   private <T> void assertIsSameInstance(T expected, T actual) {

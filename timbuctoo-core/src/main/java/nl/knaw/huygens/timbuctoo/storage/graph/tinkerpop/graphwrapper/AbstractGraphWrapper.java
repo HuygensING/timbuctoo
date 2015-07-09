@@ -6,9 +6,7 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.GraphQuery;
 import com.tinkerpop.blueprints.Vertex;
 
-public abstract class AbstractGraphWrapper implements GraphWrapper {
-
-  public static final String STOP_TRANSACTION_EXCEPTION_MESSAGE = "Use commit or rollback to close the transaction";
+public abstract class AbstractGraphWrapper implements Graph {
 
   protected abstract Graph getDelegate();
 
@@ -79,12 +77,6 @@ public abstract class AbstractGraphWrapper implements GraphWrapper {
 
   public AbstractGraphWrapper() {
     super();
-  }
-
-  @SuppressWarnings("deprecation")
-  @Override
-  public void stopTransaction(Conclusion conclusion) {
-    throw new UnsupportedOperationException(STOP_TRANSACTION_EXCEPTION_MESSAGE);
   }
 
 }
