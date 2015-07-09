@@ -11,7 +11,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.TransactionalGraph;
 
 public class GraphWrapperFactoryTest {
   private GraphWrapperFactory instance;
@@ -36,9 +35,8 @@ public class GraphWrapperFactoryTest {
     // verify
     assertThat(graphWrapper, is(instanceOf(CompositeGraphWrapper.class)));
 
-    CompositeGraphWrapper composite = (CompositeGraphWrapper) graphWrapper;
-    verify(transactionalGraphWrapperFactory).addTransactionalGraph(composite, graph);
-    verify(keyIndexableGraphWrapperFactory).addKeyIndexableGraph(composite, graph);
+    verify(transactionalGraphWrapperFactory).wrap(graph);
+    verify(keyIndexableGraphWrapperFactory).wrap(graph);
   }
 
 }

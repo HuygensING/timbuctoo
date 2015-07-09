@@ -5,10 +5,11 @@ import com.tinkerpop.blueprints.KeyIndexableGraph;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.sameInstance;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 public class KeyIndexableGraphWrapperFactoryTest {
 
@@ -23,26 +24,27 @@ public class KeyIndexableGraphWrapperFactoryTest {
   }
 
   @Test
-  public void addKeyIndexableGraphAddsTheGraphIfItIsAKeyIndexableGraph() {
+  public void wrapReturnsTheGraphWhenItIsAKeyIndexableGraph() {
     // setup
     KeyIndexableGraph graph = mock(KeyIndexableGraph.class);
 
     // action
-    instance.addKeyIndexableGraph(compositeGraphWrapper, graph);
+    KeyIndexableGraph returnedGraph = instance.wrap(graph);
 
     // verify
-    verify(compositeGraphWrapper).setKeyIndexableGraph(graph);
+    assertThat(returnedGraph, is(sameInstance(graph)));
   }
 
   @Test
-  public void addKeyIndexableGraphAddsANoOpKeyIndexableWrapperOfTheGraph() {
+  public void wrapReturnsANoOpKeyIndexableGraphWrapperWhenItIsANotKeyIndexableGraph() {
     // setup
     Graph graph = mock(Graph.class);
 
     // action
-    instance.addKeyIndexableGraph(compositeGraphWrapper, graph);
+    KeyIndexableGraph returnedGraph = instance.wrap(graph);
 
     // verify
-    verify(compositeGraphWrapper).setKeyIndexableGraph(any(NoOpKeyIndexableGraphWrapper.class));
+    assertThat(returnedGraph, is(instanceOf(NoOpKeyIndexableGraphWrapper.class)));
   }
+
 }

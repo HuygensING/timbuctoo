@@ -5,6 +5,12 @@ import com.tinkerpop.blueprints.*;
 import java.util.Set;
 
 class NoOpKeyIndexableGraphWrapper implements KeyIndexableGraph {
+  private Graph graph;
+
+  public NoOpKeyIndexableGraphWrapper(Graph graph) {
+    this.graph = graph;
+  }
+
   @Override
   public <T extends Element> void dropKeyIndex(String key, Class<T> elementClass) {
     throw new UnsupportedOperationException("Not implemented yet");

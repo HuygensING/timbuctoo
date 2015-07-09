@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.graphwrapper;
 
 import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.KeyIndexableGraph;
 import com.tinkerpop.blueprints.TransactionalGraph;
 
 public class GraphWrapperFactory {
@@ -18,10 +19,10 @@ public class GraphWrapperFactory {
   }
 
   public GraphWrapper wrap(Graph graph) {
-    CompositeGraphWrapper graphWrapper = new CompositeGraphWrapper();
+    TransactionalGraph transactionalGraph = transactionGraphWrapperFactory.wrap(graph);
+    KeyIndexableGraph keyIndexableGraph = keyIndexableGraphWrapperFactory.wrap(graph);
 
-    transactionGraphWrapperFactory.addTransactionalGraph(graphWrapper, graph);
-    keyIndexableGraphWrapperFactory.addKeyIndexableGraph(graphWrapper, graph);
+    CompositeGraphWrapper graphWrapper = new CompositeGraphWrapper(transactionalGraph, keyIndexableGraph);
 
     return graphWrapper;
   }
