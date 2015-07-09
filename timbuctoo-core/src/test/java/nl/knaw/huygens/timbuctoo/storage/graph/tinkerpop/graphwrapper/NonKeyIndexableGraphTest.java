@@ -3,7 +3,9 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.graphwrapper;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.util.Set;
 
@@ -17,6 +19,8 @@ public class NonKeyIndexableGraphTest extends AbstractGraphWrapperTest {
 
   public static final Class<Vertex> ELEMENT_CLASS = Vertex.class;
   public static final String KEY = "key";
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
   private NonKeyIndexableGraph instance;
   private Graph graph;
 

@@ -14,14 +14,14 @@ import com.tinkerpop.blueprints.Graph;
 
 public class GraphWrapperFactoryTest {
   private GraphWrapperFactory instance;
-  private TransactionalGraphWrapperFactory transactionalGraphWrapperFactory;
+  private TransactionalGraphFactory transactionalGraphFactory;
   private KeyIndexableGraphFactory keyIndexableGraphFactory;
 
   @Before
   public void setup() {
-    transactionalGraphWrapperFactory = mock(TransactionalGraphWrapperFactory.class);
+    transactionalGraphFactory = mock(TransactionalGraphFactory.class);
     keyIndexableGraphFactory = mock(KeyIndexableGraphFactory.class);
-    instance = new GraphWrapperFactory(transactionalGraphWrapperFactory, keyIndexableGraphFactory);
+    instance = new GraphWrapperFactory(transactionalGraphFactory, keyIndexableGraphFactory);
   }
 
   @Test
@@ -35,7 +35,7 @@ public class GraphWrapperFactoryTest {
     // verify
     assertThat(graphWrapper, is(instanceOf(CompositeGraphWrapper.class)));
 
-    verify(transactionalGraphWrapperFactory).wrap(graph);
+    verify(transactionalGraphFactory).create(graph);
     verify(keyIndexableGraphFactory).create(graph);
   }
 

@@ -13,11 +13,11 @@ import static org.mockito.Mockito.mock;
 
 public class TransactionalGraphFactoryWrapperTest {
 
-  private TransactionalGraphWrapperFactory instance;
+  private TransactionalGraphFactory instance;
 
   @Before
   public void setup() {
-    instance = new TransactionalGraphWrapperFactory();
+    instance = new TransactionalGraphFactory();
   }
 
   @Test
@@ -26,7 +26,7 @@ public class TransactionalGraphFactoryWrapperTest {
     TransactionalGraph graph = mock(TransactionalGraph.class);
 
     // action
-    TransactionalGraph returnedValue = instance.wrap(graph);
+    TransactionalGraph returnedValue = instance.create(graph);
 
     // verify
     assertThat(returnedValue, is(sameInstance(graph)));
@@ -38,10 +38,10 @@ public class TransactionalGraphFactoryWrapperTest {
     Graph graph = mock(Graph.class);
 
     // action
-    TransactionalGraph returnedValue = instance.wrap(graph);
+    TransactionalGraph returnedValue = instance.create(graph);
 
     // verify
-    assertThat(returnedValue, is(instanceOf(NoOpTransactionalGraphWrapper.class)));
+    assertThat(returnedValue, is(instanceOf(NonTransactionalGraph.class)));
   }
 
 }

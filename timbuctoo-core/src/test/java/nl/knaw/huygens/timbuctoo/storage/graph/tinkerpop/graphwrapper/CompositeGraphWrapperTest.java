@@ -7,7 +7,9 @@ import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.TransactionalGraph.Conclusion;
 import com.tinkerpop.blueprints.Vertex;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.util.Set;
 
@@ -22,6 +24,8 @@ public class CompositeGraphWrapperTest extends AbstractGraphWrapperTest {
 
   public static final Class<Vertex> ELEMENT_CLASS = Vertex.class;
   public static final String KEY = "key";
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
   private Graph graph;
   private TransactionalGraph transactionalGraph;
   private KeyIndexableGraph keyIndexableGraph;

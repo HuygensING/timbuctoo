@@ -2,9 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.graphwrapper;
 
 import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.*;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeMockBuilder.anEdge;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilder.aVertex;
@@ -21,9 +19,6 @@ public abstract class AbstractGraphWrapperTest {
   protected abstract AbstractGraphWrapper getInstance();
 
   protected abstract Graph getDelegate();
-
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
 
   @Test
   public void addEdgeDelegatesTheCall() {
