@@ -6,7 +6,7 @@ import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.GraphQuery;
 import com.tinkerpop.blueprints.Vertex;
 
-public abstract class AbstractGraphWrapper implements Graph {
+abstract class AbstractGraphWrapper implements Graph {
 
   protected abstract Graph getDelegate();
 

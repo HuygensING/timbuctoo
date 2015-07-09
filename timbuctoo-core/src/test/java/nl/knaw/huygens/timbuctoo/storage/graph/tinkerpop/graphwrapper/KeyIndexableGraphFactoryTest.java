@@ -11,16 +11,16 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
-public class KeyIndexableGraphWrapperFactoryTest {
+public class KeyIndexableGraphFactoryTest {
 
   private CompositeGraphWrapper compositeGraphWrapper;
-  private KeyIndexableGraphWrapperFactory instance;
+  private KeyIndexableGraphFactory instance;
 
   @Before
   public void setup() {
     compositeGraphWrapper = mock(CompositeGraphWrapper.class);
 
-    instance = new KeyIndexableGraphWrapperFactory();
+    instance = new KeyIndexableGraphFactory();
   }
 
   @Test
@@ -29,7 +29,7 @@ public class KeyIndexableGraphWrapperFactoryTest {
     KeyIndexableGraph graph = mock(KeyIndexableGraph.class);
 
     // action
-    KeyIndexableGraph returnedGraph = instance.wrap(graph);
+    KeyIndexableGraph returnedGraph = instance.create(graph);
 
     // verify
     assertThat(returnedGraph, is(sameInstance(graph)));
@@ -41,10 +41,10 @@ public class KeyIndexableGraphWrapperFactoryTest {
     Graph graph = mock(Graph.class);
 
     // action
-    KeyIndexableGraph returnedGraph = instance.wrap(graph);
+    KeyIndexableGraph returnedGraph = instance.create(graph);
 
     // verify
-    assertThat(returnedGraph, is(instanceOf(NoOpKeyIndexableGraphWrapper.class)));
+    assertThat(returnedGraph, is(instanceOf(NonKeyIndexableGraph.class)));
   }
 
 }
