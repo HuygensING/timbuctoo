@@ -2,9 +2,12 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.graphwrapper;
 
 import com.tinkerpop.blueprints.*;
 
-class CompositeGraphWrapper implements GraphWrapper {
-  private KeyIndexableGraph keyIndexableGraph;
-  private TransactionalGraph tranactionalGraph;
+public class NoOpTransactionalGraphWrapper implements TransactionalGraph{
+  private Graph graph;
+
+  public NoOpTransactionalGraphWrapper(Graph graph) {
+    this.graph = graph;
+  }
 
   @Override
   public void stopTransaction(Conclusion conclusion) {
@@ -84,13 +87,5 @@ class CompositeGraphWrapper implements GraphWrapper {
   @Override
   public void shutdown() {
     throw new UnsupportedOperationException("Not implemented yet");
-  }
-
-  public void setKeyIndexableGraph(KeyIndexableGraph keyIndexableGraph) {
-    this.keyIndexableGraph = keyIndexableGraph;
-  }
-
-  public void setTranactionalGraph(TransactionalGraph tranactionalGraph) {
-    this.tranactionalGraph = tranactionalGraph;
   }
 }
