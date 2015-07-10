@@ -1,5 +1,27 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
+import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
+import nl.knaw.huygens.timbuctoo.storage.UpdateException;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InOrder;
+import test.model.BaseDomainEntity;
+import test.model.TestSystemEntityWrapper;
+import test.model.projecta.SubADomainEntity;
+import test.model.projecta.SubARelation;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
 import static nl.knaw.huygens.timbuctoo.storage.RelationMatcher.likeRelation;
 import static nl.knaw.huygens.timbuctoo.storage.graph.DomainEntityMatcher.likeDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.graph.SubADomainEntityBuilder.aDomainEntity;
@@ -26,31 +48,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
-import nl.knaw.huygens.timbuctoo.storage.UpdateException;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InOrder;
-
-import test.model.BaseDomainEntity;
-import test.model.TestSystemEntityWrapper;
-import test.model.projecta.SubADomainEntity;
-import test.model.projecta.SubARelation;
-
-import com.google.common.collect.Lists;
 
 public class GraphLegacyStorageWrapperTest {
 
@@ -1402,6 +1399,20 @@ public class GraphLegacyStorageWrapperTest {
     assertThat(actualAvailable, is(equalTo(available)));
 
     verify(graphStorageMock).isAvailable();
+  }
+
+  @Test
+  public void createIndexDeletegatesToTheGraphStorage() throws Exception {
+    // setup
+    String field1 = "test";
+    String field2 = "test1";
+
+    // action
+    instance.createIndex(true, DOMAIN_ENTITY_TYPE, field1, field2);
+
+    // verify
+    verify(graphStorageMock).createIndex(DOMAIN_ENTITY_TYPE, field1);
+    verify(graphStorageMock).createIndex(DOMAIN_ENTITY_TYPE, field2);
   }
 
 }

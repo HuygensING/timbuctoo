@@ -1,12 +1,8 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
-import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
-import static nl.knaw.huygens.timbuctoo.model.DomainEntity.PID;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -20,9 +16,12 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.google.inject.Inject;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
+import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
+import static nl.knaw.huygens.timbuctoo.model.DomainEntity.PID;
 
 public class GraphLegacyStorageWrapper implements Storage {
 
@@ -44,8 +43,9 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public void createIndex(boolean unique, Class<? extends Entity> type, String... fields) throws StorageException {
-    // FIXME indexes should be created in a different way for GraphStorage TIM-109
-    //    throw new UnsupportedOperationException("Yet to be implemented");
+    for(String field : fields){
+      graphStorage.createIndex(type, field);
+    }
 
   }
 

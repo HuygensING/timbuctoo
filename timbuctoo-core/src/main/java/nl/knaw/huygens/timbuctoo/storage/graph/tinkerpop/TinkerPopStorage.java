@@ -73,6 +73,11 @@ public class TinkerPopStorage implements GraphStorage {
   }
 
   @Override
+  public void createIndex(Class<? extends Entity> type, String field) {
+    throw new UnsupportedOperationException("Not implemented yet");
+  }
+
+  @Override
   public <T extends DomainEntity> void addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
     Vertex vertex = db.addVertex(null);
     VertexAddAction<T> addAction = new VertexAddAction<T>(type, entity, vertex) {
@@ -852,4 +857,6 @@ public class TinkerPopStorage implements GraphStorage {
 
     return storageIteratorFactory.createForRelation(type, edges);
   }
+
+
 }

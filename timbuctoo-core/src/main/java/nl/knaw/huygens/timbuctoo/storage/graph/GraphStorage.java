@@ -1,7 +1,5 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
-import java.util.List;
-
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -11,6 +9,8 @@ import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchRelationException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+
+import java.util.List;
 
 public interface GraphStorage {
 
@@ -143,4 +143,10 @@ public interface GraphStorage {
    */
   <T extends Relation> StorageIterator<T> findRelations(Class<T> type, TimbuctooQuery query);
 
+  /**
+   * Add a database index.
+   * @param type the type to add the index to
+   * @param field the field to add the index to
+   */
+  void createIndex(Class<? extends Entity> type, String field);
 }
