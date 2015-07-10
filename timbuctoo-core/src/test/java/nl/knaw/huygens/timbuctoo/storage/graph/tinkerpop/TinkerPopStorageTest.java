@@ -11,7 +11,12 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.*;
+import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
+import nl.knaw.huygens.timbuctoo.storage.NoSuchRelationException;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
+import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQuery;
 import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQueryFactory;
@@ -41,10 +46,20 @@ import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilde
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TimbuctooQueryMockBuilder.aQuery;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.emptyCollectionOf;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class TinkerPopStorageTest {
 
@@ -2044,5 +2059,23 @@ public class TinkerPopStorageTest {
 
     // verify
     assertThat(available, is(false));
+  }
+
+  @Test
+  public void createIndexAddsAnIndexToVertexIfTheTypeIsAnEntity() {
+    // action
+    instance.createIndex(DOMAIN_ENTITY_TYPE, FIELD_NAME);
+
+    // verify
+    verify(dbMock).createKeyIndex(FIELD_NAME, Vertex.class);
+  }
+
+  @Test
+  public void createIndexAddsAnIndexToEdgeIfTheTypeIsARelation() {
+    // action
+    instance.createIndex(RELATION_TYPE, FIELD_NAME);
+
+    // verify
+    verify(dbMock).createKeyIndex(FIELD_NAME, Edge.class);
   }
 }

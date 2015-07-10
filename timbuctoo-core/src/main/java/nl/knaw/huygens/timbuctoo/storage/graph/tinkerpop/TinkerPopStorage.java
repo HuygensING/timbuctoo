@@ -74,7 +74,12 @@ public class TinkerPopStorage implements GraphStorage {
 
   @Override
   public void createIndex(Class<? extends Entity> type, String field) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    if(Relation.class.isAssignableFrom(type)){
+      db.createKeyIndex(field, Edge.class);
+    }
+    else{
+      db.createKeyIndex(field, Vertex.class);
+    }
   }
 
   @Override
