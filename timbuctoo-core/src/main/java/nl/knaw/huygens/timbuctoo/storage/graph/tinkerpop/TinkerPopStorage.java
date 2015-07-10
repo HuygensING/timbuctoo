@@ -1,12 +1,15 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getIdProperty;
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getRevisionProperty;
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getTypes;
-
-import java.util.Iterator;
-import java.util.List;
-
+import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
+import com.google.inject.Inject;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.Vertex;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -27,15 +30,13 @@ import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConve
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.graphwrapper.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.graphwrapper.GraphWrapperFactory;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
-import com.google.inject.Inject;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Vertex;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getIdProperty;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getRevisionProperty;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getTypes;
 
 public class TinkerPopStorage implements GraphStorage {
 
@@ -57,13 +58,18 @@ public class TinkerPopStorage implements GraphStorage {
   }
 
   TinkerPopStorage(GraphWrapper db, ElementConverterFactory elementConverterFactory, TinkerPopLowLevelAPI lowLevelAPI, TypeRegistry typeRegistry,
-      TinkerPopStorageIteratorFactory storageIteratorFactory, TimbuctooQueryFactory queryFactory) {
+                   TinkerPopStorageIteratorFactory storageIteratorFactory, TimbuctooQueryFactory queryFactory) {
     this.db = db;
     this.elementConverterFactory = elementConverterFactory;
     this.lowLevelAPI = lowLevelAPI;
     this.typeRegistry = typeRegistry;
     this.storageIteratorFactory = storageIteratorFactory;
     this.queryFactory = queryFactory;
+
+    db.createKeyIndex(Entity.ID_DB_PROPERTY_NAME, Vertex.class);
+    db.createKeyIndex(Entity.ID_DB_PROPERTY_NAME, Edge.class);
+    db.createKeyIndex(ElementFields.ELEMENT_TYPES, Vertex.class);
+    db.createKeyIndex(ElementFields.ELEMENT_TYPES, Edge.class);
   }
 
   @Override
@@ -407,7 +413,7 @@ public class TinkerPopStorage implements GraphStorage {
   private <T extends Entity> int deleteEntities(Class<T> type, String id) {
     int numberOfDeletedEntities = 0;
 
-    for (Iterator<Vertex> iterator = lowLevelAPI.getVerticesWithId(type, id); iterator.hasNext();) {
+    for (Iterator<Vertex> iterator = lowLevelAPI.getVerticesWithId(type, id); iterator.hasNext(); ) {
       Vertex vertex = iterator.next();
 
       for (Edge edge : vertex.getEdges(Direction.BOTH)) {
@@ -660,32 +666,96 @@ public class TinkerPopStorage implements GraphStorage {
 
   @Override
   public <T extends Relation> StorageIterator<T> findRelations(Class<T> relationType, String sourceId, String targetId, String relationTypeId) {
-    List<Edge> edges = Lists.newArrayList();
-
-    TimbuctooQuery query = queryFactory.newQuery(relationType);
-    query.hasNotNullProperty(Relation.TYPE_ID, relationTypeId);
-
     Vertex source = getVertexIfIdIsNotNull(sourceId);
     Vertex target = getVertexIfIdIsNotNull(targetId);
 
-    Iterator<Edge> foundEdges = lowLevelAPI.findEdges(relationType, query);
+    Iterator<Edge> foundEdges = null;
 
-    for (; foundEdges.hasNext();) {
-      Edge edge = foundEdges.next();
-      if (vertexIsEqualOrNull(source, edge, Direction.OUT) && vertexIsEqualOrNull(target, edge, Direction.IN)) {
+    foundEdges = findLatestEdges(relationType, relationTypeId, source, target, foundEdges);
+
+    return storageIteratorFactory.createForRelation(relationType, foundEdges);
+  }
+
+  private <T extends Relation> Iterator<Edge> findLatestEdges(Class<T> relationType, String relationTypeId, Vertex source, Vertex target, Iterator<Edge> foundEdges) {
+    VertexIsNullOrEqualPredicate targetIsNullOrEqual = new VertexIsNullOrEqualPredicate(target, Direction.IN);
+
+    RelationTypeIdIsNullOrEqualPredicate relationTypeIdIsNullOrEqual = new RelationTypeIdIsNullOrEqualPredicate(relationTypeId);
+
+    if (source != null) {
+      foundEdges = findEdgesByVertex(source, Direction.OUT, targetIsNullOrEqual, relationTypeIdIsNullOrEqual);
+    } else if (target != null) {
+      foundEdges = findEdgesByVertex(target, Direction.IN, relationTypeIdIsNullOrEqual);
+    } else {
+      TimbuctooQuery query = queryFactory.newQuery(relationType);
+      query.hasNotNullProperty(Relation.TYPE_ID, relationTypeId);
+
+      foundEdges = lowLevelAPI.findEdges(relationType, query);
+    }
+    return foundEdges;
+  }
+
+  private Iterator<Edge> findEdgesByVertex(Vertex vertex, Direction direction, Predicate<Edge>... predicates) {
+    Iterator<Edge> sourceEdges = vertex.getEdges(direction).iterator();
+
+    List<Edge> edges = Lists.newArrayList();
+    for (; sourceEdges.hasNext(); ) {
+      Edge edge = sourceEdges.next();
+
+      if(appliesToAllPredicates(edge, predicates)){
         edges.add(edge);
       }
     }
 
-    return storageIteratorFactory.createForRelation(relationType, edges.iterator());
+    return lowLevelAPI.getLatestEdges(edges);
+  }
+
+  private boolean appliesToAllPredicates(Edge edge, Predicate<Edge>[] predicates) {
+    boolean applies = true;
+    for (Predicate predicate : predicates) {
+      if (!predicate.apply(edge)) {
+        applies = false;
+        break;
+      }
+    }
+    return applies;
   }
 
   private Vertex getVertexIfIdIsNotNull(String targetId) {
     return targetId != null ? lowLevelAPI.getLatestVertexById(targetId) : null;
   }
 
-  private boolean vertexIsEqualOrNull(Vertex vertex, Edge edge, Direction direction) {
-    return vertex == null || edge.getVertex(direction).equals(vertex);
+  private static class VertexIsNullOrEqualPredicate implements Predicate<Edge> {
+    private Vertex vertex;
+    private Direction direction;
+
+    public VertexIsNullOrEqualPredicate(Vertex vertex, Direction direction) {
+      this.vertex = vertex;
+      this.direction = direction;
+    }
+
+    @Override
+    public boolean apply(Edge edge) {
+      return vertex == null || edge.getVertex(direction).equals(vertex);
+    }
+  }
+
+  private static class RelationTypeIdIsNullOrEqualPredicate implements Predicate<Edge> {
+
+    private String relationTypeId;
+
+    public RelationTypeIdIsNullOrEqualPredicate(String RelationTypeId) {
+      relationTypeId = RelationTypeId;
+    }
+
+    @Override
+    public boolean apply(Edge edge) {
+      return relationTypeId == null || Objects.equals(relationTypeId, edge.getProperty(Relation.TYPE_ID));
+    }
+  }
+
+
+  private boolean relationTypeIsEqualOrNull(String relationTypeId, Edge edge) {
+    return relationTypeId == null || Objects.equals(relationTypeId, edge.getProperty(Relation.TYPE_ID));
   }
 
   @Override
@@ -693,7 +763,7 @@ public class TinkerPopStorage implements GraphStorage {
     List<String> ids = Lists.newArrayList();
     Iterator<Vertex> vertices = lowLevelAPI.findVerticesWithoutProperty(type, DomainEntity.PID);
 
-    for (; vertices.hasNext();) {
+    for (; vertices.hasNext(); ) {
       ids.add(getIdProperty(vertices.next()));
     }
 
@@ -705,7 +775,7 @@ public class TinkerPopStorage implements GraphStorage {
     List<String> ids = Lists.newArrayList();
     Iterator<Edge> edges = lowLevelAPI.findEdgesWithoutProperty(type, DomainEntity.PID);
 
-    for (; edges.hasNext();) {
+    for (; edges.hasNext(); ) {
       ids.add(getIdProperty(edges.next()));
     }
 
@@ -763,7 +833,7 @@ public class TinkerPopStorage implements GraphStorage {
         .hasNotNullProperty(Relation.ID_DB_PROPERTY_NAME, id) // 
         .searchLatestOnly(false);
 
-    for (Iterator<Edge> edges = lowLevelAPI.findEdges(type, query); edges.hasNext();) {
+    for (Iterator<Edge> edges = lowLevelAPI.findEdges(type, query); edges.hasNext(); ) {
       db.removeEdge(edges.next());
     }
     db.commit();

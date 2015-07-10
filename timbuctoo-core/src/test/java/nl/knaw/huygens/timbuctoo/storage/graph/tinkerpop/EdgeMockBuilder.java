@@ -1,19 +1,5 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
-import static nl.knaw.huygens.timbuctoo.model.DomainEntity.PID;
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.model.Relation;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
@@ -21,6 +7,19 @@ import com.google.common.collect.Maps;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.model.Relation;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import static nl.knaw.huygens.timbuctoo.model.DomainEntity.PID;
+import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class EdgeMockBuilder {
   private Vertex source;
@@ -109,5 +108,9 @@ public class EdgeMockBuilder {
     types.add(TypeNames.getInternalName(type));
 
     return this;
+  }
+
+  public EdgeMockBuilder withTypeId(String relationTypeId) {
+    return addProperty(Relation.TYPE_ID, relationTypeId);
   }
 }

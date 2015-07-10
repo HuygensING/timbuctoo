@@ -1,5 +1,35 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
+import com.google.common.collect.Lists;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Vertex;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.storage.*;
+import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
+import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQuery;
+import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQueryFactory;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.graphwrapper.GraphWrapper;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.InOrder;
+import test.model.BaseDomainEntity;
+import test.model.TestSystemEntityWrapper;
+import test.model.projecta.SubADomainEntity;
+import test.model.projecta.SubARelation;
+
+import java.util.Iterator;
+import java.util.List;
+
 import static nl.knaw.huygens.timbuctoo.model.Relation.SOURCE_ID;
 import static nl.knaw.huygens.timbuctoo.model.Relation.TARGET_ID;
 import static nl.knaw.huygens.timbuctoo.storage.graph.DomainEntityMatcher.likeDomainEntity;
@@ -10,61 +40,11 @@ import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeMockBuilder.
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilder.aVertex;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TimbuctooQueryMockBuilder.aQuery;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.emptyCollectionOf;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.sameInstance;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-
-import java.util.Iterator;
-import java.util.List;
-
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.model.RelationType;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
-import nl.knaw.huygens.timbuctoo.storage.NoSuchRelationException;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
-import nl.knaw.huygens.timbuctoo.storage.UpdateException;
-import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
-import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQuery;
-import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQueryFactory;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.graphwrapper.GraphWrapper;
-
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.ArgumentCaptor;
-import org.mockito.InOrder;
-import org.mockito.Matchers;
-
-import test.model.BaseDomainEntity;
-import test.model.TestSystemEntityWrapper;
-import test.model.projecta.SubADomainEntity;
-import test.model.projecta.SubARelation;
-
-import com.google.common.collect.Lists;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
+import static org.mockito.Mockito.*;
 
 public class TinkerPopStorageTest {
 
@@ -92,6 +72,7 @@ public class TinkerPopStorageTest {
   private static final String RELATION_TYPE_NAME = TypeNames.getInternalName(RELATIONTYPE_TYPE);
   private static final Class<BaseDomainEntity> PRIMITIVE_DOMAIN_ENTITY_TYPE = BaseDomainEntity.class;
   private static final String PRIMITIVE_DOMAIN_ENTITY_NAME = TypeNames.getInternalName(PRIMITIVE_DOMAIN_ENTITY_TYPE);
+  public static final String OTHER_RELATION_TYPE = "otherRelationType";
 
   private GraphWrapper dbMock;
   private TinkerPopStorage instance;
@@ -365,7 +346,7 @@ public class TinkerPopStorageTest {
   public void findEntityByPropertyConvertsTheFirstVertexFoundWithProperty() throws Exception {
     // setup
     Vertex foundVertex = aVertex().build();
-    Iterator<Vertex> vertexIterator = Lists.<Vertex> newArrayList(foundVertex).iterator();
+    Iterator<Vertex> vertexIterator = Lists.<Vertex>newArrayList(foundVertex).iterator();
     when(lowLevelAPIMock.findVerticesByProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(vertexIterator);
 
     VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
@@ -399,7 +380,7 @@ public class TinkerPopStorageTest {
   @Test
   public void findEntitiesQueriesForVerticesAndReturnsAStorageIteratorWithTheResult() throws Exception {
     // setup
-    Iterator<Vertex> vertices = Lists.<Vertex> newArrayList().iterator();
+    Iterator<Vertex> vertices = Lists.<Vertex>newArrayList().iterator();
     TimbuctooQuery query = aQuery().build();
     when(lowLevelAPIMock.findVertices(DOMAIN_ENTITY_TYPE, query)).thenReturn(vertices);
 
@@ -414,7 +395,7 @@ public class TinkerPopStorageTest {
   }
 
   private void noEntitiesFoundByPropertyWithValue(Class<? extends Entity> type, String name, String value) {
-    Iterator<Vertex> vertexIterator = Lists.<Vertex> newArrayList().iterator();
+    Iterator<Vertex> vertexIterator = Lists.<Vertex>newArrayList().iterator();
     when(lowLevelAPIMock.findVerticesByProperty(type, name, value)).thenReturn(vertexIterator);
   }
 
@@ -422,7 +403,7 @@ public class TinkerPopStorageTest {
   public void findEntityByPropertyThrowsAConversionExceptionWhenTheVertexCannotBeConverted() throws Exception {
     // setup
     Vertex foundVertex = aVertex().build();
-    Iterator<Vertex> vertexIterator = Lists.<Vertex> newArrayList(foundVertex).iterator();
+    Iterator<Vertex> vertexIterator = Lists.<Vertex>newArrayList(foundVertex).iterator();
     when(lowLevelAPIMock.findVerticesByProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(vertexIterator);
 
     VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
@@ -664,7 +645,7 @@ public class TinkerPopStorageTest {
   @Test
   public void getEntitiesRetrieveWrapsAllTheVerticesOfACertainTypeInAStorageIterator() throws Exception {
     // setup
-    Iterator<Vertex> iterator = Lists.<Vertex> newArrayList().iterator();
+    Iterator<Vertex> iterator = Lists.<Vertex>newArrayList().iterator();
     when(lowLevelAPIMock.getLatestVerticesOf(SYSTEM_ENTITY_TYPE)).thenReturn(iterator);
 
     @SuppressWarnings("unchecked")
@@ -1291,7 +1272,7 @@ public class TinkerPopStorageTest {
     // setup
     Edge firstEdge = anEdge().build();
     Edge secondEdge = anEdge().build();
-    Iterator<Edge> iterator = Lists.<Edge> newArrayList(firstEdge, secondEdge).iterator();
+    Iterator<Edge> iterator = Lists.<Edge>newArrayList(firstEdge, secondEdge).iterator();
     when(lowLevelAPIMock.findLatestEdgesByProperty(RELATION_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(iterator);
 
     EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
@@ -1309,7 +1290,7 @@ public class TinkerPopStorageTest {
   @Test
   public void findRelationByPropertyReturnsNullIfNoEdgesCanBeFound() throws Exception {
     // setup
-    Iterator<Edge> iterator = Lists.<Edge> newArrayList().iterator();
+    Iterator<Edge> iterator = Lists.<Edge>newArrayList().iterator();
     when(lowLevelAPIMock.findLatestEdgesByProperty(RELATION_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(iterator);
 
     EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
@@ -1326,7 +1307,7 @@ public class TinkerPopStorageTest {
   public void findRelationByPropertyThrowsAConversionExceptionIfTheRelationshipCannotBeConverted() throws Exception {
     // setup
     Edge foundEdge = anEdge().build();
-    Iterator<Edge> iterator = Lists.<Edge> newArrayList(foundEdge).iterator();
+    Iterator<Edge> iterator = Lists.<Edge>newArrayList(foundEdge).iterator();
     when(lowLevelAPIMock.findLatestEdgesByProperty(RELATION_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(iterator);
 
     EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
@@ -1355,7 +1336,7 @@ public class TinkerPopStorageTest {
   }
 
   private void edgesFoundBySource(Edge... foundEdges) {
-    Iterator<Edge> iterator = Lists.<Edge> newArrayList(foundEdges).iterator();
+    Iterator<Edge> iterator = Lists.<Edge>newArrayList(foundEdges).iterator();
     when(lowLevelAPIMock.findEdgesBySource(RELATION_TYPE, PROPERTY_VALUE)).thenReturn(iterator);
   }
 
@@ -1377,68 +1358,14 @@ public class TinkerPopStorageTest {
   }
 
   private void edgesFoundByTarget(Edge... foundEdges) {
-    Iterator<Edge> iterator = Lists.<Edge> newArrayList(foundEdges).iterator();
+    Iterator<Edge> iterator = Lists.<Edge>newArrayList(foundEdges).iterator();
     when(lowLevelAPIMock.findEdgesByTarget(RELATION_TYPE, PROPERTY_VALUE)).thenReturn(iterator);
-  }
-
-  @Test
-  public void findRelationsWrapsTheQueryResultOfTheLowLevelAPIInAStorageIterator() throws Exception {
-    // setup
-    TimbuctooQuery queryMock = aQuery().build();
-    when(queryFactory.newQuery(RELATION_TYPE)).thenReturn(queryMock);
-
-    Vertex target = aVertex().build();
-    Vertex source = aVertex().build();
-    vertexFoundForId(RELATION_SOURCE_ID, source);
-    vertexFoundForId(RELATION_TARGET_ID, target);
-
-    Vertex otherTarget = aVertex().build();
-    Vertex otherSource = aVertex().build();
-
-    Edge edge = anEdge().withSource(source).withTarget(target).build();
-    Edge edgeWithOtherTarget = anEdge().withSource(source).withTarget(otherTarget).build();
-    Edge edgeWithOtherSource = anEdge().withSource(otherSource).withTarget(target).build();
-
-    latestEdgesFoundByQuery(queryMock, edge, edgeWithOtherTarget, edgeWithOtherSource);
-
-    StorageIterator<SubARelation> relations = storageIteratorFound();
-
-    // action
-    StorageIterator<SubARelation> foundRelations = instance.findRelations(RELATION_TYPE, RELATION_SOURCE_ID, RELATION_TARGET_ID, RELATION_TYPE_ID);
-
-    // verify
-    assertThat(foundRelations, is(sameInstance(relations)));
-
-    verify(queryMock).hasNotNullProperty(Relation.TYPE_ID, RELATION_TYPE_ID);
-    verifyNoMoreInteractions(queryMock);
-
-    verifyEdgesIsUsedForStorageIterator(edge);
-  }
-
-  private void verifyEdgesIsUsedForStorageIterator(Edge... edges) {
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    ArgumentCaptor<Iterator<Edge>> filteredEdges = ArgumentCaptor.forClass((Class) Iterator.class);
-    verify(storageIteratorFactoryMock).createForRelation(argThat(equalTo(RELATION_TYPE)), filteredEdges.capture());
-    assertThat(Lists.newArrayList(filteredEdges.getValue()), containsInAnyOrder(edges));
-  }
-
-  private StorageIterator<SubARelation> storageIteratorFound() {
-    @SuppressWarnings("unchecked")
-    StorageIterator<SubARelation> relations = mock(StorageIterator.class);
-    when(storageIteratorFactoryMock.createForRelation(argThat(equalTo(RELATION_TYPE)), Matchers.<Iterator<Edge>> any())).thenReturn(relations);
-    return relations;
-  }
-
-  private void latestEdgesFoundByQuery(TimbuctooQuery queryMock, Edge... edges) {
-    List<Edge> edgesList = Lists.<Edge> newArrayList(edges);
-    Iterator<Edge> foundEdges = edgesList.iterator();
-    when(lowLevelAPIMock.findEdges(RELATION_TYPE, queryMock)).thenReturn(foundEdges);
   }
 
   @Test
   public void findRelationsQueriesForEdgesAndReturnsAStorageIteratorWithTheResult() {
     // setup
-    Iterator<Edge> edges = Lists.<Edge> newArrayList().iterator();
+    Iterator<Edge> edges = Lists.<Edge>newArrayList().iterator();
     TimbuctooQuery query = aQuery().build();
     when(lowLevelAPIMock.findEdges(RELATION_TYPE, query)).thenReturn(edges);
 
@@ -1454,69 +1381,143 @@ public class TinkerPopStorageTest {
   }
 
   @Test
-  public void findRelationsDoesNotFilterBySourceIfSourceIdIsNull() throws Exception {
+  public void findRelationsSearchesForTheOutgoingingRelationsOfTheSourceIfTheSourceIdIsNotNull() {
+    // setup
+    Vertex target = aVertex().build();
+    vertexFoundForId(TARGET_ID, target);
+    Edge matchingEdge = anEdge().withTarget(target).withTypeId(RELATION_TYPE_ID).build();
+    Edge withOtherTarget = anEdge().withTarget(aVertex().build()).withTypeId(RELATION_TYPE_ID).build();
+    Edge withOtherType = anEdge().withTarget(target).withTypeId(OTHER_RELATION_TYPE).build();
+
+    Vertex source = aVertex() //
+        .withOutgoingEdge(matchingEdge) //
+        .withOutgoingEdge(withOtherTarget) //
+        .withOutgoingEdge(withOtherType) //
+        .build();
+    vertexFoundForId(SOURCE_ID, source);
+
+
+    Iterator<Edge> latestEdges = Lists.<Edge>newArrayList().iterator();
+    when(lowLevelAPIMock.getLatestEdges((Iterable<Edge>) argThat(contains(matchingEdge)))).thenReturn(latestEdges);
+
+
+    StorageIterator<SubARelation> iterator = StorageIteratorStub.newInstance();
+    when(storageIteratorFactoryMock.createForRelation(RELATION_TYPE, latestEdges)).thenReturn(iterator);
+
+    // action
+    StorageIterator<SubARelation> actualIterator = instance.findRelations(RELATION_TYPE, SOURCE_ID, TARGET_ID, RELATION_TYPE_ID);
+
+    // verify
+    assertThat(actualIterator, is(sameInstance(iterator)));
+    verify(storageIteratorFactoryMock).createForRelation(RELATION_TYPE, latestEdges);
+  }
+
+  @Test
+  public void findRelationsSearchesForTheInCommingRelationsOfTargetIfTheSourceIdIsNullAndTheTragetIdIsNot() {
+    Edge matchingEdge = anEdge().withTypeId(RELATION_TYPE_ID).build();
+    Edge withOtherType = anEdge().withTypeId(OTHER_RELATION_TYPE).build();
+
+    Vertex target = aVertex() //
+        .withIncomingEdge(matchingEdge) //
+        .withIncomingEdge(withOtherType) //
+        .build();
+    vertexFoundForId(TARGET_ID, target);
+
+    Iterator<Edge> latestEdges = Lists.<Edge>newArrayList().iterator();
+    when(lowLevelAPIMock.getLatestEdges((Iterable<Edge>) argThat(contains(matchingEdge)))).thenReturn(latestEdges);
+
+    StorageIterator<SubARelation> iterator = StorageIteratorStub.newInstance();
+    when(storageIteratorFactoryMock.createForRelation(RELATION_TYPE, latestEdges)).thenReturn(iterator);
+
+    // action
+    StorageIterator<SubARelation> actualIterator = instance.findRelations(RELATION_TYPE, null, TARGET_ID, RELATION_TYPE_ID);
+
+    // verify
+    assertThat(actualIterator, is(sameInstance(iterator)));
+    verify(storageIteratorFactoryMock).createForRelation(RELATION_TYPE, latestEdges);
+  }
+
+  @Test
+  public void findRelationsSearchesForEdgesOfACertainTypeId() {
     // setup
     TimbuctooQuery queryMock = aQuery().build();
     when(queryFactory.newQuery(RELATION_TYPE)).thenReturn(queryMock);
 
-    Vertex target = aVertex().build();
-    Vertex source = aVertex().build();
-    vertexFoundForId(RELATION_TARGET_ID, target);
+    Iterator<Edge> latestEdges = Lists.<Edge>newArrayList().iterator();
 
-    Vertex otherTarget = aVertex().build();
-    Vertex otherSource = aVertex().build();
+    when(lowLevelAPIMock.findEdges(RELATION_TYPE, queryMock)).thenReturn(latestEdges);
 
-    Edge edge = anEdge().withSource(source).withTarget(target).build();
-    Edge edgeWithOtherTarget = anEdge().withSource(source).withTarget(otherTarget).build();
-    Edge edgeWithOtherSource = anEdge().withSource(otherSource).withTarget(target).build();
-
-    latestEdgesFoundByQuery(queryMock, edge, edgeWithOtherTarget, edgeWithOtherSource);
-
-    StorageIterator<SubARelation> relations = storageIteratorFound();
+    StorageIterator<SubARelation> iterator = StorageIteratorStub.newInstance();
+    when(storageIteratorFactoryMock.createForRelation(RELATION_TYPE, latestEdges)).thenReturn(iterator);
 
     // action
-    StorageIterator<SubARelation> foundRelations = instance.findRelations(RELATION_TYPE, null, RELATION_TARGET_ID, RELATION_TYPE_ID);
+    StorageIterator<SubARelation> actualIterator = instance.findRelations(RELATION_TYPE, null, null, RELATION_TYPE_ID);
 
     // verify
-    assertThat(foundRelations, is(sameInstance(relations)));
-
-    verify(queryMock).hasNotNullProperty(Relation.TYPE_ID, RELATION_TYPE_ID);
-    verifyNoMoreInteractions(queryMock);
-
-    verifyEdgesIsUsedForStorageIterator(edge, edgeWithOtherSource);
+    assertThat(actualIterator, is(sameInstance(iterator)));
+    verify(storageIteratorFactoryMock).createForRelation(RELATION_TYPE, latestEdges);
   }
 
   @Test
   public void findRelationsDoesNotFilterByTargetIfTargetIdIsNull() throws Exception {
     // setup
-    TimbuctooQuery queryMock = aQuery().build();
-    when(queryFactory.newQuery(RELATION_TYPE)).thenReturn(queryMock);
+    Edge matchingEdge = anEdge().withTypeId(RELATION_TYPE_ID).build();
+    Edge anotherEdge = anEdge().withTypeId(RELATION_TYPE_ID).build();
+    Edge withOtherType = anEdge().withTypeId(OTHER_RELATION_TYPE).build();
 
-    Vertex target = aVertex().build();
-    Vertex source = aVertex().build();
-    vertexFoundForId(RELATION_SOURCE_ID, source);
+    Vertex source = aVertex() //
+        .withOutgoingEdge(matchingEdge) //
+        .withOutgoingEdge(anotherEdge) //
+        .withOutgoingEdge(withOtherType) //
+        .build();
+    vertexFoundForId(SOURCE_ID, source);
 
-    Vertex otherTarget = aVertex().build();
-    Vertex otherSource = aVertex().build();
 
-    Edge edge = anEdge().withSource(source).withTarget(target).build();
-    Edge edgeWithOtherTarget = anEdge().withSource(source).withTarget(otherTarget).build();
-    Edge edgeWithOtherSource = anEdge().withSource(otherSource).withTarget(target).build();
+    Iterator<Edge> latestEdges = Lists.<Edge>newArrayList().iterator();
+    when(lowLevelAPIMock.getLatestEdges((Iterable<Edge>) argThat(contains(matchingEdge, anotherEdge)))).thenReturn(latestEdges);
 
-    latestEdgesFoundByQuery(queryMock, edge, edgeWithOtherTarget, edgeWithOtherSource);
 
-    StorageIterator<SubARelation> relations = storageIteratorFound();
+    StorageIterator<SubARelation> iterator = StorageIteratorStub.newInstance();
+    when(storageIteratorFactoryMock.createForRelation(RELATION_TYPE, latestEdges)).thenReturn(iterator);
 
     // action
-    StorageIterator<SubARelation> foundRelations = instance.findRelations(RELATION_TYPE, RELATION_SOURCE_ID, null, RELATION_TYPE_ID);
+    StorageIterator<SubARelation> actualIterator = instance.findRelations(RELATION_TYPE, SOURCE_ID, null, RELATION_TYPE_ID);
 
     // verify
-    assertThat(foundRelations, is(sameInstance(relations)));
+    assertThat(actualIterator, is(sameInstance(iterator)));
+    verify(storageIteratorFactoryMock).createForRelation(RELATION_TYPE, latestEdges);
+  }
 
-    verify(queryMock).hasNotNullProperty(Relation.TYPE_ID, RELATION_TYPE_ID);
-    verifyNoMoreInteractions(queryMock);
+  @Test
+  public void findRelationsDoesNotFilterByTypeIfTheIdIsNull() {
+    // setup
+    Vertex target = aVertex().build();
+    vertexFoundForId(TARGET_ID, target);
+    Edge matchingEdge = anEdge().withTarget(target).withTypeId(RELATION_TYPE_ID).build();
+    Edge withOtherTarget = anEdge().withTarget(aVertex().build()).withTypeId(RELATION_TYPE_ID).build();
+    Edge withOtherType = anEdge().withTarget(target).withTypeId(OTHER_RELATION_TYPE).build();
 
-    verifyEdgesIsUsedForStorageIterator(edge, edgeWithOtherTarget);
+    Vertex source = aVertex() //
+        .withOutgoingEdge(matchingEdge) //
+        .withOutgoingEdge(withOtherTarget) //
+        .withOutgoingEdge(withOtherType) //
+        .build();
+    vertexFoundForId(SOURCE_ID, source);
+
+
+    Iterator<Edge> latestEdges = Lists.<Edge>newArrayList().iterator();
+    when(lowLevelAPIMock.getLatestEdges((Iterable<Edge>) argThat(contains(matchingEdge, withOtherType)))).thenReturn(latestEdges);
+
+
+    StorageIterator<SubARelation> iterator = StorageIteratorStub.newInstance();
+    when(storageIteratorFactoryMock.createForRelation(RELATION_TYPE, latestEdges)).thenReturn(iterator);
+
+    // action
+    StorageIterator<SubARelation> actualIterator = instance.findRelations(RELATION_TYPE, SOURCE_ID, TARGET_ID, null);
+
+    // verify
+    assertThat(actualIterator, is(sameInstance(iterator)));
+    verify(storageIteratorFactoryMock).createForRelation(RELATION_TYPE, latestEdges);
   }
 
   @Test
