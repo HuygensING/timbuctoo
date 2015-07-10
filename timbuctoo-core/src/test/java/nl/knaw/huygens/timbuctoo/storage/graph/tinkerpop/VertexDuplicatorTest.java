@@ -1,24 +1,23 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.Vertex;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType;
+import org.junit.Before;
+import org.junit.Test;
+
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeMockBuilder.anEdge;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilder.aVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Vertex;
 
 public class VertexDuplicatorTest {
   private static final String VERSION_OF_EDGE_LABEL = SystemRelationType.VERSION_OF.name();
@@ -34,6 +33,8 @@ public class VertexDuplicatorTest {
   private Vertex sourceIncomingVersionOfEdge;
   private Edge incomingEdge;
   private Edge outgoingEdge;
+  private Edge versionOfOutgoingEdge;
+  private Edge versionOfIncomingEdge;
 
   @Before
   public void setup() {
@@ -50,8 +51,8 @@ public class VertexDuplicatorTest {
   private Vertex setupVertexToDuplicate() {
     incomingEdge = anEdge().withLabel(INCOMING_EDGE_LABEL).withSource(otherVertex).withTarget(vertexToDuplicate).build();
     outgoingEdge = anEdge().withLabel(OUTGOING_EDGE_LABEL).withSource(vertexToDuplicate).withTarget(otherVertex).build();
-    Edge versionOfOutgoingEdge = anEdge().withLabel(VERSION_OF_EDGE_LABEL).withSource(otherVertex).withTarget(vertexToDuplicate).build();
-    Edge versionOfIncomingEdge = anEdge().withLabel(VERSION_OF_EDGE_LABEL).withSource(sourceIncomingVersionOfEdge).withTarget(otherVertex).build();
+    versionOfOutgoingEdge = anEdge().withLabel(VERSION_OF_EDGE_LABEL).withSource(otherVertex).withTarget(vertexToDuplicate).build();
+    versionOfIncomingEdge = anEdge().withLabel(VERSION_OF_EDGE_LABEL).withSource(sourceIncomingVersionOfEdge).withTarget(otherVertex).build();
 
     return aVertex() //
         .withId(ID) //
@@ -102,6 +103,8 @@ public class VertexDuplicatorTest {
     // verify
     verify(incomingEdge).remove();
     verify(outgoingEdge).remove();
+    verify(versionOfIncomingEdge, never()).remove();
+    verify(versionOfOutgoingEdge, never()).remove();
   }
 
   @Test

@@ -1,17 +1,16 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.sourceOfEdge;
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.targetOfEdge;
-
-import java.util.Iterator;
-import java.util.Objects;
-
-import nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType;
-
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
+import nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType;
+
+import java.util.Iterator;
+import java.util.Objects;
+
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.sourceOfEdge;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.targetOfEdge;
 
 public class VertexDuplicator {
 
@@ -43,9 +42,9 @@ public class VertexDuplicator {
 
       if (!isVersionOfEdge(edge)) {
         sourceOfEdge(edge).addEdge(edge.getLabel(), duplicate);
+        edge.remove();
       }
 
-      edge.remove();
     }
   }
 
@@ -55,9 +54,9 @@ public class VertexDuplicator {
 
       if (!isVersionOfEdge(edge)) {
         duplicate.addEdge(edge.getLabel(), targetOfEdge(edge));
+        edge.remove();
       }
 
-      edge.remove();
     }
   }
 
