@@ -22,22 +22,18 @@ package nl.knaw.huygens.timbuctoo.tools.util.persistence;
  * #L%
  */
 
+import com.google.inject.Injector;
 import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
 import nl.knaw.huygens.timbuctoo.tools.process.Progress;
-
 import org.apache.commons.configuration.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 
 /**
  * Resets the persistence identifiers to point to the updated url's.
@@ -48,8 +44,7 @@ public class PIDResetter {
   private static final Logger LOG = LoggerFactory.getLogger(PIDResetter.class);
 
   public static void main(String[] args) throws ConfigurationException {
-    Configuration config = new Configuration("config.xml");
-    Injector injector = Guice.createInjector(new ToolsInjectionModule(config, true));
+    Injector injector = ToolsInjectionModule.createInjectorWithoutSolr();
 
     TypeRegistry registry = injector.getInstance(TypeRegistry.class);
     Repository repository = injector.getInstance(Repository.class);
@@ -88,7 +83,7 @@ public class PIDResetter {
           try {
             persistenceWrapper.updatePID(pid, type, id, revision);
           } catch (PersistenceException e) {
-            LOG.error("PID \"{}\" of type \"{}\" with id \"{}\" and revision \"{}\"", pid, type, id, revision);
+            LOG.error("Could not reset PID \"{}\" of type \"{}\" with id \"{}\" and revision \"{}\"", pid, type, id, revision);
           }
         }
       }
