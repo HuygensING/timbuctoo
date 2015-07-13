@@ -101,7 +101,7 @@ public class ToolsInjectionModule extends BasicInjectionModule {
   @Singleton
   PersistenceManager providePersistenceManager() throws PersistenceManagerCreationException {
     PersistenceManager persistenceManager = PersistenceManagerFactory.newPersistenceManager(config.getBooleanSetting("handle.enabled", true), config.getSetting("handle.cipher"),
-        config.getSetting("handle.naming_authority"), config.getSetting("handle.prefix"), config.pathInUserHome(config.getSetting("handle.private_key_file")));
+        config.getSetting("handle.naming_authority"), config.getSetting("handle.prefix"), config.getSetting("handle.private_key_file"));
     return persistenceManager;
   }
 
