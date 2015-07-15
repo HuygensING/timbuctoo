@@ -319,7 +319,7 @@
         <artifactId>jetty-maven-plugin</artifactId>
         <version>${jetty.version}</version>
         <configuration>
-          <war>timbuctoo-instance/target/timbuctoo-instance-2.13.0-SNAPSHOT.war</war>
+          <war>timbuctoo-instance/target/timbuctoo-instance-${project.version}.war</war>
         </configuration>
       </plugin>
     </plugins>
