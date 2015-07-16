@@ -33,6 +33,7 @@ public interface Broker {
   String PROP_ACTION = "action";
   String PROP_DOC_TYPE = "type";
   String PROP_DOC_ID = "id";
+  String PROP_IS_MULTI_ENTITY = "multiEntity";
 
   /**
    * Returns the message producer with the specified name that writes

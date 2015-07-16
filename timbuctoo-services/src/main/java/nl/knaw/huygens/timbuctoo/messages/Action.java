@@ -22,32 +22,39 @@ package nl.knaw.huygens.timbuctoo.messages;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
+
+import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_ACTION;
+import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_DOC_ID;
+import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_DOC_TYPE;
+import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_IS_MULTI_ENTITY;
 
 public class Action {
 
   private final ActionType actionType;
   private String id;
   private final Class<? extends DomainEntity> type;
-  private final boolean isMultiAction;
+  private final boolean isMultiEntity;
 
   public Action(ActionType actionType, Class<? extends DomainEntity> type, String id) {
     this.actionType = actionType;
     this.id = id;
     this.type = type;
-    this.isMultiAction = true;
+    this.isMultiEntity = false;
   }
 
   private Action(ActionType actionType, Class<? extends DomainEntity> type) {
     this.actionType = actionType;
     this.type = type;
-    this.isMultiAction = true;
+    this.isMultiEntity = true;
   }
 
   public ActionType getActionType() {
@@ -81,7 +88,16 @@ public class Action {
     return new Action(ActionType.MOD, type);
   }
 
-  public Message createMessage(Session session) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+  public Message createMessage(Session session) throws JMSException {
+    Message message = session.createMessage();
+
+    message.setStringProperty(PROP_ACTION, actionType.getStringRepresentation());
+    message.setStringProperty(PROP_DOC_TYPE, TypeNames.getInternalName(type));
+    message.setBooleanProperty(PROP_IS_MULTI_ENTITY, isMultiEntity);
+    if (!isMultiEntity) {
+      message.setStringProperty(PROP_DOC_ID, id);
+    }
+
+    return message;
   }
 }
