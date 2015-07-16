@@ -23,17 +23,28 @@ package nl.knaw.huygens.timbuctoo.messages;
  */
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public class Action {
 
   private final ActionType actionType;
-  private final String id;
+  private String id;
   private final Class<? extends DomainEntity> type;
+  private final boolean isMultiAction;
 
   public Action(ActionType actionType, Class<? extends DomainEntity> type, String id) {
     this.actionType = actionType;
     this.id = id;
     this.type = type;
+    this.isMultiAction = true;
+  }
+
+  private Action(ActionType actionType, Class<? extends DomainEntity> type) {
+    this.actionType = actionType;
+    this.type = type;
+    this.isMultiAction = true;
   }
 
   public ActionType getActionType() {
@@ -50,7 +61,20 @@ public class Action {
 
   @Override
   public String toString() {
-    return "{\nactionType: " + actionType + "\ntypeString: " + type + "\nid: " + id + "\n}";
+    return ToStringBuilder.reflectionToString(this);
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    return EqualsBuilder.reflectionEquals(this, obj);
+  }
+
+  @Override
+  public int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this);
+  }
+
+  public static Action multiUpdateActionFor(Class<? extends DomainEntity> type) {
+    return new Action(ActionType.MOD, type);
+  }
 }

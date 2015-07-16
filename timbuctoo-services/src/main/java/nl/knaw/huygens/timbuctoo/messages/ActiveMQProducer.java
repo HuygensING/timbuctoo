@@ -22,6 +22,11 @@ package nl.knaw.huygens.timbuctoo.messages;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
@@ -30,12 +35,6 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
-
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ActiveMQProducer implements Producer {
 
@@ -82,6 +81,11 @@ public class ActiveMQProducer implements Producer {
     } catch (JMSException e) {
       LOG.error("Error while closing", e);
     }
+  }
+
+  @Override
+  public void send(Action action) {
+    throw new UnsupportedOperationException("Not implemented yet");
   }
 
 }

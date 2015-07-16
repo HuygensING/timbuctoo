@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
 
 import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
@@ -99,6 +100,15 @@ public class ChangeHelper {
   }
 
   public void sendUpdatePIDMessage(Class<? extends DomainEntity> type) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+
+    Action action = Action.multiUpdateActionFor(type);
+    try {
+      Producer producer = broker.getProducer(PERSIST_MSG_PRODUCER, Broker.PERSIST_QUEUE);
+      producer.send(action);
+    } catch (JMSException e) {
+      LOG.error("Failed to send persistence message {} - . \n{}", action, e.getMessage());
+      LOG.debug("Exception", e);
+    }
+
   }
 }
