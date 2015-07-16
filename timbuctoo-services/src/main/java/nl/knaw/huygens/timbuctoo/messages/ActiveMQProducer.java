@@ -68,6 +68,11 @@ public class ActiveMQProducer implements Producer {
   }
 
   @Override
+  public synchronized void send(Action action) throws JMSException {
+    producer.send(action.createMessage(session));
+  }
+
+  @Override
   public void close() throws JMSException {
     LOG.info("Closing '{}'", name);
     session.close();
@@ -81,11 +86,6 @@ public class ActiveMQProducer implements Producer {
     } catch (JMSException e) {
       LOG.error("Error while closing", e);
     }
-  }
-
-  @Override
-  public void send(Action action) {
-    throw new UnsupportedOperationException("Not implemented yet");
   }
 
 }

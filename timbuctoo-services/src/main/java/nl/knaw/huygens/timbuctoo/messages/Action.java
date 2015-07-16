@@ -27,6 +27,9 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import javax.jms.Message;
+import javax.jms.Session;
+
 public class Action {
 
   private final ActionType actionType;
@@ -76,5 +79,9 @@ public class Action {
 
   public static Action multiUpdateActionFor(Class<? extends DomainEntity> type) {
     return new Action(ActionType.MOD, type);
+  }
+
+  public Message createMessage(Session session) {
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 }

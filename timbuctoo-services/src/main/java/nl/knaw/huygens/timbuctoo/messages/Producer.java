@@ -34,5 +34,5 @@ public interface Producer {
 
   void closeQuietly();
 
-  void send(Action action);
+  void send(Action action) throws JMSException;
 }
