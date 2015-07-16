@@ -27,6 +27,7 @@ import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.apache.commons.lang.StringUtils;
@@ -109,4 +110,7 @@ public class PersistenceWrapper {
     manager.modifyURLForPersistentId(pidToUpdate, url);
   }
 
+
+  public void updatePID(DomainEntity domainEntity) throws PersistenceException{
+  }
 }

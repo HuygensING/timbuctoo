@@ -22,8 +22,7 @@ package nl.knaw.huygens.timbuctoo.persistence;
  * #L%
  */
 
-import javax.jms.JMSException;
-
+import com.google.inject.Inject;
 import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.messages.Action;
@@ -31,11 +30,11 @@ import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.ConsumerService;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
-
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
+import javax.jms.JMSException;
 
 public class PersistenceService extends ConsumerService implements Runnable {
 
@@ -56,6 +55,9 @@ public class PersistenceService extends ConsumerService implements Runnable {
     switch (action.getActionType()) {
     case ADD:
     case MOD:
+      if(action.isForMultiEntities()){
+        updatePIDs(action);
+      }
       setPID(action);
       break;
     case DEL:
@@ -65,6 +67,27 @@ public class PersistenceService extends ConsumerService implements Runnable {
       LOG.warn("Unexpected action {}", action);
       break;
     }
+  }
+
+  private void updatePIDs(Action action) {
+    Class<? extends DomainEntity> type = action.getType();
+    StorageIterator<? extends DomainEntity> entitiesToUpdate = repository.getDomainEntities(type);
+
+    for(;entitiesToUpdate.hasNext();){
+      DomainEntity entity = entitiesToUpdate.next();
+      String id = entity.getId();
+
+      try {
+        for(DomainEntity rev : repository.getAllRevisions(type, id)){
+          persistenceWrapper.updatePID(rev);
+        }
+      } catch (StorageException e) {
+        LOG.error("Could not retrieve revisions of \"{}\" with id \"{}\"", type, id);
+      } catch (PersistenceException e) {
+        LOG.error("Could not retrieve revisions of \"{}\" with id \"{}\"", type, id);
+      }
+    }
+
   }
 
   private void setPID(Action action) {
