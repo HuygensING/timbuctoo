@@ -68,7 +68,6 @@ import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ID_PARAM;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ID_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.PID_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.V2_PATH;
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.REVISION_KEY;
@@ -188,17 +187,6 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
     return Response.ok(repository.getEntityOrDefaultVariationWithRelations(typeRegistry.getTypeForXName(entityName), id)).build();
   }
 
-  @APIDesc("Set the pids of the entities.")
-  @Override
-  @PUT
-  @Path(PID_PATH)
-  @RolesAllowed(ADMIN_ROLE)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public void putPIDs(//
-      @PathParam(ENTITY_PARAM) String entityName,//
-      @HeaderParam(VRE_ID_KEY) String vreId) {
-    super.putPIDs(entityName, vreId);
-  }
 
   @APIDesc("Delete an specific entity.")
   @Override
