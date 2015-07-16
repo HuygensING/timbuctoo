@@ -112,5 +112,19 @@ public class PersistenceWrapper {
 
 
   public void updatePID(DomainEntity domainEntity) throws PersistenceException{
+    String url = createURL(domainEntity.getClass(), domainEntity.getId(), domainEntity.getRev());
+
+    manager.modifyURLForPersistentId(getPID(domainEntity), url);
+
+  }
+
+  private String getPID(DomainEntity entity) {
+    if (entity.getPid() == null) {
+      return null;
+    }
+
+    String[] splittedPIDURI = entity.getPid().split("/");
+
+    return splittedPIDURI[splittedPIDURI.length - 1];
   }
 }
