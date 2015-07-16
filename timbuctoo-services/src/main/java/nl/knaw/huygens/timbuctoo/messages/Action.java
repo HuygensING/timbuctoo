@@ -23,6 +23,7 @@ package nl.knaw.huygens.timbuctoo.messages;
  */
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -42,19 +43,19 @@ public class Action {
   private final ActionType actionType;
   private String id;
   private final Class<? extends DomainEntity> type;
-  private final boolean isMultiEntity;
+  private final boolean forMultiEntities;
 
   public Action(ActionType actionType, Class<? extends DomainEntity> type, String id) {
     this.actionType = actionType;
     this.id = id;
     this.type = type;
-    this.isMultiEntity = false;
+    this.forMultiEntities = false;
   }
 
   private Action(ActionType actionType, Class<? extends DomainEntity> type) {
     this.actionType = actionType;
     this.type = type;
-    this.isMultiEntity = true;
+    this.forMultiEntities = true;
   }
 
   public ActionType getActionType() {
@@ -93,11 +94,36 @@ public class Action {
 
     message.setStringProperty(PROP_ACTION, actionType.getStringRepresentation());
     message.setStringProperty(PROP_DOC_TYPE, TypeNames.getInternalName(type));
-    message.setBooleanProperty(PROP_IS_MULTI_ENTITY, isMultiEntity);
-    if (!isMultiEntity) {
+    message.setBooleanProperty(PROP_IS_MULTI_ENTITY, forMultiEntities);
+    if (!forMultiEntities) {
       message.setStringProperty(PROP_DOC_ID, id);
     }
 
     return message;
+  }
+
+  public boolean isForMultiEntities() {
+    return forMultiEntities;
+  }
+
+  public static Action fromMessage(Message message, TypeRegistry typeRegistry) throws JMSException {
+    boolean forMultiEntities = message.getBooleanProperty(PROP_IS_MULTI_ENTITY);
+    String actionString = message.getStringProperty(PROP_ACTION);
+    ActionType actionType = ActionType.getFromString(actionString);
+
+    String typeString = message.getStringProperty(PROP_DOC_TYPE);
+    Class<? extends DomainEntity> type = typeRegistry.getDomainEntityType(typeString);
+
+    if(forMultiEntities){
+      return forMultiEntities(actionType, type);
+    }
+
+    String id = message.getStringProperty(PROP_DOC_ID);
+
+    return new Action(actionType, type, id);
+  }
+
+  private static Action forMultiEntities(ActionType actionType, Class<? extends DomainEntity> type) {
+    return new Action(actionType, type);
   }
 }

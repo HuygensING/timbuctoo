@@ -38,6 +38,15 @@
       <version>${activemq.version}</version>
     </dependency>
     <!-- ## End of main dependencies ## -->
+
+    <!-- ## Test dependencies ## -->
+    <dependency>
+      <groupId>nl.knaw.huygens</groupId>
+      <artifactId>timbuctoo-test-services</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
 </project>

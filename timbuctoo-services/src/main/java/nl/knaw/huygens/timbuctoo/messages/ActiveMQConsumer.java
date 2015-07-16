@@ -22,6 +22,11 @@ package nl.knaw.huygens.timbuctoo.messages;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -29,12 +34,6 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.Session;
-
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ActiveMQConsumer implements Consumer {
 
@@ -65,15 +64,9 @@ public class ActiveMQConsumer implements Consumer {
       return null;
     }
 
-    String action = message.getStringProperty(Broker.PROP_ACTION);
-    ActionType actionType = ActionType.getFromString(action);
 
-    String typeString = message.getStringProperty(Broker.PROP_DOC_TYPE);
-    Class<? extends DomainEntity> type = getType(typeString);
 
-    String id = message.getStringProperty(Broker.PROP_DOC_ID);
-
-    return new Action(actionType, type, id);
+    return Action.fromMessage(message, typeRegistry);
   }
 
   private Class<? extends DomainEntity> getType(String typeString) throws JMSException {
