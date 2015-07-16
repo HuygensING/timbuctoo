@@ -34,9 +34,9 @@ import javax.jms.Message;
 import javax.jms.Session;
 
 import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_ACTION;
-import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_DOC_ID;
-import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_DOC_TYPE;
-import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_IS_MULTI_ENTITY;
+import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_ENTITY_ID;
+import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_ENTITY_TYPE;
+import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_FOR_MULTI_ENTITIES;
 
 public class Action {
 
@@ -93,10 +93,10 @@ public class Action {
     Message message = session.createMessage();
 
     message.setStringProperty(PROP_ACTION, actionType.getStringRepresentation());
-    message.setStringProperty(PROP_DOC_TYPE, TypeNames.getInternalName(type));
-    message.setBooleanProperty(PROP_IS_MULTI_ENTITY, forMultiEntities);
+    message.setStringProperty(PROP_ENTITY_TYPE, TypeNames.getInternalName(type));
+    message.setBooleanProperty(PROP_FOR_MULTI_ENTITIES, forMultiEntities);
     if (!forMultiEntities) {
-      message.setStringProperty(PROP_DOC_ID, id);
+      message.setStringProperty(PROP_ENTITY_ID, id);
     }
 
     return message;
@@ -107,18 +107,18 @@ public class Action {
   }
 
   public static Action fromMessage(Message message, TypeRegistry typeRegistry) throws JMSException {
-    boolean forMultiEntities = message.getBooleanProperty(PROP_IS_MULTI_ENTITY);
+    boolean forMultiEntities = message.getBooleanProperty(PROP_FOR_MULTI_ENTITIES);
     String actionString = message.getStringProperty(PROP_ACTION);
     ActionType actionType = ActionType.getFromString(actionString);
 
-    String typeString = message.getStringProperty(PROP_DOC_TYPE);
+    String typeString = message.getStringProperty(PROP_ENTITY_TYPE);
     Class<? extends DomainEntity> type = typeRegistry.getDomainEntityType(typeString);
 
     if(forMultiEntities){
       return forMultiEntities(actionType, type);
     }
 
-    String id = message.getStringProperty(PROP_DOC_ID);
+    String id = message.getStringProperty(PROP_ENTITY_ID);
 
     return new Action(actionType, type, id);
   }

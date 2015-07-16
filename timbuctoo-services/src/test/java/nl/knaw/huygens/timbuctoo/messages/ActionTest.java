@@ -10,9 +10,9 @@ import javax.jms.Message;
 import javax.jms.Session;
 
 import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_ACTION;
-import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_DOC_ID;
-import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_DOC_TYPE;
-import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_IS_MULTI_ENTITY;
+import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_ENTITY_ID;
+import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_ENTITY_TYPE;
+import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_FOR_MULTI_ENTITIES;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -42,9 +42,9 @@ public class ActionTest {
 
     // verify
     verify(message).setStringProperty(PROP_ACTION, MOD.getStringRepresentation());
-    verify(message).setStringProperty(PROP_DOC_TYPE, TypeNames.getInternalName(TYPE));
-    verify(message).setStringProperty(PROP_DOC_ID, ID);
-    verify(message).setBooleanProperty(PROP_IS_MULTI_ENTITY, false);
+    verify(message).setStringProperty(PROP_ENTITY_TYPE, TypeNames.getInternalName(TYPE));
+    verify(message).setStringProperty(PROP_ENTITY_ID, ID);
+    verify(message).setBooleanProperty(PROP_FOR_MULTI_ENTITIES, false);
   }
 
 
@@ -58,8 +58,8 @@ public class ActionTest {
 
     // verify
     verify(message).setStringProperty(PROP_ACTION, MOD.getStringRepresentation());
-    verify(message).setStringProperty(PROP_DOC_TYPE, TypeNames.getInternalName(TYPE));
-    verify(message).setBooleanProperty(PROP_IS_MULTI_ENTITY, true);
+    verify(message).setStringProperty(PROP_ENTITY_TYPE, TypeNames.getInternalName(TYPE));
+    verify(message).setBooleanProperty(PROP_FOR_MULTI_ENTITIES, true);
     verifyNoMoreInteractions(message);
   }
 }

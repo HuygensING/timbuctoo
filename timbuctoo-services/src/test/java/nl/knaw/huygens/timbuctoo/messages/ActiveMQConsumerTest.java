@@ -64,9 +64,9 @@ public class ActiveMQConsumerTest {
     // setup
     Message message = mock(Message.class);
     when(message.getStringProperty(Broker.PROP_ACTION)).thenReturn(ACTION_TYPE.getStringRepresentation());
-    when(message.getStringProperty(Broker.PROP_DOC_TYPE)).thenReturn(TypeNames.getInternalName(TYPE));
-    when(message.getStringProperty(Broker.PROP_DOC_ID)).thenReturn(ID);
-    when(message.getBooleanProperty(Broker.PROP_IS_MULTI_ENTITY)).thenReturn(false);
+    when(message.getStringProperty(Broker.PROP_ENTITY_TYPE)).thenReturn(TypeNames.getInternalName(TYPE));
+    when(message.getStringProperty(Broker.PROP_ENTITY_ID)).thenReturn(ID);
+    when(message.getBooleanProperty(Broker.PROP_FOR_MULTI_ENTITIES)).thenReturn(false);
     when(consumer.receive(anyInt())).thenReturn(message);
 
     // action
@@ -85,8 +85,8 @@ public class ActiveMQConsumerTest {
     // setup
     Message message = mock(Message.class);
     when(message.getStringProperty(Broker.PROP_ACTION)).thenReturn(ACTION_TYPE.getStringRepresentation());
-    when(message.getStringProperty(Broker.PROP_DOC_TYPE)).thenReturn(TypeNames.getInternalName(TYPE));
-    when(message.getBooleanProperty(Broker.PROP_IS_MULTI_ENTITY)).thenReturn(true);
+    when(message.getStringProperty(Broker.PROP_ENTITY_TYPE)).thenReturn(TypeNames.getInternalName(TYPE));
+    when(message.getBooleanProperty(Broker.PROP_FOR_MULTI_ENTITIES)).thenReturn(true);
     when(consumer.receive(anyInt())).thenReturn(message);
 
     // action

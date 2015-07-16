@@ -62,8 +62,8 @@ public class ActiveMQProducer implements Producer {
   public synchronized void send(ActionType action, Class<? extends DomainEntity> type, String id) throws JMSException {
     Message message = session.createMessage();
     message.setStringProperty(Broker.PROP_ACTION, action.getStringRepresentation());
-    message.setStringProperty(Broker.PROP_DOC_TYPE, TypeNames.getInternalName(type));
-    message.setStringProperty(Broker.PROP_DOC_ID, id);
+    message.setStringProperty(Broker.PROP_ENTITY_TYPE, TypeNames.getInternalName(type));
+    message.setStringProperty(Broker.PROP_ENTITY_ID, id);
     producer.send(message);
   }
 

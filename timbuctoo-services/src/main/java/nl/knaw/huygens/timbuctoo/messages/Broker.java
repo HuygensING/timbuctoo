@@ -31,9 +31,9 @@ public interface Broker {
   String PERSIST_QUEUE = "persist";
   // Message headers
   String PROP_ACTION = "action";
-  String PROP_DOC_TYPE = "type";
-  String PROP_DOC_ID = "id";
-  String PROP_IS_MULTI_ENTITY = "multiEntity";
+  String PROP_ENTITY_TYPE = "type";
+  String PROP_ENTITY_ID = "id";
+  String PROP_FOR_MULTI_ENTITIES = "multiEntity";
 
   /**
    * Returns the message producer with the specified name that writes
