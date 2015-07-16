@@ -22,22 +22,23 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static nl.knaw.huygens.timbuctoo.config.Paths.DOMAIN_PREFIX;
-import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
-import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.ID_PARAM;
-import static nl.knaw.huygens.timbuctoo.config.Paths.ID_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.PID_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.V2_PATH;
-import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
-import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.REVISION_KEY;
-import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.USER_ID_KEY;
-import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
-import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
-
-import java.net.URISyntaxException;
-import java.util.List;
+import com.google.common.collect.Lists;
+import com.google.inject.Inject;
+import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.index.IndexException;
+import nl.knaw.huygens.timbuctoo.messages.ActionType;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
+import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -58,26 +59,22 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+import java.net.URISyntaxException;
+import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.index.IndexException;
-import nl.knaw.huygens.timbuctoo.messages.ActionType;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
-import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.vre.VRE;
-import nl.knaw.huygens.timbuctoo.vre.VRECollection;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
-import com.google.inject.Inject;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static nl.knaw.huygens.timbuctoo.config.Paths.DOMAIN_PREFIX;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ID_PARAM;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ID_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.PID_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.V2_PATH;
+import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
+import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.REVISION_KEY;
+import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.USER_ID_KEY;
+import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
+import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
 
 @Path(V2_PATH + "/" + DOMAIN_PREFIX + "/" + ENTITY_PATH)
 public class DomainEntityResourceV2 extends DomainEntityResource {

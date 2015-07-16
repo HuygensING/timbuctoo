@@ -22,26 +22,24 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static nl.knaw.huygens.timbuctoo.config.Paths.DOMAIN_PREFIX;
-import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
-import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.ID_PARAM;
-import static nl.knaw.huygens.timbuctoo.config.Paths.ID_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.PID_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.V1_PATH_OPTIONAL;
-import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
-import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.REVISION_KEY;
-import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.USER_ID_KEY;
-import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
-import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.List;
+import com.google.common.base.Strings;
+import com.google.inject.Inject;
+import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.messages.ActionType;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
+import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
+import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.UpdateException;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -61,27 +59,27 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.messages.ActionType;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
-import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
-import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.UpdateException;
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
-import nl.knaw.huygens.timbuctoo.vre.VRE;
-import nl.knaw.huygens.timbuctoo.vre.VRECollection;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Strings;
-import com.google.inject.Inject;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static nl.knaw.huygens.timbuctoo.config.Paths.DOMAIN_PREFIX;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ID_PARAM;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ID_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.PID_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.UPDATE_PID_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.V1_PATH_OPTIONAL;
+import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
+import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.REVISION_KEY;
+import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.USER_ID_KEY;
+import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
+import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
 
 /**
  * A REST resource for addressing collections of domain entities.
@@ -105,16 +103,17 @@ public class DomainEntityResource extends ResourceBase {
 
   @APIDesc("Get an number of entities. Query params: \"rows\" (default: 200) and \"start\" (default: 0).")
   @GET
-  @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
+  @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_HTML})
   public Response getEntities( //
-      @PathParam(ENTITY_PARAM) String entityName, //
-      @QueryParam("type") String typeValue, //
-      @QueryParam("rows") @DefaultValue("200") int rows, //
-      @QueryParam("start") @DefaultValue("0") int start //
+                               @PathParam(ENTITY_PARAM) String entityName, //
+                               @QueryParam("type") String typeValue, //
+                               @QueryParam("rows") @DefaultValue("200") int rows, //
+                               @QueryParam("start") @DefaultValue("0") int start //
   ) {
     Class<? extends DomainEntity> entityType = getValidEntityType(entityName);
     List<? extends DomainEntity> list = retrieveEntities(entityType, typeValue, rows, start);
-    return Response.ok(new GenericEntity<List<? extends DomainEntity>>(list) {}).build();
+    return Response.ok(new GenericEntity<List<? extends DomainEntity>>(list) {
+    }).build();
   }
 
   protected final <T extends DomainEntity> List<T> retrieveEntities(Class<T> entityType, String typeValue, int rows, int start) {
@@ -129,20 +128,20 @@ public class DomainEntityResource extends ResourceBase {
   @SuppressWarnings("unchecked")
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
-  @RolesAllowed({ USER_ROLE, ADMIN_ROLE })
+  @RolesAllowed({USER_ROLE, ADMIN_ROLE})
   public <T extends DomainEntity> Response post( //
-      @PathParam(ENTITY_PARAM) String entityName, //
-      DomainEntity input, //
-      @Context UriInfo uriInfo, //
-      @HeaderParam(VRE_ID_KEY) String vreId, //
-      @QueryParam(USER_ID_KEY) String userId//
+                                                 @PathParam(ENTITY_PARAM) String entityName, //
+                                                 DomainEntity input, //
+                                                 @Context UriInfo uriInfo, //
+                                                 @HeaderParam(VRE_ID_KEY) String vreId, //
+                                                 @QueryParam(USER_ID_KEY) String userId//
   ) throws StorageException, URISyntaxException {
 
     Class<? extends DomainEntity> type = getValidEntityType(entityName);
     checkCondition(type == input.getClass(), BAD_REQUEST, "Type %s does not match input", type.getSimpleName());
 
     VRE vre = getValidVRE(vreId);
-    checkCondition(vre.inScope(type), FORBIDDEN, "Type %s not in scope %s", type, vreId);
+    isInScope(vreId, vre, type);
 
     Change change = new Change(userId, vreId);
 
@@ -175,11 +174,11 @@ public class DomainEntityResource extends ResourceBase {
   @APIDesc("Get a single entity. Query param: \"rev\" (default:latest) ")
   @GET
   @Path(ID_PATH)
-  @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
+  @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_HTML})
   public DomainEntity getDoc( //
-      @PathParam(ENTITY_PARAM) String entityName, //
-      @PathParam(ID_PARAM) String id, //
-      @QueryParam(REVISION_KEY) Integer revision//
+                              @PathParam(ENTITY_PARAM) String entityName, //
+                              @PathParam(ID_PARAM) String id, //
+                              @QueryParam(REVISION_KEY) Integer revision//
   ) {
     Class<? extends DomainEntity> type = getValidEntityType(entityName);
 
@@ -197,13 +196,13 @@ public class DomainEntityResource extends ResourceBase {
   @PUT
   @Path(ID_PATH)
   @Consumes(MediaType.APPLICATION_JSON)
-  @RolesAllowed({ USER_ROLE, ADMIN_ROLE })
+  @RolesAllowed({USER_ROLE, ADMIN_ROLE})
   public <T extends DomainEntity> Response put( //
-      @PathParam(ENTITY_PARAM) String entityName, //
-      @PathParam(ID_PARAM) String id, //
-      DomainEntity input, //
-      @HeaderParam(VRE_ID_KEY) String vreId,//
-      @QueryParam(USER_ID_KEY) String userId//
+                                                @PathParam(ENTITY_PARAM) String entityName, //
+                                                @PathParam(ID_PARAM) String id, //
+                                                DomainEntity input, //
+                                                @HeaderParam(VRE_ID_KEY) String vreId,//
+                                                @QueryParam(USER_ID_KEY) String userId//
   ) {
 
     Class<? extends DomainEntity> type = getValidEntityType(entityName);
@@ -236,8 +235,8 @@ public class DomainEntityResource extends ResourceBase {
   @RolesAllowed(ADMIN_ROLE)
   @Consumes(MediaType.APPLICATION_JSON)
   public void putPIDs(//
-      @PathParam(ENTITY_PARAM) String entityName,//
-      @HeaderParam(VRE_ID_KEY) String vreId) {
+                      @PathParam(ENTITY_PARAM) String entityName,//
+                      @HeaderParam(VRE_ID_KEY) String vreId) {
 
     Class<? extends DomainEntity> type = getValidEntityType(entityName);
     if (TypeRegistry.isPrimitiveDomainEntity(type)) {
@@ -247,7 +246,7 @@ public class DomainEntityResource extends ResourceBase {
     // to put a pid you must have access to the base class
     VRE vre = getValidVRE(vreId);
     Class<? extends DomainEntity> base = TypeRegistry.toBaseDomainEntity(type);
-    checkCondition(vre.inScope(base), FORBIDDEN, "Type %s not in scope %s", base, vreId);
+    isInScope(vreId, vre, base);
 
     try {
       for (String id : repository.getAllIdsWithoutPID(type)) {
@@ -258,14 +257,33 @@ public class DomainEntityResource extends ResourceBase {
     }
   }
 
+  private void isInScope(@HeaderParam(VRE_ID_KEY) String vreId, VRE vre, Class<? extends DomainEntity> base) {
+    checkCondition(vre.inScope(base), FORBIDDEN, "Type %s not in scope %s", base, vreId);
+  }
+
+  @APIDesc("Update the pids of the entities with one")
+  @PUT
+  @Path(UPDATE_PID_PATH)
+  @RolesAllowed(ADMIN_ROLE)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public void updatePIDs(@PathParam(ENTITY_PARAM) String entityName, @HeaderParam(VRE_ID_KEY) String vredId) {
+    Class<? extends DomainEntity> type = getValidEntityType(entityName);
+
+    VRE vre = getValidVRE(vredId);
+    Class<? extends DomainEntity> baseType = TypeRegistry.toBaseDomainEntity(type);
+    isInScope(vredId, vre, baseType);
+
+    changeHelper.sendUpdatePIDMessage(type);
+  }
+
   @APIDesc("Delete an specific entity.")
   @DELETE
   @Path(ID_PATH)
-  @RolesAllowed({ USER_ROLE, ADMIN_ROLE })
+  @RolesAllowed({USER_ROLE, ADMIN_ROLE})
   public Response delete( //
-      @PathParam(ENTITY_PARAM) String entityName, //
-      @PathParam(ID_PARAM) String id, //
-      @HeaderParam(VRE_ID_KEY) String vreId) {
+                          @PathParam(ENTITY_PARAM) String entityName, //
+                          @PathParam(ID_PARAM) String id, //
+                          @HeaderParam(VRE_ID_KEY) String vreId) {
 
     Class<? extends DomainEntity> type = getValidEntityType(entityName);
     if (!TypeRegistry.isPrimitiveDomainEntity(type)) {

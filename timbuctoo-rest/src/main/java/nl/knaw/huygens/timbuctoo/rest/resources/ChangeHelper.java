@@ -22,19 +22,17 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
-import javax.jms.JMSException;
-
+import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
+import javax.jms.JMSException;
 
 public class ChangeHelper {
   public static final String INDEX_MSG_PRODUCER = "ResourceIndexProducer";
@@ -98,5 +96,9 @@ public class ChangeHelper {
       LOG.error("Failed to send persistence message {} - {} - {}. \n{}", actionType, type, id, e.getMessage());
       LOG.debug("Exception", e);
     }
+  }
+
+  public void sendUpdatePIDMessage(Class<? extends DomainEntity> type) {
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 }

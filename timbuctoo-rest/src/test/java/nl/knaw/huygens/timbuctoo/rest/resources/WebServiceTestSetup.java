@@ -22,32 +22,6 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.security.Principal;
-
-import nl.knaw.huygens.security.client.AuthenticationHandler;
-import nl.knaw.huygens.security.client.UnauthorizedException;
-import nl.knaw.huygens.security.client.filters.SecurityResourceFilterFactory;
-import nl.knaw.huygens.security.client.model.HuygensSecurityInformation;
-import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.model.User;
-import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
-import nl.knaw.huygens.timbuctoo.rest.config.ServletInjectionModelHelper;
-import nl.knaw.huygens.timbuctoo.rest.filters.UserResourceFilterFactory;
-import nl.knaw.huygens.timbuctoo.rest.filters.VREAuthorizationFilterFactory;
-import nl.knaw.huygens.timbuctoo.security.UserConfigurationHandler;
-import nl.knaw.huygens.timbuctoo.vre.VRE;
-import nl.knaw.huygens.timbuctoo.vre.VRECollection;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.slf4j.bridge.SLF4JBridgeHandler;
-
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -61,6 +35,30 @@ import com.sun.jersey.api.core.ResourceConfig;
 import com.sun.jersey.test.framework.AppDescriptor;
 import com.sun.jersey.test.framework.JerseyTest;
 import com.sun.jersey.test.framework.WebAppDescriptor;
+import nl.knaw.huygens.security.client.AuthenticationHandler;
+import nl.knaw.huygens.security.client.UnauthorizedException;
+import nl.knaw.huygens.security.client.filters.SecurityResourceFilterFactory;
+import nl.knaw.huygens.security.client.model.HuygensSecurityInformation;
+import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.model.User;
+import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
+import nl.knaw.huygens.timbuctoo.rest.config.ServletInjectionModelHelper;
+import nl.knaw.huygens.timbuctoo.rest.filters.UserResourceFilterFactory;
+import nl.knaw.huygens.timbuctoo.rest.filters.VREAuthorizationFilterFactory;
+import nl.knaw.huygens.timbuctoo.security.UserConfigurationHandler;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.slf4j.bridge.SLF4JBridgeHandler;
+
+import java.security.Principal;
+
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /*
  * Abstract class names should not end with Test, 
