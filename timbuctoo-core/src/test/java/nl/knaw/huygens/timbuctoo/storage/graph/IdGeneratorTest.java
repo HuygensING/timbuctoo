@@ -1,20 +1,17 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
+import nl.knaw.huygens.timbuctoo.model.Entity;
+import org.junit.Before;
+import org.junit.Test;
+import test.model.BaseDomainEntity;
+import test.model.TestSystemEntityWrapper;
+import test.model.projecta.SubADomainEntity;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.startsWith;
-import static org.junit.Assert.fail;
-import nl.knaw.huygens.timbuctoo.model.Entity;
-
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import test.model.BaseDomainEntity;
-import test.model.TestSystemEntityWrapper;
-import test.model.projecta.SubADomainEntity;
 
 public class IdGeneratorTest {
 
@@ -46,12 +43,6 @@ public class IdGeneratorTest {
 
     // verify
     assertThat(id, startsWith(expectedPrefix));
-  }
-
-  @Ignore("Think of the implementation to handle legacy id's")
-  @Test
-  public void nextIdForCreatesAnIdWith12NumbersAfterThePrefix() {
-    fail("Yet to be implemented");
   }
 
   @Test
