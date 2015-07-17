@@ -22,29 +22,23 @@ package nl.knaw.huygens.timbuctoo.tools.util.persistence;
  * #L%
  */
 
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyString;
+import com.google.common.collect.Lists;
+import nl.knaw.huygens.persistence.PersistenceException;
+import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
+import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
+import org.junit.Before;
+import org.junit.Test;
+import test.tools.model.projecta.ProjectADomainEntity;
+
+import java.util.List;
+
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.util.List;
-
-import nl.knaw.huygens.persistence.PersistenceException;
-import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
-import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Matchers;
-
-import test.tools.model.projecta.ProjectADomainEntity;
-
-import com.google.common.collect.Lists;
 
 public class PIDResetterTest {
   private static final String PID = "pid";
@@ -70,7 +64,7 @@ public class PIDResetterTest {
     pidResetter.resetPIDsFor(TYPE);
 
     //verify
-    verify(persistenceWrapperMock, times(4)).updatePID(anyString(), Matchers.<Class<? extends Entity>> any(), anyString(), anyInt());
+    verify(persistenceWrapperMock, times(4)).updatePID(any(TYPE));
   }
 
   private void setupRepository(int numberOfEntities, int numberOfRevisions, int numberOfRevisionsWithPID) {
@@ -105,7 +99,7 @@ public class PIDResetterTest {
     pidResetter.resetPIDsFor(TYPE);
 
     // verify
-    verify(persistenceWrapperMock, times(2)).updatePID(anyString(), Matchers.<Class<? extends Entity>> any(), anyString(), anyInt());
+    verify(persistenceWrapperMock, times(2)).updatePID(any(TYPE));
   }
 
   @Test
@@ -119,10 +113,12 @@ public class PIDResetterTest {
     pidResetter.resetPIDsFor(TYPE);
 
     //verify
-    verify(persistenceWrapperMock, times(4)).updatePID(anyString(), Matchers.<Class<? extends Entity>> any(), anyString(), anyInt());
+    verify(persistenceWrapperMock, times(4)).updatePID(any(TYPE));
   }
 
+
+
   private void persistenceManagerThrowsExceptionWithFirstCall() throws PersistenceException {
-    doThrow(PersistenceException.class).doNothing().when(persistenceWrapperMock).updatePID(anyString(), Matchers.<Class<? extends Entity>> any(), anyString(), anyInt());
+    doThrow(PersistenceException.class).doNothing().when(persistenceWrapperMock).updatePID(any(TYPE));
   }
 }

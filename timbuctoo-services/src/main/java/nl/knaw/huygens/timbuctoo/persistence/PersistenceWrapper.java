@@ -55,14 +55,6 @@ public class PersistenceWrapper {
     Preconditions.checkNotNull(this.manager);
   }
 
-  public String persistURL(String url) throws PersistenceException {
-    return manager.persistURL(url);
-  }
-
-  public String getURLValue(String persistentId) throws PersistenceException {
-    return manager.getPersistedURL(persistentId);
-  }
-
   public String getPersistentURL(String persistentId) {
     return manager.getPersistentURL(persistentId);
   }
@@ -103,13 +95,6 @@ public class PersistenceWrapper {
   private String createURL(Class<? extends Entity> type, String id, int revision) {
     return createURL(type, id) + "?rev=" + revision;
   }
-
-  public void updatePID(String pidToUpdate, Class<? extends Entity> type, String id, int revision) throws PersistenceException {
-    String url = createURL(type, id, revision);
-
-    manager.modifyURLForPersistentId(pidToUpdate, url);
-  }
-
 
   public void updatePID(DomainEntity domainEntity) throws PersistenceException{
     String url = createURL(domainEntity.getClass(), domainEntity.getId(), domainEntity.getRev());

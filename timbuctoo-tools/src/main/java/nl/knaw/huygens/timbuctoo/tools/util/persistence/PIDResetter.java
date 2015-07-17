@@ -75,15 +75,11 @@ public class PIDResetter {
     for (StorageIterator<? extends DomainEntity> entities = repository.getDomainEntities(type); entities.hasNext();) {
       for (DomainEntity version : repository.getVersions(type, entities.next().getId())) {
         progress.step();
-        String pid = getPID(version);
-
-        if (pid != null) {
-          String id = version.getId();
-          int revision = version.getRev();
+        if (version.getPid() != null) {
           try {
-            persistenceWrapper.updatePID(pid, type, id, revision);
+            persistenceWrapper.updatePID(version);
           } catch (PersistenceException e) {
-            LOG.error("Could not reset PID \"{}\" of type \"{}\" with id \"{}\" and revision \"{}\"", pid, type, id, revision);
+            LOG.error("Could not reset PID \"{}\" of type \"{}\" with id \"{}\" and revision \"{}\"", version.getPid(), type, version.getId(), version.getRev());
           }
         }
       }
@@ -91,15 +87,5 @@ public class PIDResetter {
 
     progress.done();
 
-  }
-
-  private String getPID(DomainEntity entity) {
-    if (entity.getPid() == null) {
-      return null;
-    }
-
-    String[] splittedPIDURI = entity.getPid().split("/");
-
-    return splittedPIDURI[splittedPIDURI.length - 1];
   }
 }

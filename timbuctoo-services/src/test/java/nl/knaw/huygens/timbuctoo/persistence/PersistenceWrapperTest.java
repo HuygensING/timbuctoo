@@ -105,15 +105,6 @@ public class PersistenceWrapperTest {
   }
 
   @Test
-  public void updatePIDShouldChangeTheCurrentURLReferredInThePID() throws PersistenceException {
-    PersistenceWrapper persistenceWrapper = createInstance(URL_WITH_ENDING_SLASH);
-
-    persistenceWrapper.updatePID(PID, DEFAULT_DOMAIN_TYPE, DEFAULT_ID, 10);
-
-    verify(persistenceManager).modifyURLForPersistentId(PID, createURL(Paths.DOMAIN_PREFIX, "basedomainentities/1234?rev=10"));
-  }
-
-  @Test
   public void updatePIDUpdatesThePIDOfTheEntity() throws PersistenceException {
         PersistenceWrapper persistenceWrapper = createInstance(URL_WITH_ENDING_SLASH);
     ProjectADomainEntity entity = new ProjectADomainEntity();
