@@ -1,16 +1,15 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import org.junit.Test;
+import test.model.TestSystemEntityWrapper;
+
 import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.ADMINISTRATIVE;
 import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.REGULAR;
 import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.VIRTUAL;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
-
-import org.junit.Test;
-
-import test.model.TestSystemEntityWrapper;
 
 public class FieldTypeTest {
 
@@ -29,7 +28,7 @@ public class FieldTypeTest {
   public void propertyNameOfREGUALReturnsInternalNameOfTheTypeAndTheFieldNameSeparatedByAColon() {
     String propertyName = REGULAR.completePropertyName(TYPE, FIELD_NAME);
 
-    String expectedName = String.format("%s:%s", INTERNAL_TYPE_NAME, FIELD_NAME);
+    String expectedName = String.format("%s_%s", INTERNAL_TYPE_NAME, FIELD_NAME);
 
     assertThat(propertyName, is(equalTo(expectedName)));
   }
