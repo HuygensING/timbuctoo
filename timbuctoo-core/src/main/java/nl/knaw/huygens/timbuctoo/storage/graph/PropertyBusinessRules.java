@@ -1,27 +1,19 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
-import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.ADMINISTRATIVE;
-import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.REGULAR;
-import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.VIRTUAL;
-import static org.apache.commons.lang3.StringUtils.startsWith;
-import static org.apache.commons.lang3.StringUtils.startsWithAny;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import nl.knaw.huygens.timbuctoo.annotations.DBIgnore;
+import nl.knaw.huygens.timbuctoo.annotations.DBProperty;
+import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-import nl.knaw.huygens.timbuctoo.annotations.DBIgnore;
-import nl.knaw.huygens.timbuctoo.annotations.DBProperty;
-import nl.knaw.huygens.timbuctoo.model.Entity;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
+import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.REGULAR;
+import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.VIRTUAL;
+import static org.apache.commons.lang3.StringUtils.startsWith;
 
 public class PropertyBusinessRules {
-
-  private boolean isAdministrativeProperty(Class<? extends Entity> containingType, Field field) {
-    String fieldName = getFieldName(containingType, field);
-    return startsWithAny(fieldName, "_", "^");
-  }
 
   private boolean isVirtualProperty(Class<? extends Entity> containingType, Field field) {
     String fieldName = getFieldName(containingType, field);
@@ -36,9 +28,14 @@ public class PropertyBusinessRules {
     if (isVirtualProperty(containingType, field)) {
       return VIRTUAL;
     }
+    
+    return getFieldType(field);
+  }
 
-    if (isAdministrativeProperty(containingType, field)) {
-      return ADMINISTRATIVE;
+  private FieldType getFieldType(Field field) {
+    DBProperty dbProperty = field.getAnnotation(DBProperty.class);
+    if (dbProperty != null) {
+      return dbProperty.type();
     }
 
     return REGULAR;

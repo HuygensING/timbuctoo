@@ -22,10 +22,12 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.annotations.DBProperty;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
 
 /**
  * Denotes a language.
@@ -36,6 +38,7 @@ public class Language extends DomainEntity {
   public static final String CODE = "^code";
 
   /** Unique code (ISO-639-3). */
+  @DBProperty(value = "code", type = FieldType.ADMINISTRATIVE)
   private String code;
   /** English name. */
   private String name;

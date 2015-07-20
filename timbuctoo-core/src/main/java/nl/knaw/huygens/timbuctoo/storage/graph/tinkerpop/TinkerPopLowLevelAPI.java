@@ -1,15 +1,14 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getIdProperty;
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getRevisionProperty;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.base.Predicate;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.tinkerpop.blueprints.Direction;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.GraphQuery;
+import com.tinkerpop.blueprints.Vertex;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -21,15 +20,15 @@ import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TinkerPopGraphQue
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TinkerPopResultFilter;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TinkerPopResultFilterBuilder;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.GraphQuery;
-import com.tinkerpop.blueprints.Vertex;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import static nl.knaw.huygens.timbuctoo.model.Entity.DB_ID_PROP_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.DB_REV_PROP_NAME;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getIdProperty;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getRevisionProperty;
 
 class TinkerPopLowLevelAPI {
 
@@ -56,7 +55,7 @@ class TinkerPopLowLevelAPI {
 
   public <T extends Entity> Vertex getLatestVertexById(Class<T> type, String id) {
     // this is needed to check if the type array contains the value requeste type
-    Iterable<Vertex> foundVertices = queryByType(type).has(ID_DB_PROPERTY_NAME, id) //
+    Iterable<Vertex> foundVertices = queryByType(type).has(DB_ID_PROP_NAME, id) //
         .vertices();
 
     return getLatestVertex(foundVertices);
@@ -74,7 +73,7 @@ class TinkerPopLowLevelAPI {
   }
 
   public Vertex getLatestVertexById(String id) {
-    Iterable<Vertex> vertices = db.query().has(ID_DB_PROPERTY_NAME, id).vertices();
+    Iterable<Vertex> vertices = db.query().has(DB_ID_PROP_NAME, id).vertices();
 
     return getLatestVertex(vertices);
   }
@@ -91,8 +90,8 @@ class TinkerPopLowLevelAPI {
 
   public Vertex getVertexWithRevision(Class<? extends DomainEntity> type, String id, int revision) {
     Iterable<Vertex> vertices = queryByType(type)//
-        .has(ID_DB_PROPERTY_NAME, id)//
-        .has(REVISION_PROPERTY_NAME, revision)//
+        .has(DB_ID_PROP_NAME, id)//
+        .has(DB_REV_PROP_NAME, revision)//
         .vertices();
 
     return getFirstFromIterable(vertices);
@@ -111,7 +110,7 @@ class TinkerPopLowLevelAPI {
 
   public Edge getLatestEdgeById(Class<? extends Relation> relationType, String id) {
     Edge latestEdge = null;
-    Iterable<Edge> edges = queryByType(relationType).has(ID_DB_PROPERTY_NAME, id).edges();
+    Iterable<Edge> edges = queryByType(relationType).has(DB_ID_PROP_NAME, id).edges();
     Predicate<Edge> isLaterEdge = new Predicate<Edge>() {
       private int latestRev = 0;
 
@@ -165,7 +164,7 @@ class TinkerPopLowLevelAPI {
   }
 
   public Edge getEdgeWithRevision(Class<? extends Relation> relationType, String id, int revision) {
-    Iterable<Edge> edges = db.query().has(ID_DB_PROPERTY_NAME, id).has(REVISION_PROPERTY_NAME, revision).edges();
+    Iterable<Edge> edges = db.query().has(DB_ID_PROP_NAME, id).has(DB_REV_PROP_NAME, revision).edges();
     return getFirstFromIterable(edges);
   }
 
@@ -203,7 +202,7 @@ class TinkerPopLowLevelAPI {
   }
 
   public Iterator<Vertex> getVerticesWithId(Class<? extends Entity> type, String id) {
-    return queryByType(type).has(ID_DB_PROPERTY_NAME, id).vertices().iterator();
+    return queryByType(type).has(DB_ID_PROP_NAME, id).vertices().iterator();
   }
 
   public Iterator<Vertex> findVerticesByProperty(Class<? extends Entity> type, String propertyName, String propertyValue) {
@@ -253,7 +252,7 @@ class TinkerPopLowLevelAPI {
   }
 
   private Iterator<Edge> getRelationsByVertex(String vertexId, Direction direction) {
-    Iterable<Vertex> vertices = db.query().has(ID_DB_PROPERTY_NAME, vertexId).vertices();
+    Iterable<Vertex> vertices = db.query().has(DB_ID_PROP_NAME, vertexId).vertices();
 
     List<Vertex> latestVertices = this.getLatestVertices(vertices);
     if (latestVertices.isEmpty()) {

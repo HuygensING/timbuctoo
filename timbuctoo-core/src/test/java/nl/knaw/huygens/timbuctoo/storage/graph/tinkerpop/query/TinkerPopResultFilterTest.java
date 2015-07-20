@@ -14,8 +14,6 @@ import java.util.List;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.NoSuchFieldException;
 import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.PipeFunctionFactory;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TinkerPopResultFilter;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +29,7 @@ import com.tinkerpop.pipes.PipeFunction;
 public class TinkerPopResultFilterTest {
   private static final Class<SubADomainEntity> TYPE = SubADomainEntity.class;
   private static final String REGULAR_FIELD = SubADomainEntity.VALUEA3_NAME;
-  private static final String ADMIN_FIELD = Entity.ID_DB_PROPERTY_NAME;
+  private static final String ADMIN_FIELD = Entity.DB_ID_PROP_NAME;
   private PipeFunctionFactory pipeFunctionFactory;
   private PropertyBusinessRules businessRules;
   private TinkerPopResultFilter<Vertex> instance;

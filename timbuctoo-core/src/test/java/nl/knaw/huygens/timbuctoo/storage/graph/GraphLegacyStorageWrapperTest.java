@@ -51,7 +51,7 @@ import static org.mockito.Mockito.when;
 
 public class GraphLegacyStorageWrapperTest {
 
-  private static final String PID_FIELD_NAME = DomainEntity.PID;
+  private static final String PID_FIELD_NAME = DomainEntity.DB_PID_PROP_NAME;
   private static final Class<Relation> PRIMITIVE_RELATION_TYPE = Relation.class;
   private static final String RELATION_PROPERTY_NAME = SubARelation.SOURCE_ID;
   private static final String SYSTEM_ENTITY_PROPERTY = TestSystemEntityWrapper.ANOTATED_PROPERTY_NAME;
@@ -63,7 +63,7 @@ public class GraphLegacyStorageWrapperTest {
   private static final int SECOND_REVISION = 2;
   private static final String ID = "id";
   private static final Change CHANGE = new Change();
-  private static final String PID = "pid";
+  private static final String PID_VALUE = "pid";
   private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
   private static final Class<SubARelation> RELATION_TYPE = SubARelation.class;
   private static final Class<TestSystemEntityWrapper> SYSTEM_ENTITY_TYPE = TestSystemEntityWrapper.class;
@@ -248,8 +248,8 @@ public class GraphLegacyStorageWrapperTest {
 
     verify(queryMock).searchByType(true);
     verify(queryMock).searchLatestOnly(false);
-    verify(queryMock).hasNotNullProperty(Entity.ID_DB_PROPERTY_NAME, ID);
-    verify(queryMock).hasDistinctValue(Entity.REVISION_PROPERTY_NAME);
+    verify(queryMock).hasNotNullProperty(Entity.DB_ID_PROP_NAME, ID);
+    verify(queryMock).hasDistinctValue(Entity.DB_REV_PROP_NAME);
   }
 
   @Test
@@ -567,19 +567,19 @@ public class GraphLegacyStorageWrapperTest {
   @Test
   public void setPIDDelegatesToGraphStorageSetDomainEntityPID() throws Exception {
     // action
-    instance.setPID(DOMAIN_ENTITY_TYPE, ID, PID);
+    instance.setPID(DOMAIN_ENTITY_TYPE, ID, PID_VALUE);
 
     // verify
-    verify(graphStorageMock).setDomainEntityPID(DOMAIN_ENTITY_TYPE, ID, PID);
+    verify(graphStorageMock).setDomainEntityPID(DOMAIN_ENTITY_TYPE, ID, PID_VALUE);
   }
 
   @Test(expected = StorageException.class)
   public void setPIDThrowsAStorageExceptionIfTheDelegateDoes() throws Exception {
     // setup
-    doThrow(StorageException.class).when(graphStorageMock).setDomainEntityPID(DOMAIN_ENTITY_TYPE, ID, PID);
+    doThrow(StorageException.class).when(graphStorageMock).setDomainEntityPID(DOMAIN_ENTITY_TYPE, ID, PID_VALUE);
 
     // action
-    instance.setPID(DOMAIN_ENTITY_TYPE, ID, PID);
+    instance.setPID(DOMAIN_ENTITY_TYPE, ID, PID_VALUE);
   }
 
   @Test
@@ -708,8 +708,8 @@ public class GraphLegacyStorageWrapperTest {
 
     verify(queryMock).searchByType(false);
     verify(queryMock).searchLatestOnly(false);
-    verify(queryMock).hasNotNullProperty(Entity.ID_DB_PROPERTY_NAME, ID);
-    verify(queryMock).hasDistinctValue(Entity.REVISION_PROPERTY_NAME);
+    verify(queryMock).hasNotNullProperty(Entity.DB_ID_PROP_NAME, ID);
+    verify(queryMock).hasDistinctValue(Entity.DB_REV_PROP_NAME);
   }
 
   @Test
@@ -730,7 +730,7 @@ public class GraphLegacyStorageWrapperTest {
     assertThat(foundRelations, containsInAnyOrder(relation1, relation2));
 
     verify(queryFactoryMock).newQuery(RELATION_TYPE);
-    verify(queryMock).inCollection(Relation.TYPE_ID, relationTypeIds);
+    verify(queryMock).inCollection(Relation.DB_TYPE_ID_PROP_NAME, relationTypeIds);
 
   }
 
@@ -885,19 +885,19 @@ public class GraphLegacyStorageWrapperTest {
   @Test
   public void setPIDForRelationDelegatesToGraphStorageSetRelationPID() throws Exception {
     // action
-    instance.setPID(RELATION_TYPE, ID, PID);
+    instance.setPID(RELATION_TYPE, ID, PID_VALUE);
 
     // verify
-    verify(graphStorageMock).setRelationPID(RELATION_TYPE, ID, PID);
+    verify(graphStorageMock).setRelationPID(RELATION_TYPE, ID, PID_VALUE);
   }
 
   @Test(expected = StorageException.class)
   public void setPIDForRelationThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
-    doThrow(StorageException.class).when(graphStorageMock).setRelationPID(RELATION_TYPE, ID, PID);
+    doThrow(StorageException.class).when(graphStorageMock).setRelationPID(RELATION_TYPE, ID, PID_VALUE);
 
     // action
-    instance.setPID(RELATION_TYPE, ID, PID);
+    instance.setPID(RELATION_TYPE, ID, PID_VALUE);
   }
 
   @Test

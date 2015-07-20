@@ -22,6 +22,28 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
+import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.Person;
+import nl.knaw.huygens.timbuctoo.model.Person.Gender;
+import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.model.util.PersonName;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import test.model.TestSystemEntityWrapper;
+import test.model.projecta.ProjectAPerson;
+import test.model.projecta.SubARelation;
+import test.model.projectb.ProjectBPerson;
+import test.model.projectb.SubBRelation;
+
+import java.util.Date;
+import java.util.List;
+
 import static nl.knaw.huygens.timbuctoo.storage.PersonMatcher.likePerson;
 import static nl.knaw.huygens.timbuctoo.storage.PersonMatcher.likeProjectAPerson;
 import static nl.knaw.huygens.timbuctoo.storage.RelationMatcher.likeRelation;
@@ -38,31 +60,6 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static test.model.projecta.ProjectAPerson.PROJECT_A_PERSON_PROPERTY_NAME;
-
-import java.util.Date;
-import java.util.List;
-
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.Person;
-import nl.knaw.huygens.timbuctoo.model.Person.Gender;
-import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.model.RelationType;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.model.util.Datable;
-import nl.knaw.huygens.timbuctoo.model.util.PersonName;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import test.model.TestSystemEntityWrapper;
-import test.model.projecta.ProjectAPerson;
-import test.model.projecta.SubARelation;
-import test.model.projectb.ProjectBPerson;
-import test.model.projectb.SubBRelation;
-
-import com.google.common.collect.Lists;
 
 public abstract class StorageIntegrationTest {
   private static final Class<RelationType> SYSTEM_ENTITY_TYPE = RelationType.class;
@@ -829,6 +826,8 @@ public abstract class StorageIntegrationTest {
     assertThat(idsOfNonPersistentEntities, hasItem(id2));
     assertThat(idsOfNonPersistentEntities, not(hasItem(id)));
   }
+
+
 
   @Test
   public void doesVariationExistReturnsIfAVariationExistsForADomainEntity() throws Exception {

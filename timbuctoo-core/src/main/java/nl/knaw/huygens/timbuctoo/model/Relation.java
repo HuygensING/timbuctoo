@@ -24,9 +24,11 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.DBIgnore;
+import nl.knaw.huygens.timbuctoo.annotations.DBProperty;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
 import nl.knaw.huygens.timbuctoo.validation.RelationValidator;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -49,6 +51,7 @@ public class Relation extends DomainEntity {
   public static final String SOURCE_ID_FACET_NAME = "dynamic_s_sourceId";
   public static final String TARGET_ID_FACET_NAME = "dynamic_s_targetId";
   public static final String TYPE_ID_FACET_NAME = "dynamic_s_typeId";
+  public static final String DB_TYPE_ID_PROP_NAME = "typeId";
 
   /** A reference to the 'active' participant of the relation (resembles rdf:subject). */
   @DBIgnore
@@ -56,7 +59,9 @@ public class Relation extends DomainEntity {
   @DBIgnore
   private String sourceId;
   /** A reference to the property or characteristic of the subject (resembles rdf:predicate). */
+  @DBProperty(value = "typeType", type = FieldType.ADMINISTRATIVE)
   private String typeType;
+  @DBProperty(value = DB_TYPE_ID_PROP_NAME, type = FieldType.ADMINISTRATIVE)
   private String typeId;
   /** A reference to the 'passive' participant of the relation (resembles rdf:object). */
   @DBIgnore

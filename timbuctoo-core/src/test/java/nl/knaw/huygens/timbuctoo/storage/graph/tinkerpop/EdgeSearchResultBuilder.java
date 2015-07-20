@@ -1,27 +1,26 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.model.Entity;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.GraphQuery;
 import com.tinkerpop.blueprints.Predicate;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import static nl.knaw.huygens.timbuctoo.model.Entity.DB_ID_PROP_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.DB_REV_PROP_NAME;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class EdgeSearchResultBuilder {
   private Map<String, Object> searchProperties;
@@ -61,7 +60,7 @@ public class EdgeSearchResultBuilder {
   }
 
   public EdgeSearchResultBuilder forId(Object value) {
-    return this.forProperty(ID_DB_PROPERTY_NAME, value);
+    return this.forProperty(DB_ID_PROP_NAME, value);
 
   }
 
@@ -70,7 +69,7 @@ public class EdgeSearchResultBuilder {
   }
 
   public EdgeSearchResultBuilder forRevision(int value) {
-    this.forProperty(REVISION_PROPERTY_NAME, value);
+    this.forProperty(DB_REV_PROP_NAME, value);
     return this;
   }
 

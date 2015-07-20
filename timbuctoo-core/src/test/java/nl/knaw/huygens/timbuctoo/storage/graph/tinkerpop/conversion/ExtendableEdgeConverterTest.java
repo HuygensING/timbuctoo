@@ -1,5 +1,31 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Vertex;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Person;
+import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
+import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
+import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
+import nl.knaw.huygens.timbuctoo.storage.graph.NoSuchFieldException;
+import org.junit.Before;
+import org.junit.Test;
+import test.model.BaseDomainEntity;
+import test.model.projecta.ProjectAPerson;
+import test.model.projecta.SubADomainEntity;
+import test.model.projecta.SubARelation;
+
+import java.util.List;
+
+import static nl.knaw.huygens.timbuctoo.model.Entity.DB_MOD_PROP_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.DB_REV_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.RelationMatcher.likeRelation;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeMockBuilder.anEdge;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
@@ -12,33 +38,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.util.List;
-
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.Person;
-import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
-import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
-import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
-import nl.knaw.huygens.timbuctoo.storage.graph.NoSuchFieldException;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import test.model.BaseDomainEntity;
-import test.model.projecta.ProjectAPerson;
-import test.model.projecta.SubADomainEntity;
-import test.model.projecta.SubARelation;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Vertex;
 
 public class ExtendableEdgeConverterTest {
 
@@ -67,8 +66,8 @@ public class ExtendableEdgeConverterTest {
 
     propertyConverter1 = createPropertyConverter(PROPERTY1_NAME, FIELD1_NAME, FieldType.REGULAR);
     propertyConverter2 = createPropertyConverter(PROPERTY2_NAME, FIELD2_NAME, FieldType.REGULAR);
-    modifiedConverterMock = createPropertyConverter(Entity.MODIFIED_PROPERTY_NAME, Entity.MODIFIED_PROPERTY_NAME, FieldType.ADMINISTRATIVE);
-    revConverterMock = createPropertyConverter(Entity.REVISION_PROPERTY_NAME, Entity.REVISION_PROPERTY_NAME, FieldType.ADMINISTRATIVE);
+    modifiedConverterMock = createPropertyConverter(DB_MOD_PROP_NAME, DB_MOD_PROP_NAME, FieldType.ADMINISTRATIVE);
+    revConverterMock = createPropertyConverter(DB_REV_PROP_NAME, DB_REV_PROP_NAME, FieldType.ADMINISTRATIVE);
     propertyConverters = Lists.newArrayList(propertyConverter1, propertyConverter2, modifiedConverterMock, revConverterMock);
 
     entityInstantiatorMock = mock(EntityInstantiator.class);

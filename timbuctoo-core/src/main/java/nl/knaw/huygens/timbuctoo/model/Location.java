@@ -22,18 +22,18 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-import java.util.Map;
-
-import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
-import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
-import nl.knaw.huygens.timbuctoo.model.util.PlaceName;
-
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Maps;
+import nl.knaw.huygens.timbuctoo.annotations.DBProperty;
+import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.model.util.PlaceName;
+import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
+import java.util.Map;
 
 @IDPrefix("LOCA")
 public class Location extends DomainEntity {
@@ -46,6 +46,7 @@ public class Location extends DomainEntity {
 
   // Container class, for entity reducer
   private static class Names {
+    @DBProperty(value = "deflang", type = FieldType.ADMINISTRATIVE)
     public String defLang;
     public Map<String, PlaceName> map;
 
@@ -64,7 +65,9 @@ public class Location extends DomainEntity {
     }
   }
 
+  @DBProperty(value = "locationType", type = FieldType.ADMINISTRATIVE)
   private LocationType locationType;
+  @DBProperty(value = "names", type = FieldType.ADMINISTRATIVE)
   private Names names;
   private String latitude;
   private String longitude;

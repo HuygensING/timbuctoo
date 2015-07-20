@@ -1,14 +1,10 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.MODIFIED_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getTypes;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.tinkerpop.blueprints.Element;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
@@ -16,15 +12,17 @@ import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
 import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
 import nl.knaw.huygens.timbuctoo.storage.graph.NoSuchFieldException;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementConverter;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.tinkerpop.blueprints.Element;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+import static nl.knaw.huygens.timbuctoo.model.Entity.DB_MOD_PROP_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.DB_REV_PROP_NAME;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getTypes;
 
 abstract class AbstractExtendableElementConverter<T extends Entity, E extends Element> implements ElementConverter<T, E> {
 
@@ -137,8 +135,8 @@ abstract class AbstractExtendableElementConverter<T extends Entity, E extends El
 
   @Override
   public void updateModifiedAndRev(E elementMock, Entity entity) throws ConversionException {
-    getPropertyConverterByFieldName(MODIFIED_PROPERTY_NAME).setPropertyOfElement(elementMock, entity);
-    getPropertyConverterByFieldName(REVISION_PROPERTY_NAME).setPropertyOfElement(elementMock, entity);
+    getPropertyConverterByFieldName(DB_MOD_PROP_NAME).setPropertyOfElement(elementMock, entity);
+    getPropertyConverterByFieldName(DB_REV_PROP_NAME).setPropertyOfElement(elementMock, entity);
   }
 
   @Override

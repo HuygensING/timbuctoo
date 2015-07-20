@@ -82,7 +82,7 @@ public class TimbuctooQueryTest {
     // setup
     instance.searchByType(true);
 
-    String administrativeProperty = Entity.ID_DB_PROPERTY_NAME;
+    String administrativeProperty = Entity.DB_ID_PROP_NAME;
     Object value2 = "value2";
     instance.hasNotNullProperty(administrativeProperty, value2);
 

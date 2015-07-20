@@ -1,5 +1,25 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
+import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.blueprints.Vertex;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
+import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
+import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
+import nl.knaw.huygens.timbuctoo.storage.graph.NoSuchFieldException;
+import org.junit.Before;
+import org.junit.Test;
+import test.model.BaseDomainEntity;
+import test.model.projecta.SubADomainEntity;
+
+import java.util.List;
+
+import static nl.knaw.huygens.timbuctoo.model.Entity.DB_MOD_PROP_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.DB_REV_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.SubADomainEntityBuilder.aDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -11,27 +31,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.util.List;
-
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
-import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
-import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
-import nl.knaw.huygens.timbuctoo.storage.graph.NoSuchFieldException;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import test.model.BaseDomainEntity;
-import test.model.projecta.SubADomainEntity;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.blueprints.Vertex;
 
 public class ExtendableVertexConverterTest {
   private static final String NON_EXISTING_FIELD_NAME = "nonExistingFieldName";
@@ -55,8 +54,8 @@ public class ExtendableVertexConverterTest {
   public void setup() {
     propertyConverter1 = createPropertyConverter(PROPERTY1_NAME, FIELD1_NAME, FieldType.REGULAR);
     propertyConverter2 = createPropertyConverter(PROPERTY2_NAME, FIELD2_NAME, FieldType.REGULAR);
-    modifiedConverterMock = createPropertyConverter(Entity.MODIFIED_PROPERTY_NAME, Entity.MODIFIED_PROPERTY_NAME, FieldType.ADMINISTRATIVE);
-    revConverterMock = createPropertyConverter(Entity.REVISION_PROPERTY_NAME, Entity.REVISION_PROPERTY_NAME, FieldType.ADMINISTRATIVE);
+    modifiedConverterMock = createPropertyConverter(DB_MOD_PROP_NAME, DB_MOD_PROP_NAME, FieldType.ADMINISTRATIVE);
+    revConverterMock = createPropertyConverter(DB_REV_PROP_NAME, DB_REV_PROP_NAME, FieldType.ADMINISTRATIVE);
     propertyConverters = Lists.newArrayList(propertyConverter1, propertyConverter2, modifiedConverterMock, revConverterMock);
 
     entityInstantiatorMock = mock(EntityInstantiator.class);

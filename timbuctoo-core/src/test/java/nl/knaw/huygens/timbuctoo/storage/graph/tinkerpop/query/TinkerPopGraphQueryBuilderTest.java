@@ -18,8 +18,6 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.NoSuchFieldException;
 import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.IsOfTypePredicate;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TinkerPopGraphQueryBuilder;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TinkerPopGraphQueryBuilder.InCollectionPredicate;
 
 import org.junit.Before;
@@ -34,7 +32,7 @@ import com.tinkerpop.blueprints.GraphQuery;
 
 public class TinkerPopGraphQueryBuilderTest {
   private static final String VALUE2 = "value2";
-  private static final String ADMINISTRATIVE_PROPERTY = Entity.ID_DB_PROPERTY_NAME;
+  private static final String ADMINISTRATIVE_PROPERTY = Entity.DB_ID_PROP_NAME;
   private static final Class<SubADomainEntity> TYPE = SubADomainEntity.class;
   private static final String INTERNAL_NAME = TypeNames.getInternalName(TYPE);
   private static final Object VALUE = "value";

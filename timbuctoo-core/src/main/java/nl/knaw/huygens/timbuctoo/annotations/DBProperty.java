@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.annotations;
 
+import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -13,4 +15,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DBProperty {
   String value();
+  FieldType type() default FieldType.REGULAR;
 }

@@ -66,8 +66,8 @@ public class TinkerPopStorage implements GraphStorage {
     this.storageIteratorFactory = storageIteratorFactory;
     this.queryFactory = queryFactory;
 
-    db.createKeyIndex(Entity.ID_DB_PROPERTY_NAME, Vertex.class);
-    db.createKeyIndex(Entity.ID_DB_PROPERTY_NAME, Edge.class);
+    db.createKeyIndex(Entity.DB_ID_PROP_NAME, Vertex.class);
+    db.createKeyIndex(Entity.DB_ID_PROP_NAME, Edge.class);
     db.createKeyIndex(ElementFields.ELEMENT_TYPES, Vertex.class);
     db.createKeyIndex(ElementFields.ELEMENT_TYPES, Edge.class);
   }
@@ -697,7 +697,7 @@ public class TinkerPopStorage implements GraphStorage {
       foundEdges = findEdgesByVertex(target, Direction.IN, relationTypeIdIsNullOrEqual);
     } else {
       TimbuctooQuery query = queryFactory.newQuery(relationType);
-      query.hasNotNullProperty(Relation.TYPE_ID, relationTypeId);
+      query.hasNotNullProperty(Relation.DB_TYPE_ID_PROP_NAME, relationTypeId);
 
       foundEdges = lowLevelAPI.findEdges(relationType, query);
     }
@@ -759,19 +759,19 @@ public class TinkerPopStorage implements GraphStorage {
 
     @Override
     public boolean apply(Edge edge) {
-      return relationTypeId == null || Objects.equals(relationTypeId, edge.getProperty(Relation.TYPE_ID));
+      return relationTypeId == null || Objects.equals(relationTypeId, edge.getProperty(Relation.DB_TYPE_ID_PROP_NAME));
     }
   }
 
 
   private boolean relationTypeIsEqualOrNull(String relationTypeId, Edge edge) {
-    return relationTypeId == null || Objects.equals(relationTypeId, edge.getProperty(Relation.TYPE_ID));
+    return relationTypeId == null || Objects.equals(relationTypeId, edge.getProperty(Relation.DB_TYPE_ID_PROP_NAME));
   }
 
   @Override
   public <T extends DomainEntity> List<String> getIdsOfNonPersistentDomainEntities(Class<T> type) {
     List<String> ids = Lists.newArrayList();
-    Iterator<Vertex> vertices = lowLevelAPI.findVerticesWithoutProperty(type, DomainEntity.PID);
+    Iterator<Vertex> vertices = lowLevelAPI.findVerticesWithoutProperty(type, DomainEntity.DB_PID_PROP_NAME);
 
     for (; vertices.hasNext(); ) {
       ids.add(getIdProperty(vertices.next()));
@@ -783,7 +783,7 @@ public class TinkerPopStorage implements GraphStorage {
   @Override
   public <T extends Relation> List<String> getIdsOfNonPersistentRelations(Class<T> type) {
     List<String> ids = Lists.newArrayList();
-    Iterator<Edge> edges = lowLevelAPI.findEdgesWithoutProperty(type, DomainEntity.PID);
+    Iterator<Edge> edges = lowLevelAPI.findEdgesWithoutProperty(type, DomainEntity.DB_PID_PROP_NAME);
 
     for (; edges.hasNext(); ) {
       ids.add(getIdProperty(edges.next()));
@@ -840,7 +840,7 @@ public class TinkerPopStorage implements GraphStorage {
     }
 
     TimbuctooQuery query = queryFactory.newQuery(type)//
-        .hasNotNullProperty(Relation.ID_DB_PROPERTY_NAME, id) // 
+        .hasNotNullProperty(Relation.DB_ID_PROP_NAME, id) //
         .searchLatestOnly(false);
 
     for (Iterator<Edge> edges = lowLevelAPI.findEdges(type, query); edges.hasNext(); ) {

@@ -63,6 +63,7 @@ import static org.mockito.Mockito.when;
 
 public class TinkerPopStorageTest {
 
+  public static final String DB_PID_PROP_NAME = DomainEntity.DB_PID_PROP_NAME;
   private static final String FIELD_NAME = "fieldName";
   private static final String PROPERTY_NAME = "propertyName";
   private static final String PROPERTY_VALUE = "propertyValue";
@@ -679,7 +680,7 @@ public class TinkerPopStorageTest {
     // setup
     String id2 = "id2";
     List<Vertex> vertices = Lists.newArrayList(aVertex().withId(ID).build(), aVertex().withId(id2).build());
-    when(lowLevelAPIMock.findVerticesWithoutProperty(DOMAIN_ENTITY_TYPE, DomainEntity.PID)).thenReturn(vertices.iterator());
+    when(lowLevelAPIMock.findVerticesWithoutProperty(DOMAIN_ENTITY_TYPE, DB_PID_PROP_NAME)).thenReturn(vertices.iterator());
 
     // action
     List<String> ids = instance.getIdsOfNonPersistentDomainEntities(DOMAIN_ENTITY_TYPE);
@@ -692,7 +693,7 @@ public class TinkerPopStorageTest {
   public void getIdsOfNonPersistentDomainEntitiesReturnsAnEmptyListIfNoVerticesAreFound() {
     // setup
     List<Vertex> vertices = Lists.newArrayList();
-    when(lowLevelAPIMock.findVerticesWithoutProperty(DOMAIN_ENTITY_TYPE, DomainEntity.PID)).thenReturn(vertices.iterator());
+    when(lowLevelAPIMock.findVerticesWithoutProperty(DOMAIN_ENTITY_TYPE, DB_PID_PROP_NAME)).thenReturn(vertices.iterator());
 
     // action
     List<String> ids = instance.getIdsOfNonPersistentDomainEntities(DOMAIN_ENTITY_TYPE);
@@ -1188,7 +1189,7 @@ public class TinkerPopStorageTest {
 
     // verify
     InOrder inOrder = inOrder(query, dbMock);
-    inOrder.verify(query).hasNotNullProperty(Entity.ID_DB_PROPERTY_NAME, ID);
+    inOrder.verify(query).hasNotNullProperty(Entity.DB_ID_PROP_NAME, ID);
     inOrder.verify(query).searchLatestOnly(false);
     inOrder.verify(dbMock).removeEdge(edge1);
     inOrder.verify(dbMock).removeEdge(edge2);
@@ -1780,7 +1781,7 @@ public class TinkerPopStorageTest {
     // setup
     String id2 = "id2";
     List<Edge> edges = Lists.newArrayList(anEdge().withID(ID).build(), anEdge().withID(id2).build());
-    when(lowLevelAPIMock.findEdgesWithoutProperty(RELATION_TYPE, DomainEntity.PID)).thenReturn(edges.iterator());
+    when(lowLevelAPIMock.findEdgesWithoutProperty(RELATION_TYPE, DB_PID_PROP_NAME)).thenReturn(edges.iterator());
 
     // action
     List<String> ids = instance.getIdsOfNonPersistentRelations(RELATION_TYPE);
@@ -1793,7 +1794,7 @@ public class TinkerPopStorageTest {
   public void getIdsOfNonPersistentRelationsReturnsAnEmptyListIfNoEdgessAreFound() {
     // setup
     List<Edge> edges = Lists.newArrayList();
-    when(lowLevelAPIMock.findEdgesWithoutProperty(RELATION_TYPE, DomainEntity.PID)).thenReturn(edges.iterator());
+    when(lowLevelAPIMock.findEdgesWithoutProperty(RELATION_TYPE, DB_PID_PROP_NAME)).thenReturn(edges.iterator());
 
     // action
     List<String> ids = instance.getIdsOfNonPersistentRelations(RELATION_TYPE);

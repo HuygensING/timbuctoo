@@ -14,11 +14,11 @@ public class VertexMatcher extends CompositeMatcher<Vertex> {
   }
 
   public VertexMatcher withId(String id) {
-    addMatcher(new PropertyEqualtityMatcher<Vertex, String>(Entity.ID_DB_PROPERTY_NAME, id) {
+    addMatcher(new PropertyEqualtityMatcher<Vertex, String>(Entity.DB_ID_PROP_NAME, id) {
 
       @Override
       protected String getItemValue(Vertex item) {
-        return item.getProperty(Entity.ID_DB_PROPERTY_NAME);
+        return item.getProperty(Entity.DB_ID_PROP_NAME);
       }
     });
 

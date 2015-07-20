@@ -1,12 +1,5 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
-
-import java.io.IOException;
-import java.util.List;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
@@ -14,6 +7,13 @@ import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
+
+import java.io.IOException;
+import java.util.List;
+
+import static nl.knaw.huygens.timbuctoo.model.Entity.DB_REV_PROP_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.DB_ID_PROP_NAME;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
 
 public class ElementHelper {
   /**
@@ -23,8 +23,8 @@ public class ElementHelper {
    * else it returns the property.
    */
   public static int getRevisionProperty(Element element) {
-    return containsProperty(element, REVISION_PROPERTY_NAME) ? //
-    (int) element.getProperty(REVISION_PROPERTY_NAME)
+    return containsProperty(element, DB_REV_PROP_NAME) ? //
+    (int) element.getProperty(DB_REV_PROP_NAME)
         : 0;
   }
 
@@ -33,8 +33,8 @@ public class ElementHelper {
   }
 
   public static String getIdProperty(Element element) {
-    return containsProperty(element, ID_DB_PROPERTY_NAME) ? //
-    (String) element.getProperty(ID_DB_PROPERTY_NAME) //
+    return containsProperty(element, DB_ID_PROP_NAME) ? //
+    (String) element.getProperty(DB_ID_PROP_NAME) //
         : null;
   }
 

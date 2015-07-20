@@ -14,9 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import static nl.knaw.huygens.timbuctoo.model.DomainEntity.PID;
-import static nl.knaw.huygens.timbuctoo.model.Entity.ID_DB_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.DomainEntity.DB_PID_PROP_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.DB_ID_PROP_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.DB_REV_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -38,7 +38,7 @@ public class EdgeMockBuilder {
   }
 
   public EdgeMockBuilder withRev(int revision) {
-    return addProperty(REVISION_PROPERTY_NAME, revision);
+    return addProperty(DB_REV_PROP_NAME, revision);
   }
 
   private EdgeMockBuilder addProperty(String name, Object value) {
@@ -96,11 +96,11 @@ public class EdgeMockBuilder {
   }
 
   public EdgeMockBuilder withPID(String pid) {
-    return this.addProperty(PID, pid);
+    return this.addProperty(DB_PID_PROP_NAME, pid);
   }
 
   public EdgeMockBuilder withID(String id) {
-    return this.addProperty(ID_DB_PROPERTY_NAME, id);
+    return this.addProperty(DB_ID_PROP_NAME, id);
   }
 
   public EdgeMockBuilder withType(Class<? extends Relation> type) {
@@ -111,6 +111,6 @@ public class EdgeMockBuilder {
   }
 
   public EdgeMockBuilder withTypeId(String relationTypeId) {
-    return addProperty(Relation.TYPE_ID, relationTypeId);
+    return addProperty(Relation.DB_TYPE_ID_PROP_NAME, relationTypeId);
   }
 }

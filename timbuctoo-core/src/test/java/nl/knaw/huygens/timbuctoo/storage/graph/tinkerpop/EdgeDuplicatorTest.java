@@ -1,17 +1,16 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Vertex;
+import org.junit.Before;
+import org.junit.Test;
+
+import static nl.knaw.huygens.timbuctoo.model.DomainEntity.DB_PID_PROP_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.DB_REV_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeMockBuilder.anEdge;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilder.aVertex;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Vertex;
 
 public class EdgeDuplicatorTest {
   private static final String PID = "pid";
@@ -60,7 +59,7 @@ public class EdgeDuplicatorTest {
     instance.duplicate(edge);
 
     // verify
-    verify(duplicate).setProperty(REVISION_PROPERTY_NAME, REV);
-    verify(duplicate).setProperty(DomainEntity.PID, PID);
+    verify(duplicate).setProperty(DB_REV_PROP_NAME, REV);
+    verify(duplicate).setProperty(DB_PID_PROP_NAME, PID);
   }
 }

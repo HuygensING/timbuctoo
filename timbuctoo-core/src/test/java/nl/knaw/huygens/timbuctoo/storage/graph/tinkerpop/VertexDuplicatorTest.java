@@ -3,11 +3,12 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
-import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType;
 import org.junit.Before;
 import org.junit.Test;
 
+import static nl.knaw.huygens.timbuctoo.model.Entity.DB_ID_PROP_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.DB_REV_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeMockBuilder.anEdge;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilder.aVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -76,11 +77,11 @@ public class VertexDuplicatorTest {
   }
 
   private void verifyRevIsSet(Vertex duplicate) {
-    verify(duplicate).setProperty(Entity.REVISION_PROPERTY_NAME, REV);
+    verify(duplicate).setProperty(DB_REV_PROP_NAME, REV);
   }
 
   private void verifyIdIsSet(Vertex duplicate) {
-    verify(duplicate).setProperty(Entity.ID_DB_PROPERTY_NAME, ID);
+    verify(duplicate).setProperty(DB_ID_PROP_NAME, ID);
   }
 
   @Test

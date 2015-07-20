@@ -1,5 +1,13 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+import org.junit.Before;
+import org.junit.Test;
+import test.model.TestSystemEntityWrapper;
+
+import java.lang.reflect.Field;
+
 import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.ADMINISTRATIVE;
 import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.REGULAR;
 import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.VIRTUAL;
@@ -9,16 +17,6 @@ import static org.hamcrest.Matchers.is;
 import static test.model.TestSystemEntityWrapper.ANNOTED_GETTER_NAME;
 import static test.model.TestSystemEntityWrapper.ANOTATED_PROPERTY_NAME;
 import static test.model.TestSystemEntityWrapper.DB_PROPERTY_ANNOTATED;
-
-import java.lang.reflect.Field;
-
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Entity;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import test.model.TestSystemEntityWrapper;
 
 public class PropertyBusinessRulesTest {
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
@@ -37,17 +35,10 @@ public class PropertyBusinessRulesTest {
   }
 
   @Test
-  public void getFieldTypeReturnsADMINISTRATIVEIfTheFieldNameStartsWithAnUnderscore() throws Exception {
+  public void getFieldTypeReturnsADMINISTRATIVEIfTheFieldHasADBPropertyAnnotationWithATypeADMINISTRATIVE() throws Exception {
     Field fieldWithNameThatStartsWithUnderscore = Entity.class.getDeclaredField("id");
 
     verifyThatFieldIsOfType(Entity.class, fieldWithNameThatStartsWithUnderscore, ADMINISTRATIVE);
-  }
-
-  @Test
-  public void getFieldTypeReturnsADMINISTRATIVEIfTheFieldNameStartsWithACaret() throws Exception {
-    Field fieldWithNameThatStartsWithCaret = Entity.class.getDeclaredField("rev");
-
-    verifyThatFieldIsOfType(Entity.class, fieldWithNameThatStartsWithCaret, ADMINISTRATIVE);
   }
 
   @Test

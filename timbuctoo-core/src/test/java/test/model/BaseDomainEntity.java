@@ -22,10 +22,12 @@ package test.model;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.annotations.DBProperty;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
 
 /**
  * A domain entity for test purposes, in particular for handling cases
@@ -37,6 +39,7 @@ public class BaseDomainEntity extends DomainEntity {
 
   public static final String ID_PREFIX = "TDOM";
 
+  @DBProperty(value = "sharedValue", type = FieldType.ADMINISTRATIVE)
   @JsonProperty("^sharedValue")
   private String sharedValue;
 

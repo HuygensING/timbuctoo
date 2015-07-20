@@ -22,9 +22,11 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.DBProperty;
 import nl.knaw.huygens.timbuctoo.annotations.JsonViews;
@@ -33,12 +35,10 @@ import nl.knaw.huygens.timbuctoo.config.TimbuctooTypeIdResolver;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonView;
-import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 // Annotations determine to which subclass the entity has to be resolved.
 // @see http://wiki.fasterxml.com/JacksonPolymorphicDeserialization
@@ -48,30 +48,35 @@ public abstract class Entity {
 
   public static final String MODIFIED_PROPERTY_NAME = "^modified";
 
-  public static final String CREATED_PROPERTY_NAME = "^created";
+  private static final String CREATED_PROPERTY_NAME = "^created";
 
   public static final String REVISION_PROPERTY_NAME = "^rev";
 
-  public static final String ID_DB_PROPERTY_NAME = "^id";
-
   public static final String ID_PROPERTY_NAME = "_id";
+
+  public static final String DB_ID_PROP_NAME = "tim_id";
+  public static final String DB_REV_PROP_NAME = "rev";
+  public static final String DB_MOD_PROP_NAME = "modified";
 
   @NotNull
   @Pattern(regexp = Paths.ID_REGEX)
   @JsonProperty(ID_PROPERTY_NAME)
-  @DBProperty(ID_DB_PROPERTY_NAME)
+  @DBProperty(value= DB_ID_PROP_NAME, type = FieldType.ADMINISTRATIVE)
   private String id;
 
   /** Revison number; also used for integrity of updates. */
   @JsonProperty(REVISION_PROPERTY_NAME)
+  @DBProperty(value = DB_REV_PROP_NAME, type = FieldType.ADMINISTRATIVE)
   private int rev;
 
   /** Provides info about creation. */
   @JsonProperty(CREATED_PROPERTY_NAME)
+  @DBProperty(value = "created", type = FieldType.ADMINISTRATIVE)
   private Change created;
 
   /** Provides info about last update. */
   @JsonProperty(MODIFIED_PROPERTY_NAME)
+  @DBProperty(value = DB_MOD_PROP_NAME, type = FieldType.ADMINISTRATIVE)
   private Change modified;
 
   /**

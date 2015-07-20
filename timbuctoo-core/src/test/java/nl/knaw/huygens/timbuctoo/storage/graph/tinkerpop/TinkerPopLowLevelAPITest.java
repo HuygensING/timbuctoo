@@ -1,6 +1,29 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.GraphQuery;
+import com.tinkerpop.blueprints.Vertex;
+import nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType;
+import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQuery;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TinkerPopGraphQueryBuilder;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TinkerPopGraphQueryBuilderFactory;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TinkerPopResultFilter;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TinkerPopResultFilterBuilder;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Matchers;
+import test.model.TestSystemEntityWrapper;
+import test.model.projecta.SubADomainEntity;
+import test.model.projecta.SubARelation;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import static nl.knaw.huygens.timbuctoo.model.Entity.DB_REV_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType.VERSION_OF;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeMockBuilder.anEdge;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeSearchResultBuilder.anEdgeSearchResult;
@@ -22,32 +45,6 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType;
-import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQuery;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TinkerPopGraphQueryBuilder;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TinkerPopGraphQueryBuilderFactory;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TinkerPopResultFilter;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TinkerPopResultFilterBuilder;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Matchers;
-
-import test.model.TestSystemEntityWrapper;
-import test.model.projecta.SubADomainEntity;
-import test.model.projecta.SubARelation;
-
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.GraphQuery;
-import com.tinkerpop.blueprints.Vertex;
 
 public class TinkerPopLowLevelAPITest {
   private static final String PROPERTY_VALUE = "propertyValue";
@@ -617,7 +614,7 @@ public class TinkerPopLowLevelAPITest {
     Edge edge = anEdge().build();
     anEdgeSearchResult() //
         .forId(ID) //
-        .forProperty(REVISION_PROPERTY_NAME, FIRST_REVISION) //
+        .forProperty(DB_REV_PROP_NAME, FIRST_REVISION) //
         .containsEdge(edge) //
         .foundInDatabase(dbMock);
 
@@ -633,7 +630,7 @@ public class TinkerPopLowLevelAPITest {
     // setup
     anEmptyEdgeSearchResult() //
         .forId(ID) //
-        .forProperty(REVISION_PROPERTY_NAME, FIRST_REVISION) //
+        .forProperty(DB_REV_PROP_NAME, FIRST_REVISION) //
         .foundInDatabase(dbMock);
 
     // action
