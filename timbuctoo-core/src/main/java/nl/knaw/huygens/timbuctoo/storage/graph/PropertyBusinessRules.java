@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import nl.knaw.huygens.timbuctoo.annotations.DBIgnore;
 import nl.knaw.huygens.timbuctoo.annotations.DBProperty;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
@@ -11,13 +10,11 @@ import java.lang.reflect.Modifier;
 
 import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.REGULAR;
 import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.VIRTUAL;
-import static org.apache.commons.lang3.StringUtils.startsWith;
 
 public class PropertyBusinessRules {
 
   private boolean isVirtualProperty(Class<? extends Entity> containingType, Field field) {
-    String fieldName = getFieldName(containingType, field);
-    return field.isAnnotationPresent(DBIgnore.class) || startsWith(fieldName, "@") || isStatic(field);
+    return isStatic(field);
   }
 
   private boolean isStatic(Field field) {
@@ -25,14 +22,10 @@ public class PropertyBusinessRules {
   }
 
   public FieldType getFieldType(Class<? extends Entity> containingType, Field field) {
-    if (isVirtualProperty(containingType, field)) {
+    if (isStatic(field)) {
       return VIRTUAL;
     }
-    
-    return getFieldType(field);
-  }
 
-  private FieldType getFieldType(Field field) {
     DBProperty dbProperty = field.getAnnotation(DBProperty.class);
     if (dbProperty != null) {
       return dbProperty.type();
@@ -41,12 +34,13 @@ public class PropertyBusinessRules {
     return REGULAR;
   }
 
+  /**
+   * The name of the field used by the client.
+   * @param containingType the type that contains the field
+   * @param field the field to get the name for
+   * @return the field name
+   */
   public String getFieldName(Class<? extends Entity> containingType, Field field) {
-    DBProperty dbProperty = field.getAnnotation(DBProperty.class);
-    if (dbProperty != null) {
-      return dbProperty.value();
-    }
-
     JsonProperty annotation = field.getAnnotation(JsonProperty.class);
     if (annotation != null) {
       return annotation.value();
@@ -89,4 +83,17 @@ public class PropertyBusinessRules {
     return cls == boolean.class || cls == Boolean.class;
   }
 
+  /**
+   * Gets the property name without any potential prefixes.
+   * @param type the type to get the property name from
+   * @param field the field to get the property name from
+   * @return the property name
+   */
+  public String getPropertyName(Class<? extends Entity> type, Field field) {
+    DBProperty annotation = field.getAnnotation(DBProperty.class);
+    if(annotation != null){
+      return annotation.value();
+    }
+    return field.getName();
+  }
 }

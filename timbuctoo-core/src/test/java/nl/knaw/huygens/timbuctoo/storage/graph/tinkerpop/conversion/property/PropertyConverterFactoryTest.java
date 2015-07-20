@@ -1,5 +1,15 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property;
 
+import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
+import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.PropertyConverter;
+import org.junit.Before;
+import org.junit.Test;
+import test.model.TestSystemEntityWrapper;
+
+import java.lang.reflect.Field;
+
 import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.REGULAR;
 import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.VIRTUAL;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -9,23 +19,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Field;
-
-import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
-import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.PropertyConverter;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property.NoOpPropertyConverter;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property.ObjectValuePropertyConverter;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property.PropertyConverterFactory;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property.SimpleCollectionPropertyConverter;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property.SimpleValuePropertyConverter;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import test.model.TestSystemEntityWrapper;
-
 public class PropertyConverterFactoryTest {
   private static final String FIELD_NAME = "fieldName";
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
@@ -34,6 +27,7 @@ public class PropertyConverterFactoryTest {
   private static final Class<NoOpPropertyConverter> NO_OP_CONVERTER_TYPE = NoOpPropertyConverter.class;
   @SuppressWarnings("rawtypes")
   private static final Class<SimpleCollectionPropertyConverter> SIMPLE_COLLECTION_FIELD_CONVERTER_TYPE = SimpleCollectionPropertyConverter.class;
+  public static final String PROPERTY_NAME = "completePropertyName";
   private PropertyConverterFactory instance;
   private PropertyBusinessRules propertyBusinessRulesMock;
 
@@ -123,7 +117,7 @@ public class PropertyConverterFactoryTest {
 
   @Test
   public void createForCreatesANoOpPropertyConverterIfTheFieldTypeIsVirtual() throws Exception {
-    Field field = getField(TYPE, "dbIgnoreAnnotatedProperty");
+    Field field = getField(TYPE, "dbPropertyAnnotatedWithTypeVirtual");
 
     testCreateFor(field, VIRTUAL, NO_OP_CONVERTER_TYPE);
   }
@@ -131,6 +125,7 @@ public class PropertyConverterFactoryTest {
   private void testCreateFor(Field field, FieldType fieldType, Class<? extends PropertyConverter> expectedConverterType) {
     when(propertyBusinessRulesMock.getFieldType(TYPE, field)).thenReturn(fieldType);
     when(propertyBusinessRulesMock.getFieldName(TYPE, field)).thenReturn(FIELD_NAME);
+    when(propertyBusinessRulesMock.getPropertyName(TYPE, field)).thenReturn(PROPERTY_NAME);
 
     // action
     PropertyConverter propertyConverter = instance.createPropertyConverter(TYPE, field);
@@ -142,6 +137,7 @@ public class PropertyConverterFactoryTest {
     verify(propertyConverter).setContainingType(TYPE);
     verify(propertyConverter).setFieldType(fieldType);
     verify(propertyConverter).setFieldName(FIELD_NAME);
+    verify(propertyConverter).setPropertyName(PROPERTY_NAME);
   }
 
   private Field getField(Class<? extends Entity> type, String fieldName) throws NoSuchFieldException {

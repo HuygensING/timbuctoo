@@ -22,6 +22,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Relation.TYPE_ID;
 import static nl.knaw.huygens.timbuctoo.storage.RelationMatcher.likeRelation;
 import static nl.knaw.huygens.timbuctoo.storage.graph.DomainEntityMatcher.likeDomainEntity;
 import static nl.knaw.huygens.timbuctoo.storage.graph.SubADomainEntityBuilder.aDomainEntity;
@@ -51,7 +54,7 @@ import static org.mockito.Mockito.when;
 
 public class GraphLegacyStorageWrapperTest {
 
-  private static final String PID_FIELD_NAME = DomainEntity.DB_PID_PROP_NAME;
+  private static final String PID_FIELD_NAME = DomainEntity.PID;
   private static final Class<Relation> PRIMITIVE_RELATION_TYPE = Relation.class;
   private static final String RELATION_PROPERTY_NAME = SubARelation.SOURCE_ID;
   private static final String SYSTEM_ENTITY_PROPERTY = TestSystemEntityWrapper.ANOTATED_PROPERTY_NAME;
@@ -248,8 +251,8 @@ public class GraphLegacyStorageWrapperTest {
 
     verify(queryMock).searchByType(true);
     verify(queryMock).searchLatestOnly(false);
-    verify(queryMock).hasNotNullProperty(Entity.DB_ID_PROP_NAME, ID);
-    verify(queryMock).hasDistinctValue(Entity.DB_REV_PROP_NAME);
+    verify(queryMock).hasNotNullProperty(ID_PROPERTY_NAME, ID);
+    verify(queryMock).hasDistinctValue(REVISION_PROPERTY_NAME);
   }
 
   @Test
@@ -708,8 +711,8 @@ public class GraphLegacyStorageWrapperTest {
 
     verify(queryMock).searchByType(false);
     verify(queryMock).searchLatestOnly(false);
-    verify(queryMock).hasNotNullProperty(Entity.DB_ID_PROP_NAME, ID);
-    verify(queryMock).hasDistinctValue(Entity.DB_REV_PROP_NAME);
+    verify(queryMock).hasNotNullProperty(ID_PROPERTY_NAME, ID);
+    verify(queryMock).hasDistinctValue(REVISION_PROPERTY_NAME);
   }
 
   @Test
@@ -730,7 +733,7 @@ public class GraphLegacyStorageWrapperTest {
     assertThat(foundRelations, containsInAnyOrder(relation1, relation2));
 
     verify(queryFactoryMock).newQuery(RELATION_TYPE);
-    verify(queryMock).inCollection(Relation.DB_TYPE_ID_PROP_NAME, relationTypeIds);
+    verify(queryMock).inCollection(TYPE_ID, relationTypeIds);
 
   }
 

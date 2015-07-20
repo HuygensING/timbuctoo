@@ -48,7 +48,7 @@ import static org.mockito.Mockito.when;
 
 public class TinkerPopLowLevelAPITest {
   private static final String PROPERTY_VALUE = "propertyValue";
-  private static final String PROPERTY_NAME = "propertyName";
+  private static final String PROPERTY_NAME = "completePropertyName";
   private static final String ID2 = "id2";
   private static final int SECOND_REVISION = 2;
   private static final int THIRD_REVISION = 3;

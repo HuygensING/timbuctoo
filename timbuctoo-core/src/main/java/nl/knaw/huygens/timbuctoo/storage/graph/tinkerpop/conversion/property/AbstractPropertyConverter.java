@@ -1,19 +1,19 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property;
 
-import java.lang.reflect.Field;
-
+import com.tinkerpop.blueprints.Element;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.PropertyConverter;
 
-import com.tinkerpop.blueprints.Element;
+import java.lang.reflect.Field;
 
 abstract class AbstractPropertyConverter implements PropertyConverter {
   private Field field;
   private Class<? extends Entity> type;
   private FieldType fieldType;
   private String fieldName;
+  private String propertyName;
 
   @Override
   public void setField(Field field) {
@@ -50,7 +50,7 @@ abstract class AbstractPropertyConverter implements PropertyConverter {
     try {
       Object value = getValue(entity);
 
-      String propertyName = propertyName();
+      String propertyName = completePropertyName();
       if (isLegalValue(value)) {
         element.setProperty(propertyName, format(value));
       } else {
@@ -69,8 +69,13 @@ abstract class AbstractPropertyConverter implements PropertyConverter {
   }
 
   @Override
-  public String propertyName() {
-    return fieldType.propertyName(type, fieldName);
+  public void setPropertyName(String propertyName) {
+    this.propertyName = propertyName;
+  }
+
+  @Override
+  public String completePropertyName() {
+    return fieldType.completePropertyName(type, propertyName);
   }
 
   protected Object getValue(Entity entity) throws IllegalAccessException, IllegalArgumentException {
@@ -80,7 +85,7 @@ abstract class AbstractPropertyConverter implements PropertyConverter {
 
   @Override
   public final void addValueToEntity(Entity entity, Element element) throws ConversionException {
-    Object value = element.getProperty(propertyName());
+    Object value = element.getProperty(completePropertyName());
 
     try {
       fillField(entity, value);
@@ -100,6 +105,6 @@ abstract class AbstractPropertyConverter implements PropertyConverter {
 
   @Override
   public void removeFrom(Element element) {
-    element.removeProperty(propertyName());
+    element.removeProperty(completePropertyName());
   }
 }

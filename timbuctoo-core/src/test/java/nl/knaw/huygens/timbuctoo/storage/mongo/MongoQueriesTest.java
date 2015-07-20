@@ -66,9 +66,9 @@ public class MongoQueriesTest {
   @Test
   public void testSelectByProperty() {
     Map<String, Object> expected = Maps.newHashMap();
-    expected.put("propertyName", "testValue");
+    expected.put("completePropertyName", "testValue");
 
-    DBObject query = queries.selectByProperty("propertyName", "testValue");
+    DBObject query = queries.selectByProperty("completePropertyName", "testValue");
     assertEquals(expected, query.toMap());
   }
 

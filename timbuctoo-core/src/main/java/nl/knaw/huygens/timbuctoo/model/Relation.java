@@ -22,18 +22,16 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Objects;
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.annotations.DBIgnore;
 import nl.knaw.huygens.timbuctoo.annotations.DBProperty;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
 import nl.knaw.huygens.timbuctoo.validation.RelationValidator;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Objects;
 
 /**
  * A relation between primitive domain entities.
@@ -54,9 +52,9 @@ public class Relation extends DomainEntity {
   public static final String DB_TYPE_ID_PROP_NAME = "typeId";
 
   /** A reference to the 'active' participant of the relation (resembles rdf:subject). */
-  @DBIgnore
+  @DBProperty(value = "sourceType", type = FieldType.VIRTUAL)
   private String sourceType;
-  @DBIgnore
+  @DBProperty(value = "sourceId", type = FieldType.VIRTUAL)
   private String sourceId;
   /** A reference to the property or characteristic of the subject (resembles rdf:predicate). */
   @DBProperty(value = "typeType", type = FieldType.ADMINISTRATIVE)
@@ -64,9 +62,9 @@ public class Relation extends DomainEntity {
   @DBProperty(value = DB_TYPE_ID_PROP_NAME, type = FieldType.ADMINISTRATIVE)
   private String typeId;
   /** A reference to the 'passive' participant of the relation (resembles rdf:object). */
-  @DBIgnore
+  @DBProperty(value = "targertType", type = FieldType.VIRTUAL)
   private String targetType;
-  @DBIgnore
+  @DBProperty(value = "targetId", type = FieldType.VIRTUAL)
   private String targetId;
   /**
    * Do we accept the existence of this relation? As such it also controls

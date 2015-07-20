@@ -1,5 +1,14 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property;
 
+import com.tinkerpop.blueprints.Vertex;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
+import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.PropertyConverterTest;
+import org.junit.Before;
+import org.junit.Test;
+import test.model.TestSystemEntityWrapper;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -7,24 +16,14 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
-import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.PropertyConverterTest;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import test.model.TestSystemEntityWrapper;
-
-import com.tinkerpop.blueprints.Vertex;
 
 public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
   private static final String FIELD_VALUE = "test";
   private static final FieldType FIELD_TYPE = FieldType.REGULAR;
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
   private static final String FIELD_NAME = "stringValue";
-  private static final String PROPERTY_NAME = FIELD_TYPE.propertyName(TYPE, FIELD_NAME);
+  public static final String PROPERTY_NAME = "propertyName";
+  private static final String COMPLETE_PROPERTY_NAME = FIELD_TYPE.completePropertyName(TYPE, PROPERTY_NAME);
   private SimpleValuePropertyConverter instance;
   private TestSystemEntityWrapper entity;
   private Vertex vertexMock;
@@ -44,6 +43,7 @@ public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
     instance.setField(TYPE.getDeclaredField(FIELD_NAME));
     instance.setFieldType(FIELD_TYPE);
     instance.setFieldName(FIELD_NAME);
+    instance.setPropertyName(PROPERTY_NAME);
   }
 
   @Override
@@ -56,7 +56,7 @@ public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
     instance.setPropertyOfElement(vertexMock, entity);
 
     // verify
-    verify(vertexMock).setProperty(PROPERTY_NAME, FIELD_VALUE);
+    verify(vertexMock).setProperty(COMPLETE_PROPERTY_NAME, FIELD_VALUE);
   }
 
   @Override
@@ -69,7 +69,7 @@ public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
     instance.setPropertyOfElement(vertexMock, entity);
 
     // verify
-    verify(vertexMock).removeProperty(PROPERTY_NAME);
+    verify(vertexMock).removeProperty(COMPLETE_PROPERTY_NAME);
   }
 
   @Override
@@ -110,7 +110,7 @@ public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
   @Override
   public void addValueToEntitySetTheFieldOfTheEntityWithTheValue() throws Exception {
     // setup
-    when(vertexMock.getProperty(PROPERTY_NAME)).thenReturn(FIELD_VALUE);
+    when(vertexMock.getProperty(COMPLETE_PROPERTY_NAME)).thenReturn(FIELD_VALUE);
 
     // action
     instance.addValueToEntity(entity, vertexMock);
@@ -123,7 +123,7 @@ public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
   @Override
   public void addValueToEntityAddsNullWhenTheValueIsNull() throws Exception {
     // setup
-    when(vertexMock.getProperty(PROPERTY_NAME)).thenReturn(null);
+    when(vertexMock.getProperty(COMPLETE_PROPERTY_NAME)).thenReturn(null);
 
     // action
     instance.addValueToEntity(entity, vertexMock);
@@ -169,7 +169,7 @@ public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
     instance.removeFrom(vertexMock);
 
     // verify
-    verify(vertexMock).removeProperty(PROPERTY_NAME);
+    verify(vertexMock).removeProperty(COMPLETE_PROPERTY_NAME);
   }
 
 }

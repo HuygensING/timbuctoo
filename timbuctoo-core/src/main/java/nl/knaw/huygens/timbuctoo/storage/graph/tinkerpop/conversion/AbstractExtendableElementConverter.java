@@ -19,8 +19,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.DB_MOD_PROP_NAME;
-import static nl.knaw.huygens.timbuctoo.model.Entity.DB_REV_PROP_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.MODIFIED_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getTypes;
 
@@ -116,7 +116,7 @@ abstract class AbstractExtendableElementConverter<T extends Entity, E extends El
   public String getPropertyName(String fieldName) {
     verifyTypeContainsField(fieldName);
 
-    return getPropertyConverterByFieldName(fieldName).propertyName();
+    return getPropertyConverterByFieldName(fieldName).completePropertyName();
   }
 
   protected final PropertyConverter getPropertyConverterByFieldName(String fieldName) {
@@ -135,8 +135,8 @@ abstract class AbstractExtendableElementConverter<T extends Entity, E extends El
 
   @Override
   public void updateModifiedAndRev(E elementMock, Entity entity) throws ConversionException {
-    getPropertyConverterByFieldName(DB_MOD_PROP_NAME).setPropertyOfElement(elementMock, entity);
-    getPropertyConverterByFieldName(DB_REV_PROP_NAME).setPropertyOfElement(elementMock, entity);
+    getPropertyConverterByFieldName(MODIFIED_PROPERTY_NAME).setPropertyOfElement(elementMock, entity);
+    getPropertyConverterByFieldName(REVISION_PROPERTY_NAME).setPropertyOfElement(elementMock, entity);
   }
 
   @Override

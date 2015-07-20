@@ -1,5 +1,20 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.gremlin.java.GremlinPipeline;
+import com.tinkerpop.pipes.PipeFunction;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.graph.NoSuchFieldException;
+import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
+import org.junit.Before;
+import org.junit.Test;
+import test.model.projecta.SubADomainEntity;
+
+import java.lang.reflect.Field;
+import java.util.List;
+
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilder.aVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -8,28 +23,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Field;
-import java.util.List;
-
-import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.graph.NoSuchFieldException;
-import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import test.model.projecta.SubADomainEntity;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.gremlin.java.GremlinPipeline;
-import com.tinkerpop.pipes.PipeFunction;
-
 public class TinkerPopResultFilterTest {
   private static final Class<SubADomainEntity> TYPE = SubADomainEntity.class;
   private static final String REGULAR_FIELD = SubADomainEntity.VALUEA3_NAME;
-  private static final String ADMIN_FIELD = Entity.DB_ID_PROP_NAME;
+  private static final String ADMIN_FIELD = Entity.ID_PROPERTY_NAME;
+  private static final String DB_ADMIN_FIELD = Entity.DB_ID_PROP_NAME;
   private PipeFunctionFactory pipeFunctionFactory;
   private PropertyBusinessRules businessRules;
   private TinkerPopResultFilter<Vertex> instance;
@@ -60,7 +58,7 @@ public class TinkerPopResultFilterTest {
     instance.setDistinctFields(Sets.newHashSet(ADMIN_FIELD, REGULAR_FIELD));
     instance.setType(TYPE);
 
-    PipeFunction<Vertex, Object> adminPipeFunction = pipeFunctionfor(ADMIN_FIELD);
+    PipeFunction<Vertex, Object> adminPipeFunction = pipeFunctionfor(DB_ADMIN_FIELD);
     PipeFunction<Vertex, Object> regularPipeFunction = pipeFunctionfor(getPropertyNameFor(REGULAR_FIELD));
 
     // action
@@ -92,7 +90,7 @@ public class TinkerPopResultFilterTest {
   private String getPropertyNameFor(String regularField) throws Exception {
     Field field = TYPE.getDeclaredField(regularField);
     String fieldName = businessRules.getFieldName(TYPE, field);
-    return businessRules.getFieldType(TYPE, field).propertyName(TYPE, fieldName);
+    return businessRules.getFieldType(TYPE, field).completePropertyName(TYPE, fieldName);
   }
 
   private PipeFunction<Vertex, Object> pipeFunctionfor(String property) {

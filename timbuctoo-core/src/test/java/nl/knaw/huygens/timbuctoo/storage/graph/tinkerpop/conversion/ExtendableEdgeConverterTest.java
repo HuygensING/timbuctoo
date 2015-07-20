@@ -26,6 +26,8 @@ import java.util.List;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.DB_MOD_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.DB_REV_PROP_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.MODIFIED_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.RelationMatcher.likeRelation;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeMockBuilder.anEdge;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
@@ -66,8 +68,8 @@ public class ExtendableEdgeConverterTest {
 
     propertyConverter1 = createPropertyConverter(PROPERTY1_NAME, FIELD1_NAME, FieldType.REGULAR);
     propertyConverter2 = createPropertyConverter(PROPERTY2_NAME, FIELD2_NAME, FieldType.REGULAR);
-    modifiedConverterMock = createPropertyConverter(DB_MOD_PROP_NAME, DB_MOD_PROP_NAME, FieldType.ADMINISTRATIVE);
-    revConverterMock = createPropertyConverter(DB_REV_PROP_NAME, DB_REV_PROP_NAME, FieldType.ADMINISTRATIVE);
+    modifiedConverterMock = createPropertyConverter(DB_MOD_PROP_NAME, MODIFIED_PROPERTY_NAME, FieldType.ADMINISTRATIVE);
+    revConverterMock = createPropertyConverter(DB_REV_PROP_NAME, REVISION_PROPERTY_NAME, FieldType.ADMINISTRATIVE);
     propertyConverters = Lists.newArrayList(propertyConverter1, propertyConverter2, modifiedConverterMock, revConverterMock);
 
     entityInstantiatorMock = mock(EntityInstantiator.class);
@@ -88,7 +90,7 @@ public class ExtendableEdgeConverterTest {
 
   private PropertyConverter createPropertyConverter(String propertyName, String fieldName, FieldType fieldType) {
     PropertyConverter propertyConverter = mock(PropertyConverter.class);
-    when(propertyConverter.propertyName()).thenReturn(propertyName);
+    when(propertyConverter.completePropertyName()).thenReturn(propertyName);
     when(propertyConverter.getFieldName()).thenReturn(fieldName);
     when(propertyConverter.getFieldType()).thenReturn(fieldType);
     return propertyConverter;
@@ -198,7 +200,7 @@ public class ExtendableEdgeConverterTest {
   @Test
   public void getPropertyNameReturnsTheNameOfTheFoundPropertyConverter() {
     // setup
-    when(propertyConverter1.propertyName()).thenReturn(PROPERTY1_NAME);
+    when(propertyConverter1.completePropertyName()).thenReturn(PROPERTY1_NAME);
 
     // action
     String actualPropertyName = instance.getPropertyName(FIELD1_NAME);

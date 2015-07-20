@@ -20,14 +20,14 @@ public class FieldTypeTest {
 
   @Test
   public void propertyNameOfADMINISTRATIVEReturnsTheFieldName() {
-    String propertyName = ADMINISTRATIVE.propertyName(TYPE, FIELD_NAME);
+    String propertyName = ADMINISTRATIVE.completePropertyName(TYPE, FIELD_NAME);
 
     assertThat(propertyName, is(equalTo(FIELD_NAME)));
   }
 
   @Test
   public void propertyNameOfREGUALReturnsInternalNameOfTheTypeAndTheFieldNameSeparatedByAColon() {
-    String propertyName = REGULAR.propertyName(TYPE, FIELD_NAME);
+    String propertyName = REGULAR.completePropertyName(TYPE, FIELD_NAME);
 
     String expectedName = String.format("%s:%s", INTERNAL_TYPE_NAME, FIELD_NAME);
 
@@ -36,7 +36,7 @@ public class FieldTypeTest {
 
   @Test
   public void propertyNameOfVIRTUALReturnsTheFieldName() {
-    String propertyName = VIRTUAL.propertyName(TYPE, FIELD_NAME);
+    String propertyName = VIRTUAL.completePropertyName(TYPE, FIELD_NAME);
 
     assertThat(propertyName, is(equalTo(FIELD_NAME)));
   }

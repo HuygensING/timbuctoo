@@ -1,17 +1,16 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query;
 
-import java.lang.reflect.Field;
-import java.util.Map;
-import java.util.Set;
-
+import com.google.common.collect.Maps;
+import com.tinkerpop.blueprints.Element;
+import com.tinkerpop.gremlin.java.GremlinPipeline;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.NoSuchFieldException;
 import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
 import nl.knaw.huygens.timbuctoo.storage.graph.ResultFilter;
 
-import com.google.common.collect.Maps;
-import com.tinkerpop.blueprints.Element;
-import com.tinkerpop.gremlin.java.GremlinPipeline;
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.Set;
 
 public class TinkerPopResultFilter<T extends Element> implements ResultFilter {
 
@@ -76,8 +75,8 @@ public class TinkerPopResultFilter<T extends Element> implements ResultFilter {
       throw new NoSuchFieldException(type, name);
     }
 
-    String fieldName = businessRules.getFieldName(type, field);
-    return businessRules.getFieldType(type, field).propertyName(type, fieldName);
+    String propertyName = businessRules.getPropertyName(type, field);
+    return businessRules.getFieldType(type, field).completePropertyName(type, propertyName);
   }
 
 }

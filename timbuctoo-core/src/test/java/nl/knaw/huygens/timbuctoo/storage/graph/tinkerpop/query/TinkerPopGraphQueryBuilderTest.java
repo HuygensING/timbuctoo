@@ -1,5 +1,23 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.GraphQuery;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.graph.NoSuchFieldException;
+import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TinkerPopGraphQueryBuilder.InCollectionPredicate;
+import org.junit.Before;
+import org.junit.Test;
+import test.model.projecta.SubADomainEntity;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -9,34 +27,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.graph.NoSuchFieldException;
-import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TinkerPopGraphQueryBuilder.InCollectionPredicate;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import test.model.projecta.SubADomainEntity;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.GraphQuery;
-
 public class TinkerPopGraphQueryBuilderTest {
   private static final String VALUE2 = "value2";
-  private static final String ADMINISTRATIVE_PROPERTY = Entity.DB_ID_PROP_NAME;
-  private static final Class<SubADomainEntity> TYPE = SubADomainEntity.class;
-  private static final String INTERNAL_NAME = TypeNames.getInternalName(TYPE);
+  private static final String ADMINISTRATIVE_PROPERTY = Entity.ID_PROPERTY_NAME;
+  private static final String DB_ADMIN_PROP = Entity.DB_ID_PROP_NAME;
   private static final Object VALUE = "value";
   private static final String REGULAR_PROPERTY = SubADomainEntity.VALUEA3_NAME;
+  private static final Class<SubADomainEntity> TYPE = SubADomainEntity.class;
+  private static final String INTERNAL_NAME = TypeNames.getInternalName(TYPE);
 
   private TinkerPopGraphQueryBuilder instance;
   private PropertyBusinessRules businessRules;
@@ -69,7 +67,7 @@ public class TinkerPopGraphQueryBuilderTest {
 
     // verify
     verify(query).has(getExpectedPropertyName(TYPE, REGULAR_PROPERTY), VALUE);
-    verify(query).has(ADMINISTRATIVE_PROPERTY, VALUE2);
+    verify(query).has(DB_ADMIN_PROP, VALUE2);
   }
 
   @Test(expected = NoSuchFieldException.class)
@@ -85,7 +83,7 @@ public class TinkerPopGraphQueryBuilderTest {
   private String getExpectedPropertyName(Class<SubADomainEntity> type, String name) throws Exception {
     Field field = type.getDeclaredField(name);
     String fieldName = businessRules.getFieldName(type, field);
-    return businessRules.getFieldType(type, field).propertyName(type, fieldName);
+    return businessRules.getFieldType(type, field).completePropertyName(type, fieldName);
   }
 
   @Test
@@ -116,7 +114,7 @@ public class TinkerPopGraphQueryBuilderTest {
 
     // verify
     verify(query).has(argThat(is(getExpectedPropertyName(TYPE, REGULAR_PROPERTY))), any(InCollectionPredicate.class), argThat(is(collection1)));
-    verify(query).has(argThat(is(ADMINISTRATIVE_PROPERTY)), any(InCollectionPredicate.class), argThat(is(collection2)));
+    verify(query).has(argThat(is(DB_ADMIN_PROP)), any(InCollectionPredicate.class), argThat(is(collection2)));
 
   }
 

@@ -1,12 +1,11 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion;
 
-import java.lang.reflect.Field;
-
+import com.tinkerpop.blueprints.Element;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
 
-import com.tinkerpop.blueprints.Element;
+import java.lang.reflect.Field;
 
 public interface PropertyConverter {
 
@@ -22,7 +21,19 @@ public interface PropertyConverter {
 
   void addValueToEntity(Entity entity, Element element) throws ConversionException;
 
-  String propertyName();
+  /**
+   * Creates the name of the property with potential prefixes.
+   *
+   * @return the property name
+   */
+  String completePropertyName();
+
+  /**
+   * Set the completePropertyName.
+   *
+   * @param propertyName the property name without potential prefixes.
+   */
+  void setPropertyName(String propertyName);
 
   String getFieldName();
 
@@ -30,7 +41,10 @@ public interface PropertyConverter {
 
   /**
    * Removes the property from the element.
+   *
    * @param element the element to remove the property from
    */
   void removeFrom(Element element);
+
+
 }

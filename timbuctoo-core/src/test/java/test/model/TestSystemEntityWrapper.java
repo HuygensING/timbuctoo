@@ -22,16 +22,16 @@ package test.model;
  * #L%
  */
 
-import java.util.List;
-import java.util.Map;
-
-import nl.knaw.huygens.timbuctoo.annotations.DBIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import nl.knaw.huygens.timbuctoo.annotations.DBProperty;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
+import java.util.Map;
+
+import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.VIRTUAL;
 
 /**
  * A system entity for test purposes, in particular for handling cases
@@ -61,19 +61,10 @@ public class TestSystemEntityWrapper extends SystemEntity {
   @JsonProperty(ANOTATED_PROPERTY_NAME)
   private String annotatedProperty;
 
-  @DBProperty(DB_PROPERTY_ANNOTATED)
-  private String dbPropertyAnnotated;
+  @DBProperty(value = DB_PROPERTY_ANNOTATED, type = VIRTUAL)
+  private String dbPropertyAnnotatedWithTypeVirtual;
 
   private String propertyWithAnnotatedGetter;
-
-  @DBIgnore
-  private String dbIgnoreAnnotatedProperty;
-
-  @DBIgnore
-  private String _dbIgnoreAnnotatedProperty;
-  @DBIgnore
-  @JsonProperty("^adminDBIgnoreAnnotatedProperty")
-  private String adminDBIgnoreAnnotatedProperty;
 
   public TestSystemEntityWrapper() {}
 
@@ -170,30 +161,6 @@ public class TestSystemEntityWrapper extends SystemEntity {
 
   public static void setStaticField(String staticField) {
     TestSystemEntityWrapper.staticField = staticField;
-  }
-
-  public String getDbIgnoreAnnotatedProperty() {
-    return dbIgnoreAnnotatedProperty;
-  }
-
-  public void setDbIgnoreAnnotatedProperty(String dbIgnoreAnnotatedProperty) {
-    this.dbIgnoreAnnotatedProperty = dbIgnoreAnnotatedProperty;
-  }
-
-  public String get_dbIgnoreAnnotatedProperty() {
-    return _dbIgnoreAnnotatedProperty;
-  }
-
-  public void set_dbIgnoreAnnotatedProperty(String _dbIgnoreAnnotatedProperty) {
-    this._dbIgnoreAnnotatedProperty = _dbIgnoreAnnotatedProperty;
-  }
-
-  public String getAdminDBIgnoreAnnotatedProperty() {
-    return adminDBIgnoreAnnotatedProperty;
-  }
-
-  public void setAdminDBIgnoreAnnotatedProperty(String adminDBIgnoreAnnotatedProperty) {
-    this.adminDBIgnoreAnnotatedProperty = adminDBIgnoreAnnotatedProperty;
   }
 
 }

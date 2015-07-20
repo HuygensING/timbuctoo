@@ -34,6 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
+import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getIdProperty;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getRevisionProperty;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getTypes;
@@ -840,7 +841,7 @@ public class TinkerPopStorage implements GraphStorage {
     }
 
     TimbuctooQuery query = queryFactory.newQuery(type)//
-        .hasNotNullProperty(Relation.DB_ID_PROP_NAME, id) //
+        .hasNotNullProperty(ID_PROPERTY_NAME, id) //
         .searchLatestOnly(false);
 
     for (Iterator<Edge> edges = lowLevelAPI.findEdges(type, query); edges.hasNext(); ) {

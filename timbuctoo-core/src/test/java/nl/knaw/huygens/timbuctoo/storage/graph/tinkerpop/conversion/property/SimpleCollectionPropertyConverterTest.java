@@ -1,5 +1,17 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property;
 
+import com.google.common.collect.Lists;
+import com.tinkerpop.blueprints.Vertex;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
+import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.PropertyConverterTest;
+import org.junit.Before;
+import org.junit.Test;
+import test.model.TestSystemEntityWrapper;
+
+import java.util.List;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
@@ -7,21 +19,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.util.List;
-
-import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
-import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.PropertyConverterTest;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import test.model.TestSystemEntityWrapper;
-
-import com.google.common.collect.Lists;
-import com.tinkerpop.blueprints.Vertex;
 
 public class SimpleCollectionPropertyConverterTest implements PropertyConverterTest {
 
@@ -34,7 +31,8 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
   private static final FieldType FIELD_TYPE = FieldType.REGULAR;
   private static final Class<TestSystemEntityWrapper> CONTAINING_TYPE = TestSystemEntityWrapper.class;
   private static final String FIELD_NAME = "primitiveCollection";
-  private String propertyName;
+  public static final String PROPERTY_NAME = "completePropertyName";
+  private String completePropertyName;
   private SimpleCollectionPropertyConverter<Integer> instance;
   private Vertex vertexMock;
   private TestSystemEntityWrapper entity;
@@ -44,7 +42,7 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
     instance = new SimpleCollectionPropertyConverter<>(COMPONENT_TYPE);
     setupInstance(instance);
 
-    propertyName = FIELD_TYPE.propertyName(CONTAINING_TYPE, FIELD_NAME);
+    completePropertyName = FIELD_TYPE.completePropertyName(CONTAINING_TYPE, PROPERTY_NAME);
 
     vertexMock = mock(Vertex.class);
     entity = new TestSystemEntityWrapper();
@@ -55,6 +53,7 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
     simpleCollectionFieldWrapper.setFieldType(FIELD_TYPE);
     simpleCollectionFieldWrapper.setContainingType(CONTAINING_TYPE);
     simpleCollectionFieldWrapper.setFieldName(FIELD_NAME);
+    simpleCollectionFieldWrapper.setPropertyName(PROPERTY_NAME);
   }
 
   @Test
@@ -68,7 +67,7 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
     instance.setPropertyOfElement(vertexMock, entity);
 
     // verify
-    verify(vertexMock).setProperty(propertyName, STRINGIFIED_COLLECTION);
+    verify(vertexMock).setProperty(completePropertyName, STRINGIFIED_COLLECTION);
   }
 
   @Test
@@ -81,7 +80,7 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
     instance.setPropertyOfElement(vertexMock, entity);
 
     // verify
-    verify(vertexMock).removeProperty(propertyName);
+    verify(vertexMock).removeProperty(completePropertyName);
   }
 
   @Test
@@ -93,7 +92,7 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
     instance.setPropertyOfElement(vertexMock, entity);
 
     // verify
-    verify(vertexMock).removeProperty(propertyName);
+    verify(vertexMock).removeProperty(completePropertyName);
   }
 
   @Test(expected = ConversionException.class)
@@ -135,7 +134,7 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
   @Override
   public void addValueToEntitySetTheFieldOfTheEntityWithTheValue() throws Exception {
     // setup
-    when(vertexMock.getProperty(propertyName)).thenReturn(STRINGIFIED_COLLECTION);
+    when(vertexMock.getProperty(completePropertyName)).thenReturn(STRINGIFIED_COLLECTION);
 
     // action
     instance.addValueToEntity(entity, vertexMock);
@@ -148,7 +147,7 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
   @Override
   public void addValueToEntityAddsNullWhenTheValueIsNull() throws Exception {
     // setup
-    when(vertexMock.getProperty(propertyName)).thenReturn(null);
+    when(vertexMock.getProperty(completePropertyName)).thenReturn(null);
 
     // action
     instance.addValueToEntity(entity, vertexMock);
@@ -200,7 +199,7 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
     instance.removeFrom(vertexMock);
 
     // verify
-    verify(vertexMock).removeProperty(propertyName);
+    verify(vertexMock).removeProperty(completePropertyName);
   }
 
 }

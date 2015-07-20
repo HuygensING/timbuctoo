@@ -1,13 +1,12 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import nl.knaw.huygens.timbuctoo.model.Entity;
-
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 public class TimbuctooQuery {
 
@@ -34,7 +33,7 @@ public class TimbuctooQuery {
   /**
    * Uses the property only when the value is not null.
    * @param name the name of the property,
-   *    if the property has a @DBProperty-annotation use that name
+   *    use the name that is configured for the client
    * @param value the value of the property
    * @return the current instance
    */
@@ -49,7 +48,7 @@ public class TimbuctooQuery {
    * Method to add a filter to make sure a certain property and a value combination 
    * exists only once in a search result.  
    * @param propertyName the name of the property that should have a distinct value,
-   *    if the property has a @DBProperty-annotation use that name
+   *    use the name that is configured for the client
    * @return the current instance
    */
   public TimbuctooQuery hasDistinctValue(String propertyName) {

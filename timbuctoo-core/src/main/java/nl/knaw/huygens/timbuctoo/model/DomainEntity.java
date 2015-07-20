@@ -58,7 +58,9 @@ public abstract class DomainEntity extends Entity {
   private String pid; // the persistent identifier.
   @DBProperty(value = "deleted", type = FieldType.ADMINISTRATIVE)
   private boolean deleted;
+  @DBProperty(value = "relationCount", type = FieldType.VIRTUAL)
   private int relationCount;
+  @DBProperty(value = "properties", type = FieldType.VIRTUAL)
   private final Map<String, Object> properties = Maps.newHashMap();
   private final Map<String, Set<RelationRef>> relations = Maps.newHashMap();
   @DBProperty(value = "variations", type = FieldType.ADMINISTRATIVE)

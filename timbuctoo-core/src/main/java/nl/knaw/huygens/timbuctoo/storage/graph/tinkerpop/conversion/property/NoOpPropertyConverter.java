@@ -1,13 +1,12 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property;
 
-import java.lang.reflect.Field;
-
+import com.tinkerpop.blueprints.Element;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.PropertyConverter;
 
-import com.tinkerpop.blueprints.Element;
+import java.lang.reflect.Field;
 
 class NoOpPropertyConverter implements PropertyConverter {
 
@@ -50,8 +49,13 @@ class NoOpPropertyConverter implements PropertyConverter {
   public void addValueToEntity(Entity entity, Element element) throws ConversionException {}
 
   @Override
-  public String propertyName() {
-    return fieldType.propertyName(type, fieldName);
+  public String completePropertyName() {
+    return fieldType.completePropertyName(type, fieldName);
+  }
+
+  @Override
+  public void setPropertyName(String propertyName) {
+
   }
 
   @Override

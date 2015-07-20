@@ -21,7 +21,10 @@ import java.util.List;
 import java.util.Set;
 
 import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
-import static nl.knaw.huygens.timbuctoo.model.DomainEntity.DB_PID_PROP_NAME;
+import static nl.knaw.huygens.timbuctoo.model.DomainEntity.PID;
+import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Relation.*;
 
 public class GraphLegacyStorageWrapper implements Storage {
 
@@ -252,9 +255,9 @@ public class GraphLegacyStorageWrapper implements Storage {
   @SuppressWarnings("unchecked")
   private <T extends DomainEntity> void removePIDFromDatabase(Class<T> type, String id) throws NoSuchEntityException, NoSuchRelationException {
     if (RELATION_TYPE.isAssignableFrom(type)) {
-      graphStorage.removePropertyFromRelation((Class<? extends Relation>) type, id, DB_PID_PROP_NAME);
+      graphStorage.removePropertyFromRelation((Class<? extends Relation>) type, id, PID);
     } else {
-      graphStorage.removePropertyFromEntity(type, id, DB_PID_PROP_NAME);
+      graphStorage.removePropertyFromEntity(type, id, PID);
     }
   }
 
@@ -385,8 +388,8 @@ public class GraphLegacyStorageWrapper implements Storage {
   @Override
   public <T extends DomainEntity> List<T> getAllRevisions(Class<T> type, String id) throws StorageException {
     TimbuctooQuery query = queryFactory.newQuery(type) //
-        .hasNotNullProperty(Entity.DB_ID_PROP_NAME, id)//
-        .hasDistinctValue(Entity.DB_REV_PROP_NAME) //
+        .hasNotNullProperty(ID_PROPERTY_NAME, id)//
+        .hasDistinctValue(REVISION_PROPERTY_NAME) //
         .searchLatestOnly(false);
 
     if (RELATION_TYPE.isAssignableFrom(type)) {
@@ -442,7 +445,7 @@ public class GraphLegacyStorageWrapper implements Storage {
   @Override
   public <T extends Relation> List<T> getRelationsByType(Class<T> type, List<String> relationTypeIds) throws StorageException {
     TimbuctooQuery query = queryFactory.newQuery(type);
-    query.inCollection(Relation.DB_TYPE_ID_PROP_NAME, relationTypeIds);
+    query.inCollection(TYPE_ID, relationTypeIds);
 
     return graphStorage.findRelations(type, query).getAll();
   }

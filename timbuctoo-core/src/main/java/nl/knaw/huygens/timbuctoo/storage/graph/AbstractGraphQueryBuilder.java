@@ -1,12 +1,11 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
+import com.google.common.collect.Maps;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
-
-import nl.knaw.huygens.timbuctoo.model.Entity;
-
-import com.google.common.collect.Maps;
 
 public abstract class AbstractGraphQueryBuilder<T> {
 
@@ -49,7 +48,7 @@ public abstract class AbstractGraphQueryBuilder<T> {
     }
 
     String fieldName = businessRules.getFieldName(type, field);
-    return businessRules.getFieldType(type, field).propertyName(type, fieldName);
+    return businessRules.getFieldType(type, field).completePropertyName(type, businessRules.getPropertyName(type, field));
   }
 
   public void setHasProperties(Map<String, Object> hasProperties) {

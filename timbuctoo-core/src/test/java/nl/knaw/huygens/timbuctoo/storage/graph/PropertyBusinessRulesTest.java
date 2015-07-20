@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,13 +41,6 @@ public class PropertyBusinessRulesTest {
   }
 
   @Test
-  public void getFieldTypeReturnsVIRTUALIfTheFieldNameStartsWithAnAtSign() throws Exception {
-    Field fieldWithNameThatStartsWithAtSign = DomainEntity.class.getDeclaredField("properties");
-
-    verifyThatFieldIsOfType(DomainEntity.class, fieldWithNameThatStartsWithAtSign, VIRTUAL);
-  }
-
-  @Test
   public void getFieldTypeReturnsVIRTUALIfTheFieldIsStatic() throws Exception {
     Field staticField = TYPE.getDeclaredField("ID_PREFIX");
 
@@ -56,25 +48,12 @@ public class PropertyBusinessRulesTest {
   }
 
   @Test
-  public void getFieldTypeReturnsVIRTUALIfTheFieldHasAnAnnotationDBIgnore() throws Exception {
-    Field staticField = TYPE.getDeclaredField("dbIgnoreAnnotatedProperty");
+  public void getFieldTypeReturnsVIRTUALIfTheFieldHasADBPropertyAnnotationWithTheTypeVirtual() throws Exception {
+    Field staticField = TYPE.getDeclaredField("dbPropertyAnnotatedWithTypeVirtual");
 
     verifyThatFieldIsOfType(TYPE, staticField, VIRTUAL);
   }
 
-  @Test
-  public void getFieldTypeReturnsVIRTUALIfTheFieldNameStartsWithACaretAndHasAnAnnotationDBIgnore() throws Exception {
-    Field fieldWithDBIgnoreAnnotation = TYPE.getDeclaredField("adminDBIgnoreAnnotatedProperty");
-
-    verifyThatFieldIsOfType(TYPE, fieldWithDBIgnoreAnnotation, VIRTUAL);
-  }
-
-  @Test
-  public void getFieldTypeReturnsVIRTUALIfTheFieldNameStartsWithAnUnderscoreAndHasAnAnnotationDBIgnore() throws Exception {
-    Field fieldWithDBIgnoreAnnotation = TYPE.getDeclaredField("_dbIgnoreAnnotatedProperty");
-
-    verifyThatFieldIsOfType(TYPE, fieldWithDBIgnoreAnnotation, VIRTUAL);
-  }
 
   private void verifyThatFieldIsOfType(Class<? extends Entity> containingType, Field field, FieldType expectedFieldType) {
     FieldType fieldType = instance.getFieldType(containingType, field);
@@ -84,29 +63,59 @@ public class PropertyBusinessRulesTest {
 
   @Test
   public void getFieldNameReturnsNameOfTheFieldIfTheFieldHasNoAnnotations() throws Exception {
-    verifyThatFieldWithNameReturnsName("stringValue", "stringValue");
+    verifyThatGetFieldNameReturnsName("stringValue", "stringValue");
   }
 
   @Test
   public void getFieldNameReturnsTheValueOfTheJsonPropertyAnnotationOfTheField() throws Exception {
-    verifyThatFieldWithNameReturnsName("annotatedProperty", ANOTATED_PROPERTY_NAME);
+    verifyThatGetFieldNameReturnsName("annotatedProperty", ANOTATED_PROPERTY_NAME);
   }
 
   @Test
-  public void getFieldNameReturnsTheValueOfTheDBProeprtyAnnotationOfTheField() throws Exception {
-    verifyThatFieldWithNameReturnsName("dbPropertyAnnotated", DB_PROPERTY_ANNOTATED);
+  public void getFieldNameReturnsTheValueOfTheDBPorpertyAnnotationOfTheField() throws Exception {
+    verifyThatGetFieldNameReturnsName("dbPropertyAnnotatedWithTypeVirtual", "dbPropertyAnnotatedWithTypeVirtual");
   }
 
   @Test
   public void getFieldNameReturnsTheValueOfTheJsonPropertyAnnotationOfTheGetterOfTheField() throws Exception {
-    verifyThatFieldWithNameReturnsName("propertyWithAnnotatedGetter", ANNOTED_GETTER_NAME);
+    verifyThatGetFieldNameReturnsName("propertyWithAnnotatedGetter", ANNOTED_GETTER_NAME);
   }
 
-  private void verifyThatFieldWithNameReturnsName(String fieldName, String expectedName) throws Exception {
+  private void verifyThatGetFieldNameReturnsName(String fieldName, String expectedName) throws Exception {
     Field field = TYPE.getDeclaredField(fieldName);
 
     // action
     String actualFieldName = instance.getFieldName(TYPE, field);
+
+    // verify
+    assertThat(actualFieldName, is(equalTo(expectedName)));
+  }
+
+  @Test
+  public void getPropertyNameReturnsNameOfTheFieldIfTheFieldHasNoAnnotations() throws Exception {
+    verifyThatGetPropertyNameReturnsName("stringValue", "stringValue");
+  }
+
+  @Test
+  public void getPropertyNameReturnsTheNameOfTheFieldIfItIsAnnotatedWithATheJsonPropertyAnnotation() throws Exception {
+    verifyThatGetPropertyNameReturnsName("annotatedProperty", "annotatedProperty");
+  }
+
+  @Test
+  public void getPropertyNameReturnsTheValueOfTheDBProeprtyAnnotationOfTheField() throws Exception {
+    verifyThatGetPropertyNameReturnsName("dbPropertyAnnotatedWithTypeVirtual", DB_PROPERTY_ANNOTATED);
+  }
+
+  @Test
+  public void getPropertyNameReturnsTheNameOfTheFieldIfTheGetterIsAnnotatedWithATheJsonPropertyAnnotation() throws Exception {
+    verifyThatGetPropertyNameReturnsName("propertyWithAnnotatedGetter", "propertyWithAnnotatedGetter");
+  }
+
+  private void verifyThatGetPropertyNameReturnsName(String fieldName, String expectedName) throws Exception {
+    Field field = TYPE.getDeclaredField(fieldName);
+
+    // action
+    String actualFieldName = instance.getPropertyName(TYPE, field);
 
     // verify
     assertThat(actualFieldName, is(equalTo(expectedName)));

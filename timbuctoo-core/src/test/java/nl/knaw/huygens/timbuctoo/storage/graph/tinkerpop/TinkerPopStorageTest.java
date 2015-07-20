@@ -65,7 +65,7 @@ public class TinkerPopStorageTest {
 
   public static final String DB_PID_PROP_NAME = DomainEntity.DB_PID_PROP_NAME;
   private static final String FIELD_NAME = "fieldName";
-  private static final String PROPERTY_NAME = "propertyName";
+  private static final String PROPERTY_NAME = "completePropertyName";
   private static final String PROPERTY_VALUE = "propertyValue";
   private static final String A_LABEL = "aLabel";
   private static final Class<Relation> PRIMITIVE_RELATION_TYPE = Relation.class;
@@ -1189,7 +1189,7 @@ public class TinkerPopStorageTest {
 
     // verify
     InOrder inOrder = inOrder(query, dbMock);
-    inOrder.verify(query).hasNotNullProperty(Entity.DB_ID_PROP_NAME, ID);
+    inOrder.verify(query).hasNotNullProperty(Entity.ID_PROPERTY_NAME, ID);
     inOrder.verify(query).searchLatestOnly(false);
     inOrder.verify(dbMock).removeEdge(edge1);
     inOrder.verify(dbMock).removeEdge(edge2);

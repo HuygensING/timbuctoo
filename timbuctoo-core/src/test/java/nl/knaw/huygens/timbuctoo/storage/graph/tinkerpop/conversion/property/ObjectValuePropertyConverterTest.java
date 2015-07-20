@@ -1,33 +1,32 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tinkerpop.blueprints.Vertex;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
+import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.PropertyConverterTest;
+import org.junit.Before;
+import org.junit.Test;
+import test.model.TestSystemEntityWrapper;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
-import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.PropertyConverterTest;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import test.model.TestSystemEntityWrapper;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.tinkerpop.blueprints.Vertex;
 
 public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
   private static final Change DEFAULT_VALUE = new Change(87l, "userId", "vreId");
   private static final FieldType FIELD_TYPE = FieldType.REGULAR;
   private static final String FIELD_NAME = "objectValue";
   private static final Class<TestSystemEntityWrapper> TYPE = TestSystemEntityWrapper.class;
+  public static final String PROPERTY_NAME = "propertyName";
   private TestSystemEntityWrapper entity;
-  private String propertyName;
+  private String completePropertyName;
   private ObjectValuePropertyConverter instance;
   private Vertex vertexMock;
 
@@ -35,7 +34,7 @@ public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
   public void setUp() throws Exception {
     vertexMock = mock(Vertex.class);
     entity = new TestSystemEntityWrapper();
-    propertyName = FIELD_TYPE.propertyName(TYPE, FIELD_NAME);
+    completePropertyName = FIELD_TYPE.completePropertyName(TYPE, PROPERTY_NAME);
 
     instance = new ObjectValuePropertyConverter();
     setupInstance(instance);
@@ -46,6 +45,7 @@ public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
     objectValueFieldWrapper.setField(TYPE.getDeclaredField(FIELD_NAME));
     objectValueFieldWrapper.setFieldType(FIELD_TYPE);
     objectValueFieldWrapper.setFieldName(FIELD_NAME);
+    objectValueFieldWrapper.setPropertyName(PROPERTY_NAME);
   }
 
   @Test
@@ -60,7 +60,7 @@ public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
     instance.setPropertyOfElement(vertexMock, entity);
 
     // verify
-    verify(vertexMock).setProperty(propertyName, serializedValue);
+    verify(vertexMock).setProperty(completePropertyName, serializedValue);
   }
 
   private String serializeValue(Change change) throws JsonProcessingException {
@@ -79,7 +79,7 @@ public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
     instance.setPropertyOfElement(vertexMock, entity);
 
     // verify
-    verify(vertexMock).removeProperty(propertyName);
+    verify(vertexMock).removeProperty(completePropertyName);
   }
 
   @Test(expected = ConversionException.class)
@@ -137,7 +137,7 @@ public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
   @Override
   public void addValueToEntitySetTheFieldOfTheEntityWithTheValue() throws Exception {
     // setup
-    when(vertexMock.getProperty(propertyName)).thenReturn(serializeValue(DEFAULT_VALUE));
+    when(vertexMock.getProperty(completePropertyName)).thenReturn(serializeValue(DEFAULT_VALUE));
 
     // action
     instance.addValueToEntity(entity, vertexMock);
@@ -150,7 +150,7 @@ public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
   @Override
   public void addValueToEntityAddsNullWhenTheValueIsNull() throws Exception {
     // setup
-    when(vertexMock.getProperty(propertyName)).thenReturn(null);
+    when(vertexMock.getProperty(completePropertyName)).thenReturn(null);
 
     // action
     instance.addValueToEntity(entity, vertexMock);
@@ -199,6 +199,6 @@ public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
     instance.removeFrom(vertexMock);
 
     // verify
-    verify(vertexMock).removeProperty(propertyName);
+    verify(vertexMock).removeProperty(completePropertyName);
   }
 }

@@ -1,18 +1,17 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property;
 
-import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.VIRTUAL;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
+import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.PropertyConverter;
+import org.apache.commons.lang3.ClassUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
 
-import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
-import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
-import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.PropertyConverter;
-
-import org.apache.commons.lang3.ClassUtils;
+import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.VIRTUAL;
 
 public class PropertyConverterFactory {
 
@@ -34,6 +33,7 @@ public class PropertyConverterFactory {
     propertyConverter.setContainingType(type);
     propertyConverter.setFieldType(fieldType);
     propertyConverter.setFieldName(propertyBusinessRules.getFieldName(type, field));
+    propertyConverter.setPropertyName(propertyBusinessRules.getPropertyName(type, field));
 
     return propertyConverter;
   }
