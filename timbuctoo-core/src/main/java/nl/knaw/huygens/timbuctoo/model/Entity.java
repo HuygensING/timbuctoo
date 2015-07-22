@@ -22,9 +22,11 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.JsonViews;
 import nl.knaw.huygens.timbuctoo.config.Paths;
@@ -33,11 +35,8 @@ import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.annotation.JsonView;
-import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 // Annotations determine to which subclass the entity has to be resolved.
 // @see http://wiki.fasterxml.com/JacksonPolymorphicDeserialization
@@ -45,6 +44,8 @@ import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 @JsonTypeIdResolver(value = TimbuctooTypeIdResolver.class)
 public abstract class Entity {
 
+  public static final String INDEX_FIELD_ID = "id";
+  public static final String INDEX_FIELD_IDENTIFICATION_NAME = "desc";
   @NotNull
   @Pattern(regexp = Paths.ID_REGEX)
   @JsonProperty("_id")
@@ -66,10 +67,10 @@ public abstract class Entity {
    * Returns the name used for identification of this entity.
    */
   @JsonIgnore
-  @IndexAnnotation(fieldName = "desc")
+  @IndexAnnotation(fieldName = INDEX_FIELD_IDENTIFICATION_NAME)
   public abstract String getIdentificationName();
 
-  @IndexAnnotation(fieldName = "id")
+  @IndexAnnotation(fieldName = INDEX_FIELD_ID)
   public String getId() {
     return id;
   }
