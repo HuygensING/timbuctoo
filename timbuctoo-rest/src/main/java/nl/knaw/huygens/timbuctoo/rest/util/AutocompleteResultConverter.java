@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rest.util;
 
 import com.google.common.collect.Lists;
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import java.net.URI;
@@ -11,6 +12,7 @@ import java.util.Map;
 public class AutocompleteResultConverter {
   private final AutocompleteResultEntryConverter entryConverter;
 
+  @Inject
   public AutocompleteResultConverter(AutocompleteResultEntryConverter entryConverter) {
     this.entryConverter = entryConverter;
   }
