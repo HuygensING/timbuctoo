@@ -22,14 +22,14 @@ package nl.knaw.huygens.timbuctoo.index;
  * #L%
  */
 
-import java.util.List;
-
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * A <a href="http://en.wikipedia.org/wiki/Null_Object_pattern">null object</a> class, 
@@ -73,5 +73,10 @@ public class NoOpIndex implements Index {
   public <T extends FacetedSearchParameters<T>> FacetedSearchResult search(FacetedSearchParameters<T> searchParamaters) {
     LOG.warn("Searching on a non existing index");
     return new FacetedSearchResult();
+  }
+
+  @Override
+  public Iterable<Map<String, Object>> doRawSearch(String query) {
+    return null;
   }
 }

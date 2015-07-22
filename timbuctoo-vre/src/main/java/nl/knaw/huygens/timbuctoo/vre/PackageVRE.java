@@ -62,7 +62,9 @@ public class PackageVRE implements VRE {
   private final List<String> receptions;
 
   private final Scope scope;
-  /** Maps internal names of primitive types to this VRE. */
+  /**
+   * Maps internal names of primitive types to this VRE.
+   */
   private final Map<String, Class<? extends DomainEntity>> typeMap;
 
   private IndexCollection indexCollection;
@@ -83,7 +85,7 @@ public class PackageVRE implements VRE {
   }
 
   // For testing
-  public PackageVRE(String vreId, String description, Scope scope, IndexCollection indexCollection, SearchResultConverter searchResultConverter, Repository repository) {
+  PackageVRE(String vreId, String description, Scope scope, IndexCollection indexCollection, SearchResultConverter searchResultConverter, Repository repository) {
     this.vreId = vreId;
     this.description = description;
     this.repository = repository;
@@ -170,14 +172,14 @@ public class PackageVRE implements VRE {
   }
 
   /******************************************************************************
-   * Index methods 
+   * Index methods
    ******************************************************************************/
 
   @Override
   public <T extends FacetedSearchParameters<T>> SearchResult search( //
-      Class<? extends DomainEntity> type, //
-      FacetedSearchParameters<T> parameters, //
-      FacetedSearchResultProcessor... processors //
+                                                                     Class<? extends DomainEntity> type, //
+                                                                     FacetedSearchParameters<T> parameters, //
+                                                                     FacetedSearchResultProcessor... processors //
   ) throws SearchException, SearchValidationException {
 
     prepareSearchParameters(type, parameters);
@@ -194,8 +196,9 @@ public class PackageVRE implements VRE {
   }
 
   /**
-   * Returns the index if the index for the type can be found, 
+   * Returns the index if the index for the type can be found,
    * else it returns an index that does nothing and returns an empty search result.
+   *
    * @param type the type to find the index for
    * @return the index
    */
@@ -296,8 +299,12 @@ public class PackageVRE implements VRE {
   }
 
   @Override
-  public Iterable<Map<String, Object>> doRawSearch(Class<? extends DomainEntity> type, String searchString) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  public Iterable<Map<String, Object>> doRawSearch(Class<? extends DomainEntity> type, String query) throws NotInScopeException {
+    if(!inScope(type)){
+      throw new NotInScopeException(type, vreId);
+    }
+
+    return getIndexForType(type).doRawSearch(query);
   }
 
   private interface IndexChanger {

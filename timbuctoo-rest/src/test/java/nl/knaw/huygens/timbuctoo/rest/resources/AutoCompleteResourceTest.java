@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.rest.util.AutocompleteResultConverter;
 import nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders;
+import nl.knaw.huygens.timbuctoo.vre.NotInScopeException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import org.junit.Test;
 import test.rest.model.projecta.ProjectADomainEntity;
@@ -39,7 +40,7 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
   public static final String UNKNOWN_COLLECTION = "unknownCollections";
 
   @Test
-  public void getLetsTheAutoCompleteResultProcessorProcessARawSearchResult() {
+  public void getLetsTheAutoCompleteResultProcessorProcessARawSearchResult() throws Exception {
     // setup
     VRE vre = mock(VRE.class);
     makeVREAvailable(vre, VRE_ID);
@@ -56,7 +57,7 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
 
     // action
     ClientResponse response = resource().path(Paths.V2_PATH).path(Paths.DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
-        .queryParam(QUERY, SEARCH_PARAM).header(CustomHeaders.VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
+      .queryParam(QUERY, SEARCH_PARAM).header(CustomHeaders.VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
 
     // verify
     responseStatusIs(response, Status.OK);
@@ -85,7 +86,7 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
   }
 
   private String valueAsString(Map<String, Object> entry, String key) {
-    return ""+ entry.get(key);
+    return "" + entry.get(key);
   }
 
   private void responseStatusIs(ClientResponse response, Status status) {
@@ -93,17 +94,34 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
   }
 
   @Test
-  public void getReturnsNOT_FOUNDWhenNoResultsAreFound() {
+  public void getReturnsNotFoundWhenNoResultsAreFound() {
     // setup
     VRE vre = mock(VRE.class);
     makeVREAvailable(vre, VRE_ID);
 
     // action
     ClientResponse response = resource().path(Paths.V2_PATH).path(Paths.DOMAIN_PREFIX).path(UNKNOWN_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
-        .queryParam(QUERY, SEARCH_PARAM).get(ClientResponse.class);
+      .queryParam(QUERY, SEARCH_PARAM).get(ClientResponse.class);
 
     // verify
     responseStatusIs(response, Status.NOT_FOUND);
   }
 
+  @Test
+  public void getReturnsBadRequestWhenTheVREThrowsANotInScopeException() throws Exception {
+    // setup
+    VRE vre = mock(VRE.class);
+    NotInScopeException exception = new NotInScopeException(DEFAULT_TYPE, VRE_ID);
+    when(vre.doRawSearch(DEFAULT_TYPE, SEARCH_PARAM)).thenThrow(exception);
+
+    makeVREAvailable(vre, VRE_ID);
+
+    // action
+    ClientResponse response = resource().path(Paths.V2_PATH).path(Paths.DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
+      .queryParam(QUERY, SEARCH_PARAM).header(CustomHeaders.VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
+
+    // verify
+    responseStatusIs(response, Status.BAD_REQUEST);
+    assertThat(response.getEntity(String.class), is(exception.getMessage()));
+  }
 }

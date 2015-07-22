@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.util.AutocompleteResultConverter;
+import nl.knaw.huygens.timbuctoo.vre.NotInScopeException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
@@ -45,7 +46,13 @@ public class AutocompleteResource extends ResourceBase{
     Class<? extends DomainEntity> type = getValidEntityType(entityName);
     VRE vre = getValidVRE(vreId);
 
-    Iterable<Map<String, Object>> rawSearchResult = vre.doRawSearch(type, query);
+    Iterable<Map<String, Object>> rawSearchResult = null;
+    try {
+      rawSearchResult = vre.doRawSearch(type, query);
+    } catch (NotInScopeException e) {
+
+      return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+    }
     Iterable<Map<String, Object>> result = resultConverter.convert(rawSearchResult);
 
     return Response.ok(result).build();

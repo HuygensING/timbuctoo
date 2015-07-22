@@ -43,6 +43,7 @@ import org.apache.solr.common.SolrInputDocument;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public class SolrIndex implements Index {
 
@@ -193,6 +194,11 @@ public class SolrIndex implements Index {
     } catch (FacetedSearchException e) {
       throw new SearchException(e);
     }
+  }
+
+  @Override
+  public Iterable<Map<String, Object>> doRawSearch(String query) {
+    throw new UnsupportedOperationException("Not implemented yet");
   }
 
   @Override
