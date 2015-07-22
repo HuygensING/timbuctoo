@@ -22,21 +22,8 @@ package nl.knaw.huygens.timbuctoo.index.solr;
  * #L%
  */
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.inOrder;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.facetedsearch.FacetedSearchException;
 import nl.knaw.huygens.facetedsearch.FacetedSearchLibrary;
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
@@ -49,9 +36,10 @@ import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
-
+import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.Before;
@@ -61,9 +49,29 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import com.google.common.collect.Lists;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import static nl.knaw.huygens.timbuctoo.index.solr.SolrQueryMatcher.likeSolrQuery;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 public class SolrIndexTest {
+  public static final String QUERY = "query";
+  public static final String MESSAGE = "Error on server";
   @Mock
   private List<? extends DomainEntity> variationsToAdd;
   private AbstractSolrServer solrServerMock;
@@ -140,7 +148,7 @@ public class SolrIndexTest {
   @Test
   public void testAddWithEmptyVariationList() throws IndexException {
     // action
-    instance.add(Lists.<DomainEntity> newArrayList());
+    instance.add(Lists.<DomainEntity>newArrayList());
 
     // verify
     verifyZeroInteractions(documentCreatorMock, solrServerMock);
@@ -170,7 +178,7 @@ public class SolrIndexTest {
   @Test
   public void testUpdateWithEmptyVariationList() throws IndexException {
     // action
-    instance.update(Lists.<DomainEntity> newArrayList());
+    instance.update(Lists.<DomainEntity>newArrayList());
 
     // verify
     verifyZeroInteractions(documentCreatorMock, solrServerMock);
@@ -273,7 +281,7 @@ public class SolrIndexTest {
   @Test
   public void testDeleteMultipleByIdWithEmptyList() throws IndexException {
     // action
-    final ArrayList<String> emptyList = Lists.<String> newArrayList();
+    final ArrayList<String> emptyList = Lists.<String>newArrayList();
     instance.deleteById(emptyList);
 
     // verify
@@ -519,7 +527,7 @@ public class SolrIndexTest {
   }
 
   private void testSeachFacetedSearchLibraryThrowsAnException(Class<? extends Exception> exceptionToThrow) throws NoSuchFieldInIndexException, FacetedSearchException, SearchException,
-      SearchValidationException {
+    SearchValidationException {
     // setup
     DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
 
@@ -533,6 +541,47 @@ public class SolrIndexTest {
       // verify
       verify(facetedSearchLibraryMock).search(searchParameters);
     }
+  }
 
+  @Test
+  public void doRawSearchExecutesAQueryDirectlyOnTheSolrServerAndTranslatesItToAnIterableOfStringObjectMaps() throws SolrServerException, SearchException {
+    // setup
+    Map<String, Object> result1 = Maps.<String, Object>newHashMap();
+    Map<String, Object> result2 = Maps.<String, Object>newHashMap();
+
+    setupQueryResponseForQueryWithResults(QUERY, result1, result2);
+
+    // action
+    Iterable<Map<String, Object>> searchResult = instance.doRawSearch(QUERY);
+
+    // verify
+    assertThat(searchResult, containsInAnyOrder(result1, result2));
+  }
+
+  private void setupQueryResponseForQueryWithResults(String query, Map<String, Object>... results) throws SolrServerException {
+    QueryResponse queryResponse = mock(QueryResponse.class);
+    SolrDocumentList solrDocuments = new SolrDocumentList();
+
+    for (Map<String, Object> result : results) {
+      solrDocuments.add(createDoc(result));
+    }
+
+    when(queryResponse.getResults()).thenReturn(solrDocuments);
+    when(solrServerMock.search(argThat(likeSolrQuery().withQuery(query)))).thenReturn(queryResponse);
+  }
+
+  private SolrDocument createDoc(Map<String, Object> result) {
+    SolrDocument doc = mock(SolrDocument.class);
+    when(doc.getFieldValueMap()).thenReturn(result);
+    return doc;
+  }
+
+  @Test(expected = SearchException.class)
+  public void doRawSearchResultThrowsASearchExceptionWhenTheSolrServerThrowsASolrServerException() throws SolrServerException, SearchException {
+    // setup
+    when(solrServerMock.search(any(SolrQuery.class))).thenThrow(new SolrServerException(MESSAGE));
+
+    // action
+    instance.doRawSearch(QUERY);
   }
 }

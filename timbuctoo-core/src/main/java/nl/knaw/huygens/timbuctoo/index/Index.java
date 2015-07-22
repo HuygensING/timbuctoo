@@ -101,5 +101,5 @@ public interface Index {
    */
   <T extends FacetedSearchParameters<T>> FacetedSearchResult search(FacetedSearchParameters<T> searchParameters) throws SearchException, SearchValidationException;
 
-  Iterable<Map<String, Object>> doRawSearch(String query);
+  Iterable<Map<String, Object>> doRawSearch(String query) throws SearchException;
 }

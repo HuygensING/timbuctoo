@@ -22,6 +22,7 @@ package nl.knaw.huygens.timbuctoo.index.solr;
  * #L%
  */
 
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.facetedsearch.FacetedSearchException;
 import nl.knaw.huygens.facetedsearch.FacetedSearchLibrary;
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
@@ -38,6 +39,8 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 
@@ -197,8 +200,19 @@ public class SolrIndex implements Index {
   }
 
   @Override
-  public Iterable<Map<String, Object>> doRawSearch(String query) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  public Iterable<Map<String, Object>> doRawSearch(String query) throws SearchException {
+    QueryResponse queryResponse = null;
+    try {
+      queryResponse = solrServer.search(new SolrQuery(query));
+    } catch (SolrServerException e) {
+      throw new SearchException(e);
+    }
+
+    List<Map<String, Object>> results = Lists.newArrayList();
+    for (SolrDocument doc : queryResponse.getResults()) {
+      results.add(doc.getFieldValueMap());
+    }
+    return results;
   }
 
   @Override
@@ -210,18 +224,18 @@ public class SolrIndex implements Index {
     SolrIndex other = (SolrIndex) obj;
 
     return new EqualsBuilder().append(name, other.name)//
-        .append(solrDocumentCreator, other.solrDocumentCreator)//
-        .append(facetedSearchLibrary, other.facetedSearchLibrary)//
-        .append(solrServer, other.solrServer)//
-        .append(indexDescription, other.indexDescription).isEquals();
+      .append(solrDocumentCreator, other.solrDocumentCreator)//
+      .append(facetedSearchLibrary, other.facetedSearchLibrary)//
+      .append(solrServer, other.solrServer)//
+      .append(indexDescription, other.indexDescription).isEquals();
   }
 
   @Override
   public int hashCode() {
     return new HashCodeBuilder().append(name)//
-        .append(solrDocumentCreator)//
-        .append(facetedSearchLibrary)//
-        .append(solrServer)//
-        .append(indexDescription).toHashCode();
+      .append(solrDocumentCreator)//
+      .append(facetedSearchLibrary)//
+      .append(solrServer)//
+      .append(indexDescription).toHashCode();
   }
 }

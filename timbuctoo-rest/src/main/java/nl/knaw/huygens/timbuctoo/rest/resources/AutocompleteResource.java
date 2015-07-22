@@ -7,8 +7,11 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.util.AutocompleteResultConverter;
 import nl.knaw.huygens.timbuctoo.vre.NotInScopeException;
+import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -20,6 +23,8 @@ import javax.ws.rs.core.Response;
 import java.util.Map;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static nl.knaw.huygens.timbuctoo.config.Paths.AUTOCOMPLETE_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.DOMAIN_PREFIX;
@@ -29,6 +34,7 @@ import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 
 @Path(Paths.V2_PATH + "/" + DOMAIN_PREFIX + "/" + ENTITY_PATH + "/" + AUTOCOMPLETE_PATH)
 public class AutocompleteResource extends ResourceBase{
+  private static final Logger LOG = LoggerFactory.getLogger(AutocompleteResource.class);
   private final TypeRegistry typeRegistry;
   private final AutocompleteResultConverter resultConverter;
 
@@ -50,8 +56,11 @@ public class AutocompleteResource extends ResourceBase{
     try {
       rawSearchResult = vre.doRawSearch(type, query);
     } catch (NotInScopeException e) {
+      return mapException(BAD_REQUEST, e);
+    } catch (SearchException e) {
+      LOG.error("Search has failed.", e);
 
-      return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+      return mapException(INTERNAL_SERVER_ERROR, e);
     }
     Iterable<Map<String, Object>> result = resultConverter.convert(rawSearchResult);
 

@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.rest.util.AutocompleteResultConverter;
 import nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders;
 import nl.knaw.huygens.timbuctoo.vre.NotInScopeException;
+import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import org.junit.Test;
 import test.rest.model.projecta.ProjectADomainEntity;
@@ -19,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -38,6 +40,8 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
   public static final String KEY_VALUE2 = "keyValue";
   public static final String VALUE_VALUE2 = "valueValue";
   public static final String UNKNOWN_COLLECTION = "unknownCollections";
+  public static final String EXCEPTION_MESSAGE = "Exception message";
+  public static final String EXCEPTION_KEY = "exception";
 
   @Test
   public void getLetsTheAutoCompleteResultProcessorProcessARawSearchResult() throws Exception {
@@ -122,6 +126,34 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
 
     // verify
     responseStatusIs(response, Status.BAD_REQUEST);
-    assertThat(response.getEntity(String.class), is(exception.getMessage()));
+    verifyResponseHasExpectedMessage(response, exception);
   }
+
+  @Test
+  public void getReturnsInteralServerErrorWhenTheVREThrowsASearchException() throws Exception {
+    VRE vre = mock(VRE.class);
+    SearchException searchException = new SearchException(new Exception(EXCEPTION_MESSAGE));
+    String expectedMessage = searchException.getMessage();
+    when(vre.doRawSearch(DEFAULT_TYPE, SEARCH_PARAM)).thenThrow(searchException);
+
+    makeVREAvailable(vre, VRE_ID);
+
+    // action
+    ClientResponse response = resource().path(Paths.V2_PATH).path(Paths.DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
+      .queryParam(QUERY, SEARCH_PARAM).header(CustomHeaders.VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
+
+    // verify
+    responseStatusIs(response, Status.INTERNAL_SERVER_ERROR);
+    verifyResponseHasExpectedMessage(response, searchException);
+
+  }
+
+  protected void verifyResponseHasExpectedMessage(ClientResponse response, Exception expectedException) {
+    Map<String, String> exceptionMap = response.getEntity(new GenericType<Map<String, String>>() {
+    });
+
+    assertThat(exceptionMap.keySet(), contains(EXCEPTION_KEY));
+    assertThat(exceptionMap.get(EXCEPTION_KEY), is(expectedException.getMessage()));
+  }
+
 }

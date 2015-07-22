@@ -22,14 +22,17 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-
-import javax.ws.rs.core.Response.Status;
-
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
+
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.util.Map;
+
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 
 /**
  * Base class for Timbuctoo resources.
@@ -68,4 +71,11 @@ public abstract class ResourceBase {
     return checkNotNull(vreCollection.getVREById(id), NOT_FOUND, "No VRE with id %s", id);
   }
 
+
+  protected Response mapException(Status status, Exception e) {
+    Map<String, String> errorMap = Maps.newHashMap();
+    errorMap.put("exception", e.getMessage());
+
+    return Response.status(status).entity(errorMap).build();
+  }
 }

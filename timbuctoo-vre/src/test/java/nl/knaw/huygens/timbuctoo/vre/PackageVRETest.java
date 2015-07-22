@@ -461,18 +461,18 @@ public class PackageVRETest {
     Set<Class<? extends DomainEntity>> typeSet = Sets.newHashSet(types);
     when(scopeMock.getPrimitiveEntityTypes()).thenReturn(typeSet);
 
-    for(Class<? extends DomainEntity> type : types){
+    for (Class<? extends DomainEntity> type : types) {
       when(scopeMock.inScope(type)).thenReturn(true);
     }
   }
 
   @Test
-  public void doRawSearchCallsDoRawSearchOfTheIndexCorrespondingWithTheType() throws Exception{
+  public void doRawSearchCallsDoRawSearchOfTheIndexCorrespondingWithTheType() throws Exception {
     // setup
-    setupScopeGetBaseEntityTypesWith(TYPE, OTHER_TYPE);
+    setupScopeGetBaseEntityTypesWith(TYPE);
 
     Index indexMock1 = indexFoundFor(TYPE);
-    Iterable<Map<String, Object>> rawSearchResult = Lists.<Map<String, Object>> newArrayList();
+    Iterable<Map<String, Object>> rawSearchResult = Lists.<Map<String, Object>>newArrayList();
     when(indexMock1.doRawSearch(QUERY)).thenReturn(rawSearchResult);
 
     // action
@@ -491,6 +491,19 @@ public class PackageVRETest {
 
     // action
     vre.doRawSearch(OTHER_TYPE, QUERY);
+  }
+
+  @Test(expected = SearchException.class)
+  public void doRawSearchThrowsASearchExceptionIfTheIndexThrowsOne() throws Exception {
+    // setup
+    setupScopeGetBaseEntityTypesWith(TYPE);
+
+    Index indexMock1 = indexFoundFor(TYPE);
+    Iterable<Map<String, Object>> rawSearchResult = Lists.<Map<String, Object>>newArrayList();
+    when(indexMock1.doRawSearch(QUERY)).thenThrow(new SearchException(new Exception()));
+
+    // action
+    vre.doRawSearch(TYPE, QUERY);
   }
 
   private Index indexFoundFor(Class<? extends DomainEntity> type) {
