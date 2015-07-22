@@ -22,9 +22,6 @@ package nl.knaw.huygens.timbuctoo.index.solr;
  * #L%
  */
 
-import java.io.IOException;
-import java.util.List;
-
 import nl.knaw.huygens.facetedsearch.FacetedSearchException;
 import nl.knaw.huygens.facetedsearch.FacetedSearchLibrary;
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
@@ -37,13 +34,15 @@ import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
-
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
+
+import java.io.IOException;
+import java.util.List;
 
 public class SolrIndex implements Index {
 

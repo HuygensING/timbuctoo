@@ -1,8 +1,5 @@
 package nl.knaw.huygens.timbuctoo.vre;
 
-import java.util.Collection;
-import java.util.List;
-
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
@@ -11,6 +8,10 @@ import nl.knaw.huygens.timbuctoo.index.IndexStatus;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultProcessor;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -150,4 +151,12 @@ public interface VRE extends Scope {
    */
   void addToIndexStatus(IndexStatus indexStatus);
 
+  /**
+   * Search the solr index and get the raw search result.
+   *
+   * @param type the type to search for
+   * @param searchString the string to search for
+   * @return a raw solr search result
+   */
+  Iterable<Map<String, Object>> doRawSearch(Class<? extends DomainEntity> type, String searchString);
 }

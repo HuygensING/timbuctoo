@@ -22,11 +22,11 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-
-import javax.validation.Validator;
-
+import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import com.google.inject.name.Named;
+import com.sun.jersey.guice.JerseyServletModule;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.security.client.SecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.Repository;
@@ -36,6 +36,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
+import nl.knaw.huygens.timbuctoo.rest.util.AutocompleteResultConverter;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
@@ -48,11 +49,10 @@ import nl.knaw.huygens.timbuctoo.security.UserSecurityContextCreator;
 import nl.knaw.huygens.timbuctoo.security.VREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import com.google.inject.name.Named;
-import com.sun.jersey.guice.JerseyServletModule;
+import javax.validation.Validator;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 
 /**
  * This class mocks the ServletModel used in the webapplication,
@@ -88,6 +88,7 @@ class ResourceTestModule extends JerseyServletModule {
   private BasicAuthenticationHandler basicAuthenticationHandler;
   private ChangeHelper changeHelper;
   private VRECollection vreCollection;
+  private AutocompleteResultConverter autoCompleteResultConverter;
 
   public ResourceTestModule() {
     try {
@@ -113,6 +114,7 @@ class ResourceTestModule extends JerseyServletModule {
       basicAuthenticationHandler = mock(BasicAuthenticationHandler.class);
       changeHelper = mock(ChangeHelper.class);
       vreCollection = mock(VRECollection.class);
+      autoCompleteResultConverter = mock(AutocompleteResultConverter.class);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -124,7 +126,7 @@ class ResourceTestModule extends JerseyServletModule {
    */
   public void cleanUpMocks() {
     reset(config, repository, userConfigurationHandler, jsonProvider, validator, mailSender, authenticationHandler, broker, indexProducer, persistenceProducer, indexManager, searchRequestValidator,
-        searchParametersConverter, relationSearcher, regularClientSearchResultCreator, regularClientSearchResultCreator, basicAuthenticationHandler, changeHelper, vreCollection);
+        searchParametersConverter, relationSearcher, regularClientSearchResultCreator, regularClientSearchResultCreator, basicAuthenticationHandler, changeHelper, vreCollection, autoCompleteResultConverter);
   }
 
   @Override
@@ -280,5 +282,11 @@ class ResourceTestModule extends JerseyServletModule {
   @Provides
   public VRECollection provideVreCollection() {
     return vreCollection;
+  }
+
+  @Singleton
+  @Provides
+  public AutocompleteResultConverter provideAutoCompleteResultConverter() {
+    return autoCompleteResultConverter;
   }
 }
