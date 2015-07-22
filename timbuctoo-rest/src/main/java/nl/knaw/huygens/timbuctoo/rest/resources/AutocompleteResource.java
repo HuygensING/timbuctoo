@@ -36,7 +36,7 @@ import static nl.knaw.huygens.timbuctoo.config.Paths.V2_PATH;
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 
 @Path(V2_PATH + "/" + DOMAIN_PREFIX + "/" + ENTITY_PATH + "/" + AUTOCOMPLETE_PATH)
-public class AutocompleteResource extends ResourceBase{
+public class AutocompleteResource extends ResourceBase {
   private static final Logger LOG = LoggerFactory.getLogger(AutocompleteResource.class);
   private final Configuration config;
   private final TypeRegistry typeRegistry;
@@ -53,7 +53,7 @@ public class AutocompleteResource extends ResourceBase{
   @GET
   @Produces(APPLICATION_JSON)
   public Response get(@PathParam(ENTITY_PARAM) String entityName, @QueryParam("query") String query, //
-                      @HeaderParam(VRE_ID_KEY) String vreId){
+                      @HeaderParam(VRE_ID_KEY) String vreId) {
     Class<? extends DomainEntity> type = getValidEntityType(entityName);
     VRE vre = getValidVRE(vreId);
 
@@ -73,7 +73,7 @@ public class AutocompleteResource extends ResourceBase{
   }
 
   private URI getCollectionUri(String entityName) {
-    return UriBuilder.fromPath(config.getSetting("public_url")).fragment(DOMAIN_PREFIX).fragment(entityName).build();
+    return UriBuilder.fromPath(config.getSetting("public_url")).path(DOMAIN_PREFIX).path(entityName).build();
   }
 
   protected final Class<? extends DomainEntity> getValidEntityType(String name) {

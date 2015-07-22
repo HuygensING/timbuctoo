@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static nl.knaw.huygens.timbuctoo.config.Paths.DOMAIN_PREFIX;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
@@ -50,7 +51,7 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
 
   @Before
   public void setupPublicUrl() {
-    entityURI = UriBuilder.fromUri(this.getBaseURI()).fragment(Paths.DOMAIN_PREFIX).fragment(DEFAULT_COLLECTION).build();
+    entityURI = UriBuilder.fromUri(this.getBaseURI()).path(DOMAIN_PREFIX).path(DEFAULT_COLLECTION).build();
     when(injector.getInstance(Configuration.class).getSetting("public_url")).thenReturn(this.getBaseURI().toString());
   }
 
@@ -72,7 +73,7 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
     when(resultConverter.convert(rawSearchResult, entityURI)).thenReturn(convertedResult);
 
     // action
-    ClientResponse response = resource().path(Paths.V2_PATH).path(Paths.DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
+    ClientResponse response = resource().path(Paths.V2_PATH).path(DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
       .queryParam(QUERY, SEARCH_PARAM).header(CustomHeaders.VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
 
     // verify
@@ -116,7 +117,7 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
     makeVREAvailable(vre, VRE_ID);
 
     // action
-    ClientResponse response = resource().path(Paths.V2_PATH).path(Paths.DOMAIN_PREFIX).path(UNKNOWN_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
+    ClientResponse response = resource().path(Paths.V2_PATH).path(DOMAIN_PREFIX).path(UNKNOWN_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
       .queryParam(QUERY, SEARCH_PARAM).get(ClientResponse.class);
 
     // verify
@@ -133,7 +134,7 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
     makeVREAvailable(vre, VRE_ID);
 
     // action
-    ClientResponse response = resource().path(Paths.V2_PATH).path(Paths.DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
+    ClientResponse response = resource().path(Paths.V2_PATH).path(DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
       .queryParam(QUERY, SEARCH_PARAM).header(CustomHeaders.VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
 
     // verify
@@ -151,7 +152,7 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
     makeVREAvailable(vre, VRE_ID);
 
     // action
-    ClientResponse response = resource().path(Paths.V2_PATH).path(Paths.DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
+    ClientResponse response = resource().path(Paths.V2_PATH).path(DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
       .queryParam(QUERY, SEARCH_PARAM).header(CustomHeaders.VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
 
     // verify
