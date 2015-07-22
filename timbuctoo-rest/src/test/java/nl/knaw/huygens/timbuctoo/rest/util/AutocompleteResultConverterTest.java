@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.ws.rs.core.UriBuilder;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +16,7 @@ import static org.mockito.Mockito.when;
 
 public class AutocompleteResultConverterTest {
 
+  public static final java.net.URI URI = UriBuilder.fromUri("uri").build();
   private AutocompleteResultConverter instance;
   private AutocompleteResultEntryConverter entryConverter;
 
@@ -37,7 +39,7 @@ public class AutocompleteResultConverterTest {
 
 
     // action
-    Iterable<Map<String, Object>> convertedResult = instance.convert(input);
+    Iterable<Map<String, Object>> convertedResult = instance.convert(input, URI);
 
     // verify
     assertThat(convertedResult, containsInAnyOrder(output1, output2));
@@ -45,7 +47,7 @@ public class AutocompleteResultConverterTest {
 
   public Map<String, Object> convertsToOutput(Map<String, Object> input) {
     Map<String, Object> output = Maps.<String, Object>newHashMap();
-    when(entryConverter.convert(input)).thenReturn(output);
+    when(entryConverter.convert(input, URI)).thenReturn(output);
     return output;
   }
 

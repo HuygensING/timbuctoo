@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
+import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.rest.util.AutocompleteResultConverter;
@@ -11,10 +12,13 @@ import nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders;
 import nl.knaw.huygens.timbuctoo.vre.NotInScopeException;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
+import org.junit.Before;
 import org.junit.Test;
 import test.rest.model.projecta.ProjectADomainEntity;
 
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,9 +46,17 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
   public static final String UNKNOWN_COLLECTION = "unknownCollections";
   public static final String EXCEPTION_MESSAGE = "Exception message";
   public static final String EXCEPTION_KEY = "exception";
+  private URI entityURI;
+
+  @Before
+  public void setupPublicUrl() {
+    entityURI = UriBuilder.fromUri(this.getBaseURI()).fragment(Paths.DOMAIN_PREFIX).fragment(DEFAULT_COLLECTION).build();
+    when(injector.getInstance(Configuration.class).getSetting("public_url")).thenReturn(this.getBaseURI().toString());
+  }
 
   @Test
   public void getLetsTheAutoCompleteResultProcessorProcessARawSearchResult() throws Exception {
+
     // setup
     VRE vre = mock(VRE.class);
     makeVREAvailable(vre, VRE_ID);
@@ -57,7 +69,7 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
     ArrayList<Map<String, Object>> convertedResult = Lists.<Map<String, Object>>newArrayList();
     convertedResult.add(createEntry(KEY_VALUE1, VALUE_VALUE1));
     convertedResult.add(createEntry(KEY_VALUE2, VALUE_VALUE2));
-    when(resultConverter.convert(rawSearchResult)).thenReturn(convertedResult);
+    when(resultConverter.convert(rawSearchResult, entityURI)).thenReturn(convertedResult);
 
     // action
     ClientResponse response = resource().path(Paths.V2_PATH).path(Paths.DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//

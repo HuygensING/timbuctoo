@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
 
 import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.config.Paths;
+import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.util.AutocompleteResultConverter;
@@ -20,6 +20,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
 import java.util.Map;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -30,17 +32,20 @@ import static nl.knaw.huygens.timbuctoo.config.Paths.AUTOCOMPLETE_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.DOMAIN_PREFIX;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.V2_PATH;
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 
-@Path(Paths.V2_PATH + "/" + DOMAIN_PREFIX + "/" + ENTITY_PATH + "/" + AUTOCOMPLETE_PATH)
+@Path(V2_PATH + "/" + DOMAIN_PREFIX + "/" + ENTITY_PATH + "/" + AUTOCOMPLETE_PATH)
 public class AutocompleteResource extends ResourceBase{
   private static final Logger LOG = LoggerFactory.getLogger(AutocompleteResource.class);
+  private final Configuration config;
   private final TypeRegistry typeRegistry;
   private final AutocompleteResultConverter resultConverter;
 
   @Inject
-  public AutocompleteResource(Repository repository, VRECollection vreCollection, TypeRegistry typeRegistry, AutocompleteResultConverter resultConverter) {
+  public AutocompleteResource(Configuration config, Repository repository, VRECollection vreCollection, TypeRegistry typeRegistry, AutocompleteResultConverter resultConverter) {
     super(repository, vreCollection);
+    this.config = config;
     this.typeRegistry = typeRegistry;
     this.resultConverter = resultConverter;
   }
@@ -62,9 +67,13 @@ public class AutocompleteResource extends ResourceBase{
 
       return mapException(INTERNAL_SERVER_ERROR, e);
     }
-    Iterable<Map<String, Object>> result = resultConverter.convert(rawSearchResult);
+    Iterable<Map<String, Object>> result = resultConverter.convert(rawSearchResult, getCollectionUri(entityName));
 
     return Response.ok(result).build();
+  }
+
+  private URI getCollectionUri(String entityName) {
+    return UriBuilder.fromPath(config.getSetting("public_url")).fragment(DOMAIN_PREFIX).fragment(entityName).build();
   }
 
   protected final Class<? extends DomainEntity> getValidEntityType(String name) {
