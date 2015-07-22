@@ -29,6 +29,9 @@ public class QueryParameters {
 
   public static final String USER_ID_KEY = "userId";
   public static final String REVISION_KEY = "rev";
+  public static final String QUERY = "query";
+  public static final String ROWS = "rows";
+  public static final String START = "start";
 
   private QueryParameters() {
     throw new AssertionError("Non-instantiable class");

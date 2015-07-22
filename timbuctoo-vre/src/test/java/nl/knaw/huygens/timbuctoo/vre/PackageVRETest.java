@@ -476,7 +476,7 @@ public class PackageVRETest {
     when(indexMock1.doRawSearch(QUERY)).thenReturn(rawSearchResult);
 
     // action
-    Iterable<Map<String, Object>> actualSearchResult = vre.doRawSearch(TYPE, QUERY);
+    Iterable<Map<String, Object>> actualSearchResult = vre.doRawSearch(TYPE, QUERY, 0, 20);
 
     // verify
     assertThat(actualSearchResult, is(sameInstance(rawSearchResult)));
@@ -490,7 +490,7 @@ public class PackageVRETest {
     setupScopeGetBaseEntityTypesWith(TYPE);
 
     // action
-    vre.doRawSearch(OTHER_TYPE, QUERY);
+    vre.doRawSearch(OTHER_TYPE, QUERY, 0, 20);
   }
 
   @Test(expected = SearchException.class)
@@ -503,7 +503,7 @@ public class PackageVRETest {
     when(indexMock1.doRawSearch(QUERY)).thenThrow(new SearchException(new Exception()));
 
     // action
-    vre.doRawSearch(TYPE, QUERY);
+    vre.doRawSearch(TYPE, QUERY, 0, 20);
   }
 
   private Index indexFoundFor(Class<? extends DomainEntity> type) {

@@ -25,28 +25,33 @@ import java.util.List;
 import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.config.Paths.DOMAIN_PREFIX;
+import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.QUERY;
+import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.ROWS;
+import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.START;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class AutoCompleteResourceTest extends WebServiceTestSetup {
   protected static final Class<ProjectADomainEntity> DEFAULT_TYPE = ProjectADomainEntity.class;
   protected static final String DEFAULT_COLLECTION = TypeNames.getExternalName(DEFAULT_TYPE);
-  public static final String QUERY = "query";
-  public static final String SEARCH_PARAM = "test";
-  public static final String KEY_KEY = "key";
-  public static final String VALUE_KEY = "value";
-  public static final String KEY_VALUE1 = "keyValue";
-  public static final String VALUE_VALUE1 = "valueValue";
-  public static final String KEY_VALUE2 = "keyValue";
-  public static final String VALUE_VALUE2 = "valueValue";
-  public static final String UNKNOWN_COLLECTION = "unknownCollections";
-  public static final String EXCEPTION_MESSAGE = "Exception message";
-  public static final String EXCEPTION_KEY = "exception";
+  private static final String SEARCH_PARAM = "test";
+  private static final String KEY_KEY = "key";
+  private static final String VALUE_KEY = "value";
+  private static final String KEY_VALUE1 = "keyValue";
+  private static final String VALUE_VALUE1 = "valueValue";
+  private static final String KEY_VALUE2 = "keyValue";
+  private static final String VALUE_VALUE2 = "valueValue";
+  private static final String UNKNOWN_COLLECTION = "unknownCollections";
+  private static final String EXCEPTION_MESSAGE = "Exception message";
+  private static final String EXCEPTION_KEY = "exception";
+  private static final int DEFAULT_START = Integer.parseInt(AutocompleteResource.DEFAULT_START);
+  private static final int DEFAULT_ROWS = Integer.parseInt(AutocompleteResource.DEFAULT_ROWS);;
   private URI entityURI;
 
   @Before
@@ -57,6 +62,30 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
 
   @Test
   public void getLetsTheAutoCompleteResultProcessorProcessARawSearchResult() throws Exception {
+    // setup
+    int customStart = 20;
+    int customRows = 50;
+    VRE vre = mock(VRE.class);
+    makeVREAvailable(vre, VRE_ID);
+
+    List<Map<String, Object>> rawSearchResult = Lists.<Map<String, Object>>newArrayList();
+
+    when(vre.doRawSearch(DEFAULT_TYPE, SEARCH_PARAM, DEFAULT_START, DEFAULT_ROWS)).thenReturn(rawSearchResult);
+    convertedResultIsFoundFor(rawSearchResult);
+
+    // action
+    resource().path(Paths.V2_PATH).path(DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH) //
+      .queryParam(QUERY, SEARCH_PARAM).queryParam(START, "" + customStart).queryParam(ROWS, "" + customRows) //
+      .header(CustomHeaders.VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
+
+    // verify
+    verify(vre).doRawSearch(DEFAULT_TYPE, SEARCH_PARAM, customStart, customRows);
+  }
+
+
+
+  @Test
+  public void getInfluencesTheNumberOfResultsAndStartWhenTheQueryParametersAreSet() throws Exception {
 
     // setup
     VRE vre = mock(VRE.class);
@@ -64,13 +93,8 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
 
     List<Map<String, Object>> rawSearchResult = Lists.<Map<String, Object>>newArrayList();
 
-    when(vre.doRawSearch(DEFAULT_TYPE, SEARCH_PARAM)).thenReturn(rawSearchResult);
-    AutocompleteResultConverter resultConverter = injector.getInstance(AutocompleteResultConverter.class);
-
-    ArrayList<Map<String, Object>> convertedResult = Lists.<Map<String, Object>>newArrayList();
-    convertedResult.add(createEntry(KEY_VALUE1, VALUE_VALUE1));
-    convertedResult.add(createEntry(KEY_VALUE2, VALUE_VALUE2));
-    when(resultConverter.convert(rawSearchResult, entityURI)).thenReturn(convertedResult);
+    when(vre.doRawSearch(DEFAULT_TYPE, SEARCH_PARAM, DEFAULT_START, DEFAULT_ROWS)).thenReturn(rawSearchResult);
+    convertedResultIsFoundFor(rawSearchResult);
 
     // action
     ClientResponse response = resource().path(Paths.V2_PATH).path(DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
@@ -85,18 +109,25 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
     assertThat(entity, hasSize(2));
     verifyEntry(entity.get(0), KEY_VALUE1, VALUE_VALUE1);
     verifyEntry(entity.get(1), KEY_VALUE2, VALUE_VALUE2);
-
-
   }
 
-  protected HashMap<String, Object> createEntry(String key, String value) {
+  private void convertedResultIsFoundFor(List<Map<String, Object>> rawSearchResult) {
+    AutocompleteResultConverter resultConverter = injector.getInstance(AutocompleteResultConverter.class);
+
+    ArrayList<Map<String, Object>> convertedResult = Lists.<Map<String, Object>>newArrayList();
+    convertedResult.add(createEntry(KEY_VALUE1, VALUE_VALUE1));
+    convertedResult.add(createEntry(KEY_VALUE2, VALUE_VALUE2));
+    when(resultConverter.convert(rawSearchResult, entityURI)).thenReturn(convertedResult);
+  }
+
+  private HashMap<String, Object> createEntry(String key, String value) {
     HashMap<String, Object> entry = Maps.newHashMap();
     entry.put(KEY_KEY, key);
     entry.put(VALUE_KEY, value);
     return entry;
   }
 
-  protected void verifyEntry(Map<String, Object> entry, String key, String value) {
+  private void verifyEntry(Map<String, Object> entry, String key, String value) {
     assertThat(entry.keySet(), containsInAnyOrder(KEY_KEY, VALUE_KEY));
     assertThat(valueAsString(entry, KEY_KEY), is(key));
     assertThat(valueAsString(entry, VALUE_KEY), is(value));
@@ -129,7 +160,7 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
     // setup
     VRE vre = mock(VRE.class);
     NotInScopeException exception = new NotInScopeException(DEFAULT_TYPE, VRE_ID);
-    when(vre.doRawSearch(DEFAULT_TYPE, SEARCH_PARAM)).thenThrow(exception);
+    when(vre.doRawSearch(DEFAULT_TYPE, SEARCH_PARAM, DEFAULT_START, DEFAULT_ROWS)).thenThrow(exception);
 
     makeVREAvailable(vre, VRE_ID);
 
@@ -147,7 +178,7 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
     VRE vre = mock(VRE.class);
     SearchException searchException = new SearchException(new Exception(EXCEPTION_MESSAGE));
     String expectedMessage = searchException.getMessage();
-    when(vre.doRawSearch(DEFAULT_TYPE, SEARCH_PARAM)).thenThrow(searchException);
+    when(vre.doRawSearch(DEFAULT_TYPE, SEARCH_PARAM, DEFAULT_START, DEFAULT_ROWS)).thenThrow(searchException);
 
     makeVREAvailable(vre, VRE_ID);
 

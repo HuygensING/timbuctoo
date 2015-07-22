@@ -156,7 +156,8 @@ public interface VRE extends Scope {
    *
    * @param type the type to search for
    * @param searchString the string to search for
-   * @return a raw solr search result
+   * @param start
+   *@param numberOfResults @return a raw solr search result
    */
-  Iterable<Map<String, Object>> doRawSearch(Class<? extends DomainEntity> type, String searchString) throws NotInScopeException, nl.knaw.huygens.timbuctoo.vre.NotInScopeException, SearchException;
+  Iterable<Map<String, Object>> doRawSearch(Class<? extends DomainEntity> type, String searchString, int start, int numberOfResults) throws NotInScopeException, nl.knaw.huygens.timbuctoo.vre.NotInScopeException, SearchException;
 }

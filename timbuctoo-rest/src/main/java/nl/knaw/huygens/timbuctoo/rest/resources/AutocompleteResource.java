@@ -13,6 +13,7 @@ import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
@@ -34,9 +35,14 @@ import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.V2_PATH;
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
+import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.QUERY;
+import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.ROWS;
+import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.START;
 
 @Path(V2_PATH + "/" + DOMAIN_PREFIX + "/" + ENTITY_PATH + "/" + AUTOCOMPLETE_PATH)
 public class AutocompleteResource extends ResourceBase {
+  public static final String DEFAULT_ROWS = "10";
+  public static final String DEFAULT_START = "0";
   private static final Logger LOG = LoggerFactory.getLogger(AutocompleteResource.class);
   private final Configuration config;
   private final TypeRegistry typeRegistry;
@@ -52,14 +58,15 @@ public class AutocompleteResource extends ResourceBase {
 
   @GET
   @Produces(APPLICATION_JSON)
-  public Response get(@PathParam(ENTITY_PARAM) String entityName, @QueryParam("query") String query, //
+  public Response get(@PathParam(ENTITY_PARAM) String entityName, @QueryParam(QUERY) String query, //
+                      @QueryParam(START) @DefaultValue(DEFAULT_START) int start, @QueryParam(ROWS) @DefaultValue(DEFAULT_ROWS) int rows,
                       @HeaderParam(VRE_ID_KEY) String vreId) {
     Class<? extends DomainEntity> type = getValidEntityType(entityName);
     VRE vre = getValidVRE(vreId);
 
     Iterable<Map<String, Object>> rawSearchResult = null;
     try {
-      rawSearchResult = vre.doRawSearch(type, query);
+      rawSearchResult = vre.doRawSearch(type, query, start, rows);
     } catch (NotInScopeException e) {
       return mapException(BAD_REQUEST, e);
     } catch (SearchException e) {
