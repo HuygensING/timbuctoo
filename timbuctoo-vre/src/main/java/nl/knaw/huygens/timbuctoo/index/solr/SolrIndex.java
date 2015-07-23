@@ -210,7 +210,8 @@ public class SolrIndex implements Index {
   public Iterable<Map<String, Object>> doRawSearch(String query, int start, int rows) throws SearchException, RawSearchUnavailableException {
     QueryResponse queryResponse = null;
     try {
-      queryResponse = solrServer.search(new SolrQuery(createSolrQuery(query)).setStart(start).setRows(rows));
+      String solrQuery = createSolrQuery(query);
+      queryResponse = solrServer.search(new SolrQuery(solrQuery).setStart(start).setRows(rows));
     } catch (SolrServerException e) {
       throw new SearchException(e);
     }
@@ -227,7 +228,12 @@ public class SolrIndex implements Index {
       throw new RawSearchUnavailableException(name);
     }
 
-    return String.format("%s:%s", rawSearchField, query);
+    return String.format("%s:%s", rawSearchField, cleanUpSpecialCharaters(query));
+  }
+
+  private String cleanUpSpecialCharaters(String term) {
+
+    return term.replace(":", " ");
   }
 
   @Override

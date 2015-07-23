@@ -557,7 +557,7 @@ public class SolrIndexTest {
     Map<String, Object> result1 = Maps.<String, Object> newHashMap();
     Map<String, Object> result2 = Maps.<String, Object> newHashMap();
 
-    SolrQueryMatcher query = likeSolrQuery().withQuery(getSolrQuery()).withStart(START).withRows(ROWS);
+    SolrQueryMatcher query = likeSolrQuery().withQuery(getSolrQuery(QUERY)).withStart(START).withRows(ROWS);
     setupQueryResponseForQueryWithResults(query, result1, result2);
 
     // action
@@ -567,8 +567,28 @@ public class SolrIndexTest {
     assertThat(searchResult, containsInAnyOrder(result1, result2));
   }
 
-  private String getSolrQuery() {
-    return String.format("%s:%s", RAW_SEARCH_FIELD, QUERY);
+  @SuppressWarnings("unchecked")
+  @Test
+  public void doRawSearchRemovesTheColonsFormTheQuery() throws SolrServerException, SearchException, RawSearchUnavailableException {
+    // setup
+    Map<String, Object> result1 = Maps.<String, Object> newHashMap();
+    Map<String, Object> result2 = Maps.<String, Object> newHashMap();
+    String otherQuery = "other:query";
+    String cleanedUpOtherQuery = "other query";
+
+    SolrQueryMatcher expectedQuery = likeSolrQuery().withQuery(getSolrQuery(cleanedUpOtherQuery)).withStart(START).withRows(ROWS);
+    setupQueryResponseForQueryWithResults(expectedQuery, result1, result2);
+
+    // action
+    Iterable<Map<String, Object>> searchResult = instance.doRawSearch(otherQuery, START, ROWS);
+
+    // verify
+    verify(solrServerMock).search(argThat(expectedQuery));
+    assertThat(searchResult, containsInAnyOrder(result1, result2));
+  }
+
+  private String getSolrQuery(String query) {
+    return String.format("%s:%s", RAW_SEARCH_FIELD, query);
   }
 
   private void setupQueryResponseForQueryWithResults(SolrQueryMatcher query, Map<String, Object>... results) throws SolrServerException {
@@ -602,6 +622,6 @@ public class SolrIndexTest {
     when(solrServerMock.search(any(SolrQuery.class))).thenThrow(new SolrServerException(MESSAGE));
 
     // action
-    instance.doRawSearch(getSolrQuery(), START, ROWS);
+    instance.doRawSearch(getSolrQuery(QUERY), START, ROWS);
   }
 }
