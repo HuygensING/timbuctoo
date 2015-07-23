@@ -22,31 +22,6 @@ package nl.knaw.huygens.timbuctoo.vre;
  * #L%
  */
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
-import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
-import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.index.Index;
-import nl.knaw.huygens.timbuctoo.index.IndexCollection;
-import nl.knaw.huygens.timbuctoo.index.IndexException;
-import nl.knaw.huygens.timbuctoo.index.IndexStatus;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultProcessor;
-import nl.knaw.huygens.timbuctoo.search.converters.SearchResultConverter;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InOrder;
-import org.mockito.Mockito;
-import test.timbuctoo.index.model.ExplicitlyAnnotatedModel;
-import test.timbuctoo.index.model.Type1;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
@@ -57,6 +32,35 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
+import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
+import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.index.Index;
+import nl.knaw.huygens.timbuctoo.index.IndexCollection;
+import nl.knaw.huygens.timbuctoo.index.IndexException;
+import nl.knaw.huygens.timbuctoo.index.IndexStatus;
+import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.SearchResult;
+import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultProcessor;
+import nl.knaw.huygens.timbuctoo.search.converters.SearchResultConverter;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InOrder;
+import org.mockito.Mockito;
+
+import test.timbuctoo.index.model.ExplicitlyAnnotatedModel;
+import test.timbuctoo.index.model.Type1;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public class PackageVRETest {
 
@@ -98,7 +102,7 @@ public class PackageVRETest {
     Collection<Index> indexes = vre.getIndexes();
 
     // verify
-    assertThat(indexes, contains(new Index[]{indexMock1, indexMock2}));
+    assertThat(indexes, contains(new Index[] { indexMock1, indexMock2 }));
   }
 
   @Test
@@ -468,13 +472,14 @@ public class PackageVRETest {
     }
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void doRawSearchCallsDoRawSearchOfTheIndexCorrespondingWithTheType() throws Exception {
     // setup
     setupScopeGetBaseEntityTypesWith(TYPE);
 
     Index indexMock1 = indexFoundFor(TYPE);
-    Iterable<Map<String, Object>> rawSearchResult = Lists.<Map<String, Object>>newArrayList();
+    Iterable<Map<String, Object>> rawSearchResult = Lists.<Map<String, Object>> newArrayList();
     when(indexMock1.doRawSearch(QUERY, START, ROWS)).thenReturn(rawSearchResult);
 
     // action
@@ -486,6 +491,7 @@ public class PackageVRETest {
     verify(indexMock1).doRawSearch(QUERY, START, ROWS);
   }
 
+  @SuppressWarnings("unchecked")
   @Test(expected = NotInScopeException.class)
   public void doRawSearchThrowsANotInScopeExceptionWhenTheTypeIsNotInTheScopeOfTheVRE() throws Exception {
     // setup
@@ -495,14 +501,27 @@ public class PackageVRETest {
     vre.doRawSearch(OTHER_TYPE, QUERY, START, ROWS);
   }
 
+  @SuppressWarnings("unchecked")
   @Test(expected = SearchException.class)
   public void doRawSearchThrowsASearchExceptionIfTheIndexThrowsOne() throws Exception {
     // setup
     setupScopeGetBaseEntityTypesWith(TYPE);
 
     Index indexMock1 = indexFoundFor(TYPE);
-    Iterable<Map<String, Object>> rawSearchResult = Lists.<Map<String, Object>>newArrayList();
     when(indexMock1.doRawSearch(QUERY, START, ROWS)).thenThrow(new SearchException(new Exception()));
+
+    // action
+    vre.doRawSearch(TYPE, QUERY, 0, 20);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test(expected = RawSearchUnavailableException.class)
+  public void doRawSearchThrowsARawSearchUnavailableExceptionIfTheIndexThrowsOne() throws Exception {
+    // setup
+    setupScopeGetBaseEntityTypesWith(TYPE);
+
+    Index indexMock1 = indexFoundFor(TYPE);
+    when(indexMock1.doRawSearch(QUERY, START, ROWS)).thenThrow(new RawSearchUnavailableException("indexName"));
 
     // action
     vre.doRawSearch(TYPE, QUERY, 0, 20);

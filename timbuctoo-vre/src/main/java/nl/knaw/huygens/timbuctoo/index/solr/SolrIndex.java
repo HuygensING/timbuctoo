@@ -35,6 +35,7 @@ import nl.knaw.huygens.facetedsearch.model.parameters.IndexDescription;
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
+import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
@@ -48,6 +49,7 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 
 public class SolrIndex implements Index {
@@ -205,10 +207,10 @@ public class SolrIndex implements Index {
   }
 
   @Override
-  public Iterable<Map<String, Object>> doRawSearch(String query, int start, int rows) throws SearchException {
+  public Iterable<Map<String, Object>> doRawSearch(String query, int start, int rows) throws SearchException, RawSearchUnavailableException {
     QueryResponse queryResponse = null;
     try {
-      queryResponse = solrServer.search(new SolrQuery(query).setStart(start).setRows(rows));
+      queryResponse = solrServer.search(new SolrQuery(createSolrQuery(query)).setStart(start).setRows(rows));
     } catch (SolrServerException e) {
       throw new SearchException(e);
     }
@@ -218,6 +220,14 @@ public class SolrIndex implements Index {
       results.add(doc.getFieldValueMap());
     }
     return results;
+  }
+
+  private String createSolrQuery(String query) throws RawSearchUnavailableException {
+    if (Strings.isNullOrEmpty(rawSearchField)) {
+      throw new RawSearchUnavailableException(name);
+    }
+
+    return String.format("%s:%s", rawSearchField, query);
   }
 
   @Override

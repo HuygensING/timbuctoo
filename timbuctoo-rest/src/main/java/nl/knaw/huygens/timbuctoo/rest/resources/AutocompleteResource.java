@@ -1,30 +1,5 @@
 package nl.knaw.huygens.timbuctoo.rest.resources;
 
-import com.google.inject.Inject;
-import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.rest.util.AutocompleteResultConverter;
-import nl.knaw.huygens.timbuctoo.vre.NotInScopeException;
-import nl.knaw.huygens.timbuctoo.vre.SearchException;
-import nl.knaw.huygens.timbuctoo.vre.VRE;
-import nl.knaw.huygens.timbuctoo.vre.VRECollection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-import java.net.URI;
-import java.util.Map;
-
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
@@ -39,8 +14,39 @@ import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.QUERY;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.ROWS;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.START;
 
+import java.net.URI;
+import java.util.Map;
+
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+
+import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.rest.util.AutocompleteResultConverter;
+import nl.knaw.huygens.timbuctoo.vre.NotInScopeException;
+import nl.knaw.huygens.timbuctoo.vre.SearchException;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.inject.Inject;
+
 @Path(V2_PATH + "/" + DOMAIN_PREFIX + "/" + ENTITY_PATH + "/" + AUTOCOMPLETE_PATH)
 public class AutocompleteResource extends ResourceBase {
+  private static final int NOT_IMPLEMENTED = 501;
+  private static final String NO_AUTOCOMPLETE = "VRE with id %s does not support autocomplete on collection %s";
   public static final String DEFAULT_ROWS = "10";
   public static final String DEFAULT_START = "0";
   private static final Logger LOG = LoggerFactory.getLogger(AutocompleteResource.class);
@@ -59,8 +65,7 @@ public class AutocompleteResource extends ResourceBase {
   @GET
   @Produces(APPLICATION_JSON)
   public Response get(@PathParam(ENTITY_PARAM) String entityName, @QueryParam(QUERY) String query, //
-                      @QueryParam(START) @DefaultValue(DEFAULT_START) int start, @QueryParam(ROWS) @DefaultValue(DEFAULT_ROWS) int rows,
-                      @HeaderParam(VRE_ID_KEY) String vreId) {
+      @QueryParam(START) @DefaultValue(DEFAULT_START) int start, @QueryParam(ROWS) @DefaultValue(DEFAULT_ROWS) int rows, @HeaderParam(VRE_ID_KEY) String vreId) {
     Class<? extends DomainEntity> type = getValidEntityType(entityName);
     VRE vre = getValidVRE(vreId);
 
@@ -73,7 +78,10 @@ public class AutocompleteResource extends ResourceBase {
       LOG.error("Search has failed.", e);
 
       return mapException(INTERNAL_SERVER_ERROR, e);
+    } catch (RawSearchUnavailableException e) {
+      return super.mapException(NOT_IMPLEMENTED, String.format(NO_AUTOCOMPLETE, vreId, entityName));
     }
+
     Iterable<Map<String, Object>> result = resultConverter.convert(rawSearchResult, getCollectionUri(entityName));
 
     return Response.ok(result).build();
