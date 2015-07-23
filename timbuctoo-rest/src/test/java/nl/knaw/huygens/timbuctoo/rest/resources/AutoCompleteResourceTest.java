@@ -43,6 +43,7 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.GenericType;
 
 public class AutoCompleteResourceTest extends WebServiceTestSetup {
+  private static final String DEFAULT_QUERY = "*";
   private static final int NOT_IMPLEMENTED = 501;
   protected static final Class<ProjectADomainEntity> DEFAULT_TYPE = ProjectADomainEntity.class;
   protected static final String DEFAULT_COLLECTION = TypeNames.getExternalName(DEFAULT_TYPE);
@@ -86,6 +87,28 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
 
     // verify
     verify(vre).doRawSearch(DEFAULT_TYPE, SEARCH_PARAM, customStart, customRows);
+  }
+
+  @Test
+  public void getHasDoesQueryAAsteriskByDefault() throws Exception {
+    // setup
+    int customStart = 20;
+    int customRows = 50;
+    VRE vre = mock(VRE.class);
+    makeVREAvailable(vre, VRE_ID);
+
+    List<Map<String, Object>> rawSearchResult = Lists.<Map<String, Object>> newArrayList();
+
+    when(vre.doRawSearch(DEFAULT_TYPE, SEARCH_PARAM, DEFAULT_START, DEFAULT_ROWS)).thenReturn(rawSearchResult);
+    convertedResultIsFoundFor(rawSearchResult);
+
+    // action
+    resource().path(Paths.V2_PATH).path(DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH) //
+        .queryParam(START, "" + customStart).queryParam(ROWS, "" + customRows) //
+        .header(CustomHeaders.VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
+
+    // verify
+    verify(vre).doRawSearch(DEFAULT_TYPE, DEFAULT_QUERY, customStart, customRows);
   }
 
   @Test

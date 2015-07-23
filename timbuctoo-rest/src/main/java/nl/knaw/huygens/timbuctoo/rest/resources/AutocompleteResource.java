@@ -64,7 +64,7 @@ public class AutocompleteResource extends ResourceBase {
 
   @GET
   @Produces(APPLICATION_JSON)
-  public Response get(@PathParam(ENTITY_PARAM) String entityName, @QueryParam(QUERY) String query, //
+  public Response get(@PathParam(ENTITY_PARAM) String entityName, @QueryParam(QUERY) @DefaultValue("*") String query, //
       @QueryParam(START) @DefaultValue(DEFAULT_START) int start, @QueryParam(ROWS) @DefaultValue(DEFAULT_ROWS) int rows, @HeaderParam(VRE_ID_KEY) String vreId) {
     Class<? extends DomainEntity> type = getValidEntityType(entityName);
     VRE vre = getValidVRE(vreId);
