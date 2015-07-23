@@ -25,7 +25,6 @@ public class SolrQueryMatcher extends CompositeMatcher<SolrQuery> {
   }
 
   public SolrQueryMatcher withStart(int start) {
-    // FIXME: change the code to an Integer matcher.
     this.addMatcher(new PropertyEqualtityMatcher<SolrQuery, Integer>("start", start) {
       @Override
       protected Integer getItemValue(SolrQuery item) {
@@ -36,7 +35,6 @@ public class SolrQueryMatcher extends CompositeMatcher<SolrQuery> {
   }
 
   public SolrQueryMatcher withRows(int rows) {
-    // FIXME: change the code to an Integer matcher.
     this.addMatcher(new PropertyEqualtityMatcher<SolrQuery, Integer>("rows", rows) {
       @Override
       protected Integer getItemValue(SolrQuery item) {
