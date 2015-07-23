@@ -25,6 +25,7 @@ package nl.knaw.huygens.timbuctoo.model;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
+import nl.knaw.huygens.timbuctoo.annotations.RawSearchField;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
@@ -37,7 +38,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
 
 @IDPrefix("PERS")
+@RawSearchField(Person.INDEX_FIELD_NAME)
 public class Person extends DomainEntity {
+
+  static final String INDEX_FIELD_NAME = "dynamic_t_name";
 
   public static enum Gender {
     UNKNOWN, MALE, FEMALE, NOT_APPLICABLE
@@ -127,7 +131,7 @@ public class Person extends DomainEntity {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_t_name", isFaceted = false)
+  @IndexAnnotation(fieldName = INDEX_FIELD_NAME, isFaceted = false)
   public String getIndexedName() {
     StringBuilder builder = new StringBuilder();
     for (PersonName name : getNames()) {

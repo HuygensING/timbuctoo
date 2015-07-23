@@ -25,6 +25,7 @@ package nl.knaw.huygens.timbuctoo.model;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
+import nl.knaw.huygens.timbuctoo.annotations.RawSearchField;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.Period;
@@ -35,8 +36,10 @@ import com.google.common.collect.Lists;
  * Any named collection of people regarded as a single unit.
  */
 @IDPrefix("COLL")
+@RawSearchField(Collective.INDEX_FIELD_NAME)
 public class Collective extends DomainEntity {
 
+  static final String INDEX_FIELD_NAME = "dynamic_t_name";
   private String type;
   private String name;
   private String acronym;
@@ -61,7 +64,7 @@ public class Collective extends DomainEntity {
     this.type = Type.normalize(type);
   }
 
-  @IndexAnnotation(fieldName = "dynamic_t_name", isFaceted = false)
+  @IndexAnnotation(fieldName = INDEX_FIELD_NAME, isFaceted = false)
   public String getName() {
     return name;
   }

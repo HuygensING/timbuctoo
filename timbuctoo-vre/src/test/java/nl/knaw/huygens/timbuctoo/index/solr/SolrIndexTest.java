@@ -22,38 +22,6 @@ package nl.knaw.huygens.timbuctoo.index.solr;
  * #L%
  */
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import nl.knaw.huygens.facetedsearch.FacetedSearchException;
-import nl.knaw.huygens.facetedsearch.FacetedSearchLibrary;
-import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
-import nl.knaw.huygens.facetedsearch.model.NoSuchFieldInIndexException;
-import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
-import nl.knaw.huygens.facetedsearch.model.parameters.FacetField;
-import nl.knaw.huygens.facetedsearch.model.parameters.IndexDescription;
-import nl.knaw.huygens.solr.AbstractSolrServer;
-import nl.knaw.huygens.timbuctoo.index.IndexException;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.vre.SearchException;
-import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
-import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
-import org.apache.solr.common.SolrInputDocument;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InOrder;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import static nl.knaw.huygens.timbuctoo.index.solr.SolrQueryMatcher.likeSolrQuery;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -69,7 +37,42 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import nl.knaw.huygens.facetedsearch.FacetedSearchException;
+import nl.knaw.huygens.facetedsearch.FacetedSearchLibrary;
+import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
+import nl.knaw.huygens.facetedsearch.model.NoSuchFieldInIndexException;
+import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
+import nl.knaw.huygens.facetedsearch.model.parameters.FacetField;
+import nl.knaw.huygens.facetedsearch.model.parameters.IndexDescription;
+import nl.knaw.huygens.solr.AbstractSolrServer;
+import nl.knaw.huygens.timbuctoo.index.IndexException;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.vre.SearchException;
+import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
+
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.SolrInputDocument;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InOrder;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+
 public class SolrIndexTest {
+  private static final String RAW_SEARCH_FIELD = "rawSearchField";
   private static final String QUERY = "query";
   private static final String MESSAGE = "Error on server";
   private static final short START = 0;
@@ -92,7 +95,7 @@ public class SolrIndexTest {
     facetedSearchLibraryMock = mock(FacetedSearchLibrary.class);
     indexDescriptionMock = mock(IndexDescription.class);
 
-    instance = new SolrIndex("indexName", indexDescriptionMock, documentCreatorMock, solrServerMock, facetedSearchLibraryMock);
+    instance = new SolrIndex("indexName", RAW_SEARCH_FIELD, indexDescriptionMock, documentCreatorMock, solrServerMock, facetedSearchLibraryMock);
   }
 
   @Test
@@ -150,7 +153,7 @@ public class SolrIndexTest {
   @Test
   public void testAddWithEmptyVariationList() throws IndexException {
     // action
-    instance.add(Lists.<DomainEntity>newArrayList());
+    instance.add(Lists.<DomainEntity> newArrayList());
 
     // verify
     verifyZeroInteractions(documentCreatorMock, solrServerMock);
@@ -180,7 +183,7 @@ public class SolrIndexTest {
   @Test
   public void testUpdateWithEmptyVariationList() throws IndexException {
     // action
-    instance.update(Lists.<DomainEntity>newArrayList());
+    instance.update(Lists.<DomainEntity> newArrayList());
 
     // verify
     verifyZeroInteractions(documentCreatorMock, solrServerMock);
@@ -283,7 +286,7 @@ public class SolrIndexTest {
   @Test
   public void testDeleteMultipleByIdWithEmptyList() throws IndexException {
     // action
-    final ArrayList<String> emptyList = Lists.<String>newArrayList();
+    final ArrayList<String> emptyList = Lists.<String> newArrayList();
     instance.deleteById(emptyList);
 
     // verify
@@ -529,7 +532,7 @@ public class SolrIndexTest {
   }
 
   private void testSeachFacetedSearchLibraryThrowsAnException(Class<? extends Exception> exceptionToThrow) throws NoSuchFieldInIndexException, FacetedSearchException, SearchException,
-    SearchValidationException {
+      SearchValidationException {
     // setup
     DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
 
@@ -545,11 +548,12 @@ public class SolrIndexTest {
     }
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   public void doRawSearchExecutesAQueryDirectlyOnTheSolrServerAndTranslatesItToAnIterableOfStringObjectMaps() throws SolrServerException, SearchException {
     // setup
-    Map<String, Object> result1 = Maps.<String, Object>newHashMap();
-    Map<String, Object> result2 = Maps.<String, Object>newHashMap();
+    Map<String, Object> result1 = Maps.<String, Object> newHashMap();
+    Map<String, Object> result2 = Maps.<String, Object> newHashMap();
 
     SolrQueryMatcher query = likeSolrQuery().withQuery(QUERY).withStart(START).withRows(ROWS);
     setupQueryResponseForQueryWithResults(query, result1, result2);

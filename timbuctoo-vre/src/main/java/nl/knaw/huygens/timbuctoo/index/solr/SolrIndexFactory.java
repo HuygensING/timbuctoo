@@ -31,6 +31,7 @@ import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.index.IndexDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.index.IndexFactory;
+import nl.knaw.huygens.timbuctoo.index.RawSearchFieldFactory;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchLibraryFactory;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
@@ -49,17 +50,19 @@ public class SolrIndexFactory implements IndexFactory {
   private final IndexDescriptionFactory indexDescriptionFactory;
   private final FacetedSearchLibraryFactory facetedSearchLibraryFactory;
   private final Configuration configuration;
+  private final RawSearchFieldFactory rawSearchFieldFactory;
 
   // FIXME some abstractions are missing, there are too many dependencies.
 
   @Inject
   public SolrIndexFactory(SolrInputDocumentCreator solrInputDocumentCreator, AbstractSolrServerBuilder solrServerBuilder, IndexDescriptionFactory indexDescriptionFactory,
-      FacetedSearchLibraryFactory facetedSearchLibraryFactory, Configuration configuration) {
+      FacetedSearchLibraryFactory facetedSearchLibraryFactory, Configuration configuration, RawSearchFieldFactory rawSearchFieldFactory) {
     this.solrDocumentCreator = solrInputDocumentCreator;
     this.solrServerBuilder = solrServerBuilder;
     this.indexDescriptionFactory = indexDescriptionFactory;
     this.facetedSearchLibraryFactory = facetedSearchLibraryFactory;
     this.configuration = configuration;
+    this.rawSearchFieldFactory = rawSearchFieldFactory;
   }
 
   @Override
@@ -71,7 +74,9 @@ public class SolrIndexFactory implements IndexFactory {
         .build(indexDescription);
     FacetedSearchLibrary facetedSearchLibrary = facetedSearchLibraryFactory.create(abstractSolrServer);
 
-    return new SolrIndex(name, indexDescription, solrDocumentCreator, abstractSolrServer, facetedSearchLibrary);
+    String rawSearchField = rawSearchFieldFactory.getRawSearchField(type);
+
+    return new SolrIndex(name, rawSearchField, indexDescription, solrDocumentCreator, abstractSolrServer, facetedSearchLibrary);
   }
 
   @VisibleForTesting

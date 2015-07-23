@@ -23,8 +23,10 @@ package nl.knaw.huygens.timbuctoo.model;
  */
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
+import nl.knaw.huygens.timbuctoo.annotations.RawSearchField;
 
 @IDPrefix("LEGL")
+@RawSearchField(Entity.INDEX_FIELD_IDENTIFICATION_NAME)
 public class Legislation extends DomainEntity {
 
   @Override

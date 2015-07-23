@@ -25,6 +25,7 @@ package nl.knaw.huygens.timbuctoo.model;
 import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
+import nl.knaw.huygens.timbuctoo.annotations.RawSearchField;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
@@ -54,7 +55,10 @@ import com.google.common.collect.Lists;
  * </table>
  */
 @IDPrefix("DOCU")
+@RawSearchField(Document.INDEX_FIELD_TITLE)
 public class Document extends DomainEntity {
+
+  static final String INDEX_FIELD_TITLE = "dynamic_t_title";
 
   public static enum DocumentType {
     UNKNOWN, ANTHOLOGY, ARTICLE, AWARD, CATALOGUE, COMPILATION, DIARY, LETTER, LIST, MONOGRAPH, PERIODICAL, PICTURE, PUBLICITY, SHEETMUSIC, THEATERSCRIPT, WORK
@@ -86,7 +90,7 @@ public class Document extends DomainEntity {
     return getTitle();
   }
 
-  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_t_title", canBeEmpty = true),//
+  @IndexAnnotations({ @IndexAnnotation(fieldName = INDEX_FIELD_TITLE, canBeEmpty = true),//
       @IndexAnnotation(fieldName = "dynamic_sort_title", canBeEmpty = true, isSortable = true) })
   public String getTitle() {
     return title;

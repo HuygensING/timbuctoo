@@ -23,8 +23,10 @@ package nl.knaw.huygens.timbuctoo.model;
  */
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
+import nl.knaw.huygens.timbuctoo.annotations.RawSearchField;
 
 @IDPrefix("ARCR")
+@RawSearchField(Entity.INDEX_FIELD_IDENTIFICATION_NAME)
 public class Archiver extends DomainEntity {
 
   @Override

@@ -22,7 +22,10 @@ package nl.knaw.huygens.timbuctoo.index.solr;
  * #L%
  */
 
-import com.google.common.collect.Lists;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
 import nl.knaw.huygens.facetedsearch.FacetedSearchException;
 import nl.knaw.huygens.facetedsearch.FacetedSearchLibrary;
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
@@ -35,6 +38,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -44,9 +48,7 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
+import com.google.common.collect.Lists;
 
 public class SolrIndex implements Index {
 
@@ -57,6 +59,7 @@ public class SolrIndex implements Index {
   private final String name;
   private final FacetedSearchLibrary facetedSearchLibrary;
   private final IndexDescription indexDescription;
+  private final String rawSearchField;
 
   static {
     COUNT_QUERY = new SolrQuery();
@@ -64,12 +67,14 @@ public class SolrIndex implements Index {
     COUNT_QUERY.setRows(0);
   }
 
-  public SolrIndex(String name, IndexDescription indexDescription, SolrInputDocumentCreator solrDocumentCreator, AbstractSolrServer solrServer, FacetedSearchLibrary facetedSearchLibrary) {
+  public SolrIndex(String name, String rawSearchField, IndexDescription indexDescription, SolrInputDocumentCreator solrDocumentCreator, AbstractSolrServer solrServer,
+      FacetedSearchLibrary facetedSearchLibrary) {
     this.name = name;
     this.indexDescription = indexDescription;
     this.solrDocumentCreator = solrDocumentCreator;
     this.solrServer = solrServer;
     this.facetedSearchLibrary = facetedSearchLibrary;
+    this.rawSearchField = rawSearchField;
   }
 
   @Override
@@ -224,18 +229,20 @@ public class SolrIndex implements Index {
     SolrIndex other = (SolrIndex) obj;
 
     return new EqualsBuilder().append(name, other.name)//
-      .append(solrDocumentCreator, other.solrDocumentCreator)//
-      .append(facetedSearchLibrary, other.facetedSearchLibrary)//
-      .append(solrServer, other.solrServer)//
-      .append(indexDescription, other.indexDescription).isEquals();
+        .append(rawSearchField, other.rawSearchField) //
+        .append(solrDocumentCreator, other.solrDocumentCreator)//
+        .append(facetedSearchLibrary, other.facetedSearchLibrary)//
+        .append(solrServer, other.solrServer)//
+        .append(indexDescription, other.indexDescription).isEquals();
   }
 
   @Override
   public int hashCode() {
     return new HashCodeBuilder().append(name)//
-      .append(solrDocumentCreator)//
-      .append(facetedSearchLibrary)//
-      .append(solrServer)//
-      .append(indexDescription).toHashCode();
+        .append(rawSearchField) //
+        .append(solrDocumentCreator)//
+        .append(facetedSearchLibrary)//
+        .append(solrServer)//
+        .append(indexDescription).toHashCode();
   }
 }
