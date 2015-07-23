@@ -1,5 +1,8 @@
 package test.timbuctoo.index.model;
 
+import nl.knaw.huygens.timbuctoo.annotations.RawSearchField;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+
 /*
  * #%L
  * Timbuctoo VRE
@@ -22,7 +25,7 @@ package test.timbuctoo.index.model;
  * #L%
  */
 
-
+@RawSearchField(Entity.INDEX_FIELD_IDENTIFICATION_NAME)
 public class Type1 extends BaseType1 {
 
 }

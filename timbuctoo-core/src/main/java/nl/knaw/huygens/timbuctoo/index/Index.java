@@ -23,6 +23,7 @@ package nl.knaw.huygens.timbuctoo.index;
  */
 
 import java.util.List;
+import java.util.Map;
 
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
@@ -100,4 +101,5 @@ public interface Index {
    */
   <T extends FacetedSearchParameters<T>> FacetedSearchResult search(FacetedSearchParameters<T> searchParameters) throws SearchException, SearchValidationException;
 
+  Iterable<Map<String, Object>> doRawSearch(String query, int start, int rows) throws SearchException, RawSearchUnavailableException;
 }

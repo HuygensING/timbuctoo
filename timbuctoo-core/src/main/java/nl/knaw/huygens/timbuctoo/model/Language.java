@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import nl.knaw.huygens.timbuctoo.annotations.DBProperty;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
+import nl.knaw.huygens.timbuctoo.annotations.RawSearchField;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,7 +34,10 @@ import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
  * Denotes a language.
  */
 @IDPrefix("LANG")
+@RawSearchField(Language.INDEX_FIELD_NAME)
 public class Language extends DomainEntity {
+
+  static final String INDEX_FIELD_NAME = "dynamic_t_name";
 
   public static final String CODE = "^code";
 
@@ -64,7 +68,7 @@ public class Language extends DomainEntity {
     this.code = code;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_t_name", isFaceted = false)
+  @IndexAnnotation(fieldName = INDEX_FIELD_NAME, isFaceted = false)
   public String getName() {
     return name;
   }

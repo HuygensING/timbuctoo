@@ -23,11 +23,14 @@ package nl.knaw.huygens.timbuctoo.model;
  */
 
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
+import nl.knaw.huygens.timbuctoo.annotations.RawSearchField;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 
 @IDPrefix("KEYW")
+@RawSearchField(Keyword.INDEX_FIELD_VALUE)
 public class Keyword extends DomainEntity {
 
+  static final String INDEX_FIELD_VALUE = "dynamic_t_value";
   private String type;
   private String value;
 
@@ -45,7 +48,7 @@ public class Keyword extends DomainEntity {
     this.type = type;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_t_value", isFaceted = false)
+  @IndexAnnotation(fieldName = INDEX_FIELD_VALUE, isFaceted = false)
   public String getValue() {
     return value;
   }

@@ -58,6 +58,8 @@ public abstract class Entity {
   public static final String DB_REV_PROP_NAME = "rev";
   public static final String DB_MOD_PROP_NAME = "modified";
 
+  public static final String INDEX_FIELD_ID = "id";
+  public static final String INDEX_FIELD_IDENTIFICATION_NAME = "desc";
   @NotNull
   @Pattern(regexp = Paths.ID_REGEX)
   @JsonProperty(ID_PROPERTY_NAME)
@@ -83,10 +85,10 @@ public abstract class Entity {
    * Returns the name used for identification of this entity.
    */
   @JsonIgnore
-  @IndexAnnotation(fieldName = "desc")
+  @IndexAnnotation(fieldName = INDEX_FIELD_IDENTIFICATION_NAME)
   public abstract String getIdentificationName();
 
-  @IndexAnnotation(fieldName = "id")
+  @IndexAnnotation(fieldName = INDEX_FIELD_ID)
   public String getId() {
     return id;
   }

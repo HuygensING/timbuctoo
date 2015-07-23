@@ -35,6 +35,7 @@ import nl.knaw.huygens.solr.AbstractSolrServerBuilder;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexDescriptionFactory;
+import nl.knaw.huygens.timbuctoo.index.RawSearchFieldFactory;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchLibraryFactory;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
@@ -49,6 +50,8 @@ import test.timbuctoo.index.model.Type1;
 
 public class SolrIndexFactoryTest {
 
+  private static final String RAW_SEARCH_FIELD = "rawSearchField";
+
   private static final String DATA_DIR = "data/";
 
   private AbstractSolrServer solrServerMock;
@@ -62,6 +65,8 @@ public class SolrIndexFactoryTest {
 
   private SolrIndexFactory instance;
 
+  private RawSearchFieldFactory rawSearchFieldFactoryMock;
+
   @Before
   public void setup() {
     solrServerMock = mock(AbstractSolrServer.class);
@@ -72,16 +77,13 @@ public class SolrIndexFactoryTest {
     indexDescriptionFactoryMock = mock(IndexDescriptionFactory.class);
     solrServerBuilderMock = mock(AbstractSolrServerBuilder.class);
     facetedSearchLibraryFactoryMock = mock(FacetedSearchLibraryFactory.class);
+    rawSearchFieldFactoryMock = mock(RawSearchFieldFactory.class);
 
-    instance = new SolrIndexFactory(solrInputDocumentCreatorMock, solrServerBuilderMock, indexDescriptionFactoryMock, facetedSearchLibraryFactoryMock, configurationMock);
+    instance = new SolrIndexFactory(solrInputDocumentCreatorMock, solrServerBuilderMock, indexDescriptionFactoryMock, facetedSearchLibraryFactoryMock, configurationMock, rawSearchFieldFactoryMock);
   }
 
   @Test
   public void testCreateIndex() {
-    // It should create a list of facet definitions.
-    // It should create an AbstractSolrServer.
-    // It should create a FacetedSearchLibrary
-
     // setup
     String scopeId = "scopeid";
     VRE vre = newVRE().withVreId(scopeId).create();
@@ -89,8 +91,9 @@ public class SolrIndexFactoryTest {
     Class<? extends DomainEntity> type = Type1.class;
     String indexName = instance.getIndexNameFor(vre, type);
 
-    Index expectedSolrIndex = new SolrIndex(indexName, indexDescription, solrInputDocumentCreatorMock, solrServerMock, facetedSearchLibraryMock);
+    Index expectedSolrIndex = new SolrIndex(indexName, RAW_SEARCH_FIELD, indexDescription, solrInputDocumentCreatorMock, solrServerMock, facetedSearchLibraryMock);
 
+    when(rawSearchFieldFactoryMock.getRawSearchField(type)).thenReturn(RAW_SEARCH_FIELD);
     when(indexDescriptionFactoryMock.create(type)).thenReturn(indexDescription);
     when(solrServerBuilderMock.setCoreName(indexName)).thenReturn(solrServerBuilderMock);
     when(solrServerBuilderMock.build(indexDescription)).thenReturn(solrServerMock);

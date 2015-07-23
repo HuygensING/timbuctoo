@@ -25,6 +25,7 @@ package nl.knaw.huygens.timbuctoo.vre;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -34,6 +35,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
@@ -43,6 +45,7 @@ import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexCollection;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexStatus;
+import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultProcessor;
@@ -65,6 +68,9 @@ public class PackageVRETest {
   private static final String ID = "ID";
   private static final Class<ExplicitlyAnnotatedModel> TYPE = ExplicitlyAnnotatedModel.class;
   private static final String TYPE_STRING = "explicitlyannotatedmodel";
+  public static final String QUERY = "query";
+  public static final int ROWS = 20;
+  public static final int START = 0;
 
   private final DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
   private final Index indexMock = mock(Index.class);
@@ -414,13 +420,10 @@ public class PackageVRETest {
   @Test
   public void addToIndexStatusAddsTheStatusOfAllTheIndexesToTheIndexStatus() throws IndexException {
     // setup
-    Index indexMock1 = mock(Index.class);
-    Index indexMock2 = mock(Index.class);
-
     setupScopeGetBaseEntityTypesWith(TYPE, OTHER_TYPE);
 
-    when(indexCollectionMock.getIndexByType(TYPE)).thenReturn(indexMock1);
-    when(indexCollectionMock.getIndexByType(OTHER_TYPE)).thenReturn(indexMock2);
+    Index indexMock1 = indexFoundFor(TYPE);
+    Index indexMock2 = indexFoundFor(OTHER_TYPE);
 
     long indexMock1Count = 100l;
     when(indexMock1.getCount()).thenReturn(indexMock1Count);
@@ -441,13 +444,10 @@ public class PackageVRETest {
   @Test
   public void addToIndexStatusAddsAllTheIndexStatussesThatDoNotThrowAnException() throws IndexException {
     // setup
-    Index indexMock1 = mock(Index.class);
-    Index indexMock2 = mock(Index.class);
-
     setupScopeGetBaseEntityTypesWith(TYPE, OTHER_TYPE);
 
-    when(indexCollectionMock.getIndexByType(TYPE)).thenReturn(indexMock1);
-    when(indexCollectionMock.getIndexByType(OTHER_TYPE)).thenReturn(indexMock2);
+    Index indexMock1 = indexFoundFor(TYPE);
+    Index indexMock2 = indexFoundFor(OTHER_TYPE);
 
     doThrow(IndexException.class).when(indexMock1).getCount();
     long indexMock2Count = 133l;
@@ -466,6 +466,73 @@ public class PackageVRETest {
   protected void setupScopeGetBaseEntityTypesWith(Class<? extends DomainEntity>... types) {
     Set<Class<? extends DomainEntity>> typeSet = Sets.newHashSet(types);
     when(scopeMock.getPrimitiveEntityTypes()).thenReturn(typeSet);
+
+    for (Class<? extends DomainEntity> type : types) {
+      when(scopeMock.inScope(type)).thenReturn(true);
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void doRawSearchCallsDoRawSearchOfTheIndexCorrespondingWithTheType() throws Exception {
+    // setup
+    setupScopeGetBaseEntityTypesWith(TYPE);
+
+    Index indexMock1 = indexFoundFor(TYPE);
+    Iterable<Map<String, Object>> rawSearchResult = Lists.<Map<String, Object>> newArrayList();
+    when(indexMock1.doRawSearch(QUERY, START, ROWS)).thenReturn(rawSearchResult);
+
+    // action
+    Iterable<Map<String, Object>> actualSearchResult = vre.doRawSearch(TYPE, QUERY, 0, 20);
+
+    // verify
+    assertThat(actualSearchResult, is(sameInstance(rawSearchResult)));
+
+    verify(indexMock1).doRawSearch(QUERY, START, ROWS);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test(expected = NotInScopeException.class)
+  public void doRawSearchThrowsANotInScopeExceptionWhenTheTypeIsNotInTheScopeOfTheVRE() throws Exception {
+    // setup
+    setupScopeGetBaseEntityTypesWith(TYPE);
+
+    // action
+    vre.doRawSearch(OTHER_TYPE, QUERY, START, ROWS);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test(expected = SearchException.class)
+  public void doRawSearchThrowsASearchExceptionIfTheIndexThrowsOne() throws Exception {
+    // setup
+    setupScopeGetBaseEntityTypesWith(TYPE);
+
+    Index indexMock1 = indexFoundFor(TYPE);
+    when(indexMock1.doRawSearch(QUERY, START, ROWS)).thenThrow(new SearchException(new Exception()));
+
+    // action
+    vre.doRawSearch(TYPE, QUERY, 0, 20);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test(expected = RawSearchUnavailableException.class)
+  public void doRawSearchThrowsARawSearchUnavailableExceptionIfTheIndexThrowsOne() throws Exception {
+    // setup
+    setupScopeGetBaseEntityTypesWith(TYPE);
+
+    Index indexMock1 = indexFoundFor(TYPE);
+    when(indexMock1.doRawSearch(QUERY, START, ROWS)).thenThrow(new RawSearchUnavailableException("indexName"));
+
+    // action
+    vre.doRawSearch(TYPE, QUERY, 0, 20);
+  }
+
+  private Index indexFoundFor(Class<? extends DomainEntity> type) {
+    Index index = mock(Index.class);
+
+    when(indexCollectionMock.getIndexByType(type)).thenReturn(index);
+
+    return index;
   }
 
 }

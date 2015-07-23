@@ -22,9 +22,10 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
+import nl.knaw.huygens.timbuctoo.annotations.RawSearchField;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
@@ -32,17 +33,17 @@ import nl.knaw.huygens.timbuctoo.model.util.FloruitPeriod;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.util.Text;
-
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Lists;
+import java.util.List;
 
 @IDPrefix(Person.ID_PREFIX)
+@RawSearchField(Person.INDEX_FIELD_NAME)
 public class Person extends DomainEntity {
 
   public static final String ID_PREFIX = "PERS";
+  static final String INDEX_FIELD_NAME = "dynamic_t_name";
 
   public static enum Gender {
     UNKNOWN, MALE, FEMALE, NOT_APPLICABLE
@@ -142,7 +143,7 @@ public class Person extends DomainEntity {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_t_name", isFaceted = false)
+  @IndexAnnotation(fieldName = INDEX_FIELD_NAME, isFaceted = false)
   public String getIndexedName() {
     StringBuilder builder = new StringBuilder();
     for (PersonName name : getNames()) {

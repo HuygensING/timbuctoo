@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.annotations.DBProperty;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
+import nl.knaw.huygens.timbuctoo.annotations.RawSearchField;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.PlaceName;
 import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
@@ -36,8 +37,10 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import java.util.Map;
 
 @IDPrefix("LOCA")
+@RawSearchField(Location.INDEX_FIELD_NAME)
 public class Location extends DomainEntity {
 
+  static final String INDEX_FIELD_NAME = "dynamic_t_name";
   public static final String URN = "^urn";
 
   public static enum LocationType {
@@ -91,7 +94,7 @@ public class Location extends DomainEntity {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_t_name", isFaceted = false)
+  @IndexAnnotation(fieldName = INDEX_FIELD_NAME, isFaceted = false)
   public String getIndexedName() {
     StringBuilder builder = new StringBuilder();
     boolean isFirst = true;
