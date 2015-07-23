@@ -299,12 +299,12 @@ public class PackageVRE implements VRE {
   }
 
   @Override
-  public Iterable<Map<String, Object>> doRawSearch(Class<? extends DomainEntity> type, String query, int start, int numberOfResults) throws NotInScopeException, SearchException {
+  public Iterable<Map<String, Object>> doRawSearch(Class<? extends DomainEntity> type, String query, int start, int rows) throws NotInScopeException, SearchException {
     if(!inScope(type)){
       throw new NotInScopeException(type, vreId);
     }
 
-    return getIndexForType(type).doRawSearch(query);
+    return getIndexForType(type).doRawSearch(query, start, rows);
   }
 
   private interface IndexChanger {

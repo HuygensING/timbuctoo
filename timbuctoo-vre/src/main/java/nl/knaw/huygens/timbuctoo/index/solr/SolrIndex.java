@@ -200,10 +200,10 @@ public class SolrIndex implements Index {
   }
 
   @Override
-  public Iterable<Map<String, Object>> doRawSearch(String query) throws SearchException {
+  public Iterable<Map<String, Object>> doRawSearch(String query, int start, int rows) throws SearchException {
     QueryResponse queryResponse = null;
     try {
-      queryResponse = solrServer.search(new SolrQuery(query));
+      queryResponse = solrServer.search(new SolrQuery(query).setStart(start).setRows(rows));
     } catch (SolrServerException e) {
       throw new SearchException(e);
     }

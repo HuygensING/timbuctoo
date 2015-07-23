@@ -70,8 +70,10 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 public class SolrIndexTest {
-  public static final String QUERY = "query";
-  public static final String MESSAGE = "Error on server";
+  private static final String QUERY = "query";
+  private static final String MESSAGE = "Error on server";
+  private static final short START = 0;
+  private static final int ROWS = 10;
   @Mock
   private List<? extends DomainEntity> variationsToAdd;
   private AbstractSolrServer solrServerMock;
@@ -549,16 +551,17 @@ public class SolrIndexTest {
     Map<String, Object> result1 = Maps.<String, Object>newHashMap();
     Map<String, Object> result2 = Maps.<String, Object>newHashMap();
 
-    setupQueryResponseForQueryWithResults(QUERY, result1, result2);
+    SolrQueryMatcher query = likeSolrQuery().withQuery(QUERY).withStart(START).withRows(ROWS);
+    setupQueryResponseForQueryWithResults(query, result1, result2);
 
     // action
-    Iterable<Map<String, Object>> searchResult = instance.doRawSearch(QUERY);
+    Iterable<Map<String, Object>> searchResult = instance.doRawSearch(QUERY, START, ROWS);
 
     // verify
     assertThat(searchResult, containsInAnyOrder(result1, result2));
   }
 
-  private void setupQueryResponseForQueryWithResults(String query, Map<String, Object>... results) throws SolrServerException {
+  private void setupQueryResponseForQueryWithResults(SolrQueryMatcher query, Map<String, Object>... results) throws SolrServerException {
     QueryResponse queryResponse = mock(QueryResponse.class);
     SolrDocumentList solrDocuments = new SolrDocumentList();
 
@@ -567,7 +570,7 @@ public class SolrIndexTest {
     }
 
     when(queryResponse.getResults()).thenReturn(solrDocuments);
-    when(solrServerMock.search(argThat(likeSolrQuery().withQuery(query)))).thenReturn(queryResponse);
+    when(solrServerMock.search(argThat(query))).thenReturn(queryResponse);
   }
 
   private SolrDocument createDoc(Map<String, Object> result) {
@@ -582,6 +585,6 @@ public class SolrIndexTest {
     when(solrServerMock.search(any(SolrQuery.class))).thenThrow(new SolrServerException(MESSAGE));
 
     // action
-    instance.doRawSearch(QUERY);
+    instance.doRawSearch(QUERY, START, ROWS);
   }
 }

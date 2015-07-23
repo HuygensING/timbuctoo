@@ -65,6 +65,8 @@ public class PackageVRETest {
   private static final Class<ExplicitlyAnnotatedModel> TYPE = ExplicitlyAnnotatedModel.class;
   private static final String TYPE_STRING = "explicitlyannotatedmodel";
   public static final String QUERY = "query";
+  public static final int ROWS = 20;
+  public static final int START = 0;
 
   private final DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
   private final Index indexMock = mock(Index.class);
@@ -473,7 +475,7 @@ public class PackageVRETest {
 
     Index indexMock1 = indexFoundFor(TYPE);
     Iterable<Map<String, Object>> rawSearchResult = Lists.<Map<String, Object>>newArrayList();
-    when(indexMock1.doRawSearch(QUERY)).thenReturn(rawSearchResult);
+    when(indexMock1.doRawSearch(QUERY, START, ROWS)).thenReturn(rawSearchResult);
 
     // action
     Iterable<Map<String, Object>> actualSearchResult = vre.doRawSearch(TYPE, QUERY, 0, 20);
@@ -481,7 +483,7 @@ public class PackageVRETest {
     // verify
     assertThat(actualSearchResult, is(sameInstance(rawSearchResult)));
 
-    verify(indexMock1).doRawSearch(QUERY);
+    verify(indexMock1).doRawSearch(QUERY, START, ROWS);
   }
 
   @Test(expected = NotInScopeException.class)
@@ -490,7 +492,7 @@ public class PackageVRETest {
     setupScopeGetBaseEntityTypesWith(TYPE);
 
     // action
-    vre.doRawSearch(OTHER_TYPE, QUERY, 0, 20);
+    vre.doRawSearch(OTHER_TYPE, QUERY, START, ROWS);
   }
 
   @Test(expected = SearchException.class)
@@ -500,7 +502,7 @@ public class PackageVRETest {
 
     Index indexMock1 = indexFoundFor(TYPE);
     Iterable<Map<String, Object>> rawSearchResult = Lists.<Map<String, Object>>newArrayList();
-    when(indexMock1.doRawSearch(QUERY)).thenThrow(new SearchException(new Exception()));
+    when(indexMock1.doRawSearch(QUERY, START, ROWS)).thenThrow(new SearchException(new Exception()));
 
     // action
     vre.doRawSearch(TYPE, QUERY, 0, 20);
