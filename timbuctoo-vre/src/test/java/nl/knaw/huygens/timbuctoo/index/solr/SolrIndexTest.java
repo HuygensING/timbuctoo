@@ -52,7 +52,6 @@ import org.mockito.MockitoAnnotations;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -78,7 +77,9 @@ public class SolrIndexTest {
   private static final String MESSAGE = "Error on server";
   private static final short START = 0;
   private static final int ROWS = 10;
-  public static final HashMap<String, Object> FILTERS = Maps.newHashMap();
+  public static final Map<String, Object> FILTERS = Maps.newHashMap();
+  public static final String FILTER_VALUE = "filterValue";
+  public static final String FILTER_NAME = "filterName";
   @Mock
   private List<? extends DomainEntity> variationsToAdd;
   private AbstractSolrServer solrServerMock;
@@ -554,8 +555,8 @@ public class SolrIndexTest {
   @Test
   public void doRawSearchExecutesAQueryDirectlyOnTheSolrServerAndTranslatesItToAnIterableOfStringObjectMaps() throws SolrServerException, SearchException, RawSearchUnavailableException {
     // setup
-    Map<String, Object> result1 = Maps.<String, Object> newHashMap();
-    Map<String, Object> result2 = Maps.<String, Object> newHashMap();
+    Map<String, Object> result1 = Maps.newHashMap();
+    Map<String, Object> result2 = Maps.newHashMap();
 
     SolrQueryMatcher query = likeSolrQuery().withQuery(getSolrQuery(QUERY)).withStart(START).withRows(ROWS);
     setupQueryResponseForQueryWithResults(query, result1, result2);
@@ -571,8 +572,8 @@ public class SolrIndexTest {
   @Test
   public void doRawSearchRemovesTheColonsFormTheQuery() throws SolrServerException, SearchException, RawSearchUnavailableException {
     // setup
-    Map<String, Object> result1 = Maps.<String, Object> newHashMap();
-    Map<String, Object> result2 = Maps.<String, Object> newHashMap();
+    Map<String, Object> result1 = Maps.newHashMap();
+    Map<String, Object> result2 = Maps.newHashMap();
     String otherQuery = "other:query";
     String cleanedUpOtherQuery = "other query";
 
@@ -590,6 +591,37 @@ public class SolrIndexTest {
   private String getSolrQuery(String query) {
     return String.format("%s:%s", RAW_SEARCH_FIELD, query);
   }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void doRawSearchAddsTheAdditionalFiltersToTheQuery() throws SolrServerException, SearchException, RawSearchUnavailableException {
+    // setup
+    Map<String, Object> result1 = Maps.newHashMap();
+    Map<String, Object> result2 = Maps.newHashMap();
+
+    Map<String, Object> filters = Maps.newHashMap();
+    filters.put(FILTER_NAME, FILTER_VALUE);
+    SolrQueryMatcher expectedQuery = likeSolrQuery().withQuery(getSolrQueryWithAdditionalFilters(QUERY, filters)).withStart(START).withRows(ROWS);
+    setupQueryResponseForQueryWithResults(expectedQuery, result1, result2);
+
+    // action
+    Iterable<Map<String, Object>> searchResult = instance.doRawSearch(QUERY, START, ROWS, filters);
+
+    // verify
+    verify(solrServerMock).search(argThat(expectedQuery));
+    assertThat(searchResult, containsInAnyOrder(result1, result2));
+  }
+
+  private String getSolrQueryWithAdditionalFilters(String query, Map<String, Object> filters) {
+    StringBuilder completeQuery = new StringBuilder(String.format("+(%s)",getSolrQuery(query)));
+    for(Map.Entry<String, Object> filter: filters.entrySet()) {
+      completeQuery.append(String.format(" +(%s:%s)", filter.getKey(), filter.getValue()));
+    }
+
+
+    return completeQuery.toString();
+  }
+
 
   private void setupQueryResponseForQueryWithResults(SolrQueryMatcher query, Map<String, Object>... results) throws SolrServerException {
     QueryResponse queryResponse = mock(QueryResponse.class);
