@@ -36,6 +36,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
+import nl.knaw.huygens.timbuctoo.rest.util.AdditionalFilterTranslator;
 import nl.knaw.huygens.timbuctoo.rest.util.AutocompleteResultConverter;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultMapper;
@@ -89,6 +90,8 @@ class ResourceTestModule extends JerseyServletModule {
   private ChangeHelper changeHelper;
   private VRECollection vreCollection;
   private AutocompleteResultConverter autoCompleteResultConverter;
+  private AdditionalFilterTranslator additionalfilterTranslator;
+
 
   public ResourceTestModule() {
     try {
@@ -115,6 +118,7 @@ class ResourceTestModule extends JerseyServletModule {
       changeHelper = mock(ChangeHelper.class);
       vreCollection = mock(VRECollection.class);
       autoCompleteResultConverter = mock(AutocompleteResultConverter.class);
+      additionalfilterTranslator = mock(AdditionalFilterTranslator.class);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -126,7 +130,7 @@ class ResourceTestModule extends JerseyServletModule {
    */
   public void cleanUpMocks() {
     reset(config, repository, userConfigurationHandler, jsonProvider, validator, mailSender, authenticationHandler, broker, indexProducer, persistenceProducer, indexManager, searchRequestValidator,
-        searchParametersConverter, relationSearcher, regularClientSearchResultCreator, regularClientSearchResultCreator, basicAuthenticationHandler, changeHelper, vreCollection, autoCompleteResultConverter);
+      searchParametersConverter, relationSearcher, regularClientSearchResultCreator, regularClientSearchResultCreator, basicAuthenticationHandler, changeHelper, vreCollection, autoCompleteResultConverter, additionalfilterTranslator);
   }
 
   @Override
@@ -289,4 +293,11 @@ class ResourceTestModule extends JerseyServletModule {
   public AutocompleteResultConverter provideAutoCompleteResultConverter() {
     return autoCompleteResultConverter;
   }
+
+  @Singleton
+  @Provides
+  public AdditionalFilterTranslator provideAdditionalFilterTranslator() {
+    return additionalfilterTranslator;
+  }
+
 }

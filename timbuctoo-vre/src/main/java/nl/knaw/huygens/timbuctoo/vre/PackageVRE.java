@@ -302,7 +302,7 @@ public class PackageVRE implements VRE {
   }
 
   @Override
-  public Iterable<Map<String, Object>> doRawSearch(Class<? extends DomainEntity> type, String query, int start, int rows) throws NotInScopeException, SearchException, RawSearchUnavailableException {
+  public Iterable<Map<String, Object>> doRawSearch(Class<? extends DomainEntity> type, String query, int start, int rows, Map<String, Object> additionalFilters) throws NotInScopeException, SearchException, RawSearchUnavailableException {
     if (!inScope(type)) {
       throw new NotInScopeException(type, vreId);
     }

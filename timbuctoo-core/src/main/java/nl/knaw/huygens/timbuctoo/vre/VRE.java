@@ -1,9 +1,5 @@
 package nl.knaw.huygens.timbuctoo.vre;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
@@ -13,6 +9,10 @@ import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultProcessor;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -157,13 +157,14 @@ public interface VRE extends Scope {
    *
    * @param type the type to search for
    * @param searchString the string to search for
-   * @param start
-   * @param numberOfResults 
+   * @param start the offset
+   * @param numberOfResults the maximum number of results
+   * @param additionalFilters extra filters to apply to the search, the name should be the name of the field in the index.
    * @return a raw solr search result
    * @throws NotInScopeException when the type is not in scope of the VRE 
    * @throws SearchException when the search library throws an exception
    * @throws RawSearchUnavailableException when the type has no field defined to support raw search 
    */
-  Iterable<Map<String, Object>> doRawSearch(Class<? extends DomainEntity> type, String searchString, int start, int numberOfResults) throws NotInScopeException, SearchException,
+  Iterable<Map<String, Object>> doRawSearch(Class<? extends DomainEntity> type, String searchString, int start, int numberOfResults, Map<String, Object> additionalFilters) throws NotInScopeException, SearchException,
       RawSearchUnavailableException;
 }
