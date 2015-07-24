@@ -62,6 +62,13 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Strings;
+import com.google.inject.Inject;
+
+import nl.knaw.huygens.Log;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
@@ -75,12 +82,6 @@ import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Strings;
-import com.google.inject.Inject;
 
 /**
  * A REST resource for addressing collections of domain entities.
@@ -112,7 +113,8 @@ public class DomainEntityResource extends ResourceBase {
   ) {
     Class<? extends DomainEntity> entityType = getValidEntityType(entityName);
     List<? extends DomainEntity> list = retrieveEntities(entityType, typeValue, rows, start);
-    return Response.ok(new GenericEntity<List<? extends DomainEntity>>(list) {}).build();
+    return Response.ok(new GenericEntity<List<? extends DomainEntity>>(list) {
+    }).build();
   }
 
   protected final <T extends DomainEntity> List<T> retrieveEntities(Class<T> entityType, String typeValue, int rows, int start) {
@@ -134,7 +136,7 @@ public class DomainEntityResource extends ResourceBase {
       @HeaderParam(VRE_ID_KEY) String vreId, //
       @QueryParam(USER_ID_KEY) String userId//
   ) throws StorageException, URISyntaxException {
-
+    Log.info("XX post, input={}", input);
     Class<? extends DomainEntity> type = getValidEntityType(entityName);
     checkCondition(type == input.getClass(), BAD_REQUEST, "Type %s does not match input", type.getSimpleName());
 
@@ -145,7 +147,9 @@ public class DomainEntityResource extends ResourceBase {
 
     String id = null;
     try {
+      Log.info("XX post, before addDomainEntity, type={}", type);
       id = repository.addDomainEntity((Class<T>) type, (T) input, change);
+      Log.info("XX post, after addDomainEntity");
     } catch (DuplicateException e) {
       // TODO find a better solution
       LOG.info("Duplicate entity {} with id {}", entityName, e.getDuplicateId());
@@ -197,7 +201,7 @@ public class DomainEntityResource extends ResourceBase {
       @PathParam(ENTITY_PARAM) String entityName, //
       @PathParam(ID_PARAM) String id, //
       DomainEntity input, //
-      @HeaderParam(VRE_ID_KEY) String vreId,//
+      @HeaderParam(VRE_ID_KEY) String vreId, //
       @QueryParam(USER_ID_KEY) String userId//
   ) {
 
@@ -230,7 +234,7 @@ public class DomainEntityResource extends ResourceBase {
   @RolesAllowed(ADMIN_ROLE)
   @Consumes(MediaType.APPLICATION_JSON)
   public void putPIDs(//
-      @PathParam(ENTITY_PARAM) String entityName,//
+      @PathParam(ENTITY_PARAM) String entityName, //
       @HeaderParam(VRE_ID_KEY) String vreId) {
 
     Class<? extends DomainEntity> type = getValidEntityType(entityName);
