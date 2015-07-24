@@ -12,6 +12,12 @@
   <description>The core that provides the variation and the database connection.</description>
 
   <dependencies>
+    <dependency>
+      <groupId>nl.knaw.huygens</groupId>
+      <artifactId>log</artifactId>
+      <version>1.0.1</version>
+    </dependency>
+    
     <!-- ## Main dependencies ## -->
     <!-- Faceted search tools -->
     <dependency>

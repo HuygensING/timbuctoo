@@ -33,22 +33,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.model.SystemEntity;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
-import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
-import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
-import nl.knaw.huygens.timbuctoo.storage.Storage;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
-import nl.knaw.huygens.timbuctoo.storage.UpdateException;
-
 import org.apache.commons.lang.StringUtils;
 import org.mongojack.internal.stream.JacksonDBObject;
 import org.slf4j.Logger;
@@ -69,6 +53,23 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.MongoException;
+
+import nl.knaw.huygens.Log;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
+import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
+import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
+import nl.knaw.huygens.timbuctoo.storage.Storage;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
+import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 
 public class MongoStorage implements Storage {
 
@@ -266,8 +267,9 @@ public class MongoStorage implements Storage {
     entity.setVariations(null); // make sure the list is empty
     entity.addVariation(toBaseDomainEntity(type));
     entity.addVariation(type);
-
+    Log.info("addDomainEntity: before convert; type={}, entity={}", type, entity);
     JsonNode tree = inducer.convertDomainEntityForAdd(type, entity);
+    Log.info("addDomainEntity: after convert");
     mongoDB.insert(getDBCollection(type), id, toDBObject(tree));
 
     return id;
@@ -320,12 +322,19 @@ public class MongoStorage implements Storage {
 
   /**
    * A method that checks if the entity is present in the database.
-   * @param type the type of the entity
-   * @param id the id of the entity
-   * @param revision the revision of the entity
-   * @throws StorageException when one of the query executions fails.
-   * @throws NoSuchEntityException when the entity is not available at all.
-   * @throws UpdateException when the requested version is not available.
+   * 
+   * @param type
+   *          the type of the entity
+   * @param id
+   *          the id of the entity
+   * @param revision
+   *          the revision of the entity
+   * @throws StorageException
+   *           when one of the query executions fails.
+   * @throws NoSuchEntityException
+   *           when the entity is not available at all.
+   * @throws UpdateException
+   *           when the requested version is not available.
    */
   private <T extends Entity> void checkIfEntityExists(Class<T> type, String id, int revision) throws StorageException, NoSuchEntityException, UpdateException {
     if (!revisionExists(type, id, revision)) {
