@@ -44,18 +44,18 @@ import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.START;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.TYPE;
 
 @Path(V2_PATH + "/" + DOMAIN_PREFIX + "/" + KEYWORD_PATH + "/" + AUTOCOMPLETE_PATH)
-public class KeywordAutocompleteResource extends ResourceBase {
+public class KeywordAutocompleteResourceV2 extends ResourceBase {
   private static final int NOT_IMPLEMENTED = 501;
   private static final String NO_AUTOCOMPLETE = "VRE with id %s does not support autocomplete on collection %s";
   public static final String DEFAULT_ROWS = "10";
   public static final String DEFAULT_START = "0";
-  private static final Logger LOG = LoggerFactory.getLogger(KeywordAutocompleteResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(KeywordAutocompleteResourceV2.class);
   private final Configuration config;
   private final TypeRegistry typeRegistry;
   private final AutocompleteResultConverter resultConverter;
 
   @Inject
-  public KeywordAutocompleteResource(Configuration config, Repository repository, VRECollection vreCollection, TypeRegistry typeRegistry, AutocompleteResultConverter resultConverter) {
+  public KeywordAutocompleteResourceV2(Configuration config, Repository repository, VRECollection vreCollection, TypeRegistry typeRegistry, AutocompleteResultConverter resultConverter) {
     super(repository, vreCollection);
     this.config = config;
     this.typeRegistry = typeRegistry;

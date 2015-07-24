@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.config.Paths.DOMAIN_PREFIX;
+import static nl.knaw.huygens.timbuctoo.config.Paths.V2_PATH;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.QUERY;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.ROWS;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.START;
@@ -38,7 +39,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class AutoCompleteResourceTest extends WebServiceTestSetup {
+public class AutoCompleteResourceV2Test extends WebServiceTestSetup {
   private static final String DEFAULT_QUERY = "*";
   private static final int NOT_IMPLEMENTED = 501;
   protected static final Class<ProjectADomainEntity> DEFAULT_TYPE = ProjectADomainEntity.class;
@@ -53,14 +54,19 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
   private static final String UNKNOWN_COLLECTION = "unknownCollections";
   private static final String EXCEPTION_MESSAGE = "Exception message";
   private static final String EXCEPTION_KEY = "exception";
-  private static final int DEFAULT_START = Integer.parseInt(AutocompleteResource.DEFAULT_START);
-  private static final int DEFAULT_ROWS = Integer.parseInt(AutocompleteResource.DEFAULT_ROWS);;
+  private static final int DEFAULT_START = Integer.parseInt(AutocompleteResourceV2.DEFAULT_START);
+  private static final int DEFAULT_ROWS = Integer.parseInt(AutocompleteResourceV2.DEFAULT_ROWS);;
   private URI entityURI;
 
   @Before
   public void setupPublicUrl() {
     entityURI = UriBuilder.fromUri(this.getBaseURI()).path(DOMAIN_PREFIX).path(DEFAULT_COLLECTION).build();
     when(injector.getInstance(Configuration.class).getSetting("public_url")).thenReturn(this.getBaseURI().toString());
+  }
+
+  @Override
+  public String getAPIVersion(){
+    return V2_PATH;
   }
 
   @Test
@@ -75,7 +81,7 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
     convertedResultIsFoundFor(rawSearchResult);
 
     // action
-    ClientResponse response = resource().path(Paths.V2_PATH).path(DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
+    ClientResponse response = resource().path(getAPIVersion()).path(DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
       .queryParam(QUERY, SEARCH_PARAM).header(CustomHeaders.VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
 
     // verify
@@ -101,7 +107,7 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
     convertedResultIsFoundFor(rawSearchResult);
 
     // action
-    ClientResponse response = resource().path(Paths.V2_PATH).path(DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
+    ClientResponse response = resource().path(getAPIVersion()).path(DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
       .header(CustomHeaders.VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
 
     // verify
@@ -122,7 +128,7 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
     convertedResultIsFoundFor(rawSearchResult);
 
     // action
-    resource().path(Paths.V2_PATH).path(DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH) //
+    resource().path(getAPIVersion()).path(DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH) //
       .queryParam(QUERY, SEARCH_PARAM).queryParam(START, "" + customStart).queryParam(ROWS, "" + customRows) //
       .header(CustomHeaders.VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
 
@@ -167,7 +173,7 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
     makeVREAvailable(vre, VRE_ID);
 
     // action
-    ClientResponse response = resource().path(Paths.V2_PATH).path(DOMAIN_PREFIX).path(UNKNOWN_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
+    ClientResponse response = resource().path(getAPIVersion()).path(DOMAIN_PREFIX).path(UNKNOWN_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
         .queryParam(QUERY, SEARCH_PARAM).get(ClientResponse.class);
 
     // verify
@@ -184,7 +190,7 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
     makeVREAvailable(vre, VRE_ID);
 
     // action
-    ClientResponse response = resource().path(Paths.V2_PATH).path(DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
+    ClientResponse response = resource().path(getAPIVersion()).path(DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
         .queryParam(QUERY, SEARCH_PARAM).header(CustomHeaders.VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
 
     // verify
@@ -201,7 +207,7 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
     makeVREAvailable(vre, VRE_ID);
 
     // action
-    ClientResponse response = resource().path(Paths.V2_PATH).path(DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
+    ClientResponse response = resource().path(getAPIVersion()).path(DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
         .queryParam(QUERY, SEARCH_PARAM).header(CustomHeaders.VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
 
     // verify
@@ -220,7 +226,7 @@ public class AutoCompleteResourceTest extends WebServiceTestSetup {
     makeVREAvailable(vre, VRE_ID);
 
     // action
-    ClientResponse response = resource().path(Paths.V2_PATH).path(DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
+    ClientResponse response = resource().path(getAPIVersion()).path(DOMAIN_PREFIX).path(DEFAULT_COLLECTION).path(Paths.AUTOCOMPLETE_PATH)//
         .queryParam(QUERY, SEARCH_PARAM).header(CustomHeaders.VRE_ID_KEY, VRE_ID).get(ClientResponse.class);
 
     // verify
