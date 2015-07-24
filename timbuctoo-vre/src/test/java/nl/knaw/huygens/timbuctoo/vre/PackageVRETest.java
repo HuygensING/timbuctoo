@@ -69,6 +69,7 @@ public class PackageVRETest {
   public static final String QUERY = "query";
   public static final int ROWS = 20;
   public static final int START = 0;
+  public static final Map<String, Object> FILTERS = Maps.newHashMap();
 
   private final DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
   private final Index indexMock = mock(Index.class);
@@ -477,16 +478,16 @@ public class PackageVRETest {
     setupScopeGetBaseEntityTypesWith(TYPE);
 
     Index indexMock1 = indexFoundFor(TYPE);
-    Iterable<Map<String, Object>> rawSearchResult = Lists.<Map<String, Object>> newArrayList();
-    when(indexMock1.doRawSearch(QUERY, START, ROWS)).thenReturn(rawSearchResult);
+    Iterable<Map<String, Object>> rawSearchResult = Lists.newArrayList();
+    when(indexMock1.doRawSearch(QUERY, START, ROWS, FILTERS)).thenReturn(rawSearchResult);
 
     // action
-    Iterable<Map<String, Object>> actualSearchResult = vre.doRawSearch(TYPE, QUERY, 0, 20, Maps.<String, Object>newHashMap());
+    Iterable<Map<String, Object>> actualSearchResult = vre.doRawSearch(TYPE, QUERY, 0, 20, FILTERS);
 
     // verify
     assertThat(actualSearchResult, is(sameInstance(rawSearchResult)));
 
-    verify(indexMock1).doRawSearch(QUERY, START, ROWS);
+    verify(indexMock1).doRawSearch(QUERY, START, ROWS, FILTERS);
   }
 
   @SuppressWarnings("unchecked")
@@ -496,7 +497,7 @@ public class PackageVRETest {
     setupScopeGetBaseEntityTypesWith(TYPE);
 
     // action
-    vre.doRawSearch(OTHER_TYPE, QUERY, START, ROWS, Maps.<String, Object>newHashMap());
+    vre.doRawSearch(OTHER_TYPE, QUERY, START, ROWS, FILTERS);
   }
 
   @SuppressWarnings("unchecked")
@@ -506,10 +507,10 @@ public class PackageVRETest {
     setupScopeGetBaseEntityTypesWith(TYPE);
 
     Index indexMock1 = indexFoundFor(TYPE);
-    when(indexMock1.doRawSearch(QUERY, START, ROWS)).thenThrow(new SearchException(new Exception()));
+    when(indexMock1.doRawSearch(QUERY, START, ROWS, FILTERS)).thenThrow(new SearchException(new Exception()));
 
     // action
-    vre.doRawSearch(TYPE, QUERY, 0, 20, Maps.<String, Object>newHashMap());
+    vre.doRawSearch(TYPE, QUERY, 0, 20, FILTERS);
   }
 
   @SuppressWarnings("unchecked")
@@ -519,10 +520,10 @@ public class PackageVRETest {
     setupScopeGetBaseEntityTypesWith(TYPE);
 
     Index indexMock1 = indexFoundFor(TYPE);
-    when(indexMock1.doRawSearch(QUERY, START, ROWS)).thenThrow(new RawSearchUnavailableException("indexName"));
+    when(indexMock1.doRawSearch(QUERY, START, ROWS, FILTERS)).thenThrow(new RawSearchUnavailableException("indexName"));
 
     // action
-    vre.doRawSearch(TYPE, QUERY, 0, 20, Maps.<String, Object>newHashMap());
+    vre.doRawSearch(TYPE, QUERY, 0, 20, FILTERS);
   }
 
   private Index indexFoundFor(Class<? extends DomainEntity> type) {

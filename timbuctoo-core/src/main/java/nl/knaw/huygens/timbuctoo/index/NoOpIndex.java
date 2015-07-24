@@ -76,7 +76,7 @@ public class NoOpIndex implements Index {
   }
 
   @Override
-  public Iterable<Map<String, Object>> doRawSearch(String query, int start, int rows) {
+  public Iterable<Map<String, Object>> doRawSearch(String query, int start, int rows, Map<String, Object> additionalFilters) {
     return null;
   }
 }

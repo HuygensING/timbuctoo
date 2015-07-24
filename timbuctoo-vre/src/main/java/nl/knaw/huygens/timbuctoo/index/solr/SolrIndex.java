@@ -207,7 +207,7 @@ public class SolrIndex implements Index {
   }
 
   @Override
-  public Iterable<Map<String, Object>> doRawSearch(String query, int start, int rows) throws SearchException, RawSearchUnavailableException {
+  public Iterable<Map<String, Object>> doRawSearch(String query, int start, int rows, Map<String, Object> additionalFilters) throws SearchException, RawSearchUnavailableException {
     QueryResponse queryResponse = null;
     try {
       String solrQuery = createSolrQuery(query);

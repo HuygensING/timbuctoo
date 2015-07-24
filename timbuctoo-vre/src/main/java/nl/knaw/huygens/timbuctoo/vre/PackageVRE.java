@@ -22,15 +22,8 @@ package nl.knaw.huygens.timbuctoo.vre;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
-import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.Repository;
@@ -46,12 +39,17 @@ import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultProcessor;
 import nl.knaw.huygens.timbuctoo.search.FullTextSearchFieldFinder;
 import nl.knaw.huygens.timbuctoo.search.converters.SearchResultConverter;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
+import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
 
 /**
  * VRE implementation based on a scope defined by a single model package.
@@ -307,7 +305,7 @@ public class PackageVRE implements VRE {
       throw new NotInScopeException(type, vreId);
     }
 
-    return getIndexForType(type).doRawSearch(query, start, rows);
+    return getIndexForType(type).doRawSearch(query, start, rows, additionalFilters);
   }
 
   private interface IndexChanger {
