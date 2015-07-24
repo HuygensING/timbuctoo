@@ -32,6 +32,7 @@ public class QueryParameters {
   public static final String QUERY = "query";
   public static final String ROWS = "rows";
   public static final String START = "start";
+  public static final String TYPE = "type";
 
   private QueryParameters() {
     throw new AssertionError("Non-instantiable class");

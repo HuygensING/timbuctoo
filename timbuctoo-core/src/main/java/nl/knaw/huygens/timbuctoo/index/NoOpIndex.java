@@ -74,9 +74,8 @@ public class NoOpIndex implements Index {
     LOG.warn("Searching on a non existing index");
     return new FacetedSearchResult();
   }
-  
-@Override
-  public Iterable<Map<String, Object>> doRawSearch(String query, int start, int rows) {
+  @Override
+  public Iterable<Map<String, Object>> doRawSearch(String query, int start, int rows, Map<String, Object> additionalFilters) {
     return null;
   }
 }

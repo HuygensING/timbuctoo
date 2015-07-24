@@ -22,10 +22,8 @@ package nl.knaw.huygens.timbuctoo.index.solr;
  * #L%
  */
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.facetedsearch.FacetedSearchException;
 import nl.knaw.huygens.facetedsearch.FacetedSearchLibrary;
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
@@ -39,7 +37,6 @@ import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
-
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -49,8 +46,9 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 public class SolrIndex implements Index {
 
@@ -70,7 +68,7 @@ public class SolrIndex implements Index {
   }
 
   public SolrIndex(String name, String rawSearchField, IndexDescription indexDescription, SolrInputDocumentCreator solrDocumentCreator, AbstractSolrServer solrServer,
-      FacetedSearchLibrary facetedSearchLibrary) {
+                   FacetedSearchLibrary facetedSearchLibrary) {
     this.name = name;
     this.indexDescription = indexDescription;
     this.solrDocumentCreator = solrDocumentCreator;
@@ -207,10 +205,10 @@ public class SolrIndex implements Index {
   }
 
   @Override
-  public Iterable<Map<String, Object>> doRawSearch(String query, int start, int rows) throws SearchException, RawSearchUnavailableException {
+  public Iterable<Map<String, Object>> doRawSearch(String query, int start, int rows, Map<String, Object> additionalFilters) throws SearchException, RawSearchUnavailableException {
     QueryResponse queryResponse = null;
     try {
-      String solrQuery = createSolrQuery(query);
+      String solrQuery = createSolrQuery(query, additionalFilters);
       queryResponse = solrServer.search(new SolrQuery(solrQuery).setStart(start).setRows(rows));
     } catch (SolrServerException e) {
       throw new SearchException(e);
@@ -223,13 +221,28 @@ public class SolrIndex implements Index {
     return results;
   }
 
-  private String createSolrQuery(String query) throws RawSearchUnavailableException {
+  private String createSolrQuery(String query, Map<String, Object> additionalFilters) throws RawSearchUnavailableException {
     if (Strings.isNullOrEmpty(rawSearchField)) {
       throw new RawSearchUnavailableException(name);
     }
 
-    return String.format("%s:%s", rawSearchField, cleanUpSpecialCharaters(query));
+    String baseQuery = String.format("%s:%s", rawSearchField, cleanUpSpecialCharaters(query));
+
+    if (additionalFilters.isEmpty()) {
+      return baseQuery;
+    }
+
+
+    StringBuilder sb = new StringBuilder(String.format("+(%s)", baseQuery));
+
+    for (Map.Entry<String, Object> filter : additionalFilters.entrySet()) {
+      sb.append(String.format(" +(%s:%s)", filter.getKey(), filter.getValue()));
+    }
+    return sb.toString();
+
+
   }
+
 
   private String cleanUpSpecialCharaters(String term) {
 
@@ -245,20 +258,20 @@ public class SolrIndex implements Index {
     SolrIndex other = (SolrIndex) obj;
 
     return new EqualsBuilder().append(name, other.name)//
-        .append(rawSearchField, other.rawSearchField) //
-        .append(solrDocumentCreator, other.solrDocumentCreator)//
-        .append(facetedSearchLibrary, other.facetedSearchLibrary)//
-        .append(solrServer, other.solrServer)//
-        .append(indexDescription, other.indexDescription).isEquals();
+      .append(rawSearchField, other.rawSearchField) //
+      .append(solrDocumentCreator, other.solrDocumentCreator)//
+      .append(facetedSearchLibrary, other.facetedSearchLibrary)//
+      .append(solrServer, other.solrServer)//
+      .append(indexDescription, other.indexDescription).isEquals();
   }
 
   @Override
   public int hashCode() {
     return new HashCodeBuilder().append(name)//
-        .append(rawSearchField) //
-        .append(solrDocumentCreator)//
-        .append(facetedSearchLibrary)//
-        .append(solrServer)//
-        .append(indexDescription).toHashCode();
+      .append(rawSearchField) //
+      .append(solrDocumentCreator)//
+      .append(facetedSearchLibrary)//
+      .append(solrServer)//
+      .append(indexDescription).toHashCode();
   }
 }

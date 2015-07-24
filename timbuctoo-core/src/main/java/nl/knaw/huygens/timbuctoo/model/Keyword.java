@@ -31,6 +31,7 @@ import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 public class Keyword extends DomainEntity {
 
   static final String INDEX_FIELD_VALUE = "dynamic_t_value";
+  public static final String INDEX_TYPE_FIELD = "dynamic_s_type";
   private String type;
   private String value;
 

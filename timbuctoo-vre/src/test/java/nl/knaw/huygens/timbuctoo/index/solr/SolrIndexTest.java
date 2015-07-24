@@ -22,6 +22,39 @@ package nl.knaw.huygens.timbuctoo.index.solr;
  * #L%
  */
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import nl.knaw.huygens.facetedsearch.FacetedSearchException;
+import nl.knaw.huygens.facetedsearch.FacetedSearchLibrary;
+import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
+import nl.knaw.huygens.facetedsearch.model.NoSuchFieldInIndexException;
+import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
+import nl.knaw.huygens.facetedsearch.model.parameters.FacetField;
+import nl.knaw.huygens.facetedsearch.model.parameters.IndexDescription;
+import nl.knaw.huygens.solr.AbstractSolrServer;
+import nl.knaw.huygens.timbuctoo.index.IndexException;
+import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.vre.SearchException;
+import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.SolrInputDocument;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InOrder;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import static nl.knaw.huygens.timbuctoo.index.solr.SolrQueryMatcher.likeSolrQuery;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -37,41 +70,6 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import nl.knaw.huygens.facetedsearch.FacetedSearchException;
-import nl.knaw.huygens.facetedsearch.FacetedSearchLibrary;
-import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
-import nl.knaw.huygens.facetedsearch.model.NoSuchFieldInIndexException;
-import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
-import nl.knaw.huygens.facetedsearch.model.parameters.FacetField;
-import nl.knaw.huygens.facetedsearch.model.parameters.IndexDescription;
-import nl.knaw.huygens.solr.AbstractSolrServer;
-import nl.knaw.huygens.timbuctoo.index.IndexException;
-import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.vre.SearchException;
-import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
-
-import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
-import org.apache.solr.common.SolrInputDocument;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InOrder;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
 public class SolrIndexTest {
   private static final String INDEX_NAME = "indexName";
   private static final String RAW_SEARCH_FIELD = "rawSearchField";
@@ -79,6 +77,9 @@ public class SolrIndexTest {
   private static final String MESSAGE = "Error on server";
   private static final short START = 0;
   private static final int ROWS = 10;
+  public static final Map<String, Object> FILTERS = Maps.newHashMap();
+  public static final String FILTER_VALUE = "filterValue";
+  public static final String FILTER_NAME = "filterName";
   @Mock
   private List<? extends DomainEntity> variationsToAdd;
   private AbstractSolrServer solrServerMock;
@@ -554,14 +555,14 @@ public class SolrIndexTest {
   @Test
   public void doRawSearchExecutesAQueryDirectlyOnTheSolrServerAndTranslatesItToAnIterableOfStringObjectMaps() throws SolrServerException, SearchException, RawSearchUnavailableException {
     // setup
-    Map<String, Object> result1 = Maps.<String, Object> newHashMap();
-    Map<String, Object> result2 = Maps.<String, Object> newHashMap();
+    Map<String, Object> result1 = Maps.newHashMap();
+    Map<String, Object> result2 = Maps.newHashMap();
 
     SolrQueryMatcher query = likeSolrQuery().withQuery(getSolrQuery(QUERY)).withStart(START).withRows(ROWS);
     setupQueryResponseForQueryWithResults(query, result1, result2);
 
     // action
-    Iterable<Map<String, Object>> searchResult = instance.doRawSearch(QUERY, START, ROWS);
+    Iterable<Map<String, Object>> searchResult = instance.doRawSearch(QUERY, START, ROWS, FILTERS);
 
     // verify
     assertThat(searchResult, containsInAnyOrder(result1, result2));
@@ -571,8 +572,8 @@ public class SolrIndexTest {
   @Test
   public void doRawSearchRemovesTheColonsFormTheQuery() throws SolrServerException, SearchException, RawSearchUnavailableException {
     // setup
-    Map<String, Object> result1 = Maps.<String, Object> newHashMap();
-    Map<String, Object> result2 = Maps.<String, Object> newHashMap();
+    Map<String, Object> result1 = Maps.newHashMap();
+    Map<String, Object> result2 = Maps.newHashMap();
     String otherQuery = "other:query";
     String cleanedUpOtherQuery = "other query";
 
@@ -580,7 +581,7 @@ public class SolrIndexTest {
     setupQueryResponseForQueryWithResults(expectedQuery, result1, result2);
 
     // action
-    Iterable<Map<String, Object>> searchResult = instance.doRawSearch(otherQuery, START, ROWS);
+    Iterable<Map<String, Object>> searchResult = instance.doRawSearch(otherQuery, START, ROWS, FILTERS);
 
     // verify
     verify(solrServerMock).search(argThat(expectedQuery));
@@ -590,6 +591,37 @@ public class SolrIndexTest {
   private String getSolrQuery(String query) {
     return String.format("%s:%s", RAW_SEARCH_FIELD, query);
   }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void doRawSearchAddsTheAdditionalFiltersToTheQuery() throws SolrServerException, SearchException, RawSearchUnavailableException {
+    // setup
+    Map<String, Object> result1 = Maps.newHashMap();
+    Map<String, Object> result2 = Maps.newHashMap();
+
+    Map<String, Object> filters = Maps.newHashMap();
+    filters.put(FILTER_NAME, FILTER_VALUE);
+    SolrQueryMatcher expectedQuery = likeSolrQuery().withQuery(getSolrQueryWithAdditionalFilters(QUERY, filters)).withStart(START).withRows(ROWS);
+    setupQueryResponseForQueryWithResults(expectedQuery, result1, result2);
+
+    // action
+    Iterable<Map<String, Object>> searchResult = instance.doRawSearch(QUERY, START, ROWS, filters);
+
+    // verify
+    verify(solrServerMock).search(argThat(expectedQuery));
+    assertThat(searchResult, containsInAnyOrder(result1, result2));
+  }
+
+  private String getSolrQueryWithAdditionalFilters(String query, Map<String, Object> filters) {
+    StringBuilder completeQuery = new StringBuilder(String.format("+(%s)",getSolrQuery(query)));
+    for(Map.Entry<String, Object> filter: filters.entrySet()) {
+      completeQuery.append(String.format(" +(%s:%s)", filter.getKey(), filter.getValue()));
+    }
+
+
+    return completeQuery.toString();
+  }
+
 
   private void setupQueryResponseForQueryWithResults(SolrQueryMatcher query, Map<String, Object>... results) throws SolrServerException {
     QueryResponse queryResponse = mock(QueryResponse.class);
@@ -613,7 +645,7 @@ public class SolrIndexTest {
   public void doRawSearchThrowsAnRawSearchUnavailableExceptionWhenNoRawSearchFieldIsConfigured() throws Exception {
     SolrIndex instance = new SolrIndex(INDEX_NAME, "", indexDescriptionMock, documentCreatorMock, solrServerMock, facetedSearchLibraryMock);
 
-    instance.doRawSearch(QUERY, START, ROWS);
+    instance.doRawSearch(QUERY, START, ROWS, FILTERS);
   }
 
   @Test(expected = SearchException.class)
@@ -622,6 +654,6 @@ public class SolrIndexTest {
     when(solrServerMock.search(any(SolrQuery.class))).thenThrow(new SolrServerException(MESSAGE));
 
     // action
-    instance.doRawSearch(getSolrQuery(QUERY), START, ROWS);
+    instance.doRawSearch(getSolrQuery(QUERY), START, ROWS, FILTERS);
   }
 }

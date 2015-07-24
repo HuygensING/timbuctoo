@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Keyword;
 import nl.knaw.huygens.timbuctoo.rest.util.AutocompleteResultConverter;
 import nl.knaw.huygens.timbuctoo.vre.NotInScopeException;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
@@ -34,26 +35,27 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static nl.knaw.huygens.timbuctoo.config.Paths.AUTOCOMPLETE_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.DOMAIN_PREFIX;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
-import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.KEYWORD_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.V2_PATH;
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.QUERY;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.ROWS;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.START;
+import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.TYPE;
 
-@Path(V2_PATH + "/" + DOMAIN_PREFIX + "/" + ENTITY_PATH + "/" + AUTOCOMPLETE_PATH)
-public class AutocompleteResource extends ResourceBase {
+@Path(V2_PATH + "/" + DOMAIN_PREFIX + "/" + KEYWORD_PATH + "/" + AUTOCOMPLETE_PATH)
+public class KeywordAutocompleteResource extends ResourceBase {
   private static final int NOT_IMPLEMENTED = 501;
   private static final String NO_AUTOCOMPLETE = "VRE with id %s does not support autocomplete on collection %s";
   public static final String DEFAULT_ROWS = "10";
   public static final String DEFAULT_START = "0";
-  private static final Logger LOG = LoggerFactory.getLogger(AutocompleteResource.class);
+  private static final Logger LOG = LoggerFactory.getLogger(KeywordAutocompleteResource.class);
   private final Configuration config;
   private final TypeRegistry typeRegistry;
   private final AutocompleteResultConverter resultConverter;
 
   @Inject
-  public AutocompleteResource(Configuration config, Repository repository, VRECollection vreCollection, TypeRegistry typeRegistry, AutocompleteResultConverter resultConverter) {
+  public KeywordAutocompleteResource(Configuration config, Repository repository, VRECollection vreCollection, TypeRegistry typeRegistry, AutocompleteResultConverter resultConverter) {
     super(repository, vreCollection);
     this.config = config;
     this.typeRegistry = typeRegistry;
@@ -63,13 +65,19 @@ public class AutocompleteResource extends ResourceBase {
   @GET
   @Produces(APPLICATION_JSON)
   public Response get(@PathParam(ENTITY_PARAM) String entityName, @QueryParam(QUERY) @DefaultValue("*") String query, //
-      @QueryParam(START) @DefaultValue(DEFAULT_START) int start, @QueryParam(ROWS) @DefaultValue(DEFAULT_ROWS) int rows, @HeaderParam(VRE_ID_KEY) String vreId) {
+                      @QueryParam(START) @DefaultValue(DEFAULT_START) int start, @QueryParam(ROWS) @DefaultValue(DEFAULT_ROWS) int rows, //
+                      @QueryParam(TYPE) String typeFilter, @HeaderParam(VRE_ID_KEY) String vreId) {
     Class<? extends DomainEntity> type = getValidEntityType(entityName);
     VRE vre = getValidVRE(vreId);
 
     Iterable<Map<String, Object>> rawSearchResult = null;
     try {
-      rawSearchResult = vre.doRawSearch(type, query, start, rows, Maps.<String, Object>newHashMap());
+      Map<String, Object> additionalFilters = Maps.newHashMap();
+      if (typeFilter != null) {
+        additionalFilters.put(Keyword.INDEX_TYPE_FIELD, typeFilter);
+      }
+
+      rawSearchResult = vre.doRawSearch(type, query, start, rows, additionalFilters);
     } catch (NotInScopeException e) {
       return mapException(BAD_REQUEST, e);
     } catch (SearchException e) {

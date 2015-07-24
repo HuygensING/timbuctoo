@@ -22,22 +22,9 @@ package nl.knaw.huygens.timbuctoo.vre;
  * #L%
  */
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.Repository;
@@ -50,17 +37,28 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultProcessor;
 import nl.knaw.huygens.timbuctoo.search.converters.SearchResultConverter;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
-
 import test.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 import test.timbuctoo.index.model.Type1;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 public class PackageVRETest {
 
@@ -71,6 +69,7 @@ public class PackageVRETest {
   public static final String QUERY = "query";
   public static final int ROWS = 20;
   public static final int START = 0;
+  public static final Map<String, Object> FILTERS = Maps.newHashMap();
 
   private final DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
   private final Index indexMock = mock(Index.class);
@@ -479,16 +478,16 @@ public class PackageVRETest {
     setupScopeGetBaseEntityTypesWith(TYPE);
 
     Index indexMock1 = indexFoundFor(TYPE);
-    Iterable<Map<String, Object>> rawSearchResult = Lists.<Map<String, Object>> newArrayList();
-    when(indexMock1.doRawSearch(QUERY, START, ROWS)).thenReturn(rawSearchResult);
+    Iterable<Map<String, Object>> rawSearchResult = Lists.newArrayList();
+    when(indexMock1.doRawSearch(QUERY, START, ROWS, FILTERS)).thenReturn(rawSearchResult);
 
     // action
-    Iterable<Map<String, Object>> actualSearchResult = vre.doRawSearch(TYPE, QUERY, 0, 20);
+    Iterable<Map<String, Object>> actualSearchResult = vre.doRawSearch(TYPE, QUERY, 0, 20, FILTERS);
 
     // verify
     assertThat(actualSearchResult, is(sameInstance(rawSearchResult)));
 
-    verify(indexMock1).doRawSearch(QUERY, START, ROWS);
+    verify(indexMock1).doRawSearch(QUERY, START, ROWS, FILTERS);
   }
 
   @SuppressWarnings("unchecked")
@@ -498,7 +497,7 @@ public class PackageVRETest {
     setupScopeGetBaseEntityTypesWith(TYPE);
 
     // action
-    vre.doRawSearch(OTHER_TYPE, QUERY, START, ROWS);
+    vre.doRawSearch(OTHER_TYPE, QUERY, START, ROWS, FILTERS);
   }
 
   @SuppressWarnings("unchecked")
@@ -508,10 +507,10 @@ public class PackageVRETest {
     setupScopeGetBaseEntityTypesWith(TYPE);
 
     Index indexMock1 = indexFoundFor(TYPE);
-    when(indexMock1.doRawSearch(QUERY, START, ROWS)).thenThrow(new SearchException(new Exception()));
+    when(indexMock1.doRawSearch(QUERY, START, ROWS, FILTERS)).thenThrow(new SearchException(new Exception()));
 
     // action
-    vre.doRawSearch(TYPE, QUERY, 0, 20);
+    vre.doRawSearch(TYPE, QUERY, 0, 20, FILTERS);
   }
 
   @SuppressWarnings("unchecked")
@@ -521,10 +520,10 @@ public class PackageVRETest {
     setupScopeGetBaseEntityTypesWith(TYPE);
 
     Index indexMock1 = indexFoundFor(TYPE);
-    when(indexMock1.doRawSearch(QUERY, START, ROWS)).thenThrow(new RawSearchUnavailableException("indexName"));
+    when(indexMock1.doRawSearch(QUERY, START, ROWS, FILTERS)).thenThrow(new RawSearchUnavailableException("indexName"));
 
     // action
-    vre.doRawSearch(TYPE, QUERY, 0, 20);
+    vre.doRawSearch(TYPE, QUERY, 0, 20, FILTERS);
   }
 
   private Index indexFoundFor(Class<? extends DomainEntity> type) {
