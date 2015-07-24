@@ -39,7 +39,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class AutoCompleteResourceV2Test extends WebServiceTestSetup {
+public class AutocompleteResourceV2Test extends WebServiceTestSetup {
   private static final String DEFAULT_QUERY = "*";
   private static final int NOT_IMPLEMENTED = 501;
   protected static final Class<ProjectADomainEntity> DEFAULT_TYPE = ProjectADomainEntity.class;
