@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.rest.resources;
+package nl.knaw.huygens.timbuctoo.rest.util.search;
 
 /*
  * #%L
@@ -22,10 +22,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
@@ -35,17 +32,17 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
-import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
-
 import org.junit.Before;
 import org.junit.Test;
-
 import test.rest.model.TestDomainEntity;
 import test.rest.model.TestRelation;
 
-import com.google.common.collect.Lists;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class SearchRequestValidatorTest {
   private static final String INVALID_VRE_ID = "invalidVRE";
