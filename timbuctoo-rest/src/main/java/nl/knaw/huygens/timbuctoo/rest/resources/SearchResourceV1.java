@@ -28,7 +28,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.SEARCH_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.V1_OR_V2_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.V1_TO_V2_1_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.VERSION_PARAM;
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 
@@ -78,7 +78,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 
-@Path(V1_OR_V2_PATH + SEARCH_PATH)
+@Path(V1_TO_V2_1_PATH + SEARCH_PATH)
 public class SearchResourceV1 extends ResourceBase {
 
   private static final String RELATION_PARAM = "relationType";

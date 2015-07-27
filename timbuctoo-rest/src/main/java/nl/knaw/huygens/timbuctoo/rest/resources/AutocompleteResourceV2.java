@@ -57,14 +57,15 @@ import static nl.knaw.huygens.timbuctoo.config.Paths.AUTOCOMPLETE_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.DOMAIN_PREFIX;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.V2_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.V2_OR_V2_1_PATH;
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.QUERY;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.ROWS;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.START;
 
-@Path(V2_PATH + "/" + DOMAIN_PREFIX + "/" + ENTITY_PATH + "/" + AUTOCOMPLETE_PATH)
+@Path( V2_OR_V2_1_PATH + DOMAIN_PREFIX + "/" + ENTITY_PATH + "/" + AUTOCOMPLETE_PATH)
 public class AutocompleteResourceV2 extends ResourceBase {
+
   private static final int NOT_IMPLEMENTED = 501;
   private static final String NO_AUTOCOMPLETE = "VRE with id %s does not support autocomplete on collection %s";
   public static final String DEFAULT_ROWS = "10";

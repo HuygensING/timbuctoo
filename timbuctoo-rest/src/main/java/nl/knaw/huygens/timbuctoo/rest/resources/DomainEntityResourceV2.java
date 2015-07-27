@@ -68,14 +68,14 @@ import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ID_PARAM;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ID_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.V2_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.V2_OR_V2_1_PATH;
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.REVISION_KEY;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.USER_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
 
-@Path(V2_PATH + "/" + DOMAIN_PREFIX + "/" + ENTITY_PATH)
+@Path(V2_OR_V2_1_PATH +  DOMAIN_PREFIX + "/" + ENTITY_PATH)
 public class DomainEntityResourceV2 extends DomainEntityResource {
   private static Logger LOG = LoggerFactory.getLogger(DomainEntityResourceV2.class);
 
