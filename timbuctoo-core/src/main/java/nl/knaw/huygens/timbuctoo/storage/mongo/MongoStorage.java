@@ -256,7 +256,6 @@ public class MongoStorage implements Storage {
   @Override
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
     String id = entityIds.getNextId(type);
-    Log.info("XX id={}", id);
 
     entity.setId(id);
     entity.setRev(1);
