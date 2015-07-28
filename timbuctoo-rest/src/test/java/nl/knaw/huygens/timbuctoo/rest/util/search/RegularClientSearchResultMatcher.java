@@ -22,161 +22,140 @@ package nl.knaw.huygens.timbuctoo.rest.util.search;
  * #L%
  */
 
+import nl.knaw.huygens.facetedsearch.model.Facet;
+import nl.knaw.huygens.hamcrest.CompositeMatcher;
+import nl.knaw.huygens.hamcrest.PropertyEqualtityMatcher;
+import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
+import nl.knaw.huygens.timbuctoo.model.RegularSearchResultDTO;
+import org.hamcrest.Matcher;
+
 import java.util.List;
 import java.util.Set;
 
-import nl.knaw.huygens.facetedsearch.model.Facet;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
-import nl.knaw.huygens.timbuctoo.model.RegularSearchResultDTO;
+public class RegularClientSearchResultMatcher extends CompositeMatcher<RegularSearchResultDTO> {
 
-import org.hamcrest.Description;
+  private RegularClientSearchResultMatcher() {
 
-import com.google.common.base.Objects;
-
-public class RegularClientSearchResultMatcher extends ClientSearchResultMatcher<RegularSearchResultDTO> {
-
-  private final String term;
-  private final List<Facet> facets;
-  private final List<DomainEntityDTO> refs;
-
-  private RegularClientSearchResultMatcher( //
-      String term, //
-      List<Facet> facets, //
-      int numFound, //
-      List<String> ids, //
-      List<DomainEntityDTO> refs, //
-      List<? extends DomainEntity> results, //
-      int start, //
-      int rows, //
-      Set<String> sortableFields, //
-      String nextLink, //
-      String prevLink) {
-
-    super(numFound, ids, results, start, rows, sortableFields, nextLink, prevLink);
-
-    this.term = term;
-    this.facets = facets;
-    this.refs = refs;
   }
 
-  @Override
-  public void describeTo(Description description) {
-    description.appendText("RegularClientSearchResult with \n");
-
-    addToDescription(description, "term", term);
-    addToDescription(description, "facets", facets);
-    addToDescription(description, "numFound", numFound);
-    addToDescription(description, "ids", ids);
-    addToDescription(description, "refs", refs);
-    addToDescription(description, "results", results);
-    addToDescription(description, "start", start);
-    addToDescription(description, "rows", rows);
-    addToDescription(description, "sortableFields", sortableFields);
-    addToDescription(description, "nextLink", nextLink);
-    addToDescription(description, "prevLink", prevLink);
+  public static RegularClientSearchResultMatcher likeRegularSearchResultDTO() {
+    return new RegularClientSearchResultMatcher();
   }
 
-  @Override
-  protected void describeMismatchSafely(RegularSearchResultDTO item, Description mismatchdescription) {
-    mismatchdescription.appendText("RegularClientSearchResult with \n");
+  public RegularClientSearchResultMatcher withTerm(String term) {
+    this.addMatcher(new PropertyEqualtityMatcher<RegularSearchResultDTO, String>("term", term) {
+      @Override
+      protected String getItemValue(RegularSearchResultDTO item) {
+        return item.getTerm();
+      }
+    });
 
-    addToDescription(mismatchdescription, "term", item.getTerm());
-    addToDescription(mismatchdescription, "facets", item.getFacets());
-    addToDescription(mismatchdescription, "numFound", item.getNumFound());
-    addToDescription(mismatchdescription, "ids", item.getIds());
-    addToDescription(mismatchdescription, "refs", item.getRefs());
-    addToDescription(mismatchdescription, "start", item.getStart());
-    addToDescription(mismatchdescription, "rows", item.getRows());
-    addToDescription(mismatchdescription, "sortableFields", item.getSortableFields());
-    addToDescription(mismatchdescription, "nextLink", item.getNextLink());
-    addToDescription(mismatchdescription, "prevLink", item.getPrevLink());
+    return this;
   }
 
-  @Override
-  protected boolean matchesSafely(RegularSearchResultDTO item) {
-    boolean isEqual = super.matchesSafely(item);
-    isEqual &= Objects.equal(term, item.getTerm());
-    isEqual &= Objects.equal(facets, item.getFacets());
-    isEqual &= Objects.equal(refs, item.getRefs());
+  public RegularClientSearchResultMatcher withFacets(List<Facet> facets) {
+    this.addMatcher(new PropertyEqualtityMatcher<RegularSearchResultDTO, List<Facet>>("facets", facets) {
+      @Override
+      protected List<Facet> getItemValue(RegularSearchResultDTO item) {
+        return item.getFacets();
+      }
+    });
 
-    return isEqual;
+    return this;
   }
 
-  public static RegularClientSearchResultMatcherBuilder newRegularClientSearchResultMatcherBuilder() {
-    return new RegularClientSearchResultMatcherBuilder();
+  public RegularClientSearchResultMatcher withSortableFields(Set<String> sortableFields){
+    this.addMatcher(new PropertyEqualtityMatcher<RegularSearchResultDTO, Set<String>>("sortableFields", sortableFields) {
+      @Override
+      protected Set<String> getItemValue(RegularSearchResultDTO item) {
+        return item.getSortableFields();
+      }
+    });
+    return this;
   }
 
-  public static class RegularClientSearchResultMatcherBuilder {
-    private String term;
-    private List<Facet> facets;
-    private int numFound;
-    private List<String> ids;
-    private List<DomainEntityDTO> refs;
-    private List<? extends DomainEntity> results;
-    private int start;
-    private int rows;
-    private Set<String> sortableFields;
-    private String nextLink;
-    private String prevLink;
+  public RegularClientSearchResultMatcher withFullTextSearchFields(Set<String> fullTextSearchFields){
+    this.addMatcher(new PropertyEqualtityMatcher<RegularSearchResultDTO, Set<String>>("fullTextSearchFields", fullTextSearchFields) {
+      @Override
+      protected Set<String> getItemValue(RegularSearchResultDTO item) {
+        return item.getFullTextSearchFields();
+      }
+    });
+    return this;
+  }
 
-    public RegularClientSearchResultMatcherBuilder withTerm(String term) {
-      this.term = term;
-      return this;
-    }
+  public RegularClientSearchResultMatcher withNumfound(int numfound) {
+    this.addMatcher(new PropertyEqualtityMatcher<RegularSearchResultDTO, Integer>("numfound", numfound) {
+      @Override
+      protected Integer getItemValue(RegularSearchResultDTO item) {
+        return item.getNumFound();
+      }
+    });
+    return this;
+  }
 
-    public RegularClientSearchResultMatcherBuilder withFacets(List<Facet> facets) {
-      this.facets = facets;
-      return this;
-    }
+  public RegularClientSearchResultMatcher withIds(List<String> ids){
+    this.addMatcher(new PropertyEqualtityMatcher<RegularSearchResultDTO, List<String>>("ids", ids) {
+      @Override
+      protected List<String> getItemValue(RegularSearchResultDTO item) {
+        return item.getIds();
+      }
+    });
 
-    public RegularClientSearchResultMatcherBuilder withNumFound(int numFound) {
-      this.numFound = numFound;
-      return this;
-    }
+    return this;
+  }
 
-    public RegularClientSearchResultMatcherBuilder withIds(List<String> ids) {
-      this.ids = ids;
-      return this;
-    }
+  public RegularClientSearchResultMatcher withStart(int start){
+    this.addMatcher(new PropertyEqualtityMatcher<RegularSearchResultDTO, Integer>("start", start) {
+      @Override
+      protected Integer getItemValue(RegularSearchResultDTO item) {
+        return item.getStart();
+      }
+    });
+    return this;
+  }
 
-    public RegularClientSearchResultMatcherBuilder withRefs(List<DomainEntityDTO> refs) {
-      this.refs = refs;
-      return this;
-    }
+  public RegularClientSearchResultMatcher withRows(int rows){
+    this.addMatcher(new PropertyEqualtityMatcher<RegularSearchResultDTO, Integer>("rows", rows) {
+      @Override
+      protected Integer getItemValue(RegularSearchResultDTO item) {
+        return item.getRows();
+      }
+    });
+    return this;
+  }
 
-    public RegularClientSearchResultMatcherBuilder withResults(List<? extends DomainEntity> results) {
-      this.results = results;
-      return this;
-    }
 
-    public RegularClientSearchResultMatcherBuilder withStart(int start) {
-      this.start = start;
-      return this;
-    }
 
-    public RegularClientSearchResultMatcherBuilder withRows(int rows) {
-      this.rows = rows;
-      return this;
-    }
+  public RegularClientSearchResultMatcher withNextLink(String nextLink){
+    this.addMatcher(new PropertyEqualtityMatcher<RegularSearchResultDTO, String>("nextLink", nextLink) {
+      @Override
+      protected String getItemValue(RegularSearchResultDTO item) {
+        return item.getNextLink();
+      }
+    });
 
-    public RegularClientSearchResultMatcherBuilder withSortableFields(Set<String> sortableFields) {
-      this.sortableFields = sortableFields;
-      return this;
-    }
+    return this;
+  }
 
-    public RegularClientSearchResultMatcherBuilder withNextLink(String nextLink) {
-      this.nextLink = nextLink;
-      return this;
-    }
+  public RegularClientSearchResultMatcher withPrevLink(String prevLink){
+    this.addMatcher(new PropertyEqualtityMatcher<RegularSearchResultDTO, String>("prevLink", prevLink) {
+      @Override
+      protected String getItemValue(RegularSearchResultDTO item) {
+        return item.getPrevLink();
+      }
+    });
 
-    public RegularClientSearchResultMatcherBuilder withPrevLink(String prevLink) {
-      this.prevLink = prevLink;
-      return this;
-    }
+    return this;
+  }
 
-    public RegularClientSearchResultMatcher build() {
-      return new RegularClientSearchResultMatcher(term, facets, numFound, ids, refs, results, start, rows, sortableFields, nextLink, prevLink);
-    }
+  public Matcher<RegularSearchResultDTO> withRefs(List<DomainEntityDTO> refs) {
+    this.addMatcher(new PropertyEqualtityMatcher<RegularSearchResultDTO, List<DomainEntityDTO>>("refs", refs) {
+      @Override
+      protected List<DomainEntityDTO> getItemValue(RegularSearchResultDTO item) {
+        return item.getRefs();
+      }
+    });
+    return this;
   }
 }

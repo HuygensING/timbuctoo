@@ -22,10 +22,7 @@ package nl.knaw.huygens.timbuctoo.rest.util.search;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.rest.util.RangeHelper.mapToRange;
-
-import java.util.List;
-
+import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
@@ -35,7 +32,7 @@ import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
-import com.google.inject.Inject;
+import java.util.List;
 
 public class RelationSearchResultMapper extends SearchResultMapper {
 

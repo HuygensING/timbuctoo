@@ -308,6 +308,11 @@ public class PackageVRE implements VRE {
     return getIndexForType(type).doRawSearch(query, start, rows, additionalFilters);
   }
 
+  @Override
+  public List<Map<String, Object>> getRawDataFor(Class<? extends DomainEntity> type, List<String> ids) {
+    throw new UnsupportedOperationException("Not implemented yet");
+  }
+
   private interface IndexChanger {
     void change(Class<? extends DomainEntity> type, List<? extends DomainEntity> variations) throws IndexException;
   }

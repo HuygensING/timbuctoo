@@ -22,21 +22,20 @@ package nl.knaw.huygens.timbuctoo.rest.util.search;
  * #L%
  */
 
-import java.util.List;
-
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
+import nl.knaw.huygens.timbuctoo.rest.util.RangeHelper;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
+import java.util.List;
 
 public abstract class SearchResultMapper {
 
@@ -46,12 +45,18 @@ public abstract class SearchResultMapper {
   protected final SortableFieldFinder sortableFieldFinder;
   protected final HATEOASURICreator hateoasURICreator;
   protected final VRECollection vreCollection;
+  private final RangeHelper rangeHelper;
 
   public SearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator, VRECollection vreCollection) {
+    this(repository, sortableFieldFinder, hateoasURICreator, vreCollection, new RangeHelper());
+  }
+
+  SearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator, VRECollection vreCollection, RangeHelper rangeHelper) {
     this.repository = repository;
     this.sortableFieldFinder = sortableFieldFinder;
     this.hateoasURICreator = hateoasURICreator;
     this.vreCollection = vreCollection;
+    this.rangeHelper = rangeHelper;
   }
 
   public abstract <T extends DomainEntity> SearchResultDTO create(Class<T> type, SearchResult searchResult, int start, int rows);
@@ -105,4 +110,7 @@ public abstract class SearchResultMapper {
     return searchResult.getIds() != null ? searchResult.getIds() : Lists.<String> newArrayList();
   }
 
+  protected int mapToRange(int start, int minValue, int maxValue){
+    return rangeHelper.mapToRange(start, minValue, maxValue);
+  }
 }

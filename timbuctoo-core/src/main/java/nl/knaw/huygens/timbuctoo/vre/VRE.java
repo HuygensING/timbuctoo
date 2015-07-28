@@ -167,4 +167,14 @@ public interface VRE extends Scope {
    */
   Iterable<Map<String, Object>> doRawSearch(Class<? extends DomainEntity> type, String searchString, int start, int numberOfResults, Map<String, Object> additionalFilters) throws NotInScopeException, SearchException,
       RawSearchUnavailableException;
+
+
+  /**
+   * Get the indexed data for entities with id in the id's list.
+   *
+   * @param type the type of the entity to get
+   * @param ids the ids to get the data for
+   * @return the found data
+   */
+  List<Map<String, Object>> getRawDataFor(Class<? extends DomainEntity> type, List<String> ids);
 }

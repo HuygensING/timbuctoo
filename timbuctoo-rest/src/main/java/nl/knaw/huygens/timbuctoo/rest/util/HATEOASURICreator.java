@@ -22,16 +22,14 @@ package nl.knaw.huygens.timbuctoo.rest.util;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.config.Paths.SEARCH_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.V1_PATH;
-
-import java.net.URI;
-
-import javax.ws.rs.core.UriBuilder;
-
+import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 
-import com.google.inject.Inject;
+import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
+
+import static nl.knaw.huygens.timbuctoo.config.Paths.SEARCH_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.V1_PATH;
 
 public class HATEOASURICreator {
 
@@ -62,4 +60,11 @@ public class HATEOASURICreator {
     return createHATEOASURI(start, rows, queryId).toString();
   }
 
+  public String createNextResultsAsString(int currenStart, int requestedRows, int totalFound, String queryId) {
+    throw new UnsupportedOperationException("Not implemented yet");
+  }
+
+  public String createPrevResultsAsString(int currenStart, int requestedRows, String queryId) {
+    throw new UnsupportedOperationException("Not implemented yet");
+  }
 }

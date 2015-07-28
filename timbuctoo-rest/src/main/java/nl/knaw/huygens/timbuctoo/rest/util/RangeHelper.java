@@ -23,8 +23,8 @@ package nl.knaw.huygens.timbuctoo.rest.util;
  */
 
 public class RangeHelper {
-  private RangeHelper() {
-    throw new AssertionError("Non-instantiable class");
+  public RangeHelper() {
+
   }
 
   /**
@@ -36,7 +36,7 @@ public class RangeHelper {
    * {@code minValue} if {@code value} is lower than the {@code minValue}, 
    * {@code maxValue} if {@code value} is higher than the {@code maxValue}
    */
-  public static int mapToRange(int value, int minValue, int maxValue) {
+  public int mapToRange(int value, int minValue, int maxValue) {
     return Math.min(Math.max(value, minValue), maxValue);
   }
 }

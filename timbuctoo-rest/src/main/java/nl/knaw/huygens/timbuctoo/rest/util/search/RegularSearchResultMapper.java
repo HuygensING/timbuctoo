@@ -22,10 +22,8 @@ package nl.knaw.huygens.timbuctoo.rest.util.search;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.rest.util.RangeHelper.mapToRange;
-
-import java.util.List;
-
+import com.google.common.collect.Lists;
+import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -33,21 +31,27 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
 import nl.knaw.huygens.timbuctoo.model.RegularSearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
+import nl.knaw.huygens.timbuctoo.rest.util.RangeHelper;
 import nl.knaw.huygens.timbuctoo.search.FullTextSearchFieldFinder;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
-import com.google.common.collect.Lists;
-import com.google.inject.Inject;
+import java.util.List;
 
 public class RegularSearchResultMapper extends SearchResultMapper {
 
-  private final FullTextSearchFieldFinder fullTextSearchFieldFinder;
+  protected final FullTextSearchFieldFinder fullTextSearchFieldFinder;
 
   @Inject
   public RegularSearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator, FullTextSearchFieldFinder fullTextSearchFieldFinder,
       VRECollection vreCollection) {
     super(repository, sortableFieldFinder, hateoasURICreator, vreCollection);
+    this.fullTextSearchFieldFinder = fullTextSearchFieldFinder;
+  }
+
+  RegularSearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator, FullTextSearchFieldFinder fullTextSearchFieldFinder,
+                            VRECollection vreCollection, RangeHelper rangeHelper){
+    super(repository, sortableFieldFinder, hateoasURICreator, vreCollection, rangeHelper);
     this.fullTextSearchFieldFinder = fullTextSearchFieldFinder;
   }
 
@@ -75,7 +79,7 @@ public class RegularSearchResultMapper extends SearchResultMapper {
     dto.setSortableFields(sortableFieldFinder.findFields(type));
     dto.setTerm(searchResult.getTerm());
     dto.setFacets(searchResult.getFacets());
-    dto.setFullTextSearchFields(Lists.newArrayList(fullTextSearchFieldFinder.findFields(type)));
+    dto.setFullTextSearchFields(fullTextSearchFieldFinder.findFields(type));
 
     setPreviousLink(normalizedStart, rows, dto, queryId);
     setNextLink(start, rows, dto, numFound, end, queryId);
