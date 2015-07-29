@@ -80,6 +80,8 @@ public class SolrIndexTest {
   public static final Map<String, Object> FILTERS = Maps.newHashMap();
   public static final String FILTER_VALUE = "filterValue";
   public static final String FILTER_NAME = "filterName";
+  public static final String ID_1 = "id1";
+  public static final String ID_2 = "id2";
   @Mock
   private List<? extends DomainEntity> variationsToAdd;
   private AbstractSolrServer solrServerMock;
@@ -88,6 +90,8 @@ public class SolrIndexTest {
   private FacetedSearchLibrary facetedSearchLibraryMock;
   private SolrIndex instance;
   private IndexDescription indexDescriptionMock;
+  public static final Map<String, Object> RESULT_1 = Maps.newHashMap();
+  public static final Map<String, Object> RESULT_2 = Maps.newHashMap();
 
   @Before
   public void setUp() {
@@ -156,7 +160,7 @@ public class SolrIndexTest {
   @Test
   public void testAddWithEmptyVariationList() throws IndexException {
     // action
-    instance.add(Lists.<DomainEntity> newArrayList());
+    instance.add(Lists.<DomainEntity>newArrayList());
 
     // verify
     verifyZeroInteractions(documentCreatorMock, solrServerMock);
@@ -186,7 +190,7 @@ public class SolrIndexTest {
   @Test
   public void testUpdateWithEmptyVariationList() throws IndexException {
     // action
-    instance.update(Lists.<DomainEntity> newArrayList());
+    instance.update(Lists.<DomainEntity>newArrayList());
 
     // verify
     verifyZeroInteractions(documentCreatorMock, solrServerMock);
@@ -289,7 +293,7 @@ public class SolrIndexTest {
   @Test
   public void testDeleteMultipleByIdWithEmptyList() throws IndexException {
     // action
-    final ArrayList<String> emptyList = Lists.<String> newArrayList();
+    final ArrayList<String> emptyList = Lists.<String>newArrayList();
     instance.deleteById(emptyList);
 
     // verify
@@ -535,7 +539,7 @@ public class SolrIndexTest {
   }
 
   private void testSeachFacetedSearchLibraryThrowsAnException(Class<? extends Exception> exceptionToThrow) throws NoSuchFieldInIndexException, FacetedSearchException, SearchException,
-      SearchValidationException {
+    SearchValidationException {
     // setup
     DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
 
@@ -596,25 +600,23 @@ public class SolrIndexTest {
   @Test
   public void doRawSearchAddsTheAdditionalFiltersToTheQuery() throws SolrServerException, SearchException, RawSearchUnavailableException {
     // setup
-    Map<String, Object> result1 = Maps.newHashMap();
-    Map<String, Object> result2 = Maps.newHashMap();
 
     Map<String, Object> filters = Maps.newHashMap();
     filters.put(FILTER_NAME, FILTER_VALUE);
     SolrQueryMatcher expectedQuery = likeSolrQuery().withQuery(getSolrQueryWithAdditionalFilters(QUERY, filters)).withStart(START).withRows(ROWS);
-    setupQueryResponseForQueryWithResults(expectedQuery, result1, result2);
+    setupQueryResponseForQueryWithResults(expectedQuery, RESULT_1, RESULT_2);
 
     // action
     Iterable<Map<String, Object>> searchResult = instance.doRawSearch(QUERY, START, ROWS, filters);
 
     // verify
     verify(solrServerMock).search(argThat(expectedQuery));
-    assertThat(searchResult, containsInAnyOrder(result1, result2));
+    assertThat(searchResult, containsInAnyOrder(RESULT_1, RESULT_2));
   }
 
   private String getSolrQueryWithAdditionalFilters(String query, Map<String, Object> filters) {
-    StringBuilder completeQuery = new StringBuilder(String.format("+(%s)",getSolrQuery(query)));
-    for(Map.Entry<String, Object> filter: filters.entrySet()) {
+    StringBuilder completeQuery = new StringBuilder(String.format("+(%s)", getSolrQuery(query)));
+    for (Map.Entry<String, Object> filter : filters.entrySet()) {
       completeQuery.append(String.format(" +(%s:%s)", filter.getKey(), filter.getValue()));
     }
 
@@ -655,5 +657,27 @@ public class SolrIndexTest {
 
     // action
     instance.doRawSearch(getSolrQuery(QUERY), START, ROWS, FILTERS);
+  }
+
+  @Test
+  public void getDataByIdsQuerysTheIdFieldOfTheObject() throws Exception {
+    // setup
+    List<String> ids = Lists.newArrayList(ID_1, ID_2);
+    setupQueryResponseForQueryWithResults(likeSolrQuery(), RESULT_1, RESULT_2);
+
+    // action
+    List<Map<String, Object>> actualData = instance.getDataByIds(ids);
+
+    // verify
+    assertThat(actualData, containsInAnyOrder(RESULT_1, RESULT_2));
+    verify(solrServerMock).search(argThat(likeSolrQuery().withQuery(String.format("id : (%s OR %s)", ID_1, ID_2))));
+  }
+
+  @Test(expected = SearchException.class)
+  public void getDataByIdsThrowsASearchExceptionWhenTheSolrServerThrowsASolrServerException() throws Exception {
+    // setup
+    when(solrServerMock.search(any(SolrQuery.class))).thenThrow(new SolrServerException(MESSAGE));
+
+    instance.getDataByIds(Lists.newArrayList(ID_1, ID_2));
   }
 }

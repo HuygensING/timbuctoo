@@ -207,9 +207,15 @@ public class SolrIndex implements Index {
   @Override
   public Iterable<Map<String, Object>> doRawSearch(String query, int start, int rows, Map<String, Object> additionalFilters) throws SearchException, RawSearchUnavailableException {
     QueryResponse queryResponse = null;
+    String queryString = createSolrQuery(query, additionalFilters);
+    SolrQuery solrQuery = new SolrQuery(queryString).setStart(start).setRows(rows);
+    return getRawResults(solrQuery);
+  }
+
+  private List<Map<String, Object>> getRawResults(SolrQuery solrQuery) throws SearchException {
+    QueryResponse queryResponse;
     try {
-      String solrQuery = createSolrQuery(query, additionalFilters);
-      queryResponse = solrServer.search(new SolrQuery(solrQuery).setStart(start).setRows(rows));
+      queryResponse = solrServer.search(solrQuery);
     } catch (SolrServerException e) {
       throw new SearchException(e);
     }
@@ -219,11 +225,6 @@ public class SolrIndex implements Index {
       results.add(doc.getFieldValueMap());
     }
     return results;
-  }
-
-  @Override
-  public List<Map<String, Object>> getDataByIds(List<String> ids) {
-    throw new UnsupportedOperationException("Not implemented yet");
   }
 
   private String createSolrQuery(String query, Map<String, Object> additionalFilters) throws RawSearchUnavailableException {
@@ -248,6 +249,23 @@ public class SolrIndex implements Index {
 
   }
 
+  @Override
+  public List<Map<String, Object>> getDataByIds(List<String> ids) throws SearchException {
+    StringBuilder queryBuilder = new StringBuilder("id : (");
+    boolean isFirst = true;
+    for (String id : ids) {
+      if (!isFirst) {
+        queryBuilder.append(" OR ");
+      }
+      queryBuilder.append(id);
+      isFirst = false;
+
+    }
+    queryBuilder.append(")");
+
+    return getRawResults(new SolrQuery(queryBuilder.toString()));
+
+  }
 
   private String cleanUpSpecialCharaters(String term) {
 
