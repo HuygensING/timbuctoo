@@ -48,7 +48,7 @@ public class IndexRegularSearchResultMapper extends RegularSearchResultMapper {
 
     List<Map<String, Object>> rawData = null;
     try {
-      rawData = vreCollection.getVREById(searchResult.getVreId()).getRawDataFor(type, ids);
+      rawData = vreCollection.getVREById(searchResult.getVreId()).getRawDataFor(type, idsToRetrieve);
     } catch (SearchException | NotInScopeException e) {
       throw new RuntimeException(e); // FIXME: Hack to inform the client the search went wrong, and not change the API
     }

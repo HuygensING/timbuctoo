@@ -30,6 +30,7 @@ import java.util.Set;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
@@ -40,10 +41,10 @@ public class IndexRegularSearchResultMapperTest {
   public static final List<Map<String, Object>> RAW_DATA = Lists.newArrayList();
   public static final String NEXT_RESULTS = "nextResults";
   public static final String PREV_RESULTS = "prevResults";
-  public static final int NORMALIZED_START = 0;
+  public static final int NORMALIZED_START = 1;
   public static final int START = 0;
   public static final int ROWS = 10;
-  public static final int NORMALIZED_ROWS = 10;
+  public static final int NORMALIZED_ROWS = 4;
   public static final String QUERY_ID = "queryId";
   public static final List<Facet> FACETS = Lists.newArrayList();
   public static final Set<String> FULL_TEXT_SEARCH_FIELDS = Sets.newHashSet();
@@ -57,6 +58,7 @@ public class IndexRegularSearchResultMapperTest {
   private FullTextSearchFieldFinder fullTextSearchFieldFinder;
   private VRECollection vreCollection;
   public static final List<String> IDS = Lists.newArrayList("id1", "id2", "id3", "id4", "id5", "id6", "id7", "id8", "id9", "id10");
+  public static final List<String> ID_SUBLIST = Lists.newArrayList("id2", "id3", "id4", "id5");
   public static final int NUM_FOUND = IDS.size();
   private RangeHelper rangeHelper;
   private SearchResult searchResult;
@@ -82,24 +84,25 @@ public class IndexRegularSearchResultMapperTest {
     when(domainEntityDTOFactory.createFor(RAW_DATA)).thenReturn(REFS);
   }
 
-  public void setupSortableFieldFinder() {
+  private void setupSortableFieldFinder() {
     sortableFieldFinder = mock(SortableFieldFinder.class);
     when(sortableFieldFinder.findFields(DEFAULT_TYPE)).thenReturn(SORTABLE_FIELDS);
   }
 
-  public void setupFullTextSearchFieldFinder() {
+  private void setupFullTextSearchFieldFinder() {
     fullTextSearchFieldFinder = mock(FullTextSearchFieldFinder.class);
     when(fullTextSearchFieldFinder.findFields(DEFAULT_TYPE)).thenReturn(FULL_TEXT_SEARCH_FIELDS);
   }
 
-  public void setupVRE() throws Exception {
+  private void setupVRE() throws Exception {
     vreCollection = mock(VRECollection.class);
     vre = mock(VRE.class);
     when(vreCollection.getVREById(VRE_ID)).thenReturn(vre);
-    when(vre.getRawDataFor(DEFAULT_TYPE, IDS)).thenReturn(RAW_DATA);
+    when(vre.getRawDataFor(DEFAULT_TYPE, ID_SUBLIST)).thenReturn(RAW_DATA);
+
   }
 
-  public void setupSearchResult() {
+  private void setupSearchResult() {
     searchResult = new SearchResult();
     searchResult.setIds(IDS);
     searchResult.setSearchType(INTERNAL_TYPE_NAME);
@@ -109,20 +112,20 @@ public class IndexRegularSearchResultMapperTest {
     searchResult.setVreId(VRE_ID);
   }
 
-  public void setupRangeHelper() {
+  private void setupRangeHelper() {
     rangeHelper = mock(RangeHelper.class);
     when(rangeHelper.mapToRange(START, 0, NUM_FOUND)).thenReturn(NORMALIZED_START);
     when(rangeHelper.mapToRange(ROWS, 0, NUM_FOUND - NORMALIZED_START)).thenReturn(NORMALIZED_ROWS);
   }
 
-  public void setupURICreator() {
+  private void setupURICreator() {
     uriCreator = mock(HATEOASURICreator.class);
-    when(uriCreator.createNextResultsAsString(START, ROWS, NUM_FOUND, QUERY_ID)).thenReturn(NEXT_RESULTS);
-    when(uriCreator.createPrevResultsAsString(START, ROWS, QUERY_ID)).thenReturn(PREV_RESULTS);
+    when(uriCreator.createNextResultsAsString(NORMALIZED_START, NORMALIZED_ROWS, NUM_FOUND, QUERY_ID)).thenReturn(NEXT_RESULTS);
+    when(uriCreator.createPrevResultsAsString(NORMALIZED_START, NORMALIZED_ROWS, QUERY_ID)).thenReturn(PREV_RESULTS);
   }
 
   @Test
-  public void createCreatesASearchResultDTOWithDomainEntityDTOsOfTheFoundResults() {
+  public void createCreatesASearchResultDTOWithDomainEntityDTOsOfTheFoundResults() throws Exception {
     // action
     RegularSearchResultDTO searchResultDTO = instance.create(DEFAULT_TYPE, searchResult, START, ROWS);
 
@@ -139,12 +142,16 @@ public class IndexRegularSearchResultMapperTest {
       .withSortableFields(SORTABLE_FIELDS) //
       .withTerm(TERM)
       .withRefs(REFS));
+
+    verify(vre).getRawDataFor(DEFAULT_TYPE, ID_SUBLIST);
   }
 
   @Test
-  public void createRetrievesAllTheInfromationFromTheIndexAndHasNoInteractionWithTheRepository() {
+  public void createRetrievesAllTheInfromationFromTheIndexAndHasNoInteractionWithTheRepository() throws Exception {
+    // action
     instance.create(DEFAULT_TYPE, searchResult, START, ROWS);
 
+    // verify
     verifyZeroInteractions(repository);
   }
 
@@ -155,7 +162,7 @@ public class IndexRegularSearchResultMapperTest {
   public void createThrowsARuntimeExceptionWhenGetRawDataForThrowsANotInScopeException() throws Exception {
     // setup
     NotInScopeException notInScopeException = new NotInScopeException(DEFAULT_TYPE, VRE_ID);
-    when(vre.getRawDataFor(DEFAULT_TYPE, IDS)).thenThrow(notInScopeException);
+    when(vre.getRawDataFor(DEFAULT_TYPE, ID_SUBLIST)).thenThrow(notInScopeException);
 
     exception.expect(RuntimeException.class);
     exception.expectCause(is(notInScopeException));
@@ -168,7 +175,7 @@ public class IndexRegularSearchResultMapperTest {
   public void createThrowsARuntimeExceptionWhenGetRawDataForThrowsASearchException() throws Exception {
     // setup
     SearchException searchException = new SearchException(new Exception());
-    when(vre.getRawDataFor(DEFAULT_TYPE, IDS)).thenThrow(searchException);
+    when(vre.getRawDataFor(DEFAULT_TYPE, ID_SUBLIST)).thenThrow(searchException);
 
     exception.expect(RuntimeException.class);
     exception.expectCause(is(searchException));
