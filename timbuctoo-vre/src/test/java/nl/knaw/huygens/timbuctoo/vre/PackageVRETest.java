@@ -44,6 +44,7 @@ import org.mockito.Mockito;
 import test.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 import test.timbuctoo.index.model.Type1;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -66,10 +67,11 @@ public class PackageVRETest {
   private static final String ID = "ID";
   private static final Class<ExplicitlyAnnotatedModel> TYPE = ExplicitlyAnnotatedModel.class;
   private static final String TYPE_STRING = "explicitlyannotatedmodel";
-  public static final String QUERY = "query";
-  public static final int ROWS = 20;
-  public static final int START = 0;
-  public static final Map<String, Object> FILTERS = Maps.newHashMap();
+  private static final String QUERY = "query";
+  private static final int ROWS = 20;
+  private static final int START = 0;
+  private static final Map<String, Object> FILTERS = Maps.newHashMap();
+  private static final String INDEX_NAME = "indexName";
 
   private final DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
   private final Index indexMock = mock(Index.class);
@@ -101,7 +103,7 @@ public class PackageVRETest {
     Collection<Index> indexes = vre.getIndexes();
 
     // verify
-    assertThat(indexes, contains(new Index[] { indexMock1, indexMock2 }));
+    assertThat(indexes, contains(new Index[]{indexMock1, indexMock2}));
   }
 
   @Test
@@ -520,7 +522,7 @@ public class PackageVRETest {
     setupScopeGetBaseEntityTypesWith(TYPE);
 
     Index indexMock1 = indexFoundFor(TYPE);
-    when(indexMock1.doRawSearch(QUERY, START, ROWS, FILTERS)).thenThrow(new RawSearchUnavailableException("indexName"));
+    when(indexMock1.doRawSearch(QUERY, START, ROWS, FILTERS)).thenThrow(new RawSearchUnavailableException(INDEX_NAME));
 
     // action
     vre.doRawSearch(TYPE, QUERY, 0, 20, FILTERS);
@@ -534,4 +536,42 @@ public class PackageVRETest {
     return index;
   }
 
+  @Test
+  public void getRawDataForCallsTheSelectedIndexesGetDataByIds() throws Exception {
+    // setup
+    setupScopeGetBaseEntityTypesWith(TYPE);
+
+    List<String> ids = Lists.newArrayList();
+    Index index = indexFoundFor(TYPE);
+    List<Map<String, Object>> rawData = Lists.newArrayList();
+    when(index.getDataByIds(ids)).thenReturn(rawData);
+
+    // action
+    List<Map<String, Object>> actualRawData = vre.getRawDataFor(TYPE, ids);
+
+    // verify
+    assertThat(actualRawData, is(sameInstance(rawData)));
+  }
+
+  @Test(expected = NotInScopeException.class)
+  public void getRawDataForThrowsANotInScopeExceptionWhenTheTypeIsNoInScope() throws Exception {
+    // setup
+    setupScopeGetBaseEntityTypesWith(TYPE);
+
+    // action
+    vre.getRawDataFor(OTHER_TYPE, Lists.<String>newArrayList());
+  }
+
+
+  @Test(expected = SearchException.class)
+  public void getRawDataForThrowsASearchExceptionWhenTheIndexDoes() throws Exception {
+    // setup
+    setupScopeGetBaseEntityTypesWith(TYPE);
+    Index index = indexFoundFor(TYPE);
+    ArrayList<String> ids = Lists.<String>newArrayList();
+    when(index.getDataByIds(ids)).thenThrow(new SearchException(new Exception()));
+
+    // action
+    vre.getRawDataFor(TYPE, ids);
+  }
 }

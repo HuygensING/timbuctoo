@@ -176,5 +176,5 @@ public interface VRE extends Scope {
    * @param ids the ids to get the data for
    * @return the found data
    */
-  List<Map<String, Object>> getRawDataFor(Class<? extends DomainEntity> type, List<String> ids);
+  List<Map<String, Object>> getRawDataFor(Class<? extends DomainEntity> type, List<String> ids) throws NotInScopeException, SearchException;
 }

@@ -221,6 +221,11 @@ public class SolrIndex implements Index {
     return results;
   }
 
+  @Override
+  public List<Map<String, Object>> getDataByIds(List<String> ids) {
+    throw new UnsupportedOperationException("Not implemented yet");
+  }
+
   private String createSolrQuery(String query, Map<String, Object> additionalFilters) throws RawSearchUnavailableException {
     if (Strings.isNullOrEmpty(rawSearchField)) {
       throw new RawSearchUnavailableException(name);

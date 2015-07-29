@@ -22,25 +22,27 @@ package nl.knaw.huygens.timbuctoo.index;
  * #L%
  */
 
-import java.util.List;
-import java.util.Map;
-
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 
+import java.util.List;
+import java.util.Map;
+
 public interface Index {
 
   /**
    * Returns the name of the index.
+   *
    * @return the name of the index.
    */
   String getName();
 
   /**
    * Adds new items to the index.
+   *
    * @param variations
    * @throws IndexException when the action fails.
    */
@@ -48,6 +50,7 @@ public interface Index {
 
   /**
    * Updates existing items in the index.
+   *
    * @param variations
    * @throws IndexException when the action fails.
    */
@@ -55,51 +58,60 @@ public interface Index {
 
   /**
    * Deletes an item from the index.
+   *
    * @param id the id of the item to delete.
-   * @throws IndexException 
+   * @throws IndexException
    */
   void deleteById(String id) throws IndexException;
 
   /**
    * Deletes multiple items by id.
-   * @param ids the id's of the items to delete.  
-   * @throws IndexException 
+   *
+   * @param ids the id's of the items to delete.
+   * @throws IndexException
    */
   void deleteById(List<String> ids) throws IndexException;
 
   /**
    * Deletes all the items of the index.
-   * @throws IndexException 
+   *
+   * @throws IndexException
    */
   void clear() throws IndexException;
 
   /**
    * Get the number of items in the index.
+   *
    * @return the number of items in the index.
-   * @throws IndexException 
+   * @throws IndexException
    */
   long getCount() throws IndexException;
 
   /**
    * Commits all the changes to the index.
-   * @throws IndexException 
+   *
+   * @throws IndexException
    */
   void commit() throws IndexException;
 
   /**
    * Closes the index.
-   * @throws IndexException 
+   *
+   * @throws IndexException
    */
   void close() throws IndexException;
 
   /**
    * Searches the index.
+   *
    * @param searchParameters
    * @return the search result.
-   * @throws SearchException when the search request could not be processed.
+   * @throws SearchException           when the search request could not be processed.
    * @throws SearchValidationException when the searchParameters are not valid.
    */
   <T extends FacetedSearchParameters<T>> FacetedSearchResult search(FacetedSearchParameters<T> searchParameters) throws SearchException, SearchValidationException;
 
   Iterable<Map<String, Object>> doRawSearch(String query, int start, int rows, Map<String, Object> additionalFilters) throws SearchException, RawSearchUnavailableException;
+
+  List<Map<String, Object>> getDataByIds(List<String> ids) throws SearchException;
 }

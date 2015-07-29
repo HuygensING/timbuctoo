@@ -12,10 +12,14 @@ import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
 import nl.knaw.huygens.timbuctoo.rest.util.RangeHelper;
 import nl.knaw.huygens.timbuctoo.search.FullTextSearchFieldFinder;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
+import nl.knaw.huygens.timbuctoo.vre.NotInScopeException;
+import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import test.rest.model.projecta.ProjectADomainEntity;
 
 import java.util.ArrayList;
@@ -23,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -59,7 +64,7 @@ public class IndexRegularSearchResultMapperTest {
   private DomainEntityDTOFactory domainEntityDTOFactory;
 
   @Before
-  public void setup() {
+  public void setup() throws Exception {
     repository = mock(Repository.class);
     setupSearchResult();
     setupVRE();
@@ -87,7 +92,7 @@ public class IndexRegularSearchResultMapperTest {
     when(fullTextSearchFieldFinder.findFields(DEFAULT_TYPE)).thenReturn(FULL_TEXT_SEARCH_FIELDS);
   }
 
-  public void setupVRE() {
+  public void setupVRE() throws Exception {
     vreCollection = mock(VRECollection.class);
     vre = mock(VRE.class);
     when(vreCollection.getVREById(VRE_ID)).thenReturn(vre);
@@ -136,11 +141,39 @@ public class IndexRegularSearchResultMapperTest {
       .withRefs(REFS));
   }
 
-
   @Test
   public void createRetrievesAllTheInfromationFromTheIndexAndHasNoInteractionWithTheRepository() {
     instance.create(DEFAULT_TYPE, searchResult, START, ROWS);
 
     verifyZeroInteractions(repository);
+  }
+
+  @Rule
+  public ExpectedException exception = ExpectedException.none();
+
+  @Test
+  public void createThrowsARuntimeExceptionWhenGetRawDataForThrowsANotInScopeException() throws Exception {
+    // setup
+    NotInScopeException notInScopeException = new NotInScopeException(DEFAULT_TYPE, VRE_ID);
+    when(vre.getRawDataFor(DEFAULT_TYPE, IDS)).thenThrow(notInScopeException);
+
+    exception.expect(RuntimeException.class);
+    exception.expectCause(is(notInScopeException));
+
+    // action
+    instance.create(DEFAULT_TYPE, searchResult, START, ROWS);
+  }
+
+  @Test
+  public void createThrowsARuntimeExceptionWhenGetRawDataForThrowsASearchException() throws Exception {
+    // setup
+    SearchException searchException = new SearchException(new Exception());
+    when(vre.getRawDataFor(DEFAULT_TYPE, IDS)).thenThrow(searchException);
+
+    exception.expect(RuntimeException.class);
+    exception.expectCause(is(searchException));
+
+    // action
+    instance.create(DEFAULT_TYPE, searchResult, START, ROWS);
   }
 }

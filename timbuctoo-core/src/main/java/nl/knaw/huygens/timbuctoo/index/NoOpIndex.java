@@ -78,4 +78,9 @@ public class NoOpIndex implements Index {
   public Iterable<Map<String, Object>> doRawSearch(String query, int start, int rows, Map<String, Object> additionalFilters) {
     return null;
   }
+
+  @Override
+  public List<Map<String, Object>> getDataByIds(List<String> ids) {
+    throw new UnsupportedOperationException("Not implemented yet");
+  }
 }

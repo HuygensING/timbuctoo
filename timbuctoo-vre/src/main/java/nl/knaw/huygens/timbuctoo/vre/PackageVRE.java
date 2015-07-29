@@ -301,16 +301,22 @@ public class PackageVRE implements VRE {
 
   @Override
   public Iterable<Map<String, Object>> doRawSearch(Class<? extends DomainEntity> type, String query, int start, int rows, Map<String, Object> additionalFilters) throws NotInScopeException, SearchException, RawSearchUnavailableException {
-    if (!inScope(type)) {
-      throw new NotInScopeException(type, vreId);
-    }
+    throwNotInScopeExceptionWhenNotInScope(type);
 
     return getIndexForType(type).doRawSearch(query, start, rows, additionalFilters);
   }
 
+  private void throwNotInScopeExceptionWhenNotInScope(Class<? extends DomainEntity> type) throws NotInScopeException {
+    if (!inScope(type)) {
+      throw new NotInScopeException(type, vreId);
+    }
+  }
+
   @Override
-  public List<Map<String, Object>> getRawDataFor(Class<? extends DomainEntity> type, List<String> ids) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  public List<Map<String, Object>> getRawDataFor(Class<? extends DomainEntity> type, List<String> ids) throws NotInScopeException, SearchException {
+    throwNotInScopeExceptionWhenNotInScope(type);
+
+    return getIndexForType(type).getDataByIds(ids);
   }
 
   private interface IndexChanger {
