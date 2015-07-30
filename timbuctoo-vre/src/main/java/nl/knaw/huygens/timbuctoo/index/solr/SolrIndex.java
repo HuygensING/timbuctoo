@@ -35,6 +35,7 @@ import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -251,7 +252,8 @@ public class SolrIndex implements Index {
 
   @Override
   public List<Map<String, Object>> getDataByIds(List<String> ids) throws SearchException {
-    StringBuilder queryBuilder = new StringBuilder("id : (");
+    StringBuilder queryBuilder = new StringBuilder(Entity.INDEX_FIELD_ID);
+    queryBuilder.append(" : (");
     boolean isFirst = true;
     for (String id : ids) {
       if (!isFirst) {

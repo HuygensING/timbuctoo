@@ -35,6 +35,7 @@ import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -670,7 +671,7 @@ public class SolrIndexTest {
 
     // verify
     assertThat(actualData, containsInAnyOrder(RESULT_1, RESULT_2));
-    verify(solrServerMock).search(argThat(likeSolrQuery().withQuery(String.format("id : (%s OR %s)", ID_1, ID_2))));
+    verify(solrServerMock).search(argThat(likeSolrQuery().withQuery(String.format("%s : (%s OR %s)", Entity.INDEX_FIELD_ID, ID_1, ID_2))));
   }
 
   @Test(expected = SearchException.class)
