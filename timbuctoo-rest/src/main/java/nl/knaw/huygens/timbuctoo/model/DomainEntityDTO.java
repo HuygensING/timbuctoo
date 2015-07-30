@@ -22,11 +22,10 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-import java.util.Map;
-
+import com.google.common.base.Joiner;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 
-import com.google.common.base.Joiner;
+import java.util.Map;
 
 public class DomainEntityDTO {
 
@@ -34,7 +33,7 @@ public class DomainEntityDTO {
   private final String id;
   private final String path;
   private final String displayName;
-  private final Map<String, String> data;
+  private final Map<String, ? extends Object> data;
 
   public DomainEntityDTO(String type, String xtype, DomainEntity entity) {
     this.type = type;
@@ -60,7 +59,7 @@ public class DomainEntityDTO {
     return displayName;
   }
 
-  public Map<String, String> getData() {
+  public Map<String, ? extends Object> getData() {
     return data;
   }
 

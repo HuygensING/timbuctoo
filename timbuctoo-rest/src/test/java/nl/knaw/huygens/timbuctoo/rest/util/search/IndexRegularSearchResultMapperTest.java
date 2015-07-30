@@ -63,7 +63,7 @@ public class IndexRegularSearchResultMapperTest {
   private RangeHelper rangeHelper;
   private SearchResult searchResult;
   private VRE vre;
-  private DomainEntityDTOFactory domainEntityDTOFactory;
+  private DomainEntityDTOListFactory domainEntityDTOListFactory;
 
   @Before
   public void setup() throws Exception {
@@ -76,12 +76,12 @@ public class IndexRegularSearchResultMapperTest {
     setupSortableFieldFinder();
     setupRefCreatorFactory();
 
-    instance = new IndexRegularSearchResultMapper(repository, sortableFieldFinder, uriCreator, fullTextSearchFieldFinder, vreCollection, rangeHelper, domainEntityDTOFactory);
+    instance = new IndexRegularSearchResultMapper(repository, sortableFieldFinder, uriCreator, fullTextSearchFieldFinder, vreCollection, rangeHelper, domainEntityDTOListFactory);
   }
 
   private void setupRefCreatorFactory() {
-    domainEntityDTOFactory = mock(DomainEntityDTOFactory.class);
-    when(domainEntityDTOFactory.createFor(RAW_DATA)).thenReturn(REFS);
+    domainEntityDTOListFactory = mock(DomainEntityDTOListFactory.class);
+    when(domainEntityDTOListFactory.createFor(DEFAULT_TYPE, RAW_DATA)).thenReturn(REFS);
   }
 
   private void setupSortableFieldFinder() {

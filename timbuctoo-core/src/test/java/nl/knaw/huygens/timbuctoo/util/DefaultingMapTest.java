@@ -32,7 +32,7 @@ import org.junit.Test;
 
 public class DefaultingMapTest {
 
-  private static final String KEY = "key";
+  private static final String KEY = "KEY";
   private static final Integer VALUE = 7;
   private static final Integer DEFAULT = 42;
 

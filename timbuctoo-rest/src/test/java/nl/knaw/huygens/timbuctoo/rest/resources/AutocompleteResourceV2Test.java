@@ -67,7 +67,7 @@ public class AutocompleteResourceV2Test extends WebServiceTestSetup {
   protected static final Class<ProjectADomainEntity> DEFAULT_TYPE = ProjectADomainEntity.class;
   protected static final String DEFAULT_COLLECTION = TypeNames.getExternalName(DEFAULT_TYPE);
   private static final String SEARCH_PARAM = "test";
-  private static final String KEY_KEY = "key";
+  private static final String KEY_KEY = "KEY";
   private static final String VALUE_KEY = "value";
   private static final String KEY_VALUE1 = "keyValue";
   private static final String VALUE_VALUE1 = "valueValue";

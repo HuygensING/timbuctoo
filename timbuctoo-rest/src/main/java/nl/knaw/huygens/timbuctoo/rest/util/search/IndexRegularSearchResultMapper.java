@@ -20,20 +20,20 @@ import java.util.Map;
  * A search result mapper that retrieves the information from the index rather that from the database.
  */
 public class IndexRegularSearchResultMapper extends RegularSearchResultMapper {
-  private DomainEntityDTOFactory domainEntityDTOFactory;
+  private DomainEntityDTOListFactory domainEntityDTOListFactory;
 
   @Inject
   public IndexRegularSearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator, FullTextSearchFieldFinder fullTextSearchFieldFinder, VRECollection vreCollection) {
-    this(repository, sortableFieldFinder, hateoasURICreator, fullTextSearchFieldFinder, vreCollection, new RangeHelper(), new DomainEntityDTOFactory());
+    this(repository, sortableFieldFinder, hateoasURICreator, fullTextSearchFieldFinder, vreCollection, new RangeHelper(), new DomainEntityDTOListFactory());
   }
 
   IndexRegularSearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator, FullTextSearchFieldFinder fullTextSearchFieldFinder, VRECollection vreCollection, RangeHelper rangeHelper) {
     super(repository, sortableFieldFinder, hateoasURICreator, fullTextSearchFieldFinder, vreCollection, rangeHelper);
   }
 
-  public IndexRegularSearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator uriCreator, FullTextSearchFieldFinder fullTextSearchFieldFinder, VRECollection vreCollection, RangeHelper rangeHelper, DomainEntityDTOFactory domainEntityDTOFactory) {
+  public IndexRegularSearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator uriCreator, FullTextSearchFieldFinder fullTextSearchFieldFinder, VRECollection vreCollection, RangeHelper rangeHelper, DomainEntityDTOListFactory domainEntityDTOListFactory) {
     super(repository, sortableFieldFinder, uriCreator, fullTextSearchFieldFinder, vreCollection, rangeHelper);
-    this.domainEntityDTOFactory = domainEntityDTOFactory;
+    this.domainEntityDTOListFactory = domainEntityDTOListFactory;
   }
 
   @Override
@@ -61,7 +61,7 @@ public class IndexRegularSearchResultMapper extends RegularSearchResultMapper {
     dto.setStart(normalizedStart);
     dto.setIds(ids);
     dto.setNumFound(numFound);
-    dto.setRefs(domainEntityDTOFactory.createFor(rawData));
+    dto.setRefs(domainEntityDTOListFactory.createFor(type, rawData));
     dto.setSortableFields(sortableFieldFinder.findFields(type));
     dto.setTerm(searchResult.getTerm());
     dto.setFacets(searchResult.getFacets());

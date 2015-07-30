@@ -67,7 +67,7 @@ public class KeywordAutoCompleteResourceV2Test extends WebServiceTestSetup {
   protected static final Class<Keyword> KEYWORD_TYPE = Keyword.class;
   protected static final String KEYWORD_COLLECTION = TypeNames.getExternalName(KEYWORD_TYPE);
   private static final String SEARCH_PARAM = "test";
-  private static final String KEY_KEY = "key";
+  private static final String KEY_KEY = "KEY";
   private static final String VALUE_KEY = "value";
   private static final String KEY_VALUE1 = "keyValue";
   private static final String VALUE_VALUE1 = "valueValue";
