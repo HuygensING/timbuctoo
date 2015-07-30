@@ -83,7 +83,7 @@ public abstract class AbstractGraphWrapperTest {
   @Test
   public void getEdgesForKeyWithValueDelegatesTheCall() {
     // setup
-    String key = "key";
+    String key = "KEY";
     String value = "value";
     Iterable<Edge> edges = Lists.newArrayList();
     when(getDelegate().getEdges(key, value)).thenReturn(edges);
@@ -141,7 +141,7 @@ public abstract class AbstractGraphWrapperTest {
   @Test
   public void getVerticesForKeyWithValueDelegatesTheCall() {
     // setup
-    String key = "key";
+    String key = "KEY";
     String value = "value";
     Iterable<Vertex> expected = Lists.newArrayList();
     when(getDelegate().getVertices(key, value)).thenReturn(expected);

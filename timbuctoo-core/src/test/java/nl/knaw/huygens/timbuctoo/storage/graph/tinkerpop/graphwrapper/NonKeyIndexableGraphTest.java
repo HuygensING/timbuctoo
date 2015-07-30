@@ -18,7 +18,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 public class NonKeyIndexableGraphTest extends AbstractGraphWrapperTest {
 
   public static final Class<Vertex> ELEMENT_CLASS = Vertex.class;
-  public static final String KEY = "key";
+  public static final String KEY = "KEY";
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
   private NonKeyIndexableGraph instance;

@@ -10,6 +10,8 @@ import java.lang.reflect.Modifier;
 
 import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.REGULAR;
 import static nl.knaw.huygens.timbuctoo.storage.graph.FieldType.VIRTUAL;
+import static nl.knaw.huygens.timbuctoo.storage.graph.MethodHelper.getMethodByName;
+import static nl.knaw.huygens.timbuctoo.storage.graph.MethodHelper.getGetterName;
 
 public class PropertyBusinessRules {
 
@@ -46,41 +48,12 @@ public class PropertyBusinessRules {
       return annotation.value();
     }
 
-    Method method = getMethodByName(containingType, getMethodName(field));
+    Method method = getMethodByName(containingType, getGetterName(field));
     if (method != null && method.getAnnotation(JsonProperty.class) != null) {
       return method.getAnnotation(JsonProperty.class).value();
     }
 
     return field.getName();
-  }
-
-  /**
-   * Searches for a public method in the specified class or its superclasses
-   * and -interfaces that matches the specified name and has no parameters.
-   */
-  private static Method getMethodByName(Class<?> type, String methodName) {
-    try {
-      // TODO decide: use type.getDeclaredMethod(methodName)?
-      return type.getMethod(methodName);
-    } catch (NoSuchMethodException e) {
-      return null;
-    }
-  }
-
-  private static final String GET_ACCESSOR = "get";
-  private static final String IS_ACCESSOR = "is"; // get accesor for booleans.
-
-  private String getMethodName(Field field) {
-    char[] fieldNameChars = field.getName().toCharArray();
-
-    fieldNameChars[0] = Character.toUpperCase(fieldNameChars[0]);
-
-    String accessor = isBoolean(field.getType()) ? IS_ACCESSOR : GET_ACCESSOR;
-    return accessor.concat(String.valueOf(fieldNameChars));
-  }
-
-  private boolean isBoolean(Class<?> cls) {
-    return cls == boolean.class || cls == Boolean.class;
   }
 
   /**
