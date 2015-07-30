@@ -3,12 +3,16 @@ package test.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 @IDPrefix("MEXA")
-public class MappingExample extends DomainEntity{
+public class MappingExample extends DomainEntity {
   public static final String FIELD_WITHOUT_GETTER = "fieldWithoutGetter";
   public static final String FIELD_NAME_OF_GETTER_WITH_ANNOTATION = "fieldNameOfGetterWithAnnotation";
+  public static final String FIRST_NON_SORTABLE = "firstNonSortable";
+  public static final String CLIENT_FIELD_FIRST_NON_SORTABLE = "clientFieldFirstNonSortable";
+
   @JsonProperty(FIELD_WITHOUT_GETTER)
   private Object fieldWithoutGetter;
 
@@ -22,6 +26,11 @@ public class MappingExample extends DomainEntity{
   private Object fieldWithGetterWithJsonPropertyAnnotation;
 
   private Object fieldWithGetterWithoutAnnotations;
+
+  private Object fieldWithSortableIndexAnnotation;
+
+  @JsonProperty(CLIENT_FIELD_FIRST_NON_SORTABLE)
+  private Object fieldWithIndexAnnotations;
 
   @Override
   public String getIdentificationName() {
@@ -44,5 +53,18 @@ public class MappingExample extends DomainEntity{
 
   public Object getFieldWithGetterWithoutAnnotations() {
     return fieldWithGetterWithoutAnnotations;
+  }
+
+  @IndexAnnotation(fieldName = "fieldName", isSortable = true)
+  public Object getFieldWithSortableIndexAnnotation() {
+    return fieldWithSortableIndexAnnotation;
+  }
+
+  @IndexAnnotations({//
+    @IndexAnnotation(fieldName = "fieldName", isSortable = true), //
+    @IndexAnnotation(fieldName = FIRST_NON_SORTABLE), //
+    @IndexAnnotation(fieldName = "other")})
+  public Object getFieldWithIndexAnnotations() {
+    return fieldWithIndexAnnotations;
   }
 }

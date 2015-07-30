@@ -8,7 +8,7 @@ import test.model.projecta.ProjectAMappingExample;
 import static nl.knaw.huygens.timbuctoo.model.mapping.FieldNameMapFactory.Representation.CLIENT;
 import static nl.knaw.huygens.timbuctoo.model.mapping.FieldNameMapFactory.Representation.INDEX;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 
@@ -26,15 +26,19 @@ public class FieldNameMapFactoryTest {
   @Test
   public void createOnlyMapsTheFieldsThatHaveBothRepresentations() throws Exception {
     // setup
-    String expectedKey = MappingExample.INDEX_AND_CLIENT_CLIENT_NAME;
-    String expectedValue = MappingExample.INDEX_AND_CLIENT_INDEX_NAME;
+    String expectedKey1 = MappingExample.INDEX_AND_CLIENT_CLIENT_NAME;
+    String expectedValue1 = MappingExample.INDEX_AND_CLIENT_INDEX_NAME;
+
+    String expectedKey2 = MappingExample.CLIENT_FIELD_FIRST_NON_SORTABLE;
+    String expectedValue2 = MappingExample.FIRST_NON_SORTABLE;
 
     // action
     FieldNameMap fieldNameMap = instance.create(CLIENT, INDEX, TYPE);
 
     // verify
-    assertThat(fieldNameMap.getKeys(), contains(expectedKey));
-    assertThat(fieldNameMap.get(expectedKey), is(expectedValue));
+    assertThat(fieldNameMap.getKeys(), containsInAnyOrder(expectedKey1, expectedKey2));
+    assertThat(fieldNameMap.get(expectedKey1), is(expectedValue1));
+    assertThat(fieldNameMap.get(expectedKey2), is(expectedValue2));
   }
 
   @Test

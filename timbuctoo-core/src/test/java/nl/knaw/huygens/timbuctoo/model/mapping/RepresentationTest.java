@@ -36,13 +36,24 @@ public class RepresentationTest {
   }
 
   @Test
+  public void getFieldNameOfINDEXReturnsNullIfTheFieldHasAGetterWithAnIndexAnnotationThatIsSortable() throws Exception {
+    String expectedName = null;
+    verifyFieldName(INDEX, "fieldWithSortableIndexAnnotation", expectedName);
+  }
+
+  @Test
+  public void getFieldNameOfINDEXReturnsTheNameOfTheFirstNonSortableIndexAnnotationIfTheFieldHasGetterWithIndexAnnotations() throws Exception {
+    String expectedName = MappingExample.FIRST_NON_SORTABLE;
+    verifyFieldName(INDEX, "fieldWithIndexAnnotations", expectedName);
+  }
+
+  @Test
   public void getFieldNameForDerivedPropertyOfINDEXReturnsTheNameFromTheAnnotationOfTheGetter() {
     DerivedProperty derivedProperty = ProjectAMappingExample.DERIVED_PROPERTY_1;
     String expectedName = ProjectAMappingExample.DERIVED1_INDEX;
 
     verifyFieldName(INDEX, derivedProperty, expectedName);
   }
-
 
   @Test
   public void getFieldNameOfCLIENTReturnsTheValueOfTheJsonPropertyAnnotationOfTheField() throws Exception {

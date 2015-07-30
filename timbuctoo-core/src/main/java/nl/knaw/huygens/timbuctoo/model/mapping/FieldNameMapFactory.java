@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.model.mapping;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.DerivedProperty;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
@@ -95,7 +96,17 @@ public class FieldNameMapFactory {
 
       private String getFieldName(Method method) {
         if (isAnnotationPresentOnMethod(method, IndexAnnotation.class)) {
-          return method.getAnnotation(IndexAnnotation.class).fieldName();
+          IndexAnnotation annotation = method.getAnnotation(IndexAnnotation.class);
+          return annotation.isSortable() ? null : annotation.fieldName();
+        }
+
+        if(isAnnotationPresentOnMethod(method, IndexAnnotations.class)){
+          for (IndexAnnotation indexAnnotation : method.getAnnotation(IndexAnnotations.class).value()) {
+            if(!indexAnnotation.isSortable()){
+              return indexAnnotation.fieldName();
+            }
+          }
+
         }
 
         return null;
