@@ -69,8 +69,8 @@ public class IndexRegularSearchResultMapper extends RegularSearchResultMapper {
       dto.setFacets(searchResult.getFacets());
       dto.setFullTextSearchFields(fullTextSearchFieldFinder.findFields(type));
 
-      dto.setNextLink(hateoasURICreator.createNextResultsAsString(normalizedStart, normalizedRows, numFound, queryId));
-      dto.setPrevLink(hateoasURICreator.createPrevResultsAsString(normalizedStart, normalizedRows, queryId));
+      dto.setNextLink(hateoasURICreator.createNextResultsAsString(normalizedStart, rows, numFound, queryId));
+      dto.setPrevLink(hateoasURICreator.createPrevResultsAsString(normalizedStart, rows, queryId));
 
       return dto;
     }

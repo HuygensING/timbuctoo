@@ -33,11 +33,12 @@ import static nl.knaw.huygens.timbuctoo.config.Paths.V1_PATH;
 
 public class HATEOASURICreator {
 
+  public static final String PUBLIC_URL = "public_url";
   private final String publicUrl;
 
   @Inject
   public HATEOASURICreator(Configuration config) {
-    publicUrl = config.getSetting("public_url");
+    publicUrl = config.getSetting(PUBLIC_URL);
   }
 
   /**
@@ -60,11 +61,17 @@ public class HATEOASURICreator {
     return createHATEOASURI(start, rows, queryId).toString();
   }
 
-  public String createNextResultsAsString(int currenStart, int requestedRows, int totalFound, String queryId) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  public String createNextResultsAsString(int currentStart, int requestedRows, int totalFound, String queryId) {
+    int nextStart = currentStart + requestedRows;
+    if(nextStart >= totalFound){
+      return null;
+    }
+
+    return createHATEOASURIAsString(nextStart, requestedRows, queryId);
   }
 
   public String createPrevResultsAsString(int currenStart, int requestedRows, String queryId) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    int previousStart = Math.max(currenStart - requestedRows, 0);
+    return createHATEOASURIAsString(previousStart, requestedRows, queryId);
   }
 }

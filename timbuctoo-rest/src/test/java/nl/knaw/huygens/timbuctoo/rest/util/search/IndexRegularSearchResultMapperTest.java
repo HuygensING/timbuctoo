@@ -120,8 +120,8 @@ public class IndexRegularSearchResultMapperTest {
 
   private void setupURICreator() {
     uriCreator = mock(HATEOASURICreator.class);
-    when(uriCreator.createNextResultsAsString(NORMALIZED_START, NORMALIZED_ROWS, NUM_FOUND, QUERY_ID)).thenReturn(NEXT_RESULTS);
-    when(uriCreator.createPrevResultsAsString(NORMALIZED_START, NORMALIZED_ROWS, QUERY_ID)).thenReturn(PREV_RESULTS);
+    when(uriCreator.createNextResultsAsString(NORMALIZED_START, ROWS, NUM_FOUND, QUERY_ID)).thenReturn(NEXT_RESULTS);
+    when(uriCreator.createPrevResultsAsString(NORMALIZED_START, ROWS, QUERY_ID)).thenReturn(PREV_RESULTS);
   }
 
   @Test
