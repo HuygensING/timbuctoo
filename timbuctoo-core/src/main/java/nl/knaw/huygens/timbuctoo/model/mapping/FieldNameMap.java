@@ -24,4 +24,14 @@ public class FieldNameMap {
   void put(String key, String value) {
     map.put(key, value);
   }
+
+  /**
+   * Changes the keys of the input from the from-keys to the target-keys.
+   * @param input the map to be remapped
+   * @param <T> the type of the value of the map.
+   * @return the remapped map
+   */
+  public <T> Map<String, T> remap(Map<String, T> input) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }

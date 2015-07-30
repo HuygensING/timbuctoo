@@ -1,12 +1,24 @@
 package nl.knaw.huygens.timbuctoo.rest.util.search;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.mapping.FieldNameMap;
 
 import java.util.Map;
 
 public class DomainEntityDTOFactory {
-  public DomainEntityDTO create(FieldNameMap fieldNameMap, Map<String, Object> map) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  public DomainEntityDTO create(FieldNameMap fieldNameMap, Map<String, Object> data) {
+    DomainEntityDTO dto = new DomainEntityDTO();
+
+    dto.setId(getAsString(data, Entity.INDEX_FIELD_ID));
+    dto.setDisplayName(getAsString(data, Entity.INDEX_FIELD_IDENTIFICATION_NAME));
+    dto.setData(fieldNameMap.remap(data));
+
+    return dto;
+  }
+
+  private String getAsString(Map<String, Object> data, String key) {
+    Object value = data.get(key);
+    return value != null ? value.toString() : null;
   }
 }
