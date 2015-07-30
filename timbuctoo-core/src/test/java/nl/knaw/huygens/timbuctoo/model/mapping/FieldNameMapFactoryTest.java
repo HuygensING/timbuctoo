@@ -36,9 +36,9 @@ public class FieldNameMapFactoryTest {
     FieldNameMap fieldNameMap = instance.create(CLIENT, INDEX, TYPE);
 
     // verify
-    assertThat(fieldNameMap.getKeys(), containsInAnyOrder(expectedKey1, expectedKey2));
-    assertThat(fieldNameMap.get(expectedKey1), is(expectedValue1));
-    assertThat(fieldNameMap.get(expectedKey2), is(expectedValue2));
+    assertThat(fieldNameMap.getFromNames(), containsInAnyOrder(expectedKey1, expectedKey2));
+    assertThat(fieldNameMap.translate(expectedKey1), is(expectedValue1));
+    assertThat(fieldNameMap.translate(expectedKey2), is(expectedValue2));
   }
 
   @Test
@@ -72,8 +72,8 @@ public class FieldNameMapFactoryTest {
   }
 
   private void hasKeyWithValue(FieldNameMap fieldNameMap, String expectedKey, String expectedValue) {
-    assertThat(fieldNameMap.getKeys(), hasItem(expectedKey));
-    assertThat(fieldNameMap.get(expectedKey), is(expectedValue));
+    assertThat(fieldNameMap.getFromNames(), hasItem(expectedKey));
+    assertThat(fieldNameMap.translate(expectedKey), is(expectedValue));
   }
 
 

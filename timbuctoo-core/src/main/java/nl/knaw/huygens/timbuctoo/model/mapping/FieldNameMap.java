@@ -13,16 +13,16 @@ public class FieldNameMap {
     map = Maps.newHashMap();
   }
 
-  public Set<String> getKeys() {
+  public Set<String> getFromNames() {
     return map.keySet();
   }
 
-  public String get(String key) {
-    return map.get(key);
+  public String translate(String from) {
+    return map.get(from);
   }
 
-  void put(String key, String value) {
-    map.put(key, value);
+  void put(String from, String to) {
+    map.put(from, to);
   }
 
   /**
@@ -32,6 +32,14 @@ public class FieldNameMap {
    * @return the remapped map
    */
   public <T> Map<String, T> remap(Map<String, T> input) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    Map<String, T> remapped = Maps.newHashMap();
+    for (Map.Entry<String, String> entry : map.entrySet()) {
+      String key = entry.getKey();
+      if(input.containsKey(key)){
+        remapped.put(entry.getValue(), input.get(key));
+      }
+    }
+
+    return remapped;
   }
 }
