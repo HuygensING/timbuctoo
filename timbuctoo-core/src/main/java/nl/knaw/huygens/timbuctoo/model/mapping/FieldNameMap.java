@@ -14,11 +14,11 @@ public class FieldNameMap {
   }
 
   public Set<String> getKeys() {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    return map.keySet();
   }
 
   public String get(String key) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return map.get(key);
   }
 
   void put(String key, String value) {

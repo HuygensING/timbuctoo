@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.rest.util.search;
 import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
 import nl.knaw.huygens.timbuctoo.model.RegularSearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
@@ -46,30 +47,31 @@ public class IndexRegularSearchResultMapper extends RegularSearchResultMapper {
 
     List<String> idsToRetrieve = ids.subList(normalizedStart, end);
 
-    List<Map<String, Object>> rawData = null;
+    List<DomainEntityDTO> refs = null;
     try {
-      rawData = vreCollection.getVREById(searchResult.getVreId()).getRawDataFor(type, idsToRetrieve);
-    } catch (SearchException | NotInScopeException e) {
+      List<Map<String, Object>> rawData = vreCollection.getVREById(searchResult.getVreId()).getRawDataFor(type, idsToRetrieve);
+      refs = domainEntityDTOListFactory.createFor(type, rawData);
+    } catch (SearchException | NotInScopeException | SearchResultCreationException e) {
       throw new RuntimeException(e); // FIXME: Hack to inform the client the search went wrong, and not change the API
     }
 
-    String queryId = searchResult.getId();
+      String queryId = searchResult.getId();
 
-    RegularSearchResultDTO dto = new RegularSearchResultDTO();
+      RegularSearchResultDTO dto = new RegularSearchResultDTO();
 
-    dto.setRows(normalizedRows);
-    dto.setStart(normalizedStart);
-    dto.setIds(ids);
-    dto.setNumFound(numFound);
-    dto.setRefs(domainEntityDTOListFactory.createFor(type, rawData));
-    dto.setSortableFields(sortableFieldFinder.findFields(type));
-    dto.setTerm(searchResult.getTerm());
-    dto.setFacets(searchResult.getFacets());
-    dto.setFullTextSearchFields(fullTextSearchFieldFinder.findFields(type));
+      dto.setRows(normalizedRows);
+      dto.setStart(normalizedStart);
+      dto.setIds(ids);
+      dto.setNumFound(numFound);
+      dto.setRefs(refs);
+      dto.setSortableFields(sortableFieldFinder.findFields(type));
+      dto.setTerm(searchResult.getTerm());
+      dto.setFacets(searchResult.getFacets());
+      dto.setFullTextSearchFields(fullTextSearchFieldFinder.findFields(type));
 
-    dto.setNextLink(hateoasURICreator.createNextResultsAsString(normalizedStart, normalizedRows, numFound, queryId));
-    dto.setPrevLink(hateoasURICreator.createPrevResultsAsString(normalizedStart, normalizedRows, queryId));
+      dto.setNextLink(hateoasURICreator.createNextResultsAsString(normalizedStart, normalizedRows, numFound, queryId));
+      dto.setPrevLink(hateoasURICreator.createPrevResultsAsString(normalizedStart, normalizedRows, queryId));
 
-    return dto;
+      return dto;
+    }
   }
-}

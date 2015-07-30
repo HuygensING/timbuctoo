@@ -1,13 +1,15 @@
 package nl.knaw.huygens.timbuctoo.model.mapping;
 
-import nl.knaw.huygens.timbuctoo.model.mapping.DomainEntityFieldNameMapFactory.Representation;
+import nl.knaw.huygens.timbuctoo.model.DerivedProperty;
+import nl.knaw.huygens.timbuctoo.model.mapping.FieldNameMapFactory.Representation;
 import org.junit.Test;
 import test.model.MappingExample;
+import test.model.projecta.ProjectAMappingExample;
 
 import java.lang.reflect.Field;
 
-import static nl.knaw.huygens.timbuctoo.model.mapping.DomainEntityFieldNameMapFactory.Representation.CLIENT;
-import static nl.knaw.huygens.timbuctoo.model.mapping.DomainEntityFieldNameMapFactory.Representation.INDEX;
+import static nl.knaw.huygens.timbuctoo.model.mapping.FieldNameMapFactory.Representation.CLIENT;
+import static nl.knaw.huygens.timbuctoo.model.mapping.FieldNameMapFactory.Representation.INDEX;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
@@ -34,6 +36,15 @@ public class RepresentationTest {
   }
 
   @Test
+  public void getFieldNameForDerivedPropertyOfINDEXReturnsTheNameFromTheAnnotationOfTheGetter() {
+    DerivedProperty derivedProperty = ProjectAMappingExample.DERIVED_PROPERTY_1;
+    String expectedName = ProjectAMappingExample.DERIVED1_INDEX;
+
+    verifyFieldName(INDEX, derivedProperty, expectedName);
+  }
+
+
+  @Test
   public void getFieldNameOfCLIENTReturnsTheValueOfTheJsonPropertyAnnotationOfTheField() throws Exception {
     String expectedName = MappingExample.INDEX_AND_CLIENT_CLIENT_NAME;
     verifyFieldName(CLIENT, "indexAndClient", expectedName);
@@ -49,6 +60,22 @@ public class RepresentationTest {
   public void getFieldNameOfCLIENTReturnsTheNameOfTheFieldWhenNoJsonPropertyAnnotationsArePresent() throws Exception {
     String expectedName = "fieldWithGetterWithoutAnnotations";
     verifyFieldName(CLIENT, "fieldWithGetterWithoutAnnotations", expectedName);
+  }
+
+  @Test
+  public void getFieldNameForDerivedPropertyOfClientReturnsThePropertyName() {
+    DerivedProperty derivedProperty = ProjectAMappingExample.DERIVED_PROPERTY_1;
+    String expectedName = derivedProperty.getPropertyName();
+
+    verifyFieldName(CLIENT, derivedProperty, expectedName);
+  }
+
+  private void verifyFieldName(Representation representation, DerivedProperty derivedProperty, String expectedName) {
+    // action
+    String fieldName = representation.getFieldName(ProjectAMappingExample.class, derivedProperty);
+
+    // verify
+    assertThat(fieldName, is(expectedName));
   }
 
 

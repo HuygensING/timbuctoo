@@ -79,7 +79,7 @@ public class IndexRegularSearchResultMapperTest {
     instance = new IndexRegularSearchResultMapper(repository, sortableFieldFinder, uriCreator, fullTextSearchFieldFinder, vreCollection, rangeHelper, domainEntityDTOListFactory);
   }
 
-  private void setupRefCreatorFactory() {
+  private void setupRefCreatorFactory() throws Exception {
     domainEntityDTOListFactory = mock(DomainEntityDTOListFactory.class);
     when(domainEntityDTOListFactory.createFor(DEFAULT_TYPE, RAW_DATA)).thenReturn(REFS);
   }
@@ -179,6 +179,19 @@ public class IndexRegularSearchResultMapperTest {
 
     exception.expect(RuntimeException.class);
     exception.expectCause(is(searchException));
+
+    // action
+    instance.create(DEFAULT_TYPE, searchResult, START, ROWS);
+  }
+
+  @Test
+  public void createThrowsARuntimeExceptionWhenTheDomainEntityDTOListFactoryThrowsASearchResultCreationException() throws Exception {
+    // setup
+    SearchResultCreationException searchResultCreationException = new SearchResultCreationException(DEFAULT_TYPE, new Exception());
+    when(domainEntityDTOListFactory.createFor(DEFAULT_TYPE, RAW_DATA)).thenThrow(searchResultCreationException);
+
+    exception.expect(RuntimeException.class);
+    exception.expectCause(is(searchResultCreationException));
 
     // action
     instance.create(DEFAULT_TYPE, searchResult, START, ROWS);
