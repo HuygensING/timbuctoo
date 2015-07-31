@@ -160,7 +160,7 @@
     <solr.wrapper.version>1.1.0</solr.wrapper.version>
     <tinkerpop.version>2.6.0</tinkerpop.version>
     <!-- must be the same as timbuctoo version (without SNAPSHOT) -->
-    <timbuctoo.config.version>2.13.0</timbuctoo.config.version>
+    <timbuctoo.config.version>2.14.0</timbuctoo.config.version>
     <!-- Plugin versions -->
     <appassembler.version>1.5</appassembler.version>
     <assembly.version>2.5.5</assembly.version>
