@@ -127,7 +127,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jdk.version>1.7</jdk.version>
+    <jdk.version>1.8</jdk.version>
     <activemq.version>5.7.0</activemq.version>
     <classloader-leak-prevention.version>1.10.0</classloader-leak-prevention.version>
     <commons.configuration.version>1.9</commons.configuration.version>
