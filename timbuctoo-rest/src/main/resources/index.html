@@ -34,9 +34,6 @@
 <h1>Huygens ING Data Repository</h1>
 
 <table class="outer">
-<tr id="mongostatus"></tr>
-</table>
-<table class="outer">
 <tr id="indexstatus"></tr>
 </table>
 
@@ -65,24 +62,8 @@
       success: function (data) {
         var html = '';
 
-        html += '<td class="column"><h3>Stored system entities</h3>';
-        html += '<table><tr><th>Type</th><th>Statistics</th></tr>';
-        $.each(data.storageStatus.systemEntityStats, function (i, item) {
-          html += '<tr><td class="name">' + item.key + '</td><td>' + item.info + '</td></tr>';
-        });
-        html += '</table></td>';
-
-        html += '<td class="column"><h3>Stored domain entities</h3>';
-        html += '<table><tr><th>Type</th><th>Statistics</th></tr>';
-        $.each(data.storageStatus.domainEntityStats, function (i, item) {
-          html += '<tr><td class="name">' + item.key + '</td><td>' + item.info + '</td></tr>';
-        });
-        html += '</table></td>';
-        $('#mongostatus').html(html);
-
-        html = '';
         $.each(data.indexStatus.counts, function (scope, items) {
-          html += '<td class="column"><h3>Index of \'' + scope + '\'</h3>';
+          html += '<td class="column"><h3>\'' + scope + '\'</h3>';
         	html += '<table><tr><th>Type</th><th>Count</th></tr>';
         	$.each(items, function (i, item) {
             html += '<tr><td class="name">' + item.key + '</td><td class="number">' + item.value + '</td></tr>';
