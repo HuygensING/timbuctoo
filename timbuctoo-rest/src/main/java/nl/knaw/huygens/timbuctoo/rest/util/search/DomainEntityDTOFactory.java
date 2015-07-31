@@ -5,11 +5,17 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.mapping.FieldNameMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
 public class DomainEntityDTOFactory {
+  private static final Logger LOG = LoggerFactory.getLogger(DomainEntityDTOFactory.class);
   public DomainEntityDTO create(Class<? extends DomainEntity> type, FieldNameMap fieldNameMap, Map<String, Object> data) {
+    LOG.info("fieldNameMap: {}", fieldNameMap);
+    LOG.info("data: {}", data);
+
     DomainEntityDTO dto = new DomainEntityDTO();
 
     dto.setId(getAsString(data, Entity.INDEX_FIELD_ID));

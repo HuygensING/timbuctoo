@@ -55,6 +55,7 @@ public class Paths {
    */
   public static final String VERSION_PARAM = "apiVersion";
   public static final String V1_PATH_OPTIONAL = "{ " + VERSION_PARAM + ": (v1/)? }";
+  public static final String V1_TO_V2_PATH = "{ " + VERSION_PARAM + ": (v[1-2]/) }";
   public static final String V1_TO_V2_1_PATH = "{ " + VERSION_PARAM + ": (v2.1/|v[1-2]/) }";
   public static final String V2_OR_V2_1_PATH = "{ " + VERSION_PARAM + ": (v2.1/|v2/) }";
   public static final String VERSION_PATH_OPTIONAL = "{" + VERSION_PARAM + ": (v2.1/|v[0-2]/)? }";

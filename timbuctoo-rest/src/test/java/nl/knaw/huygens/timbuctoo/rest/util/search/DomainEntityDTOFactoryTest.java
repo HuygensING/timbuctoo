@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rest.util.search;
 
 import com.google.common.collect.Maps;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.mapping.FieldNameMap;
@@ -8,9 +9,11 @@ import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import test.rest.model.projecta.ProjectADomainEntity;
 
 import java.util.Map;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -18,8 +21,11 @@ import static org.mockito.Mockito.mock;
 
 public class DomainEntityDTOFactoryTest {
 
-  public static final Object ID_VALUE = "idValue";
+  public static final String ID_VALUE = "idValue";
   public static final Object DISPLAY_NAME = "displayName";
+  public static final Class<ProjectADomainEntity> TYPE = ProjectADomainEntity.class;
+  public static final String EXTERNAL_NAME = TypeNames.getExternalName(TYPE);
+  public static final String INTERNAL_NAME = TypeNames.getInternalName(TYPE);
   public Map<String, Object> remappedData;
   private Map<String, Object> data;
   private DomainEntityDTOFactory instance;
@@ -48,20 +54,23 @@ public class DomainEntityDTOFactoryTest {
   }
 
   @Test
-  public void createAddsTheIdAndDisplayNameToTheDTORetrievedFromTheDataMap() {
+  public void createAddsTheIdAndDisplayNameAndTypeAndPathToTheDTORetrievedFromTheDataMap() {
     // action
-    DomainEntityDTO domainEntityDTO = instance.create(fieldNameMap, data);
+    DomainEntityDTO domainEntityDTO = instance.create(TYPE, fieldNameMap, data);
 
     // verify
     assertThat(domainEntityDTO.getDisplayName(), is(DISPLAY_NAME));
     assertThat(domainEntityDTO.getId(), is(ID_VALUE));
+    assertThat(domainEntityDTO.getType(), is(INTERNAL_NAME));
+    assertThat(domainEntityDTO.getPath(), containsString(EXTERNAL_NAME));
+    assertThat(domainEntityDTO.getPath(), containsString(ID_VALUE));
   }
 
 
   @Test
   public void createAddsTheByFieldNameMapTranslatedDataToTheDomainEntityDTO() {
     // action
-    DomainEntityDTO domainEntityDTO = instance.create(fieldNameMap, data);
+    DomainEntityDTO domainEntityDTO = instance.create(TYPE, fieldNameMap, data);
 
     // verify
     hasKeyWithValue((Map<String, Object>)domainEntityDTO.getData(), Entity.ID_PROPERTY_NAME, ID_VALUE);

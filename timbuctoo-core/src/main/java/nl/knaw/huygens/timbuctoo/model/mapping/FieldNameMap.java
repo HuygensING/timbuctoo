@@ -42,4 +42,9 @@ public class FieldNameMap {
 
     return remapped;
   }
+
+  @Override
+  public String toString() {
+    return map.toString();
+  }
 }

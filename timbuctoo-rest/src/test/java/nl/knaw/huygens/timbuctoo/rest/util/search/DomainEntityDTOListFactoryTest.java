@@ -77,7 +77,7 @@ public class DomainEntityDTOListFactoryTest {
 
   private DomainEntityDTO createDTOForDataRow(Map<String, Object> dataRow, FieldNameMap fieldNameMap) {
     DomainEntityDTO dto = mock(DomainEntityDTO.class);
-    when(domainEntityDTOFactory.create(fieldNameMap, dataRow)).thenReturn(dto);
+    when(domainEntityDTOFactory.create(TYPE, fieldNameMap, dataRow)).thenReturn(dto);
     return dto;
   }
 

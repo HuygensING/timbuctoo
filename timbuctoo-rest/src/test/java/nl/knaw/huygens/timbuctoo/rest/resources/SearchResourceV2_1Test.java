@@ -23,11 +23,18 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  */
 
 import nl.knaw.huygens.timbuctoo.config.Paths;
+import nl.knaw.huygens.timbuctoo.rest.util.search.IndexRegularSearchResultMapper;
+import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
 
 public class SearchResourceV2_1Test extends SearchResourceV1Test {
 
   @Override
   protected String getAPIVersion() {
     return Paths.V2_1_PATH;
+  }
+
+  @Override
+  protected RegularSearchResultMapper getRegularSearchResultMapper() {
+    return injector.getInstance(IndexRegularSearchResultMapper.class);
   }
 }

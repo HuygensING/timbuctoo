@@ -22,14 +22,8 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.Set;
-
-import javax.ws.rs.core.MediaType;
-
+import com.google.common.collect.Sets;
+import com.sun.jersey.api.client.WebResource;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Person;
@@ -38,15 +32,17 @@ import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
-
 import org.junit.Before;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
-
 import test.rest.model.TestRelation;
 
-import com.google.common.collect.Sets;
-import com.sun.jersey.api.client.WebResource;
+import javax.ws.rs.core.MediaType;
+import java.util.Set;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public abstract class SearchResourceTestBase extends WebServiceTestSetup {
 
@@ -94,8 +90,12 @@ public abstract class SearchResourceTestBase extends WebServiceTestSetup {
 
   @Before
   public void setUpClientSearchResultCreators() {
-    regularSearchResultMapperMock = injector.getInstance(RegularSearchResultMapper.class);
+    regularSearchResultMapperMock = getRegularSearchResultMapper();
     relationSearchResultMapperMock = injector.getInstance(RelationSearchResultMapper.class);
+  }
+
+  protected RegularSearchResultMapper getRegularSearchResultMapper() {
+    return injector.getInstance(RegularSearchResultMapper.class);
   }
 
 }
