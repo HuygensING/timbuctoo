@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import com.google.common.base.Joiner;
 import nl.knaw.huygens.timbuctoo.config.Paths;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 
 import java.util.Map;
 
@@ -76,5 +77,13 @@ public class DomainEntityDTO {
 
   public void setData(Map<String, ? extends Object> data) {
     this.data = data;
+  }
+
+  public void setType(Class<? extends DomainEntity> type) {
+    this.type = TypeNames.getInternalName(type);
+  }
+
+  public void createPath(String xtype) {
+    this.path = Joiner.on('/').join(Paths.DOMAIN_PREFIX, xtype, id);
   }
 }

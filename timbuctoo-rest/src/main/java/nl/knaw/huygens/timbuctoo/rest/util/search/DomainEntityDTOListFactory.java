@@ -37,7 +37,7 @@ public class DomainEntityDTOListFactory {
     }
     List<DomainEntityDTO> dtos = Lists.newArrayList();
     for (Map<String, Object> dataRow : rawIndexData) {
-      dtos.add(domainEntityDTOFactory.create(fieldNameMap, dataRow));
+      dtos.add(domainEntityDTOFactory.create(type, fieldNameMap, dataRow));
     }
     return dtos;
   }
