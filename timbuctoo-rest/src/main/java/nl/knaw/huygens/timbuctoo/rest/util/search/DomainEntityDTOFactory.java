@@ -13,8 +13,8 @@ import java.util.Map;
 public class DomainEntityDTOFactory {
   private static final Logger LOG = LoggerFactory.getLogger(DomainEntityDTOFactory.class);
   public DomainEntityDTO create(Class<? extends DomainEntity> type, FieldNameMap fieldNameMap, Map<String, Object> data) {
-    LOG.info("fieldNameMap: {}", fieldNameMap);
-    LOG.info("data: {}", data);
+    LOG.debug("fieldNameMap: {}", fieldNameMap);
+    LOG.debug("data: {}", data);
 
     DomainEntityDTO dto = new DomainEntityDTO();
 
