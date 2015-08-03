@@ -265,7 +265,9 @@ public class SolrIndex implements Index {
     }
     queryBuilder.append(")");
 
-    return getRawResults(new SolrQuery(queryBuilder.toString()));
+    SolrQuery query = new SolrQuery(queryBuilder.toString());
+    query.setRows(ids.size());
+    return getRawResults(query);
 
   }
 

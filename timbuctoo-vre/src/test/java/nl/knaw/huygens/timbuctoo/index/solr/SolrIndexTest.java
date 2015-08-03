@@ -671,7 +671,9 @@ public class SolrIndexTest {
 
     // verify
     assertThat(actualData, containsInAnyOrder(RESULT_1, RESULT_2));
-    verify(solrServerMock).search(argThat(likeSolrQuery().withQuery(String.format("%s : (%s OR %s)", Entity.INDEX_FIELD_ID, ID_1, ID_2))));
+    verify(solrServerMock).search(argThat(likeSolrQuery()//
+      .withQuery(String.format("%s : (%s OR %s)", Entity.INDEX_FIELD_ID, ID_1, ID_2))//
+      .withRows(ids.size())));
   }
 
   @Test(expected = SearchException.class)
