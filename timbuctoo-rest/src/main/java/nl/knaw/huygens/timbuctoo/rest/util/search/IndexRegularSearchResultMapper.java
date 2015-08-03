@@ -13,6 +13,8 @@ import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 import nl.knaw.huygens.timbuctoo.vre.NotInScopeException;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -21,6 +23,7 @@ import java.util.Map;
  * A search result mapper that retrieves the information from the index rather that from the database.
  */
 public class IndexRegularSearchResultMapper extends RegularSearchResultMapper {
+  private static final Logger LOG = LoggerFactory.getLogger(IndexRegularSearchResultMapper.class);
   private DomainEntityDTOListFactory domainEntityDTOListFactory;
 
   @Inject
@@ -41,15 +44,18 @@ public class IndexRegularSearchResultMapper extends RegularSearchResultMapper {
   public <T extends DomainEntity> RegularSearchResultDTO create(Class<T> type, SearchResult searchResult, int start, int rows, String version) {
     List<String> ids = getIds(searchResult);
     int numFound = ids.size();
+    LOG.debug("num found {}", numFound);
     int normalizedStart = mapToRange(start, 0, numFound);
     int normalizedRows = mapToRange(rows, 0, numFound - normalizedStart);
     int end = normalizedStart + normalizedRows;
 
     List<String> idsToRetrieve = ids.subList(normalizedStart, end);
+    LOG.debug("number of ids to retrieve {}", idsToRetrieve.size());
 
     List<DomainEntityDTO> refs = null;
     try {
       List<Map<String, Object>> rawData = vreCollection.getVREById(searchResult.getVreId()).getRawDataFor(type, idsToRetrieve);
+      LOG.debug("number of items found in index {}", rawData.size());
       refs = domainEntityDTOListFactory.createFor(type, rawData);
     } catch (SearchException | NotInScopeException | SearchResultCreationException e) {
       throw new RuntimeException(e); // FIXME: Hack to inform the client the search went wrong, and not change the API
