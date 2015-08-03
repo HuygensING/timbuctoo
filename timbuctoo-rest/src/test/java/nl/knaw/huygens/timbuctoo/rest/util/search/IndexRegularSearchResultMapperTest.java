@@ -51,6 +51,7 @@ public class IndexRegularSearchResultMapperTest {
   public static final Set<String> SORTABLE_FIELDS = Sets.newHashSet();
   public static final String TERM = "term";
   public static final ArrayList<DomainEntityDTO> REFS = Lists.<DomainEntityDTO>newArrayList();
+  public static final String VERSION = "v1";
   private IndexRegularSearchResultMapper instance;
   private Repository repository;
   private SortableFieldFinder sortableFieldFinder;
@@ -120,14 +121,14 @@ public class IndexRegularSearchResultMapperTest {
 
   private void setupURICreator() {
     uriCreator = mock(HATEOASURICreator.class);
-    when(uriCreator.createNextResultsAsString(NORMALIZED_START, ROWS, NUM_FOUND, QUERY_ID)).thenReturn(NEXT_RESULTS);
-    when(uriCreator.createPrevResultsAsString(NORMALIZED_START, ROWS, QUERY_ID)).thenReturn(PREV_RESULTS);
+    when(uriCreator.createNextResultsAsString(NORMALIZED_START, ROWS, NUM_FOUND, QUERY_ID, VERSION)).thenReturn(NEXT_RESULTS);
+    when(uriCreator.createPrevResultsAsString(NORMALIZED_START, ROWS, QUERY_ID, VERSION)).thenReturn(PREV_RESULTS);
   }
 
   @Test
   public void createCreatesASearchResultDTOWithDomainEntityDTOsOfTheFoundResults() throws Exception {
     // action
-    RegularSearchResultDTO searchResultDTO = instance.create(DEFAULT_TYPE, searchResult, START, ROWS);
+    RegularSearchResultDTO searchResultDTO = instance.create(DEFAULT_TYPE, searchResult, START, ROWS, VERSION);
 
     // verify
     assertThat(searchResultDTO, RegularClientSearchResultMatcher.likeRegularSearchResultDTO() //
@@ -149,7 +150,7 @@ public class IndexRegularSearchResultMapperTest {
   @Test
   public void createRetrievesAllTheInfromationFromTheIndexAndHasNoInteractionWithTheRepository() throws Exception {
     // action
-    instance.create(DEFAULT_TYPE, searchResult, START, ROWS);
+    instance.create(DEFAULT_TYPE, searchResult, START, ROWS, VERSION);
 
     // verify
     verifyZeroInteractions(repository);
@@ -168,7 +169,7 @@ public class IndexRegularSearchResultMapperTest {
     exception.expectCause(is(notInScopeException));
 
     // action
-    instance.create(DEFAULT_TYPE, searchResult, START, ROWS);
+    instance.create(DEFAULT_TYPE, searchResult, START, ROWS, VERSION);
   }
 
   @Test
@@ -181,7 +182,7 @@ public class IndexRegularSearchResultMapperTest {
     exception.expectCause(is(searchException));
 
     // action
-    instance.create(DEFAULT_TYPE, searchResult, START, ROWS);
+    instance.create(DEFAULT_TYPE, searchResult, START, ROWS, VERSION);
   }
 
   @Test
@@ -194,6 +195,6 @@ public class IndexRegularSearchResultMapperTest {
     exception.expectCause(is(searchResultCreationException));
 
     // action
-    instance.create(DEFAULT_TYPE, searchResult, START, ROWS);
+    instance.create(DEFAULT_TYPE, searchResult, START, ROWS, VERSION);
   }
 }

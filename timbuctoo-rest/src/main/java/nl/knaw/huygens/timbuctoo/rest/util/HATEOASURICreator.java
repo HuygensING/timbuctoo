@@ -66,18 +66,18 @@ public class HATEOASURICreator {
     return createHATEOASURI(start,rows, queryId, versionPath).toString();
   }
 
-  public String createNextResultsAsString(int currentStart, int requestedRows, int totalFound, String queryId) {
+  public String createNextResultsAsString(int currentStart, int requestedRows, int totalFound, String queryId, String version) {
     int nextStart = currentStart + requestedRows;
     if (nextStart >= totalFound) {
       return null;
     }
 
-    return createHATEOASURIAsString(nextStart, requestedRows, queryId);
+    return createHATEOASURIAsString(nextStart, requestedRows, queryId, version);
   }
 
-  public String createPrevResultsAsString(int currenStart, int requestedRows, String queryId) {
+  public String createPrevResultsAsString(int currenStart, int requestedRows, String queryId, String version) {
     int previousStart = Math.max(currenStart - requestedRows, 0);
-    return createHATEOASURIAsString(previousStart, requestedRows, queryId);
+    return createHATEOASURIAsString(previousStart, requestedRows, queryId, version);
   }
 
 

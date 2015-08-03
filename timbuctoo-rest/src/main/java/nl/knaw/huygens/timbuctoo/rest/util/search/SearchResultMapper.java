@@ -59,7 +59,7 @@ public abstract class SearchResultMapper {
     this.rangeHelper = rangeHelper;
   }
 
-  public abstract <T extends DomainEntity> SearchResultDTO create(Class<T> type, SearchResult searchResult, int start, int rows);
+  public abstract <T extends DomainEntity> SearchResultDTO create(Class<T> type, SearchResult searchResult, int start, int rows, String version);
 
   protected <T extends DomainEntity> List<T> retrieveEntities(Class<T> type, List<String> ids) {
     // Retrieve one-by-one to retain ordering
@@ -91,14 +91,14 @@ public abstract class SearchResultMapper {
     return entities;
   }
 
-  protected void setNextLink(int start, int rows, SearchResultDTO clientSearchResult, int numFound, int end, String queryId) {
+  protected void setNextLink(int start, int rows, SearchResultDTO clientSearchResult, int numFound, int end, String queryId, String version) {
     if (end < numFound) {
       String next = hateoasURICreator.createHATEOASURIAsString(start + rows, rows, queryId);
       clientSearchResult.setNextLink(next);
     }
   }
 
-  protected void setPreviousLink(int start, int rows, SearchResultDTO clientSearchResult, String queryId) {
+  protected void setPreviousLink(int start, int rows, SearchResultDTO clientSearchResult, String queryId, String version) {
     if (start > 0) {
       int prevStart = Math.max(start - rows, 0);
       String prev = hateoasURICreator.createHATEOASURIAsString(prevStart, rows, queryId);

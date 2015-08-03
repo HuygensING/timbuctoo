@@ -56,7 +56,7 @@ public class RegularSearchResultMapper extends SearchResultMapper {
   }
 
   @Override
-  public <T extends DomainEntity> RegularSearchResultDTO create(Class<T> type, SearchResult searchResult, int start, int rows) {
+  public <T extends DomainEntity> RegularSearchResultDTO create(Class<T> type, SearchResult searchResult, int start, int rows, String version) {
     RegularSearchResultDTO dto = new RegularSearchResultDTO();
 
     List<String> ids = getIds(searchResult);
@@ -81,8 +81,8 @@ public class RegularSearchResultMapper extends SearchResultMapper {
     dto.setFacets(searchResult.getFacets());
     dto.setFullTextSearchFields(fullTextSearchFieldFinder.findFields(type));
 
-    setPreviousLink(normalizedStart, rows, dto, queryId);
-    setNextLink(start, rows, dto, numFound, end, queryId);
+    setPreviousLink(normalizedStart, rows, dto, queryId, version);
+    setNextLink(start, rows, dto, numFound, end, queryId, version);
 
     return dto;
   }

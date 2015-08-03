@@ -45,7 +45,7 @@ public class RelationSearchResultMapper extends SearchResultMapper {
   }
 
   @Override
-  public <T extends DomainEntity> RelationSearchResultDTO create(Class<T> type, SearchResult searchResult, int start, int rows) {
+  public <T extends DomainEntity> RelationSearchResultDTO create(Class<T> type, SearchResult searchResult, int start, int rows, String version) {
     RelationSearchResultDTO dto = new RelationSearchResultDTO();
 
     String queryId = searchResult.getId();
@@ -68,8 +68,8 @@ public class RelationSearchResultMapper extends SearchResultMapper {
     dto.setTargetType(searchResult.getTargetType());
     dto.setRefs(relationMapper.createRefs(vre, type, results));
     dto.setSortableFields(sortableFieldFinder.findFields(type));
-    setNextLink(normalizedStart, rows, dto, numFound, end, queryId);
-    setPreviousLink(normalizedStart, rows, dto, queryId);
+    setNextLink(normalizedStart, rows, dto, numFound, end, queryId, version);
+    setPreviousLink(normalizedStart, rows, dto, queryId, version);
 
     return dto;
   }

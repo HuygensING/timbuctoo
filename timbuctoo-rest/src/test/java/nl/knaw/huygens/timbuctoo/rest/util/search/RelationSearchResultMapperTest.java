@@ -8,8 +8,8 @@ package nl.knaw.huygens.timbuctoo.rest.util.search;
  * =======
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
- * License, or (at your option) any later version.
+ * published by the Free Software Foundation, either NULL_VERSION 3 of the
+ * License, or (at your option) any later NULL_VERSION.
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -22,27 +22,25 @@ package nl.knaw.huygens.timbuctoo.rest.util.search;
  * #L%
  */
 
+import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.model.RelationDTO;
+import nl.knaw.huygens.timbuctoo.model.SearchResult;
+import org.junit.Before;
+import org.junit.Test;
+import test.rest.model.TestRelation;
+
+import java.util.List;
+
 import static nl.knaw.huygens.timbuctoo.rest.util.search.RelationClientSearchResultMatcher.newClientSearchResultMatcher;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.List;
-
-import nl.knaw.huygens.timbuctoo.model.RelationDTO;
-import nl.knaw.huygens.timbuctoo.model.SearchResult;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import test.rest.model.TestRelation;
-
-import com.google.common.collect.Lists;
-
 public class RelationSearchResultMapperTest extends SearchResultMapperTest {
 
   private static final String TYPE_STRING = "testrelation";
   private static final List<RelationDTO> REFS = Lists.newArrayList(new RelationDTO(TYPE_STRING, "xtype", "id", "relationName", null, null));
+  public static final String VERSION = "version";
 
   private RelationSearchResultMapper instance;
   private RelationMapper relationMapperMock;
@@ -81,7 +79,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
 
     when(relationMapperMock.createRefs(vreMock, type, result)).thenReturn(REFS);
 
-    testCreate(start, rows, type, searchResult, likeRelationClientResult);
+    testCreate(start, rows, type, searchResult, likeRelationClientResult, VERSION);
   }
 
   @Test
@@ -110,7 +108,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
     when(relationMapperMock.createRefs(vreMock, type, result)).thenReturn(REFS);
     when(hateoasURICreatorMock.createHATEOASURIAsString(previousStart, rows, QUERY_ID)).thenReturn(PREV_LINK);
 
-    testCreate(start, rows, type, searchResult, likeRelationClientResult);
+    testCreate(start, rows, type, searchResult, likeRelationClientResult, VERSION);
   }
 
   @Test
@@ -137,7 +135,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
 
     when(relationMapperMock.createRefs(vreMock, type, result)).thenReturn(REFS);
 
-    testCreate(start, rows, type, searchResult, likeRelationClientResult);
+    testCreate(start, rows, type, searchResult, likeRelationClientResult, VERSION);
   }
 
   @Test
@@ -166,7 +164,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
     when(relationMapperMock.createRefs(vreMock, type, result)).thenReturn(REFS);
     when(hateoasURICreatorMock.createHATEOASURIAsString(nextStart, rows, QUERY_ID)).thenReturn(NEXT_LINK);
 
-    testCreate(start, rows, type, searchResult, likeRelationClientResult);
+    testCreate(start, rows, type, searchResult, likeRelationClientResult, VERSION);
   }
 
   @Test
@@ -193,7 +191,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
 
     when(relationMapperMock.createRefs(vreMock, type, result)).thenReturn(REFS);
 
-    testCreate(start, rows, type, searchResult, likeRelationClientResult);
+    testCreate(start, rows, type, searchResult, likeRelationClientResult, VERSION);
   }
 
   @Test
@@ -224,7 +222,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
     when(relationMapperMock.createRefs(vreMock, type, result)).thenReturn(REFS);
     when(hateoasURICreatorMock.createHATEOASURIAsString(prevStart, rows, QUERY_ID)).thenReturn(PREV_LINK);
 
-    testCreate(start, rows, type, searchResult, likeRelationClientResult);
+    testCreate(start, rows, type, searchResult, likeRelationClientResult, VERSION);
   }
 
   @Test
@@ -249,7 +247,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
         .withSortableFields(SORTABLE_FIELDS) //
         .build();
 
-    testCreate(start, rows, type, searchResult, likeRelationClientResult);
+    testCreate(start, rows, type, searchResult, likeRelationClientResult, VERSION);
   }
 
   private SearchResult newSearchResult(String id, String vreId) {
@@ -259,8 +257,8 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
     return result;
   }
 
-  private void testCreate(int start, int rows, Class<TestRelation> type, SearchResult searchResult, RelationClientSearchResultMatcher likeRelationClientResult) {
-    assertThat(instance.create(type, searchResult, start, rows), likeRelationClientResult);
+  private void testCreate(int start, int rows, Class<TestRelation> type, SearchResult searchResult, RelationClientSearchResultMatcher likeRelationClientResult, String version) {
+    assertThat(instance.create(type, searchResult, start, rows, version), likeRelationClientResult);
   }
 
 }

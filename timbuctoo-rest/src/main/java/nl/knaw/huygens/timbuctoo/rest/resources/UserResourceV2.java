@@ -22,17 +22,18 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.config.Paths.SYSTEM_PREFIX;
-import static nl.knaw.huygens.timbuctoo.config.Paths.USER_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.V2_PATH;
-import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
-import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.USER_ID_KEY;
-import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
-import static nl.knaw.huygens.timbuctoo.security.UserRoles.UNVERIFIED_USER_ROLE;
-import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
-
-import java.net.URISyntaxException;
-import java.util.List;
+import com.google.inject.Inject;
+import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
+import nl.knaw.huygens.timbuctoo.mail.MailSender;
+import nl.knaw.huygens.timbuctoo.model.User;
+import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
+import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
+import nl.knaw.huygens.timbuctoo.security.UserConfigurationHandler;
+import nl.knaw.huygens.timbuctoo.security.UserRoles;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -49,22 +50,19 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import java.net.URISyntaxException;
+import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
-import nl.knaw.huygens.timbuctoo.mail.MailSender;
-import nl.knaw.huygens.timbuctoo.model.User;
-import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
-import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
-import nl.knaw.huygens.timbuctoo.security.UserConfigurationHandler;
-import nl.knaw.huygens.timbuctoo.security.UserRoles;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
-import nl.knaw.huygens.timbuctoo.vre.VRECollection;
+import static nl.knaw.huygens.timbuctoo.config.Paths.SYSTEM_PREFIX;
+import static nl.knaw.huygens.timbuctoo.config.Paths.USER_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.V2_OR_V2_1_PATH;
+import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
+import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.USER_ID_KEY;
+import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
+import static nl.knaw.huygens.timbuctoo.security.UserRoles.UNVERIFIED_USER_ROLE;
+import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
 
-import com.google.inject.Inject;
-
-@Path(V2_PATH + "/" + SYSTEM_PREFIX + "/" + USER_PATH)
+@Path(V2_OR_V2_1_PATH + SYSTEM_PREFIX + "/" + USER_PATH)
 public class UserResourceV2 extends UserResource {
 
   @Inject
@@ -96,7 +94,7 @@ public class UserResourceV2 extends UserResource {
   @GET
   @Path("/me")
   @Produces(MediaType.APPLICATION_JSON)
-  @RolesAllowed({ ADMIN_ROLE, USER_ROLE, UNVERIFIED_USER_ROLE })
+  @RolesAllowed({ADMIN_ROLE, USER_ROLE, UNVERIFIED_USER_ROLE})
   public User getMyUserData(@QueryParam(USER_ID_KEY) String id, @QueryParam(VRE_ID_KEY) String vreId) {
     return super.getMyUserData(id, vreId);
   }
@@ -126,9 +124,9 @@ public class UserResourceV2 extends UserResource {
   @Produces(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
   public VREAuthorization getVreAuthorization(//
-      @PathParam(ID_PARAM) String userId, //
-      @PathParam("vre") String vreId,//
-      @HeaderParam(VRE_ID_KEY) String userVREId//
+                                              @PathParam(ID_PARAM) String userId, //
+                                              @PathParam("vre") String vreId,//
+                                              @HeaderParam(VRE_ID_KEY) String userVREId//
   ) {
     return super.getVreAuthorization(userId, vreId, userVREId);
   }
@@ -140,9 +138,9 @@ public class UserResourceV2 extends UserResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
   public Response postVREAuthorization(//
-      @PathParam("id") String userId,//
-      @HeaderParam(VRE_ID_KEY) String userVREId,//
-      VREAuthorization authorization//
+                                       @PathParam("id") String userId,//
+                                       @HeaderParam(VRE_ID_KEY) String userVREId,//
+                                       VREAuthorization authorization//
   ) throws URISyntaxException, StorageException, ValidationException {
     return super.postVREAuthorization(userId, userVREId, authorization);
   }
@@ -155,10 +153,10 @@ public class UserResourceV2 extends UserResource {
   @Consumes(MediaType.APPLICATION_JSON)
   @RolesAllowed(ADMIN_ROLE)
   public Response putVREAUthorization(//
-      @PathParam("id") String userId,//
-      @PathParam("vre") String vreId,//
-      @HeaderParam(VRE_ID_KEY) String userVREId,//
-      VREAuthorization authorization//
+                                      @PathParam("id") String userId,//
+                                      @PathParam("vre") String vreId,//
+                                      @HeaderParam(VRE_ID_KEY) String userVREId,//
+                                      VREAuthorization authorization//
   ) throws StorageException {
     checkNotNull(authorization, Status.BAD_REQUEST, "Missing VREAuthorization");
     checkIfInScope(vreId, userVREId);
@@ -174,9 +172,9 @@ public class UserResourceV2 extends UserResource {
   @Path(VRE_AUTHORIZATION_PATH)
   @RolesAllowed(ADMIN_ROLE)
   public void deleteVREAuthorization(//
-      @PathParam(ID_PARAM) String userId,// 
-      @PathParam("vre") String vreId,//
-      @HeaderParam(VRE_ID_KEY) String userVREId//
+                                     @PathParam(ID_PARAM) String userId,//
+                                     @PathParam("vre") String vreId,//
+                                     @HeaderParam(VRE_ID_KEY) String userVREId//
   ) throws StorageException {
     super.deleteVREAuthorization(userId, vreId, userVREId);
   }

@@ -16,7 +16,7 @@ import javax.ws.rs.Path;
 import static nl.knaw.huygens.timbuctoo.config.Paths.SEARCH_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.VERSION_PARAM;
 
-@Path("{" + VERSION_PARAM + " : " + Paths.V2_1_PATH + "/}" + SEARCH_PATH)
+@Path("{" + VERSION_PARAM + " : " + Paths.V2_1_PATH + "}" + SEARCH_PATH)
 public class SearchResourceV2_1 extends SearchResourceV1 {
   @Inject
   public SearchResourceV2_1(TypeRegistry registry, Repository repository, Configuration config, SearchRequestValidator searchRequestValidator, RelationSearcher relationSearcher, IndexRegularSearchResultMapper regularSearchResultMapper, RelationSearchResultMapper relationSearchResultMapper, VRECollection vreCollection) {

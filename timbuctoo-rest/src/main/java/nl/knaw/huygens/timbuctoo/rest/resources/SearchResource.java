@@ -22,25 +22,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
-
-import java.net.URI;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
+import com.google.inject.Inject;
 import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
@@ -62,12 +44,27 @@ import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
-
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
+
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 
 @Path("search")
 public class SearchResource extends ResourceBase {
@@ -140,7 +137,7 @@ public class SearchResource extends ResourceBase {
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
 
-    SearchResultDTO dto = regularSearchResultMapper.create(type, result, start, rows);
+    SearchResultDTO dto = regularSearchResultMapper.create(type, result, start, rows, null);
     return Response.ok(dto).build();
   }
 
@@ -196,7 +193,7 @@ public class SearchResource extends ResourceBase {
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
 
-    SearchResultDTO dto = relationSearchResultMapper.create(type, result, start, rows);
+    SearchResultDTO dto = relationSearchResultMapper.create(type, result, start, rows, null);
     return Response.ok(dto).build();
   }
 

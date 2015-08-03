@@ -38,7 +38,7 @@ public class IndexRegularSearchResultMapper extends RegularSearchResultMapper {
   }
 
   @Override
-  public <T extends DomainEntity> RegularSearchResultDTO create(Class<T> type, SearchResult searchResult, int start, int rows) {
+  public <T extends DomainEntity> RegularSearchResultDTO create(Class<T> type, SearchResult searchResult, int start, int rows, String version) {
     List<String> ids = getIds(searchResult);
     int numFound = ids.size();
     int normalizedStart = mapToRange(start, 0, numFound);
@@ -69,8 +69,8 @@ public class IndexRegularSearchResultMapper extends RegularSearchResultMapper {
       dto.setFacets(searchResult.getFacets());
       dto.setFullTextSearchFields(fullTextSearchFieldFinder.findFields(type));
 
-      dto.setNextLink(hateoasURICreator.createNextResultsAsString(normalizedStart, rows, numFound, queryId));
-      dto.setPrevLink(hateoasURICreator.createPrevResultsAsString(normalizedStart, rows, queryId));
+      dto.setNextLink(hateoasURICreator.createNextResultsAsString(normalizedStart, rows, numFound, queryId, version));
+      dto.setPrevLink(hateoasURICreator.createPrevResultsAsString(normalizedStart, rows, queryId, version));
 
       return dto;
     }

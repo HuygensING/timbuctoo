@@ -91,7 +91,7 @@ public class SearchResourceV1 extends ResourceBase {
 
   @Inject
   public SearchResourceV1(TypeRegistry registry, Repository repository, Configuration config, SearchRequestValidator searchRequestValidator, RelationSearcher relationSearcher,
-      RegularSearchResultMapper regularSearchResultMapper, RelationSearchResultMapper relationSearchResultMapper, VRECollection vreCollection) {
+                          RegularSearchResultMapper regularSearchResultMapper, RelationSearchResultMapper relationSearchResultMapper, VRECollection vreCollection) {
     super(repository, vreCollection);
     this.registry = registry;
     this.config = config;
@@ -106,10 +106,10 @@ public class SearchResourceV1 extends ResourceBase {
   @APIDesc("Searches the Solr index. Expects a search parameters body.")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response regularPost( //
-      @PathParam(VERSION_PARAM) String version, //
-      @HeaderParam(VRE_ID_KEY) String vreId, //
-      @PathParam(ENTITY_PARAM) String typeString, //
-      SearchParametersV1 searchParams //
+                               @PathParam(VERSION_PARAM) String version, //
+                               @HeaderParam(VRE_ID_KEY) String vreId, //
+                               @PathParam(ENTITY_PARAM) String typeString, //
+                               SearchParametersV1 searchParams //
   ) {
 
     searchRequestValidator.validate(vreId, typeString, searchParams);
@@ -135,10 +135,10 @@ public class SearchResourceV1 extends ResourceBase {
   @Path("/" + RELATION_SEARCH_PREFIX)
   @Consumes(MediaType.APPLICATION_JSON)
   public Response relationPost( //
-      @PathParam(VERSION_PARAM) String version, //
-      @HeaderParam(VRE_ID_KEY) String vreId, //
-      @PathParam(RELATION_PARAM) String relationTypeString, //
-      RelationSearchParameters params //
+                                @PathParam(VERSION_PARAM) String version, //
+                                @HeaderParam(VRE_ID_KEY) String vreId, //
+                                @PathParam(RELATION_PARAM) String relationTypeString, //
+                                RelationSearchParameters params //
   ) {
 
     Class<? extends DomainEntity> relationType = registry.getTypeForXName(relationTypeString);
@@ -158,12 +158,13 @@ public class SearchResourceV1 extends ResourceBase {
 
   @GET
   @Path("/{id: " + SearchResult.ID_PREFIX + Paths.ID_VALUE_REGEX + "}")
-  @Produces({ MediaType.APPLICATION_JSON })
+  @Produces({MediaType.APPLICATION_JSON})
   @APIDesc("Returns (paged) search results Query params: \"start\" (default: 0) \"rows\" (default: 10)")
   public Response get( //
-      @PathParam("id") String queryId, //
-      @QueryParam("start") @DefaultValue("0") final int start, //
-      @QueryParam("rows") @DefaultValue("10") final int rows) {
+                       @PathParam("id") String queryId, //
+                       @QueryParam("start") @DefaultValue("0") final int start, //
+                       @QueryParam("rows") @DefaultValue("10") final int rows, //
+                       @PathParam(VERSION_PARAM) String version) {
 
     // Retrieve result
     SearchResult result = getSearchResult(queryId);
@@ -174,14 +175,14 @@ public class SearchResourceV1 extends ResourceBase {
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
 
-    SearchResultDTO dto = getSearchResultMapper(type).create(type, result, start, rows);
+    SearchResultDTO dto = getSearchResultMapper(type).create(type, result, start, rows, version);
     return Response.ok(dto).build();
   }
 
   @GET
   @Path("/{id: " + SearchResult.ID_PREFIX + Paths.ID_VALUE_REGEX + "}/csv")
-  @Produces({ CSVProvider.TEXT_CSV })
-  public Response getRelationSearchResultAsCSV(@PathParam("id") String queryId) {
+  @Produces({CSVProvider.TEXT_CSV})
+  public Response getRelationSearchResultAsCSV(@PathParam("id") String queryId, @PathParam(VERSION_PARAM) String version) {
     SearchResult result = getSearchResult(queryId);
     checkNotNull(result, NOT_FOUND, "No SearchResult with id %s", queryId);
 
@@ -190,17 +191,17 @@ public class SearchResourceV1 extends ResourceBase {
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
     checkCondition(Relation.class.isAssignableFrom(type), BAD_REQUEST, "Not a relation type: %s", typeString);
 
-    RelationSearchResultDTO dto = relationSearchResultMapper.create(type, result, 0, Integer.MAX_VALUE);
+    RelationSearchResultDTO dto = relationSearchResultMapper.create(type, result, 0, Integer.MAX_VALUE, version);
     return Response.ok(dto) //
-        .header("Content-Disposition", "attachment; filename=" + queryId + ".csv") //
-        .build();
+      .header("Content-Disposition", "attachment; filename=" + queryId + ".csv") //
+      .build();
   }
 
   @APIDesc("Exports a search result to an Excel format.")
   @GET
   @Path("/{id: " + SearchResult.ID_PREFIX + Paths.ID_VALUE_REGEX + "}/xls")
-  @Produces({ XLSProvider.EXCEL_TYPE_STRING })
-  public Response getRelationSearchResultAsXLS(@PathParam("id") String queryId) {
+  @Produces({XLSProvider.EXCEL_TYPE_STRING})
+  public Response getRelationSearchResultAsXLS(@PathParam("id") String queryId, @PathParam(VERSION_PARAM) String version) {
     SearchResult result = getSearchResult(queryId);
     checkNotNull(result, NOT_FOUND, "No SearchResult with id %s", queryId);
 
@@ -209,10 +210,10 @@ public class SearchResourceV1 extends ResourceBase {
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
     checkCondition(Relation.class.isAssignableFrom(type), BAD_REQUEST, "Not a relation type: %s", typeString);
 
-    RelationSearchResultDTO dto = relationSearchResultMapper.create(type, result, 0, Integer.MAX_VALUE);
+    RelationSearchResultDTO dto = relationSearchResultMapper.create(type, result, 0, Integer.MAX_VALUE, version);
     return Response.ok(dto) //
-        .header("Content-Disposition", "attachment; filename=" + queryId + ".xls") //
-        .build();
+      .header("Content-Disposition", "attachment; filename=" + queryId + ".xls") //
+      .build();
   }
 
   private SearchResultMapper getSearchResultMapper(Class<? extends DomainEntity> type) {

@@ -5,7 +5,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static nl.knaw.huygens.timbuctoo.config.Paths.SEARCH_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.V1_PATH;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -20,6 +19,7 @@ public class HATEOASURICreatorTest {
   public static final int ROWS = 10;
   public static final int START = 0;
   public static final int NEXT_START = START + ROWS;
+  public static final String VERSION = "version";
 
   @Before
   public void setup() {
@@ -42,10 +42,10 @@ public class HATEOASURICreatorTest {
   @Test
   public void createHATEOASURICreatesABaseURIFromThePublicURLTheVersionPathAndSearchPathAndAddsTheQueryIdAndQueryParametersStartAndRows() {
     // action
-    String hateoasuri = instance.createHATEOASURIAsString(START, ROWS, QUERY_ID, V1_PATH);
+    String hateoasuri = instance.createHATEOASURIAsString(START, ROWS, QUERY_ID, VERSION);
 
     // verify
-    assertThat(hateoasuri, is(String.format("%s/%s/%s/%s?start=%d&rows=%d", PUBLIC_URL, V1_PATH, SEARCH_PATH, QUERY_ID, START, ROWS)));
+    assertThat(hateoasuri, is(String.format("%s/%s/%s/%s?start=%d&rows=%d", PUBLIC_URL, VERSION, SEARCH_PATH, QUERY_ID, START, ROWS)));
   }
 
   @Test
@@ -54,7 +54,7 @@ public class HATEOASURICreatorTest {
     int numfoud = 10 * ROWS;
 
     // action
-    String nextLink = instance.createNextResultsAsString(START, ROWS, numfoud, QUERY_ID);
+    String nextLink = instance.createNextResultsAsString(START, ROWS, numfoud, QUERY_ID, VERSION);
 
     //
     assertThat(nextLink, containsString(String.format("start=%d", NEXT_START)));
@@ -67,7 +67,7 @@ public class HATEOASURICreatorTest {
     int numfoud = 2 * ROWS;
 
     // action
-    String nextLink = instance.createNextResultsAsString(START, ROWS, numfoud, QUERY_ID);
+    String nextLink = instance.createNextResultsAsString(START, ROWS, numfoud, QUERY_ID, VERSION);
 
     //
     assertThat(nextLink, containsString(String.format("start=%d", NEXT_START)));
@@ -80,7 +80,7 @@ public class HATEOASURICreatorTest {
     int numfoud = ROWS - 1;
 
     // action
-    String nextLink = instance.createNextResultsAsString(START, ROWS, numfoud, QUERY_ID);
+    String nextLink = instance.createNextResultsAsString(START, ROWS, numfoud, QUERY_ID, VERSION);
 
     // verify
     assertThat(nextLink, is(nullValue()));
@@ -92,7 +92,7 @@ public class HATEOASURICreatorTest {
     int numfoud = ROWS;
 
     // action
-    String nextLink = instance.createNextResultsAsString(START, ROWS, numfoud, QUERY_ID);
+    String nextLink = instance.createNextResultsAsString(START, ROWS, numfoud, QUERY_ID, VERSION);
 
     // verify
     assertThat(nextLink, is(nullValue()));
@@ -104,7 +104,7 @@ public class HATEOASURICreatorTest {
     int numfoud = ROWS + 5;
 
     // action
-    String nextLink = instance.createNextResultsAsString(START, ROWS, numfoud, QUERY_ID);
+    String nextLink = instance.createNextResultsAsString(START, ROWS, numfoud, QUERY_ID, VERSION);
 
     // verify
     assertThat(nextLink, containsString(String.format("rows=%d", ROWS)));
@@ -116,7 +116,7 @@ public class HATEOASURICreatorTest {
     int currentStart = ROWS;
 
     // action
-    String prevLink = instance.createPrevResultsAsString(currentStart, ROWS, QUERY_ID);
+    String prevLink = instance.createPrevResultsAsString(currentStart, ROWS, QUERY_ID, VERSION);
 
     // verify
     assertThat(prevLink, containsString(String.format("start=%d", currentStart - ROWS)));
@@ -129,7 +129,7 @@ public class HATEOASURICreatorTest {
     int currentStart = ROWS - 5;
 
     // action
-    String prevLink = instance.createPrevResultsAsString(currentStart, ROWS, QUERY_ID);
+    String prevLink = instance.createPrevResultsAsString(currentStart, ROWS, QUERY_ID, VERSION);
 
     // verify
     assertThat(prevLink, containsString(String.format("start=%d", 0)));

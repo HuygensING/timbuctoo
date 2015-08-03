@@ -46,9 +46,9 @@ public class Paths {
   /** The path of the {@code UserResource} */
   public static final String USER_PATH = "users";
   /** The path for api version 1 */
-  public static final String V1_PATH = "v1";
-  public static final String V2_PATH = "v2";
-  public static final String V2_1_PATH = "v2.1";
+  public static final String V1_PATH = "v1/";
+  public static final String V2_PATH = "v2/";
+  public static final String V2_1_PATH = "v2.1/";
   /**
    * When the version 1 path is optional. Contains a slash. 
    * Regex is only allowed for variables, so we assign it apiVersion.
