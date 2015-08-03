@@ -109,7 +109,7 @@
       </dependencies>
       <properties>
         <tomcat.server>tomcat.hi17</tomcat.server>
-        <tomcat.manager.url>tc17-manager</tomcat.manager.url>
+        <tomcat.manager.url>${tc17-manager}</tomcat.manager.url>
         <tomcat.path>/timbuctoo</tomcat.path>
       </properties>
     </profile>
