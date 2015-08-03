@@ -31,9 +31,18 @@ public class HATEOASURICreatorTest {
   private HATEOASURICreator instance;
 
   @Test
-  public void createHATEOASURICreatesABaseURIFromThePublicURLTheV1PathAndSearchPathAndAddsTheQueryIdAndQueryParametersStartAndRows() {
+  public void createHATEOASURICreatesABaseURIFromThePublicURLAndSearchPathAndAddsTheQueryIdAndQueryParametersStartAndRows() {
     // action
     String hateoasuri = instance.createHATEOASURIAsString(START, ROWS, QUERY_ID);
+
+    // verify
+    assertThat(hateoasuri, is(String.format("%s/%s/%s?start=%d&rows=%d", PUBLIC_URL, SEARCH_PATH, QUERY_ID, START, ROWS)));
+  }
+
+  @Test
+  public void createHATEOASURICreatesABaseURIFromThePublicURLTheVersionPathAndSearchPathAndAddsTheQueryIdAndQueryParametersStartAndRows() {
+    // action
+    String hateoasuri = instance.createHATEOASURIAsString(START, ROWS, QUERY_ID, V1_PATH);
 
     // verify
     assertThat(hateoasuri, is(String.format("%s/%s/%s/%s?start=%d&rows=%d", PUBLIC_URL, V1_PATH, SEARCH_PATH, QUERY_ID, START, ROWS)));
