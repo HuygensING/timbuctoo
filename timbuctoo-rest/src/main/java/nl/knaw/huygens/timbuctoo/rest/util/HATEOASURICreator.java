@@ -76,6 +76,9 @@ public class HATEOASURICreator {
   }
 
   public String createPrevResultsAsString(int currenStart, int requestedRows, String queryId, String version) {
+    if(currenStart == 0){
+      return null;
+    }
     int previousStart = Math.max(currenStart - requestedRows, 0);
     return createHATEOASURIAsString(previousStart, requestedRows, queryId, version);
   }

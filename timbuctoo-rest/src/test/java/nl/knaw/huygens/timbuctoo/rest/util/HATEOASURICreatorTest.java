@@ -136,5 +136,17 @@ public class HATEOASURICreatorTest {
     assertThat(prevLink, containsString(String.format("rows=%d", ROWS)));
   }
 
+  @Test
+  public void createPrevResultsReturnsNullWhenTheCurrentStartIsZero() {
+    // setup
+    int currentStart = 0;
+
+    // action
+    String prevLink = instance.createPrevResultsAsString(currentStart, ROWS, QUERY_ID, VERSION);
+
+    // verify
+    assertThat(prevLink, is(nullValue()));
+  }
+
 }
 
