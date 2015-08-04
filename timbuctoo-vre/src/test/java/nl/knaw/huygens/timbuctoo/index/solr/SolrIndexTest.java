@@ -66,6 +66,7 @@ import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -682,5 +683,22 @@ public class SolrIndexTest {
     when(solrServerMock.search(any(SolrQuery.class))).thenThrow(new SolrServerException(MESSAGE));
 
     instance.getDataByIds(Lists.newArrayList(ID_1, ID_2));
+  }
+
+  @Test
+  public void getDataByIdsSplitsTheQueryWhenMoreThan1000ItemsAreRequested() throws SearchException, SolrServerException {
+    // setup
+    setupQueryResponseForQueryWithResults(likeSolrQuery());
+    List<String> listWith2500Ids = Lists.newArrayList();
+    for (int i = 0; i < 2500; i++) {
+      listWith2500Ids.add("" + i);
+    }
+
+    // action
+    List<Map<String, Object>> actualData = instance.getDataByIds(listWith2500Ids);
+
+    // verify
+    verify(solrServerMock, times(2)).search(argThat(likeSolrQuery().withRows(1000)));
+    verify(solrServerMock).search(argThat(likeSolrQuery().withRows(500)));
   }
 }

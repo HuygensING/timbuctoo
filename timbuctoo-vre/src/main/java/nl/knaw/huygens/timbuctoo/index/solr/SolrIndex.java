@@ -252,6 +252,19 @@ public class SolrIndex implements Index {
 
   @Override
   public List<Map<String, Object>> getDataByIds(List<String> ids) throws SearchException {
+    final int maxNumberOfIdsSolrSupports = 1000;
+    List<List<String>> idsPart = Lists.partition(ids, maxNumberOfIdsSolrSupports);
+    List<Map<String, Object>> results = Lists.newArrayList();
+
+    for (List<String> part : idsPart) {
+      addResultsOfPartialQuery(part, results);
+    }
+
+
+    return results;
+  }
+
+  private void addResultsOfPartialQuery(List<String> ids, List<Map<String, Object>> results) throws SearchException {
     StringBuilder queryBuilder = new StringBuilder(Entity.INDEX_FIELD_ID);
     queryBuilder.append(" : (");
     boolean isFirst = true;
@@ -261,14 +274,13 @@ public class SolrIndex implements Index {
       }
       queryBuilder.append(id);
       isFirst = false;
-
     }
     queryBuilder.append(")");
 
     SolrQuery query = new SolrQuery(queryBuilder.toString());
     query.setRows(ids.size());
-    return getRawResults(query);
 
+    results.addAll(getRawResults(query));
   }
 
   private String cleanUpSpecialCharaters(String term) {
