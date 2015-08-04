@@ -89,7 +89,7 @@ public class FieldNameMapFactory {
 
       @Override
       public String getFieldName(Class<?> type, DerivedProperty derivedProperty) {
-        Method method = getMethodByName(type, derivedProperty.getAccessor());
+        Method method = getMethodByName(type, derivedProperty.getLocalAccessor());
 
         return getFieldName(method);
       }

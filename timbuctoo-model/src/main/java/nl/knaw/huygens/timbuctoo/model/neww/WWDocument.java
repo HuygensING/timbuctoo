@@ -22,9 +22,10 @@ package nl.knaw.huygens.timbuctoo.model.neww;
  * #L%
  */
 
-import java.util.List;
-import java.util.Map;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.DerivedProperty;
@@ -34,10 +35,8 @@ import nl.knaw.huygens.timbuctoo.oaipmh.DublinCoreMetadataField;
 import nl.knaw.huygens.timbuctoo.oaipmh.OAIDublinCoreField;
 import nl.knaw.huygens.timbuctoo.util.Text;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.util.List;
+import java.util.Map;
 
 public class WWDocument extends Document {
 
@@ -116,20 +115,20 @@ public class WWDocument extends Document {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_genre", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_s_genre", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getGenres() {
     return getRelations("hasGenre");
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_library", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
+  @IndexAnnotation(fieldName = "dynamic_s_library", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = false)
   public List<RelationRef> getLibraries() {
     // Relation with collectives with type "library".
     return getRelations("isStoredAt");
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_origin", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_s_origin", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getOrigins() {
     return getRelations("hasPublishLocation");
   }
@@ -144,12 +143,18 @@ public class WWDocument extends Document {
 
   // ---------------------------------------------------------------------------
 
-  private static final DerivedProperty AUTHOR_GENDER = new DerivedProperty("authorGender", "isCreatedBy", "getGender");
+  private static final DerivedProperty AUTHOR_GENDER = new DerivedProperty("authorGender", "isCreatedBy", "getGender", "getAuthorGender");
   private static final List<DerivedProperty> DERIVED_PROPERTIES = ImmutableList.of(AUTHOR_GENDER);
 
   @Override
   public List<DerivedProperty> getDerivedProperties() {
     return DERIVED_PROPERTIES;
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_author_gender", canBeEmpty = true)
+  public Object getAuthorGender() {
+    return this.getProperty(AUTHOR_GENDER.getPropertyName());
   }
 
   @Override
