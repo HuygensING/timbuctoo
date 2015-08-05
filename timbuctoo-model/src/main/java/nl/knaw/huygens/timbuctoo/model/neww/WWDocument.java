@@ -114,21 +114,8 @@ public class WWDocument extends Document {
     return getTitle() != null;
   }
 
+  // used for the generation of CMDI data.
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_genre", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
-  public List<RelationRef> getGenres() {
-    return getRelations("hasGenre");
-  }
-
-  @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_library", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = false)
-  public List<RelationRef> getLibraries() {
-    // Relation with collectives with type "library".
-    return getRelations("isStoredAt");
-  }
-
-  @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_origin", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getOrigins() {
     return getRelations("hasPublishLocation");
   }
@@ -144,17 +131,39 @@ public class WWDocument extends Document {
   // ---------------------------------------------------------------------------
 
   private static final DerivedProperty AUTHOR_GENDER = new DerivedProperty("authorGender", "isCreatedBy", "getGender", "getAuthorGender");
-  private static final List<DerivedProperty> DERIVED_PROPERTIES = ImmutableList.of(AUTHOR_GENDER);
+  private static final DerivedProperty GENRES = new DerivedProperty("genre", "hasGenre", "getIdentificationName", "getGenres");
+  private static final DerivedProperty LIBRARIES = new DerivedProperty("librarie", "isStoredAt", "getIdentificationName", "getLibraries");
+  private static final DerivedProperty ORIGINS = new DerivedProperty("publishLocation", "hasPublishLocation", "getIdentificationName", "getOrigin");
+  private static final List<DerivedProperty> DERIVED_PROPERTIES = ImmutableList.of(AUTHOR_GENDER, GENRES, LIBRARIES, ORIGINS);
 
   @Override
   public List<DerivedProperty> getDerivedProperties() {
-    return DERIVED_PROPERTIES;
+    return ImmutableList.<DerivedProperty>builder().addAll(DERIVED_PROPERTIES).addAll(super.getDerivedProperties()).build();
   }
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_author_gender", canBeEmpty = true)
   public Object getAuthorGender() {
     return this.getProperty(AUTHOR_GENDER.getPropertyName());
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_genre", canBeEmpty = true, isFaceted = true)
+  public Object getGenres() {
+    return this.getProperty(GENRES.getPropertyName());
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_library", canBeEmpty = true, isFaceted = false)
+  public Object getLibraries() {
+    // Relation with collectives with type "library".
+    return getProperty(LIBRARIES.getPropertyName());
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_origin", canBeEmpty = true, isFaceted = true)
+  public Object getOrigin() {
+    return getProperty(ORIGINS.getPropertyName());
   }
 
   @Override
