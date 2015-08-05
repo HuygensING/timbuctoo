@@ -34,6 +34,7 @@ import nl.knaw.huygens.timbuctoo.annotations.DBProperty;
 import nl.knaw.huygens.timbuctoo.annotations.JsonViews;
 import nl.knaw.huygens.timbuctoo.config.BusinessRules;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.model.mapping.VirtualProperty;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
 import nl.knaw.huygens.timbuctoo.util.Text;
@@ -70,6 +71,8 @@ public abstract class DomainEntity extends Entity {
     relationCount = 0;
   }
 
+
+
   @JsonProperty(PID)
   @JsonView(JsonViews.NoExportView.class)
   public String getPid() {
@@ -93,6 +96,14 @@ public abstract class DomainEntity extends Entity {
   }
 
   // ---------------------------------------------------------------------------
+
+  /**
+   * If implemented returns a list with mappings with indexed fields and values, that are not stored in properties of the class.
+   * @return the mapping
+   */
+  public List<VirtualProperty> getVirtualProperties(){
+    return ImmutableList.of();
+  }
 
   /**
    * Returns the definition of properties that are added dynamically

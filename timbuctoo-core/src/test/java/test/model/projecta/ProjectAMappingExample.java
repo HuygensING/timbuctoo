@@ -27,7 +27,8 @@ public class ProjectAMappingExample extends MappingExample {
   public static final String VIRTUAL_CLIENT = "virtualClient";
 
   public static final VirtualProperty VIRTUAL_PROPERTY = new VirtualProperty(VIRTUAL_CLIENT, "getVirtualProperty");
-  public static final List<VirtualProperty> VIRTUAL_PROPERTIES = ImmutableList.of(VIRTUAL_PROPERTY);
+  public static final VirtualProperty VIRTUAL_PROPERTY_ACCESSOR_IN_SUPER = new VirtualProperty("virtualClient2", "getVirtualSuperProperty");
+  public static final List<VirtualProperty> VIRTUAL_PROPERTIES = ImmutableList.of(VIRTUAL_PROPERTY, VIRTUAL_PROPERTY_ACCESSOR_IN_SUPER);
 
   public List<VirtualProperty> getVirtualProperties() {
     return VIRTUAL_PROPERTIES;
@@ -65,5 +66,10 @@ public class ProjectAMappingExample extends MappingExample {
   @IndexAnnotation(fieldName = VIRTUAL_INDEX)
   public String getVirtualProperty(){
     return null;
+  }
+
+  @Override
+  public String getVirtualSuperProperty() {
+    return super.getVirtualSuperProperty();
   }
 }

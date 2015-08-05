@@ -22,23 +22,23 @@ package nl.knaw.huygens.timbuctoo.model.neww;
  * #L%
  */
 
-import java.util.List;
-import java.util.Map;
-
-import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
-import nl.knaw.huygens.timbuctoo.model.DerivedRelationType;
-import nl.knaw.huygens.timbuctoo.model.Person;
-import nl.knaw.huygens.timbuctoo.model.RelationRef;
-import nl.knaw.huygens.timbuctoo.oaipmh.DublinCoreMetadataField;
-import nl.knaw.huygens.timbuctoo.oaipmh.OAIDublinCoreField;
-import nl.knaw.huygens.timbuctoo.util.Text;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.model.DerivedProperty;
+import nl.knaw.huygens.timbuctoo.model.DerivedRelationType;
+import nl.knaw.huygens.timbuctoo.model.Person;
+import nl.knaw.huygens.timbuctoo.model.RelationRef;
+import nl.knaw.huygens.timbuctoo.model.mapping.VirtualProperty;
+import nl.knaw.huygens.timbuctoo.oaipmh.DublinCoreMetadataField;
+import nl.knaw.huygens.timbuctoo.oaipmh.OAIDublinCoreField;
+import nl.knaw.huygens.timbuctoo.util.Text;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.List;
+import java.util.Map;
 
 public class WWPerson extends Person {
 
@@ -185,14 +185,14 @@ public class WWPerson extends Person {
   // NOTE. Some relations are generic, but a project need not be interested
   // So it seems to make sense to define relations here and not in Person
 
-  @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_residence", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<RelationRef> getResidenceLocation() {
-    return getRelations("hasResidenceLocation");
-  }
+//  @JsonIgnore
+//  @IndexAnnotation(fieldName = "dynamic_s_residence", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+//  public List<RelationRef> getResidenceLocation() {
+//    return getRelations("hasResidenceLocation");
+//  }
 
   // a facet that allows searching all the locations related to person.
-  @IndexAnnotation(fieldName = "dynamic_s_relatedLocations", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_s_relatedLocations", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getRelatedLocations() {
     List<RelationRef> relatedLocations = Lists.newArrayList();
 
@@ -227,19 +227,19 @@ public class WWPerson extends Person {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_language", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_s_language", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getPrimaryLanguages() {
     return getRelations("hasPersonLanguage");
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_collective", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_s_collective", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getCollectives() {
     return getRelations("isMemberOf");
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_religion", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_s_religion", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getReligions() {
     return getRelations("hasReligion");
   }
@@ -252,6 +252,30 @@ public class WWPerson extends Person {
   @Override
   public List<DerivedRelationType> getDerivedRelationTypes() {
     return DERIVED_RELATION_TYPES;
+  }
+
+  // ---------------------------------------------------------------------------
+  private static final DerivedProperty RESIDENCE_LOCATION = new DerivedProperty("residenceLocation", "hasResidenceLocation", "getIdentificationName", "getResidenceLocation");
+  private static final List<DerivedProperty> DERIVED_PROPERTIES = ImmutableList.of(RESIDENCE_LOCATION);
+
+  @Override
+  public List<DerivedProperty> getDerivedProperties() {
+    return ImmutableList.<DerivedProperty>builder().addAll(DERIVED_PROPERTIES).addAll(super.getDerivedProperties()).build();
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_residence", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
+  public List<RelationRef> getResidenceLocation() {
+    return getRelations("hasResidenceLocation");
+  }
+
+  // ---------------------------------------------------------------------------
+  private static final VirtualProperty NAME = new VirtualProperty("name", "getIdentificationName");
+  private static final List<VirtualProperty> VIRTUAL_PROPERTIES = ImmutableList.of(NAME);
+
+  @Override
+  public List<VirtualProperty> getVirtualProperties() {
+    return VIRTUAL_PROPERTIES;
   }
 
   @Override

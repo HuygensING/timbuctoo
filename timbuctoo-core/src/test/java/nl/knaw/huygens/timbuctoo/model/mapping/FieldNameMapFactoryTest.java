@@ -71,6 +71,19 @@ public class FieldNameMapFactoryTest {
     hasKeyWithValue(fieldNameMap, expectedKey2, expectedValue2);
   }
 
+  @Test
+  public void createMapsVirtualProperties() throws Exception {
+    // setup
+    String expectedKey = ProjectAMappingExample.VIRTUAL_INDEX;
+    String expectedValue = ProjectAMappingExample.VIRTUAL_CLIENT;
+
+    // action
+    FieldNameMap fieldNameMap = instance.create(INDEX, CLIENT, SUB_TYPE);
+
+    // verify
+    hasKeyWithValue(fieldNameMap, expectedKey, expectedValue);
+  }
+
   private void hasKeyWithValue(FieldNameMap fieldNameMap, String expectedKey, String expectedValue) {
     assertThat(fieldNameMap.getFromNames(), hasItem(expectedKey));
     assertThat(fieldNameMap.translate(expectedKey), is(expectedValue));

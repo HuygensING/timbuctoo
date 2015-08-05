@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.DerivedProperty;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -97,42 +98,41 @@ public class FieldNameMapFactory {
     INDEX {
       @Override
       protected String getFieldName(Class<?> type, Field field) {
-        Method method = getMethodByName(type, getGetterName(field));
-
-        return getFieldName(method);
+        return getFieldName(type, getGetterName(field));
       }
 
       @Override
       public String getFieldName(Class<?> type, DerivedProperty derivedProperty) {
-        Method method = getMethodByName(type, derivedProperty.getLocalAccessor());
-
-        return getFieldName(method);
+        return getFieldName(type, derivedProperty.getLocalAccessor());
       }
 
       @Override
       public String getFieldName(Class<?> type, VirtualProperty virtualProperty) {
-        Method method = getMethodByName(type, virtualProperty.getAccessor());
-
-        return getFieldName(method);
+        return getFieldName(type, virtualProperty.getAccessor());
       }
 
-      private String getFieldName(Method method) {
-        if (isAnnotationPresentOnMethod(method, IndexAnnotation.class)) {
-          IndexAnnotation annotation = method.getAnnotation(IndexAnnotation.class);
-          return annotation.isSortable() ? null : annotation.fieldName();
-        }
+      private String getFieldName(Class<?> type, String methodName) {
 
-        if (isAnnotationPresentOnMethod(method, IndexAnnotations.class)) {
-          for (IndexAnnotation indexAnnotation : method.getAnnotation(IndexAnnotations.class).value()) {
-            if (!indexAnnotation.isSortable()) {
-              return indexAnnotation.fieldName();
-            }
+        Class<?> typeToGetMethodFrom = type;
+        for (; !typeToGetMethodFrom.isAssignableFrom(Entity.class); typeToGetMethodFrom = typeToGetMethodFrom.getSuperclass()) {
+          Method method = getMethodByName(typeToGetMethodFrom, methodName);
+          if (isAnnotationPresentOnMethod(method, IndexAnnotation.class)) {
+            IndexAnnotation annotation = method.getAnnotation(IndexAnnotation.class);
+            return annotation.isSortable() ? null : annotation.fieldName();
           }
 
+          if (isAnnotationPresentOnMethod(method, IndexAnnotations.class)) {
+            for (IndexAnnotation indexAnnotation : method.getAnnotation(IndexAnnotations.class).value()) {
+              if (!indexAnnotation.isSortable()) {
+                return indexAnnotation.fieldName();
+              }
+            }
+          }
         }
 
         return null;
       }
+
     };
 
     protected abstract String getFieldName(Class<?> type, Field field);
@@ -142,7 +142,7 @@ public class FieldNameMapFactory {
     public abstract String getFieldName(Class<?> type, VirtualProperty virtualProperty);
 
     protected boolean isAnnotationPresentOnMethod(Method method, Class<? extends Annotation> annotation) {
-      return method != null && method.isAnnotationPresent(annotation);
+      return method != null && method.getAnnotation(annotation) != null;
     }
 
 

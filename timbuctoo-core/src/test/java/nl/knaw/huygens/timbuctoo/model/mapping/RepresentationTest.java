@@ -56,6 +56,22 @@ public class RepresentationTest {
   }
 
   @Test
+  public void getFieldNameForVirtualPropertyOfINDEXReturnsTheFieldNameOfIndexAnnotationOfTheAccessor() {
+    VirtualProperty virtualProperty = ProjectAMappingExample.VIRTUAL_PROPERTY;
+    String expectedName = ProjectAMappingExample.VIRTUAL_INDEX;
+
+    verifyFieldName(INDEX, virtualProperty, expectedName);
+  }
+
+  @Test
+  public void getFieldNameForVirtualPropertyOfINDEXReturnsTheFieldNameOfIndexAnnotationOfTheOverriddenAccessorInTheSuperclass() {
+    VirtualProperty virtualProperty = ProjectAMappingExample.VIRTUAL_PROPERTY_ACCESSOR_IN_SUPER;
+    String expectedName = ProjectAMappingExample.VIRTUAL_SUPER_PROPERTY;
+
+    verifyFieldName(INDEX, virtualProperty, expectedName);
+  }
+
+  @Test
   public void getFieldNameOfCLIENTReturnsTheValueOfTheJsonPropertyAnnotationOfTheField() throws Exception {
     String expectedName = MappingExample.INDEX_AND_CLIENT_CLIENT_NAME;
     verifyFieldName(CLIENT, "indexAndClient", expectedName);
@@ -74,19 +90,19 @@ public class RepresentationTest {
   }
 
   @Test
-  public void getFieldNameForDerivedPropertyOfClientReturnsThePropertyName() {
+  public void getFieldNameForDerivedPropertyOfCLIENTReturnsThePropertyName() {
     DerivedProperty derivedProperty = ProjectAMappingExample.DERIVED_PROPERTY_1;
     String expectedName = derivedProperty.getPropertyName();
 
     verifyFieldName(CLIENT, derivedProperty, expectedName);
   }
 
-  private void verifyFieldName(Representation representation, DerivedProperty derivedProperty, String expectedName) {
-    // action
-    String fieldName = representation.getFieldName(ProjectAMappingExample.class, derivedProperty);
+  @Test
+  public void getFieldNameForVirtualPropertyOfCLIENTReturnsThePropertyName() {
+    VirtualProperty virtualProperty = ProjectAMappingExample.VIRTUAL_PROPERTY;
+    String expectedName = virtualProperty.getPropertyName();
 
-    // verify
-    assertThat(fieldName, is(expectedName));
+    verifyFieldName(CLIENT, virtualProperty, expectedName);
   }
 
 
@@ -98,6 +114,20 @@ public class RepresentationTest {
 
     // verify
     assertThat(fieldName, is(nameInPresentation));
+  }
+
+  private void verifyFieldName(Representation representation, VirtualProperty virtualProperty, String expectedName) {
+    String fieldName = representation.getFieldName(ProjectAMappingExample.class, virtualProperty);
+
+    assertThat(fieldName, is(expectedName));
+  }
+
+  private void verifyFieldName(Representation representation, DerivedProperty derivedProperty, String expectedName) {
+    // action
+    String fieldName = representation.getFieldName(ProjectAMappingExample.class, derivedProperty);
+
+    // verify
+    assertThat(fieldName, is(expectedName));
   }
 
 

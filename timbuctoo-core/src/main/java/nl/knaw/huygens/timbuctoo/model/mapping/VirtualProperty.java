@@ -19,4 +19,5 @@ public class VirtualProperty {
   public String getAccessor() {
     return accessor;
   }
+
 }

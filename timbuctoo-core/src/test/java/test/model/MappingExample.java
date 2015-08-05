@@ -12,6 +12,7 @@ public class MappingExample extends DomainEntity {
   public static final String FIELD_NAME_OF_GETTER_WITH_ANNOTATION = "fieldNameOfGetterWithAnnotation";
   public static final String FIRST_NON_SORTABLE = "firstNonSortable";
   public static final String CLIENT_FIELD_FIRST_NON_SORTABLE = "clientFieldFirstNonSortable";
+  public static final String VIRTUAL_SUPER_PROPERTY = "virtualSuperProperty";
 
   @JsonProperty(FIELD_WITHOUT_GETTER)
   private Object fieldWithoutGetter;
@@ -66,5 +67,11 @@ public class MappingExample extends DomainEntity {
     @IndexAnnotation(fieldName = "other")})
   public Object getFieldWithIndexAnnotations() {
     return fieldWithIndexAnnotations;
+  }
+
+
+  @IndexAnnotation(fieldName = VIRTUAL_SUPER_PROPERTY)
+  public String getVirtualSuperProperty() {
+    return null;
   }
 }

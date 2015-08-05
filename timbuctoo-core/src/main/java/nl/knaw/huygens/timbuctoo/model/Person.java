@@ -73,7 +73,9 @@ public class Person extends DomainEntity {
   }
 
   private final Names names;
-  /** Gender at birth. */
+  /**
+   * Gender at birth.
+   */
   private Gender gender;
   private Datable birthDate;
   private Datable deathDate;
