@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.model.mapping;
 
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import org.junit.Before;
 import org.junit.Test;
 import test.model.MappingExample;
@@ -26,6 +27,9 @@ public class FieldNameMapFactoryTest {
   @Test
   public void createOnlyMapsTheFieldsThatHaveBothRepresentations() throws Exception {
     // setup
+    String idKey = Entity.ID_PROPERTY_NAME;
+    String idValue = Entity.INDEX_FIELD_ID;
+
     String expectedKey1 = MappingExample.INDEX_AND_CLIENT_CLIENT_NAME;
     String expectedValue1 = MappingExample.INDEX_AND_CLIENT_INDEX_NAME;
 
@@ -36,14 +40,18 @@ public class FieldNameMapFactoryTest {
     FieldNameMap fieldNameMap = instance.create(CLIENT, INDEX, TYPE);
 
     // verify
-    assertThat(fieldNameMap.getFromNames(), containsInAnyOrder(expectedKey1, expectedKey2));
+    assertThat(fieldNameMap.getFromNames(), containsInAnyOrder(expectedKey1, expectedKey2, idKey));
     assertThat(fieldNameMap.translate(expectedKey1), is(expectedValue1));
     assertThat(fieldNameMap.translate(expectedKey2), is(expectedValue2));
+    assertThat(fieldNameMap.translate(idKey), is(idValue));
   }
 
   @Test
   public void createMapsFieldsFromParents() throws Exception {
     // setup
+    String idKey = Entity.INDEX_FIELD_ID;
+    String idValue = Entity.ID_PROPERTY_NAME;
+
     String expectedKey1 = MappingExample.INDEX_AND_CLIENT_INDEX_NAME;
     String expectedValue1 = MappingExample.INDEX_AND_CLIENT_CLIENT_NAME;
 
@@ -51,8 +59,8 @@ public class FieldNameMapFactoryTest {
     FieldNameMap fieldNameMap = instance.create(INDEX, CLIENT, SUB_TYPE);
 
     // verify
-    // verify
     hasKeyWithValue(fieldNameMap, expectedKey1, expectedValue1);
+    hasKeyWithValue(fieldNameMap, idKey, idValue);
   }
 
   @Test

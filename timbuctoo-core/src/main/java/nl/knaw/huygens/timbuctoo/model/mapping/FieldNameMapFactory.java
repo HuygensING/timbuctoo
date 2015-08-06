@@ -18,9 +18,8 @@ public class FieldNameMapFactory {
   public <T extends DomainEntity> FieldNameMap create(Representation from, Representation to, Class<T> type) throws MappingException {
     FieldNameMap fieldNameMap = new FieldNameMap();
 
-    Class<?> typeToMap = type;
 
-    for (; isDomainEntity(typeToMap); typeToMap = typeToMap.getSuperclass()) {
+    for (Class<?> typeToMap = type; isEntity(typeToMap); typeToMap = typeToMap.getSuperclass()) {
       addFields(from, to, typeToMap, fieldNameMap);
       addVirtualProperties(from, to, typeToMap, fieldNameMap);
     }
@@ -55,8 +54,8 @@ public class FieldNameMapFactory {
     }
   }
 
-  private boolean isDomainEntity(Class<?> typeToAddFieldsFor) {
-    return DomainEntity.class.isAssignableFrom(typeToAddFieldsFor);
+  private static boolean isEntity(Class<?> typeToAddFieldsFor) {
+    return Entity.class.isAssignableFrom(typeToAddFieldsFor);
   }
 
   private void addFields(Representation from, Representation to, Class<?> type, FieldNameMap fieldNameMap) {
@@ -120,8 +119,8 @@ public class FieldNameMapFactory {
 
       private String getFieldName(Class<?> type, String methodName) {
 
-        Class<?> typeToGetMethodFrom = type;
-        for (; !typeToGetMethodFrom.isAssignableFrom(Entity.class); typeToGetMethodFrom = typeToGetMethodFrom.getSuperclass()) {
+
+        for (Class<?> typeToGetMethodFrom = type; isEntity(typeToGetMethodFrom); typeToGetMethodFrom = typeToGetMethodFrom.getSuperclass()) {
           Method method = getMethodByName(typeToGetMethodFrom, methodName);
           if (isAnnotationPresentOnMethod(method, IndexAnnotation.class)) {
             IndexAnnotation annotation = method.getAnnotation(IndexAnnotation.class);
