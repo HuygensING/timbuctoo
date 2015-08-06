@@ -39,6 +39,7 @@ import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.rest.util.AdditionalFilterTranslator;
 import nl.knaw.huygens.timbuctoo.rest.util.AutocompleteResultConverter;
 import nl.knaw.huygens.timbuctoo.rest.util.search.IndexRegularSearchResultMapper;
+import nl.knaw.huygens.timbuctoo.rest.util.search.IndexRelationSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
@@ -86,6 +87,7 @@ class ResourceTestModule extends JerseyServletModule {
   private RelationSearcher relationSearcher;
   private RegularSearchResultMapper regularClientSearchResultCreator;
   private IndexRegularSearchResultMapper indexRegularSearchResultMapper;
+  private IndexRelationSearchResultMapper indexRelationSearchResultMapper;
   private RelationSearchResultMapper relationClientSearchResultCreator;
   private UserConfigurationHandler userConfigurationHandler;
   private BasicAuthenticationHandler basicAuthenticationHandler;
@@ -122,6 +124,7 @@ class ResourceTestModule extends JerseyServletModule {
       autoCompleteResultConverter = mock(AutocompleteResultConverter.class);
       additionalfilterTranslator = mock(AdditionalFilterTranslator.class);
       indexRegularSearchResultMapper = mock(IndexRegularSearchResultMapper.class);
+      indexRelationSearchResultMapper = mock(IndexRelationSearchResultMapper.class);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -133,7 +136,8 @@ class ResourceTestModule extends JerseyServletModule {
    */
   public void cleanUpMocks() {
     reset(config, repository, userConfigurationHandler, jsonProvider, validator, mailSender, authenticationHandler, broker, indexProducer, persistenceProducer, indexManager, searchRequestValidator,
-      searchParametersConverter, relationSearcher, regularClientSearchResultCreator, regularClientSearchResultCreator, basicAuthenticationHandler, changeHelper, vreCollection, autoCompleteResultConverter, additionalfilterTranslator, indexRegularSearchResultMapper);
+      searchParametersConverter, relationSearcher, regularClientSearchResultCreator, regularClientSearchResultCreator, basicAuthenticationHandler, changeHelper, vreCollection, autoCompleteResultConverter,
+      additionalfilterTranslator, indexRegularSearchResultMapper, indexRelationSearchResultMapper);
   }
 
   @Override
@@ -309,4 +313,9 @@ class ResourceTestModule extends JerseyServletModule {
     return indexRegularSearchResultMapper;
   }
 
+  @Singleton
+  @Provides
+  public IndexRelationSearchResultMapper provideIndexRelationSearchResultMapper() {
+    return indexRelationSearchResultMapper;
+  }
 }

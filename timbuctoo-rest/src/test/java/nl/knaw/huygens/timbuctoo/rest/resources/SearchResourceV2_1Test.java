@@ -24,7 +24,9 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
 
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.rest.util.search.IndexRegularSearchResultMapper;
+import nl.knaw.huygens.timbuctoo.rest.util.search.IndexRelationSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
+import nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultMapper;
 
 public class SearchResourceV2_1Test extends SearchResourceV1Test {
 
@@ -36,5 +38,10 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
   @Override
   protected RegularSearchResultMapper getRegularSearchResultMapper() {
     return injector.getInstance(IndexRegularSearchResultMapper.class);
+  }
+
+  @Override
+  protected RelationSearchResultMapper getRelationSearchResultMapper() {
+    return injector.getInstance(IndexRelationSearchResultMapper.class);
   }
 }

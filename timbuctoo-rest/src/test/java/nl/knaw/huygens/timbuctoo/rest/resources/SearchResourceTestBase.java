@@ -91,7 +91,11 @@ public abstract class SearchResourceTestBase extends WebServiceTestSetup {
   @Before
   public void setUpClientSearchResultCreators() {
     regularSearchResultMapperMock = getRegularSearchResultMapper();
-    relationSearchResultMapperMock = injector.getInstance(RelationSearchResultMapper.class);
+    relationSearchResultMapperMock = getRelationSearchResultMapper();
+  }
+
+  protected RelationSearchResultMapper getRelationSearchResultMapper() {
+    return injector.getInstance(RelationSearchResultMapper.class);
   }
 
   protected RegularSearchResultMapper getRegularSearchResultMapper() {
