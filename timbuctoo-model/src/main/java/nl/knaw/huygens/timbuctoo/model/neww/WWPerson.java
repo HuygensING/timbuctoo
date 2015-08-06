@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
-import nl.knaw.huygens.timbuctoo.model.DerivedProperty;
 import nl.knaw.huygens.timbuctoo.model.DerivedRelationType;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.RelationRef;
@@ -207,6 +206,13 @@ public class WWPerson extends Person {
   }
 
   @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_residence", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
+  @VirtualProperty(propertyName = "residenceLocation")
+  public List<RelationRef> getResidenceLocation() {
+    return getRelations("hasResidenceLocation");
+  }
+
+  @JsonIgnore
   @OAIDublinCoreField(dublinCoreField = DublinCoreMetadataField.DESCRIPTION)
   public String getCountries() {
     StringBuilder sb = new StringBuilder();
@@ -237,28 +243,14 @@ public class WWPerson extends Person {
   }
 
   // ---------------------------------------------------------------------------
-
   private static final DerivedRelationType PERSON_LANGUAGE = new DerivedRelationType("hasPersonLanguage", "isCreatorOf", "hasWorkLanguage");
+
   private static final List<DerivedRelationType> DERIVED_RELATION_TYPES = ImmutableList.of(PERSON_LANGUAGE);
+
 
   @Override
   public List<DerivedRelationType> getDerivedRelationTypes() {
     return DERIVED_RELATION_TYPES;
-  }
-
-  // ---------------------------------------------------------------------------
-  private static final DerivedProperty RESIDENCE_LOCATION = new DerivedProperty("residenceLocation", "hasResidenceLocation", "getIdentificationName", "getResidenceLocation");
-  private static final List<DerivedProperty> DERIVED_PROPERTIES = ImmutableList.of(RESIDENCE_LOCATION);
-
-  @Override
-  public List<DerivedProperty> getDerivedProperties() {
-    return ImmutableList.<DerivedProperty>builder().addAll(DERIVED_PROPERTIES).addAll(super.getDerivedProperties()).build();
-  }
-
-  @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_residence", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
-  public List<RelationRef> getResidenceLocation() {
-    return getRelations("hasResidenceLocation");
   }
 
   // ---------------------------------------------------------------------------
