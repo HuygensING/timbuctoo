@@ -1,7 +1,6 @@
 package test.model.projecta;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.DerivedProperty;
@@ -26,13 +25,7 @@ public class ProjectAMappingExample extends MappingExample {
   public static final String VIRTUAL_INDEX = "virtualIndex";
   public static final String VIRTUAL_CLIENT = "virtualClient";
 
-  public static final VirtualProperty VIRTUAL_PROPERTY = new VirtualProperty(VIRTUAL_CLIENT, "getVirtualProperty");
-  public static final VirtualProperty VIRTUAL_PROPERTY_ACCESSOR_IN_SUPER = new VirtualProperty("virtualClient2", "getVirtualSuperProperty");
-  public static final List<VirtualProperty> VIRTUAL_PROPERTIES = ImmutableList.of(VIRTUAL_PROPERTY, VIRTUAL_PROPERTY_ACCESSOR_IN_SUPER);
-
-  public List<VirtualProperty> getVirtualProperties() {
-    return VIRTUAL_PROPERTIES;
-  }
+  public static final String VIRTUAL_CLIENT_2 = "virtualClient2";
 
   @JsonProperty(CLIENT_AND_INDEX_SUB_CLIENT)
   private Object clientAndIndexSub;
@@ -64,11 +57,13 @@ public class ProjectAMappingExample extends MappingExample {
   }
 
   @IndexAnnotation(fieldName = VIRTUAL_INDEX)
-  public String getVirtualProperty(){
+  @VirtualProperty(propertyName = VIRTUAL_CLIENT)
+  public String getVirtualProperty() {
     return null;
   }
 
   @Override
+  @VirtualProperty(propertyName = VIRTUAL_CLIENT_2)
   public String getVirtualSuperProperty() {
     return super.getVirtualSuperProperty();
   }

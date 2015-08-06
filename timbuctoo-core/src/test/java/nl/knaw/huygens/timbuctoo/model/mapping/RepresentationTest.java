@@ -7,6 +7,7 @@ import test.model.MappingExample;
 import test.model.projecta.ProjectAMappingExample;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import static nl.knaw.huygens.timbuctoo.model.mapping.FieldNameMapFactory.Representation.CLIENT;
 import static nl.knaw.huygens.timbuctoo.model.mapping.FieldNameMapFactory.Representation.INDEX;
@@ -16,6 +17,7 @@ import static org.hamcrest.core.Is.is;
 public class RepresentationTest {
 
   public static final Class<MappingExample> TYPE = MappingExample.class;
+  public static final Class<ProjectAMappingExample> SUB_TYPE = ProjectAMappingExample.class;
 
   @Test
   public void getFieldNameOfINDEXGetsTheNameFromTheIndexAnnotationOfTheGetterOfTheField() throws Exception {
@@ -56,20 +58,17 @@ public class RepresentationTest {
   }
 
   @Test
-  public void getFieldNameForVirtualPropertyOfINDEXReturnsTheFieldNameOfIndexAnnotationOfTheAccessor() {
-    VirtualProperty virtualProperty = ProjectAMappingExample.VIRTUAL_PROPERTY;
+  public void getFieldNameForVirtualPropertyOfINDEXReturnsTheFieldNameOfIndexAnnotationOfTheAccessor() throws Exception {
     String expectedName = ProjectAMappingExample.VIRTUAL_INDEX;
-
-    verifyFieldName(INDEX, virtualProperty, expectedName);
+    verifyFieldNameForVirtualProperty(INDEX, "getVirtualProperty", expectedName);
   }
 
   @Test
-  public void getFieldNameForVirtualPropertyOfINDEXReturnsTheFieldNameOfIndexAnnotationOfTheOverriddenAccessorInTheSuperclass() {
-    VirtualProperty virtualProperty = ProjectAMappingExample.VIRTUAL_PROPERTY_ACCESSOR_IN_SUPER;
+  public void getFieldNameForVirtualPropertyOfINDEXReturnsTheFieldNameOfIndexAnnotationOfTheOverriddenAccessorInTheSuperclass() throws Exception {
     String expectedName = ProjectAMappingExample.VIRTUAL_SUPER_PROPERTY;
-
-    verifyFieldName(INDEX, virtualProperty, expectedName);
+    verifyFieldNameForVirtualProperty(INDEX, "getVirtualSuperProperty", expectedName);
   }
+
 
   @Test
   public void getFieldNameOfCLIENTReturnsTheValueOfTheJsonPropertyAnnotationOfTheField() throws Exception {
@@ -98,13 +97,10 @@ public class RepresentationTest {
   }
 
   @Test
-  public void getFieldNameForVirtualPropertyOfCLIENTReturnsThePropertyName() {
-    VirtualProperty virtualProperty = ProjectAMappingExample.VIRTUAL_PROPERTY;
-    String expectedName = virtualProperty.getPropertyName();
-
-    verifyFieldName(CLIENT, virtualProperty, expectedName);
+  public void getFieldNameForVirtualPropertyOfCLIENTReturnsThePropertyName() throws Exception {
+    String expectedName = ProjectAMappingExample.VIRTUAL_CLIENT;
+    verifyFieldNameForVirtualProperty(CLIENT, "getVirtualProperty", expectedName);
   }
-
 
   private void verifyFieldName(Representation representation, String nameOfTheField, String nameInPresentation) throws Exception {
     Field field = TYPE.getDeclaredField(nameOfTheField);
@@ -116,12 +112,6 @@ public class RepresentationTest {
     assertThat(fieldName, is(nameInPresentation));
   }
 
-  private void verifyFieldName(Representation representation, VirtualProperty virtualProperty, String expectedName) {
-    String fieldName = representation.getFieldName(ProjectAMappingExample.class, virtualProperty);
-
-    assertThat(fieldName, is(expectedName));
-  }
-
   private void verifyFieldName(Representation representation, DerivedProperty derivedProperty, String expectedName) {
     // action
     String fieldName = representation.getFieldName(ProjectAMappingExample.class, derivedProperty);
@@ -130,5 +120,11 @@ public class RepresentationTest {
     assertThat(fieldName, is(expectedName));
   }
 
+  private void verifyFieldNameForVirtualProperty(Representation representation, String methodName, String expectedName) throws Exception {
+    Method method = SUB_TYPE.getMethod(methodName);
+    String fieldName = representation.getFieldName(SUB_TYPE, method);
+
+    assertThat(fieldName, is(expectedName));
+  }
 
 }

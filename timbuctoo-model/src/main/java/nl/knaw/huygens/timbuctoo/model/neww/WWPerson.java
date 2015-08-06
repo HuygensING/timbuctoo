@@ -81,6 +81,7 @@ public class WWPerson extends Person {
   }
 
   @Override
+  @VirtualProperty(propertyName = "name")
   public String getIdentificationName() {
     String name = defaultName().getShortName();
     return StringUtils.stripToEmpty(name).isEmpty() ? "[TEMP] " + tempName : name;
@@ -182,15 +183,6 @@ public class WWPerson extends Person {
     this.tempSpouse = tempSpouse;
   }
 
-  // NOTE. Some relations are generic, but a project need not be interested
-  // So it seems to make sense to define relations here and not in Person
-
-//  @JsonIgnore
-//  @IndexAnnotation(fieldName = "dynamic_s_residence", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-//  public List<RelationRef> getResidenceLocation() {
-//    return getRelations("hasResidenceLocation");
-//  }
-
   // a facet that allows searching all the locations related to person.
   @IndexAnnotation(fieldName = "dynamic_s_relatedLocations", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getRelatedLocations() {
@@ -270,13 +262,6 @@ public class WWPerson extends Person {
   }
 
   // ---------------------------------------------------------------------------
-  private static final VirtualProperty NAME = new VirtualProperty("name", "getIdentificationName");
-  private static final List<VirtualProperty> VIRTUAL_PROPERTIES = ImmutableList.of(NAME);
-
-  @Override
-  public List<VirtualProperty> getVirtualProperties() {
-    return VIRTUAL_PROPERTIES;
-  }
 
   @Override
   public Map<String, String> getClientRepresentation() {

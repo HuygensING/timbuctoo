@@ -18,12 +18,30 @@ public class FieldNameMapFactory {
   public <T extends DomainEntity> FieldNameMap create(Representation from, Representation to, Class<T> type) throws MappingException {
     FieldNameMap fieldNameMap = new FieldNameMap();
 
-    Class<?> typeToAddFieldsFor = type;
+    Class<?> typeToMap = type;
 
-    for (; isDomainEntity(typeToAddFieldsFor); typeToAddFieldsFor = typeToAddFieldsFor.getSuperclass()) {
-      addFields(from, to, typeToAddFieldsFor, fieldNameMap);
+    for (; isDomainEntity(typeToMap); typeToMap = typeToMap.getSuperclass()) {
+      addFields(from, to, typeToMap, fieldNameMap);
+      addVirtualProperties(from, to, typeToMap, fieldNameMap);
     }
 
+    addDerivedProperties(from, to, type, fieldNameMap);
+
+
+    return fieldNameMap;
+  }
+
+  private void addVirtualProperties(Representation from, Representation to, Class<?> type, FieldNameMap fieldNameMap) {
+    for (Method method : type.getMethods()) {
+      String key = from.getFieldName(type, method);
+      String value = to.getFieldName(type, method);
+
+      addField(fieldNameMap, key, value);
+    }
+
+  }
+
+  private <T extends DomainEntity> void addDerivedProperties(Representation from, Representation to, Class<T> type, FieldNameMap fieldNameMap) throws MappingException {
     try {
       T instance = type.newInstance();
       for (DerivedProperty derivedProperty : instance.getDerivedProperties()) {
@@ -32,21 +50,9 @@ public class FieldNameMapFactory {
 
         addField(fieldNameMap, key, value);
       }
-
-      for (VirtualProperty property : instance.getVirtualProperties()) {
-        String key = from.getFieldName(type, property);
-        String value = to.getFieldName(type, property);
-
-        addField(fieldNameMap, key, value);
-      }
-
-
     } catch (InstantiationException | IllegalAccessException e) {
       throw new MappingException(type, e);
     }
-
-
-    return fieldNameMap;
   }
 
   private boolean isDomainEntity(Class<?> typeToAddFieldsFor) {
@@ -89,8 +95,9 @@ public class FieldNameMapFactory {
       }
 
       @Override
-      public String getFieldName(Class<?> type, VirtualProperty virtualProperty) {
-        return virtualProperty.getPropertyName();
+      protected String getFieldName(Class<?> type, Method method) {
+        VirtualProperty annotation = method.getAnnotation(VirtualProperty.class);
+        return annotation != null ? annotation.propertyName() : null;
       }
     },
     //    DATABASE, TODO implement when needed
@@ -107,8 +114,8 @@ public class FieldNameMapFactory {
       }
 
       @Override
-      public String getFieldName(Class<?> type, VirtualProperty virtualProperty) {
-        return getFieldName(type, virtualProperty.getAccessor());
+      protected String getFieldName(Class<?> type, Method method) {
+        return getFieldName(type, method.getName());
       }
 
       private String getFieldName(Class<?> type, String methodName) {
@@ -139,7 +146,8 @@ public class FieldNameMapFactory {
 
     protected abstract String getFieldName(Class<?> type, DerivedProperty derivedProperty);
 
-    public abstract String getFieldName(Class<?> type, VirtualProperty virtualProperty);
+    protected abstract String getFieldName(Class<?> type, Method method);
+
 
     protected boolean isAnnotationPresentOnMethod(Method method, Class<? extends Annotation> annotation) {
       return method != null && method.getAnnotation(annotation) != null;
