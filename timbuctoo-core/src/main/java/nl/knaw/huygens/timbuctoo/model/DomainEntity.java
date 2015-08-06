@@ -70,8 +70,6 @@ public abstract class DomainEntity extends Entity {
     relationCount = 0;
   }
 
-
-
   @JsonProperty(PID)
   @JsonView(JsonViews.NoExportView.class)
   public String getPid() {
