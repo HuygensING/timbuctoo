@@ -92,8 +92,17 @@ public class SolrIndexTest {
   private FacetedSearchLibrary facetedSearchLibraryMock;
   private SolrIndex instance;
   private IndexDescription indexDescriptionMock;
-  public static final Map<String, Object> RESULT_1 = Maps.newHashMap();
-  public static final Map<String, Object> RESULT_2 = Maps.newHashMap();
+  public static final Map<String, Object> RESULT_1;
+  public static final Map<String, Object> RESULT_2;
+
+  static {
+    RESULT_1 = Maps.newHashMap();
+    RESULT_1.put("key", "value");
+    RESULT_2 = Maps.newHashMap();
+    RESULT_2.put("otherKey", "otherValue");
+  }
+
+
 
   @Before
   public void setUp() {
@@ -641,7 +650,7 @@ public class SolrIndexTest {
 
   private SolrDocument createDoc(Map<String, Object> result) {
     SolrDocument doc = mock(SolrDocument.class);
-    when(doc.getFieldValueMap()).thenReturn(result);
+    when(doc.entrySet()).thenReturn(result.entrySet());
     return doc;
   }
 

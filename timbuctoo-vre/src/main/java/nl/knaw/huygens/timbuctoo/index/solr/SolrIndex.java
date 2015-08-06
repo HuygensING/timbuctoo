@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.index.solr;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.facetedsearch.FacetedSearchException;
 import nl.knaw.huygens.facetedsearch.FacetedSearchLibrary;
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
@@ -223,7 +224,14 @@ public class SolrIndex implements Index {
 
     List<Map<String, Object>> results = Lists.newArrayList();
     for (SolrDocument doc : queryResponse.getResults()) {
-      results.add(doc.getFieldValueMap());
+      Map<String, Object> fieldValueMap = Maps.newHashMap();
+      /*
+       * Do not use doc.getFieldValueMap because it will return a map that returns only the first value on get.
+       */
+      for (Map.Entry<String, Object> entry : doc.entrySet()) {
+        fieldValueMap.put(entry.getKey(), entry.getValue());
+      }
+      results.add(fieldValueMap);
     }
     return results;
   }
