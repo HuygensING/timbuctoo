@@ -31,7 +31,7 @@ import test.rest.model.TestRelation;
 
 import java.util.List;
 
-import static nl.knaw.huygens.timbuctoo.rest.util.search.RelationClientSearchResultMatcher.newClientSearchResultMatcher;
+import static nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultDTOMatcher.likeRelationSearchResultDTO;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -67,15 +67,14 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
 
     List<String> idsToGet = ID_LIST_WITH_TEN_IDS;
     List<TestRelation> result = setupRepository(type, idsToGet);
-    RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
+    RelationSearchResultDTOMatcher likeRelationClientResult = likeRelationSearchResultDTO()//
         .withIds(ID_LIST_WITH_TEN_IDS) //
         .withNumFound(TEN_RESULTS_FOUND) //
         .withRefs(REFS) //
         .withResults(result) //
         .withStart(start) //
         .withRows(rows) //
-        .withSortableFields(SORTABLE_FIELDS) //
-        .build();
+        .withSortableFields(SORTABLE_FIELDS);
 
     when(relationMapperMock.createRefs(vreMock, type, result)).thenReturn(REFS);
 
@@ -94,7 +93,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
 
     List<String> idsToGet = ID_LIST_WITH_TEN_IDS.subList(1, 10);
     List<TestRelation> result = setupRepository(type, idsToGet);
-    RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
+    RelationSearchResultDTOMatcher likeRelationClientResult = likeRelationSearchResultDTO()//
         .withIds(ID_LIST_WITH_TEN_IDS) //
         .withNumFound(TEN_RESULTS_FOUND) //
         .withRefs(REFS) //
@@ -102,8 +101,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
         .withStart(start) //
         .withRows(rows) //
         .withSortableFields(SORTABLE_FIELDS) //
-        .withPrevLink(PREV_LINK) //
-        .build();
+        .withPrevLink(PREV_LINK) ;
 
     when(relationMapperMock.createRefs(vreMock, type, result)).thenReturn(REFS);
     when(hateoasURICreatorMock.createHATEOASURIAsString(previousStart, rows, QUERY_ID)).thenReturn(PREV_LINK);
@@ -123,15 +121,14 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
 
     List<String> idsToGet = ID_LIST_WITH_TEN_IDS;
     List<TestRelation> result = setupRepository(type, idsToGet);
-    RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
+    RelationSearchResultDTOMatcher likeRelationClientResult = likeRelationSearchResultDTO()
         .withIds(ID_LIST_WITH_TEN_IDS) //
         .withNumFound(TEN_RESULTS_FOUND) //
         .withRefs(REFS) //
         .withResults(result) //
         .withStart(normalizedStart) //
         .withRows(rows) //
-        .withSortableFields(SORTABLE_FIELDS) //
-        .build();
+        .withSortableFields(SORTABLE_FIELDS);
 
     when(relationMapperMock.createRefs(vreMock, type, result)).thenReturn(REFS);
 
@@ -150,7 +147,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
 
     List<String> idsToGet = ID_LIST_WITH_TEN_IDS.subList(0, 5);
     List<TestRelation> result = setupRepository(type, idsToGet);
-    RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
+    RelationSearchResultDTOMatcher likeRelationClientResult = likeRelationSearchResultDTO()//
         .withIds(ID_LIST_WITH_TEN_IDS) //
         .withNumFound(TEN_RESULTS_FOUND) //
         .withRefs(REFS) //
@@ -158,8 +155,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
         .withStart(start) //
         .withRows(rows) //
         .withSortableFields(SORTABLE_FIELDS) //
-        .withNextLink(NEXT_LINK) //
-        .build();
+        .withNextLink(NEXT_LINK);
 
     when(relationMapperMock.createRefs(vreMock, type, result)).thenReturn(REFS);
     when(hateoasURICreatorMock.createHATEOASURIAsString(nextStart, rows, QUERY_ID)).thenReturn(NEXT_LINK);
@@ -179,16 +175,14 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
 
     List<String> idsToGet = ID_LIST_WITH_TEN_IDS;
     List<TestRelation> result = setupRepository(type, idsToGet);
-    RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
+    RelationSearchResultDTOMatcher likeRelationClientResult = likeRelationSearchResultDTO()//
         .withIds(idsToGet) //
         .withNumFound(TEN_RESULTS_FOUND) //
         .withRefs(REFS) //
         .withResults(result) //
         .withStart(start) //
         .withRows(normalizedRows) //
-        .withSortableFields(SORTABLE_FIELDS) //
-        .build();
-
+        .withSortableFields(SORTABLE_FIELDS);
     when(relationMapperMock.createRefs(vreMock, type, result)).thenReturn(REFS);
 
     testCreate(start, rows, type, searchResult, likeRelationClientResult, VERSION);
@@ -207,7 +201,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
 
     List<String> idsToGet = ID_LIST_WITH_TEN_IDS.subList(normalizedStart, 10);
     List<TestRelation> result = setupRepository(type, idsToGet);
-    RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
+    RelationSearchResultDTOMatcher likeRelationClientResult = likeRelationSearchResultDTO()//
         .withIds(ID_LIST_WITH_TEN_IDS) //
         .withNumFound(TEN_RESULTS_FOUND) //
         .withRefs(REFS) //
@@ -215,8 +209,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
         .withStart(normalizedStart) //
         .withRows(normalizedRows) //
         .withSortableFields(SORTABLE_FIELDS) //
-        .withPrevLink(PREV_LINK) //
-        .build();
+        .withPrevLink(PREV_LINK);
 
     int prevStart = 0;
     when(relationMapperMock.createRefs(vreMock, type, result)).thenReturn(REFS);
@@ -237,15 +230,14 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
     List<TestRelation> result = setupRepository(type, idsToGet);
     List<RelationDTO> emptyRefList = Lists.newArrayList();
 
-    RelationClientSearchResultMatcher likeRelationClientResult = newClientSearchResultMatcher()//
+    RelationSearchResultDTOMatcher likeRelationClientResult = likeRelationSearchResultDTO()
         .withIds(idsToGet) //
         .withNumFound(0) //
         .withRefs(emptyRefList) //
         .withResults(result) //
         .withStart(start) //
         .withRows(rows) //
-        .withSortableFields(SORTABLE_FIELDS) //
-        .build();
+        .withSortableFields(SORTABLE_FIELDS);
 
     testCreate(start, rows, type, searchResult, likeRelationClientResult, VERSION);
   }
@@ -257,7 +249,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
     return result;
   }
 
-  private void testCreate(int start, int rows, Class<TestRelation> type, SearchResult searchResult, RelationClientSearchResultMatcher likeRelationClientResult, String version) {
+  private void testCreate(int start, int rows, Class<TestRelation> type, SearchResult searchResult, RelationSearchResultDTOMatcher likeRelationClientResult, String version) {
     assertThat(instance.create(type, searchResult, start, rows, version), likeRelationClientResult);
   }
 
