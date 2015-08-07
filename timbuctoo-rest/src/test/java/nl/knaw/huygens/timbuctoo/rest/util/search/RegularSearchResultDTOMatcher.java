@@ -27,22 +27,21 @@ import nl.knaw.huygens.hamcrest.CompositeMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualtityMatcher;
 import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
 import nl.knaw.huygens.timbuctoo.model.RegularSearchResultDTO;
-import org.hamcrest.Matcher;
 
 import java.util.List;
 import java.util.Set;
 
-public class RegularClientSearchResultMatcher extends CompositeMatcher<RegularSearchResultDTO> {
+public class RegularSearchResultDTOMatcher extends CompositeMatcher<RegularSearchResultDTO> {
 
-  private RegularClientSearchResultMatcher() {
+  private RegularSearchResultDTOMatcher() {
 
   }
 
-  public static RegularClientSearchResultMatcher likeRegularSearchResultDTO() {
-    return new RegularClientSearchResultMatcher();
+  public static RegularSearchResultDTOMatcher likeRegularSearchResultDTO() {
+    return new RegularSearchResultDTOMatcher();
   }
 
-  public RegularClientSearchResultMatcher withTerm(String term) {
+  public RegularSearchResultDTOMatcher withTerm(String term) {
     this.addMatcher(new PropertyEqualtityMatcher<RegularSearchResultDTO, String>("term", term) {
       @Override
       protected String getItemValue(RegularSearchResultDTO item) {
@@ -53,7 +52,7 @@ public class RegularClientSearchResultMatcher extends CompositeMatcher<RegularSe
     return this;
   }
 
-  public RegularClientSearchResultMatcher withFacets(List<Facet> facets) {
+  public RegularSearchResultDTOMatcher withFacets(List<Facet> facets) {
     this.addMatcher(new PropertyEqualtityMatcher<RegularSearchResultDTO, List<Facet>>("facets", facets) {
       @Override
       protected List<Facet> getItemValue(RegularSearchResultDTO item) {
@@ -64,7 +63,7 @@ public class RegularClientSearchResultMatcher extends CompositeMatcher<RegularSe
     return this;
   }
 
-  public RegularClientSearchResultMatcher withSortableFields(Set<String> sortableFields){
+  public RegularSearchResultDTOMatcher withSortableFields(Set<String> sortableFields){
     this.addMatcher(new PropertyEqualtityMatcher<RegularSearchResultDTO, Set<String>>("sortableFields", sortableFields) {
       @Override
       protected Set<String> getItemValue(RegularSearchResultDTO item) {
@@ -74,7 +73,7 @@ public class RegularClientSearchResultMatcher extends CompositeMatcher<RegularSe
     return this;
   }
 
-  public RegularClientSearchResultMatcher withFullTextSearchFields(Set<String> fullTextSearchFields){
+  public RegularSearchResultDTOMatcher withFullTextSearchFields(Set<String> fullTextSearchFields){
     this.addMatcher(new PropertyEqualtityMatcher<RegularSearchResultDTO, Set<String>>("fullTextSearchFields", fullTextSearchFields) {
       @Override
       protected Set<String> getItemValue(RegularSearchResultDTO item) {
@@ -84,7 +83,7 @@ public class RegularClientSearchResultMatcher extends CompositeMatcher<RegularSe
     return this;
   }
 
-  public RegularClientSearchResultMatcher withNumfound(int numfound) {
+  public RegularSearchResultDTOMatcher withNumfound(int numfound) {
     this.addMatcher(new PropertyEqualtityMatcher<RegularSearchResultDTO, Integer>("numfound", numfound) {
       @Override
       protected Integer getItemValue(RegularSearchResultDTO item) {
@@ -94,7 +93,7 @@ public class RegularClientSearchResultMatcher extends CompositeMatcher<RegularSe
     return this;
   }
 
-  public RegularClientSearchResultMatcher withIds(List<String> ids){
+  public RegularSearchResultDTOMatcher withIds(List<String> ids){
     this.addMatcher(new PropertyEqualtityMatcher<RegularSearchResultDTO, List<String>>("ids", ids) {
       @Override
       protected List<String> getItemValue(RegularSearchResultDTO item) {
@@ -105,7 +104,7 @@ public class RegularClientSearchResultMatcher extends CompositeMatcher<RegularSe
     return this;
   }
 
-  public RegularClientSearchResultMatcher withStart(int start){
+  public RegularSearchResultDTOMatcher withStart(int start){
     this.addMatcher(new PropertyEqualtityMatcher<RegularSearchResultDTO, Integer>("start", start) {
       @Override
       protected Integer getItemValue(RegularSearchResultDTO item) {
@@ -115,7 +114,7 @@ public class RegularClientSearchResultMatcher extends CompositeMatcher<RegularSe
     return this;
   }
 
-  public RegularClientSearchResultMatcher withRows(int rows){
+  public RegularSearchResultDTOMatcher withRows(int rows){
     this.addMatcher(new PropertyEqualtityMatcher<RegularSearchResultDTO, Integer>("rows", rows) {
       @Override
       protected Integer getItemValue(RegularSearchResultDTO item) {
@@ -127,7 +126,7 @@ public class RegularClientSearchResultMatcher extends CompositeMatcher<RegularSe
 
 
 
-  public RegularClientSearchResultMatcher withNextLink(String nextLink){
+  public RegularSearchResultDTOMatcher withNextLink(String nextLink){
     this.addMatcher(new PropertyEqualtityMatcher<RegularSearchResultDTO, String>("nextLink", nextLink) {
       @Override
       protected String getItemValue(RegularSearchResultDTO item) {
@@ -138,7 +137,7 @@ public class RegularClientSearchResultMatcher extends CompositeMatcher<RegularSe
     return this;
   }
 
-  public RegularClientSearchResultMatcher withPrevLink(String prevLink){
+  public RegularSearchResultDTOMatcher withPrevLink(String prevLink){
     this.addMatcher(new PropertyEqualtityMatcher<RegularSearchResultDTO, String>("prevLink", prevLink) {
       @Override
       protected String getItemValue(RegularSearchResultDTO item) {
@@ -149,7 +148,7 @@ public class RegularClientSearchResultMatcher extends CompositeMatcher<RegularSe
     return this;
   }
 
-  public Matcher<RegularSearchResultDTO> withRefs(List<DomainEntityDTO> refs) {
+  public RegularSearchResultDTOMatcher withRefs(List<DomainEntityDTO> refs) {
     this.addMatcher(new PropertyEqualtityMatcher<RegularSearchResultDTO, List<DomainEntityDTO>>("refs", refs) {
       @Override
       protected List<DomainEntityDTO> getItemValue(RegularSearchResultDTO item) {

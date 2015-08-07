@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultDTOMatcher.likeRegularSearchResultDTO;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -35,32 +36,32 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 public class IndexRegularSearchResultMapperTest {
-  protected static final Class<ProjectADomainEntity> DEFAULT_TYPE = ProjectADomainEntity.class;
-  protected static final String INTERNAL_TYPE_NAME = TypeNames.getInternalName(DEFAULT_TYPE);
-  public static final String VRE_ID = "vreId";
-  public static final List<Map<String, Object>> RAW_DATA = Lists.newArrayList();
-  public static final String NEXT_RESULTS = "nextResults";
-  public static final String PREV_RESULTS = "prevResults";
-  public static final int NORMALIZED_START = 1;
-  public static final int START = 0;
-  public static final int ROWS = 10;
-  public static final int NORMALIZED_ROWS = 4;
-  public static final String QUERY_ID = "queryId";
-  public static final List<Facet> FACETS = Lists.newArrayList();
-  public static final Set<String> FULL_TEXT_SEARCH_FIELDS = Sets.newHashSet();
-  public static final Set<String> SORTABLE_FIELDS = Sets.newHashSet();
-  public static final String TERM = "term";
-  public static final ArrayList<DomainEntityDTO> REFS = Lists.<DomainEntityDTO>newArrayList();
-  public static final String VERSION = "v1";
+  private static final Class<ProjectADomainEntity> DEFAULT_TYPE = ProjectADomainEntity.class;
+  private static final String INTERNAL_TYPE_NAME = TypeNames.getInternalName(DEFAULT_TYPE);
+  private static final String VRE_ID = "vreId";
+  private static final List<Map<String, Object>> RAW_DATA = Lists.newArrayList();
+  private static final String NEXT_RESULTS = "nextResults";
+  private static final String PREV_RESULTS = "prevResults";
+  private static final int NORMALIZED_START = 1;
+  private static final int START = 0;
+  private static final int ROWS = 10;
+  private static final int NORMALIZED_ROWS = 4;
+  private static final String QUERY_ID = "queryId";
+  private static final List<Facet> FACETS = Lists.newArrayList();
+  private static final Set<String> FULL_TEXT_SEARCH_FIELDS = Sets.newHashSet();
+  private static final Set<String> SORTABLE_FIELDS = Sets.newHashSet();
+  private static final String TERM = "term";
+  private static final ArrayList<DomainEntityDTO> REFS = Lists.<DomainEntityDTO>newArrayList();
+  private static final String VERSION = "v1";
   private IndexRegularSearchResultMapper instance;
   private Repository repository;
   private SortableFieldFinder sortableFieldFinder;
   private HATEOASURICreator uriCreator;
   private FullTextSearchFieldFinder fullTextSearchFieldFinder;
   private VRECollection vreCollection;
-  public static final List<String> IDS = Lists.newArrayList("id1", "id2", "id3", "id4", "id5", "id6", "id7", "id8", "id9", "id10");
-  public static final List<String> ID_SUBLIST = Lists.newArrayList("id2", "id3", "id4", "id5");
-  public static final int NUM_FOUND = IDS.size();
+  private static final List<String> IDS = Lists.newArrayList("id1", "id2", "id3", "id4", "id5", "id6", "id7", "id8", "id9", "id10");
+  private static final List<String> ID_SUBLIST = Lists.newArrayList("id2", "id3", "id4", "id5");
+  private static final int NUM_FOUND = IDS.size();
   private RangeHelper rangeHelper;
   private SearchResult searchResult;
   private VRE vre;
@@ -131,7 +132,7 @@ public class IndexRegularSearchResultMapperTest {
     RegularSearchResultDTO searchResultDTO = instance.create(DEFAULT_TYPE, searchResult, START, ROWS, VERSION);
 
     // verify
-    assertThat(searchResultDTO, RegularClientSearchResultMatcher.likeRegularSearchResultDTO() //
+    assertThat(searchResultDTO, likeRegularSearchResultDTO() //
       .withFacets(FACETS) //
       .withFullTextSearchFields(FULL_TEXT_SEARCH_FIELDS) //
       .withIds(IDS) //
