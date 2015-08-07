@@ -22,14 +22,13 @@ package nl.knaw.huygens.hamcrest;
  * #L%
  */
 
-import java.util.List;
-
+import com.google.common.collect.Lists;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.hamcrest.internal.ReflectiveTypeFinder;
 
-import com.google.common.collect.Lists;
+import java.util.List;
 
 public class CompositeMatcher<T> extends TypeSafeDiagnosingMatcher<T> {
 
@@ -59,8 +58,13 @@ public class CompositeMatcher<T> extends TypeSafeDiagnosingMatcher<T> {
   @Override
   protected boolean matchesSafely(T item, Description mismatchDescription) {
     boolean matched = true;
+    boolean firstMismatch = true;
     for (TypeSafeMatcher<T> matcher : getMatchers()) {
       if (!matcher.matches(item)) {
+        if(!firstMismatch){
+          mismatchDescription.appendText(", ");
+        }
+        firstMismatch = false;
         matcher.describeMismatch(item, mismatchDescription);
         matched = false;
       }
