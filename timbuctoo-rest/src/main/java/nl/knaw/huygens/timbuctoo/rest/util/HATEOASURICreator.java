@@ -75,11 +75,11 @@ public class HATEOASURICreator {
     return createHATEOASURIAsString(nextStart, requestedRows, queryId, version);
   }
 
-  public String createPrevResultsAsString(int currenStart, int requestedRows, String queryId, String version) {
-    if(currenStart == 0){
+  public String createPrevResultsAsString(int currentStart, int requestedRows, String queryId, String version) {
+    if(currentStart == 0){
       return null;
     }
-    int previousStart = Math.max(currenStart - requestedRows, 0);
+    int previousStart = Math.max(currentStart - requestedRows, 0);
     return createHATEOASURIAsString(previousStart, requestedRows, queryId, version);
   }
 

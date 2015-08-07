@@ -104,7 +104,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
         .withPrevLink(PREV_LINK) ;
 
     when(relationMapperMock.createRefs(vreMock, type, result)).thenReturn(REFS);
-    when(hateoasURICreatorMock.createHATEOASURIAsString(previousStart, rows, QUERY_ID)).thenReturn(PREV_LINK);
+    when(hateoasURICreatorMock.createPrevResultsAsString(start, rows, QUERY_ID, VERSION)).thenReturn(PREV_LINK);
 
     testCreate(start, rows, type, searchResult, likeRelationClientResult, VERSION);
   }
@@ -158,7 +158,8 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
         .withNextLink(NEXT_LINK);
 
     when(relationMapperMock.createRefs(vreMock, type, result)).thenReturn(REFS);
-    when(hateoasURICreatorMock.createHATEOASURIAsString(nextStart, rows, QUERY_ID)).thenReturn(NEXT_LINK);
+    when(hateoasURICreatorMock.createPrevResultsAsString(start, rows, QUERY_ID, VERSION)).thenReturn(PREV_LINK);
+    when(hateoasURICreatorMock.createNextResultsAsString(start, rows, ID_LIST_WITH_TEN_IDS.size(), QUERY_ID, VERSION)).thenReturn(NEXT_LINK);
 
     testCreate(start, rows, type, searchResult, likeRelationClientResult, VERSION);
   }
@@ -213,7 +214,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
 
     int prevStart = 0;
     when(relationMapperMock.createRefs(vreMock, type, result)).thenReturn(REFS);
-    when(hateoasURICreatorMock.createHATEOASURIAsString(prevStart, rows, QUERY_ID)).thenReturn(PREV_LINK);
+    when(hateoasURICreatorMock.createPrevResultsAsString(normalizedStart, rows, QUERY_ID, VERSION)).thenReturn(PREV_LINK);
 
     testCreate(start, rows, type, searchResult, likeRelationClientResult, VERSION);
   }

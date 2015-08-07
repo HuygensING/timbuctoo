@@ -28,6 +28,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
+import nl.knaw.huygens.timbuctoo.rest.util.RangeHelper;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
@@ -40,7 +41,11 @@ public class RelationSearchResultMapper extends SearchResultMapper {
 
   @Inject
   public RelationSearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator, RelationMapper relationMapper, VRECollection vreCollection) {
-    super(repository, sortableFieldFinder, hateoasURICreator, vreCollection);
+    this(repository, sortableFieldFinder, hateoasURICreator, relationMapper, vreCollection, new RangeHelper());
+  }
+
+  public RelationSearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator, RelationMapper relationMapper, VRECollection vreCollection, RangeHelper rangeHelper) {
+    super(repository, sortableFieldFinder, hateoasURICreator, vreCollection, rangeHelper);
     this.relationMapper = relationMapper;
   }
 

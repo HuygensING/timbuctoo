@@ -92,25 +92,19 @@ public abstract class SearchResultMapper {
   }
 
   protected void setNextLink(int start, int rows, SearchResultDTO clientSearchResult, int numFound, int end, String queryId, String version) {
-    if (end < numFound) {
-      String next = hateoasURICreator.createHATEOASURIAsString(start + rows, rows, queryId);
-      clientSearchResult.setNextLink(next);
-    }
+    String next = hateoasURICreator.createNextResultsAsString(start, rows, numFound, queryId, version);
+    clientSearchResult.setNextLink(next);
   }
 
   protected void setPreviousLink(int start, int rows, SearchResultDTO clientSearchResult, String queryId, String version) {
-    if (start > 0) {
-      int prevStart = Math.max(start - rows, 0);
-      String prev = hateoasURICreator.createHATEOASURIAsString(prevStart, rows, queryId);
-      clientSearchResult.setPrevLink(prev);
-    }
+    clientSearchResult.setPrevLink(hateoasURICreator.createPrevResultsAsString(start, rows,queryId,version));
   }
 
   protected List<String> getIds(SearchResult searchResult) {
-    return searchResult.getIds() != null ? searchResult.getIds() : Lists.<String> newArrayList();
+    return searchResult.getIds() != null ? searchResult.getIds() : Lists.<String>newArrayList();
   }
 
-  protected int mapToRange(int start, int minValue, int maxValue){
+  protected int mapToRange(int start, int minValue, int maxValue) {
     return rangeHelper.mapToRange(start, minValue, maxValue);
   }
 }
