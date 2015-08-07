@@ -22,22 +22,21 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-import java.util.Map;
-
+import com.google.common.base.Joiner;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 
-import com.google.common.base.Joiner;
+import java.util.Map;
 
 public class RelationDTO {
 
-  private final String type;
-  private final String id;
-  private final String path;
-  private final String relationName;
-  private final String sourceName;
-  private final String targetName;
-  private final Map<String, String> sourceData;
-  private final Map<String, String> targetData;
+  private String type; // internal type
+  private String id;
+  private String path;
+  private String relationName;
+  private String sourceName;
+  private String targetName;
+  private Map<String, String> sourceData;
+  private Map<String, String> targetData;
 
   public RelationDTO(String type, String xtype, String id, String relationName, DomainEntity source, DomainEntity target) {
     this.type = type;
@@ -59,6 +58,10 @@ public class RelationDTO {
       targetName = "[unknown]";
       targetData = null;
     }
+  }
+
+  public RelationDTO() {
+
   }
 
   public String getType() {

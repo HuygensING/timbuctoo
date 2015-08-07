@@ -18,12 +18,12 @@ import java.util.Map;
 
 public class IndexRelationSearchResultMapper extends RelationSearchResultMapper {
 
-  private final RelationSearchResultDTOFactory relationSearchResultDTOFactory;
+  private final RelationDTOListFactory relationDTOListFactory;
 
   @Inject
-  public IndexRelationSearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator, RelationSearchResultDTOFactory relationSearchResultDTOFactory, VRECollection vreCollection, RangeHelper rangeHelper) {
-    super(repository, sortableFieldFinder, hateoasURICreator, relationSearchResultDTOFactory, vreCollection, rangeHelper);
-    this.relationSearchResultDTOFactory = relationSearchResultDTOFactory;
+  public IndexRelationSearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator, RelationDTOListFactory relationDTOListFactory, VRECollection vreCollection, RangeHelper rangeHelper) {
+    super(repository, sortableFieldFinder, hateoasURICreator, relationDTOListFactory, vreCollection, rangeHelper);
+    this.relationDTOListFactory = relationDTOListFactory;
   }
 
   @Override
@@ -52,7 +52,7 @@ public class IndexRelationSearchResultMapper extends RelationSearchResultMapper 
     dto.setNumFound(numFound);
     dto.setSourceType(searchResult.getSourceType());
     dto.setTargetType(searchResult.getTargetType());
-    dto.setRefs(relationSearchResultDTOFactory.create(vre, type, rawData));
+    dto.setRefs(relationDTOListFactory.create(vre, type, rawData));
     dto.setSortableFields(sortableFieldFinder.findFields(type));
     setNextLink(normalizedStart, rows, dto, numFound, end, queryId, version);
     setPreviousLink(normalizedStart, rows, dto, queryId, version);

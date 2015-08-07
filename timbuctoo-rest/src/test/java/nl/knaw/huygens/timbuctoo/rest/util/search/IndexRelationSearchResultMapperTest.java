@@ -58,7 +58,7 @@ public class IndexRelationSearchResultMapperTest {
   private Repository repository;
   private SortableFieldFinder sortableFieldFinder;
   private HATEOASURICreator uriCreator;
-  private RelationSearchResultDTOFactory relationDTOFactory;
+  private RelationDTOListFactory relationDTOFactory;
   private VRECollection vreCollection;
   private RangeHelper rangeHelper;
   private IndexRelationSearchResultMapper instance;
@@ -80,7 +80,7 @@ public class IndexRelationSearchResultMapperTest {
   }
 
   private void setupRelationDTOFactory() {
-    relationDTOFactory = mock(RelationSearchResultDTOFactory.class);
+    relationDTOFactory = mock(RelationDTOListFactory.class);
     when(relationDTOFactory.create(vre, TYPE, RAW_DATA)).thenReturn(REFS);
   }
 
