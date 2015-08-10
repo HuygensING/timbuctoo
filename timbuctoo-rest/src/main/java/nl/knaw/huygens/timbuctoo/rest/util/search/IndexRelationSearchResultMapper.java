@@ -52,7 +52,13 @@ public class IndexRelationSearchResultMapper extends RelationSearchResultMapper 
     dto.setNumFound(numFound);
     dto.setSourceType(searchResult.getSourceType());
     dto.setTargetType(searchResult.getTargetType());
-    dto.setRefs(relationDTOListFactory.create(vre, type, rawData));
+
+    try {
+      dto.setRefs(relationDTOListFactory.create(vre, type, rawData));
+    }
+    catch(SearchResultCreationException e){
+      throw new RuntimeException(e);
+    }
     dto.setSortableFields(sortableFieldFinder.findFields(type));
     setNextLink(normalizedStart, rows, dto, numFound, end, queryId, version);
     setPreviousLink(normalizedStart, rows, dto, queryId, version);

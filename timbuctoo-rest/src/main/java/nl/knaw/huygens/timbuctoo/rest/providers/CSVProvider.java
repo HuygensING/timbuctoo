@@ -22,29 +22,26 @@ package nl.knaw.huygens.timbuctoo.rest.providers;
  * #L%
  */
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.model.RelationDTO;
+import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
-
-import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.model.RelationDTO;
-import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
-import nl.knaw.huygens.timbuctoo.model.RelationType;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Generates a CSV representation for a reception search.
@@ -63,7 +60,9 @@ public class CSVProvider implements MessageBodyWriter<RelationSearchResultDTO> {
 
   public static final char SEPARATOR = '\t';
 
-  /** Length cannot be determined in advance. */
+  /**
+   * Length cannot be determined in advance.
+   */
   private static final long UNKNOWN_LENGTH = -1;
 
   private static final Logger LOG = LoggerFactory.getLogger(CSVProvider.class);
@@ -87,7 +86,7 @@ public class CSVProvider implements MessageBodyWriter<RelationSearchResultDTO> {
 
   @Override
   public void writeTo(RelationSearchResultDTO dto, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out)
-      throws IOException {
+    throws IOException {
 
     List<RelationDTO> refs = dto.getRefs();
     if (refs != null && refs.size() > 0) {
@@ -123,15 +122,15 @@ public class CSVProvider implements MessageBodyWriter<RelationSearchResultDTO> {
     }
   }
 
-  private void appendKeysTo(StringBuilder builder, Map<String, String> data, String prefix) {
-    for (Map.Entry<String, String> entry : data.entrySet()) {
+  private void appendKeysTo(StringBuilder builder, Map<String, ? extends Object> data, String prefix) {
+    for (Map.Entry<String, ? extends Object> entry : data.entrySet()) {
       appendTo(builder, prefix + entry.getKey());
     }
   }
 
-  private void appendValuesTo(StringBuilder builder, Map<String, String> data) {
-    for (Map.Entry<String, String> entry : data.entrySet()) {
-      appendTo(builder, entry.getValue());
+  private void appendValuesTo(StringBuilder builder, Map<String, ? extends Object> data) {
+    for (Map.Entry<String, ? extends Object> entry : data.entrySet()) {
+      appendTo(builder, "" + entry.getValue());
       // appendTo(builder, entry.getValue().replace(SEPARATOR, '.'));
     }
   }

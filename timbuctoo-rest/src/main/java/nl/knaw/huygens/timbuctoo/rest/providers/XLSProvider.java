@@ -22,24 +22,12 @@ package nl.knaw.huygens.timbuctoo.rest.providers;
  * #L%
  */
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.List;
-import java.util.Map;
-
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.MessageBodyWriter;
-import javax.ws.rs.ext.Provider;
-
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.RelationDTO;
 import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
-
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -47,8 +35,17 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.ext.MessageBodyWriter;
+import javax.ws.rs.ext.Provider;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Generates a Microsoft Excel representation for a reception search.
@@ -61,7 +58,9 @@ public class XLSProvider implements MessageBodyWriter<RelationSearchResultDTO> {
   public static final String EXCEL_TYPE_STRING = "application/vnd.ms-excel";
   public static final MediaType EXCEL_TYPE = new MediaType("application", "vnd.ms-excel");
 
-  /** Length cannot be determined in advance. */
+  /**
+   * Length cannot be determined in advance.
+   */
   private static final long UNKNOWN_LENGTH = -1;
 
   private static final Logger LOG = LoggerFactory.getLogger(XLSProvider.class);
@@ -85,7 +84,7 @@ public class XLSProvider implements MessageBodyWriter<RelationSearchResultDTO> {
 
   @Override
   public void writeTo(RelationSearchResultDTO dto, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out)
-      throws IOException {
+    throws IOException {
 
     List<RelationDTO> refs = dto.getRefs();
     if (refs != null && refs.size() > 0) {
@@ -123,23 +122,23 @@ public class XLSProvider implements MessageBodyWriter<RelationSearchResultDTO> {
 
   private void addHeaderToRow(HSSFRow row, RelationDTO dto) {
     int index = 0;
-    for (Map.Entry<String, String> entry : dto.getSourceData().entrySet()) {
+    for (Map.Entry<String, ? extends Object> entry : dto.getSourceData().entrySet()) {
       index = addCell(row, index, "src-" + entry.getKey());
     }
     index = addCell(row, index, "relationType");
-    for (Map.Entry<String, String> entry : dto.getTargetData().entrySet()) {
+    for (Map.Entry<String, ? extends Object> entry : dto.getTargetData().entrySet()) {
       index = addCell(row, index, "dst-" + entry.getKey());
     }
   }
 
   private void addDataToRow(HSSFRow row, RelationDTO dto) {
     int index = 0;
-    for (Map.Entry<String, String> entry : dto.getSourceData().entrySet()) {
-      index = addCell(row, index, entry.getValue());
+    for (Map.Entry<String, ? extends Object> entry : dto.getSourceData().entrySet()) {
+      index = addCell(row, index, "" + entry.getValue());
     }
     index = addCell(row, index, dto.getRelationName());
-    for (Map.Entry<String, String> entry : dto.getTargetData().entrySet()) {
-      index = addCell(row, index, entry.getValue());
+    for (Map.Entry<String, ? extends Object> entry : dto.getTargetData().entrySet()) {
+      index = addCell(row, index, "" + entry.getValue());
     }
   }
 

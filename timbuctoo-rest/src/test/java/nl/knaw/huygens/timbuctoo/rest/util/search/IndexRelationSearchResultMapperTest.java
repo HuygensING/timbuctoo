@@ -79,7 +79,7 @@ public class IndexRelationSearchResultMapperTest {
     instance = new IndexRelationSearchResultMapper(repository, sortableFieldFinder, uriCreator, relationDTOFactory, vreCollection, rangeHelper);
   }
 
-  private void setupRelationDTOFactory() {
+  private void setupRelationDTOFactory() throws Exception {
     relationDTOFactory = mock(RelationDTOListFactory.class);
     when(relationDTOFactory.create(vre, TYPE, RAW_DATA)).thenReturn(REFS);
   }
@@ -165,16 +165,16 @@ public class IndexRelationSearchResultMapperTest {
     instance.create(TYPE, searchResult, START, ROWS, VERSION);
   }
 
-//  @Test
-//  public void createThrowsARuntimeExceptionWhenTheDomainEntityDTOListFactoryThrowsASearchResultCreationException() throws Exception {
-//    // setup
-//    SearchResultCreationException searchResultCreationException = new SearchResultCreationException(DEFAULT_TYPE, new Exception());
-//    when(domainEntityDTOListFactory.createFor(TYPE, RAW_DATA)).thenThrow(searchResultCreationException);
-//
-//    exception.expect(RuntimeException.class);
-//    exception.expectCause(is(searchResultCreationException));
-//
-//    // action
-//    instance.create(TYPE, searchResult, START, ROWS, VERSION);
-//  }
+  @Test
+  public void createThrowsARuntimeExceptionWhenTheRelationDTOListFactoryThrowsASearchResultCreationException() throws Exception {
+    // setup
+    SearchResultCreationException searchResultCreationException = new SearchResultCreationException(TYPE, new Exception());
+    when(relationDTOFactory.create(vre, TYPE, RAW_DATA)).thenThrow(searchResultCreationException);
+
+    exception.expect(RuntimeException.class);
+    exception.expectCause(is(searchResultCreationException));
+
+    // action
+    instance.create(TYPE, searchResult, START, ROWS, VERSION);
+  }
 }
