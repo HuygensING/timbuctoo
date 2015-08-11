@@ -117,14 +117,14 @@ public class GraphLegacyStorageWrapperTest {
     assertThat(id, is(equalTo(ID)));
 
     verify(graphStorageMock).addDomainEntity(//
-        argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
-        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE)//
-            .withoutAPID()//
-            .withId(ID) //
-            .withACreatedValue() //
-            .withAModifiedValue() //
-            .withRevision(FIRST_REVISION)), //
-        argThat(is(CHANGE)));
+      argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
+      argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE)//
+        .withoutAPID()//
+        .withId(ID) //
+        .withACreatedValue() //
+        .withAModifiedValue() //
+        .withRevision(FIRST_REVISION)), //
+      argThat(is(CHANGE)));
   }
 
   @Test(expected = StorageException.class)
@@ -232,6 +232,31 @@ public class GraphLegacyStorageWrapperTest {
 
     // action
     instance.getDomainEntities(DOMAIN_ENTITY_TYPE);
+
+  }
+
+  @Test
+  public void getDomainEntitiesDelegatesToGraphStorageGetRelationsIfTheTypeIsARelation() throws StorageException {
+    // setup
+    @SuppressWarnings("unchecked")
+    StorageIterator<SubARelation> storageIteratorMock = mock(StorageIterator.class);
+    when(graphStorageMock.getRelations(RELATION_TYPE)).thenReturn(storageIteratorMock);
+
+    // action
+    StorageIterator<SubARelation> actualIterator = instance.getDomainEntities(RELATION_TYPE);
+
+    // verify
+    verify(graphStorageMock).getRelations(RELATION_TYPE);
+    assertThat(actualIterator, is(sameInstance(storageIteratorMock)));
+  }
+
+  @Test(expected = StorageException.class)
+  public void getDomainEntitiesThrowsAnExceptionWhenGetRelationsDoes() throws StorageException {
+    // setup
+    when(graphStorageMock.getRelations(RELATION_TYPE)).thenThrow(new StorageException());
+
+    // action
+    instance.getDomainEntities(RELATION_TYPE);
 
   }
 

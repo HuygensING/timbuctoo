@@ -273,6 +273,11 @@ public class TinkerPopStorage implements GraphStorage {
   }
 
   @Override
+  public <T extends Relation> StorageIterator<T> getRelations(Class<T> relationType) throws StorageException {
+    throw new UnsupportedOperationException("Not implemented yet");
+  }
+
+  @Override
   public <T extends Relation> T getRelation(Class<T> type, String id) throws StorageException {
     T relation = null;
 

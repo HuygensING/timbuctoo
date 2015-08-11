@@ -24,13 +24,16 @@ public interface GraphStorage {
 
   <T extends Entity> StorageIterator<T> getEntities(Class<T> type) throws StorageException;
 
+  <T extends Relation> StorageIterator<T> getRelations(Class<T> relationType) throws StorageException;
+
   <T extends Relation> T getRelation(Class<T> type, String id) throws StorageException;
 
   <T extends Entity> void updateEntity(Class<T> type, T entity) throws StorageException;
 
   /**
    * Update a DomainEntity with a new variant.
-   * @param type the type of the variant
+   *
+   * @param type    the type of the variant
    * @param variant the variant to add
    * @throws StorageException when the variant cannot be added
    */
@@ -47,9 +50,10 @@ public interface GraphStorage {
 
   /**
    * Delete a variant of a DomainEntity.
+   *
    * @param variant the variant to delete
-   * @throws StorageException when the deletion cannot be executed
-   * @throws NoSuchEntityException when the entity does not exist
+   * @throws StorageException         when the deletion cannot be executed
+   * @throws NoSuchEntityException    when the entity does not exist
    * @throws IllegalArgumentException when the variant is a primitive
    */
   <T extends DomainEntity> void deleteVariant(T variant) throws StorageException, NoSuchEntityException, IllegalArgumentException;
@@ -78,17 +82,19 @@ public interface GraphStorage {
 
   /**
    * Find the relations where the entity of the id is the source or target.
+   *
    * @param type the type of the relation to find
-   * @param id the id of entity that should contain the relations
+   * @param id   the id of entity that should contain the relations
    * @return the found relations
-   * @throws StorageException 
+   * @throws StorageException
    */
   <T extends Relation> StorageIterator<T> getRelationsByEntityId(Class<T> type, String id) throws StorageException;
 
   /**
    * Checks if a certain variant with a certain id exists.
+   *
    * @param type the type of the variant
-   * @param id the id of the variant
+   * @param id   the id of the variant
    * @return true if it exists, false if not
    */
   boolean entityExists(Class<? extends Entity> type, String id);
@@ -109,8 +115,9 @@ public interface GraphStorage {
 
   /**
    * Remove a property from a DomainEntity.
-   * @param type the type of the Entity to remove from
-   * @param id the id of the Entity to remove from
+   *
+   * @param type      the type of the Entity to remove from
+   * @param id        the id of the Entity to remove from
    * @param fieldName the field name that corresponds with the property to remove
    * @throws NoSuchEntityException when the entity cannot be found
    */
@@ -118,8 +125,9 @@ public interface GraphStorage {
 
   /**
    * Remove a property from a Relation.
-   * @param type the type of the Relation to remove from
-   * @param id the id of the Relation to remove from
+   *
+   * @param type      the type of the Relation to remove from
+   * @param id        the id of the Relation to remove from
    * @param fieldName the field name that corresponds with the property to remove
    * @throws NoSuchRelationException when the relation cannot be found
    */
@@ -129,7 +137,8 @@ public interface GraphStorage {
 
   /**
    * Find entities of a certain type that match with the query.
-   * @param type the type to find the entities for
+   *
+   * @param type  the type to find the entities for
    * @param query the query to match
    * @return a StorageIterator with the found entities
    */
@@ -137,7 +146,8 @@ public interface GraphStorage {
 
   /**
    * Find relations of a certain type that match with the query.
-   * @param type the type to find the relations for
+   *
+   * @param type  the type to find the relations for
    * @param query the query to match
    * @return a StorageIterator with the found relations
    */
@@ -145,8 +155,11 @@ public interface GraphStorage {
 
   /**
    * Add a database index.
-   * @param type the type to add the index to
+   *
+   * @param type  the type to add the index to
    * @param field the field to add the index to
    */
   void createIndex(Class<? extends Entity> type, String field);
+
+
 }

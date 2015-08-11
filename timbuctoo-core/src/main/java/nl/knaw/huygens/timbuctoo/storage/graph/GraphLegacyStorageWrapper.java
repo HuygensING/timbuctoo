@@ -323,6 +323,9 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends DomainEntity> StorageIterator<T> getDomainEntities(Class<T> type) throws StorageException {
+    if(isRelation(type)){
+      return (StorageIterator<T>) graphStorage.getRelations(asRelation(type));
+    }
     return graphStorage.getEntities(type);
   }
 
