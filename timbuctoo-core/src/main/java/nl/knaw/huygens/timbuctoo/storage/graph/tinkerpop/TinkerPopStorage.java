@@ -75,10 +75,9 @@ public class TinkerPopStorage implements GraphStorage {
 
   @Override
   public void createIndex(Class<? extends Entity> type, String field) {
-    if(Relation.class.isAssignableFrom(type)){
+    if (Relation.class.isAssignableFrom(type)) {
       db.createKeyIndex(field, Edge.class);
-    }
-    else{
+    } else {
       db.createKeyIndex(field, Vertex.class);
     }
   }
@@ -273,8 +272,10 @@ public class TinkerPopStorage implements GraphStorage {
   }
 
   @Override
-  public <T extends Relation> StorageIterator<T> getRelations(Class<T> relationType) throws StorageException {
-    throw new UnsupportedOperationException("Not implemented yet");
+  public <T extends Relation> StorageIterator<T> getRelations(Class<T> type) {
+    Iterator<Edge> edges = lowLevelAPI.getLatestEdgesOf(type);
+
+    return storageIteratorFactory.createForRelation(type, edges);
   }
 
   @Override
@@ -717,7 +718,7 @@ public class TinkerPopStorage implements GraphStorage {
     for (; sourceEdges.hasNext(); ) {
       Edge edge = sourceEdges.next();
 
-      if(appliesToAllPredicates(edge, predicates)){
+      if (appliesToAllPredicates(edge, predicates)) {
         edges.add(edge);
       }
     }
@@ -846,8 +847,8 @@ public class TinkerPopStorage implements GraphStorage {
     }
 
     TimbuctooQuery query = queryFactory.newQuery(type)//
-        .hasNotNullProperty(ID_PROPERTY_NAME, id) //
-        .searchLatestOnly(false);
+      .hasNotNullProperty(ID_PROPERTY_NAME, id) //
+      .searchLatestOnly(false);
 
     for (Iterator<Edge> edges = lowLevelAPI.findEdges(type, query); edges.hasNext(); ) {
       db.removeEdge(edges.next());

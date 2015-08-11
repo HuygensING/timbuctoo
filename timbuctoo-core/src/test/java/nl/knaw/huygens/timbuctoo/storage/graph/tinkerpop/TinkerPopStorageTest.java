@@ -1731,6 +1731,25 @@ public class TinkerPopStorageTest {
   }
 
   @Test
+  public void getRelationsReturnsARelationIteratorOfTheEdgesFoundByTheLowLevelAPI()  {
+    // setup
+    Iterator<Edge> iterator = Lists.<Edge>newArrayList().iterator();
+    when(lowLevelAPIMock.getLatestEdgesOf(RELATION_TYPE)).thenReturn(iterator);
+
+    @SuppressWarnings("unchecked")
+    StorageIterator<SubARelation> storageIterator = mock(StorageIterator.class);
+    when(storageIteratorFactoryMock.createForRelation(RELATION_TYPE, iterator)).thenReturn(storageIterator);
+
+    // action
+    StorageIterator<SubARelation> actualStorageIterator = instance.getRelations(RELATION_TYPE);
+
+    // verify
+    assertThat(actualStorageIterator, is(sameInstance(storageIterator)));
+  }
+
+
+
+  @Test
   public void getRelationsByEntityIdReturnsAStorageIteratorOfRelationForTheFoundEdges() throws Exception {
     // setup
     Vertex vertex = aVertex().build();
