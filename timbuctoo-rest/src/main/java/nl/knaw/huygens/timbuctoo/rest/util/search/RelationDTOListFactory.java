@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rest.util.search;
 
 import com.google.common.collect.Lists;
+import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.RelationDTO;
@@ -15,6 +16,7 @@ import java.util.Map;
 public class RelationDTOListFactory extends RelationMapper {
   private final RelationDTOFactory relationDTOFactory;
 
+  @Inject
   public RelationDTOListFactory(Repository repository, RelationDTOFactory relationDTOFactory) {
     super(repository);
     this.relationDTOFactory = relationDTOFactory;
