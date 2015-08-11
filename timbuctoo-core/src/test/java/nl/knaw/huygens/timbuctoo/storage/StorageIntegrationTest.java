@@ -142,10 +142,10 @@ public abstract class StorageIntegrationTest {
     assertThat(id, startsWith(RelationType.ID_PREFIX));
 
     assertThat(instance.getEntity(SYSTEM_ENTITY_TYPE, id), //
-        matchesRelationType() //
-            .withId(id)//
-            .withInverseName(INVERSE_NAME)//
-            .withRegularName(REGULAR_NAME));
+      matchesRelationType() //
+        .withId(id)//
+        .withInverseName(INVERSE_NAME)//
+        .withRegularName(REGULAR_NAME));
 
   }
 
@@ -166,10 +166,10 @@ public abstract class StorageIntegrationTest {
     instance.updateSystemEntity(SYSTEM_ENTITY_TYPE, storedSystemEntity);
 
     assertThat(instance.getEntity(SYSTEM_ENTITY_TYPE, id), //
-        matchesRelationType() //
-            .withId(id)//
-            .withInverseName(INVERSE_NAME)//
-            .withRegularName(OTHER_REGULAR_NAME));
+      matchesRelationType() //
+        .withId(id)//
+        .withInverseName(INVERSE_NAME)//
+        .withRegularName(OTHER_REGULAR_NAME));
 
   }
 
@@ -182,18 +182,18 @@ public abstract class StorageIntegrationTest {
     List<RelationType> storedSystemEntities = instance.getSystemEntities(SYSTEM_ENTITY_TYPE).getAll();
 
     List<RelationTypeMatcher> relationTypeMatchers = Lists.newArrayList(//
-        matchesRelationType()//
-            .withId(id1)//
-            .withInverseName(INVERSE_NAME)//
-            .withRegularName(REGULAR_NAME),//
-        matchesRelationType()//
-            .withId(id2)//
-            .withInverseName(INVERSE_NAME1)//
-            .withRegularName(REGULAR_NAME1), //
-        matchesRelationType()//
-            .withId(id3)//
-            .withInverseName(INVERSE_NAME2) //
-            .withRegularName(REGULAR_NAME2));
+      matchesRelationType()//
+        .withId(id1)//
+        .withInverseName(INVERSE_NAME)//
+        .withRegularName(REGULAR_NAME),//
+      matchesRelationType()//
+        .withId(id2)//
+        .withInverseName(INVERSE_NAME1)//
+        .withRegularName(REGULAR_NAME1), //
+      matchesRelationType()//
+        .withId(id3)//
+        .withInverseName(INVERSE_NAME2) //
+        .withRegularName(REGULAR_NAME2));
 
     assertThat(storedSystemEntities, hasSize(3));
     assertThat(storedSystemEntities, containsInAnyOrder(relationTypeMatchers.toArray(new RelationTypeMatcher[0])));
@@ -278,9 +278,9 @@ public abstract class StorageIntegrationTest {
 
     // verify
     assertThat(foundRelationType, matchesRelationType()//
-        .withId(id) //
-        .withInverseName(INVERSE_NAME) //
-        .withRegularName(REGULAR_NAME));
+      .withId(id) //
+      .withInverseName(INVERSE_NAME) //
+      .withRegularName(REGULAR_NAME));
   }
 
   @Test
@@ -313,21 +313,21 @@ public abstract class StorageIntegrationTest {
 
     List<PersonName> names = Lists.newArrayList(PERSON_NAME);
     assertThat("DomainEntity is not as expected", instance.getEntity(DOMAIN_ENTITY_TYPE, id), //
-        likeProjectAPerson() //
-            .withProjectAPersonProperty(PROJECT_A_PERSON_PROPERTY) //
-            .withId(id) //
-            .withBirthDate(BIRTH_DATE) //
-            .withDeathDate(DEATH_DATE) //
-            .withGender(GENDER) //
-            .withNames(names));
+      likeProjectAPerson() //
+        .withProjectAPersonProperty(PROJECT_A_PERSON_PROPERTY) //
+        .withId(id) //
+        .withBirthDate(BIRTH_DATE) //
+        .withDeathDate(DEATH_DATE) //
+        .withGender(GENDER) //
+        .withNames(names));
 
     assertThat("Primitive is not as expected", instance.getEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), //
-        likePerson()//
-            .withId(id) //
-            .withNames(names)//
-            .withGender(GENDER)//
-            .withBirthDate(BIRTH_DATE)//
-            .withDeathDate(DEATH_DATE));
+      likePerson()//
+        .withId(id) //
+        .withNames(names)//
+        .withGender(GENDER)//
+        .withBirthDate(BIRTH_DATE)//
+        .withDeathDate(DEATH_DATE));
   }
 
   @SuppressWarnings("unchecked")
@@ -346,8 +346,8 @@ public abstract class StorageIntegrationTest {
     // verify
     assertThat(revisions, hasSize(2));
     assertThat(revisions, containsInAnyOrder( //
-        likeDefaultPerson(id).withRevision(1), //
-        likeDefaultPerson(id).withRevision(2)));
+      likeDefaultPerson(id).withRevision(1), //
+      likeDefaultPerson(id).withRevision(2)));
   }
 
   @Test
@@ -361,11 +361,11 @@ public abstract class StorageIntegrationTest {
 
     // verify 
     assertThat(entityWithoutVariant, likePerson()//
-        .withBirthDate(primitive.getBirthDate())//
-        .withDeathDate(primitive.getDeathDate())//
-        .withGender(primitive.getGender())//
-        .withId(id)//
-        .withNames(primitive.getNames()));
+      .withBirthDate(primitive.getBirthDate())//
+      .withDeathDate(primitive.getDeathDate())//
+      .withGender(primitive.getGender())//
+      .withId(id)//
+      .withNames(primitive.getNames()));
   }
 
   @SuppressWarnings("unchecked")
@@ -401,8 +401,8 @@ public abstract class StorageIntegrationTest {
 
     int rev = updatedEntity.getRev();
     assertThat(instance.getRevision(DOMAIN_ENTITY_TYPE, id, rev), //
-        likeDefaultProjectAPerson(id)//
-            .withRevision(rev));
+      likeDefaultProjectAPerson(id)//
+        .withRevision(rev));
   }
 
   @Test
@@ -423,24 +423,24 @@ public abstract class StorageIntegrationTest {
     ProjectAPerson updatedEntity = instance.getEntity(DOMAIN_ENTITY_TYPE, id);
 
     assertThat("Project domain entity is not updated", //
-        updatedEntity, likeProjectAPerson()//
-            .withProjectAPersonProperty(PROJECT_A_PERSON_PROPERTY)//
-            .withBirthDate(BIRTH_DATE2)//
-            .withDeathDate(DEATH_DATE)//
-            .withGender(GENDER)//
-            .withId(id)//
-            .withNames(Lists.newArrayList(PERSON_NAME))//
-            .withRevision(firstRevision + 1));
+      updatedEntity, likeProjectAPerson()//
+        .withProjectAPersonProperty(PROJECT_A_PERSON_PROPERTY)//
+        .withBirthDate(BIRTH_DATE2)//
+        .withDeathDate(DEATH_DATE)//
+        .withGender(GENDER)//
+        .withId(id)//
+        .withNames(Lists.newArrayList(PERSON_NAME))//
+        .withRevision(firstRevision + 1));
 
     assertThat("Primitive domain entity should not have changed", //
-        instance.getEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), likeDefaultPerson(id));
+      instance.getEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), likeDefaultPerson(id));
 
     assertThat("No revision should be created for version 1",//
-        instance.getRevision(DOMAIN_ENTITY_TYPE, id, firstRevision), is(nullValue()));
+      instance.getRevision(DOMAIN_ENTITY_TYPE, id, firstRevision), is(nullValue()));
 
     int secondRevision = updatedEntity.getRev();
     assertThat("No revision should be created for version 2",//
-        instance.getRevision(DOMAIN_ENTITY_TYPE, id, secondRevision), is(nullValue()));
+      instance.getRevision(DOMAIN_ENTITY_TYPE, id, secondRevision), is(nullValue()));
   }
 
   // FIXME this is a hack with Mongo update and should eventually be extracted to a different method.
@@ -500,12 +500,12 @@ public abstract class StorageIntegrationTest {
     String id = addDefaultProjectAPerson();
 
     assertThat(instance.getEntity(DOMAIN_ENTITY_TYPE, id), //
-        likeDefaultProjectAPerson(id)//
-            .withDeletedFlag(false));
+      likeDefaultProjectAPerson(id)//
+        .withDeletedFlag(false));
 
     assertThat(instance.getEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), //
-        likeDefaultPerson(id)//
-            .withDeletedFlag(false));
+      likeDefaultPerson(id)//
+        .withDeletedFlag(false));
 
     instance.deleteDomainEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, id, UPDATE_CHANGE);
     assertThat(instance.getEntity(DOMAIN_ENTITY_TYPE, id), is(nullValue()));
@@ -517,12 +517,12 @@ public abstract class StorageIntegrationTest {
     String id = addDefaultProjectAPerson();
 
     assertThat(instance.getEntity(DOMAIN_ENTITY_TYPE, id), //
-        likeDefaultProjectAPerson(id)//
-            .withDeletedFlag(false));
+      likeDefaultProjectAPerson(id)//
+        .withDeletedFlag(false));
 
     assertThat(instance.getEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), //
-        likeDefaultPerson(id)//
-            .withDeletedFlag(false));
+      likeDefaultPerson(id)//
+        .withDeletedFlag(false));
 
     // action
     instance.deleteVariation(DOMAIN_ENTITY_TYPE, id, UPDATE_CHANGE);
@@ -530,7 +530,7 @@ public abstract class StorageIntegrationTest {
     int expectedRevision = 2;
     assertThat(instance.getEntity(DOMAIN_ENTITY_TYPE, id), is(nullValue()));
     assertThat(instance.getEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, id), //
-        likeDefaultPerson(id).withRevision(expectedRevision));
+      likeDefaultPerson(id).withRevision(expectedRevision));
   }
 
   @Test
@@ -586,8 +586,8 @@ public abstract class StorageIntegrationTest {
     instance.setPID(RELATION_TYPE, id, PID);
     SubARelation relation = instance.getEntity(RELATION_TYPE, id);
     assertThat(relation, //
-        likeDefaultAcceptedRelation(sourceId, targetId, typeId) //
-            .withPID());
+      likeDefaultAcceptedRelation(sourceId, targetId, typeId) //
+        .withPID());
 
     // action
     instance.declineRelationsOfEntity(PROJECT_RELATION_TYPE, sourceId);
@@ -595,8 +595,8 @@ public abstract class StorageIntegrationTest {
     // verify
     SubARelation declinedRelation = instance.getEntity(RELATION_TYPE, id);
     assertThat(declinedRelation, //
-        likeDefaultNotAcceptionRelation(sourceId, targetId, typeId) //
-            .withoutPID());
+      likeDefaultNotAcceptionRelation(sourceId, targetId, typeId) //
+        .withoutPID());
   }
 
   @Test
@@ -657,26 +657,26 @@ public abstract class StorageIntegrationTest {
     List<ProjectAPerson> persons = instance.getDomainEntities(DOMAIN_ENTITY_TYPE).getAll();
 
     PersonMatcher<? super ProjectAPerson> personMatcher = likeProjectAPerson() //
-        .withProjectAPersonProperty(PROJECT_A_PERSON_PROPERTY)//
-        .withBirthDate(BIRTH_DATE) //
-        .withDeathDate(DEATH_DATE) //
-        .withGender(GENDER) //
-        .withId(id1) //
-        .withNames(Lists.newArrayList(PERSON_NAME));
+      .withProjectAPersonProperty(PROJECT_A_PERSON_PROPERTY)//
+      .withBirthDate(BIRTH_DATE) //
+      .withDeathDate(DEATH_DATE) //
+      .withGender(GENDER) //
+      .withId(id1) //
+      .withNames(Lists.newArrayList(PERSON_NAME));
     PersonMatcher<? super ProjectAPerson> personMatcher1 = likeProjectAPerson() //
-        .withProjectAPersonProperty(PROJECT_A_PERSON_PROPERTY1)//
-        .withBirthDate(BIRTH_DATE1) //
-        .withDeathDate(DEATH_DATE1) //
-        .withGender(GENDER1) //
-        .withId(id2) //
-        .withNames(Lists.newArrayList(PERSON_NAME1));
+      .withProjectAPersonProperty(PROJECT_A_PERSON_PROPERTY1)//
+      .withBirthDate(BIRTH_DATE1) //
+      .withDeathDate(DEATH_DATE1) //
+      .withGender(GENDER1) //
+      .withId(id2) //
+      .withNames(Lists.newArrayList(PERSON_NAME1));
     PersonMatcher<? super ProjectAPerson> personMatcher2 = likeProjectAPerson() //
-        .withProjectAPersonProperty(PROJECT_A_PERSON_PROPERTY2)//
-        .withBirthDate(BIRTH_DATE2) //
-        .withDeathDate(DEATH_DATE2) //
-        .withGender(GENDER2) //
-        .withId(id3) //
-        .withNames(Lists.newArrayList(PERSON_NAME2));
+      .withProjectAPersonProperty(PROJECT_A_PERSON_PROPERTY2)//
+      .withBirthDate(BIRTH_DATE2) //
+      .withDeathDate(DEATH_DATE2) //
+      .withGender(GENDER2) //
+      .withId(id3) //
+      .withNames(Lists.newArrayList(PERSON_NAME2));
 
     assertThat(persons, hasSize(3));
     assertThat(persons, containsInAnyOrder(personMatcher, personMatcher1, personMatcher2));
@@ -709,11 +709,11 @@ public abstract class StorageIntegrationTest {
     ProjectAPerson foundPerson = instance.findItemByProperty(ProjectAPerson.class, ProjectAPerson.PROJECT_A_PERSON_PROPERTY_NAME, PROJECT_A_PERSON_PROPERTY);
 
     assertThat(foundPerson, likePerson()//
-        .withBirthDate(BIRTH_DATE)//
-        .withDeathDate(DEATH_DATE)//
-        .withGender(GENDER)//
-        .withId(id)//
-        .withNames(Lists.newArrayList(PERSON_NAME)));
+      .withBirthDate(BIRTH_DATE)//
+      .withDeathDate(DEATH_DATE)//
+      .withGender(GENDER)//
+      .withId(id)//
+      .withNames(Lists.newArrayList(PERSON_NAME)));
   }
 
   @Test
@@ -794,21 +794,21 @@ public abstract class StorageIntegrationTest {
 
   private PersonMatcher<Person> likeDefaultPerson(String id) {
     return likePerson()//
-        .withBirthDate(BIRTH_DATE)//
-        .withDeathDate(DEATH_DATE)//
-        .withGender(GENDER)//
-        .withId(id)//
-        .withNames(Lists.newArrayList(PERSON_NAME));
+      .withBirthDate(BIRTH_DATE)//
+      .withDeathDate(DEATH_DATE)//
+      .withGender(GENDER)//
+      .withId(id)//
+      .withNames(Lists.newArrayList(PERSON_NAME));
   }
 
   private PersonMatcher<ProjectAPerson> likeDefaultProjectAPerson(String id) {
     return likeProjectAPerson()//
-        .withProjectAPersonProperty(PROJECT_A_PERSON_PROPERTY)//
-        .withBirthDate(BIRTH_DATE)//
-        .withDeathDate(DEATH_DATE)//
-        .withGender(GENDER)//
-        .withId(id)//
-        .withNames(Lists.newArrayList(PERSON_NAME));
+      .withProjectAPersonProperty(PROJECT_A_PERSON_PROPERTY)//
+      .withBirthDate(BIRTH_DATE)//
+      .withDeathDate(DEATH_DATE)//
+      .withGender(GENDER)//
+      .withId(id)//
+      .withNames(Lists.newArrayList(PERSON_NAME));
   }
 
   @Test
@@ -826,7 +826,6 @@ public abstract class StorageIntegrationTest {
     assertThat(idsOfNonPersistentEntities, hasItem(id2));
     assertThat(idsOfNonPersistentEntities, not(hasItem(id)));
   }
-
 
 
   @Test
@@ -862,25 +861,25 @@ public abstract class StorageIntegrationTest {
 
   private RelationMatcher likeDefaultPrimitiveRelation(String id, String sourceId, String targetId, String typeId) {
     return likeRelation()//
-        .withType(PRIMITIVE_RELATION_TYPE) //
-        .withId(id) //
-        .withSourceId(sourceId) //
-        .withSourceType(RELATION_SOURCE_TYPE) //
-        .withTargetId(targetId) //
-        .withTargetType(RELATION_TARGET_TYPE) //
-        .withTypeId(typeId) //
-        .isAccepted(ACCEPTED);
+      .withType(PRIMITIVE_RELATION_TYPE) //
+      .withId(id) //
+      .withSourceId(sourceId) //
+      .withSourceType(RELATION_SOURCE_TYPE) //
+      .withTargetId(targetId) //
+      .withTargetType(RELATION_TARGET_TYPE) //
+      .withTypeId(typeId) //
+      .isAccepted(ACCEPTED);
   }
 
   private RelationMatcher likeDefaultRelation(String sourceId, String targetId, String typeId) {
     return likeRelation() //
-        .withType(RELATION_TYPE) //
-        .withSourceId(sourceId) //
-        .withSourceType(RELATION_SOURCE_TYPE) //
-        .withTargetId(targetId) //
-        .withTargetType(RELATION_TARGET_TYPE) //
-        .withTypeId(typeId) //
-        .isAccepted(ACCEPTED);
+      .withType(RELATION_TYPE) //
+      .withSourceId(sourceId) //
+      .withSourceType(RELATION_SOURCE_TYPE) //
+      .withTargetId(targetId) //
+      .withTargetType(RELATION_TARGET_TYPE) //
+      .withTypeId(typeId) //
+      .isAccepted(ACCEPTED);
   }
 
   private String addDefaultSubARelation(String sourceId, String targetId, String typeId) throws StorageException {
@@ -925,25 +924,25 @@ public abstract class StorageIntegrationTest {
     SubARelation updateRelation = instance.getEntity(PROJECT_RELATION_TYPE, id);
 
     assertThat("Relation is not updated", updateRelation, //
-        is(likeRelation()//
-            .withId(id) //
-            .withSourceId(sourceId) //
-            .withSourceType(RELATION_SOURCE_TYPE) //
-            .withTargetId(targetId) //
-            .withTargetType(RELATION_TARGET_TYPE) //
-            .withTypeId(typeId) //
-            .isAccepted(NOT_ACCEPTED) //
-            .withRevision(firstRevision + 1)));
+      is(likeRelation()//
+        .withId(id) //
+        .withSourceId(sourceId) //
+        .withSourceType(RELATION_SOURCE_TYPE) //
+        .withTargetId(targetId) //
+        .withTargetType(RELATION_TARGET_TYPE) //
+        .withTypeId(typeId) //
+        .isAccepted(NOT_ACCEPTED) //
+        .withRevision(firstRevision + 1)));
 
     assertThat("Primitive domain entity should not have changed", //
-        instance.getEntity(PRIMITIVE_RELATION_TYPE, id), likeDefaultPrimitiveRelation(id, sourceId, targetId, typeId));
+      instance.getEntity(PRIMITIVE_RELATION_TYPE, id), likeDefaultPrimitiveRelation(id, sourceId, targetId, typeId));
 
     assertThat("No revision should be created for version 1",//
-        instance.getRevision(DOMAIN_ENTITY_TYPE, id, firstRevision), is(nullValue()));
+      instance.getRevision(DOMAIN_ENTITY_TYPE, id, firstRevision), is(nullValue()));
 
     int secondRevision = updateRelation.getRev();
     assertThat("No revision should be created for version 2",//
-        instance.getRevision(DOMAIN_ENTITY_TYPE, id, secondRevision), is(nullValue()));
+      instance.getRevision(DOMAIN_ENTITY_TYPE, id, secondRevision), is(nullValue()));
   }
 
   @Test
@@ -959,8 +958,8 @@ public abstract class StorageIntegrationTest {
     instance.setPID(RELATION_TYPE, id, PID);
     SubARelation entity = instance.getEntity(RELATION_TYPE, id);
     assertThat(entity, //
-        likeDefaultAcceptedRelation(sourceId, targetId, typeId) //
-            .withPID());
+      likeDefaultAcceptedRelation(sourceId, targetId, typeId) //
+        .withPID());
 
     // action
     instance.updateDomainEntity(RELATION_TYPE, entity, UPDATE_CHANGE);
@@ -968,8 +967,8 @@ public abstract class StorageIntegrationTest {
     // verify
     SubARelation updatedEntity = instance.getEntity(RELATION_TYPE, id);
     assertThat(updatedEntity, //
-        likeDefaultAcceptedRelation(sourceId, targetId, typeId) //
-            .withoutPID());
+      likeDefaultAcceptedRelation(sourceId, targetId, typeId) //
+        .withoutPID());
   }
 
   @Test
@@ -990,9 +989,9 @@ public abstract class StorageIntegrationTest {
 
     int rev = updatedEntity.getRev();
     assertThat(instance.getRevision(PROJECT_RELATION_TYPE, id, rev), //
-        likeDefaultRelation(sourceId, targetId, typeId)//
-            .withId(id)//
-            .withRevision(rev));
+      likeDefaultRelation(sourceId, targetId, typeId)//
+        .withId(id)//
+        .withRevision(rev));
   }
 
   @Test
@@ -1009,12 +1008,12 @@ public abstract class StorageIntegrationTest {
 
     // verify
     assertThat(foundRelation, likeRelation()//
-        .withSourceId(sourceId) //
-        .withSourceType(RELATION_SOURCE_TYPE) //
-        .withTargetId(targetId) //
-        .withTargetType(RELATION_TARGET_TYPE) //
-        .withTypeId(typeId) //
-        .isAccepted(ACCEPTED));
+      .withSourceId(sourceId) //
+      .withSourceType(RELATION_SOURCE_TYPE) //
+      .withTargetId(targetId) //
+      .withTargetType(RELATION_TARGET_TYPE) //
+      .withTypeId(typeId) //
+      .isAccepted(ACCEPTED));
 
   }
 
@@ -1045,22 +1044,22 @@ public abstract class StorageIntegrationTest {
 
   private RelationMatcher likeDefaultNotAcceptionRelation(String sourceId, String targetId, String typeId) {
     return likeRelation()//
-        .withSourceId(sourceId) //
-        .withSourceType(RELATION_SOURCE_TYPE) //
-        .withTargetId(targetId) //
-        .withTargetType(RELATION_TARGET_TYPE) //
-        .withTypeId(typeId) //
-        .isAccepted(NOT_ACCEPTED);
+      .withSourceId(sourceId) //
+      .withSourceType(RELATION_SOURCE_TYPE) //
+      .withTargetId(targetId) //
+      .withTargetType(RELATION_TARGET_TYPE) //
+      .withTypeId(typeId) //
+      .isAccepted(NOT_ACCEPTED);
   }
 
   private RelationMatcher likeDefaultAcceptedRelation(String sourceId, String targetId, String typeId) {
     return likeRelation()//
-        .withSourceId(sourceId) //
-        .withSourceType(RELATION_SOURCE_TYPE) //
-        .withTargetId(targetId) //
-        .withTargetType(RELATION_TARGET_TYPE) //
-        .withTypeId(typeId) //
-        .isAccepted(ACCEPTED);
+      .withSourceId(sourceId) //
+      .withSourceType(RELATION_SOURCE_TYPE) //
+      .withTargetId(targetId) //
+      .withTargetType(RELATION_TARGET_TYPE) //
+      .withTypeId(typeId) //
+      .isAccepted(ACCEPTED);
   }
 
   @SuppressWarnings("unchecked")
@@ -1079,22 +1078,22 @@ public abstract class StorageIntegrationTest {
 
     // verify
     assertThat(relations.getAll(), containsInAnyOrder( //
-        likeRelation()//
-            .withId(id1) //
-            .withSourceId(sourceId) //
-            .withSourceType(RELATION_SOURCE_TYPE) //
-            .withTargetId(targetId) //
-            .withTargetType(RELATION_TARGET_TYPE) //
-            .withTypeId(typeId) //
-            .isAccepted(ACCEPTED), //
-        likeRelation() //
-            .withId(id2) //
-            .withSourceId(targetId) //
-            .withSourceType(RELATION_TARGET_TYPE) //
-            .withTargetId(sourceId) //
-            .withTargetType(RELATION_SOURCE_TYPE) //
-            .withTypeId(otherTypeId) //
-            .isAccepted(ACCEPTED)));
+      likeRelation()//
+        .withId(id1) //
+        .withSourceId(sourceId) //
+        .withSourceType(RELATION_SOURCE_TYPE) //
+        .withTargetId(targetId) //
+        .withTargetType(RELATION_TARGET_TYPE) //
+        .withTypeId(typeId) //
+        .isAccepted(ACCEPTED), //
+      likeRelation() //
+        .withId(id2) //
+        .withSourceId(targetId) //
+        .withSourceType(RELATION_TARGET_TYPE) //
+        .withTargetId(sourceId) //
+        .withTargetType(RELATION_SOURCE_TYPE) //
+        .withTypeId(otherTypeId) //
+        .isAccepted(ACCEPTED)));
   }
 
   @Test
@@ -1116,14 +1115,14 @@ public abstract class StorageIntegrationTest {
     List<Relation> allRelations = relations.getAll();
     assertThat(allRelations.size(), is(1));
     assertThat(allRelations, contains( //
-        likeRelation()//
-            .withId(id) //
-            .withSourceId(sourceId) //
-            .withSourceType(RELATION_SOURCE_TYPE) //
-            .withTargetId(targetId) //
-            .withTargetType(RELATION_TARGET_TYPE) //
-            .withTypeId(typeId) //
-            .isAccepted(ACCEPTED)));
+      likeRelation()//
+        .withId(id) //
+        .withSourceId(sourceId) //
+        .withSourceType(RELATION_SOURCE_TYPE) //
+        .withTargetId(targetId) //
+        .withTargetType(RELATION_TARGET_TYPE) //
+        .withTypeId(typeId) //
+        .isAccepted(ACCEPTED)));
   }
 
   @Test
@@ -1166,8 +1165,8 @@ public abstract class StorageIntegrationTest {
     // verify
     assertThat(revisions, hasSize(2));
     assertThat(revisions, containsInAnyOrder(//
-        likeDefaultAcceptedRelation(sourceId, targetId, typeId).withRevision(1), //
-        likeDefaultNotAcceptionRelation(sourceId, targetId, typeId).withRevision(2)));
+      likeDefaultAcceptedRelation(sourceId, targetId, typeId).withRevision(1), //
+      likeDefaultNotAcceptionRelation(sourceId, targetId, typeId).withRevision(2)));
   }
 
   @Test
@@ -1199,10 +1198,10 @@ public abstract class StorageIntegrationTest {
 
     // verify
     assertThat(foundRelation, likeRelation() //
-        .withId(id) //
-        .withSourceId(sourceId) //
-        .withTargetId(targetId) //
-        .withTypeId(relationTypeId));
+      .withId(id) //
+      .withSourceId(sourceId) //
+      .withTargetId(targetId) //
+      .withTypeId(relationTypeId));
   }
 
   @SuppressWarnings("unchecked")
@@ -1227,9 +1226,9 @@ public abstract class StorageIntegrationTest {
     List<SubARelation> relationList = Lists.newArrayList(relations);
     assertThat(relationList, contains(likeRelation().withId(relId1)));
     assertThat(relationList, not(containsInAnyOrder( //
-        likeRelation().withId(relId2), //
-        likeRelation().withId(relId3), //
-        likeRelation().withId(relId4))));
+      likeRelation().withId(relId2), //
+      likeRelation().withId(relId3), //
+      likeRelation().withId(relId4))));
 
   }
 
@@ -1255,9 +1254,9 @@ public abstract class StorageIntegrationTest {
     List<SubARelation> relationList = Lists.newArrayList(relations);
     assertThat(relationList, contains(likeRelation().withId(relId4)));
     assertThat(relationList, not(containsInAnyOrder( //
-        likeRelation().withId(relId2), //
-        likeRelation().withId(relId3), //
-        likeRelation().withId(relId1))));
+      likeRelation().withId(relId2), //
+      likeRelation().withId(relId3), //
+      likeRelation().withId(relId1))));
 
   }
 
@@ -1282,11 +1281,11 @@ public abstract class StorageIntegrationTest {
     // verify
     List<SubARelation> relationList = Lists.newArrayList(relations);
     assertThat(relationList, containsInAnyOrder( //
-        likeRelation().withId(relId2), //
-        likeRelation().withId(relId4)));
+      likeRelation().withId(relId2), //
+      likeRelation().withId(relId4)));
     assertThat(relationList, not(containsInAnyOrder( //
-        likeRelation().withId(relId1), //
-        likeRelation().withId(relId3))));
+      likeRelation().withId(relId1), //
+      likeRelation().withId(relId3))));
   }
 
   @SuppressWarnings("unchecked")
@@ -1310,11 +1309,11 @@ public abstract class StorageIntegrationTest {
     // verify
     List<SubARelation> relationList = Lists.newArrayList(relations);
     assertThat(relationList, containsInAnyOrder( //
-        likeRelation().withId(relId1), //
-        likeRelation().withId(relId3)));
+      likeRelation().withId(relId1), //
+      likeRelation().withId(relId3)));
     assertThat(relationList, not(containsInAnyOrder( //
-        likeRelation().withId(relId2), //
-        likeRelation().withId(relId4))));
+      likeRelation().withId(relId2), //
+      likeRelation().withId(relId4))));
   }
 
   @Test
@@ -1407,9 +1406,32 @@ public abstract class StorageIntegrationTest {
     // verify
     assertThat(relations, hasSize(2));
     assertThat(relations, containsInAnyOrder(//
-        likeDefaultAcceptedRelation(sourceId, targetId, typeId), //
-        likeDefaultAcceptedRelation(sourceId, targetId, typeId2)));
+      likeDefaultAcceptedRelation(sourceId, targetId, typeId), //
+      likeDefaultAcceptedRelation(sourceId, targetId, typeId2)));
 
+  }
+
+  @Test
+  public void getDomainEntitiesForRelationReturnsAllDomainEntitiesOfTheRequestedType() throws Exception {
+    // setup
+    String sourceId = addDefaultProjectAPerson();
+    String targetId = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+    String typeId2 = addRelationType();
+    String typeId3 = addRelationType();
+
+    String relationId1 = addDefaultSubARelation(sourceId, targetId, typeId);
+    String relationId2 = addDefaultSubARelation(sourceId, targetId, typeId2);
+    String relationId3 = addDefaultSubARelation(sourceId, targetId, typeId3);
+
+    // action
+    StorageIterator<Relation> relations = instance.getDomainEntities(Relation.class);
+
+    // verify
+    assertThat(relations.getAll(), containsInAnyOrder(//
+      likeRelation().withId(relationId1), //
+      likeRelation().withId(relationId2), //
+      likeRelation().withId(relationId3)));
   }
 
   /* **************************************************************************
