@@ -1,9 +1,8 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
+import com.tinkerpop.blueprints.Element;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
-
-import com.tinkerpop.blueprints.Element;
 
 public interface ElementConverter<T extends Entity, E extends Element> {
 
@@ -19,4 +18,5 @@ public interface ElementConverter<T extends Entity, E extends Element> {
 
   void removePropertyByFieldName(E element, String fieldName);
 
+  <U extends T> U convertToSubType(Class<U> type, E element) throws ConversionException;
 }

@@ -1,13 +1,12 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion;
 
-import java.util.List;
-
+import com.tinkerpop.blueprints.Edge;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeConverter;
 
-import com.tinkerpop.blueprints.Edge;
+import java.util.List;
 
 public class CompositeEdgeConverter<T extends Relation> implements EdgeConverter<T> {
 
@@ -52,4 +51,10 @@ public class CompositeEdgeConverter<T extends Relation> implements EdgeConverter
   public void removePropertyByFieldName(Edge edge, String fieldName) {
     throw new UnsupportedOperationException("Yet to be implemented");
   }
+
+  @Override
+  public <U extends T> U convertToSubType(Class<U> type, Edge element) throws ConversionException {
+    throw new UnsupportedOperationException("Not implemented yet");
+  }
+
 }

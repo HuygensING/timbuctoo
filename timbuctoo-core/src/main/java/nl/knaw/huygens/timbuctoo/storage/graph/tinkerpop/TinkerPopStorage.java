@@ -817,8 +817,18 @@ public class TinkerPopStorage implements GraphStorage {
   }
 
   @Override
-  public <T extends Relation> T getDefaultRelation(Class<T> relationType, String id) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  public <T extends Relation> T getDefaultRelation(Class<T> type, String id) throws StorageException{
+    T relation = null;
+    Class<? extends Relation> primitiveType = Relation.class;
+
+    Edge edge = lowLevelAPI.getLatestEdgeById(primitiveType, id);
+
+    if (edge != null) {
+      EdgeConverter<? super T> edgeConverter = elementConverterFactory.forPrimitiveRelationOf(type);
+
+      relation = edgeConverter.convertToSubType(type, edge);
+    }
+    return relation;
   }
 
   @Override

@@ -435,9 +435,9 @@ public class TinkerPopStorageTest {
   public void getAllVariationsReturnsAllVariationsOfAVertex() throws Exception {
     // setup
     Vertex vertex = aVertex()//
-        .withType(PRIMITIVE_DOMAIN_ENTITY_TYPE)//
-        .withType(DOMAIN_ENTITY_TYPE)//
-        .build();
+      .withType(PRIMITIVE_DOMAIN_ENTITY_TYPE)//
+      .withType(DOMAIN_ENTITY_TYPE)//
+      .build();
     latestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, vertex);
 
     VertexConverter<BaseDomainEntity> primitiveConverter = vertexConverterCreatedFor(PRIMITIVE_DOMAIN_ENTITY_TYPE);
@@ -481,9 +481,9 @@ public class TinkerPopStorageTest {
   public void getAllVariationsThrowsAConversionExceptionWhenTheVertexCouldNotBeConverted() throws Exception {
     // setup
     Vertex vertex = aVertex()//
-        .withType(PRIMITIVE_DOMAIN_ENTITY_TYPE)//
-        .withType(DOMAIN_ENTITY_TYPE)//
-        .build();
+      .withType(PRIMITIVE_DOMAIN_ENTITY_TYPE)//
+      .withType(DOMAIN_ENTITY_TYPE)//
+      .build();
     latestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, vertex);
 
     VertexConverter<BaseDomainEntity> primitiveConverter = vertexConverterCreatedFor(PRIMITIVE_DOMAIN_ENTITY_TYPE);
@@ -766,11 +766,11 @@ public class TinkerPopStorageTest {
 
     Change oldModified = CHANGE;
     SubADomainEntity domainEntity = aDomainEntity() //
-        .withId(ID) //
-        .withRev(entityRev)//
-        .withAPid()//
-        .withModified(oldModified)//
-        .build();
+      .withId(ID) //
+      .withRev(entityRev)//
+      .withAPid()//
+      .withModified(oldModified)//
+      .build();
 
     instance.updateEntity(DOMAIN_ENTITY_TYPE, domainEntity);
   }
@@ -779,10 +779,10 @@ public class TinkerPopStorageTest {
   public void addVariantAddsANewVariantToTheExistingVertexOfTheBaseType() throws Exception {
     // setup
     SubADomainEntity domainEntity = aDomainEntity() //
-        .withId(ID) //
-        .withRev(SECOND_REVISION)//
-        .withAPid()//
-        .build();
+      .withId(ID) //
+      .withRev(SECOND_REVISION)//
+      .withAPid()//
+      .build();
 
     Vertex vertex = aVertex().withRev(FIRST_REVISION).build();
     latestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, vertex);
@@ -830,11 +830,11 @@ public class TinkerPopStorageTest {
 
     Change oldModified = CHANGE;
     SubADomainEntity domainEntity = aDomainEntity() //
-        .withId(ID) //
-        .withRev(entityRevision)//
-        .withAPid()//
-        .withModified(oldModified)//
-        .build();
+      .withId(ID) //
+      .withRev(entityRevision)//
+      .withAPid()//
+      .withModified(oldModified)//
+      .build();
 
     instance.addVariant(DOMAIN_ENTITY_TYPE, domainEntity);
   }
@@ -852,10 +852,10 @@ public class TinkerPopStorageTest {
   public void addVariantThrowsAConversionExceptionWhenTheModifiedOrRevCannotBeUpdated() throws Exception {
     // setup
     SubADomainEntity domainEntity = aDomainEntity() //
-        .withId(ID) //
-        .withRev(SECOND_REVISION)//
-        .withAPid()//
-        .build();
+      .withId(ID) //
+      .withRev(SECOND_REVISION)//
+      .withAPid()//
+      .build();
 
     Vertex vertex = aVertex().withRev(FIRST_REVISION).build();
     latestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, vertex);
@@ -871,10 +871,10 @@ public class TinkerPopStorageTest {
   public void addVariantThrowsAConversionExceptionWhenTheVertexCannotBeUpdated() throws Exception {
     // setup
     SubADomainEntity domainEntity = aDomainEntity() //
-        .withId(ID) //
-        .withRev(SECOND_REVISION)//
-        .withAPid()//
-        .build();
+      .withId(ID) //
+      .withRev(SECOND_REVISION)//
+      .withAPid()//
+      .build();
 
     Vertex vertex = aVertex().withRev(FIRST_REVISION).build();
     latestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, vertex);
@@ -903,8 +903,8 @@ public class TinkerPopStorageTest {
     // verify
     InOrder inOrder = inOrder(converter, lowLevelAPIMock, dbMock);
     inOrder.verify(converter).addValuesToElement( //
-        argThat(is(foundVertex)), //
-        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE).withPID(PID)));
+      argThat(is(foundVertex)), //
+      argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE).withPID(PID)));
     inOrder.verify(lowLevelAPIMock).duplicate(foundVertex);
     inOrder.verify(dbMock).commit();
   }
@@ -1014,13 +1014,13 @@ public class TinkerPopStorageTest {
   public void addRelationAddsARelationshipToTheSource() throws Exception {
     // setup
     SubARelation relation = aRelation()//
-        .withSourceId(RELATION_SOURCE_ID)//
-        .withSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
-        .withTargetId(RELATION_TARGET_ID)//
-        .withTargetType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
-        .withTypeId(RELATION_TYPE_ID)//
-        .withTypeType(RELATION_TYPE_NAME)//
-        .build();
+      .withSourceId(RELATION_SOURCE_ID)//
+      .withSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
+      .withTargetId(RELATION_TARGET_ID)//
+      .withTargetType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
+      .withTypeId(RELATION_TYPE_ID)//
+      .withTypeType(RELATION_TYPE_NAME)//
+      .build();
 
     Vertex sourceVertex = aVertex().build();
     latestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, RELATION_SOURCE_ID, sourceVertex);
@@ -1046,13 +1046,13 @@ public class TinkerPopStorageTest {
   public void addRelationThrowsAConversionExceptionWhenRelationCannotBeConvertedAndDeletesTheCreatedEdge() throws Exception {
     // setup
     SubARelation relation = aRelation()//
-        .withSourceId(RELATION_SOURCE_ID)//
-        .withSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
-        .withTargetId(RELATION_TARGET_ID)//
-        .withTargetType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
-        .withTypeId(RELATION_TYPE_ID)//
-        .withTypeType(RELATION_TYPE_NAME)//
-        .build();
+      .withSourceId(RELATION_SOURCE_ID)//
+      .withSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
+      .withTargetId(RELATION_TARGET_ID)//
+      .withTargetType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
+      .withTypeId(RELATION_TYPE_ID)//
+      .withTypeType(RELATION_TYPE_NAME)//
+      .build();
 
     Vertex sourceVertex = aVertex().build();
     latestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, RELATION_SOURCE_ID, sourceVertex);
@@ -1108,13 +1108,13 @@ public class TinkerPopStorageTest {
     when(relationTypeConverter.convertToEntity(relationTypeVertex)).thenThrow(new ConversionException());
 
     SubARelation relation = aRelation()//
-        .withSourceId(RELATION_SOURCE_ID)//
-        .withSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
-        .withTargetId(RELATION_TARGET_ID)//
-        .withTargetType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
-        .withTypeId(RELATION_TYPE_ID)//
-        .withTypeType(RELATION_TYPE_NAME)//
-        .build();
+      .withSourceId(RELATION_SOURCE_ID)//
+      .withSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
+      .withTargetId(RELATION_TARGET_ID)//
+      .withTargetType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
+      .withTypeId(RELATION_TYPE_ID)//
+      .withTypeType(RELATION_TYPE_NAME)//
+      .build();
 
     // action
     instance.addRelation(RELATION_TYPE, relation, new Change());
@@ -1126,9 +1126,9 @@ public class TinkerPopStorageTest {
     noLatestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, RELATION_SOURCE_ID);
 
     SubARelation relation = aRelation()//
-        .withSourceId(RELATION_SOURCE_ID)//
-        .withSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
-        .build();
+      .withSourceId(RELATION_SOURCE_ID)//
+      .withSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
+      .build();
 
     // action
     instance.addRelation(RELATION_TYPE, relation, new Change());
@@ -1142,11 +1142,11 @@ public class TinkerPopStorageTest {
     noLatestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, RELATION_TARGET_ID);
 
     SubARelation relation = aRelation()//
-        .withSourceId(RELATION_SOURCE_ID)//
-        .withSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
-        .withTargetId(RELATION_TARGET_ID)//
-        .withTargetType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
-        .build();
+      .withSourceId(RELATION_SOURCE_ID)//
+      .withSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
+      .withTargetId(RELATION_TARGET_ID)//
+      .withTargetType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
+      .build();
 
     // action
     instance.addRelation(RELATION_TYPE, relation, new Change());
@@ -1160,13 +1160,13 @@ public class TinkerPopStorageTest {
     noLatestVertexFoundFor(RELATION_TYPE, ID);
 
     SubARelation relation = aRelation()//
-        .withSourceId(RELATION_SOURCE_ID)//
-        .withSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
-        .withTargetId(RELATION_TARGET_ID)//
-        .withTargetType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
-        .withTypeId(RELATION_TYPE_ID)//
-        .withTypeType(RELATION_TYPE_NAME)//
-        .build();
+      .withSourceId(RELATION_SOURCE_ID)//
+      .withSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
+      .withTargetId(RELATION_TARGET_ID)//
+      .withTargetType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
+      .withTypeId(RELATION_TYPE_ID)//
+      .withTypeType(RELATION_TYPE_NAME)//
+      .build();
 
     // action
     instance.addRelation(RELATION_TYPE, relation, new Change());
@@ -1406,10 +1406,10 @@ public class TinkerPopStorageTest {
     Edge withOtherType = anEdge().withTarget(target).withTypeId(OTHER_RELATION_TYPE).build();
 
     Vertex source = aVertex() //
-        .withOutgoingEdge(matchingEdge) //
-        .withOutgoingEdge(withOtherTarget) //
-        .withOutgoingEdge(withOtherType) //
-        .build();
+      .withOutgoingEdge(matchingEdge) //
+      .withOutgoingEdge(withOtherTarget) //
+      .withOutgoingEdge(withOtherType) //
+      .build();
     vertexFoundForId(SOURCE_ID, source);
 
 
@@ -1434,9 +1434,9 @@ public class TinkerPopStorageTest {
     Edge withOtherType = anEdge().withTypeId(OTHER_RELATION_TYPE).build();
 
     Vertex target = aVertex() //
-        .withIncomingEdge(matchingEdge) //
-        .withIncomingEdge(withOtherType) //
-        .build();
+      .withIncomingEdge(matchingEdge) //
+      .withIncomingEdge(withOtherType) //
+      .build();
     vertexFoundForId(TARGET_ID, target);
 
     Iterator<Edge> latestEdges = Lists.<Edge>newArrayList().iterator();
@@ -1482,10 +1482,10 @@ public class TinkerPopStorageTest {
     Edge withOtherType = anEdge().withTypeId(OTHER_RELATION_TYPE).build();
 
     Vertex source = aVertex() //
-        .withOutgoingEdge(matchingEdge) //
-        .withOutgoingEdge(anotherEdge) //
-        .withOutgoingEdge(withOtherType) //
-        .build();
+      .withOutgoingEdge(matchingEdge) //
+      .withOutgoingEdge(anotherEdge) //
+      .withOutgoingEdge(withOtherType) //
+      .build();
     vertexFoundForId(SOURCE_ID, source);
 
 
@@ -1514,10 +1514,10 @@ public class TinkerPopStorageTest {
     Edge withOtherType = anEdge().withTarget(target).withTypeId(OTHER_RELATION_TYPE).build();
 
     Vertex source = aVertex() //
-        .withOutgoingEdge(matchingEdge) //
-        .withOutgoingEdge(withOtherTarget) //
-        .withOutgoingEdge(withOtherType) //
-        .build();
+      .withOutgoingEdge(matchingEdge) //
+      .withOutgoingEdge(withOtherTarget) //
+      .withOutgoingEdge(withOtherType) //
+      .build();
     vertexFoundForId(SOURCE_ID, source);
 
 
@@ -1540,9 +1540,9 @@ public class TinkerPopStorageTest {
   public void getAllVariationsOfRelationReturnsAllVariationsOfAnEdge() throws Exception {
     // setup
     Edge edge = anEdge() //
-        .withType(PRIMITIVE_RELATION_TYPE) //
-        .withType(RELATION_TYPE) //
-        .build();
+      .withType(PRIMITIVE_RELATION_TYPE) //
+      .withType(RELATION_TYPE) //
+      .build();
 
     latestEdgeFoundWithId(PRIMITIVE_RELATION_TYPE, ID, edge);
 
@@ -1587,9 +1587,9 @@ public class TinkerPopStorageTest {
   public void getAllVariationsOfRelationThrowsAConversionExceptionWhenTheEdgeCouldNotBeConverted() throws Exception {
     // setup
     Edge edge = anEdge() //
-        .withType(PRIMITIVE_RELATION_TYPE) //
-        .withType(RELATION_TYPE) //
-        .build();
+      .withType(PRIMITIVE_RELATION_TYPE) //
+      .withType(RELATION_TYPE) //
+      .build();
 
     latestEdgeFoundWithId(PRIMITIVE_RELATION_TYPE, ID, edge);
 
@@ -1617,6 +1617,49 @@ public class TinkerPopStorageTest {
 
     // verify
     assertThat(foundRelation, is(sameInstance(relation)));
+  }
+
+  @Test
+  public void getDefaultRelationReturnsTheRequestedTypeWithTheValuesOfThePrimitiveVariant() throws Exception {
+    // setup
+    Edge edge = anEdge().build();
+    latestEdgeFoundWithId(Relation.class, ID, edge);
+
+    EdgeConverter<? super SubARelation> converter = createPrimitiveConverterFor(RELATION_TYPE);
+    SubARelation relation = aRelation().build();
+    when(converter.convertToSubType(RELATION_TYPE, edge)).thenReturn(relation);
+
+    // action
+    SubARelation defaultRelation = instance.getDefaultRelation(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(defaultRelation, is(sameInstance(relation)));
+  }
+
+  @Test
+  public void getDefaultRelationReturnsNullIfThePrimitiveCannotBeFound() throws Exception {
+    // setup
+    noLatestEdgeFoundWithId(RELATION_TYPE, ID);
+
+    // action
+    SubARelation defaultRelation = instance.getDefaultRelation(RELATION_TYPE, ID);
+
+    // verify
+    assertThat(defaultRelation, is(nullValue()));
+  }
+
+  @Test(expected = ConversionException.class)
+  public void getDefaultRelationThrowsAConversionExceptionWhenTheVertexCannotBeConverted() throws Exception {
+    // setup
+    Edge edge = anEdge().build();
+    latestEdgeFoundWithId(Relation.class, ID, edge);
+
+    EdgeConverter<? super SubARelation> converter = createPrimitiveConverterFor(RELATION_TYPE);
+    when(converter.convertToSubType(RELATION_TYPE, edge)).thenThrow(new ConversionException());
+
+    // action
+    instance.getDefaultRelation(RELATION_TYPE, ID);
+
   }
 
   @Test
@@ -1723,6 +1766,16 @@ public class TinkerPopStorageTest {
 
     return edgeConverter;
   }
+  private <T extends Relation> EdgeConverter<? super T> createPrimitiveConverterFor(Class<T> type) {
+    @SuppressWarnings("unchecked")
+    EdgeConverter<? super T> edgeConverter = mock(EdgeConverter.class);
+
+
+    doReturn(edgeConverter).when(elementConverterFactoryMock).forPrimitiveRelationOf(type);
+
+    return edgeConverter;
+  }
+
 
   private Edge latestEdgeFoundWithId(Class<? extends Relation> type, String id, Edge edge) {
     when(lowLevelAPIMock.getLatestEdgeById(type, id)).thenReturn(edge);
@@ -1731,7 +1784,7 @@ public class TinkerPopStorageTest {
   }
 
   @Test
-  public void getRelationsReturnsARelationIteratorOfTheEdgesFoundByTheLowLevelAPI()  {
+  public void getRelationsReturnsARelationIteratorOfTheEdgesFoundByTheLowLevelAPI() {
     // setup
     Iterator<Edge> iterator = Lists.<Edge>newArrayList().iterator();
     when(lowLevelAPIMock.getLatestEdgesOf(RELATION_TYPE)).thenReturn(iterator);
@@ -1746,7 +1799,6 @@ public class TinkerPopStorageTest {
     // verify
     assertThat(actualStorageIterator, is(sameInstance(storageIterator)));
   }
-
 
 
   @Test
@@ -1880,8 +1932,8 @@ public class TinkerPopStorageTest {
     // verify
     InOrder inOrder = inOrder(converter, lowLevelAPIMock, dbMock);
     inOrder.verify(converter).addValuesToElement( //
-        argThat(is(edge)), //
-        argThat(likeDomainEntity(RELATION_TYPE).withPID(PID)));
+      argThat(is(edge)), //
+      argThat(likeDomainEntity(RELATION_TYPE).withPID(PID)));
     inOrder.verify(lowLevelAPIMock).duplicate(edge);
     inOrder.verify(dbMock).commit();
   }

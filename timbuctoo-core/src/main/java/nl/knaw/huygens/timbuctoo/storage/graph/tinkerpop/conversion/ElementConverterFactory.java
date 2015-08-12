@@ -1,10 +1,8 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion;
 
-import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -14,9 +12,10 @@ import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeConverter;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexConverter;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property.PropertyConverterFactory;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.google.inject.Inject;
+import java.lang.reflect.Field;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 public class ElementConverterFactory {
 
@@ -65,7 +64,7 @@ public class ElementConverterFactory {
   }
 
   @SuppressWarnings("unchecked")
-  private <T extends Relation> EdgeConverter<? super T> forPrimitiveRelationOf(Class<T> type) {
+  public <T extends Relation> EdgeConverter<? super T> forPrimitiveRelationOf(Class<T> type) {
     Class<? extends Relation> primitive = (Class<? extends Relation>) TypeRegistry.toBaseDomainEntity(type);
     EdgeConverter<? extends Relation> converter = forRelation(primitive);
 
