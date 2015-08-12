@@ -60,6 +60,10 @@ public class ExtendableEdgeConverterTest {
   private List<PropertyConverter> propertyConverters;
   private EntityInstantiator entityInstantiatorMock;
   private TypeRegistry typeRegistry;
+  public static final String SOURCE_ID = "sourceId";
+  public static final String SOURCE_TYPE = TypeNames.getInternalName(BaseDomainEntity.class);
+  public static final String TARGET_ID = "targetId";
+  public static final String TARGET_TYPE = TypeNames.getInternalName(Person.class);
 
   @Before
   public void setup() throws Exception {
@@ -76,9 +80,25 @@ public class ExtendableEdgeConverterTest {
 
     instance = createInstance(DOMAIN_ENTITY_TYPE, propertyConverters, entityInstantiatorMock);
 
-    edgeMock = mock(Edge.class);
+    setupEdgeMock();
     entity = new SubARelation();
     setupEntityInstantiator();
+  }
+
+  private void setupEdgeMock() {
+    Vertex source = aVertex()//
+      .withId(SOURCE_ID)//
+      .withType(BaseDomainEntity.class)//
+      .withType(SubADomainEntity.class)//
+      .build();
+
+    Vertex target = aVertex()//
+      .withId(TARGET_ID)//
+      .withType(Person.class)//
+      .withType(ProjectAPerson.class) //
+      .build();
+
+    edgeMock = anEdge().withSource(source).withTarget(target).build();
   }
 
   private void setupEntityInstantiator() throws InstantiationException {
@@ -146,34 +166,15 @@ public class ExtendableEdgeConverterTest {
 
   @Test
   public void convertToEntityCreatesAnInstanceOfTheEntityThenLetThePropertyConvertersAddTheValues() throws Exception {
-    // setup
-    String sourceId = "sourceId";
-    String sourceType = TypeNames.getInternalName(BaseDomainEntity.class);
-    Vertex source = aVertex()//
-      .withId(sourceId)//
-      .withType(BaseDomainEntity.class)//
-      .withType(SubADomainEntity.class)//
-      .build();
-
-    String targetId = "targetId";
-    String targetType = TypeNames.getInternalName(Person.class);
-    Vertex target = aVertex()//
-      .withId(targetId)//
-      .withType(Person.class)//
-      .withType(ProjectAPerson.class) //
-      .build();
-
-    Edge edgeMock = anEdge().withSource(source).withTarget(target).build();
-
     // action
     SubARelation createdEntity = instance.convertToEntity(edgeMock);
 
     // verify
     assertThat(createdEntity, likeRelation() //
-      .withSourceId(sourceId) //
-      .withSourceType(sourceType) //
-      .withTargetId(targetId) //
-      .withTargetType(targetType));
+      .withSourceId(SOURCE_ID) //
+      .withSourceType(SOURCE_TYPE) //
+      .withTargetId(TARGET_ID) //
+      .withTargetType(TARGET_TYPE));
 
     verify(propertyConverter1).addValueToEntity(entity, edgeMock);
     verify(propertyConverter2).addValueToEntity(entity, edgeMock);
@@ -204,33 +205,15 @@ public class ExtendableEdgeConverterTest {
     // setup
     ExtendableEdgeConverter<Relation> instance = createInstance(PRIMITIVE_TYPE, propertyConverters, entityInstantiatorMock);
 
-    String sourceId = "sourceId";
-    String sourceType = TypeNames.getInternalName(BaseDomainEntity.class);
-    Vertex source = aVertex()//
-      .withId(sourceId)//
-      .withType(BaseDomainEntity.class)//
-      .withType(SubADomainEntity.class)//
-      .build();
-
-    String targetId = "targetId";
-    String targetType = TypeNames.getInternalName(Person.class);
-    Vertex target = aVertex()//
-      .withId(targetId)//
-      .withType(Person.class)//
-      .withType(ProjectAPerson.class) //
-      .build();
-
-    Edge edgeMock = anEdge().withSource(source).withTarget(target).build();
-
     // action
     SubARelation actualEntity = instance.convertToSubType(DOMAIN_ENTITY_TYPE, edgeMock);
 
     // verify
     assertThat(actualEntity, likeRelation() //
-      .withSourceId(sourceId) //
-      .withSourceType(sourceType) //
-      .withTargetId(targetId) //
-      .withTargetType(targetType));
+      .withSourceId(SOURCE_ID) //
+      .withSourceType(SOURCE_TYPE) //
+      .withTargetId(TARGET_ID) //
+      .withTargetType(TARGET_TYPE));
 
     verify(propertyConverter1).addValueToEntity(entity, edgeMock);
     verify(propertyConverter2).addValueToEntity(entity, edgeMock);
@@ -251,24 +234,6 @@ public class ExtendableEdgeConverterTest {
   @Test(expected = ConversionException.class)
   public void convertToSubTypeThrowsAConverterExceptionWhenOneOfTheFieldsCannotBeConverted() throws Exception {
     // setup
-    String sourceId = "sourceId";
-    String sourceType = TypeNames.getInternalName(BaseDomainEntity.class);
-    Vertex source = aVertex()//
-      .withId(sourceId)//
-      .withType(BaseDomainEntity.class)//
-      .withType(SubADomainEntity.class)//
-      .build();
-
-    String targetId = "targetId";
-    String targetType = TypeNames.getInternalName(Person.class);
-    Vertex target = aVertex()//
-      .withId(targetId)//
-      .withType(Person.class)//
-      .withType(ProjectAPerson.class) //
-      .build();
-
-    Edge edgeMock = anEdge().withSource(source).withTarget(target).build();
-
     doThrow(ConversionException.class).when(propertyConverter1).addValueToEntity(entity, edgeMock);
 
     ExtendableEdgeConverter<Relation> instance = createInstance(PRIMITIVE_TYPE, propertyConverters, entityInstantiatorMock);
