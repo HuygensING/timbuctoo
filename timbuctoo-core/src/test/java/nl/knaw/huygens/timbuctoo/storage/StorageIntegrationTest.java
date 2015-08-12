@@ -1444,13 +1444,14 @@ public abstract class StorageIntegrationTest {
 
     // action
     SubBRelation entityWithoutVariation = instance.getEntityOrDefaultVariation(SubBRelation.class, id);
+    Relation primitive = instance.getEntity(PRIMITIVE_RELATION_TYPE, id);
 
     // verify
     assertThat(entityWithoutVariation, likeRelation() //
       .withType(SubBRelation.class) //
-      .withSourceId(sourceId) //
-      .withTargetId(targetId) //
-      .withTypeId(typeId));
+      .withSourceId(primitive.getSourceId()) //
+      .withTargetId(primitive.getTargetId()) //
+      .withTypeId(primitive.getTypeId()));
 
   }
 
