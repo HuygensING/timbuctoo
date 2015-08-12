@@ -104,12 +104,12 @@ public class Relation extends DomainEntity {
   }
 
   @JsonProperty(SOURCE_TYPE)
+  @IndexAnnotation(fieldName = INDEX_FIELD_SOURCE_TYPE)
   public String getSourceType() {
     return sourceType;
   }
 
   @JsonProperty(SOURCE_TYPE)
-  @IndexAnnotation(fieldName = INDEX_FIELD_SOURCE_TYPE)
   public void setSourceType(String sourceRefType) {
     this.sourceType = sourceRefType;
   }
