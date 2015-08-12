@@ -22,20 +22,18 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-
-import nl.knaw.huygens.timbuctoo.model.RelationType;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Provides for access to stored relation types.
@@ -106,6 +104,8 @@ public class RelationTypes {
     try {
       return idCache.get(id);
     } catch (ExecutionException e) {
+      LOG.error("Could not retrieve relation type with id {}", id);
+      LOG.error("Exception thrown", e);
       if (required) {
         throw new IllegalStateException("No relation type with id " + id);
       }
