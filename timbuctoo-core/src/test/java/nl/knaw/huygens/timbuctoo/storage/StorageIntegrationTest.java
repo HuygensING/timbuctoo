@@ -1434,6 +1434,26 @@ public abstract class StorageIntegrationTest {
       likeRelation().withId(relationId3)));
   }
 
+  @Test
+  public void getEntityOrDefaultVariationForRelationReturnsTheEntityAndItsValuesIfItExistsElseItReturnsTheEntityWithTheValuesOfTheDefaultVariation() throws Exception {
+    // setup
+    String sourceId = addDefaultProjectAPerson();
+    String targetId = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+    String id = addDefaultSubARelation(sourceId, targetId, typeId);
+
+    // action
+    SubBRelation entityWithoutVariation = instance.getEntityOrDefaultVariation(SubBRelation.class, id);
+
+    // verify
+    assertThat(entityWithoutVariation, likeRelation() //
+      .withType(SubBRelation.class) //
+      .withSourceId(sourceId) //
+      .withTargetId(targetId) //
+      .withTypeId(typeId));
+
+  }
+
   /* **************************************************************************
    * Other methods
    * **************************************************************************/
