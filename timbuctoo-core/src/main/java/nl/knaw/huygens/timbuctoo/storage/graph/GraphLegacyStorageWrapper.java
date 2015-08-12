@@ -297,10 +297,27 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends Entity> T getEntityOrDefaultVariation(Class<T> type, String id) throws StorageException {
+    if(isRelation(type)){
+      return getRelationOrDefaultVariant(type, id);
+    }
+
+    return getEntityOrDefaultVariant(type, id);
+  }
+
+  private <T extends Entity> T getEntityOrDefaultVariant(Class<T> type, String id) throws StorageException {
     if (graphStorage.entityExists(type, id)) {
       return graphStorage.getEntity(type, id);
     } else {
       return graphStorage.getDefaultVariation(type, id);
+    }
+  }
+
+  private <T extends Entity> T getRelationOrDefaultVariant(Class<T> type, String id) throws StorageException {
+    if(graphStorage.relationExists(asRelation(type), id)) {
+      return (T) graphStorage.getRelation(asRelation(type), id);
+    }
+    else {
+      return (T) graphStorage.getDefaultRelation(asRelation(type), id);
     }
   }
 

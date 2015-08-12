@@ -212,6 +212,60 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
+  public void getEntityOrDefaultVariationForRelationDelegatesToGraphStorageGetRelationIfTheVariantExists() throws Exception {
+    // setup
+    relationExists(true);
+    SubARelation relation = aRelation().build();
+    when(graphStorageMock.getRelation(RELATION_TYPE, ID)).thenReturn(relation);
+
+    // action
+    SubARelation actualRelation = instance.getEntityOrDefaultVariation(RELATION_TYPE, ID);
+
+    // verify
+    verify(graphStorageMock).getRelation(RELATION_TYPE, ID);
+    assertThat(actualRelation, is(sameInstance(relation)));
+  }
+
+  private void relationExists(boolean value) {
+    when(graphStorageMock.relationExists(RELATION_TYPE, ID)).thenReturn(value);
+  }
+
+  @Test(expected = StorageException.class)
+  public void getEntityOrDefaultVariationForRelationForRelationThrowsAStorageExceptionifGraphStorageGetRelationDoes() throws Exception {
+    // setup
+    relationExists(true);
+    when(graphStorageMock.getRelation(RELATION_TYPE, ID)).thenThrow(new StorageException());
+
+    // action
+    instance.getEntityOrDefaultVariation(RELATION_TYPE, ID);
+  }
+
+  @Test
+  public void getEntityOrDefaultVariationForRelationDelegatesToGraphStorageGetDefaultRelationIfTheVariantDoesNotExist() throws Exception {
+    // setup
+    relationExists(false);
+    SubARelation relation = aRelation().build();
+    when(graphStorageMock.getDefaultRelation(RELATION_TYPE, ID)).thenReturn(relation);
+
+    // action
+    SubARelation actualRelation = instance.getEntityOrDefaultVariation(RELATION_TYPE, ID);
+
+    // verify
+    verify(graphStorageMock).getDefaultRelation(RELATION_TYPE, ID);
+    assertThat(actualRelation, is(sameInstance(relation)));
+  }
+
+  @Test(expected = StorageException.class)
+  public void getEntityOrDefaultVariationForRelationThrowsAStorageExceptionifGraphStorageGetDefaultRelationDoes() throws Exception {
+    // setup
+    relationExists(false);
+    when(graphStorageMock.getDefaultRelation(RELATION_TYPE, ID)).thenThrow(new StorageException());
+
+    // action
+    instance.getEntityOrDefaultVariation(RELATION_TYPE, ID);
+  }
+
+  @Test
   public void getDomainEntitiesDelegatesToGraphStorageGetEntities() throws StorageException {
     // setup
     @SuppressWarnings("unchecked")
@@ -901,7 +955,7 @@ public class GraphLegacyStorageWrapperTest {
   public void doesVariationExistForRelationDelegatesToGraphStorageRelationExists() throws Exception {
     // setup
     boolean relationExists = true;
-    when(graphStorageMock.relationExists(RELATION_TYPE, ID)).thenReturn(relationExists);
+    relationExists(relationExists);
 
     // action
     boolean variationExists = instance.doesVariationExist(RELATION_TYPE, ID);
@@ -1066,7 +1120,7 @@ public class GraphLegacyStorageWrapperTest {
   public void entityExistsForRelationDelegatesToGraphStorageRelationExists() throws Exception {
     // setup
     boolean relationExists = true;
-    when(graphStorageMock.relationExists(RELATION_TYPE, ID)).thenReturn(relationExists);
+    relationExists(relationExists);
 
     // action
     boolean actualEntityExists = instance.entityExists(RELATION_TYPE, ID);

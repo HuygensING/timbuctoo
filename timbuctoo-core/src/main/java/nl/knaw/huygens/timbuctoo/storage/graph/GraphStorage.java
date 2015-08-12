@@ -111,6 +111,15 @@ public interface GraphStorage {
   // TODO make only available for DomainEntities see TIM-162
   <T extends Entity> T getDefaultVariation(Class<T> type, String id) throws StorageException;
 
+  /**
+   * The method to get the default variantion of a Relation similar to getDefaultVariation.
+   * @param relationType the type to find
+   * @param id the id of the relation to find
+   * @param <T> the type of relation
+   * @return the found relation or null
+   */
+  <T extends Relation> T getDefaultRelation(Class<T> relationType, String id) throws StorageException;
+
   <T extends Relation> StorageIterator<T> findRelations(Class<T> relationType, String sourceId, String targetId, String relationTypeId);
 
   /**
@@ -160,6 +169,7 @@ public interface GraphStorage {
    * @param field the field to add the index to
    */
   void createIndex(Class<? extends Entity> type, String field);
+
 
 
 }
