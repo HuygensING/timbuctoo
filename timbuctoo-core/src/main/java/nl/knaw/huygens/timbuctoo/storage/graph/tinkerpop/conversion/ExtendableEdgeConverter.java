@@ -54,6 +54,16 @@ public class ExtendableEdgeConverter<T extends Relation> extends AbstractExtenda
 
   @Override
   public <U extends T> U convertToSubType(Class<U> type, Edge element) throws ConversionException {
-    throw new UnsupportedOperationException("Not implemented yet");
+    try {
+      U entity = entityInstantiator.createInstanceOf(type);
+      executeCustomDeserializationActions(entity, element);
+
+      addValuesToEntity(entity, element);
+
+      return entity;
+
+    } catch (InstantiationException e) {
+      throw new ConversionException(e);
+    }
   }
 }
