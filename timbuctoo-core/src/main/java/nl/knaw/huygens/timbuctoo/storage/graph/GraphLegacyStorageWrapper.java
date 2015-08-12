@@ -308,7 +308,7 @@ public class GraphLegacyStorageWrapper implements Storage {
   public <T extends Entity> T getEntity(Class<T> type, String id) throws StorageException {
     if (isRelation(type)) {
       @SuppressWarnings("unchecked")
-      T relationDomainEntity = (T) graphStorage.getRelation((Class<Relation>) type, id);
+      T relationDomainEntity = (T) graphStorage.getRelation(asRelation(type), id);
       return relationDomainEntity;
     } else {
       return graphStorage.getEntity(type, id);
