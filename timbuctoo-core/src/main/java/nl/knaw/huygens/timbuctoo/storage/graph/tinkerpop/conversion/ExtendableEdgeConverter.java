@@ -5,7 +5,6 @@ import com.tinkerpop.blueprints.Vertex;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.CorruptVertexException;
 import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeConverter;
@@ -52,18 +51,4 @@ public class ExtendableEdgeConverter<T extends Relation> extends AbstractExtenda
     throw new CorruptVertexException(vertex.getProperty(DB_ID_PROP_NAME));
   }
 
-  @Override
-  public <U extends T> U convertToSubType(Class<U> type, Edge element) throws ConversionException {
-    try {
-      U entity = entityInstantiator.createInstanceOf(type);
-      executeCustomDeserializationActions(entity, element);
-
-      addValuesToEntity(entity, element);
-
-      return entity;
-
-    } catch (InstantiationException e) {
-      throw new ConversionException(e);
-    }
-  }
 }

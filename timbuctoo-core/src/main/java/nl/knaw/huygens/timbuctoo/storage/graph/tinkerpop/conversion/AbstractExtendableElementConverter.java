@@ -100,6 +100,22 @@ abstract class AbstractExtendableElementConverter<T extends Entity, E extends El
 
   }
 
+  @Override
+  public <U extends T> U convertToSubType(Class<U> type, E element) throws ConversionException {
+    try {
+      U entity = entityInstantiator.createInstanceOf(type);
+
+      addValuesToEntity(entity, element);
+
+      executeCustomDeserializationActions(entity, element);
+
+      return entity;
+
+    } catch (InstantiationException e) {
+      throw new ConversionException(e);
+    }
+  }
+
   protected abstract void executeCustomDeserializationActions(T entity, E element);
 
   protected <U extends T> void addValuesToEntity(U entity, E element) throws ConversionException {
@@ -155,5 +171,6 @@ abstract class AbstractExtendableElementConverter<T extends Entity, E extends El
 
     getPropertyConverterByFieldName(fieldName).removeFrom(element);
   }
+
 
 }

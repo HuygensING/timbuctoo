@@ -1,34 +1,18 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion;
 
-import java.util.Collection;
-import java.util.List;
-
+import com.tinkerpop.blueprints.Vertex;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
 import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexConverter;
 
-import com.tinkerpop.blueprints.Vertex;
+import java.util.Collection;
+import java.util.List;
 
 class ExtendableVertexConverter<T extends Entity> extends AbstractExtendableElementConverter<T, Vertex> implements VertexConverter<T> {
   ExtendableVertexConverter(Class<T> type, Collection<PropertyConverter> propertyConverters, EntityInstantiator entityInstantiator) {
     super(type, propertyConverters, entityInstantiator);
-  }
-
-  @Override
-  public <U extends T> U convertToSubType(Class<U> type, Vertex vertex) throws ConversionException {
-    try {
-      U entity = entityInstantiator.createInstanceOf(type);
-
-      addValuesToEntity(entity, vertex);
-
-      return entity;
-
-    } catch (InstantiationException e) {
-      throw new ConversionException(e);
-    }
   }
 
   @Override
