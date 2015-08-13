@@ -80,10 +80,6 @@ public class RelationDTOFactory {
     List<Map<String, Object>> data = vre.getRawDataFor(type, Lists.newArrayList(id));
     FieldNameMap fieldNameMap = fieldNameMapFactory.create(FieldNameMapFactory.Representation.INDEX, FieldNameMapFactory.Representation.CLIENT, type);
 
-    System.out.println("type: " + type);
-    System.out.println("data: " + data.get(0));
-    System.out.println("fieldNameMap: " + fieldNameMap);
-
     return domainEntityDTOFactory.create(type, fieldNameMap, data.get(0));
   }
 }
