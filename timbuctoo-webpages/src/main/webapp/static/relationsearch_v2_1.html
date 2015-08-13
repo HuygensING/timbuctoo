@@ -19,90 +19,92 @@
   <http://www.gnu.org/licenses/gpl-3.0.html>.
   #L%
   -->
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
-<title>Repository Search</title>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<link href="css/static-html.css" rel="stylesheet" type="text/css" />
+    <title>Repository Search</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <link href="css/static-html.css" rel="stylesheet" type="text/css"/>
 </head>
 
 <body>
 <h1>Repository Search</h1>
+
 <form id="formSearch" name="formSearch">
-<p id="error" style="display:none" />
+    <p id="error" style="display:none"/>
 
-<h2>Overall Setting</h2>
-<table>
-<tr>
-  <td>VRE</td>
-  <td><input id="vreselect" value="WomenWriters" disabled="disabled"></input></td>
-</tr>
-</table>
+    <h2>Overall Setting</h2>
+    <table>
+        <tr>
+            <td>VRE</td>
+            <td><input id="vreselect" value="WomenWriters" disabled="disabled"></input></td>
+        </tr>
+    </table>
 
-<h2>Source Query</h2>
-<table>
-<tr>
-  <td>Collection</td>
-  <td><input name="" type="text" size="50" id="searchcollection1"/></td>
-</tr>
-<tr>
-  <td>Text</td>
-  <td><input name="" type="text" size="50" id="searchtext1"/></td>
-</tr>
-</table>
-<p><a href="#" onclick="doPost1()">Submit query</a></p>
+    <h2>Source Query</h2>
+    <table>
+        <tr>
+            <td>Collection</td>
+            <td><input name="" type="text" size="50" id="searchcollection1"/></td>
+        </tr>
+        <tr>
+            <td>Text</td>
+            <td><input name="" type="text" size="50" id="searchtext1"/></td>
+        </tr>
+    </table>
+    <p><a href="#" onclick="doPost1()">Submit query</a></p>
 
-<h2>Target Query</h2>
-<table>
-<tr>
-  <td>Collection</td>
-  <td><input name="" type="text" size="50" id="searchcollection2"/></td>
-</tr>
-<tr>
-  <td>Text</td>
-  <td><input name="" type="text" size="50" id="searchtext2"/></td>
-</tr>
-</table>
-<p><a href="#" onclick="doPost2()">Submit query</a></p>
+    <h2>Target Query</h2>
+    <table>
+        <tr>
+            <td>Collection</td>
+            <td><input name="" type="text" size="50" id="searchcollection2"/></td>
+        </tr>
+        <tr>
+            <td>Text</td>
+            <td><input name="" type="text" size="50" id="searchtext2"/></td>
+        </tr>
+    </table>
+    <p><a href="#" onclick="doPost2()">Submit query</a></p>
 
-<h2>Relation Query</h2>
-<table>
-<tr>
-  <td>Relation types</td>
-  <td><select multiple id="relation_types"></select></td>
-</tr>
-<tr>
-  <td>Source Query</td>
-  <td><input name="" type="text" size="50" id="searchid1"/></td>
-</tr>
-<tr>
-  <td>Target Query</td>
-  <td><input name="" type="text" size="50" id="searchid2"/></td>
-</tr>
-</table>
-<p><a href="#" onclick="doPost3()">Submit query</a></p>
-<table>
-<h2>Results</h2>
-<table>
-<tr>
-  <td>URL</td>
-  <td><input name="" type="text" size="50" id="searchid3"/></td>
-</tr>
-<tr>
-  <td>Start</td>
-  <td><input name="" type="text" size="50" id="start" value="0"/></td>
-</tr>
-<tr>
-  <td>Rows</td>
-  <td><input name="" type="text" size="50" id="rows" value="10"/></td>
-</tr>
-</table>
-<p><a href="#" onclick="doGet()">Show results</a></p>
+    <h2>Relation Query</h2>
+    <table>
+        <tr>
+            <td>Relation types</td>
+            <td><select multiple id="relation_types"></select></td>
+        </tr>
+        <tr>
+            <td>Source Query</td>
+            <td><input name="" type="text" size="50" id="searchid1"/></td>
+        </tr>
+        <tr>
+            <td>Target Query</td>
+            <td><input name="" type="text" size="50" id="searchid2"/></td>
+        </tr>
+    </table>
+    <p><a href="#" onclick="doPost3()">Submit query</a></p>
+    <table>
+        <h2>Results</h2>
+        <table>
+            <tr>
+                <td>URL</td>
+                <td><input name="" type="text" size="50" id="searchid3"/></td>
+            </tr>
+            <tr>
+                <td>Start</td>
+                <td><input name="" type="text" size="50" id="start" value="0"/></td>
+            </tr>
+            <tr>
+                <td>Rows</td>
+                <td><input name="" type="text" size="50" id="rows" value="10"/></td>
+            </tr>
+        </table>
+        <p><a href="#" onclick="doGet()">Show results</a></p>
 
-<div id="results">
-</div>
+        <div id="results">
+        </div>
 </form>
 
 <script src="jquery-1.9.1.js" type="text/javascript"></script>
@@ -181,7 +183,7 @@
         'typeString': 'wwrelation',
         'sourceSearchId': $('#searchid1').val(),
         'targetSearchId': $('#searchid2').val(),
-        'relationTypeIds': $('#relation_types').val()
+        'relationTypeIds': getRelationTypes()
       }),
       headers : { 
         VRE_ID : $('#vreselect').val()
@@ -199,6 +201,15 @@
     });
   }
 
+  function getRelationTypes(){
+    var relationTypes = $('#relation_types').val()
+    if(relationTypes != null){
+      return relationTypes;
+    }
+
+    return [ ];
+  }
+
   function doGet() {
     var searchUrl = $('#searchid3').val();
     var start = $('#start').val() || '0';
@@ -211,7 +222,7 @@
       success: function (data) {
         var html = '<table><tr><th>Id</th><th>Name</th></tr>';
         $.each(data.refs, function (i, item) {
-        	html += '<tr><td><a href="' + baseUrl + item.path + '">' + item.id + '</a></td><td>' + item.displayName + '</td></tr>';
+        	html += '<tr><td><a href="' + baseUrl + item.path + '">' + item.id + '</a></td><td>' + item.sourceName + '-' + item.relationName + '-' + item.targetName + '</td></tr>';
         });
         html += '</table>';
         $('#results').html(html);
@@ -244,6 +255,7 @@
     $('#searchid3').val('');
     $('#results').html('No results (yet)');
   });
+
 </script>
 </body>
 
