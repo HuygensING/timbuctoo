@@ -594,7 +594,7 @@ public class PackageVRETest {
   @Test(expected = NotInScopeException.class)
   public void mapToScopeThrowsANotInScopeExceptionWhenThereIsNoTypeInScopeThatMatchesTheBaseType() throws Exception {
     // setup
-    when(scopeMock.mapToScopeType(BASE_TYPE)).thenThrow(NotInScopeException.noTypeMatchesBaseType(BASE_TYPE, vre));
+    when(scopeMock.mapToScopeType(BASE_TYPE)).thenThrow(NotInScopeException.noTypeMatchesBaseType(BASE_TYPE));
 
     // action
     Class<? extends DomainEntity> scopeType = vre.mapToScopeType(BASE_TYPE);

@@ -30,8 +30,8 @@ public class NotInScopeException extends Exception {
     super(message);
   }
 
-  public static NotInScopeException noTypeMatchesBaseType(Class<? extends DomainEntity> baseType, VRE vre) {
-    return new NotInScopeException(String.format("No matching type for base type [%s] in vre [%s].", TypeNames.getExternalName(baseType), vre.getVreId()));
+  public static NotInScopeException noTypeMatchesBaseType(Class<? extends DomainEntity> baseType) {
+    return new NotInScopeException(String.format("No matching type for base type [%s].", TypeNames.getExternalName(baseType)));
   }
 
   public static NotInScopeException typeIsNotInScope(Class<? extends DomainEntity> type, String vreId) {

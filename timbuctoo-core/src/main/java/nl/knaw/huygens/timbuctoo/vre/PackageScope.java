@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.vre;
 
 import com.google.common.collect.ImmutableSortedSet.Builder;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.ClassPath.ClassInfo;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -31,6 +32,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.util.ClassComparator;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -43,10 +45,12 @@ class PackageScope implements Scope {
 
   private Set<Class<? extends DomainEntity>> types;
   private Set<Class<? extends DomainEntity>> baseTypes;
+  private HashMap<Class<? extends DomainEntity>, Class<? extends DomainEntity>> baseTypeScopeTypeMap;
 
   public PackageScope() throws IOException {
     classPath = ClassPath.from(PackageScope.class.getClassLoader());
     builder = newBuilder();
+    baseTypeScopeTypeMap = Maps.newHashMap();
   }
 
   @Override
@@ -62,12 +66,6 @@ class PackageScope implements Scope {
     return filteredList;
   }
 
-  @Override
-  public Class<? extends DomainEntity> mapToScopeType(Class<? extends DomainEntity> baseType) throws NotInScopeException {
-    throw new UnsupportedOperationException("Not implemented yet");
-  }
-
-
   /**
    * Convenience constructor that creates a scope for a single package.
    */
@@ -75,6 +73,16 @@ class PackageScope implements Scope {
     this();
     addPackage(packageName);
     buildTypes();
+  }
+
+
+  @Override
+  public Class<? extends DomainEntity> mapToScopeType(Class<? extends DomainEntity> baseType) throws NotInScopeException {
+    if(!baseTypeScopeTypeMap.containsKey(baseType)){
+      throw NotInScopeException.noTypeMatchesBaseType(baseType);
+    }
+
+    return baseTypeScopeTypeMap.get(baseType);
   }
 
   @Override
@@ -128,13 +136,16 @@ class PackageScope implements Scope {
   }
 
   private Builder<Class<? extends DomainEntity>> newBuilder() {
-    return new Builder<Class<? extends DomainEntity>>(new ClassComparator());
+    return new Builder<>(new ClassComparator());
   }
 
   private Set<Class<? extends DomainEntity>> buildBaseTypes() {
+
     Builder<Class<? extends DomainEntity>> builder = newBuilder();
     for (Class<? extends DomainEntity> type : types) {
-      builder.add(TypeRegistry.toBaseDomainEntity(type));
+      Class<? extends DomainEntity> baseType = TypeRegistry.toBaseDomainEntity(type);
+      baseTypeScopeTypeMap.put(baseType, type);
+      builder.add(baseType);
     }
     return builder.build();
   }

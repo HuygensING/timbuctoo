@@ -22,32 +22,55 @@ package nl.knaw.huygens.timbuctoo.vre;
  * #L%
  */
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
+import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import org.junit.Before;
+import org.junit.Test;
+import test.model.BaseDomainEntity;
+import test.model.BaseDomainEntityWithoutSubClasses;
+import test.model.projecta.SubADomainEntity;
+import test.model.projectb.SubBDomainEntity;
 
 import java.io.IOException;
 import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-
-import org.junit.Test;
-
-import test.variation.model.DomainEntityWithIndexAnnotations;
-import test.variation.model.projecta.ProjectADomainEntity;
-
-import com.google.common.collect.Lists;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 
 public class PackageScopeTest {
 
+  public static final Class<BaseDomainEntity> BASE_TYPE = BaseDomainEntity.class;
+  private PackageScope instance;
+
+  @Before
+  public void setup() throws IOException {
+    instance = new PackageScope("test.model.projecta");
+  }
+
   @Test
   public void testFilter() throws IOException {
-    PackageScope instance = new PackageScope("test.variation.model");
-
-    DomainEntity inScope = new DomainEntityWithIndexAnnotations();
-    DomainEntity outOfScope = new ProjectADomainEntity();
+    DomainEntity inScope = new SubADomainEntity();
+    DomainEntity outOfScope = new SubBDomainEntity();
     List<DomainEntity> entities = Lists.newArrayList(inScope, outOfScope);
 
     assertThat(instance.filter(entities), contains(inScope));
+  }
+
+
+  @Test
+  public void mapToScopeTypeReturnsTheTypeInScopeThatMatchesTheBaseType() throws Exception {
+    // action
+    Class<? extends DomainEntity> scopeType = instance.mapToScopeType(BASE_TYPE);
+
+    // verify
+    assertThat(scopeType, is(equalTo(SubADomainEntity.class)));
+  }
+
+  @Test(expected = NotInScopeException.class)
+  public void mapToScopeTypeThrowsANotInScopeExceptionWhenNoMatchIsFound() throws Exception {
+    instance.mapToScopeType(BaseDomainEntityWithoutSubClasses.class);
   }
 
 }
