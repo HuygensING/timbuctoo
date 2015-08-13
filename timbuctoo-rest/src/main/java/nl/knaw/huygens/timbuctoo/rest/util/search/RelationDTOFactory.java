@@ -39,12 +39,12 @@ public class RelationDTOFactory {
     RelationDTO dto = new RelationDTO();
 
     dto.setType(TypeNames.getInternalName(type));
-    String id = String.valueOf(dataRow.get(Entity.INDEX_FIELD_ID));
+    String id = getStringValue(dataRow.get(Entity.INDEX_FIELD_ID));
     dto.setId(id);
     dto.createPath(TypeNames.getExternalName(type), id);
 
-    String relTypeId = String.valueOf(dataRow.get(Relation.TYPE_ID_FACET_NAME));
-    RelationType relationType = repository.getEntityOrDefaultVariation(RelationType.class, relTypeId);
+    String relTypeId = getStringValue(dataRow.get(Relation.TYPE_ID_FACET_NAME));
+    RelationType relationType = repository.getRelationTypeById(relTypeId, true);
     dto.setRelationName(relationType.getRegularName());
 
 
@@ -59,16 +59,29 @@ public class RelationDTOFactory {
     return dto;
   }
 
-  private DomainEntityDTO createEntityDTO(VRE vre, Map<String, Object> dataRow, String idField, String typeField) throws NotInScopeException, SearchException, MappingException {
-    String id = String.valueOf(dataRow.get(idField));
-    String typeString = String.valueOf(dataRow.get(typeField));
+  private String getStringValue(Object obj) {
+    if (Iterable.class.isAssignableFrom(obj.getClass())) {
+      Iterable<?> iterable = (Iterable<?>) obj;
+      for (Object o : iterable) {
+        return String.valueOf(o);
+      }
 
-    Class<? extends DomainEntity> type = typeRegistry.getDomainEntityType(typeString);
+    }
+    return String.valueOf(obj);
+  }
+
+  private DomainEntityDTO createEntityDTO(VRE vre, Map<String, Object> dataRow, String idField, String typeField) throws NotInScopeException, SearchException, MappingException {
+    String id = getStringValue(dataRow.get(idField));
+    String typeString = getStringValue(dataRow.get(typeField));
+
+    // relations contain only base types
+    Class<? extends DomainEntity> baseType = typeRegistry.getDomainEntityType(typeString);
+    Class<? extends DomainEntity> type = vre.mapToScopeType(baseType);
     List<Map<String, Object>> data = vre.getRawDataFor(type, Lists.newArrayList(id));
     FieldNameMap fieldNameMap = fieldNameMapFactory.create(FieldNameMapFactory.Representation.INDEX, FieldNameMapFactory.Representation.CLIENT, type);
 
-    System.out.println("data: " + data.get(0));
     System.out.println("type: " + type);
+    System.out.println("data: " + data.get(0));
     System.out.println("fieldNameMap: " + fieldNameMap);
 
     return domainEntityDTOFactory.create(type, fieldNameMap, data.get(0));

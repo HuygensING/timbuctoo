@@ -26,7 +26,15 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 public class NotInScopeException extends Exception {
-  public NotInScopeException(Class<? extends DomainEntity> type, String vreId){
-    super(String.format("%s is not in the scope of %s", TypeNames.getExternalName(type), vreId));
+  private NotInScopeException(String message) {
+    super(message);
+  }
+
+  public static NotInScopeException noTypeMatchesBaseType(Class<? extends DomainEntity> baseType, VRE vre) {
+    return new NotInScopeException(String.format("No matching type for base type [%s] in vre [%s].", TypeNames.getExternalName(baseType), vre.getVreId()));
+  }
+
+  public static NotInScopeException typeIsNotInScope(Class<? extends DomainEntity> type, String vreId) {
+    return new NotInScopeException(String.format("%s is not in the scope of %s", TypeNames.getExternalName(type), vreId));
   }
 }

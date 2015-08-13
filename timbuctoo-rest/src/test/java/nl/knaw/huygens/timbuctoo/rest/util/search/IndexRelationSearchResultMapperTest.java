@@ -142,7 +142,7 @@ public class IndexRelationSearchResultMapperTest {
   @Test
   public void createThrowsARuntimeExceptionWhenGetRawDataForThrowsANotInScopeException() throws Exception {
     // setup
-    NotInScopeException notInScopeException = new NotInScopeException(TYPE, VRE_ID);
+    NotInScopeException notInScopeException = NotInScopeException.typeIsNotInScope(TYPE, VRE_ID);
     when(vre.getRawDataFor(TYPE, ID_SUBLIST)).thenThrow(notInScopeException);
 
     exception.expect(RuntimeException.class);

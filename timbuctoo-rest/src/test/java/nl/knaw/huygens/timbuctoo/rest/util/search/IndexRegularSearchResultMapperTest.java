@@ -163,7 +163,7 @@ public class IndexRegularSearchResultMapperTest {
   @Test
   public void createThrowsARuntimeExceptionWhenGetRawDataForThrowsANotInScopeException() throws Exception {
     // setup
-    NotInScopeException notInScopeException = new NotInScopeException(DEFAULT_TYPE, VRE_ID);
+    NotInScopeException notInScopeException = NotInScopeException.typeIsNotInScope(DEFAULT_TYPE, VRE_ID);
     when(vre.getRawDataFor(DEFAULT_TYPE, ID_SUBLIST)).thenThrow(notInScopeException);
 
     exception.expect(RuntimeException.class);

@@ -83,7 +83,7 @@ public class RelationDTOListFactoryTest {
     // setup
     expectedException.expect(SearchResultCreationException.class);
     expectedException.expectCause(any(NotInScopeException.class));
-    when(relationDTOFactory.create(vre, TYPE, DATA_ROW_1)).thenThrow(new NotInScopeException(TYPE, ""));
+    when(relationDTOFactory.create(vre, TYPE, DATA_ROW_1)).thenThrow(NotInScopeException.typeIsNotInScope(TYPE, ""));
 
     // action
     instance.create(vre, TYPE, RAW_DATA);

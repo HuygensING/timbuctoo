@@ -172,6 +172,11 @@ public class PackageVRE implements VRE {
     return scope.filter(entities);
   }
 
+  @Override
+  public Class<? extends DomainEntity> mapToScopeType(Class<? extends DomainEntity> baseType) throws NotInScopeException {
+    return scope.mapToScopeType(baseType);
+  }
+
   /******************************************************************************
    * Index methods
    ******************************************************************************/
@@ -308,7 +313,7 @@ public class PackageVRE implements VRE {
 
   private void throwNotInScopeExceptionWhenNotInScope(Class<? extends DomainEntity> type) throws NotInScopeException {
     if (!inScope(type)) {
-      throw new NotInScopeException(type, vreId);
+      throw NotInScopeException.typeIsNotInScope(type, vreId);
     }
   }
 

@@ -42,6 +42,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
+import test.timbuctoo.index.model.BaseType1;
 import test.timbuctoo.index.model.projecta.ProjectAType1;
 import test.timbuctoo.index.model.projecta.ProjectAType2;
 
@@ -55,6 +56,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -73,6 +75,7 @@ public class PackageVRETest {
   private static final int START = 0;
   private static final Map<String, Object> FILTERS = Maps.newHashMap();
   private static final String INDEX_NAME = "indexName";
+  public static final Class<BaseType1> BASE_TYPE = BaseType1.class;
 
   private final DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
   private final Index indexMock = mock(Index.class);
@@ -574,5 +577,26 @@ public class PackageVRETest {
 
     // action
     vre.getRawDataFor(TYPE, ids);
+  }
+
+  @Test
+  public void mapToScopeTypeTranslatesTheBaseEntityToTheTypeSpecificToTheVRE() throws Exception {
+    // setup
+    doReturn(TYPE).when(scopeMock).mapToScopeType(BASE_TYPE);
+    
+    // action
+    Class<? extends DomainEntity> scopeType = vre.mapToScopeType(BASE_TYPE);
+
+    // verify
+    assertThat(scopeType, is(sameInstance(TYPE)));
+  }
+
+  @Test(expected = NotInScopeException.class)
+  public void mapToScopeThrowsANotInScopeExceptionWhenThereIsNoTypeInScopeThatMatchesTheBaseType() throws Exception {
+    // setup
+    when(scopeMock.mapToScopeType(BASE_TYPE)).thenThrow(NotInScopeException.noTypeMatchesBaseType(BASE_TYPE, vre));
+
+    // action
+    Class<? extends DomainEntity> scopeType = vre.mapToScopeType(BASE_TYPE);
   }
 }

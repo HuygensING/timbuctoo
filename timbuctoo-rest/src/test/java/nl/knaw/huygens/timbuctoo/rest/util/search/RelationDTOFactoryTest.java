@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.RelationDTO;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.mapping.FieldNameMap;
@@ -20,6 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 import test.model.projecta.ProjectAPerson;
+import test.rest.model.BaseDomainEntity;
 import test.rest.model.projecta.ProjectADomainEntity;
 import test.rest.model.projecta.ProjectARelation;
 
@@ -45,9 +47,11 @@ import static org.mockito.Mockito.when;
 public class RelationDTOFactoryTest {
 
   private static final Class<? extends DomainEntity> SOURCE_TYPE = ProjectAPerson.class;
-  public static final String SOURCE_INTERNAL_NAME = TypeNames.getInternalName(SOURCE_TYPE);
+  public static final Class<? extends DomainEntity> SOURCE_BASE_TYPE = Person.class;
+  public static final String RELATION_SOURCE_NAME = TypeNames.getInternalName(SOURCE_BASE_TYPE);
   private static final Class<? extends DomainEntity> TARGET_TYPE = ProjectADomainEntity.class;
-  public static final String TARGET_INTERNAL_NAME = TypeNames.getInternalName(TARGET_TYPE);
+  public static final Class<? extends DomainEntity> TARGET_BASE_TYPE = BaseDomainEntity.class;
+  public static final String RELATION_TARGET_NAME = TypeNames.getInternalName(TARGET_BASE_TYPE);
   private static final Map<String, Object> SOURCE_DATA;
   private static final Map<String, Object> TARGET_DATA;
   private static final String SOURCE_ID = "sourceId";
@@ -113,29 +117,32 @@ public class RelationDTOFactoryTest {
     vre = mock(VRE.class);
     when(vre.getRawDataFor(SOURCE_TYPE, Lists.newArrayList(SOURCE_ID))).thenReturn(Lists.newArrayList(SOURCE_DATA));
     when(vre.getRawDataFor(TARGET_TYPE, Lists.newArrayList(TARGET_ID))).thenReturn(Lists.newArrayList(TARGET_DATA));
+
+    doReturn(SOURCE_TYPE).when(vre).mapToScopeType(SOURCE_BASE_TYPE);
+    doReturn(TARGET_TYPE).when(vre).mapToScopeType(TARGET_BASE_TYPE);
   }
 
   private void setupRepository() {
     repository = mock(Repository.class);
     relationType = new RelationType();
     relationType.setRegularName(RELATION_NAME);
-    when(repository.getEntityOrDefaultVariation(RELATION_TYPE_TYPE, TYPE_ID)).thenReturn(relationType);
+    when(repository.getRelationTypeById(TYPE_ID, true)).thenReturn(relationType);
   }
 
   private void setupTypeRegistry() {
     typeRegistry = mock(TypeRegistry.class);
-    doReturn(SOURCE_TYPE).when(typeRegistry).getDomainEntityType(SOURCE_INTERNAL_NAME);
-    doReturn(TARGET_TYPE).when(typeRegistry).getDomainEntityType(TARGET_INTERNAL_NAME);
+    doReturn(SOURCE_BASE_TYPE).when(typeRegistry).getDomainEntityType(RELATION_SOURCE_NAME);
+    doReturn(TARGET_BASE_TYPE).when(typeRegistry).getDomainEntityType(RELATION_TARGET_NAME);
   }
 
   private Map<String, Object> setupRelationData() {
     Map<String, Object> relationData = Maps.newHashMap();
-    relationData.put(Entity.INDEX_FIELD_ID, RELATION_ID);
-    relationData.put(INDEX_FIELD_SOURCE_TYPE, SOURCE_INTERNAL_NAME);
-    relationData.put(SOURCE_ID_FACET_NAME, SOURCE_ID);
-    relationData.put(INDEX_FIELD_TARGET_TYPE, TARGET_INTERNAL_NAME);
-    relationData.put(TARGET_ID_FACET_NAME, TARGET_ID);
-    relationData.put(TYPE_ID_FACET_NAME, TYPE_ID);
+    relationData.put(Entity.INDEX_FIELD_ID, Lists.newArrayList(RELATION_ID));
+    relationData.put(INDEX_FIELD_SOURCE_TYPE, Lists.newArrayList(RELATION_SOURCE_NAME));
+    relationData.put(SOURCE_ID_FACET_NAME, Lists.newArrayList(SOURCE_ID));
+    relationData.put(INDEX_FIELD_TARGET_TYPE, Lists.newArrayList(RELATION_TARGET_NAME));
+    relationData.put(TARGET_ID_FACET_NAME, Lists.newArrayList(TARGET_ID));
+    relationData.put(TYPE_ID_FACET_NAME, Lists.newArrayList(TYPE_ID));
     return relationData;
   }
 
@@ -185,7 +192,7 @@ public class RelationDTOFactoryTest {
   @Test(expected = NotInScopeException.class)
   public void createThrowsANotInScopeExceptionWhenTheVREThrowsNotInScopeException() throws Exception {
     // setup
-    when(vre.getRawDataFor(SOURCE_TYPE, Lists.newArrayList(SOURCE_ID))).thenThrow(new NotInScopeException(SOURCE_TYPE, "vreId"));
+    when(vre.getRawDataFor(SOURCE_TYPE, Lists.newArrayList(SOURCE_ID))).thenThrow(NotInScopeException.typeIsNotInScope(SOURCE_TYPE, "vreId"));
 
     // action
     instance.create(vre, RELATION_TYPE, relationData);

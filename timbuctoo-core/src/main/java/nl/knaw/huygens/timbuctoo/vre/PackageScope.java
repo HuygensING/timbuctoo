@@ -22,20 +22,19 @@ package nl.knaw.huygens.timbuctoo.vre;
  * #L%
  */
 
-import static com.google.common.base.Preconditions.checkState;
+import com.google.common.collect.ImmutableSortedSet.Builder;
+import com.google.common.collect.Lists;
+import com.google.common.reflect.ClassPath;
+import com.google.common.reflect.ClassPath.ClassInfo;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.util.ClassComparator;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.util.ClassComparator;
-
-import com.google.common.collect.ImmutableSortedSet.Builder;
-import com.google.common.collect.Lists;
-import com.google.common.reflect.ClassPath;
-import com.google.common.reflect.ClassPath.ClassInfo;
+import static com.google.common.base.Preconditions.checkState;
 
 class PackageScope implements Scope {
 
@@ -62,6 +61,12 @@ class PackageScope implements Scope {
 
     return filteredList;
   }
+
+  @Override
+  public Class<? extends DomainEntity> mapToScopeType(Class<? extends DomainEntity> baseType) throws NotInScopeException {
+    throw new UnsupportedOperationException("Not implemented yet");
+  }
+
 
   /**
    * Convenience constructor that creates a scope for a single package.

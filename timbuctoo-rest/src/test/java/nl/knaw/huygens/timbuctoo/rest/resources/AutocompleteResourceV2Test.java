@@ -206,7 +206,7 @@ public class AutocompleteResourceV2Test extends WebServiceTestSetup {
   public void getReturnsBadRequestWhenTheVREThrowsANotInScopeException() throws Exception {
     // setup
     VRE vre = mock(VRE.class);
-    NotInScopeException exception = new NotInScopeException(DEFAULT_TYPE, VRE_ID);
+    NotInScopeException exception = NotInScopeException.typeIsNotInScope(DEFAULT_TYPE, VRE_ID);
     when(vre.doRawSearch(DEFAULT_TYPE, SEARCH_PARAM, DEFAULT_START, DEFAULT_ROWS, Maps.<String, Object>newHashMap())).thenThrow(exception);
 
     makeVREAvailable(vre, VRE_ID);

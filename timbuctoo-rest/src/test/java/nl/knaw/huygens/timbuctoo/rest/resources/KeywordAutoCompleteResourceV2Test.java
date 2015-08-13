@@ -232,7 +232,7 @@ public class KeywordAutoCompleteResourceV2Test extends WebServiceTestSetup {
   public void getReturnsBadRequestWhenTheVREThrowsANotInScopeException() throws Exception {
     // setup
     VRE vre = mock(VRE.class);
-    NotInScopeException exception = new NotInScopeException(KEYWORD_TYPE, VRE_ID);
+    NotInScopeException exception = NotInScopeException.typeIsNotInScope(KEYWORD_TYPE, VRE_ID);
     when(vre.doRawSearch(KEYWORD_TYPE, SEARCH_PARAM, DEFAULT_START, DEFAULT_ROWS, NO_FILTERS)).thenThrow(exception);
 
     makeVREAvailable(vre, VRE_ID);
