@@ -25,6 +25,7 @@ package nl.knaw.huygens.timbuctoo.vre;
 import com.google.common.collect.ImmutableSortedSet.Builder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.reflect.ClassPath;
 import com.google.common.reflect.ClassPath.ClassInfo;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -32,25 +33,18 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.util.ClassComparator;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-
-import static com.google.common.base.Preconditions.checkState;
 
 class PackageScope implements Scope {
 
-  private ClassPath classPath;
-  private Builder<Class<? extends DomainEntity>> builder;
+  private Map<Class<? extends DomainEntity>, Class<? extends DomainEntity>> baseTypeScopeTypeMap;
 
-  private Set<Class<? extends DomainEntity>> types;
-  private Set<Class<? extends DomainEntity>> baseTypes;
-  private HashMap<Class<? extends DomainEntity>, Class<? extends DomainEntity>> baseTypeScopeTypeMap;
-
-  public PackageScope() throws IOException {
-    classPath = ClassPath.from(PackageScope.class.getClassLoader());
-    builder = newBuilder();
+  public PackageScope(String packageName) throws IOException {
     baseTypeScopeTypeMap = Maps.newHashMap();
+    addPackage(packageName);
   }
 
   @Override
@@ -66,19 +60,9 @@ class PackageScope implements Scope {
     return filteredList;
   }
 
-  /**
-   * Convenience constructor that creates a scope for a single package.
-   */
-  public PackageScope(String packageName) throws IOException {
-    this();
-    addPackage(packageName);
-    buildTypes();
-  }
-
-
   @Override
   public Class<? extends DomainEntity> mapToScopeType(Class<? extends DomainEntity> baseType) throws NotInScopeException {
-    if(!baseTypeScopeTypeMap.containsKey(baseType)){
+    if (!baseTypeScopeTypeMap.containsKey(baseType)) {
       throw NotInScopeException.noTypeMatchesBaseType(baseType);
     }
 
@@ -87,8 +71,12 @@ class PackageScope implements Scope {
 
   @Override
   public final Set<Class<? extends DomainEntity>> getPrimitiveEntityTypes() {
-    checkState(builder == null);
-    return baseTypes;
+    return Collections.unmodifiableSet(baseTypeScopeTypeMap.keySet());
+  }
+
+  @Override
+  public Set<Class<? extends DomainEntity>> getEntityTypes() {
+    return Collections.unmodifiableSet(Sets.newHashSet(baseTypeScopeTypeMap.values()));
   }
 
   /**
@@ -96,7 +84,7 @@ class PackageScope implements Scope {
    */
   @Override
   public <T extends DomainEntity> boolean inScope(Class<T> type, String id) {
-    return types.contains(type);
+    return containsType(type);
   }
 
   /**
@@ -104,55 +92,35 @@ class PackageScope implements Scope {
    */
   @Override
   public <T extends DomainEntity> boolean inScope(T entity) {
-    return types.contains(entity.getClass());
+    return containsType(entity.getClass());
   }
 
   @Override
   public <T extends DomainEntity> boolean inScope(Class<T> type) {
-    return types.contains(type);
+    return containsType(type);
   }
 
-  protected final void addPackage(String name) throws IOException {
-    checkState(builder != null);
+  private <T extends DomainEntity> boolean containsType(Class<T> type) {
+    return baseTypeScopeTypeMap.containsValue(type);
+  }
+
+  private final void addPackage(String name) throws IOException {
+    ClassPath classPath = ClassPath.from(PackageScope.class.getClassLoader());
     String packageName = name.replaceFirst("^timbuctoo", "nl.knaw.huygens.timbuctoo");
     for (ClassInfo info : classPath.getTopLevelClasses(packageName)) {
       addClass(info.load());
     }
   }
 
-  protected final void addClass(Class<?> cls) {
-    checkState(builder != null);
+  private final void addClass(Class<?> cls) {
     if (TypeRegistry.isDomainEntity(cls) && cls != DomainEntity.class) {
-      builder.add(TypeRegistry.toDomainEntity(cls));
-    }
-  }
-
-  protected final void buildTypes() {
-    checkState(builder != null);
-    types = builder.build();
-    baseTypes = buildBaseTypes();
-    builder = null;
-    classPath = null;
-  }
-
-  private Builder<Class<? extends DomainEntity>> newBuilder() {
-    return new Builder<>(new ClassComparator());
-  }
-
-  private Set<Class<? extends DomainEntity>> buildBaseTypes() {
-
-    Builder<Class<? extends DomainEntity>> builder = newBuilder();
-    for (Class<? extends DomainEntity> type : types) {
+      Class<DomainEntity> type = TypeRegistry.toDomainEntity(cls);
       Class<? extends DomainEntity> baseType = TypeRegistry.toBaseDomainEntity(type);
       baseTypeScopeTypeMap.put(baseType, type);
-      builder.add(baseType);
     }
-    return builder.build();
   }
-
-  @Override
-  public Set<Class<? extends DomainEntity>> getEntityTypes() {
-    return types;
+  private Builder<Class<? extends DomainEntity>> newBuilder() {
+    return new Builder<>(new ClassComparator());
   }
 
 }
