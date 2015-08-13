@@ -132,7 +132,7 @@ public class WWDocument extends Document {
 
   private static final DerivedProperty AUTHOR_GENDER = new DerivedProperty("authorGender", "isCreatedBy", "getGender", "getAuthorGender");
   private static final DerivedProperty GENRES = new DerivedProperty("genre", "hasGenre", "getIdentificationName", "getGenres");
-  private static final DerivedProperty LIBRARIES = new DerivedProperty("librarie", "isStoredAt", "getIdentificationName", "getLibraries");
+  private static final DerivedProperty LIBRARIES = new DerivedProperty("library", "isStoredAt", "getIdentificationName", "getLibraries");
   private static final DerivedProperty ORIGINS = new DerivedProperty("publishLocation", "hasPublishLocation", "getIdentificationName", "getOrigin");
   private static final List<DerivedProperty> DERIVED_PROPERTIES = ImmutableList.of(AUTHOR_GENDER, GENRES, LIBRARIES, ORIGINS);
 

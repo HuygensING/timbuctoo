@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rest.util.search;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
@@ -12,19 +14,39 @@ import java.util.Map;
 
 public class DomainEntityDTOFactory {
   private static final Logger LOG = LoggerFactory.getLogger(DomainEntityDTOFactory.class);
+
   public DomainEntityDTO create(Class<? extends DomainEntity> type, FieldNameMap fieldNameMap, Map<String, Object> data) {
     LOG.debug("fieldNameMap: {}", fieldNameMap);
-    LOG.debug("data: {}", data);
+    Map<String, Object> formattedData = format(data);
+    LOG.debug("data: {}", formattedData);
 
     DomainEntityDTO dto = new DomainEntityDTO();
 
-    dto.setId(getAsString(data, Entity.INDEX_FIELD_ID));
-    dto.setDisplayName(getAsString(data, Entity.INDEX_FIELD_IDENTIFICATION_NAME));
-    dto.setData(fieldNameMap.remap(data));
+    dto.setId(getAsString(formattedData, Entity.INDEX_FIELD_ID));
+    dto.setDisplayName(getAsString(formattedData, Entity.INDEX_FIELD_IDENTIFICATION_NAME));
+    dto.setData(fieldNameMap.remap(formattedData));
     dto.setType(type);
     dto.createPath(TypeNames.getExternalName(type));
 
     return dto;
+  }
+
+  private Map<String, Object> format(Map<String, Object> data) {
+    Map<String, Object> formattedMap = Maps.newHashMap();
+
+    for (Map.Entry<String, Object> entry : data.entrySet()) {
+      Object formattedValue = formatValue(entry.getValue());
+      formattedMap.put(entry.getKey(), formattedValue);
+    }
+
+    return formattedMap;
+  }
+
+  private Object formatValue(Object value) {
+    if (value instanceof Iterable) {
+      return Joiner.on(';').join((Iterable<?>) value);
+    }
+    return value;
   }
 
   private String getAsString(Map<String, Object> data, String key) {

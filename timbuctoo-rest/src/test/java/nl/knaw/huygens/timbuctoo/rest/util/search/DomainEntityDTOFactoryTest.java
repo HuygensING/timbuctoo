@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rest.util.search;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
@@ -8,7 +9,6 @@ import nl.knaw.huygens.timbuctoo.model.mapping.FieldNameMap;
 import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 import test.rest.model.projecta.ProjectADomainEntity;
 
 import java.util.Map;
@@ -18,6 +18,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class DomainEntityDTOFactoryTest {
 
@@ -44,13 +45,18 @@ public class DomainEntityDTOFactoryTest {
     fieldNameMap = mock(FieldNameMap.class);
     remappedData = Maps.newHashMap();
     remappedData.put(Entity.ID_PROPERTY_NAME, ID_VALUE);
-    Mockito.when(fieldNameMap.remap(data)).thenReturn(remappedData);
+
+    Map<String, Object>expectedMap = Maps.newHashMap();
+    expectedMap.put(Entity.INDEX_FIELD_ID, ID_VALUE);
+    expectedMap.put(Entity.INDEX_FIELD_IDENTIFICATION_NAME, DISPLAY_NAME);
+
+    when(fieldNameMap.remap(expectedMap)).thenReturn(remappedData);
   }
 
   private void setupData() {
     data = Maps.newHashMap();
-    data.put(Entity.INDEX_FIELD_ID, ID_VALUE);
-    data.put(Entity.INDEX_FIELD_IDENTIFICATION_NAME, DISPLAY_NAME);
+    data.put(Entity.INDEX_FIELD_ID, Lists.newArrayList(ID_VALUE));
+    data.put(Entity.INDEX_FIELD_IDENTIFICATION_NAME, Lists.newArrayList(DISPLAY_NAME));
   }
 
   @Test
@@ -73,14 +79,13 @@ public class DomainEntityDTOFactoryTest {
     DomainEntityDTO domainEntityDTO = instance.create(TYPE, fieldNameMap, data);
 
     // verify
-    hasKeyWithValue((Map<String, Object>)domainEntityDTO.getData(), Entity.ID_PROPERTY_NAME, ID_VALUE);
+    hasKeyWithValue((Map<String, Object>) domainEntityDTO.getData(), Entity.ID_PROPERTY_NAME, ID_VALUE);
   }
 
-  private <T,U> void hasKeyWithValue(Map<T,U> map, T expectedKey, U expectedValue) {
+  private <T, U> void hasKeyWithValue(Map<T, U> map, T expectedKey, U expectedValue) {
     MatcherAssert.assertThat(map.keySet(), hasItem(expectedKey));
     MatcherAssert.assertThat(map.get(expectedKey), is(expectedValue));
   }
-
 
 
 }
