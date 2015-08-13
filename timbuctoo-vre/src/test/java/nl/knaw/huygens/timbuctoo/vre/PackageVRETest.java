@@ -28,6 +28,7 @@ import com.google.common.collect.Sets;
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexCollection;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
@@ -41,8 +42,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
-import test.timbuctoo.index.model.ExplicitlyAnnotatedModel;
-import test.timbuctoo.index.model.Type1;
+import test.timbuctoo.index.model.projecta.ProjectAType1;
+import test.timbuctoo.index.model.projecta.ProjectAType2;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -63,10 +64,10 @@ import static org.mockito.Mockito.when;
 
 public class PackageVRETest {
 
-  private static final Class<Type1> OTHER_TYPE = Type1.class;
+  private static final Class<ProjectAType2> OTHER_TYPE = ProjectAType2.class;
   private static final String ID = "ID";
-  private static final Class<ExplicitlyAnnotatedModel> TYPE = ExplicitlyAnnotatedModel.class;
-  private static final String TYPE_STRING = "explicitlyannotatedmodel";
+  private static final Class<ProjectAType1> TYPE = ProjectAType1.class;
+  private static final String TYPE_STRING = TypeNames.getInternalName(TYPE);
   private static final String QUERY = "query";
   private static final int ROWS = 20;
   private static final int START = 0;
@@ -270,7 +271,7 @@ public class PackageVRETest {
     // setup
     List<DomainEntity> variations = Lists.newArrayList();
 
-    ExplicitlyAnnotatedModel entityInScope = mock(TYPE);
+    ProjectAType1 entityInScope = mock(TYPE);
     List<DomainEntity> filteredVariations = Lists.newArrayList();
     filteredVariations.add(entityInScope);
 
@@ -290,7 +291,7 @@ public class PackageVRETest {
     // setup
     List<DomainEntity> variations = Lists.newArrayList();
 
-    ExplicitlyAnnotatedModel entityInScope = mock(TYPE);
+    ProjectAType1 entityInScope = mock(TYPE);
     List<DomainEntity> filteredVariations = Lists.newArrayList();
     filteredVariations.add(entityInScope);
 
@@ -312,7 +313,7 @@ public class PackageVRETest {
     // setup
     List<DomainEntity> variations = Lists.newArrayList();
 
-    ExplicitlyAnnotatedModel entityInScope = mock(TYPE);
+    ProjectAType1 entityInScope = mock(TYPE);
     List<DomainEntity> filteredVariations = Lists.newArrayList();
     filteredVariations.add(entityInScope);
 
@@ -332,7 +333,7 @@ public class PackageVRETest {
     // setup
     List<DomainEntity> variations = Lists.newArrayList();
 
-    ExplicitlyAnnotatedModel entityInScope = mock(TYPE);
+    ProjectAType1 entityInScope = mock(TYPE);
     List<DomainEntity> filteredVariations = Lists.newArrayList();
     filteredVariations.add(entityInScope);
 
