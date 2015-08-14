@@ -64,6 +64,8 @@ public class Paths {
   public static final String ENTITY_PATH = "{" + ENTITY_PARAM + ": " + ENTITY_REGEX + "}";
   public static final String KEYWORD_PATH = "{" + ENTITY_PARAM + ": [a-z]*keywords}";
   public static final String AUTOCOMPLETE_PATH = "autocomplete";
+  public static final String ADMIN_PATH = "admin";
+  public static final String INDEX_REQUEST_PATH = "indexrequests";
 
 
   private Paths() {
