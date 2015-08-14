@@ -40,10 +40,11 @@ import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_FOR_MULTI_ENTITIES;
 
 public class Action {
 
-  private final ActionType actionType;
+  private ActionType actionType;
   private String id;
-  private final Class<? extends DomainEntity> type;
-  private final boolean forMultiEntities;
+  private  Class<? extends DomainEntity> type;
+  private boolean forMultiEntities;
+  private String requestId;
 
   public Action(ActionType actionType, Class<? extends DomainEntity> type, String id) {
     this.actionType = actionType;
@@ -56,6 +57,10 @@ public class Action {
     this.actionType = actionType;
     this.type = type;
     this.forMultiEntities = true;
+  }
+
+  public Action() {
+
   }
 
   public ActionType getActionType() {
@@ -125,5 +130,21 @@ public class Action {
 
   private static Action forMultiEntities(ActionType actionType, Class<? extends DomainEntity> type) {
     return new Action(actionType, type);
+  }
+
+  /**
+   * Get the request id, the id that matches the id of the (temporary) stored request.
+   * @return the request id
+   */
+  public String getRequestId() {
+    return requestId;
+  }
+
+  public static Action forRequestWithId(ActionType actionType, String id) {
+    Action action = new Action();
+    action.requestId = id;
+    action.actionType = actionType;
+
+    return action;
   }
 }

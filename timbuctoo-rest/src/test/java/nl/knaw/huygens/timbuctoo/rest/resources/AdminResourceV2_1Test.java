@@ -8,11 +8,14 @@ import nl.knaw.huygens.timbuctoo.index.IndexRequestStatus;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
+import nl.knaw.huygens.timbuctoo.rest.util.ClientIndexRequest;
 import org.junit.Before;
 import org.junit.Test;
+import test.model.projecta.SubADomainEntity;
 
 import javax.jms.JMSException;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 
 import static com.sun.jersey.api.client.ClientResponse.Status.CREATED;
 import static com.sun.jersey.api.client.ClientResponse.Status.INTERNAL_SERVER_ERROR;
@@ -21,17 +24,15 @@ import static com.sun.jersey.api.client.ClientResponse.Status.OK;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ADMIN_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.INDEX_REQUEST_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.V2_1_PATH;
-import static nl.knaw.huygens.timbuctoo.index.IndexRequest.INDEX_ALL;
 import static nl.knaw.huygens.timbuctoo.messages.Broker.INDEX_QUEUE;
 import static nl.knaw.huygens.timbuctoo.rest.resources.ActionMatcher.likeAction;
 import static nl.knaw.huygens.timbuctoo.rest.resources.AdminResourceV2_1.INDEX_PRODUCER;
-import static nl.knaw.huygens.timbuctoo.rest.resources.IndexRequestMatcher.likeIndexRequestMatcher;
+import static nl.knaw.huygens.timbuctoo.rest.resources.IndexRequestMatcher.likeIndexRequest;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -39,10 +40,12 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
 
   public static final String REQUEST_ID = "requestId";
   public static final String EXCEPTION_MESSAGE = "Exception message";
+  public static final Class<SubADomainEntity> TYPE = SubADomainEntity.class;
   private Broker broker;
   private Producer indexProducer;
   private int numberOfCollectionsToIndex;
   private IndexRequestStatus indexRequestStatus;
+  public static final ClientIndexRequest CLIENT_INDEX_REQUEST = new ClientIndexRequest(TYPE);
 
   @Before
   public void setup() throws JMSException {
@@ -64,35 +67,34 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
   }
 
   @Test
-  public void postIndexRequestCreatesATemporaryRestResourceAndFiresAnIndexMessageForEachCollection() throws Exception {
-    // action
-    ClientResponse response = indexRequestResource().post(ClientResponse.class);
-
-    String expectedLocationHeader = getExpectedLocationHeader(REQUEST_ID);
-
-    // verify
-    verifyResponseStatus(response, CREATED);
-    String location = response.getHeaders().getFirst(HttpHeaders.LOCATION);
-    assertThat(location, is(expectedLocationHeader));
-
-    verify(indexProducer, times(numberOfCollectionsToIndex)).send(argThat( //
-      likeAction() //
-        .withActionType(ActionType.MOD) //
-        .withForMultiEntitiesFlag(true)));
-    verify(indexRequestStatus).add(argThat(likeIndexRequestMatcher().withDesc(INDEX_ALL)));
-  }
-
-
-  @Test
   public void postIndexRequestReturnsAInternalServerErrorWhenTheProducerCouldNotBeRetrieved() throws Exception {
     // setup
     when(broker.getProducer(INDEX_PRODUCER, INDEX_QUEUE)).thenThrow(new JMSException(EXCEPTION_MESSAGE));
 
     // action
-    ClientResponse response = indexRequestResource().post(ClientResponse.class);
+    ClientResponse response = indexRequestResource().type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, CLIENT_INDEX_REQUEST);
 
     // verify
     verifyResponseStatus(response, INTERNAL_SERVER_ERROR);
+  }
+
+  @Test
+  public void postIndexRequestCreatesAnIndexRequestForTheCollectionAndPostsItToTheBroker() throws Exception {
+    // action
+    String expectedLocationHeader = getExpectedLocationHeader(REQUEST_ID);
+    ClientResponse response = indexRequestResource().accept(MediaType.APPLICATION_JSON_TYPE).type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, CLIENT_INDEX_REQUEST);
+
+    // verify
+    verifyResponseStatus(response, CREATED);
+
+    String location = response.getHeaders().getFirst(HttpHeaders.LOCATION);
+    assertThat(location, is(expectedLocationHeader));
+
+    verify(indexRequestStatus).add(argThat(likeIndexRequest().withType(TYPE)));
+    verify(indexProducer).send(argThat( //
+      likeAction() //
+        .withActionType(ActionType.MOD) //
+        .withRequestId(REQUEST_ID)));
   }
 
   @Test

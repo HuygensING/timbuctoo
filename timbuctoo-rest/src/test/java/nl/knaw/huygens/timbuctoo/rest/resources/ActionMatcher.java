@@ -55,4 +55,14 @@ public class ActionMatcher extends CompositeMatcher<Action> {
     });
     return this;
   }
+
+  public ActionMatcher withRequestId(String requestId) {
+    this.addMatcher(new PropertyEqualtityMatcher<Action, String>("requestId", requestId) {
+      @Override
+      protected String getItemValue(Action item) {
+        return item.getRequestId();
+      }
+    });
+    return this;
+  }
 }

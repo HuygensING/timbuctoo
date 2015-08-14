@@ -1,11 +1,14 @@
 package nl.knaw.huygens.timbuctoo.index;
 
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+
 public class IndexRequest {
 
   public static final String INDEX_ALL = "Index all";
   private String desc;
+  private Class<? extends DomainEntity> type;
 
-  private IndexRequest(){
+  private IndexRequest() {
 
   }
 
@@ -16,7 +19,7 @@ public class IndexRequest {
     return indexRequest;
   }
 
-  public void setDesc(String desc) {
+  private void setDesc(String desc) {
     this.desc = desc;
   }
 
@@ -26,5 +29,21 @@ public class IndexRequest {
 
   public String toClientRep() {
     return String.format("{\"desc\":\"%s\", \"status\":\"Running\"}", desc);
+  }
+
+  public Class<? extends DomainEntity> getType() {
+    return type;
+  }
+
+
+  public static IndexRequest forType(Class<? extends DomainEntity> type) {
+    IndexRequest indexRequest = new IndexRequest();
+    indexRequest.setType(type);
+    return indexRequest;
+  }
+
+  private void setType(Class<? extends DomainEntity> type) {
+    this.setDesc(String.format("Index request for [%s]", type));
+    this.type = type;
   }
 }

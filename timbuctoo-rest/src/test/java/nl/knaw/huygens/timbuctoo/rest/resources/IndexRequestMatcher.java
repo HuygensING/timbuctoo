@@ -3,13 +3,14 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualtityMatcher;
 import nl.knaw.huygens.timbuctoo.index.IndexRequest;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 public class IndexRequestMatcher extends CompositeMatcher<IndexRequest> {
   private IndexRequestMatcher() {
 
   }
 
-  public static IndexRequestMatcher likeIndexRequestMatcher() {
+  public static IndexRequestMatcher likeIndexRequest() {
     return new IndexRequestMatcher();
   }
 
@@ -22,5 +23,15 @@ public class IndexRequestMatcher extends CompositeMatcher<IndexRequest> {
       }
     });
     return this;
+  }
+
+public IndexRequestMatcher withType(Class<? extends DomainEntity> type) {
+  this.addMatcher(new PropertyEqualtityMatcher<IndexRequest, Class<? extends DomainEntity>>( "type", type) {
+    @Override
+    protected Class<? extends DomainEntity> getItemValue(IndexRequest item) {
+      return item.getType();
+    }
+  });
+  return this;
   }
 }
