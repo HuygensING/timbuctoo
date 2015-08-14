@@ -19,4 +19,8 @@ public class IndexRequest {
   public String getDesc() {
     return desc;
   }
+
+  public String toClientRep() {
+    return String.format("{\"desc\":\"%s\", \"status\":\"Running\"}", desc);
+  }
 }

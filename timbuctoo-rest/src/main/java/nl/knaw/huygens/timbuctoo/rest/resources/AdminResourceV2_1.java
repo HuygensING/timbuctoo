@@ -13,8 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.jms.JMSException;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -62,5 +64,16 @@ public class AdminResourceV2_1 {
       LOG.error("Exception thrown", e);
       return Response.serverError().entity("Could not handle request.").build();
     }
+  }
+
+  @GET
+  @Path(Paths.INDEX_REQUEST_PATH + Paths.ID_PATH)
+  public Response getIndexRequest(@PathParam(Paths.ID_PARAM) String id){
+    IndexRequest indexRequest = indexRequestStatus.get(id);
+    if(indexRequest == null){
+      return Response.status(Response.Status.NOT_FOUND).build();
+    }
+
+    return Response.ok(indexRequest.toClientRep()).build();
   }
 }

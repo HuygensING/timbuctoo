@@ -16,6 +16,8 @@ import javax.ws.rs.core.HttpHeaders;
 
 import static com.sun.jersey.api.client.ClientResponse.Status.CREATED;
 import static com.sun.jersey.api.client.ClientResponse.Status.INTERNAL_SERVER_ERROR;
+import static com.sun.jersey.api.client.ClientResponse.Status.NOT_FOUND;
+import static com.sun.jersey.api.client.ClientResponse.Status.OK;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ADMIN_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.INDEX_REQUEST_PATH;
 import static nl.knaw.huygens.timbuctoo.config.Paths.V2_1_PATH;
@@ -80,13 +82,6 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
     verify(indexRequestStatus).add(argThat(likeIndexRequestMatcher().withDesc(INDEX_ALL)));
   }
 
-  private String getExpectedLocationHeader(String requestId) {
-    return indexRequestResource().getUriBuilder().path(requestId).build().toString();
-  }
-
-  private WebResource indexRequestResource() {
-    return resource().path(V2_1_PATH).path(ADMIN_PATH).path(INDEX_REQUEST_PATH);
-  }
 
   @Test
   public void postIndexRequestReturnsAInternalServerErrorWhenTheProducerCouldNotBeRetrieved() throws Exception {
@@ -98,6 +93,40 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
 
     // verify
     verifyResponseStatus(response, INTERNAL_SERVER_ERROR);
+  }
+
+  @Test
+  public void getIndexRequestReturnsTheDescriptionOfTheIndexRequestAndThatItIsRunning() {
+    // setup
+    when(indexRequestStatus.get(REQUEST_ID)).thenReturn(IndexRequest.indexAll());
+
+    // action
+    ClientResponse response = indexRequestResource().path(REQUEST_ID).get(ClientResponse.class);
+
+    // verify
+    verifyResponseStatus(response, OK);
+    assertThat(response.getEntity(String.class), is(IndexRequest.indexAll().toClientRep()));
+  }
+
+  @Test
+  public void getIndexRequestReturnsNotFoundIfTheRequestCouldNotBeFound() {
+    // setup
+    when(indexRequestStatus.get(REQUEST_ID)).thenReturn(null);
+
+    // action
+    ClientResponse response = indexRequestResource().path(REQUEST_ID).get(ClientResponse.class);
+
+    // verify
+    verifyResponseStatus(response, NOT_FOUND);
+    verify(indexRequestStatus).get(REQUEST_ID);
+  }
+
+  private String getExpectedLocationHeader(String requestId) {
+    return indexRequestResource().getUriBuilder().path(requestId).build().toString();
+  }
+
+  private WebResource indexRequestResource() {
+    return resource().path(V2_1_PATH).path(ADMIN_PATH).path(INDEX_REQUEST_PATH);
   }
 
 }
