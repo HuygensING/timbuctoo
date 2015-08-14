@@ -18,13 +18,13 @@ public class IndexRequestStatusTest {
 
   @Mock
   private Cache<String, IndexRequest> cacheMock;
-  private IndexRequestStatus instance;
+  private IndexRequests instance;
   public static final IndexRequest INDEX_REQUEST = IndexRequest.indexAll();
 
   @Before
   public void setup() {
     MockitoAnnotations.initMocks(this);
-    instance = new IndexRequestStatus(cacheMock);
+    instance = new IndexRequests(cacheMock);
 
   }
 

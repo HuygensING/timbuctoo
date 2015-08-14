@@ -4,7 +4,7 @@ import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexRequest;
-import nl.knaw.huygens.timbuctoo.index.IndexRequestStatus;
+import nl.knaw.huygens.timbuctoo.index.IndexRequests;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
@@ -37,11 +37,11 @@ public class AdminResourceV2_1 {
   public static final String INDEX_PRODUCER = "IndexProducer";
   public static final Logger LOG = LoggerFactory.getLogger(AdminResourceV2_1.class);
   private final Broker broker;
-  private final IndexRequestStatus indexRequestStatus;
+  private final IndexRequests indexRequestStatus;
   private final TypeRegistry typeRegistry;
 
   @Inject
-  public AdminResourceV2_1(Broker broker, IndexRequestStatus indexRequestStatus, TypeRegistry typeRegistry) {
+  public AdminResourceV2_1(Broker broker, IndexRequests indexRequestStatus, TypeRegistry typeRegistry) {
     this.broker = broker;
     this.indexRequestStatus = indexRequestStatus;
     this.typeRegistry = typeRegistry;

@@ -33,7 +33,7 @@ import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
-import nl.knaw.huygens.timbuctoo.index.IndexRequestStatus;
+import nl.knaw.huygens.timbuctoo.index.IndexRequests;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
@@ -97,7 +97,7 @@ class ResourceTestModule extends JerseyServletModule {
   private VRECollection vreCollection;
   private AutocompleteResultConverter autoCompleteResultConverter;
   private AdditionalFilterTranslator additionalfilterTranslator;
-  private IndexRequestStatus indexRequestStatus;
+  private IndexRequests indexRequestStatus;
 
 
   public ResourceTestModule() {
@@ -128,7 +128,7 @@ class ResourceTestModule extends JerseyServletModule {
       additionalfilterTranslator = mock(AdditionalFilterTranslator.class);
       indexRegularSearchResultMapper = mock(IndexRegularSearchResultMapper.class);
       indexRelationSearchResultMapper = mock(IndexRelationSearchResultMapper.class);
-      indexRequestStatus = mock(IndexRequestStatus.class);
+      indexRequestStatus = mock(IndexRequests.class);
 
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -326,7 +326,7 @@ class ResourceTestModule extends JerseyServletModule {
 
   @Singleton
   @Provides
-  public IndexRequestStatus provideIndexRequestStatus(){
+  public IndexRequests provideIndexRequestStatus(){
     return indexRequestStatus;
   }
 }

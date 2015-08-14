@@ -4,7 +4,7 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexRequest;
-import nl.knaw.huygens.timbuctoo.index.IndexRequestStatus;
+import nl.knaw.huygens.timbuctoo.index.IndexRequests;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
@@ -44,7 +44,7 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
   private Broker broker;
   private Producer indexProducer;
   private int numberOfCollectionsToIndex;
-  private IndexRequestStatus indexRequestStatus;
+  private IndexRequests indexRequestStatus;
   public static final ClientIndexRequest CLIENT_INDEX_REQUEST = new ClientIndexRequest(TYPE);
 
   @Before
@@ -56,7 +56,7 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
   }
 
   private void setupIndexRequestStatus() {
-    indexRequestStatus = injector.getInstance(IndexRequestStatus.class);
+    indexRequestStatus = injector.getInstance(IndexRequests.class);
     when(indexRequestStatus.add(any(IndexRequest.class))).thenReturn(REQUEST_ID);
   }
 

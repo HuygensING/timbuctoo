@@ -6,16 +6,17 @@ import com.google.inject.Inject;
 
 import java.util.UUID;
 
-public class IndexRequestStatus {
+// FIXME: Should be removed when ActiveMQ is made persistent. See TIM-403 and TIM
+public class IndexRequests {
 
   private final Cache<String, IndexRequest> cache;
 
   @Inject
-  public IndexRequestStatus() {
+  public IndexRequests() {
     this(CacheBuilder.newBuilder().build());
   }
 
-  IndexRequestStatus(Cache<String, IndexRequest> cache) {
+  IndexRequests(Cache<String, IndexRequest> cache) {
     this.cache = cache;
   }
 
