@@ -17,6 +17,7 @@ import javax.jms.JMSException;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
+import static com.sun.jersey.api.client.ClientResponse.Status.BAD_REQUEST;
 import static com.sun.jersey.api.client.ClientResponse.Status.CREATED;
 import static com.sun.jersey.api.client.ClientResponse.Status.INTERNAL_SERVER_ERROR;
 import static com.sun.jersey.api.client.ClientResponse.Status.NOT_FOUND;
@@ -80,8 +81,10 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
 
   @Test
   public void postIndexRequestCreatesAnIndexRequestForTheCollectionAndPostsItToTheBroker() throws Exception {
-    // action
+    // setup
     String expectedLocationHeader = getExpectedLocationHeader(REQUEST_ID);
+
+    // action
     ClientResponse response = indexRequestResource().accept(MediaType.APPLICATION_JSON_TYPE).type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, CLIENT_INDEX_REQUEST);
 
     // verify
@@ -95,6 +98,18 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
       likeAction() //
         .withActionType(ActionType.MOD) //
         .withRequestId(REQUEST_ID)));
+  }
+
+  @Test
+  public void postIndexRequestReturnsABadRequestStatusWhenTheClientIndexRequestTypeIsNotNull() throws Exception {
+    // setup
+    ClientIndexRequest clientIndexRequest = new ClientIndexRequest();
+
+    // action
+    ClientResponse response = indexRequestResource().accept(MediaType.APPLICATION_JSON_TYPE).type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, clientIndexRequest);
+
+    // verify
+    verifyResponseStatus(response, BAD_REQUEST);
   }
 
   @Test

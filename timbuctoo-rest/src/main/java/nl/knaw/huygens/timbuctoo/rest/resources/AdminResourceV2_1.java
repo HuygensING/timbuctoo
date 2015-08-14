@@ -25,6 +25,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
 
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static nl.knaw.huygens.timbuctoo.messages.Broker.INDEX_QUEUE;
 
 @Path(Paths.V2_1_PATH + Paths.ADMIN_PATH)
@@ -50,6 +51,11 @@ public class AdminResourceV2_1 {
   @POST
   @Path(Paths.INDEX_REQUEST_PATH)
   public Response postIndexRequest(ClientIndexRequest clientRequest) {
+    if(clientRequest.getType() == null){
+
+      return Response.status(BAD_REQUEST).entity(new ExceptionMessage("\"type\" cannot be null")).build();
+    }
+
     try {
       Producer producer = broker.getProducer(INDEX_PRODUCER, INDEX_QUEUE);
       String id = indexRequestStatus.add(IndexRequest.forType(clientRequest.getType()));
@@ -76,5 +82,25 @@ public class AdminResourceV2_1 {
     }
 
     return Response.ok(indexRequest.toClientRep()).build();
+  }
+
+  private class ExceptionMessage {
+    private String message;
+
+    ExceptionMessage(String message){
+      this.message = message;
+    }
+
+    public ExceptionMessage(){
+
+    }
+
+    public String getMessage() {
+      return message;
+    }
+
+    public void setMessage(String message) {
+      this.message = message;
+    }
   }
 }
