@@ -5,6 +5,10 @@ public class IndexRequest {
   public static final String INDEX_ALL = "Index all";
   private String desc;
 
+  private IndexRequest(){
+
+  }
+
   public static IndexRequest indexAll() {
     IndexRequest indexRequest = new IndexRequest();
     indexRequest.setDesc(INDEX_ALL);
