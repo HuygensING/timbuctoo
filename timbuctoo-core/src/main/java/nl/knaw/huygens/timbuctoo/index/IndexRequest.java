@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.index;
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import java.time.LocalDateTime;
@@ -48,7 +49,7 @@ public class IndexRequest {
   }
 
   private void setType(Class<? extends DomainEntity> type) {
-    this.setDesc(String.format("Index request for [%s]", type));
+    this.setDesc(String.format("Index request for [%s]", TypeNames.getExternalName(type)));
     this.type = type;
   }
 
