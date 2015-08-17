@@ -17,7 +17,7 @@ public class IndexerFactory {
       case ADD:
         return new AddIndexer(repository, indexManager);
       case MOD:
-        return new UpdateIndexer();
+        return new UpdateIndexer(repository, indexManager);
       case DEL:
         return new DeleteIndexer();
       default:

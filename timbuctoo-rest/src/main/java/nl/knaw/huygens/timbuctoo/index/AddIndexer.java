@@ -19,7 +19,8 @@ class AddIndexer implements Indexer {
     Class<? extends DomainEntity> type = request.getType();
     request.inProgress();
     for (StorageIterator<? extends DomainEntity> domainEntities = repository.getDomainEntities(type); domainEntities.hasNext(); ) {
-      indexManager.addEntity(type, domainEntities.next().getId());
+      String id = domainEntities.next().getId();
+      indexManager.addEntity(type, id);
     }
     request.done();
   }
