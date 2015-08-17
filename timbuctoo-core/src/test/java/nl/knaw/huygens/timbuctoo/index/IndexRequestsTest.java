@@ -10,32 +10,53 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.mockito.Mockito.when;
 
 
 public class IndexRequestsTest {
 
   @Mock
-  private Cache<String, IndexRequest> cacheMock;
+  private Cache<String, IndexRequest> cache;
+
+  private IndexRequest indexRequest;
+  private static final int TIMEOUT = 100;
   private IndexRequests instance;
-  public static final IndexRequest INDEX_REQUEST = IndexRequest.indexAll();
 
   @Before
   public void setup() {
     MockitoAnnotations.initMocks(this);
-    instance = new IndexRequests();
-
+    indexRequest = IndexRequest.indexAll();
+    instance = new IndexRequests(TIMEOUT);
   }
 
   @Test
   public void addMakesItPossibleToRequestTheRequest() {
     // action
-    String id = instance.add(INDEX_REQUEST);
+    String id = instance.add(indexRequest);
 
     // verify
-    assertThat(instance.get(id), is(sameInstance(INDEX_REQUEST)));
+    assertThat(instance.get(id), is(sameInstance(indexRequest)));
 
   }
+
+  @Test
+  public void addInvalidatesDoneRequestsThatAreChangedMoreThanTheTimeoutAge() throws Exception {
+    // setup
+    String id = instance.add(indexRequest);
+    IndexRequest beforeDone = instance.get(id);
+    assertThat(beforeDone, is(sameInstance(this.indexRequest)));
+    beforeDone.done();
+
+    Thread.sleep(TIMEOUT);
+
+    // action
+    instance.add(IndexRequest.indexAll());
+
+    // verify
+    IndexRequest notFoundAfterTimeout = instance.get(id);
+    assertThat(notFoundAfterTimeout, is(nullValue()));
+
+  }
+
 
   @Test
   public void getReturnsNullWhenNotIndexRequestIsFound() throws Exception {
@@ -49,8 +70,23 @@ public class IndexRequestsTest {
     assertThat(indexRequest, is(nullValue()));
   }
 
-  private void noIndexRequestFoundFor(String id) {
-    when(cacheMock.getIfPresent(id)).thenReturn(null);
+  @Test
+  public void getInvalidatesDoneRequestsThatAreChangedMoreThanTheTimeoutAge() throws Exception {
+    // setup
+    String id = instance.add(indexRequest);
+    IndexRequest beforeDone = instance.get(id);
+    beforeDone.done();
+
+    // wait until the request has timed out
+    Thread.sleep(TIMEOUT);
+
+    // action
+    IndexRequest foundForLastTime = instance.get(id);
+
+    // verify
+    assertThat(foundForLastTime, is(sameInstance(indexRequest)));
+    IndexRequest notFoundAgain = instance.get(id);
+    assertThat(notFoundAgain, is(nullValue()));
   }
 
 }
