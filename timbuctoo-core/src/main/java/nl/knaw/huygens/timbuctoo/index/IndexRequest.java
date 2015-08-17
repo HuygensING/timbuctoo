@@ -7,9 +7,10 @@ public class IndexRequest {
   public static final String INDEX_ALL = "Index all";
   private String desc;
   private Class<? extends DomainEntity> type;
+  private Status status;
 
   private IndexRequest() {
-
+    status = Status.REQUESTED;
   }
 
   public static IndexRequest indexAll() {
@@ -45,5 +46,15 @@ public class IndexRequest {
   private void setType(Class<? extends DomainEntity> type) {
     this.setDesc(String.format("Index request for [%s]", type));
     this.type = type;
+  }
+
+  public Status getStatus() {
+    return status;
+  }
+
+  public enum Status {
+    REQUESTED,
+    IN_PROGRESS,
+    DONE
   }
 }

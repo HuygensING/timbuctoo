@@ -22,6 +22,7 @@ package nl.knaw.huygens.timbuctoo.messages;
  * #L%
  */
 
+import com.google.common.base.Strings;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -146,5 +147,9 @@ public class Action {
     action.actionType = actionType;
 
     return action;
+  }
+
+  public boolean hasRequestId() {
+    return !Strings.isNullOrEmpty(requestId);
   }
 }

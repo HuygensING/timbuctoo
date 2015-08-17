@@ -38,11 +38,15 @@ public class IndexService extends ConsumerService implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(IndexService.class);
 
   private final IndexManager manager;
+  private final IndexRequests indexRequests;
+  private final IndexerFactory indexerFactory;
 
   @Inject
-  public IndexService(IndexManager manager, Broker broker) throws JMSException {
+  public IndexService(IndexManager manager, Broker broker, IndexRequests indexRequests, IndexerFactory indexerFactory) throws JMSException {
     super(broker, Broker.INDEX_QUEUE, "IndexService");
     this.manager = manager;
+    this.indexRequests = indexRequests;
+    this.indexerFactory = indexerFactory;
   }
 
   /**
@@ -58,6 +62,21 @@ public class IndexService extends ConsumerService implements Runnable {
   @Override
   protected void executeAction(Action action) {
     // ignore multiple entity actions for now
+    if(action.hasRequestId()){
+      executeIndexRequestWithRequestId(action);
+    }
+
+    executeSimpleIndexRequest(action);
+  }
+
+  private void executeIndexRequestWithRequestId(Action action) {
+    IndexRequest indexRequest = indexRequests.get(action.getRequestId());
+    Indexer indexer = indexerFactory.create(action.getActionType());
+
+    indexer.executeFor(indexRequest);
+  }
+
+  private void executeSimpleIndexRequest(Action action) {
     if (!action.isForMultiEntities()) {
       ActionType actionType = action.getActionType();
       Class<? extends DomainEntity> type = action.getType();
