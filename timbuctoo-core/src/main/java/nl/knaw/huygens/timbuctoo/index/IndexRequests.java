@@ -3,10 +3,12 @@ package nl.knaw.huygens.timbuctoo.index;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 import java.util.UUID;
 
 // FIXME: Should be removed when ActiveMQ is made persistent. See TIM-403 and TIM
+@Singleton
 public class IndexRequests {
 
   private final Cache<String, IndexRequest> cache;
