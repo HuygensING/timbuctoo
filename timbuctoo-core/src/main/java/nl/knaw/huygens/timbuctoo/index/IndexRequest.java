@@ -29,7 +29,7 @@ public class IndexRequest {
   }
 
   public String toClientRep() {
-    return String.format("{\"desc\":\"%s\", \"status\":\"Running\"}", desc);
+    return String.format("{\"desc\":\"%s\", \"status\":\"%s\"}", desc, status);
   }
 
   public Class<? extends DomainEntity> getType() {
