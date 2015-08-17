@@ -63,11 +63,11 @@ public class IndexService extends ConsumerService implements Runnable {
   @Override
   protected void executeAction(Action action) {
     // ignore multiple entity actions for now
-    if(action.hasRequestId()){
+    if (action.hasRequestId()) {
       executeIndexRequestWithRequestId(action);
+    } else {
+      executeSimpleIndexRequest(action);
     }
-
-    executeSimpleIndexRequest(action);
   }
 
   private void executeIndexRequestWithRequestId(Action action) {
@@ -78,7 +78,8 @@ public class IndexService extends ConsumerService implements Runnable {
       indexer.executeFor(indexRequest);
     } catch (IndexException e) {
       getLogger().error("Error indexing ({}) object of type {}", action.getActionType(), indexRequest.getType());
-      getLogger().debug("Exception while indexing", e);    }
+      getLogger().debug("Exception while indexing", e);
+    }
   }
 
   private void executeSimpleIndexRequest(Action action) {

@@ -12,6 +12,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 public class IndexServiceTest {
 
@@ -31,7 +32,8 @@ public class IndexServiceTest {
     IndexerFactory indexerFactory = mock(IndexerFactory.class);
     Indexer indexer = mock(Indexer.class);
     Mockito.when(indexerFactory.create(ACTION_TYPE)).thenReturn(indexer);
-    IndexService instance = new IndexService(mock(IndexManager.class), mock(Broker.class), indexRequests, indexerFactory);
+    IndexManager indexManager = mock(IndexManager.class);
+    IndexService instance = new IndexService(indexManager, mock(Broker.class), indexRequests, indexerFactory);
 
     // action
     instance.executeAction(ACTION_WITH_REQUEST_ID);
@@ -41,5 +43,6 @@ public class IndexServiceTest {
     assertThat(indexRequest.getStatus(), is(IndexRequest.Status.REQUESTED));
 
     verify(indexer).executeFor(indexRequest);
+    verifyZeroInteractions(indexManager);
   }
 }
