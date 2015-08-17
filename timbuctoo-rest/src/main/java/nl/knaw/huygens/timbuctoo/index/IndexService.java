@@ -73,7 +73,11 @@ public class IndexService extends ConsumerService implements Runnable {
     IndexRequest indexRequest = indexRequests.get(action.getRequestId());
     Indexer indexer = indexerFactory.create(action.getActionType());
 
-    indexer.executeFor(indexRequest);
+    try {
+      indexer.executeFor(indexRequest);
+    } catch (IndexException e) {
+      getLogger().error("Error indexing ({}) object of type {}", action.getActionType(), indexRequest.getType());
+      getLogger().debug("Exception while indexing", e);    }
   }
 
   private void executeSimpleIndexRequest(Action action) {
@@ -97,7 +101,7 @@ public class IndexService extends ConsumerService implements Runnable {
             this.stop(); //stop the Runnable
         }
       } catch (IndexException ex) {
-        getLogger().error("Error indexing ({}) object of type {} with id {}", new Object[]{actionType, type, id});
+        getLogger().error("Error indexing ({}) object of type {} with id {}", actionType, type, id);
         getLogger().debug("Exception while indexing", ex);
       }
     }

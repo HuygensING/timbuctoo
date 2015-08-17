@@ -52,6 +52,14 @@ public class IndexRequest {
     return status;
   }
 
+  public void inProgress() {
+    status = Status.IN_PROGRESS;
+  }
+
+  public void done() {
+    status = Status.DONE;
+  }
+
   public enum Status {
     REQUESTED,
     IN_PROGRESS,

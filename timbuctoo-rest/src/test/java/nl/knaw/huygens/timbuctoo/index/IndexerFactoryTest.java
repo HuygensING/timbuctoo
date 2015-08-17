@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.index;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import org.hamcrest.Matchers;
 import org.junit.Before;
@@ -8,6 +9,7 @@ import org.junit.Test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.mockito.Mockito.mock;
 
 public class IndexerFactoryTest {
 
@@ -15,7 +17,7 @@ public class IndexerFactoryTest {
 
   @Before
   public void setUp() throws Exception {
-    instance = new IndexerFactory();
+    instance = new IndexerFactory(mock(Repository.class), mock(IndexManager.class));
   }
 
   @Test
