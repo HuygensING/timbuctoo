@@ -34,6 +34,7 @@ public interface Broker {
   String PROP_ENTITY_TYPE = "type";
   String PROP_ENTITY_ID = "id";
   String PROP_FOR_MULTI_ENTITIES = "multiEntity";
+  String PROP_REQUEST_ID ="requestId";
 
   /**
    * Returns the message producer with the specified name that writes

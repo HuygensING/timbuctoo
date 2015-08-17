@@ -38,12 +38,13 @@ import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_ACTION;
 import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_ENTITY_ID;
 import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_ENTITY_TYPE;
 import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_FOR_MULTI_ENTITIES;
+import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_REQUEST_ID;
 
 public class Action {
 
   private ActionType actionType;
   private String id;
-  private  Class<? extends DomainEntity> type;
+  private Class<? extends DomainEntity> type;
   private boolean forMultiEntities;
   private String requestId;
 
@@ -99,10 +100,15 @@ public class Action {
     Message message = session.createMessage();
 
     message.setStringProperty(PROP_ACTION, actionType.getStringRepresentation());
-    message.setStringProperty(PROP_ENTITY_TYPE, TypeNames.getInternalName(type));
-    message.setBooleanProperty(PROP_FOR_MULTI_ENTITIES, forMultiEntities);
-    if (!forMultiEntities) {
-      message.setStringProperty(PROP_ENTITY_ID, id);
+
+    if (hasRequestId()) {
+      message.setStringProperty(PROP_REQUEST_ID, requestId);
+    } else {
+      message.setStringProperty(PROP_ENTITY_TYPE, TypeNames.getInternalName(type));
+      message.setBooleanProperty(PROP_FOR_MULTI_ENTITIES, forMultiEntities);
+      if (!forMultiEntities) {
+        message.setStringProperty(PROP_ENTITY_ID, id);
+      }
     }
 
     return message;
@@ -113,20 +119,33 @@ public class Action {
   }
 
   public static Action fromMessage(Message message, TypeRegistry typeRegistry) throws JMSException {
+    ActionType actionType = getActionType(message);
+    String requestId = message.getStringProperty(PROP_REQUEST_ID);
+    if(requestId != null){
+      return forRequestWithId(actionType, requestId);
+    }
+
     boolean forMultiEntities = message.getBooleanProperty(PROP_FOR_MULTI_ENTITIES);
-    String actionString = message.getStringProperty(PROP_ACTION);
-    ActionType actionType = ActionType.getFromString(actionString);
 
     String typeString = message.getStringProperty(PROP_ENTITY_TYPE);
     Class<? extends DomainEntity> type = typeRegistry.getDomainEntityType(typeString);
 
-    if(forMultiEntities){
+
+
+    if (forMultiEntities) {
       return forMultiEntities(actionType, type);
     }
+
+
 
     String id = message.getStringProperty(PROP_ENTITY_ID);
 
     return new Action(actionType, type, id);
+  }
+
+  private static ActionType getActionType(Message message) throws JMSException {
+    String actionString = message.getStringProperty(PROP_ACTION);
+    return ActionType.getFromString(actionString);
   }
 
   private static Action forMultiEntities(ActionType actionType, Class<? extends DomainEntity> type) {
@@ -135,6 +154,7 @@ public class Action {
 
   /**
    * Get the request id, the id that matches the id of the (temporary) stored request.
+   *
    * @return the request id
    */
   public String getRequestId() {
