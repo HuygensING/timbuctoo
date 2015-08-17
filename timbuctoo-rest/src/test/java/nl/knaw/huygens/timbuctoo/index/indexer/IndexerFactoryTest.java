@@ -1,6 +1,12 @@
-package nl.knaw.huygens.timbuctoo.index;
+package nl.knaw.huygens.timbuctoo.index.indexer;
 
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.index.Indexer;
+import nl.knaw.huygens.timbuctoo.index.indexer.AddIndexer;
+import nl.knaw.huygens.timbuctoo.index.indexer.DeleteIndexer;
+import nl.knaw.huygens.timbuctoo.index.indexer.IndexerFactory;
+import nl.knaw.huygens.timbuctoo.index.indexer.UpdateIndexer;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import org.hamcrest.Matchers;
 import org.junit.Before;
