@@ -39,7 +39,7 @@ import static org.mockito.Mockito.when;
 
 public class AdminResourceV2_1Test extends WebServiceTestSetup {
 
-  public static final String REQUEST_ID = "requestId";
+  public static final String REQUEST_ID = "7659943b-bdee-4ad3-b8fc-a0f1329d6e9f";
   public static final String EXCEPTION_MESSAGE = "Exception message";
   public static final Class<SubADomainEntity> TYPE = SubADomainEntity.class;
   private Broker broker;

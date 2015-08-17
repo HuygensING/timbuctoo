@@ -41,6 +41,7 @@ public class Paths {
   public static final String ID_REGEX = "[a-zA-Z]{4}" + ID_VALUE_REGEX;
   public static final String ID_PARAM = "id";
   public static final String ID_PATH = "/{id: " + ID_REGEX + "}";
+  public static final String INDEX_REQUEST_ID_VALUE_PATH = "/{id: " + ID_VALUE_REGEX + "}";
   public static final String PID_PATH = "/pid";
   public static final String UPDATE_PID_PATH = "/updatepid";
   /** The path of the {@code UserResource} */

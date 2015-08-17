@@ -19,6 +19,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -51,7 +52,7 @@ public class AdminResourceV2_1 {
   @POST
   @Path(Paths.INDEX_REQUEST_PATH)
   public Response postIndexRequest(ClientIndexRequest clientRequest) {
-    if(clientRequest.getType() == null){
+    if (clientRequest.getType() == null) {
 
       return Response.status(BAD_REQUEST).entity(new ExceptionMessage("\"type\" cannot be null")).build();
     }
@@ -74,8 +75,11 @@ public class AdminResourceV2_1 {
   }
 
   @GET
-  @Path(Paths.INDEX_REQUEST_PATH + Paths.ID_PATH)
+  @Path(Paths.INDEX_REQUEST_PATH + Paths.INDEX_REQUEST_ID_VALUE_PATH)
+  @Produces(MediaType.APPLICATION_JSON)
   public Response getIndexRequest(@PathParam(Paths.ID_PARAM) String id) {
+    LOG.info("id: " + id);
+
     IndexRequest indexRequest = indexRequestStatus.get(id);
     if (indexRequest == null) {
       return Response.status(Response.Status.NOT_FOUND).build();
@@ -87,11 +91,11 @@ public class AdminResourceV2_1 {
   private class ExceptionMessage {
     private String message;
 
-    ExceptionMessage(String message){
+    ExceptionMessage(String message) {
       this.message = message;
     }
 
-    public ExceptionMessage(){
+    public ExceptionMessage() {
 
     }
 
