@@ -2,15 +2,19 @@ package nl.knaw.huygens.timbuctoo.index;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
+import java.time.LocalDateTime;
+
 public class IndexRequest {
 
   public static final String INDEX_ALL = "Index all";
   private String desc;
   private Class<? extends DomainEntity> type;
   private Status status;
+  private LocalDateTime lastChanged;
 
   private IndexRequest() {
     status = Status.REQUESTED;
+    lastChanged = LocalDateTime.now();
   }
 
   public static IndexRequest indexAll() {
@@ -54,10 +58,16 @@ public class IndexRequest {
 
   public void inProgress() {
     status = Status.IN_PROGRESS;
+    lastChanged = LocalDateTime.now();
   }
 
   public void done() {
     status = Status.DONE;
+    lastChanged = LocalDateTime.now();
+  }
+
+  public LocalDateTime getLastChanged() {
+    return lastChanged;
   }
 
   public enum Status {
