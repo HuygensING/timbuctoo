@@ -1,23 +1,21 @@
 package nl.knaw.huygens.timbuctoo.rest.util;
 
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-
 public class ClientIndexRequest {
-  private Class<? extends DomainEntity> type;
+  private String collectionName;
 
   public ClientIndexRequest(){
 
   }
 
-  public ClientIndexRequest(Class<? extends DomainEntity> type) {
-    this.type = type;
+  public ClientIndexRequest(String collectionName) {
+    this.collectionName = collectionName;
   }
 
-  public Class<? extends DomainEntity> getType() {
-    return type;
+  public String getCollectionName() {
+    return collectionName;
   }
 
-  public void setType(Class<? extends DomainEntity> type) {
-    this.type = type;
+  public void setCollectionName(String collectionName) {
+    this.collectionName = collectionName;
   }
 }

@@ -2,12 +2,14 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
 
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexRequest;
 import nl.knaw.huygens.timbuctoo.index.IndexRequests;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
+import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.rest.util.ClientIndexRequest;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,13 +48,14 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
   private Producer indexProducer;
   private int numberOfCollectionsToIndex;
   private IndexRequests indexRequestStatus;
-  public static final ClientIndexRequest CLIENT_INDEX_REQUEST = new ClientIndexRequest(TYPE);
+  public static final ClientIndexRequest CLIENT_INDEX_REQUEST = new ClientIndexRequest(TypeNames.getExternalName(TYPE));
 
   @Before
-  public void setup() throws JMSException {
+  public void setup() throws JMSException, ModelException {
     setupBroker();
     setupIndexRequestStatus();
     TypeRegistry typeRegistry = injector.getInstance(TypeRegistry.class);
+    typeRegistry.init(TYPE.getPackage().getName());
     numberOfCollectionsToIndex = typeRegistry.getPrimitiveDomainEntityTypes().size();
   }
 
@@ -101,9 +104,21 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
   }
 
   @Test
-  public void postIndexRequestReturnsABadRequestStatusWhenTheClientIndexRequestTypeIsNotNull() throws Exception {
+  public void postIndexRequestReturnsABadRequestStatusWhenTheClientIndexRequestCollectionNameIsNotNull() throws Exception {
     // setup
     ClientIndexRequest clientIndexRequest = new ClientIndexRequest();
+
+    // action
+    ClientResponse response = indexRequestResource().accept(MediaType.APPLICATION_JSON_TYPE).type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, clientIndexRequest);
+
+    // verify
+    verifyResponseStatus(response, BAD_REQUEST);
+  }
+
+  @Test
+  public void postIndexRequestReturnsABadRequestStatusWhenTheClientIndexRequestCollectionNameIsNotValid() throws Exception {
+    // setup
+    ClientIndexRequest clientIndexRequest = new ClientIndexRequest("invalid collection");
 
     // action
     ClientResponse response = indexRequestResource().accept(MediaType.APPLICATION_JSON_TYPE).type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class, clientIndexRequest);

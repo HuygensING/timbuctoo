@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.util.ClientIndexRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,14 +53,22 @@ public class AdminResourceV2_1 {
   @POST
   @Path(Paths.INDEX_REQUEST_PATH)
   public Response postIndexRequest(ClientIndexRequest clientRequest) {
-    if (clientRequest.getType() == null) {
+    String collectionName = clientRequest.getCollectionName();
+    if (collectionName == null) {
 
       return Response.status(BAD_REQUEST).entity(new ExceptionMessage("\"type\" cannot be null")).build();
     }
 
+    Class<? extends DomainEntity> type = typeRegistry.getTypeForXName(collectionName);
+
+    if (type == null) {
+      return Response.status(BAD_REQUEST).entity(new ExceptionMessage(String.format("[%s] is not a valid collection.", collectionName))).build();
+    }
+
     try {
       Producer producer = broker.getProducer(INDEX_PRODUCER, INDEX_QUEUE);
-      String id = indexRequestStatus.add(IndexRequest.forType(clientRequest.getType()));
+
+      String id = indexRequestStatus.add(IndexRequest.forType(type));
 
       producer.send(Action.forRequestWithId(ActionType.MOD, id));
 
