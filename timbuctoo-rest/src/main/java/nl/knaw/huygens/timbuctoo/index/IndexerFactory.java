@@ -19,7 +19,7 @@ public class IndexerFactory {
       case MOD:
         return new UpdateIndexer(repository, indexManager);
       case DEL:
-        return new DeleteIndexer();
+        return new DeleteIndexer(repository, indexManager);
       default:
         throw new IllegalArgumentException(String.format("[%s] is not supported by the IndexFactory.", actionType));
     }
