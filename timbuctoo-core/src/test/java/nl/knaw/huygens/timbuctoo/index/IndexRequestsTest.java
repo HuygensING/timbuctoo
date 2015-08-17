@@ -14,7 +14,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
-public class IndexRequestStatusTest {
+public class IndexRequestsTest {
 
   @Mock
   private Cache<String, IndexRequest> cacheMock;
