@@ -71,10 +71,10 @@
 
     <h2>Relation Query</h2>
     <table>
-        <tr>
-            <td>Relation types</td>
-            <td><select multiple id="relation_types"></select></td>
-        </tr>
+        <!--<tr>-->
+            <!--<td>Relation types</td>-->
+            <!--<td><select multiple id="relation_types"></select></td>-->
+        <!--</tr>-->
         <tr>
             <td>Source Query</td>
             <td><input name="" type="text" size="50" id="searchid1"/></td>
@@ -231,18 +231,18 @@
   }
 
   $(document).ready(function() {
-    $.ajax({
+    /*$.ajax({
       url: baseUrl +'system/vres/WomenWriters',
       type: 'GET',
       success: function(data) {
-	$.each(data.receptions, function(i, item){
-	   var option = $('<option>');
-	   option.attr('value', item.typeId);
-	   option.append(item.regularName);
-	   $('#relation_types').append(option);
+	    $.each(data.receptions, function(i, item){
+	        var option = $('<option>');
+	        option.attr('value', item.typeId);
+	        option.append(item.regularName);
+	        $('#relation_types').append(option);
         });
       }
-    });
+    });*/
 	
     $('#searchcollection1').val('wwpersons');
     $('#searchtext1').val('Zuylen');
