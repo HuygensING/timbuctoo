@@ -22,19 +22,6 @@ package nl.knaw.huygens.timbuctoo.rest.filters;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
-import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.USER_ID_KEY;
-
-import java.util.Collections;
-import java.util.List;
-
-import javax.ws.rs.core.SecurityContext;
-
-import nl.knaw.huygens.timbuctoo.model.User;
-import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
-import nl.knaw.huygens.timbuctoo.security.UserSecurityContext;
-import nl.knaw.huygens.timbuctoo.security.VREAuthorizationHandler;
-
 import com.google.inject.Inject;
 import com.sun.jersey.api.model.AbstractMethod;
 import com.sun.jersey.spi.container.ContainerRequest;
@@ -42,6 +29,19 @@ import com.sun.jersey.spi.container.ContainerRequestFilter;
 import com.sun.jersey.spi.container.ContainerResponseFilter;
 import com.sun.jersey.spi.container.ResourceFilter;
 import com.sun.jersey.spi.container.ResourceFilterFactory;
+import nl.knaw.huygens.timbuctoo.model.User;
+import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
+import nl.knaw.huygens.timbuctoo.security.UserSecurityContext;
+import nl.knaw.huygens.timbuctoo.security.VREAuthorizationHandler;
+
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
+import java.util.Collections;
+import java.util.List;
+
+import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
+import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.USER_ID_KEY;
 
 public class UserResourceFilterFactory implements ResourceFilterFactory {
   private final VREAuthorizationHandler vreAuthorizationHandler;
@@ -60,7 +60,7 @@ public class UserResourceFilterFactory implements ResourceFilterFactory {
    * A resource filter that sets the user and the VRE as query parameters, 
    * and retrieves the vreAuthorization of the user.
    */
-  private static class UserResourceFilter implements ResourceFilter, ContainerRequestFilter {
+  static class UserResourceFilter implements ResourceFilter, ContainerRequestFilter {
     private final VREAuthorizationHandler vreAuthorizationHandler;
 
     public UserResourceFilter(VREAuthorizationHandler vreAuthorizationHandler) {
@@ -73,6 +73,9 @@ public class UserResourceFilterFactory implements ResourceFilterFactory {
 
       if (securityContext instanceof UserSecurityContext) {
         User user = ((UserSecurityContext) securityContext).getUser();
+        if(user == null){
+          throw new WebApplicationException(Response.Status.UNAUTHORIZED);
+        }
         String userId = user.getId();
         String vreId = request.getHeaderValue(VRE_ID_KEY);
 

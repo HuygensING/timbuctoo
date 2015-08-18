@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import test.variation.model.projecta.ProjectADomainEntity;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -14,6 +15,7 @@ import static org.hamcrest.Matchers.sameInstance;
 
 public class IndexRequestsTest {
 
+  public static final Class<ProjectADomainEntity> TYPE = ProjectADomainEntity.class;
   @Mock
   private Cache<String, IndexRequest> cache;
 
@@ -24,7 +26,7 @@ public class IndexRequestsTest {
   @Before
   public void setup() {
     MockitoAnnotations.initMocks(this);
-    indexRequest = IndexRequest.indexAll();
+    indexRequest = IndexRequest.forType(TYPE);
     instance = new IndexRequests(TIMEOUT);
   }
 
@@ -49,7 +51,7 @@ public class IndexRequestsTest {
     Thread.sleep(TIMEOUT);
 
     // action
-    instance.add(IndexRequest.indexAll());
+    instance.add(IndexRequest.forType(TYPE));
 
     // verify
     IndexRequest notFoundAfterTimeout = instance.get(id);
