@@ -36,14 +36,12 @@ public class IndexService extends ConsumerService implements Runnable {
 
   private static final Logger LOG = LoggerFactory.getLogger(IndexService.class);
 
-  private final IndexManager manager;
   private final IndexRequests indexRequests;
   private final IndexerFactory indexerFactory;
 
   @Inject
-  public IndexService(IndexManager manager, Broker broker, IndexRequests indexRequests, IndexerFactory indexerFactory) throws JMSException {
+  public IndexService(Broker broker, IndexRequests indexRequests, IndexerFactory indexerFactory) throws JMSException {
     super(broker, Broker.INDEX_QUEUE, "IndexService");
-    this.manager = manager;
     this.indexRequests = indexRequests;
     this.indexerFactory = indexerFactory;
   }

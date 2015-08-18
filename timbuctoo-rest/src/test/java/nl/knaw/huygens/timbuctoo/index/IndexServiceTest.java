@@ -12,7 +12,6 @@ import test.rest.model.projecta.ProjectADomainEntity;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 
 public class IndexServiceTest {
 
@@ -22,7 +21,6 @@ public class IndexServiceTest {
   public static final Class<ProjectADomainEntity> TYPE = ProjectADomainEntity.class;
   public static final String ENTITY_ID = "entityId";
   public static final Action ACTION_FOR_SINGLE_ENTITY = new Action(ACTION_TYPE, TYPE, ENTITY_ID);
-  private IndexManager indexManager;
   private Indexer indexer;
   private IndexerFactory indexerFactory;
   private IndexRequest indexRequest;
@@ -32,10 +30,9 @@ public class IndexServiceTest {
 
   @Before
   public void setUp() throws Exception {
-    indexManager = mock(IndexManager.class);
     setupIndexerFactory();
     setupIndexRequests();
-    instance = new IndexService(indexManager, mock(Broker.class), indexRequests, indexerFactory);
+    instance = new IndexService(mock(Broker.class), indexRequests, indexerFactory);
   }
 
   private void setupIndexerFactory() {
@@ -57,7 +54,6 @@ public class IndexServiceTest {
 
     // verify
     verify(indexer).executeFor(indexRequest);
-    verifyZeroInteractions(indexManager);
   }
 
   @Test
@@ -67,6 +63,5 @@ public class IndexServiceTest {
 
     // verify
     verify(indexer).executeFor(argThat(IndexRequestMatcher.likeIndexRequest().forType(TYPE).forId(ENTITY_ID)));
-    verifyZeroInteractions(indexManager);
   }
 }
