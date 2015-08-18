@@ -18,7 +18,6 @@ import java.util.List;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public abstract class AbstractIndexerTest {
   protected static final Class<ProjectADomainEntity> TYPE = ProjectADomainEntity.class;
@@ -28,22 +27,21 @@ public abstract class AbstractIndexerTest {
   protected IndexManager indexManager;
   protected Indexer instance;
   protected List<ProjectADomainEntity> entities;
+  private IndexRequest request;
 
   @Before
   public void setUp() throws Exception {
     setupRepository();
     indexManager = mock(IndexManager.class);
     instance = createInstance();
+    setupRequest();
   }
 
   protected abstract Indexer createInstance();
 
   private void setupRepository() {
     repository = mock(Repository.class);
-    entities = Lists.newArrayList();
-    entities.add(createEntityWithID(ID_1));
-    entities.add(createEntityWithID(ID_2));
-    when(repository.getDomainEntities(TYPE)).thenReturn(StorageIteratorStub.newInstance(entities));
+
   }
 
   private ProjectADomainEntity createEntityWithID(String id) {
@@ -52,29 +50,36 @@ public abstract class AbstractIndexerTest {
     return entity;
   }
 
+  private void setupRequest() {
+    entities = Lists.newArrayList();
+    entities.add(createEntityWithID(ID_1));
+    entities.add(createEntityWithID(ID_2));
+
+    request = mock(IndexRequest.class);
+    doReturn(TYPE).when(request).getType();
+    doReturn(StorageIteratorStub.newInstance(entities)).when(request).getEntities(repository);
+  }
+
   @Test
   public void executeForSetsTheIndexRequestStatusToIN_PROGRESSWhenStartingAndToDONEWhenFinished() throws Exception {
-    // setup
-    IndexRequest request = mock(IndexRequest.class);
-    doReturn(TYPE).when(request).getType();
-
     // action
     instance.executeFor(request);
 
     // verify
     InOrder inOrder = inOrder(request, repository, indexManager);
     inOrder.verify(request).inProgress();
-    inOrder.verify(repository).getDomainEntities(TYPE);
+    inOrder.verify(request).getEntities(repository);
     verifyIndexActionExecuted(inOrder, TYPE, ID_1);
     verifyIndexActionExecuted(inOrder, TYPE, ID_2);
     inOrder.verify(request).done();
 
   }
 
+
   @Test
   public void executeForCallsIndexManagerForEachItemFoundByTheRepository() throws Exception {
     // action
-    instance.executeFor(IndexRequest.forType(TYPE));
+    instance.executeFor(request);
 
     // verify
     verifyIndexActionExecuted(TYPE, ID_1);
@@ -87,7 +92,7 @@ public abstract class AbstractIndexerTest {
     throwAnIndexExceptionWhenIndexMethodExecuted(TYPE, ID_1);
 
     // action
-    instance.executeFor(IndexRequest.forType(TYPE));
+    instance.executeFor(request);
   }
 
   protected abstract void verifyIndexActionExecuted(Class<? extends DomainEntity> type, String id) throws IndexException;

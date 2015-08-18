@@ -25,10 +25,8 @@ package nl.knaw.huygens.timbuctoo.index;
 import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.index.indexer.IndexerFactory;
 import nl.knaw.huygens.timbuctoo.messages.Action;
-import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.ConsumerService;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,50 +61,28 @@ public class IndexService extends ConsumerService implements Runnable {
   @Override
   protected void executeAction(Action action) {
     // ignore multiple entity actions for now
-    if (action.hasRequestId()) {
-      executeIndexRequestWithRequestId(action);
-    } else {
-      executeSimpleIndexRequest(action);
-    }
-  }
-
-  private void executeIndexRequestWithRequestId(Action action) {
-    IndexRequest indexRequest = indexRequests.get(action.getRequestId());
-    Indexer indexer = indexerFactory.create(action.getActionType());
-
-    try {
-      indexer.executeFor(indexRequest);
-    } catch (IndexException e) {
-      getLogger().error("Error indexing ({}) object of type {}", action.getActionType(), indexRequest.getType());
-      getLogger().debug("Exception while indexing", e);
-    }
-  }
-
-  private void executeSimpleIndexRequest(Action action) {
     if (!action.isForMultiEntities()) {
-      ActionType actionType = action.getActionType();
-      Class<? extends DomainEntity> type = action.getType();
-      String id = action.getId();
+      IndexRequest indexRequest = getIndexRequest(action);
+
+      Indexer indexer = indexerFactory.create(action.getActionType());
 
       try {
-        switch (actionType) {
-          case ADD:
-            manager.addEntity(type, id);
-            break;
-          case MOD:
-            manager.updateEntity(type, id);
-            break;
-          case DEL:
-            manager.deleteEntity(type, id);
-            break;
-          case END:
-            this.stop(); //stop the Runnable
-        }
-      } catch (IndexException ex) {
-        getLogger().error("Error indexing ({}) object of type {} with id {}", actionType, type, id);
-        getLogger().debug("Exception while indexing", ex);
+        indexer.executeFor(indexRequest);
+      } catch (IndexException e) {
+        getLogger().error("Error indexing ([{}]) object of type [{}]", action.getActionType(), indexRequest.getType());
+        getLogger().debug("Exception while indexing", e);
       }
     }
+  }
+
+  private IndexRequest getIndexRequest(Action action) {
+    IndexRequest indexRequest;
+    if (action.hasRequestId()) {
+      indexRequest = indexRequests.get(action.getRequestId());
+    } else {
+      indexRequest = IndexRequest.forEntity(action.getType(), action.getId());
+    }
+    return indexRequest;
   }
 
   public static void waitForCompletion(Thread thread, long patience) {

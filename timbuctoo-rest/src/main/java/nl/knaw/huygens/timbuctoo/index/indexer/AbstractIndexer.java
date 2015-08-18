@@ -21,7 +21,7 @@ public abstract class AbstractIndexer implements Indexer {
   public final void executeFor(IndexRequest request) throws IndexException {
     Class<? extends DomainEntity> type = request.getType();
     request.inProgress();
-    for (StorageIterator<? extends DomainEntity> domainEntities = repository.getDomainEntities(type); domainEntities.hasNext(); ) {
+    for (StorageIterator<? extends DomainEntity> domainEntities = request.getEntities(repository); domainEntities.hasNext(); ) {
       String id = domainEntities.next().getId();
       executeIndexAction(type, id);
     }

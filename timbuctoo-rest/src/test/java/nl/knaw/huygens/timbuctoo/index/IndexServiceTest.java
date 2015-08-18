@@ -4,12 +4,12 @@ import nl.knaw.huygens.timbuctoo.index.indexer.IndexerFactory;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import test.rest.model.projecta.ProjectADomainEntity;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -20,29 +20,53 @@ public class IndexServiceTest {
   public static final ActionType ACTION_TYPE = ActionType.MOD;
   public static final Action ACTION_WITH_REQUEST_ID = Action.forRequestWithId(ACTION_TYPE, REQUEST_ID);
   public static final Class<ProjectADomainEntity> TYPE = ProjectADomainEntity.class;
+  public static final String ENTITY_ID = "entityId";
+  public static final Action ACTION_FOR_SINGLE_ENTITY = new Action(ACTION_TYPE, TYPE, ENTITY_ID);
+  private IndexManager indexManager;
+  private Indexer indexer;
+  private IndexerFactory indexerFactory;
+  private IndexRequest indexRequest;
+  private IndexRequests indexRequests;
+  private IndexService instance;
 
 
+  @Before
+  public void setUp() throws Exception {
+    indexManager = mock(IndexManager.class);
+    setupIndexerFactory();
+    setupIndexRequests();
+    instance = new IndexService(indexManager, mock(Broker.class), indexRequests, indexerFactory);
+  }
+
+  private void setupIndexerFactory() {
+    indexer = mock(Indexer.class);
+    indexerFactory = mock(IndexerFactory.class);
+    Mockito.when(indexerFactory.create(ACTION_TYPE)).thenReturn(indexer);
+  }
+
+  private void setupIndexRequests() {
+    indexRequest = IndexRequest.forType(TYPE);
+    indexRequests = mock(IndexRequests.class);
+    Mockito.when(indexRequests.get(REQUEST_ID)).thenReturn(indexRequest);
+  }
 
   @Test
   public void executeActionForActionWithRequestIdSetsTheIndexRequestToInProgressAndLetAnIndexerExcecuteTheAction() throws Exception {
-    // setup
-    IndexRequests indexRequests = mock(IndexRequests.class);
-    IndexRequest indexRequest = IndexRequest.forType(TYPE);
-    Mockito.when(indexRequests.get(REQUEST_ID)).thenReturn(indexRequest);
-    IndexerFactory indexerFactory = mock(IndexerFactory.class);
-    Indexer indexer = mock(Indexer.class);
-    Mockito.when(indexerFactory.create(ACTION_TYPE)).thenReturn(indexer);
-    IndexManager indexManager = mock(IndexManager.class);
-    IndexService instance = new IndexService(indexManager, mock(Broker.class), indexRequests, indexerFactory);
-
     // action
     instance.executeAction(ACTION_WITH_REQUEST_ID);
 
+    // verify
+    verify(indexer).executeFor(indexRequest);
+    verifyZeroInteractions(indexManager);
+  }
+
+  @Test
+  public void executeActionForActionForSingleItemLetsTheIndexerExecuteACreateIndexRequestForTheAction() throws Exception {
+    // action
+    instance.executeAction(ACTION_FOR_SINGLE_ENTITY);
 
     // verify
-    assertThat(indexRequest.getStatus(), is(IndexRequest.Status.REQUESTED));
-
-    verify(indexer).executeFor(indexRequest);
+    verify(indexer).executeFor(argThat(IndexRequestMatcher.likeIndexRequest().forType(TYPE).forId(ENTITY_ID)));
     verifyZeroInteractions(indexManager);
   }
 }
