@@ -22,6 +22,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
+import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.Repository;
@@ -110,8 +111,11 @@ public class DomainEntityResource extends ResourceBase {
                                @QueryParam("rows") @DefaultValue("200") int rows, //
                                @QueryParam("start") @DefaultValue("0") int start //
   ) {
+    Stopwatch stopwatch = Stopwatch.createStarted();
+    LOG.info("Begin retrieving entities: [{}]",entityName);
     Class<? extends DomainEntity> entityType = getValidEntityType(entityName);
     List<? extends DomainEntity> list = retrieveEntities(entityType, typeValue, rows, start);
+    LOG.info("Done retrievingEntities: [{}] in [{}]", entityName, stopwatch.stop());
     return Response.ok(new GenericEntity<List<? extends DomainEntity>>(list) {
     }).build();
   }
@@ -120,6 +124,7 @@ public class DomainEntityResource extends ResourceBase {
     if (Strings.isNullOrEmpty(typeValue)) {
       return repository.getDomainEntities(entityType).skip(start).getSome(rows);
     } else {
+      // used for filtering keywords
       return repository.getEntitiesByProperty(entityType, "type", typeValue).getAll();
     }
   }

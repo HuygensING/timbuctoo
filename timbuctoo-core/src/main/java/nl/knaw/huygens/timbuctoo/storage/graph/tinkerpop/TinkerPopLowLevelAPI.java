@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import com.google.common.base.Predicate;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.tinkerpop.blueprints.Direction;
@@ -19,6 +20,8 @@ import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.IsOfTypePredicate
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TinkerPopGraphQueryBuilderFactory;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TinkerPopResultFilter;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TinkerPopResultFilterBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
 import java.util.List;
@@ -34,6 +37,7 @@ class TinkerPopLowLevelAPI {
 
   private static final String VERSION_OF_LABEL = SystemRelationType.VERSION_OF.name();
   private static final IsLatestVersionOfVertex IS_LATEST_VERSION_OF_VERTEX = new IsLatestVersionOfVertex();
+  public static final Logger LOG = LoggerFactory.getLogger(TinkerPopLowLevelAPI.class);
   private final Graph db;
   private final VertexDuplicator vertexDuplicator;
   private final EdgeDuplicator edgeDuplicator;
@@ -136,10 +140,20 @@ class TinkerPopLowLevelAPI {
   }
 
   public Iterator<Vertex> getLatestVerticesOf(Class<? extends Entity> type) {
+    Stopwatch retrieveStopwatch = Stopwatch.createStarted();
+    LOG.info("Retrieve vertices of type [{}]", type);
+    Stopwatch queryStopwatch = Stopwatch.createStarted();
+
+    LOG.info("Query vertices of type [{}]", type);
     Iterable<Vertex> allVertices = queryByType(type).vertices();
+    LOG.info("Query vertices of type [{}] ended in [{}]", type, queryStopwatch.stop());
 
+    Stopwatch filterStopwatch = Stopwatch.createStarted();
+    LOG.info("Filter vertices of type [{}]", type);
     List<Vertex> latestVertices = getLatestVertices(allVertices);
+    LOG.info("Filter vertices of type [{}] ended in [{}]", type, filterStopwatch.stop());
 
+    LOG.info("Retrieve vertices of type [{}] ended in [{}]", type, retrieveStopwatch.stop());
     return latestVertices.iterator();
 
   }

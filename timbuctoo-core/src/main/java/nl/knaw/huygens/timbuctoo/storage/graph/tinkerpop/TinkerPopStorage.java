@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
@@ -29,6 +30,8 @@ import nl.knaw.huygens.timbuctoo.storage.graph.TimbuctooQueryFactory;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.graphwrapper.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.graphwrapper.GraphWrapperFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
 import java.util.List;
@@ -41,6 +44,7 @@ import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.ge
 
 public class TinkerPopStorage implements GraphStorage {
 
+  public static final Logger LOG = LoggerFactory.getLogger(TinkerPopStorage.class);
   private boolean available = true;
   private final GraphWrapper db;
   private final ElementConverterFactory elementConverterFactory;
@@ -267,15 +271,24 @@ public class TinkerPopStorage implements GraphStorage {
 
   @Override
   public <T extends Entity> StorageIterator<T> getEntities(Class<T> type) {
+    Stopwatch stopwatch = Stopwatch.createStarted();
+    LOG.info("Retrieving entities of type [{}] started.", type);
     Iterator<Vertex> vertices = lowLevelAPI.getLatestVerticesOf(type);
-    return storageIteratorFactory.create(type, vertices);
+    StorageIterator<T> iterator = storageIteratorFactory.create(type, vertices);
+    LOG.info("Retrieving entities of type [{}] ended in [{}]", type, stopwatch.stop());
+    return iterator;
   }
 
   @Override
   public <T extends Relation> StorageIterator<T> getRelations(Class<T> type) {
+    Stopwatch stopwatch = Stopwatch.createStarted();
+    LOG.info("Retrieving relations of type [{}] started.", type);
     Iterator<Edge> edges = lowLevelAPI.getLatestEdgesOf(type);
 
-    return storageIteratorFactory.createForRelation(type, edges);
+    StorageIterator<T> iterator = storageIteratorFactory.createForRelation(type, edges);
+
+    LOG.info("Retrieving relations of type [{}] ended in [{}]", type, stopwatch.stop());
+    return iterator;
   }
 
   @Override
