@@ -183,13 +183,25 @@ class TinkerPopLowLevelAPI {
   }
 
   public Iterator<Edge> getLatestEdgesOf(Class<? extends Relation> type) {
+    Stopwatch stopwatch = Stopwatch.createStarted();
+    LOG.info("Begin get latest edges for [{}]", type);
 
+    Stopwatch queryStopwatch = Stopwatch.createStarted();
+    LOG.info("Begin query latest edges for [{}]", type);
     Iterable<Edge> edges = db.query().edges();
+    LOG.info("End querying latest edges for [{}] in [{}]", type, queryStopwatch.stop());
 
-    return getLatestEdges(edges);
+    Stopwatch filterStopwatch = Stopwatch.createStarted();
+    LOG.info("Begin filter for latest edges for [{}]", type);
+    Iterator<Edge> latestEdges = getLatestEdges(edges);
+    LOG.info("End filter for latest edges for [{}] in [{}]", type, filterStopwatch.stop());
+
+    LOG.info("End get latest edges for [{}] in [{}]", type, stopwatch.stop());
+    return latestEdges;
   }
 
   public Iterator<Edge> getLatestEdges(Iterable<Edge> edges) {
+
     Map<String, Edge> latestEdgeMap = Maps.newHashMap();
     for (Iterator<Edge> iterator = edges.iterator(); iterator.hasNext();) {
       Edge edge = iterator.next();
