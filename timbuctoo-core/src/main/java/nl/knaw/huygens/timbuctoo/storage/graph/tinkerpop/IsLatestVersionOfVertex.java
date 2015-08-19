@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import com.google.common.base.Predicate;
-import com.google.common.base.Stopwatch;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
@@ -16,7 +15,6 @@ public final class IsLatestVersionOfVertex implements Predicate<Vertex> {
 
   @Override
   public boolean apply(Vertex vertex) {
-    Stopwatch stopwatch = Stopwatch.createStarted();
     Iterable<Edge> outgoingVersionOfEdges = vertex.getEdges(Direction.OUT, VERSION_OF.name());
     boolean isLatest = outgoingVersionOfEdges == null || !outgoingVersionOfEdges.iterator().hasNext();
     return isLatest;
