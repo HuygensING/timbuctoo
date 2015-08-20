@@ -6,4 +6,5 @@ public final class ElementFields {
   }
 
   public static final String ELEMENT_TYPES = "types";
+  public static final String IS_LATEST = "isLatest";
 }

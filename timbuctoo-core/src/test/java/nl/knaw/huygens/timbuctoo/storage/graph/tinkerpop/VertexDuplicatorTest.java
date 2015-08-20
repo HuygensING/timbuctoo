@@ -10,6 +10,7 @@ import org.junit.Test;
 import static nl.knaw.huygens.timbuctoo.model.Entity.DB_ID_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.DB_REV_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeMockBuilder.anEdge;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.IS_LATEST;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilder.aVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -56,13 +57,13 @@ public class VertexDuplicatorTest {
     versionOfIncomingEdge = anEdge().withLabel(VERSION_OF_EDGE_LABEL).withSource(sourceIncomingVersionOfEdge).withTarget(otherVertex).build();
 
     return aVertex() //
-        .withId(ID) //
-        .withRev(REV) //
-        .withIncomingEdgeWithLabel(INCOMING_EDGE_LABEL, incomingEdge) //
-        .withIncomingEdgeWithLabel(VERSION_OF_EDGE_LABEL, versionOfIncomingEdge) //
-        .withOutgoingEdgeWithLabel(VERSION_OF_EDGE_LABEL, versionOfOutgoingEdge)//
-        .withOutgoingEdgeWithLabel(OUTGOING_EDGE_LABEL, outgoingEdge)//
-        .build();
+      .withId(ID) //
+      .withRev(REV) //
+      .withIncomingEdgeWithLabel(INCOMING_EDGE_LABEL, incomingEdge) //
+      .withIncomingEdgeWithLabel(VERSION_OF_EDGE_LABEL, versionOfIncomingEdge) //
+      .withOutgoingEdgeWithLabel(VERSION_OF_EDGE_LABEL, versionOfOutgoingEdge)//
+      .withOutgoingEdgeWithLabel(OUTGOING_EDGE_LABEL, outgoingEdge)//
+      .build();
   }
 
   @Test
@@ -117,6 +118,7 @@ public class VertexDuplicatorTest {
     verify(vertexToDuplicate).addEdge(VERSION_OF_EDGE_LABEL, duplicate);
   }
 
+
   @Test
   public void duplicateReturnsTheDuplicateVertex() {
     // action
@@ -124,6 +126,16 @@ public class VertexDuplicatorTest {
 
     // verify 
     assertThat(actualDuplicate, is(sameInstance(duplicate)));
+  }
+
+  @Test
+  public void duplicateAddsIsLatestPropertyAndSetsItToFalseOnTheVertextToDuplicate(){
+    // action
+    instance.duplicate(vertexToDuplicate);
+
+    // verify
+    verify(duplicate).setProperty(IS_LATEST, true);
+    verify(vertexToDuplicate).setProperty(IS_LATEST, false);
   }
 
 

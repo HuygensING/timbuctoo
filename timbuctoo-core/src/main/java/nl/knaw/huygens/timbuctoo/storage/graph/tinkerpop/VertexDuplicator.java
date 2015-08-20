@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType;
 import java.util.Iterator;
 import java.util.Objects;
 
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.IS_LATEST;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.sourceOfEdge;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.targetOfEdge;
 
@@ -31,9 +32,16 @@ public class VertexDuplicator {
 
     duplicateIncomingEdges(vertexToDuplicate, duplicate);
 
-    vertexToDuplicate.addEdge(VERSION_OF_LABEL, duplicate);
+    changeLatestVertext(vertexToDuplicate, duplicate);
 
     return duplicate;
+  }
+
+  private void changeLatestVertext(Vertex vertexToDuplicate, Vertex duplicate) {
+    duplicate.setProperty(IS_LATEST, true);
+    vertexToDuplicate.setProperty(IS_LATEST, false);
+
+    vertexToDuplicate.addEdge(VERSION_OF_LABEL, duplicate);
   }
 
   private void duplicateIncomingEdges(Vertex vertexToDuplicate, Vertex duplicate) {
