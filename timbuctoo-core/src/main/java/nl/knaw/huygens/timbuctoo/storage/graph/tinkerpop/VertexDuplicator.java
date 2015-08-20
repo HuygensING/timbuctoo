@@ -32,12 +32,12 @@ public class VertexDuplicator {
 
     duplicateIncomingEdges(vertexToDuplicate, duplicate);
 
-    changeLatestVertext(vertexToDuplicate, duplicate);
+    changeLatestVertex(vertexToDuplicate, duplicate);
 
     return duplicate;
   }
 
-  private void changeLatestVertext(Vertex vertexToDuplicate, Vertex duplicate) {
+  private void changeLatestVertex(Vertex vertexToDuplicate, Vertex duplicate) {
     duplicate.setProperty(IS_LATEST, true);
     vertexToDuplicate.setProperty(IS_LATEST, false);
 
