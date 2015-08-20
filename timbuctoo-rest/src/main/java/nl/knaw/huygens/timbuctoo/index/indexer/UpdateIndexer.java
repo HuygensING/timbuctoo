@@ -13,6 +13,6 @@ class UpdateIndexer extends AbstractIndexer {
 
   @Override
   protected void executeIndexAction(Class<? extends DomainEntity> type, String id) throws IndexException {
-    indexManager.updateEntity(type, id);
+    getIndexManager().updateEntity(type, id);
   }
 }

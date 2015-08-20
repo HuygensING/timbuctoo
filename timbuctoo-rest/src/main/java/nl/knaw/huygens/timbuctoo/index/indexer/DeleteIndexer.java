@@ -13,6 +13,6 @@ public class DeleteIndexer extends AbstractIndexer {
 
   @Override
   protected void executeIndexAction(Class<? extends DomainEntity> type, String id) throws IndexException {
-    indexManager.deleteEntity(type, id);
+    getIndexManager().deleteEntity(type, id);
   }
 }

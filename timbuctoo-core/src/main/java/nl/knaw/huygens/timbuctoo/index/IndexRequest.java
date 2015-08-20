@@ -91,11 +91,6 @@ public class IndexRequest {
     return repository.getDomainEntities(type);
   }
 
-  private static class MultiEntityIndexRequest extends IndexRequest{
-
-  }
-
-
   public enum Status {
     REQUESTED,
     IN_PROGRESS,

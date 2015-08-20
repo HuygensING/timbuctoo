@@ -9,8 +9,8 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
 public abstract class AbstractIndexer implements Indexer {
-  protected final Repository repository;
-  protected final IndexManager indexManager;
+  private final Repository repository;
+  private final IndexManager indexManager;
 
   public AbstractIndexer(Repository repository, IndexManager indexManager) {
     this.indexManager = indexManager;
