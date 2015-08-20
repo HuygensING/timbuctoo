@@ -130,6 +130,21 @@ public class TinkerPopStorageTest {
     verify(dbMock).commit();
   }
 
+  @Test
+  public void addDomainEntitySetsThePropertyIsLatestToTrue() throws Exception {
+    // setup
+    SubADomainEntity entity = aDomainEntity().build();
+
+    VertexConverter<SubADomainEntity> converter = compositeVertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
+
+    // action
+    instance.addDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+
+    // verify
+    verify(converter).addValuesToElement(createdVertex, entity);
+    verify(createdVertex).setProperty(ElementFields.IS_LATEST, true);
+  }
+
   @Test(expected = ConversionException.class)
   public void addDomainEntityRollsBackTheTransactionAndThrowsAConversionExceptionWhenTheDomainEntityConverterThrowsAConversionException() throws Exception {
     // setup

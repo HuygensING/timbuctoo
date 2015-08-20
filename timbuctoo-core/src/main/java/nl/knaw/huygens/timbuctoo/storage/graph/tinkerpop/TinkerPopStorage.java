@@ -89,6 +89,8 @@ public class TinkerPopStorage implements GraphStorage {
   @Override
   public <T extends DomainEntity> void addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
     Vertex vertex = db.addVertex(null);
+    // query helper, make it easier to find the latest vertex
+    vertex.setProperty(ElementFields.IS_LATEST, true);
     VertexAddAction<T> addAction = new VertexAddAction<T>(type, entity, vertex) {
       @Override
       protected VertexConverter<T> converter() {
