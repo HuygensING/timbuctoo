@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 import static nl.knaw.huygens.timbuctoo.model.Entity.DB_ID_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.DB_REV_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.IS_LATEST;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
@@ -73,6 +74,10 @@ public class VertexSearchResultBuilder {
     return this;
   }
 
+  public VertexSearchResultBuilder forLatest() {
+    return this.forProperty(IS_LATEST, true);
+  }
+
   public void foundInDatabase(Graph db) {
     GraphQuery graphQueryMock = mock(GraphQuery.class);
     when(db.query()).thenReturn(graphQueryMock);
@@ -106,4 +111,5 @@ public class VertexSearchResultBuilder {
   public void foundByGraphQuery(GraphQuery query) {
     when(query.vertices()).thenReturn(vertices);
   }
+
 }

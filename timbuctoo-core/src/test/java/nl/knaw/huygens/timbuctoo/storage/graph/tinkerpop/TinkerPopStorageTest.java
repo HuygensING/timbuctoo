@@ -392,7 +392,7 @@ public class TinkerPopStorageTest {
     // setup
     Vertex foundVertex = aVertex().build();
     Iterator<Vertex> vertexIterator = Lists.<Vertex>newArrayList(foundVertex).iterator();
-    when(lowLevelAPIMock.findVerticesByProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(vertexIterator);
+    when(lowLevelAPIMock.findLatestVerticesByProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(vertexIterator);
 
     VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
     when(converter.getPropertyName(FIELD_NAME)).thenReturn(PROPERTY_NAME);
@@ -441,7 +441,7 @@ public class TinkerPopStorageTest {
 
   private void noEntitiesFoundByPropertyWithValue(Class<? extends Entity> type, String name, String value) {
     Iterator<Vertex> vertexIterator = Lists.<Vertex>newArrayList().iterator();
-    when(lowLevelAPIMock.findVerticesByProperty(type, name, value)).thenReturn(vertexIterator);
+    when(lowLevelAPIMock.findLatestVerticesByProperty(type, name, value)).thenReturn(vertexIterator);
   }
 
   @Test(expected = ConversionException.class)
@@ -449,7 +449,7 @@ public class TinkerPopStorageTest {
     // setup
     Vertex foundVertex = aVertex().build();
     Iterator<Vertex> vertexIterator = Lists.<Vertex>newArrayList(foundVertex).iterator();
-    when(lowLevelAPIMock.findVerticesByProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(vertexIterator);
+    when(lowLevelAPIMock.findLatestVerticesByProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE)).thenReturn(vertexIterator);
 
     VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
     when(converter.getPropertyName(FIELD_NAME)).thenReturn(PROPERTY_NAME);

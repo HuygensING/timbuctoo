@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.storage.graph;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 
 import java.util.List;
 import java.util.Map;
@@ -18,22 +19,23 @@ public class TimbuctooQuery {
   private Map<String, List<?>> inCollectionProperties;
 
   public TimbuctooQuery(Class<? extends Entity> type) {
-    this(type, Maps.<String, Object> newHashMap(), Sets.<String> newHashSet(), Maps.<String, List<?>> newHashMap());
+    this(type, Maps.<String, Object>newHashMap(), Sets.<String>newHashSet(), Maps.<String, List<?>>newHashMap());
 
   }
 
   TimbuctooQuery(Class<? extends Entity> type, Map<String, Object> hasProperties, Set<String> distinctProperties, Map<String, List<?>> inCollectionProperties) {
     this.type = type;
-    this.searchLatestOnly(true);
     this.hasProperties = hasProperties;
     this.distinctValues = distinctProperties;
     this.inCollectionProperties = inCollectionProperties;
+    this.searchLatestOnly(true);
   }
 
   /**
    * Uses the property only when the value is not null.
-   * @param name the name of the property,
-   *    use the name that is configured for the client
+   *
+   * @param name  the name of the property,
+   *              use the name that is configured for the client
    * @param value the value of the property
    * @return the current instance
    */
@@ -45,10 +47,11 @@ public class TimbuctooQuery {
   }
 
   /**
-   * Method to add a filter to make sure a certain property and a value combination 
-   * exists only once in a search result.  
+   * Method to add a filter to make sure a certain property and a value combination
+   * exists only once in a search result.
+   *
    * @param propertyName the name of the property that should have a distinct value,
-   *    use the name that is configured for the client
+   *                     use the name that is configured for the client
    * @return the current instance
    */
   public TimbuctooQuery hasDistinctValue(String propertyName) {
@@ -58,6 +61,7 @@ public class TimbuctooQuery {
 
   /**
    * A method to search of the type the query is created for or not. Default is false.
+   *
    * @param searchByType boolean true or false
    * @return the current instance
    */
@@ -68,6 +72,7 @@ public class TimbuctooQuery {
 
   /**
    * Be able to search for the latest version of a type only. Default is true.
+   *
    * @param searchLatestOnly the value true or false
    * @return the current instance
    */
@@ -84,6 +89,9 @@ public class TimbuctooQuery {
     queryCreator.setHasProperties(hasProperties);
     queryCreator.setInCollectionProperties(inCollectionProperties);
     queryCreator.setSearchByType(searchByType);
+    if (!Relation.class.isAssignableFrom(type)) {
+      queryCreator.searchLatestOnly(searchLatestOnly);
+    }
 
     return queryCreator.build();
 
@@ -96,7 +104,8 @@ public class TimbuctooQuery {
 
   /**
    * A method that makes it possible to search on multiple values at once.
-   * @param fieldName the field that should contain one of the values
+   *
+   * @param fieldName     the field that should contain one of the values
    * @param allowedValues the possible values the field should contain
    * @return the current instance
    */

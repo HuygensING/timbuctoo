@@ -101,19 +101,18 @@ public class TinkerPopLowLevelAPITest {
 
   @Test
   public void findVerticesByPropertyReturnsAnIteratorWithTheLatestFoundVertices() {
-    Vertex latestVertex1 = aVertex().build();
-    Vertex latestVertex2 = aVertex().build();
-    Vertex notLatestVertex = aVertex().withOutgoingEdgeWithLabel(VERSION_OF).build();
+    Vertex latestVertex1 = aVertex().isLatest().build();
+    Vertex latestVertex2 = aVertex().isLatest().build();
     aVertexSearchResult() //
-        .forType(DOMAIN_ENTITY_TYPE) //
-        .forProperty(PROPERTY_NAME, PROPERTY_VALUE) //
-        .containsVertex(latestVertex1) //
-        .containsVertex(notLatestVertex) //
-        .containsVertex(latestVertex2) //
-        .foundInDatabase(dbMock);
+      .forType(DOMAIN_ENTITY_TYPE) //
+      .forProperty(PROPERTY_NAME, PROPERTY_VALUE) //
+      .forLatest() //
+      .containsVertex(latestVertex1) //
+      .containsVertex(latestVertex2) //
+      .foundInDatabase(dbMock);
 
     // action
-    Iterator<Vertex> vertices = instance.findVerticesByProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE);
+    Iterator<Vertex> vertices = instance.findLatestVerticesByProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE);
 
     // verify
     assertThat(Lists.newArrayList(vertices), containsInAnyOrder(latestVertex1, latestVertex2));
@@ -122,12 +121,13 @@ public class TinkerPopLowLevelAPITest {
   @Test
   public void findVerticesByPropertyReturnsAnEmptuIteratorWhenNoVerticesAreFound() {
     anEmptyVertexSearchResult()//
-        .forType(DOMAIN_ENTITY_TYPE)//
-        .forProperty(PROPERTY_NAME, PROPERTY_VALUE)//
-        .foundInDatabase(dbMock);
+      .forType(DOMAIN_ENTITY_TYPE)//
+      .forProperty(PROPERTY_NAME, PROPERTY_VALUE)//
+      .forLatest() //
+      .foundInDatabase(dbMock);
 
     // action
-    Iterator<Vertex> vertices = instance.findVerticesByProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE);
+    Iterator<Vertex> vertices = instance.findLatestVerticesByProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME, PROPERTY_VALUE);
 
     // verify
     assertThat(Iterators.size(vertices), is(0));
@@ -139,10 +139,10 @@ public class TinkerPopLowLevelAPITest {
     Vertex vertex1 = aVertex().build();
     Vertex vertex2 = aVertex().build();
     aVertexSearchResult()//
-        .forType(DOMAIN_ENTITY_TYPE).withoutProperty(PROPERTY_NAME)//
-        .containsVertex(vertex1) //
-        .containsVertex(vertex2) //
-        .foundInDatabase(dbMock);
+      .forType(DOMAIN_ENTITY_TYPE).withoutProperty(PROPERTY_NAME)//
+      .containsVertex(vertex1) //
+      .containsVertex(vertex2) //
+      .foundInDatabase(dbMock);
 
     // action
     Iterator<Vertex> vertices = instance.findVerticesWithoutProperty(DOMAIN_ENTITY_TYPE, PROPERTY_NAME);
@@ -165,12 +165,10 @@ public class TinkerPopLowLevelAPITest {
 
   @Test
   public void getLatestVertexByIdReturnsTheVertexWithoutOutgoingIsVersionOfRelation() {
-    Vertex latestVertex = aVertex().build();
-    aVertexSearchResult().forType(SYSTEM_ENTITY_TYPE).forId(ID) //
-        .containsVertex(aVertex().withOutgoingEdgeWithLabel(VERSION_OF).build()) //
-        .andVertex(latestVertex) //
-        .andVertex(aVertex().withIncomingEdgeWithLabel(VERSION_OF).build())//
-        .foundInDatabase(dbMock);
+    Vertex latestVertex = aVertex().isLatest().build();
+    aVertexSearchResult().forLatest().forType(SYSTEM_ENTITY_TYPE).forId(ID) //
+      .andVertex(latestVertex) //
+      .foundInDatabase(dbMock);
 
     // action
     Vertex foundVertex = instance.getLatestVertexById(SYSTEM_ENTITY_TYPE, ID);
@@ -182,7 +180,11 @@ public class TinkerPopLowLevelAPITest {
   @Test
   public void getLatestVertexByIdReturnsNullIfNoVerticesAreFound() {
     // setup
-    anEmptyVertexSearchResult().forType(SYSTEM_ENTITY_TYPE).forId(ID).foundInDatabase(dbMock);
+    anEmptyVertexSearchResult()//
+      .forLatest() //
+      .forType(SYSTEM_ENTITY_TYPE)//
+      .forId(ID)//
+      .foundInDatabase(dbMock);
 
     // action
     Vertex foundVertex = instance.getLatestVertexById(SYSTEM_ENTITY_TYPE, ID);
@@ -194,11 +196,9 @@ public class TinkerPopLowLevelAPITest {
   @Test
   public void getLatestVertexByIdReturnsTheLatestVertexWithACertainId() {
     Vertex latestVertex = aVertex().build();
-    aVertexSearchResult().forId(ID) //
-        .containsVertex(aVertex().withOutgoingEdgeWithLabel(VERSION_OF).build()) //
-        .andVertex(latestVertex) //
-        .andVertex(aVertex().withOutgoingEdgeWithLabel(VERSION_OF).build())//
-        .foundInDatabase(dbMock);
+    aVertexSearchResult().forLatest().forId(ID) //
+      .containsVertex(latestVertex) //
+      .foundInDatabase(dbMock);
 
     // action
     Vertex foundVertex = instance.getLatestVertexById(ID);
@@ -209,7 +209,7 @@ public class TinkerPopLowLevelAPITest {
 
   @Test
   public void getLatestVertexByIdReturnsNullIfNoVerticesAreFoundWithACertainId() {
-    anEmptyVertexSearchResult().forId(ID).foundInDatabase(dbMock);
+    anEmptyVertexSearchResult().forLatest().forId(ID).foundInDatabase(dbMock);
 
     Vertex foundVertex = instance.getLatestVertexById(ID);
 
@@ -222,12 +222,10 @@ public class TinkerPopLowLevelAPITest {
     // setup
     Vertex latestVertex1 = aVertex().build();
     Vertex latestVertex2 = aVertex().build();
-    aVertexSearchResult().forType(SYSTEM_ENTITY_TYPE) //
-        .containsVertex(latestVertex1) //
-        .andVertex(aVertex().withOutgoingEdgeWithLabel(VERSION_OF).build()) //
-        .andVertex(aVertex().withOutgoingEdgeWithLabel(VERSION_OF).build()) //
-        .andVertex(latestVertex2) //
-        .foundInDatabase(dbMock);
+    aVertexSearchResult().forLatest().forType(SYSTEM_ENTITY_TYPE) //
+      .containsVertex(latestVertex1) //
+      .andVertex(latestVertex2) //
+      .foundInDatabase(dbMock);
 
     // action
     Iterator<Vertex> foundVertices = instance.getLatestVerticesOf(SYSTEM_ENTITY_TYPE);
@@ -240,7 +238,7 @@ public class TinkerPopLowLevelAPITest {
   @Test
   public void getLatestVerticesOfReturnsAnEmptyIteratorWhenNoVerticesAreFound() {
     // setup
-    anEmptyVertexSearchResult().forType(SYSTEM_ENTITY_TYPE).foundInDatabase(dbMock);
+    anEmptyVertexSearchResult().forLatest().forType(SYSTEM_ENTITY_TYPE).foundInDatabase(dbMock);
 
     // action
     Iterator<Vertex> foundVertices = instance.getLatestVerticesOf(SYSTEM_ENTITY_TYPE);
@@ -255,8 +253,8 @@ public class TinkerPopLowLevelAPITest {
     // setup
     Vertex foundVertex = aVertex().build();
     aVertexSearchResult().forType(DOMAIN_ENTITY_TYPE).forId(ID).forRevision(FIRST_REVISION)//
-        .containsVertex(foundVertex) //
-        .foundInDatabase(dbMock);
+      .containsVertex(foundVertex) //
+      .foundInDatabase(dbMock);
 
     // action
     Vertex actualVertex = instance.getVertexWithRevision(DOMAIN_ENTITY_TYPE, ID, FIRST_REVISION);
@@ -283,11 +281,11 @@ public class TinkerPopLowLevelAPITest {
     Vertex vertex1 = aVertex().build();
     Vertex vertex2 = aVertex().build();
     aVertexSearchResult() //
-        .forType(DOMAIN_ENTITY_TYPE) //
-        .forId(ID) //
-        .containsVertex(vertex1) //
-        .andVertex(vertex2) //
-        .foundInDatabase(dbMock);
+      .forType(DOMAIN_ENTITY_TYPE) //
+      .forId(ID) //
+      .containsVertex(vertex1) //
+      .andVertex(vertex2) //
+      .foundInDatabase(dbMock);
 
     // action
     Iterator<Vertex> iterator = instance.getVerticesWithId(DOMAIN_ENTITY_TYPE, ID);
@@ -300,9 +298,9 @@ public class TinkerPopLowLevelAPITest {
   public void getVerticesWithIdReturnsAnEmptyIteratorWhenNoneAreFound() {
     // setup
     anEmptyVertexSearchResult() //
-        .forType(DOMAIN_ENTITY_TYPE) //
-        .forId(ID) //
-        .foundInDatabase(dbMock);
+      .forType(DOMAIN_ENTITY_TYPE) //
+      .forId(ID) //
+      .foundInDatabase(dbMock);
 
     // action
     Iterator<Vertex> iterator = instance.getVerticesWithId(DOMAIN_ENTITY_TYPE, ID);
@@ -318,26 +316,22 @@ public class TinkerPopLowLevelAPITest {
     // setup
     GraphQuery graphQuery = mock(GraphQuery.class);
     TimbuctooQuery query = aQuery() //
-        .searchesLatestOnly(true) //
-        .createsGraphQueryForDB(queryBuilder, graphQuery) //
-        .build();
+      .searchesLatestOnly(true) //
+      .createsGraphQueryForDB(queryBuilder, graphQuery) //
+      .build();
 
     TinkerPopResultFilter<Vertex> resultFilter = resultFilterCreatedForQuery(query);
 
     Vertex latestVertex1 = aVertex().build();
     Vertex latestVertex2 = aVertex().build();
-    Vertex otherVertex1 = aVertex().withOutgoingEdgeWithLabel(VERSION_OF).build();
-    Vertex otherVertex2 = aVertex().withOutgoingEdgeWithLabel(VERSION_OF).build();
 
-    List<Vertex> vertices = Lists.newArrayList(latestVertex1, latestVertex2, otherVertex1, otherVertex2);
-    doReturn(vertices).when(resultFilter).filter((Iterable<Vertex>) argThat(containsInAnyOrder(latestVertex1, latestVertex2, otherVertex1, otherVertex2)));
+    List<Vertex> vertices = Lists.newArrayList(latestVertex1, latestVertex2);
+    doReturn(vertices).when(resultFilter).filter((Iterable<Vertex>) argThat(containsInAnyOrder(latestVertex1, latestVertex2)));
 
     aVertexSearchResult() //
-        .containsVertex(latestVertex1) //
-        .andVertex(otherVertex1) //
-        .andVertex(otherVertex2) //
-        .andVertex(latestVertex2) //
-        .foundByGraphQuery(graphQuery);
+      .containsVertex(latestVertex1) //
+      .andVertex(latestVertex2) //
+      .foundByGraphQuery(graphQuery);
 
     // action
     Iterator<Vertex> iterator = instance.findVertices(DOMAIN_ENTITY_TYPE, query);
@@ -345,7 +339,7 @@ public class TinkerPopLowLevelAPITest {
     // verify
     assertThat(Lists.newArrayList(iterator), containsInAnyOrder(latestVertex1, latestVertex2));
 
-    verify(resultFilter).filter((Iterable<Vertex>) argThat(containsInAnyOrder(latestVertex1, latestVertex2, otherVertex1, otherVertex2)));
+    verify(resultFilter).filter((Iterable<Vertex>) argThat(containsInAnyOrder(latestVertex1, latestVertex2)));
   }
 
   @SuppressWarnings("unchecked")
@@ -354,9 +348,9 @@ public class TinkerPopLowLevelAPITest {
     // setup
     GraphQuery graphQuery = mock(GraphQuery.class);
     TimbuctooQuery query = aQuery() //
-        .searchesLatestOnly(false) //
-        .createsGraphQueryForDB(queryBuilder, graphQuery) //
-        .build();
+      .searchesLatestOnly(false) //
+      .createsGraphQueryForDB(queryBuilder, graphQuery) //
+      .build();
 
     TinkerPopResultFilter<Vertex> resultFilter = resultFilterCreatedForQuery(query);
 
@@ -369,18 +363,18 @@ public class TinkerPopLowLevelAPITest {
     doReturn(vertices).when(resultFilter).filter((List<Vertex>) argThat(containsInAnyOrder(latestVertex1, latestVertex2, otherVertex1, otherVertex2)));
 
     aVertexSearchResult() //
-        .containsVertex(latestVertex1) //
-        .andVertex(otherVertex1) //
-        .andVertex(otherVertex2) //
-        .andVertex(latestVertex2) //
-        .foundByGraphQuery(graphQuery);
+      .containsVertex(latestVertex1) //
+      .andVertex(otherVertex1) //
+      .andVertex(otherVertex2) //
+      .andVertex(latestVertex2) //
+      .foundByGraphQuery(graphQuery);
 
     // action
     Iterator<Vertex> iterator = instance.findVertices(DOMAIN_ENTITY_TYPE, query);
 
     // verify
     assertThat(Lists.newArrayList(iterator), //
-        containsInAnyOrder(latestVertex1, latestVertex2, otherVertex1, otherVertex2));
+      containsInAnyOrder(latestVertex1, latestVertex2, otherVertex1, otherVertex2));
 
     verify(resultFilter).filter((List<Vertex>) argThat(containsInAnyOrder(latestVertex1, latestVertex2, otherVertex1, otherVertex2)));
   }
@@ -390,16 +384,16 @@ public class TinkerPopLowLevelAPITest {
     // setup
     GraphQuery graphQuery = mock(GraphQuery.class);
     TimbuctooQuery query = aQuery() //
-        .createsGraphQueryForDB(queryBuilder, graphQuery) //
-        .createsGraphQueryForDB(queryBuilder, graphQuery) //
-        .build();
+      .createsGraphQueryForDB(queryBuilder, graphQuery) //
+      .createsGraphQueryForDB(queryBuilder, graphQuery) //
+      .build();
 
     TinkerPopResultFilter<Vertex> resultFilter = resultFilterCreatedForQuery(query);
 
-    when(resultFilter.filter(Matchers.<List<Vertex>> any())).thenReturn(Lists.<Vertex> newArrayList());
+    when(resultFilter.filter(Matchers.<List<Vertex>>any())).thenReturn(Lists.<Vertex>newArrayList());
 
     anEmptyVertexSearchResult() //
-        .foundByGraphQuery(graphQuery);
+      .foundByGraphQuery(graphQuery);
 
     // action
     Iterator<Vertex> iterator = instance.findVertices(DOMAIN_ENTITY_TYPE, query);
@@ -411,7 +405,7 @@ public class TinkerPopLowLevelAPITest {
   private TinkerPopResultFilter<Vertex> resultFilterCreatedForQuery(TimbuctooQuery query) {
     @SuppressWarnings("unchecked")
     TinkerPopResultFilter<Vertex> resultFilter = mock(TinkerPopResultFilter.class);
-    when(resultFilterBuilder.<Vertex> buildFor(query)).thenReturn(resultFilter);
+    when(resultFilterBuilder.<Vertex>buildFor(query)).thenReturn(resultFilter);
     return resultFilter;
   }
 
@@ -437,11 +431,11 @@ public class TinkerPopLowLevelAPITest {
     Edge latestEdgeWithId = anEdge().withID(ID).withRev(FIRST_REVISION).build();
     Edge latestEdgeWithId2 = anEdge().withID(ID2).withRev(SECOND_REVISION).build();
     anEdgeSearchResult()//
-        .forProperty(PROPERTY_NAME, PROPERTY_VALUE)//
-        .containsEdge(latestEdgeWithId)//
-        .andEdge(latestEdgeWithId2)//
-        .andEdge(anEdge().withID(ID2).withRev(FIRST_REVISION).build())//
-        .foundInDatabase(dbMock);
+      .forProperty(PROPERTY_NAME, PROPERTY_VALUE)//
+      .containsEdge(latestEdgeWithId)//
+      .andEdge(latestEdgeWithId2)//
+      .andEdge(anEdge().withID(ID2).withRev(FIRST_REVISION).build())//
+      .foundInDatabase(dbMock);
 
     // action
     Iterator<Edge> edges = instance.findLatestEdgesByProperty(RELATION_TYPE, PROPERTY_NAME, PROPERTY_VALUE);
@@ -469,19 +463,15 @@ public class TinkerPopLowLevelAPITest {
     Edge notLatestEdge1 = anEdge().withID(ID).withRev(FIRST_REVISION).build();
     Edge latestEdge2 = anEdge().withID(ID2).withRev(FIRST_REVISION).build();
     Vertex latestVertexWithEdges = aVertex()//
-        .withOutgoingEdge(latestEdge1)//
-        .withOutgoingEdge(notLatestEdge1)//
-        .withOutgoingEdge(latestEdge2)//
-        .build();
-    Vertex notLatestVertex = aVertex() //
-        .withIncomingEdgeWithLabel(VERSION_OF)//
-        .withOutgoingEdge(anEdge().build())//
-        .build();
+      .withOutgoingEdge(latestEdge1)//
+      .withOutgoingEdge(notLatestEdge1)//
+      .withOutgoingEdge(latestEdge2)//
+      .build();
     aVertexSearchResult()//
-        .forId(ID)//
-        .containsVertex(latestVertexWithEdges)//
-        .andVertex(notLatestVertex) //
-        .foundInDatabase(dbMock);
+      .forLatest()
+      .forId(ID)//
+      .containsVertex(latestVertexWithEdges)//
+      .foundInDatabase(dbMock);
 
     // action
     Iterator<Edge> edges = instance.findEdgesBySource(RELATION_TYPE, ID);
@@ -493,7 +483,7 @@ public class TinkerPopLowLevelAPITest {
   @Test
   public void findEdgesBySourceReturnsAnEmptyIteratorIfTheSourceVertexCannotBeFound() {
     // setup
-    anEmptyVertexSearchResult().forId(ID).foundInDatabase(dbMock);
+    anEmptyVertexSearchResult().forLatest().forId(ID).foundInDatabase(dbMock);
 
     // action
     Iterator<Edge> edges = instance.findEdgesBySource(RELATION_TYPE, ID);
@@ -506,7 +496,8 @@ public class TinkerPopLowLevelAPITest {
   public void findEdgesBySourceReturnsAnEmptyIteratorIfTheSourceVertexHasNoOutgoingEdges() {
     // setup
     Vertex latestVertexWithoutEdges = aVertex().build();
-    aVertexSearchResult().containsVertex(latestVertexWithoutEdges).forId(ID).foundInDatabase(dbMock);;
+    aVertexSearchResult().forLatest().containsVertex(latestVertexWithoutEdges).forId(ID).foundInDatabase(dbMock);
+    ;
 
     // action
     Iterator<Edge> edges = instance.findEdgesBySource(RELATION_TYPE, ID);
@@ -520,13 +511,13 @@ public class TinkerPopLowLevelAPITest {
     // setup
     Vertex latestVertexWithout = aVertex().build();
     Vertex notlatestVertexWithEdges = aVertex()//
-        .withIncomingEdgeWithLabel(VERSION_OF)//
-        .withOutgoingEdge(anEdge().build())//
-        .build();
-    aVertexSearchResult().forId(ID) //
-        .containsVertex(latestVertexWithout) //
-        .andVertex(notlatestVertexWithEdges) //
-        .foundInDatabase(dbMock);
+      .withIncomingEdgeWithLabel(VERSION_OF)//
+      .withOutgoingEdge(anEdge().build())//
+      .build();
+    aVertexSearchResult().forLatest().forId(ID) //
+      .containsVertex(latestVertexWithout) //
+      .andVertex(notlatestVertexWithEdges) //
+      .foundInDatabase(dbMock);
 
     // action
     Iterator<Edge> edges = instance.findEdgesBySource(RELATION_TYPE, ID);
@@ -542,19 +533,15 @@ public class TinkerPopLowLevelAPITest {
     Edge notLatestEdge1 = anEdge().withID(ID).withRev(FIRST_REVISION).build();
     Edge latestEdge2 = anEdge().withID(ID2).withRev(FIRST_REVISION).build();
     Vertex latestVertexWithEdges = aVertex()//
-        .withIncomingEdge(latestEdge1)//
-        .withIncomingEdge(notLatestEdge1)//
-        .withIncomingEdge(latestEdge2)//
-        .build();
-    Vertex notLatestVertex = aVertex() //
-        .withIncomingEdgeWithLabel(VERSION_OF)//
-        .withIncomingEdge(anEdge().build())//
-        .build();
+      .withIncomingEdge(latestEdge1)//
+      .withIncomingEdge(notLatestEdge1)//
+      .withIncomingEdge(latestEdge2)//
+      .build();
     aVertexSearchResult()//
-        .forId(ID)//
-        .containsVertex(latestVertexWithEdges)//
-        .andVertex(notLatestVertex) //
-        .foundInDatabase(dbMock);
+      .forLatest() //
+      .forId(ID)//
+      .containsVertex(latestVertexWithEdges)//
+      .foundInDatabase(dbMock);
 
     // action
     Iterator<Edge> edges = instance.findEdgesByTarget(RELATION_TYPE, ID);
@@ -566,7 +553,7 @@ public class TinkerPopLowLevelAPITest {
   @Test
   public void findEdgesByTargetReturnsAnEmptyIteratorIfTheTargetVertexCannotBeFound() {
     // setup
-    anEmptyVertexSearchResult().forId(ID).foundInDatabase(dbMock);
+    anEmptyVertexSearchResult().forLatest().forId(ID).foundInDatabase(dbMock);
 
     // action
     Iterator<Edge> edges = instance.findEdgesByTarget(RELATION_TYPE, ID);
@@ -579,7 +566,10 @@ public class TinkerPopLowLevelAPITest {
   public void findEdgesByTargetReturnsAnEmptyIteratorIfTheTargetVertexHasNoIncomingEdges() {
     // setup
     Vertex latestVertexWithoutEdges = aVertex().build();
-    aVertexSearchResult().containsVertex(latestVertexWithoutEdges).forId(ID).foundInDatabase(dbMock);;
+    aVertexSearchResult().forLatest().forId(ID)//
+      .containsVertex(latestVertexWithoutEdges) //
+      .foundInDatabase(dbMock);
+    ;
 
     // action
     Iterator<Edge> edges = instance.findEdgesByTarget(RELATION_TYPE, ID);
@@ -592,14 +582,9 @@ public class TinkerPopLowLevelAPITest {
   public void findEdgesByTargetReturnsAnEmptyIteratorIfTheLatestTargetVertexHasNoIncomingEdges() {
     // setup
     Vertex latestVertexWithout = aVertex().build();
-    Vertex notlatestVertexWithEdges = aVertex()//
-        .withIncomingEdgeWithLabel(VERSION_OF)//
-        .withIncomingEdge(anEdge().build())//
-        .build();
-    aVertexSearchResult().forId(ID) //
-        .containsVertex(latestVertexWithout) //
-        .andVertex(notlatestVertexWithEdges) //
-        .foundInDatabase(dbMock);
+    aVertexSearchResult().forLatest().forId(ID) //
+      .containsVertex(latestVertexWithout) //
+      .foundInDatabase(dbMock);
 
     // action
     Iterator<Edge> edges = instance.findEdgesByTarget(RELATION_TYPE, ID);
@@ -613,10 +598,10 @@ public class TinkerPopLowLevelAPITest {
     // setup
     Edge edge = anEdge().build();
     anEdgeSearchResult() //
-        .forId(ID) //
-        .forProperty(DB_REV_PROP_NAME, FIRST_REVISION) //
-        .containsEdge(edge) //
-        .foundInDatabase(dbMock);
+      .forId(ID) //
+      .forProperty(DB_REV_PROP_NAME, FIRST_REVISION) //
+      .containsEdge(edge) //
+      .foundInDatabase(dbMock);
 
     // action
     Edge foundEdge = instance.getEdgeWithRevision(RELATION_TYPE, ID, FIRST_REVISION);
@@ -629,9 +614,9 @@ public class TinkerPopLowLevelAPITest {
   public void getEdgeWithRevisionReturnsNullIfTheEdgeIsNotFound() {
     // setup
     anEmptyEdgeSearchResult() //
-        .forId(ID) //
-        .forProperty(DB_REV_PROP_NAME, FIRST_REVISION) //
-        .foundInDatabase(dbMock);
+      .forId(ID) //
+      .forProperty(DB_REV_PROP_NAME, FIRST_REVISION) //
+      .foundInDatabase(dbMock);
 
     // action
     Edge foundEdge = instance.getEdgeWithRevision(RELATION_TYPE, ID, FIRST_REVISION);
@@ -647,10 +632,10 @@ public class TinkerPopLowLevelAPITest {
     Edge edge1 = anEdge().build();
     Edge edge2 = anEdge().build();
     anEdgeSearchResult()//
-        .withoutProperty(PROPERTY_NAME)//
-        .containsEdge(edge1) //
-        .containsEdge(edge2) //
-        .foundInDatabase(dbMock);
+      .withoutProperty(PROPERTY_NAME)//
+      .containsEdge(edge1) //
+      .containsEdge(edge2) //
+      .foundInDatabase(dbMock);
 
     // action
     Iterator<Edge> vertices = instance.findEdgesWithoutProperty(RELATION_TYPE, PROPERTY_NAME);
@@ -682,17 +667,17 @@ public class TinkerPopLowLevelAPITest {
     Edge edge3 = anEdge().withID(ID2).withRev(FIRST_REVISION).build();
 
     anEdgeSearchResult()//
-        .containsEdge(edge1)//
-        .andEdge(edge2)//
-        .andEdge(edge3)//
-        .foundByGraphQuery(graphQuery);
+      .containsEdge(edge1)//
+      .andEdge(edge2)//
+      .andEdge(edge3)//
+      .foundByGraphQuery(graphQuery);
 
     TimbuctooQuery query = aQuery().createsGraphQueryForDB(queryBuilder, graphQuery).build();
 
     TinkerPopResultFilter<Edge> resultFilter = mock(TinkerPopResultFilter.class);
-    when(resultFilterBuilder.<Edge> buildFor(query)).thenReturn(resultFilter);
+    when(resultFilterBuilder.<Edge>buildFor(query)).thenReturn(resultFilter);
 
-    List<Edge> edges = Lists.<Edge> newArrayList(edge1, edge2, edge3);
+    List<Edge> edges = Lists.<Edge>newArrayList(edge1, edge2, edge3);
     when(resultFilter.filter(Matchers.anyCollectionOf(Edge.class))).thenReturn(edges);
 
     // action
@@ -715,20 +700,20 @@ public class TinkerPopLowLevelAPITest {
     Edge edge3 = anEdge().withID(ID2).withRev(FIRST_REVISION).build();
 
     anEdgeSearchResult()//
-        .containsEdge(edge1)//
-        .andEdge(edge2)//
-        .andEdge(edge3)//
-        .foundByGraphQuery(graphQuery);
+      .containsEdge(edge1)//
+      .andEdge(edge2)//
+      .andEdge(edge3)//
+      .foundByGraphQuery(graphQuery);
 
     TimbuctooQuery query = aQuery()//
-        .searchesLatestOnly(true)//
-        .createsGraphQueryForDB(queryBuilder, graphQuery)//
-        .build();
+      .searchesLatestOnly(true)//
+      .createsGraphQueryForDB(queryBuilder, graphQuery)//
+      .build();
 
     TinkerPopResultFilter<Edge> resultFilter = mock(TinkerPopResultFilter.class);
-    when(resultFilterBuilder.<Edge> buildFor(query)).thenReturn(resultFilter);
+    when(resultFilterBuilder.<Edge>buildFor(query)).thenReturn(resultFilter);
 
-    List<Edge> edges = Lists.<Edge> newArrayList(edge1, edge2, edge3);
+    List<Edge> edges = Lists.<Edge>newArrayList(edge1, edge2, edge3);
     when(resultFilter.filter(Matchers.anyCollectionOf(Edge.class))).thenReturn(edges);
 
     // action
@@ -750,9 +735,9 @@ public class TinkerPopLowLevelAPITest {
 
     @SuppressWarnings("unchecked")
     TinkerPopResultFilter<Edge> resultFilter = mock(TinkerPopResultFilter.class);
-    when(resultFilterBuilder.<Edge> buildFor(query)).thenReturn(resultFilter);
+    when(resultFilterBuilder.<Edge>buildFor(query)).thenReturn(resultFilter);
 
-    List<Edge> edges = Lists.<Edge> newArrayList();
+    List<Edge> edges = Lists.<Edge>newArrayList();
     when(resultFilter.filter(Matchers.anyCollectionOf(Edge.class))).thenReturn(edges);
 
     // action
@@ -769,10 +754,10 @@ public class TinkerPopLowLevelAPITest {
     // setup
     Edge edgeWithHighestRevision = anEdge().withRev(THIRD_REVISION).build();
     anEdgeSearchResult().forId(ID).forType(RELATION_TYPE)//
-        .containsEdge(anEdge().withRev(FIRST_REVISION).build())//
-        .andEdge(edgeWithHighestRevision)//
-        .andEdge(anEdge().withRev(SECOND_REVISION).build())//
-        .foundInDatabase(dbMock);
+      .containsEdge(anEdge().withRev(FIRST_REVISION).build())//
+      .andEdge(edgeWithHighestRevision)//
+      .andEdge(anEdge().withRev(SECOND_REVISION).build())//
+      .foundInDatabase(dbMock);
 
     // action
     Edge foundEdge = instance.getLatestEdgeById(RELATION_TYPE, ID);
@@ -807,7 +792,7 @@ public class TinkerPopLowLevelAPITest {
 
     // verify
     assertThat(Lists.newArrayList(latestEdges), //
-        containsInAnyOrder(latestEdge1, latestEdge2));
+      containsInAnyOrder(latestEdge1, latestEdge2));
   }
 
   @Test
@@ -824,7 +809,7 @@ public class TinkerPopLowLevelAPITest {
 
     // verify
     assertThat(Lists.newArrayList(latestEdges), //
-        containsInAnyOrder(latestEdge1));
+      containsInAnyOrder(latestEdge1));
   }
 
   @Test
@@ -833,11 +818,11 @@ public class TinkerPopLowLevelAPITest {
     Edge edgeWithLatestRev1 = anEdge().withID(ID).withRev(SECOND_REVISION).build();
     Edge edgeWithLatestRev2 = anEdge().withID(ID2).withRev(SECOND_REVISION).build();
     anEdgeSearchResult() //
-        .containsEdge(anEdge().withID(ID).withRev(FIRST_REVISION).build()) //
-        .andEdge(edgeWithLatestRev1) //
-        .andEdge(anEdge().withID(ID2).withRev(FIRST_REVISION).build()) //
-        .andEdge(edgeWithLatestRev2) //
-        .foundInDatabase(dbMock);
+      .containsEdge(anEdge().withID(ID).withRev(FIRST_REVISION).build()) //
+      .andEdge(edgeWithLatestRev1) //
+      .andEdge(anEdge().withID(ID2).withRev(FIRST_REVISION).build()) //
+      .andEdge(edgeWithLatestRev2) //
+      .foundInDatabase(dbMock);
 
     // action
     Iterator<Edge> actualEdges = instance.getLatestEdgesOf(RELATION_TYPE);

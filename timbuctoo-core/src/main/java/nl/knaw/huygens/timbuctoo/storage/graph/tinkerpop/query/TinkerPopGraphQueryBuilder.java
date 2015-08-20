@@ -1,20 +1,20 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query;
 
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
-
-import java.util.List;
-import java.util.Map.Entry;
-
+import com.google.common.collect.Maps;
+import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.GraphQuery;
+import com.tinkerpop.blueprints.Predicate;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.AbstractGraphQueryBuilder;
 import nl.knaw.huygens.timbuctoo.storage.graph.NoSuchFieldException;
 import nl.knaw.huygens.timbuctoo.storage.graph.PropertyBusinessRules;
 
-import com.google.common.collect.Maps;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.GraphQuery;
-import com.tinkerpop.blueprints.Predicate;
+import java.util.List;
+import java.util.Map.Entry;
+
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.IS_LATEST;
 
 public class TinkerPopGraphQueryBuilder extends AbstractGraphQueryBuilder<GraphQuery> {
   static class InCollectionPredicate implements Predicate {
@@ -55,6 +55,10 @@ public class TinkerPopGraphQueryBuilder extends AbstractGraphQueryBuilder<GraphQ
 
     if (searchByType) {
       query.has(ELEMENT_TYPES, IS_OF_TYPE, TypeNames.getInternalName(type));
+    }
+
+    if(searchLatestOnly){
+      query.has(IS_LATEST, true);
     }
 
     return query;

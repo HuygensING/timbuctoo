@@ -21,6 +21,7 @@ import static com.tinkerpop.blueprints.Direction.OUT;
 import static nl.knaw.huygens.timbuctoo.model.Entity.DB_ID_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.DB_REV_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.IS_LATEST;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -141,6 +142,11 @@ public class VertexMockBuilder {
     return this;
   }
 
+  public VertexMockBuilder isLatest() {
+    addProperty(IS_LATEST, true);
+    return this;
+  }
+
   private void addProperty(String name, Object value) {
     properties.put(name, value);
   }
@@ -164,4 +170,6 @@ public class VertexMockBuilder {
     addEdge(edge, edge.getLabel(), outgoingEdges);
     return this;
   }
+
+
 }

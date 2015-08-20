@@ -560,7 +560,7 @@ public class TinkerPopStorage implements GraphStorage {
     VertexConverter<T> converter = elementConverterFactory.forType(type);
     String propertyName = converter.getPropertyName(field);
 
-    Iterator<Vertex> iterator = lowLevelAPI.findVerticesByProperty(type, propertyName, value);
+    Iterator<Vertex> iterator = lowLevelAPI.findLatestVerticesByProperty(type, propertyName, value);
 
     if (iterator.hasNext()) {
       entity = converter.convertToEntity(iterator.next());

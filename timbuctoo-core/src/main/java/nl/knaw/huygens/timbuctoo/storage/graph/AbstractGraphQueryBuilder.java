@@ -15,6 +15,7 @@ public abstract class AbstractGraphQueryBuilder<T> {
   protected Map<String, Object> hasProperties;
   protected boolean searchByType;
   protected Map<String, List<?>> inCollectionProperties;
+  protected boolean searchLatestOnly;
 
   public AbstractGraphQueryBuilder(Class<? extends Entity> type, PropertyBusinessRules businessRules) {
     this.type = type;
@@ -65,4 +66,7 @@ public abstract class AbstractGraphQueryBuilder<T> {
     this.inCollectionProperties = inCollectionProperties;
   }
 
+  public void searchLatestOnly(boolean searchLatestOnly) {
+    this.searchLatestOnly = searchLatestOnly;
+  }
 }
