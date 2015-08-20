@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexRequest;
+import nl.knaw.huygens.timbuctoo.index.IndexRequestFactory;
 import nl.knaw.huygens.timbuctoo.index.IndexRequests;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
@@ -52,13 +53,15 @@ public class AdminResourceV2_1 {
   private final IndexRequests indexRequestStatus;
   private final TypeRegistry typeRegistry;
   private final VRECollection vreCollection;
+  private final IndexRequestFactory indexRequestFactory;
 
   @Inject
-  public AdminResourceV2_1(Broker broker, IndexRequests indexRequestStatus, TypeRegistry typeRegistry, VRECollection vreCollection) {
+  public AdminResourceV2_1(Broker broker, IndexRequests indexRequestStatus, TypeRegistry typeRegistry, VRECollection vreCollection, IndexRequestFactory indexRequestFactory) {
     this.broker = broker;
     this.indexRequestStatus = indexRequestStatus;
     this.typeRegistry = typeRegistry;
     this.vreCollection = vreCollection;
+    this.indexRequestFactory = indexRequestFactory;
   }
 
   @POST
@@ -85,7 +88,7 @@ public class AdminResourceV2_1 {
     try {
       Producer producer = broker.getProducer(INDEX_PRODUCER, INDEX_QUEUE);
 
-      String id = indexRequestStatus.add(IndexRequest.forType(type));
+      String id = indexRequestStatus.add(indexRequestFactory.forType(type));
 
       producer.send(Action.forRequestWithId(ActionType.MOD, id));
 

@@ -38,12 +38,14 @@ public class IndexService extends ConsumerService implements Runnable {
 
   private final IndexRequests indexRequests;
   private final IndexerFactory indexerFactory;
+  private final IndexRequestFactory indexRequestFactory;
 
   @Inject
-  public IndexService(Broker broker, IndexRequests indexRequests, IndexerFactory indexerFactory) throws JMSException {
+  public IndexService(Broker broker, IndexRequests indexRequests, IndexRequestFactory indexRequestFactory, IndexerFactory indexerFactory) throws JMSException {
     super(broker, Broker.INDEX_QUEUE, "IndexService");
     this.indexRequests = indexRequests;
     this.indexerFactory = indexerFactory;
+    this.indexRequestFactory = indexRequestFactory;
   }
 
   /**
@@ -78,7 +80,7 @@ public class IndexService extends ConsumerService implements Runnable {
     if (action.hasRequestId()) {
       indexRequest = indexRequests.get(action.getRequestId());
     } else {
-      indexRequest = IndexRequest.forEntity(action.getType(), action.getId());
+      indexRequest = indexRequestFactory.forEntity(action.getType(), action.getId());
     }
     return indexRequest;
   }

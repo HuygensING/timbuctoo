@@ -32,7 +32,7 @@ public class IndexServiceTest {
   public void setUp() throws Exception {
     setupIndexerFactory();
     setupIndexRequests();
-    instance = new IndexService(mock(Broker.class), indexRequests, indexerFactory);
+    instance = new IndexService(mock(Broker.class), indexRequests, new IndexRequestFactory(), indexerFactory);
   }
 
   private void setupIndexerFactory() {
