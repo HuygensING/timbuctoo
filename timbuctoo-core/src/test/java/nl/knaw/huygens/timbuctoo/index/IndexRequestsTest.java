@@ -26,7 +26,7 @@ public class IndexRequestsTest {
   @Before
   public void setup() {
     MockitoAnnotations.initMocks(this);
-    indexRequest = IndexRequest.forType(TYPE);
+    indexRequest = IndexRequestImpl.forType(TYPE);
     instance = new IndexRequests(TIMEOUT);
   }
 
@@ -51,7 +51,7 @@ public class IndexRequestsTest {
     Thread.sleep(TIMEOUT);
 
     // action
-    instance.add(IndexRequest.forType(TYPE));
+    instance.add(IndexRequestImpl.forType(TYPE));
 
     // verify
     IndexRequest notFoundAfterTimeout = instance.get(id);

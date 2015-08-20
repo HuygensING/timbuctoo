@@ -5,6 +5,8 @@ import com.sun.jersey.api.client.WebResource;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexRequest;
+import nl.knaw.huygens.timbuctoo.index.IndexRequestFactory;
+import nl.knaw.huygens.timbuctoo.index.IndexRequestImpl;
 import nl.knaw.huygens.timbuctoo.index.IndexRequests;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
@@ -35,7 +37,6 @@ import static nl.knaw.huygens.timbuctoo.config.Paths.V2_1_PATH;
 import static nl.knaw.huygens.timbuctoo.messages.Broker.INDEX_QUEUE;
 import static nl.knaw.huygens.timbuctoo.rest.resources.ActionMatcher.likeAction;
 import static nl.knaw.huygens.timbuctoo.rest.resources.AdminResourceV2_1.INDEX_PRODUCER;
-import static nl.knaw.huygens.timbuctoo.rest.resources.IndexRequestMatcher.likeIndexRequest;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
@@ -55,11 +56,14 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
   private IndexRequests indexRequestStatus;
   public static final ClientIndexRequest CLIENT_INDEX_REQUEST = new ClientIndexRequest(TypeNames.getExternalName(TYPE));
   private VRE vre;
+  private IndexRequestFactory indexRequestFactory;
+  private IndexRequest indexRequest;
 
   @Before
   public void setup() throws JMSException, ModelException {
     setupBroker();
-    setupIndexRequestStatus();
+    setupIndexRequests();
+    setupIndexRequestFactory();
     TypeRegistry typeRegistry = injector.getInstance(TypeRegistry.class);
     typeRegistry.init(TYPE.getPackage().getName());
     numberOfCollectionsToIndex = typeRegistry.getPrimitiveDomainEntityTypes().size();
@@ -67,9 +71,16 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
     makeVREAvailable(vre, VRE_ID);
   }
 
-  private void setupIndexRequestStatus() {
+  private void setupIndexRequestFactory() {
+    indexRequestFactory = injector.getInstance(IndexRequestFactory.class);
+    indexRequest = mock(IndexRequest.class);
+    when(indexRequestFactory.forType(TYPE)).thenReturn(indexRequest);
+  }
+
+
+  private void setupIndexRequests() {
     indexRequestStatus = injector.getInstance(IndexRequests.class);
-    when(indexRequestStatus.add(any(IndexRequest.class))).thenReturn(REQUEST_ID);
+    when(indexRequestStatus.add(any(IndexRequestImpl.class))).thenReturn(REQUEST_ID);
   }
 
   private void setupBroker() throws JMSException {
@@ -108,7 +119,9 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
     String location = response.getHeaders().getFirst(HttpHeaders.LOCATION);
     assertThat(location, is(expectedLocationHeader));
 
-    verify(indexRequestStatus).add(argThat(likeIndexRequest().withType(TYPE)));
+
+    verify(indexRequestFactory).forType(TYPE);
+    verify(indexRequestStatus).add(indexRequest);
     verify(indexProducer).send(argThat( //
       likeAction() //
         .withActionType(ActionType.MOD) //
@@ -198,7 +211,7 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
     // setup
     setupUserWithRoles(VRE_ID, USER_ID, UserRoles.ADMIN_ROLE);
     when(vre.inScope(TYPE)).thenReturn(true);
-    when(indexRequestStatus.get(REQUEST_ID)).thenReturn(IndexRequest.forType(TYPE));
+    when(indexRequestStatus.get(REQUEST_ID)).thenReturn(IndexRequestImpl.forType(TYPE));
 
 
     // action
@@ -206,7 +219,7 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
 
     // verify
     verifyResponseStatus(response, OK);
-    assertThat(response.getEntity(String.class), is(IndexRequest.forType(TYPE).toClientRep()));
+    assertThat(response.getEntity(String.class), is(IndexRequestImpl.forType(TYPE).toClientRep()));
   }
 
   @Test
@@ -262,7 +275,7 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
     // setup
     setupUserWithRoles(VRE_ID, USER_ID, UserRoles.ADMIN_ROLE);
     when(vre.inScope(TYPE)).thenReturn(false);
-    when(indexRequestStatus.get(REQUEST_ID)).thenReturn(IndexRequest.forType(TYPE));
+    when(indexRequestStatus.get(REQUEST_ID)).thenReturn(IndexRequestImpl.forType(TYPE));
 
 
     // action

@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
-import nl.knaw.huygens.timbuctoo.index.IndexRequest;
+import nl.knaw.huygens.timbuctoo.index.IndexRequestImpl;
 import nl.knaw.huygens.timbuctoo.index.Indexer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
@@ -27,7 +27,7 @@ public abstract class AbstractIndexerTest {
   protected IndexManager indexManager;
   protected Indexer instance;
   protected List<ProjectADomainEntity> entities;
-  private IndexRequest request;
+  private IndexRequestImpl request;
 
   @Before
   public void setUp() throws Exception {
@@ -55,7 +55,7 @@ public abstract class AbstractIndexerTest {
     entities.add(createEntityWithID(ID_1));
     entities.add(createEntityWithID(ID_2));
 
-    request = mock(IndexRequest.class);
+    request = mock(IndexRequestImpl.class);
     doReturn(TYPE).when(request).getType();
     doReturn(StorageIteratorStub.newInstance(entities)).when(request).getEntities(repository);
   }

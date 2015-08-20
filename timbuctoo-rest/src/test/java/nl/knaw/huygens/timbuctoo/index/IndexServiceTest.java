@@ -26,7 +26,7 @@ public class IndexServiceTest {
   private IndexRequests indexRequests;
   private IndexService instance;
   private IndexRequestFactory indexRequestFactory;
-  private IndexRequest indexRequestFromFactory;
+  private IndexRequestImpl indexRequestFromFactory;
 
 
   @Before
@@ -39,7 +39,7 @@ public class IndexServiceTest {
 
   private void setupIndexRequestFactory() {
     indexRequestFactory = mock(IndexRequestFactory.class);
-    indexRequestFromFactory = mock(IndexRequest.class);
+    indexRequestFromFactory = mock(IndexRequestImpl.class);
     when(indexRequestFactory.forEntity(TYPE, ENTITY_ID)).thenReturn(indexRequestFromFactory);
   }
 
@@ -50,7 +50,7 @@ public class IndexServiceTest {
   }
 
   private void setupIndexRequests() {
-    indexRequestFromIndexRequests = mock(IndexRequest.class);
+    indexRequestFromIndexRequests = mock(IndexRequestImpl.class);
     indexRequests = mock(IndexRequests.class);
     when(indexRequests.get(REQUEST_ID)).thenReturn(indexRequestFromIndexRequests);
   }
@@ -61,7 +61,7 @@ public class IndexServiceTest {
     instance.executeAction(ACTION_WITH_REQUEST_ID);
 
     // verify
-    verify(indexRequestFromIndexRequests).index(indexer);
+    verify(indexer).executeFor(indexRequestFromIndexRequests);
   }
 
   @Test

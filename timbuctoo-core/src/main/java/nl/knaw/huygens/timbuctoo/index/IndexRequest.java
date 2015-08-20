@@ -1,99 +1,37 @@
 package nl.knaw.huygens.timbuctoo.index;
 
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 
 import java.time.LocalDateTime;
 
-public class IndexRequest {
+public interface IndexRequest {
+  void setDesc(String desc);
 
-  public static final String INDEX_ALL = "Index all";
-  private String desc;
-  private Class<? extends DomainEntity> type;
-  private Status status;
-  private LocalDateTime lastChanged;
-  private String id;
+  String getDesc();
 
-  private IndexRequest() {
-    status = Status.REQUESTED;
-    lastChanged = LocalDateTime.now();
-  }
+  String toClientRep();
 
-  public static IndexRequest forEntity(Class<? extends DomainEntity> type, String id) {
-    IndexRequest indexRequest = new IndexRequest();
-    indexRequest.setId(id);
-    indexRequest.setType(type);
-    indexRequest.setDesc(String.format("Index request for [%s] with id [%s]", TypeNames.getExternalName(type), id));
-    return indexRequest;
-  }
+  Class<? extends DomainEntity> getType();
 
-  public static IndexRequest forType(Class<? extends DomainEntity> type) {
-    IndexRequest indexRequest = new IndexRequest();
-    indexRequest.setType(type);
-    indexRequest.setDesc(String.format("Index request for [%s]", TypeNames.getExternalName(type)));
-    return indexRequest;
-  }
+  void setType(Class<? extends DomainEntity> type);
 
-  private void setDesc(String desc) {
-    this.desc = desc;
-  }
+  Status getStatus();
 
-  public String getDesc() {
-    return desc;
-  }
+  void inProgress();
 
-  public String toClientRep() {
-    return String.format("{\"desc\":\"%s\", \"status\":\"%s\"}", desc, status);
-  }
+  void done();
 
-  public Class<? extends DomainEntity> getType() {
-    return type;
-  }
+  LocalDateTime getLastChanged();
 
-  private void setType(Class<? extends DomainEntity> type) {
-    this.type = type;
-  }
+  void setId(String id);
 
-  public Status getStatus() {
-    return status;
-  }
+  String getId();
 
-  public void inProgress() {
-    status = Status.IN_PROGRESS;
-    lastChanged = LocalDateTime.now();
-  }
+  StorageIterator<? extends DomainEntity> getEntities(Repository repository);
 
-  public void done() {
-    status = Status.DONE;
-    lastChanged = LocalDateTime.now();
-  }
-
-  public LocalDateTime getLastChanged() {
-    return lastChanged;
-  }
-
-  private void setId(String id) {
-    this.id = id;
-  }
-
-  public String getId() {
-    return id;
-  }
-
-  public StorageIterator<? extends DomainEntity> getEntities(Repository repository) {
-    if(id != null){
-      return StorageIteratorStub.newInstance(repository.getEntityOrDefaultVariation(type, id));
-    }
-
-    return repository.getDomainEntities(type);
-  }
-
-  public void index(Indexer indexer) {
-    throw new UnsupportedOperationException("Not implemented yet");
-  }
+  void index(Indexer indexer);
 
   public enum Status {
     REQUESTED,

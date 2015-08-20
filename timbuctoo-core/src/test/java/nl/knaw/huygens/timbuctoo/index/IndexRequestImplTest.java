@@ -22,7 +22,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class IndexRequestTest {
+public class IndexRequestImplTest {
 
   public static final Class<ProjectADomainEntity> TYPE = ProjectADomainEntity.class;
   public static final String ID = "id";
@@ -36,7 +36,7 @@ public class IndexRequestTest {
 
   @Test
   public void doneSetsTheLastChangedToNowAndTheStatusToDONE() throws InterruptedException {
-    IndexRequest indexRequest = IndexRequest.forType(TYPE);
+    IndexRequestImpl indexRequest = IndexRequestImpl.forType(TYPE);
     LocalDateTime created = indexRequest.getLastChanged();
     verifyStatus(indexRequest, REQUESTED);
     Thread.sleep(100);
@@ -55,13 +55,13 @@ public class IndexRequestTest {
     assertThat("done.isBefore(afterDone)", done.isBefore(afterDone), is(true));
   }
 
-  private void verifyStatus(IndexRequest indexRequest, IndexRequest.Status expectedStatus) {
+  private void verifyStatus(IndexRequestImpl indexRequest, IndexRequestImpl.Status expectedStatus) {
     assertThat(indexRequest.getStatus(), is(expectedStatus));
   }
 
   @Test
   public void inProgressSetsTheLastChangedToNowAndTheStatusToIN_PROGRESS() throws InterruptedException {
-    IndexRequest indexRequest = IndexRequest.forType(TYPE);
+    IndexRequestImpl indexRequest = IndexRequestImpl.forType(TYPE);
     LocalDateTime created = indexRequest.getLastChanged();
     verifyStatus(indexRequest, REQUESTED);
     Thread.sleep(100);
@@ -83,7 +83,7 @@ public class IndexRequestTest {
   @Test
   public void getEntitiesCallsRepositoryGetDomainEntitiesWhenTheClassIsInstantiatedWithForType() {
     // setup
-    IndexRequest instance = IndexRequest.forType(TYPE);
+    IndexRequestImpl instance = IndexRequestImpl.forType(TYPE);
 
     iterator = StorageIteratorStub.newInstance();
     when(repository.getDomainEntities(TYPE)).thenReturn(iterator);
@@ -99,7 +99,7 @@ public class IndexRequestTest {
   @Test
   public void getEntitiesCallsRepositoryGetEntityOrDefaultVariationWhenTheClassIsInstantiatedWithForEntity() {
     // setup
-    IndexRequest instance = IndexRequest.forEntity(TYPE, ID);
+    IndexRequestImpl instance = IndexRequestImpl.forEntity(TYPE, ID);
     ProjectADomainEntity entity = new ProjectADomainEntity();
     when(repository.getEntityOrDefaultVariation(TYPE, ID)).thenReturn(entity);
 

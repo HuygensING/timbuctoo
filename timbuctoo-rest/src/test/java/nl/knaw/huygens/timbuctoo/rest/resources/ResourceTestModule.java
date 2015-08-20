@@ -131,7 +131,7 @@ class ResourceTestModule extends JerseyServletModule {
       indexRegularSearchResultMapper = mock(IndexRegularSearchResultMapper.class);
       indexRelationSearchResultMapper = mock(IndexRelationSearchResultMapper.class);
       indexRequests = mock(IndexRequests.class);
-      indexRequestFactory = new IndexRequestFactory();
+      indexRequestFactory = mock(IndexRequestFactory.class);
 
 
     } catch (Exception e) {
@@ -146,7 +146,7 @@ class ResourceTestModule extends JerseyServletModule {
   public void cleanUpMocks() {
     reset(config, repository, userConfigurationHandler, jsonProvider, validator, mailSender, authenticationHandler, broker, indexProducer, persistenceProducer, indexManager, searchRequestValidator,
       searchParametersConverter, relationSearcher, regularClientSearchResultCreator, regularClientSearchResultCreator, basicAuthenticationHandler, changeHelper, vreCollection, autoCompleteResultConverter,
-      additionalfilterTranslator, indexRegularSearchResultMapper, indexRelationSearchResultMapper, indexRequests);
+      additionalfilterTranslator, indexRegularSearchResultMapper, indexRelationSearchResultMapper, indexRequests, indexRequestFactory);
   }
 
   @Override
