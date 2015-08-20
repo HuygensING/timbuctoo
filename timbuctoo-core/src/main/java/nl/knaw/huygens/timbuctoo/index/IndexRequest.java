@@ -91,6 +91,10 @@ public class IndexRequest {
     return repository.getDomainEntities(type);
   }
 
+  public void index(Indexer indexer) {
+    throw new UnsupportedOperationException("Not implemented yet");
+  }
+
   public enum Status {
     REQUESTED,
     IN_PROGRESS,

@@ -61,7 +61,7 @@ public class IndexServiceTest {
     instance.executeAction(ACTION_WITH_REQUEST_ID);
 
     // verify
-    verify(indexer).executeFor(indexRequestFromIndexRequests);
+    verify(indexRequestFromIndexRequests).index(indexer);
   }
 
   @Test
