@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.IS_LATEST;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getIdProperty;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getRevisionProperty;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getTypes;
@@ -90,7 +91,7 @@ public class TinkerPopStorage implements GraphStorage {
   public <T extends DomainEntity> void addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
     Vertex vertex = db.addVertex(null);
     // query helper, make it easier to find the latest vertex
-    vertex.setProperty(ElementFields.IS_LATEST, true);
+    vertex.setProperty(IS_LATEST, true);
     VertexAddAction<T> addAction = new VertexAddAction<T>(type, entity, vertex) {
       @Override
       protected VertexConverter<T> converter() {
@@ -107,6 +108,7 @@ public class TinkerPopStorage implements GraphStorage {
   @Override
   public <T extends SystemEntity> void addSystemEntity(Class<T> type, T entity) throws StorageException {
     Vertex vertex = db.addVertex(null);
+    vertex.setProperty(IS_LATEST, true);
 
     VertexAddAction<T> addAction = new VertexAddAction<T>(type, entity, vertex);
     VertexRollbackAction rollbackAction = new VertexRollbackAction(vertex);

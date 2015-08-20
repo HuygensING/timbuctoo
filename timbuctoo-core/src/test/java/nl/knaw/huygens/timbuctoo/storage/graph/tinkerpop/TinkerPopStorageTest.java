@@ -42,6 +42,7 @@ import static nl.knaw.huygens.timbuctoo.storage.graph.SubADomainEntityBuilder.aD
 import static nl.knaw.huygens.timbuctoo.storage.graph.SubARelationBuilder.aRelation;
 import static nl.knaw.huygens.timbuctoo.storage.graph.TestSystemEntityWrapperBuilder.aSystemEntity;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeMockBuilder.anEdge;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.IS_LATEST;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilder.aVertex;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.query.TimbuctooQueryMockBuilder.aQuery;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -142,7 +143,7 @@ public class TinkerPopStorageTest {
 
     // verify
     verify(converter).addValuesToElement(createdVertex, entity);
-    verify(createdVertex).setProperty(ElementFields.IS_LATEST, true);
+    verify(createdVertex).setProperty(IS_LATEST, true);
   }
 
   @Test(expected = ConversionException.class)
@@ -173,6 +174,19 @@ public class TinkerPopStorageTest {
     // verify
     verify(vertexConverter).addValuesToElement(createdVertex, entity);
     verify(dbMock).commit();
+  }
+
+  @Test
+  public void addSystemEntitySetsThePropertyIsLatestToTrue() throws Exception {
+    // setup
+    TestSystemEntityWrapper entity = aSystemEntity().build();
+    VertexConverter<TestSystemEntityWrapper> vertexConverter = vertexConverterCreatedFor(SYSTEM_ENTITY_TYPE);
+
+    // action
+    instance.addSystemEntity(SYSTEM_ENTITY_TYPE, entity);
+
+    // verify
+    verify(createdVertex).setProperty(IS_LATEST, true);
   }
 
   @Test(expected = StorageException.class)
