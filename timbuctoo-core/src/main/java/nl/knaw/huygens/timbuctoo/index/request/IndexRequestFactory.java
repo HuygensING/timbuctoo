@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.index;
+package nl.knaw.huygens.timbuctoo.index.request;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 

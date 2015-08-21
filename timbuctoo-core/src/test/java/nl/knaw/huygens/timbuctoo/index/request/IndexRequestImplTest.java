@@ -1,6 +1,7 @@
-package nl.knaw.huygens.timbuctoo.index;
+package nl.knaw.huygens.timbuctoo.index.request;
 
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.index.request.IndexRequestImpl;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
@@ -10,9 +11,9 @@ import test.variation.model.projecta.ProjectADomainEntity;
 
 import java.time.LocalDateTime;
 
-import static nl.knaw.huygens.timbuctoo.index.IndexRequest.Status.DONE;
-import static nl.knaw.huygens.timbuctoo.index.IndexRequest.Status.IN_PROGRESS;
-import static nl.knaw.huygens.timbuctoo.index.IndexRequest.Status.REQUESTED;
+import static nl.knaw.huygens.timbuctoo.index.request.IndexRequest.Status.DONE;
+import static nl.knaw.huygens.timbuctoo.index.request.IndexRequest.Status.IN_PROGRESS;
+import static nl.knaw.huygens.timbuctoo.index.request.IndexRequest.Status.REQUESTED;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;

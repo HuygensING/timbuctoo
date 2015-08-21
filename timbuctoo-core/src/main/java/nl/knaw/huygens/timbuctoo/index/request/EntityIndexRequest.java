@@ -1,16 +1,20 @@
-package nl.knaw.huygens.timbuctoo.index;
+package nl.knaw.huygens.timbuctoo.index.request;
 
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.index.IndexException;
+import nl.knaw.huygens.timbuctoo.index.Indexer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
 import java.time.LocalDateTime;
 
-public class CollectionIndexRequest implements IndexRequest{
+public class EntityIndexRequest implements IndexRequest {
   private final Class<? extends DomainEntity> type;
+  private final String id;
 
-  public CollectionIndexRequest(Class<? extends DomainEntity> type) {
+  public EntityIndexRequest(Class<? extends DomainEntity> type, String id) {
     this.type = type;
+    this.id = id;
   }
 
   @Override

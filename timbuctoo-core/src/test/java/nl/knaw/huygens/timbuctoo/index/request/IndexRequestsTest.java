@@ -1,6 +1,9 @@
-package nl.knaw.huygens.timbuctoo.index;
+package nl.knaw.huygens.timbuctoo.index.request;
 
 import com.google.common.cache.Cache;
+import nl.knaw.huygens.timbuctoo.index.request.IndexRequest;
+import nl.knaw.huygens.timbuctoo.index.request.IndexRequestImpl;
+import nl.knaw.huygens.timbuctoo.index.request.IndexRequests;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;

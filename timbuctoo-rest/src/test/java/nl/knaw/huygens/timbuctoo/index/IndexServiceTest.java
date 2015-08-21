@@ -1,6 +1,10 @@
 package nl.knaw.huygens.timbuctoo.index;
 
 import nl.knaw.huygens.timbuctoo.index.indexer.IndexerFactory;
+import nl.knaw.huygens.timbuctoo.index.request.IndexRequest;
+import nl.knaw.huygens.timbuctoo.index.request.IndexRequestFactory;
+import nl.knaw.huygens.timbuctoo.index.request.IndexRequestImpl;
+import nl.knaw.huygens.timbuctoo.index.request.IndexRequests;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;

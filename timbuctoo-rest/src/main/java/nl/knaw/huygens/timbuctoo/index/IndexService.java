@@ -24,6 +24,9 @@ package nl.knaw.huygens.timbuctoo.index;
 
 import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.index.indexer.IndexerFactory;
+import nl.knaw.huygens.timbuctoo.index.request.IndexRequest;
+import nl.knaw.huygens.timbuctoo.index.request.IndexRequestFactory;
+import nl.knaw.huygens.timbuctoo.index.request.IndexRequests;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.ConsumerService;

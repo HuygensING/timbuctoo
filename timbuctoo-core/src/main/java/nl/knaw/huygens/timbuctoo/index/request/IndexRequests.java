@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.index;
+package nl.knaw.huygens.timbuctoo.index.request;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -9,7 +9,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.UUID;
 
-import static nl.knaw.huygens.timbuctoo.index.IndexRequest.Status.DONE;
+import static nl.knaw.huygens.timbuctoo.index.request.IndexRequest.Status.DONE;
 
 // FIXME: Should be removed when ActiveMQ is made persistent. See TIM-403 and TIM
 @Singleton
