@@ -29,11 +29,6 @@ class EntityIndexRequest implements IndexRequest {
   }
 
   @Override
-  public String getDesc() {
-    return desc;
-  }
-
-  @Override
   public String toClientRep() {
     return String.format("{\"desc\":\"%s\", \"status\":\"%s\"}", desc, status);
   }
@@ -41,11 +36,6 @@ class EntityIndexRequest implements IndexRequest {
   @Override
   public Class<? extends DomainEntity> getType() {
     return type;
-  }
-
-  @Override
-  public void setType(Class<? extends DomainEntity> type) {
-//    this.type = type;
   }
 
   @Override
@@ -68,11 +58,6 @@ class EntityIndexRequest implements IndexRequest {
   @Override
   public LocalDateTime getLastChanged() {
     return lastChanged;
-  }
-
-  @Override
-  public void setId(String id) {
-//    this.id = id;
   }
 
   @Override

@@ -1,31 +1,44 @@
 package nl.knaw.huygens.timbuctoo.index.indexer;
 
 import nl.knaw.huygens.timbuctoo.index.IndexException;
-import nl.knaw.huygens.timbuctoo.index.Indexer;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import org.mockito.InOrder;
+import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import org.junit.Before;
+import org.junit.Test;
+import test.rest.model.projecta.ProjectADomainEntity;
 
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public class DeleteIndexerTest extends AbstractIndexerTest {
-  @Override
-  protected Indexer createInstance() {
-    return new DeleteIndexer(repository, indexManager);
+public class DeleteIndexerTest {
+  private static final Class<ProjectADomainEntity> TYPE = ProjectADomainEntity.class;
+  private static final String ID = "id";
+  private DeleteIndexer instance;
+  private IndexManager indexManager;
+
+  @Before
+  public void setup() {
+    indexManager = mock(IndexManager.class);
+    instance = new DeleteIndexer(indexManager);
   }
 
-  @Override
-  protected void verifyIndexActionExecuted(Class<? extends DomainEntity> type, String id) throws IndexException {
-    verify(indexManager).deleteEntity(type, id);
+  @Test
+  public void executeIndexActionClassIndexManagersDeleteEntity() throws Exception {
+    // action
+    instance.executeIndexAction(TYPE, ID);
+
+    // verify
+    verify(indexManager).deleteEntity(TYPE, ID);
   }
 
-  @Override
-  protected void verifyIndexActionExecuted(InOrder inOrder, Class<? extends DomainEntity> type, String id) throws IndexException {
-    inOrder.verify(indexManager).deleteEntity(type, id);
+  @Test(expected = IndexException.class)
+  public void executeIndexActionThrowsAnIndexExctionWhenTheIndexManagerDoes() throws Exception {
+    // setup
+    doThrow(IndexException.class).when(indexManager).deleteEntity(TYPE, ID);
+
+    // action
+    instance.executeIndexAction(TYPE, ID);
   }
 
-  @Override
-  protected void throwAnIndexExceptionWhenIndexMethodExecuted(Class<? extends DomainEntity> type, String id) throws IndexException {
-    doThrow(IndexException.class).when(indexManager).deleteEntity(type, id);
-  }
+
 }

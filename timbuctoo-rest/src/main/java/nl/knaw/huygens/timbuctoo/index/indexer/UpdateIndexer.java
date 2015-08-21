@@ -1,18 +1,20 @@
 package nl.knaw.huygens.timbuctoo.index.indexer;
 
-import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.index.Indexer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
-class UpdateIndexer extends AbstractIndexer {
+class UpdateIndexer implements Indexer{
 
-  public UpdateIndexer(Repository repository, IndexManager indexManager) {
-    super(repository, indexManager);
+  private final IndexManager indexManager;
+
+  public UpdateIndexer(IndexManager indexManager) {
+    this.indexManager = indexManager;
   }
 
   @Override
   public void executeIndexAction(Class<? extends DomainEntity> type, String id) throws IndexException {
-    getIndexManager().updateEntity(type, id);
+    indexManager.updateEntity(type, id);
   }
 }

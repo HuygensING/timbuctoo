@@ -27,10 +27,6 @@ class CollectionIndexRequest implements IndexRequest {
     this.desc = desc;
   }
 
-  @Override
-  public String getDesc() {
-    return desc;
-  }
 
   @Override
   public String toClientRep() {
@@ -40,11 +36,6 @@ class CollectionIndexRequest implements IndexRequest {
   @Override
   public Class<? extends DomainEntity> getType() {
     return type;
-  }
-
-  @Override
-  public void setType(Class<? extends DomainEntity> type) {
-//    this.type = type;
   }
 
   @Override
@@ -70,11 +61,6 @@ class CollectionIndexRequest implements IndexRequest {
   }
 
   @Override
-  public void setId(String id) {
-    throw new UnsupportedOperationException("Not implemented yet");
-  }
-
-  @Override
   public String getId() {
     throw new UnsupportedOperationException("Not implemented yet");
   }
@@ -86,7 +72,7 @@ class CollectionIndexRequest implements IndexRequest {
 
   @Override
   public void execute(Indexer indexer) throws IndexException {
-    for(StorageIterator<? extends DomainEntity> iterator = repository.getDomainEntities(type); iterator.hasNext();){
+    for (StorageIterator<? extends DomainEntity> iterator = repository.getDomainEntities(type); iterator.hasNext(); ) {
       indexer.executeIndexAction(type, iterator.next().getId());
     }
   }

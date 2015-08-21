@@ -1,18 +1,20 @@
 package nl.knaw.huygens.timbuctoo.index.indexer;
 
-import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.index.Indexer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
-public class DeleteIndexer extends AbstractIndexer {
+public class DeleteIndexer implements Indexer {
 
-  public DeleteIndexer(Repository repository, IndexManager indexManager) {
-    super(repository, indexManager);
+  private final IndexManager indexManager;
+
+  public DeleteIndexer(IndexManager indexManager) {
+    this.indexManager = indexManager;
   }
 
   @Override
   public void executeIndexAction(Class<? extends DomainEntity> type, String id) throws IndexException {
-    getIndexManager().deleteEntity(type, id);
+    indexManager.deleteEntity(type, id);
   }
 }

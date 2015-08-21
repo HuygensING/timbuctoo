@@ -19,11 +19,11 @@ public class IndexerFactory {
   public Indexer create(ActionType actionType) {
     switch (actionType) {
       case ADD:
-        return new AddIndexer(repository, indexManager);
+        return new AddIndexer(indexManager);
       case MOD:
-        return new UpdateIndexer(repository, indexManager);
+        return new UpdateIndexer(indexManager);
       case DEL:
-        return new DeleteIndexer(repository, indexManager);
+        return new DeleteIndexer(indexManager);
       default:
         throw new IllegalArgumentException(String.format("[%s] is not supported by the IndexFactory.", actionType));
     }
