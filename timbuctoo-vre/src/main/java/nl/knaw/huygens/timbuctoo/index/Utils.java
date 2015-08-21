@@ -27,12 +27,12 @@ import java.lang.reflect.Method;
 import org.apache.commons.lang.StringUtils;
 
 /**
- * Contains various index-related utility methods.
+ * Contains various execute-related utility methods.
  */
 public class Utils {
 
   /**
-   * Determines the index field name from the method name (only used if the
+   * Determines the execute field name from the method name (only used if the
    * annotation doesn't specify a fieldname).
    * 
    * @param method

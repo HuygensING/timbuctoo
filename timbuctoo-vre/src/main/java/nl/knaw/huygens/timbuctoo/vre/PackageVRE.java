@@ -202,11 +202,11 @@ public class PackageVRE implements VRE {
   }
 
   /**
-   * Returns the index if the index for the type can be found,
-   * else it returns an index that does nothing and returns an empty search result.
+   * Returns the execute if the execute for the type can be found,
+   * else it returns an execute that does nothing and returns an empty search result.
    *
-   * @param type the type to find the index for
-   * @return the index
+   * @param type the type to find the execute for
+   * @return the execute
    */
   private Index getIndexForType(Class<? extends DomainEntity> type) {
     return indexCollection.getIndexByType(type);
@@ -280,7 +280,7 @@ public class PackageVRE implements VRE {
       try {
         index.close();
       } catch (IndexException e) {
-        LOG.error("closing of index {} went wrong", index.getName(), e);
+        LOG.error("closing of execute {} went wrong", index.getName(), e);
       }
     }
   }

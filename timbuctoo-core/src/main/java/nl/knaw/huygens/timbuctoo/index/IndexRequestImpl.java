@@ -103,7 +103,7 @@ public class IndexRequestImpl implements IndexRequest {
   }
 
   @Override
-  public void index(Indexer indexer) {
+  public void execute(Indexer indexer) {
     throw new UnsupportedOperationException("Not implemented yet");
   }
 

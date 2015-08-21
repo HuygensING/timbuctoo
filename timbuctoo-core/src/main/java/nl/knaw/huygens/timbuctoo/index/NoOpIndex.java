@@ -71,7 +71,7 @@ public class NoOpIndex implements Index {
 
   @Override
   public <T extends FacetedSearchParameters<T>> FacetedSearchResult search(FacetedSearchParameters<T> searchParamaters) {
-    LOG.warn("Searching on a non existing index");
+    LOG.warn("Searching on a non existing execute");
     return new FacetedSearchResult();
   }
   @Override

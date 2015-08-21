@@ -200,7 +200,7 @@ public class JsonImporter extends CSVImporter {
       if (importId != null) {
         storeReference(importId, type, storedId);
       } else {
-        // has no new relations, index immediately
+        // has no new relations, execute immediately
         indexManager.addEntity(type, storedId);
       }
     }

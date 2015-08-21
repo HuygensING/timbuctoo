@@ -62,7 +62,7 @@ public class ReIndexer {
   }
 
   public void indexAsynchronous(Repository repository, IndexManager indexManager) throws InterruptedException, IndexException {
-    LOG.info("Clearing index");
+    LOG.info("Clearing execute");
     indexManager.deleteAllEntities();
 
     TypeRegistry registry = repository.getTypeRegistry();

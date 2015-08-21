@@ -34,14 +34,14 @@ import java.util.Map;
 public interface Index {
 
   /**
-   * Returns the name of the index.
+   * Returns the name of the execute.
    *
-   * @return the name of the index.
+   * @return the name of the execute.
    */
   String getName();
 
   /**
-   * Adds new items to the index.
+   * Adds new items to the execute.
    *
    * @param variations
    * @throws IndexException when the action fails.
@@ -49,7 +49,7 @@ public interface Index {
   void add(List<? extends DomainEntity> variations) throws IndexException;
 
   /**
-   * Updates existing items in the index.
+   * Updates existing items in the execute.
    *
    * @param variations
    * @throws IndexException when the action fails.
@@ -57,7 +57,7 @@ public interface Index {
   void update(List<? extends DomainEntity> variations) throws IndexException;
 
   /**
-   * Deletes an item from the index.
+   * Deletes an item from the execute.
    *
    * @param id the id of the item to delete.
    * @throws IndexException
@@ -73,36 +73,36 @@ public interface Index {
   void deleteById(List<String> ids) throws IndexException;
 
   /**
-   * Deletes all the items of the index.
+   * Deletes all the items of the execute.
    *
    * @throws IndexException
    */
   void clear() throws IndexException;
 
   /**
-   * Get the number of items in the index.
+   * Get the number of items in the execute.
    *
-   * @return the number of items in the index.
+   * @return the number of items in the execute.
    * @throws IndexException
    */
   long getCount() throws IndexException;
 
   /**
-   * Commits all the changes to the index.
+   * Commits all the changes to the execute.
    *
    * @throws IndexException
    */
   void commit() throws IndexException;
 
   /**
-   * Closes the index.
+   * Closes the execute.
    *
    * @throws IndexException
    */
   void close() throws IndexException;
 
   /**
-   * Searches the index.
+   * Searches the execute.
    *
    * @param searchParameters
    * @return the search result.

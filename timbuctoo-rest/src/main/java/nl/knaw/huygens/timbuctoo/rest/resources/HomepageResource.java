@@ -9,7 +9,7 @@ import java.io.InputStream;
 
 
 /**
- * A resource to serve the index page.
+ * A resource to serve the execute page.
  */
 @Path("/")
 public class HomepageResource {

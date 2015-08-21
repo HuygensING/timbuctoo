@@ -103,7 +103,7 @@ public class SearchResourceV1 extends ResourceBase {
 
   @POST
   @Path("/" + ENTITY_PATH)
-  @APIDesc("Searches the Solr index. Expects a search parameters body.")
+  @APIDesc("Searches the Solr execute. Expects a search parameters body.")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response regularPost( //
                                @PathParam(VERSION_PARAM) String version, //
@@ -130,7 +130,7 @@ public class SearchResourceV1 extends ResourceBase {
     }
   }
 
-  @APIDesc("Searches the Solr index. Expects a relation search parameters body.")
+  @APIDesc("Searches the Solr execute. Expects a relation search parameters body.")
   @POST
   @Path("/" + RELATION_SEARCH_PREFIX)
   @Consumes(MediaType.APPLICATION_JSON)

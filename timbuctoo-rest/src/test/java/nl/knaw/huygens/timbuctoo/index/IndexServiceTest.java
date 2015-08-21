@@ -9,7 +9,6 @@ import org.junit.Test;
 import test.rest.model.projecta.ProjectADomainEntity;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class IndexServiceTest {
@@ -61,7 +60,7 @@ public class IndexServiceTest {
     instance.executeAction(ACTION_WITH_REQUEST_ID);
 
     // verify
-    verify(indexer).executeFor(indexRequestFromIndexRequests);
+    indexRequestFromIndexRequests.execute(indexer);
   }
 
   @Test
@@ -70,6 +69,6 @@ public class IndexServiceTest {
     instance.executeAction(ACTION_FOR_SINGLE_ENTITY);
 
     // verify
-    verify(indexer).executeFor(indexRequestFromFactory);
+    indexRequestFromFactory.execute(indexer);
   }
 }

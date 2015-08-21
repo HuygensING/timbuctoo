@@ -17,7 +17,7 @@ public class MappingExample extends DomainEntity {
   @JsonProperty(FIELD_WITHOUT_GETTER)
   private Object fieldWithoutGetter;
 
-  public static final String INDEX_AND_CLIENT_INDEX_NAME = "index";
+  public static final String INDEX_AND_CLIENT_INDEX_NAME = "execute";
   public static final String INDEX_AND_CLIENT_CLIENT_NAME = "client";
   @JsonProperty(INDEX_AND_CLIENT_CLIENT_NAME)
   private Object indexAndClient;

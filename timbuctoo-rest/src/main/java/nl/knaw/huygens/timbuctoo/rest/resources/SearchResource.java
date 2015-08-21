@@ -94,7 +94,7 @@ public class SearchResource extends ResourceBase {
   }
 
   @POST
-  @APIDesc("Searches the Solr index. Expects a search parameters body.")
+  @APIDesc("Searches the Solr execute. Expects a search parameters body.")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response regularPost(SearchParameters searchParams, @HeaderParam(VRE_ID_KEY) String vreId) {
 
@@ -154,7 +154,7 @@ public class SearchResource extends ResourceBase {
   @POST
   @Path("/" + RELATION_SEARCH_PREFIX)
   @Consumes(MediaType.APPLICATION_JSON)
-  @APIDesc("Searches the Solr index. Expects a relation search parameters body.")
+  @APIDesc("Searches the Solr execute. Expects a relation search parameters body.")
   public Response relationPost(@HeaderParam(VRE_ID_KEY) String vreId, RelationSearchParameters params) {
 
     final String typeString = params.getTypeString();

@@ -31,9 +31,9 @@ public interface IndexRequest {
 
   StorageIterator<? extends DomainEntity> getEntities(Repository repository);
 
-  void index(Indexer indexer);
+  void execute(Indexer indexer) throws IndexException;
 
-  public enum Status {
+  enum Status {
     REQUESTED,
     IN_PROGRESS,
     DONE

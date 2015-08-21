@@ -27,7 +27,7 @@ import javax.jms.JMSException;
 public interface Broker {
 
   String BROKER_NAME = "-broker";
-  String INDEX_QUEUE = "index";
+  String INDEX_QUEUE = "execute";
   String PERSIST_QUEUE = "persist";
   // Message headers
   String PROP_ACTION = "action";

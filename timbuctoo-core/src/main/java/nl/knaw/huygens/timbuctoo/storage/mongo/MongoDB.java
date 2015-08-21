@@ -145,7 +145,7 @@ public class MongoDB {
   }
 
   /**
-   * Creates an index on a set of fields, if one does not already exist,
+   * Creates an execute on a set of fields, if one does not already exist,
    * using the specified options.
    */
   public void createIndex(DBCollection collection, DBObject keys, DBObject options) throws StorageException {

@@ -84,7 +84,7 @@ public class ChangeHelper {
       Producer producer = broker.getProducer(INDEX_MSG_PRODUCER, Broker.INDEX_QUEUE);
       producer.send(actionType, type, id);
     } catch (JMSException e) {
-      LOG.error("Failed to send index message {} - {} - {}. \n{}", actionType, type, id, e.getMessage());
+      LOG.error("Failed to send execute message {} - {} - {}. \n{}", actionType, type, id, e.getMessage());
       LOG.debug("Exception", e);
     }
   }

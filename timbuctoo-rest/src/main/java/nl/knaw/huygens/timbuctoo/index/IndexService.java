@@ -67,7 +67,7 @@ public class IndexService extends ConsumerService implements Runnable {
       Indexer indexer = indexerFactory.create(action.getActionType());
 
       try {
-        indexer.executeFor(indexRequest);
+        indexRequest.execute(indexer);
       } catch (IndexException e) {
         getLogger().error("Error indexing ([{}]) object of type [{}]", action.getActionType(), indexRequest.getType());
         getLogger().debug("Exception while indexing", e);

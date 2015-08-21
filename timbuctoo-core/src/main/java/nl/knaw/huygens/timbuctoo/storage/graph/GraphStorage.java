@@ -163,10 +163,10 @@ public interface GraphStorage {
   <T extends Relation> StorageIterator<T> findRelations(Class<T> type, TimbuctooQuery query);
 
   /**
-   * Add a database index.
+   * Add a database execute.
    *
-   * @param type  the type to add the index to
-   * @param field the field to add the index to
+   * @param type  the type to add the execute to
+   * @param field the field to add the execute to
    */
   void createIndex(Class<? extends Entity> type, String field);
 

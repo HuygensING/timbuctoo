@@ -111,7 +111,7 @@ public class ToolsInjectionModule extends BasicInjectionModule {
 
     @Override
     public Index createIndexFor(VRE vre, Class<? extends DomainEntity> type) {
-      LOG.info("Creating a no op index for vre \"{}\" and type \"{}\"", vre.getVreId(), type.getSimpleName());
+      LOG.info("Creating a no op execute for vre \"{}\" and type \"{}\"", vre.getVreId(), type.getSimpleName());
       return NO_OP_INDEX;
     }
 

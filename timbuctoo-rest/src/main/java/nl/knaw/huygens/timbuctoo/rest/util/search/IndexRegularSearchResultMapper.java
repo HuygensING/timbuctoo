@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A search result mapper that retrieves the information from the index rather that from the database.
+ * A search result mapper that retrieves the information from the execute rather that from the database.
  */
 public class IndexRegularSearchResultMapper extends RegularSearchResultMapper {
   private static final Logger LOG = LoggerFactory.getLogger(IndexRegularSearchResultMapper.class);
@@ -55,7 +55,7 @@ public class IndexRegularSearchResultMapper extends RegularSearchResultMapper {
     List<DomainEntityDTO> refs = null;
     try {
       List<Map<String, Object>> rawData = vreCollection.getVREById(searchResult.getVreId()).getRawDataFor(type, idsToRetrieve);
-      LOG.debug("number of items found in index {}", rawData.size());
+      LOG.debug("number of items found in execute {}", rawData.size());
       refs = domainEntityDTOListFactory.createFor(type, rawData);
     } catch (SearchException | NotInScopeException | SearchResultCreationException e) {
       throw new RuntimeException(e); // FIXME: Hack to inform the client the search went wrong, and not change the API

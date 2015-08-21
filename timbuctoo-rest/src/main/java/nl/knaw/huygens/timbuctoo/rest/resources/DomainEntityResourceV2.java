@@ -221,13 +221,13 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
       List<String> updatedRelationIds = repository.deleteDomainEntity(entity);
       changeHelper.notifyChange(ActionType.MOD, type, entity, id);
       try {
-        // FIXME: Ugly hack to remove the entity from the index of the VRE.
+        // FIXME: Ugly hack to remove the entity from the execute of the VRE.
         vre.deleteFromIndex(type, id);
       } catch (IndexException e) {
-        LOG.error("Delete from index went wrong.", e);
+        LOG.error("Delete from execute went wrong.", e);
       }
 
-      // FIXME: Quick hack to index and persist the updated relations.
+      // FIXME: Quick hack to execute and persist the updated relations.
       // TODO: Find a better way to do this.
       for (String relationId : updatedRelationIds) {
         changeHelper.notifyChange(ActionType.MOD, Relation.class, repository.getEntityOrDefaultVariation(Relation.class, relationId), relationId);
