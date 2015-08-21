@@ -103,7 +103,7 @@ public class TinkerPopLowLevelAPITest {
   public void findVerticesByPropertyReturnsAnIteratorWithTheLatestFoundVertices() {
     Vertex latestVertex1 = aVertex().isLatest().build();
     Vertex latestVertex2 = aVertex().isLatest().build();
-    aVertexSearchResult() //
+    VertexSearchResultBuilder.QueryVerifier queryVerifier = aVertexSearchResult() //
       .forType(DOMAIN_ENTITY_TYPE) //
       .forProperty(PROPERTY_NAME, PROPERTY_VALUE) //
       .forLatest() //
@@ -116,10 +116,11 @@ public class TinkerPopLowLevelAPITest {
 
     // verify
     assertThat(Lists.newArrayList(vertices), containsInAnyOrder(latestVertex1, latestVertex2));
+    queryVerifier.verify();
   }
 
   @Test
-  public void findVerticesByPropertyReturnsAnEmptuIteratorWhenNoVerticesAreFound() {
+  public void findVerticesByPropertyReturnsAnEmptyIteratorWhenNoVerticesAreFound() {
     anEmptyVertexSearchResult()//
       .forType(DOMAIN_ENTITY_TYPE)//
       .forProperty(PROPERTY_NAME, PROPERTY_VALUE)//
@@ -138,7 +139,7 @@ public class TinkerPopLowLevelAPITest {
     // setup
     Vertex vertex1 = aVertex().build();
     Vertex vertex2 = aVertex().build();
-    aVertexSearchResult()//
+    VertexSearchResultBuilder.QueryVerifier queryVerifier = aVertexSearchResult()//
       .forType(DOMAIN_ENTITY_TYPE).withoutProperty(PROPERTY_NAME)//
       .containsVertex(vertex1) //
       .containsVertex(vertex2) //
@@ -149,6 +150,7 @@ public class TinkerPopLowLevelAPITest {
 
     // verify
     assertThat(Lists.newArrayList(vertices), containsInAnyOrder(vertex1, vertex2));
+    queryVerifier.verify();
   }
 
   @Test
@@ -166,7 +168,10 @@ public class TinkerPopLowLevelAPITest {
   @Test
   public void getLatestVertexByIdReturnsTheVertexWithoutOutgoingIsVersionOfRelation() {
     Vertex latestVertex = aVertex().isLatest().build();
-    aVertexSearchResult().forLatest().forType(SYSTEM_ENTITY_TYPE).forId(ID) //
+    VertexSearchResultBuilder.QueryVerifier queryVerifier = aVertexSearchResult() //
+      .forLatest() //
+      .forType(SYSTEM_ENTITY_TYPE) //
+      .forId(ID) //
       .andVertex(latestVertex) //
       .foundInDatabase(dbMock);
 
@@ -175,6 +180,7 @@ public class TinkerPopLowLevelAPITest {
 
     // verify
     assertThat(foundVertex, is(sameInstance(latestVertex)));
+    queryVerifier.verify();
   }
 
   @Test
@@ -196,7 +202,9 @@ public class TinkerPopLowLevelAPITest {
   @Test
   public void getLatestVertexByIdReturnsTheLatestVertexWithACertainId() {
     Vertex latestVertex = aVertex().build();
-    aVertexSearchResult().forLatest().forId(ID) //
+    VertexSearchResultBuilder.QueryVerifier queryVerifier = aVertexSearchResult()
+      .forLatest()
+      .forId(ID) //
       .containsVertex(latestVertex) //
       .foundInDatabase(dbMock);
 
@@ -205,6 +213,7 @@ public class TinkerPopLowLevelAPITest {
 
     // verify
     assertThat(foundVertex, is(sameInstance(latestVertex)));
+    queryVerifier.verify();
   }
 
   @Test
@@ -222,7 +231,9 @@ public class TinkerPopLowLevelAPITest {
     // setup
     Vertex latestVertex1 = aVertex().build();
     Vertex latestVertex2 = aVertex().build();
-    aVertexSearchResult().forLatest().forType(SYSTEM_ENTITY_TYPE) //
+    VertexSearchResultBuilder.QueryVerifier queryVerifier = aVertexSearchResult() //
+      .forLatest()//
+      .forType(SYSTEM_ENTITY_TYPE) //
       .containsVertex(latestVertex1) //
       .andVertex(latestVertex2) //
       .foundInDatabase(dbMock);
@@ -233,6 +244,7 @@ public class TinkerPopLowLevelAPITest {
     // verify
     assertThat(foundVertices, is(notNullValue()));
     assertThat(Lists.newArrayList(foundVertices), contains(latestVertex1, latestVertex2));
+    queryVerifier.verify();
   }
 
   @Test
@@ -252,7 +264,10 @@ public class TinkerPopLowLevelAPITest {
   public void getVertexWithRevisionReturnsTheVertexWithTheRevision() {
     // setup
     Vertex foundVertex = aVertex().build();
-    aVertexSearchResult().forType(DOMAIN_ENTITY_TYPE).forId(ID).forRevision(FIRST_REVISION)//
+    VertexSearchResultBuilder.QueryVerifier queryVerifier = aVertexSearchResult()//
+      .forType(DOMAIN_ENTITY_TYPE) //
+      .forId(ID) //
+      .forRevision(FIRST_REVISION)//
       .containsVertex(foundVertex) //
       .foundInDatabase(dbMock);
 
@@ -261,6 +276,7 @@ public class TinkerPopLowLevelAPITest {
 
     // verify
     assertThat(actualVertex, is(sameInstance(foundVertex)));
+    queryVerifier.verify();
   }
 
   @Test
@@ -280,7 +296,7 @@ public class TinkerPopLowLevelAPITest {
     // setup
     Vertex vertex1 = aVertex().build();
     Vertex vertex2 = aVertex().build();
-    aVertexSearchResult() //
+    VertexSearchResultBuilder.QueryVerifier queryVerifier = aVertexSearchResult() //
       .forType(DOMAIN_ENTITY_TYPE) //
       .forId(ID) //
       .containsVertex(vertex1) //
@@ -292,6 +308,7 @@ public class TinkerPopLowLevelAPITest {
 
     // verify
     assertThat(Lists.newArrayList(iterator), containsInAnyOrder(vertex1, vertex2));
+    queryVerifier.verify();
   }
 
   @Test
@@ -430,7 +447,7 @@ public class TinkerPopLowLevelAPITest {
     // setup
     Edge latestEdgeWithId = anEdge().withID(ID).withRev(FIRST_REVISION).build();
     Edge latestEdgeWithId2 = anEdge().withID(ID2).withRev(SECOND_REVISION).build();
-    anEdgeSearchResult()//
+    EdgeSearchResultBuilder.QueryVerifier queryVerifier = anEdgeSearchResult()//
       .forProperty(PROPERTY_NAME, PROPERTY_VALUE)//
       .containsEdge(latestEdgeWithId)//
       .andEdge(latestEdgeWithId2)//
@@ -442,6 +459,7 @@ public class TinkerPopLowLevelAPITest {
 
     // verify
     assertThat(Lists.newArrayList(edges), containsInAnyOrder(latestEdgeWithId, latestEdgeWithId2));
+    queryVerifier.verify();
   }
 
   @Test
@@ -467,7 +485,7 @@ public class TinkerPopLowLevelAPITest {
       .withOutgoingEdge(notLatestEdge1)//
       .withOutgoingEdge(latestEdge2)//
       .build();
-    aVertexSearchResult()//
+    VertexSearchResultBuilder.QueryVerifier queryVerifier = aVertexSearchResult()//
       .forLatest()
       .forId(ID)//
       .containsVertex(latestVertexWithEdges)//
@@ -478,6 +496,7 @@ public class TinkerPopLowLevelAPITest {
 
     // verify
     assertThat(Lists.newArrayList(edges), containsInAnyOrder(latestEdge1, latestEdge2));
+    queryVerifier.verify();
   }
 
   @Test
@@ -514,7 +533,9 @@ public class TinkerPopLowLevelAPITest {
       .withIncomingEdgeWithLabel(VERSION_OF)//
       .withOutgoingEdge(anEdge().build())//
       .build();
-    aVertexSearchResult().forLatest().forId(ID) //
+    VertexSearchResultBuilder.QueryVerifier queryVerifier = aVertexSearchResult() //
+      .forLatest() //
+      .forId(ID) //
       .containsVertex(latestVertexWithout) //
       .andVertex(notlatestVertexWithEdges) //
       .foundInDatabase(dbMock);
@@ -524,6 +545,7 @@ public class TinkerPopLowLevelAPITest {
 
     // verify
     assertThat(Iterators.size(edges), is(0));
+    queryVerifier.verify();
   }
 
   @Test
@@ -537,7 +559,7 @@ public class TinkerPopLowLevelAPITest {
       .withIncomingEdge(notLatestEdge1)//
       .withIncomingEdge(latestEdge2)//
       .build();
-    aVertexSearchResult()//
+    VertexSearchResultBuilder.QueryVerifier queryVerifier = aVertexSearchResult()//
       .forLatest() //
       .forId(ID)//
       .containsVertex(latestVertexWithEdges)//
@@ -548,6 +570,7 @@ public class TinkerPopLowLevelAPITest {
 
     // verify
     assertThat(Lists.newArrayList(edges), containsInAnyOrder(latestEdge1, latestEdge2));
+    queryVerifier.verify();
   }
 
   @Test
@@ -566,16 +589,17 @@ public class TinkerPopLowLevelAPITest {
   public void findEdgesByTargetReturnsAnEmptyIteratorIfTheTargetVertexHasNoIncomingEdges() {
     // setup
     Vertex latestVertexWithoutEdges = aVertex().build();
-    aVertexSearchResult().forLatest().forId(ID)//
+    VertexSearchResultBuilder.QueryVerifier queryVerifier = aVertexSearchResult().forLatest().forId(ID)//
       .containsVertex(latestVertexWithoutEdges) //
       .foundInDatabase(dbMock);
-    ;
+
 
     // action
     Iterator<Edge> edges = instance.findEdgesByTarget(RELATION_TYPE, ID);
 
     // verify
     assertThat(Iterators.size(edges), is(0));
+    queryVerifier.verify();
   }
 
   @Test
@@ -597,7 +621,7 @@ public class TinkerPopLowLevelAPITest {
   public void getEdgeWithRevisionReturnsTheEdgeWithACertainRevision() {
     // setup
     Edge edge = anEdge().build();
-    anEdgeSearchResult() //
+    EdgeSearchResultBuilder.QueryVerifier queryVerifier = anEdgeSearchResult() //
       .forId(ID) //
       .forProperty(DB_REV_PROP_NAME, FIRST_REVISION) //
       .containsEdge(edge) //
@@ -608,6 +632,7 @@ public class TinkerPopLowLevelAPITest {
 
     // verify
     assertThat(foundEdge, is(sameInstance(edge)));
+    queryVerifier.verify();
   }
 
   @Test
@@ -631,7 +656,7 @@ public class TinkerPopLowLevelAPITest {
     // setup
     Edge edge1 = anEdge().build();
     Edge edge2 = anEdge().build();
-    anEdgeSearchResult()//
+    EdgeSearchResultBuilder.QueryVerifier queryVerifier = anEdgeSearchResult()//
       .withoutProperty(PROPERTY_NAME)//
       .containsEdge(edge1) //
       .containsEdge(edge2) //
@@ -642,6 +667,7 @@ public class TinkerPopLowLevelAPITest {
 
     // verify
     assertThat(Lists.newArrayList(vertices), containsInAnyOrder(edge1, edge2));
+    queryVerifier.verify();
   }
 
   @Test
@@ -753,7 +779,7 @@ public class TinkerPopLowLevelAPITest {
   public void getLatestEdgeByIdReturnsTheEdgeWithTheHighestRevisionForACertainId() {
     // setup
     Edge edgeWithHighestRevision = anEdge().withRev(THIRD_REVISION).build();
-    anEdgeSearchResult().forId(ID).forType(RELATION_TYPE)//
+    EdgeSearchResultBuilder.QueryVerifier queryVerifier = anEdgeSearchResult().forId(ID).forType(RELATION_TYPE)//
       .containsEdge(anEdge().withRev(FIRST_REVISION).build())//
       .andEdge(edgeWithHighestRevision)//
       .andEdge(anEdge().withRev(SECOND_REVISION).build())//
@@ -764,6 +790,7 @@ public class TinkerPopLowLevelAPITest {
 
     // verify
     assertThat(foundEdge, is(sameInstance(edgeWithHighestRevision)));
+    queryVerifier.verify();
   }
 
   @Test
@@ -817,7 +844,7 @@ public class TinkerPopLowLevelAPITest {
     // setup
     Edge edgeWithLatestRev1 = anEdge().withID(ID).withRev(SECOND_REVISION).build();
     Edge edgeWithLatestRev2 = anEdge().withID(ID2).withRev(SECOND_REVISION).build();
-    anEdgeSearchResult() //
+    EdgeSearchResultBuilder.QueryVerifier queryVerifier = anEdgeSearchResult() //
       .containsEdge(anEdge().withID(ID).withRev(FIRST_REVISION).build()) //
       .andEdge(edgeWithLatestRev1) //
       .andEdge(anEdge().withID(ID2).withRev(FIRST_REVISION).build()) //
@@ -831,6 +858,7 @@ public class TinkerPopLowLevelAPITest {
     ArrayList<Edge> edgesList = Lists.newArrayList(actualEdges);
     assertThat(edgesList.size(), is(2));
     assertThat(edgesList, containsInAnyOrder(edgeWithLatestRev1, edgeWithLatestRev2));
+    queryVerifier.verify();
   }
 
   @Test

@@ -8,6 +8,7 @@ import com.tinkerpop.blueprints.GraphQuery;
 import com.tinkerpop.blueprints.Predicate;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
+import org.mockito.Mockito;
 
 import java.util.List;
 import java.util.Map;
@@ -73,7 +74,7 @@ public class EdgeSearchResultBuilder {
     return this;
   }
 
-  public void foundInDatabase(Graph db) {
+  public QueryVerifier foundInDatabase(Graph db) {
     GraphQuery graphQueryMock = mock(GraphQuery.class);
     when(db.query()).thenReturn(graphQueryMock);
 
@@ -94,6 +95,7 @@ public class EdgeSearchResultBuilder {
 
     foundByGraphQuery(graphQueryMock);
 
+    return new QueryVerifier(graphQueryMock);
   }
 
   public EdgeSearchResultBuilder withoutProperty(String propertyName) {
@@ -104,5 +106,29 @@ public class EdgeSearchResultBuilder {
 
   public void foundByGraphQuery(GraphQuery graphQuery) {
     when(graphQuery.edges()).thenReturn(edges);
+  }
+
+  public class QueryVerifier {
+    private final GraphQuery graphQueryMock;
+
+    public QueryVerifier(GraphQuery graphQueryMock) {
+      this.graphQueryMock = graphQueryMock;
+    }
+
+    public void verify() {
+      for (Entry<String, Object> searchProperty : searchProperties.entrySet()) {
+        String key = searchProperty.getKey();
+        Object value = searchProperty.getValue();
+        if (ELEMENT_TYPES.equals(key)) {
+          Mockito.verify(graphQueryMock).has(argThat(is(key)), any(Predicate.class), argThat(is(value)));
+        } else {
+          Mockito.verify(graphQueryMock).has(key, value);
+        }
+      }
+
+      for (String property : withoutProperties) {
+        when(graphQueryMock.hasNot(property)).thenReturn(graphQueryMock);
+      }
+    }
   }
 }
