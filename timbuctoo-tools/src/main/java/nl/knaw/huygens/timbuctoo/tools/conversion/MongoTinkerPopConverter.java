@@ -1,7 +1,9 @@
 package nl.knaw.huygens.timbuctoo.tools.conversion;
 
-import java.util.Map;
-
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.Maps;
+import com.google.inject.Injector;
+import com.tinkerpop.blueprints.Graph;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -10,14 +12,10 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.graph.IdGenerator;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
 import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.Maps;
-import com.google.inject.Injector;
-import com.tinkerpop.blueprints.Graph;
+import java.util.Map;
 
 public class MongoTinkerPopConverter {
   private static final Logger LOG = LoggerFactory.getLogger(MongoTinkerPopConverter.class);
@@ -45,7 +43,7 @@ public class MongoTinkerPopConverter {
 
   public static void main(String[] args) throws Exception {
     Stopwatch stopwatch = Stopwatch.createStarted();
-    Injector injector = ToolsInjectionModule.createInjector();
+    Injector injector = ToolsInjectionModule.createInjectorWithoutSolr();
     Graph graph = injector.getInstance(Graph.class);
     ElementConverterFactory converterFactory = injector.getInstance(ElementConverterFactory.class);
     IdGenerator idGenerator = injector.getInstance(IdGenerator.class);
