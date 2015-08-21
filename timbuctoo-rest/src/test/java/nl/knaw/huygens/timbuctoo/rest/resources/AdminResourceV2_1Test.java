@@ -6,7 +6,6 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.request.IndexRequest;
 import nl.knaw.huygens.timbuctoo.index.request.IndexRequestFactory;
-import nl.knaw.huygens.timbuctoo.index.request.IndexRequestImpl;
 import nl.knaw.huygens.timbuctoo.index.request.IndexRequests;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
@@ -41,6 +40,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -50,10 +50,10 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
   public static final String REQUEST_ID = "7659943b-bdee-4ad3-b8fc-a0f1329d6e9f";
   public static final String EXCEPTION_MESSAGE = "Exception message";
   public static final Class<SubADomainEntity> TYPE = SubADomainEntity.class;
+  public static final String CLIENT_REP = "Client rep";
   private Broker broker;
   private Producer indexProducer;
-  private int numberOfCollectionsToIndex;
-  private IndexRequests indexRequestStatus;
+  private IndexRequests indexRequests;
   public static final ClientIndexRequest CLIENT_INDEX_REQUEST = new ClientIndexRequest(TypeNames.getExternalName(TYPE));
   private VRE vre;
   private IndexRequestFactory indexRequestFactory;
@@ -62,25 +62,31 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
   @Before
   public void setup() throws JMSException, ModelException {
     setupBroker();
-    setupIndexRequests();
+    setupIndexRequest();
     setupIndexRequestFactory();
+    setupIndexRequests();
     TypeRegistry typeRegistry = injector.getInstance(TypeRegistry.class);
     typeRegistry.init(TYPE.getPackage().getName());
-    numberOfCollectionsToIndex = typeRegistry.getPrimitiveDomainEntityTypes().size();
     vre = mock(VRE.class);
     makeVREAvailable(vre, VRE_ID);
   }
 
   private void setupIndexRequestFactory() {
     indexRequestFactory = injector.getInstance(IndexRequestFactory.class);
-    indexRequest = mock(IndexRequest.class);
     when(indexRequestFactory.forCollectionOf(TYPE)).thenReturn(indexRequest);
+  }
+
+  private void setupIndexRequest() {
+    indexRequest = mock(IndexRequest.class);
+    when(indexRequest.toClientRep()).thenReturn(CLIENT_REP);
+    doReturn(TYPE).when(indexRequest).getType();
   }
 
 
   private void setupIndexRequests() {
-    indexRequestStatus = injector.getInstance(IndexRequests.class);
-    when(indexRequestStatus.add(any(IndexRequestImpl.class))).thenReturn(REQUEST_ID);
+    indexRequests = injector.getInstance(IndexRequests.class);
+    when(indexRequests.add(any(IndexRequest.class))).thenReturn(REQUEST_ID);
+    when(indexRequests.get(REQUEST_ID)).thenReturn(indexRequest);
   }
 
   private void setupBroker() throws JMSException {
@@ -121,7 +127,7 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
 
 
     verify(indexRequestFactory).forCollectionOf(TYPE);
-    verify(indexRequestStatus).add(indexRequest);
+    verify(indexRequests).add(indexRequest);
     verify(indexProducer).send(argThat( //
       likeAction() //
         .withActionType(ActionType.MOD) //
@@ -211,15 +217,13 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
     // setup
     setupUserWithRoles(VRE_ID, USER_ID, UserRoles.ADMIN_ROLE);
     when(vre.inScope(TYPE)).thenReturn(true);
-    when(indexRequestStatus.get(REQUEST_ID)).thenReturn(IndexRequestImpl.forType(TYPE));
-
 
     // action
     ClientResponse response = withHeaders(asJsonRequest(indexRequestResource().path(REQUEST_ID))).get(ClientResponse.class);
 
     // verify
     verifyResponseStatus(response, OK);
-    assertThat(response.getEntity(String.class), is(IndexRequestImpl.forType(TYPE).toClientRep()));
+    assertThat(response.getEntity(String.class), is(CLIENT_REP));
   }
 
   @Test
@@ -227,14 +231,14 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
     // setup
     setupUserWithRoles(VRE_ID, USER_ID, UserRoles.ADMIN_ROLE);
     when(vre.inScope(TYPE)).thenReturn(true);
-    when(indexRequestStatus.get(REQUEST_ID)).thenReturn(null);
+    when(indexRequests.get(REQUEST_ID)).thenReturn(null);
 
     // action
     ClientResponse response = withHeaders(asJsonRequest(indexRequestResource().path(REQUEST_ID))).get(ClientResponse.class);
 
     // verify
     verifyResponseStatus(response, NOT_FOUND);
-    verify(indexRequestStatus).get(REQUEST_ID);
+    verify(indexRequests).get(REQUEST_ID);
   }
 
   @Test
@@ -275,7 +279,7 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
     // setup
     setupUserWithRoles(VRE_ID, USER_ID, UserRoles.ADMIN_ROLE);
     when(vre.inScope(TYPE)).thenReturn(false);
-    when(indexRequestStatus.get(REQUEST_ID)).thenReturn(IndexRequestImpl.forType(TYPE));
+
 
 
     // action

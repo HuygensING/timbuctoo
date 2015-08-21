@@ -1,9 +1,7 @@
 package nl.knaw.huygens.timbuctoo.index.request;
 
 import com.google.common.cache.Cache;
-import nl.knaw.huygens.timbuctoo.index.request.IndexRequest;
-import nl.knaw.huygens.timbuctoo.index.request.IndexRequestImpl;
-import nl.knaw.huygens.timbuctoo.index.request.IndexRequests;
+import nl.knaw.huygens.timbuctoo.Repository;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -14,6 +12,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.Mockito.mock;
 
 
 public class IndexRequestsTest {
@@ -29,8 +28,12 @@ public class IndexRequestsTest {
   @Before
   public void setup() {
     MockitoAnnotations.initMocks(this);
-    indexRequest = IndexRequestImpl.forType(TYPE);
+    indexRequest = createIndexRequest();
     instance = new IndexRequests(TIMEOUT);
+  }
+
+  private IndexRequest createIndexRequest() {
+    return new IndexRequestFactory(mock(Repository.class)).forCollectionOf(TYPE);
   }
 
   @Test
@@ -46,6 +49,7 @@ public class IndexRequestsTest {
   @Test
   public void addInvalidatesDoneRequestsThatAreChangedMoreThanTheTimeoutAge() throws Exception {
     // setup
+    IndexRequest otherIndexRequest = createIndexRequest();
     String id = instance.add(indexRequest);
     IndexRequest beforeDone = instance.get(id);
     assertThat(beforeDone, is(sameInstance(this.indexRequest)));
@@ -54,7 +58,7 @@ public class IndexRequestsTest {
     Thread.sleep(TIMEOUT);
 
     // action
-    instance.add(IndexRequestImpl.forType(TYPE));
+    instance.add(otherIndexRequest);
 
     // verify
     IndexRequest notFoundAfterTimeout = instance.get(id);

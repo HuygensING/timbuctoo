@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.index;
 import nl.knaw.huygens.timbuctoo.index.indexer.IndexerFactory;
 import nl.knaw.huygens.timbuctoo.index.request.IndexRequest;
 import nl.knaw.huygens.timbuctoo.index.request.IndexRequestFactory;
-import nl.knaw.huygens.timbuctoo.index.request.IndexRequestImpl;
 import nl.knaw.huygens.timbuctoo.index.request.IndexRequests;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
@@ -29,7 +28,7 @@ public class IndexServiceTest {
   private IndexRequests indexRequests;
   private IndexService instance;
   private IndexRequestFactory indexRequestFactory;
-  private IndexRequestImpl indexRequestFromFactory;
+  private IndexRequest indexRequestFromFactory;
 
 
   @Before
@@ -42,7 +41,7 @@ public class IndexServiceTest {
 
   private void setupIndexRequestFactory() {
     indexRequestFactory = mock(IndexRequestFactory.class);
-    indexRequestFromFactory = mock(IndexRequestImpl.class);
+    indexRequestFromFactory = mock(IndexRequest.class);
     when(indexRequestFactory.forEntity(TYPE, ENTITY_ID)).thenReturn(indexRequestFromFactory);
   }
 
@@ -53,7 +52,7 @@ public class IndexServiceTest {
   }
 
   private void setupIndexRequests() {
-    indexRequestFromIndexRequests = mock(IndexRequestImpl.class);
+    indexRequestFromIndexRequests = mock(IndexRequest.class);
     indexRequests = mock(IndexRequests.class);
     when(indexRequests.get(REQUEST_ID)).thenReturn(indexRequestFromIndexRequests);
   }

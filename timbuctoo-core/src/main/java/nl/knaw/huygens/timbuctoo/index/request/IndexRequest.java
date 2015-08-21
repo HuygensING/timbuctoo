@@ -1,23 +1,15 @@
 package nl.knaw.huygens.timbuctoo.index.request;
 
-import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.Indexer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
 import java.time.LocalDateTime;
 
 public interface IndexRequest {
-  void setDesc(String desc);
-
-  String getDesc();
-
   String toClientRep();
 
   Class<? extends DomainEntity> getType();
-
-  void setType(Class<? extends DomainEntity> type);
 
   Status getStatus();
 
@@ -26,12 +18,6 @@ public interface IndexRequest {
   void done();
 
   LocalDateTime getLastChanged();
-
-  void setId(String id);
-
-  String getId();
-
-  StorageIterator<? extends DomainEntity> getEntities(Repository repository);
 
   void execute(Indexer indexer) throws IndexException;
 
