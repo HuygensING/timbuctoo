@@ -7,7 +7,7 @@ public class IndexRequestFactory {
 
   }
 
-  public IndexRequest forType(Class<? extends DomainEntity> type) {
+  public IndexRequest forCollectionOf(Class<? extends DomainEntity> type) {
     return new CollectionIndexRequest(type);
   }
 

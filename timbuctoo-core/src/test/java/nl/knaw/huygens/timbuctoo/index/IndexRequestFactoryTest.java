@@ -19,9 +19,9 @@ public class IndexRequestFactoryTest {
   }
 
   @Test
-  public void forCollectionCreatesACollectionIndexRequest() throws Exception {
+  public void forCollectionOfCreatesACollectionIndexRequest() throws Exception {
     // action
-    IndexRequest indexRequest = instance.forType(TYPE);
+    IndexRequest indexRequest = instance.forCollectionOf(TYPE);
 
     // verify
     assertThat(indexRequest, Matchers.is(Matchers.instanceOf(CollectionIndexRequest.class)));

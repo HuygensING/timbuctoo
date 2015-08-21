@@ -74,7 +74,7 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
   private void setupIndexRequestFactory() {
     indexRequestFactory = injector.getInstance(IndexRequestFactory.class);
     indexRequest = mock(IndexRequest.class);
-    when(indexRequestFactory.forType(TYPE)).thenReturn(indexRequest);
+    when(indexRequestFactory.forCollectionOf(TYPE)).thenReturn(indexRequest);
   }
 
 
@@ -120,7 +120,7 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
     assertThat(location, is(expectedLocationHeader));
 
 
-    verify(indexRequestFactory).forType(TYPE);
+    verify(indexRequestFactory).forCollectionOf(TYPE);
     verify(indexRequestStatus).add(indexRequest);
     verify(indexProducer).send(argThat( //
       likeAction() //

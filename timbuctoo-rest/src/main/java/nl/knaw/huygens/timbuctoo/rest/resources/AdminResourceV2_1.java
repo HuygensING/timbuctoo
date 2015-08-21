@@ -88,7 +88,7 @@ public class AdminResourceV2_1 {
     try {
       Producer producer = broker.getProducer(INDEX_PRODUCER, INDEX_QUEUE);
 
-      String id = indexRequestStatus.add(indexRequestFactory.forType(type));
+      String id = indexRequestStatus.add(indexRequestFactory.forCollectionOf(type));
 
       producer.send(Action.forRequestWithId(ActionType.MOD, id));
 
