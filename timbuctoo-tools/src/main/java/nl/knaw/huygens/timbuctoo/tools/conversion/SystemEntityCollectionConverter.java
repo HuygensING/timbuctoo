@@ -1,21 +1,20 @@
 package nl.knaw.huygens.timbuctoo.tools.conversion;
 
-import java.util.Map;
-
+import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.Vertex;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.IdGenerator;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexConverter;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.ElementConverterFactory;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Vertex;
+import java.util.Map;
 
 public class SystemEntityCollectionConverter<T extends SystemEntity> {
   private static final Logger LOG = LoggerFactory.getLogger(SystemEntityCollectionConverter.class);
@@ -54,6 +53,7 @@ public class SystemEntityCollectionConverter<T extends SystemEntity> {
     entity.setId(newId);
 
     Vertex vertex = graph.addVertex(null);
+    vertex.setProperty(ElementFields.IS_LATEST, true);
     addPropertiesToVertex(type, entity, vertex);
 
     conversionChecker.verifyConversion(oldId, newId, vertex.getId());
