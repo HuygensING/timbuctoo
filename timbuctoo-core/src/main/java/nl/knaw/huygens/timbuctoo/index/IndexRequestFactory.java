@@ -8,10 +8,10 @@ public class IndexRequestFactory {
   }
 
   public IndexRequest forType(Class<? extends DomainEntity> type) {
-    return IndexRequestImpl.forType(type);
+    return new CollectionIndexRequest(type);
   }
 
-  public IndexRequestImpl forEntity(Class<? extends DomainEntity> type, String id) {
-    return IndexRequestImpl.forEntity(type, id);
+  public IndexRequest forEntity(Class<? extends DomainEntity> type, String id) {
+    return new EntityIndexRequest(type, id);
   }
 }
