@@ -28,7 +28,8 @@ public abstract class AbstractIndexer implements Indexer {
     request.done();
   }
 
-  protected abstract void executeIndexAction(Class<? extends DomainEntity> type, String id) throws IndexException;
+  @Override
+  public abstract void executeIndexAction(Class<? extends DomainEntity> type, String id) throws IndexException;
 
   protected IndexManager getIndexManager() {
     return indexManager;

@@ -8,56 +8,65 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
 import java.time.LocalDateTime;
 
-public class CollectionIndexRequest implements IndexRequest{
+class CollectionIndexRequest implements IndexRequest {
   private final Class<? extends DomainEntity> type;
+  private final Repository repository;
+  private LocalDateTime lastChanged;
+  private String desc;
+  private Status status;
 
-  public CollectionIndexRequest(Class<? extends DomainEntity> type) {
+  public CollectionIndexRequest(Class<? extends DomainEntity> type, Repository repository) {
+    this.repository = repository;
+    this.status = Status.REQUESTED;
+    this.lastChanged = LocalDateTime.now();
     this.type = type;
   }
 
   @Override
   public void setDesc(String desc) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    this.desc = desc;
   }
 
   @Override
   public String getDesc() {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return desc;
   }
 
   @Override
   public String toClientRep() {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return String.format("{\"desc\":\"%s\", \"status\":\"%s\"}", desc, status);
   }
 
   @Override
   public Class<? extends DomainEntity> getType() {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return type;
   }
 
   @Override
   public void setType(Class<? extends DomainEntity> type) {
-    throw new UnsupportedOperationException("Not implemented yet");
+//    this.type = type;
   }
 
   @Override
   public Status getStatus() {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return status;
   }
 
   @Override
   public void inProgress() {
-    throw new UnsupportedOperationException("Not implemented yet");
+    status = Status.IN_PROGRESS;
+    lastChanged = LocalDateTime.now();
   }
 
   @Override
   public void done() {
-    throw new UnsupportedOperationException("Not implemented yet");
+    status = Status.DONE;
+    lastChanged = LocalDateTime.now();
   }
 
   @Override
   public LocalDateTime getLastChanged() {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return lastChanged;
   }
 
   @Override
@@ -77,6 +86,8 @@ public class CollectionIndexRequest implements IndexRequest{
 
   @Override
   public void execute(Indexer indexer) throws IndexException {
-    throw new UnsupportedOperationException("Not implemented yet");
+    for(StorageIterator<? extends DomainEntity> iterator = repository.getDomainEntities(type); iterator.hasNext();){
+      indexer.executeIndexAction(type, iterator.next().getId());
+    }
   }
 }

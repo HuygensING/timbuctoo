@@ -11,7 +11,8 @@ class AddIndexer extends AbstractIndexer {
     super(repository, indexManager);
   }
 
-  protected void executeIndexAction(Class<? extends DomainEntity> type, String id) throws IndexException {
+  @Override
+  public void executeIndexAction(Class<? extends DomainEntity> type, String id) throws IndexException {
     getIndexManager().addEntity(type, id);
   }
 }

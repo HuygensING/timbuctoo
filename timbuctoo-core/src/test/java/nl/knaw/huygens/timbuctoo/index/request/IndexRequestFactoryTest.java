@@ -1,11 +1,13 @@
 package nl.knaw.huygens.timbuctoo.index.request;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import test.variation.model.projecta.ProjectADomainEntity;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.mock;
 
 public class IndexRequestFactoryTest {
 
@@ -15,7 +17,7 @@ public class IndexRequestFactoryTest {
 
   @Before
   public void setUp() throws Exception {
-    instance = new IndexRequestFactory();
+    instance = new IndexRequestFactory(mock(Repository.class));
   }
 
   @Test
