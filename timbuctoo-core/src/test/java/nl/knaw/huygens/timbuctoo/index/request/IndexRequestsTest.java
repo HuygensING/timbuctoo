@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.index.request;
 
 import com.google.common.cache.Cache;
-import nl.knaw.huygens.timbuctoo.Repository;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -13,6 +12,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 
 public class IndexRequestsTest {
@@ -33,7 +33,9 @@ public class IndexRequestsTest {
   }
 
   private IndexRequest createIndexRequest() {
-    return new IndexRequestFactory(mock(Repository.class)).forCollectionOf(TYPE);
+    IndexRequest indexRequest = mock(IndexRequest.class);
+    when(indexRequest.canBeDiscarded(TIMEOUT)).thenReturn(false, true); // make sure the item is not purged directly after adding
+    return  indexRequest;
   }
 
   @Test
@@ -50,12 +52,9 @@ public class IndexRequestsTest {
   public void addInvalidatesDoneRequestsThatAreChangedMoreThanTheTimeoutAge() throws Exception {
     // setup
     IndexRequest otherIndexRequest = createIndexRequest();
-    String id = instance.add(indexRequest);
-    IndexRequest beforeDone = instance.get(id);
-    assertThat(beforeDone, is(sameInstance(this.indexRequest)));
-    beforeDone.done();
 
-    Thread.sleep(TIMEOUT);
+    String id = instance.add(indexRequest);
+    verifyRequestCanBeRetreived(id);
 
     // action
     instance.add(otherIndexRequest);
@@ -83,19 +82,18 @@ public class IndexRequestsTest {
   public void getInvalidatesDoneRequestsThatAreChangedMoreThanTheTimeoutAge() throws Exception {
     // setup
     String id = instance.add(indexRequest);
-    IndexRequest beforeDone = instance.get(id);
-    beforeDone.done();
-
-    // wait until the request has timed out
-    Thread.sleep(TIMEOUT);
+    verifyRequestCanBeRetreived(id);
 
     // action
-    IndexRequest foundForLastTime = instance.get(id);
+    IndexRequest notFoundAgain = instance.get(id);
 
     // verify
-    assertThat(foundForLastTime, is(sameInstance(indexRequest)));
-    IndexRequest notFoundAgain = instance.get(id);
     assertThat(notFoundAgain, is(nullValue()));
+  }
+
+  protected void verifyRequestCanBeRetreived(String id) {
+    IndexRequest beforePurge = instance.get(id);
+    assertThat(beforePurge, is(sameInstance(indexRequest)));
   }
 
 }

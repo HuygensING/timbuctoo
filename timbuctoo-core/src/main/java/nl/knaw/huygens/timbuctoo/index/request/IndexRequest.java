@@ -21,6 +21,8 @@ public interface IndexRequest {
 
   void execute(Indexer indexer) throws IndexException;
 
+  boolean canBeDiscarded(int timeout);
+
   enum Status {
     REQUESTED,
     IN_PROGRESS,

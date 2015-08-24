@@ -7,29 +7,29 @@ import nl.knaw.huygens.timbuctoo.index.Indexer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
-import java.time.LocalDateTime;
-
 class CollectionIndexRequest extends AbstractIndexRequest {
-  private final Class<? extends DomainEntity> type;
   private final Repository repository;
-  private LocalDateTime lastChanged;
-  private Status status;
 
   public CollectionIndexRequest(Class<? extends DomainEntity> type, Repository repository) {
-    super();
+    this(type, repository, IndexRequestStatus.requested());
+  }
+
+  CollectionIndexRequest(Class<? extends DomainEntity> type, Repository repository, IndexRequestStatus indexRequestStatus) {
+    super(type, indexRequestStatus);
     this.repository = repository;
-    this.type = type;
   }
 
   @Override
   protected String getDesc() {
-    return String.format("Index request for [%s]", TypeNames.getExternalName(type));
+    return String.format("Index request for [%s]", TypeNames.getExternalName(getType()));
   }
 
   @Override
-  public void execute(Indexer indexer) throws IndexException {
+  protected void executeIndexAction(Indexer indexer) throws IndexException {
+    Class<? extends DomainEntity> type = getType();
     for (StorageIterator<? extends DomainEntity> iterator = repository.getDomainEntities(type); iterator.hasNext(); ) {
       indexer.executeIndexAction(type, iterator.next().getId());
     }
   }
+
 }

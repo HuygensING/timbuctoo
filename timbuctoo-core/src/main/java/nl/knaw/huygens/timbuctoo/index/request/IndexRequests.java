@@ -4,12 +4,8 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.inject.Singleton;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.UUID;
-
-import static nl.knaw.huygens.timbuctoo.index.request.IndexRequest.Status.DONE;
 
 // FIXME: Should be removed when ActiveMQ is made persistent. See TIM-403 and TIM
 @Singleton
@@ -49,20 +45,9 @@ public class IndexRequests {
   private void purge() {
     for (Map.Entry<String, IndexRequest> entry : cache.asMap().entrySet()) {
       IndexRequest value = entry.getValue();
-      if (isDone(value) && isReadyForPurge(value)){
+      if (value.canBeDiscarded(timeout)){
         cache.invalidate(entry.getKey());
       }
     }
-    cache.cleanUp();
-  }
-
-  private boolean isDone(IndexRequest value) {
-    return value.getStatus() == DONE;
-  }
-
-  private boolean isReadyForPurge(IndexRequest value) {
-    LocalDateTime minimumTimeOutTime = LocalDateTime.now().minus(timeout, ChronoUnit.MILLIS);
-    LocalDateTime lastChanged = value.getLastChanged();
-    return minimumTimeOutTime.compareTo(lastChanged) >= 0;
   }
 }

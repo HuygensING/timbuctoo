@@ -4,6 +4,7 @@ import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import org.junit.Test;
+import org.mockito.InOrder;
 import test.variation.model.projecta.ProjectADomainEntity;
 
 import static org.mockito.Mockito.doThrow;
@@ -18,7 +19,7 @@ public class CollectionIndexRequestTest extends AbstractIndexRequestTest {
 
   @Override
   protected IndexRequest createInstance() {
-    return new CollectionIndexRequest(TYPE, createRepository());
+    return new CollectionIndexRequest(TYPE, createRepository(), requestedStatus);
   }
 
   private Repository createRepository() {
@@ -43,6 +44,12 @@ public class CollectionIndexRequestTest extends AbstractIndexRequestTest {
     verify(indexer).executeIndexAction(TYPE, ID_2);
   }
 
+  @Override
+  protected void verifyIndexAction(InOrder inOrder) throws IndexException {
+    inOrder.verify(indexer).executeIndexAction(TYPE, ID_1);
+    inOrder.verify(indexer).executeIndexAction(TYPE, ID_2);
+  }
+
   @Test(expected = IndexException.class)
   public void executeThrowsAnIndexExceptionWhenTheIndexerDoes() throws Exception {
     // setup
@@ -50,7 +57,6 @@ public class CollectionIndexRequestTest extends AbstractIndexRequestTest {
 
     // action
     getInstance().execute(indexer);
-
   }
 
 
