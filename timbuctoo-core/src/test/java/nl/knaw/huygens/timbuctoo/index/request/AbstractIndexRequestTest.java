@@ -96,8 +96,6 @@ public abstract class AbstractIndexRequestTest {
     // setup
     IndexRequest instance = getInstance();
 
-    Thread.sleep(TIMEOUT + 1);
-
     // action
     boolean readyForPurge = instance.canBeDiscarded(TIMEOUT);
 
@@ -111,7 +109,7 @@ public abstract class AbstractIndexRequestTest {
     IndexRequest instance = getInstance();
     instance.execute(indexer); // sets the status to done
 
-    Thread.sleep(TIMEOUT - 1);
+    Thread.sleep(TIMEOUT - 2);
 
     // action
     boolean readyForPurge = instance.canBeDiscarded(TIMEOUT);

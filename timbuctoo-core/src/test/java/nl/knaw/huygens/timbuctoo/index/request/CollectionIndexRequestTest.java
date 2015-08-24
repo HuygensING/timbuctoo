@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.index.request;
 
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
@@ -16,10 +17,17 @@ public class CollectionIndexRequestTest extends AbstractIndexRequestTest {
 
   public static final String ID_1 = "id1";
   public static final String ID_2 = "id2";
+  private RequestItemStatus requestItemStatus;
 
   @Override
   protected IndexRequest createInstance() {
-    return new CollectionIndexRequest(TYPE, createRepository(), requestedStatus);
+    createRequestItemStatus();
+    return new CollectionIndexRequest(TYPE, createRepository(), requestedStatus, requestItemStatus);
+  }
+
+  private void createRequestItemStatus() {
+    requestItemStatus = mock(RequestItemStatus.class);
+    when(requestItemStatus.getToDo()).thenReturn(Lists.newArrayList(ID_1, ID_2));
   }
 
   private Repository createRepository() {
@@ -57,6 +65,17 @@ public class CollectionIndexRequestTest extends AbstractIndexRequestTest {
 
     // action
     getInstance().execute(indexer);
+  }
+
+  @Test
+  public void executeAddsAllTheFoundIdsToTheTodoListAndRemovesThemWhenDoneIndexing() throws Exception {
+    // action
+    getInstance().execute(indexer);
+
+    // verify
+    verify(requestItemStatus).setToDo(Lists.newArrayList(ID_1, ID_2));
+    verify(requestItemStatus).done(ID_1);
+    verify(requestItemStatus).done(ID_2);
   }
 
 
