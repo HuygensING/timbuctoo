@@ -1067,8 +1067,39 @@ public class TinkerPopStorageTest {
     instance.addRelation(RELATION_TYPE, relation, new Change());
 
     // verify
-    converter.addValuesToElement(edge, relation);
+    verify(converter).addValuesToElement(edge, relation);
     verify(dbMock).commit();
+  }
+
+  @Test
+  public void addRelationSetsTheLatestProperty() throws Exception {
+    // setup
+    SubARelation relation = aRelation()//
+      .withSourceId(RELATION_SOURCE_ID)//
+      .withSourceType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
+      .withTargetId(RELATION_TARGET_ID)//
+      .withTargetType(PRIMITIVE_DOMAIN_ENTITY_NAME)//
+      .withTypeId(RELATION_TYPE_ID)//
+      .withTypeType(RELATION_TYPE_NAME)//
+      .build();
+
+    Vertex sourceVertex = aVertex().build();
+    latestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, RELATION_SOURCE_ID, sourceVertex);
+    Vertex targetVertex = aVertex().build();
+    latestVertexFoundFor(PRIMITIVE_DOMAIN_ENTITY_TYPE, RELATION_TARGET_ID, targetVertex);
+
+    relationTypeWithRegularNameExists(REGULAR_RELATION_NAME, RELATION_TYPE_ID);
+
+    Edge edge = anEdge().build();
+    when(sourceVertex.addEdge(REGULAR_RELATION_NAME, targetVertex)).thenReturn(edge);
+
+    EdgeConverter<SubARelation> converter = createCompositeEdgeConverterFor(RELATION_TYPE);
+
+    // action
+    instance.addRelation(RELATION_TYPE, relation, new Change());
+
+    // verify
+    verify(edge).setProperty(IS_LATEST, true);
   }
 
   @Test(expected = ConversionException.class)

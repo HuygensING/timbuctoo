@@ -168,6 +168,7 @@ public class TinkerPopStorage implements GraphStorage {
 
     EdgeAddAction<T> addAction = new EdgeAddAction<T>(type, type.cast(relation), edge);
     EdgeRollbackAction rollbackAction = new EdgeRollbackAction(edge);
+    edge.setProperty(IS_LATEST, true);
 
     new RevertableAddition().execute(addAction, rollbackAction);
   }
