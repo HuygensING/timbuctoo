@@ -4,6 +4,8 @@ import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.IS_LATEST;
+
 public class EdgeDuplicator {
 
   public EdgeDuplicator() {
@@ -14,6 +16,13 @@ public class EdgeDuplicator {
     Edge duplicate = createDuplicate(edgeToDuplicate);
 
     addProperties(edgeToDuplicate, duplicate);
+
+    changeLatest(duplicate, edgeToDuplicate);
+  }
+
+  private void changeLatest(Edge duplicate, Edge edgeToDuplicate) {
+    duplicate.setProperty(IS_LATEST, true);
+    edgeToDuplicate.setProperty(IS_LATEST, false);
   }
 
   private Edge createDuplicate(Edge edgeToDuplicate) {

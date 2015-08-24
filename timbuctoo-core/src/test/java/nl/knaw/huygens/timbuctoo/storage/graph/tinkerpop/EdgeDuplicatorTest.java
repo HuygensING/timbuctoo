@@ -62,4 +62,14 @@ public class EdgeDuplicatorTest {
     verify(duplicate).setProperty(DB_REV_PROP_NAME, REV);
     verify(duplicate).setProperty(DB_PID_PROP_NAME, PID);
   }
+
+  @Test
+  public void duplicateAddsIsLatestPropertyAndSetsItToFalseOnTheEdgeToDuplicate(){
+    // action
+    instance.duplicate(edge);
+
+    // verify
+    verify(edge).setProperty(ElementFields.IS_LATEST, false);
+    verify(duplicate).setProperty(ElementFields.IS_LATEST, true);
+  }
 }
