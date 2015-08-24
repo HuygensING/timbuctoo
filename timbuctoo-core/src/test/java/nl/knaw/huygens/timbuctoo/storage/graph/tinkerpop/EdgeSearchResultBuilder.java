@@ -17,6 +17,7 @@ import java.util.Map.Entry;
 import static nl.knaw.huygens.timbuctoo.model.Entity.DB_ID_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.DB_REV_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.IS_LATEST;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
@@ -106,6 +107,10 @@ public class EdgeSearchResultBuilder {
 
   public void foundByGraphQuery(GraphQuery graphQuery) {
     when(graphQuery.edges()).thenReturn(edges);
+  }
+
+  public EdgeSearchResultBuilder forLatest() {
+    return this.forProperty(IS_LATEST, true);
   }
 
   public class QueryVerifier {

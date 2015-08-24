@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
-import com.google.common.base.Predicate;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -58,7 +57,7 @@ class TinkerPopLowLevelAPI {
 
   public <T extends Entity> Vertex getLatestVertexById(Class<T> type, String id) {
     // this is needed to check if the type array contains the value requeste type
-    Iterable<Vertex> foundVertices = queryByTypeAndLatest(type).has(DB_ID_PROP_NAME, id) //
+    Iterable<Vertex> foundVertices = queryLatestByType(type).has(DB_ID_PROP_NAME, id) //
       .vertices();
 
     return getFirstFromIterable(foundVertices);
@@ -67,14 +66,14 @@ class TinkerPopLowLevelAPI {
   public Vertex getLatestVertexById(String id) {
     Iterable<Vertex> vertices = queryLatest().has(DB_ID_PROP_NAME, id).vertices();
 
-   return getFirstFromIterable(vertices);
+    return getFirstFromIterable(vertices);
   }
 
   private GraphQuery queryLatest() {
     return db.query().has(IS_LATEST, true);
   }
 
-  private <T extends Entity> GraphQuery queryByTypeAndLatest(Class<T> type) {
+  private <T extends Entity> GraphQuery queryLatestByType(Class<T> type) {
     return queryByType(type).has(IS_LATEST, true);
   }
 
@@ -108,30 +107,9 @@ class TinkerPopLowLevelAPI {
   }
 
   public Edge getLatestEdgeById(Class<? extends Relation> relationType, String id) {
-    Edge latestEdge = null;
-    Iterable<Edge> edges = queryByType(relationType).has(DB_ID_PROP_NAME, id).edges();
-    Predicate<Edge> isLaterEdge = new Predicate<Edge>() {
-      private int latestRev = 0;
+    Iterable<Edge> edges = queryLatestByType(relationType).has(DB_ID_PROP_NAME, id).edges();
 
-      @Override
-      public boolean apply(Edge edge) {
-        int rev = ElementHelper.getRevisionProperty(edge);
-        if (rev > latestRev) {
-          latestRev = rev;
-          return true;
-        }
-        return false;
-      }
-    };
-
-    for (Iterator<Edge> iterator = edges.iterator(); iterator.hasNext(); ) {
-      Edge edge = iterator.next();
-      if (isLaterEdge.apply(edge)) {
-        latestEdge = edge;
-      }
-    }
-
-    return latestEdge;
+    return getFirstFromIterable(edges);
   }
 
   public Iterator<Vertex> getLatestVerticesOf(Class<? extends Entity> type) {
@@ -167,16 +145,11 @@ class TinkerPopLowLevelAPI {
 
     Stopwatch queryStopwatch = Stopwatch.createStarted();
     LOG.info("Begin query latest edges for [{}]", type);
-    Iterable<Edge> edges = db.query().edges();
+    Iterable<Edge> edges = queryLatestByType(type).edges();
     LOG.info("End querying latest edges for [{}] in [{}]", type, queryStopwatch.stop());
 
-    Stopwatch filterStopwatch = Stopwatch.createStarted();
-    LOG.info("Begin filter for latest edges for [{}]", type);
-    Iterator<Edge> latestEdges = getLatestEdges(edges);
-    LOG.info("End filter for latest edges for [{}] in [{}]", type, filterStopwatch.stop());
-
     LOG.info("End get latest edges for [{}] in [{}]", type, stopwatch.stop());
-    return latestEdges;
+    return edges.iterator();
   }
 
   public Iterator<Edge> getLatestEdges(Iterable<Edge> edges) {
@@ -230,9 +203,9 @@ class TinkerPopLowLevelAPI {
   }
 
   public Iterator<Edge> findLatestEdgesByProperty(Class<? extends Relation> type, String propertyName, String propertyValue) {
-    Iterable<Edge> edges = db.query().has(propertyName, propertyValue).edges();
+    Iterable<Edge> edges = queryLatest().has(propertyName, propertyValue).edges();
 
-    return getLatestEdges(edges);
+    return edges.iterator();
   }
 
   /**
@@ -244,7 +217,7 @@ class TinkerPopLowLevelAPI {
    * @return the found edges or an empty iterator non are found
    */
   public Iterator<Edge> findEdgesBySource(Class<? extends Relation> type, String sourceId) {
-    return getRelationsByVertex(sourceId, Direction.OUT);
+    return getEdgesByVertex(sourceId, Direction.OUT);
   }
 
   /**
@@ -256,17 +229,17 @@ class TinkerPopLowLevelAPI {
    * @return the found edges or an empty iterator non are found
    */
   public Iterator<Edge> findEdgesByTarget(Class<? extends Relation> type, String targetId) {
-    return getRelationsByVertex(targetId, Direction.IN);
+    return getEdgesByVertex(targetId, Direction.IN);
   }
 
-  private Iterator<Edge> getRelationsByVertex(String vertexId, Direction direction) {
+  private Iterator<Edge> getEdgesByVertex(String vertexId, Direction direction) {
     Iterable<Vertex> vertices = queryLatest().has(DB_ID_PROP_NAME, vertexId).vertices();
 
     Iterator<Vertex> iterator = vertices.iterator();
     if (iterator.hasNext()) {
-      Iterable<Edge> outgoingEdges = iterator.next().getEdges(direction);
+      Iterable<Edge> outgoingEdges = iterator.next().query().direction(direction).has(IS_LATEST, true).edges();
 
-      return getLatestEdges(outgoingEdges);
+      return outgoingEdges.iterator();
     }
 
     return Lists.<Edge>newArrayList().iterator();
@@ -279,7 +252,7 @@ class TinkerPopLowLevelAPI {
 
     Iterable<Edge> filteredEdges = filter.filter(edges);
 
-    return query.searchLatestOnly() ? getLatestEdges(filteredEdges) : filteredEdges.iterator();
+    return filteredEdges.iterator();
   }
 
   public <T extends Entity> Iterator<Vertex> findVertices(Class<T> type, TimbuctooQuery query) {

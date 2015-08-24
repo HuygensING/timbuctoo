@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.storage.graph;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.Relation;
 
 import java.util.List;
 import java.util.Map;
@@ -89,9 +88,7 @@ public class TimbuctooQuery {
     queryCreator.setHasProperties(hasProperties);
     queryCreator.setInCollectionProperties(inCollectionProperties);
     queryCreator.setSearchByType(searchByType);
-    if (!Relation.class.isAssignableFrom(type)) {
-      queryCreator.searchLatestOnly(searchLatestOnly);
-    }
+    queryCreator.searchLatestOnly(searchLatestOnly);
 
     return queryCreator.build();
 

@@ -835,7 +835,7 @@ public class TinkerPopStorage implements GraphStorage {
   }
 
   @Override
-  public <T extends Relation> T getDefaultRelation(Class<T> type, String id) throws StorageException{
+  public <T extends Relation> T getDefaultRelation(Class<T> type, String id) throws StorageException {
     T relation = null;
     Class<? extends Relation> primitiveType = Relation.class;
 

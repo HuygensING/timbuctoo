@@ -448,10 +448,10 @@ public class TinkerPopLowLevelAPITest {
     Edge latestEdgeWithId = anEdge().withID(ID).withRev(FIRST_REVISION).build();
     Edge latestEdgeWithId2 = anEdge().withID(ID2).withRev(SECOND_REVISION).build();
     EdgeSearchResultBuilder.QueryVerifier queryVerifier = anEdgeSearchResult()//
+      .forLatest() //
       .forProperty(PROPERTY_NAME, PROPERTY_VALUE)//
       .containsEdge(latestEdgeWithId)//
       .andEdge(latestEdgeWithId2)//
-      .andEdge(anEdge().withID(ID2).withRev(FIRST_REVISION).build())//
       .foundInDatabase(dbMock);
 
     // action
@@ -465,7 +465,7 @@ public class TinkerPopLowLevelAPITest {
   @Test
   public void findLatestEdgesByPropertyReturnsAnEmptyIteratorWhenNoEdgesAreFound() {
     // setup
-    anEmptyEdgeSearchResult().forProperty(PROPERTY_NAME, PROPERTY_VALUE).foundInDatabase(dbMock);
+    anEmptyEdgeSearchResult().forLatest().forProperty(PROPERTY_NAME, PROPERTY_VALUE).foundInDatabase(dbMock);
 
     // action
     Iterator<Edge> edges = instance.findLatestEdgesByProperty(RELATION_TYPE, PROPERTY_NAME, PROPERTY_VALUE);
@@ -478,11 +478,9 @@ public class TinkerPopLowLevelAPITest {
   public void findEdgesBySourceReturnsTheLastestOutgoingEdgesOfTheLatestSourceVertex() {
     // setup
     Edge latestEdge1 = anEdge().withID(ID).withRev(SECOND_REVISION).build();
-    Edge notLatestEdge1 = anEdge().withID(ID).withRev(FIRST_REVISION).build();
     Edge latestEdge2 = anEdge().withID(ID2).withRev(FIRST_REVISION).build();
     Vertex latestVertexWithEdges = aVertex()//
       .withOutgoingEdge(latestEdge1)//
-      .withOutgoingEdge(notLatestEdge1)//
       .withOutgoingEdge(latestEdge2)//
       .build();
     VertexSearchResultBuilder.QueryVerifier queryVerifier = aVertexSearchResult()//
@@ -552,11 +550,9 @@ public class TinkerPopLowLevelAPITest {
   public void findEdgesByTargeReturnsTheIncomingEdgesOfTheTargetVertex() {
     // setup
     Edge latestEdge1 = anEdge().withID(ID).withRev(SECOND_REVISION).build();
-    Edge notLatestEdge1 = anEdge().withID(ID).withRev(FIRST_REVISION).build();
     Edge latestEdge2 = anEdge().withID(ID2).withRev(FIRST_REVISION).build();
     Vertex latestVertexWithEdges = aVertex()//
       .withIncomingEdge(latestEdge1)//
-      .withIncomingEdge(notLatestEdge1)//
       .withIncomingEdge(latestEdge2)//
       .build();
     VertexSearchResultBuilder.QueryVerifier queryVerifier = aVertexSearchResult()//
@@ -713,42 +709,7 @@ public class TinkerPopLowLevelAPITest {
     assertThat(Lists.newArrayList(foundEdges), containsInAnyOrder(edge1, edge2, edge3));
 
     verify(resultFilter).filter((Iterable<Edge>) argThat(contains(edge1, edge2, edge3)));
-  }
 
-  @SuppressWarnings("unchecked")
-  @Test
-  public void findEdgesReturnsTheLatestOnlyIfTheQueryRequestIt() {
-    // setup
-    GraphQuery graphQuery = mock(GraphQuery.class);
-
-    Edge edge1 = anEdge().withID(ID).withRev(FIRST_REVISION).build();
-    Edge edge2 = anEdge().withID(ID).withRev(SECOND_REVISION).build();
-    Edge edge3 = anEdge().withID(ID2).withRev(FIRST_REVISION).build();
-
-    anEdgeSearchResult()//
-      .containsEdge(edge1)//
-      .andEdge(edge2)//
-      .andEdge(edge3)//
-      .foundByGraphQuery(graphQuery);
-
-    TimbuctooQuery query = aQuery()//
-      .searchesLatestOnly(true)//
-      .createsGraphQueryForDB(queryBuilder, graphQuery)//
-      .build();
-
-    TinkerPopResultFilter<Edge> resultFilter = mock(TinkerPopResultFilter.class);
-    when(resultFilterBuilder.<Edge>buildFor(query)).thenReturn(resultFilter);
-
-    List<Edge> edges = Lists.<Edge>newArrayList(edge1, edge2, edge3);
-    when(resultFilter.filter(Matchers.anyCollectionOf(Edge.class))).thenReturn(edges);
-
-    // action
-    Iterator<Edge> foundEdges = instance.findEdges(RELATION_TYPE, query);
-
-    // verify
-    assertThat(Lists.newArrayList(foundEdges), containsInAnyOrder(edge2, edge3));
-
-    verify(resultFilter).filter((Iterable<Edge>) argThat(contains(edge1, edge2, edge3)));
   }
 
   @Test
@@ -779,10 +740,11 @@ public class TinkerPopLowLevelAPITest {
   public void getLatestEdgeByIdReturnsTheEdgeWithTheHighestRevisionForACertainId() {
     // setup
     Edge edgeWithHighestRevision = anEdge().withRev(THIRD_REVISION).build();
-    EdgeSearchResultBuilder.QueryVerifier queryVerifier = anEdgeSearchResult().forId(ID).forType(RELATION_TYPE)//
-      .containsEdge(anEdge().withRev(FIRST_REVISION).build())//
+    EdgeSearchResultBuilder.QueryVerifier queryVerifier = anEdgeSearchResult()//
+      .forLatest()//
+      .forId(ID)//
+      .forType(RELATION_TYPE)//
       .andEdge(edgeWithHighestRevision)//
-      .andEdge(anEdge().withRev(SECOND_REVISION).build())//
       .foundInDatabase(dbMock);
 
     // action
@@ -796,7 +758,7 @@ public class TinkerPopLowLevelAPITest {
   @Test
   public void getLatestEdgeByIdReturnsNullIfNoEdgesAreFound() {
     // setup
-    anEmptyEdgeSearchResult().forId(ID).forType(RELATION_TYPE).foundInDatabase(dbMock);
+    anEmptyEdgeSearchResult().forLatest().forId(ID).forType(RELATION_TYPE).foundInDatabase(dbMock);
 
     // action
     Edge foundEdge = instance.getLatestEdgeById(RELATION_TYPE, ID);
@@ -844,10 +806,10 @@ public class TinkerPopLowLevelAPITest {
     // setup
     Edge edgeWithLatestRev1 = anEdge().withID(ID).withRev(SECOND_REVISION).build();
     Edge edgeWithLatestRev2 = anEdge().withID(ID2).withRev(SECOND_REVISION).build();
-    EdgeSearchResultBuilder.QueryVerifier queryVerifier = anEdgeSearchResult() //
-      .containsEdge(anEdge().withID(ID).withRev(FIRST_REVISION).build()) //
+    EdgeSearchResultBuilder.QueryVerifier queryVerifier = anEdgeSearchResult()//
+      .forLatest()//
+      .forType(RELATION_TYPE) //
       .andEdge(edgeWithLatestRev1) //
-      .andEdge(anEdge().withID(ID2).withRev(FIRST_REVISION).build()) //
       .andEdge(edgeWithLatestRev2) //
       .foundInDatabase(dbMock);
 
@@ -855,16 +817,16 @@ public class TinkerPopLowLevelAPITest {
     Iterator<Edge> actualEdges = instance.getLatestEdgesOf(RELATION_TYPE);
 
     // verify
+    queryVerifier.verify();
     ArrayList<Edge> edgesList = Lists.newArrayList(actualEdges);
     assertThat(edgesList.size(), is(2));
     assertThat(edgesList, containsInAnyOrder(edgeWithLatestRev1, edgeWithLatestRev2));
-    queryVerifier.verify();
   }
 
   @Test
   public void getLatestEdgesOfReturnsAnEmptyIteratorWhenNoEdgesAreFound() {
     // setup
-    anEmptyEdgeSearchResult().foundInDatabase(dbMock);
+    anEmptyEdgeSearchResult().forLatest().forType(RELATION_TYPE).foundInDatabase(dbMock);
 
     // action
     Iterator<Edge> actualEdges = instance.getLatestEdgesOf(RELATION_TYPE);

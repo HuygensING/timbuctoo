@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.VertexQuery;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.SystemRelationType;
@@ -22,6 +23,8 @@ import static nl.knaw.huygens.timbuctoo.model.Entity.DB_ID_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.DB_REV_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.IS_LATEST;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -80,6 +83,7 @@ public class VertexMockBuilder {
     addEdges(vertex);
     addProperties(vertex);
     addTypes(vertex);
+    setupEdgeQuery(vertex);
 
     return vertex;
   }
@@ -125,6 +129,32 @@ public class VertexMockBuilder {
     for (Entry<String, List<Edge>> entry : outgoingEdges.entrySet()) {
       when(vertex.getEdges(OUT, entry.getKey())).thenReturn(entry.getValue());
     }
+  }
+
+  private void setupEdgeQuery(Vertex vertex){
+    VertexQuery outQuery = mock(VertexQuery.class);
+    when(outQuery.has(anyString(), any())).thenReturn(outQuery);
+    when(outQuery.edges()).thenReturn(getAllEdges(outgoingEdges));
+
+    VertexQuery inQuery = mock(VertexQuery.class);
+    when(inQuery.has(anyString(), any())).thenReturn(inQuery);
+    when(inQuery.edges()).thenReturn(getAllEdges(incomingEdges));
+
+    List<Edge> allEdges = Lists.newArrayList();
+    allEdges.addAll(getAllEdges(incomingEdges));
+    allEdges.addAll(getAllEdges(outgoingEdges));
+
+    VertexQuery bothQuery = mock(VertexQuery.class);
+    when(bothQuery.has(anyString(), any())).thenReturn(bothQuery);
+    when(bothQuery.edges()).thenReturn(allEdges);
+
+    VertexQuery vertexQuery = mock(VertexQuery.class);
+    when(vertexQuery.has(anyString(), any())).thenReturn(vertexQuery);
+    when(vertexQuery.direction(OUT)).thenReturn(outQuery);
+    when(vertexQuery.direction(IN)).thenReturn(inQuery);
+    when(vertexQuery.direction(BOTH)).thenReturn(bothQuery);
+
+    when(vertex.query()).thenReturn(vertexQuery);
   }
 
   private Collection<Edge> getAllEdges(Map<String, List<Edge>> edgeMap) {
