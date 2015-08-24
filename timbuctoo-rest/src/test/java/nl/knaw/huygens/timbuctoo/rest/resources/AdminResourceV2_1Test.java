@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rest.resources;
 
+import com.google.common.collect.Maps;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
@@ -22,6 +23,7 @@ import test.model.projecta.SubADomainEntity;
 import javax.jms.JMSException;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import java.util.Map;
 
 import static com.sun.jersey.api.client.ClientResponse.Status.BAD_REQUEST;
 import static com.sun.jersey.api.client.ClientResponse.Status.CREATED;
@@ -50,7 +52,7 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
   public static final String REQUEST_ID = "7659943b-bdee-4ad3-b8fc-a0f1329d6e9f";
   public static final String EXCEPTION_MESSAGE = "Exception message";
   public static final Class<SubADomainEntity> TYPE = SubADomainEntity.class;
-  public static final String CLIENT_REP = "Client rep";
+  public static final Map<String, Object> CLIENT_REP = Maps.newHashMap();
   private Broker broker;
   private Producer indexProducer;
   private IndexRequests indexRequests;
@@ -223,7 +225,7 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
 
     // verify
     verifyResponseStatus(response, OK);
-    assertThat(response.getEntity(String.class), is(CLIENT_REP));
+    assertThat(response.getEntity(Map.class), is(CLIENT_REP));
   }
 
   @Test

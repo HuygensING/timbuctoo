@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.Indexer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
+import java.util.Map;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Collectors;
@@ -28,6 +29,17 @@ class CollectionIndexRequest extends AbstractIndexRequest {
   @Override
   protected String getDesc() {
     return String.format("Index request for [%s]", TypeNames.getExternalName(getType()));
+  }
+
+  @Override
+  public Map<String, Object> toClientRep() {
+    Map<String, Object> clientRepresentation = super.toClientRep();
+
+    clientRepresentation.put("todo", requestItemStatus.getToDo());
+    clientRepresentation.put("done", requestItemStatus.getDone());
+
+
+    return clientRepresentation;
   }
 
   @Override

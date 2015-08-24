@@ -1,11 +1,14 @@
 package nl.knaw.huygens.timbuctoo.index.request;
 
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.Indexer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Map;
 
 abstract class AbstractIndexRequest implements IndexRequest {
 
@@ -21,8 +24,11 @@ abstract class AbstractIndexRequest implements IndexRequest {
   }
 
   @Override
-  public String toClientRep() {
-    return String.format("{\"desc\":\"%s\", \"status\":\"%s\"}", getDesc(), getStatus());
+  public Map<String, Object> toClientRep() {
+    HashMap<String, Object> clientRepresentation = Maps.newHashMap();
+    clientRepresentation.put("desc", getDesc());
+    clientRepresentation.put("status", getStatus());
+    return clientRepresentation;
   }
 
   protected abstract String getDesc();

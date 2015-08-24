@@ -5,9 +5,10 @@ import nl.knaw.huygens.timbuctoo.index.Indexer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 public interface IndexRequest {
-  String toClientRep();
+  Map<String, Object> toClientRep();
 
   Class<? extends DomainEntity> getType();
 
