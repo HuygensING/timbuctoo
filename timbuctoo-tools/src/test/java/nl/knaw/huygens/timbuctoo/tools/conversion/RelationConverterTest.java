@@ -1,24 +1,28 @@
 package nl.knaw.huygens.timbuctoo.tools.conversion;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.tinkerpop.blueprints.Edge;
+import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.graph.IdGenerator;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
 
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.graph.IdGenerator;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class RelationConverterTest {
   private static final int REVISION2 = 2;
@@ -34,11 +38,13 @@ public class RelationConverterTest {
   private RelationConverter instance;
   private IdGenerator idGenerator;
   private Map<String, String> oldIdNewIdMap;
+  private Edge edge1;
+  private Edge edge2;
 
   @Before
-  public void setup() throws StorageException {
+  public void setup() throws Exception {
     oldIdNewIdMap = Maps.newHashMap();
-    revisionConverter = mock(RelationRevisionConverter.class);
+    setupRevisionConverter();
     mongoStorage = mock(MongoConversionStorage.class);
     setupIdGenerator();
 
@@ -46,6 +52,15 @@ public class RelationConverterTest {
 
     setupRevisionVariationMap();
   }
+
+  protected void setupRevisionConverter() throws Exception {
+    revisionConverter = mock(RelationRevisionConverter.class);
+    edge1 = mock(Edge.class);
+    edge2 = mock(Edge.class);
+    Mockito.when(revisionConverter.convert(anyString(), anyString(), Matchers.<Relation>anyList(), any(Integer.class))).thenReturn(edge1, edge2);
+  }
+
+
 
   @SuppressWarnings("unchecked")
   private void setupRevisionVariationMap() throws StorageException {
@@ -77,12 +92,21 @@ public class RelationConverterTest {
     verify(revisionConverter).convert(OLD_ID, NEW_ID, variationsOfRevision2, REVISION2);
 
     verifyTheRelationIdsAreMapped();
-
   }
 
   private void verifyTheRelationIdsAreMapped() {
     assertThat(oldIdNewIdMap.keySet(), contains(OLD_ID));
     assertThat(oldIdNewIdMap.get(OLD_ID), is(NEW_ID));
+  }
+
+  @Test
+  public void convertSetsTheIsLatestPropertyToFalseOfEachRevisionAndSetsItToTrueForTheLatest() throws Exception {
+    // action
+    instance.convert(OLD_ID);
+
+    // verify
+    verify(edge1).setProperty(ElementFields.IS_LATEST, false);
+    verify(edge2).setProperty(ElementFields.IS_LATEST, true);
   }
 
 }

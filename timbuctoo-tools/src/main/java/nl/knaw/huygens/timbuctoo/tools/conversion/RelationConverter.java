@@ -1,13 +1,14 @@
 package nl.knaw.huygens.timbuctoo.tools.conversion;
 
-import java.util.Map;
-
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Graph;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.graph.IdGenerator;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields;
 
-import com.tinkerpop.blueprints.Graph;
+import java.util.Map;
 
 public class RelationConverter {
 
@@ -18,7 +19,7 @@ public class RelationConverter {
   private Map<String, String> oldIdNewIdMap;
 
   public RelationConverter(MongoConversionStorage mongoStorage, Graph graph, TinkerPopConversionStorage graphStorage, TypeRegistry typeRegistry, Map<String, String> oldIdNewIdMap,
-      Map<String, Object> oldIdLatestVertexIdMap, IdGenerator idGenerator) {
+                           Map<String, Object> oldIdLatestVertexIdMap, IdGenerator idGenerator) {
     this(mongoStorage, new RelationRevisionConverter(graph, mongoStorage, graphStorage, typeRegistry, oldIdNewIdMap, oldIdLatestVertexIdMap), idGenerator, oldIdNewIdMap);
   }
 
@@ -34,8 +35,12 @@ public class RelationConverter {
     String newId = idGenerator.nextIdFor(TYPE);
     oldIdNewIdMap.put(oldId, newId);
 
+    Edge edge = null;
     for (int revision : map.revisionsInOrder()) {
-      revisionConverter.convert(oldId, newId, map.get(revision), revision);
+      edge = revisionConverter.convert(oldId, newId, map.get(revision), revision);
+      edge.setProperty(ElementFields.IS_LATEST, false);
     }
+
+    edge.setProperty(ElementFields.IS_LATEST, true);
   }
 }

@@ -1,8 +1,9 @@
 package nl.knaw.huygens.timbuctoo.tools.conversion;
 
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.collect.Lists;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.Vertex;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -10,10 +11,8 @@ import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorage;
 
-import com.google.common.collect.Lists;
-import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Graph;
-import com.tinkerpop.blueprints.Vertex;
+import java.util.List;
+import java.util.Map;
 
 public class RelationRevisionConverter {
 
@@ -39,7 +38,7 @@ public class RelationRevisionConverter {
     this.oldIdLatestVertexIdMap = oldIdLatestVertexIdMap;
   }
 
-  public void convert(String oldId, String newId, List<Relation> variants, int revision) throws StorageException, IllegalArgumentException, IllegalAccessException {
+  public Edge convert(String oldId, String newId, List<Relation> variants, int revision) throws StorageException, IllegalArgumentException, IllegalAccessException {
     Edge edge = null;
     Object edgeId = null;
     List<Class<? extends Relation>> variantTypes = Lists.newArrayList();
@@ -58,6 +57,8 @@ public class RelationRevisionConverter {
     }
 
     checkIfVariantsAreCorrectlyStored(oldId, newId, edgeId, revision, variantTypes);
+
+    return edge;
 
   }
 

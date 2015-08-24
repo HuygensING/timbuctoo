@@ -1,30 +1,29 @@
 package nl.knaw.huygens.timbuctoo.tools.conversion;
 
-import static nl.knaw.huygens.timbuctoo.tools.conversion.RelationMatcher.likeRelation;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.model.RelationType;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import test.model.projecta.SubARelation;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
+import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import org.junit.Before;
+import org.junit.Test;
+import test.model.projecta.SubARelation;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static nl.knaw.huygens.timbuctoo.tools.conversion.RelationMatcher.likeRelation;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class RelationRevisionConverterTest {
   private static final String NEW_REL_TYPE_ID = "typeId";
@@ -116,6 +115,31 @@ public class RelationRevisionConverterTest {
     verify(verifier1).verifyConversion(OLD_ID, NEW_ID, NEW_INTERNAL_ID);
     verify(verifier2).verifyConversion(OLD_ID, NEW_ID, NEW_INTERNAL_ID);
 
+  }
+
+  @Test
+  public void convertReturnsTheEdge() throws Exception {
+    List<Relation> variations = Lists.newArrayList();
+    Relation variant1 = new Relation();
+    variant1.setTargetId(OLD_TARGET_ID);
+    variant1.setSourceId(OLD_SOURCE_ID);
+    variant1.setTypeId(OLD_REL_TYPE_ID);
+    variations.add(variant1);
+
+    SubARelation variant2 = new SubARelation();
+    variations.add(variant2);
+
+    findRelationTypeIdGivesName(OLD_REL_TYPE_ID, REGULAR_NAME);
+
+    when(sourceVertex.addEdge(REGULAR_NAME, targetVertex)).thenReturn(edge);
+
+    EntityConversionVerifier verifier1 = createVerifierFor(VARIANT_TYPE1, REVISION);
+    EntityConversionVerifier verifier2 = createVerifierFor(VARIANT_TYPE2, REVISION);
+
+    // action
+    Edge returnedEdge = instance.convert(OLD_ID, NEW_ID, variations, REVISION);
+
+    assertThat(returnedEdge, is(sameInstance(edge)));
   }
 
   private EntityConversionVerifier createVerifierFor(Class<? extends Relation> type, int revision) {
