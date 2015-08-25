@@ -22,9 +22,10 @@ package nl.knaw.huygens.timbuctoo.model.neww;
  * #L%
  */
 
-import java.util.List;
-import java.util.Map;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.DerivedRelationType;
 import nl.knaw.huygens.timbuctoo.model.Person;
@@ -32,13 +33,10 @@ import nl.knaw.huygens.timbuctoo.model.RelationRef;
 import nl.knaw.huygens.timbuctoo.oaipmh.DublinCoreMetadataField;
 import nl.knaw.huygens.timbuctoo.oaipmh.OAIDublinCoreField;
 import nl.knaw.huygens.timbuctoo.util.Text;
-
 import org.apache.commons.lang3.StringUtils;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.util.List;
+import java.util.Map;
 
 public class WWPerson extends Person {
 
@@ -94,6 +92,7 @@ public class WWPerson extends Person {
     this.bibliography = bibliography;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_s_children", canBeEmpty = true, isFaceted = true)
   public String getChildren() {
     return children;
   }
@@ -186,13 +185,13 @@ public class WWPerson extends Person {
   // So it seems to make sense to define relations here and not in Person
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_residence", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_s_residence", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getResidenceLocation() {
     return getRelations("hasResidenceLocation");
   }
 
   // a facet that allows searching all the locations related to person.
-  @IndexAnnotation(fieldName = "dynamic_s_relatedLocations", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_s_relatedLocations", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getRelatedLocations() {
     List<RelationRef> relatedLocations = Lists.newArrayList();
 
@@ -227,21 +226,39 @@ public class WWPerson extends Person {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_language", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_s_language", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getPrimaryLanguages() {
     return getRelations("hasPersonLanguage");
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_collective", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_s_collective", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getCollectives() {
     return getRelations("isMemberOf");
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_religion", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_s_religion", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getReligions() {
     return getRelations("hasReligion");
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_marital_status", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
+  public List<RelationRef> getMaritalStatuses() {
+    return getRelations("hasMaritalStatus");
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_social_class", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
+  public List<RelationRef> getSocialClasses(){
+    return getRelations("hasSocialClass");
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_education", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
+  public List<RelationRef> getEducations(){
+    return getRelations("hasEducation");
   }
 
   // ---------------------------------------------------------------------------
