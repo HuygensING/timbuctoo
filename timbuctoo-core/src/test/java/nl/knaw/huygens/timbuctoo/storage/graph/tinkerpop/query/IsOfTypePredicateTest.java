@@ -18,7 +18,7 @@ public class IsOfTypePredicateTest {
   @Test
   public void evaluateReturnsTrueIfTheStringsAreEqual(){
     // action
-    boolean result = instance.evaluate("test", "test");
+    boolean result = instance.evaluate("[\"test\"]", "test");
 
     //verify
     assertThat(result, is(true));
@@ -29,7 +29,7 @@ public class IsOfTypePredicateTest {
   @Test
   public void evaluateReturnsTrueIfFirstStringStartsWithTheSecond(){
     // action
-    boolean result = instance.evaluate("test 1234 blash", "test");
+    boolean result = instance.evaluate("[\"test\",\"1234\",\"blash\"", "test");
 
     //verify
     assertThat(result, is(true));
@@ -38,7 +38,7 @@ public class IsOfTypePredicateTest {
   @Test
   public void evaluateReturnsTrueIfTheFirstStringEndsWithTheSecond(){
     // action
-    boolean result = instance.evaluate("1234 blash,test", "test");
+    boolean result = instance.evaluate("[\"1234\",\"blash\",\"test\"]", "test");
 
     //verify
     assertThat(result, is(true));
@@ -47,7 +47,7 @@ public class IsOfTypePredicateTest {
   @Test
   public void evaluateReturnsTrueWhenTheFirstContainsTheSecondInTheMiddle(){
     // action
-    boolean result = instance.evaluate("1234 blash,test, 1235", "test");
+    boolean result = instance.evaluate("[\"1234\",\"blash\",\"test\",\"1235\"]", "test");
 
     //verify
     assertThat(result, is(true));
@@ -56,7 +56,7 @@ public class IsOfTypePredicateTest {
   @Test
   public void evaluateReturnsFalseWhenTheFirstStartsWithTheSecondButContainsSomeWordCharactersDirectlyAfterIt(){
     // action
-    boolean result = instance.evaluate("testabc 1234 blash", "test");
+    boolean result = instance.evaluate("[\"testabc\",\"1234\",\"blash\"]", "test");
 
     //verify
     assertThat(result, is(false));
@@ -65,7 +65,7 @@ public class IsOfTypePredicateTest {
   @Test
   public void evaluateReturnsFalseWhenTheFirstEndsOnTheSecondButContainsSomeWordCharactersDirectlyBeforeIt(){
     // action
-    boolean result = instance.evaluate("1234 blashtest", "test");
+    boolean result = instance.evaluate("[\"1234\",\"blashtest\"]", "test");
 
     //verify
     assertThat(result, is(false));
@@ -74,7 +74,7 @@ public class IsOfTypePredicateTest {
   @Test
   public void evaluateReturnsFalseWhenTheFirstContainsTheSecondButContainsSomeWordCharactersDirectlyAfterIt(){
     // action
-    boolean result = instance.evaluate("1234 blash,testasdf, 1235", "test");
+    boolean result = instance.evaluate("[\"1234\",\"blash\",\"testasdf\",\"1235\"]", "test");
 
     //verify
     assertThat(result, is(false));
@@ -83,7 +83,7 @@ public class IsOfTypePredicateTest {
   @Test
   public void evaluateReturnsFalseWhenTheFirstContainsTheSecondButContainsSomeWordCharactersDirectlyBeforeIt(){
     // action
-    boolean result = instance.evaluate("1234 blash,dsfdstest, 1235", "test");
+    boolean result = instance.evaluate("[\"1234\",\"blash\",\"dsfdstest\",\"1235\"]", "test");
 
     //verify
     assertThat(result, is(false));
