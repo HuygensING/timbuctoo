@@ -36,6 +36,7 @@ class TinkerPopLowLevelAPI {
 
   private static final String VERSION_OF_LABEL = SystemRelationType.VERSION_OF.name();
   public static final Logger LOG = LoggerFactory.getLogger(TinkerPopLowLevelAPI.class);
+  public static final IsOfTypePredicate IS_TYPE_OF = new IsOfTypePredicate();
   private final Graph db;
   private final VertexDuplicator vertexDuplicator;
   private final EdgeDuplicator edgeDuplicator;
@@ -79,11 +80,7 @@ class TinkerPopLowLevelAPI {
 
   private <T extends Entity> GraphQuery queryByType(Class<T> type) {
     return db.query() //
-      .has(ELEMENT_TYPES, isOfType(), TypeNames.getInternalName(type));
-  }
-
-  private com.tinkerpop.blueprints.Predicate isOfType() {
-    return new IsOfTypePredicate();
+      .has(ELEMENT_TYPES, IS_TYPE_OF, TypeNames.getInternalName(type));
   }
 
   public Vertex getVertexWithRevision(Class<? extends DomainEntity> type, String id, int revision) {
