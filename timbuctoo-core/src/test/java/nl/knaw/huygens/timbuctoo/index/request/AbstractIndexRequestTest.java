@@ -20,7 +20,7 @@ public abstract class AbstractIndexRequestTest {
   private IndexRequest instance;
   private IndexRequestStatus doneStatus;
   private IndexRequestStatus inProgressStatus;
-  public static final int TIMEOUT = 3;
+  public static final int TIMEOUT = 1000;
 
   @Before
   public void setup() {
@@ -108,8 +108,6 @@ public abstract class AbstractIndexRequestTest {
     // setup
     IndexRequest instance = getInstance();
     instance.execute(indexer); // sets the status to done
-
-    Thread.sleep(TIMEOUT - 2);
 
     // action
     boolean readyForPurge = instance.canBeDiscarded(TIMEOUT);
