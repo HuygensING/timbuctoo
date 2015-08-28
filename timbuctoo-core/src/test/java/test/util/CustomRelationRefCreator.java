@@ -30,7 +30,5 @@ public class CustomRelationRefCreator extends RelationRefCreator {
 
   public CustomRelationRefCreator(TypeRegistry registry, Storage storage) {
     super(registry, storage);
-    // TODO Auto-generated constructor stub
   }
-
 }

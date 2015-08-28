@@ -32,18 +32,22 @@ import com.google.inject.Singleton;
  * A class that determines which RelationRefCreator should be created for the type.
  */
 @Singleton
-public class RelationRefCreatorFactory {
+public class RelationRefAdderFactory {
 
   private static final Class<RelationRefCreator> DEFAULT_RELATION_REF_CREATOR_TYPE = RelationRefCreator.class;
   private static final Class<RefCreatorAnnotation> REF_CREATOR_ANNOTATION_TYPE = RefCreatorAnnotation.class;
   private Injector injector;
 
   @Inject
-  public RelationRefCreatorFactory(Injector injector) {
+  public RelationRefAdderFactory(Injector injector) {
     this.injector = injector;
   }
 
-  public RelationRefCreator create(Class<? extends Relation> type) {
+  public RelationRefAdder create(Class<? extends Relation> type) {
+    return new RelationRefAdder(getRefCreator(type));
+  }
+
+  private RelationRefCreator getRefCreator(Class<? extends Relation> type) {
     if (type.isAnnotationPresent(REF_CREATOR_ANNOTATION_TYPE)) {
       Class<? extends RelationRefCreator> refCreatorType = type.getAnnotation(REF_CREATOR_ANNOTATION_TYPE).value();
 

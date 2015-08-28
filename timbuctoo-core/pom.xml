@@ -92,6 +92,12 @@
     </dependency>
     <!-- ## End of main dependencies ## -->
     <!-- ## Test dependencies ## -->
+    <!-- Timbuctoo test dependencies -->
+    <dependency>
+      <groupId>nl.knaw.huygens</groupId>
+      <artifactId>timbuctoo-test-services</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <!-- In memory mongo -->
     <dependency>
       <groupId>de.flapdoodle.embed</groupId>

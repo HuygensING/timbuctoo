@@ -39,36 +39,36 @@ import test.util.TestRelationWithoutRefCreatorAnnotation;
 
 import com.google.inject.Injector;
 
-public class RelationRefCreatorFactoryTest {
-  private RelationRefCreatorFactory instance;
+public class RelationRefAdderFactoryTest {
+  private RelationRefAdderFactory instance;
   private Injector injectorMock;
 
   @Before
   public void setUp() {
     injectorMock = mock(Injector.class);
-    instance = new RelationRefCreatorFactory(injectorMock);
+    instance = new RelationRefAdderFactory(injectorMock);
   }
 
   @Test
   public void createReturnsRelationRefCreatorAnnotatedOnTheRelation() {
-    verifyRelationHasRelationRefCreator(TestRelationWithRefCreatorAnnotation.class, CustomRelationRefCreator.class);
+    verifyRelationHasRelationAdderWithRelationRefCreator(TestRelationWithRefCreatorAnnotation.class, CustomRelationRefCreator.class);
   }
 
   @Test
   public void createReturnsADefaultRelationRefCreatorWhenNoAnnotationIsFound() {
-    verifyRelationHasRelationRefCreator(TestRelationWithoutRefCreatorAnnotation.class, RelationRefCreator.class);
+    verifyRelationHasRelationAdderWithRelationRefCreator(TestRelationWithoutRefCreatorAnnotation.class, RelationRefCreator.class);
   }
 
-  private void verifyRelationHasRelationRefCreator(Class<? extends Relation> relationType, Class<? extends RelationRefCreator> relationRefCreatorType) {
+  private void verifyRelationHasRelationAdderWithRelationRefCreator(Class<? extends Relation> relationType, Class<? extends RelationRefCreator> relationRefCreatorType) {
     // setup
     setupInjector(relationRefCreatorType);
 
     // action
-    RelationRefCreator relationRefCreator = instance.create(relationType);
+    RelationRefAdder relationRefAdder = instance.create(relationType);
 
     // verify
-    assertThat(relationRefCreator, is(notNullValue(RelationRefCreator.class)));
-    assertThat(relationRefCreator, is(instanceOf(relationRefCreatorType)));
+    assertThat(relationRefAdder, is(notNullValue(RelationRefAdder.class)));
+    assertThat(relationRefAdder.getRelationRefCreator(), is(instanceOf(relationRefCreatorType)));
   }
 
   private <T extends RelationRefCreator> void setupInjector(Class<T> relationRefCreatorType) {
