@@ -8,8 +8,11 @@ import nl.knaw.huygens.timbuctoo.model.RelationRef;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.util.DefaultRelationRefCreator;
 
+import com.google.inject.Inject;
+
 public class WWRelationRefCreator extends DefaultRelationRefCreator {
 
+  @Inject
   public WWRelationRefCreator(TypeRegistry typeRegistry, Storage storage) {
     super(typeRegistry, storage);
   }
