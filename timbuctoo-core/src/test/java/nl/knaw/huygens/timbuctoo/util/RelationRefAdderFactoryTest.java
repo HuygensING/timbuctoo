@@ -55,8 +55,8 @@ public class RelationRefAdderFactoryTest {
   }
 
   @Test
-  public void createReturnsADefaultRelationRefCreatorWhenNoAnnotationIsFound() {
-    verifyRelationHasRelationAdderWithRelationRefCreator(TestRelationWithoutRefCreatorAnnotation.class, RelationRefCreator.class);
+  public void createReturnsARelationRefCreatorWhenNoAnnotationIsFound() {
+    verifyRelationHasRelationAdderWithRelationRefCreator(TestRelationWithoutRefCreatorAnnotation.class, DefaultRelationRefCreator.class);
   }
 
   private void verifyRelationHasRelationAdderWithRelationRefCreator(Class<? extends Relation> relationType, Class<? extends RelationRefCreator> relationRefCreatorType) {

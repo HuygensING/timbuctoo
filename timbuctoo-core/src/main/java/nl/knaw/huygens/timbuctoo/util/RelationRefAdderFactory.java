@@ -34,7 +34,7 @@ import com.google.inject.Singleton;
 @Singleton
 public class RelationRefAdderFactory {
 
-  private static final Class<RelationRefCreator> DEFAULT_RELATION_REF_CREATOR_TYPE = RelationRefCreator.class;
+  private static final Class<DefaultRelationRefCreator> DEFAULT_RELATION_REF_CREATOR_TYPE = DefaultRelationRefCreator.class;
   private static final Class<RefCreatorAnnotation> REF_CREATOR_ANNOTATION_TYPE = RefCreatorAnnotation.class;
   private Injector injector;
 
@@ -49,7 +49,7 @@ public class RelationRefAdderFactory {
 
   private RelationRefCreator getRefCreator(Class<? extends Relation> type) {
     if (type.isAnnotationPresent(REF_CREATOR_ANNOTATION_TYPE)) {
-      Class<? extends RelationRefCreator> refCreatorType = type.getAnnotation(REF_CREATOR_ANNOTATION_TYPE).value();
+      Class<? extends DefaultRelationRefCreator> refCreatorType = type.getAnnotation(REF_CREATOR_ANNOTATION_TYPE).value();
 
       return injector.getInstance(refCreatorType);
     }

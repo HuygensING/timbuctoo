@@ -1,6 +1,6 @@
-package nl.knaw.huygens.timbuctoo.util;
+package nl.knaw.huygens.timbuctoo.model.neww;
 
-import static nl.knaw.huygens.timbuctoo.util.RelationRefMatcher.likeRelationRef;
+import static nl.knaw.huygens.timbuctoo.model.neww.WWRelationRefMatcher.likeWWRelationRef;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.doReturn;
@@ -10,45 +10,42 @@ import nl.knaw.huygens.timbuctoo.config.EntityMapper;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.model.RelationRef;
+import nl.knaw.huygens.timbuctoo.model.Document;
+import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import test.variation.model.BaseVariationDomainEntity;
-import test.variation.model.TestConcreteDoc;
-import test.variation.model.projecta.ProjectADomainEntity;
-import test.variation.model.projecta.ProjectATestDocWithPersonName;
-
 import com.google.common.base.Joiner;
 
-public class RelationRefCreatorTest {
-  private static final Class<TestConcreteDoc> BASE_SOURCE_TYPE = TestConcreteDoc.class;
-  private static final Class<ProjectATestDocWithPersonName> SOURCE_TYPE = ProjectATestDocWithPersonName.class;
+public class WWRelationRefCreatorTest {
+  private static final Datable DATE = new Datable("20150828");
+  private static final Class<Person> BASE_SOURCE_TYPE = Person.class;
+  private static final Class<WWPerson> SOURCE_TYPE = WWPerson.class;
   private static final String BASE_SOURCE_TYPE_NAME = TypeNames.getInternalName(BASE_SOURCE_TYPE);
   private static final String SOURCE_TYPE_I_NAME = TypeNames.getInternalName(SOURCE_TYPE);
   private static final String SOURCE_TYPE_X_NAME = TypeNames.getExternalName(SOURCE_TYPE);
   private static final String INVERSE_RELATION_NAME = "inverseRelationName";
   private static final String SOURCE_ID = "sourceId";
-  private static final Class<BaseVariationDomainEntity> BASE_TARGET_TYPE = BaseVariationDomainEntity.class;
+  private static final Class<Document> BASE_TARGET_TYPE = Document.class;
   private static final String BASE_TARGET_I_NAME = TypeNames.getInternalName(BASE_TARGET_TYPE);
   private static final boolean ACCEPTED = true;
   private static final String RELATION_ID = "relationId";
   private static final String DISPLAY_NAME = "displayName";
   private static final int REV = 2;
   private static final String REGULAR_RELATION_NAME = "relationName";
-  private static final Class<ProjectADomainEntity> TARGET_TYPE = ProjectADomainEntity.class;
+  private static final Class<WWDocument> TARGET_TYPE = WWDocument.class;
   private static final String TARGET_TYPE_I_NAME = TypeNames.getInternalName(TARGET_TYPE);
   private static final String TARGET_TYPE_E_NAME = TypeNames.getExternalName(TARGET_TYPE);
   private static final String TARGET_ID = "targetId";
-  private Relation relation;
+  private WWRelation relation;
   private RelationType relType;
   private EntityMapper mapper;
-  private RelationRefCreator instance;
+  private WWRelationRefCreator instance;
   private Storage storage;
 
   @Before
@@ -60,11 +57,11 @@ public class RelationRefCreatorTest {
     TypeRegistry typeRegistry = TypeRegistry.getInstance().init(BASE_TARGET_TYPE.getPackage().getName() + " " + TARGET_TYPE.getPackage().getName());
     storage = setupStorage();
 
-    instance = new RelationRefCreator(typeRegistry, storage);
+    instance = new WWRelationRefCreator(typeRegistry, storage);
   }
 
   private void setupRelation() {
-    relation = new Relation();
+    relation = new WWRelation();
     relation.setId(RELATION_ID);
     relation.setAccepted(ACCEPTED);
     relation.setTargetId(TARGET_ID);
@@ -72,6 +69,7 @@ public class RelationRefCreatorTest {
     relation.setRev(REV);
     relation.setSourceId(SOURCE_ID);
     relation.setSourceType(BASE_SOURCE_TYPE_NAME);
+    relation.setDate(DATE);
   }
 
   private void setupRelType() {
@@ -87,8 +85,8 @@ public class RelationRefCreatorTest {
     return storage;
   }
 
-  private ProjectATestDocWithPersonName sourceEntity() {
-    return new ProjectATestDocWithPersonName() {
+  private WWPerson sourceEntity() {
+    return new WWPerson() {
       @Override
       public String getIdentificationName() {
         return DISPLAY_NAME;
@@ -96,8 +94,8 @@ public class RelationRefCreatorTest {
     };
   }
 
-  private ProjectADomainEntity targetEntity() {
-    return new ProjectADomainEntity() {
+  private WWDocument targetEntity() {
+    return new WWDocument() {
       @Override
       public String getIdentificationName() {
         return DISPLAY_NAME;
@@ -114,10 +112,10 @@ public class RelationRefCreatorTest {
   @Test
   public void createRegularCreatesARelationRefToTheTargetOfTheRelation() throws Exception {
     // action
-    RelationRef relationRef = instance.createRegular(mapper, relation, relType);
+    WWRelationRef relationRef = (WWRelationRef) instance.createRegular(mapper, relation, relType);
 
     // verify
-    assertThat(relationRef, is(likeRelationRef() //
+    assertThat(relationRef, is(likeWWRelationRef() //
         .withId(TARGET_ID)//
         .withType(TARGET_TYPE_I_NAME)//
         .withPath(Joiner.on('/').join(Paths.DOMAIN_PREFIX, TARGET_TYPE_E_NAME, TARGET_ID))//
@@ -125,7 +123,8 @@ public class RelationRefCreatorTest {
         .withRev(REV)//
         .withDisplayName(DISPLAY_NAME)//
         .withRelationId(RELATION_ID)//
-        .withAccepted(ACCEPTED)));
+        .withAccepted(ACCEPTED)//
+        .withDate(DATE)));
 
   }
 
@@ -141,10 +140,10 @@ public class RelationRefCreatorTest {
   @Test
   public void createInverseCreatesARelationRefToTheSourceOfTheRelation() throws Exception {
     // action
-    RelationRef relationRef = instance.createInverse(mapper, relation, relType);
+    WWRelationRef relationRef = (WWRelationRef) instance.createInverse(mapper, relation, relType);
 
     // verify
-    assertThat(relationRef, is(likeRelationRef() //
+    assertThat(relationRef, is(likeWWRelationRef() //
         .withId(SOURCE_ID)//
         .withType(SOURCE_TYPE_I_NAME)//
         .withPath(Joiner.on('/').join(Paths.DOMAIN_PREFIX, SOURCE_TYPE_X_NAME, SOURCE_ID))//
@@ -152,7 +151,8 @@ public class RelationRefCreatorTest {
         .withRev(REV)//
         .withDisplayName(DISPLAY_NAME)//
         .withRelationId(RELATION_ID)//
-        .withAccepted(ACCEPTED)));
+        .withAccepted(ACCEPTED)//
+        .withDate(DATE)));
   }
 
   @Test(expected = StorageException.class)

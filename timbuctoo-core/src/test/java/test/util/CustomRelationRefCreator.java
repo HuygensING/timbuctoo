@@ -24,9 +24,9 @@ package test.util;
 
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
-import nl.knaw.huygens.timbuctoo.util.RelationRefCreator;
+import nl.knaw.huygens.timbuctoo.util.DefaultRelationRefCreator;
 
-public class CustomRelationRefCreator extends RelationRefCreator {
+public class CustomRelationRefCreator extends DefaultRelationRefCreator {
 
   public CustomRelationRefCreator(TypeRegistry registry, Storage storage) {
     super(registry, storage);
