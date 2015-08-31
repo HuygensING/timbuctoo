@@ -142,7 +142,7 @@ public class WWDocument extends Document {
     for (RelationRef publisher : getRelations("isPublishedBy")) {
       if (publisher instanceof WWRelationRef) {
         WWRelationRef wwPublisher = (WWRelationRef) publisher;
-        if (firstPublisher == null || firstPublisher.getDate().compareTo(wwPublisher.getDate()) < 0) {
+        if (wwPublisher.getDate() != null && (firstPublisher == null || wwPublisher.getDate().compareTo(firstPublisher.getDate()) < 0)) {
           firstPublisher = wwPublisher;
         }
       }
