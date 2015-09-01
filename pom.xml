@@ -322,27 +322,7 @@
           <war>timbuctoo-instance/target/timbuctoo-instance-${project.version}.war</war>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.tomcat.maven</groupId>
-        <artifactId>tomcat6-maven-plugin</artifactId>
-        <configuration>
-          <update>true</update>
-          <server>${tomcat.server}</server>
-          <url>${tomcat.manager.url}</url>
-          <path>${tomcat.path}</path>
-          <warFile>timbuctoo-instance/target/timbuctoo-instance-${project.version}.war</warFile>
-        </configuration>
-      </plugin>
     </plugins>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.tomcat.maven</groupId>
-          <artifactId>tomcat6-maven-plugin</artifactId>
-          <version>2.2</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
   </build>
 
 
