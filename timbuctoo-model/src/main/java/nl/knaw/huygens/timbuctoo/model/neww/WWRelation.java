@@ -23,10 +23,13 @@ package nl.knaw.huygens.timbuctoo.model.neww;
  */
 
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.util.RefCreatorAnnotation;
 
 /**
  * Relation entity for the New European Woman Writers VRE.
  */
+@RefCreatorAnnotation(WWRelationRefCreator.class)
 public class WWRelation extends Relation {
 
   public static enum Qualification {
@@ -39,6 +42,8 @@ public class WWRelation extends Relation {
 
   private Qualification qualification;
   private Certainty certainty;
+  // A field to determine the first of the relation.
+  private Datable date;
 
   public WWRelation() {
     setQualification(Qualification.UNKNOWN);
@@ -59,5 +64,13 @@ public class WWRelation extends Relation {
 
   public void setCertainty(Certainty certainty) {
     this.certainty = certainty;
+  }
+
+  public Datable getDate() {
+    return date;
+  }
+
+  public void setDate(Datable date) {
+    this.date = date;
   }
 }

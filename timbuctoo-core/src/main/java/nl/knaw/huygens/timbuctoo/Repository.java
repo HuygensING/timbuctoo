@@ -49,8 +49,8 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import nl.knaw.huygens.timbuctoo.storage.StorageStatus;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.util.KV;
-import nl.knaw.huygens.timbuctoo.util.RelationRefCreator;
-import nl.knaw.huygens.timbuctoo.util.RelationRefCreatorFactory;
+import nl.knaw.huygens.timbuctoo.util.RelationRefAdder;
+import nl.knaw.huygens.timbuctoo.util.RelationRefAdderFactory;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,10 +73,10 @@ public class Repository {
   private final Storage storage;
   private final EntityMappers entityMappers;
   private final RelationTypes relationTypes;
-  private final RelationRefCreatorFactory relationRefCreatorFactory;
+  private final RelationRefAdderFactory relationRefCreatorFactory;
 
   @Inject
-  public Repository(TypeRegistry registry, Storage storage, RelationRefCreatorFactory relationRefCreatorFactory, RelationTypes relationTypes) throws StorageException {
+  public Repository(TypeRegistry registry, Storage storage, RelationRefAdderFactory relationRefCreatorFactory, RelationTypes relationTypes) throws StorageException {
     this.registry = registry;
     this.storage = storage;
     this.relationRefCreatorFactory = relationRefCreatorFactory;
@@ -448,7 +448,7 @@ public class Repository {
       checkState(mapper != null, "No EntityMapper for type %s", entityType);
       @SuppressWarnings("unchecked")
       Class<? extends Relation> mappedType = (Class<? extends Relation>) mapper.map(Relation.class);
-      RelationRefCreator relationRefCreator = relationRefCreatorFactory.create(mappedType);
+      RelationRefAdder relationRefCreator = relationRefCreatorFactory.create(mappedType);
 
       for (Relation relation : getRelationsByEntityId(entityId, limit, mappedType)) {
         RelationType relType = getRelationTypeById(relation.getTypeId(), REQUIRED);
@@ -480,7 +480,7 @@ public class Repository {
    * Makes sure each relation is added only once.
    * @param relationRefCreator TODO
    */
-  private <T extends DomainEntity> void addDerivedRelations(T entity, EntityMapper mapper, RelationRefCreator relationRefCreator) throws StorageException {
+  private <T extends DomainEntity> void addDerivedRelations(T entity, EntityMapper mapper, RelationRefAdder relationRefCreator) throws StorageException {
     for (DerivedRelationType drtype : entity.getDerivedRelationTypes()) {
       Set<String> ids = Sets.newHashSet();
 

@@ -40,7 +40,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.storage.mongo.MongoDBIntegrationTestHelper;
-import nl.knaw.huygens.timbuctoo.util.RelationRefCreatorFactory;
+import nl.knaw.huygens.timbuctoo.util.RelationRefAdderFactory;
 
 import org.junit.After;
 import org.junit.Before;
@@ -51,7 +51,7 @@ import com.google.common.collect.Iterators;
 public class RepositoryIntegrationTest {
   private static final Class<SearchResult> SEARCH_RESULT_TYPE = SearchResult.class;
   private Repository instance;
-  private RelationRefCreatorFactory relationRefCreatorFactoryMock;
+  private RelationRefAdderFactory relationRefCreatorFactoryMock;
   private MongoDBIntegrationTestHelper dbIntegrationTestHelper;
 
   @Before
@@ -61,7 +61,7 @@ public class RepositoryIntegrationTest {
 
     TypeRegistry registry = TypeRegistry.getInstance();
     Storage storage = dbIntegrationTestHelper.createStorage(registry);
-    relationRefCreatorFactoryMock = mock(RelationRefCreatorFactory.class);
+    relationRefCreatorFactoryMock = mock(RelationRefAdderFactory.class);
 
     instance = new Repository(registry, storage, relationRefCreatorFactoryMock, new RelationTypes(storage));
   }

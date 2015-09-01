@@ -120,6 +120,23 @@ public class WWDocument extends Document {
     return getRelations("hasPublishLocation");
   }
 
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_firstPublisher", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  public RelationRef getFirstPublisher() {
+    WWRelationRef firstPublisher = null;
+
+    for (RelationRef publisher : getRelations("isPublishedBy")) {
+      if (publisher instanceof WWRelationRef) {
+        WWRelationRef wwPublisher = (WWRelationRef) publisher;
+        if (wwPublisher.getDate() != null && (firstPublisher == null || wwPublisher.getDate().compareTo(firstPublisher.getDate()) < 0)) {
+          firstPublisher = wwPublisher;
+        }
+      }
+    }
+
+    return firstPublisher;
+  }
+
   public String getEnglishTitle() {
     return englishTitle;
   }
