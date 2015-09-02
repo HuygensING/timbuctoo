@@ -111,14 +111,14 @@ class TinkerPopLowLevelAPI {
 
   public Iterator<Vertex> getLatestVerticesOf(Class<? extends Entity> type) {
     Stopwatch retrieveStopwatch = Stopwatch.createStarted();
-    LOG.info("Retrieve vertices of type [{}]", type);
+    LOG.debug("Retrieve vertices of type [{}]", type);
     Stopwatch queryStopwatch = Stopwatch.createStarted();
 
-    LOG.info("Query vertices of type [{}]", type);
+    LOG.debug("Query vertices of type [{}]", type);
     Iterable<Vertex> vertices = queryByType(type).has(IS_LATEST, true).vertices();
-    LOG.info("Query vertices of type [{}] ended in [{}]", type, queryStopwatch.stop());
+    LOG.debug("Query vertices of type [{}] ended in [{}]", type, queryStopwatch.stop());
 
-    LOG.info("Retrieve vertices of type [{}] ended in [{}]", type, retrieveStopwatch.stop());
+    LOG.debug("Retrieve vertices of type [{}] ended in [{}]", type, retrieveStopwatch.stop());
     return vertices.iterator();
 
   }
@@ -138,14 +138,14 @@ class TinkerPopLowLevelAPI {
 
   public Iterator<Edge> getLatestEdgesOf(Class<? extends Relation> type) {
     Stopwatch stopwatch = Stopwatch.createStarted();
-    LOG.info("Begin get latest edges for [{}]", type);
+    LOG.debug("Begin get latest edges for [{}]", type);
 
     Stopwatch queryStopwatch = Stopwatch.createStarted();
-    LOG.info("Begin query latest edges for [{}]", type);
+    LOG.debug("Begin query latest edges for [{}]", type);
     Iterable<Edge> edges = queryLatestByType(type).edges();
-    LOG.info("End querying latest edges for [{}] in [{}]", type, queryStopwatch.stop());
+    LOG.debug("End querying latest edges for [{}] in [{}]", type, queryStopwatch.stop());
 
-    LOG.info("End get latest edges for [{}] in [{}]", type, stopwatch.stop());
+    LOG.debug("End get latest edges for [{}] in [{}]", type, stopwatch.stop());
     return edges.iterator();
   }
 

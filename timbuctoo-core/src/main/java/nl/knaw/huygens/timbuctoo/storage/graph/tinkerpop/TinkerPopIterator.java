@@ -48,23 +48,23 @@ public class TinkerPopIterator<T extends Entity, U extends Element> implements S
   @Override
   public StorageIterator<T> skip(int count) {
     Stopwatch stopwatch = Stopwatch.createStarted();
-    LOG.info("Skip started");
+    LOG.debug("Skip started");
     for (; count > 0 && delegate.hasNext(); count--) {
       delegate.next();
     }
-    LOG.info("Skip ended in [{}]", stopwatch.stop());
+    LOG.debug("Skip ended in [{}]", stopwatch.stop());
     return this;
   }
 
   @Override
   public List<T> getSome(int limit) {
     Stopwatch stopwatch = Stopwatch.createStarted();
-    LOG.info("Get some started");
+    LOG.debug("Get some started");
     List<T> some = Lists.newArrayList();
     for (; limit > 0 && hasNext(); limit--) {
       some.add(next());
     }
-    LOG.info("Get some ended in [{}]", stopwatch.stop());
+    LOG.debug("Get some ended in [{}]", stopwatch.stop());
 
     return some;
   }
