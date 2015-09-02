@@ -277,22 +277,22 @@ public class TinkerPopStorage implements GraphStorage {
   @Override
   public <T extends Entity> StorageIterator<T> getEntities(Class<T> type) {
     Stopwatch stopwatch = Stopwatch.createStarted();
-    LOG.info("Retrieving entities of type [{}] started.", type);
+    LOG.debug("Retrieving entities of type [{}] started.", type);
     Iterator<Vertex> vertices = lowLevelAPI.getLatestVerticesOf(type);
     StorageIterator<T> iterator = storageIteratorFactory.create(type, vertices);
-    LOG.info("Retrieving entities of type [{}] ended in [{}]", type, stopwatch.stop());
+    LOG.debug("Retrieving entities of type [{}] ended in [{}]", type, stopwatch.stop());
     return iterator;
   }
 
   @Override
   public <T extends Relation> StorageIterator<T> getRelations(Class<T> type) {
     Stopwatch stopwatch = Stopwatch.createStarted();
-    LOG.info("Retrieving relations of type [{}] started.", type);
+    LOG.debug("Retrieving relations of type [{}] started.", type);
     Iterator<Edge> edges = lowLevelAPI.getLatestEdgesOf(type);
 
     StorageIterator<T> iterator = storageIteratorFactory.createForRelation(type, edges);
 
-    LOG.info("Retrieving relations of type [{}] ended in [{}]", type, stopwatch.stop());
+    LOG.debug("Retrieving relations of type [{}] ended in [{}]", type, stopwatch.stop());
     return iterator;
   }
 
