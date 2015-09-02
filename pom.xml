@@ -28,7 +28,6 @@
     <module>timbuctoo-services</module>
     <module>timbuctoo-model</module>
     <module>timbuctoo-instance</module>
-    <module>timbuctoo-webpages</module>
     <module>timbuctoo-tools-instance</module>
     <module>timbuctoo-test-services</module>
   </modules>
@@ -161,6 +160,7 @@
     <tinkerpop.version>2.6.0</tinkerpop.version>
     <!-- must be the same as timbuctoo version (without SNAPSHOT) -->
     <timbuctoo.config.version>3.0.0</timbuctoo.config.version>
+    <timbuctoo-webpages.version>3.0.0</timbuctoo-webpages.version>
     <!-- Plugin versions -->
     <appassembler.version>1.5</appassembler.version>
     <assembly.version>2.5.5</assembly.version>

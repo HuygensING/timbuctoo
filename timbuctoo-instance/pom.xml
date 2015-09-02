@@ -27,7 +27,7 @@
     <dependency>
       <groupId>nl.knaw.huygens</groupId>
       <artifactId>timbuctoo-webpages</artifactId>
-      <version>${project.version}</version>
+      <version>${timbuctoo-webpages.version}</version>
       <type>war</type>
       <scope>runtime</scope>
     </dependency>
