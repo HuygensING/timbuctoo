@@ -80,8 +80,9 @@ public class DefaultRelationRefCreatorTest {
 
   private Storage setupStorage() throws StorageException {
     Storage storage = mock(Storage.class);
-    when(storage.getEntity(TARGET_TYPE, TARGET_ID)).thenReturn(targetEntity());
-    when(storage.getEntity(SOURCE_TYPE, SOURCE_ID)).thenReturn(sourceEntity());
+    // it should be getEntityOrDefaultVariation else the retrieval of Location fails.
+    when(storage.getEntityOrDefaultVariation(TARGET_TYPE, TARGET_ID)).thenReturn(targetEntity());
+    when(storage.getEntityOrDefaultVariation(SOURCE_TYPE, SOURCE_ID)).thenReturn(sourceEntity());
     return storage;
   }
 
@@ -130,7 +131,8 @@ public class DefaultRelationRefCreatorTest {
   @Test(expected = StorageException.class)
   public void createRegularThrowsAStorageExceptionWhenTheStorageDoes() throws Exception {
     // setup
-    when(storage.getEntity(TARGET_TYPE, TARGET_ID)).thenThrow(new StorageException());
+    // it should be getEntityOrDefaultVariation else the retrieval of Location fails.
+    when(storage.getEntityOrDefaultVariation(TARGET_TYPE, TARGET_ID)).thenThrow(new StorageException());
 
     // action
     instance.createRegular(mapper, relation, relType);
@@ -156,7 +158,8 @@ public class DefaultRelationRefCreatorTest {
   @Test(expected = StorageException.class)
   public void createInverseThrowsAStorageExceptionWhenTheStorageDoes() throws Exception {
     // setup
-    when(storage.getEntity(SOURCE_TYPE, SOURCE_ID)).thenThrow(new StorageException());
+    // it should be getEntityOrDefaultVariation else the retrieval of Location fails.
+    when(storage.getEntityOrDefaultVariation(SOURCE_TYPE, SOURCE_ID)).thenThrow(new StorageException());
 
     // action
     instance.createInverse(mapper, relation, relType);

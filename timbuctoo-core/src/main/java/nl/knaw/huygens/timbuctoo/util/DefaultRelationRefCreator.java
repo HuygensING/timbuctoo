@@ -35,7 +35,7 @@ public class DefaultRelationRefCreator implements RelationRefCreator {
     Class<? extends DomainEntity> baseRefType = typeRegistry.getDomainEntityType(refTypeName);
     Class<? extends DomainEntity> refType = mapper.map(baseRefType);
 
-    DomainEntity refEntity = storage.getEntity(refType, refId);
+    DomainEntity refEntity = storage.getEntityOrDefaultVariation(refType, refId);
 
     RelationRef ref = createRef(relation, refId, relationName, refType, refEntity);
 
