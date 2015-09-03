@@ -120,7 +120,7 @@ public class SearchResource extends ResourceBase {
   }
 
   @GET
-  @Path("/{id: " + SearchResult.ID_PREFIX + Paths.ID_VALUE_REGEX + "}")
+  @Path("/{id: " + Paths.ID_REGEX + "}")
   @APIDesc("Returns (paged) search results Query params: \"start\" (default: 0) \"rows\" (default: 10)")
   @Produces({ MediaType.APPLICATION_JSON })
   public Response regularGet( //
@@ -177,7 +177,7 @@ public class SearchResource extends ResourceBase {
 
   @APIDesc("Returns (paged) search results Query params: \"start\" (default: 0) \"rows\" (default: 10)")
   @GET
-  @Path("/" + RELATION_SEARCH_PREFIX + "/{id: " + SearchResult.ID_PREFIX + Paths.ID_VALUE_REGEX + "}")
+  @Path("/" + RELATION_SEARCH_PREFIX + "/{id: " + SearchResult.ID_PREFIX + Paths.ID_REGEX + "}")
   @Produces({ MediaType.APPLICATION_JSON })
   public Response relationGet( //
       @PathParam("id") String queryId, //

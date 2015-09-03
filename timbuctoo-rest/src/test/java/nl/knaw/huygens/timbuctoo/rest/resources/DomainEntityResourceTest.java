@@ -546,21 +546,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   //Request handled by the framework.
   @Test
-  public void testPostNonExistingCollection() throws Exception {
-    setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
-
-    ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID, "test");
-
-    ClientResponse response = createResource("unknown", "all") //
-        .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header(AUTHORIZATION, CREDENTIALS) //
-        .header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, entity);
-    verifyResponseStatus(response, Status.NOT_FOUND);
-
-    verifyZeroInteractions(getChangeHelper());
-  }
-
-  @Test
   public void testPostWrongType() throws Exception {
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
 
