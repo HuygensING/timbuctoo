@@ -1,5 +1,8 @@
 package nl.knaw.huygens.timbuctoo.model.util;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import com.google.common.base.Strings;
 
 /*
@@ -53,4 +56,13 @@ public class Period {
     return endDate;
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    return EqualsBuilder.reflectionEquals(this, obj, false);
+  }
+
+  @Override
+  public int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this, false);
+  }
 }

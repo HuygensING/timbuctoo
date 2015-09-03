@@ -41,19 +41,19 @@ public class IndexCollection implements Iterable<Index> {
   }
 
   /**
-   * Returns the index if the index for the type can be found, 
-   * else it returns an index that does nothing and returns an empty search result.
-   * @param type the type to find the index for
-   * @return the index
+   * Returns the execute if the execute for the type can be found,
+   * else it returns an execute that does nothing and returns an empty search result.
+   * @param type the type to find the execute for
+   * @return the execute
    */
   public Index getIndexByType(Class<? extends DomainEntity> type) {
     return indexMap.get(toBaseDomainEntity(type));
   }
 
   /**
-   * Add an index for a certain type.
-   * @param type the type that belongs to the index.
-   * @param index the index to add.
+   * Add an execute for a certain type.
+   * @param type the type that belongs to the execute.
+   * @param index the execute to add.
    */
   public void addIndex(Class<? extends DomainEntity> type, Index index) {
     indexMap.put(toBaseDomainEntity(type), index);

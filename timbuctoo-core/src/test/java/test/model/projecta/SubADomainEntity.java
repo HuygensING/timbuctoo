@@ -24,9 +24,17 @@ package test.model.projecta;
 
 import test.model.BaseDomainEntity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class SubADomainEntity extends BaseDomainEntity {
 
+  public static final String VALUEA2_NAME = "valuea";
+  @JsonProperty(VALUEA2_NAME)
   private String valuea;
+
+  public static final String VALUEA3_NAME = "valuea3";
+  @JsonProperty(VALUEA3_NAME)
+  private String valuea3;
 
   public SubADomainEntity() {}
 
@@ -53,6 +61,14 @@ public class SubADomainEntity extends BaseDomainEntity {
 
   public void setValuea(String valuea) {
     this.valuea = valuea;
+  }
+
+  public String getValuea3() {
+    return valuea3;
+  }
+
+  public void setValuea3(String valuea3) {
+    this.valuea3 = valuea3;
   }
 
 }

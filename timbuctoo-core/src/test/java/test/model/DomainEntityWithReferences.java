@@ -22,9 +22,11 @@ package test.model;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.annotations.DBProperty;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
 
 /**
  * Used for testing inducing an reducing of non-primitive properties.
@@ -32,6 +34,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class DomainEntityWithReferences extends BaseDomainEntity {
 
   private Reference sharedReference;
+  @DBProperty(value = "uniqueReference", type = FieldType.ADMINISTRATIVE)
   private Reference uniqueReference;
 
   public DomainEntityWithReferences() {}
@@ -49,6 +52,7 @@ public class DomainEntityWithReferences extends BaseDomainEntity {
   }
 
   @JsonProperty("^uniqueReference")
+
   public Reference getUniqueReference() {
     return uniqueReference;
   }

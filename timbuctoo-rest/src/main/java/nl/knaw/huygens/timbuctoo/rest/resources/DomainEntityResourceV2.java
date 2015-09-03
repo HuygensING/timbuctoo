@@ -22,22 +22,23 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
-import static javax.ws.rs.core.Response.Status.FORBIDDEN;
-import static nl.knaw.huygens.timbuctoo.config.Paths.DOMAIN_PREFIX;
-import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
-import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.ID_PARAM;
-import static nl.knaw.huygens.timbuctoo.config.Paths.ID_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.PID_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.V2_PATH;
-import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
-import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.REVISION_KEY;
-import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.USER_ID_KEY;
-import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
-import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
-
-import java.net.URISyntaxException;
-import java.util.List;
+import com.google.common.collect.Lists;
+import com.google.inject.Inject;
+import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.index.IndexException;
+import nl.knaw.huygens.timbuctoo.messages.ActionType;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
+import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
@@ -58,28 +59,23 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+import java.net.URISyntaxException;
+import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.index.IndexException;
-import nl.knaw.huygens.timbuctoo.messages.ActionType;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
-import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.vre.VRE;
-import nl.knaw.huygens.timbuctoo.vre.VRECollection;
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static nl.knaw.huygens.timbuctoo.config.Paths.DOMAIN_PREFIX;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ID_PARAM;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ID_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.V2_OR_V2_1_PATH;
+import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
+import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.REVISION_KEY;
+import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.USER_ID_KEY;
+import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
+import static nl.knaw.huygens.timbuctoo.security.UserRoles.USER_ROLE;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
-import com.google.inject.Inject;
-
-@Path(V2_PATH + "/" + DOMAIN_PREFIX + "/" + ENTITY_PATH)
+@Path(V2_OR_V2_1_PATH +  DOMAIN_PREFIX + "/" + ENTITY_PATH)
 public class DomainEntityResourceV2 extends DomainEntityResource {
   private static Logger LOG = LoggerFactory.getLogger(DomainEntityResourceV2.class);
 
@@ -188,20 +184,9 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
   ) {
     super.put(entityName, id, input, vreId, userId);
 
-    return Response.ok(repository.getEntityWithRelations(typeRegistry.getTypeForXName(entityName), id)).build();
+    return Response.ok(repository.getEntityOrDefaultVariationWithRelations(typeRegistry.getTypeForXName(entityName), id)).build();
   }
 
-  @APIDesc("Set the pids of the entities.")
-  @Override
-  @PUT
-  @Path(PID_PATH)
-  @RolesAllowed(ADMIN_ROLE)
-  @Consumes(MediaType.APPLICATION_JSON)
-  public void putPIDs(//
-      @PathParam(ENTITY_PARAM) String entityName,//
-      @HeaderParam(VRE_ID_KEY) String vreId) {
-    super.putPIDs(entityName, vreId);
-  }
 
   @APIDesc("Delete an specific entity.")
   @Override
@@ -226,7 +211,7 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
     VRE vre = getValidVRE(vreId);
     checkCondition(vre.inScope(type, id), FORBIDDEN, "Entity %s %s not in scope %s", type, id, vreId);
 
-    DomainEntity entity = repository.getEntity(type, id);
+    DomainEntity entity = repository.getEntityOrDefaultVariation(type, id);
 
     if (entity == null) {
       return returnNotFoundResponse(id);
@@ -236,16 +221,16 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
       List<String> updatedRelationIds = repository.deleteDomainEntity(entity);
       changeHelper.notifyChange(ActionType.MOD, type, entity, id);
       try {
-        // FIXME: Ugly hack to remove the entity from the index of the VRE.
+        // FIXME: Ugly hack to remove the entity from the execute of the VRE.
         vre.deleteFromIndex(type, id);
       } catch (IndexException e) {
-        LOG.error("Delete from index went wrong.", e);
+        LOG.error("Delete from execute went wrong.", e);
       }
 
-      // FIXME: Quick hack to index and persist the updated relations.
+      // FIXME: Quick hack to execute and persist the updated relations.
       // TODO: Find a better way to do this.
       for (String relationId : updatedRelationIds) {
-        changeHelper.notifyChange(ActionType.MOD, Relation.class, repository.getEntity(Relation.class, relationId), relationId);
+        changeHelper.notifyChange(ActionType.MOD, Relation.class, repository.getEntityOrDefaultVariation(Relation.class, relationId), relationId);
       }
 
     } catch (NoSuchEntityException e) {

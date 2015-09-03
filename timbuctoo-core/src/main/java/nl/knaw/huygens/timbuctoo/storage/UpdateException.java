@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage;
 
+import nl.knaw.huygens.timbuctoo.model.Entity;
+
 /*
  * #%L
  * Timbuctoo core
@@ -45,4 +47,15 @@ public class UpdateException extends StorageException {
     super(message, cause);
   }
 
+  public static <T extends Entity> UpdateException entityNotFound(Class<T> type, T entity) {
+    return new UpdateException(String.format("\"%s\" with id \"%s\" cannot be found.", type.getSimpleName(), entity.getId()));
+  }
+
+  public static <T extends Entity> UpdateException revisionNotFound(Class<? super T> type, T entity, int actualLatestRev) {
+    return new UpdateException(String.format("\"%s\" with id \"%s\" and revision \"%d\" found. Revision \"%d\" wanted.", type.getSimpleName(), entity.getId(), entity.getRev() - 1, actualLatestRev));
+  }
+
+  public static <T extends Entity> UpdateException variantAlreadyExists(Class<T> type, String id) {
+    return new UpdateException(String.format("Variant \"%s\" cannot be added to entity with id \"%s\" when it already exists.", type, id));
+  }
 }

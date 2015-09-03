@@ -22,7 +22,6 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.storage.Properties.propertyName;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -34,6 +33,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.storage.mongo.MongoProperties;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -72,13 +72,19 @@ public class EntityReducerTest {
 
   // ---------------------------------------------------------------------------
 
+  private Properties properties;
   private EntityReducer reducer;
   private ObjectMapper mapper;
 
   @Before
   public void setup() throws Exception {
-    reducer = new EntityReducer(registry);
+    properties = new MongoProperties();
+    reducer = new EntityReducer(properties, registry);
     mapper = new ObjectMapper();
+  }
+
+  private String propertyName(Class<? extends Entity> type, String fieldName) {
+    return properties.propertyName(type, fieldName);
   }
 
   private JsonNode newSystemEntityTree() {

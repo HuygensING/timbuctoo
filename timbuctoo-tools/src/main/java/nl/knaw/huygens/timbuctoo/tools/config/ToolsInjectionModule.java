@@ -101,7 +101,7 @@ public class ToolsInjectionModule extends BasicInjectionModule {
   @Singleton
   PersistenceManager providePersistenceManager() throws PersistenceManagerCreationException {
     PersistenceManager persistenceManager = PersistenceManagerFactory.newPersistenceManager(config.getBooleanSetting("handle.enabled", true), config.getSetting("handle.cipher"),
-        config.getSetting("handle.naming_authority"), config.getSetting("handle.prefix"), config.pathInUserHome(config.getSetting("handle.private_key_file")));
+        config.getSetting("handle.naming_authority"), config.getSetting("handle.prefix"), config.getSetting("handle.private_key_file"));
     return persistenceManager;
   }
 
@@ -111,7 +111,7 @@ public class ToolsInjectionModule extends BasicInjectionModule {
 
     @Override
     public Index createIndexFor(VRE vre, Class<? extends DomainEntity> type) {
-      LOG.info("Creating a no op index for vre \"{}\" and type \"{}\"", vre.getVreId(), type.getSimpleName());
+      LOG.info("Creating a no op execute for vre \"{}\" and type \"{}\"", vre.getVreId(), type.getSimpleName());
       return NO_OP_INDEX;
     }
 

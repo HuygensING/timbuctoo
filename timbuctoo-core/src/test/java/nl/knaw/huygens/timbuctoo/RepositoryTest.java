@@ -44,7 +44,7 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.RelationTypes;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
-import nl.knaw.huygens.timbuctoo.util.RelationRefCreatorFactory;
+import nl.knaw.huygens.timbuctoo.util.RelationRefAdderFactory;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -68,14 +68,14 @@ public class RepositoryTest {
   private Repository repository;
   private Change change;
   private RelationTypes relationTypesMock;
-  private RelationRefCreatorFactory relationRefCreatorFactoryMock;
+  private RelationRefAdderFactory relationRefCreatorFactoryMock;
 
   @Before
   public void setup() throws Exception {
     relationTypesMock = mock(RelationTypes.class);
     registry = TypeRegistry.getInstance().init(TEST_MODEL_PACKAGES);
     storageMock = mock(Storage.class);
-    relationRefCreatorFactoryMock = mock(RelationRefCreatorFactory.class);
+    relationRefCreatorFactoryMock = mock(RelationRefAdderFactory.class);
 
     repository = new Repository(registry, storageMock, relationRefCreatorFactoryMock, relationTypesMock);
     change = new Change("userId", "vreId");
@@ -89,8 +89,8 @@ public class RepositoryTest {
 
   @Test
   public void testGetEntity() throws Exception {
-    repository.getEntity(BaseVariationDomainEntity.class, DEFAULT_ID);
-    verify(storageMock).getItem(BaseVariationDomainEntity.class, DEFAULT_ID);
+    repository.getEntityOrDefaultVariation(BaseVariationDomainEntity.class, DEFAULT_ID);
+    verify(storageMock).getEntityOrDefaultVariation(BaseVariationDomainEntity.class, DEFAULT_ID);
   }
 
   @Test
@@ -111,8 +111,8 @@ public class RepositoryTest {
 
   @Test
   public void testGetEntityWithRelations() throws Exception {
-    repository.getEntityWithRelations(BaseVariationDomainEntity.class, DEFAULT_ID);
-    verify(storageMock).getItem(BaseVariationDomainEntity.class, DEFAULT_ID);
+    repository.getEntityOrDefaultVariationWithRelations(BaseVariationDomainEntity.class, DEFAULT_ID);
+    verify(storageMock).getEntityOrDefaultVariation(BaseVariationDomainEntity.class, DEFAULT_ID);
   }
 
   @Test

@@ -93,8 +93,8 @@ public class SolrRelationSearcherTest {
 
     doReturn(type).when(typeRegistryMock).getDomainEntityType(typeString);
     when(vreMock.search(type, searchParametersV1, facetedSearchResultFilterMock)).thenReturn(searchResult);
-    when(repositoryMock.getEntity(SearchResult.class, sourceSearchId)).thenReturn(createSearchResult(sourceIds));
-    when(repositoryMock.getEntity(SearchResult.class, targetSearchId)).thenReturn(createSearchResult(targetIds));
+    when(repositoryMock.getEntityOrDefaultVariation(SearchResult.class, sourceSearchId)).thenReturn(createSearchResult(sourceIds));
+    when(repositoryMock.getEntityOrDefaultVariation(SearchResult.class, targetSearchId)).thenReturn(createSearchResult(targetIds));
 
     instance = new SolrRelationSearcher(repositoryMock, relationSearcherParametersConverterMock, typeRegistryMock, collectionConverterMock) {
       @Override

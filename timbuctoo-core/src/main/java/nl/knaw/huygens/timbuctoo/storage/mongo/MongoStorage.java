@@ -24,11 +24,9 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
 import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
-import static nl.knaw.huygens.timbuctoo.storage.Properties.propertyName;
 
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +41,7 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
+import nl.knaw.huygens.timbuctoo.storage.Properties;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
@@ -77,16 +76,18 @@ public class MongoStorage implements Storage {
   private final MongoDB mongoDB;
   private final EntityIds entityIds;
   private final EntityInducer inducer;
-  private final EntityReducer reducer;
+  protected final EntityReducer reducer;
   private final MongoQueries queries;
   private final ObjectMapper objectMapper;
+  private final Properties properties;
   private final TreeEncoderFactory treeEncoderFactory;
   private final TreeDecoderFactory treeDecoderFactory;
 
   @Inject
-  public MongoStorage(MongoDB mongoDB, EntityIds entityIds, EntityInducer inducer, EntityReducer reducer) {
+  public MongoStorage(MongoDB mongoDB, EntityIds entityIds, Properties properties, EntityInducer inducer, EntityReducer reducer) {
     this.mongoDB = mongoDB;
     this.entityIds = entityIds;
+    this.properties = properties;
     this.inducer = inducer;
     this.reducer = reducer;
 
@@ -94,6 +95,10 @@ public class MongoStorage implements Storage {
     objectMapper = new ObjectMapper();
     treeEncoderFactory = new TreeEncoderFactory(objectMapper);
     treeDecoderFactory = new TreeDecoderFactory();
+  }
+
+  private String propertyName(Class<? extends Entity> type, String fieldName) {
+    return properties.propertyName(type, fieldName);
   }
 
   @Override
@@ -119,11 +124,16 @@ public class MongoStorage implements Storage {
     mongoDB.close();
   }
 
+  @Override
+  public boolean isAvailable() {
+    return mongoDB.isAvailable();
+  }
+
   // --- support -------------------------------------------------------
 
   private final Map<Class<? extends Entity>, DBCollection> collectionCache = Maps.newHashMap();
 
-  private <T extends Entity> DBCollection getDBCollection(Class<T> type) {
+  protected <T extends Entity> DBCollection getDBCollection(Class<T> type) {
     DBCollection collection = collectionCache.get(type);
     if (collection == null) {
       Class<? extends Entity> baseType = getBaseClass(type);
@@ -136,7 +146,7 @@ public class MongoStorage implements Storage {
     return collection;
   }
 
-  private <T extends Entity> DBCollection getVersionCollection(Class<T> type) {
+  protected <T extends Entity> DBCollection getVersionCollection(Class<T> type) {
     Class<? extends Entity> baseType = getBaseClass(type);
     String collectionName = getInternalName(baseType) + "_versions";
     DBCollection collection = mongoDB.getCollection(collectionName);
@@ -154,7 +164,7 @@ public class MongoStorage implements Storage {
   }
 
   @SuppressWarnings("unchecked")
-  private JsonNode toJsonNode(DBObject object) throws StorageException {
+  protected JsonNode toJsonNode(DBObject object) throws StorageException {
     if (object instanceof JacksonDBObject) {
       return (((JacksonDBObject<JsonNode>) object).getObject());
     } else if (object instanceof DBJsonNode) {
@@ -213,9 +223,31 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public <T extends Entity> T getItem(Class<T> type, String id) throws StorageException {
+  public <T extends Entity> T getEntityOrDefaultVariation(Class<T> type, String id) throws StorageException {
     DBObject query = queries.selectById(id);
     return getItem(type, query);
+  }
+
+  @Override
+  public <T extends Entity> T getEntity(Class<T> type, String id) throws StorageException {
+    DBObject query = queries.selectById(id);
+
+    DBObject object = mongoDB.findOne(getDBCollection(type), query);
+
+    if (object == null) {
+      return null;
+    }
+
+    JsonNode existing = toJsonNode(object);
+
+    if (TypeRegistry.isDomainEntity(type) && existing.isObject()) {
+      ObjectNode objectTree = (ObjectNode) existing;
+      if (!doesVariationExist(TypeNames.getInternalName(type), objectTree)) {
+        return null;
+      }
+    }
+
+    return reducer.reduceVariation(type, existing);
   }
 
   @Override
@@ -232,7 +264,7 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends Entity> StorageIterator<T> getEntitiesByProperty(Class<T> type, String field, String value) throws StorageException {
-    DBObject query = queries.selectByProperty(type, field, value);
+    DBObject query = queries.selectByProperty(propertyName(type, field), value);
     return findItems(type, query);
   }
 
@@ -357,7 +389,7 @@ public class MongoStorage implements Storage {
   }
 
   @Override
-  public void deleteVariation(Class<? extends DomainEntity> type, String id, Change change) throws StorageException {
+  public <T extends DomainEntity> void deleteVariation(Class<T> type, String id, Change change) throws StorageException {
     String variationToDelete = TypeNames.getInternalName(type);
     if (TypeRegistry.isPrimitiveDomainEntity(type)) {
       throwTypeIsAPrimitiveException(type);
@@ -395,26 +427,23 @@ public class MongoStorage implements Storage {
     inducer.adminDomainEntity(entity, (ObjectNode) tree);
 
     mongoDB.update(getDBCollection(type), query, toDBObject(tree));
-
   }
 
   @Override
-  public void declineRelationsOfEntity(Class<? extends Relation> type, String id) throws StorageException {
+  public <T extends Relation> void declineRelationsOfEntity(Class<T> type, String id) throws StorageException {
     if (TypeRegistry.isPrimitiveDomainEntity(type)) {
       throwTypeIsAPrimitiveException(type);
     }
 
-    String propertyName = String.format("%s:accepted", TypeNames.getInternalName(type));
-    HashMap<String, Object> propertiesWithValues = Maps.newHashMap();
-    propertiesWithValues.put(propertyName, false);
-    propertiesWithValues.put(DomainEntity.PID, null);
+    Map<String, Object> propertyMap = Maps.newHashMap();
+    propertyMap.put(propertyName(type, "accepted"), false);
+    propertyMap.put(DomainEntity.PID, null);
 
     BasicDBObject setQuery = new BasicDBObject();
-    setQuery.putAll(queries.setPropertiesToValue(propertiesWithValues));
+    setQuery.putAll(queries.setPropertiesToValue(propertyMap));
     setQuery.putAll(queries.incrementRevision());
 
     getDBCollection(type).update(queries.selectRelationsByEntityId(id), setQuery, false, true);
-
   }
 
   private void throwTypeIsAPrimitiveException(Class<? extends DomainEntity> type) throws IllegalArgumentException {
@@ -463,7 +492,7 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends Entity> T findItemByProperty(Class<T> type, String field, String value) throws StorageException {
-    DBObject query = queries.selectByProperty(type, field, value);
+    DBObject query = queries.selectByProperty(propertyName(type, field), value);
     return getItem(type, query);
   }
 
@@ -581,8 +610,7 @@ public class MongoStorage implements Storage {
 
   @Override
   public <T extends Relation> List<T> getRelationsByType(Class<T> type, List<String> relationTypeIds) throws StorageException {
-    DBObject query = queries.selectByProperty(type, Relation.TYPE_ID, relationTypeIds);
-
+    DBObject query = queries.selectByProperty(propertyName(type, Relation.TYPE_ID), relationTypeIds);
     return findItems(type, query).getAll();
   }
 
@@ -594,7 +622,6 @@ public class MongoStorage implements Storage {
 
   @Override
   public boolean doesVariationExist(Class<? extends DomainEntity> type, String id) throws StorageException {
-
     try {
       JsonNode node = getExisting(type, queries.selectById(id));
 
@@ -612,15 +639,12 @@ public class MongoStorage implements Storage {
 
   private boolean doesVariationExist(String variation, ObjectNode objectTree) {
     ArrayNode variations = (ArrayNode) objectTree.get(DomainEntity.VARIATIONS);
-
-    boolean containsVariation = false;
     for (Iterator<JsonNode> variationIterator = variations.elements(); variationIterator.hasNext();) {
       if (Objects.equal(variation, variationIterator.next().asText())) {
-        containsVariation = true;
-        break;
+        return true;
       }
     }
-    return containsVariation;
+    return false;
   }
 
 }

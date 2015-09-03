@@ -37,28 +37,37 @@ public class Paths {
   /** Regex for determining the entity name.*/
   public static final String ENTITY_REGEX = "[a-zA-Z]+";
   /** Regex for determining the id.*/
-  public static final String ID_REGEX = "[a-zA-Z]{4}\\d+";
+  public static final String ID_VALUE_REGEX = "[\\w\\-]+";
+  public static final String ID_REGEX = "[a-zA-Z]{4}" + ID_VALUE_REGEX;
   public static final String ID_PARAM = "id";
   public static final String ID_PATH = "/{id: " + ID_REGEX + "}";
+  public static final String INDEX_REQUEST_ID_VALUE_PATH = "/{id: " + ID_VALUE_REGEX + "}";
   public static final String PID_PATH = "/pid";
+  public static final String UPDATE_PID_PATH = "/updatepid";
   /** The path of the {@code UserResource} */
   public static final String USER_PATH = "users";
   /** The path for api version 1 */
-  public static final String V1_PATH = "v1";
-  public static final String V2_PATH = "v2";
-  /** 
+  public static final String V1_PATH = "v1/";
+  public static final String V2_PATH = "v2/";
+  public static final String V2_1_PATH = "v2.1/";
+  /**
    * When the version 1 path is optional. Contains a slash. 
    * Regex is only allowed for variables, so we assign it apiVersion.
    */
   public static final String VERSION_PARAM = "apiVersion";
   public static final String V1_PATH_OPTIONAL = "{ " + VERSION_PARAM + ": (v1/)? }";
-  public static final String V1_OR_V2_PATH = "{ " + VERSION_PARAM + ": (v[1-2]/) }";
-  public static final String VERSION_PATH_OPTIONAL = "{" + VERSION_PARAM + ": (v[0-2]/)? }";
+  public static final String V1_TO_V2_PATH = "{ " + VERSION_PARAM + ": (v[1-2]/) }";
+  public static final String V1_TO_V2_1_PATH = "{ " + VERSION_PARAM + ": (v2.1/|v[1-2]/) }";
+  public static final String V2_OR_V2_1_PATH = "{ " + VERSION_PARAM + ": (v2.1/|v2/) }";
+  public static final String VERSION_PATH_OPTIONAL = "{" + VERSION_PARAM + ": (v2.1/|v[0-2]/)? }";
 
   public static final String ENTITY_PARAM = "entityName";
   public static final String ENTITY_PATH = "{" + ENTITY_PARAM + ": " + ENTITY_REGEX + "}";
   public static final String KEYWORD_PATH = "{" + ENTITY_PARAM + ": [a-z]*keywords}";
   public static final String AUTOCOMPLETE_PATH = "autocomplete";
+  public static final String ADMIN_PATH = "admin";
+  public static final String INDEX_REQUEST_PATH = "indexrequests";
+
 
   private Paths() {
     throw new AssertionError("Non-instantiable class");

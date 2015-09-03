@@ -132,7 +132,7 @@ public class SearchRequestValidator {
 
   private void isValidSearch(String searchId) {
     checkNotNull(searchId, BAD_REQUEST, "sourceSearchId is not specified");
-    checkNotNull(repository.getEntity(SearchResult.class, searchId), BAD_REQUEST, "Search result for id %s does not exist.", searchId);
+    checkNotNull(repository.getEntityOrDefaultVariation(SearchResult.class, searchId), BAD_REQUEST, "Search result for id %s does not exist.", searchId);
   }
 
 }

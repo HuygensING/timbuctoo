@@ -25,6 +25,8 @@ package nl.knaw.huygens.timbuctoo.tools.other;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
@@ -120,8 +122,13 @@ public class SearchResultTool {
 
   private void displayStatus(boolean verbose) {
     StorageIterator<SearchResult> iterator = repository.getSystemEntities(SearchResult.class);
-    System.out.printf("%nSearch results: %d%n", iterator.size());
-    while (verbose && iterator.hasNext()) {
+    List<SearchResult> allResults = iterator.getAll();
+    int size = allResults.size();
+    System.out.printf("%nSearch results: %d%n", size);
+
+    Iterator<SearchResult> allResultsIterator = allResults.iterator();
+
+    while (verbose && allResultsIterator.hasNext()) {
       SearchResult result = iterator.next();
       result.getModified().getTimeStamp();
       Date date = new Date(result.getModified().getTimeStamp());

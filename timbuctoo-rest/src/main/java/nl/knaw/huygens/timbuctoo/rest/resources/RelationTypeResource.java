@@ -37,6 +37,7 @@ import javax.ws.rs.core.Response.Status;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
+import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -54,7 +55,7 @@ import com.google.inject.Inject;
 public class RelationTypeResource extends ResourceBase {
 
   private static final String ID_PARAM = "id";
-  private static final String ID_PATH = "/{id: " + RelationType.ID_PREFIX + "\\d+}";
+  private static final String ID_PATH = "/{id: " + RelationType.ID_PREFIX + Paths.ID_VALUE_REGEX + "}";
 
   private final TypeRegistry registry;
 
@@ -75,7 +76,7 @@ public class RelationTypeResource extends ResourceBase {
   @Path(ID_PATH)
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   public RelationType getRelationType(@PathParam(ID_PARAM) String id) {
-    RelationType entity = repository.getEntity(RelationType.class, id);
+    RelationType entity = repository.getEntityOrDefaultVariation(RelationType.class, id);
     checkNotNull(entity, Status.NOT_FOUND, "No RelationType with id %s", id);
     return entity;
   }

@@ -22,16 +22,18 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-import java.util.List;
-
 import nl.knaw.huygens.facetedsearch.model.Facet;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
+import java.util.List;
+import java.util.Set;
 
 public class RegularSearchResultDTO extends SearchResultDTO {
 
   private String term;
   private List<Facet> facets;
   private List<DomainEntityDTO> refs;
-  private List<String> fullTextSearchFields;
+  private Set<String> fullTextSearchFields;
 
   public String getTerm() {
     return term;
@@ -57,12 +59,17 @@ public class RegularSearchResultDTO extends SearchResultDTO {
     this.refs = refs;
   }
 
-  public List<String> getFullTextSearchFields() {
+  public Set<String> getFullTextSearchFields() {
     return fullTextSearchFields;
   }
 
-  public void setFullTextSearchFields(List<String> fields) {
+  public void setFullTextSearchFields(Set<String> fields) {
     this.fullTextSearchFields = fields;
   }
 
+
+  @Override
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this);
+  }
 }

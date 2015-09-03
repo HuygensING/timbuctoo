@@ -22,20 +22,18 @@ package nl.knaw.huygens.timbuctoo.rest.util.search;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.rest.util.RangeHelper.mapToRange;
-
-import java.util.List;
-
+import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
+import nl.knaw.huygens.timbuctoo.rest.util.RangeHelper;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
-import com.google.inject.Inject;
+import java.util.List;
 
 public class RelationSearchResultMapper extends SearchResultMapper {
 
@@ -43,12 +41,16 @@ public class RelationSearchResultMapper extends SearchResultMapper {
 
   @Inject
   public RelationSearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator, RelationMapper relationMapper, VRECollection vreCollection) {
-    super(repository, sortableFieldFinder, hateoasURICreator, vreCollection);
+    this(repository, sortableFieldFinder, hateoasURICreator, relationMapper, vreCollection, new RangeHelper());
+  }
+
+  public RelationSearchResultMapper(Repository repository, SortableFieldFinder sortableFieldFinder, HATEOASURICreator hateoasURICreator, RelationMapper relationMapper, VRECollection vreCollection, RangeHelper rangeHelper) {
+    super(repository, sortableFieldFinder, hateoasURICreator, vreCollection, rangeHelper);
     this.relationMapper = relationMapper;
   }
 
   @Override
-  public <T extends DomainEntity> RelationSearchResultDTO create(Class<T> type, SearchResult searchResult, int start, int rows) {
+  public <T extends DomainEntity> RelationSearchResultDTO create(Class<T> type, SearchResult searchResult, int start, int rows, String version) {
     RelationSearchResultDTO dto = new RelationSearchResultDTO();
 
     String queryId = searchResult.getId();
@@ -71,8 +73,8 @@ public class RelationSearchResultMapper extends SearchResultMapper {
     dto.setTargetType(searchResult.getTargetType());
     dto.setRefs(relationMapper.createRefs(vre, type, results));
     dto.setSortableFields(sortableFieldFinder.findFields(type));
-    setNextLink(normalizedStart, rows, dto, numFound, end, queryId);
-    setPreviousLink(normalizedStart, rows, dto, queryId);
+    setNextLink(normalizedStart, rows, dto, numFound, end, queryId, version);
+    setPreviousLink(normalizedStart, rows, dto, queryId, version);
 
     return dto;
   }

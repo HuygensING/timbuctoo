@@ -35,7 +35,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 /**
- * A class to clean up the database and the index.
+ * A class to clean up the database and the execute.
  */
 public class EnvironmentCleaner {
 
@@ -57,7 +57,7 @@ public class EnvironmentCleaner {
     mongoDB.dropDatabase();
     mongoDB.close();
 
-    // clean the index
+    // clean the execute
     IndexManager indexManager = injector.getInstance(IndexManager.class);
     indexManager.deleteAllEntities();
     indexManager.close();

@@ -8,8 +8,8 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * =======
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 3 of the 
- * License, or (at your option) any later version.
+ * published by the Free Software Foundation, either NULL_VERSION 3 of the
+ * License, or (at your option) any later NULL_VERSION.
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -22,27 +22,11 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.isNotNull;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.ClientResponse.Status;
+import com.sun.jersey.api.client.GenericType;
+import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
 import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
@@ -59,20 +43,34 @@ import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
-
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.ClientResponse.Status;
-import com.sun.jersey.api.client.GenericType;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+
+import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.isNotNull;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 public class SearchResourceV1Test extends SearchResourceTestBase {
 
-  private static final Class<Class<? extends Relation>> RELATION_TYPE = new GenericType<Class<? extends Relation>>() {}.getRawClass();
+  private static final Class<Class<? extends Relation>> RELATION_TYPE = new GenericType<Class<? extends Relation>>() {
+  }.getRawClass();
   private static final String TYPE_STRING = "persons";
   private static final String RELATION_TYPE_STRING = "testrelations";
   private static final String RELATION_SEARCH_RESULT_TYPE = "testrelation";
@@ -87,7 +85,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
   }
 
   /**
-   * Return the version of the api to test.
+   * Return the NULL_VERSION of the api to test.
    */
   @Override
   protected String getAPIVersion() {
@@ -106,8 +104,8 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     setupPublicUrl(resource().getURI().toString());
 
     ClientResponse response = searchResourceBuilder(TYPE_STRING) //
-        .header(VRE_ID_KEY, VRE_ID) //
-        .post(ClientResponse.class, params);
+      .header(VRE_ID_KEY, VRE_ID) //
+      .post(ClientResponse.class, params);
     verifyResponseStatus(response, Status.CREATED);
 
     String expected = getExpectedURL(ID);
@@ -117,7 +115,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
   }
 
   protected String getExpectedURL(String id) {
-    return String.format("%s%s/search/%s", resource().getURI().toString(), getAPIVersion(), id);
+    return String.format("%s%ssearch/%s", resource().getURI().toString(), getAPIVersion(), id);
   }
 
   @Test
@@ -126,8 +124,8 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     doThrow(new TimbuctooException(Response.Status.BAD_REQUEST, "Error")).when(searchRequestValidator).validate(anyString(), anyString(), any(SearchParametersV1.class));
 
     ClientResponse response = searchResourceBuilder(TYPE_STRING) //
-        .header(VRE_ID_KEY, VRE_ID) //
-        .post(ClientResponse.class, parameters);
+      .header(VRE_ID_KEY, VRE_ID) //
+      .post(ClientResponse.class, parameters);
     verifyResponseStatus(response, Status.BAD_REQUEST);
 
     verifyZeroInteractions(repository);
@@ -138,19 +136,19 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     VRE vreMock = setUpVREManager(true, true);
 
     SearchParametersV1 params = new SearchParametersV1().setTerm(TERM);
-    doThrow(Exception.class).when(vreMock).search(Matchers.<Class<? extends DomainEntity>> any(), any(SearchParametersV1.class));
+    doThrow(Exception.class).when(vreMock).search(Matchers.<Class<? extends DomainEntity>>any(), any(SearchParametersV1.class));
 
     ClientResponse response = searchResourceBuilder(TYPE_STRING) //
-        .header(VRE_ID_KEY, VRE_ID) //
-        .post(ClientResponse.class, params);
+      .header(VRE_ID_KEY, VRE_ID) //
+      .post(ClientResponse.class, params);
     verifyResponseStatus(response, Status.INTERNAL_SERVER_ERROR);
 
-    verify(repository, never()).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    verify(repository, never()).addSystemEntity(Matchers.<Class<SearchResult>>any(), any(SearchResult.class));
     verifyVRESearchIsCalled(vreMock);
   }
 
   protected void verifyVRESearchIsCalled(VRE vreMock) throws SearchException, SearchValidationException {
-    verify(vreMock).search(Mockito.<Class<? extends DomainEntity>> any(), any(SearchParametersV1.class));
+    verify(vreMock).search(Mockito.<Class<? extends DomainEntity>>any(), any(SearchParametersV1.class));
   }
 
   @Test
@@ -160,11 +158,11 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     SearchParametersV1 params = new SearchParametersV1().setTerm(TERM);
     SearchResult searchResult = mock(SearchResult.class);
     setSearchResult(vreMock, searchResult);
-    doThrow(IOException.class).when(repository).addSystemEntity(Matchers.<Class<SearchResult>> any(), any(SearchResult.class));
+    doThrow(IOException.class).when(repository).addSystemEntity(Matchers.<Class<SearchResult>>any(), any(SearchResult.class));
 
     ClientResponse response = searchResourceBuilder(TYPE_STRING) //
-        .header(VRE_ID_KEY, VRE_ID) //
-        .post(ClientResponse.class, params);
+      .header(VRE_ID_KEY, VRE_ID) //
+      .post(ClientResponse.class, params);
     verifyResponseStatus(response, Status.INTERNAL_SERVER_ERROR);
 
     verifyVRESearchIsCalled(vreMock);
@@ -180,18 +178,18 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     int defaultStart = 0;
     int defaultRows = 10;
 
-    when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
-    when(regularSearchResultMapperMock.create(SEARCH_RESULT_TYPE, searchResult, defaultStart, defaultRows)).thenReturn(clientSearchResult);
+    when(repository.getEntityOrDefaultVariation(SearchResult.class, ID)).thenReturn(searchResult);
+    when(regularSearchResultMapperMock.create(SEARCH_RESULT_TYPE, searchResult, defaultStart, defaultRows, getAPIVersion())).thenReturn(clientSearchResult);
 
     ClientResponse response = searchResourceBuilder(ID) //
-        .accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+      .accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
     verifyResponseStatus(response, Status.OK);
 
     RegularSearchResultDTO actualResult = response.getEntity(RegularSearchResultDTO.class);
     assertThat(actualResult, notNullValue(RegularSearchResultDTO.class));
 
-    verify(repository).getEntity(SearchResult.class, ID);
-    verify(regularSearchResultMapperMock).create(SEARCH_RESULT_TYPE, searchResult, defaultStart, defaultRows);
+    verify(repository).getEntityOrDefaultVariation(SearchResult.class, ID);
+    verify(regularSearchResultMapperMock).create(SEARCH_RESULT_TYPE, searchResult, defaultStart, defaultRows, getAPIVersion());
   }
 
   @Test
@@ -208,21 +206,21 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     queryParameters.add("start", "20");
     queryParameters.add("rows", "20");
 
-    when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
-    when(regularSearchResultMapperMock.create(SEARCH_RESULT_TYPE, searchResult, startIndex, numberOfRows)).thenReturn(clientSearchResult);
+    when(repository.getEntityOrDefaultVariation(SearchResult.class, ID)).thenReturn(searchResult);
+    when(regularSearchResultMapperMock.create(SEARCH_RESULT_TYPE, searchResult, startIndex, numberOfRows, getAPIVersion())).thenReturn(clientSearchResult);
 
     ClientResponse clientResponse = searchResource(ID) //
-        .queryParams(queryParameters) //
-        .type(MediaType.APPLICATION_JSON_TYPE) //
-        .accept(MediaType.APPLICATION_JSON_TYPE) //
-        .get(ClientResponse.class);
+      .queryParams(queryParameters) //
+      .type(MediaType.APPLICATION_JSON_TYPE) //
+      .accept(MediaType.APPLICATION_JSON_TYPE) //
+      .get(ClientResponse.class);
     verifyResponseStatus(clientResponse, Status.OK);
 
     RegularSearchResultDTO actualResult = clientResponse.getEntity(RegularSearchResultDTO.class);
     assertThat(actualResult, notNullValue(RegularSearchResultDTO.class));
 
-    verify(repository).getEntity(SearchResult.class, ID);
-    verify(regularSearchResultMapperMock).create(SEARCH_RESULT_TYPE, searchResult, startIndex, numberOfRows);
+    verify(repository).getEntityOrDefaultVariation(SearchResult.class, ID);
+    verify(regularSearchResultMapperMock).create(SEARCH_RESULT_TYPE, searchResult, startIndex, numberOfRows, getAPIVersion());
   }
 
   @Test
@@ -235,31 +233,31 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     int defaultStart = 0;
     int defaultRows = 10;
 
-    when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
-    when(relationSearchResultMapperMock.create(TEST_RELATION_TYPE, searchResult, defaultStart, defaultRows)).thenReturn(clientSearchResult);
+    when(repository.getEntityOrDefaultVariation(SearchResult.class, ID)).thenReturn(searchResult);
+    when(relationSearchResultMapperMock.create(TEST_RELATION_TYPE, searchResult, defaultStart, defaultRows, getAPIVersion())).thenReturn(clientSearchResult);
 
     ClientResponse response = searchResourceBuilder(ID) //
-        .accept(MediaType.APPLICATION_JSON_TYPE) //
-        .get(ClientResponse.class);
+      .accept(MediaType.APPLICATION_JSON_TYPE) //
+      .get(ClientResponse.class);
     verifyResponseStatus(response, Status.OK);
 
     RelationSearchResultDTO actualResult = response.getEntity(RelationSearchResultDTO.class);
     assertThat(actualResult, notNullValue(RelationSearchResultDTO.class));
 
-    verify(repository).getEntity(SearchResult.class, ID);
-    verify(relationSearchResultMapperMock).create(TEST_RELATION_TYPE, searchResult, defaultStart, defaultRows);
+    verify(repository).getEntityOrDefaultVariation(SearchResult.class, ID);
+    verify(relationSearchResultMapperMock).create(TEST_RELATION_TYPE, searchResult, defaultStart, defaultRows, getAPIVersion());
   }
 
   @Test
   public void testGetNoId() {
     ClientResponse response = searchResourceBuilder() //
-        .accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+      .accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
     verifyResponseStatus(response, Status.METHOD_NOT_ALLOWED);
   }
 
   @Test
   public void testGetUnknownId() {
-    when(repository.getEntity(SearchResult.class, ID)).thenReturn(null);
+    when(repository.getEntityOrDefaultVariation(SearchResult.class, ID)).thenReturn(null);
 
     ClientResponse response = searchResourceBuilder(ID).accept(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
     verifyResponseStatus(response, Status.NOT_FOUND);
@@ -271,11 +269,11 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     searchResult.setId(ID);
     searchResult.setSearchType("unknown");
 
-    when(repository.getEntity(SearchResult.class, ID)).thenReturn(searchResult);
+    when(repository.getEntityOrDefaultVariation(SearchResult.class, ID)).thenReturn(searchResult);
 
     ClientResponse response = searchResourceBuilder(ID) //
-        .accept(MediaType.APPLICATION_JSON_TYPE) //
-        .get(ClientResponse.class);
+      .accept(MediaType.APPLICATION_JSON_TYPE) //
+      .get(ClientResponse.class);
     verifyResponseStatus(response, Status.BAD_REQUEST);
   }
 
@@ -294,12 +292,13 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     SearchResult searchResultMock = mock(SearchResult.class);
 
     makeVREAvailable(vreMock, VRE_ID);
-    when(searcher.search(any(VRE.class), isNotNull(new GenericType<Class<? extends DomainEntity>>() {}.getRawClass()), any(RelationSearchParameters.class))).thenReturn(searchResultMock);
+    when(searcher.search(any(VRE.class), isNotNull(new GenericType<Class<? extends DomainEntity>>() {
+    }.getRawClass()), any(RelationSearchParameters.class))).thenReturn(searchResultMock);
     when(repository.addSystemEntity(SearchResult.class, searchResultMock)).thenReturn(ID);
 
     ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING) //
-        .header(VRE_ID_KEY, VRE_ID) //
-        .post(ClientResponse.class, parameters);
+      .header(VRE_ID_KEY, VRE_ID) //
+      .post(ClientResponse.class, parameters);
     verifyResponseStatus(response, Status.CREATED);
 
     assertThat(response.getLocation().toString(), equalTo(getRelationSearchURL(ID)));
@@ -315,9 +314,9 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     doThrow(new TimbuctooException(Response.Status.BAD_REQUEST, "Error")).when(searchRequestValidator).validateRelationRequest(anyString(), anyString(), any(RelationSearchParameters.class));
 
     ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING) //
-        .type(MediaType.APPLICATION_JSON) //
-        .header(VRE_ID_KEY, VRE_ID) //
-        .post(ClientResponse.class, parameters);
+      .type(MediaType.APPLICATION_JSON) //
+      .header(VRE_ID_KEY, VRE_ID) //
+      .post(ClientResponse.class, parameters);
     verifyResponseStatus(response, Status.BAD_REQUEST);
 
     verifyZeroInteractions(repository, searcher);
@@ -336,9 +335,9 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     doThrow(Exception.class).when(repository).addSystemEntity(SearchResult.class, searchResultMock);
 
     ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING) //
-        .type(MediaType.APPLICATION_JSON) //
-        .header(VRE_ID_KEY, VRE_ID) //
-        .post(ClientResponse.class, parameters);
+      .type(MediaType.APPLICATION_JSON) //
+      .header(VRE_ID_KEY, VRE_ID) //
+      .post(ClientResponse.class, parameters);
     verifyResponseStatus(response, Status.INTERNAL_SERVER_ERROR);
 
     verify(searchRequestValidator).validateRelationRequest(anyString(), anyString(), any(RelationSearchParameters.class));
@@ -356,9 +355,9 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
     doThrow(SearchException.class).when(searcher).search(any(VRE.class), isNotNull(RELATION_TYPE), any(RelationSearchParameters.class));
 
     ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING) //
-        .type(MediaType.APPLICATION_JSON) //
-        .header(VRE_ID_KEY, VRE_ID) //
-        .post(ClientResponse.class, parameters);
+      .type(MediaType.APPLICATION_JSON) //
+      .header(VRE_ID_KEY, VRE_ID) //
+      .post(ClientResponse.class, parameters);
     verifyResponseStatus(response, Status.INTERNAL_SERVER_ERROR);
 
     verify(searchRequestValidator).validateRelationRequest(anyString(), anyString(), any(RelationSearchParameters.class));
@@ -367,10 +366,10 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
 
   private String getRelationSearchURL(String id) {
     return String.format(//
-        "%s%s/search/%s", //
-        resource().getURI().toString(), //
-        getAPIVersion(), //
-        id);
+      "%s%ssearch/%s", //
+      resource().getURI().toString(), //
+      getAPIVersion(), //
+      id);
   }
 
 }

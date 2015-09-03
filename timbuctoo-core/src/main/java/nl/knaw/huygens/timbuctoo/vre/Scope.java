@@ -22,10 +22,10 @@ package nl.knaw.huygens.timbuctoo.vre;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+
 import java.util.List;
 import java.util.Set;
-
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 /**
  * Defines a subset of the data in the repository.
@@ -44,6 +44,7 @@ public interface Scope {
 
   /**
    * Checks if the {@code type} is in scope. A light method to check if it is needed to do a further check.
+   *
    * @param type the type to check if it is in scope.
    * @return {@code true} if the type is in scope {@code false} if not.
    */
@@ -62,10 +63,19 @@ public interface Scope {
   <T extends DomainEntity> boolean inScope(T entity);
 
   /**
-   * Filters a list of entities to return the a list of entities that are in scope. 
+   * Filters a list of entities to return the a list of entities that are in scope.
+   *
    * @param entities the list to filter.
    * @return the entities in scope.
    */
   <T extends DomainEntity> List<T> filter(final List<T> entities);
 
+  /**
+   * Find the type in this scope that matches baseType.
+   * @param baseType the type to get the type in scope of
+   * @param <T> the type has to be a DomainEntity
+   * @return the found type
+   * @throws NotInScopeException when no match is found
+   */
+  Class<? extends DomainEntity> mapToScopeType(Class<? extends DomainEntity> baseType) throws NotInScopeException;
 }

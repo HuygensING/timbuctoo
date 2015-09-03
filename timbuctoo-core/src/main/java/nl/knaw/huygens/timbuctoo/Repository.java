@@ -22,13 +22,10 @@ package nl.knaw.huygens.timbuctoo;
  * #L%
  */
 
-import static com.google.common.base.Preconditions.checkState;
-
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import nl.knaw.huygens.timbuctoo.config.EntityMapper;
 import nl.knaw.huygens.timbuctoo.config.EntityMappers;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -52,17 +49,18 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import nl.knaw.huygens.timbuctoo.storage.StorageStatus;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.util.KV;
-import nl.knaw.huygens.timbuctoo.util.RelationRefCreator;
-import nl.knaw.huygens.timbuctoo.util.RelationRefCreatorFactory;
+import nl.knaw.huygens.timbuctoo.util.RelationRefAdder;
+import nl.knaw.huygens.timbuctoo.util.RelationRefAdderFactory;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+
+import static com.google.common.base.Preconditions.checkState;
 
 @Singleton
 public class Repository {
@@ -75,10 +73,10 @@ public class Repository {
   private final Storage storage;
   private final EntityMappers entityMappers;
   private final RelationTypes relationTypes;
-  private final RelationRefCreatorFactory relationRefCreatorFactory;
+  private final RelationRefAdderFactory relationRefCreatorFactory;
 
   @Inject
-  public Repository(TypeRegistry registry, Storage storage, RelationRefCreatorFactory relationRefCreatorFactory, RelationTypes relationTypes) throws StorageException {
+  public Repository(TypeRegistry registry, Storage storage, RelationRefAdderFactory relationRefCreatorFactory, RelationTypes relationTypes) throws StorageException {
     this.registry = registry;
     this.storage = storage;
     this.relationRefCreatorFactory = relationRefCreatorFactory;
@@ -168,7 +166,7 @@ public class Repository {
    * This method makes sure that the variation is actually stored.
    */
   public <T extends DomainEntity> void ensureVariation(Class<T> type, String id, Change change) throws StorageException {
-    T entity = getEntity(type, id);
+    T entity = getEntityOrDefaultVariation(type, id);
     if (entity != null && !entity.hasVariation(type)) {
       updateDomainEntity(type, entity, change);
     }
@@ -246,19 +244,19 @@ public class Repository {
     }
   }
 
-  public <T extends Entity> T getEntity(Class<T> type, String id) {
+  public <T extends Entity> T getEntityOrDefaultVariation(Class<T> type, String id) {
     try {
-      return storage.getItem(type, id);
+      return storage.getEntityOrDefaultVariation(type, id);
     } catch (StorageException e) {
       LOG.error("Error in getEntity({}, {}): {}", type.getSimpleName(), id, e.getMessage());
       return null;
     }
   }
 
-  public <T extends DomainEntity> T getEntityWithRelations(Class<T> type, String id) {
+  public <T extends DomainEntity> T getEntityOrDefaultVariationWithRelations(Class<T> type, String id) {
     T entity = null;
     try {
-      entity = storage.getItem(type, id);
+      entity = storage.getEntityOrDefaultVariation(type, id);
       if (entity != null) {
         addRelationsToEntity(entity);
       }
@@ -450,7 +448,7 @@ public class Repository {
       checkState(mapper != null, "No EntityMapper for type %s", entityType);
       @SuppressWarnings("unchecked")
       Class<? extends Relation> mappedType = (Class<? extends Relation>) mapper.map(Relation.class);
-      RelationRefCreator relationRefCreator = relationRefCreatorFactory.create(mappedType);
+      RelationRefAdder relationRefCreator = relationRefCreatorFactory.create(mappedType);
 
       for (Relation relation : getRelationsByEntityId(entityId, limit, mappedType)) {
         RelationType relType = getRelationTypeById(relation.getTypeId(), REQUIRED);
@@ -482,7 +480,7 @@ public class Repository {
    * Makes sure each relation is added only once.
    * @param relationRefCreator TODO
    */
-  private <T extends DomainEntity> void addDerivedRelations(T entity, EntityMapper mapper, RelationRefCreator relationRefCreator) throws StorageException {
+  private <T extends DomainEntity> void addDerivedRelations(T entity, EntityMapper mapper, RelationRefAdder relationRefCreator) throws StorageException {
     for (DerivedRelationType drtype : entity.getDerivedRelationTypes()) {
       Set<String> ids = Sets.newHashSet();
 
@@ -541,7 +539,7 @@ public class Repository {
           String iname = regular ? relation.getTargetType() : relation.getSourceType();
           Class<? extends DomainEntity> type = vre.mapTypeName(iname, REQUIRED);
           String id = regular ? relation.getTargetId() : relation.getSourceId();
-          Object value = type.getMethod(property.getAccessor()).invoke(getEntity(type, id));
+          Object value = type.getMethod(property.getAccessor()).invoke(getEntityOrDefaultVariation(type, id));
           entity.addProperty(property.getPropertyName(), value);
         }
       } catch (Exception e) {
@@ -567,4 +565,7 @@ public class Repository {
     return storage.doesVariationExist(type, id);
   }
 
+  public <T extends DomainEntity> List<T> getAllRevisions(Class<T> type, String id) throws StorageException {
+    return storage.getAllRevisions(type, id);
+  }
 }

@@ -27,6 +27,7 @@ import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import org.apache.commons.lang.StringUtils;
@@ -52,14 +53,6 @@ public class PersistenceWrapper {
     this.baseUrl = CharMatcher.is('/').trimTrailingFrom(baseUrl);
     this.manager = persistenceManager;
     Preconditions.checkNotNull(this.manager);
-  }
-
-  public String persistURL(String url) throws PersistenceException {
-    return manager.persistURL(url);
-  }
-
-  public String getURLValue(String persistentId) throws PersistenceException {
-    return manager.getPersistedURL(persistentId);
   }
 
   public String getPersistentURL(String persistentId) {
@@ -103,10 +96,20 @@ public class PersistenceWrapper {
     return createURL(type, id) + "?rev=" + revision;
   }
 
-  public void updatePID(String pidToUpdate, Class<? extends Entity> type, String id, int revision) throws PersistenceException {
-    String url = createURL(type, id, revision);
+  public void updatePID(DomainEntity domainEntity) throws PersistenceException{
+    String url = createURL(domainEntity.getClass(), domainEntity.getId(), domainEntity.getRev());
 
-    manager.modifyURLForPersistentId(pidToUpdate, url);
+    manager.modifyURLForPersistentId(getPID(domainEntity), url);
+
   }
 
+  private String getPID(DomainEntity entity) {
+    if (entity.getPid() == null) {
+      return null;
+    }
+
+    String[] splittedPIDURI = entity.getPid().split("/");
+
+    return splittedPIDURI[splittedPIDURI.length - 1];
+  }
 }

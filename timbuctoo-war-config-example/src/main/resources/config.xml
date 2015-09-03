@@ -28,6 +28,11 @@
       <directory>{path to config directory}</directory>
       <use_user_home>false</use_user_home> <!-- is the path in the user home dir -->
     </home>
+    <graph>
+      <!-- check nl.knaw.huygens.timbuctoo.config.GraphTypes for more types. -->
+      <type>NEO4J</type>
+      <path>database</path>
+    </graph>
     <database>
       <!-- Mongo database -->
       <host>{server}</host>

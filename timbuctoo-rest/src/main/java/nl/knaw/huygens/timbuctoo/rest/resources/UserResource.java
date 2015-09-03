@@ -53,6 +53,7 @@ import javax.ws.rs.core.Response.Status;
 
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
+import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.VREAuthorization;
@@ -70,7 +71,7 @@ import com.google.inject.Inject;
 @Path(V1_PATH_OPTIONAL + SYSTEM_PREFIX + "/" + USER_PATH)
 public class UserResource extends ResourceBase {
 
-  protected static final String ID_REGEX = "/{id:" + User.ID_PREFIX + "\\d+}";
+  protected static final String ID_REGEX = "/{id:" + User.ID_PREFIX + Paths.ID_VALUE_REGEX + "}";
   protected static final String VRE_AUTHORIZATION_COLLECTION_PATH = ID_REGEX + "/vreauthorizations";
   protected static final String VRE_AUTHORIZATION_PATH = VRE_AUTHORIZATION_COLLECTION_PATH + "/{vre: \\w+}";
   protected static final String ID_PARAM = "id";

@@ -33,11 +33,15 @@ import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.index.request.IndexRequestFactory;
+import nl.knaw.huygens.timbuctoo.index.request.IndexRequests;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.rest.util.AdditionalFilterTranslator;
 import nl.knaw.huygens.timbuctoo.rest.util.AutocompleteResultConverter;
+import nl.knaw.huygens.timbuctoo.rest.util.search.IndexRegularSearchResultMapper;
+import nl.knaw.huygens.timbuctoo.rest.util.search.IndexRelationSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
@@ -66,6 +70,7 @@ class ResourceTestModule extends JerseyServletModule {
   private static final String M1A = "test.rest.model.projecta";
   private static final String M1B = "test.rest.model.projectb";
   private static final String PACKAGES = M0 + " " + M1 + " " + M1A + " " + M1B;
+  public static final String PERSISTENCE_PRODUCER = "persistenceProducer";
 
   //All the classes are instance variables because we need to be able to reset them after each test.
   private Configuration config;
@@ -84,6 +89,8 @@ class ResourceTestModule extends JerseyServletModule {
   private SearchParametersConverter searchParametersConverter;
   private RelationSearcher relationSearcher;
   private RegularSearchResultMapper regularClientSearchResultCreator;
+  private IndexRegularSearchResultMapper indexRegularSearchResultMapper;
+  private IndexRelationSearchResultMapper indexRelationSearchResultMapper;
   private RelationSearchResultMapper relationClientSearchResultCreator;
   private UserConfigurationHandler userConfigurationHandler;
   private BasicAuthenticationHandler basicAuthenticationHandler;
@@ -91,6 +98,8 @@ class ResourceTestModule extends JerseyServletModule {
   private VRECollection vreCollection;
   private AutocompleteResultConverter autoCompleteResultConverter;
   private AdditionalFilterTranslator additionalfilterTranslator;
+  private IndexRequests indexRequests;
+  private IndexRequestFactory indexRequestFactory;
 
 
   public ResourceTestModule() {
@@ -119,6 +128,12 @@ class ResourceTestModule extends JerseyServletModule {
       vreCollection = mock(VRECollection.class);
       autoCompleteResultConverter = mock(AutocompleteResultConverter.class);
       additionalfilterTranslator = mock(AdditionalFilterTranslator.class);
+      indexRegularSearchResultMapper = mock(IndexRegularSearchResultMapper.class);
+      indexRelationSearchResultMapper = mock(IndexRelationSearchResultMapper.class);
+      indexRequests = mock(IndexRequests.class);
+      indexRequestFactory = mock(IndexRequestFactory.class);
+
+
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
@@ -130,7 +145,8 @@ class ResourceTestModule extends JerseyServletModule {
    */
   public void cleanUpMocks() {
     reset(config, repository, userConfigurationHandler, jsonProvider, validator, mailSender, authenticationHandler, broker, indexProducer, persistenceProducer, indexManager, searchRequestValidator,
-      searchParametersConverter, relationSearcher, regularClientSearchResultCreator, regularClientSearchResultCreator, basicAuthenticationHandler, changeHelper, vreCollection, autoCompleteResultConverter, additionalfilterTranslator);
+      searchParametersConverter, relationSearcher, regularClientSearchResultCreator, regularClientSearchResultCreator, basicAuthenticationHandler, changeHelper, vreCollection, autoCompleteResultConverter,
+      additionalfilterTranslator, indexRegularSearchResultMapper, indexRelationSearchResultMapper, indexRequests, indexRequestFactory);
   }
 
   @Override
@@ -223,7 +239,7 @@ class ResourceTestModule extends JerseyServletModule {
 
   @Provides
   @Singleton
-  @Named("persistenceProducer")
+  @Named(PERSISTENCE_PRODUCER)
   public Producer providePersistenceProducer() {
     return persistenceProducer;
   }
@@ -300,4 +316,27 @@ class ResourceTestModule extends JerseyServletModule {
     return additionalfilterTranslator;
   }
 
+  @Singleton
+  @Provides
+  public IndexRegularSearchResultMapper provideIndexRegularSearchResultMapper() {
+    return indexRegularSearchResultMapper;
+  }
+
+  @Singleton
+  @Provides
+  public IndexRelationSearchResultMapper provideIndexRelationSearchResultMapper() {
+    return indexRelationSearchResultMapper;
+  }
+
+  @Singleton
+  @Provides
+  public IndexRequests provideIndexRequestStatus(){
+    return indexRequests;
+  }
+
+  @Singleton
+  @Provides
+  public IndexRequestFactory provideIndexRequestFactory() {
+    return indexRequestFactory;
+  }
 }

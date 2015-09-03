@@ -97,7 +97,7 @@ public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
    * Index this part of the item.
    */
   private void indexMethodOnce(SolrInputDocument doc, Entity instance, Method m, IndexAnnotation indexAnnotation) {
-    // Determine index field name:
+    // Determine execute field name:
     String name = indexAnnotation.fieldName();
     if (name.length() == 0) {
       name = Utils.getFieldName(m);
@@ -121,7 +121,7 @@ public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
   }
 
   /*
-   *  FIXME awful hack to index range facets. It shares logic with nl.knaw.huygens.timbuctoo.search.FacetFinder.
+   *  FIXME awful hack to execute range facets. It shares logic with nl.knaw.huygens.timbuctoo.search.FacetFinder.
    *  See issue #2642
    */
   private void indexRange(SolrInputDocument doc, String name, Object value, boolean canBeEmpty, String[] getters) {
@@ -141,7 +141,7 @@ public class SolrInputDocGenerator implements AnnotatedMethodProcessor {
 
   /**
    * Evil reflection stuff to deal with getting strings/stuff out of arrays of objects.
-   * It will index the result of applying the array of methods on each of the objects.
+   * It will execute the result of applying the array of methods on each of the objects.
    */
   private void indexArray(SolrInputDocument doc, String fieldName, Object[] array, boolean canBeEmpty, String... methods) {
     try {

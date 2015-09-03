@@ -22,19 +22,19 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-import java.util.Map;
-
-import nl.knaw.huygens.timbuctoo.config.Paths;
-
 import com.google.common.base.Joiner;
+import nl.knaw.huygens.timbuctoo.config.Paths;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+
+import java.util.Map;
 
 public class DomainEntityDTO {
 
-  private final String type;
-  private final String id;
-  private final String path;
-  private final String displayName;
-  private final Map<String, String> data;
+  private String type;
+  private String id;
+  private String path;
+  private String displayName;
+  private Map<String, ? extends Object> data;
 
   public DomainEntityDTO(String type, String xtype, DomainEntity entity) {
     this.type = type;
@@ -42,6 +42,9 @@ public class DomainEntityDTO {
     path = Joiner.on('/').join(Paths.DOMAIN_PREFIX, xtype, id);
     displayName = entity.getIdentificationName();
     data = entity.getClientRepresentation();
+  }
+
+  public DomainEntityDTO() {
   }
 
   public String getType() {
@@ -60,8 +63,27 @@ public class DomainEntityDTO {
     return displayName;
   }
 
-  public Map<String, String> getData() {
+  public Map<String, ? extends Object> getData() {
     return data;
   }
 
+  public void setId(String id) {
+    this.id = id;
+  }
+
+  public void setDisplayName(String displayName) {
+    this.displayName = displayName;
+  }
+
+  public void setData(Map<String, ? extends Object> data) {
+    this.data = data;
+  }
+
+  public void setType(Class<? extends DomainEntity> type) {
+    this.type = TypeNames.getInternalName(type);
+  }
+
+  public void createPath(String xtype) {
+    this.path = Joiner.on('/').join(Paths.DOMAIN_PREFIX, xtype, id);
+  }
 }

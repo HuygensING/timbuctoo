@@ -98,7 +98,7 @@ public interface VRE extends Scope {
   Collection<Index> getIndexes();
 
   /**
-   * Delete an entity from the index.
+   * Delete an entity from the execute.
    * @param type the type to delete.
    * @param id the id of the type to delete.
    * @throws IndexException throw when the deletion does not succeed.
@@ -106,7 +106,7 @@ public interface VRE extends Scope {
   void deleteFromIndex(Class<? extends DomainEntity> type, String id) throws IndexException;
 
   /**
-   * Delete multiple entities from the index.
+   * Delete multiple entities from the execute.
    * @param type the type to delete.
    * @param ids the id's of the type to delete.
    * @throws IndexException throw when the deletion does not succeed.
@@ -115,23 +115,23 @@ public interface VRE extends Scope {
 
   /**
    * Clears all the indexes of this VRE.
-   * @throws IndexException thrown when the clearing of an index fails.
+   * @throws IndexException thrown when the clearing of an execute fails.
    */
   void clearIndexes() throws IndexException;
 
   /**
-   * Add one or more variations of an entity to an index.
-   * @param type the type to determine the index for
+   * Add one or more variations of an entity to an execute.
+   * @param type the type to determine the execute for
    * @param variations all the variations of some model
-   * @throws IndexException when the adding to the index fails
+   * @throws IndexException when the adding to the execute fails
    */
   void addToIndex(Class<? extends DomainEntity> type, List<? extends DomainEntity> variations) throws IndexException;
 
   /**
-   * Updates an entity that is already in the index.
-   * @param type the type to determine the index for
+   * Updates an entity that is already in the execute.
+   * @param type the type to determine the execute for
    * @param variations all the variations of the entity.
-   * @throws IndexException when the adding to the index fails
+   * @throws IndexException when the adding to the execute fails
    */
   void updateIndex(Class<? extends DomainEntity> type, List<? extends DomainEntity> variations) throws IndexException;
 
@@ -142,24 +142,24 @@ public interface VRE extends Scope {
 
   /**
    * Commits all the changes on each of it's indexes.
-   * @throws IndexException thrown when a commit of one index failed.
+   * @throws IndexException thrown when a commit of one execute failed.
    */
   void commitAll() throws IndexException;
 
   /**
-   * Adds the status of all the indexes to the index status.
+   * Adds the status of all the indexes to the execute status.
    * @param indexStatus
    */
   void addToIndexStatus(IndexStatus indexStatus);
 
   /**
-   * Search the solr index and get the raw search result.
+   * Search the solr execute and get the raw search result.
    *
    * @param type the type to search for
    * @param searchString the string to search for
    * @param start the offset
    * @param numberOfResults the maximum number of results
-   * @param additionalFilters extra filters to apply to the search, the name should be the name of the field in the index.
+   * @param additionalFilters extra filters to apply to the search, the name should be the name of the field in the execute.
    * @return a raw solr search result
    * @throws NotInScopeException when the type is not in scope of the VRE 
    * @throws SearchException when the search library throws an exception
@@ -167,4 +167,14 @@ public interface VRE extends Scope {
    */
   Iterable<Map<String, Object>> doRawSearch(Class<? extends DomainEntity> type, String searchString, int start, int numberOfResults, Map<String, Object> additionalFilters) throws NotInScopeException, SearchException,
       RawSearchUnavailableException;
+
+
+  /**
+   * Get the indexed data for entities with id in the id's list.
+   *
+   * @param type the type of the entity to get
+   * @param ids the ids to get the data for
+   * @return the found data
+   */
+  List<Map<String, Object>> getRawDataFor(Class<? extends DomainEntity> type, List<String> ids) throws NotInScopeException, SearchException;
 }

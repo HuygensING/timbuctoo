@@ -95,8 +95,8 @@ public class MongoRelationSearcherTest {
 
     when(vreMock.getVreId()).thenReturn(VRE_ID);
     when(repositoryMock.getRelationsByType(RELATION_VARIATION, relationTypeIds)).thenReturn(foundRelations);
-    when(repositoryMock.getEntity(SEARCH_RESULT_TYPE, sourceSearchId)).thenReturn(sourceSearchResult);
-    when(repositoryMock.getEntity(SEARCH_RESULT_TYPE, targetSearchId)).thenReturn(targetSearchResult);
+    when(repositoryMock.getEntityOrDefaultVariation(SEARCH_RESULT_TYPE, sourceSearchId)).thenReturn(sourceSearchResult);
+    when(repositoryMock.getEntityOrDefaultVariation(SEARCH_RESULT_TYPE, targetSearchId)).thenReturn(targetSearchResult);
     when(collectionConverterMock.toFilterableSet(foundRelations)).thenReturn(filterableRelationsMock);
     when(filterableRelationsMock.filter(Mockito.<RelationSourceTargetPredicate<Relation>> any())).thenReturn(filteredRelations);
     when(relationSearchResultCreatorMock.create(VRE_ID, TYPE_STRING, filteredRelations, SOURCE_TYPE, sourceIds, TARGET_TYPE, targetIds, relationTypeIds)).thenReturn(relationSearchResult);
@@ -118,8 +118,8 @@ public class MongoRelationSearcherTest {
 
     // verify
     verify(repositoryMock).getRelationsByType(RELATION_VARIATION, relationTypeIds);
-    verify(repositoryMock).getEntity(SEARCH_RESULT_TYPE, sourceSearchId);
-    verify(repositoryMock).getEntity(SEARCH_RESULT_TYPE, targetSearchId);
+    verify(repositoryMock).getEntityOrDefaultVariation(SEARCH_RESULT_TYPE, sourceSearchId);
+    verify(repositoryMock).getEntityOrDefaultVariation(SEARCH_RESULT_TYPE, targetSearchId);
     verify(filterableRelationsMock).filter(Mockito.<RelationSourceTargetPredicate<Relation>> any());
     verify(relationSearchResultCreatorMock).create(VRE_ID, TYPE_STRING, filteredRelations, SOURCE_TYPE, sourceIds, TARGET_TYPE, targetIds, relationTypeIds);
     assertThat(actualResult, equalTo(relationSearchResult));
@@ -144,8 +144,8 @@ public class MongoRelationSearcherTest {
     // verify
     verify(repositoryMock).getRelationTypeIdsByName(relationTypeNames);
     verify(repositoryMock).getRelationsByType(RELATION_VARIATION, relationTypeIds);
-    verify(repositoryMock).getEntity(SEARCH_RESULT_TYPE, sourceSearchId);
-    verify(repositoryMock).getEntity(SEARCH_RESULT_TYPE, targetSearchId);
+    verify(repositoryMock).getEntityOrDefaultVariation(SEARCH_RESULT_TYPE, sourceSearchId);
+    verify(repositoryMock).getEntityOrDefaultVariation(SEARCH_RESULT_TYPE, targetSearchId);
     verify(filterableRelationsMock).filter(Mockito.<RelationSourceTargetPredicate<Relation>> any());
     verify(relationSearchResultCreatorMock).create(VRE_ID, TYPE_STRING, filteredRelations, SOURCE_TYPE, sourceIds, TARGET_TYPE, targetIds, relationTypeIds);
     assertThat(actualResult, equalTo(relationSearchResult));

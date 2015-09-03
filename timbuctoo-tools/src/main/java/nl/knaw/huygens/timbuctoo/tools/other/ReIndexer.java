@@ -53,7 +53,7 @@ public class ReIndexer {
     IndexManager indexManager = injector.getInstance(IndexManager.class);
 
     try {
-      new ReIndexer().indexAsynchrounous(repository, indexManager);
+      new ReIndexer().indexAsynchronous(repository, indexManager);
     } finally {
       repository.close();
       indexManager.close();
@@ -61,8 +61,8 @@ public class ReIndexer {
     }
   }
 
-  public void indexAsynchrounous(Repository repository, IndexManager indexManager) throws InterruptedException, IndexException {
-    LOG.info("Clearing index");
+  public void indexAsynchronous(Repository repository, IndexManager indexManager) throws InterruptedException, IndexException {
+    LOG.info("Clearing execute");
     indexManager.deleteAllEntities();
 
     TypeRegistry registry = repository.getTypeRegistry();
@@ -98,21 +98,25 @@ public class ReIndexer {
     public void run() {
       String typeName = TypeNames.getInternalName(type);
       LOG.info("Start indexing for {}.", typeName);
-      try {
-        StorageIterator<? extends DomainEntity> iterator = repository.getDomainEntities(type);
-        while (iterator.hasNext()) {
-          indexManager.addEntity(type, iterator.next().getId());
+      StorageIterator<? extends DomainEntity> iterator = repository.getDomainEntities(type);
+      while (iterator.hasNext()) {
+
+        String id = iterator.next().getId();
+        try {
+          indexManager.addEntity(type, id);
+        } catch (IndexException e) {
+          LOG.error("Error indexing for {} with id {}.", typeName, id);
+          LOG.debug("Error: {}", e);
+        } catch (RuntimeException e) {
+          LOG.error("Error indexing for {} with id {}.", typeName, id);
+          LOG.debug("Error: {}", e);
+          countDownLatch.countDown();
+          throw e;
         }
-        iterator.close();
-      } catch (RuntimeException e) {
-        LOG.error("Error indexing for {}.", typeName);
-        LOG.debug("Error: {}", e);
-        countDownLatch.countDown();
-        throw e;
-      } catch (IndexException e) {
-        LOG.error("Error indexing for {}.", typeName);
-        LOG.debug("Error: {}", e);
       }
+
+      iterator.close();
+
       LOG.info("End indexing for {}.", typeName);
       countDownLatch.countDown();
       LOG.info("Incomplete tasks: {}", countDownLatch.getCount());

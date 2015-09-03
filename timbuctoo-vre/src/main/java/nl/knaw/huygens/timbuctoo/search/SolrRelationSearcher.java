@@ -55,11 +55,11 @@ public class SolrRelationSearcher extends RelationSearcher {
   public SearchResult search(VRE vre, Class<? extends DomainEntity> relationType, RelationSearchParameters parameters) throws SearchException, SearchValidationException {
     addRelationTypeIds(vre, parameters);
 
-    SearchResult sourceResult = repository.getEntity(SearchResult.class, parameters.getSourceSearchId());
+    SearchResult sourceResult = repository.getEntityOrDefaultVariation(SearchResult.class, parameters.getSourceSearchId());
     String sourceType = sourceResult.getSearchType();
     List<String> sourceSearchIds = sourceResult.getIds();
 
-    SearchResult targetResult = repository.getEntity(SearchResult.class, parameters.getTargetSearchId());
+    SearchResult targetResult = repository.getEntityOrDefaultVariation(SearchResult.class, parameters.getTargetSearchId());
     String targetType = targetResult.getSearchType();
     List<String> targetSearchIds = targetResult.getIds();
 

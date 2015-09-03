@@ -44,6 +44,8 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.servlet.GuiceServletContextListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Creates and manages the injector for the repository servlet.
@@ -57,6 +59,8 @@ public abstract class TimbuctooContextListener extends GuiceServletContextListen
   // According to the Guice project this is just the eager Tomcat detector warning about a potential leak based
   // on it's internal introspection. Once new ThreadLocals are created the entry that causes this message is removed.
   // See: http://code.google.com/p/google-guice/issues/detail?id=707
+
+  private static Logger LOG = LoggerFactory.getLogger(TimbuctooContextListener.class);
 
   private Configuration config;
   private Injector injector;
@@ -91,6 +95,8 @@ public abstract class TimbuctooContextListener extends GuiceServletContextListen
       scheduler.start();
     }
 
+    LOG.info("public url: {}", config.getSetting("public_url"));
+
     try {
       broker = injector.getInstance(Broker.class);
       broker.start();
@@ -118,6 +124,14 @@ public abstract class TimbuctooContextListener extends GuiceServletContextListen
 
   @Override
   public void contextDestroyed(ServletContextEvent event) {
+    shutdown();
+    super.contextDestroyed(event);
+  }
+
+  /**
+   * A method to stop the embedded server gracefully.
+   */
+  public void shutdown() {
     closeIndexManager();
 
     if (scheduler != null) {
@@ -158,7 +172,6 @@ public abstract class TimbuctooContextListener extends GuiceServletContextListen
       broker.close();
       broker = null;
     }
-    super.contextDestroyed(event);
   }
 
   private void closeIndexManager() {

@@ -22,17 +22,6 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.annotations.JsonViews;
-import nl.knaw.huygens.timbuctoo.config.BusinessRules;
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
-import nl.knaw.huygens.timbuctoo.util.Text;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
@@ -40,6 +29,18 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.annotations.DBProperty;
+import nl.knaw.huygens.timbuctoo.annotations.JsonViews;
+import nl.knaw.huygens.timbuctoo.config.BusinessRules;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
+import nl.knaw.huygens.timbuctoo.util.Text;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public abstract class DomainEntity extends Entity {
 
@@ -48,11 +49,20 @@ public abstract class DomainEntity extends Entity {
   public static final String PID = "^pid";
   public static final String DELETED = "^deleted";
   public static final String VARIATIONS = "^variations";
+  public static final String DB_PID_PROP_NAME = "pid";
 
+  @JsonProperty("^displayName")
+  @DBProperty(value = "displayName", type = FieldType.ADMINISTRATIVE)
+  private String displayName; // Used for demo purposes with Neo4J database.
+  @DBProperty(value = DB_PID_PROP_NAME, type = FieldType.ADMINISTRATIVE)
   private String pid; // the persistent identifier.
+  @DBProperty(value = "deleted", type = FieldType.ADMINISTRATIVE)
   private boolean deleted;
+  @DBProperty(value = "relationCount", type = FieldType.VIRTUAL)
   private int relationCount;
+  @DBProperty(value = "properties", type = FieldType.VIRTUAL)
   private final Map<String, Object> properties = Maps.newHashMap();
+  @DBProperty(value = "relations", type = FieldType.VIRTUAL)
   private final Map<String, Set<RelationRef>> relations = Maps.newHashMap();
   private List<String> variations = Lists.newArrayList();
 
@@ -235,6 +245,14 @@ public abstract class DomainEntity extends Entity {
 
   protected void addItemToRepresentation(Map<String, String> data, String key, Object value) {
     data.put(key, (value != null) ? value.toString() : "");
+  }
+
+  public String getDisplayName() {
+    return displayName;
+  }
+
+  public void setDisplayName(String displayName) {
+    this.displayName = displayName;
   }
 
 }

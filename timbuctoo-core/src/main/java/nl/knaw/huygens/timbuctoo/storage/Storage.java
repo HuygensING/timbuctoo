@@ -48,6 +48,12 @@ public interface Storage {
    */
   void close();
 
+  /**
+   * Checks if the storage is available.
+   * @return true if the storage is available.
+   */
+  boolean isAvailable();
+
   // --- add entities --------------------------------------------------
 
   /**
@@ -112,7 +118,7 @@ public interface Storage {
    * @throws NoSuchEntityException is thrown when the (variation) type does not exist for this entity.
    * @throws StorageException is thrown when the delete of the variation fails.
    */
-  void deleteVariation(Class<? extends DomainEntity> type, String id, Change change) throws IllegalArgumentException, NoSuchEntityException, StorageException;
+  <T extends DomainEntity> void deleteVariation(Class<T> type, String id, Change change) throws IllegalArgumentException, NoSuchEntityException, StorageException;
 
   /**
    * Deletes all the relations linked to the DomainEntity with {@code id}.
@@ -129,7 +135,7 @@ public interface Storage {
    * @throws IllegalArgumentException when the variation type is a primitive.  
    * @throws StorageException is thrown when the update fails.
    */
-  void declineRelationsOfEntity(Class<? extends Relation> type, String id) throws IllegalArgumentException, StorageException;
+  <T extends Relation> void declineRelationsOfEntity(Class<T> type, String id) throws IllegalArgumentException, StorageException;
 
   // -------------------------------------------------------------------
 
@@ -139,9 +145,20 @@ public interface Storage {
   <T extends Entity> boolean entityExists(Class<T> type, String id) throws StorageException;
 
   /**
+   * Retrieves an {@code Entity} with it's project variation, 
+   * if that does not exist the default variation will be returned.
+   * The default variation will only be true for {@code DomainEntities}.
+   * @param type the type of the {@code Entity} requested
+   * @param id the id of the requested {@code Entity}
+   * @return the {@code Entity} or the default variation if available or null when neither exist. 
+   * @throws StorageException when something goes wrong accessing the database.
+   */
+  <T extends Entity> T getEntityOrDefaultVariation(Class<T> type, String id) throws StorageException;
+
+  /**
    * Retrieves the specified entity, or {@code null} if no such entity exists.
    */
-  <T extends Entity> T getItem(Class<T> type, String id) throws StorageException;
+  <T extends Entity> T getEntity(Class<T> type, String id) throws StorageException;
 
   /**
    * Retrieves all system entities of the specified type.

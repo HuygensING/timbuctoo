@@ -172,6 +172,11 @@ public class PackageVRE implements VRE {
     return scope.filter(entities);
   }
 
+  @Override
+  public Class<? extends DomainEntity> mapToScopeType(Class<? extends DomainEntity> baseType) throws NotInScopeException {
+    return scope.mapToScopeType(baseType);
+  }
+
   /******************************************************************************
    * Index methods
    ******************************************************************************/
@@ -197,11 +202,11 @@ public class PackageVRE implements VRE {
   }
 
   /**
-   * Returns the index if the index for the type can be found,
-   * else it returns an index that does nothing and returns an empty search result.
+   * Returns the execute if the execute for the type can be found,
+   * else it returns an execute that does nothing and returns an empty search result.
    *
-   * @param type the type to find the index for
-   * @return the index
+   * @param type the type to find the execute for
+   * @return the execute
    */
   private Index getIndexForType(Class<? extends DomainEntity> type) {
     return indexCollection.getIndexByType(type);
@@ -275,7 +280,7 @@ public class PackageVRE implements VRE {
       try {
         index.close();
       } catch (IndexException e) {
-        LOG.error("closing of index {} went wrong", index.getName(), e);
+        LOG.error("closing of execute {} went wrong", index.getName(), e);
       }
     }
   }
@@ -301,11 +306,22 @@ public class PackageVRE implements VRE {
 
   @Override
   public Iterable<Map<String, Object>> doRawSearch(Class<? extends DomainEntity> type, String query, int start, int rows, Map<String, Object> additionalFilters) throws NotInScopeException, SearchException, RawSearchUnavailableException {
-    if (!inScope(type)) {
-      throw new NotInScopeException(type, vreId);
-    }
+    throwNotInScopeExceptionWhenNotInScope(type);
 
     return getIndexForType(type).doRawSearch(query, start, rows, additionalFilters);
+  }
+
+  private void throwNotInScopeExceptionWhenNotInScope(Class<? extends DomainEntity> type) throws NotInScopeException {
+    if (!inScope(type)) {
+      throw NotInScopeException.typeIsNotInScope(type, vreId);
+    }
+  }
+
+  @Override
+  public List<Map<String, Object>> getRawDataFor(Class<? extends DomainEntity> type, List<String> ids) throws NotInScopeException, SearchException {
+    throwNotInScopeExceptionWhenNotInScope(type);
+
+    return getIndexForType(type).getDataByIds(ids);
   }
 
   private interface IndexChanger {

@@ -22,22 +22,20 @@ package nl.knaw.huygens.hamcrest;
  * #L%
  */
 
-import java.util.List;
-
+import com.google.common.collect.Lists;
 import org.hamcrest.Description;
+import org.hamcrest.TypeSafeDiagnosingMatcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.hamcrest.internal.ReflectiveTypeFinder;
 
-import com.google.common.collect.Lists;
+import java.util.List;
 
-public class CompositeMatcher<T> extends TypeSafeMatcher<T> {
+public class CompositeMatcher<T> extends TypeSafeDiagnosingMatcher<T> {
 
   private List<TypeSafeMatcher<T>> matchers;
-  private List<TypeSafeMatcher<T>> failed;
 
   public CompositeMatcher() {
     matchers = Lists.newArrayList();
-    failed = Lists.newArrayList();
   }
 
   public CompositeMatcher(ReflectiveTypeFinder typeFinder) {
@@ -49,41 +47,28 @@ public class CompositeMatcher<T> extends TypeSafeMatcher<T> {
     description.appendList("(", " " + "and" + " ", ")", getMatchers());
   }
 
-  @Override
-  protected void describeMismatchSafely(T item, Description mismatchDescription) {
-    for (final TypeSafeMatcher<T> matcher : getFailed()) {
-      matcher.describeMismatch(item, mismatchDescription);
-    }
-  }
-
-  @Override
-  protected boolean matchesSafely(T item) {
-    for (TypeSafeMatcher<T> matcher : getMatchers()) {
-      if (!matcher.matches(item)) {
-        addFailedMatcher(matcher);
-      }
-    }
-    return hasFailed();
-  }
-
   protected List<TypeSafeMatcher<T>> getMatchers() {
     return matchers;
-  }
-
-  protected List<TypeSafeMatcher<T>> getFailed() {
-    return failed;
-  }
-
-  protected boolean hasFailed() {
-    return getFailed().isEmpty();
-  }
-
-  protected boolean addFailedMatcher(TypeSafeMatcher<T> matcher) {
-    return getFailed().add(matcher);
   }
 
   protected void addMatcher(TypeSafeMatcher<T> propertyMatcher) {
     getMatchers().add(propertyMatcher);
   }
 
+  @Override
+  protected boolean matchesSafely(T item, Description mismatchDescription) {
+    boolean matched = true;
+    boolean firstMismatch = true;
+    for (TypeSafeMatcher<T> matcher : getMatchers()) {
+      if (!matcher.matches(item)) {
+        if(!firstMismatch){
+          mismatchDescription.appendText(", ");
+        }
+        firstMismatch = false;
+        matcher.describeMismatch(item, mismatchDescription);
+        matched = false;
+      }
+    }
+    return matched;
+  }
 }

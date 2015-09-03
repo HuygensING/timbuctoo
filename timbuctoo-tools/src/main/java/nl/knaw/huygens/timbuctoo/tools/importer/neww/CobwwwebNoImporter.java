@@ -179,7 +179,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
   // Save as CWNOPerson, add WWPerson variation
   private String createNewPerson(CWNOPerson entity) {
     String storedId = addDomainEntity(CWNOPerson.class, entity);
-    WWPerson person = repository.getEntity(WWPerson.class, storedId);
+    WWPerson person = repository.getEntityOrDefaultVariation(WWPerson.class, storedId);
     updateProjectDomainEntity(WWPerson.class, person);
     return storedId;
   }
@@ -380,7 +380,7 @@ public class CobwwwebNoImporter extends CobwwwebImporter {
   // Save as CWNODocument, add WWDocument variation
   private String createNewDocument(CWNODocument entity) {
     String storedId = addDomainEntity(CWNODocument.class, entity);
-    WWDocument document = repository.getEntity(WWDocument.class, storedId);
+    WWDocument document = repository.getEntityOrDefaultVariation(WWDocument.class, storedId);
     updateProjectDomainEntity(WWDocument.class, document);
     return storedId;
   }

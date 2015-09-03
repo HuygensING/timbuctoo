@@ -22,16 +22,19 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-import java.util.Map;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.Maps;
+import nl.knaw.huygens.timbuctoo.annotations.DBProperty;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.annotations.RawSearchField;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.PlaceName;
+import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Maps;
+import java.util.Map;
 
 @IDPrefix("LOCA")
 @RawSearchField(Location.INDEX_FIELD_NAME)
@@ -46,15 +49,28 @@ public class Location extends DomainEntity {
 
   // Container class, for entity reducer
   private static class Names {
+    @DBProperty(value = "deflang", type = FieldType.ADMINISTRATIVE)
     public String defLang;
     public Map<String, PlaceName> map;
 
     public Names() {
       map = Maps.newHashMap();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+      return EqualsBuilder.reflectionEquals(this, obj, false);
+    }
+
+    @Override
+    public int hashCode() {
+      return HashCodeBuilder.reflectionHashCode(this, false);
+    }
   }
 
+  @DBProperty(value = "locationType", type = FieldType.ADMINISTRATIVE)
   private LocationType locationType;
+  @DBProperty(value = "names", type = FieldType.ADMINISTRATIVE)
   private Names names;
   private String latitude;
   private String longitude;
@@ -81,8 +97,14 @@ public class Location extends DomainEntity {
   @IndexAnnotation(fieldName = INDEX_FIELD_NAME, isFaceted = false)
   public String getIndexedName() {
     StringBuilder builder = new StringBuilder();
+    boolean isFirst = true;
     for (PlaceName name : names.map.values()) {
-      builder.append(' ').append(name.getDisplayName(locationType));
+      if (!isFirst) {
+        builder.append(' ');
+      } else {
+        isFirst = false;
+      }
+      builder.append(name.getDisplayName(locationType));
     }
     return builder.toString();
   }
@@ -116,6 +138,8 @@ public class Location extends DomainEntity {
   @JsonProperty("^names")
   public void setNames(Map<String, PlaceName> value) {
     names.map = value;
+    setDisplayName(getIndexedName());
+
   }
 
   public void addName(String lang, PlaceName name) {

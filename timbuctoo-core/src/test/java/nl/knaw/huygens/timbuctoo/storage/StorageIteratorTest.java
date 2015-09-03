@@ -29,11 +29,10 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
 public class StorageIteratorTest {
@@ -59,13 +58,13 @@ public class StorageIteratorTest {
 
   @Test
   public void testEmptyIteratorSize() {
-    StorageIterator<String>iterator = StorageIteratorStub.newInstance();
-    assertEquals(0, iterator.size());
+    StorageIterator<String> iterator = StorageIteratorStub.newInstance();
+    assertEquals(0, Iterators.size(iterator));
   }
 
   @Test
   public void testEmptyIteratorGetSome() {
-    StorageIterator<String>iterator = StorageIteratorStub.newInstance();
+    StorageIterator<String> iterator = StorageIteratorStub.newInstance();
     assertEquals(0, iterator.getSome(1).size());
   }
 
@@ -77,13 +76,13 @@ public class StorageIteratorTest {
 
   @Test
   public void testIteratorHasNext() {
-    StorageIterator<String>iterator = StorageIteratorStub.newInstance("x");
+    StorageIterator<String> iterator = StorageIteratorStub.newInstance("x");
     assertTrue(iterator.hasNext());
   }
 
   @Test(expected = NoSuchElementException.class)
   public void testIteratorNext() {
-    StorageIterator<String>iterator = StorageIteratorStub.newInstance(list);
+    StorageIterator<String> iterator = StorageIteratorStub.newInstance(list);
     for (int i = 0; i < list.size(); i++) {
       assertEquals(list.get(i), iterator.next());
     }
@@ -92,8 +91,8 @@ public class StorageIteratorTest {
 
   @Test
   public void testIteratorSize() {
-    StorageIterator<String>iterator = StorageIteratorStub.newInstance(list);
-    assertEquals(9, iterator.size());
+    StorageIterator<String> iterator = StorageIteratorStub.newInstance(list);
+    assertEquals(9, Iterators.size(iterator));
   }
 
   @Test

@@ -22,8 +22,9 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-import java.util.List;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.annotations.RawSearchField;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
@@ -31,8 +32,7 @@ import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Lists;
+import java.util.List;
 
 /**
  * <h1>Relation to Dublin Core Metadata</h1>
@@ -98,6 +98,7 @@ public class Document extends DomainEntity {
 
   public void setTitle(String title) {
     this.title = title;
+    setDisplayName(title);
   }
 
   public String getDescription() {
@@ -180,23 +181,29 @@ public class Document extends DomainEntity {
     this.rights = rights;
   }
 
-  @JsonIgnore
-  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_s_creator", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true), //
-      @IndexAnnotation(fieldName = "dynamic_sort_creator", accessors = { "getDisplayName" }, canBeEmpty = true, isSortable = true) })
-  public List<RelationRef> getCreators() {
-    return getRelations("isCreatedBy");
+  //------------------------------------------------------------------------------------------
+  // Derived properties
+
+  private static final DerivedProperty CREATORS = new DerivedProperty("createdBy", "isCreatedBy", "getIdentificationName", "getCreators");
+  private static final DerivedProperty LANGUAGES = new DerivedProperty("language", "hasWorkLanguage", "getIdentificationName", "getLanguages");
+  private static final List<DerivedProperty> DERIVED_PROPERTIES = ImmutableList.of(CREATORS, LANGUAGES);
+
+  @Override
+  public List<DerivedProperty> getDerivedProperties() {
+    return DERIVED_PROPERTIES;
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<RelationRef> getSubjects() {
-    return getRelations("hasSubject"); // undefined relation name, currently not used
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_s_creator", canBeEmpty = true, isFaceted = true), //
+    @IndexAnnotation(fieldName = "dynamic_sort_creator", canBeEmpty = true, isSortable = true) })
+  public Object getCreators() {
+    return getProperty(CREATORS.getPropertyName());
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_language", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
-  public List<RelationRef> getLanguages() {
-    return getRelations("hasWorkLanguage");
+  @IndexAnnotation(fieldName = "dynamic_s_language", canBeEmpty = true, isFaceted = true)
+  public Object getLanguages() {
+    return getProperty(LANGUAGES.getPropertyName());
   }
 
 }

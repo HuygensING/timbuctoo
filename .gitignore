@@ -7,3 +7,10 @@ target/*
 **/bin
 .settings/
 .project
+
+# intellij files and folders
+**/*.iml
+**/.idea
+
+# shade plugin output
+**/dependency-reduced-pom.xml

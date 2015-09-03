@@ -34,7 +34,7 @@ public interface StorageIterator<T> extends Iterator<T> {
   /**
    * Returns the number of items that can be iterated over.
    */
-  int size();
+  //  int size();
 
   /**
    * Skips the specified number of items;

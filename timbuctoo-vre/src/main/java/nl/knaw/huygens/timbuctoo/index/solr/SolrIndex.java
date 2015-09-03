@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.index.solr;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.facetedsearch.FacetedSearchException;
 import nl.knaw.huygens.facetedsearch.FacetedSearchLibrary;
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
@@ -35,6 +36,7 @@ import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -207,16 +209,29 @@ public class SolrIndex implements Index {
   @Override
   public Iterable<Map<String, Object>> doRawSearch(String query, int start, int rows, Map<String, Object> additionalFilters) throws SearchException, RawSearchUnavailableException {
     QueryResponse queryResponse = null;
+    String queryString = createSolrQuery(query, additionalFilters);
+    SolrQuery solrQuery = new SolrQuery(queryString).setStart(start).setRows(rows);
+    return getRawResults(solrQuery);
+  }
+
+  private List<Map<String, Object>> getRawResults(SolrQuery solrQuery) throws SearchException {
+    QueryResponse queryResponse;
     try {
-      String solrQuery = createSolrQuery(query, additionalFilters);
-      queryResponse = solrServer.search(new SolrQuery(solrQuery).setStart(start).setRows(rows));
+      queryResponse = solrServer.search(solrQuery);
     } catch (SolrServerException e) {
       throw new SearchException(e);
     }
 
     List<Map<String, Object>> results = Lists.newArrayList();
     for (SolrDocument doc : queryResponse.getResults()) {
-      results.add(doc.getFieldValueMap());
+      Map<String, Object> fieldValueMap = Maps.newHashMap();
+      /*
+       * Do not use doc.getFieldValueMap because it will return a map that returns only the first value on get.
+       */
+      for (Map.Entry<String, Object> entry : doc.entrySet()) {
+        fieldValueMap.put(entry.getKey(), entry.getValue());
+      }
+      results.add(fieldValueMap);
     }
     return results;
   }
@@ -243,6 +258,38 @@ public class SolrIndex implements Index {
 
   }
 
+  @Override
+  public List<Map<String, Object>> getDataByIds(List<String> ids) throws SearchException {
+    final int maxNumberOfIdsSolrSupports = 1000;
+    List<List<String>> idsPart = Lists.partition(ids, maxNumberOfIdsSolrSupports);
+    List<Map<String, Object>> results = Lists.newArrayList();
+
+    for (List<String> part : idsPart) {
+      addResultsOfPartialQuery(part, results);
+    }
+
+
+    return results;
+  }
+
+  private void addResultsOfPartialQuery(List<String> ids, List<Map<String, Object>> results) throws SearchException {
+    StringBuilder queryBuilder = new StringBuilder(Entity.INDEX_FIELD_ID);
+    queryBuilder.append(" : (");
+    boolean isFirst = true;
+    for (String id : ids) {
+      if (!isFirst) {
+        queryBuilder.append(" OR ");
+      }
+      queryBuilder.append(id);
+      isFirst = false;
+    }
+    queryBuilder.append(")");
+
+    SolrQuery query = new SolrQuery(queryBuilder.toString());
+    query.setRows(ids.size());
+
+    results.addAll(getRawResults(query));
+  }
 
   private String cleanUpSpecialCharaters(String term) {
 
