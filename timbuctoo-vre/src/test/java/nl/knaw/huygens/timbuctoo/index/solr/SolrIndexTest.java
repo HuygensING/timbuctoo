@@ -651,6 +651,7 @@ public class SolrIndexTest {
   private SolrDocument createDoc(Map<String, Object> result) {
     SolrDocument doc = mock(SolrDocument.class);
     when(doc.entrySet()).thenReturn(result.entrySet());
+    when(doc.getFieldValueMap()).thenReturn(result);
     return doc;
   }
 

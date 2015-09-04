@@ -211,10 +211,25 @@ public class SolrIndex implements Index {
     QueryResponse queryResponse = null;
     String queryString = createSolrQuery(query, additionalFilters);
     SolrQuery solrQuery = new SolrQuery(queryString).setStart(start).setRows(rows);
-    return getRawResults(solrQuery);
+    return getSingleRawResults(solrQuery);
   }
 
-  private List<Map<String, Object>> getRawResults(SolrQuery solrQuery) throws SearchException {
+  private List<Map<String, Object>> getSingleRawResults(SolrQuery solrQuery) throws SearchException {
+    QueryResponse queryResponse;
+    try {
+      queryResponse = solrServer.search(solrQuery);
+    } catch (SolrServerException e) {
+      throw new SearchException(e);
+    }
+
+    List<Map<String, Object>> results = Lists.newArrayList();
+    for (SolrDocument doc : queryResponse.getResults()) {
+      results.add(doc.getFieldValueMap());
+    }
+    return results;
+  }
+
+  private List<Map<String, Object>> getMultiRawResults(SolrQuery solrQuery) throws SearchException {
     QueryResponse queryResponse;
     try {
       queryResponse = solrServer.search(solrQuery);
@@ -288,7 +303,7 @@ public class SolrIndex implements Index {
     SolrQuery query = new SolrQuery(queryBuilder.toString());
     query.setRows(ids.size());
 
-    results.addAll(getRawResults(query));
+    results.addAll(getMultiRawResults(query));
   }
 
   private String cleanUpSpecialCharaters(String term) {
