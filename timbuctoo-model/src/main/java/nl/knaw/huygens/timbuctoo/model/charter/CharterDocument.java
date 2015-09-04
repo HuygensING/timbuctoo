@@ -24,7 +24,10 @@ package nl.knaw.huygens.timbuctoo.model.charter;
 
 import java.util.List;
 
+import nl.knaw.huygens.facetedsearch.model.FacetType;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.Document;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
 public class CharterDocument extends Document {
 
@@ -161,5 +164,11 @@ public class CharterDocument extends Document {
 
   public void setOverige(String overige) {
     this.overige = overige;
+  }
+
+  @Override
+  @IndexAnnotation(isFaceted = true, fieldName = "dynamic_i_date", facetType = FacetType.RANGE)
+  public Datable getDate() {
+    return super.getDate();
   }
 }
