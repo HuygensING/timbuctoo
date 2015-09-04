@@ -92,7 +92,7 @@ public class RelationTypes {
     });
   }
 
-  public void logCacheStats() {
+  public synchronized void logCacheStats() {
     LOG.info("RelationType id cache {}", idCache.stats());
     LOG.info("RelationType name cache {}", nameCache.stats());
   }
@@ -100,7 +100,7 @@ public class RelationTypes {
   /**
    * Retrieves the relation type with the specified id.
    */
-  public RelationType getById(String id, boolean required) {
+  public synchronized RelationType getById(String id, boolean required) {
     try {
       return idCache.get(id);
     } catch (ExecutionException e) {
@@ -116,7 +116,7 @@ public class RelationTypes {
   /**
    * Retrieves the relation type with the specified name.
    */
-  public RelationType getByName(String name, boolean required) {
+  public synchronized RelationType getByName(String name, boolean required) {
     try {
       return nameCache.get(name);
     } catch (ExecutionException e) {
@@ -132,7 +132,7 @@ public class RelationTypes {
    * @param relationTypeNames the names to get the id's for.
    * @return a list with id's
    */
-  public List<String> getRelationTypeIdsByName(List<String> relationTypeNames) {
+  public synchronized List<String> getRelationTypeIdsByName(List<String> relationTypeNames) {
     List<String> ids = Lists.newArrayList();
 
     for (String relationTypeName : relationTypeNames) {
