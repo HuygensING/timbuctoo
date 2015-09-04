@@ -37,11 +37,10 @@ public class Paths {
   /** Regex for determining the entity name.*/
   public static final String ENTITY_REGEX = "[a-zA-Z]+";
   /** Regex for determining the id.*/
-  public static final String ID_VALUE_REGEX = "[\\w\\-]+";
-  public static final String ID_REGEX = "[a-zA-Z]{4}" + ID_VALUE_REGEX;
+  public static final String ID_REGEX = "[\\w\\-]+";
   public static final String ID_PARAM = "id";
   public static final String ID_PATH = "/{id: " + ID_REGEX + "}";
-  public static final String INDEX_REQUEST_ID_VALUE_PATH = "/{id: " + ID_VALUE_REGEX + "}";
+  public static final String INDEX_REQUEST_ID_VALUE_PATH = "/{id: " + ID_REGEX + "}";
   public static final String PID_PATH = "/pid";
   public static final String UPDATE_PID_PATH = "/updatepid";
   /** The path of the {@code UserResource} */

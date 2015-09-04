@@ -58,7 +58,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.startsWith;
 import static test.model.projecta.ProjectAPerson.PROJECT_A_PERSON_PROPERTY_NAME;
 
 public abstract class StorageIntegrationTest {
@@ -138,8 +137,6 @@ public abstract class StorageIntegrationTest {
   @Test
   public void addSystemEntityAddsASystemEntityToTheStorageAndReturnsItsId() throws Exception {
     String id = addSystemEntity(REGULAR_NAME, INVERSE_NAME);
-
-    assertThat(id, startsWith(RelationType.ID_PREFIX));
 
     assertThat(instance.getEntity(SYSTEM_ENTITY_TYPE, id), //
       matchesRelationType() //
@@ -308,8 +305,6 @@ public abstract class StorageIntegrationTest {
 
     // action
     String id = instance.addDomainEntity(DOMAIN_ENTITY_TYPE, domainEntityToStore, CHANGE_TO_SAVE);
-
-    assertThat(id, startsWith(Person.ID_PREFIX));
 
     List<PersonName> names = Lists.newArrayList(PERSON_NAME);
     assertThat("DomainEntity is not as expected", instance.getEntity(DOMAIN_ENTITY_TYPE, id), //

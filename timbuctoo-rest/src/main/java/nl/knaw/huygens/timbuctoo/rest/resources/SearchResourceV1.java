@@ -157,7 +157,7 @@ public class SearchResourceV1 extends ResourceBase {
   }
 
   @GET
-  @Path("/{id: " + SearchResult.ID_PREFIX + Paths.ID_VALUE_REGEX + "}")
+  @Path("/{id: " + Paths.ID_REGEX + "}")
   @Produces({MediaType.APPLICATION_JSON})
   @APIDesc("Returns (paged) search results Query params: \"start\" (default: 0) \"rows\" (default: 10)")
   public Response get( //
@@ -180,7 +180,7 @@ public class SearchResourceV1 extends ResourceBase {
   }
 
   @GET
-  @Path("/{id: " + SearchResult.ID_PREFIX + Paths.ID_VALUE_REGEX + "}/csv")
+  @Path("/{id: " + SearchResult.ID_PREFIX + Paths.ID_REGEX + "}/csv")
   @Produces({CSVProvider.TEXT_CSV})
   public Response getRelationSearchResultAsCSV(@PathParam("id") String queryId, @PathParam(VERSION_PARAM) String version) {
     SearchResult result = getSearchResult(queryId);
@@ -199,7 +199,7 @@ public class SearchResourceV1 extends ResourceBase {
 
   @APIDesc("Exports a search result to an Excel format.")
   @GET
-  @Path("/{id: " + SearchResult.ID_PREFIX + Paths.ID_VALUE_REGEX + "}/xls")
+  @Path("/{id: " + SearchResult.ID_PREFIX + Paths.ID_REGEX + "}/xls")
   @Produces({XLSProvider.EXCEL_TYPE_STRING})
   public Response getRelationSearchResultAsXLS(@PathParam("id") String queryId, @PathParam(VERSION_PARAM) String version) {
     SearchResult result = getSearchResult(queryId);
