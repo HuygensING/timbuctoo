@@ -22,16 +22,12 @@ package nl.knaw.huygens.timbuctoo.index;
  * #L%
  */
 
-import java.lang.reflect.Method;
-
-import junit.framework.Assert;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.Entity;
-
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
 import test.timbuctoo.index.model.ExplicitlyAnnotatedModel;
 import test.timbuctoo.index.model.ExplicitlyAnnotatedModelWithIndexAnnotations;
 import test.timbuctoo.index.model.ImplicitlyAnnotatedModel;
@@ -40,6 +36,8 @@ import test.timbuctoo.index.model.ModelWithOverriddenIndexAnnotation;
 import test.timbuctoo.index.model.ModelWithOverriddenIndexAnnotations;
 import test.timbuctoo.index.model.SubModel;
 import test.timbuctoo.index.model.SubModelWithIndexAnnotations;
+
+import java.lang.reflect.Method;
 
 public class ModelIteratorTest {
 

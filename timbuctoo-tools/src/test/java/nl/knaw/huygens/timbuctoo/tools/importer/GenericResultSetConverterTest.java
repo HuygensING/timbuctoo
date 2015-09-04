@@ -22,7 +22,11 @@ package nl.knaw.huygens.timbuctoo.tools.importer;
  * #L%
  */
 
-import static org.junit.Assert.assertEquals;
+import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.ResultSet;
@@ -32,13 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import junit.framework.Assert;
-import nl.knaw.huygens.timbuctoo.model.util.Datable;
-
-import org.junit.Test;
-import org.mockito.Mockito;
-
-import com.google.common.collect.Lists;
+import static org.junit.Assert.assertEquals;
 
 public class GenericResultSetConverterTest {
 
