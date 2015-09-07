@@ -62,6 +62,7 @@ public class CharterDocument extends Document {
     setResourceType(ResourceType.TEXT);
   }
 
+  @IndexAnnotation(fieldName = "dynamic_archief", isFaceted = true)
   public String getArchief() {
     return archief;
   }
@@ -70,6 +71,7 @@ public class CharterDocument extends Document {
     this.archief = archief;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_fonds", isFaceted = true)
   public String getFonds() {
     return fonds;
   }
