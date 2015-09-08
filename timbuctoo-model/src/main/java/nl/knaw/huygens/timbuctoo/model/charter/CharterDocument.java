@@ -24,10 +24,13 @@ package nl.knaw.huygens.timbuctoo.model.charter;
 
 import java.util.List;
 
+import com.google.common.collect.Lists;
+
 import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.model.util.Link;
 
 public class CharterDocument extends Document {
 
@@ -38,6 +41,10 @@ public class CharterDocument extends Document {
   private String volgNummer;
   private String regestNummer;
 
+  private List<Link> thumbs;
+
+  // URL naar entry in online bronarchief (baseurl+item aanduiding)
+  // In Document: private List<Link> links;
   // semi verplichte data
   // de tekst zoals die in de (bestaande) inventaris(sen) staat
   private String inventaristekst;
@@ -60,9 +67,10 @@ public class CharterDocument extends Document {
 
   public CharterDocument() {
     setResourceType(ResourceType.TEXT);
+    thumbs = Lists.newArrayList();
   }
 
-  @IndexAnnotation(fieldName = "dynamic_archief", isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_s_archief", isFaceted = true)
   public String getArchief() {
     return archief;
   }
@@ -71,7 +79,7 @@ public class CharterDocument extends Document {
     this.archief = archief;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_fonds", isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_s_fonds", isFaceted = true)
   public String getFonds() {
     return fonds;
   }
@@ -172,5 +180,13 @@ public class CharterDocument extends Document {
   @IndexAnnotation(isFaceted = true, fieldName = "dynamic_i_date", facetType = FacetType.RANGE)
   public Datable getDate() {
     return super.getDate();
+  }
+
+  public List<Link> getThumbs() {
+    return thumbs;
+  }
+
+  public void setThumbs(List<Link> thumbs) {
+    this.thumbs = thumbs;
   }
 }
