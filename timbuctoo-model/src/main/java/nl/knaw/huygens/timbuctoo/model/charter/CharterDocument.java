@@ -47,7 +47,7 @@ public class CharterDocument extends Document {
   // In Document: private List<Link> links;
   // semi verplichte data
   // de tekst zoals die in de (bestaande) inventaris(sen) staat
-  private String inventaristekst;
+  private List<String> inventaristekst;
   // tekst van het regest of de regesten (soms zijn er meerdere)
   private List<String> tekstRegest;
   // de bij het regest gevoegde additionele informatie (bezegeling, afschriften, drukken)
@@ -112,11 +112,11 @@ public class CharterDocument extends Document {
     this.regestNummer = regestNummer;
   }
 
-  public String getInventaristekst() {
+  public List<String> getInventaristekst() {
     return inventaristekst;
   }
 
-  public void setInventaristekst(String inventaristekst) {
+  public void setInventaristekst(List<String> inventaristekst) {
     this.inventaristekst = inventaristekst;
   }
 
