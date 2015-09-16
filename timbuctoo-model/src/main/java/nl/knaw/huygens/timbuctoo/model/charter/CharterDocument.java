@@ -28,6 +28,7 @@ import com.google.common.collect.Lists;
 
 import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
@@ -112,7 +113,9 @@ public class CharterDocument extends Document {
     this.regestNummer = regestNummer;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_s_inventaristekst", canBeEmpty = true, isFaceted = false)
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_s_inventaristekst", canBeEmpty = true),//
+      @IndexAnnotation(fieldName = "dynamic_sort_inventaristekst", canBeEmpty = true, isSortable = false) })
+  //  @IndexAnnotation(fieldName = "dynamic_s_inventaristekst", canBeEmpty = true, isFaceted = false)
   public List<String> getInventaristekst() {
     return inventaristekst;
   }
