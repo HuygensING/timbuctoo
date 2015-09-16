@@ -113,8 +113,9 @@ public class CharterDocument extends Document {
     this.regestNummer = regestNummer;
   }
 
-  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_s_inventaristekst", canBeEmpty = true),//
-      @IndexAnnotation(fieldName = "dynamic_sort_inventaristekst", canBeEmpty = true, isSortable = false) })
+  @IndexAnnotation(fieldName = "dynamic_t_titel", isFaceted = false)
+  //  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_s_inventaristekst", canBeEmpty = true),//
+  //      @IndexAnnotation(fieldName = "dynamic_sort_inventaristekst", canBeEmpty = true, isSortable = false) })
   //  @IndexAnnotation(fieldName = "dynamic_s_inventaristekst", canBeEmpty = true, isFaceted = false)
   public List<String> getInventaristekst() {
     return inventaristekst;
