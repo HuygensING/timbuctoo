@@ -153,7 +153,7 @@ public class CharterDocument extends Document {
     this.translation = translation;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_s_editions", isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_s_editions", canBeEmpty = true, isFaceted = true)
   public String getDescriptionOfEditions() {
     return descriptionOfEditions;
   }
