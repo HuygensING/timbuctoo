@@ -112,6 +112,7 @@ public class CharterDocument extends Document {
     this.regestNummer = regestNummer;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_s_inventaristekst", canBeEmpty = true, isFaceted = false)
   public List<String> getInventaristekst() {
     return inventaristekst;
   }
@@ -152,6 +153,7 @@ public class CharterDocument extends Document {
     this.translation = translation;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_s_editions", isFaceted = true)
   public String getDescriptionOfEditions() {
     return descriptionOfEditions;
   }
