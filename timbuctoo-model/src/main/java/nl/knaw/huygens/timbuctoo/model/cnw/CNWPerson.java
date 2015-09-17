@@ -77,7 +77,7 @@ public class CNWPerson extends Person {
 
 	}
 
-	@IndexAnnotations({ @IndexAnnotation(title = "Geslacht", fieldName = "dynamic_s_gender", isFaceted = true, canBeEmpty = true),//
+	@IndexAnnotations({ @IndexAnnotation(title = "Geslacht", fieldName = "dynamic_s_gender", isFaceted = true, canBeEmpty = true), //
 			@IndexAnnotation(title = "Geslacht", fieldName = "dynamic_sort_gender", canBeEmpty = true, isSortable = true) })
 	public Gender getGender() {
 		return super.getGender();
@@ -144,6 +144,12 @@ public class CNWPerson extends Person {
 		return combinedDomains;
 	}
 
+	@IndexAnnotation(title = "(Sub)domein (sorteerveld)", fieldName = "dynamic_sort_combineddomain", canBeEmpty = false, isFaceted = false, isSortable = true)
+	public String getCombinedDomainSortKey() {
+		Collections.sort(combinedDomains);
+		return Joiner.on(";").join(combinedDomains);
+	}
+
 	public void setDomains(List<String> domains) {
 		this.domains = domains;
 	}
@@ -170,6 +176,12 @@ public class CNWPerson extends Person {
 	public List<String> getCharacteristics() {
 		Collections.sort(characteristics);
 		return characteristics;
+	}
+
+	@IndexAnnotation(title = "Karakteristiek(en) (sorteerveld)", fieldName = "dynamic_sort_characteristic", canBeEmpty = false, isFaceted = false, isSortable = true)
+	public String getCharacteristicSortKey() {
+		Collections.sort(characteristics);
+		return Joiner.on(";").join(characteristics);
 	}
 
 	public void setKoppelnaam(String koppelnaam) {
@@ -359,8 +371,8 @@ public class CNWPerson extends Person {
 	@IndexAnnotation(fieldName = "dynamic_s_shortdescription", canBeEmpty = false, isFaceted = false)
 	public String getShortDescription() {
 		String charString = characteristics.isEmpty() ? "" : ", " + Joiner.on(", ").join(characteristics);
-		return MessageFormat.format("{0} ({1}-{2}){3}",//
-				StringUtils.defaultIfBlank(getName(), getKoppelnaam()),//
+		return MessageFormat.format("{0} ({1}-{2}){3}", //
+				StringUtils.defaultIfBlank(getName(), getKoppelnaam()), //
 				extractYear(getBirthDate()), //
 				extractYear(getDeathDate()), //
 				charString);
