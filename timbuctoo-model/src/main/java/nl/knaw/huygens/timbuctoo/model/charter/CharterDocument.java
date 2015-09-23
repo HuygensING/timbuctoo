@@ -28,7 +28,6 @@ import com.google.common.collect.Lists;
 
 import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
-import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
@@ -194,5 +193,15 @@ public class CharterDocument extends Document {
 
   public void setThumbs(List<Link> thumbs) {
     this.thumbs = thumbs;
+  }
+
+  public void setThumbLabels(List<String> labels) {
+    try {
+      int index = 0;
+      for (String label : labels) {
+        thumbs.get(index).setLabel(label);
+        index++;
+      }
+    } catch (IndexOutOfBoundsException ioobe) {}
   }
 }
