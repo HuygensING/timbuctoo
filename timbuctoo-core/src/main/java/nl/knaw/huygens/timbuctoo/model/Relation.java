@@ -64,7 +64,7 @@ public class Relation extends DomainEntity {
    * A reference to the property or characteristic of the subject (resembles rdf:predicate).
    */
   @DBProperty(value = "typeType", type = FieldType.ADMINISTRATIVE)
-  private String typeType;
+  private String typeType = "relationtype";
   @DBProperty(value = DB_TYPE_ID_PROP_NAME, type = FieldType.ADMINISTRATIVE)
   private String typeId;
   /**
