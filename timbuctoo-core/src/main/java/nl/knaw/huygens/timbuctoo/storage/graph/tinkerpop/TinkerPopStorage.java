@@ -160,7 +160,7 @@ public class TinkerPopStorage implements GraphStorage {
   public <T extends Relation> void addRelation(Class<T> type, Relation relation, Change change) throws StorageException {
     Vertex sourceVertex = getDomainEntityRelationPart(relation.getSourceType(), relation.getSourceId());
     Vertex targetVertex = getDomainEntityRelationPart(relation.getTargetType(), relation.getTargetId());
-    Vertex relationTypeVertex = getSystemEntityRelationPart(relation.getTypeType(), relation.getTypeId());
+    Vertex relationTypeVertex = getRelationTypeVertex(relation.getTypeType(), relation.getTypeId());
 
     String regularRelationName = getRegularRelationName(relationTypeVertex);
 
@@ -232,12 +232,8 @@ public class TinkerPopStorage implements GraphStorage {
     return relationTypeName;
   }
 
-  private Vertex getSystemEntityRelationPart(String typeType, String typeId) throws StorageException {
-    return getRelationPart(getSystemEntityType(typeType), typeType, typeId);
-  }
-
-  private Class<? extends SystemEntity> getSystemEntityType(String typeType) {
-    return typeRegistry.getSystemEntityType(typeType);
+  private Vertex getRelationTypeVertex(String typeType, String typeId) throws StorageException {
+    return getRelationPart(RelationType.class, typeType, typeId);
   }
 
   private Vertex getDomainEntityRelationPart(String partType, String partId) throws StorageException {
