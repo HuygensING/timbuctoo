@@ -70,7 +70,7 @@ public class Relation extends DomainEntity {
   /**
    * A reference to the 'passive' participant of the relation (resembles rdf:object).
    */
-  @DBProperty(value = "targertType", type = FieldType.VIRTUAL)
+  @DBProperty(value = "targetType", type = FieldType.VIRTUAL)
   private String targetType;
   @DBProperty(value = "targetId", type = FieldType.VIRTUAL)
   private String targetId;
