@@ -149,6 +149,11 @@ class TinkerPopLowLevelAPI {
     return edges.iterator();
   }
 
+  /**
+   * Filter the latest edges from the iterable. It also filters the system edges, like VERSION_OF.
+   * @param edges the edges to the latest from
+   * @return the latest non-system edges
+   */
   public Iterator<Edge> getLatestEdges(Iterable<Edge> edges) {
 
     Map<String, Edge> latestEdgeMap = Maps.newHashMap();
