@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 public class VertexDuplicatorTest {
   private static final String VERSION_OF_EDGE_LABEL = SystemRelationType.VERSION_OF.name();
   private static final String OUTGOING_EDGE_LABEL = "outgoing";
-  private static final String INCOMING_EDGE_LABEL = "incomming";
+  private static final String INCOMING_EDGE_LABEL = "incoming";
   private static final int REV = 1;
   private static final String ID = "id";
   private Graph dbMock;
