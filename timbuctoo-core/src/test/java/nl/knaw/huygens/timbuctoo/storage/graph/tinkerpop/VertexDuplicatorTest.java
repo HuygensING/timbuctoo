@@ -59,10 +59,10 @@ public class VertexDuplicatorTest {
     return aVertex() //
       .withId(ID) //
       .withRev(REV) //
-      .withIncomingEdgeWithLabel(INCOMING_EDGE_LABEL, incomingEdge) //
-      .withIncomingEdgeWithLabel(VERSION_OF_EDGE_LABEL, versionOfIncomingEdge) //
-      .withOutgoingEdgeWithLabel(VERSION_OF_EDGE_LABEL, versionOfOutgoingEdge)//
-      .withOutgoingEdgeWithLabel(OUTGOING_EDGE_LABEL, outgoingEdge)//
+      .withIncomingEdge(incomingEdge) //
+      .withIncomingEdge(versionOfIncomingEdge) //
+      .withOutgoingEdge(versionOfOutgoingEdge)//
+      .withOutgoingEdge(outgoingEdge)//
       .build();
   }
 

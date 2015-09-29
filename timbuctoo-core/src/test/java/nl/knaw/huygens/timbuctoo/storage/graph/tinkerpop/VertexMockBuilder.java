@@ -45,11 +45,6 @@ public class VertexMockBuilder {
     return new VertexMockBuilder();
   }
 
-  public VertexMockBuilder withIncomingEdgeWithLabel(String label, Edge edge) {
-    addEdge(edge, label, incomingEdges);
-    return this;
-  }
-
   public VertexMockBuilder withIncomingEdgeWithLabel(SystemRelationType label) {
     addEdge(mock(Edge.class), label.name(), incomingEdges);
     return this;
@@ -63,16 +58,6 @@ public class VertexMockBuilder {
     }
 
     edges.add(edge);
-  }
-
-  public VertexMockBuilder withOutgoingEdgeWithLabel(String label, Edge edge) {
-    addEdge(edge, label, outgoingEdges);
-    return this;
-  }
-
-  public VertexMockBuilder withOutgoingEdgeWithLabel(SystemRelationType label) {
-    addEdge(mock(Edge.class), label.name(), outgoingEdges);
-    return this;
   }
 
   public Vertex build() {
