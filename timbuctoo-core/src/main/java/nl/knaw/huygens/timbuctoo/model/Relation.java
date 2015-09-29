@@ -253,6 +253,7 @@ public class Relation extends DomainEntity {
   @Override
   public String toString() {
     return Objects.toStringHelper(this) //
+      .add("id", getId()) //
       .add("typeId", typeId) //
       .add("sourceType", sourceType) //
       .add("sourceId", sourceId) //
