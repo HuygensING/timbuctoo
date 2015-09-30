@@ -22,13 +22,11 @@ package nl.knaw.huygens.timbuctoo.messages;
  * #L%
  */
 
-import java.util.Map;
-
-import javax.jms.JMSException;
-
+import com.google.common.collect.Maps;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.usage.MemoryUsage;
@@ -38,9 +36,8 @@ import org.apache.activemq.usage.TempUsage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Maps;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import javax.jms.JMSException;
+import java.util.Map;
 
 /**
  * Encapsulates an embedded ActiveMQ message broker.
@@ -116,14 +113,19 @@ public class ActiveMQBroker implements Broker {
   private static final String KEY_STORE = "messages.system_usage.store_mb";
   private static final String KEY_TEMP = "messages.system_usage.temp_mb";
   private static long MEGA_BYTE = 1024 * 1024;
+  public static final String MESSAGES_DATA_DIR = "messages.data_dir";
 
   /**
    * Creates an embeded message broker
    */
   private void createBrokerService(Configuration config) {
     brokerService = new BrokerService();
+    brokerService.setUseShutdownHook(false);
     brokerService.setBrokerName(brokerName);
     brokerService.setPersistent(config.getBooleanSetting(KEY_PERSISTENT, false));
+    if(brokerService.isPersistent()){
+      brokerService.setDataDirectory(config.getDirectory(MESSAGES_DATA_DIR));
+    }
 
     SystemUsage systemManager = new SystemUsage();
     MemoryUsage memoryUsage = new MemoryUsage();
