@@ -5,10 +5,12 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.IS_LATEST;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.sourceOfEdge;
+import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.targetOfEdge;
 
-public class EdgeDuplicator {
+public class EdgeManipulator {
 
-  public EdgeDuplicator() {
+  public EdgeManipulator() {
     // TODO Auto-generated constructor stub
   }
 
@@ -37,5 +39,21 @@ public class EdgeDuplicator {
     for (String key : edgeToDuplicate.getPropertyKeys()) {
       duplicate.setProperty(key, edgeToDuplicate.getProperty(key));
     }
+  }
+
+  public void changeSource(Edge original, Vertex newSource) {
+    Edge newEdge = newSource.addEdge(original.getLabel(), targetOfEdge(original));
+
+    addProperties(original, newEdge);
+
+    original.remove();
+  }
+
+  public void changeTarget(Edge original, Vertex newTarget) {
+    Edge newEdge = sourceOfEdge(original).addEdge(original.getLabel(), newTarget);
+
+    addProperties(original, newEdge);
+
+    original.remove();
   }
 }

@@ -16,9 +16,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 public class VertexDuplicatorTest {
@@ -37,6 +36,7 @@ public class VertexDuplicatorTest {
   private Edge outgoingEdge;
   private Edge versionOfOutgoingEdge;
   private Edge versionOfIncomingEdge;
+  private EdgeManipulator edgeManipulator;
 
   @Before
   public void setup() {
@@ -46,15 +46,32 @@ public class VertexDuplicatorTest {
     duplicate = aVertex().build();
     dbMock = mock(Graph.class);
     when(dbMock.addVertex(null)).thenReturn(duplicate);
+    edgeManipulator = mock(EdgeManipulator.class);
 
-    instance = new VertexDuplicator(dbMock);
+    instance = new VertexDuplicator(dbMock, edgeManipulator);
   }
 
   private Vertex setupVertexToDuplicate() {
-    incomingEdge = anEdge().withLabel(INCOMING_EDGE_LABEL).withSource(otherVertex).withTarget(vertexToDuplicate).build();
-    outgoingEdge = anEdge().withLabel(OUTGOING_EDGE_LABEL).withSource(vertexToDuplicate).withTarget(otherVertex).build();
-    versionOfOutgoingEdge = anEdge().withLabel(VERSION_OF_EDGE_LABEL).withSource(otherVertex).withTarget(vertexToDuplicate).build();
-    versionOfIncomingEdge = anEdge().withLabel(VERSION_OF_EDGE_LABEL).withSource(sourceIncomingVersionOfEdge).withTarget(otherVertex).build();
+    incomingEdge = anEdge() //
+      .withLabel(INCOMING_EDGE_LABEL) //
+      .withSource(otherVertex) //
+      .withTarget(vertexToDuplicate) //
+      .build();
+    outgoingEdge = anEdge() //
+      .withLabel(OUTGOING_EDGE_LABEL) //
+      .withSource(vertexToDuplicate) //
+      .withTarget(otherVertex) //
+      .build();
+    versionOfOutgoingEdge = anEdge() //
+      .withLabel(VERSION_OF_EDGE_LABEL) //
+      .withSource(otherVertex) //
+      .withTarget(vertexToDuplicate) //
+      .build();
+    versionOfIncomingEdge = anEdge() //
+      .withLabel(VERSION_OF_EDGE_LABEL) //
+      .withSource(sourceIncomingVersionOfEdge) //
+      .withTarget(otherVertex) //
+      .build();
 
     return aVertex() //
       .withId(ID) //
@@ -67,7 +84,7 @@ public class VertexDuplicatorTest {
   }
 
   @Test
-  public void duplicateCopiesAllThePropertiesOfTheNode() {
+  public void duplicateCopiesAllThePropertiesOfTVertex() {
     // action
     instance.duplicate(vertexToDuplicate);
 
@@ -91,22 +108,9 @@ public class VertexDuplicatorTest {
     instance.duplicate(vertexToDuplicate);
 
     // verify
-    verify(duplicate).addEdge(OUTGOING_EDGE_LABEL, otherVertex);
-    verify(otherVertex).addEdge(INCOMING_EDGE_LABEL, duplicate);
-    verify(duplicate, times(0)).addEdge(VERSION_OF_EDGE_LABEL, otherVertex);
-    verify(sourceIncomingVersionOfEdge, times(0)).addEdge(VERSION_OF_EDGE_LABEL, duplicate);
-  }
-
-  @Test
-  public void duplicateRemovesTheEdgesOfTheDuplicatedVertexExceptIsVersionOf() {
-    // action
-    instance.duplicate(vertexToDuplicate);
-
-    // verify
-    verify(incomingEdge).remove();
-    verify(outgoingEdge).remove();
-    verify(versionOfIncomingEdge, never()).remove();
-    verify(versionOfOutgoingEdge, never()).remove();
+    verify(edgeManipulator).changeTarget(incomingEdge, duplicate);
+    verify(edgeManipulator).changeSource(outgoingEdge, duplicate);
+    verifyNoMoreInteractions(edgeManipulator);
   }
 
   @Test
@@ -129,7 +133,7 @@ public class VertexDuplicatorTest {
   }
 
   @Test
-  public void duplicateAddsIsLatestPropertyAndSetsItToFalseOnTheVertextToDuplicate(){
+  public void duplicateAddsIsLatestPropertyAndSetsItToFalseOnTheVertextToDuplicate() {
     // action
     instance.duplicate(vertexToDuplicate);
 

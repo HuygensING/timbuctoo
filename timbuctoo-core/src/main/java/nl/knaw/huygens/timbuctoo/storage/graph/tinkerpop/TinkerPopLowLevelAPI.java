@@ -39,19 +39,19 @@ class TinkerPopLowLevelAPI {
   public static final IsOfTypePredicate IS_TYPE_OF = new IsOfTypePredicate();
   private final Graph db;
   private final VertexDuplicator vertexDuplicator;
-  private final EdgeDuplicator edgeDuplicator;
+  private final EdgeManipulator edgeManipulator;
   private TinkerPopGraphQueryBuilderFactory queryBuilderFactory;
   private TinkerPopResultFilterBuilder resultFilterBuilder;
 
   public TinkerPopLowLevelAPI(Graph db) {
-    this(db, new VertexDuplicator(db), new EdgeDuplicator(), new TinkerPopGraphQueryBuilderFactory(db), new TinkerPopResultFilterBuilder());
+    this(db, new VertexDuplicator(db), new EdgeManipulator(), new TinkerPopGraphQueryBuilderFactory(db), new TinkerPopResultFilterBuilder());
   }
 
-  public TinkerPopLowLevelAPI(Graph db, VertexDuplicator vertexDuplicator, EdgeDuplicator edgeDuplicator, TinkerPopGraphQueryBuilderFactory queryBuilderFactory,
+  public TinkerPopLowLevelAPI(Graph db, VertexDuplicator vertexDuplicator, EdgeManipulator edgeManipulator, TinkerPopGraphQueryBuilderFactory queryBuilderFactory,
                               TinkerPopResultFilterBuilder resultFilterBuilder) {
     this.db = db;
     this.vertexDuplicator = vertexDuplicator;
-    this.edgeDuplicator = edgeDuplicator;
+    this.edgeManipulator = edgeManipulator;
     this.queryBuilderFactory = queryBuilderFactory;
     this.resultFilterBuilder = resultFilterBuilder;
   }
@@ -128,7 +128,7 @@ class TinkerPopLowLevelAPI {
   }
 
   public void duplicate(Edge edge) {
-    edgeDuplicator.duplicate(edge);
+    edgeManipulator.duplicate(edge);
   }
 
   public Edge getEdgeWithRevision(Class<? extends Relation> relationType, String id, int revision) {

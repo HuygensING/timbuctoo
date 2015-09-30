@@ -27,7 +27,7 @@ public class DomainEntityConverterFactory {
     this.idGenerator = new IdGenerator();
     this.revisionConverter = new RevisionConverter(graph, new VariationConverter(new ElementConverterFactory(typeRegistry)), new ConversionVerifierFactory(mongoStorage, graphStorage, graph,
         oldIdNewIdMap));
-    this.vertexDuplicator = new VertexDuplicator(graph);
+    this.vertexDuplicator = new VertexDuplicator(graph, null);
   }
 
   public <T extends DomainEntity> DomainEntityConverter<T> create(Class<T> type, String id) {

@@ -60,19 +60,19 @@ public class TinkerPopLowLevelAPITest {
   private Graph dbMock;
   private TinkerPopLowLevelAPI instance;
   private VertexDuplicator vertexDuplicator;
-  private EdgeDuplicator edgeDuplicator;
+  private EdgeManipulator edgeManipulator;
   private TinkerPopGraphQueryBuilder queryBuilder;
   private TinkerPopGraphQueryBuilderFactory queryBuilderFactory;
   private TinkerPopResultFilterBuilder resultFilterBuilder;
 
   @Before
   public void setup() {
-    edgeDuplicator = mock(EdgeDuplicator.class);
+    edgeManipulator = mock(EdgeManipulator.class);
     vertexDuplicator = mock(VertexDuplicator.class);
     dbMock = mock(Graph.class);
     resultFilterBuilder = mock(TinkerPopResultFilterBuilder.class);
     setupQueryBuilderFactory();
-    instance = new TinkerPopLowLevelAPI(dbMock, vertexDuplicator, edgeDuplicator, queryBuilderFactory, resultFilterBuilder);
+    instance = new TinkerPopLowLevelAPI(dbMock, vertexDuplicator, edgeManipulator, queryBuilderFactory, resultFilterBuilder);
   }
 
   private void setupQueryBuilderFactory() {
@@ -439,7 +439,7 @@ public class TinkerPopLowLevelAPITest {
     instance.duplicate(edge);
 
     // verify
-    verify(edgeDuplicator).duplicate(edge);
+    verify(edgeManipulator).duplicate(edge);
   }
 
   @Test
