@@ -401,6 +401,30 @@ public abstract class StorageIntegrationTest {
   }
 
   @Test
+  public void setPIDDoesNotAlterAnyRelationsOfTheEntity() throws Exception {
+    // setup
+    String idOfPersisted = addDefaultProjectAPerson();
+    String otherId = addDefaultProjectAPerson();
+    String typeId = addRelationType();
+    String relationId = addDefaultSubARelation(idOfPersisted, otherId, typeId);
+
+    // action
+    instance.setPID(DOMAIN_ENTITY_TYPE, idOfPersisted, PID);
+
+    // verify
+    StorageIterator<SubARelation> relationsOfEntity = instance.getRelationsByEntityId(RELATION_TYPE, idOfPersisted);
+
+    assertThat(relationsOfEntity.getAll(), contains(//
+      likeRelation() //
+        .withId(relationId) //
+        .withTypeId(typeId) //
+        .withSourceId(idOfPersisted) //
+        .withSourceType(RELATION_SOURCE_TYPE) //
+        .withTargetId(otherId) //
+        .withTargetType(RELATION_TARGET_TYPE)));
+  }
+
+  @Test
   public void updateDomainEntityIncreasesTheRevisionNumberAndChangesTheDomainEntityButDoesNotCreateANewVersion() throws Exception {
     String id = addDefaultProjectAPerson();
 

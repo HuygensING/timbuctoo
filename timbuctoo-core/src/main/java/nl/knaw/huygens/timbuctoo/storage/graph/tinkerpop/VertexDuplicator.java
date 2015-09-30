@@ -10,17 +10,20 @@ import java.util.Iterator;
 import java.util.Objects;
 
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.IS_LATEST;
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.sourceOfEdge;
-import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.targetOfEdge;
 
 public class VertexDuplicator {
 
   private static final String VERSION_OF_LABEL = SystemRelationType.VERSION_OF.name();
   private Graph db;
+  private final EdgeManipulator edgeManipulator;
 
   public VertexDuplicator(Graph db) {
-    this.db = db;
+    this(db, new EdgeManipulator());
+  }
 
+  public VertexDuplicator(Graph db, EdgeManipulator edgeManipulator) {
+    this.db = db;
+    this.edgeManipulator = edgeManipulator;
   }
 
   public Vertex duplicate(Vertex vertexToDuplicate) {
@@ -28,9 +31,9 @@ public class VertexDuplicator {
 
     duplicateProperties(vertexToDuplicate, duplicate);
 
-    duplicateOutgoingEdges(vertexToDuplicate, duplicate);
+    moveOutgoingEdges(vertexToDuplicate, duplicate);
 
-    duplicateIncomingEdges(vertexToDuplicate, duplicate);
+    moveIncomingEdges(vertexToDuplicate, duplicate);
 
     changeLatestVertex(vertexToDuplicate, duplicate);
 
@@ -44,25 +47,23 @@ public class VertexDuplicator {
     vertexToDuplicate.addEdge(VERSION_OF_LABEL, duplicate);
   }
 
-  private void duplicateIncomingEdges(Vertex vertexToDuplicate, Vertex duplicate) {
-    for (Iterator<Edge> iterator = vertexToDuplicate.getEdges(Direction.IN).iterator(); iterator.hasNext();) {
+  private void moveIncomingEdges(Vertex vertexToDuplicate, Vertex duplicate) {
+    for (Iterator<Edge> iterator = vertexToDuplicate.getEdges(Direction.IN).iterator(); iterator.hasNext(); ) {
       Edge edge = iterator.next();
 
       if (!isVersionOfEdge(edge)) {
-        sourceOfEdge(edge).addEdge(edge.getLabel(), duplicate);
-        edge.remove();
+        edgeManipulator.changeTarget(edge, duplicate);
       }
 
     }
   }
 
-  private void duplicateOutgoingEdges(Vertex vertexToDuplicate, Vertex duplicate) {
-    for (Iterator<Edge> iterator = vertexToDuplicate.getEdges(Direction.OUT).iterator(); iterator.hasNext();) {
+  private void moveOutgoingEdges(Vertex vertexToDuplicate, Vertex duplicate) {
+    for (Iterator<Edge> iterator = vertexToDuplicate.getEdges(Direction.OUT).iterator(); iterator.hasNext(); ) {
       Edge edge = iterator.next();
 
       if (!isVersionOfEdge(edge)) {
-        duplicate.addEdge(edge.getLabel(), targetOfEdge(edge));
-        edge.remove();
+        edgeManipulator.changeSource(edge, duplicate);
       }
 
     }
