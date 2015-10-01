@@ -396,13 +396,13 @@ public class GraphLegacyStorageWrapperTest {
 
     // verify
     InOrder inOrder = inOrder(graphStorageMock);
-    inOrder.verify(graphStorageMock).removePropertyFromEntity(DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
     inOrder.verify(graphStorageMock).updateEntity( //
         argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
         argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
             .withId(ID) //
             .withRevision(SECOND_REVISION) //
             .withAModifiedValueNotEqualTo(oldModified)));
+    inOrder.verify(graphStorageMock).removePropertyFromEntity(DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
   }
 
   private void entityAndVariantExist() {
@@ -411,15 +411,21 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test(expected = StorageException.class)
-  public void updateDomainEntityThrowAStorageExceptionWhenTheDelegateDoes() throws Exception {
+  public void updateDomainEntityDoesNotRemoveThePIDAndReThrowsAStorageExceptionOfTheDelegate() throws Exception {
     // setup
     SubADomainEntity entity = aDomainEntity().withId(ID).build();
     entityAndVariantExist();
 
     doThrow(StorageException.class).when(graphStorageMock).updateEntity(DOMAIN_ENTITY_TYPE, entity);
 
-    // action
-    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+    try {
+      // action
+      instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+    }
+    finally {
+      // verify
+      verify(graphStorageMock, never()).removePropertyFromEntity(DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
+    }
 
   }
 
@@ -441,13 +447,13 @@ public class GraphLegacyStorageWrapperTest {
 
     // verify
     InOrder inOrder = inOrder(graphStorageMock);
-    inOrder.verify(graphStorageMock).removePropertyFromEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
-    verify(graphStorageMock).addVariant(//
+    inOrder.verify(graphStorageMock).addVariant(//
         argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
         argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
             .withId(ID) //
             .withRevision(SECOND_REVISION) //
             .withAModifiedValueNotEqualTo(oldModified)));
+    inOrder.verify(graphStorageMock).removePropertyFromEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
   }
 
   private void variantDoesNotExist() {
@@ -832,25 +838,31 @@ public class GraphLegacyStorageWrapperTest {
 
     // verify
     InOrder inOrder = inOrder(graphStorageMock);
-    inOrder.verify(graphStorageMock).removePropertyFromRelation(RELATION_TYPE, ID, PID_FIELD_NAME);
     inOrder.verify(graphStorageMock).updateRelation( //
-        argThat(is(equalTo(RELATION_TYPE))), //
-        argThat(likeDomainEntity(RELATION_TYPE) //
-            .withId(ID) //
-            .withAModifiedValueNotEqualTo(oldModified) //
-            .withRevision(SECOND_REVISION)), //
-        argThat(is(CHANGE)));
+      argThat(is(equalTo(RELATION_TYPE))), //
+      argThat(likeDomainEntity(RELATION_TYPE) //
+        .withId(ID) //
+        .withAModifiedValueNotEqualTo(oldModified) //
+        .withRevision(SECOND_REVISION)), //
+      argThat(is(CHANGE)));
+    inOrder.verify(graphStorageMock).removePropertyFromRelation(RELATION_TYPE, ID, PID_FIELD_NAME);
   }
 
   @Test(expected = StorageException.class)
-  public void updateDomainEntityForRelationThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
+  public void updateDomainEntityForRelationDoesNotRemoveThePIDAndReThrowsAStorageExceptionOfTheDelegate() throws Exception {
     // setup
-    SubARelation entity = aRelation().build();
+    SubARelation entity = aRelation().withId(ID).build();
 
     doThrow(StorageException.class).when(graphStorageMock).updateRelation(RELATION_TYPE, entity, CHANGE);
 
-    // action
-    instance.updateDomainEntity(RELATION_TYPE, entity, CHANGE);
+    try {
+      // action
+      instance.updateDomainEntity(RELATION_TYPE, entity, CHANGE);
+    }finally {
+      // verify
+      verify(graphStorageMock, never()).removePropertyFromRelation(RELATION_TYPE, ID, PID_FIELD_NAME);
+    }
+
   }
 
   @Test
@@ -875,12 +887,12 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   private void verifyRelationIsDeclined(String relId) throws NoSuchEntityException, StorageException {
-    InOrder inOrder1 = inOrder(graphStorageMock);
-    inOrder1.verify(graphStorageMock).removePropertyFromRelation(RELATION_TYPE, relId, PID_FIELD_NAME);
-    inOrder1.verify(graphStorageMock).updateRelation( //
-        argThat(equalTo(RELATION_TYPE)), //
-        argThat(likeRelation().withId(relId).isAccepted(false)), //
-        any(Change.class));
+    InOrder inOrder = inOrder(graphStorageMock);
+    inOrder.verify(graphStorageMock).updateRelation( //
+      argThat(equalTo(RELATION_TYPE)), //
+      argThat(likeRelation().withId(relId).isAccepted(false)), //
+      any(Change.class));
+    inOrder.verify(graphStorageMock).removePropertyFromRelation(RELATION_TYPE, relId, PID_FIELD_NAME);
   }
 
   @Test(expected = StorageException.class)

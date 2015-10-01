@@ -134,15 +134,15 @@ public class GraphLegacyStorageWrapper implements Storage {
     updateAdministrativeValues(entity);
     if (isRelation(type)) {
       Class<? extends Relation> relationType = asRelation(type);
-      removePIDFromDatabase(type, entity.getId());
       graphStorage.updateRelation(relationType, (Relation) entity, change);
+      removePIDFromDatabase(type, entity.getId());
     } else {
       if (baseTypeExists(type, entity) && variantExists(type, entity)) {
-        removePIDFromDatabase(type, entity.getId());
         graphStorage.updateEntity(type, entity);
+        removePIDFromDatabase(type, entity.getId());
       } else if (baseTypeExists(type, entity)) {
-        removePIDFromDatabase(toBaseDomainEntity(type), entity.getId());
         graphStorage.addVariant(type, entity);
+        removePIDFromDatabase(toBaseDomainEntity(type), entity.getId());
       } else {
         throw new UpdateException(String.format("%s with id %s does not exist.", type, entity.getId()));
       }
