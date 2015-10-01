@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.util;
 
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
-import nl.knaw.huygens.hamcrest.PropertyEqualtityMatcher;
+import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.timbuctoo.model.RelationRef;
 
 public class RelationRefMatcher extends CompositeMatcher<RelationRef> {
@@ -13,7 +13,7 @@ public class RelationRefMatcher extends CompositeMatcher<RelationRef> {
   }
 
   public RelationRefMatcher withId(String id) {
-    this.addMatcher(new PropertyEqualtityMatcher<RelationRef, String>("id", id) {
+    this.addMatcher(new PropertyEqualityMatcher<RelationRef, String>("id", id) {
 
       @Override
       protected String getItemValue(RelationRef item) {
@@ -25,7 +25,7 @@ public class RelationRefMatcher extends CompositeMatcher<RelationRef> {
   }
 
   public RelationRefMatcher withType(String type) {
-    this.addMatcher(new PropertyEqualtityMatcher<RelationRef, String>("type", type) {
+    this.addMatcher(new PropertyEqualityMatcher<RelationRef, String>("type", type) {
 
       @Override
       protected String getItemValue(RelationRef item) {
@@ -36,7 +36,7 @@ public class RelationRefMatcher extends CompositeMatcher<RelationRef> {
   }
 
   public RelationRefMatcher withPath(String path) {
-    this.addMatcher(new PropertyEqualtityMatcher<RelationRef, String>("path", path) {
+    this.addMatcher(new PropertyEqualityMatcher<RelationRef, String>("path", path) {
 
       @Override
       protected String getItemValue(RelationRef item) {
@@ -48,7 +48,7 @@ public class RelationRefMatcher extends CompositeMatcher<RelationRef> {
   }
 
   public RelationRefMatcher withRelationName(String relationName) {
-    this.addMatcher(new PropertyEqualtityMatcher<RelationRef, String>("relationName", relationName) {
+    this.addMatcher(new PropertyEqualityMatcher<RelationRef, String>("relationName", relationName) {
 
       @Override
       protected String getItemValue(RelationRef item) {
@@ -59,7 +59,7 @@ public class RelationRefMatcher extends CompositeMatcher<RelationRef> {
   }
 
   public RelationRefMatcher withRev(int rev) {
-    this.addMatcher(new PropertyEqualtityMatcher<RelationRef, Integer>("rev",  rev) {
+    this.addMatcher(new PropertyEqualityMatcher<RelationRef, Integer>("rev",  rev) {
 
       @Override
       protected Integer getItemValue(RelationRef item) {
@@ -70,7 +70,7 @@ public class RelationRefMatcher extends CompositeMatcher<RelationRef> {
   }
 
   public RelationRefMatcher withDisplayName(String displayName) {
-    this.addMatcher(new PropertyEqualtityMatcher<RelationRef, String>("displayName", displayName) {
+    this.addMatcher(new PropertyEqualityMatcher<RelationRef, String>("displayName", displayName) {
 
       @Override
       protected String getItemValue(RelationRef item) {
@@ -81,7 +81,7 @@ public class RelationRefMatcher extends CompositeMatcher<RelationRef> {
   }
 
   public RelationRefMatcher withRelationId(String relationId) {
-    this.addMatcher(new PropertyEqualtityMatcher<RelationRef, String>("relationId", relationId) {
+    this.addMatcher(new PropertyEqualityMatcher<RelationRef, String>("relationId", relationId) {
 
       @Override
       protected String getItemValue(RelationRef item) {
@@ -92,7 +92,7 @@ public class RelationRefMatcher extends CompositeMatcher<RelationRef> {
   }
 
   public RelationRefMatcher withAccepted(boolean accepted) {
-    this.addMatcher(new PropertyEqualtityMatcher<RelationRef, Boolean>("accepted", accepted) {
+    this.addMatcher(new PropertyEqualityMatcher<RelationRef, Boolean>("accepted", accepted) {
 
       @Override
       protected Boolean getItemValue(RelationRef item) {

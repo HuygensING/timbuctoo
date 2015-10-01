@@ -23,7 +23,7 @@ package nl.knaw.huygens.timbuctoo.rest.util.search;
  */
 
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
-import nl.knaw.huygens.hamcrest.PropertyEqualtityMatcher;
+import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.RelationDTO;
 import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
@@ -42,7 +42,7 @@ public class RelationSearchResultDTOMatcher extends CompositeMatcher<RelationSea
   }
 
   public RelationSearchResultDTOMatcher withSortableFields(Set<String> sortableFields) {
-    this.addMatcher(new PropertyEqualtityMatcher<RelationSearchResultDTO, Set<String>>("sortableFields", sortableFields) {
+    this.addMatcher(new PropertyEqualityMatcher<RelationSearchResultDTO, Set<String>>("sortableFields", sortableFields) {
       @Override
       protected Set<String> getItemValue(RelationSearchResultDTO item) {
         return item.getSortableFields();
@@ -52,7 +52,7 @@ public class RelationSearchResultDTOMatcher extends CompositeMatcher<RelationSea
   }
 
   public RelationSearchResultDTOMatcher withNumFound(int numfound) {
-    this.addMatcher(new PropertyEqualtityMatcher<RelationSearchResultDTO, Integer>("numfound", numfound) {
+    this.addMatcher(new PropertyEqualityMatcher<RelationSearchResultDTO, Integer>("numfound", numfound) {
       @Override
       protected Integer getItemValue(RelationSearchResultDTO item) {
         return item.getNumFound();
@@ -62,7 +62,7 @@ public class RelationSearchResultDTOMatcher extends CompositeMatcher<RelationSea
   }
 
   public RelationSearchResultDTOMatcher withIds(List<String> ids) {
-    this.addMatcher(new PropertyEqualtityMatcher<RelationSearchResultDTO, List<String>>("ids", ids) {
+    this.addMatcher(new PropertyEqualityMatcher<RelationSearchResultDTO, List<String>>("ids", ids) {
       @Override
       protected List<String> getItemValue(RelationSearchResultDTO item) {
         return item.getIds();
@@ -73,7 +73,7 @@ public class RelationSearchResultDTOMatcher extends CompositeMatcher<RelationSea
   }
 
   public RelationSearchResultDTOMatcher withStart(int start) {
-    this.addMatcher(new PropertyEqualtityMatcher<RelationSearchResultDTO, Integer>("start", start) {
+    this.addMatcher(new PropertyEqualityMatcher<RelationSearchResultDTO, Integer>("start", start) {
       @Override
       protected Integer getItemValue(RelationSearchResultDTO item) {
         return item.getStart();
@@ -83,7 +83,7 @@ public class RelationSearchResultDTOMatcher extends CompositeMatcher<RelationSea
   }
 
   public RelationSearchResultDTOMatcher withRows(int rows) {
-    this.addMatcher(new PropertyEqualtityMatcher<RelationSearchResultDTO, Integer>("rows", rows) {
+    this.addMatcher(new PropertyEqualityMatcher<RelationSearchResultDTO, Integer>("rows", rows) {
       @Override
       protected Integer getItemValue(RelationSearchResultDTO item) {
         return item.getRows();
@@ -94,7 +94,7 @@ public class RelationSearchResultDTOMatcher extends CompositeMatcher<RelationSea
 
 
   public RelationSearchResultDTOMatcher withNextLink(String nextLink) {
-    this.addMatcher(new PropertyEqualtityMatcher<RelationSearchResultDTO, String>("nextLink", nextLink) {
+    this.addMatcher(new PropertyEqualityMatcher<RelationSearchResultDTO, String>("nextLink", nextLink) {
       @Override
       protected String getItemValue(RelationSearchResultDTO item) {
         return item.getNextLink();
@@ -105,7 +105,7 @@ public class RelationSearchResultDTOMatcher extends CompositeMatcher<RelationSea
   }
 
   public RelationSearchResultDTOMatcher withPrevLink(String prevLink) {
-    this.addMatcher(new PropertyEqualtityMatcher<RelationSearchResultDTO, String>("prevLink", prevLink) {
+    this.addMatcher(new PropertyEqualityMatcher<RelationSearchResultDTO, String>("prevLink", prevLink) {
       @Override
       protected String getItemValue(RelationSearchResultDTO item) {
         return item.getPrevLink();
@@ -116,7 +116,7 @@ public class RelationSearchResultDTOMatcher extends CompositeMatcher<RelationSea
   }
 
   public RelationSearchResultDTOMatcher withRefs(List<RelationDTO> refs) {
-    this.addMatcher(new PropertyEqualtityMatcher<RelationSearchResultDTO, List<RelationDTO>>("refs", refs) {
+    this.addMatcher(new PropertyEqualityMatcher<RelationSearchResultDTO, List<RelationDTO>>("refs", refs) {
       @Override
       protected List<RelationDTO> getItemValue(RelationSearchResultDTO item) {
         return item.getRefs();
@@ -126,7 +126,7 @@ public class RelationSearchResultDTOMatcher extends CompositeMatcher<RelationSea
   }
 
   public RelationSearchResultDTOMatcher withResults(List<? extends DomainEntity> results) {
-    this.addMatcher(new PropertyEqualtityMatcher<RelationSearchResultDTO, List<? extends DomainEntity>>("results", results) {
+    this.addMatcher(new PropertyEqualityMatcher<RelationSearchResultDTO, List<? extends DomainEntity>>("results", results) {
       @Override
       protected List<? extends DomainEntity> getItemValue(RelationSearchResultDTO item) {
         return item.getResults();

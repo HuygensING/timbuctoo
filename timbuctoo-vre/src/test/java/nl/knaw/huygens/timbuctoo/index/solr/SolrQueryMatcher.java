@@ -23,7 +23,7 @@ package nl.knaw.huygens.timbuctoo.index.solr;
  */
 
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
-import nl.knaw.huygens.hamcrest.PropertyEqualtityMatcher;
+import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import org.apache.solr.client.solrj.SolrQuery;
 
 public class SolrQueryMatcher extends CompositeMatcher<SolrQuery> {
@@ -36,7 +36,7 @@ public class SolrQueryMatcher extends CompositeMatcher<SolrQuery> {
   }
 
   public SolrQueryMatcher withQuery(String query) {
-    this.addMatcher(new PropertyEqualtityMatcher<SolrQuery, String>("query", query) {
+    this.addMatcher(new PropertyEqualityMatcher<SolrQuery, String>("query", query) {
       @Override
       protected String getItemValue(SolrQuery item) {
         return item.getQuery();
@@ -47,7 +47,7 @@ public class SolrQueryMatcher extends CompositeMatcher<SolrQuery> {
   }
 
   public SolrQueryMatcher withStart(int start) {
-    this.addMatcher(new PropertyEqualtityMatcher<SolrQuery, Integer>("start", start) {
+    this.addMatcher(new PropertyEqualityMatcher<SolrQuery, Integer>("start", start) {
       @Override
       protected Integer getItemValue(SolrQuery item) {
         return item.getStart();
@@ -57,7 +57,7 @@ public class SolrQueryMatcher extends CompositeMatcher<SolrQuery> {
   }
 
   public SolrQueryMatcher withRows(int rows) {
-    this.addMatcher(new PropertyEqualtityMatcher<SolrQuery, Integer>("rows", rows) {
+    this.addMatcher(new PropertyEqualityMatcher<SolrQuery, Integer>("rows", rows) {
       @Override
       protected Integer getItemValue(SolrQuery item) {
         return item.getRows();
