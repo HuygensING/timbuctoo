@@ -588,7 +588,7 @@ public abstract class StorageIntegrationTest {
     instance.declineRelationsOfEntity(PROJECT_RELATION_TYPE, sourceId);
 
     // verify
-    assertThat(instance.getEntity(PROJECT_RELATION_TYPE, relationId), likeDefaultNotAcceptionRelation(sourceId, targetId, typeId));
+    assertThat(instance.getEntity(PROJECT_RELATION_TYPE, relationId), likeDefaultNotAcceptedRelation(sourceId, targetId, typeId));
     assertThat(instance.getEntity(PRIMITIVE_RELATION_TYPE, relationId), likeDefaultAcceptedRelation(sourceId, targetId, typeId));
   }
 
@@ -614,8 +614,65 @@ public abstract class StorageIntegrationTest {
     // verify
     SubARelation declinedRelation = instance.getEntity(RELATION_TYPE, id);
     assertThat(declinedRelation, //
-      likeDefaultNotAcceptionRelation(sourceId, targetId, typeId) //
+      likeDefaultNotAcceptedRelation(sourceId, targetId, typeId) //
         .withoutPID());
+  }
+
+  @Test
+  public void declineRelationsOfEntityOnlyAffectsRelationsWithThatContainTheRequestedVariant() throws Exception {
+    // setup
+    String sourceId = addDefaultProjectAPerson();
+    String targetId = addDefaultProjectAPerson();
+
+    String typeId = addRelationType();
+
+    String subARelationId = addDefaultSubARelation(sourceId, targetId, typeId);
+
+    addVariantToEntity(sourceId);
+
+    // add a relation project a does not have a variant on.
+    String otherTargetId = addDefaultProjectBPerson();
+    String subBRelationId = addDefaultSubBRelation(sourceId, otherTargetId, typeId);
+
+    // action
+    instance.declineRelationsOfEntity(SubARelation.class, sourceId);
+
+    // verify
+    assertThat(instance.getEntity(SubARelation.class, subARelationId), //
+      likeDefaultNotAcceptedRelation(sourceId, targetId, typeId));
+
+    assertThat(instance.getEntity(SubBRelation.class, subBRelationId),
+      likeRelation() //
+        .withType(SubBRelation.class) //
+        .withSourceId(sourceId) //
+        .withTargetId(otherTargetId) //
+        .withTypeId(typeId) //
+        .isAccepted(true));
+  }
+
+  private String addDefaultSubBRelation(String sourceId, String targetId, String typeId) throws StorageException {
+    SubBRelation relation = new SubBRelation();
+    relation.setAccepted(ACCEPTED);
+    relation.setSourceId(sourceId);
+    relation.setSourceType(RELATION_SOURCE_TYPE);
+    relation.setTargetId(targetId);
+    relation.setTargetType(RELATION_TARGET_TYPE);
+    relation.setTypeId(typeId);
+    relation.setTypeType(RELATIONTYPE_TYPE_STRING);
+
+    return instance.addDomainEntity(SubBRelation.class, relation, CHANGE_TO_SAVE);
+  }
+
+  private void addVariantToEntity(String sourceId) throws StorageException {
+    ProjectAPerson projectAPerson = instance.getEntity(ProjectAPerson.class, sourceId);
+
+    ProjectBPerson projectBPerson = new ProjectBPerson();
+    projectBPerson.addName(PERSON_NAME2);
+    projectBPerson.setBirthDate(BIRTH_DATE2);
+    projectBPerson.setId(projectAPerson.getId());
+    projectBPerson.setRev(projectAPerson.getRev());
+
+    instance.updateDomainEntity(ProjectBPerson.class, projectBPerson, UPDATE_CHANGE);
   }
 
   @Test
@@ -797,9 +854,9 @@ public abstract class StorageIntegrationTest {
     return person;
   }
 
-  private void addDefaultProjectBPerson() throws StorageException {
+  private String addDefaultProjectBPerson() throws StorageException {
     ProjectBPerson entity = createProjectBPerson(GENDER, PERSON_NAME, BIRTH_DATE, DEATH_DATE);
-    instance.addDomainEntity(ProjectBPerson.class, entity, CHANGE_TO_SAVE);
+    return instance.addDomainEntity(ProjectBPerson.class, entity, CHANGE_TO_SAVE);
   }
 
   private String addDefaultProjectAPerson() throws StorageException {
@@ -1061,7 +1118,7 @@ public abstract class StorageIntegrationTest {
 
   //Relation test helpers
 
-  private RelationMatcher likeDefaultNotAcceptionRelation(String sourceId, String targetId, String typeId) {
+  private RelationMatcher likeDefaultNotAcceptedRelation(String sourceId, String targetId, String typeId) {
     return likeRelation()//
       .withSourceId(sourceId) //
       .withSourceType(RELATION_SOURCE_TYPE) //
@@ -1185,7 +1242,7 @@ public abstract class StorageIntegrationTest {
     assertThat(revisions, hasSize(2));
     assertThat(revisions, containsInAnyOrder(//
       likeDefaultAcceptedRelation(sourceId, targetId, typeId).withRevision(1), //
-      likeDefaultNotAcceptionRelation(sourceId, targetId, typeId).withRevision(2)));
+      likeDefaultNotAcceptedRelation(sourceId, targetId, typeId).withRevision(2)));
   }
 
   @Test

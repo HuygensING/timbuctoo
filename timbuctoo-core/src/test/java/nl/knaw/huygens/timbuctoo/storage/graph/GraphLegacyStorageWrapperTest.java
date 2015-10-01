@@ -863,6 +863,8 @@ public class GraphLegacyStorageWrapperTest {
 
     StorageIteratorStub<SubARelation> foundRelations = StorageIteratorStub.newInstance(relation1, relation2);
     when(graphStorageMock.getRelationsByEntityId(RELATION_TYPE, ID)).thenReturn(foundRelations);
+    when(graphStorageMock.relationExists(SubARelation.class, relId1)).thenReturn(true);
+    when(graphStorageMock.relationExists(SubARelation.class, relId2)).thenReturn(true);
 
     // action
     instance.declineRelationsOfEntity(RELATION_TYPE, ID);
@@ -891,6 +893,8 @@ public class GraphLegacyStorageWrapperTest {
 
     StorageIteratorStub<SubARelation> foundRelations = StorageIteratorStub.newInstance(relation1, relation2);
     when(graphStorageMock.getRelationsByEntityId(RELATION_TYPE, ID)).thenReturn(foundRelations);
+    when(graphStorageMock.relationExists(SubARelation.class, relId1)).thenReturn(true);
+    when(graphStorageMock.relationExists(SubARelation.class, relId2)).thenReturn(true);
 
     doThrow(StorageException.class).when(graphStorageMock).updateRelation(//
         argThat(equalTo(RELATION_TYPE)), //

@@ -24,7 +24,7 @@ import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
 import static nl.knaw.huygens.timbuctoo.model.DomainEntity.PID;
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.model.Relation.*;
+import static nl.knaw.huygens.timbuctoo.model.Relation.TYPE_ID;
 
 public class GraphLegacyStorageWrapper implements Storage {
 
@@ -46,7 +46,7 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public void createIndex(boolean unique, Class<? extends Entity> type, String... fields) throws StorageException {
-    for(String field : fields){
+    for (String field : fields) {
       graphStorage.createIndex(type, field);
     }
 
@@ -92,7 +92,8 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   /**
    * Adds the administrative values to the entity.
-   * @param type the type to generate the id for
+   *
+   * @param type   the type to generate the id for
    * @param entity the entity to add the values to
    * @return the generated id
    */
@@ -173,7 +174,7 @@ public class GraphLegacyStorageWrapper implements Storage {
   @Override
   public <T extends SystemEntity> int deleteSystemEntities(Class<T> type) throws StorageException {
     int numberOfDeletions = 0;
-    for (StorageIterator<T> iterator = graphStorage.getEntities(type); iterator.hasNext();) {
+    for (StorageIterator<T> iterator = graphStorage.getEntities(type); iterator.hasNext(); ) {
       numberOfDeletions += graphStorage.deleteSystemEntity(type, iterator.next().getId());
     }
 
@@ -184,7 +185,7 @@ public class GraphLegacyStorageWrapper implements Storage {
   public <T extends SystemEntity> int deleteByModifiedDate(Class<T> type, Date dateValue) throws StorageException {
     int numberOfDeletions = 0;
     long timeStampToDelete = dateValue.getTime();
-    for (StorageIterator<T> entities = graphStorage.getEntities(type); entities.hasNext();) {
+    for (StorageIterator<T> entities = graphStorage.getEntities(type); entities.hasNext(); ) {
       T entity = entities.next();
       Change modified = entity.getModified();
 
@@ -247,9 +248,10 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   /**
    * Remove the PID from the database of Entity or Relation.
-   * @param type the type of the to remove the PID from 
-   * @param id the id to remove the PID from
-   * @throws NoSuchEntityException when the Entity could not be found
+   *
+   * @param type the type of the to remove the PID from
+   * @param id   the id to remove the PID from
+   * @throws NoSuchEntityException   when the Entity could not be found
    * @throws NoSuchRelationException when the Relation could not be found
    */
   @SuppressWarnings("unchecked")
@@ -263,7 +265,7 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public void deleteRelationsOfEntity(Class<Relation> type, String id) throws StorageException {
-    for (StorageIterator<Relation> relations = graphStorage.getRelationsByEntityId(type, id); relations.hasNext();) {
+    for (StorageIterator<Relation> relations = graphStorage.getRelationsByEntityId(type, id); relations.hasNext(); ) {
       graphStorage.deleteRelation(RELATION_TYPE, relations.next().getId());
     }
 
@@ -275,9 +277,15 @@ public class GraphLegacyStorageWrapper implements Storage {
       throw new IllegalArgumentException("Use deleteRelation for removing primitive relation.");
     }
 
-    for (StorageIterator<T> relationsOfEntity = graphStorage.getRelationsByEntityId(type, id); relationsOfEntity.hasNext();) {
+    for (StorageIterator<T> relationsOfEntity = graphStorage.getRelationsByEntityId(type, id); relationsOfEntity.hasNext(); ) {
       T relation = relationsOfEntity.next();
-      declineRelation(type, relation);
+      /*
+       * getRelationsByEntityId returns more relations than we like in this case.
+       * In this case we want to decline the relations the project variant of the is available.
+       */
+      if (entityExists(type, relation.getId())) {
+        declineRelation(type, relation);
+      }
     }
   }
 
@@ -297,7 +305,7 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends Entity> T getEntityOrDefaultVariation(Class<T> type, String id) throws StorageException {
-    if(isRelation(type)){
+    if (isRelation(type)) {
       return getRelationOrDefaultVariant(type, id);
     }
 
@@ -313,10 +321,9 @@ public class GraphLegacyStorageWrapper implements Storage {
   }
 
   private <T extends Entity> T getRelationOrDefaultVariant(Class<T> type, String id) throws StorageException {
-    if(graphStorage.relationExists(asRelation(type), id)) {
+    if (graphStorage.relationExists(asRelation(type), id)) {
       return (T) graphStorage.getRelation(asRelation(type), id);
-    }
-    else {
+    } else {
       return (T) graphStorage.getDefaultRelation(asRelation(type), id);
     }
   }
@@ -340,7 +347,7 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends DomainEntity> StorageIterator<T> getDomainEntities(Class<T> type) throws StorageException {
-    if(isRelation(type)){
+    if (isRelation(type)) {
       return (StorageIterator<T>) graphStorage.getRelations(asRelation(type));
     }
     return graphStorage.getEntities(type);
@@ -408,9 +415,9 @@ public class GraphLegacyStorageWrapper implements Storage {
   @Override
   public <T extends DomainEntity> List<T> getAllRevisions(Class<T> type, String id) throws StorageException {
     TimbuctooQuery query = queryFactory.newQuery(type) //
-        .hasNotNullProperty(ID_PROPERTY_NAME, id)//
-        .hasDistinctValue(REVISION_PROPERTY_NAME) //
-        .searchLatestOnly(false);
+      .hasNotNullProperty(ID_PROPERTY_NAME, id)//
+      .hasDistinctValue(REVISION_PROPERTY_NAME) //
+      .searchLatestOnly(false);
 
     if (RELATION_TYPE.isAssignableFrom(type)) {
       query.searchByType(false);
@@ -453,7 +460,7 @@ public class GraphLegacyStorageWrapper implements Storage {
     for (String id : ids) {
       StorageIterator<Relation> iterator = graphStorage.getRelationsByEntityId(RELATION_TYPE, id);
 
-      for (; iterator.hasNext();) {
+      for (; iterator.hasNext(); ) {
         relationIds.add(iterator.next().getId());
       }
 
