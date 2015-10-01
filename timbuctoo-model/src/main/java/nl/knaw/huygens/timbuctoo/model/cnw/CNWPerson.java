@@ -26,31 +26,32 @@ import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
 
-import nl.knaw.huygens.facetedsearch.model.FacetType;
-import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
-import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
-import nl.knaw.huygens.timbuctoo.model.Person;
-import nl.knaw.huygens.timbuctoo.model.util.Datable;
-
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
+import nl.knaw.huygens.facetedsearch.model.FacetType;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
+import nl.knaw.huygens.timbuctoo.model.Person;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
+
 public class CNWPerson extends Person {
+
+	public static final String NONE = "(empty)";
 
 	private String name = "";
 	private String koppelnaam = "";
 	private List<String> networkDomains = Lists.newArrayList();
-
-	private List<String> combinedDomains = Lists.newArrayList();
 	private List<String> domains = Lists.newArrayList();
 	private List<String> subdomains = Lists.newArrayList();
+	private List<String> combinedDomains = Lists.newArrayList();
 	private List<String> characteristics = Lists.newArrayList();
-
 	private List<String> periodicals = Lists.newArrayList(); // Periodieken
 	private List<String> memberships = Lists.newArrayList(); // Lidmaatschappen : Om te zetten naar facet met sorteerbare lijst
 	private String biodesurl = "";//Bioport url, Link, mogelijkheid tot doorklikken
@@ -105,14 +106,14 @@ public class CNWPerson extends Person {
 		return deathdateQualifier;
 	}
 
-	@IndexAnnotation(title = "Periodieken", fieldName = "dynamic_s_periodical", canBeEmpty = true, isFaceted = true)
+	@IndexAnnotation(title = "Periodiek", fieldName = "dynamic_s_periodical", canBeEmpty = true, isFaceted = true)
 	public List<String> getPeriodicals() {
-		return periodicals;
+		return specialValueEmptyWhenNone(periodicals);
 	}
 
-	@IndexAnnotation(title = "Lidmaatschap(pen)", fieldName = "dynamic_s_membership", canBeEmpty = true, isFaceted = true)
+	@IndexAnnotation(title = "Lidmaatschap", fieldName = "dynamic_s_membership", canBeEmpty = true, isFaceted = true)
 	public List<String> getMemberships() {
-		return memberships;
+		return specialValueEmptyWhenNone(memberships);
 	}
 
 	public void setActivities(List<String> activities) {
@@ -154,31 +155,31 @@ public class CNWPerson extends Person {
 		this.domains = domains;
 	}
 
-	@IndexAnnotation(title = "Domein(en)", fieldName = "dynamic_s_domain", canBeEmpty = false, isFaceted = true)
+	@IndexAnnotation(title = "Domein", fieldName = "dynamic_s_domain", canBeEmpty = false, isFaceted = true)
 	public List<String> getDomains() {
-		return domains;
+		return specialValueEmptyWhenNone(domains);
 	}
 
 	public void setSubDomains(List<String> subdomains) {
 		this.subdomains = subdomains;
 	}
 
-	@IndexAnnotation(title = "Subdomein(en)", fieldName = "dynamic_s_subdomain", canBeEmpty = true, isFaceted = true)
+	@IndexAnnotation(title = "Subdomein", fieldName = "dynamic_s_subdomain", canBeEmpty = false, isFaceted = true)
 	public List<String> getSubDomains() {
-		return subdomains;
+		return specialValueEmptyWhenNone(subdomains);
 	}
 
 	public void setCharacteristics(List<String> characteristicList) {
 		this.characteristics = characteristicList;
 	}
 
-	@IndexAnnotation(title = "Karakteristiek(en)", fieldName = "dynamic_s_characteristic", canBeEmpty = false, isFaceted = true)
+	@IndexAnnotation(title = "Karakteristiek", fieldName = "dynamic_s_characteristic", canBeEmpty = false, isFaceted = true)
 	public List<String> getCharacteristics() {
 		Collections.sort(characteristics);
-		return characteristics;
+		return specialValueEmptyWhenNone(characteristics);
 	}
 
-	@IndexAnnotation(title = "Karakteristiek(en) (sorteerveld)", fieldName = "dynamic_sort_characteristic", canBeEmpty = false, isFaceted = false, isSortable = true)
+	@IndexAnnotation(title = "Karakteristieken (sorteerveld)", fieldName = "dynamic_sort_characteristic", canBeEmpty = false, isFaceted = false, isSortable = true)
 	public String getCharacteristicSortKey() {
 		Collections.sort(characteristics);
 		return Joiner.on(";").join(characteristics);
@@ -188,7 +189,7 @@ public class CNWPerson extends Person {
 		this.koppelnaam = koppelnaam;
 	}
 
-	@IndexAnnotation(title = "Koppelnaam", fieldName = "dynamic_s_koppelnaam", canBeEmpty = false, isFaceted = true)
+	@IndexAnnotation(title = "Volledige naam", fieldName = "dynamic_s_koppelnaam", canBeEmpty = false, isFaceted = true)
 	public String getKoppelnaam() {
 		return koppelnaam;
 	}
@@ -247,8 +248,8 @@ public class CNWPerson extends Person {
 	}
 
 	@JsonIgnore
-	@IndexAnnotations({ @IndexAnnotation(title = "Netwerk(en)", fieldName = "dynamic_s_networkdomain", canBeEmpty = false, isFaceted = true, isSortable = true), //
-			@IndexAnnotation(title = "Netwerk(en)", fieldName = "dynamic_sort_networkdomain", canBeEmpty = false, isFaceted = true, isSortable = true) })
+	@IndexAnnotations({ @IndexAnnotation(title = "Netwerk", fieldName = "dynamic_s_networkdomain", canBeEmpty = false, isFaceted = true, isSortable = true), //
+			@IndexAnnotation(title = "Netwerk", fieldName = "dynamic_sort_networkdomain", canBeEmpty = false, isFaceted = true, isSortable = true) })
 	public String getNetworkDomainString() {
 		return Joiner.on(" en ").join(networkDomains);
 	}
@@ -411,6 +412,10 @@ public class CNWPerson extends Person {
 
 	public void setDeathDateQualifier(String qualifier) {
 		deathdateQualifier = qualifier;
+	}
+
+	private List<String> specialValueEmptyWhenNone(List<String> list) {
+		return list.isEmpty() ? ImmutableList.<String> of(NONE) : list;
 	}
 
 }
