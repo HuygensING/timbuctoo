@@ -77,7 +77,7 @@ public class RelationDTOFactory {
     // relations contain only base types
     Class<? extends DomainEntity> baseType = typeRegistry.getDomainEntityType(typeString);
     Class<? extends DomainEntity> type = vre.mapToScopeType(baseType);
-    List<Map<String, Object>> data = vre.getRawDataFor(type, Lists.newArrayList(id));
+    List<Map<String, Object>> data = vre.getRawDataFor(type, Lists.newArrayList(id), Lists.newArrayList());
     FieldNameMap fieldNameMap = fieldNameMapFactory.create(FieldNameMapFactory.Representation.INDEX, FieldNameMapFactory.Representation.CLIENT, type);
 
     return domainEntityDTOFactory.create(type, fieldNameMap, data.get(0));

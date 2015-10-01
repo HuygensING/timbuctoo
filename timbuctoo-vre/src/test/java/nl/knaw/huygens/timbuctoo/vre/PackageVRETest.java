@@ -27,6 +27,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
+import nl.knaw.huygens.facetedsearch.model.parameters.SortDirection;
+import nl.knaw.huygens.facetedsearch.model.parameters.SortParameter;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.index.Index;
@@ -75,7 +77,8 @@ public class PackageVRETest {
   private static final int START = 0;
   private static final Map<String, Object> FILTERS = Maps.newHashMap();
   private static final String INDEX_NAME = "indexName";
-  public static final Class<BaseType1> BASE_TYPE = BaseType1.class;
+  private static final Class<BaseType1> BASE_TYPE = BaseType1.class;
+  private static final List<SortParameter> SORT = Lists.newArrayList(new SortParameter("field", SortDirection.ASCENDING));
 
   private final DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
   private final Index indexMock = mock(Index.class);
@@ -551,7 +554,7 @@ public class PackageVRETest {
     when(index.getDataByIds(ids)).thenReturn(rawData);
 
     // action
-    List<Map<String, Object>> actualRawData = vre.getRawDataFor(TYPE, ids);
+    List<Map<String, Object>> actualRawData = vre.getRawDataFor(TYPE, ids, SORT);
 
     // verify
     assertThat(actualRawData, is(sameInstance(rawData)));
@@ -563,7 +566,7 @@ public class PackageVRETest {
     setupScopeGetBaseEntityTypesWith(TYPE);
 
     // action
-    vre.getRawDataFor(OTHER_TYPE, Lists.<String>newArrayList());
+    vre.getRawDataFor(OTHER_TYPE, Lists.<String>newArrayList(), SORT);
   }
 
 
@@ -576,7 +579,7 @@ public class PackageVRETest {
     when(index.getDataByIds(ids)).thenThrow(new SearchException(new Exception()));
 
     // action
-    vre.getRawDataFor(TYPE, ids);
+    vre.getRawDataFor(TYPE, ids, SORT);
   }
 
   @Test

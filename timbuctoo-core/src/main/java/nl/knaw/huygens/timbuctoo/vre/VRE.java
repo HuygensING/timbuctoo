@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.vre;
 
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
+import nl.knaw.huygens.facetedsearch.model.parameters.SortParameter;
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexFactory;
@@ -174,7 +175,8 @@ public interface VRE extends Scope {
    *
    * @param type the type of the entity to get
    * @param ids the ids to get the data for
+   * @param sort
    * @return the found data
    */
-  List<Map<String, Object>> getRawDataFor(Class<? extends DomainEntity> type, List<String> ids) throws NotInScopeException, SearchException;
+  List<Map<String, Object>> getRawDataFor(Class<? extends DomainEntity> type, List<String> ids, List<SortParameter> sort) throws NotInScopeException, SearchException;
 }
