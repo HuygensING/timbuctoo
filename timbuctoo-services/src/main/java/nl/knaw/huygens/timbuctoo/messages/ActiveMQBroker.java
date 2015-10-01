@@ -120,6 +120,10 @@ public class ActiveMQBroker implements Broker {
    */
   private void createBrokerService(Configuration config) {
     brokerService = new BrokerService();
+    /*
+     * Do not use shutdown hooks if you are closing the ActiveMQ broker manualy.
+     * see: http://stackoverflow.com/questions/9591203/unable-to-shutdown-embedded-activemq-service-using-the-built-in-brokerservice-st
+     */
     brokerService.setUseShutdownHook(false);
     brokerService.setBrokerName(brokerName);
     brokerService.setPersistent(config.getBooleanSetting(KEY_PERSISTENT, false));
