@@ -149,7 +149,7 @@ public class IndexRegularSearchResultMapperTest {
   }
 
   @Test
-  public void createRetrievesAllTheInfromationFromTheIndexAndHasNoInteractionWithTheRepository() throws Exception {
+  public void createRetrievesAllTheInformationFromTheIndexAndHasNoInteractionWithTheRepository() throws Exception {
     // action
     instance.create(DEFAULT_TYPE, searchResult, START, ROWS, VERSION);
 
