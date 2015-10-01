@@ -252,7 +252,7 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 		@Override
 		public void handleContent(Element element, PersonContext context, String text) {
 			String denormalized = denormalized(text, "periodics");
-			if (denormalized != null) {
+			if (StringUtils.isNotEmpty(denormalized)) {
 				context.person.getPeriodicals().add(denormalized);
 			}
 		}
