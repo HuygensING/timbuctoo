@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.index;
 
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
+import nl.knaw.huygens.facetedsearch.model.parameters.SortParameter;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
@@ -113,5 +114,5 @@ public interface Index {
 
   Iterable<Map<String, Object>> doRawSearch(String query, int start, int rows, Map<String, Object> additionalFilters) throws SearchException, RawSearchUnavailableException;
 
-  List<Map<String, Object>> getDataByIds(List<String> ids) throws SearchException;
+  List<Map<String, Object>> getDataByIds(List<String> ids, List<SortParameter> sort) throws SearchException;
 }

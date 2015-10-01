@@ -551,7 +551,7 @@ public class PackageVRETest {
     List<String> ids = Lists.newArrayList();
     Index index = indexFoundFor(TYPE);
     List<Map<String, Object>> rawData = Lists.newArrayList();
-    when(index.getDataByIds(ids)).thenReturn(rawData);
+    when(index.getDataByIds(ids,SORT)).thenReturn(rawData);
 
     // action
     List<Map<String, Object>> actualRawData = vre.getRawDataFor(TYPE, ids, SORT);
@@ -576,7 +576,7 @@ public class PackageVRETest {
     setupScopeGetBaseEntityTypesWith(TYPE);
     Index index = indexFoundFor(TYPE);
     ArrayList<String> ids = Lists.<String>newArrayList();
-    when(index.getDataByIds(ids)).thenThrow(new SearchException(new Exception()));
+    when(index.getDataByIds(ids, SORT)).thenThrow(new SearchException(new Exception()));
 
     // action
     vre.getRawDataFor(TYPE, ids, SORT);

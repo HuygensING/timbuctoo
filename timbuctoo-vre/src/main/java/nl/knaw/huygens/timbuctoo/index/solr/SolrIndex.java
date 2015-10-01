@@ -31,6 +31,7 @@ import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.NoSuchFieldInIndexException;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.facetedsearch.model.parameters.IndexDescription;
+import nl.knaw.huygens.facetedsearch.model.parameters.SortParameter;
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
@@ -274,7 +275,7 @@ public class SolrIndex implements Index {
   }
 
   @Override
-  public List<Map<String, Object>> getDataByIds(List<String> ids) throws SearchException {
+  public List<Map<String, Object>> getDataByIds(List<String> ids, List<SortParameter> sort) throws SearchException {
     final int maxNumberOfIdsSolrSupports = 1000;
     List<List<String>> idsPart = Lists.partition(ids, maxNumberOfIdsSolrSupports);
     List<Map<String, Object>> results = Lists.newArrayList();

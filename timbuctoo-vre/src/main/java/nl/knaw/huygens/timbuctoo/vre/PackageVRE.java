@@ -322,7 +322,7 @@ public class PackageVRE implements VRE {
   public List<Map<String, Object>> getRawDataFor(Class<? extends DomainEntity> type, List<String> ids, List<SortParameter> sort) throws NotInScopeException, SearchException {
     throwNotInScopeExceptionWhenNotInScope(type);
 
-    return getIndexForType(type).getDataByIds(ids);
+    return getIndexForType(type).getDataByIds(ids, sort);
   }
 
   private interface IndexChanger {

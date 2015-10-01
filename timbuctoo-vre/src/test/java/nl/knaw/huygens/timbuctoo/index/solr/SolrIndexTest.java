@@ -31,6 +31,8 @@ import nl.knaw.huygens.facetedsearch.model.NoSuchFieldInIndexException;
 import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetField;
 import nl.knaw.huygens.facetedsearch.model.parameters.IndexDescription;
+import nl.knaw.huygens.facetedsearch.model.parameters.SortDirection;
+import nl.knaw.huygens.facetedsearch.model.parameters.SortParameter;
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
@@ -94,6 +96,7 @@ public class SolrIndexTest {
   private IndexDescription indexDescriptionMock;
   public static final Map<String, Object> RESULT_1;
   public static final Map<String, Object> RESULT_2;
+  private static final List<SortParameter> SORT = Lists.newArrayList(new SortParameter("field", SortDirection.ASCENDING));
 
   static {
     RESULT_1 = Maps.newHashMap();
@@ -678,7 +681,7 @@ public class SolrIndexTest {
     setupQueryResponseForQueryWithResults(likeSolrQuery(), RESULT_1, RESULT_2);
 
     // action
-    List<Map<String, Object>> actualData = instance.getDataByIds(ids);
+    List<Map<String, Object>> actualData = instance.getDataByIds(ids, SORT);
 
     // verify
     assertThat(actualData, containsInAnyOrder(RESULT_1, RESULT_2));
@@ -692,7 +695,7 @@ public class SolrIndexTest {
     // setup
     when(solrServerMock.search(any(SolrQuery.class))).thenThrow(new SolrServerException(MESSAGE));
 
-    instance.getDataByIds(Lists.newArrayList(ID_1, ID_2));
+    instance.getDataByIds(Lists.newArrayList(ID_1, ID_2), SORT);
   }
 
   @Test
@@ -705,7 +708,7 @@ public class SolrIndexTest {
     }
 
     // action
-    List<Map<String, Object>> actualData = instance.getDataByIds(listWith2500Ids);
+    List<Map<String, Object>> actualData = instance.getDataByIds(listWith2500Ids, SORT);
 
     // verify
     verify(solrServerMock, times(2)).search(argThat(likeSolrQuery().withRows(1000)));
