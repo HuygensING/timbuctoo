@@ -22,9 +22,15 @@ package nl.knaw.huygens.timbuctoo.index.solr;
  * #L%
  */
 
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
+import nl.knaw.huygens.hamcrest.PropertyMatcher;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
+
+import java.util.List;
 
 public class SolrQueryMatcher extends CompositeMatcher<SolrQuery> {
 
@@ -61,6 +67,19 @@ public class SolrQueryMatcher extends CompositeMatcher<SolrQuery> {
       @Override
       protected Integer getItemValue(SolrQuery item) {
         return item.getRows();
+      }
+    });
+    return this;
+  }
+
+
+  public SolrQueryMatcher withSorts(SortClauseMatcher... sorts) {
+    List<? super SortClauseMatcher> sortClauseMatchers = Lists.newArrayList(sorts);
+
+    this.addMatcher(new PropertyMatcher<SolrQuery, Iterable<SolrQuery.SortClause>>("sorts", Matchers.containsInAnyOrder((Matcher[]) sorts)) {
+      @Override
+      protected Iterable<SolrQuery.SortClause> getItemValue(SolrQuery item) {
+        return item.getSorts();
       }
     });
     return this;

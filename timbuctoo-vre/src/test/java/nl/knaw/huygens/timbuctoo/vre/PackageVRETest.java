@@ -551,7 +551,7 @@ public class PackageVRETest {
     List<String> ids = Lists.newArrayList();
     Index index = indexFoundFor(TYPE);
     List<Map<String, Object>> rawData = Lists.newArrayList();
-    when(index.getDataByIds(ids,SORT)).thenReturn(rawData);
+    when(index.getDataByIds(ids, SORT)).thenReturn(rawData);
 
     // action
     List<Map<String, Object>> actualRawData = vre.getRawDataFor(TYPE, ids, SORT);
@@ -586,7 +586,7 @@ public class PackageVRETest {
   public void mapToScopeTypeTranslatesTheBaseEntityToTheTypeSpecificToTheVRE() throws Exception {
     // setup
     doReturn(TYPE).when(scopeMock).mapToScopeType(BASE_TYPE);
-    
+
     // action
     Class<? extends DomainEntity> scopeType = vre.mapToScopeType(BASE_TYPE);
 

@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.index.solr.SolrQueryMatcher.likeSolrQuery;
+import static nl.knaw.huygens.timbuctoo.index.solr.SortClauseMatcher.likeSortClause;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -86,6 +87,7 @@ public class SolrIndexTest {
   public static final String FILTER_NAME = "filterName";
   public static final String ID_1 = "id1";
   public static final String ID_2 = "id2";
+
   @Mock
   private List<? extends DomainEntity> variationsToAdd;
   private AbstractSolrServer solrServerMock;
@@ -96,7 +98,10 @@ public class SolrIndexTest {
   private IndexDescription indexDescriptionMock;
   public static final Map<String, Object> RESULT_1;
   public static final Map<String, Object> RESULT_2;
-  private static final List<SortParameter> SORT = Lists.newArrayList(new SortParameter("field", SortDirection.ASCENDING));
+  public static final String SORT_FIELD_NAME = "field";
+  public static final SortDirection SORT_DIRECTION = SortDirection.ASCENDING;
+  public static final SolrQuery.ORDER SORT_ORDER = SolrQuery.ORDER.asc;
+  private static final List<SortParameter> SORT = Lists.newArrayList(new SortParameter(SORT_FIELD_NAME, SORT_DIRECTION));
 
   static {
     RESULT_1 = Maps.newHashMap();
@@ -104,7 +109,6 @@ public class SolrIndexTest {
     RESULT_2 = Maps.newHashMap();
     RESULT_2.put("otherKey", "otherValue");
   }
-
 
 
   @Before
@@ -681,13 +685,33 @@ public class SolrIndexTest {
     setupQueryResponseForQueryWithResults(likeSolrQuery(), RESULT_1, RESULT_2);
 
     // action
-    List<Map<String, Object>> actualData = instance.getDataByIds(ids, SORT);
+    List<Map<String, Object>> actualData = instance.getDataByIds(ids, Lists.newArrayList());
 
     // verify
     assertThat(actualData, containsInAnyOrder(RESULT_1, RESULT_2));
     verify(solrServerMock).search(argThat(likeSolrQuery()//
       .withQuery(String.format("%s : (%s OR %s)", Entity.INDEX_FIELD_ID, ID_1, ID_2))//
       .withRows(ids.size())));
+  }
+
+  @Test
+  public void getDataByIdsAppendsASortParamWhenSortIsNotEmpty() throws Exception {
+    // setup
+    List<String> ids = Lists.newArrayList(ID_1, ID_2);
+    setupQueryResponseForQueryWithResults(likeSolrQuery(), RESULT_1, RESULT_2);
+
+    // action
+    List<Map<String, Object>> actualData = instance.getDataByIds(ids, SORT);
+
+    // verify
+    assertThat(actualData, containsInAnyOrder(RESULT_1, RESULT_2));
+    verify(solrServerMock).search(argThat(likeSolrQuery()//
+      .withQuery(String.format("%s : (%s OR %s)", Entity.INDEX_FIELD_ID, ID_1, ID_2))//
+      .withRows(ids.size()) //
+      .withSorts(
+        likeSortClause()
+          .withItem(SORT_FIELD_NAME)
+          .withOrder(SORT_ORDER))));
   }
 
   @Test(expected = SearchException.class)
