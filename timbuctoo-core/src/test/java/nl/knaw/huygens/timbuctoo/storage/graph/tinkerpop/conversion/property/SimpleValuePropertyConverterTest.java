@@ -91,7 +91,7 @@ public class SimpleValuePropertyConverterTest implements PropertyConverterTest {
 
   @Override
   @Test(expected = ConversionException.class)
-  public void setValueOfVertexThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalArgumentExceptionIsThrown() throws Exception {
+  public void setPropertyOfElementThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalArgumentExceptionIsThrown() throws Exception {
     // setup
     SimpleValuePropertyConverter instance = new SimpleValuePropertyConverter() {
       @Override
