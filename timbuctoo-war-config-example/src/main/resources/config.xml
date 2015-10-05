@@ -25,8 +25,8 @@
     <home>
       <!-- The directory that contains all the timbuctoo data directories, 
       like solr and admin_data -->
-      <directory>{path to config directory}</directory>
-      <use_user_home>false</use_user_home> <!-- is the path in the user home dir -->
+      <directory>repository</directory>
+      <use_user_home>true</use_user_home> <!-- is the path in the user home dir -->
     </home>
     <graph>
       <!-- check nl.knaw.huygens.timbuctoo.config.GraphTypes for more types. -->
