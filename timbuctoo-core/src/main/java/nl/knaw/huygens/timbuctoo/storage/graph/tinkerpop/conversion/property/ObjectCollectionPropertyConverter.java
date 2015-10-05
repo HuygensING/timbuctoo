@@ -40,7 +40,7 @@ class ObjectCollectionPropertyConverter<T> extends AbstractPropertyConverter {
     try {
       return convertCollection(componentType, (Class<Collection<T>>) fieldType, value.toString());
     } catch (IOException | InstantiationException | IllegalAccessException e) {
-      throw new IllegalArgumentException("Value could not be read.");
+      throw new IllegalArgumentException("Value could not be read.", e);
     }
   }
 
