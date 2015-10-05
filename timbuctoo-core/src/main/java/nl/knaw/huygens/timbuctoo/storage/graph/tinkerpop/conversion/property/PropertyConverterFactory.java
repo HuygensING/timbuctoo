@@ -41,11 +41,16 @@ public class PropertyConverterFactory {
   private PropertyConverter createPropertyConverter(Field field, FieldType fieldType) {
     if (fieldType == VIRTUAL) {
       return createNoOpPropertyConverter();
+    }
+     else if(isCollection(field)) {
+      if (isSimpleCollection(field)) {
+        return createSimpleCollectionPropertyConverter(getComponentType(field));
+      }
+      return createObjectCollectionPropertyConverter(getComponentType(field));
     } else if (isSimpleValue(field)) {
       return createSimpleValuePropertyConverter();
-    } else if (isSimpleCollection(field)) {
-      return createSimpleCollectionPropertyConverter(getComponentType(field));
     }
+
 
     return createObjectValuePropertyConverter();
   }
@@ -63,8 +68,11 @@ public class PropertyConverterFactory {
   }
 
   private boolean isSimpleCollection(Field field) {
-    Class<?> type = field.getType();
-    return Collection.class.isAssignableFrom(type) && hasSimpleTypeArgument(field);
+    return isCollection(field) && hasSimpleTypeArgument(field);
+  }
+
+  private boolean isCollection(Field field) {
+    return Collection.class.isAssignableFrom(field.getType());
   }
 
   private boolean hasSimpleTypeArgument(Field field) {
@@ -93,6 +101,10 @@ public class PropertyConverterFactory {
 
   protected PropertyConverter createObjectValuePropertyConverter() {
     return new ObjectValuePropertyConverter();
+  }
+
+  protected <T> PropertyConverter createObjectCollectionPropertyConverter(Class<T> componentType) {
+    return new ObjectCollectionPropertyConverter(componentType);
   }
 
   protected PropertyConverter createNoOpPropertyConverter() {

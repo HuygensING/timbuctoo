@@ -26,6 +26,8 @@ public class PropertyConverterFactoryTest {
   private static final Class<SimpleValuePropertyConverter> SIMPLE_VALUE_CONVERTER_TYPE = SimpleValuePropertyConverter.class;
   private static final Class<NoOpPropertyConverter> NO_OP_CONVERTER_TYPE = NoOpPropertyConverter.class;
   @SuppressWarnings("rawtypes")
+  public static final Class<ObjectCollectionPropertyConverter> OBJECT_COLLECTION_CONVERTER_TYPE = ObjectCollectionPropertyConverter.class;
+  @SuppressWarnings("rawtypes")
   private static final Class<SimpleCollectionPropertyConverter> SIMPLE_COLLECTION_FIELD_CONVERTER_TYPE = SimpleCollectionPropertyConverter.class;
   public static final String PROPERTY_NAME = "completePropertyName";
   private PropertyConverterFactory instance;
@@ -44,6 +46,11 @@ public class PropertyConverterFactoryTest {
       @Override
       protected PropertyConverter createObjectValuePropertyConverter() {
         return mock(OBJECT_CONVERTER_TYPE);
+      }
+
+      @Override
+      protected <T> PropertyConverter createObjectCollectionPropertyConverter(Class<T> componentType) {
+        return mock(OBJECT_COLLECTION_CONVERTER_TYPE);
       }
 
       @Override
@@ -102,10 +109,10 @@ public class PropertyConverterFactoryTest {
   }
 
   @Test
-  public void createForCreatesAnObjectPropertyConverterIfTheFieldContainsAnObjectCollection() throws Exception {
+  public void createForCreatesAnObjectCollectionPropertyConverterIfTheFieldContainsAnObjectCollection() throws Exception {
     Field objectField = getField(TYPE, "objectCollection");
 
-    testCreateFor(objectField, REGULAR, OBJECT_CONVERTER_TYPE);
+    testCreateFor(objectField, REGULAR, OBJECT_COLLECTION_CONVERTER_TYPE);
   }
 
   @Test
