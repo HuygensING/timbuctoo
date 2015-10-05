@@ -23,7 +23,7 @@ package nl.knaw.huygens.timbuctoo.storage;
  */
 
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
-import nl.knaw.huygens.hamcrest.PropertyEqualtityMatcher;
+import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 
 public class RelationTypeMatcher extends CompositeMatcher<RelationType> {
@@ -36,7 +36,7 @@ public class RelationTypeMatcher extends CompositeMatcher<RelationType> {
   }
 
   public RelationTypeMatcher withId(String id) {
-    addMatcher(new PropertyEqualtityMatcher<RelationType, String>("id", id) {
+    addMatcher(new PropertyEqualityMatcher<RelationType, String>("id", id) {
 
       @Override
       protected String getItemValue(RelationType item) {
@@ -48,7 +48,7 @@ public class RelationTypeMatcher extends CompositeMatcher<RelationType> {
   }
 
   public RelationTypeMatcher withRegularName(String regularName) {
-    addMatcher(new PropertyEqualtityMatcher<RelationType, String>("regularName", regularName) {
+    addMatcher(new PropertyEqualityMatcher<RelationType, String>("regularName", regularName) {
 
       @Override
       protected String getItemValue(RelationType item) {
@@ -60,7 +60,7 @@ public class RelationTypeMatcher extends CompositeMatcher<RelationType> {
   }
 
   public RelationTypeMatcher withInverseName(String inverseName) {
-    addMatcher(new PropertyEqualtityMatcher<RelationType, String>("inverseName", inverseName) {
+    addMatcher(new PropertyEqualityMatcher<RelationType, String>("inverseName", inverseName) {
 
       @Override
       protected String getItemValue(RelationType item) {

@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.rest.util.search;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import nl.knaw.huygens.facetedsearch.model.parameters.SortParameter;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -26,6 +27,7 @@ import test.rest.model.projecta.ProjectADomainEntity;
 import test.rest.model.projecta.ProjectARelation;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.INDEX_FIELD_IDENTIFICATION_NAME;
@@ -66,6 +68,7 @@ public class RelationDTOFactoryTest {
   public static final String TARGET_NAME = "targetName";
   public static final HashMap<String, Object> CONVERTED_SOURCE_DATA = Maps.<String, Object>newHashMap();
   public static final HashMap<String, Object> CONVERTED_TARGET_DATA = Maps.<String, Object>newHashMap();
+  private static final List<SortParameter> EMPTY_SORT = Lists.newArrayList();
 
   static {
     SOURCE_DATA = Maps.newHashMap();
@@ -115,8 +118,8 @@ public class RelationDTOFactoryTest {
 
   private void setupVRE() throws Exception {
     vre = mock(VRE.class);
-    when(vre.getRawDataFor(SOURCE_TYPE, Lists.newArrayList(SOURCE_ID))).thenReturn(Lists.newArrayList(SOURCE_DATA));
-    when(vre.getRawDataFor(TARGET_TYPE, Lists.newArrayList(TARGET_ID))).thenReturn(Lists.newArrayList(TARGET_DATA));
+    when(vre.getRawDataFor(SOURCE_TYPE, Lists.newArrayList(SOURCE_ID), EMPTY_SORT)).thenReturn(Lists.newArrayList(SOURCE_DATA));
+    when(vre.getRawDataFor(TARGET_TYPE, Lists.newArrayList(TARGET_ID), EMPTY_SORT)).thenReturn(Lists.newArrayList(TARGET_DATA));
 
     doReturn(SOURCE_TYPE).when(vre).mapToScopeType(SOURCE_BASE_TYPE);
     doReturn(TARGET_TYPE).when(vre).mapToScopeType(TARGET_BASE_TYPE);
@@ -183,7 +186,7 @@ public class RelationDTOFactoryTest {
   @Test(expected = SearchException.class)
   public void createThrowsASearchExceptionWhenTheVREThrowsASearchException() throws Exception {
     // setup
-    when(vre.getRawDataFor(SOURCE_TYPE, Lists.newArrayList(SOURCE_ID))).thenThrow(new SearchException(new Exception()));
+    when(vre.getRawDataFor(SOURCE_TYPE, Lists.newArrayList(SOURCE_ID), EMPTY_SORT)).thenThrow(new SearchException(new Exception()));
 
     // action
     instance.create(vre, RELATION_TYPE, relationData);
@@ -192,7 +195,7 @@ public class RelationDTOFactoryTest {
   @Test(expected = NotInScopeException.class)
   public void createThrowsANotInScopeExceptionWhenTheVREThrowsNotInScopeException() throws Exception {
     // setup
-    when(vre.getRawDataFor(SOURCE_TYPE, Lists.newArrayList(SOURCE_ID))).thenThrow(NotInScopeException.typeIsNotInScope(SOURCE_TYPE, "vreId"));
+    when(vre.getRawDataFor(SOURCE_TYPE, Lists.newArrayList(SOURCE_ID), EMPTY_SORT)).thenThrow(NotInScopeException.typeIsNotInScope(SOURCE_TYPE, "vreId"));
 
     // action
     instance.create(vre, RELATION_TYPE, relationData);

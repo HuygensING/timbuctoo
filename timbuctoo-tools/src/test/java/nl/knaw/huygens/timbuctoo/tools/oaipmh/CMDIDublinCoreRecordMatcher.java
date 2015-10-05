@@ -23,7 +23,7 @@ package nl.knaw.huygens.timbuctoo.tools.oaipmh;
  */
 
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
-import nl.knaw.huygens.hamcrest.PropertyEqualtityMatcher;
+import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.oaipmh.metadata.CMDIDublinCoreRecord;
 
 public class CMDIDublinCoreRecordMatcher extends CompositeMatcher<CMDIDublinCoreRecord> {
@@ -62,7 +62,7 @@ public class CMDIDublinCoreRecordMatcher extends CompositeMatcher<CMDIDublinCore
     return this;
   }
 
-  private class MdSelfLinkMatcher extends PropertyEqualtityMatcher<CMDIDublinCoreRecord, String> {
+  private class MdSelfLinkMatcher extends PropertyEqualityMatcher<CMDIDublinCoreRecord, String> {
     private static final String PROPERTY_NAME = "mdSelfLink";
 
     private MdSelfLinkMatcher(String mdSelfLink) {
@@ -75,7 +75,7 @@ public class CMDIDublinCoreRecordMatcher extends CompositeMatcher<CMDIDublinCore
     }
   }
 
-  private class MdProfileMatcher extends PropertyEqualtityMatcher<CMDIDublinCoreRecord, String> {
+  private class MdProfileMatcher extends PropertyEqualityMatcher<CMDIDublinCoreRecord, String> {
 
     private static final String PROPERTY_NAME = "mdProfile";
 
@@ -89,7 +89,7 @@ public class CMDIDublinCoreRecordMatcher extends CompositeMatcher<CMDIDublinCore
     }
   }
 
-  private class MdCreatorMatcher extends PropertyEqualtityMatcher<CMDIDublinCoreRecord, String> {
+  private class MdCreatorMatcher extends PropertyEqualityMatcher<CMDIDublinCoreRecord, String> {
     private static final String PROPERTY_NAME = "mdCreator";
 
     private MdCreatorMatcher(String mdCreator) {
@@ -102,7 +102,7 @@ public class CMDIDublinCoreRecordMatcher extends CompositeMatcher<CMDIDublinCore
     }
   }
 
-  private class MdCollectionDisplayNameMatcher extends PropertyEqualtityMatcher<CMDIDublinCoreRecord, String> {
+  private class MdCollectionDisplayNameMatcher extends PropertyEqualityMatcher<CMDIDublinCoreRecord, String> {
     private static final String PROPERTY_NAME = "mdCollectionDisplayName";
 
     private MdCollectionDisplayNameMatcher(String propertyValue) {
@@ -115,7 +115,7 @@ public class CMDIDublinCoreRecordMatcher extends CompositeMatcher<CMDIDublinCore
     }
   }
 
-  private class DublinCoreRecordTitleMatcher extends PropertyEqualtityMatcher<CMDIDublinCoreRecord, String> {
+  private class DublinCoreRecordTitleMatcher extends PropertyEqualityMatcher<CMDIDublinCoreRecord, String> {
     private static final String PROPERTY_NAME = "DublinCoreRecord with title";
 
     public DublinCoreRecordTitleMatcher(String propertyValue) {

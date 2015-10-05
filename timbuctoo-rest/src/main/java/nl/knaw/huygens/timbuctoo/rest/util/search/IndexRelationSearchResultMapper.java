@@ -41,7 +41,7 @@ public class IndexRelationSearchResultMapper extends RelationSearchResultMapper 
     List<String> idsToRetrieve = ids.subList(normalizedStart, end);
     List<Map<String, Object>> rawData = null;
     try {
-      rawData = vre.getRawDataFor(type, idsToRetrieve);
+      rawData = vre.getRawDataFor(type, idsToRetrieve, searchResult.getSort());
     } catch (NotInScopeException | SearchException e) {
       throw new RuntimeException(e); // FIXME: Hack to inform the client the search went wrong, and not change the API
     }

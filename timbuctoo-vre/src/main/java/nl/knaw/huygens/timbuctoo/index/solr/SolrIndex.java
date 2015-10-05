@@ -31,6 +31,8 @@ import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.NoSuchFieldInIndexException;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.facetedsearch.model.parameters.IndexDescription;
+import nl.knaw.huygens.facetedsearch.model.parameters.SortDirection;
+import nl.knaw.huygens.facetedsearch.model.parameters.SortParameter;
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
@@ -274,20 +276,32 @@ public class SolrIndex implements Index {
   }
 
   @Override
-  public List<Map<String, Object>> getDataByIds(List<String> ids) throws SearchException {
+  public List<Map<String, Object>> getDataByIds(List<String> ids, List<SortParameter> sort) throws SearchException {
     final int maxNumberOfIdsSolrSupports = 1000;
     List<List<String>> idsPart = Lists.partition(ids, maxNumberOfIdsSolrSupports);
     List<Map<String, Object>> results = Lists.newArrayList();
 
+    List<SolrQuery.SortClause> sortClauses = Lists.newArrayList();
+
+    for (SortParameter sortParameter : sort) {
+      SolrQuery.ORDER order = SolrQuery.ORDER.desc;
+      if(SortDirection.ASCENDING.equals(sortParameter.getDirection())){
+        order = SolrQuery.ORDER.asc;
+      }
+
+      sortClauses.add(new SolrQuery.SortClause(sortParameter.getFieldName(), order));
+    }
+
+
     for (List<String> part : idsPart) {
-      addResultsOfPartialQuery(part, results);
+      addResultsOfPartialQuery(part, results, sortClauses);
     }
 
 
     return results;
   }
 
-  private void addResultsOfPartialQuery(List<String> ids, List<Map<String, Object>> results) throws SearchException {
+  private void addResultsOfPartialQuery(List<String> ids, List<Map<String, Object>> results, List<SolrQuery.SortClause> sortClauses) throws SearchException {
     StringBuilder queryBuilder = new StringBuilder(Entity.INDEX_FIELD_ID);
     queryBuilder.append(" : (");
     boolean isFirst = true;
@@ -301,7 +315,9 @@ public class SolrIndex implements Index {
     queryBuilder.append(")");
 
     SolrQuery query = new SolrQuery(queryBuilder.toString());
+
     query.setRows(ids.size());
+    query.setSorts(sortClauses);
 
     results.addAll(getMultiRawResults(query));
   }

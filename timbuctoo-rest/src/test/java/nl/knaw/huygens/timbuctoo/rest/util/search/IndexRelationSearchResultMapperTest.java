@@ -3,6 +3,8 @@ package nl.knaw.huygens.timbuctoo.rest.util.search;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.facetedsearch.model.Facet;
+import nl.knaw.huygens.facetedsearch.model.parameters.SortDirection;
+import nl.knaw.huygens.facetedsearch.model.parameters.SortParameter;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.RelationDTO;
@@ -41,16 +43,16 @@ public class IndexRelationSearchResultMapperTest {
   private static final int ROWS = 10;
   private static final String VERSION = "v1";
   private static final List<String> IDS = Lists.newArrayList("id1", "id2", "id3", "id4", "id5", "id6", "id7", "id8", "id9", "id10");
-  private static final List<String> ID_SUBLIST = Lists.newArrayList("id2", "id3", "id4", "id5");
+  private static final List<String> ID_SUB_LIST = Lists.newArrayList("id2", "id3", "id4", "id5");
   public static final int NUM_FOUND = IDS.size();
-  ;
+  private static final List<SortParameter> SORT = Lists.newArrayList(new SortParameter("field", SortDirection.ASCENDING));
   private static final String QUERY_ID = "queryId";
   private static final List<Facet> FACETS = Lists.newArrayList();
   private static final String TERM = "term";
   public static final int NORMALIZED_ROWS = 4;
   public static final int NORMALIZED_START = 1;
   public static final HashSet<String> SORTABLE_FIELDS = Sets.newHashSet();
-  public static final String NEXT_LINK = "nextlink";
+  public static final String NEXT_LINK = "nextLink";
   public static final String PREV_LINK = "prevLink";
   public static final ArrayList<RelationDTO> REFS = Lists.newArrayList();
   private static final List<Map<String, Object>> RAW_DATA = Lists.newArrayList();
@@ -93,7 +95,7 @@ public class IndexRelationSearchResultMapperTest {
     vreCollection = mock(VRECollection.class);
     vre = mock(VRE.class);
     when(vreCollection.getVREById(VRE_ID)).thenReturn(vre);
-    when(vre.getRawDataFor(TYPE, ID_SUBLIST)).thenReturn(RAW_DATA);
+    when(vre.getRawDataFor(TYPE, ID_SUB_LIST, SORT)).thenReturn(RAW_DATA);
   }
 
   private void setupRangeHelper() {
@@ -117,6 +119,7 @@ public class IndexRelationSearchResultMapperTest {
     searchResult.setFacets(FACETS);
     searchResult.setTerm(TERM);
     searchResult.setVreId(VRE_ID);
+    searchResult.setSort(SORT);
   }
 
   @Test
@@ -143,7 +146,7 @@ public class IndexRelationSearchResultMapperTest {
   public void createThrowsARuntimeExceptionWhenGetRawDataForThrowsANotInScopeException() throws Exception {
     // setup
     NotInScopeException notInScopeException = NotInScopeException.typeIsNotInScope(TYPE, VRE_ID);
-    when(vre.getRawDataFor(TYPE, ID_SUBLIST)).thenThrow(notInScopeException);
+    when(vre.getRawDataFor(TYPE, ID_SUB_LIST, SORT)).thenThrow(notInScopeException);
 
     exception.expect(RuntimeException.class);
     exception.expectCause(is(notInScopeException));
@@ -156,7 +159,7 @@ public class IndexRelationSearchResultMapperTest {
   public void createThrowsARuntimeExceptionWhenGetRawDataForThrowsASearchException() throws Exception {
     // setup
     SearchException searchException = new SearchException(new Exception());
-    when(vre.getRawDataFor(TYPE, ID_SUBLIST)).thenThrow(searchException);
+    when(vre.getRawDataFor(TYPE, ID_SUB_LIST, SORT)).thenThrow(searchException);
 
     exception.expect(RuntimeException.class);
     exception.expectCause(is(searchException));

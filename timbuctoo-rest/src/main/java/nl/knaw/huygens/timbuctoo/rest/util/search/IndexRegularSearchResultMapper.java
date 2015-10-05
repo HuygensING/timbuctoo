@@ -54,7 +54,7 @@ public class IndexRegularSearchResultMapper extends RegularSearchResultMapper {
 
     List<DomainEntityDTO> refs = null;
     try {
-      List<Map<String, Object>> rawData = vreCollection.getVREById(searchResult.getVreId()).getRawDataFor(type, idsToRetrieve);
+      List<Map<String, Object>> rawData = vreCollection.getVREById(searchResult.getVreId()).getRawDataFor(type, idsToRetrieve, searchResult.getSort());
       LOG.debug("number of items found in execute {}", rawData.size());
       refs = domainEntityDTOListFactory.createFor(type, rawData);
     } catch (SearchException | NotInScopeException | SearchResultCreationException e) {

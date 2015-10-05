@@ -26,6 +26,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
+import nl.knaw.huygens.facetedsearch.model.parameters.SortParameter;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.index.Index;
@@ -318,10 +319,10 @@ public class PackageVRE implements VRE {
   }
 
   @Override
-  public List<Map<String, Object>> getRawDataFor(Class<? extends DomainEntity> type, List<String> ids) throws NotInScopeException, SearchException {
+  public List<Map<String, Object>> getRawDataFor(Class<? extends DomainEntity> type, List<String> ids, List<SortParameter> sort) throws NotInScopeException, SearchException {
     throwNotInScopeExceptionWhenNotInScope(type);
 
-    return getIndexForType(type).getDataByIds(ids);
+    return getIndexForType(type).getDataByIds(ids, sort);
   }
 
   private interface IndexChanger {

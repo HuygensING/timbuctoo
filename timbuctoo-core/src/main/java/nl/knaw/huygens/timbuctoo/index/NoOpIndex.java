@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.index;
 
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
+import nl.knaw.huygens.facetedsearch.model.parameters.SortParameter;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +81,7 @@ public class NoOpIndex implements Index {
   }
 
   @Override
-  public List<Map<String, Object>> getDataByIds(List<String> ids) {
+  public List<Map<String, Object>> getDataByIds(List<String> ids, List<SortParameter> sort) {
     throw new UnsupportedOperationException("Not implemented yet");
   }
 }

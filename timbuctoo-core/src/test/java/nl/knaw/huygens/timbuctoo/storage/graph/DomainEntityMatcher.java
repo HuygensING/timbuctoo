@@ -5,7 +5,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
-import nl.knaw.huygens.hamcrest.PropertyEqualtityMatcher;
+import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.hamcrest.PropertyMatcher;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
@@ -18,7 +18,7 @@ public class DomainEntityMatcher<T extends DomainEntity> extends CompositeMatche
   }
 
   public DomainEntityMatcher<T> withId(String id) {
-    addMatcher(new PropertyEqualtityMatcher<T, String>("id", id) {
+    addMatcher(new PropertyEqualityMatcher<T, String>("id", id) {
 
       @Override
       protected String getItemValue(T item) {
@@ -52,7 +52,7 @@ public class DomainEntityMatcher<T extends DomainEntity> extends CompositeMatche
   }
 
   public DomainEntityMatcher<T> withRevision(int revisionNumber) {
-    addMatcher(new PropertyEqualtityMatcher<T, Integer>("rev", revisionNumber) {
+    addMatcher(new PropertyEqualityMatcher<T, Integer>("rev", revisionNumber) {
 
       @Override
       protected Integer getItemValue(T item) {
@@ -86,7 +86,7 @@ public class DomainEntityMatcher<T extends DomainEntity> extends CompositeMatche
   }
 
   public DomainEntityMatcher<T> withPID(String pid) {
-    addMatcher(new PropertyEqualtityMatcher<T, String>("pid", pid) {
+    addMatcher(new PropertyEqualityMatcher<T, String>("pid", pid) {
 
       @Override
       protected String getItemValue(T item) {
