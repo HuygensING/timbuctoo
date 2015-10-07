@@ -1,12 +1,21 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import nl.knaw.huygens.facetedsearch.model.DefaultFacet;
+import nl.knaw.huygens.facetedsearch.model.Facet;
+import nl.knaw.huygens.facetedsearch.model.FacetType;
+import nl.knaw.huygens.facetedsearch.model.RangeFacet;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.List;
@@ -19,7 +28,16 @@ class ObjectCollectionPropertyConverter<T> extends AbstractPropertyConverter {
 
   public ObjectCollectionPropertyConverter(Class<T> componentType) {
     this.componentType = componentType;
-    objectMapper = new ObjectMapper();
+    objectMapper = createObjectMapper();
+  }
+
+  protected ObjectMapper createObjectMapper() {
+    ObjectMapper objectMapper = new ObjectMapper();
+    SimpleModule module = new SimpleModule();
+    module.addDeserializer(Facet.class, new FacetDeserializer());
+    objectMapper.registerModule(module);
+
+    return objectMapper;
   }
 
 
@@ -49,17 +67,9 @@ class ObjectCollectionPropertyConverter<T> extends AbstractPropertyConverter {
    * so we need to deserialize the the entries as an array an later covert them to the type of the field.
    */
   private <E, C extends Collection<E>> Object convertCollection(Class<E> entryType, Class<C> fieldType, String rawValue) throws IOException, IllegalAccessException, InstantiationException {
-    Class<E> arrayRep = (Class<E>) Array.newInstance(entryType, 0).getClass();
+    TypeFactory typeFactory =  objectMapper.getTypeFactory();
 
-    E[] value1 = (E[]) objectMapper.readValue(rawValue, arrayRep);
-
-    C fieldValue = instantiateCollection(entryType, fieldType);
-
-    for (E e : value1) {
-      fieldValue.add(e);
-    }
-
-    return fieldValue;
+    return objectMapper.readValue(rawValue, typeFactory.constructCollectionType(fieldType, entryType));
   }
 
   private <C extends Collection<E>, E> C instantiateCollection(Class<E> entryType, Class<C> fieldType) throws IllegalAccessException, InstantiationException {
@@ -74,5 +84,17 @@ class ObjectCollectionPropertyConverter<T> extends AbstractPropertyConverter {
     }
 
     throw new RuntimeException("Type " + fieldType + " is not supported as field");
+  }
+
+  private static class FacetDeserializer extends JsonDeserializer<Facet> {
+
+    @Override
+    public Facet deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+      JsonNode treeNode = jp.readValueAsTree();
+      if(FacetType.RANGE.toString().equals(treeNode.get("type"))){
+        return new RangeFacet(treeNode.get("name").asText(), treeNode.get("title").asText(), treeNode.get("lowerLimit").asLong(), (int) treeNode.get("upprtLimit").asLong());
+      }
+      return new DefaultFacet(treeNode.get("name").asText(), treeNode.get("title").asText());
+    }
   }
 }
