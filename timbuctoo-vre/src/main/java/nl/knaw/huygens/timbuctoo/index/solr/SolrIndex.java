@@ -289,7 +289,7 @@ public class SolrIndex implements Index {
         order = SolrQuery.ORDER.asc;
       }
 
-      sortClauses.add(new SolrQuery.SortClause(sortParameter.getFieldName(), order));
+      sortClauses.add(new SolrQuery.SortClause(sortParameter.getFieldname(), order));
     }
 
 
