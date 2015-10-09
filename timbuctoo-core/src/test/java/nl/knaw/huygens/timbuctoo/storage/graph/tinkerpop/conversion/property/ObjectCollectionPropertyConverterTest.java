@@ -31,7 +31,7 @@ public class ObjectCollectionPropertyConverterTest implements PropertyConverterT
   public static final String PROPERTY_NAME = "propertyName";
   private TestSystemEntityWrapper entity;
   private String completePropertyName;
-  private ObjectCollectionPropertyConverter instance;
+  private ObjectCollectionPropertyConverter<Change> instance;
   private Vertex vertexMock;
 
   @Before
@@ -90,7 +90,7 @@ public class ObjectCollectionPropertyConverterTest implements PropertyConverterT
   @Override
   public void setPropertyOfElementThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalAccessException() throws Exception {
     // setup
-    ObjectCollectionPropertyConverter instance = new ObjectCollectionPropertyConverter(COMPONENT_TYPE) {
+    ObjectCollectionPropertyConverter<Change> instance = new ObjectCollectionPropertyConverter<Change>(COMPONENT_TYPE) {
       @Override
       protected Object getValue(Entity entity) throws IllegalAccessException, IllegalArgumentException {
         throw new IllegalAccessException();
@@ -106,7 +106,7 @@ public class ObjectCollectionPropertyConverterTest implements PropertyConverterT
   @Override
   public void setPropertyOfElementThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalArgumentExceptionIsThrown() throws Exception {
     // setup
-    ObjectCollectionPropertyConverter instance = new ObjectCollectionPropertyConverter(COMPONENT_TYPE) {
+    ObjectCollectionPropertyConverter<Change> instance = new ObjectCollectionPropertyConverter<Change>(COMPONENT_TYPE) {
       @Override
       protected Object getValue(Entity entity) throws IllegalAccessException, IllegalArgumentException {
         throw new IllegalArgumentException();
@@ -124,7 +124,7 @@ public class ObjectCollectionPropertyConverterTest implements PropertyConverterT
     // setup
     entity.setObjectCollection(DEFAULT_VALUE);
 
-    ObjectCollectionPropertyConverter instance = new ObjectCollectionPropertyConverter(COMPONENT_TYPE) {
+    ObjectCollectionPropertyConverter<Change> instance = new ObjectCollectionPropertyConverter<Change>(COMPONENT_TYPE) {
       @Override
       protected Object format(Object value) throws IllegalArgumentException {
         throw new IllegalArgumentException();
@@ -167,7 +167,7 @@ public class ObjectCollectionPropertyConverterTest implements PropertyConverterT
   @Override
   public void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnIllegalAccessExceptionIsThrown() throws Exception {
     // setup
-    ObjectCollectionPropertyConverter instance = new ObjectCollectionPropertyConverter(COMPONENT_TYPE) {
+    ObjectCollectionPropertyConverter instance = new ObjectCollectionPropertyConverter<Change>(COMPONENT_TYPE) {
       @Override
       protected void fillField(Entity entity, Object value) throws IllegalAccessException, IllegalArgumentException {
         throw new IllegalAccessException();
@@ -184,7 +184,7 @@ public class ObjectCollectionPropertyConverterTest implements PropertyConverterT
   @Override
   public void addValueToEntityThrowsAConversionExceptionWhenFillFieldThrowsAnAnIllegalArgumentExceptionIsThrown() throws Exception {
     // setup
-    ObjectCollectionPropertyConverter instance = new ObjectCollectionPropertyConverter(COMPONENT_TYPE) {
+    ObjectCollectionPropertyConverter instance = new ObjectCollectionPropertyConverter<Change>(COMPONENT_TYPE) {
       @Override
       protected void fillField(Entity entity, Object value) throws IllegalAccessException, IllegalArgumentException {
         throw new IllegalArgumentException();
