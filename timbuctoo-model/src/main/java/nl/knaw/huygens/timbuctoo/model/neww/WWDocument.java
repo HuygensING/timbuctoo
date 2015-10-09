@@ -84,6 +84,12 @@ public class WWDocument extends Document {
     return source;
   }
 
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_sources", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
+  public List<RelationRef> getSources() {
+    return getRelations("hasDocumentSource");
+  }
+
   public void setSource(boolean source) {
     this.source = source;
   }
@@ -225,7 +231,7 @@ public class WWDocument extends Document {
   private static final List<DerivedRelationDescription> DERIVED_RELATION_TYPES = ImmutableList.of(AUTHOR_BIRTHPLACE, AUTHOR_DEATHPLACE, AUTHOR_MEMBERSHIPS, AUTHOR_RELIGION, AUTHOR_RESIDENCE, AUTHOR_MARITAL_STATUS, AUTHOR_EDUCATION, AUTHOR_SOCIAL_CLASS, AUTHOR_FINANCIALS, AUTHOR_PROFESSION);
 
   @Override
-  public  List<DerivedRelationDescription> getDerivedRelationDescriptions() {
+  public List<DerivedRelationDescription> getDerivedRelationDescriptions() {
     return DERIVED_RELATION_TYPES;
   }
 
