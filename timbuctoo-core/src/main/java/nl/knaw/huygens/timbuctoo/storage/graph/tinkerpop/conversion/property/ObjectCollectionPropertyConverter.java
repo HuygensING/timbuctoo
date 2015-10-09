@@ -1,19 +1,12 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import nl.knaw.huygens.facetedsearch.model.DefaultFacet;
 import nl.knaw.huygens.facetedsearch.model.Facet;
-import nl.knaw.huygens.facetedsearch.model.FacetType;
-import nl.knaw.huygens.facetedsearch.model.RangeFacet;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
@@ -86,15 +79,4 @@ class ObjectCollectionPropertyConverter<T> extends AbstractPropertyConverter {
     throw new RuntimeException("Type " + fieldType + " is not supported as field");
   }
 
-  private static class FacetDeserializer extends JsonDeserializer<Facet> {
-
-    @Override
-    public Facet deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-      JsonNode treeNode = jp.readValueAsTree();
-      if(FacetType.RANGE.toString().equals(treeNode.get("type"))){
-        return new RangeFacet(treeNode.get("name").asText(), treeNode.get("title").asText(), treeNode.get("lowerLimit").asLong(), (int) treeNode.get("upprtLimit").asLong());
-      }
-      return new DefaultFacet(treeNode.get("name").asText(), treeNode.get("title").asText());
-    }
-  }
 }
