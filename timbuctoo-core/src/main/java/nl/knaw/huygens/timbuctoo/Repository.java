@@ -492,7 +492,7 @@ public class Repository {
     String sourceTypeName = TypeNames.getInternalName(entity.getClass());
     String sourceId = entity.getId();
 
-    for (DerivedRelationDescription drDescription : entity.getDerivedRelationTypes()) {
+    for (DerivedRelationDescription drDescription : entity.getDerivedRelationDescriptions()) {
       Set<DerivedRelation> derivedRelations = Sets.newHashSet();
 
       RelationType relationType = getRelationTypeByName(drDescription.getSecundaryTypeName(), REQUIRED);

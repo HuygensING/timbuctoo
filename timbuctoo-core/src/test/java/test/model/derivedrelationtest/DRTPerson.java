@@ -12,7 +12,7 @@ public class DRTPerson extends Person {
   private static final List<DerivedRelationDescription> DERIVED_RELATION_TYPES = ImmutableList.of(PERSON_HAS_LANG);
 
   @Override
-  public List<DerivedRelationDescription> getDerivedRelationTypes() {
+  public List<DerivedRelationDescription> getDerivedRelationDescriptions() {
     return DERIVED_RELATION_TYPES;
   }
 }

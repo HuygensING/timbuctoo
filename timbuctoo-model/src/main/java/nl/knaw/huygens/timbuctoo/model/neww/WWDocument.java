@@ -29,7 +29,7 @@ import com.google.common.collect.Maps;
 import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.DerivedProperty;
-import nl.knaw.huygens.timbuctoo.model.DerivedRelationType;
+import nl.knaw.huygens.timbuctoo.model.DerivedRelationDescription;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.RelationRef;
 import nl.knaw.huygens.timbuctoo.oaipmh.DublinCoreMetadataField;
@@ -212,22 +212,23 @@ public class WWDocument extends Document {
     return getProperty(ORIGINS.getPropertyName());
   }
 
-  private static final DerivedRelationType AUTHOR_RESIDENCE = new DerivedRelationType("hasAuthorResidence", "isCreatedBy", "hasResidenceLocation");
-  private static final DerivedRelationType AUTHOR_BIRTHPLACE = new DerivedRelationType("hasAuthorBirthPlace", "isCreatedBy", "hasBirthPlace");
-  private static final DerivedRelationType AUTHOR_DEATHPLACE = new DerivedRelationType("hasAuthorDeathPlace", "isCreatedBy", "hasDeathPlace");
-  private static final DerivedRelationType AUTHOR_RELIGION = new DerivedRelationType("hasAuthorReligion", "isCreatedBy", "hasReligion");
-  private static final DerivedRelationType AUTHOR_MEMBERSHIPS = new DerivedRelationType("hasAuthorMemberships", "isCreatedBy", "isMemberOf");
-  private static final DerivedRelationType AUTHOR_MARITAL_STATUS = new DerivedRelationType("hasAuthorMaritalStatus", "isCreatedBy", "hasMaritalStatus");
-  private static final DerivedRelationType AUTHOR_SOCIAL_CLASS = new DerivedRelationType("hasAuthorSocialClass", "isCreatedBy", "hasSocialClass");
-  private static final DerivedRelationType AUTHOR_EDUCATION = new DerivedRelationType("hasAuthorEducation", "isCreatedBy", "hasEducation");
-  private static final DerivedRelationType AUTHOR_PROFESSION = new DerivedRelationType("hasAuthorProfession", "isCreatedBy", "hasProfession");
-  private static final DerivedRelationType AUTHOR_FINANCIALS = new DerivedRelationType("hasAuthorFinancialSituation", "isCreatedBy", "hasFinancialSituation");
-  private static final List<DerivedRelationType> DERIVED_RELATION_TYPES = ImmutableList.of(AUTHOR_BIRTHPLACE, AUTHOR_DEATHPLACE, AUTHOR_MEMBERSHIPS, AUTHOR_RELIGION, AUTHOR_RESIDENCE, AUTHOR_MARITAL_STATUS, AUTHOR_EDUCATION, AUTHOR_SOCIAL_CLASS, AUTHOR_FINANCIALS, AUTHOR_PROFESSION);
+  private static final DerivedRelationDescription AUTHOR_RESIDENCE = new DerivedRelationDescription("hasAuthorResidence", "isCreatedBy", "hasResidenceLocation");
+  private static final DerivedRelationDescription AUTHOR_BIRTHPLACE = new DerivedRelationDescription("hasAuthorBirthPlace", "isCreatedBy", "hasBirthPlace");
+  private static final DerivedRelationDescription AUTHOR_DEATHPLACE = new DerivedRelationDescription("hasAuthorDeathPlace", "isCreatedBy", "hasDeathPlace");
+  private static final DerivedRelationDescription AUTHOR_RELIGION = new DerivedRelationDescription("hasAuthorReligion", "isCreatedBy", "hasReligion");
+  private static final DerivedRelationDescription AUTHOR_MEMBERSHIPS = new DerivedRelationDescription("hasAuthorMemberships", "isCreatedBy", "isMemberOf");
+  private static final DerivedRelationDescription AUTHOR_MARITAL_STATUS = new DerivedRelationDescription("hasAuthorMaritalStatus", "isCreatedBy", "hasMaritalStatus");
+  private static final DerivedRelationDescription AUTHOR_SOCIAL_CLASS = new DerivedRelationDescription("hasAuthorSocialClass", "isCreatedBy", "hasSocialClass");
+  private static final DerivedRelationDescription AUTHOR_EDUCATION = new DerivedRelationDescription("hasAuthorEducation", "isCreatedBy", "hasEducation");
+  private static final DerivedRelationDescription AUTHOR_PROFESSION = new DerivedRelationDescription("hasAuthorProfession", "isCreatedBy", "hasProfession");
+  private static final DerivedRelationDescription AUTHOR_FINANCIALS = new DerivedRelationDescription("hasAuthorFinancialSituation", "isCreatedBy", "hasFinancialSituation");
+  private static final List<DerivedRelationDescription> DERIVED_RELATION_TYPES = ImmutableList.of(AUTHOR_BIRTHPLACE, AUTHOR_DEATHPLACE, AUTHOR_MEMBERSHIPS, AUTHOR_RELIGION, AUTHOR_RESIDENCE, AUTHOR_MARITAL_STATUS, AUTHOR_EDUCATION, AUTHOR_SOCIAL_CLASS, AUTHOR_FINANCIALS, AUTHOR_PROFESSION);
 
   @Override
-  public List<DerivedRelationType> getDerivedRelationTypes() {
+  public  List<DerivedRelationDescription> getDerivedRelationDescriptions() {
     return DERIVED_RELATION_TYPES;
   }
+
 
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_author_residence", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
@@ -278,13 +279,13 @@ public class WWDocument extends Document {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_author_profession", canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_s_author_profession", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getAuthorProfession() {
     return getRelations(AUTHOR_PROFESSION.getDerivedTypeName());
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_author_financials", canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_s_author_financials", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getAuthorFinancials() {
     return getRelations(AUTHOR_FINANCIALS.getDerivedTypeName());
   }

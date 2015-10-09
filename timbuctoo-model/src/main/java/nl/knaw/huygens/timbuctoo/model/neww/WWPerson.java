@@ -269,7 +269,7 @@ public class WWPerson extends Person {
 
 
   @Override
-  public List<DerivedRelationDescription> getDerivedRelationTypes() {
+  public List<DerivedRelationDescription> getDerivedRelationDescriptions() {
     return DERIVED_RELATION_TYPES;
   }
 
