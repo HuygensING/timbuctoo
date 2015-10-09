@@ -22,48 +22,68 @@ package nl.knaw.huygens.timbuctoo;
  * #L%
  */
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Mockito.mock;
-
-import java.util.Calendar;
-import java.util.Date;
-
+import com.google.common.collect.Iterators;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.Person;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.RelationTypes;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
-import nl.knaw.huygens.timbuctoo.storage.mongo.MongoDBIntegrationTestHelper;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.TinkerPopDBIntegrationTestHelper;
+import nl.knaw.huygens.timbuctoo.util.DefaultRelationRefCreator;
+import nl.knaw.huygens.timbuctoo.util.RelationRefAdder;
 import nl.knaw.huygens.timbuctoo.util.RelationRefAdderFactory;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
+import test.model.derivedrelationtest.DRTDocument;
+import test.model.derivedrelationtest.DRTLanguage;
+import test.model.derivedrelationtest.DRTPerson;
+import test.model.derivedrelationtest.DRTRelation;
+import test.model.projecta.ProjectAPerson;
 
-import com.google.common.collect.Iterators;
+import java.util.Calendar;
+import java.util.Date;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.Mockito.mock;
 
 public class RepositoryIntegrationTest {
   private static final Class<SearchResult> SEARCH_RESULT_TYPE = SearchResult.class;
+  public static final Change CHANGE = Change.newInternalInstance();
+  public static final String IS_PERSON_OF_RELATION = "isPersonOf";
+  public static final String IS_LANGUAGE_OF_RELATION = "isLanguageOf";
   private Repository instance;
   private RelationRefAdderFactory relationRefCreatorFactoryMock;
-  private MongoDBIntegrationTestHelper dbIntegrationTestHelper;
+  private TinkerPopDBIntegrationTestHelper dbIntegrationTestHelper;
 
   @Before
   public void setup() throws Exception {
-    dbIntegrationTestHelper = new MongoDBIntegrationTestHelper();
+    dbIntegrationTestHelper = new TinkerPopDBIntegrationTestHelper();
     dbIntegrationTestHelper.startCleanDB();
 
     TypeRegistry registry = TypeRegistry.getInstance();
+    registry.init(Person.class.getPackage().getName() + " " + DRTPerson.class.getPackage());
     Storage storage = dbIntegrationTestHelper.createStorage(registry);
-    relationRefCreatorFactoryMock = mock(RelationRefAdderFactory.class);
+    setupRelationAdderFactory(registry, storage);
 
     instance = new Repository(registry, storage, relationRefCreatorFactoryMock, new RelationTypes(storage));
+  }
+
+  protected void setupRelationAdderFactory(TypeRegistry registry, Storage storage) {
+    relationRefCreatorFactoryMock = mock(RelationRefAdderFactory.class);
+    Mockito.when(relationRefCreatorFactoryMock.create(DRTRelation.class)).thenReturn(
+      new RelationRefAdder(new DefaultRelationRefCreator(registry, storage)));
   }
 
   @After
@@ -106,6 +126,79 @@ public class RepositoryIntegrationTest {
     // verify
     assertThatDatabaseContainsNumberOfItemsOfType(SEARCH_RESULT_TYPE, 2);
   }
+
+  @Test
+  public void getEntityOrDefaultVariationWithRelationsAlsoReturnsTheDerivedRelations() throws ValidationException, StorageException {
+    // add entities
+    DRTDocument doc = new DRTDocument();
+    String docId = instance.addDomainEntity(DRTDocument.class, doc, CHANGE);
+
+    DRTLanguage language = new DRTLanguage();
+    String languageId = instance.addDomainEntity(DRTLanguage.class, language, CHANGE);
+
+    ProjectAPerson person = new ProjectAPerson();
+    String personId = instance.addDomainEntity(ProjectAPerson.class, person, CHANGE);
+
+
+    // add relation between document and language
+    RelationType documentHasLanguageType = new RelationType();
+    documentHasLanguageType.setRegularName("hasLanguage");
+    documentHasLanguageType.setInverseName(IS_LANGUAGE_OF_RELATION);
+    documentHasLanguageType.setSourceTypeName("document");
+    documentHasLanguageType.setTargetTypeName("language");
+    String documentHasLanguageTypeId = instance.addSystemEntity(RelationType.class, documentHasLanguageType);
+
+    DRTRelation docLanguageRelation = new DRTRelation();
+    docLanguageRelation.setSourceId(docId);
+    docLanguageRelation.setSourceType("document");
+    docLanguageRelation.setTargetId(languageId);
+    docLanguageRelation.setTargetType("language");
+    docLanguageRelation.setTypeId(documentHasLanguageTypeId);
+    instance.addDomainEntity(DRTRelation.class, docLanguageRelation, CHANGE);
+
+    // add relation between document and person
+    RelationType documentHasPersonType = new RelationType();
+    documentHasPersonType.setRegularName("hasPerson");
+    documentHasPersonType.setInverseName(IS_PERSON_OF_RELATION);
+    documentHasPersonType.setSourceTypeName("document");
+    documentHasPersonType.setTargetTypeName("person");
+    String documentHasPersonTypeId = instance.addSystemEntity(RelationType.class, documentHasPersonType);
+
+    DRTRelation docPersonRelation = new DRTRelation();
+    docPersonRelation.setSourceId(docId);
+    docPersonRelation.setSourceType("document");
+    docPersonRelation.setTargetId(personId);
+    docPersonRelation.setTargetType("person");
+    docPersonRelation.setTypeId(documentHasPersonTypeId);
+    instance.addDomainEntity(DRTRelation.class, docPersonRelation, CHANGE);
+
+    // add derived relation types
+    RelationType personHasLanguageType = new RelationType();
+    personHasLanguageType.setRegularName(DRTPerson.DERIVED_RELATION);
+    personHasLanguageType.setInverseName("isLangOf");
+    personHasLanguageType.setSourceTypeName("person");
+    personHasLanguageType.setTargetTypeName("language");
+
+    instance.addSystemEntity(RelationType.class, personHasLanguageType);
+
+    RelationType langHasPersonType = new RelationType();
+    langHasPersonType.setRegularName(DRTLanguage.DERIVED_RELATION);
+    langHasPersonType.setInverseName("isPersonOfLang");
+    langHasPersonType.setSourceTypeName("language");
+    langHasPersonType.setTargetTypeName("person");
+
+    instance.addSystemEntity(RelationType.class, langHasPersonType);
+
+
+    // action
+    DRTPerson personWithDerivedRelation = instance.getEntityOrDefaultVariationWithRelations(DRTPerson.class, personId);
+    DRTLanguage languageWithDerivedRelation = instance.getEntityOrDefaultVariationWithRelations(DRTLanguage.class, languageId);
+
+    // verify
+    assertThat(personWithDerivedRelation.getRelations().keySet(), containsInAnyOrder(DRTPerson.DERIVED_RELATION, IS_PERSON_OF_RELATION));
+    assertThat(languageWithDerivedRelation.getRelations().keySet(), containsInAnyOrder(DRTLanguage.DERIVED_RELATION, IS_LANGUAGE_OF_RELATION));
+  }
+
 
   private <T extends SystemEntity> void assertThatDatabaseContainsNumberOfItemsOfType(Class<T> type, int size) {
     StorageIterator<T> foundResults = instance.getSystemEntities(type);
