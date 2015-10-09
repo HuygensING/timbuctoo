@@ -262,6 +262,18 @@ public class WWPerson extends Person {
     return getRelations("hasEducation");
   }
 
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_profession", accessors = {"getDisplayName"}, isFaceted = true, canBeEmpty = true)
+  public List<RelationRef> getProfessions() {
+    return getRelations("hasProfession");
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_financials", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
+  public List<RelationRef> getFinancials() {
+    return getRelations("hasFinancialSituation");
+  }
+
   // ---------------------------------------------------------------------------
   private static final DerivedRelationDescription PERSON_LANGUAGE = new DerivedRelationDescription("hasPersonLanguage", "isCreatorOf", "hasWorkLanguage");
 
