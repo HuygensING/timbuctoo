@@ -23,7 +23,10 @@ package nl.knaw.huygens.timbuctoo;
  */
 
 import com.google.common.collect.Iterators;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.Document;
+import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
@@ -51,7 +54,9 @@ import test.model.projecta.ProjectAPerson;
 import java.util.Calendar;
 import java.util.Date;
 
+import static nl.knaw.huygens.timbuctoo.RelationRefMatcher.likeRelationRef;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -63,6 +68,13 @@ public class RepositoryIntegrationTest {
   public static final Change CHANGE = Change.newInternalInstance();
   public static final String IS_PERSON_OF_RELATION = "isPersonOf";
   public static final String IS_LANGUAGE_OF_RELATION = "isLanguageOf";
+  public static final String DRTPERSON_TYPE = TypeNames.getInternalName(DRTPerson.class);
+  public static final String DRTLANGUAGE_TYPE = TypeNames.getInternalName(DRTLanguage.class);
+  public static final String PERSON_TYPE = TypeNames.getInternalName(Person.class);;
+  public static final String LANGUAGE_TYPE = TypeNames.getInternalName(Language.class);
+  public static final String DRTLANGUAGE_XTYPE = TypeNames.getExternalName(DRTLanguage.class);
+  public static final String DRTPERSONS_XTYPE = TypeNames.getExternalName(DRTPerson.class);
+  public static final String DOCUMENT_TYPE = TypeNames.getInternalName(Document.class);
   private Repository instance;
   private RelationRefAdderFactory relationRefCreatorFactoryMock;
   private TinkerPopDBIntegrationTestHelper dbIntegrationTestHelper;
@@ -141,16 +153,16 @@ public class RepositoryIntegrationTest {
 
 
     // add relation between document and language
-    String documentHasLanguageTypeId = addRelationType("hasLanguage", IS_LANGUAGE_OF_RELATION, "document", "language");
-    addRelation(docId, languageId, documentHasLanguageTypeId, "language");
+    String documentHasLanguageTypeId = addRelationType("hasLanguage", IS_LANGUAGE_OF_RELATION, "document", LANGUAGE_TYPE);
+    addRelation(docId, languageId, documentHasLanguageTypeId, LANGUAGE_TYPE);
 
     // add relation between document and person
-    String documentHasPersonTypeId =addRelationType("hasPerson", IS_PERSON_OF_RELATION, "document", "person");
-    addRelation(docId, personId, documentHasPersonTypeId, "person");
+    String documentHasPersonTypeId =addRelationType("hasPerson", IS_PERSON_OF_RELATION, DOCUMENT_TYPE, PERSON_TYPE);
+    addRelation(docId, personId, documentHasPersonTypeId, PERSON_TYPE);
 
     // add derived relation types
-    addRelationType(DRTPerson.DERIVED_RELATION, "isLangOf", "person","language");
-    addRelationType(DRTLanguage.DERIVED_RELATION, "isPersonOfLang", "language", "person");
+    addRelationType(DRTPerson.DERIVED_RELATION, "isLangOf", PERSON_TYPE, LANGUAGE_TYPE);
+    addRelationType(DRTLanguage.DERIVED_RELATION, "isPersonOfLang", LANGUAGE_TYPE, PERSON_TYPE);
 
 
     // action
@@ -159,7 +171,10 @@ public class RepositoryIntegrationTest {
 
     // verify
     assertThat(personWithDerivedRelation.getRelations().keySet(), containsInAnyOrder(DRTPerson.DERIVED_RELATION, IS_PERSON_OF_RELATION));
+    assertThat(personWithDerivedRelation.getRelations(DRTPerson.DERIVED_RELATION), contains(likeRelationRef().withType(DRTLANGUAGE_TYPE).withPath(DRTLANGUAGE_XTYPE, languageId).withId(languageId)));
+
     assertThat(languageWithDerivedRelation.getRelations().keySet(), containsInAnyOrder(DRTLanguage.DERIVED_RELATION, IS_LANGUAGE_OF_RELATION));
+    assertThat(languageWithDerivedRelation.getRelations(DRTLanguage.DERIVED_RELATION), contains(likeRelationRef().withType(DRTPERSON_TYPE).withPath(DRTPERSONS_XTYPE, personId).withId(personId)));
   }
 
   private void addRelation(String docId, String languageId, String documentHasLanguageTypeId, String language) throws StorageException, ValidationException {
