@@ -30,7 +30,7 @@ import nl.knaw.huygens.timbuctoo.config.EntityMapper;
 import nl.knaw.huygens.timbuctoo.config.EntityMappers;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DerivedProperty;
-import nl.knaw.huygens.timbuctoo.model.DerivedRelationType;
+import nl.knaw.huygens.timbuctoo.model.DerivedRelationDescription;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Language;
@@ -160,7 +160,7 @@ public class Repository {
 
   /**
    * Ensures that the specified domain entity has a variation of the appropriate type.
-   *
+   * <p/>
    * Even though a variation of an entity may always be retrieved, it may be "virtual", i.e. constructed
    * with default vales for the fields that do not occur in the corresponding primitive domain entity.
    * This method makes sure that the variation is actually stored.
@@ -180,16 +180,17 @@ public class Repository {
 
   /**
    * Deletes a DomainEntity from the database. When the DomainEntity is a primitive the complete DomainEntity
-   *  and it's Relations are removed. When the DomainEntity is a project variation the 
-   *  Variation is removed and the Relations are declined for the project.
-   *  
+   * and it's Relations are removed. When the DomainEntity is a project variation the
+   * Variation is removed and the Relations are declined for the project.
+   * <p/>
    * TODO: Make available for deleting primitives:
-   *  - The PID's should be updated
-   *  - The versions should be deleted
-   *  - The relations should be deleted:
-   *    Update PID's of the relations
+   * - The PID's should be updated
+   * - The versions should be deleted
+   * - The relations should be deleted:
+   * Update PID's of the relations
+   *
    * @param entity
-   * @return 
+   * @return
    * @throws StorageException
    */
   public <T extends DomainEntity> List<String> deleteDomainEntity(T entity) throws StorageException {
@@ -214,11 +215,11 @@ public class Repository {
   /**
    * Deletes non-persistent domain entities with the specified type and id's..
    * The idea behind this method is that domain entities without persistent identifier are not validated yet.
-   * After a bulk import non of the imported entity will have a persistent identifier, until a user has agreed with the imported collection.  
-   * 
-   * @param <T> extends {@code DomainEntity}, because system entities have no persistent identifiers.
+   * After a bulk import non of the imported entity will have a persistent identifier, until a user has agreed with the imported collection.
+   *
+   * @param <T>  extends {@code DomainEntity}, because system entities have no persistent identifiers.
    * @param type the type all of the objects should removed permanently from
-   * @param ids the id's to remove permanently
+   * @param ids  the id's to remove permanently
    * @throws StorageException when the storage layer throws an exception it will be forwarded
    */
   public <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws StorageException {
@@ -353,8 +354,8 @@ public class Repository {
   }
 
   /**
-   * Retrieves all the id's of type {@code <T>} that does not have a persistent id. 
-   * 
+   * Retrieves all the id's of type {@code <T>} that does not have a persistent id.
+   *
    * @param type the type of the id's that should be retrieved
    * @return a list with all the ids.
    * @throws StorageException when the storage layer throws an exception it will be forwarded.
@@ -371,6 +372,7 @@ public class Repository {
 
   /**
    * Retrieves the relation type with the specified id.
+   *
    * @throws IllegalStateException when the relation type is required and does not exist.
    */
   public RelationType getRelationTypeById(String id, boolean required) throws IllegalStateException {
@@ -379,6 +381,7 @@ public class Repository {
 
   /**
    * Retrieves the relation type with the specified name, regular or inverse.
+   *
    * @throws IllegalStateException when the relation type is required and does not exist.
    */
   public RelationType getRelationTypeByName(String name, boolean required) throws IllegalStateException {
@@ -397,7 +400,7 @@ public class Repository {
 
   /**
    * Returns the id's of the relations, connected to the entities with the input id's.
-   * The input id's can be the source id as well as the target id of the Relation. 
+   * The input id's can be the source id as well as the target id of the Relation.
    */
   public List<String> getRelationIds(List<String> ids) throws StorageException {
     return storage.getRelationIds(ids);
@@ -413,11 +416,12 @@ public class Repository {
 
   /**
    * Get all the relations that have the type in {@code relationTypIds}.
-   * @param variation the project specific variation of the relation to get.
+   *
+   * @param variation       the project specific variation of the relation to get.
    * @param relationTypeIds the relation type should be in this collection.
    * @return a collection with the found relations.
-   * @throws StorageException 
-   * @deprecated will be removed when the MongoRelationSearcher will be removed. 
+   * @throws StorageException
+   * @deprecated will be removed when the MongoRelationSearcher will be removed.
    */
   @Deprecated
   public <T extends Relation> List<T> getRelationsByType(Class<T> variation, List<String> relationTypeIds) throws StorageException {
@@ -425,7 +429,8 @@ public class Repository {
   }
 
   /**
-   * Get all the relation types that have a name in the relationNames collection. 
+   * Get all the relation types that have a name in the relationNames collection.
+   *
    * @param relationTypeNames collection to get the relation types for.
    * @return the found relation types.
    */
@@ -435,10 +440,11 @@ public class Repository {
 
   /**
    * Adds relations for the specified entity as virtual properties.
-   *
+   * <p/>
    * NOTE We retrieve relations where the entity is source or target with one query;
    * handling them separately would cause complications with reflexive relations.
-   * @param entityMappers 
+   *
+   * @param entityMappers
    */
   private <T extends DomainEntity> void addRelationsTo(T entity, int limit, EntityMappers entityMappers) throws StorageException {
     if (entity != null && limit > 0) {
@@ -478,22 +484,23 @@ public class Repository {
   /**
    * Adds derived relations for the specified entity.
    * Makes sure each relation is added only once.
+   *
    * @param relationRefCreator TODO
    */
   private <T extends DomainEntity> void addDerivedRelations(T entity, EntityMapper mapper, RelationRefAdder relationRefCreator) throws StorageException {
-    for (DerivedRelationType drtype : entity.getDerivedRelationTypes()) {
+    for (DerivedRelationDescription drDescription : entity.getDerivedRelationTypes()) {
       Set<String> ids = Sets.newHashSet();
 
-      RelationType relationType = getRelationTypeByName(drtype.getSecundaryTypeName(), REQUIRED);
-      boolean regular = relationType.getRegularName().equals(drtype.getSecundaryTypeName());
-      for (RelationRef ref : entity.getRelations(drtype.getPrimaryTypeName())) {
+      RelationType relationType = getRelationTypeByName(drDescription.getSecundaryTypeName(), REQUIRED);
+      boolean regular = relationType.getRegularName().equals(drDescription.getSecundaryTypeName());
+      for (RelationRef ref : entity.getRelations(drDescription.getPrimaryTypeName())) {
         for (Relation relation : findRelations(ref.getId(), relationType.getId(), regular)) {
           ids.add(regular ? relation.getTargetId() : relation.getSourceId());
         }
       }
 
       // TODO extract method
-      String derivedTypeName = drtype.getDerivedTypeName();
+      String derivedTypeName = drDescription.getDerivedTypeName();
       relationType = getRelationTypeByName(derivedTypeName, REQUIRED);
       regular = relationType.getRegularName().equals(derivedTypeName);
 
@@ -509,16 +516,12 @@ public class Repository {
 
   private Relation createDerivedRelation(RelationType relationType, Class<? extends Relation> projectRelationClass, DomainEntity entity, String relatedId) {
     RelationBuilder<? extends Relation> relationBuilder = RelationBuilder.newInstance(projectRelationClass);
-    relationBuilder.withRelationType(relationType);
 
+    relationBuilder.withRelationType(relationType);
     String entityId = entity.getId();
-    if (isEntitySourceType(relationType, entity)) {
-      relationBuilder.withSourceId(entityId);
-      relationBuilder.withTargetId(relatedId);
-    } else {
-      relationBuilder.withTargetId(entityId);
-      relationBuilder.withSourceId(relatedId);
-    }
+    relationBuilder.withSourceId(entityId);
+    relationBuilder.withTargetId(relatedId);
+
 
     return relationBuilder.build();
   }
@@ -556,10 +559,11 @@ public class Repository {
 
   /**
    * Checks of a variation of the entity.
+   *
    * @param type the type of the variation
-   * @param id the id of the entity, that should contain the variation
+   * @param id   the id of the entity, that should contain the variation
    * @return true if the variation exist false if not.
-   * @throws StorageException wrapped exception around the database exceptions 
+   * @throws StorageException wrapped exception around the database exceptions
    */
   public boolean doesVariationExist(Class<? extends DomainEntity> type, String id) throws StorageException {
     return storage.doesVariationExist(type, id);

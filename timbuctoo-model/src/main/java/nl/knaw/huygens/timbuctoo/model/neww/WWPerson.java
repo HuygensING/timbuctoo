@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
-import nl.knaw.huygens.timbuctoo.model.DerivedRelationType;
+import nl.knaw.huygens.timbuctoo.model.DerivedRelationDescription;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.RelationRef;
 import nl.knaw.huygens.timbuctoo.model.mapping.VirtualProperty;
@@ -263,13 +263,13 @@ public class WWPerson extends Person {
   }
 
   // ---------------------------------------------------------------------------
-  private static final DerivedRelationType PERSON_LANGUAGE = new DerivedRelationType("hasPersonLanguage", "isCreatorOf", "hasWorkLanguage");
+  private static final DerivedRelationDescription PERSON_LANGUAGE = new DerivedRelationDescription("hasPersonLanguage", "isCreatorOf", "hasWorkLanguage");
 
-  private static final List<DerivedRelationType> DERIVED_RELATION_TYPES = ImmutableList.of(PERSON_LANGUAGE);
+  private static final List<DerivedRelationDescription> DERIVED_RELATION_TYPES = ImmutableList.of(PERSON_LANGUAGE);
 
 
   @Override
-  public List<DerivedRelationType> getDerivedRelationTypes() {
+  public List<DerivedRelationDescription> getDerivedRelationTypes() {
     return DERIVED_RELATION_TYPES;
   }
 

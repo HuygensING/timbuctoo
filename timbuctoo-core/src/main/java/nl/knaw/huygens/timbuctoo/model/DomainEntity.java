@@ -120,7 +120,7 @@ public abstract class DomainEntity extends Entity {
   // ---------------------------------------------------------------------------
 
   @JsonIgnore
-  public List<DerivedRelationType> getDerivedRelationTypes() {
+  public List<DerivedRelationDescription> getDerivedRelationTypes() {
     return ImmutableList.of();
   }
 
