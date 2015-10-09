@@ -141,53 +141,16 @@ public class RepositoryIntegrationTest {
 
 
     // add relation between document and language
-    RelationType documentHasLanguageType = new RelationType();
-    documentHasLanguageType.setRegularName("hasLanguage");
-    documentHasLanguageType.setInverseName(IS_LANGUAGE_OF_RELATION);
-    documentHasLanguageType.setSourceTypeName("document");
-    documentHasLanguageType.setTargetTypeName("language");
-    String documentHasLanguageTypeId = instance.addSystemEntity(RelationType.class, documentHasLanguageType);
-
-    DRTRelation docLanguageRelation = new DRTRelation();
-    docLanguageRelation.setSourceId(docId);
-    docLanguageRelation.setSourceType("document");
-    docLanguageRelation.setTargetId(languageId);
-    docLanguageRelation.setTargetType("language");
-    docLanguageRelation.setTypeId(documentHasLanguageTypeId);
-    instance.addDomainEntity(DRTRelation.class, docLanguageRelation, CHANGE);
+    String documentHasLanguageTypeId = addRelationType("hasLanguage", IS_LANGUAGE_OF_RELATION, "document", "language");
+    addRelation(docId, languageId, documentHasLanguageTypeId, "language");
 
     // add relation between document and person
-    RelationType documentHasPersonType = new RelationType();
-    documentHasPersonType.setRegularName("hasPerson");
-    documentHasPersonType.setInverseName(IS_PERSON_OF_RELATION);
-    documentHasPersonType.setSourceTypeName("document");
-    documentHasPersonType.setTargetTypeName("person");
-    String documentHasPersonTypeId = instance.addSystemEntity(RelationType.class, documentHasPersonType);
-
-    DRTRelation docPersonRelation = new DRTRelation();
-    docPersonRelation.setSourceId(docId);
-    docPersonRelation.setSourceType("document");
-    docPersonRelation.setTargetId(personId);
-    docPersonRelation.setTargetType("person");
-    docPersonRelation.setTypeId(documentHasPersonTypeId);
-    instance.addDomainEntity(DRTRelation.class, docPersonRelation, CHANGE);
+    String documentHasPersonTypeId =addRelationType("hasPerson", IS_PERSON_OF_RELATION, "document", "person");
+    addRelation(docId, personId, documentHasPersonTypeId, "person");
 
     // add derived relation types
-    RelationType personHasLanguageType = new RelationType();
-    personHasLanguageType.setRegularName(DRTPerson.DERIVED_RELATION);
-    personHasLanguageType.setInverseName("isLangOf");
-    personHasLanguageType.setSourceTypeName("person");
-    personHasLanguageType.setTargetTypeName("language");
-
-    instance.addSystemEntity(RelationType.class, personHasLanguageType);
-
-    RelationType langHasPersonType = new RelationType();
-    langHasPersonType.setRegularName(DRTLanguage.DERIVED_RELATION);
-    langHasPersonType.setInverseName("isPersonOfLang");
-    langHasPersonType.setSourceTypeName("language");
-    langHasPersonType.setTargetTypeName("person");
-
-    instance.addSystemEntity(RelationType.class, langHasPersonType);
+    addRelationType(DRTPerson.DERIVED_RELATION, "isLangOf", "person","language");
+    addRelationType(DRTLanguage.DERIVED_RELATION, "isPersonOfLang", "language", "person");
 
 
     // action
@@ -197,6 +160,25 @@ public class RepositoryIntegrationTest {
     // verify
     assertThat(personWithDerivedRelation.getRelations().keySet(), containsInAnyOrder(DRTPerson.DERIVED_RELATION, IS_PERSON_OF_RELATION));
     assertThat(languageWithDerivedRelation.getRelations().keySet(), containsInAnyOrder(DRTLanguage.DERIVED_RELATION, IS_LANGUAGE_OF_RELATION));
+  }
+
+  private void addRelation(String docId, String languageId, String documentHasLanguageTypeId, String language) throws StorageException, ValidationException {
+    DRTRelation docLanguageRelation = new DRTRelation();
+    docLanguageRelation.setSourceId(docId);
+    docLanguageRelation.setSourceType("document");
+    docLanguageRelation.setTargetId(languageId);
+    docLanguageRelation.setTargetType(language);
+    docLanguageRelation.setTypeId(documentHasLanguageTypeId);
+    instance.addDomainEntity(DRTRelation.class, docLanguageRelation, CHANGE);
+  }
+
+  private String addRelationType(String regularName, String inverseName, String sourceTypeName, String targetTypeName) throws StorageException, ValidationException {
+    RelationType relationType = new RelationType();
+    relationType.setRegularName(regularName);
+    relationType.setInverseName(inverseName);
+    relationType.setSourceTypeName(sourceTypeName);
+    relationType.setTargetTypeName(targetTypeName);
+    return instance.addSystemEntity(RelationType.class, relationType);
   }
 
 
