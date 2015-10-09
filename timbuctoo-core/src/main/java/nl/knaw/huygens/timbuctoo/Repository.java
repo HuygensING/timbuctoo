@@ -28,6 +28,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import nl.knaw.huygens.timbuctoo.config.EntityMapper;
 import nl.knaw.huygens.timbuctoo.config.EntityMappers;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DerivedProperty;
 import nl.knaw.huygens.timbuctoo.model.DerivedRelationDescription;
@@ -40,7 +41,6 @@ import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
 import nl.knaw.huygens.timbuctoo.storage.RelationTypes;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
@@ -61,6 +61,7 @@ import java.util.List;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkState;
+import static nl.knaw.huygens.timbuctoo.DerivedRelation.aDerivedRelation;
 
 @Singleton
 public class Repository {
@@ -488,46 +489,35 @@ public class Repository {
    * @param relationRefCreator TODO
    */
   private <T extends DomainEntity> void addDerivedRelations(T entity, EntityMapper mapper, RelationRefAdder relationRefCreator) throws StorageException {
+    String sourceTypeName = TypeNames.getInternalName(entity.getClass());
+    String sourceId = entity.getId();
+
     for (DerivedRelationDescription drDescription : entity.getDerivedRelationTypes()) {
-      Set<String> ids = Sets.newHashSet();
+      Set<DerivedRelation> derivedRelations = Sets.newHashSet();
 
       RelationType relationType = getRelationTypeByName(drDescription.getSecundaryTypeName(), REQUIRED);
       boolean regular = relationType.getRegularName().equals(drDescription.getSecundaryTypeName());
       for (RelationRef ref : entity.getRelations(drDescription.getPrimaryTypeName())) {
         for (Relation relation : findRelations(ref.getId(), relationType.getId(), regular)) {
-          ids.add(regular ? relation.getTargetId() : relation.getSourceId());
+          DerivedRelation derivedRelation = aDerivedRelation() //
+            .withDescription(drDescription) //
+            .withSource(sourceTypeName, sourceId);
+          if (regular) {
+            derivedRelations.add(derivedRelation //
+              .withTarget(relationType.getTargetTypeName(), relation.getTargetId()));
+          } else {
+            derivedRelations.add(derivedRelation //
+              .withTarget(relationType.getSourceTypeName(), relation.getSourceId()));
+          }
+
         }
       }
 
-      // TODO extract method
-      String derivedTypeName = drDescription.getDerivedTypeName();
-      relationType = getRelationTypeByName(derivedTypeName, REQUIRED);
-      regular = relationType.getRegularName().equals(derivedTypeName);
-
-      @SuppressWarnings("unchecked")
-      Class<? extends Relation> projectRelationClass = (Class<? extends Relation>) mapper.map(Relation.class);
-
-      for (String id : ids) {
-        Relation relation = createDerivedRelation(relationType, projectRelationClass, entity, id);
-        relationRefCreator.addRelation(entity, mapper, relation, relationType);
+      for (DerivedRelation derivedRelation : derivedRelations) {
+        relationRefCreator.addRelation(entity, mapper, derivedRelation, derivedRelation.getRelationType());
       }
+
     }
-  }
-
-  private Relation createDerivedRelation(RelationType relationType, Class<? extends Relation> projectRelationClass, DomainEntity entity, String relatedId) {
-    RelationBuilder<? extends Relation> relationBuilder = RelationBuilder.newInstance(projectRelationClass);
-
-    relationBuilder.withRelationType(relationType);
-    String entityId = entity.getId();
-    relationBuilder.withSourceId(entityId);
-    relationBuilder.withTargetId(relatedId);
-
-
-    return relationBuilder.build();
-  }
-
-  private boolean isEntitySourceType(RelationType relationType, DomainEntity entity) {
-    return registry.getDomainEntityType(relationType.getSourceTypeName()).isAssignableFrom(entity.getClass());
   }
 
   public <T extends DomainEntity> void addDerivedProperties(VRE vre, T entity) {
