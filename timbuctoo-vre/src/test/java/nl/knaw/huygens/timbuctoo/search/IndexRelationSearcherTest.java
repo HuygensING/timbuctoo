@@ -56,9 +56,9 @@ import org.mockito.MockitoAnnotations;
 
 import com.google.common.collect.Lists;
 
-public class SolrRelationSearcherTest {
+public class IndexRelationSearcherTest {
 
-  private SolrRelationSearcher instance;
+  private IndexRelationSearcher instance;
   private String typeString = "relation";
   private SearchResult searchResult = new SearchResult();
   private SearchParametersV1 searchParametersV1 = new SearchParametersV1();
@@ -96,7 +96,7 @@ public class SolrRelationSearcherTest {
     when(repositoryMock.getEntityOrDefaultVariation(SearchResult.class, sourceSearchId)).thenReturn(createSearchResult(sourceIds));
     when(repositoryMock.getEntityOrDefaultVariation(SearchResult.class, targetSearchId)).thenReturn(createSearchResult(targetIds));
 
-    instance = new SolrRelationSearcher(repositoryMock, relationSearcherParametersConverterMock, typeRegistryMock, collectionConverterMock) {
+    instance = new IndexRelationSearcher(repositoryMock, relationSearcherParametersConverterMock, typeRegistryMock, collectionConverterMock) {
       @Override
       protected RelationFacetedSearchResultFilter createRelationFacetedSearchResultFilter(List<String> sourceIds, List<String> targetIds) {
         return facetedSearchResultFilterMock;

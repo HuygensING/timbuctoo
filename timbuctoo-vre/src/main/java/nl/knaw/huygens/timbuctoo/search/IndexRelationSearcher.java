@@ -37,14 +37,14 @@ import nl.knaw.huygens.timbuctoo.vre.VRE;
 
 import com.google.inject.Inject;
 
-public class SolrRelationSearcher extends RelationSearcher {
+public class IndexRelationSearcher extends RelationSearcher {
 
   private final RelationSearchParametersConverter relationSearchParametersConverter;
   private final TypeRegistry typeRegistry;
   private final CollectionConverter collectionConverter;
 
   @Inject
-  public SolrRelationSearcher(Repository repository, RelationSearchParametersConverter relationSearchParametersConverter, TypeRegistry typeRegistry, CollectionConverter collectionConverter) {
+  public IndexRelationSearcher(Repository repository, RelationSearchParametersConverter relationSearchParametersConverter, TypeRegistry typeRegistry, CollectionConverter collectionConverter) {
     super(repository);
     this.relationSearchParametersConverter = relationSearchParametersConverter;
     this.typeRegistry = typeRegistry;
