@@ -308,7 +308,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
   }
 
   @Test
-  public void anInvalidSearchRequestPostShouldRespondWithABadRequestStatus() throws StorageException, ValidationException {
+  public void anInvalidSearchRequestPostShouldRespondWithABadRequestStatus() throws Exception {
     RelationSearcher searcher = injector.getInstance(RelationSearcher.class);
     RelationSearchParameters parameters = new RelationSearchParameters();
     doThrow(new TimbuctooException(Response.Status.BAD_REQUEST, "Error")).when(searchRequestValidator).validateRelationRequest(anyString(), anyString(), any(RelationSearchParameters.class));

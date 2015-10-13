@@ -133,7 +133,13 @@ public class SearchResourceV2_1 extends ResourceBase {
     RelationSearchParameters relationParameters = relationSearchParametersConverter.fromRelationParametersV2_1(params);
     searchRequestValidator.validateRelationRequest(vreId, relationTypeString, relationParameters);
     VRE vre = getValidVRE(vreId);
-    String queryId = vre.searchRelations(relationType, relationParameters);
+
+    String queryId = null;
+    try {
+      queryId = vre.searchRelations(relationType, relationParameters);
+    } catch (SearchValidationException e) {
+      return Response.status(BAD_REQUEST).entity(e.getMessage()).build();
+    }
 
     return Response.created(createHATEOASURI(queryId, version)).build();
   }

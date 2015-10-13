@@ -115,10 +115,22 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
 
 
   @Test
-  @Ignore
   @Override
-  public void anInvalidSearchRequestPostShouldRespondWithABadRequestStatus() throws StorageException, ValidationException {
-    fail("Yet to be implemented");
+  public void anInvalidSearchRequestPostShouldRespondWithABadRequestStatus() throws Exception {
+    // setup
+    searchParametersAreInvalid();
+
+    // action
+    ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING, RELATED_TYPE_STRING) //
+      .header(VRE_ID_KEY, VRE_ID) //
+      .post(ClientResponse.class, PARAMETERS_V_2_1);
+
+    // verify
+    verifyResponseStatus(response, ClientResponse.Status.BAD_REQUEST);
+  }
+
+  protected void searchParametersAreInvalid() throws SearchValidationException {
+    when(vreMock.searchRelations(RELATION_TYPE, PARAMETERS)).thenThrow(new SearchValidationException(new Exception()));
   }
 
   @Test
