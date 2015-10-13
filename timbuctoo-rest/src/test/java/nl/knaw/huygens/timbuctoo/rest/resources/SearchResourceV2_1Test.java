@@ -58,25 +58,24 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
   private static final String RELATED_TYPE_STRING = TypeNames.getExternalName(TestDomainEntity.class);
   public static final RelationSearchParametersV2_1 PARAMETERS_V_2_1 = new RelationSearchParametersV2_1();
   public static final Class<TestRelation> RELATION_TYPE = TestRelation.class;
+  public static final RelationSearchParameters PARAMETERS = new RelationSearchParameters();
+  private VRE vreMock;
 
   @Before
-  public void setup(){
+  public void setup() {
     setupPublicUrl(resource().getURI().toString());
+    setupVRE();
+    setupConverter();
   }
 
-  @Override
-  protected String getAPIVersion() {
-    return Paths.V2_1_PATH;
+  protected void setupVRE() {
+    vreMock = mock(VRE.class);
+    makeVREAvailable(vreMock, VRE_ID);
   }
 
-  @Override
-  protected RegularSearchResultMapper getRegularSearchResultMapper() {
-    return injector.getInstance(IndexRegularSearchResultMapper.class);
-  }
-
-  @Override
-  protected RelationSearchResultMapper getRelationSearchResultMapper() {
-    return injector.getInstance(IndexRelationSearchResultMapper.class);
+  protected void setupConverter() {
+    RelationSearchParametersConverter relationSearchParametersConverter = injector.getInstance(RelationSearchParametersConverter.class);
+    when(relationSearchParametersConverter.fromRelationParametersV2_1(any(RelationSearchParametersV2_1.class))).thenReturn(PARAMETERS);
   }
 
 
@@ -98,27 +97,20 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
   @Test
   @Override
   public void aSuccessfulRelationSearchPostShouldResponseWithStatusCodeCreatedAndALocationHeader() throws SearchException, SearchValidationException, StorageException, ValidationException {
-    RelationSearchParametersV2_1 parametersV2_1 = new RelationSearchParametersV2_1();
-    RelationSearchParameters parameters = new RelationSearchParameters();
+    // setup
+    when(vreMock.searchRelations(RELATION_TYPE, PARAMETERS)).thenReturn(ID);
 
-
-    VRE vreMock = mock(VRE.class);
-    when(vreMock.searchRelations(RELATION_TYPE, parameters)).thenReturn(ID);
-
-    makeVREAvailable(vreMock, VRE_ID);
-    RelationSearchParametersConverter relationSearchParametersConverter = injector.getInstance(RelationSearchParametersConverter.class);
-    when(relationSearchParametersConverter.fromRelationParametersV2_1(any(RelationSearchParametersV2_1.class))).thenReturn(parameters);
-
+    // action
     ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING, RELATED_TYPE_STRING) //
       .header(VRE_ID_KEY, VRE_ID) //
-      .post(ClientResponse.class, parametersV2_1);
+      .post(ClientResponse.class, PARAMETERS_V_2_1);
 
     // verify
     verifyResponseStatus(response, ClientResponse.Status.CREATED);
 
-    verify(searchRequestValidator).validateRelationRequest(VRE_ID, RELATION_TYPE_STRING, parameters);
+    verify(searchRequestValidator).validateRelationRequest(VRE_ID, RELATION_TYPE_STRING, PARAMETERS);
     assertThat(response.getLocation().toString(), equalTo(getRelationSearchURL(ID)));
-    verify(vreMock).searchRelations(RELATION_TYPE, parameters);
+    verify(vreMock).searchRelations(RELATION_TYPE, PARAMETERS);
   }
 
 
@@ -162,6 +154,21 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
       resource().getURI().toString(), //
       getAPIVersion(), //
       id);
+  }
+
+  @Override
+  protected String getAPIVersion() {
+    return Paths.V2_1_PATH;
+  }
+
+  @Override
+  protected RegularSearchResultMapper getRegularSearchResultMapper() {
+    return injector.getInstance(IndexRegularSearchResultMapper.class);
+  }
+
+  @Override
+  protected RelationSearchResultMapper getRelationSearchResultMapper() {
+    return injector.getInstance(IndexRelationSearchResultMapper.class);
   }
 
 

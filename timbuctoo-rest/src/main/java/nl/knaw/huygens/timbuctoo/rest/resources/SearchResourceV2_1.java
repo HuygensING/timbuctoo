@@ -99,6 +99,11 @@ public class SearchResourceV2_1 extends ResourceBase {
     VRE vre = getValidVRE(vreId);
     Class<? extends DomainEntity> type = registry.getTypeForXName(typeString);
 
+    if (Relation.class.isAssignableFrom(type)) {
+      // This resource is not available for relations.
+      return Response.status(Response.Status.NOT_FOUND).build();
+    }
+
     // Process
     try {
       SearchResult result = vre.search(type, searchParams);
