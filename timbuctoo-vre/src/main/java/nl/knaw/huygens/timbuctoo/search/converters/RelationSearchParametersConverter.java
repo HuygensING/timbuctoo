@@ -22,17 +22,17 @@ package nl.knaw.huygens.timbuctoo.search.converters;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.model.Relation.TYPE_ID_FACET_NAME;
-
-import java.util.ArrayList;
-
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetParameter;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetField;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetParameter;
-import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
+import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
+import nl.knaw.huygens.timbuctoo.vre.RelationSearchParametersV2_1;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
+
+import static nl.knaw.huygens.timbuctoo.model.Relation.TYPE_ID_FACET_NAME;
 
 public class RelationSearchParametersConverter {
 
@@ -43,4 +43,7 @@ public class RelationSearchParametersConverter {
     return new SearchParametersV1().setFacetParameters(Lists.newArrayList(parameter)).setFacetFields(facetFields);
   }
 
+  public RelationSearchParameters fromRelationParametersV2_1(RelationSearchParametersV2_1 parametersV2_1) {
+    throw new UnsupportedOperationException("Not implemented yet");
+  }
 }

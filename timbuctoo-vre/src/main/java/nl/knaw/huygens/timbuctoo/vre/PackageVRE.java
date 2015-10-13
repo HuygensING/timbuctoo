@@ -36,6 +36,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 import nl.knaw.huygens.timbuctoo.index.IndexStatus;
 import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultProcessor;
 import nl.knaw.huygens.timbuctoo.search.FullTextSearchFieldFinder;
@@ -323,6 +324,11 @@ public class PackageVRE implements VRE {
     throwNotInScopeExceptionWhenNotInScope(type);
 
     return getIndexForType(type).getDataByIds(ids, sort);
+  }
+
+  @Override
+  public String searchRelations(Class<? extends Relation> type, RelationSearchParameters parameters) {
+    throw new UnsupportedOperationException("Not implemented yet");
   }
 
   private interface IndexChanger {

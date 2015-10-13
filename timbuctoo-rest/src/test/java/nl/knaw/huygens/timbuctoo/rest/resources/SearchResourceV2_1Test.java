@@ -22,13 +22,47 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
+import com.sun.jersey.api.client.ClientResponse;
 import nl.knaw.huygens.timbuctoo.config.Paths;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.rest.util.search.IndexRegularSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.IndexRelationSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultMapper;
+import nl.knaw.huygens.timbuctoo.search.converters.RelationSearchParametersConverter;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
+import nl.knaw.huygens.timbuctoo.vre.RelationSearchParametersV2_1;
+import nl.knaw.huygens.timbuctoo.vre.SearchException;
+import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import test.rest.model.TestDomainEntity;
+import test.rest.model.TestRelation;
+
+import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class SearchResourceV2_1Test extends SearchResourceV1Test {
+
+  private static final String RELATION_TYPE_STRING = TypeNames.getExternalName(TestRelation.class);
+  private static final String RELATED_TYPE_STRING = TypeNames.getExternalName(TestDomainEntity.class);
+  public static final RelationSearchParametersV2_1 PARAMETERS_V_2_1 = new RelationSearchParametersV2_1();
+  public static final Class<TestRelation> RELATION_TYPE = TestRelation.class;
+
+  @Before
+  public void setup(){
+    setupPublicUrl(resource().getURI().toString());
+  }
 
   @Override
   protected String getAPIVersion() {
@@ -44,4 +78,91 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
   protected RelationSearchResultMapper getRelationSearchResultMapper() {
     return injector.getInstance(IndexRelationSearchResultMapper.class);
   }
+
+
+  @Test
+  @Ignore
+  @Override
+  public void testGetRelationSearch() {
+
+    fail("Yet to be implemented");
+  }
+
+
+  /*
+   * ****************************************************************************
+   * Reception Search                                                           *
+   * ****************************************************************************
+   */
+
+  @Test
+  @Override
+  public void aSuccessfulRelationSearchPostShouldResponseWithStatusCodeCreatedAndALocationHeader() throws SearchException, SearchValidationException, StorageException, ValidationException {
+    RelationSearchParametersV2_1 parametersV2_1 = new RelationSearchParametersV2_1();
+    RelationSearchParameters parameters = new RelationSearchParameters();
+
+
+    VRE vreMock = mock(VRE.class);
+    when(vreMock.searchRelations(RELATION_TYPE, parameters)).thenReturn(ID);
+
+    makeVREAvailable(vreMock, VRE_ID);
+    RelationSearchParametersConverter relationSearchParametersConverter = injector.getInstance(RelationSearchParametersConverter.class);
+    when(relationSearchParametersConverter.fromRelationParametersV2_1(any(RelationSearchParametersV2_1.class))).thenReturn(parameters);
+
+    ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING, RELATED_TYPE_STRING) //
+      .header(VRE_ID_KEY, VRE_ID) //
+      .post(ClientResponse.class, parametersV2_1);
+
+    // verify
+    verifyResponseStatus(response, ClientResponse.Status.CREATED);
+
+    verify(searchRequestValidator).validateRelationRequest(VRE_ID, RELATION_TYPE_STRING, parameters);
+    assertThat(response.getLocation().toString(), equalTo(getRelationSearchURL(ID)));
+    verify(vreMock).searchRelations(RELATION_TYPE, parameters);
+  }
+
+
+  @Test
+  @Ignore
+  @Override
+  public void anInvalidSearchRequestPostShouldRespondWithABadRequestStatus() throws StorageException, ValidationException {
+    fail("Yet to be implemented");
+  }
+
+  @Test
+  @Ignore
+  @Override
+  public void whenTheRepositoryCannotStoreTheRelationSearchResultAnInternalServerErrorShouldBeReturned() throws StorageException, ValidationException, Exception {
+    fail("Yet to be implemented");
+  }
+
+  @Test
+  @Ignore
+  @Override
+  public void whenTheRelationSearcherThrowsAnSearchExceptionAnInternalServerErrorShouldBeReturned() throws StorageException, ValidationException, Exception {
+    fail("Yet to be implemented");
+  }
+
+  @Test
+  public void theRelationSearchReturnANotFoundWhenTheOldURLIsUsed() {
+    // action
+    ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING) //
+      .header(VRE_ID_KEY, VRE_ID) //
+      .post(ClientResponse.class, PARAMETERS_V_2_1);
+
+
+    // verify
+    verifyResponseStatus(response, ClientResponse.Status.NOT_FOUND);
+  }
+
+
+  private String getRelationSearchURL(String id) {
+    return String.format(//
+      "%s%ssearch/%s", //
+      resource().getURI().toString(), //
+      getAPIVersion(), //
+      id);
+  }
+
+
 }

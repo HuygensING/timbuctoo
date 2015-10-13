@@ -27,7 +27,7 @@ import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
-import nl.knaw.huygens.solr.RelationSearchParameters;
+import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.Paths;
@@ -69,13 +69,13 @@ import static org.mockito.Mockito.when;
 
 public class SearchResourceV1Test extends SearchResourceTestBase {
 
-  private static final Class<Class<? extends Relation>> RELATION_TYPE = new GenericType<Class<? extends Relation>>() {
+  protected static final Class<Class<? extends Relation>> RELATION_TYPE = new GenericType<Class<? extends Relation>>() {
   }.getRawClass();
   private static final String TYPE_STRING = "persons";
   private static final String RELATION_TYPE_STRING = "testrelations";
   private static final String RELATION_SEARCH_RESULT_TYPE = "testrelation";
 
-  private void setupPublicUrl(String url) {
+  protected void setupPublicUrl(String url) {
     when(injector.getInstance(Configuration.class).getSetting("public_url")).thenReturn(url);
   }
 
@@ -284,7 +284,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
    */
 
   @Test
-  public void aSuccessfulRelationSearchPostShouldResponseWithStatusCodeCreatedandALocationHeader() throws SearchException, SearchValidationException, StorageException, ValidationException {
+  public void aSuccessfulRelationSearchPostShouldResponseWithStatusCodeCreatedAndALocationHeader() throws SearchException, SearchValidationException, StorageException, ValidationException {
     RelationSearcher searcher = injector.getInstance(RelationSearcher.class);
     RelationSearchParameters parameters = new RelationSearchParameters();
     setupPublicUrl(resource().getURI().toString());

@@ -24,7 +24,7 @@ package nl.knaw.huygens.timbuctoo.search;
 
 import java.util.List;
 
-import nl.knaw.huygens.solr.RelationSearchParameters;
+import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;

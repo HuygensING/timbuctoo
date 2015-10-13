@@ -30,7 +30,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
 
-import nl.knaw.huygens.solr.RelationSearchParameters;
+import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
 
 import org.junit.Test;

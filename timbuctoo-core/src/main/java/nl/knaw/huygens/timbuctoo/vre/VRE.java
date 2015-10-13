@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 import nl.knaw.huygens.timbuctoo.index.IndexStatus;
 import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultProcessor;
 
@@ -179,4 +180,10 @@ public interface VRE extends Scope {
    * @return the found data
    */
   List<Map<String, Object>> getRawDataFor(Class<? extends DomainEntity> type, List<String> ids, List<SortParameter> sort) throws NotInScopeException, SearchException;
+
+  /*
+   * Executes the relation search and saves the result.
+   * It returns the id of the saved result.
+   */
+  String searchRelations(Class<? extends Relation> type, RelationSearchParameters parameters);
 }

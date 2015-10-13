@@ -23,7 +23,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  */
 
 import com.google.inject.Inject;
-import nl.knaw.huygens.solr.RelationSearchParameters;
+import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
@@ -78,8 +78,6 @@ import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 @Path(V1_TO_V2_PATH + SEARCH_PATH)
 public class SearchResourceV1 extends ResourceBase {
 
-  private static final String RELATION_PARAM = "relationType";
-  private static final String RELATION_SEARCH_PREFIX = "{" + RELATION_PARAM + ": [a-z]*relations }";
   private static final Logger LOG = LoggerFactory.getLogger(SearchResourceV1.class);
 
   private final TypeRegistry registry;
@@ -132,12 +130,12 @@ public class SearchResourceV1 extends ResourceBase {
 
   @APIDesc("Searches the Solr execute. Expects a relation search parameters body.")
   @POST
-  @Path("/" + RELATION_SEARCH_PREFIX)
+  @Path("/" + Paths.RELATION_SEARCH_PREFIX)
   @Consumes(MediaType.APPLICATION_JSON)
   public Response relationPost( //
                                 @PathParam(VERSION_PARAM) String version, //
                                 @HeaderParam(VRE_ID_KEY) String vreId, //
-                                @PathParam(RELATION_PARAM) String relationTypeString, //
+                                @PathParam(Paths.RELATION_PARAM) String relationTypeString, //
                                 RelationSearchParameters params //
   ) {
 
