@@ -101,9 +101,7 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
     when(vreMock.searchRelations(RELATION_TYPE, PARAMETERS)).thenReturn(ID);
 
     // action
-    ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING, RELATED_TYPE_STRING) //
-      .header(VRE_ID_KEY, VRE_ID) //
-      .post(ClientResponse.class, PARAMETERS_V_2_1);
+    ClientResponse response = executeRelationSearchPostRequest();
 
     // verify
     verifyResponseStatus(response, ClientResponse.Status.CREATED);
@@ -121,29 +119,43 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
     searchParametersAreInvalid();
 
     // action
-    ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING, RELATED_TYPE_STRING) //
-      .header(VRE_ID_KEY, VRE_ID) //
-      .post(ClientResponse.class, PARAMETERS_V_2_1);
+    ClientResponse response = executeRelationSearchPostRequest();
 
     // verify
     verifyResponseStatus(response, ClientResponse.Status.BAD_REQUEST);
   }
 
-  protected void searchParametersAreInvalid() throws SearchValidationException {
+  protected void searchParametersAreInvalid() throws Exception{
     when(vreMock.searchRelations(RELATION_TYPE, PARAMETERS)).thenThrow(new SearchValidationException(new Exception()));
   }
 
   @Test
-  @Ignore
   @Override
-  public void whenTheRepositoryCannotStoreTheRelationSearchResultAnInternalServerErrorShouldBeReturned() throws StorageException, ValidationException, Exception {
-    fail("Yet to be implemented");
+  public void whenTheRepositoryCannotStoreTheRelationSearchResultAnInternalServerErrorShouldBeReturned() throws Exception {
+    // setup
+    searchResultCannotBeStored();
+
+    // action
+    ClientResponse response = executeRelationSearchPostRequest();
+
+    // verify
+    verifyResponseStatus(response, ClientResponse.Status.INTERNAL_SERVER_ERROR);
+  }
+
+  private ClientResponse executeRelationSearchPostRequest() {
+    return searchResourceBuilder(RELATION_TYPE_STRING, RELATED_TYPE_STRING) //
+        .header(VRE_ID_KEY, VRE_ID) //
+        .post(ClientResponse.class, PARAMETERS_V_2_1);
+  }
+
+  private void searchResultCannotBeStored() throws Exception {
+    when(vreMock.searchRelations(RELATION_TYPE, PARAMETERS)).thenThrow(new StorageException("exception"));
   }
 
   @Test
   @Ignore
   @Override
-  public void whenTheRelationSearcherThrowsAnSearchExceptionAnInternalServerErrorShouldBeReturned() throws StorageException, ValidationException, Exception {
+  public void whenASearchExceptionIsThrownAnInternalServerErrorShouldBeReturned() throws Exception {
     fail("Yet to be implemented");
   }
 

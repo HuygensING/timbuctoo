@@ -346,7 +346,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
   }
 
   @Test
-  public void whenTheRelationSearcherThrowsAnSearchExceptionAnInternalServerErrorShouldBeReturned() throws StorageException, ValidationException, Exception {
+  public void whenASearchExceptionIsThrownAnInternalServerErrorShouldBeReturned() throws StorageException, ValidationException, Exception {
     RelationSearcher searcher = injector.getInstance(RelationSearcher.class);
     RelationSearchParameters parameters = new RelationSearchParameters();
 

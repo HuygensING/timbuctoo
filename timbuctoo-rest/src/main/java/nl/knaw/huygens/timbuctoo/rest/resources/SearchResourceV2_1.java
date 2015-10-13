@@ -139,6 +139,9 @@ public class SearchResourceV2_1 extends ResourceBase {
       queryId = vre.searchRelations(relationType, relationParameters);
     } catch (SearchValidationException e) {
       return Response.status(BAD_REQUEST).entity(e.getMessage()).build();
+    } catch (StorageException e) {
+      LOG.error("Could not store the search result.", e);
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Something went wrong.").build();
     }
 
     return Response.created(createHATEOASURI(queryId, version)).build();
