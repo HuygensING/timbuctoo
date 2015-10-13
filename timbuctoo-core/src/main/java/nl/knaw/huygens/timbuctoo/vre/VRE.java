@@ -199,5 +199,5 @@ public interface VRE extends Scope {
    * @return the id of the saved result.
    * @throws SearchValidationException when the parameters are not valid
    */
-  String searchRelations(Class<? extends Relation> type, RelationSearchParameters parameters) throws SearchValidationException, StorageException;
+  String searchRelations(Class<? extends Relation> type, RelationSearchParameters parameters) throws SearchException, SearchValidationException, StorageException;
 }

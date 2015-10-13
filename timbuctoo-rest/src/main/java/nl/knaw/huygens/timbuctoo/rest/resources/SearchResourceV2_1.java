@@ -25,6 +25,7 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
 import nl.knaw.huygens.timbuctoo.vre.RelationSearchParametersV2_1;
+import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
@@ -141,7 +142,10 @@ public class SearchResourceV2_1 extends ResourceBase {
       return Response.status(BAD_REQUEST).entity(e.getMessage()).build();
     } catch (StorageException e) {
       LOG.error("Could not store the search result.", e);
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Something went wrong.").build();
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Storage went wrong.").build();
+    } catch (SearchException e) {
+      LOG.error("Search went wrong", e);
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Search went wrong.").build();
     }
 
     return Response.created(createHATEOASURI(queryId, version)).build();

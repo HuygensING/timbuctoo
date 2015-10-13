@@ -153,10 +153,20 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
   }
 
   @Test
-  @Ignore
   @Override
   public void whenASearchExceptionIsThrownAnInternalServerErrorShouldBeReturned() throws Exception {
-    fail("Yet to be implemented");
+    // setup
+    searchWentWrong();
+
+    // action
+    ClientResponse response = executeRelationSearchPostRequest();
+
+    // verify
+    verifyResponseStatus(response, ClientResponse.Status.INTERNAL_SERVER_ERROR);
+  }
+
+  private void searchWentWrong() throws Exception {
+    when(vreMock.searchRelations(RELATION_TYPE, PARAMETERS)).thenThrow(new SearchException(new Exception()));
   }
 
   @Test
