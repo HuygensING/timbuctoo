@@ -610,6 +610,27 @@ public class SolrIndexTest {
     assertThat(searchResult, containsInAnyOrder(result1, result2));
   }
 
+  @SuppressWarnings("unchecked")
+  @Test
+  public void doRawSearchEscapesSpecialCharacters() throws SolrServerException, SearchException, RawSearchUnavailableException {
+    // setup
+    Map<String, Object> result1 = Maps.newHashMap();
+    Map<String, Object> result2 = Maps.newHashMap();
+    String otherQuery = "*foo*";
+    String cleanedUpOtherQuery = "\\*foo\\*";
+
+    SolrQueryMatcher expectedQuery = likeSolrQuery().withQuery(getSolrQuery(cleanedUpOtherQuery)).withStart(START).withRows(ROWS);
+    setupQueryResponseForQueryWithResults(expectedQuery, result1, result2);
+
+    // action
+    Iterable<Map<String, Object>> searchResult = instance.doRawSearch(otherQuery, START, ROWS, FILTERS);
+
+    // verify
+    verify(solrServerMock).search(argThat(expectedQuery));
+    assertThat(searchResult, containsInAnyOrder(result1, result2));
+  }
+
+
   private String getSolrQuery(String query) {
     return String.format("%s:%s", RAW_SEARCH_FIELD, query);
   }
