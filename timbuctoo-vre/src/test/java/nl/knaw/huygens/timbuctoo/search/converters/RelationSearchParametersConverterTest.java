@@ -22,25 +22,23 @@ package nl.knaw.huygens.timbuctoo.search.converters;
  * #L%
  */
 
+import com.google.common.collect.Lists;
+import nl.knaw.huygens.solr.SearchParametersV1;
+import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
+import org.junit.Test;
+
+import java.util.ArrayList;
+
 import static nl.knaw.huygens.timbuctoo.model.Relation.TYPE_ID_FACET_NAME;
 import static nl.knaw.huygens.timbuctoo.search.converters.DefaultFacetParameterMatcher.likeFacetParameter;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.ArrayList;
-
-import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
-import nl.knaw.huygens.solr.SearchParametersV1;
-
-import org.junit.Test;
-
-import com.google.common.collect.Lists;
-
 public class RelationSearchParametersConverterTest {
 
   @Test
-  public void toSearchParamtersV1() {
+  public void toSearchParametersV1() {
     // setup
     RelationSearchParametersConverter instance = new RelationSearchParametersConverter();
 
