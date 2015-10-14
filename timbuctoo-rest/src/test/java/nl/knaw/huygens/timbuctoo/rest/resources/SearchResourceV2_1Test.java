@@ -79,8 +79,8 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
   }
 
 
-  @Test
   @Ignore
+  @Test
   @Override
   public void testGetRelationSearch() {
 
@@ -105,8 +105,6 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
 
     // verify
     verifyResponseStatus(response, ClientResponse.Status.CREATED);
-
-    verify(searchRequestValidator).validateRelationRequest(VRE_ID, RELATION_TYPE_STRING, PARAMETERS);
     assertThat(response.getLocation().toString(), equalTo(getRelationSearchURL(ID)));
     verify(vreMock).searchRelations(RELATION_TYPE, PARAMETERS);
   }
