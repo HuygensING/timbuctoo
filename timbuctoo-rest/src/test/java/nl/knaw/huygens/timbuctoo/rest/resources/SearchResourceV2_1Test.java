@@ -23,8 +23,11 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  */
 
 import com.sun.jersey.api.client.ClientResponse;
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTOV2_1;
+import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.util.search.IndexRegularSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.IndexRelationSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
@@ -38,15 +41,16 @@ import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import test.rest.model.TestDomainEntity;
 import test.rest.model.TestRelation;
 
+import javax.ws.rs.core.MediaType;
+
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.fail;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -54,12 +58,16 @@ import static org.mockito.Mockito.when;
 
 public class SearchResourceV2_1Test extends SearchResourceV1Test {
 
-  private static final String RELATION_TYPE_STRING = TypeNames.getExternalName(TestRelation.class);
-  private static final String RELATED_TYPE_STRING = TypeNames.getExternalName(TestDomainEntity.class);
+
   public static final RelationSearchParametersV2_1 PARAMETERS_V_2_1 = new RelationSearchParametersV2_1();
-  public static final Class<TestRelation> RELATION_TYPE = TestRelation.class;
+  private static final String RELATED_TYPE_STRING = TypeNames.getExternalName(TestDomainEntity.class);
   public static final RelationSearchParameters PARAMETERS = new RelationSearchParameters();
+  public static final Class<TestRelation> RELATION_TYPE = TestRelation.class;
+  private static final String RELATION_X_TYPE_STRING = TypeNames.getExternalName(RELATION_TYPE);
+  public static final String RELATION_I_TYPE_STRING = TypeNames.getInternalName(RELATION_TYPE);
   private VRE vreMock;
+  public static final int DEFAULT_START = 0;
+  public static final int DEFAULT_ROWS = 10;
 
   @Before
   public void setup() {
@@ -79,12 +87,36 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
   }
 
 
-  @Ignore
   @Test
   @Override
   public void testGetRelationSearch() {
+    // setup
+    Repository repository = injector.getInstance(Repository.class);
+    SearchResult value = new SearchResult();
+    when(repository.getEntityOrDefaultVariation(SearchResult.class, ID)).thenReturn(value);
 
-    fail("Yet to be implemented");
+    SearchResult searchResult = new SearchResult();
+    searchResult.setSearchType(RELATION_I_TYPE_STRING);
+
+    RelationSearchResultDTOV2_1 clientSearchResult = new RelationSearchResultDTOV2_1();
+
+    when(repository.getEntityOrDefaultVariation(SearchResult.class, ID)).thenReturn(searchResult);
+    when(relationSearchResultMapperMock.create(TEST_RELATION_TYPE, searchResult, DEFAULT_START, DEFAULT_ROWS, getAPIVersion())).thenReturn(clientSearchResult);
+
+    // action
+    ClientResponse response = searchResourceBuilder(ID) //
+      .accept(MediaType.APPLICATION_JSON_TYPE) //
+      .get(ClientResponse.class);
+
+    // verify
+    verifyResponseStatus(response, ClientResponse.Status.OK);
+
+    RelationSearchResultDTOV2_1 actualResult = response.getEntity(RelationSearchResultDTOV2_1.class);
+    assertThat(actualResult, notNullValue(RelationSearchResultDTOV2_1.class));
+
+    verify(repository).getEntityOrDefaultVariation(SearchResult.class, ID);
+    verify(relationSearchResultMapperMock).create(TEST_RELATION_TYPE, searchResult, DEFAULT_START, DEFAULT_ROWS, getAPIVersion());
+    
   }
 
 
@@ -141,7 +173,7 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
   }
 
   private ClientResponse executeRelationSearchPostRequest() {
-    return searchResourceBuilder(RELATION_TYPE_STRING, RELATED_TYPE_STRING) //
+    return searchResourceBuilder(RELATION_X_TYPE_STRING, RELATED_TYPE_STRING) //
         .header(VRE_ID_KEY, VRE_ID) //
         .post(ClientResponse.class, PARAMETERS_V_2_1);
   }
@@ -170,7 +202,7 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
   @Test
   public void theRelationSearchReturnANotFoundWhenTheOldURLIsUsed() {
     // action
-    ClientResponse response = searchResourceBuilder(RELATION_TYPE_STRING) //
+    ClientResponse response = searchResourceBuilder(RELATION_X_TYPE_STRING) //
       .header(VRE_ID_KEY, VRE_ID) //
       .post(ClientResponse.class, PARAMETERS_V_2_1);
 

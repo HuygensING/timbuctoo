@@ -9,7 +9,6 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
@@ -186,7 +185,7 @@ public class SearchResourceV2_1 extends ResourceBase {
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
     checkCondition(Relation.class.isAssignableFrom(type), BAD_REQUEST, "Not a relation type: %s", typeString);
 
-    RelationSearchResultDTO dto = relationSearchResultMapper.create(type, result, 0, Integer.MAX_VALUE, version);
+    SearchResultDTO dto = relationSearchResultMapper.create(type, result, 0, Integer.MAX_VALUE, version);
     return Response.ok(dto) //
       .header("Content-Disposition", "attachment; filename=" + queryId + ".csv") //
       .build();
@@ -205,7 +204,7 @@ public class SearchResourceV2_1 extends ResourceBase {
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
     checkCondition(Relation.class.isAssignableFrom(type), BAD_REQUEST, "Not a relation type: %s", typeString);
 
-    RelationSearchResultDTO dto = relationSearchResultMapper.create(type, result, 0, Integer.MAX_VALUE, version);
+    SearchResultDTO dto = relationSearchResultMapper.create(type, result, 0, Integer.MAX_VALUE, version);
     return Response.ok(dto) //
       .header("Content-Disposition", "attachment; filename=" + queryId + ".xls") //
       .build();

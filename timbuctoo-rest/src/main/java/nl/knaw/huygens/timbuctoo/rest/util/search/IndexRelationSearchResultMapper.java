@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
+import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
 import nl.knaw.huygens.timbuctoo.rest.util.RangeHelper;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
@@ -27,7 +28,7 @@ public class IndexRelationSearchResultMapper extends RelationSearchResultMapper 
   }
 
   @Override
-  public <T extends DomainEntity> RelationSearchResultDTO create(Class<T> type, SearchResult searchResult, int start, int rows, String version) {
+  public <T extends DomainEntity> SearchResultDTO create(Class<T> type, SearchResult searchResult, int start, int rows, String version) {
     RelationSearchResultDTO dto = new RelationSearchResultDTO();
 
     String queryId = searchResult.getId();

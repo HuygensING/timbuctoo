@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.RelationDTO;
 import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
+import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
 import nl.knaw.huygens.timbuctoo.rest.util.RangeHelper;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
@@ -125,10 +126,10 @@ public class IndexRelationSearchResultMapperTest {
   @Test
   public void createCreatesASearchResultDTOWithDomainEntityDTOsOfTheFoundResults() {
     // action
-    RelationSearchResultDTO searchResultDTO = instance.create(TYPE, searchResult, START, ROWS, VERSION);
+    SearchResultDTO searchResultDTO = instance.create(TYPE, searchResult, START, ROWS, VERSION);
 
     // verify
-    assertThat(searchResultDTO, likeRelationSearchResultDTO()
+    assertThat((RelationSearchResultDTO) searchResultDTO, likeRelationSearchResultDTO()
       .withRows(NORMALIZED_ROWS) //
       .withStart(NORMALIZED_START) //
       .withSortableFields(SORTABLE_FIELDS) //
