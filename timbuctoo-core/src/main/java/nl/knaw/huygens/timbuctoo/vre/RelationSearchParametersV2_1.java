@@ -6,11 +6,11 @@ public class RelationSearchParametersV2_1 extends FacetedSearchParameters<Relati
 
   private String otherSearchId;
 
-  private String getOtherSearchId() {
+  public String getOtherSearchId() {
     return otherSearchId;
   }
 
-  private RelationSearchParametersV2_1 setOtherSearchId(String otherSearchId) {
+  public RelationSearchParametersV2_1 setOtherSearchId(String otherSearchId) {
     this.otherSearchId = otherSearchId;
     return this;
   }

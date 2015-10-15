@@ -20,6 +20,7 @@ import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
 import nl.knaw.huygens.timbuctoo.rest.util.search.SearchResultMapper;
 import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.search.converters.RelationSearchParametersConverter;
+import nl.knaw.huygens.timbuctoo.search.converters.SearchConversionException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
@@ -94,15 +95,19 @@ public class SearchResourceV2_1 extends ResourceBase {
                                SearchParametersV1 searchParams //
   ) {
 
-    searchRequestValidator.validate(vreId, typeString, searchParams);
+    System.out.println("Regular search. " + typeString);
 
-    VRE vre = getValidVRE(vreId);
     Class<? extends DomainEntity> type = registry.getTypeForXName(typeString);
 
     if (Relation.class.isAssignableFrom(type)) {
       // This resource is not available for relations.
       return Response.status(Response.Status.NOT_FOUND).build();
     }
+
+    searchRequestValidator.validate(vreId, typeString, searchParams);
+
+    VRE vre = getValidVRE(vreId);
+
 
     // Process
     try {
@@ -129,13 +134,17 @@ public class SearchResourceV2_1 extends ResourceBase {
                                 RelationSearchParametersV2_1 params //
   ) {
 
-    Class<? extends Relation> relationType = (Class<? extends Relation>) registry.getTypeForXName(relationTypeString);
-    RelationSearchParameters relationParameters = relationSearchParametersConverter.fromRelationParametersV2_1(params);
-    searchRequestValidator.validateRelationRequest(vreId, relationTypeString, relationParameters);
-    VRE vre = getValidVRE(vreId);
+    System.out.println("relation search");
 
     String queryId = null;
     try {
+      Class<? extends Relation> relationType = (Class<? extends Relation>) registry.getTypeForXName(relationTypeString);
+      Class<? extends DomainEntity> relatedType = registry.getTypeForXName(relationTypeString);
+      VRE vre = getValidVRE(vreId);
+      RelationSearchParameters relationParameters = relationSearchParametersConverter.fromRelationParametersV2_1(params, vre, relatedType);
+
+      searchRequestValidator.validateRelationRequest(vreId, relationTypeString, relationParameters);
+
       queryId = vre.searchRelations(relationType, relationParameters);
     } catch (SearchValidationException e) {
       return Response.status(BAD_REQUEST).entity(e.getMessage()).build();
@@ -145,6 +154,9 @@ public class SearchResourceV2_1 extends ResourceBase {
     } catch (SearchException e) {
       LOG.error("Search went wrong", e);
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Search went wrong.").build();
+    } catch (SearchConversionException e) {
+      LOG.error("Search conversion went wrong", e);
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Search conversion went wrong.").build();
     }
 
     return Response.created(createHATEOASURI(queryId, version)).build();

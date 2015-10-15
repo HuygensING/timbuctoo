@@ -26,6 +26,7 @@ import com.sun.jersey.api.client.ClientResponse;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTOV2_1;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.util.search.IndexRegularSearchResultMapper;
@@ -33,6 +34,7 @@ import nl.knaw.huygens.timbuctoo.rest.util.search.IndexRelationSearchResultMappe
 import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.search.converters.RelationSearchParametersConverter;
+import nl.knaw.huygens.timbuctoo.search.converters.SearchConversionException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
@@ -41,7 +43,9 @@ import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.Matchers;
 import test.rest.model.TestDomainEntity;
 import test.rest.model.TestRelation;
 
@@ -70,7 +74,7 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
   public static final int DEFAULT_ROWS = 10;
 
   @Before
-  public void setup() {
+  public void setup() throws SearchConversionException {
     setupPublicUrl(resource().getURI().toString());
     setupVRE();
     setupConverter();
@@ -81,9 +85,9 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
     makeVREAvailable(vreMock, VRE_ID);
   }
 
-  protected void setupConverter() {
+  protected void setupConverter() throws SearchConversionException {
     RelationSearchParametersConverter relationSearchParametersConverter = injector.getInstance(RelationSearchParametersConverter.class);
-    when(relationSearchParametersConverter.fromRelationParametersV2_1(any(RelationSearchParametersV2_1.class))).thenReturn(PARAMETERS);
+    when(relationSearchParametersConverter.fromRelationParametersV2_1(any(RelationSearchParametersV2_1.class), any(VRE.class), Matchers.<Class<? extends DomainEntity>>any())).thenReturn(PARAMETERS);
   }
 
 
@@ -116,7 +120,7 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
 
     verify(repository).getEntityOrDefaultVariation(SearchResult.class, ID);
     verify(relationSearchResultMapperMock).create(TEST_RELATION_TYPE, searchResult, DEFAULT_START, DEFAULT_ROWS, getAPIVersion());
-    
+
   }
 
 
@@ -155,7 +159,7 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
     verifyResponseStatus(response, ClientResponse.Status.BAD_REQUEST);
   }
 
-  protected void searchParametersAreInvalid() throws Exception{
+  protected void searchParametersAreInvalid() throws Exception {
     when(vreMock.searchRelations(RELATION_TYPE, PARAMETERS)).thenThrow(new SearchValidationException(new Exception()));
   }
 
@@ -174,8 +178,8 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
 
   private ClientResponse executeRelationSearchPostRequest() {
     return searchResourceBuilder(RELATION_X_TYPE_STRING, RELATED_TYPE_STRING) //
-        .header(VRE_ID_KEY, VRE_ID) //
-        .post(ClientResponse.class, PARAMETERS_V_2_1);
+      .header(VRE_ID_KEY, VRE_ID) //
+      .post(ClientResponse.class, PARAMETERS_V_2_1);
   }
 
   private void searchResultCannotBeStored() throws Exception {
@@ -200,7 +204,23 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
   }
 
   @Test
-  public void theRelationSearchReturnANotFoundWhenTheOldURLIsUsed() {
+  public void whenTheRelationSearchParametersV2_1ToRelationSearchParametersAInternalServerErrorIsThrown() throws Exception {
+    // setup
+    RelationSearchParametersConverter converter = injector.getInstance(RelationSearchParametersConverter.class);
+
+    when(converter.fromRelationParametersV2_1(any(RelationSearchParametersV2_1.class), any(VRE.class), Matchers.<Class<? extends DomainEntity>>any())) //
+      .thenThrow(new SearchConversionException(new Exception()));
+
+    // action
+    ClientResponse response = executeRelationSearchPostRequest();
+
+    // verify
+    verifyResponseStatus(response, ClientResponse.Status.INTERNAL_SERVER_ERROR);
+  }
+
+  @Ignore
+  @Test
+  public void theRelationSearchReturnsNotFoundWhenTheOldURLIsUsed() {
     // action
     ClientResponse response = searchResourceBuilder(RELATION_X_TYPE_STRING) //
       .header(VRE_ID_KEY, VRE_ID) //
