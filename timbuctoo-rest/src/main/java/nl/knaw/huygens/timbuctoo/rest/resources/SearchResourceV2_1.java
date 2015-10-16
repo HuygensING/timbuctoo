@@ -95,14 +95,7 @@ public class SearchResourceV2_1 extends ResourceBase {
                                SearchParametersV1 searchParams //
   ) {
 
-    System.out.println("Regular search. " + typeString);
-
     Class<? extends DomainEntity> type = registry.getTypeForXName(typeString);
-
-    if (Relation.class.isAssignableFrom(type)) {
-      // This resource is not available for relations.
-      return Response.status(Response.Status.NOT_FOUND).build();
-    }
 
     searchRequestValidator.validate(vreId, typeString, searchParams);
 
@@ -134,8 +127,6 @@ public class SearchResourceV2_1 extends ResourceBase {
                                 RelationSearchParametersV2_1 params //
   ) {
 
-    System.out.println("relation search");
-
     String queryId = null;
     try {
       Class<? extends Relation> relationType = (Class<? extends Relation>) registry.getTypeForXName(relationTypeString);
@@ -160,6 +151,15 @@ public class SearchResourceV2_1 extends ResourceBase {
     }
 
     return Response.created(createHATEOASURI(queryId, version)).build();
+  }
+
+  @APIDesc("Method to get searches send to the old relation post and return a not found")
+  @POST
+  @Path("/" + Paths.RELATION_SEARCH_PREFIX)
+  @Consumes(MediaType.APPLICATION_JSON)
+  public Response oldRelationPost() {
+
+    return Response.status(NOT_FOUND).entity("Add '/{entity to relate with}' to the path").build();
   }
 
   @GET

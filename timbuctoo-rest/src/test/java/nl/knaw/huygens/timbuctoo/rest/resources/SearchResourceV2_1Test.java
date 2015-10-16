@@ -43,7 +43,6 @@ import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Matchers;
 import test.rest.model.TestDomainEntity;
@@ -218,7 +217,6 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
     verifyResponseStatus(response, ClientResponse.Status.INTERNAL_SERVER_ERROR);
   }
 
-  @Ignore
   @Test
   public void theRelationSearchReturnsNotFoundWhenTheOldURLIsUsed() {
     // action
