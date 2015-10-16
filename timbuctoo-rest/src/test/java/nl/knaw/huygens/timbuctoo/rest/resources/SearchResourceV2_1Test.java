@@ -27,6 +27,7 @@ import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTOV2_1;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.util.search.IndexRegularSearchResultMapper;
@@ -86,7 +87,7 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
 
   protected void setupConverter() throws SearchConversionException {
     RelationSearchParametersConverter relationSearchParametersConverter = injector.getInstance(RelationSearchParametersConverter.class);
-    when(relationSearchParametersConverter.fromRelationParametersV2_1(any(RelationSearchParametersV2_1.class), any(VRE.class), Matchers.<Class<? extends DomainEntity>>any())).thenReturn(PARAMETERS);
+    when(relationSearchParametersConverter.fromRelationParametersV2_1(Matchers.<Class<? extends Relation>>any(), any(RelationSearchParametersV2_1.class), any(VRE.class), Matchers.<Class<? extends DomainEntity>>any())).thenReturn(PARAMETERS);
   }
 
 
@@ -173,7 +174,7 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
       .header(VRE_ID_KEY, VRE_ID) //
       .post(ClientResponse.class, PARAMETERS_V_2_1);
   }
-  
+
   @Test
   @Override
   public void whenASearchExceptionIsThrownAnInternalServerErrorShouldBeReturned() throws Exception {
@@ -196,7 +197,7 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
     // setup
     RelationSearchParametersConverter converter = injector.getInstance(RelationSearchParametersConverter.class);
 
-    when(converter.fromRelationParametersV2_1(any(RelationSearchParametersV2_1.class), any(VRE.class), Matchers.<Class<? extends DomainEntity>>any())) //
+    when(converter.fromRelationParametersV2_1(Matchers.<Class<? extends Relation>>any(), any(RelationSearchParametersV2_1.class), any(VRE.class), Matchers.<Class<? extends DomainEntity>>any())) //
       .thenThrow(new SearchConversionException(new Exception()));
 
     // action

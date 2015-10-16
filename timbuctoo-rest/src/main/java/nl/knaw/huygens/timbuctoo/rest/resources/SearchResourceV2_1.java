@@ -132,7 +132,7 @@ public class SearchResourceV2_1 extends ResourceBase {
       Class<? extends Relation> relationType = (Class<? extends Relation>) registry.getTypeForXName(relationTypeString);
       Class<? extends DomainEntity> relatedType = registry.getTypeForXName(relationTypeString);
       VRE vre = getValidVRE(vreId);
-      RelationSearchParameters relationParameters = relationSearchParametersConverter.fromRelationParametersV2_1(params, vre, relatedType);
+      RelationSearchParameters relationParameters = relationSearchParametersConverter.fromRelationParametersV2_1(relationType, params, vre, relatedType);
 
       searchRequestValidator.validateRelationRequest(vreId, relationTypeString, relationParameters);
 

@@ -29,7 +29,9 @@ import nl.knaw.huygens.facetedsearch.model.parameters.FacetField;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetParameter;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
@@ -72,13 +74,14 @@ public class RelationSearchParametersConverter {
     return new SearchParametersV1().setFacetParameters(Lists.newArrayList(parameter)).setFacetFields(facetFields);
   }
 
-  public RelationSearchParameters fromRelationParametersV2_1(RelationSearchParametersV2_1 parametersV2_1, VRE vre, Class<? extends DomainEntity> targetSearchType) throws SearchConversionException {
+  public RelationSearchParameters fromRelationParametersV2_1(Class<? extends Relation> relationType, RelationSearchParametersV2_1 parametersV2_1, VRE vre, Class<? extends DomainEntity> targetSearchType) throws SearchConversionException {
     try {
       RelationSearchParameters relationSearchParameters = new RelationSearchParameters();
 
       relationSearchParameters.setRelationTypeIds(getRelationTypeIds(parametersV2_1));
       relationSearchParameters.setSourceSearchId(parametersV2_1.getOtherSearchId());
       relationSearchParameters.setTargetSearchId(getTargetSearchId(parametersV2_1, vre, targetSearchType));
+      relationSearchParameters.setTypeString(TypeNames.getInternalName(relationType));
 
       return relationSearchParameters;
     } catch (SearchException | SearchValidationException | StorageException | ValidationException e) {

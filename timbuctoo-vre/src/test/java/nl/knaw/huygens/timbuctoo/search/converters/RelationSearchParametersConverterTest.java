@@ -27,6 +27,7 @@ import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetParameter;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetParameter;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
@@ -39,6 +40,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import test.timbuctoo.index.model.projecta.ProjectARelation;
 import test.timbuctoo.index.model.projecta.ProjectAType1;
 
 import java.util.ArrayList;
@@ -71,11 +73,13 @@ public class RelationSearchParametersConverterTest {
   public static final String SOURCE_SEARCH_RESULT_ID = "sourceSearchResultId";
   public static final String TARGET_SEARCH_RESULT_ID = "targetSearchResultId";
   public static final Class<ProjectAType1> TARGET_TYPE = ProjectAType1.class;
+  public static final Class<ProjectARelation> RELATION_TYPE = ProjectARelation.class;
   private RelationSearchParametersConverter instance;
   private Repository repository;
   public static final SearchResult SEARCH_RESULT = new SearchResult();
   private VRE vre;
   private RelationSearchParametersV2_1 relationSearchParametersV2_1;
+  public static final String RELATION_TYPE_STRING = TypeNames.getInternalName(RELATION_TYPE);
 
   @Before
   public void setUp() throws Exception {
@@ -116,12 +120,13 @@ public class RelationSearchParametersConverterTest {
     when(repository.addSystemEntity(SearchResult.class, SEARCH_RESULT)).thenReturn(TARGET_SEARCH_RESULT_ID);
 
     // action
-    RelationSearchParameters relationSearchParameters = instance.fromRelationParametersV2_1(relationSearchParametersV2_1, vre, TARGET_TYPE);
+    RelationSearchParameters relationSearchParameters = instance.fromRelationParametersV2_1(RELATION_TYPE, relationSearchParametersV2_1, vre, TARGET_TYPE);
 
     // verify
     assertThat(relationSearchParameters.getRelationTypeIds(), containsInAnyOrder(ID_1, ID_2));
     assertThat(relationSearchParameters.getSourceSearchId(), is(SOURCE_SEARCH_RESULT_ID));
     assertThat(relationSearchParameters.getTargetSearchId(), is(TARGET_SEARCH_RESULT_ID));
+    assertThat(relationSearchParameters.getTypeString(), is(RELATION_TYPE_STRING));
 
     verify(vre).search(argThat(equalTo(TARGET_TYPE)), argThat(likeSearchParametersV1().withoutFacetParameter(likeFacetParameter(RELATION_FACET, RELATION_TYPE_NAMES))));
   }
@@ -139,7 +144,7 @@ public class RelationSearchParametersConverterTest {
     expectedException.expectCause(is(instanceOf(SearchException.class)));
 
     // action
-    instance.fromRelationParametersV2_1(relationSearchParametersV2_1, vre, TARGET_TYPE);
+    instance.fromRelationParametersV2_1(RELATION_TYPE, relationSearchParametersV2_1, vre, TARGET_TYPE);
 
   }
 
@@ -153,7 +158,7 @@ public class RelationSearchParametersConverterTest {
     expectedException.expectCause(is(instanceOf(SearchValidationException.class)));
 
     // action
-    instance.fromRelationParametersV2_1(relationSearchParametersV2_1, vre, TARGET_TYPE);
+    instance.fromRelationParametersV2_1(RELATION_TYPE, relationSearchParametersV2_1, vre, TARGET_TYPE);
   }
 
   @Test
@@ -168,7 +173,7 @@ public class RelationSearchParametersConverterTest {
     expectedException.expectCause(is(instanceOf(StorageException.class)));
 
     // action
-    instance.fromRelationParametersV2_1(relationSearchParametersV2_1, vre, TARGET_TYPE);
+    instance.fromRelationParametersV2_1(RELATION_TYPE, relationSearchParametersV2_1, vre, TARGET_TYPE);
   }
 
   @Test
@@ -183,6 +188,6 @@ public class RelationSearchParametersConverterTest {
     expectedException.expectCause(is(instanceOf(ValidationException.class)));
 
     // action
-    instance.fromRelationParametersV2_1(relationSearchParametersV2_1, vre, TARGET_TYPE);
+    instance.fromRelationParametersV2_1(RELATION_TYPE, relationSearchParametersV2_1, vre, TARGET_TYPE);
   }
 }
