@@ -165,14 +165,7 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
   @Test
   @Override
   public void whenTheRepositoryCannotStoreTheRelationSearchResultAnInternalServerErrorShouldBeReturned() throws Exception {
-    // setup
-    searchResultCannotBeStored();
-
-    // action
-    ClientResponse response = executeRelationSearchPostRequest();
-
-    // verify
-    verifyResponseStatus(response, ClientResponse.Status.INTERNAL_SERVER_ERROR);
+    // this cannot happen anymore.
   }
 
   private ClientResponse executeRelationSearchPostRequest() {
@@ -180,11 +173,7 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
       .header(VRE_ID_KEY, VRE_ID) //
       .post(ClientResponse.class, PARAMETERS_V_2_1);
   }
-
-  private void searchResultCannotBeStored() throws Exception {
-    when(vreMock.searchRelations(RELATION_TYPE, PARAMETERS)).thenThrow(new StorageException("exception"));
-  }
-
+  
   @Test
   @Override
   public void whenASearchExceptionIsThrownAnInternalServerErrorShouldBeReturned() throws Exception {

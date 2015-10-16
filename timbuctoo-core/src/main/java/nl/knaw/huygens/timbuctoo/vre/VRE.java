@@ -11,7 +11,6 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultProcessor;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
 import java.util.Collection;
 import java.util.List;
@@ -198,6 +197,7 @@ public interface VRE extends Scope {
    * @param parameters the search parameters
    * @return the id of the saved result.
    * @throws SearchValidationException when the parameters are not valid
+   * @throws SearchException when the search cannot be executed
    */
-  String searchRelations(Class<? extends Relation> type, RelationSearchParameters parameters) throws SearchException, SearchValidationException, StorageException;
+  String searchRelations(Class<? extends Relation> type, RelationSearchParameters parameters) throws SearchException, SearchValidationException;
 }
