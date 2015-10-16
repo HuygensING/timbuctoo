@@ -81,21 +81,24 @@ public class PackageVRE implements VRE {
   private final RelationSearcher relationSearcher;
 
   public PackageVRE(String vreId, String description, String modelPackage, List<String> receptions, Repository repository, RelationSearcher relationSearcher) {
-    this(vreId, description, createScope(modelPackage), new IndexCollection(),  new SearchResultConverter(vreId), repository, relationSearcher);
+    this(vreId, description, createScope(modelPackage), new IndexCollection(),  new SearchResultConverter(vreId), repository, relationSearcher, receptions);
   }
 
   // For testing
-  PackageVRE(String vreId, String description, Scope scope, IndexCollection indexCollection, SearchResultConverter searchResultConverter, Repository repository, RelationSearcher relationSearcher) {
+  PackageVRE(String vreId, String description, Scope scope, IndexCollection indexCollection, SearchResultConverter searchResultConverter, Repository repository, RelationSearcher relationSearcher, List<String> receptions) {
     this.vreId = vreId;
     this.description = description;
     this.repository = repository;
     this.relationSearcher = relationSearcher;
-    this.receptions = Lists.newArrayList();
+    this.receptions = receptions;
     this.indexCollection = indexCollection;
     this.searchResultConverter = searchResultConverter;
     this.scope = scope;
     this.typeMap = createTypeMap();
   }
+
+
+
 
   @Override
   public String getVreId() {

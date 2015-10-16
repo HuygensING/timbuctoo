@@ -107,7 +107,7 @@ public class PackageVRETest {
     when(indexCollectionMock.getIndexByType(TYPE)).thenReturn(indexMock);
     repositoryMock = mock(Repository.class);
     relationSearcher = mock(RelationSearcher.class);
-    vre = new PackageVRE("vreId", "description", scopeMock, indexCollectionMock, resultConverterMock, repositoryMock, relationSearcher);
+    vre = new PackageVRE("vreId", "description", scopeMock, indexCollectionMock, resultConverterMock, repositoryMock, relationSearcher, Lists.newArrayList());
   }
 
   @Test
