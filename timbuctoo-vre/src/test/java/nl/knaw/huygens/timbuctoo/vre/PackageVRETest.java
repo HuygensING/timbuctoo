@@ -179,16 +179,6 @@ public class PackageVRETest {
     testSearchIndexThrowsAnException(SearchValidationException.class);
   }
 
-  @Test
-  public void deleteFromIndexShouldDelegateTheCallToTheRightIndex() throws IndexException {
-    // action
-    vre.deleteFromIndex(TYPE, ID);
-
-    // verify
-    verify(indexMock).deleteById(ID);
-
-  }
-
   private void testSearchIndexThrowsAnException(Class<? extends Exception> exceptionToThrow) throws SearchException, SearchValidationException {
     doThrow(exceptionToThrow).when(indexMock).search(searchParameters);
 
@@ -199,6 +189,15 @@ public class PackageVRETest {
       verify(indexMock).search(searchParameters);
       verifyZeroInteractions(resultConverterMock);
     }
+  }
+
+  @Test
+  public void deleteFromIndexShouldDelegateTheCallToTheRightIndex() throws IndexException {
+    // action
+    vre.deleteFromIndex(TYPE, ID);
+
+    // verify
+    verify(indexMock).deleteById(ID);
   }
 
   @Test(expected = IndexException.class)
