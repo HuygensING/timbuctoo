@@ -40,7 +40,10 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultProcessor;
 import nl.knaw.huygens.timbuctoo.search.FullTextSearchFieldFinder;
+import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.search.converters.SearchResultConverter;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,23 +78,18 @@ public class PackageVRE implements VRE {
   private final SearchResultConverter searchResultConverter;
 
   private final Repository repository;
+  private final RelationSearcher relationSearcher;
 
-  public PackageVRE(String vreId, String description, String modelPackage, List<String> receptions, Repository repository) {
-    this.vreId = vreId;
-    this.description = description;
-    this.receptions = receptions;
-    this.repository = repository;
-    this.indexCollection = new IndexCollection();
-    this.searchResultConverter = new SearchResultConverter(vreId);
-    this.scope = createScope(modelPackage);
-    this.typeMap = createTypeMap();
+  public PackageVRE(String vreId, String description, String modelPackage, List<String> receptions, Repository repository, RelationSearcher relationSearcher) {
+    this(vreId, description, createScope(modelPackage), new IndexCollection(),  new SearchResultConverter(vreId), repository, relationSearcher);
   }
 
   // For testing
-  PackageVRE(String vreId, String description, Scope scope, IndexCollection indexCollection, SearchResultConverter searchResultConverter, Repository repository) {
+  PackageVRE(String vreId, String description, Scope scope, IndexCollection indexCollection, SearchResultConverter searchResultConverter, Repository repository, RelationSearcher relationSearcher) {
     this.vreId = vreId;
     this.description = description;
     this.repository = repository;
+    this.relationSearcher = relationSearcher;
     this.receptions = Lists.newArrayList();
     this.indexCollection = indexCollection;
     this.searchResultConverter = searchResultConverter;
@@ -114,7 +112,7 @@ public class PackageVRE implements VRE {
     return receptions;
   }
 
-  private Scope createScope(String modelPackage) {
+  private static Scope createScope(String modelPackage) {
     try {
       return new PackageScope(modelPackage);
     } catch (IOException e) {
@@ -327,8 +325,19 @@ public class PackageVRE implements VRE {
   }
 
   @Override
-  public String searchRelations(Class<? extends Relation> type, RelationSearchParameters parameters) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  public String searchRelations(Class<? extends Relation> type, RelationSearchParameters parameters) throws SearchException, SearchValidationException {
+    String searchId = null;
+
+    SearchResult searchResult = relationSearcher.search(this, type, parameters);
+
+    try {
+      searchId = repository.addSystemEntity(SearchResult.class, searchResult);
+    } catch (StorageException | ValidationException e) {
+      LOG.error("Storage of search result failed.");
+      throw new SearchException(e);
+    }
+
+    return searchId;
   }
 
   private interface IndexChanger {

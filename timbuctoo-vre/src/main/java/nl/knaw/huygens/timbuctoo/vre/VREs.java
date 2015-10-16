@@ -22,21 +22,20 @@ package nl.knaw.huygens.timbuctoo.vre;
  * #L%
  */
 
-import java.util.List;
-import java.util.Map;
-
-import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.config.Configuration.VREDef;
-import nl.knaw.huygens.timbuctoo.index.IndexFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.config.Configuration.VREDef;
+import nl.knaw.huygens.timbuctoo.index.IndexFactory;
+import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * Provides access to the configured VRE's.
@@ -49,10 +48,10 @@ public class VREs implements VRECollection {
   private final Map<String, VRE> vres = Maps.newHashMap();
 
   @Inject
-  public VREs(Configuration config, IndexFactory indexFactory, Repository repository) {
+  public VREs(Configuration config, IndexFactory indexFactory, Repository repository, RelationSearcher relationSearcher) {
     for (VREDef vreDef : config.getVREDefs()) {
       LOG.info("Adding {} - {}", vreDef.id, vreDef.description);
-      VRE vre = new PackageVRE(vreDef.id, vreDef.description, vreDef.modelPackage, vreDef.receptions, repository);
+      VRE vre = new PackageVRE(vreDef.id, vreDef.description, vreDef.modelPackage, vreDef.receptions, repository, relationSearcher);
       vre.initIndexes(indexFactory);
       String vreId = vreDef.id;
       vres.put(vreId, vre);

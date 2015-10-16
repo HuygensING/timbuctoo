@@ -39,12 +39,18 @@ import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultProcessor;
+import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.search.converters.SearchResultConverter;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 import test.timbuctoo.index.model.BaseType1;
+import test.timbuctoo.index.model.projecta.ProjectARelation;
 import test.timbuctoo.index.model.projecta.ProjectAType1;
 import test.timbuctoo.index.model.projecta.ProjectAType2;
 
@@ -56,6 +62,7 @@ import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.doReturn;
@@ -79,6 +86,8 @@ public class PackageVRETest {
   private static final String INDEX_NAME = "indexName";
   private static final Class<BaseType1> BASE_TYPE = BaseType1.class;
   private static final List<SortParameter> SORT = Lists.newArrayList(new SortParameter("field", SortDirection.ASCENDING));
+  public static final Class<ProjectARelation> RELATION_TYPE = ProjectARelation.class;
+  public static final RelationSearchParameters RELATION_SEARCH_PARAMETERS = new RelationSearchParameters();
 
   private final DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
   private final Index indexMock = mock(Index.class);
@@ -88,6 +97,8 @@ public class PackageVRETest {
   private Scope scopeMock;
   private PackageVRE vre;
   private Repository repositoryMock;
+  public static final SearchResult SEARCH_RESULT = new SearchResult();
+  private RelationSearcher relationSearcher;
 
   @Before
   public void setup() {
@@ -95,7 +106,8 @@ public class PackageVRETest {
     scopeMock = mock(Scope.class);
     when(indexCollectionMock.getIndexByType(TYPE)).thenReturn(indexMock);
     repositoryMock = mock(Repository.class);
-    vre = new PackageVRE("vreId", "description", scopeMock, indexCollectionMock, resultConverterMock, repositoryMock);
+    relationSearcher = mock(RelationSearcher.class);
+    vre = new PackageVRE("vreId", "description", scopeMock, indexCollectionMock, resultConverterMock, repositoryMock, relationSearcher);
   }
 
   @Test
@@ -189,6 +201,78 @@ public class PackageVRETest {
       verify(indexMock).search(searchParameters);
       verifyZeroInteractions(resultConverterMock);
     }
+  }
+
+  @Test
+  public void searchRelationsStoresASearchResultFoundByTheRelationSearcher() throws Exception {
+    // setup
+    when(relationSearcher.search(vre, RELATION_TYPE, RELATION_SEARCH_PARAMETERS)).thenReturn(SEARCH_RESULT);
+
+    when(repositoryMock.addSystemEntity(SearchResult.class, SEARCH_RESULT)).thenReturn(ID);
+
+    // action
+    String id = vre.searchRelations(RELATION_TYPE, RELATION_SEARCH_PARAMETERS);
+
+    // verify
+    assertThat(id, is(ID));
+
+    verify(relationSearcher).search(vre, RELATION_TYPE, RELATION_SEARCH_PARAMETERS);
+    verify(repositoryMock).addSystemEntity(SearchResult.class, SEARCH_RESULT);
+  }
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
+
+  @Test
+  public void searchRelationsThrowsASearchValidationExceptionIfTheParametersAreNotValid() throws Exception {
+    // setup
+    when(relationSearcher.search(vre, RELATION_TYPE, RELATION_SEARCH_PARAMETERS)).thenThrow(new SearchValidationException(new Exception()));
+
+    // setup expected exceptions
+    expectedException.expect(SearchValidationException.class);
+
+    // action
+    vre.searchRelations(RELATION_TYPE, RELATION_SEARCH_PARAMETERS);
+  }
+
+  @Test
+  public void searchRelationsThrowsASearchExceptionWhenTheSearchCannotBeExecuted() throws Exception {
+    // setup
+    when(relationSearcher.search(vre, RELATION_TYPE, RELATION_SEARCH_PARAMETERS)).thenThrow(new SearchException(new Exception()));
+
+    // setup expected exceptions
+    expectedException.expect(SearchException.class);
+
+    // action
+    vre.searchRelations(RELATION_TYPE, RELATION_SEARCH_PARAMETERS);
+  }
+
+  @Test
+  public void searchRelationsThrowsASearchExceptionWhenTheSearchCannotBeStored() throws Exception {
+    // setup
+    when(relationSearcher.search(vre, RELATION_TYPE, RELATION_SEARCH_PARAMETERS)).thenReturn(SEARCH_RESULT);
+    when(repositoryMock.addSystemEntity(SearchResult.class, SEARCH_RESULT)).thenThrow(new StorageException());
+
+    // setup expected exceptions
+    expectedException.expect(SearchException.class);
+    expectedException.expectCause(is(instanceOf(StorageException.class)));
+
+    // action
+    vre.searchRelations(RELATION_TYPE, RELATION_SEARCH_PARAMETERS);
+  }
+
+  @Test
+  public void searchRelationsThrowsASearchExceptionWhenTheSearchResultIsNotValid() throws Exception {
+    // setup
+    when(relationSearcher.search(vre, RELATION_TYPE, RELATION_SEARCH_PARAMETERS)).thenReturn(SEARCH_RESULT);
+    when(repositoryMock.addSystemEntity(SearchResult.class, SEARCH_RESULT)).thenThrow(new ValidationException());
+
+    // setup expected exceptions
+    expectedException.expect(SearchException.class);
+    expectedException.expectCause(is(instanceOf(ValidationException.class)));
+
+    // action
+    vre.searchRelations(RELATION_TYPE, RELATION_SEARCH_PARAMETERS);
   }
 
   @Test
