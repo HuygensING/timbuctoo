@@ -22,6 +22,10 @@ package nl.knaw.huygens.timbuctoo.tools.config;
  * #L%
  */
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.persistence.PersistenceManagerCreationException;
 import nl.knaw.huygens.persistence.PersistenceManagerFactory;
@@ -36,19 +40,15 @@ import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.index.NoOpIndex;
 import nl.knaw.huygens.timbuctoo.index.solr.SolrIndexFactory;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.search.IndexRelationSearcher;
+import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.tools.oaipmh.OaiPmhRestClient;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 import nl.knaw.huygens.timbuctoo.vre.VREs;
-
 import org.apache.commons.configuration.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
 
 /**
  * A class to make it possible to use Guice @see http://code.google.com/p/google-guice.
@@ -81,9 +81,10 @@ public class ToolsInjectionModule extends BasicInjectionModule {
   protected void configure() {
     super.configure();
     bind(IndexManager.class).to(IndexFacade.class);
+    bind(RelationSearcher.class).to(IndexRelationSearcher.class);
+
     if (useSolr) {
       bind(IndexFactory.class).to(SolrIndexFactory.class);
-
     } else {
       bind(IndexFactory.class).to(NoOpIndexFactory.class);
     }
