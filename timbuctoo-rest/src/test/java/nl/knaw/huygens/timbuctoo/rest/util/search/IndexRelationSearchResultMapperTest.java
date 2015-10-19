@@ -1,19 +1,25 @@
 package nl.knaw.huygens.timbuctoo.rest.util.search;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import nl.knaw.huygens.facetedsearch.model.DefaultFacet;
 import nl.knaw.huygens.facetedsearch.model.Facet;
 import nl.knaw.huygens.facetedsearch.model.parameters.SortDirection;
 import nl.knaw.huygens.facetedsearch.model.parameters.SortParameter;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.RelationDTO;
-import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
+import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTOV2_1;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.rest.util.HATEOASURICreator;
 import nl.knaw.huygens.timbuctoo.rest.util.RangeHelper;
+import nl.knaw.huygens.timbuctoo.search.FullTextSearchFieldFinder;
 import nl.knaw.huygens.timbuctoo.search.SortableFieldFinder;
+import nl.knaw.huygens.timbuctoo.search.converters.RelationSearchParametersConverter;
 import nl.knaw.huygens.timbuctoo.vre.NotInScopeException;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
@@ -22,6 +28,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import test.rest.model.projecta.ProjectADomainEntity;
+import test.rest.model.projecta.ProjectAPerson;
 import test.rest.model.projecta.ProjectARelation;
 
 import java.util.ArrayList;
@@ -29,11 +37,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import static nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultDTOMatcher.likeRelationSearchResultDTO;
+import static nl.knaw.huygens.timbuctoo.rest.util.search.DefaultFacetMatcher.likeDefaultFacet;
+import static nl.knaw.huygens.timbuctoo.rest.util.search.FacetOptionMatcher.likeFacetOption;
+import static nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultDTOV2_1Matcher.likeRelationSearchResultDTOV2_1;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsCollectionContaining.hasItem;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static test.rest.model.projecta.ProjectADomainEntity.FULL_TEXT_SEARCH_FIELD;
 
 public class IndexRelationSearchResultMapperTest {
 
@@ -48,15 +61,23 @@ public class IndexRelationSearchResultMapperTest {
   public static final int NUM_FOUND = IDS.size();
   private static final List<SortParameter> SORT = Lists.newArrayList(new SortParameter("field", SortDirection.ASCENDING));
   private static final String QUERY_ID = "queryId";
-  private static final List<Facet> FACETS = Lists.newArrayList();
+  public static final DefaultFacet FACET = new DefaultFacet("test", "test");
+  private static final List<Facet> FACETS = Lists.newArrayList(FACET);
   private static final String TERM = "term";
   public static final int NORMALIZED_ROWS = 4;
   public static final int NORMALIZED_START = 1;
   public static final HashSet<String> SORTABLE_FIELDS = Sets.newHashSet();
   public static final String NEXT_LINK = "nextLink";
   public static final String PREV_LINK = "prevLink";
-  public static final ArrayList<RelationDTO> REFS = Lists.newArrayList();
-  private static final List<Map<String, Object>> RAW_DATA = Lists.newArrayList();
+  public static final ArrayList<RelationDTO> REFS = Lists.newArrayList(new RelationDTO());
+  private static final List<Map<String, Object>> RAW_DATA = Lists.newArrayList(Maps.newHashMap());
+  public static final Class<ProjectAPerson> SOURCE_TYPE = ProjectAPerson.class;
+  public static final String SOURCE_TYPE_STRING = TypeNames.getInternalName(SOURCE_TYPE);
+  public static final Class<ProjectADomainEntity> TARGET_TYPE = ProjectADomainEntity.class;
+  public static final String TARGET_TYPE_STRING = TypeNames.getInternalName(TARGET_TYPE);
+  public static final String RELATION_1 = "relation1";
+  public static final String RELATION_2 = "relation2";
+  public static final ArrayList<String> POSSIBLE_RELATIONS = Lists.newArrayList(RELATION_1, RELATION_2);
 
   private Repository repository;
   private SortableFieldFinder sortableFieldFinder;
@@ -67,19 +88,32 @@ public class IndexRelationSearchResultMapperTest {
   private IndexRelationSearchResultMapper instance;
   private SearchResult searchResult;
   private VRE vre;
+  private TypeRegistry registry;
+  private FullTextSearchFieldFinder fullTextSearchFieldFinder;
 
   @Before
   public void setup() throws Exception {
     repository = mock(Repository.class);
     setupSortableFieldFinder();
     setupURICreator();
-    setupRelationDTOFactory();
     setupVRE();
+    setupRelationDTOFactory();
     setupRangeHelper();
-
     setupSearchResult();
+    setupRegistry();
+    setupFullTextSearchFieldFinder();
 
-    instance = new IndexRelationSearchResultMapper(repository, sortableFieldFinder, uriCreator, relationDTOFactory, vreCollection, rangeHelper);
+    this.instance = new IndexRelationSearchResultMapper(repository, sortableFieldFinder, uriCreator, relationDTOFactory, vreCollection, rangeHelper, fullTextSearchFieldFinder, registry);
+  }
+
+  private void setupFullTextSearchFieldFinder() {
+    fullTextSearchFieldFinder = mock(FullTextSearchFieldFinder.class);
+    when(fullTextSearchFieldFinder.findFields(TARGET_TYPE)).thenReturn(Sets.newHashSet(FULL_TEXT_SEARCH_FIELD));
+  }
+
+  private void setupRegistry() throws ModelException {
+    registry = TypeRegistry.getInstance();
+    registry.init(TARGET_TYPE.getPackage().getName());
   }
 
   private void setupRelationDTOFactory() throws Exception {
@@ -97,6 +131,7 @@ public class IndexRelationSearchResultMapperTest {
     vre = mock(VRE.class);
     when(vreCollection.getVREById(VRE_ID)).thenReturn(vre);
     when(vre.getRawDataFor(TYPE, ID_SUB_LIST, SORT)).thenReturn(RAW_DATA);
+    when(vre.getRelationTypeNamesBetween(SOURCE_TYPE, TARGET_TYPE)).thenReturn(POSSIBLE_RELATIONS);
   }
 
   private void setupRangeHelper() {
@@ -121,23 +156,56 @@ public class IndexRelationSearchResultMapperTest {
     searchResult.setTerm(TERM);
     searchResult.setVreId(VRE_ID);
     searchResult.setSort(SORT);
+    searchResult.setSourceType(SOURCE_TYPE_STRING);
+    searchResult.setTargetType(TARGET_TYPE_STRING);
   }
 
   @Test
-  public void createCreatesASearchResultDTOWithDomainEntityDTOsOfTheFoundResults() {
+  public void createCreatesASearchResultDTOWithDomainEntityDTOsOfTheFoundResults() throws SearchResultCreationException {
     // action
     SearchResultDTO searchResultDTO = instance.create(TYPE, searchResult, START, ROWS, VERSION);
 
     // verify
-    assertThat((RelationSearchResultDTO) searchResultDTO, likeRelationSearchResultDTO()
+    assertThat(searchResultDTO, is(instanceOf(RelationSearchResultDTOV2_1.class)));
+
+    assertThat((RelationSearchResultDTOV2_1) searchResultDTO, likeRelationSearchResultDTOV2_1()
+      .withTerm(TERM) //
       .withRows(NORMALIZED_ROWS) //
       .withStart(NORMALIZED_START) //
       .withSortableFields(SORTABLE_FIELDS) //
-      .withIds(IDS) //
+      .withoutIds() //
       .withNextLink(NEXT_LINK) //
       .withPrevLink(PREV_LINK) //
       .withNumFound(NUM_FOUND) //
+      .withFacet(FACET) //
       .withRefs(REFS));
+  }
+
+  @Test
+  public void createAddsTheReceptionRelationsBetweenTheSourceAndTheTargetTypeOfTheVREAsFacet() {
+    // action
+    SearchResultDTO searchResultDTO = instance.create(TYPE, searchResult, START, ROWS, VERSION);
+
+    assertThat(searchResultDTO, is(instanceOf(RelationSearchResultDTOV2_1.class)));
+
+    assertThat(((RelationSearchResultDTOV2_1) searchResultDTO).getFacets(), //
+      hasItem(likeDefaultFacet() //
+        .withName(RelationSearchParametersConverter.RELATION_FACET) //
+        .withOptions( //
+          likeFacetOption().withName(RELATION_1), //
+          likeFacetOption().withName(RELATION_2))));
+  }
+
+  @Test
+  public void createAddsTheFullTextSearchFieldsOfTheTargetType() {
+    // action
+    SearchResultDTO searchResultDTO = instance.create(TYPE, searchResult, START, ROWS, VERSION);
+
+    // verify
+    assertThat(searchResultDTO, is(instanceOf(RelationSearchResultDTOV2_1.class)));
+
+    assertThat((RelationSearchResultDTOV2_1) searchResultDTO, likeRelationSearchResultDTOV2_1()
+      .withFullTextSearchField(FULL_TEXT_SEARCH_FIELD));
   }
 
   @Rule

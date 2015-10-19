@@ -343,6 +343,11 @@ public class PackageVRE implements VRE {
     return searchId;
   }
 
+  @Override
+  public List<String> getRelationTypeNamesBetween(Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) {
+    throw new UnsupportedOperationException("Not implemented yet");
+  }
+
   private interface IndexChanger {
     void change(Class<? extends DomainEntity> type, List<? extends DomainEntity> variations) throws IndexException;
   }

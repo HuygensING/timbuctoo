@@ -1,13 +1,46 @@
 package nl.knaw.huygens.timbuctoo.model;
 
-public class RelationSearchResultDTOV2_1 extends RegularSearchResultDTO{
-  private String otherSearchId;
+import nl.knaw.huygens.facetedsearch.model.Facet;
 
-  private String getOtherSearchId() {
-    return otherSearchId;
+import java.util.List;
+import java.util.Set;
+
+public class RelationSearchResultDTOV2_1 extends SearchResultDTO {
+
+  private String term;
+  private List<Facet> facets;
+  private List<RelationDTO> refs;
+  private Set<String> fullTextSearchFields;
+
+  public String getTerm() {
+    return term;
   }
 
-  private void setOtherSearchId(String otherSearchId) {
-    this.otherSearchId = otherSearchId;
+  public void setTerm(String term) {
+    this.term = term;
+  }
+
+  public List<Facet> getFacets() {
+    return facets;
+  }
+
+  public void setFacets(List<Facet> facets) {
+    this.facets = facets;
+  }
+
+  public List<RelationDTO> getRefs() {
+    return refs;
+  }
+
+  public void setRefs(List<RelationDTO> refs) {
+    this.refs = refs;
+  }
+
+  public Set<String> getFullTextSearchFields() {
+    return fullTextSearchFields;
+  }
+
+  public void setFullTextSearchFields(Set<String> fields) {
+    this.fullTextSearchFields = fields;
   }
 }

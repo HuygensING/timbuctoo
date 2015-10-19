@@ -22,13 +22,15 @@ package test.rest.model.projecta;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import test.rest.model.BaseDomainEntity;
 import nl.knaw.huygens.timbuctoo.annotations.EntityTypeName;
 
 @EntityTypeName("projectadomainentities")
 public class ProjectADomainEntity extends BaseDomainEntity {
 
-  public String projectAGeneralTestDocValue;
+  public static final String FULL_TEXT_SEARCH_FIELD = "dynamic_t_testdocvalue";
+  private String projectAGeneralTestDocValue;
 
   public ProjectADomainEntity() {}
 
@@ -38,6 +40,16 @@ public class ProjectADomainEntity extends BaseDomainEntity {
 
   public ProjectADomainEntity(String id, String projectAGeneralTestDocValue) {
     super(id);
+    this.projectAGeneralTestDocValue = projectAGeneralTestDocValue;
+  }
+
+
+  @IndexAnnotation(fieldName = FULL_TEXT_SEARCH_FIELD, canBeEmpty = true)
+  private String getProjectAGeneralTestDocValue() {
+    return projectAGeneralTestDocValue;
+  }
+
+  private void setProjectAGeneralTestDocValue(String projectAGeneralTestDocValue) {
     this.projectAGeneralTestDocValue = projectAGeneralTestDocValue;
   }
 }

@@ -52,7 +52,7 @@ import static nl.knaw.huygens.timbuctoo.model.Relation.TYPE_ID_FACET_NAME;
 
 public class RelationSearchParametersConverter {
 
-  static final String RELATION_FACET = "dynamic_s_relation";
+  public static final String RELATION_FACET = "dynamic_s_relation";
   private final Repository repository;
   public static final Predicate<FacetParameter> IS_RELATION_FACET = new Predicate<FacetParameter>() {
     @Override

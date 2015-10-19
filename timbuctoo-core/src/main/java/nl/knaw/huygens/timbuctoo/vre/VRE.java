@@ -200,4 +200,6 @@ public interface VRE extends Scope {
    * @throws SearchException when the search cannot be executed
    */
   String searchRelations(Class<? extends Relation> type, RelationSearchParameters parameters) throws SearchException, SearchValidationException;
+
+  List<String> getRelationTypeNamesBetween(Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType);
 }
