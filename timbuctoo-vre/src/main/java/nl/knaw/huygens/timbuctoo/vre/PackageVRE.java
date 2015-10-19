@@ -342,8 +342,20 @@ public class PackageVRE implements VRE {
     return searchId;
   }
 
+  private String notInScopeMessage(Class<? extends DomainEntity> type) {
+    return String.format("\"%s\" is not part of the scope of VRE \"%s\".", TypeNames.getInternalName(type), vreId);
+  }
+
   @Override
   public List<String> getRelationTypeNamesBetween(Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) {
+    if (!inScope(sourceType)) {
+      throw new IllegalArgumentException(notInScopeMessage(sourceType));
+    }
+
+    if (!inScope(targetType)) {
+      throw new IllegalArgumentException(notInScopeMessage(targetType));
+    }
+
     List<RelationType> relationTypes = this.repository.getRelationTypes(sourceType, targetType);
     List<String> relationTypeNames = Lists.newArrayListWithCapacity(relationTypes.size());
 

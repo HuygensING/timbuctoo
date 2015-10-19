@@ -22,20 +22,7 @@ package nl.knaw.huygens.timbuctoo;
  * #L%
  */
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
@@ -45,17 +32,27 @@ import nl.knaw.huygens.timbuctoo.storage.RelationTypes;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.util.RelationRefAdderFactory;
-
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-
 import test.variation.model.BaseVariationDomainEntity;
 import test.variation.model.TestSystemEntity;
 import test.variation.model.projecta.ProjectADomainEntity;
 import test.variation.model.projecta.ProjectARelation;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class RepositoryTest {
 
@@ -303,5 +300,10 @@ public class RepositoryTest {
     // verify
     verify(relationTypesMock).getRelationTypeIdsByName(relationTypeIds);
     assertThat(actualRelationTypeIds, equalTo(relationTypeIds));
+  }
+
+  @Test
+  public void getRelationTypesRetrievesAllTheRelationTypesPossibleBetweenTheSourceAndTarget(){
+
   }
 }

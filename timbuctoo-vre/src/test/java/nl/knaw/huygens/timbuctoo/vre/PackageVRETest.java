@@ -90,6 +90,7 @@ public class PackageVRETest {
   private static final List<SortParameter> SORT = Lists.newArrayList(new SortParameter("field", SortDirection.ASCENDING));
   public static final Class<ProjectARelation> RELATION_TYPE = ProjectARelation.class;
   public static final RelationSearchParameters RELATION_SEARCH_PARAMETERS = new RelationSearchParameters();
+  public static final String VRE_ID = "vreId";
 
   private final DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
   private final Index indexMock = mock(Index.class);
@@ -109,7 +110,7 @@ public class PackageVRETest {
     when(indexCollectionMock.getIndexByType(TYPE)).thenReturn(indexMock);
     repositoryMock = mock(Repository.class);
     relationSearcher = mock(RelationSearcher.class);
-    vre = new PackageVRE("vreId", "description", scopeMock, indexCollectionMock, resultConverterMock, repositoryMock, relationSearcher, Lists.newArrayList());
+    vre = new PackageVRE(VRE_ID, "description", scopeMock, indexCollectionMock, resultConverterMock, repositoryMock, relationSearcher, Lists.newArrayList());
   }
 
   @Test
@@ -221,9 +222,6 @@ public class PackageVRETest {
     verify(relationSearcher).search(vre, RELATION_TYPE, RELATION_SEARCH_PARAMETERS);
     verify(repositoryMock).addSystemEntity(SearchResult.class, SEARCH_RESULT);
   }
-
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
 
   @Test
   public void searchRelationsThrowsASearchValidationExceptionIfTheParametersAreNotValid() throws Exception {
@@ -689,8 +687,10 @@ public class PackageVRETest {
   }
 
   @Test
-  public void getRelationTypeNamesBetweenFiltersRetrievesTheRelationTypeNamesBetweenTheSourceAndTheTarget(){
+  public void getRelationTypeNamesBetweenCollectsTheRelationNamesOfRelationTypesBetweenTheSourceAndTarget() {
     // setup
+    inScope(TYPE);
+    inScope(OTHER_TYPE);
     String otherTypeName = TypeNames.getInternalName(OTHER_TYPE);
     String typeName = TypeNames.getInternalName(TYPE);
     RelationType relationType = new RelationType();
@@ -712,6 +712,48 @@ public class PackageVRETest {
 
     // verify
     assertThat(relationTypeNamesBetween, containsInAnyOrder(name1, name2));
-
   }
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
+
+  @Test
+  public void getRelationTypeNamesBetweenThrowsAnArgumentExceptionWhenTheSourceIsNotInScope() {
+    // setup
+    notInScope(TYPE);
+    inScope(OTHER_TYPE);
+
+    expectedException.expect(IllegalArgumentException.class);
+    expectedException.expectMessage(expectedMessage(TYPE));
+
+    // action
+    vre.getRelationTypeNamesBetween(TYPE, OTHER_TYPE);
+  }
+
+  private void notInScope(Class<? extends DomainEntity> type) {
+    when(scopeMock.inScope(type)).thenReturn(false);
+  }
+
+  private void inScope(Class<? extends DomainEntity> type) {
+    when(scopeMock.inScope(type)).thenReturn(true);
+  }
+
+  private String expectedMessage(Class<? extends DomainEntity> type) {
+    return String.format("\"%s\" is not part of the scope of VRE \"%s\".", TypeNames.getInternalName(type), VRE_ID);
+  }
+
+  @Test
+  public void getRelationTypeNamesBetweenThrowsAnArgumentExceptionWhenTheTargetIsNotInScope() {
+    // setup
+    inScope(TYPE);
+    notInScope(OTHER_TYPE);
+
+    expectedException.expect(IllegalArgumentException.class);
+    expectedException.expectMessage(expectedMessage(OTHER_TYPE));
+
+    // action
+    vre.getRelationTypeNamesBetween(TYPE, OTHER_TYPE);
+  }
+
+
 }
