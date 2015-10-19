@@ -18,7 +18,6 @@ import nl.knaw.huygens.timbuctoo.rest.util.search.IndexRegularSearchResultMapper
 import nl.knaw.huygens.timbuctoo.rest.util.search.IndexRelationSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
 import nl.knaw.huygens.timbuctoo.rest.util.search.SearchResultMapper;
-import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.search.converters.RelationSearchParametersConverter;
 import nl.knaw.huygens.timbuctoo.search.converters.SearchConversionException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
@@ -64,23 +63,19 @@ public class SearchResourceV2_1 extends ResourceBase {
   private final Repository repository;
   private final Configuration config;
   private final SearchRequestValidator searchRequestValidator;
-  private final RelationSearcher relationSearcher;
   private final IndexRegularSearchResultMapper regularSearchResultMapper;
   private final IndexRelationSearchResultMapper relationSearchResultMapper;
-  private final VRECollection vreCollection;
   private final RelationSearchParametersConverter relationSearchParametersConverter;
 
   @Inject
-  public SearchResourceV2_1(TypeRegistry registry, Repository repository, Configuration config, SearchRequestValidator searchRequestValidator, RelationSearcher relationSearcher, IndexRegularSearchResultMapper regularSearchResultMapper, IndexRelationSearchResultMapper relationSearchResultMapper, VRECollection vreCollection, RelationSearchParametersConverter relationSearchParametersConverter) {
+  public SearchResourceV2_1(TypeRegistry registry, Repository repository, Configuration config, SearchRequestValidator searchRequestValidator, IndexRegularSearchResultMapper regularSearchResultMapper, IndexRelationSearchResultMapper relationSearchResultMapper, VRECollection vreCollection, RelationSearchParametersConverter relationSearchParametersConverter) {
     super(repository, vreCollection);
     this.registry = registry;
     this.repository = repository;
     this.config = config;
     this.searchRequestValidator = searchRequestValidator;
-    this.relationSearcher = relationSearcher;
     this.regularSearchResultMapper = regularSearchResultMapper;
     this.relationSearchResultMapper = relationSearchResultMapper;
-    this.vreCollection = vreCollection;
     this.relationSearchParametersConverter = relationSearchParametersConverter;
   }
 
@@ -127,7 +122,6 @@ public class SearchResourceV2_1 extends ResourceBase {
                                 RelationSearchParametersV2_1 params //
   ) {
 
-    String queryId = null;
     try {
       Class<? extends Relation> relationType = (Class<? extends Relation>) registry.getTypeForXName(relationTypeString);
       Class<? extends DomainEntity> relatedType = registry.getTypeForXName(relationTypeString);
@@ -136,7 +130,9 @@ public class SearchResourceV2_1 extends ResourceBase {
 
       searchRequestValidator.validateRelationRequest(vreId, relationTypeString, relationParameters);
 
-      queryId = vre.searchRelations(relationType, relationParameters);
+      String queryId = vre.searchRelations(relationType, relationParameters);
+      
+      return Response.created(createHATEOASURI(queryId, version)).build();
     } catch (SearchValidationException e) {
       return Response.status(BAD_REQUEST).entity(e.getMessage()).build();
     } catch (SearchException e) {
@@ -147,7 +143,6 @@ public class SearchResourceV2_1 extends ResourceBase {
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Search conversion went wrong.").build();
     }
 
-    return Response.created(createHATEOASURI(queryId, version)).build();
   }
 
   @APIDesc("Method to get searches send to the old relation post and return a not found")
