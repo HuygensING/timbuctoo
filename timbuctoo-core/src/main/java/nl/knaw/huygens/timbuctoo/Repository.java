@@ -562,4 +562,8 @@ public class Repository {
   public <T extends DomainEntity> List<T> getAllRevisions(Class<T> type, String id) throws StorageException {
     return storage.getAllRevisions(type, id);
   }
+
+  public List<RelationType> getRelationTypes(Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) {
+    throw new UnsupportedOperationException("Yet to be implemented");
+  }
 }

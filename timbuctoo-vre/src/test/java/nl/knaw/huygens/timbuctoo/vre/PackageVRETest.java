@@ -37,6 +37,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.IndexStatus;
 import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultProcessor;
 import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
@@ -62,6 +63,7 @@ import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
@@ -684,5 +686,32 @@ public class PackageVRETest {
 
     // action
     Class<? extends DomainEntity> scopeType = vre.mapToScopeType(BASE_TYPE);
+  }
+
+  @Test
+  public void getRelationTypeNamesBetweenFiltersRetrievesTheRelationTypeNamesBetweenTheSourceAndTheTarget(){
+    // setup
+    String otherTypeName = TypeNames.getInternalName(OTHER_TYPE);
+    String typeName = TypeNames.getInternalName(TYPE);
+    RelationType relationType = new RelationType();
+    String name1 = "regular";
+    relationType.setRegularName(name1);
+    relationType.setTargetTypeName(otherTypeName);
+    relationType.setSourceTypeName(typeName);
+
+    RelationType inverseRelationType = new RelationType();
+    String name2 = "inverse";
+    inverseRelationType.setInverseName(name2);
+    inverseRelationType.setTargetTypeName(typeName);
+    inverseRelationType.setSourceTypeName(otherTypeName);
+
+    when(repositoryMock.getRelationTypes(TYPE, OTHER_TYPE)).thenReturn(Lists.newArrayList(relationType, inverseRelationType));
+
+    // action
+    List<String> relationTypeNamesBetween = vre.getRelationTypeNamesBetween(TYPE, OTHER_TYPE);
+
+    // verify
+    assertThat(relationTypeNamesBetween, containsInAnyOrder(name1, name2));
+
   }
 }

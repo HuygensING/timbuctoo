@@ -37,6 +37,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexStatus;
 import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultProcessor;
 import nl.knaw.huygens.timbuctoo.search.FullTextSearchFieldFinder;
@@ -81,7 +82,7 @@ public class PackageVRE implements VRE {
   private final RelationSearcher relationSearcher;
 
   public PackageVRE(String vreId, String description, String modelPackage, List<String> receptions, Repository repository, RelationSearcher relationSearcher) {
-    this(vreId, description, createScope(modelPackage), new IndexCollection(),  new SearchResultConverter(vreId), repository, relationSearcher, receptions);
+    this(vreId, description, createScope(modelPackage), new IndexCollection(), new SearchResultConverter(vreId), repository, relationSearcher, receptions);
   }
 
   // For testing
@@ -96,8 +97,6 @@ public class PackageVRE implements VRE {
     this.scope = scope;
     this.typeMap = createTypeMap();
   }
-
-
 
 
   @Override
@@ -186,9 +185,9 @@ public class PackageVRE implements VRE {
 
   @Override
   public <T extends FacetedSearchParameters<T>> SearchResult search( //
-      Class<? extends DomainEntity> type, //
-      FacetedSearchParameters<T> parameters, //
-      FacetedSearchResultProcessor... processors //
+                                                                     Class<? extends DomainEntity> type, //
+                                                                     FacetedSearchParameters<T> parameters, //
+                                                                     FacetedSearchResultProcessor... processors //
   ) throws SearchException, SearchValidationException {
 
     prepareSearchParameters(type, parameters);
@@ -345,7 +344,21 @@ public class PackageVRE implements VRE {
 
   @Override
   public List<String> getRelationTypeNamesBetween(Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    List<RelationType> relationTypes = this.repository.getRelationTypes(sourceType, targetType);
+    List<String> relationTypeNames = Lists.newArrayListWithCapacity(relationTypes.size());
+
+    for (RelationType relationType : relationTypes) {
+      if (isRegular(sourceType, relationType)) {
+        relationTypeNames.add(relationType.getRegularName());
+      } else {
+        relationTypeNames.add(relationType.getInverseName());
+      }
+    }
+    return relationTypeNames;
+  }
+
+  private boolean isRegular(Class<? extends DomainEntity> sourceType, RelationType relationType) {
+    return relationType.getSourceTypeName().equals(TypeNames.getInternalName(sourceType));
   }
 
   private interface IndexChanger {
