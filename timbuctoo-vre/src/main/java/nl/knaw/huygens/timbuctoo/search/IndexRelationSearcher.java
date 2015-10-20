@@ -22,20 +22,19 @@ package nl.knaw.huygens.timbuctoo.search;
  * #L%
  */
 
-import java.util.List;
-
-import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
+import com.google.inject.Inject;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.converters.RelationSearchParametersConverter;
+import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 
-import com.google.inject.Inject;
+import java.util.List;
 
 public class IndexRelationSearcher extends RelationSearcher {
 
@@ -80,6 +79,8 @@ public class IndexRelationSearcher extends RelationSearcher {
     searchResult.setTargetType(targetType);
     searchResult.setTargetIds(targetSearchIds);
     searchResult.setRelationTypeIds(relationTypeIds);
+    searchResult.setFacets(targetResult.getFacets());
+    searchResult.setTerm(targetResult.getTerm());
 
     return searchResult;
   }

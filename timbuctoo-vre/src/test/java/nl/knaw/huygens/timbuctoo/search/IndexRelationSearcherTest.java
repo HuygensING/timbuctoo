@@ -22,20 +22,8 @@ package nl.knaw.huygens.timbuctoo.search;
  * #L%
  */
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
+import com.google.common.collect.Lists;
+import nl.knaw.huygens.facetedsearch.model.DefaultFacet;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -43,10 +31,10 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.converters.RelationSearchParametersConverter;
+import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -54,10 +42,25 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
 
 public class IndexRelationSearcherTest {
 
+  public static final DefaultFacet TARGET_FACET = new DefaultFacet("test", "test");
+  public static final String TARGET_TERM = "targetTerm";
   private IndexRelationSearcher instance;
   private String typeString = "relation";
   private SearchResult searchResult = new SearchResult();
@@ -107,6 +110,8 @@ public class IndexRelationSearcherTest {
   private SearchResult createSearchResult(List<String> ids) {
     SearchResult searchResult = new SearchResult();
     searchResult.setIds(ids);
+    searchResult.setFacets(Lists.newArrayList(TARGET_FACET));
+    searchResult.setTerm(TARGET_TERM);
     return searchResult;
   }
 
@@ -124,6 +129,23 @@ public class IndexRelationSearcherTest {
     verify(vreMock).search(type, searchParametersV1, facetedSearchResultFilterMock);
 
     assertThat(actualResult, equalTo(searchResult));
+  }
+
+  @Test
+  public void searchAddsTheFacetsAndTermOfTheTargetSearch() throws SearchException, SearchValidationException {
+    RelationSearchParameters relationSearchParameters = createRelationSearchParameters(typeString, sourceSearchId, targetSearchId, relationTypeIds);
+
+    when(relationSearcherParametersConverterMock.toSearchParametersV1(relationSearchParameters)).thenReturn(searchParametersV1);
+
+    // action
+    SearchResult actualResult = instance.search(vreMock, type, relationSearchParameters);
+
+    // verify
+    verify(relationSearcherParametersConverterMock).toSearchParametersV1(relationSearchParameters);
+    verify(vreMock).search(type, searchParametersV1, facetedSearchResultFilterMock);
+
+    assertThat(actualResult.getFacets(), contains(TARGET_FACET));
+    assertThat(actualResult.getTerm(), is(TARGET_TERM));
   }
 
   @Test
