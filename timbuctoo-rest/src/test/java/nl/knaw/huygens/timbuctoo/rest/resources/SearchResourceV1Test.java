@@ -27,7 +27,6 @@ import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
-import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.Paths;
@@ -38,8 +37,7 @@ import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
@@ -284,7 +282,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
    */
 
   @Test
-  public void aSuccessfulRelationSearchPostShouldResponseWithStatusCodeCreatedAndALocationHeader() throws SearchException, SearchValidationException, StorageException, ValidationException {
+  public void aSuccessfulRelationSearchPostShouldResponseWithStatusCodeCreatedAndALocationHeader() throws Exception {
     RelationSearcher searcher = injector.getInstance(RelationSearcher.class);
     RelationSearchParameters parameters = new RelationSearchParameters();
     setupPublicUrl(resource().getURI().toString());
@@ -323,7 +321,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
   }
 
   @Test
-  public void whenTheRepositoryCannotStoreTheRelationSearchResultAnInternalServerErrorShouldBeReturned() throws StorageException, ValidationException, Exception {
+  public void whenTheRepositoryCannotStoreTheRelationSearchResultAnInternalServerErrorShouldBeReturned() throws Exception {
     RelationSearcher searcher = injector.getInstance(RelationSearcher.class);
     RelationSearchParameters parameters = new RelationSearchParameters();
 
@@ -346,7 +344,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
   }
 
   @Test
-  public void whenASearchExceptionIsThrownAnInternalServerErrorShouldBeReturned() throws StorageException, ValidationException, Exception {
+  public void whenASearchExceptionIsThrownAnInternalServerErrorShouldBeReturned() throws Exception {
     RelationSearcher searcher = injector.getInstance(RelationSearcher.class);
     RelationSearchParameters parameters = new RelationSearchParameters();
 

@@ -36,8 +36,6 @@ import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultMapper;
 import nl.knaw.huygens.timbuctoo.search.converters.RelationSearchParametersConverter;
 import nl.knaw.huygens.timbuctoo.search.converters.SearchConversionException;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
 import nl.knaw.huygens.timbuctoo.vre.RelationSearchParametersV2_1;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
@@ -56,6 +54,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -64,7 +63,8 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
 
 
   public static final RelationSearchParametersV2_1 PARAMETERS_V_2_1 = new RelationSearchParametersV2_1();
-  private static final String RELATED_TYPE_STRING = TypeNames.getExternalName(TestDomainEntity.class);
+  public static final Class<TestDomainEntity> RELATED_TYPE = TestDomainEntity.class;
+  private static final String RELATED_TYPE_STRING = TypeNames.getExternalName(RELATED_TYPE);
   public static final RelationSearchParameters PARAMETERS = new RelationSearchParameters();
   public static final Class<TestRelation> RELATION_TYPE = TestRelation.class;
   private static final String RELATION_X_TYPE_STRING = TypeNames.getExternalName(RELATION_TYPE);
@@ -72,6 +72,7 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
   private VRE vreMock;
   public static final int DEFAULT_START = 0;
   public static final int DEFAULT_ROWS = 10;
+  private RelationSearchParametersConverter relationSearchParametersConverter;
 
   @Before
   public void setup() throws SearchConversionException {
@@ -86,7 +87,7 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
   }
 
   protected void setupConverter() throws SearchConversionException {
-    RelationSearchParametersConverter relationSearchParametersConverter = injector.getInstance(RelationSearchParametersConverter.class);
+    relationSearchParametersConverter = injector.getInstance(RelationSearchParametersConverter.class);
     when(relationSearchParametersConverter.fromRelationParametersV2_1(Matchers.<Class<? extends Relation>>any(), any(RelationSearchParametersV2_1.class), any(VRE.class), Matchers.<Class<? extends DomainEntity>>any())).thenReturn(PARAMETERS);
   }
 
@@ -132,7 +133,7 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
 
   @Test
   @Override
-  public void aSuccessfulRelationSearchPostShouldResponseWithStatusCodeCreatedAndALocationHeader() throws SearchException, SearchValidationException, StorageException, ValidationException {
+  public void aSuccessfulRelationSearchPostShouldResponseWithStatusCodeCreatedAndALocationHeader() throws Exception {
     // setup
     when(vreMock.searchRelations(RELATION_TYPE, PARAMETERS)).thenReturn(ID);
 
@@ -142,6 +143,11 @@ public class SearchResourceV2_1Test extends SearchResourceV1Test {
     // verify
     verifyResponseStatus(response, ClientResponse.Status.CREATED);
     assertThat(response.getLocation().toString(), equalTo(getRelationSearchURL(ID)));
+    verify(relationSearchParametersConverter).fromRelationParametersV2_1(
+      argThat(equalTo(RELATION_TYPE)), //
+        any(RelationSearchParametersV2_1.class), //
+        any(VRE.class),
+      argThat(equalTo(RELATED_TYPE)));
     verify(vreMock).searchRelations(RELATION_TYPE, PARAMETERS);
   }
 
