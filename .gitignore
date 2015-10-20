@@ -1,12 +1,10 @@
-build/*
-reports/*
-target/*
-**/target/*
-.classpath
-/bin
+build
+reports
+**/target
 **/bin
-.settings/
-.project
+**/.classpath
+**/.settings
+**/.project
 
 # intellij files and folders
 **/*.iml
