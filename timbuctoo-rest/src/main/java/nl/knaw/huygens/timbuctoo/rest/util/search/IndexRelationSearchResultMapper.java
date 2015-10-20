@@ -20,6 +20,7 @@ import nl.knaw.huygens.timbuctoo.vre.NotInScopeException;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
+import nl.knaw.huygens.timbuctoo.vre.VREException;
 
 import java.util.List;
 import java.util.Map;
@@ -65,7 +66,11 @@ public class IndexRelationSearchResultMapper extends RelationSearchResultMapper 
     dto.setFullTextSearchFields(getFullTextSearchFieldsOfTarget(searchResult));
 
     List<Facet> facets = Lists.newArrayList(searchResult.getFacets());
-    facets.add(createRelationFacet(vre, searchResult));
+    try {
+      facets.add(createRelationFacet(vre, searchResult));
+    } catch (VREException e) {
+      throw new RuntimeException(e); // FIXME: Hack to inform the client the search went wrong, and not change the API
+    }
     dto.setFacets(facets);
 
     dto.setTerm(searchResult.getTerm());
@@ -83,7 +88,7 @@ public class IndexRelationSearchResultMapper extends RelationSearchResultMapper 
     return dto;
   }
 
-  private Facet createRelationFacet(VRE vre, SearchResult searchResult) {
+  private Facet createRelationFacet(VRE vre, SearchResult searchResult) throws VREException {
     Class<? extends DomainEntity> sourceType = registry.getDomainEntityType(searchResult.getSourceType());
     Class<? extends DomainEntity> targetType = registry.getDomainEntityType(searchResult.getTargetType());
 

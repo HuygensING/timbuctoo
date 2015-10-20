@@ -44,6 +44,7 @@ import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.search.converters.SearchResultConverter;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.util.RepositoryException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -687,7 +688,7 @@ public class PackageVRETest {
   }
 
   @Test
-  public void getRelationTypeNamesBetweenCollectsTheRelationNamesOfRelationTypesBetweenTheSourceAndTarget() {
+  public void getRelationTypeNamesBetweenCollectsTheRelationNamesOfRelationTypesBetweenTheSourceAndTarget() throws RepositoryException, VREException {
     // setup
     inScope(TYPE);
     inScope(OTHER_TYPE);
@@ -705,7 +706,7 @@ public class PackageVRETest {
     inverseRelationType.setTargetTypeName(typeName);
     inverseRelationType.setSourceTypeName(otherTypeName);
 
-    when(repositoryMock.getRelationTypes(TYPE, OTHER_TYPE)).thenReturn(Lists.newArrayList(relationType, inverseRelationType));
+    when(repositoryMock.getRelationTypes(TYPE, OTHER_TYPE)).thenReturn(Lists.newArrayList(relationType, inverseRelationType).iterator());
 
     // action
     List<String> relationTypeNamesBetween = vre.getRelationTypeNamesBetween(TYPE, OTHER_TYPE);
@@ -718,7 +719,21 @@ public class PackageVRETest {
   public ExpectedException expectedException = ExpectedException.none();
 
   @Test
-  public void getRelationTypeNamesBetweenThrowsAnArgumentExceptionWhenTheSourceIsNotInScope() {
+  public void getRelationTypeNamesBetweenThrowsAVREExceptionWhenTheRepositoryThrowsARepositoryException() throws RepositoryException, VREException {
+    // setup
+    inScope(TYPE);
+    inScope(OTHER_TYPE);
+    when(repositoryMock.getRelationTypes(TYPE, OTHER_TYPE)).thenThrow(new RepositoryException());
+
+    expectedException.expect(VREException.class);
+    expectedException.expectCause(is(instanceOf(RepositoryException.class)));
+
+    // action
+    vre.getRelationTypeNamesBetween(TYPE, OTHER_TYPE);
+  }
+
+  @Test
+  public void getRelationTypeNamesBetweenThrowsAnArgumentExceptionWhenTheSourceIsNotInScope() throws VREException {
     // setup
     notInScope(TYPE);
     inScope(OTHER_TYPE);
@@ -743,7 +758,7 @@ public class PackageVRETest {
   }
 
   @Test
-  public void getRelationTypeNamesBetweenThrowsAnArgumentExceptionWhenTheTargetIsNotInScope() {
+  public void getRelationTypeNamesBetweenThrowsAnArgumentExceptionWhenTheTargetIsNotInScope() throws VREException {
     // setup
     inScope(TYPE);
     notInScope(OTHER_TYPE);

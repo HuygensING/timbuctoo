@@ -24,6 +24,7 @@ import nl.knaw.huygens.timbuctoo.vre.NotInScopeException;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
+import nl.knaw.huygens.timbuctoo.vre.VREException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -248,5 +249,18 @@ public class IndexRelationSearchResultMapperTest {
 
     // action
     instance.create(TYPE, searchResult, START, ROWS, VERSION);
+  }
+
+  @Test
+  public void createThrowsARuntimeExceptionWhenVREsGetRelationTypeNamesBetweenThrowsAVREException() throws VREException {
+    // setup
+    when(vre.getRelationTypeNamesBetween(SOURCE_TYPE, TARGET_TYPE)).thenThrow(new VREException(new Exception()));
+
+    exception.expect(RuntimeException.class);
+    exception.expectCause(is(instanceOf(VREException.class)));
+
+    // action
+    instance.create(TYPE, searchResult, START, ROWS, VERSION);
+
   }
 }

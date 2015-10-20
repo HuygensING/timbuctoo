@@ -45,11 +45,13 @@ import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.search.converters.SearchResultConverter;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.util.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -347,7 +349,7 @@ public class PackageVRE implements VRE {
   }
 
   @Override
-  public List<String> getRelationTypeNamesBetween(Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) {
+  public List<String> getRelationTypeNamesBetween(Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) throws VREException {
     if (!inScope(sourceType)) {
       throw new IllegalArgumentException(notInScopeMessage(sourceType));
     }
@@ -356,10 +358,16 @@ public class PackageVRE implements VRE {
       throw new IllegalArgumentException(notInScopeMessage(targetType));
     }
 
-    List<RelationType> relationTypes = this.repository.getRelationTypes(sourceType, targetType);
-    List<String> relationTypeNames = Lists.newArrayListWithCapacity(relationTypes.size());
+    Iterator<RelationType> relationTypes = null;
+    try {
+      relationTypes = this.repository.getRelationTypes(sourceType, targetType);
+    } catch (RepositoryException e) {
+      throw new VREException(e);
+    }
+    List<String> relationTypeNames = Lists.newArrayList();
 
-    for (RelationType relationType : relationTypes) {
+    for (;relationTypes.hasNext();) {
+      RelationType relationType = relationTypes.next();
       if (isRegular(sourceType, relationType)) {
         relationTypeNames.add(relationType.getRegularName());
       } else {
