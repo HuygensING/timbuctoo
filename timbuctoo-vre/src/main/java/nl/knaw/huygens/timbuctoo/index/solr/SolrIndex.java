@@ -49,6 +49,7 @@ import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.parser.SolrQueryParserBase;
 
 import java.io.IOException;
 import java.util.List;
@@ -258,7 +259,7 @@ public class SolrIndex implements Index {
       throw new RawSearchUnavailableException(name);
     }
 
-    String baseQuery = String.format("%s:%s", rawSearchField, cleanUpSpecialCharaters(query));
+    String baseQuery = String.format("%s:%s", rawSearchField, SolrQueryParserBase.escape(query.replace(":", " ")));
 
     if (additionalFilters.isEmpty()) {
       return baseQuery;
@@ -320,11 +321,6 @@ public class SolrIndex implements Index {
     query.setSorts(sortClauses);
 
     results.addAll(getMultiRawResults(query));
-  }
-
-  private String cleanUpSpecialCharaters(String term) {
-
-    return term.replace(":", " ");
   }
 
   @Override
