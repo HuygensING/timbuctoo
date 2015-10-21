@@ -42,7 +42,6 @@ import java.util.Map;
  */
 @Singleton
 public class VREs implements VRECollection {
-
   private static final Logger LOG = LoggerFactory.getLogger(VREs.class);
 
   private final Map<String, VRE> vres = Maps.newHashMap();
@@ -51,11 +50,23 @@ public class VREs implements VRECollection {
   public VREs(Configuration config, IndexFactory indexFactory, Repository repository, RelationSearcher relationSearcher) {
     for (VREDef vreDef : config.getVREDefs()) {
       LOG.info("Adding {} - {}", vreDef.id, vreDef.description);
-      VRE vre = new PackageVRE(vreDef.id, vreDef.description, vreDef.modelPackage, vreDef.receptions, repository, relationSearcher);
+      VRE vre = createVRE(repository, relationSearcher, vreDef);
       vre.initIndexes(indexFactory);
       String vreId = vreDef.id;
       vres.put(vreId, vre);
     }
+  }
+
+  private PackageVRE createVRE(Repository repository, RelationSearcher relationSearcher, VREDef vreDef) {
+    if(isWomenWritersVRE(vreDef)){
+      return new WomenWritersVRE(vreDef.id, vreDef.description, vreDef.modelPackage, vreDef.receptions, repository, relationSearcher);
+    }
+
+    return new PackageVRE(vreDef.id, vreDef.description, vreDef.modelPackage, vreDef.receptions, repository, relationSearcher);
+  }
+
+  private boolean isWomenWritersVRE(VREDef vreDef) {
+    return "WomenWriters".equals(vreDef.id);
   }
 
   @Override

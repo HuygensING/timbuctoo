@@ -95,14 +95,14 @@ public class PackageVRETest {
 
   private final DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
   private final Index indexMock = mock(Index.class);
-  private final SearchResultConverter resultConverterMock = mock(SearchResultConverter.class);
+  protected final SearchResultConverter resultConverterMock = mock(SearchResultConverter.class);
 
-  private IndexCollection indexCollectionMock;
-  private Scope scopeMock;
+  protected IndexCollection indexCollectionMock;
+  protected Scope scopeMock;
   private PackageVRE vre;
-  private Repository repositoryMock;
+  protected Repository repositoryMock;
   public static final SearchResult SEARCH_RESULT = new SearchResult();
-  private RelationSearcher relationSearcher;
+  protected RelationSearcher relationSearcher;
 
   @Before
   public void setup() {
@@ -114,11 +114,11 @@ public class PackageVRETest {
     vre = createVREWithoutReceptions();
   }
 
-  private PackageVRE createVREWithoutReceptions() {
+  protected PackageVRE createVREWithoutReceptions() {
     return new PackageVRE(VRE_ID, "description", scopeMock, indexCollectionMock, resultConverterMock, repositoryMock, relationSearcher, Lists.newArrayList());
   }
 
-  private PackageVRE createVREWithRelationSearchRelations(String... receptionNames) {
+  protected PackageVRE createVREWithRelationSearchRelations(String... receptionNames) {
     return new PackageVRE(VRE_ID, "description", scopeMock, indexCollectionMock, resultConverterMock, repositoryMock, relationSearcher, Lists.newArrayList(receptionNames));
   }
 
