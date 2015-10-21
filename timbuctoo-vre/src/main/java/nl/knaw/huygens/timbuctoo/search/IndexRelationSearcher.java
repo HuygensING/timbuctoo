@@ -33,6 +33,7 @@ import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VREException;
 
 import java.util.List;
 
@@ -52,8 +53,6 @@ public class IndexRelationSearcher extends RelationSearcher {
 
   @Override
   public SearchResult search(VRE vre, Class<? extends DomainEntity> relationType, RelationSearchParameters parameters) throws SearchException, SearchValidationException {
-    addRelationTypeIds(vre, parameters);
-
     SearchResult sourceResult = repository.getEntityOrDefaultVariation(SearchResult.class, parameters.getSourceSearchId());
     String sourceType = sourceResult.getSearchType();
     List<String> sourceSearchIds = sourceResult.getIds();
@@ -62,7 +61,10 @@ public class IndexRelationSearcher extends RelationSearcher {
     String targetType = targetResult.getSearchType();
     List<String> targetSearchIds = targetResult.getIds();
 
-    List<String> relationTypeIds = parameters.getRelationTypeIds();
+    List<String> relationTypeIds = null;
+
+      relationTypeIds = getRelationTypeId(vre, parameters, sourceType, targetType);
+
 
     SearchParametersV1 parametersV1 = relationSearchParametersConverter.toSearchParametersV1(parameters);
     parametersV1.getQueryOptimizer().setRows(1000000); // TODO find a better way to get all the found solr entries.
@@ -85,6 +87,24 @@ public class IndexRelationSearcher extends RelationSearcher {
     return searchResult;
   }
 
+  private List<String> getRelationTypeId(VRE vre, RelationSearchParameters parameters, String sourceTypeName, String targetTypeName
+  ) throws SearchException {
+
+    if(parameters.getRelationTypeIds() == null || parameters.getRelationTypeIds().isEmpty()){
+      try {
+        Class<? extends DomainEntity> sourceType = typeRegistry.getDomainEntityType(sourceTypeName);
+        Class<? extends DomainEntity> targetType = typeRegistry.getDomainEntityType(targetTypeName);
+
+        return repository.getRelationTypeIdsByName(vre.getRelationTypeNamesBetween(sourceType, targetType));
+      }
+      catch (VREException e){
+        throw new SearchException(e);
+      }
+    }
+
+    return repository.getRelationTypeIdsByName(parameters.getRelationTypeIds());
+  }
+
   protected RelationFacetedSearchResultFilter createRelationFacetedSearchResultFilter(List<String> sourceIds, List<String> targetIds) {
     return new RelationFacetedSearchResultFilter(collectionConverter, sourceIds, targetIds);
   }
@@ -93,6 +113,8 @@ public class IndexRelationSearcher extends RelationSearcher {
     if (parameters.getRelationTypeIds() == null || parameters.getRelationTypeIds().isEmpty()) {
       parameters.setRelationTypeIds(repository.getRelationTypeIdsByName(vre.getReceptionNames()));
     }
+
+
   }
 
 }
