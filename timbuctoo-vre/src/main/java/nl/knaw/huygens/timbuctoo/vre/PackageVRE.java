@@ -22,6 +22,7 @@ package nl.knaw.huygens.timbuctoo.vre;
  * #L%
  */
 
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
@@ -360,13 +361,13 @@ public class PackageVRE implements VRE {
 
     Iterator<RelationType> relationTypes = null;
     try {
-      relationTypes = this.repository.getRelationTypes(sourceType, targetType);
+      relationTypes = getRelationTypes(sourceType, targetType);
     } catch (RepositoryException e) {
       throw new VREException(e);
     }
     List<String> relationTypeNames = Lists.newArrayList();
 
-    for (;relationTypes.hasNext();) {
+    for (; relationTypes.hasNext(); ) {
       RelationType relationType = relationTypes.next();
       if (isRegular(sourceType, relationType)) {
         relationTypeNames.add(relationType.getRegularName());
@@ -374,7 +375,16 @@ public class PackageVRE implements VRE {
         relationTypeNames.add(relationType.getInverseName());
       }
     }
+
     return relationTypeNames;
+  }
+
+  private Iterator<RelationType> getRelationTypes(Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) throws RepositoryException {
+    if(receptions.isEmpty()) {
+      return this.repository.getRelationTypes(sourceType, targetType);
+    }
+
+    return Iterators.filter(this.repository.getRelationTypes(sourceType, targetType), reception -> receptions.contains(reception.getRegularName()));
   }
 
   private boolean isRegular(Class<? extends DomainEntity> sourceType, RelationType relationType) {
