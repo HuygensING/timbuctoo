@@ -78,9 +78,12 @@ import static org.mockito.Mockito.when;
 
 public class PackageVRETest {
 
-  private static final Class<ProjectAType2> OTHER_TYPE = ProjectAType2.class;
+  public static final String INVERSE_NAME_OF_INVERSE_MATCH = "inverseNameOfInverseMatch";
+  public static final String REGULAR_NAME_OF_REGULAR_MATCH = "regular1";
+  public static final String REGULAR_NAME_OF_INVERSE_MATCH = "regular2";
+  protected static final Class<ProjectAType2> OTHER_TYPE = ProjectAType2.class;
   private static final String ID = "ID";
-  private static final Class<ProjectAType1> TYPE = ProjectAType1.class;
+  protected static final Class<ProjectAType1> TYPE = ProjectAType1.class;
   private static final String TYPE_STRING = TypeNames.getInternalName(TYPE);
   private static final String QUERY = "query";
   private static final int ROWS = 20;
@@ -99,7 +102,7 @@ public class PackageVRETest {
 
   protected IndexCollection indexCollectionMock;
   protected Scope scopeMock;
-  private PackageVRE vre;
+  protected PackageVRE vre;
   protected Repository repositoryMock;
   public static final SearchResult SEARCH_RESULT = new SearchResult();
   protected RelationSearcher relationSearcher;
@@ -115,11 +118,11 @@ public class PackageVRETest {
   }
 
   protected PackageVRE createVREWithoutReceptions() {
-    return new PackageVRE(VRE_ID, "description", scopeMock, indexCollectionMock, resultConverterMock, repositoryMock, relationSearcher, Lists.newArrayList());
+    return new PackageVRE(VRE_ID, "description", scopeMock, indexCollectionMock, resultConverterMock, repositoryMock, relationSearcher);
   }
 
   protected PackageVRE createVREWithRelationSearchRelations(String... receptionNames) {
-    return new PackageVRE(VRE_ID, "description", scopeMock, indexCollectionMock, resultConverterMock, repositoryMock, relationSearcher, Lists.newArrayList(receptionNames));
+    return new PackageVRE(VRE_ID, "description", scopeMock, indexCollectionMock, resultConverterMock, repositoryMock, relationSearcher);
   }
 
   @Test
@@ -703,14 +706,13 @@ public class PackageVRETest {
     String otherTypeName = TypeNames.getInternalName(OTHER_TYPE);
     String typeName = TypeNames.getInternalName(TYPE);
     RelationType relationType = new RelationType();
-    String name1 = "regular";
-    relationType.setRegularName(name1);
+    relationType.setRegularName(REGULAR_NAME_OF_REGULAR_MATCH);
     relationType.setTargetTypeName(otherTypeName);
     relationType.setSourceTypeName(typeName);
 
     RelationType inverseRelationType = new RelationType();
-    String name2 = "inverse";
-    inverseRelationType.setInverseName(name2);
+    inverseRelationType.setInverseName(INVERSE_NAME_OF_INVERSE_MATCH);
+    inverseRelationType.setRegularName(REGULAR_NAME_OF_INVERSE_MATCH);
     inverseRelationType.setTargetTypeName(typeName);
     inverseRelationType.setSourceTypeName(otherTypeName);
 
@@ -720,52 +722,8 @@ public class PackageVRETest {
     List<String> relationTypeNamesBetween = vre.getRelationTypeNamesBetween(TYPE, OTHER_TYPE);
 
     // verify
-    assertThat(relationTypeNamesBetween, containsInAnyOrder(name1, name2));
+    assertThat(relationTypeNamesBetween, containsInAnyOrder(REGULAR_NAME_OF_REGULAR_MATCH, INVERSE_NAME_OF_INVERSE_MATCH));
   }
-
-  @Test
-  public void getRelationTypeNamesBetweenIsFilteredByTheRelationSearchRelations() throws RepositoryException, VREException {
-    String regularNameOfRegularMatch = "regular1";
-    String regularNameOfInverseMatch = "regular2";
-    PackageVRE vreWithRelationSearchRelations = createVREWithRelationSearchRelations(regularNameOfRegularMatch, regularNameOfInverseMatch);
-
-    inScope(TYPE);
-    inScope(OTHER_TYPE);
-    String otherTypeName = TypeNames.getInternalName(OTHER_TYPE);
-    String typeName = TypeNames.getInternalName(TYPE);
-
-    RelationType relationTypeMatch1 = new RelationType();
-    relationTypeMatch1.setRegularName(regularNameOfRegularMatch);
-    relationTypeMatch1.setTargetTypeName(otherTypeName);
-    relationTypeMatch1.setSourceTypeName(typeName);
-
-    RelationType inverseMatch = new RelationType();
-    inverseMatch.setRegularName(regularNameOfInverseMatch);
-    String inverseNameOfInverseMatch = "inverseNameOfInverseMatch";
-    inverseMatch.setInverseName(inverseNameOfInverseMatch);
-    inverseMatch.setTargetTypeName(typeName);
-    inverseMatch.setSourceTypeName(otherTypeName);
-
-    RelationType inverseNoMatch = new RelationType();
-    inverseNoMatch.setInverseName("inverse");
-    inverseNoMatch.setRegularName("inverseNoMatch");
-    inverseNoMatch.setTargetTypeName(typeName);
-    inverseNoMatch.setSourceTypeName(otherTypeName);
-
-    RelationType regularNoMatch = new RelationType();
-    regularNoMatch.setRegularName("regularNoMatch");
-    regularNoMatch.setTargetTypeName(otherTypeName);
-    regularNoMatch.setSourceTypeName(typeName);
-
-    when(repositoryMock.getRelationTypes(TYPE, OTHER_TYPE)).thenReturn(Lists.newArrayList(relationTypeMatch1, inverseNoMatch, inverseMatch).iterator());
-
-    // action
-    List<String> relationTypeNamesBetween = vreWithRelationSearchRelations.getRelationTypeNamesBetween(TYPE, OTHER_TYPE);
-
-    // verify
-    assertThat(relationTypeNamesBetween, containsInAnyOrder(regularNameOfRegularMatch, inverseNameOfInverseMatch));
-  }
-
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
@@ -801,7 +759,7 @@ public class PackageVRETest {
     when(scopeMock.inScope(type)).thenReturn(false);
   }
 
-  private void inScope(Class<? extends DomainEntity> type) {
+  protected void inScope(Class<? extends DomainEntity> type) {
     when(scopeMock.inScope(type)).thenReturn(true);
   }
 

@@ -22,7 +22,6 @@ package nl.knaw.huygens.timbuctoo.vre;
  * #L%
  */
 
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
@@ -69,8 +68,6 @@ public class PackageVRE implements VRE {
 
   private final String vreId;
   private final String description;
-  private final List<String> receptions;
-
   private final Scope scope;
   /**
    * Maps internal names of primitive types to this VRE.
@@ -81,20 +78,19 @@ public class PackageVRE implements VRE {
 
   private final SearchResultConverter searchResultConverter;
 
-  private final Repository repository;
+  protected final Repository repository;
   private final RelationSearcher relationSearcher;
 
-  public PackageVRE(String vreId, String description, String modelPackage, List<String> receptions, Repository repository, RelationSearcher relationSearcher) {
-    this(vreId, description, createScope(modelPackage), new IndexCollection(), new SearchResultConverter(vreId), repository, relationSearcher, receptions);
+  public PackageVRE(String vreId, String description, String modelPackage, Repository repository, RelationSearcher relationSearcher) {
+    this(vreId, description, createScope(modelPackage), new IndexCollection(), new SearchResultConverter(vreId), repository, relationSearcher);
   }
 
   // For testing
-  PackageVRE(String vreId, String description, Scope scope, IndexCollection indexCollection, SearchResultConverter searchResultConverter, Repository repository, RelationSearcher relationSearcher, List<String> receptions) {
+  PackageVRE(String vreId, String description, Scope scope, IndexCollection indexCollection, SearchResultConverter searchResultConverter, Repository repository, RelationSearcher relationSearcher) {
     this.vreId = vreId;
     this.description = description;
     this.repository = repository;
     this.relationSearcher = relationSearcher;
-    this.receptions = receptions;
     this.indexCollection = indexCollection;
     this.searchResultConverter = searchResultConverter;
     this.scope = scope;
@@ -110,11 +106,6 @@ public class PackageVRE implements VRE {
   @Override
   public String getDescription() {
     return description;
-  }
-
-  @Override
-  public List<String> getReceptionNames() {
-    return receptions;
   }
 
   private static Scope createScope(String modelPackage) {
@@ -380,11 +371,19 @@ public class PackageVRE implements VRE {
   }
 
   private Iterator<RelationType> getRelationTypes(Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) throws RepositoryException {
-    if(receptions.isEmpty()) {
-      return this.repository.getRelationTypes(sourceType, targetType);
-    }
+    Iterator<RelationType> relationTypes = this.repository.getRelationTypes(sourceType, targetType);
 
-    return Iterators.filter(this.repository.getRelationTypes(sourceType, targetType), reception -> receptions.contains(reception.getRegularName()));
+    return filterRelationTypes(relationTypes);
+  }
+
+  /**
+   * A VRE specific method the add an extra filter to the relation type to use when searching for relations.
+   *
+   * @param relationTypes the relation types to filter
+   * @return the filtered relations types.
+   */
+  protected Iterator<RelationType> filterRelationTypes(Iterator<RelationType> relationTypes) {
+    return relationTypes;
   }
 
   private boolean isRegular(Class<? extends DomainEntity> sourceType, RelationType relationType) {
@@ -395,4 +394,12 @@ public class PackageVRE implements VRE {
     void change(Class<? extends DomainEntity> type, List<? extends DomainEntity> variations) throws IndexException;
   }
 
+  @Override
+  public VREInfo toVREInfo() {
+    VRE.VREInfo info = new VRE.VREInfo();
+    info.setName(getVreId());
+    info.setDescription(getDescription());
+
+    return info;
+  }
 }

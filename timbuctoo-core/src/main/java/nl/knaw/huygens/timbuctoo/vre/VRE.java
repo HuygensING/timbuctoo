@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.vre;
 
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.facetedsearch.model.parameters.SortParameter;
 import nl.knaw.huygens.timbuctoo.index.Index;
@@ -68,12 +69,7 @@ public interface VRE extends Scope {
    */
   Class<? extends DomainEntity> mapTypeName(String iname, boolean required) throws IllegalStateException;
 
-  /**
-   * Returns names of relation types that are considered to be receptions.
-   */
-  List<String> getReceptionNames();
-
-  /**
+    /**
    * Search the VRE for the items of the type of {@code entity}.
    *
    * @param type       the type to search.
@@ -202,4 +198,47 @@ public interface VRE extends Scope {
   String searchRelations(Class<? extends Relation> type, RelationSearchParameters parameters) throws SearchException, SearchValidationException;
 
   List<String> getRelationTypeNamesBetween(Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) throws VREException;
+
+  VREInfo toVREInfo();
+
+  class VREInfo {
+    private String name;
+    private String description;
+    private final List<Reception> receptions = Lists.newArrayList();
+
+    public String getName() {
+      return name;
+    }
+
+    public void setName(String name) {
+      this.name = name;
+    }
+
+    public String getDescription() {
+      return description;
+    }
+
+    public void setDescription(String description) {
+      this.description = description;
+    }
+
+    public List<Reception> getReceptions() {
+      return receptions;
+    }
+
+    public void addReception(Reception reception) {
+      receptions.add(reception);
+    }
+  }
+
+  class Reception {
+    public String typeId;
+    public String regularName;
+    public String inverseName;
+    public String baseSourceType;
+    public String baseTargetType;
+    public String derivedSourceType;
+    public String derivedTargetType;
+  }
+
 }

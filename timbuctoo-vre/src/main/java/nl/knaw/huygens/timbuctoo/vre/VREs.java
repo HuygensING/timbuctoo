@@ -62,7 +62,7 @@ public class VREs implements VRECollection {
       return new WomenWritersVRE(vreDef.id, vreDef.description, vreDef.modelPackage, vreDef.receptions, repository, relationSearcher);
     }
 
-    return new PackageVRE(vreDef.id, vreDef.description, vreDef.modelPackage, vreDef.receptions, repository, relationSearcher);
+    return new PackageVRE(vreDef.id, vreDef.description, vreDef.modelPackage, repository, relationSearcher);
   }
 
   private boolean isWomenWritersVRE(VREDef vreDef) {

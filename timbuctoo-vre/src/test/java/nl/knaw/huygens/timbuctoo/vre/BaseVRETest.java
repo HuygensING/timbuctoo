@@ -50,7 +50,7 @@ public class BaseVRETest {
     List<String> receptionNames = Lists.newArrayList();
     Repository repositoryMock = mock(Repository.class);
     RelationSearcher relationSearcher = mock(RelationSearcher.class);
-    vre = new PackageVRE("id", "Base VRE", "timbuctoo.model.base", receptionNames, repositoryMock, relationSearcher);
+    vre = new PackageVRE("id", "Base VRE", "timbuctoo.model.base", repositoryMock, relationSearcher);
   }
 
   @AfterClass

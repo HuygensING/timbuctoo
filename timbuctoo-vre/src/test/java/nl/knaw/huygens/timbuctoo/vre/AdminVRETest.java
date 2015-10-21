@@ -48,7 +48,7 @@ public class AdminVRETest {
     List<String> receptionNames = Lists.newArrayList();
     Repository repositoryMock = mock(Repository.class);
     RelationSearcher relationSearcher = mock(RelationSearcher.class);
-    vre = new PackageVRE("Admin", "Admin VRE", "timbuctoo.model", receptionNames, repositoryMock, relationSearcher);
+    vre = new PackageVRE("Admin", "Admin VRE", "timbuctoo.model", repositoryMock, relationSearcher);
   }
 
   @Test
