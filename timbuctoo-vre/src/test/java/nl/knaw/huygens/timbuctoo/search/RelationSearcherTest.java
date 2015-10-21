@@ -63,13 +63,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-public class IndexRelationSearcherTest {
+public class RelationSearcherTest {
 
   public static final DefaultFacet TARGET_FACET = new DefaultFacet("test", "test");
   public static final String TARGET_TERM = "targetTerm";
   public static final Class<ProjectAType1> SOURCE_TYPE = ProjectAType1.class;
   public static final Class<ProjectAType2> TARGET_TYPE = ProjectAType2.class;
-  private IndexRelationSearcher instance;
+  private RelationSearcher instance;
   private String typeString = "relation";
   private SearchResult searchResult = new SearchResult();
   private SearchParametersV1 searchParametersV1 = new SearchParametersV1();
@@ -107,7 +107,7 @@ public class IndexRelationSearcherTest {
     when(repositoryMock.getEntityOrDefaultVariation(SearchResult.class, sourceSearchId)).thenReturn(createSearchResult(SOURCE_TYPE, sourceIds));
     when(repositoryMock.getEntityOrDefaultVariation(SearchResult.class, targetSearchId)).thenReturn(createSearchResult(TARGET_TYPE, targetIds, TARGET_TERM, TARGET_FACET));
 
-    instance = new IndexRelationSearcher(repositoryMock, relationSearcherParametersConverterMock, typeRegistry, collectionConverterMock) {
+    instance = new RelationSearcher(repositoryMock, relationSearcherParametersConverterMock, typeRegistry, collectionConverterMock) {
       @Override
       protected RelationFacetedSearchResultFilter createRelationFacetedSearchResultFilter(List<String> sourceIds, List<String> targetIds) {
         return facetedSearchResultFilterMock;

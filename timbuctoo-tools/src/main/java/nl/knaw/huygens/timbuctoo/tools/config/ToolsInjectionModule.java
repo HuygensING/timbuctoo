@@ -40,7 +40,6 @@ import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.index.NoOpIndex;
 import nl.knaw.huygens.timbuctoo.index.solr.SolrIndexFactory;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.search.IndexRelationSearcher;
 import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.tools.oaipmh.OaiPmhRestClient;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
@@ -81,7 +80,7 @@ public class ToolsInjectionModule extends BasicInjectionModule {
   protected void configure() {
     super.configure();
     bind(IndexManager.class).to(IndexFacade.class);
-    bind(RelationSearcher.class).to(IndexRelationSearcher.class);
+    bind(RelationSearcher.class).to(RelationSearcher.class);
 
     if (useSolr) {
       bind(IndexFactory.class).to(SolrIndexFactory.class);
