@@ -22,7 +22,7 @@ package nl.knaw.huygens.timbuctoo.util;
  * #L%
  */
 
-public class RepositoryException extends RuntimeException {
+public class RepositoryException extends Exception {
 
   private static final long serialVersionUID = 1L;
 

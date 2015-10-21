@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.rest.util.search;
 
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.model.RelationDTO;
+import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import org.junit.Before;
 import org.junit.Test;
@@ -251,7 +252,7 @@ public class RelationSearchResultMapperTest extends SearchResultMapperTest {
   }
 
   private void testCreate(int start, int rows, Class<TestRelation> type, SearchResult searchResult, RelationSearchResultDTOMatcher likeRelationClientResult, String version) {
-    assertThat(instance.create(type, searchResult, start, rows, version), likeRelationClientResult);
+    assertThat((RelationSearchResultDTO) instance.create(type, searchResult, start, rows, version), likeRelationClientResult);
   }
 
 }

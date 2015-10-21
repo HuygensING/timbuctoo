@@ -66,6 +66,8 @@ public class Paths {
   public static final String AUTOCOMPLETE_PATH = "autocomplete";
   public static final String ADMIN_PATH = "admin";
   public static final String INDEX_REQUEST_PATH = "indexrequests";
+  public static final String RELATION_PARAM = "relationType";
+  public static final String RELATION_SEARCH_PREFIX = "{" + RELATION_PARAM + ": [a-z]*relations }";
 
 
   private Paths() {

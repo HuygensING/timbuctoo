@@ -22,8 +22,10 @@ package nl.knaw.huygens.timbuctoo;
  * #L%
  */
 
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.collect.UnmodifiableIterator;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import nl.knaw.huygens.timbuctoo.config.EntityMapper;
@@ -51,14 +53,17 @@ import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.util.KV;
 import nl.knaw.huygens.timbuctoo.util.RelationRefAdder;
 import nl.knaw.huygens.timbuctoo.util.RelationRefAdderFactory;
+import nl.knaw.huygens.timbuctoo.util.RepositoryException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import static com.google.common.base.Preconditions.checkState;
 import static nl.knaw.huygens.timbuctoo.DerivedRelation.aDerivedRelation;
@@ -561,5 +566,44 @@ public class Repository {
 
   public <T extends DomainEntity> List<T> getAllRevisions(Class<T> type, String id) throws StorageException {
     return storage.getAllRevisions(type, id);
+  }
+
+  public Iterator<RelationType> getRelationTypes(Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) throws RepositoryException {
+
+    try {
+      StorageIterator<RelationType> relationTypes = storage.getSystemEntities(RelationType.class);
+      IsRelationTypeBetween isRelationTypeBetween = new IsRelationTypeBetween(sourceType, targetType);
+
+      UnmodifiableIterator<RelationType> filteredRelationTypes = Iterators.filter(relationTypes, relationType -> isRelationTypeBetween.test(relationType));
+
+      return filteredRelationTypes;
+    } catch (StorageException e) {
+      throw new RepositoryException(e);
+    }
+  }
+
+  private static class IsRelationTypeBetween implements Predicate<RelationType> {
+
+    private final String typeName1;
+    private final String typeName2;
+
+    public IsRelationTypeBetween(Class<? extends DomainEntity> type1, Class<? extends DomainEntity> type2) {
+      typeName1 = TypeNames.getInternalName(TypeRegistry.toBaseDomainEntity(type1));
+      typeName2 = TypeNames.getInternalName(TypeRegistry.toBaseDomainEntity(type2));
+    }
+
+
+    @Override
+    public boolean test(RelationType relationType) {
+      return isRegularMatch(relationType) || isInverseMatch(relationType);
+    }
+
+    private boolean isInverseMatch(RelationType relationType) {
+      return typeName1.equals(relationType.getTargetTypeName()) && typeName2.equals(relationType.getSourceTypeName());
+    }
+
+    private boolean isRegularMatch(RelationType relationType) {
+      return typeName1.equals(relationType.getSourceTypeName()) && typeName2.equals(relationType.getTargetTypeName());
+    }
   }
 }

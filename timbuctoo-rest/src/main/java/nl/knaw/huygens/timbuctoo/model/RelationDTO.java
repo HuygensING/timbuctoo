@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import com.google.common.base.Joiner;
 import nl.knaw.huygens.timbuctoo.config.Paths;
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 
 import java.util.Map;
 
@@ -127,5 +128,10 @@ public class RelationDTO {
 
   public void setRelationName(String relationName) {
     this.relationName = relationName;
+  }
+
+  @Override
+  public String toString() {
+    return ReflectionToStringBuilder.reflectionToString(this);
   }
 }
