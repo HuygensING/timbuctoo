@@ -22,9 +22,9 @@ package nl.knaw.huygens.timbuctoo.rest.config;
  * #L%
  */
 
-import javax.validation.Validation;
-import javax.validation.Validator;
-
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import com.sun.jersey.api.client.Client;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.persistence.PersistenceManagerCreationException;
 import nl.knaw.huygens.persistence.PersistenceManagerFactory;
@@ -43,7 +43,6 @@ import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.mail.MailSenderFactory;
 import nl.knaw.huygens.timbuctoo.messages.ActiveMQBroker;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
-import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.security.DefaultVREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.security.ExampleAuthenticationHandler;
 import nl.knaw.huygens.timbuctoo.security.ExampleVREAuthorizationHandler;
@@ -54,9 +53,8 @@ import nl.knaw.huygens.timbuctoo.security.VREAuthorizationHandler;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 import nl.knaw.huygens.timbuctoo.vre.VREs;
 
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
-import com.sun.jersey.api.client.Client;
+import javax.validation.Validation;
+import javax.validation.Validator;
 
 public class RESTInjectionModule extends BasicInjectionModule {
 
@@ -78,7 +76,6 @@ public class RESTInjectionModule extends BasicInjectionModule {
     bind(SecurityContextCreator.class).to(UserSecurityContextCreator.class);
     bind(Broker.class).to(ActiveMQBroker.class);
     bind(IndexManager.class).to(IndexFacade.class);
-    bind(RelationSearcher.class).to(RelationSearcher.class);
 
     if (SecurityType.DEFAULT.equals(securityType)) {
       bind(AuthenticationHandler.class).to(TimbuctooAuthenticationHandler.class);
