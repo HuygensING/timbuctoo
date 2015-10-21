@@ -263,7 +263,7 @@ public class WWDocument extends Document {
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_author_collective", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getAuthorMembership() {
-    return getRelations(AUTHOR_MARITAL_STATUS.getDerivedTypeName());
+    return getRelations(AUTHOR_MEMBERSHIPS.getDerivedTypeName());
   }
 
   @JsonIgnore
@@ -275,7 +275,7 @@ public class WWDocument extends Document {
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_author_marital_status", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getAuthorMaritalStatus() {
-    return getRelations(AUTHOR_MEMBERSHIPS.getDerivedTypeName());
+    return getRelations(AUTHOR_MARITAL_STATUS.getDerivedTypeName());
   }
 
   @JsonIgnore
