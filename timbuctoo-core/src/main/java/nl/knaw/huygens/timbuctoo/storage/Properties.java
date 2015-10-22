@@ -27,6 +27,8 @@ import nl.knaw.huygens.timbuctoo.model.Entity;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import java.lang.reflect.Field;
+
 public interface Properties {
 
   /**
@@ -67,11 +69,11 @@ public interface Properties {
 
   /**
    * Converts a json node from the storage to a property value.
-   * @param type the type of the property.
+   * @param field the field to reduce the value for.
    * @param node the json node to transform.
    * @return the property value.
    * @throws StorageException Thrown if conversion fails.
    */
-  Object reduce(Class<?> type, JsonNode node) throws StorageException;
+  Object reduce(Field field, JsonNode node) throws StorageException;
 
 }

@@ -22,27 +22,25 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.inject.Inject;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.SystemEntity;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.inject.Inject;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * This is the complementary class of {@link EntityInducer}.
@@ -153,7 +151,7 @@ public class EntityReducer {
         JsonNode node = tree.findValue(key);
         if (node != null) {
           Field field = entry.getValue();
-          Object value = properties.reduce(field.getType(), node);
+          Object value = properties.reduce(field, node);
           field.set(object, value);
         }
       }

@@ -22,18 +22,24 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  * #L%
  */
 
-import static org.junit.Assert.assertEquals;
-import nl.knaw.huygens.timbuctoo.model.util.Datable;
-import nl.knaw.huygens.timbuctoo.storage.Properties;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.storage.Properties;
+import org.junit.Before;
+import org.junit.Test;
+import test.model.TestSystemEntityWrapper;
 
-public class MongoPropertyReducerTest {
+import java.lang.reflect.Field;
+import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+
+public class MongoPropertiesTest {
+
+  public static final Class<TestSystemEntityWrapper> TYPE_WITH_FIELDS_TO_REDUCE = TestSystemEntityWrapper.class;
   private ObjectMapper mapper;
   private Properties properties;
 
@@ -43,93 +49,113 @@ public class MongoPropertyReducerTest {
     properties = new MongoProperties();
   }
 
-  private <T> void doTest(Class<?> type, T value) throws Exception {
+  private <T> void doTest(String objectCollection, T value) throws Exception {
+    Field field = getField(objectCollection);
     JsonNode node = mapper.valueToTree(value);
-    assertEquals(value, properties.reduce(type, node));
+
+    assertEquals(value, properties.reduce(field, node));
+  }
+
+  private Field getField(String testBooleanObject) throws NoSuchFieldException {
+    return TYPE_WITH_FIELDS_TO_REDUCE.getDeclaredField(testBooleanObject);
   }
 
   @Test
   public void testBooleanPrimitive() throws Exception {
-    doTest(boolean.class, false);
-    doTest(boolean.class, true);
+    doTest("booleanPrimitive", false);
+    doTest("booleanPrimitive", true);
   }
 
   @Test
   public void testBooleanObject() throws Exception {
-    doTest(Boolean.class, Boolean.FALSE);
-    doTest(Boolean.class, Boolean.TRUE);
+    doTest("booleanObject", Boolean.FALSE);
+    doTest("booleanObject", Boolean.TRUE);
   }
+
+
 
   @Test
   public void testShortPrimitive() throws Exception {
-    doTest(short.class, (short) 42);
+    doTest("shortValue", (short) 42);
   }
 
   @Test
   public void testShortObject() throws Exception {
-    doTest(Short.class, new Short((short) 42));
+    doTest("shortObject", new Short((short) 42));
   }
 
   @Test
   public void testIntegerPrimitive() throws Exception {
-    doTest(int.class, 42);
+    doTest("intPrimitive", 42);
   }
 
   @Test
   public void testIntegerObject() throws Exception {
-    doTest(Integer.class, new Integer(42));
+    doTest("intObject", new Integer(42));
   }
 
   @Test
   public void testLongPrimitive() throws Exception {
-    doTest(long.class, 42L);
+    doTest("longPrimitive", 42L);
   }
 
   @Test
   public void testLongObject() throws Exception {
-    doTest(Long.class, new Long(42L));
+    doTest("longObject", new Long(42L));
   }
 
   @Test
   public void testFloatPrimitive() throws Exception {
-    doTest(float.class, 42.0F);
+    doTest("floatPrimitive", 42.0F);
   }
 
   @Test
   public void testFloatObject() throws Exception {
-    doTest(Float.class, new Float(42F));
+    doTest("floatObject", new Float(42F));
   }
 
   @Test
   public void testDoublePrimitive() throws Exception {
-    doTest(double.class, 42.0);
+    doTest("doublePrimitive", 42.0);
   }
 
   @Test
   public void testDoubleObject() throws Exception {
-    doTest(Double.class, new Double(42.0));
+    doTest("doubleObject", new Double(42.0));
   }
 
   @Test
   public void testCharacterPrimitive() throws Exception {
-    doTest(char.class, 'x');
+    doTest("charPrimitive", 'x');
   }
 
   @Test
   public void testCharacterObject() throws Exception {
-    doTest(Character.class, new Character('x'));
+    doTest("charObject", new Character('x'));
   }
 
   @Test
   public void testString() throws Exception {
-    doTest(String.class, "xyz");
+    doTest("stringObject", "xyz");
   }
 
   @Test
   public void testDatable() throws Exception {
     Datable datable = new Datable("19531113");
     JsonNode node = mapper.valueToTree(datable.getEDTF());
-    assertEquals(datable, properties.reduce(Datable.class, node));
+    assertEquals(datable, properties.reduce(getField("datableObject"), node));
+  }
+
+  @Test
+  public void reduceDoesNotReduceAListWithObjectsToAListWithLinkedHashMaps() throws Exception {
+    // setup
+    Change change1 = Change.newInternalInstance();
+    Change change2 = Change.newInternalInstance();
+
+    List<Change> value = Lists.newArrayList(change1, change2);
+
+    // action
+    doTest("objectCollection", value);
   }
 
 }

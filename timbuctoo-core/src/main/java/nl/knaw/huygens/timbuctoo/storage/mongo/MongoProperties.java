@@ -22,23 +22,32 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.List;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.storage.Properties;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 public class MongoProperties implements Properties {
 
-  /** Separator between parts of a property name. */
+  /**
+   * Separator between parts of a property name.
+   */
   static final String SEPARATOR = ":";
 
   private final ObjectMapper jsonMapper;
@@ -88,36 +97,79 @@ public class MongoProperties implements Properties {
   }
 
   @Override
-  public Object reduce(Class<?> type, JsonNode node) throws StorageException {
+  public Object reduce(Field field, JsonNode node) throws StorageException {
     if (node.isArray()) {
-      return createCollection(node);
-    } else if (type == Integer.class || type == int.class) {
-      return node.asInt();
-    } else if (type == Boolean.class || type == boolean.class) {
-      return node.asBoolean();
-    } else if (type == Character.class || type == char.class) {
-      return node.asText().charAt(0);
-    } else if (type == Double.class || type == double.class) {
-      return node.asDouble();
-    } else if (type == Float.class || type == float.class) {
-      return (float) node.asDouble();
-    } else if (type == Long.class || type == long.class) {
-      return node.asLong();
-    } else if (type == Short.class || type == short.class) {
-      return (short) node.asInt();
-    } else if (Datable.class.isAssignableFrom(type)) {
-      return new Datable(node.asText());
+      return deserializeCollection(field, node);
     } else {
-      return jsonMapper.convertValue(node, type);
+      Class<?> type = field.getType();
+      if (type == Integer.class || type == int.class) {
+        return node.asInt();
+      } else if (type == Boolean.class || type == boolean.class) {
+        return node.asBoolean();
+      } else if (type == Character.class || type == char.class) {
+        return node.asText().charAt(0);
+      } else if (type == Double.class || type == double.class) {
+        return node.asDouble();
+      } else if (type == Float.class || type == float.class) {
+        return (float) node.asDouble();
+      } else if (type == Long.class || type == long.class) {
+        return node.asLong();
+      } else if (type == Short.class || type == short.class) {
+        return (short) node.asInt();
+      } else if (Datable.class.isAssignableFrom(type)) {
+        return new Datable(node.asText());
+      } else {
+        return jsonMapper.convertValue(node, type);
+      }
     }
   }
 
-  private Object createCollection(JsonNode value) throws StorageException {
+  private Object deserializeCollection(Field field, JsonNode node) throws StorageException {
+    Class<Collection<?>> type = (Class<Collection<?>>) field.getType();
+    Class<?> componentType = getComponentType(field);
+
+
     try {
-      return jsonMapper.readValue(value.toString(), new TypeReference<List<? extends Object>>() {});
-    } catch (Exception e) {
+      return convertCollection(componentType, type, node.toString());
+    } catch (IOException | IllegalAccessException | InstantiationException e) {
       throw new StorageException(e);
     }
+  }
+
+  private Class<?> getComponentType(Field field) {
+    Type[] actualTypeArguments = ((ParameterizedType) field.getGenericType()).getActualTypeArguments();
+
+    if (actualTypeArguments.length <= 0) {
+      return null;
+    }
+
+    Type firstTypeArgument = actualTypeArguments[0];
+    return firstTypeArgument instanceof Class<?> ? (Class<?>) firstTypeArgument : null;
+
+  }
+
+  /*
+  * Jackson does not deserialize the entries of an array of complex types (non java primitives) well,
+  * so we need to deserialize the the entries as an array an later covert them to the type of the field.
+  */
+  private Object convertCollection(Class<?> entryType, Class<? extends Collection> fieldType, String rawValue) throws IOException, IllegalAccessException, InstantiationException {
+    TypeFactory typeFactory =  jsonMapper.getTypeFactory();
+
+    return jsonMapper.readValue(rawValue, typeFactory.constructCollectionType(fieldType, entryType));
+  }
+
+  private <C extends Collection<E>, E> C instantiateCollection(Class<E> entryType, Class<C> fieldType) throws IllegalAccessException, InstantiationException {
+    if (!Modifier.isAbstract(fieldType.getModifiers())) {
+      return fieldType.newInstance();
+    }
+    else if(fieldType.isAssignableFrom(List.class)){
+      return (C) Lists.newArrayList();
+    }
+    else if(fieldType.isAssignableFrom(Set.class)){
+      return (C) Sets.newHashSet();
+    }
+
+    throw new RuntimeException("Type " + fieldType + " is not supported as field");
   }
 
 }
