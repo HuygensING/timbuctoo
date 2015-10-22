@@ -24,13 +24,16 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import nl.knaw.huygens.facetedsearch.model.Facet;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import nl.knaw.huygens.timbuctoo.storage.FacetDeserializer;
 import nl.knaw.huygens.timbuctoo.storage.Properties;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
@@ -54,6 +57,9 @@ public class MongoProperties implements Properties {
 
   public MongoProperties() {
     jsonMapper = new ObjectMapper();
+    SimpleModule module = new SimpleModule();
+    module.addDeserializer(Facet.class, new FacetDeserializer());
+    jsonMapper.registerModule(module);
   }
 
   @Override

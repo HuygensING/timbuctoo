@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property;
+package nl.knaw.huygens.timbuctoo.storage;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -15,7 +15,7 @@ import nl.knaw.huygens.facetedsearch.model.RangeFacet;
 import java.io.IOException;
 import java.util.Iterator;
 
-class FacetDeserializer extends JsonDeserializer<Facet> {
+public class FacetDeserializer extends JsonDeserializer<Facet> {
 
   @Override
   public Facet deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {

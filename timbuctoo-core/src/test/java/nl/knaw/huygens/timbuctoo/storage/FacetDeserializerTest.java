@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion.property;
+package nl.knaw.huygens.timbuctoo.storage;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
