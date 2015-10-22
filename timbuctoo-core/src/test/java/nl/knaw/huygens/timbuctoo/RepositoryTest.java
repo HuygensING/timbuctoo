@@ -22,8 +22,44 @@ package nl.knaw.huygens.timbuctoo;
  * #L%
  */
 
+import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.Document;
+import nl.knaw.huygens.timbuctoo.model.Location;
+import nl.knaw.huygens.timbuctoo.model.Person;
+import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.model.SearchResult;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.storage.RelationTypes;
+import nl.knaw.huygens.timbuctoo.storage.Storage;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.util.RelationRefAdderFactory;
+import nl.knaw.huygens.timbuctoo.util.RepositoryException;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import test.model.projecta.ProjectADocument;
+import test.model.projecta.ProjectAPerson;
+import test.variation.model.BaseVariationDomainEntity;
+import test.variation.model.TestSystemEntity;
+import test.variation.model.projecta.ProjectADomainEntity;
+import test.variation.model.projecta.ProjectARelation;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -31,31 +67,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.model.RelationType;
-import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.storage.RelationTypes;
-import nl.knaw.huygens.timbuctoo.storage.Storage;
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
-import nl.knaw.huygens.timbuctoo.util.RelationRefAdderFactory;
-
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import test.variation.model.BaseVariationDomainEntity;
-import test.variation.model.TestSystemEntity;
-import test.variation.model.projecta.ProjectADomainEntity;
-import test.variation.model.projecta.ProjectARelation;
-
-import com.google.common.collect.Lists;
 
 public class RepositoryTest {
 
@@ -303,5 +314,58 @@ public class RepositoryTest {
     // verify
     verify(relationTypesMock).getRelationTypeIdsByName(relationTypeIds);
     assertThat(actualRelationTypeIds, equalTo(relationTypeIds));
+  }
+
+  @Test
+  public void getRelationTypesRetrievesAllTheRelationTypesPossibleBetweenTheSourceAndTarget() throws StorageException, RepositoryException {
+    // setup
+    RelationType inverseMatch = new RelationType();
+    inverseMatch.setTargetTypeName(personTypeName());
+    inverseMatch.setSourceTypeName(documentTypeName());
+
+    RelationType regularMatch = new RelationType();
+    regularMatch.setSourceTypeName(personTypeName());
+    regularMatch.setTargetTypeName(documentTypeName());
+
+    RelationType noMatch = new RelationType();
+    noMatch.setSourceTypeName(personTypeName());
+    noMatch.setTargetTypeName(locationTypeName());
+
+    StorageIteratorStub<RelationType> iterator = StorageIteratorStub.newInstance(inverseMatch, regularMatch, noMatch);
+    when(storageMock.getSystemEntities(RelationType.class)).thenReturn(iterator);
+
+
+    // action
+    Iterator<RelationType> relationTypes = repository.getRelationTypes(ProjectAPerson.class, ProjectADocument.class);
+
+    // verify
+    assertThat(Lists.newArrayList(relationTypes), containsInAnyOrder(inverseMatch, regularMatch));
+  }
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
+
+  @Test
+  public void getRelationTypesThrowsARepositoryExceptionWhenTheStorageThrowsAStorageException() throws StorageException, RepositoryException {
+    // setup
+    when(storageMock.getSystemEntities(RelationType.class)).thenThrow(new StorageException());
+
+    expectedException.expect(RepositoryException.class);
+    expectedException.expectCause(is(instanceOf(StorageException.class)));
+
+    // action
+    repository.getRelationTypes(ProjectAPerson.class, ProjectADocument.class);
+  }
+
+  private String locationTypeName() {
+    return TypeNames.getInternalName(Location.class);
+  }
+
+  private String personTypeName() {
+    return TypeNames.getInternalName(Person.class);
+  }
+
+  private String documentTypeName() {
+    return TypeNames.getInternalName(Document.class);
   }
 }

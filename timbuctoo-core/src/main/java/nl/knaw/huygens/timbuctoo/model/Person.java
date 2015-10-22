@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.annotations.RawSearchField;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
@@ -201,7 +202,7 @@ public class Person extends DomainEntity {
     this.gender = gender;
   }
 
-  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_s_birthDate", isFaceted = true, canBeEmpty = true), //
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_i_birthDate", isFaceted = true, canBeEmpty = true, facetType = FacetType.RANGE), //
       @IndexAnnotation(fieldName = "dynamic_k_birthDate", canBeEmpty = true, isSortable = true) })
   public Datable getBirthDate() {
     return birthDate;
@@ -211,7 +212,7 @@ public class Person extends DomainEntity {
     this.birthDate = birthDate;
   }
 
-  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_s_deathDate", isFaceted = true, canBeEmpty = true), //
+  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_i_deathDate", isFaceted = true, canBeEmpty = true, facetType = FacetType.RANGE), //
       @IndexAnnotation(fieldName = "dynamic_k_deathDate", isSortable = true, canBeEmpty = true) })
   public Datable getDeathDate() {
     return deathDate;

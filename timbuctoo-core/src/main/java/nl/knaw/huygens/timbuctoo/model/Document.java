@@ -25,6 +25,7 @@ package nl.knaw.huygens.timbuctoo.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.annotations.RawSearchField;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
@@ -117,7 +118,7 @@ public class Document extends DomainEntity {
     this.edition = edition;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_s_date", canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_i_date", canBeEmpty = true, isFaceted = true, facetType = FacetType.RANGE)
   public Datable getDate() {
     return date;
   }

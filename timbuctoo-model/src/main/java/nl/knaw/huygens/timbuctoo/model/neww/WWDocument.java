@@ -154,6 +154,7 @@ public class WWDocument extends Document {
 
   // ---------------------------------------------------------------------------
 
+  private static final DerivedProperty AUTHOR_NAME = new DerivedProperty("authorName", "isCreatedBy", "getIndexedName", "getAuthorName");
   private static final DerivedProperty AUTHOR_GENDER = new DerivedProperty("authorGender", "isCreatedBy", "getGender", "getAuthorGender");
   private static final DerivedProperty AUTHOR_BIRTH_DATE = new DerivedProperty("authorBirthDate", "isCreatedBy", "getBirthDate", "getAuthorBirthDate");
   private static final DerivedProperty AUTHOR_DEATH_DATE = new DerivedProperty("authorDeathDate", "isCreatedBy", "getDeathDate", "getAuthorDeathDate");
@@ -162,7 +163,7 @@ public class WWDocument extends Document {
   private static final DerivedProperty GENRES = new DerivedProperty("genre", "hasGenre", "getIdentificationName", "getGenres");
   private static final DerivedProperty LIBRARIES = new DerivedProperty("library", "isStoredAt", "getIdentificationName", "getLibraries");
   private static final DerivedProperty ORIGINS = new DerivedProperty("publishLocation", "hasPublishLocation", "getIdentificationName", "getOrigin");
-  private static final List<DerivedProperty> DERIVED_PROPERTIES = ImmutableList.of(AUTHOR_GENDER, GENRES, LIBRARIES, ORIGINS, AUTHOR_BIRTH_DATE, AUTHOR_DEATH_DATE, AUTHOR_CHILDREN, AUTHOR_TYPE);
+  private static final List<DerivedProperty> DERIVED_PROPERTIES = ImmutableList.of(AUTHOR_NAME, AUTHOR_GENDER, GENRES, LIBRARIES, ORIGINS, AUTHOR_BIRTH_DATE, AUTHOR_DEATH_DATE, AUTHOR_CHILDREN, AUTHOR_TYPE);
 
   @Override
   public List<DerivedProperty> getDerivedProperties() {
@@ -173,6 +174,12 @@ public class WWDocument extends Document {
   @IndexAnnotation(fieldName = "dynamic_s_author_gender", canBeEmpty = true, isFaceted = true)
   public Object getAuthorGender() {
     return this.getProperty(AUTHOR_GENDER.getPropertyName());
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_t_author_name", canBeEmpty = true, isFaceted = true)
+  public Object getAuthorName() {
+    return this.getProperty(AUTHOR_NAME.getPropertyName());
   }
 
   @JsonIgnore
@@ -263,7 +270,7 @@ public class WWDocument extends Document {
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_author_collective", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getAuthorMembership() {
-    return getRelations(AUTHOR_MARITAL_STATUS.getDerivedTypeName());
+    return getRelations(AUTHOR_MEMBERSHIPS.getDerivedTypeName());
   }
 
   @JsonIgnore
@@ -275,7 +282,7 @@ public class WWDocument extends Document {
   @JsonIgnore
   @IndexAnnotation(fieldName = "dynamic_s_author_marital_status", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getAuthorMaritalStatus() {
-    return getRelations(AUTHOR_MEMBERSHIPS.getDerivedTypeName());
+    return getRelations(AUTHOR_MARITAL_STATUS.getDerivedTypeName());
   }
 
   @JsonIgnore

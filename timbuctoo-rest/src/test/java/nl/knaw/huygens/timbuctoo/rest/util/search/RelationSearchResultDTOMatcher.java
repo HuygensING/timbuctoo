@@ -134,4 +134,26 @@ public class RelationSearchResultDTOMatcher extends CompositeMatcher<RelationSea
     });
     return this;
   }
+
+  public RelationSearchResultDTOMatcher withSourceType(String sourceType) {
+    this.addMatcher(new PropertyEqualityMatcher<RelationSearchResultDTO, String>("sourceType", sourceType) {
+      @Override
+      protected String getItemValue(RelationSearchResultDTO item) {
+        return item.getSourceType();
+      }
+    });
+
+    return this;
+  }
+
+  public RelationSearchResultDTOMatcher withTargetType(String targetType) {
+    this.addMatcher(new PropertyEqualityMatcher<RelationSearchResultDTO, String>("targetType", targetType) {
+      @Override
+      protected String getItemValue(RelationSearchResultDTO item) {
+        return item.getTargetType();
+      }
+    });
+    return this;
+  }
+
 }
