@@ -32,6 +32,7 @@ import nl.knaw.huygens.timbuctoo.model.DerivedProperty;
 import nl.knaw.huygens.timbuctoo.model.DerivedRelationDescription;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.RelationRef;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.oaipmh.DublinCoreMetadataField;
 import nl.knaw.huygens.timbuctoo.oaipmh.OAIDublinCoreField;
 import nl.knaw.huygens.timbuctoo.util.Text;
@@ -183,15 +184,15 @@ public class WWDocument extends Document {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_author_birthDate", canBeEmpty = true, isFaceted = true)
-  public Object getAuthorBirthDate() {
-    return this.getProperty(AUTHOR_BIRTH_DATE.getPropertyName());
+  @IndexAnnotation(fieldName = "dynamic_i_author_birthDate", canBeEmpty = true, isFaceted = true, facetType = FacetType.RANGE)
+  public Datable getAuthorBirthDate() {
+    return (Datable) this.getProperty(AUTHOR_BIRTH_DATE.getPropertyName());
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_author_deathDate", canBeEmpty = true, isFaceted = true)
-  public Object getAuthordeathDate() {
-    return this.getProperty(AUTHOR_DEATH_DATE.getPropertyName());
+  @IndexAnnotation(fieldName = "dynamic_i_author_deathDate", canBeEmpty = true, isFaceted = true, facetType = FacetType.RANGE)
+  public Datable getAuthordeathDate() {
+    return (Datable) this.getProperty(AUTHOR_DEATH_DATE.getPropertyName());
   }
 
   @JsonIgnore
