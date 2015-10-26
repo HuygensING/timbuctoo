@@ -178,7 +178,7 @@ public class WWDocument extends Document {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_t_author_name", canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_t_author_name", canBeEmpty = true)
   public Object getAuthorName() {
     return this.getProperty(AUTHOR_NAME.getPropertyName());
   }
