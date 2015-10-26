@@ -60,7 +60,7 @@ import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static test.timbuctoo.index.model.SearchParametersV1Matcher.likeSearchParametersV1;
+import static nl.knaw.huygens.timbuctoo.search.converters.RelationSearchParametersV2_1Matcher.likeSearchParametersV2_1;
 
 public class RelationSearchParametersConverterTest {
 
@@ -128,7 +128,7 @@ public class RelationSearchParametersConverterTest {
     assertThat(relationSearchParameters.getTargetSearchId(), is(TARGET_SEARCH_RESULT_ID));
     assertThat(relationSearchParameters.getTypeString(), is(RELATION_TYPE_STRING));
 
-    verify(vre).search(argThat(equalTo(TARGET_TYPE)), argThat(likeSearchParametersV1().withoutFacetParameter(likeFacetParameter(RELATION_FACET, RELATION_TYPE_NAMES))));
+    verify(vre).search(argThat(equalTo(TARGET_TYPE)), argThat(likeSearchParametersV2_1().withoutFacetParameter(likeFacetParameter(RELATION_FACET, RELATION_TYPE_NAMES))));
   }
 
   @Rule

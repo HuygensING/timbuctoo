@@ -63,8 +63,10 @@ public class RelationSearcher {
 
     List<String> relationTypeIds = null;
 
-      relationTypeIds = getRelationTypeId(vre, parameters, sourceType, targetType);
-
+    relationTypeIds = getRelationTypeIds(vre, parameters, sourceType, targetType);
+    if (parameters.getRelationTypeIds().isEmpty()) {
+      parameters.setRelationTypeIds(relationTypeIds);
+    }
 
     SearchParametersV1 parametersV1 = relationSearchParametersConverter.toSearchParametersV1(parameters);
     parametersV1.getQueryOptimizer().setRows(1000000); // TODO find a better way to get all the found solr entries.
@@ -87,17 +89,15 @@ public class RelationSearcher {
     return searchResult;
   }
 
-  private List<String> getRelationTypeId(VRE vre, RelationSearchParameters parameters, String sourceTypeName, String targetTypeName
-  ) throws SearchException {
+  private List<String> getRelationTypeIds(VRE vre, RelationSearchParameters parameters, String sourceTypeName, String targetTypeName) throws SearchException {
 
-    if(parameters.getRelationTypeIds() == null || parameters.getRelationTypeIds().isEmpty()){
+    if (parameters.getRelationTypeIds() == null || parameters.getRelationTypeIds().isEmpty()) {
       try {
         Class<? extends DomainEntity> sourceType = typeRegistry.getDomainEntityType(sourceTypeName);
         Class<? extends DomainEntity> targetType = typeRegistry.getDomainEntityType(targetTypeName);
 
         return repository.getRelationTypeIdsByName(vre.getRelationTypeNamesBetween(sourceType, targetType));
-      }
-      catch (VREException e){
+      } catch (VREException e) {
         throw new SearchException(e);
       }
     }
