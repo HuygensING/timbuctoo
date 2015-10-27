@@ -25,7 +25,6 @@ package nl.knaw.huygens.timbuctoo.search;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.facetedsearch.model.DefaultFacet;
 import nl.knaw.huygens.facetedsearch.model.Facet;
-import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetParameter;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
@@ -52,13 +51,9 @@ import test.timbuctoo.index.model.projecta.ProjectAType2;
 import java.util.List;
 import java.util.Map;
 
-import static nl.knaw.huygens.timbuctoo.model.Relation.TYPE_ID_FACET_NAME;
 import static nl.knaw.huygens.timbuctoo.search.RelationSearchParametersMatcher.likeSearchParametersV1;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doThrow;
@@ -83,7 +78,7 @@ public class RelationSearcherTest {
   private TypeRegistry typeRegistry;
   private Repository repositoryMock;
   private CollectionConverter collectionConverterMock;
-  private List<String> relationTypeIds = Lists.newArrayList("id1", "id2");
+  private List<String> defaultRelationTypeIdsFromRepository = Lists.newArrayList("id1", "id2");
   private List<String> relationTypeIdsArgument = Lists.newArrayList("argId1", "argId2");
   private List<String> sourceIds = Lists.newArrayList("sourceId1", "sourceId2");
   private List<String> targetIds = Lists.newArrayList("targetId1", "targetId2");
@@ -101,13 +96,13 @@ public class RelationSearcherTest {
   public void setup() throws Exception {
     MockitoAnnotations.initMocks(this);
 
-    relationSearcherParametersConverterMock = mock(RelationSearchParametersConverter.class);
+    searchParametersV1 = new SearchParametersV1();
+    setupParametersConversion(searchParametersV1);
 
     collectionConverterMock = mock(CollectionConverter.class);
     facetedSearchResultFilterMock = mock(RelationFacetedSearchResultFilter.class);
-    searchParametersV1 = new SearchParametersV1();
     setupTypeRegistry();
-    setupVRE();
+    setupVRE(searchParametersV1);
     setupRepository();
 
 
@@ -122,20 +117,25 @@ public class RelationSearcherTest {
 
   private void setupRepository() {
     repositoryMock = mock(Repository.class);
-    when(repositoryMock.getRelationTypeIdsByName(RELATION_TYPE_NAMES)).thenReturn(relationTypeIds);
+    when(repositoryMock.getRelationTypeIdsByName(RELATION_TYPE_NAMES)).thenReturn(defaultRelationTypeIdsFromRepository);
     when(repositoryMock.getEntityOrDefaultVariation(SearchResult.class, sourceSearchId)).thenReturn(createSearchResult(SOURCE_TYPE, sourceIds));
     when(repositoryMock.getEntityOrDefaultVariation(SearchResult.class, targetSearchId)).thenReturn(createSearchResult(TARGET_TYPE, targetIds, TARGET_TERM, TARGET_FACET));
   }
 
-  private void setupVRE() throws SearchException, SearchValidationException, VREException {
+  private void setupVRE(SearchParametersV1 searchParametersV1) throws SearchException, SearchValidationException, VREException {
     vreMock = mock(VRE.class);
-    when(vreMock.search(type, this.searchParametersV1, facetedSearchResultFilterMock)).thenReturn(searchResult);
+    when(vreMock.search(type, searchParametersV1, facetedSearchResultFilterMock)).thenReturn(searchResult);
     when(vreMock.getRelationTypeNamesBetween(SOURCE_TYPE, TARGET_TYPE)).thenReturn(RELATION_TYPE_NAMES);
   }
 
   private void setupTypeRegistry() throws ModelException {
     typeRegistry = TypeRegistry.getInstance();
     typeRegistry.init(type.getPackage().getName() + " " + TARGET_TYPE.getPackage().getName());
+  }
+
+  private void setupParametersConversion(SearchParametersV1 searchParametersV1) {
+    relationSearcherParametersConverterMock = mock(RelationSearchParametersConverter.class);
+    when(relationSearcherParametersConverterMock.toSearchParametersV1(any(RelationSearchParameters.class))).thenReturn(searchParametersV1);
   }
 
   private SearchResult createSearchResult(Class<? extends DomainEntity> type, List<String> ids, String term, Facet facet) {
@@ -154,60 +154,59 @@ public class RelationSearcherTest {
   }
 
   @Test
-  public void testSearchWithRelationTypes() throws Exception {
+  public void searchShouldSearchUsingTheVRE() throws Exception {
+    // setup
     RelationSearchParameters relationSearchParameters = createRelationSearchParameters(typeString, sourceSearchId, targetSearchId, relationTypeIdsArgument);
-
-    searchParametersV1.addFacetParameter(new DefaultFacetParameter(TYPE_ID_FACET_NAME, relationTypeIdsArgument));
-    when(relationSearcherParametersConverterMock.toSearchParametersV1(any(RelationSearchParameters.class))).thenReturn(searchParametersV1);
 
     // action
     SearchResult actualResult = instance.search(vreMock, type, relationSearchParameters);
 
     // verify
-    verify(relationSearcherParametersConverterMock).toSearchParametersV1(argThat(likeSearchParametersV1().withTypeIds(relationTypeIdsArgument)));
+    //verify that the VRE is called correctly
     verify(vreMock).search(type, searchParametersV1, facetedSearchResultFilterMock);
-
-    assertThat(actualResult, equalTo(searchResult));
+    //SearchResult is what the VRE returns
+    assertThat(actualResult, is(sameInstance(searchResult)));
   }
 
+  @Test
+  public void searchUsesTheProvidedRelationTypeIds() throws Exception {
+    // setup
+    RelationSearchParameters relationSearchParameters = createRelationSearchParameters(typeString, sourceSearchId, targetSearchId, relationTypeIdsArgument);
 
+    // action
+    instance.search(vreMock, type, relationSearchParameters);
+
+    // verify
+    //we can assert that the parameters are taken into account by checking if they were passed to the converter method
+    verify(relationSearcherParametersConverterMock).toSearchParametersV1(argThat(likeSearchParametersV1().withTypeIds(relationTypeIdsArgument)));
+  }
+
+  @Test
+  public void searchUsesTheDefaultRelationsWhenNoRelationsAreProvided() throws Exception {
+    // setup
+    RelationSearchParameters relationSearchParameters = createSearchParameters(typeString, sourceSearchId, targetSearchId);
+
+    // action
+    instance.search(vreMock, Relation.class, relationSearchParameters);
+
+    // verify
+    verify(vreMock).getRelationTypeNamesBetween(SOURCE_TYPE, TARGET_TYPE);
+    verify(repositoryMock).getRelationTypeIdsByName(RELATION_TYPE_NAMES);
+    verify(relationSearcherParametersConverterMock).toSearchParametersV1(argThat(likeSearchParametersV1().withTypeIds(defaultRelationTypeIdsFromRepository)));
+  }
 
   @Test
   public void searchAddsTheFacetsAndTermOfTheTargetSearch() throws SearchException, SearchValidationException {
     // setup
     RelationSearchParameters relationSearchParameters = createRelationSearchParameters(typeString, sourceSearchId, targetSearchId, relationTypeIdsArgument);
-    when(relationSearcherParametersConverterMock.toSearchParametersV1(relationSearchParameters)).thenReturn(searchParametersV1);
 
     // action
     SearchResult actualResult = instance.search(vreMock, type, relationSearchParameters);
 
     // verify
-    verify(relationSearcherParametersConverterMock).toSearchParametersV1(relationSearchParameters);
-    verify(vreMock).search(type, searchParametersV1, facetedSearchResultFilterMock);
-
     assertThat(actualResult.getFacets(), contains(TARGET_FACET));
     assertThat(actualResult.getTerm(), is(TARGET_TERM));
   }
-
-  @Test
-  public void testSearchWithoutRelationTypesSpecified() throws Exception {
-    // setup
-    RelationSearchParameters relationSearchParameters = createSearchParameters(typeString, sourceSearchId, targetSearchId);
-    when(relationSearcherParametersConverterMock.toSearchParametersV1(any(RelationSearchParameters.class))).thenReturn(searchParametersV1);
-
-    // action
-    SearchResult actualResult = instance.search(vreMock, Relation.class, relationSearchParameters);
-
-    // verify
-    verify(vreMock).getRelationTypeNamesBetween(SOURCE_TYPE, TARGET_TYPE);
-    verify(repositoryMock).getRelationTypeIdsByName(RELATION_TYPE_NAMES);
-    verify(relationSearcherParametersConverterMock).toSearchParametersV1(argThat(likeSearchParametersV1().withTypeIds(relationTypeIds)));
-    verify(vreMock).search(type, searchParametersV1,facetedSearchResultFilterMock);
-
-    assertThat(actualResult, equalTo(searchResult));
-  }
-
-
 
   protected RelationSearchParameters createRelationSearchParameters(String typeString, String sourceSearchId, String targetSearchId, List<String> relationTypeIds) {
     RelationSearchParameters parameters = createSearchParameters(typeString, sourceSearchId, targetSearchId);
@@ -228,35 +227,31 @@ public class RelationSearcherTest {
 
   @Test
   public void searchThrowsASearchExceptionWhenTheVRECannotRetrieveTheRelationTypes() throws Exception {
+    // setup
     RelationSearchParameters relationSearchParameters = createSearchParameters(typeString, sourceSearchId, targetSearchId);
-    when(relationSearcherParametersConverterMock.toSearchParametersV1(relationSearchParameters)).thenReturn(searchParametersV1);
-
     when(vreMock.getRelationTypeNamesBetween(SOURCE_TYPE, TARGET_TYPE)).thenThrow(new VREException(new Exception()));
 
+    //verification setup
     expectedException.expect(SearchException.class);
     expectedException.expectCause(is(instanceOf(VREException.class)));
 
     // action
     instance.search(vreMock, Relation.class, relationSearchParameters);
-
   }
 
   @Test(expected = SearchValidationException.class)
-  public void testSearchVREThrowsASearchValidationException() throws Exception {
-    testSearchVREThrowsAnException(SearchValidationException.class);
+  public void searchPassesTheVRESearchValidationExceptionOnwards() throws Exception {
+    searchPassesTheVREExceptionOnwards(SearchValidationException.class);
   }
 
   @Test(expected = SearchException.class)
-  public void testSearchVREThrowsASearchException() throws Exception {
-    testSearchVREThrowsAnException(SearchException.class);
+  public void searchPassesTheVRESearchExceptionOnwards() throws Exception {
+    searchPassesTheVREExceptionOnwards(SearchException.class);
   }
 
-
-
-  private void testSearchVREThrowsAnException(Class<? extends Exception> exceptionToBeThrown) throws SearchException, SearchValidationException {
+  private void searchPassesTheVREExceptionOnwards(Class<? extends Exception> exceptionToBeThrown) throws SearchException, SearchValidationException {
+    //setup
     RelationSearchParameters parameters = createRelationSearchParameters(typeString, sourceSearchId, targetSearchId, relationTypeIdsArgument);
-
-    when(relationSearcherParametersConverterMock.toSearchParametersV1(parameters)).thenReturn(searchParametersV1);
     doThrow(exceptionToBeThrown).when(vreMock).search(type, searchParametersV1, facetedSearchResultFilterMock);
 
     try {
@@ -269,5 +264,4 @@ public class RelationSearcherTest {
       verifyZeroInteractions(facetedSearchResultFilterMock);
     }
   }
-
 }
