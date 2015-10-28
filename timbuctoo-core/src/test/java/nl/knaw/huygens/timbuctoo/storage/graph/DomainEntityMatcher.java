@@ -1,14 +1,19 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.hamcrest.PropertyMatcher;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+
+import java.util.List;
+
+import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
 public class DomainEntityMatcher<T extends DomainEntity> extends CompositeMatcher<T> {
   private DomainEntityMatcher() {}
@@ -91,6 +96,20 @@ public class DomainEntityMatcher<T extends DomainEntity> extends CompositeMatche
       @Override
       protected String getItemValue(T item) {
         return item.getPid();
+      }
+    });
+    return this;
+  }
+
+  public DomainEntityMatcher<T> withVariations(Class<?> type, Class<?> type2) {
+
+    String variation1 = getInternalName(type);
+    String variation2 = getInternalName(type2);
+
+    addMatcher(new PropertyEqualityMatcher<T, List<String>>("variations", Lists.newArrayList(variation1, variation2)) {
+      @Override
+      protected List<String> getItemValue(T item) {
+        return item.getVariations();
       }
     });
     return this;
