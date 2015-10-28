@@ -381,7 +381,31 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void updateDomainEntityDelegatesToGraphStorage() throws Exception {
+  public void updateDomainEntityManagesTheLifeCycle() throws Exception {
+    // setup
+    Change oldModified = new Change();
+    SubADomainEntity entity = aDomainEntity() //
+      .withId(ID) //
+      .withAPid() //
+      .withModified(oldModified)//
+      .withRev(FIRST_REVISION) //
+      .build();
+    entityAndVariantExist();
+
+    // action
+    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+
+    // verify
+    verify(graphStorageMock).updateEntity( //
+      argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
+      argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
+        .withId(ID) //
+        .withRevision(SECOND_REVISION) //
+        .withAModifiedValueNotEqualTo(oldModified)));
+  }
+
+  @Test
+  public void updateDomainEntityRemovesThePIDAfterTheUpdate() throws Exception {
     // setup
     Change oldModified = new Change();
     SubADomainEntity entity = aDomainEntity() //
@@ -397,12 +421,7 @@ public class GraphLegacyStorageWrapperTest {
 
     // verify
     InOrder inOrder = inOrder(graphStorageMock);
-    inOrder.verify(graphStorageMock).updateEntity( //
-      argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
-      argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
-        .withId(ID) //
-        .withRevision(SECOND_REVISION) //
-        .withAModifiedValueNotEqualTo(oldModified)));
+    inOrder.verify(graphStorageMock).updateEntity(DOMAIN_ENTITY_TYPE, entity);
     inOrder.verify(graphStorageMock).removePropertyFromEntity(DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
   }
 
@@ -430,7 +449,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void updateDomainEntityDelegatesToGraphStoragesAddNewVariantWhenTheVariantDoesNotExist() throws Exception {
+  public void updateDomainEntityAddsNewVariantWhenTheVariantDoesNotExist() throws Exception {
     // setup
     Change oldModified = new Change();
     SubADomainEntity entity = aDomainEntity() //
@@ -824,7 +843,31 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void updateDomainEntityForRelationDelegatesToGraphStorageAddRelation() throws Exception {
+  public void updateDomainEntityForRelationManagesTheLifeCycle() throws Exception {
+    // setup
+    Change oldModified = new Change();
+    SubARelation entity = aRelation() //
+      .withId(ID) //
+      .withAPID() //
+      .withModified(oldModified) //
+      .withRevision(FIRST_REVISION) //
+      .build();
+
+    // action
+    instance.updateDomainEntity(RELATION_TYPE, entity, CHANGE);
+
+    // verify
+    verify(graphStorageMock).updateRelation( //
+      argThat(is(equalTo(RELATION_TYPE))), //
+      argThat(likeDomainEntity(RELATION_TYPE) //
+        .withId(ID) //
+        .withAModifiedValueNotEqualTo(oldModified) //
+        .withRevision(SECOND_REVISION)), //
+      argThat(is(CHANGE)));
+  }
+
+  @Test
+  public void updateDomainEntityForRelationRemovesThePIDAfterTheUpdate() throws Exception {
     // setup
     Change oldModified = new Change();
     SubARelation entity = aRelation() //
@@ -839,13 +882,7 @@ public class GraphLegacyStorageWrapperTest {
 
     // verify
     InOrder inOrder = inOrder(graphStorageMock);
-    inOrder.verify(graphStorageMock).updateRelation( //
-      argThat(is(equalTo(RELATION_TYPE))), //
-      argThat(likeDomainEntity(RELATION_TYPE) //
-        .withId(ID) //
-        .withAModifiedValueNotEqualTo(oldModified) //
-        .withRevision(SECOND_REVISION)), //
-      argThat(is(CHANGE)));
+    inOrder.verify(graphStorageMock).updateRelation(RELATION_TYPE, entity, CHANGE);
     inOrder.verify(graphStorageMock).removePropertyFromRelation(RELATION_TYPE, ID, PID_FIELD_NAME);
   }
 
