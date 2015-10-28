@@ -7,6 +7,7 @@ import com.tinkerpop.blueprints.Graph;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.graph.IdGenerator;
@@ -85,8 +86,10 @@ public class MongoTinkerPopConverter {
 
   public void convertSystemEntities() throws Exception {
     for (Class<? extends SystemEntity> type : registry.getSystemEntityTypes()) {
-      SystemEntityCollectionConverter<? extends SystemEntity> systemEntityConverter = createSystemEntityConverter(type);
-      systemEntityConverter.convert();
+      if (!SearchResult.class.isAssignableFrom(type)) { //Search results don't need to be converted because we delete them periodically anyway
+        SystemEntityCollectionConverter<? extends SystemEntity> systemEntityConverter = createSystemEntityConverter(type);
+        systemEntityConverter.convert();
+      }
     }
 
   }
