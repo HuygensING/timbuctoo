@@ -50,6 +50,7 @@ public abstract class DomainEntity extends Entity {
   public static final String DELETED = "^deleted";
   public static final String VARIATIONS = "^variations";
   public static final String DB_PID_PROP_NAME = "pid";
+  public static final String DB_VARIATIONS_PROP_NAME = "variations";
 
   @JsonProperty("^displayName")
   @DBProperty(value = "displayName", type = FieldType.ADMINISTRATIVE)
@@ -64,6 +65,7 @@ public abstract class DomainEntity extends Entity {
   private final Map<String, Object> properties = Maps.newHashMap();
   @DBProperty(value = "relations", type = FieldType.VIRTUAL)
   private final Map<String, Set<RelationRef>> relations = Maps.newHashMap();
+  @DBProperty(value = DB_VARIATIONS_PROP_NAME, type = FieldType.VIRTUAL)
   private List<String> variations = Lists.newArrayList();
 
   public DomainEntity() {

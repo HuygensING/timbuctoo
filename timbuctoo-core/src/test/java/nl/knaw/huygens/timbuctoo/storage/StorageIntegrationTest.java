@@ -193,13 +193,12 @@ public abstract class StorageIntegrationTest {
         .withRegularName(REGULAR_NAME2));
 
     assertThat(storedSystemEntities, hasSize(3));
-    assertThat(storedSystemEntities, containsInAnyOrder(relationTypeMatchers.toArray(new RelationTypeMatcher[0])));
+    assertThat(storedSystemEntities, containsInAnyOrder(relationTypeMatchers.toArray(new RelationTypeMatcher[relationTypeMatchers.size()])));
   }
 
   private String addSystemEntity(String regularName, String inverseName) throws StorageException {
     RelationType systemEntityToStore1 = createRelationType(regularName, inverseName);
-    String id1 = instance.addSystemEntity(SYSTEM_ENTITY_TYPE, systemEntityToStore1);
-    return id1;
+    return instance.addSystemEntity(SYSTEM_ENTITY_TYPE, systemEntityToStore1);
   }
 
   @Test
@@ -968,13 +967,11 @@ public abstract class StorageIntegrationTest {
     relation.setTypeId(typeId);
     relation.setTypeType(RELATIONTYPE_TYPE_STRING);
 
-    String id = instance.addDomainEntity(PROJECT_RELATION_TYPE, relation, CHANGE_TO_SAVE);
-    return id;
+    return instance.addDomainEntity(PROJECT_RELATION_TYPE, relation, CHANGE_TO_SAVE);
   }
 
   private String addRelationType() throws StorageException {
-    String typeId = addSystemEntity(REGULAR_NAME, INVERSE_NAME);
-    return typeId;
+    return addSystemEntity(REGULAR_NAME, INVERSE_NAME);
   }
 
   @Test
