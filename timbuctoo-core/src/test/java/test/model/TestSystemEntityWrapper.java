@@ -27,6 +27,7 @@ import nl.knaw.huygens.timbuctoo.annotations.DBProperty;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
 import java.util.List;
 import java.util.Map;
@@ -65,6 +66,26 @@ public class TestSystemEntityWrapper extends SystemEntity {
   private String dbPropertyAnnotatedWithTypeVirtual;
 
   private String propertyWithAnnotatedGetter;
+
+
+  // Values used fo MongoProperties Test
+  private Boolean booleanObject;
+  private boolean booleanPrimitive;
+  private short shortValue;
+  private Short shortObject;
+  private int intPrimitive;
+  private Integer intObject;
+  private long longPrimitive;
+  private Long longObject;
+  private float floatPrimitive;
+  private Float floatObject;
+  private double doublePrimitive;
+  private Double doubleObject;
+  private char charPrimitive;
+  private Character charObject;
+  private String stringObject;
+  private Datable datableObject;
+
 
   public TestSystemEntityWrapper() {}
 
@@ -163,4 +184,131 @@ public class TestSystemEntityWrapper extends SystemEntity {
     TestSystemEntityWrapper.staticField = staticField;
   }
 
+  private short getShortValue() {
+    return shortValue;
+  }
+
+  private void setShortValue(short shortValue) {
+    this.shortValue = shortValue;
+  }
+
+  private Short getShortObject() {
+    return shortObject;
+  }
+
+  private void setShortObject(Short shortObject) {
+    this.shortObject = shortObject;
+  }
+
+  private Boolean getBooleanObject() {
+    return booleanObject;
+  }
+
+  private void setBooleanObject(Boolean booleanObject) {
+    this.booleanObject = booleanObject;
+  }
+
+  private boolean isBooleanPrimitive() {
+    return booleanPrimitive;
+  }
+
+  private void setBooleanPrimitive(boolean booleanPrimitive) {
+    this.booleanPrimitive = booleanPrimitive;
+  }
+
+  private int getIntPrimitive() {
+    return intPrimitive;
+  }
+
+  private void setIntPrimitive(int intPrimitive) {
+    this.intPrimitive = intPrimitive;
+  }
+
+  private Integer getIntObject() {
+    return intObject;
+  }
+
+  private void setIntObject(Integer intObject) {
+    this.intObject = intObject;
+  }
+
+  private long getLongPrimitive() {
+    return longPrimitive;
+  }
+
+  private void setLongPrimitive(long longPrimitive) {
+    this.longPrimitive = longPrimitive;
+  }
+
+  private Long getLongObject() {
+    return longObject;
+  }
+
+  private void setLongObject(Long longObject) {
+    this.longObject = longObject;
+  }
+
+  private float getFloatPrimitive() {
+    return floatPrimitive;
+  }
+
+  private void setFloatPrimitive(float floatPrimitive) {
+    this.floatPrimitive = floatPrimitive;
+  }
+
+  private Float getFloatObject() {
+    return floatObject;
+  }
+
+  private void setFloatObject(Float floatObject) {
+    this.floatObject = floatObject;
+  }
+
+  private double getDoublePrimitive() {
+    return doublePrimitive;
+  }
+
+  private void setDoublePrimitive(double doublePrimitive) {
+    this.doublePrimitive = doublePrimitive;
+  }
+
+  private Double getDoubleObject() {
+    return doubleObject;
+  }
+
+  private void setDoubleObject(Double doubleObject) {
+    this.doubleObject = doubleObject;
+  }
+
+  private char getCharPrimitive() {
+    return charPrimitive;
+  }
+
+  private void setCharPrimitive(char charPrimitive) {
+    this.charPrimitive = charPrimitive;
+  }
+
+  private Character getCharObject() {
+    return charObject;
+  }
+
+  private void setCharObject(Character charObject) {
+    this.charObject = charObject;
+  }
+
+  private String getStringObject() {
+    return stringObject;
+  }
+
+  private void setStringObject(String stringObject) {
+    this.stringObject = stringObject;
+  }
+
+  private Datable getDatableObject() {
+    return datableObject;
+  }
+
+  private void setDatableObject(Datable datableObject) {
+    this.datableObject = datableObject;
+  }
 }

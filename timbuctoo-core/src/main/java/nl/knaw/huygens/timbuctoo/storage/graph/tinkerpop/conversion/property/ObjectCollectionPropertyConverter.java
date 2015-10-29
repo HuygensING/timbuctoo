@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.facetedsearch.model.Facet;
+import nl.knaw.huygens.timbuctoo.storage.FacetDeserializer;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;

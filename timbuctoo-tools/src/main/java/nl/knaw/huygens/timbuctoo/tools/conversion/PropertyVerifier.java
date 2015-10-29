@@ -1,11 +1,12 @@
 package nl.knaw.huygens.timbuctoo.tools.conversion;
 
+import com.google.common.collect.Lists;
+import org.apache.commons.lang.builder.EqualsBuilder;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-
-import com.google.common.collect.Lists;
 
 public class PropertyVerifier {
   private List<Mismatch> misMatches;
@@ -21,7 +22,10 @@ public class PropertyVerifier {
   }
 
   protected boolean areEqual(String fieldName, Object oldValue, Object newValue) {
-    return Objects.equals(oldValue, newValue);
+    /* Do not remove the Object.equals. EqualsBuilder.reflectionEquals does not
+     * always recognize two equal Strings.
+     */
+    return Objects.equals(oldValue, newValue) || EqualsBuilder.reflectionEquals(oldValue, newValue);
   }
 
   private void addMismatch(String fieldName, Object oldValue, Object newValue) {
