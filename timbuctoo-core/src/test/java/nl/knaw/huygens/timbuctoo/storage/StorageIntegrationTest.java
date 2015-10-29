@@ -23,6 +23,7 @@ package nl.knaw.huygens.timbuctoo.storage;
  */
 
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Person.Gender;
@@ -85,7 +86,9 @@ public abstract class StorageIntegrationTest {
 
   // DomainEntity constants
   private static final Class<ProjectAPerson> DOMAIN_ENTITY_TYPE = ProjectAPerson.class;
+  public static final String DOMAIN_ENTITY_TYPE_NAME = TypeNames.getInternalName(DOMAIN_ENTITY_TYPE);
   private static final Class<Person> PRIMITIVE_DOMAIN_ENTITY_TYPE = Person.class;
+  public static final String PRIMITIVE_DOMAIN_ENTITY_TYPE_NAME = TypeNames.getInternalName(PRIMITIVE_DOMAIN_ENTITY_TYPE);
   private static final Datable BIRTH_DATE = new Datable("1800");
   private static final Datable BIRTH_DATE1 = new Datable("10001213");
   private static final Datable BIRTH_DATE2 = new Datable("18000312");
@@ -324,6 +327,18 @@ public abstract class StorageIntegrationTest {
         .withDeathDate(DEATH_DATE));
   }
 
+  @Test
+  public void addDomainEntityFillsTheVariationsOfTheEntity() throws Exception {
+    // setup
+    ProjectAPerson domainEntityToStore = createProjectAPerson(GENDER, PERSON_NAME, PROJECT_A_PERSON_PROPERTY, BIRTH_DATE, DEATH_DATE);
+
+    // action
+    String id = instance.addDomainEntity(DOMAIN_ENTITY_TYPE, domainEntityToStore, CHANGE_TO_SAVE);
+
+    // verify
+    assertThat(instance.getEntity(DOMAIN_ENTITY_TYPE, id).getVariations(), containsInAnyOrder(DOMAIN_ENTITY_TYPE_NAME, PRIMITIVE_DOMAIN_ENTITY_TYPE_NAME));
+  }
+
   @SuppressWarnings("unchecked")
   @Test
   public void getAllRevisionsReturnsAllTheRevisionsOfADomainEntity() throws StorageException {
@@ -464,7 +479,7 @@ public abstract class StorageIntegrationTest {
   // FIXME this is a hack with Mongo update and should eventually be extracted to a different method.
   // see TIM-156
   @Test
-  public void updateDomainEntityWithADifferentTypeAddsTheNewFields() throws Exception {
+  public void updateDomainEntityWithADifferentTypeAddsAVariant() throws Exception {
     // setup
     String id = addDefaultProjectAPerson();
 
@@ -484,7 +499,9 @@ public abstract class StorageIntegrationTest {
 
     assertThat(foundProjectBPerson.getNames(), contains(PERSON_NAME2));
     assertThat(foundProjectBPerson.getBirthDate(), is(BIRTH_DATE2));
-
+    String addedTypeName = TypeNames.getInternalName(ProjectBPerson.class);
+    assertThat(foundProjectBPerson.getVariations(), containsInAnyOrder(DOMAIN_ENTITY_TYPE_NAME,
+      PRIMITIVE_DOMAIN_ENTITY_TYPE_NAME, addedTypeName));
   }
 
   @Test

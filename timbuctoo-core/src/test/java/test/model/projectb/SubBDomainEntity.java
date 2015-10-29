@@ -22,6 +22,7 @@ package test.model.projectb;
  * #L%
  */
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import test.model.BaseDomainEntity;
 
 public class SubBDomainEntity extends BaseDomainEntity {
@@ -47,4 +48,8 @@ public class SubBDomainEntity extends BaseDomainEntity {
     valueb = value;
   }
 
+  @Override
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this);
+  }
 }

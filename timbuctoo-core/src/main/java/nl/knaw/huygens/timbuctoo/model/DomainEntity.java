@@ -65,7 +65,7 @@ public abstract class DomainEntity extends Entity {
   private final Map<String, Object> properties = Maps.newHashMap();
   @DBProperty(value = "relations", type = FieldType.VIRTUAL)
   private final Map<String, Set<RelationRef>> relations = Maps.newHashMap();
-  @DBProperty(value = DB_VARIATIONS_PROP_NAME, type = FieldType.VIRTUAL)
+  @DBProperty(value = DB_VARIATIONS_PROP_NAME, type = FieldType.ADMINISTRATIVE)
   private List<String> variations = Lists.newArrayList();
 
   public DomainEntity() {

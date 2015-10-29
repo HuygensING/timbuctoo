@@ -3,12 +3,19 @@ package nl.knaw.huygens.timbuctoo.storage.graph;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import test.model.projecta.SubADomainEntity;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
+
 public class SubADomainEntityBuilder {
   private String id;
   private int revision;
   private String pid;
   private Change modified;
   private String sharedValue;
+  private List<String> variations;
 
   private SubADomainEntityBuilder() {
 
@@ -25,6 +32,8 @@ public class SubADomainEntityBuilder {
     subADomainEntity.setRev(revision);
     subADomainEntity.setModified(modified);
     subADomainEntity.setSharedValue(sharedValue);
+    subADomainEntity.setVariations(variations);
+
 
     return subADomainEntity;
   }
@@ -54,4 +63,8 @@ public class SubADomainEntityBuilder {
     return this;
   }
 
+  public SubADomainEntityBuilder withVariations(Class<?>... types) {
+    this.variations = Arrays.stream(types).map(type -> getInternalName(type)).collect(Collectors.toList());
+    return this;
+  }
 }
