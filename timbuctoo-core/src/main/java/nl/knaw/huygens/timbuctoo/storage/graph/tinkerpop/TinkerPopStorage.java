@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.IS_LATEST;
@@ -601,7 +602,7 @@ public class TinkerPopStorage implements GraphStorage {
     Vertex vertex = lowLevelAPI.getLatestVertexById(type, id);
 
     if (vertex != null) {
-      List<String> typeNames = getTypes(vertex);
+      Set<String> typeNames = getTypes(vertex);
 
       for (String typeName : typeNames) {
         Class<? extends DomainEntity> domainEntityType = typeRegistry.getDomainEntityType(typeName);
