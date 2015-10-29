@@ -99,7 +99,7 @@ public class GraphLegacyStorageWrapper implements Storage {
   private <T extends DomainEntity> String addAdministrativeValues(Class<T> type, T entity) {
     removePIDFromEntity(entity); // to make sure no bogus PID is set to the entity
     entity.addVariation(type);
-    entity.addVariation(TypeRegistry.toBaseDomainEntity(type));
+    entity.addVariation(toBaseDomainEntity(type));
 
     return addGeneralAdministrativeValues(type, entity);
   }
@@ -149,19 +149,34 @@ public class GraphLegacyStorageWrapper implements Storage {
     updateAdministrativeValues(entity);
     if (isRelation(type)) {
       Class<? extends Relation> relationType = asRelation(type);
-      graphStorage.updateRelation(relationType, (Relation) entity, change);
+      Relation relation = (Relation) entity;
+
+      updateVariationsForRelations(relation);
+      graphStorage.updateRelation(relationType, relation, change);
       removePIDFromDatabase(type, entity.getId());
     } else {
       if (baseTypeExists(type, entity) && variantExists(type, entity)) {
+        updateVariations(type, entity);
         graphStorage.updateEntity(type, entity);
         removePIDFromDatabase(type, entity.getId());
       } else if (baseTypeExists(type, entity)) {
+        updateVariations(type, entity);
         graphStorage.addVariant(type, entity);
         removePIDFromDatabase(toBaseDomainEntity(type), entity.getId());
       } else {
         throw new UpdateException(String.format("%s with id %s does not exist.", type, entity.getId()));
       }
     }
+  }
+
+  private <T extends Relation> void updateVariationsForRelations(T entity) throws StorageException {
+    Relation prevEntity = graphStorage.getRelation(RELATION_TYPE, entity.getId());
+    entity.setVariations(prevEntity.getVariations());
+  }
+
+  private <T extends DomainEntity> void updateVariations(Class<T> type, T entity) throws StorageException {
+    DomainEntity prevEntity = graphStorage.getEntity(toBaseDomainEntity(type), entity.getId());
+    entity.setVariations(prevEntity.getVariations());
   }
 
   private <T extends DomainEntity> boolean variantExists(Class<T> type, T entity) {
@@ -235,7 +250,7 @@ public class GraphLegacyStorageWrapper implements Storage {
       return;
     }
     for (String id : ids) {
-      graphStorage.deleteDomainEntity(TypeRegistry.toBaseDomainEntity(type), id);
+      graphStorage.deleteDomainEntity(toBaseDomainEntity(type), id);
     }
   }
 
