@@ -151,16 +151,17 @@ public class GraphLegacyStorageWrapper implements Storage {
       Class<? extends Relation> relationType = asRelation(type);
       Relation relation = (Relation) entity;
 
-      updateVariationsForRelations(relation);
+      resetVariationsForRelation(relation);
       graphStorage.updateRelation(relationType, relation, change);
       removePIDFromDatabase(type, entity.getId());
     } else {
       if (baseTypeExists(type, entity) && variantExists(type, entity)) {
-        updateVariations(type, entity);
+        resetVariations(type, entity);
         graphStorage.updateEntity(type, entity);
         removePIDFromDatabase(type, entity.getId());
       } else if (baseTypeExists(type, entity)) {
-        updateVariations(type, entity);
+        resetVariations(type, entity);
+        entity.addVariation(type);
         graphStorage.addVariant(type, entity);
         removePIDFromDatabase(toBaseDomainEntity(type), entity.getId());
       } else {
@@ -169,12 +170,12 @@ public class GraphLegacyStorageWrapper implements Storage {
     }
   }
 
-  private <T extends Relation> void updateVariationsForRelations(T entity) throws StorageException {
+  private <T extends Relation> void resetVariationsForRelation(T entity) throws StorageException {
     Relation prevEntity = graphStorage.getRelation(RELATION_TYPE, entity.getId());
     entity.setVariations(prevEntity.getVariations());
   }
 
-  private <T extends DomainEntity> void updateVariations(Class<T> type, T entity) throws StorageException {
+  private <T extends DomainEntity> void resetVariations(Class<T> type, T entity) throws StorageException {
     DomainEntity prevEntity = graphStorage.getEntity(toBaseDomainEntity(type), entity.getId());
     entity.setVariations(prevEntity.getVariations());
   }

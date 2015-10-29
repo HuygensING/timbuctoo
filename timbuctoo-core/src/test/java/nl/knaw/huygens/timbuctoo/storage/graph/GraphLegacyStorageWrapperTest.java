@@ -11,13 +11,13 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import nl.knaw.huygens.timbuctoo.storage.UpdateException;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.InOrder;
 import test.model.BaseDomainEntity;
 import test.model.TestSystemEntityWrapper;
 import test.model.projecta.SubADomainEntity;
 import test.model.projecta.SubARelation;
+import test.model.projectb.SubBDomainEntity;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -39,7 +39,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyList;
@@ -193,7 +192,7 @@ public class GraphLegacyStorageWrapperTest {
   @Test
   public void getEntityOrDefaultVariationDelegatesToGraphStorageGetDefaultVariationIfTheVariantDoesNotExist() throws Exception {
     // setup
-    variantDoesNotExist();
+    variantDoesNotExist(DOMAIN_ENTITY_TYPE);
     SubADomainEntity entity = aDomainEntity().build();
     when(graphStorageMock.getDefaultVariation(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entity);
 
@@ -207,7 +206,7 @@ public class GraphLegacyStorageWrapperTest {
   @Test(expected = StorageException.class)
   public void getEntityOrDefaultVariationThrowsAStorageExceptionifGraphStorageGetDefaultVariationDoes() throws Exception {
     // setup
-    variantDoesNotExist();
+    variantDoesNotExist(DOMAIN_ENTITY_TYPE);
     when(graphStorageMock.getDefaultVariation(DOMAIN_ENTITY_TYPE, ID)).thenThrow(new StorageException());
 
     // action
@@ -430,9 +429,13 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   private void entityAndVariantExist() throws StorageException {
+    entityExists();
+    variantExists();
+  }
+
+  private void entityExists() throws StorageException {
     when(graphStorageMock.entityExists(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(true);
     when(graphStorageMock.getEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(aDomainEntity().withVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_TYPE).build());
-    variantExists();
   }
 
   @Test(expected = StorageException.class)
@@ -453,47 +456,48 @@ public class GraphLegacyStorageWrapperTest {
 
   }
 
-  @Ignore
   @Test
   public void updateDomainEntityAddsNewVariantWhenTheVariantDoesNotExist() throws Exception {
     // setup
     Change oldModified = new Change();
-    SubADomainEntity entity = aDomainEntity() //
-      .withId(ID) //
-      .withAPid() //
-      .withModified(oldModified)//
-      .withRev(FIRST_REVISION) //
-      .build();
-    entityAndVariantExist();
-    variantDoesNotExist();
+    SubBDomainEntity entity = new SubBDomainEntity();
+    entity.setId(ID);
+    entity.setRev(1);
+    entity.setModified(oldModified);
+
+    Class<SubBDomainEntity> typeToAdd = SubBDomainEntity.class;
+
+    entityExists();
+    variantDoesNotExist(typeToAdd);
 
     // action
-    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+    instance.updateDomainEntity(typeToAdd, entity, CHANGE);
 
     // verify
     InOrder inOrder = inOrder(graphStorageMock);
+
     inOrder.verify(graphStorageMock).addVariant(//
-      argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
-      argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
+      argThat(is(equalTo(typeToAdd))), //
+      argThat(likeDomainEntity(typeToAdd) //
         .withId(ID) //
         .withRevision(SECOND_REVISION) //
-        .withAModifiedValueNotEqualTo(oldModified)));
+        .withAModifiedValueNotEqualTo(oldModified)
+      .withVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_TYPE, typeToAdd)));
     inOrder.verify(graphStorageMock).removePropertyFromEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
 
-    fail("Make test more expressive");
   }
 
-  private void variantDoesNotExist() throws StorageException {
+  private void variantDoesNotExist(Class<? extends BaseDomainEntity> type) throws StorageException {
     when(graphStorageMock.entityExists(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(true);
-    when(graphStorageMock.getEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(aDomainEntity().withVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE).build());
-    when(graphStorageMock.entityExists(DOMAIN_ENTITY_TYPE, ID)).thenReturn(false);
+    when(graphStorageMock.getEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(aDomainEntity().withVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_TYPE).build());
+    when(graphStorageMock.entityExists(type, ID)).thenReturn(false);
   }
 
   @Test(expected = StorageException.class)
   public void updateDomainEntityThrowsAStorageExceptionWhenGraphStoragesAddNewVariantWhenTheVariantDoesNotExist() throws Exception {
     // setup
     SubADomainEntity entity = aDomainEntity().withId(ID).build();
-    variantDoesNotExist();
+    variantDoesNotExist(DOMAIN_ENTITY_TYPE);
 
     doThrow(StorageException.class).when(graphStorageMock).addVariant(DOMAIN_ENTITY_TYPE, entity);
 
