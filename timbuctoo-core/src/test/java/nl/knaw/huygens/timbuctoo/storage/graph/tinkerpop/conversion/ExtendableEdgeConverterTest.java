@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.Edge;
@@ -17,13 +19,18 @@ import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
 import nl.knaw.huygens.timbuctoo.storage.graph.NoSuchFieldException;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import test.model.BaseDomainEntity;
 import test.model.projecta.ProjectAPerson;
 import test.model.projecta.SubADomainEntity;
 import test.model.projecta.SubARelation;
 
+import java.util.Arrays;
 import java.util.List;
 
+import static java.util.stream.Collectors.toList;
+import static nl.knaw.huygens.hamcrest.ListContainsItemsInAnyOrderMatcher.containsInAnyOrder;
+import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
 import static nl.knaw.huygens.timbuctoo.model.Entity.DB_MOD_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.DB_REV_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.MODIFIED_PROPERTY_NAME;
@@ -35,6 +42,7 @@ import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexMockBuilde
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -44,7 +52,7 @@ import static org.mockito.Mockito.when;
 public class ExtendableEdgeConverterTest {
 
   private static final String NON_EXISTING_FIELD_NAME = "nonExistingFieldName";
-  private static final Class<Relation> PRIMITIVE_TYPE = Relation.class;
+  private static final Class<Relation> BASE_DOMAIN_ENTITY_TYPE = Relation.class;
   private static final Class<SubARelation> DOMAIN_ENTITY_TYPE = SubARelation.class;
   private static final String PROPERTY1_NAME = "property1Name";
   private static final String PROPERTY2_NAME = "property2Name";
@@ -137,21 +145,33 @@ public class ExtendableEdgeConverterTest {
   @Test
   public void addValuesToEdgeAddsTheTypeOfTheEdgeConverter() throws Exception {
     // setup 
-    ExtendableEdgeConverter<Relation> instance = createInstance(PRIMITIVE_TYPE, propertyConverters, entityInstantiatorMock);
+    ExtendableEdgeConverter<Relation> instance = createInstance(BASE_DOMAIN_ENTITY_TYPE, propertyConverters, entityInstantiatorMock);
 
     // action
     instance.addValuesToElement(edgeMock, entity);
 
-    verifyTypeIsAdded(edgeMock, PRIMITIVE_TYPE);
+    verifyTypeIsSet(edgeMock, BASE_DOMAIN_ENTITY_TYPE);
   }
 
-  private void verifyTypeIsAdded(Element elementMock, Class<? extends Entity> type) throws Exception {
-    List<String> types = Lists.newArrayList(TypeNames.getInternalName(type));
+  private void verifyTypeIsSet(Element elementMock, Class<? extends Entity>... types) throws Exception {
+    List<String> internalNames = Arrays.stream(types).map(type -> getInternalName(type)).collect(toList());
+
+
+    ArgumentCaptor<String> valueCaptor = ArgumentCaptor.forClass(String.class);
+    verify(elementMock).setProperty(argThat(is(ELEMENT_TYPES)), valueCaptor.capture());
+
+    List<String> value = new ObjectMapper().readValue(valueCaptor.getValue(), new TypeReference<List<String>>() {
+    });
+
+    assertThat(value, containsInAnyOrder(internalNames));
+  }
+
+  private String getTypesAsString(List<String> typeNames) throws JsonProcessingException {
 
     ObjectMapper objectMapper = new ObjectMapper();
-    String value = objectMapper.writeValueAsString(types);
+    String value = objectMapper.writeValueAsString(typeNames);
 
-    verify(elementMock).setProperty(ELEMENT_TYPES, value);
+    return value;
   }
 
   @Test(expected = ConversionException.class)
@@ -203,7 +223,7 @@ public class ExtendableEdgeConverterTest {
   @Test
   public void convertToSubTypeCreatesAnInstanceOfTheUsedTypeAndAddsThePropertyValuesOfTheTypeOfTheNodeConverter() throws Exception {
     // setup
-    ExtendableEdgeConverter<Relation> instance = createInstance(PRIMITIVE_TYPE, propertyConverters, entityInstantiatorMock);
+    ExtendableEdgeConverter<Relation> instance = createInstance(BASE_DOMAIN_ENTITY_TYPE, propertyConverters, entityInstantiatorMock);
 
     // action
     SubARelation actualEntity = instance.convertToSubType(DOMAIN_ENTITY_TYPE, edgeMock);
@@ -225,7 +245,7 @@ public class ExtendableEdgeConverterTest {
     // setup
 
     when(entityInstantiatorMock.createInstanceOf(DOMAIN_ENTITY_TYPE)).thenThrow(new InstantiationException());
-    ExtendableEdgeConverter<Relation> instance = createInstance(PRIMITIVE_TYPE, propertyConverters, entityInstantiatorMock);
+    ExtendableEdgeConverter<Relation> instance = createInstance(BASE_DOMAIN_ENTITY_TYPE, propertyConverters, entityInstantiatorMock);
 
     // action
     instance.convertToSubType(DOMAIN_ENTITY_TYPE, edgeMock);
@@ -236,7 +256,7 @@ public class ExtendableEdgeConverterTest {
     // setup
     doThrow(ConversionException.class).when(propertyConverter1).addValueToEntity(entity, edgeMock);
 
-    ExtendableEdgeConverter<Relation> instance = createInstance(PRIMITIVE_TYPE, propertyConverters, entityInstantiatorMock);
+    ExtendableEdgeConverter<Relation> instance = createInstance(BASE_DOMAIN_ENTITY_TYPE, propertyConverters, entityInstantiatorMock);
 
     // action
     SubARelation actualEntity = instance.convertToSubType(DOMAIN_ENTITY_TYPE, edgeMock);
@@ -308,6 +328,32 @@ public class ExtendableEdgeConverterTest {
 
     verify(modifiedConverterMock, times(0)).setPropertyOfElement(edgeMock, entity);
     verify(revConverterMock, times(0)).setPropertyOfElement(edgeMock, entity);
+  }
+
+  @Test
+  public void updateElementAddsEntityTypeIfItIsNotAddedYet() throws Exception {
+    // setup
+    String initialTypes = getTypesAsString(Lists.newArrayList(getInternalName(BASE_DOMAIN_ENTITY_TYPE)));
+    when(edgeMock.getProperty(ELEMENT_TYPES)).thenReturn(initialTypes);
+
+    // action
+    instance.addValuesToElement(edgeMock, entity);
+
+    // verify
+    verifyTypeIsSet(edgeMock, BASE_DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_TYPE);
+  }
+
+  @Test
+  public void updateElementDoesNotAddTheElementTypeWhenItIsAlreadyInElementTypes() throws Exception {
+    // setup
+    String initialTypes = getTypesAsString(Lists.newArrayList(getInternalName(BASE_DOMAIN_ENTITY_TYPE), getInternalName(DOMAIN_ENTITY_TYPE)));
+    when(edgeMock.getProperty(ELEMENT_TYPES)).thenReturn(initialTypes);
+
+    // action
+    instance.addValuesToElement(edgeMock, entity);
+
+    // verify
+    verifyTypeIsSet(edgeMock, BASE_DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_TYPE);
   }
 
   @Test(expected = ConversionException.class)

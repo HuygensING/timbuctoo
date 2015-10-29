@@ -2,8 +2,8 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.tinkerpop.blueprints.Element;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -16,8 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static nl.knaw.huygens.timbuctoo.model.Entity.MODIFIED_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
@@ -57,7 +57,7 @@ abstract class AbstractExtendableElementConverter<T extends Entity, E extends El
   private void addVariation(E element, Class<? extends Entity> variationType) {
     LOG.debug("add variation \"{}\"", variationType);
 
-    List<String> types = getTypesProperty(element);
+    Set<String> types = getTypesProperty(element);
 
     types.add(TypeNames.getInternalName(variationType));
 
@@ -65,7 +65,7 @@ abstract class AbstractExtendableElementConverter<T extends Entity, E extends El
 
   }
 
-  protected final void setTypesProperty(E element, List<String> types) {
+  protected final void setTypesProperty(E element, Collection<String> types) {
     try {
       element.setProperty(ELEMENT_TYPES, objectMapper.writeValueAsString(types));
     } catch (JsonProcessingException e) {
@@ -73,12 +73,12 @@ abstract class AbstractExtendableElementConverter<T extends Entity, E extends El
     }
   }
 
-  protected final List<String> getTypesProperty(E element) {
-    List<String> types = null;
+  protected final Set<String> getTypesProperty(E element) {
+    Set<String> types = null;
     if (element.getProperty(ELEMENT_TYPES) != null) {
       types = getTypes(element);
     } else {
-      types = Lists.newArrayList();
+      types = Sets.newHashSet();
     }
     return types;
   }

@@ -8,7 +8,7 @@ import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.VertexConverter;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 
 class ExtendableVertexConverter<T extends Entity> extends AbstractExtendableElementConverter<T, Vertex> implements VertexConverter<T> {
   ExtendableVertexConverter(Class<T> type, Collection<PropertyConverter> propertyConverters, EntityInstantiator entityInstantiator) {
@@ -27,7 +27,7 @@ class ExtendableVertexConverter<T extends Entity> extends AbstractExtendableElem
   }
 
   private void removeVariation(Vertex vertex) {
-    List<String> types = getTypesProperty(vertex);
+    Set<String> types = getTypesProperty(vertex);
 
     types.remove(TypeNames.getInternalName(type));
 

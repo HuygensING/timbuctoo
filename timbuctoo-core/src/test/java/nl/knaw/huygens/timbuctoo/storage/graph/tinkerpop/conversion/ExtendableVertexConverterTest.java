@@ -1,11 +1,11 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.conversion;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
@@ -13,11 +13,16 @@ import nl.knaw.huygens.timbuctoo.storage.graph.FieldType;
 import nl.knaw.huygens.timbuctoo.storage.graph.NoSuchFieldException;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import test.model.BaseDomainEntity;
 import test.model.projecta.SubADomainEntity;
 
+import java.util.Arrays;
 import java.util.List;
 
+import static java.util.stream.Collectors.toList;
+import static nl.knaw.huygens.hamcrest.ListContainsItemsInAnyOrderMatcher.containsInAnyOrder;
+import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
 import static nl.knaw.huygens.timbuctoo.model.Entity.DB_MOD_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.DB_REV_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.MODIFIED_PROPERTY_NAME;
@@ -28,6 +33,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -105,22 +111,25 @@ public class ExtendableVertexConverterTest {
 
     // verify
     verifyTypeIsSet(vertexMock, BASE_DOMAIN_ENTITY_TYPE);
-
   }
 
-  private void verifyTypeIsSet(Element elementMock, Class<? extends Entity> type) throws Exception {
-    String internalName = TypeNames.getInternalName(type);
+  private void verifyTypeIsSet(Element elementMock, Class<? extends Entity>... types) throws Exception {
+    List<String> internalNames = Arrays.stream(types).map(type -> getInternalName(type)).collect(toList());
 
-    String value = getTypesAsString(elementMock, internalName);
 
-    verify(elementMock).setProperty(ELEMENT_TYPES, value);
+    ArgumentCaptor<String> valueCaptor = ArgumentCaptor.forClass(String.class);
+    verify(elementMock).setProperty(argThat(is(ELEMENT_TYPES)), valueCaptor.capture());
+
+    List<String> value = new ObjectMapper().readValue(valueCaptor.getValue(), new TypeReference<List<String>>() {
+    });
+
+    assertThat(value, containsInAnyOrder(internalNames));
   }
 
-  private String getTypesAsString(Element elementMock, String... internalNames) throws JsonProcessingException {
-    List<String> types = Lists.newArrayList(internalNames);
+  private String getTypesAsString(List<String> typeNames) throws JsonProcessingException {
 
     ObjectMapper objectMapper = new ObjectMapper();
-    String value = objectMapper.writeValueAsString(types);
+    String value = objectMapper.writeValueAsString(typeNames);
 
     return value;
   }
@@ -265,9 +274,9 @@ public class ExtendableVertexConverterTest {
   @Test
   public void removeVariantRemovesTheTypeFromTheTypesProperty() throws Exception {
     // setup
-    String entityName = TypeNames.getInternalName(DOMAIN_ENTITY_TYPE);
-    String baseEntityName = TypeNames.getInternalName(BASE_DOMAIN_ENTITY_TYPE);
-    when(vertexMock.getProperty(ELEMENT_TYPES)).thenReturn(getTypesAsString(vertexMock, entityName, baseEntityName));
+    String entityName = getInternalName(DOMAIN_ENTITY_TYPE);
+    String baseEntityName = getInternalName(BASE_DOMAIN_ENTITY_TYPE);
+    when(vertexMock.getProperty(ELEMENT_TYPES)).thenReturn(getTypesAsString(Lists.newArrayList(entityName, baseEntityName)));
 
     instance = createInstance(DOMAIN_ENTITY_TYPE, propertyConverters);
 
@@ -300,7 +309,7 @@ public class ExtendableVertexConverterTest {
   }
 
   @Test
-  public void updateVertexSetsTheValuesOfTheNonAdministrativeFields() throws Exception {
+  public void updateElementSetsTheValuesOfTheNonAdministrativeFields() throws Exception {
 
     // action
     instance.updateElement(vertexMock, entity);
@@ -311,6 +320,32 @@ public class ExtendableVertexConverterTest {
 
     verify(modifiedConverterMock, never()).setPropertyOfElement(vertexMock, entity);
     verify(revConverterMock, never()).setPropertyOfElement(vertexMock, entity);
+  }
+
+  @Test
+  public void updateElementAddsEntityTypeIfItIsNotAddedYet() throws Exception {
+    // setup
+    String initialTypes = getTypesAsString(Lists.newArrayList(getInternalName(BASE_DOMAIN_ENTITY_TYPE)));
+    when(vertexMock.getProperty(ELEMENT_TYPES)).thenReturn(initialTypes);
+
+    // action
+    instance.addValuesToElement(vertexMock, entity);
+
+    // verify
+    verifyTypeIsSet(vertexMock, BASE_DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_TYPE);
+  }
+
+  @Test
+  public void updateElementDoesNotAddTheElementTypeWhenItIsAlreadyInElementTypes() throws Exception {
+    // setup
+    String initialTypes = getTypesAsString(Lists.newArrayList(getInternalName(BASE_DOMAIN_ENTITY_TYPE), getInternalName(DOMAIN_ENTITY_TYPE)));
+    when(vertexMock.getProperty(ELEMENT_TYPES)).thenReturn(initialTypes);
+
+    // action
+    instance.addValuesToElement(vertexMock, entity);
+
+    // verify
+    verifyTypeIsSet(vertexMock, BASE_DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_TYPE);
   }
 
   @Test(expected = ConversionException.class)

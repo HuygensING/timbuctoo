@@ -10,7 +10,7 @@ import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
 import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.EdgeConverter;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 
 import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.isPrimitiveDomainEntity;
 import static nl.knaw.huygens.timbuctoo.model.Entity.DB_ID_PROP_NAME;
@@ -40,7 +40,7 @@ public class ExtendableEdgeConverter<T extends Relation> extends AbstractExtenda
   }
 
   private String getPrimitiveType(Vertex vertex) {
-    List<String> types = getTypes(vertex);
+    Set<String> types = getTypes(vertex);
 
     for (String type : types) {
       Class<? extends DomainEntity> entity = typeRegistry.getDomainEntityType(type);
