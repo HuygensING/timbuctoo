@@ -35,7 +35,6 @@ import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import test.model.TestSystemEntityWrapper;
 import test.model.projecta.ProjectAPerson;
@@ -479,7 +478,6 @@ public abstract class StorageIntegrationTest {
 
   // FIXME this is a hack with Mongo update and should eventually be extracted to a different method.
   // see TIM-156
-  @Ignore
   @Test
   public void updateDomainEntityWithADifferentTypeAddsAVariant() throws Exception {
     // setup
@@ -636,7 +634,6 @@ public abstract class StorageIntegrationTest {
         .withoutPID());
   }
 
-  @Ignore
   @Test
   public void declineRelationsOfEntityOnlyAffectsRelationsWithThatContainTheRequestedVariant() throws Exception {
     // setup
