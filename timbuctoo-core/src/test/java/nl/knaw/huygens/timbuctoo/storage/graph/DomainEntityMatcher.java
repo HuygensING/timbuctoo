@@ -10,13 +10,15 @@ import nl.knaw.huygens.timbuctoo.model.util.Change;
 import java.util.List;
 
 import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
+import static nl.knaw.huygens.hamcrest.ListContainsItemsInAnyOrderMatcher.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
 public class DomainEntityMatcher<T extends DomainEntity> extends CompositeMatcher<T> {
-  private DomainEntityMatcher() {}
+  private DomainEntityMatcher() {
+  }
 
   public static <U extends DomainEntity> DomainEntityMatcher<U> likeDomainEntity(Class<U> type) {
     return new DomainEntityMatcher<U>();
@@ -101,12 +103,17 @@ public class DomainEntityMatcher<T extends DomainEntity> extends CompositeMatche
     return this;
   }
 
-  public DomainEntityMatcher<T> withVariations(Class<?> type, Class<?> type2) {
+  public DomainEntityMatcher<T> withVariations(Class<?> type, Class<?>... types) {
+    List<String> variations = Lists.newArrayList(getInternalName(type));
 
-    String variation1 = getInternalName(type);
-    String variation2 = getInternalName(type2);
+    if (types != null) {
+      for (Class<?> typeInTypes : types) {
+        variations.add(getInternalName(typeInTypes));
+      }
+    }
 
-    addMatcher(new PropertyEqualityMatcher<T, List<String>>("variations", Lists.newArrayList(variation1, variation2)) {
+    this.addMatcher(new PropertyMatcher<T, List<String>>("variations", containsInAnyOrder(variations)) {
+
       @Override
       protected List<String> getItemValue(T item) {
         return item.getVariations();
@@ -114,4 +121,6 @@ public class DomainEntityMatcher<T extends DomainEntity> extends CompositeMatche
     });
     return this;
   }
+
+
 }
