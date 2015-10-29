@@ -23,12 +23,17 @@ public class ListContainsItemsInAnyOrderMatcher<T> extends TypeSafeMatcher<List<
 
   @Override
   public void describeTo(Description description) {
+    description.appendText("Contains in any order ").appendValue(variations);
+  }
+
+  @Override
+  protected void describeMismatchSafely(List<T> item, Description mismatchDescription) {
     if (nonMatchingItems != null) {
-      description.appendText("No matchers found for ");
-      description.appendText(Joiner.on(", ").join(nonMatchingItems));
+      mismatchDescription.appendText("No matchers found for ");
+      mismatchDescription.appendText(Joiner.on(", ").join(nonMatchingItems));
     } else {
-      description.appendText("Extra items found ");
-      description.appendText(Joiner.on(", ").join(extraFound));
+      mismatchDescription.appendText("Extra items found ");
+      mismatchDescription.appendText(Joiner.on(", ").join(extraFound));
     }
   }
 
