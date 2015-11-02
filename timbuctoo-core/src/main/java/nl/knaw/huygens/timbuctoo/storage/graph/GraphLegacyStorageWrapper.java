@@ -273,7 +273,7 @@ public class GraphLegacyStorageWrapper implements Storage {
     }
 
     removePIDFromDatabase(type, id);
-    updateAdministrativeValues(entity, Change.newInternalInstance());
+    updateAdministrativeValues(entity, change);
 
     graphStorage.deleteVariant(entity);
   }

@@ -482,7 +482,7 @@ public class GraphLegacyStorageWrapperTest {
         .withId(ID) //
         .withRevision(SECOND_REVISION) //
         .withAModifiedValueNotEqualTo(oldModified)
-      .withVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_TYPE, typeToAdd)));
+        .withVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_TYPE, typeToAdd)));
     inOrder.verify(graphStorageMock).removePropertyFromEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
 
   }
@@ -597,6 +597,7 @@ public class GraphLegacyStorageWrapperTest {
     verifyZeroInteractions(graphStorageMock);
   }
 
+
   @Test
   public void deleteVariationDelegatesToGraphStorage() throws Exception {
     // setup
@@ -620,6 +621,28 @@ public class GraphLegacyStorageWrapperTest {
         .withId(ID) //
         .withRevision(SECOND_REVISION) //
         .withAModifiedValueNotEqualTo(oldModified)));
+  }
+
+  @Test
+  public void deleteVariationManagesTheLifeCylce() throws Exception {
+    Change oldModified = new Change();
+    SubADomainEntity entity = aDomainEntity() //
+      .withId(ID) //
+      .withAPid() //
+      .withModified(oldModified)//
+      .withRev(FIRST_REVISION) //
+      .build();
+    when(graphStorageMock.getEntity(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entity);
+
+    // action
+    instance.deleteVariation(DOMAIN_ENTITY_TYPE, ID, CHANGE);
+
+    // verify
+    verify(graphStorageMock).deleteVariant(argThat(//
+      likeDomainEntity(DOMAIN_ENTITY_TYPE) //
+        .withId(ID) //
+        .withRevision(SECOND_REVISION) //
+        .withModified(CHANGE)));
   }
 
   @Test(expected = StorageException.class)
