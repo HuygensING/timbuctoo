@@ -213,7 +213,7 @@ public class Repository {
       EntityMapper mapper = entityMappers.getEntityMapper(type);
       @SuppressWarnings("unchecked")
       Class<? extends Relation> relation = (Class<? extends Relation>) mapper.map(Relation.class);
-      storage.declineRelationsOfEntity(relation, id);
+      storage.declineRelationsOfEntity(relation, id, change);
       return storage.getRelationIds(Lists.newArrayList(id));
     }
   }

@@ -66,7 +66,7 @@ public class GraphLegacyStorageWrapperTest {
   private static final int FIRST_REVISION = 1;
   private static final int SECOND_REVISION = 2;
   private static final String ID = "id";
-  private static final Change CHANGE = new Change();
+  private static final Change CHANGE = new Change("user", "vre");
   private static final String PID_VALUE = "pid";
   private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
   private static final Class<SubARelation> RELATION_TYPE = SubARelation.class;
@@ -122,8 +122,8 @@ public class GraphLegacyStorageWrapperTest {
       argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE)//
         .withoutAPID()//
         .withId(ID) //
-        .withACreatedValue() //
-        .withAModifiedValue() //
+        .withCreated(CHANGE) //
+        .withModified(CHANGE) //
         .withRevision(FIRST_REVISION) //
         .withVariations(DOMAIN_ENTITY_TYPE, PRIMITIVE_DOMAIN_ENTITY_TYPE)), //
       argThat(is(CHANGE)));
@@ -404,7 +404,7 @@ public class GraphLegacyStorageWrapperTest {
         .withId(ID) //
         .withRevision(SECOND_REVISION) //
         .withVariations(DOMAIN_ENTITY_TYPE, PRIMITIVE_DOMAIN_ENTITY_TYPE)
-        .withAModifiedValueNotEqualTo(oldModified)));
+        .withModified(CHANGE)));
   }
 
   @Test
@@ -439,7 +439,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test(expected = StorageException.class)
-  public void updateDomainEntityDoesNotRemoveThePIDAndReThrowsAStorageExceptionOfTheDelegate() throws Exception {
+  public void updateDomainEntityDoesNotRemoveThePIDAndRethrowsAStorageExceptionOfTheDelegate() throws Exception {
     // setup
     SubADomainEntity entity = aDomainEntity().withId(ID).build();
     entityAndVariantExist();
@@ -482,7 +482,7 @@ public class GraphLegacyStorageWrapperTest {
         .withId(ID) //
         .withRevision(SECOND_REVISION) //
         .withAModifiedValueNotEqualTo(oldModified)
-      .withVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_TYPE, typeToAdd)));
+        .withVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_TYPE, typeToAdd)));
     inOrder.verify(graphStorageMock).removePropertyFromEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
 
   }
@@ -597,6 +597,7 @@ public class GraphLegacyStorageWrapperTest {
     verifyZeroInteractions(graphStorageMock);
   }
 
+
   @Test
   public void deleteVariationDelegatesToGraphStorage() throws Exception {
     // setup
@@ -620,6 +621,28 @@ public class GraphLegacyStorageWrapperTest {
         .withId(ID) //
         .withRevision(SECOND_REVISION) //
         .withAModifiedValueNotEqualTo(oldModified)));
+  }
+
+  @Test
+  public void deleteVariationManagesTheLifeCylce() throws Exception {
+    Change oldModified = new Change();
+    SubADomainEntity entity = aDomainEntity() //
+      .withId(ID) //
+      .withAPid() //
+      .withModified(oldModified)//
+      .withRev(FIRST_REVISION) //
+      .build();
+    when(graphStorageMock.getEntity(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entity);
+
+    // action
+    instance.deleteVariation(DOMAIN_ENTITY_TYPE, ID, CHANGE);
+
+    // verify
+    verify(graphStorageMock).deleteVariant(argThat(//
+      likeDomainEntity(DOMAIN_ENTITY_TYPE) //
+        .withId(ID) //
+        .withRevision(SECOND_REVISION) //
+        .withModified(CHANGE)));
   }
 
   @Test(expected = StorageException.class)
@@ -781,8 +804,8 @@ public class GraphLegacyStorageWrapperTest {
       argThat(is(equalTo(RELATION_TYPE))), //
       argThat(likeDomainEntity(RELATION_TYPE)//
         .withId(ID) //
-        .withACreatedValue() //
-        .withAModifiedValue() //
+        .withCreated(CHANGE) //
+        .withModified(CHANGE) //
         .withRevision(FIRST_REVISION)//
         .withoutAPID() //
         .withVariations(RELATION_TYPE, PRIMITIVE_RELATION_TYPE)), //
@@ -876,7 +899,7 @@ public class GraphLegacyStorageWrapperTest {
       argThat(is(equalTo(RELATION_TYPE))), //
       argThat(likeDomainEntity(RELATION_TYPE) //
         .withId(ID) //
-        .withAModifiedValueNotEqualTo(oldModified) //
+        .withModified(CHANGE)
         .withRevision(SECOND_REVISION)
         .withVariations(RELATION_TYPE, PRIMITIVE_RELATION_TYPE)), //
       argThat(is(CHANGE)));
@@ -936,18 +959,18 @@ public class GraphLegacyStorageWrapperTest {
     relationExists(true, relId2);
 
     // action
-    instance.declineRelationsOfEntity(RELATION_TYPE, ID);
+    instance.declineRelationsOfEntity(RELATION_TYPE, ID, CHANGE);
 
     // verify
-    verifyRelationIsDeclined(relId1);
-    verifyRelationIsDeclined(relId2);
+    verifyRelationIsDeclined(relId1, CHANGE);
+    verifyRelationIsDeclined(relId2, CHANGE);
   }
 
-  private void verifyRelationIsDeclined(String relId) throws NoSuchEntityException, StorageException {
+  private void verifyRelationIsDeclined(String relId, Change change) throws NoSuchEntityException, StorageException {
     InOrder inOrder = inOrder(graphStorageMock);
     inOrder.verify(graphStorageMock).updateRelation( //
       argThat(equalTo(RELATION_TYPE)), //
-      argThat(likeRelation().withId(relId).isAccepted(false)), //
+      argThat(likeRelation().withId(relId).isAccepted(false).withModified(change)), //
       any(Change.class));
     inOrder.verify(graphStorageMock).removePropertyFromRelation(RELATION_TYPE, relId, PID_FIELD_NAME);
   }
@@ -972,7 +995,7 @@ public class GraphLegacyStorageWrapperTest {
       any(Change.class));
 
     // action
-    instance.declineRelationsOfEntity(RELATION_TYPE, ID);
+    instance.declineRelationsOfEntity(RELATION_TYPE, ID, Change.newInternalInstance());
 
   }
 
@@ -982,13 +1005,13 @@ public class GraphLegacyStorageWrapperTest {
     when(graphStorageMock.getRelationsByEntityId(RELATION_TYPE, ID)).thenThrow(new StorageException());
 
     // action
-    instance.declineRelationsOfEntity(RELATION_TYPE, ID);
+    instance.declineRelationsOfEntity(RELATION_TYPE, ID, Change.newInternalInstance());
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void declineRelationsOfEntityThrowsAnIllegalArgumentExceptionWhenTheTypeIsAPrimitive() throws Exception {
     // action
-    instance.declineRelationsOfEntity(PRIMITIVE_RELATION_TYPE, ID);
+    instance.declineRelationsOfEntity(PRIMITIVE_RELATION_TYPE, ID, Change.newInternalInstance());
   }
 
   @Test

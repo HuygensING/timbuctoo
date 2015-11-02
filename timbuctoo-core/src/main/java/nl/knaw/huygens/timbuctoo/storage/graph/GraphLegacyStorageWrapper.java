@@ -71,14 +71,14 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws StorageException {
-    String id = addGeneralAdministrativeValues(type, entity);
+    String id = addGeneralAdministrativeValues(type, entity, Change.newInternalInstance());
     graphStorage.addSystemEntity(type, entity);
     return id;
   }
 
   @Override
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
-    String id = addAdministrativeValues(type, entity);
+    String id = addAdministrativeValues(type, entity, change);
 
     if (isRelation(type)) {
       graphStorage.addRelation(asRelation(type), (Relation) entity, change);
@@ -93,15 +93,16 @@ public class GraphLegacyStorageWrapper implements Storage {
    * Adds all the administrative values for DomainEntities.
    * @param type the type of the DomainEntity
    * @param entity the entity to add the values to
+   * @param change
    * @param <T> the generic of the type
    * @return the generated id
    */
-  private <T extends DomainEntity> String addAdministrativeValues(Class<T> type, T entity) {
+  private <T extends DomainEntity> String addAdministrativeValues(Class<T> type, T entity, Change change) {
     removePIDFromEntity(entity); // to make sure no bogus PID is set to the entity
     entity.addVariation(type);
     entity.addVariation(toBaseDomainEntity(type));
 
-    return addGeneralAdministrativeValues(type, entity);
+    return addGeneralAdministrativeValues(type, entity, change);
   }
 
   /**
@@ -109,12 +110,12 @@ public class GraphLegacyStorageWrapper implements Storage {
    *
    * @param type   the type to generate the id for
    * @param entity the entity to add the values to
+   * @param change
    * @param <T> the generic of the type
    * @return the generated id
    */
-  private <T extends Entity> String addGeneralAdministrativeValues(Class<T> type, T entity) {
+  private <T extends Entity> String addGeneralAdministrativeValues(Class<T> type, T entity, Change change) {
     String id = idGenerator.nextIdFor(type);
-    Change change = Change.newInternalInstance();
 
     entity.setCreated(change);
     entity.setModified(change);
@@ -128,8 +129,8 @@ public class GraphLegacyStorageWrapper implements Storage {
     entity.setPid(null);
   }
 
-  private <T extends Entity> void updateAdministrativeValues(T entity) {
-    entity.setModified(Change.newInternalInstance());
+  private <T extends Entity> void updateAdministrativeValues(T entity, Change modified) {
+    entity.setModified(modified);
     updateRevision(entity);
   }
 
@@ -140,13 +141,13 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws StorageException {
-    updateAdministrativeValues(entity);
+    updateAdministrativeValues(entity, Change.newInternalInstance());
     graphStorage.updateEntity(type, entity);
   }
 
   @Override
   public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
-    updateAdministrativeValues(entity);
+    updateAdministrativeValues(entity, change);
     if (isRelation(type)) {
       Class<? extends Relation> relationType = asRelation(type);
       Relation relation = (Relation) entity;
@@ -272,7 +273,7 @@ public class GraphLegacyStorageWrapper implements Storage {
     }
 
     removePIDFromDatabase(type, id);
-    updateAdministrativeValues(entity);
+    updateAdministrativeValues(entity, change);
 
     graphStorage.deleteVariant(entity);
   }
@@ -303,7 +304,7 @@ public class GraphLegacyStorageWrapper implements Storage {
   }
 
   @Override
-  public <T extends Relation> void declineRelationsOfEntity(Class<T> type, String id) throws IllegalArgumentException, StorageException {
+  public <T extends Relation> void declineRelationsOfEntity(Class<T> type, String id, Change change) throws IllegalArgumentException, StorageException {
     if (TypeRegistry.isPrimitiveDomainEntity(type)) {
       throw new IllegalArgumentException("Use deleteRelation for removing primitive relation.");
     }
@@ -315,14 +316,14 @@ public class GraphLegacyStorageWrapper implements Storage {
        * In this case we want to decline the relations the project variant of the is available.
        */
       if (entityExists(type, relation.getId())) {
-        declineRelation(type, relation);
+        declineRelation(type, relation, change);
       }
     }
   }
 
-  private <T extends Relation> void declineRelation(Class<T> type, T relation) throws StorageException {
+  private <T extends Relation> void declineRelation(Class<T> type, T relation, Change change) throws StorageException {
     relation.setAccepted(false);
-    this.updateDomainEntity(type, relation, Change.newInternalInstance());
+    this.updateDomainEntity(type, relation, change);
   }
 
   @Override
