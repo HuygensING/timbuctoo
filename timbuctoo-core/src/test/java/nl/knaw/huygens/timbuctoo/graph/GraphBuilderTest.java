@@ -2,9 +2,7 @@ package nl.knaw.huygens.timbuctoo.graph;
 
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
@@ -15,56 +13,78 @@ import test.model.projecta.ProjectADocument;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 
 public class GraphBuilderTest {
 
-  private Repository initializeRepository() throws Exception {
+  public static final String REPLACES_TYPE_ID = "replacesRel";
+  public static final String REPLACES_TYPE_NAME = "replacesType";
+  public static final String TRANSLATION_TYPE_ID = "translationRel";
+  public static final String TRANSLATION_TYPE_NAME = "translatesType";
+  public static final String CRITIQUE_TYPE_ID = "critiqueRel";
+  public static final String CRITIQUES_TYPE_NAME = "critiquesType";
+  public static final String START_DOC_ID = "startDoc";
+  public static final String PREV_VERSION_DOC_ID = "prevVersion";
+  public static final String TRANSLATION_DOC_ID = "translation";
+  public static final String CRITIQUE_DOC_ID = "critique";
+  public static final String REPLACES_INSTANCE_ID = "replaces";
+  public static final String TRANSLATES_INSTANCE_ID = "translates";
+  public static final String CRITIQUES_INSTANCE_ID = "critiques";
+
+  private class TestFixture {
+    public GraphBuilder builder;
+    public ProjectADocument startDoc;
+  }
+
+  private TestFixture initializeRepository() throws Exception {
     //Our domain:
     //Documents can have previousVersions
     RelationType replacesRel = RelationTypeBuilder.newInstance()
-      .withId("replacesRel")
+      .withId(REPLACES_TYPE_ID)
       .withSourceType(ProjectADocument.class)
       .withTargetType(ProjectADocument.class)
-      .withRegularName("replacesType")
+      .withRegularName(REPLACES_TYPE_NAME)
       .build();
     //... translations
     RelationType translationRel = RelationTypeBuilder.newInstance()
-      .withId("translationRel")
+      .withId(TRANSLATION_TYPE_ID)
       .withSourceType(ProjectADocument.class)
       .withTargetType(ProjectADocument.class)
-      .withRegularName("translatesType")
+      .withRegularName(TRANSLATION_TYPE_NAME)
       .build();
     //... and critiques
     RelationType critiqueRel = RelationTypeBuilder.newInstance()
-      .withId("critiqueRel")
+      .withId(CRITIQUE_TYPE_ID)
       .withSourceType(ProjectADocument.class)
       .withTargetType(ProjectADocument.class)
-      .withRegularName("critiquesType")
+      .withRegularName(CRITIQUES_TYPE_NAME)
       .build();
     //There exists a few documents
-    ProjectADocument startDoc = new ProjectADocument("startDoc");
-    ProjectADocument prevVersion = new ProjectADocument("prevVersion");
-    ProjectADocument translation = new ProjectADocument("translation");
-    ProjectADocument critique = new ProjectADocument("critique");
+    ProjectADocument startDoc = new ProjectADocument(START_DOC_ID);
+    ProjectADocument prevVersion = new ProjectADocument(PREV_VERSION_DOC_ID);
+    ProjectADocument translation = new ProjectADocument(TRANSLATION_DOC_ID);
+    ProjectADocument critique = new ProjectADocument(CRITIQUE_DOC_ID);
     //The startDoc has 1 relation to all the other docs
     List<Relation> relations = Lists.newArrayList(
       RelationBuilder.newInstance(Relation.class)
-        .withId("replaces")
+        .withId(REPLACES_INSTANCE_ID)
         .withRelationType(replacesRel)
         .withSource(startDoc)
         .withTarget(prevVersion)
         .build(),
       RelationBuilder.newInstance(Relation.class)
-        .withId("translates")
+        .withId(TRANSLATES_INSTANCE_ID)
         .withRelationType(translationRel)
         .withSource(translation)
         .withTarget(startDoc)
         .build(),
       RelationBuilder.newInstance(Relation.class)
-        .withId("critiques")
+        .withId(CRITIQUES_INSTANCE_ID)
         .withRelationType(critiqueRel)
         .withSource(critique)
         .withTarget(startDoc)
@@ -82,53 +102,79 @@ public class GraphBuilderTest {
     Mockito.when(repo.getTypeRegistry()).thenReturn(registry);
 
     //when the code asks for an entity the repo should return it
-    Mockito.when(repo.getEntityOrDefaultVariation(any(), eq("startDoc"))).thenReturn(startDoc);
-    Mockito.when(repo.getEntityOrDefaultVariation(any(), eq("prevVersion"))).thenReturn(prevVersion);
-    Mockito.when(repo.getEntityOrDefaultVariation(any(), eq("translation"))).thenReturn(translation);
-    Mockito.when(repo.getEntityOrDefaultVariation(any(), eq("critique"))).thenReturn(critique);
+    Mockito.when(repo.getEntityOrDefaultVariation(any(), eq(START_DOC_ID))).thenReturn(startDoc);
+    Mockito.when(repo.getEntityOrDefaultVariation(any(), eq(PREV_VERSION_DOC_ID))).thenReturn(prevVersion);
+    Mockito.when(repo.getEntityOrDefaultVariation(any(), eq(TRANSLATION_DOC_ID))).thenReturn(translation);
+    Mockito.when(repo.getEntityOrDefaultVariation(any(), eq(CRITIQUE_DOC_ID))).thenReturn(critique);
 
     //when the code asks the repo for the relations the repo return the above list for startDoc and an empty list otherwise
-    Mockito.when(repo.getRelationsByEntityId(eq("startDoc"), anyInt())).thenReturn(relations);
+    Mockito.when(repo.getRelationsByEntityId(eq(START_DOC_ID), anyInt())).thenReturn(relations);
 //    Mockito.when(repo.getRelationsByEntityId(anyString(), anyInt())).thenReturn(Lists.newArrayList());
 
     //when the code asks for the type given a relation id we manually make the repo return the right one
-    Mockito.when(repo.getRelationTypeById("replacesRel", true)).thenReturn(replacesRel);
-    Mockito.when(repo.getRelationTypeById("translationRel", true)).thenReturn(translationRel);
-    Mockito.when(repo.getRelationTypeById("critiqueRel", true)).thenReturn(critiqueRel);
+    Mockito.when(repo.getRelationTypeById(REPLACES_TYPE_ID, true)).thenReturn(replacesRel);
+    Mockito.when(repo.getRelationTypeById(TRANSLATION_TYPE_ID, true)).thenReturn(translationRel);
+    Mockito.when(repo.getRelationTypeById(CRITIQUE_TYPE_ID, true)).thenReturn(critiqueRel);
 
-    return repo;
+    TestFixture result = new TestFixture();
+    result.startDoc = startDoc;
+    result.builder = new GraphBuilder(repo);
+    return result;
   }
 
   @Test
   public void aCallWithoutTypesShouldReturnAllTypes() throws Exception {
-    Repository repo = initializeRepository();
-    ProjectADocument startDoc = repo.getEntityOrDefaultVariation(ProjectADocument.class, "startDoc");
+    //setup
+    TestFixture fixture = initializeRepository();
+    GraphBuilder b = fixture.builder;
+    ProjectADocument startDoc = fixture.startDoc;
 
-    GraphBuilder b = new GraphBuilder(repo);
+    //action
     b.addEntity(startDoc, 1, null);
-    D3Graph g = b.getGraph();
-    assertEquals(4, g.nodeCount());
+
+    //verify
+    assertThat(b.getGraph().nodeCount(), is(4));
   }
 
   @Test
   public void aCallWithEmptyTypeListShouldReturnAllTypes() throws Exception {
-    Repository repo = initializeRepository();
-    ProjectADocument startDoc = repo.getEntityOrDefaultVariation(ProjectADocument.class, "startDoc");
+    //setup
+    TestFixture fixture = initializeRepository();
+    GraphBuilder b = fixture.builder;
+    ProjectADocument startDoc = fixture.startDoc;
 
-    GraphBuilder b = new GraphBuilder(repo);
-    b.addEntity(startDoc, 1, null);
-    D3Graph g = b.getGraph();
-    assertEquals(4, g.nodeCount());
+    //action
+    b.addEntity(startDoc, 1, Lists.newArrayList());
+
+    //verify
+    assertThat(b.getGraph().nodeCount(), is(4));
   }
 
   @Test
-  public void aCallWithTypeListShouldReturnOnlyThoseTypes() throws Exception {
-    Repository repo = initializeRepository();
-    ProjectADocument startDoc = repo.getEntityOrDefaultVariation(ProjectADocument.class, "startDoc");
+  public void aCallWithOneTypeInTheListShouldReturnOnlyThoseTypes() throws Exception {
+    //setup
+    TestFixture fixture = initializeRepository();
+    GraphBuilder b = fixture.builder;
+    ProjectADocument startDoc = fixture.startDoc;
 
-    GraphBuilder b = new GraphBuilder(repo);
-    b.addEntity(startDoc, 1, Lists.newArrayList("replacesType"));
-    D3Graph g = b.getGraph();
-    assertEquals(2, g.nodeCount());
+    //action
+    b.addEntity(startDoc, 1, Lists.newArrayList(REPLACES_TYPE_NAME));
+
+    //verify
+    assertThat(b.getGraph().nodeCount(), is(2));
+  }
+
+  @Test
+  public void aCallWithMultipleTypesInTheListShouldReturnOnlyThoseTypes() throws Exception {
+    //setup
+    TestFixture fixture = initializeRepository();
+    GraphBuilder b = fixture.builder;
+    ProjectADocument startDoc = fixture.startDoc;
+
+    //action
+    b.addEntity(startDoc, 1, Lists.newArrayList(REPLACES_TYPE_NAME, TRANSLATION_TYPE_NAME));
+
+    //verify
+    assertThat(b.getGraph().nodeCount(), is(3));
   }
 }
