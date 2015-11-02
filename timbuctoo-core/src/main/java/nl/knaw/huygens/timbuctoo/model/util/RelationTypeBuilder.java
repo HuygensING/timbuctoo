@@ -30,6 +30,8 @@ public class RelationTypeBuilder {
 
   private String targetTypeName;
   private String sourceTypeName;
+  private String regularName;
+  private String typeId;
 
   private RelationTypeBuilder() {}
 
@@ -57,11 +59,24 @@ public class RelationTypeBuilder {
     return this;
   }
 
+  public RelationTypeBuilder withRegularName(String typeName) {
+    regularName = typeName;
+    return this;
+  }
+
+  public RelationTypeBuilder withId(String id) {
+    typeId = id;
+    return this;
+  }
+
+
   public RelationType build() {
     RelationType relationType = new RelationType();
 
     relationType.setTargetTypeName(targetTypeName);
     relationType.setSourceTypeName(sourceTypeName);
+    relationType.setRegularName(regularName);
+    relationType.setId(typeId);
 
     return relationType;
   }
