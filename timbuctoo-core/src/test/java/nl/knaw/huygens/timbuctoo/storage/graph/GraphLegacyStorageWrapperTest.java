@@ -959,18 +959,18 @@ public class GraphLegacyStorageWrapperTest {
     relationExists(true, relId2);
 
     // action
-    instance.declineRelationsOfEntity(RELATION_TYPE, ID);
+    instance.declineRelationsOfEntity(RELATION_TYPE, ID, CHANGE);
 
     // verify
-    verifyRelationIsDeclined(relId1);
-    verifyRelationIsDeclined(relId2);
+    verifyRelationIsDeclined(relId1, CHANGE);
+    verifyRelationIsDeclined(relId2, CHANGE);
   }
 
-  private void verifyRelationIsDeclined(String relId) throws NoSuchEntityException, StorageException {
+  private void verifyRelationIsDeclined(String relId, Change change) throws NoSuchEntityException, StorageException {
     InOrder inOrder = inOrder(graphStorageMock);
     inOrder.verify(graphStorageMock).updateRelation( //
       argThat(equalTo(RELATION_TYPE)), //
-      argThat(likeRelation().withId(relId).isAccepted(false)), //
+      argThat(likeRelation().withId(relId).isAccepted(false).withModified(change)), //
       any(Change.class));
     inOrder.verify(graphStorageMock).removePropertyFromRelation(RELATION_TYPE, relId, PID_FIELD_NAME);
   }
@@ -995,7 +995,7 @@ public class GraphLegacyStorageWrapperTest {
       any(Change.class));
 
     // action
-    instance.declineRelationsOfEntity(RELATION_TYPE, ID);
+    instance.declineRelationsOfEntity(RELATION_TYPE, ID, Change.newInternalInstance());
 
   }
 
@@ -1005,13 +1005,13 @@ public class GraphLegacyStorageWrapperTest {
     when(graphStorageMock.getRelationsByEntityId(RELATION_TYPE, ID)).thenThrow(new StorageException());
 
     // action
-    instance.declineRelationsOfEntity(RELATION_TYPE, ID);
+    instance.declineRelationsOfEntity(RELATION_TYPE, ID, Change.newInternalInstance());
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void declineRelationsOfEntityThrowsAnIllegalArgumentExceptionWhenTheTypeIsAPrimitive() throws Exception {
     // action
-    instance.declineRelationsOfEntity(PRIMITIVE_RELATION_TYPE, ID);
+    instance.declineRelationsOfEntity(PRIMITIVE_RELATION_TYPE, ID, Change.newInternalInstance());
   }
 
   @Test

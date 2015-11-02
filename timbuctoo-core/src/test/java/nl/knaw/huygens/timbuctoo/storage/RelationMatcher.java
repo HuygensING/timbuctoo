@@ -22,13 +22,15 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.nullValue;
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.hamcrest.PropertyMatcher;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
+
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 
 public class RelationMatcher extends CompositeMatcher<Relation> {
   private RelationMatcher() {}
@@ -174,6 +176,18 @@ public class RelationMatcher extends CompositeMatcher<Relation> {
       @Override
       protected String getItemValue(Relation item) {
         return item.getPid();
+      }
+    });
+
+    return this;
+  }
+
+  public RelationMatcher withModified(Change modified) {
+    addMatcher(new PropertyEqualityMatcher<Relation, Change>("modified", modified) {
+
+      @Override
+      protected Change getItemValue(Relation item) {
+        return item.getModified();
       }
     });
 

@@ -217,7 +217,7 @@ public class RepositoryTest {
   }
 
   @Test
-  public void testDeleteDomainEntityProjectVariationAndReturnsTheIdsOfTheUpdateRelatiosn() throws Exception {
+  public void testDeleteDomainEntityProjectVariationAndReturnsTheIdsOfTheUpdateRelations() throws Exception {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     entity.setModified(change);
     List<String> ids = Lists.newArrayList("id1", "id2");
@@ -229,7 +229,7 @@ public class RepositoryTest {
     assertThat(actualIds, is(equalTo(ids)));
 
     verify(storageMock).deleteVariation(ProjectADomainEntity.class, DEFAULT_ID, change);
-    verify(storageMock).declineRelationsOfEntity(ProjectARelation.class, DEFAULT_ID);
+    verify(storageMock).declineRelationsOfEntity(ProjectARelation.class, DEFAULT_ID, change);
   }
 
   @Test

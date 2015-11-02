@@ -316,7 +316,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     propertiesWithValues.put(DomainEntity.PID, null);
 
     // action
-    storage.declineRelationsOfEntity(type, DEFAULT_ID);
+    storage.declineRelationsOfEntity(type, DEFAULT_ID, Change.newInternalInstance());
 
     // verify
     DBObject setQueryPart = queries.setPropertiesToValue(propertiesWithValues);
@@ -330,7 +330,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
   @Test(expected = IllegalArgumentException.class)
   public void declineRelationsOfEntityRemovesThrowsAnIllegalArgumentExceptionWhenTheRelationTypeIsPrimitive() throws Exception {
     try {
-      storage.declineRelationsOfEntity(Relation.class, DEFAULT_ID);
+      storage.declineRelationsOfEntity(Relation.class, DEFAULT_ID, Change.newInternalInstance());
     } finally {
       verifyZeroInteractions(mongoDB);
     }

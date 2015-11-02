@@ -304,7 +304,7 @@ public class GraphLegacyStorageWrapper implements Storage {
   }
 
   @Override
-  public <T extends Relation> void declineRelationsOfEntity(Class<T> type, String id) throws IllegalArgumentException, StorageException {
+  public <T extends Relation> void declineRelationsOfEntity(Class<T> type, String id, Change change) throws IllegalArgumentException, StorageException {
     if (TypeRegistry.isPrimitiveDomainEntity(type)) {
       throw new IllegalArgumentException("Use deleteRelation for removing primitive relation.");
     }
@@ -316,14 +316,14 @@ public class GraphLegacyStorageWrapper implements Storage {
        * In this case we want to decline the relations the project variant of the is available.
        */
       if (entityExists(type, relation.getId())) {
-        declineRelation(type, relation);
+        declineRelation(type, relation, change);
       }
     }
   }
 
-  private <T extends Relation> void declineRelation(Class<T> type, T relation) throws StorageException {
+  private <T extends Relation> void declineRelation(Class<T> type, T relation, Change change) throws StorageException {
     relation.setAccepted(false);
-    this.updateDomainEntity(type, relation, Change.newInternalInstance());
+    this.updateDomainEntity(type, relation, change);
   }
 
   @Override

@@ -601,7 +601,7 @@ public abstract class StorageIntegrationTest {
     assertThat(instance.getEntity(PRIMITIVE_RELATION_TYPE, relationId), likeDefaultAcceptedRelation(sourceId, targetId, typeId));
 
     // action
-    instance.declineRelationsOfEntity(PROJECT_RELATION_TYPE, sourceId);
+    instance.declineRelationsOfEntity(PROJECT_RELATION_TYPE, sourceId, Change.newInternalInstance());
 
     // verify
     assertThat(instance.getEntity(PROJECT_RELATION_TYPE, relationId), likeDefaultNotAcceptedRelation(sourceId, targetId, typeId));
@@ -625,7 +625,7 @@ public abstract class StorageIntegrationTest {
         .withPID());
 
     // action
-    instance.declineRelationsOfEntity(PROJECT_RELATION_TYPE, sourceId);
+    instance.declineRelationsOfEntity(PROJECT_RELATION_TYPE, sourceId, Change.newInternalInstance());
 
     // verify
     SubARelation declinedRelation = instance.getEntity(RELATION_TYPE, id);
@@ -651,7 +651,7 @@ public abstract class StorageIntegrationTest {
     String subBRelationId = addDefaultSubBRelation(sourceId, otherTargetId, typeId);
 
     // action
-    instance.declineRelationsOfEntity(SubARelation.class, sourceId);
+    instance.declineRelationsOfEntity(SubARelation.class, sourceId, Change.newInternalInstance());
 
     // verify
     assertThat(instance.getEntity(SubARelation.class, subARelationId), //
@@ -1246,7 +1246,7 @@ public abstract class StorageIntegrationTest {
 
     String id = addDefaultSubARelation(sourceId, targetId, typeId);
     instance.setPID(RELATION_TYPE, id, PID);
-    instance.declineRelationsOfEntity(RELATION_TYPE, sourceId);
+    instance.declineRelationsOfEntity(RELATION_TYPE, sourceId, Change.newInternalInstance());
     instance.setPID(RELATION_TYPE, id, PID2);
 
     // action

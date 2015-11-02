@@ -132,10 +132,11 @@ public interface Storage {
    * Sets the accepted property of a relation to false.
    * @param type the project type of the relation to decline
    * @param id the id of the entity for which the relations should be declined.
-   * @throws IllegalArgumentException when the variation type is a primitive.  
+   * @param change
+   * @throws IllegalArgumentException when the variation type is a primitive.
    * @throws StorageException is thrown when the update fails.
    */
-  <T extends Relation> void declineRelationsOfEntity(Class<T> type, String id) throws IllegalArgumentException, StorageException;
+  <T extends Relation> void declineRelationsOfEntity(Class<T> type, String id, Change change) throws IllegalArgumentException, StorageException;
 
   // -------------------------------------------------------------------
 
