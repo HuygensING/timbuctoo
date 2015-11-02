@@ -123,4 +123,23 @@ public class DomainEntityMatcher<T extends DomainEntity> extends CompositeMatche
   }
 
 
+  public DomainEntityMatcher<T> withCreated(Change created) {
+    this.addMatcher(new PropertyEqualityMatcher<T, Change>("created", created) {
+      @Override
+      protected Change getItemValue(T item) {
+        return item.getCreated();
+      }
+    });
+    return this;
+  }
+
+  public DomainEntityMatcher<T> withModified(Change modified) {
+    this.addMatcher(new PropertyEqualityMatcher<T, Change>("modified", modified) {
+      @Override
+      protected Change getItemValue(T item) {
+        return item.getModified();
+      }
+    });
+    return this;
+  }
 }

@@ -66,7 +66,7 @@ public class GraphLegacyStorageWrapperTest {
   private static final int FIRST_REVISION = 1;
   private static final int SECOND_REVISION = 2;
   private static final String ID = "id";
-  private static final Change CHANGE = new Change();
+  private static final Change CHANGE = new Change("user", "vre");
   private static final String PID_VALUE = "pid";
   private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
   private static final Class<SubARelation> RELATION_TYPE = SubARelation.class;
@@ -122,8 +122,8 @@ public class GraphLegacyStorageWrapperTest {
       argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE)//
         .withoutAPID()//
         .withId(ID) //
-        .withACreatedValue() //
-        .withAModifiedValue() //
+        .withCreated(CHANGE) //
+        .withModified(CHANGE) //
         .withRevision(FIRST_REVISION) //
         .withVariations(DOMAIN_ENTITY_TYPE, PRIMITIVE_DOMAIN_ENTITY_TYPE)), //
       argThat(is(CHANGE)));
@@ -781,8 +781,8 @@ public class GraphLegacyStorageWrapperTest {
       argThat(is(equalTo(RELATION_TYPE))), //
       argThat(likeDomainEntity(RELATION_TYPE)//
         .withId(ID) //
-        .withACreatedValue() //
-        .withAModifiedValue() //
+        .withCreated(CHANGE) //
+        .withModified(CHANGE) //
         .withRevision(FIRST_REVISION)//
         .withoutAPID() //
         .withVariations(RELATION_TYPE, PRIMITIVE_RELATION_TYPE)), //
