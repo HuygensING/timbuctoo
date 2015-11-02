@@ -404,7 +404,7 @@ public class GraphLegacyStorageWrapperTest {
         .withId(ID) //
         .withRevision(SECOND_REVISION) //
         .withVariations(DOMAIN_ENTITY_TYPE, PRIMITIVE_DOMAIN_ENTITY_TYPE)
-        .withAModifiedValueNotEqualTo(oldModified)));
+        .withModified(CHANGE)));
   }
 
   @Test
@@ -439,7 +439,7 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test(expected = StorageException.class)
-  public void updateDomainEntityDoesNotRemoveThePIDAndReThrowsAStorageExceptionOfTheDelegate() throws Exception {
+  public void updateDomainEntityDoesNotRemoveThePIDAndRethrowsAStorageExceptionOfTheDelegate() throws Exception {
     // setup
     SubADomainEntity entity = aDomainEntity().withId(ID).build();
     entityAndVariantExist();
@@ -876,7 +876,7 @@ public class GraphLegacyStorageWrapperTest {
       argThat(is(equalTo(RELATION_TYPE))), //
       argThat(likeDomainEntity(RELATION_TYPE) //
         .withId(ID) //
-        .withAModifiedValueNotEqualTo(oldModified) //
+        .withModified(CHANGE)
         .withRevision(SECOND_REVISION)
         .withVariations(RELATION_TYPE, PRIMITIVE_RELATION_TYPE)), //
       argThat(is(CHANGE)));

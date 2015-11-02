@@ -129,8 +129,8 @@ public class GraphLegacyStorageWrapper implements Storage {
     entity.setPid(null);
   }
 
-  private <T extends Entity> void updateAdministrativeValues(T entity) {
-    entity.setModified(Change.newInternalInstance());
+  private <T extends Entity> void updateAdministrativeValues(T entity, Change modified) {
+    entity.setModified(modified);
     updateRevision(entity);
   }
 
@@ -141,13 +141,13 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws StorageException {
-    updateAdministrativeValues(entity);
+    updateAdministrativeValues(entity, Change.newInternalInstance());
     graphStorage.updateEntity(type, entity);
   }
 
   @Override
   public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
-    updateAdministrativeValues(entity);
+    updateAdministrativeValues(entity, change);
     if (isRelation(type)) {
       Class<? extends Relation> relationType = asRelation(type);
       Relation relation = (Relation) entity;
@@ -273,7 +273,7 @@ public class GraphLegacyStorageWrapper implements Storage {
     }
 
     removePIDFromDatabase(type, id);
-    updateAdministrativeValues(entity);
+    updateAdministrativeValues(entity, Change.newInternalInstance());
 
     graphStorage.deleteVariant(entity);
   }
