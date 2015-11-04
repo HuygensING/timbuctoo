@@ -415,7 +415,7 @@ public class CNWPerson extends Person {
 	}
 
 	private List<String> specialValueEmptyWhenNone(List<String> list) {
-		return list.isEmpty() ? ImmutableList.<String> of(NONE) : list;
+		return list.isEmpty() ? Lists.newArrayList(NONE) : list;
 	}
 
 }
