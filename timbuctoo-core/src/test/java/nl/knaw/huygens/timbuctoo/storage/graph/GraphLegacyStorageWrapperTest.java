@@ -615,12 +615,8 @@ public class GraphLegacyStorageWrapperTest {
 
     // verify
     InOrder inOrder = inOrder(graphStorageMock);
+    inOrder.verify(graphStorageMock).deleteVariant(entity);
     inOrder.verify(graphStorageMock).removePropertyFromEntity(DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
-    inOrder.verify(graphStorageMock).deleteVariant(argThat(//
-      likeDomainEntity(DOMAIN_ENTITY_TYPE) //
-        .withId(ID) //
-        .withRevision(SECOND_REVISION) //
-        .withAModifiedValueNotEqualTo(oldModified)));
   }
 
   @Test

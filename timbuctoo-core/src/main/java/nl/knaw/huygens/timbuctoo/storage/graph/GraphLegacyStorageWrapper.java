@@ -272,10 +272,10 @@ public class GraphLegacyStorageWrapper implements Storage {
       throw new NoSuchEntityException(type, id);
     }
 
-    removePIDFromDatabase(type, id);
     updateAdministrativeValues(entity, change);
 
     graphStorage.deleteVariant(entity);
+    removePIDFromDatabase(type, id);
   }
 
   /**
