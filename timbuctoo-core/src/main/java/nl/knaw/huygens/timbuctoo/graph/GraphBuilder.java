@@ -108,7 +108,7 @@ public class GraphBuilder {
 
   private <T extends DomainEntity> D3Node createNode(T entity) {
     @SuppressWarnings("unchecked")
-    Class<T> type = (Class<T>) entity.getClass();
+    Class type = TypeRegistry.toBaseDomainEntity(entity.getClass());
     String key = TypeNames.getExternalName(type) + "/" + entity.getId();
     String iname = TypeNames.getInternalName(type);
     String label = entity.getIdentificationName();
