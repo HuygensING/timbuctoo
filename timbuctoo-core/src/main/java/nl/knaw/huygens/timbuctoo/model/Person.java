@@ -167,7 +167,9 @@ public class Person extends DomainEntity {
   }
 
   public void setTypes(List<String> types) {
-    this.types = types;
+    for (String type: types) {
+      addType(type);
+    }
   }
 
   public void addType(String type) {
