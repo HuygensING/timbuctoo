@@ -289,9 +289,9 @@ public class GraphLegacyStorageWrapper implements Storage {
   @SuppressWarnings("unchecked")
   private <T extends DomainEntity> void removePIDFromDatabase(Class<T> type, String id) throws NoSuchEntityException, NoSuchRelationException {
     if (RELATION_TYPE.isAssignableFrom(type)) {
-      graphStorage.removePropertyFromRelation((Class<? extends Relation>) type, id, PID);
+      graphStorage.removePropertyFromRelation(RELATION_TYPE, id, PID);
     } else {
-      graphStorage.removePropertyFromEntity(type, id, PID);
+      graphStorage.removePropertyFromEntity(TypeRegistry.toBaseDomainEntity(type), id, PID);
     }
   }
 

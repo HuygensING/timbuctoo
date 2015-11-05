@@ -425,7 +425,7 @@ public class GraphLegacyStorageWrapperTest {
     // verify
     InOrder inOrder = inOrder(graphStorageMock);
     inOrder.verify(graphStorageMock).updateEntity(DOMAIN_ENTITY_TYPE, entity);
-    inOrder.verify(graphStorageMock).removePropertyFromEntity(DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
+    inOrder.verify(graphStorageMock).removePropertyFromEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
   }
 
   private void entityAndVariantExist() throws StorageException {
@@ -451,7 +451,7 @@ public class GraphLegacyStorageWrapperTest {
       instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
     } finally {
       // verify
-      verify(graphStorageMock, never()).removePropertyFromEntity(DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
+      verify(graphStorageMock, never()).removePropertyFromEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
     }
 
   }
@@ -616,7 +616,7 @@ public class GraphLegacyStorageWrapperTest {
     // verify
     InOrder inOrder = inOrder(graphStorageMock);
     inOrder.verify(graphStorageMock).deleteVariant(entity);
-    inOrder.verify(graphStorageMock).removePropertyFromEntity(DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
+    inOrder.verify(graphStorageMock).removePropertyFromEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
   }
 
   @Test
@@ -919,7 +919,7 @@ public class GraphLegacyStorageWrapperTest {
     // verify
     InOrder inOrder = inOrder(graphStorageMock);
     inOrder.verify(graphStorageMock).updateRelation(RELATION_TYPE, entity, CHANGE);
-    inOrder.verify(graphStorageMock).removePropertyFromRelation(RELATION_TYPE, ID, PID_FIELD_NAME);
+    inOrder.verify(graphStorageMock).removePropertyFromRelation(PRIMITIVE_RELATION_TYPE, ID, PID_FIELD_NAME);
   }
 
   @Test(expected = StorageException.class)
@@ -968,7 +968,7 @@ public class GraphLegacyStorageWrapperTest {
       argThat(equalTo(RELATION_TYPE)), //
       argThat(likeRelation().withId(relId).isAccepted(false).withModified(change)), //
       any(Change.class));
-    inOrder.verify(graphStorageMock).removePropertyFromRelation(RELATION_TYPE, relId, PID_FIELD_NAME);
+    inOrder.verify(graphStorageMock).removePropertyFromRelation(PRIMITIVE_RELATION_TYPE, relId, PID_FIELD_NAME);
   }
 
   @Test(expected = StorageException.class)
