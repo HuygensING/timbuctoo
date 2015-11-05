@@ -5,7 +5,7 @@ import nl.knaw.huygens.facetedsearch.model.Facet;
 import java.util.List;
 import java.util.Set;
 
-public class RelationSearchResultDTOV2_1 extends SearchResultDTO {
+public class RelationSearchResultDTOV2_1 extends SearchResultDTO implements RelationSearchable{
 
   private String term;
   private List<Facet> facets;
@@ -28,6 +28,7 @@ public class RelationSearchResultDTOV2_1 extends SearchResultDTO {
     this.facets = facets;
   }
 
+  @Override
   public List<RelationDTO> getRefs() {
     return refs;
   }

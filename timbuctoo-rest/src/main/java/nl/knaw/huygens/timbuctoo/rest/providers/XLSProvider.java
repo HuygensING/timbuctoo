@@ -26,7 +26,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.RelationDTO;
-import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
+import nl.knaw.huygens.timbuctoo.model.RelationSearchable;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -53,7 +53,7 @@ import java.util.Map;
 @Provider
 @Produces(XLSProvider.EXCEL_TYPE_STRING)
 @Singleton
-public class XLSProvider implements MessageBodyWriter<RelationSearchResultDTO> {
+public class XLSProvider implements MessageBodyWriter<RelationSearchable> {
 
   public static final String EXCEL_TYPE_STRING = "application/vnd.ms-excel";
   public static final MediaType EXCEL_TYPE = new MediaType("application", "vnd.ms-excel");
@@ -74,16 +74,16 @@ public class XLSProvider implements MessageBodyWriter<RelationSearchResultDTO> {
 
   @Override
   public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-    return EXCEL_TYPE.equals(mediaType) && RelationSearchResultDTO.class.isAssignableFrom(type);
+    return EXCEL_TYPE.equals(mediaType) && RelationSearchable.class.isAssignableFrom(type);
   }
 
   @Override
-  public long getSize(RelationSearchResultDTO doc, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+  public long getSize(RelationSearchable dto, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
     return UNKNOWN_LENGTH;
   }
 
   @Override
-  public void writeTo(RelationSearchResultDTO dto, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out)
+  public void writeTo(RelationSearchable dto, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out)
     throws IOException {
 
     List<RelationDTO> refs = dto.getRefs();

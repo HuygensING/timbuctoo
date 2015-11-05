@@ -24,7 +24,7 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import java.util.List;
 
-public class RelationSearchResultDTO extends SearchResultDTO {
+public class RelationSearchResultDTO extends SearchResultDTO implements RelationSearchable {
 
   /** Internal name of source entity type. */
   private String sourceType;
@@ -48,6 +48,7 @@ public class RelationSearchResultDTO extends SearchResultDTO {
     this.targetType = targetType;
   }
 
+  @Override
   public List<RelationDTO> getRefs() {
     return refs;
   }
