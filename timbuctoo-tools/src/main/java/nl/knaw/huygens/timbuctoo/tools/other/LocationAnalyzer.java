@@ -46,7 +46,7 @@ public class LocationAnalyzer {
       if (repository != null) {
         repository.close();
       }
-      // TODO close index manager, even if it's not used...
+      // TODO close execute manager, even if it's not used...
     }
   }
 

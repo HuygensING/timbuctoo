@@ -27,12 +27,14 @@ import javax.jms.JMSException;
 public interface Broker {
 
   String BROKER_NAME = "-broker";
-  String INDEX_QUEUE = "index";
+  String INDEX_QUEUE = "execute";
   String PERSIST_QUEUE = "persist";
   // Message headers
   String PROP_ACTION = "action";
-  String PROP_DOC_TYPE = "type";
-  String PROP_DOC_ID = "id";
+  String PROP_ENTITY_TYPE = "type";
+  String PROP_ENTITY_ID = "id";
+  String PROP_FOR_MULTI_ENTITIES = "multiEntity";
+  String PROP_REQUEST_ID ="requestId";
 
   /**
    * Returns the message producer with the specified name that writes

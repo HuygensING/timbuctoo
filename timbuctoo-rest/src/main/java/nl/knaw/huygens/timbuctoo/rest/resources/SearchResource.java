@@ -22,12 +22,31 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
-
-import java.net.URI;
+import com.google.inject.Inject;
+import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
+import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
+import nl.knaw.huygens.solr.SearchParameters;
+import nl.knaw.huygens.solr.SearchParametersV1;
+import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
+import nl.knaw.huygens.timbuctoo.config.Paths;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.SearchResult;
+import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
+import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
+import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
+import nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultMapper;
+import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
+import nl.knaw.huygens.timbuctoo.search.converters.SearchParametersConverter;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -40,33 +59,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.net.URI;
 
-import nl.knaw.huygens.solr.RelationSearchParameters;
-import nl.knaw.huygens.solr.SearchParameters;
-import nl.knaw.huygens.solr.SearchParametersV1;
-import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
-import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
-import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
-import nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultMapper;
-import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
-import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
-import nl.knaw.huygens.timbuctoo.search.converters.SearchParametersConverter;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
-import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
-import nl.knaw.huygens.timbuctoo.vre.VRE;
-import nl.knaw.huygens.timbuctoo.vre.VRECollection;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 
 @Path("search")
 public class SearchResource extends ResourceBase {
@@ -96,7 +94,7 @@ public class SearchResource extends ResourceBase {
   }
 
   @POST
-  @APIDesc("Searches the Solr index. Expects a search parameters body.")
+  @APIDesc("Searches the Solr execute. Expects a search parameters body.")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response regularPost(SearchParameters searchParams, @HeaderParam(VRE_ID_KEY) String vreId) {
 
@@ -122,7 +120,7 @@ public class SearchResource extends ResourceBase {
   }
 
   @GET
-  @Path("/{id: " + SearchResult.ID_PREFIX + "\\d+}")
+  @Path("/{id: " + Paths.ID_REGEX + "}")
   @APIDesc("Returns (paged) search results Query params: \"start\" (default: 0) \"rows\" (default: 10)")
   @Produces({ MediaType.APPLICATION_JSON })
   public Response regularGet( //
@@ -139,12 +137,12 @@ public class SearchResource extends ResourceBase {
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
 
-    SearchResultDTO dto = regularSearchResultMapper.create(type, result, start, rows);
+    SearchResultDTO dto = regularSearchResultMapper.create(type, result, start, rows, null);
     return Response.ok(dto).build();
   }
 
   private SearchResult getSearchResult(String id) {
-    return repository.getEntity(SearchResult.class, id);
+    return repository.getEntityOrDefaultVariation(SearchResult.class, id);
   }
 
   private String putSearchResult(SearchResult result) throws StorageException, ValidationException {
@@ -156,7 +154,7 @@ public class SearchResource extends ResourceBase {
   @POST
   @Path("/" + RELATION_SEARCH_PREFIX)
   @Consumes(MediaType.APPLICATION_JSON)
-  @APIDesc("Searches the Solr index. Expects a relation search parameters body.")
+  @APIDesc("Searches the Solr execute. Expects a relation search parameters body.")
   public Response relationPost(@HeaderParam(VRE_ID_KEY) String vreId, RelationSearchParameters params) {
 
     final String typeString = params.getTypeString();
@@ -179,7 +177,7 @@ public class SearchResource extends ResourceBase {
 
   @APIDesc("Returns (paged) search results Query params: \"start\" (default: 0) \"rows\" (default: 10)")
   @GET
-  @Path("/" + RELATION_SEARCH_PREFIX + "/{id: " + SearchResult.ID_PREFIX + "\\d+}")
+  @Path("/" + RELATION_SEARCH_PREFIX + "/{id: " + SearchResult.ID_PREFIX + Paths.ID_REGEX + "}")
   @Produces({ MediaType.APPLICATION_JSON })
   public Response relationGet( //
       @PathParam("id") String queryId, //
@@ -195,7 +193,7 @@ public class SearchResource extends ResourceBase {
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
 
-    SearchResultDTO dto = relationSearchResultMapper.create(type, result, start, rows);
+    SearchResultDTO dto = relationSearchResultMapper.create(type, result, start, rows, null);
     return Response.ok(dto).build();
   }
 

@@ -22,13 +22,7 @@ package nl.knaw.huygens.timbuctoo.rest.util.search;
  * #L%
  */
 
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-
-import java.util.List;
-
-import javax.ws.rs.core.Response.Status;
-
-import nl.knaw.huygens.solr.RelationSearchParameters;
+import com.google.inject.Inject;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -36,12 +30,15 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
+import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
-
 import org.apache.commons.lang.StringUtils;
 
-import com.google.inject.Inject;
+import javax.ws.rs.core.Response.Status;
+import java.util.List;
+
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 
 public class SearchRequestValidator {
 
@@ -132,7 +129,7 @@ public class SearchRequestValidator {
 
   private void isValidSearch(String searchId) {
     checkNotNull(searchId, BAD_REQUEST, "sourceSearchId is not specified");
-    checkNotNull(repository.getEntity(SearchResult.class, searchId), BAD_REQUEST, "Search result for id %s does not exist.", searchId);
+    checkNotNull(repository.getEntityOrDefaultVariation(SearchResult.class, searchId), BAD_REQUEST, "Search result for id %s does not exist.", searchId);
   }
 
 }

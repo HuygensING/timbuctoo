@@ -22,8 +22,6 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.storage.Properties.propertyName;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +29,6 @@ import java.util.Map.Entry;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 
 import com.mongodb.BasicDBList;
@@ -83,12 +80,12 @@ public class MongoQueries {
     return new BasicDBObject("versions", new BasicDBObject("$elemMatch", new BasicDBObject("^rev", revision)));
   }
 
-  public DBObject selectByProperty(Class<? extends Entity> type, String field, Object value) {
-    return new BasicDBObject(propertyName(type, field), value);
+  public DBObject selectByProperty(String propertyName, Object value) {
+    return new BasicDBObject(propertyName, value);
   }
 
-  public DBObject selectByProperty(Class<? extends Entity> type, String field, List<String> relationTypeIds) {
-    return new BasicDBObject(propertyName(type, field), new BasicDBObject("$in", relationTypeIds));
+  public DBObject selectByProperty(String propertyName, List<String> relationTypeIds) {
+    return new BasicDBObject(propertyName, new BasicDBObject("$in", relationTypeIds));
   }
 
   public DBObject selectByModifiedDate(Date dateValue) {
@@ -157,15 +154,12 @@ public class MongoQueries {
     return query;
   }
 
-  public DBObject setPropertiesToValue(Map<String, Object> propertiesWithValues) {
+  public DBObject setPropertiesToValue(Map<String, Object> propertyMap) {
     BasicDBObject set = new BasicDBObject();
-    for (Entry<String, Object> entry : propertiesWithValues.entrySet()) {
+    for (Entry<String, Object> entry : propertyMap.entrySet()) {
       set.append(entry.getKey(), entry.getValue());
     }
-
-    DBObject updateQuery = new BasicDBObject("$set", set);
-
-    return updateQuery;
+    return new BasicDBObject("$set", set);
   }
 
   public DBObject incrementRevision() {

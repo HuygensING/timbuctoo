@@ -22,11 +22,18 @@ package nl.knaw.huygens.timbuctoo.config;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.storage.Properties;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
-import nl.knaw.huygens.timbuctoo.storage.mongo.MongoStorage;
+import nl.knaw.huygens.timbuctoo.storage.graph.GraphLegacyStorageWrapper;
+import nl.knaw.huygens.timbuctoo.storage.graph.GraphStorage;
+import nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.TinkerPopStorage;
+import nl.knaw.huygens.timbuctoo.storage.mongo.MongoProperties;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
+import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.impls.neo4j2.Neo4j2Graph;
+import com.tinkerpop.blueprints.impls.rexster.RexsterGraph;
 
 public class BasicInjectionModule extends AbstractModule {
 
@@ -55,6 +62,30 @@ public class BasicInjectionModule extends AbstractModule {
     bind(Configuration.class).toInstance(config);
     bind(TypeRegistry.class).toInstance(registry);
 
-    bind(Storage.class).to(MongoStorage.class);
+    //    bind(Storage.class).to(MongoStorage.class);
+    bind(Properties.class).to(MongoProperties.class);
+
+    bind(Storage.class).to(GraphLegacyStorageWrapper.class);
+    bind(GraphStorage.class).to(TinkerPopStorage.class);
+    bind(Graph.class).toInstance(createDB());
+
+  }
+
+  private Graph createDB() {
+    GraphTypes type = GraphTypes.valueOf(config.getSetting("graph.type"));
+    if (type == GraphTypes.NEO4J) {
+      return new Neo4j2Graph(config.getDirectory("graph.path"));
+    } else if (type == GraphTypes.REXSTER) {
+      return createRexsterGraph();
+    }
+    throw new RuntimeException("Database" + type + " is not supported yet.");
+  }
+
+  public Graph createRexsterGraph() {
+    String user = config.getSetting("graph.user", null);
+    String password = config.getSetting("graph.password", null);
+    String url = config.getSetting("graph.url");
+
+    return new RexsterGraph(url, user, password);
   }
 }

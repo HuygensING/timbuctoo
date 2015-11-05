@@ -22,20 +22,19 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.config.Paths.SYSTEM_PREFIX;
-import static nl.knaw.huygens.timbuctoo.config.Paths.VERSION_PATH_OPTIONAL;
+import com.google.inject.Inject;
+import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
+import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.rest.util.Status;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
-import nl.knaw.huygens.timbuctoo.index.IndexManager;
-import nl.knaw.huygens.timbuctoo.rest.util.Status;
-
-import com.google.inject.Inject;
+import static nl.knaw.huygens.timbuctoo.config.Paths.SYSTEM_PREFIX;
+import static nl.knaw.huygens.timbuctoo.config.Paths.VERSION_PATH_OPTIONAL;
 
 @Path(VERSION_PATH_OPTIONAL + SYSTEM_PREFIX + "/status")
 public class StatusResource {
@@ -54,7 +53,6 @@ public class StatusResource {
   @APIDesc("Returns the status of the webapp.")
   public Status getStatus() {
     Status status = new Status();
-    status.setStorageStatus(repository.getStatus());
     status.setIndexStatus(indexManager.getStatus());
     return status;
   }

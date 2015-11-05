@@ -22,14 +22,13 @@ package nl.knaw.huygens.timbuctoo.messages;
  * #L%
  */
 
-import java.util.Enumeration;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.QueueBrowser;
 import javax.jms.Session;
+import java.util.Enumeration;
 
 public class ActiveMQBrowser implements Browser {
 
@@ -67,6 +66,26 @@ public class ActiveMQBrowser implements Browser {
       return count;
     } catch (JMSException e) {
       return 0;
+    }
+  }
+
+  @Override
+  public String status() {
+    try {
+      StringBuilder sb = new StringBuilder();
+      Enumeration<?> enumeration = browser.getEnumeration();
+      int count = 0;
+      for (; enumeration.hasMoreElements(); ) {
+        Object element = enumeration.nextElement();
+        sb.append(element);
+        sb.append("\n");
+        count++;
+      }
+      sb.append(String.format("%d items found", count));
+      return sb.toString();
+
+    } catch (JMSException e) {
+      return "Status could not be retrieved";
     }
   }
 

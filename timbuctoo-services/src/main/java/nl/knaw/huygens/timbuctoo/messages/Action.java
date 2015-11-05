@@ -22,18 +22,47 @@ package nl.knaw.huygens.timbuctoo.messages;
  * #L%
  */
 
+import com.google.common.base.Strings;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.Session;
+
+import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_ACTION;
+import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_ENTITY_ID;
+import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_ENTITY_TYPE;
+import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_FOR_MULTI_ENTITIES;
+import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_REQUEST_ID;
 
 public class Action {
 
-  private final ActionType actionType;
-  private final String id;
-  private final Class<? extends DomainEntity> type;
+  private ActionType actionType;
+  private String id;
+  private Class<? extends DomainEntity> type;
+  private boolean forMultiEntities;
+  private String requestId;
 
   public Action(ActionType actionType, Class<? extends DomainEntity> type, String id) {
     this.actionType = actionType;
     this.id = id;
     this.type = type;
+    this.forMultiEntities = false;
+  }
+
+  private Action(ActionType actionType, Class<? extends DomainEntity> type) {
+    this.actionType = actionType;
+    this.type = type;
+    this.forMultiEntities = true;
+  }
+
+  public Action() {
+
   }
 
   public ActionType getActionType() {
@@ -50,7 +79,97 @@ public class Action {
 
   @Override
   public String toString() {
-    return "{\nactionType: " + actionType + "\ntypeString: " + type + "\nid: " + id + "\n}";
+    return ToStringBuilder.reflectionToString(this);
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    return EqualsBuilder.reflectionEquals(this, obj);
+  }
+
+  @Override
+  public int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this);
+  }
+
+  public static Action multiUpdateActionFor(Class<? extends DomainEntity> type) {
+    return new Action(ActionType.MOD, type);
+  }
+
+  public Message createMessage(Session session) throws JMSException {
+    Message message = session.createMessage();
+
+    message.setStringProperty(PROP_ACTION, actionType.getStringRepresentation());
+
+    if (hasRequestId()) {
+      message.setStringProperty(PROP_REQUEST_ID, requestId);
+    } else {
+      message.setStringProperty(PROP_ENTITY_TYPE, TypeNames.getInternalName(type));
+      message.setBooleanProperty(PROP_FOR_MULTI_ENTITIES, forMultiEntities);
+      if (!forMultiEntities) {
+        message.setStringProperty(PROP_ENTITY_ID, id);
+      }
+    }
+
+    return message;
+  }
+
+  public boolean isForMultiEntities() {
+    return forMultiEntities;
+  }
+
+  public static Action fromMessage(Message message, TypeRegistry typeRegistry) throws JMSException {
+    ActionType actionType = getActionType(message);
+    String requestId = message.getStringProperty(PROP_REQUEST_ID);
+    if(requestId != null){
+      return forRequestWithId(actionType, requestId);
+    }
+
+    boolean forMultiEntities = message.getBooleanProperty(PROP_FOR_MULTI_ENTITIES);
+
+    String typeString = message.getStringProperty(PROP_ENTITY_TYPE);
+    Class<? extends DomainEntity> type = typeRegistry.getDomainEntityType(typeString);
+
+
+
+    if (forMultiEntities) {
+      return forMultiEntities(actionType, type);
+    }
+
+
+
+    String id = message.getStringProperty(PROP_ENTITY_ID);
+
+    return new Action(actionType, type, id);
+  }
+
+  private static ActionType getActionType(Message message) throws JMSException {
+    String actionString = message.getStringProperty(PROP_ACTION);
+    return ActionType.getFromString(actionString);
+  }
+
+  private static Action forMultiEntities(ActionType actionType, Class<? extends DomainEntity> type) {
+    return new Action(actionType, type);
+  }
+
+  /**
+   * Get the request id, the id that matches the id of the (temporary) stored request.
+   *
+   * @return the request id
+   */
+  public String getRequestId() {
+    return requestId;
+  }
+
+  public static Action forRequestWithId(ActionType actionType, String id) {
+    Action action = new Action();
+    action.requestId = id;
+    action.actionType = actionType;
+
+    return action;
+  }
+
+  public boolean hasRequestId() {
+    return !Strings.isNullOrEmpty(requestId);
+  }
 }

@@ -22,20 +22,18 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-
-import nl.knaw.huygens.timbuctoo.model.RelationType;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Provides for access to stored relation types.
@@ -67,7 +65,7 @@ public class RelationTypes {
     idCache = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<String, RelationType>() {
       @Override
       public RelationType load(String id) throws StorageException {
-        RelationType type = storage.getItem(RelationType.class, id);
+        RelationType type = storage.getEntity(RelationType.class, id);
         if (type == null) {
           // Not allowed to return null
           throw new StorageException("item does not exist");
@@ -94,7 +92,7 @@ public class RelationTypes {
     });
   }
 
-  public void logCacheStats() {
+  public synchronized void logCacheStats() {
     LOG.info("RelationType id cache {}", idCache.stats());
     LOG.info("RelationType name cache {}", nameCache.stats());
   }
@@ -102,10 +100,12 @@ public class RelationTypes {
   /**
    * Retrieves the relation type with the specified id.
    */
-  public RelationType getById(String id, boolean required) {
+  public synchronized RelationType getById(String id, boolean required) {
     try {
       return idCache.get(id);
     } catch (ExecutionException e) {
+      LOG.error("Could not retrieve relation type with id {}", id);
+      LOG.error("Exception thrown", e);
       if (required) {
         throw new IllegalStateException("No relation type with id " + id);
       }
@@ -116,7 +116,7 @@ public class RelationTypes {
   /**
    * Retrieves the relation type with the specified name.
    */
-  public RelationType getByName(String name, boolean required) {
+  public synchronized RelationType getByName(String name, boolean required) {
     try {
       return nameCache.get(name);
     } catch (ExecutionException e) {
@@ -132,7 +132,7 @@ public class RelationTypes {
    * @param relationTypeNames the names to get the id's for.
    * @return a list with id's
    */
-  public List<String> getRelationTypeIdsByName(List<String> relationTypeNames) {
+  public synchronized List<String> getRelationTypeIdsByName(List<String> relationTypeNames) {
     List<String> ids = Lists.newArrayList();
 
     for (String relationTypeName : relationTypeNames) {

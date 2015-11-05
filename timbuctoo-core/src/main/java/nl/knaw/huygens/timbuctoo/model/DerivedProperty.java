@@ -24,18 +24,20 @@ package nl.knaw.huygens.timbuctoo.model;
 
 /**
  * Defines a property of an entity that is actually a property of
- * an entity related with that entity. 
+ * an entity related with that entity.
  */
 public class DerivedProperty {
 
   private final String propertyName;
   private final String relationName;
   private final String accessor;
+  private final String localAccessor;
 
-  public DerivedProperty(String propertyName, String relationName, String accessor) {
+  public DerivedProperty(String propertyName, String relationName, String accessor, String localAccessor) {
     this.propertyName = propertyName;
     this.relationName = relationName;
     this.accessor = accessor;
+    this.localAccessor = localAccessor;
   }
 
   public String getPropertyName() {
@@ -50,4 +52,7 @@ public class DerivedProperty {
     return accessor;
   }
 
+  public String getLocalAccessor() {
+    return localAccessor;
+  }
 }

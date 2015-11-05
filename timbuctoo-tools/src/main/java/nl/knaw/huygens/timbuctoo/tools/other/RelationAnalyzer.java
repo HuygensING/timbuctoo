@@ -59,7 +59,7 @@ public class RelationAnalyzer {
       if (repository != null) {
         repository.close();
       }
-      // TODO close index manager, if it's not used...
+      // TODO close execute manager, if it's not used...
     }
   }
 

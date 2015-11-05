@@ -22,6 +22,10 @@ package nl.knaw.huygens.timbuctoo.tools.config;
  * #L%
  */
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.persistence.PersistenceManagerCreationException;
 import nl.knaw.huygens.persistence.PersistenceManagerFactory;
@@ -40,15 +44,9 @@ import nl.knaw.huygens.timbuctoo.tools.oaipmh.OaiPmhRestClient;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 import nl.knaw.huygens.timbuctoo.vre.VREs;
-
 import org.apache.commons.configuration.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-import com.google.inject.Provides;
-import com.google.inject.Singleton;
 
 /**
  * A class to make it possible to use Guice @see http://code.google.com/p/google-guice.
@@ -81,9 +79,9 @@ public class ToolsInjectionModule extends BasicInjectionModule {
   protected void configure() {
     super.configure();
     bind(IndexManager.class).to(IndexFacade.class);
+
     if (useSolr) {
       bind(IndexFactory.class).to(SolrIndexFactory.class);
-
     } else {
       bind(IndexFactory.class).to(NoOpIndexFactory.class);
     }
@@ -101,7 +99,7 @@ public class ToolsInjectionModule extends BasicInjectionModule {
   @Singleton
   PersistenceManager providePersistenceManager() throws PersistenceManagerCreationException {
     PersistenceManager persistenceManager = PersistenceManagerFactory.newPersistenceManager(config.getBooleanSetting("handle.enabled", true), config.getSetting("handle.cipher"),
-        config.getSetting("handle.naming_authority"), config.getSetting("handle.prefix"), config.pathInUserHome(config.getSetting("handle.private_key_file")));
+        config.getSetting("handle.naming_authority"), config.getSetting("handle.prefix"), config.getSetting("handle.private_key_file"));
     return persistenceManager;
   }
 
@@ -111,7 +109,7 @@ public class ToolsInjectionModule extends BasicInjectionModule {
 
     @Override
     public Index createIndexFor(VRE vre, Class<? extends DomainEntity> type) {
-      LOG.info("Creating a no op index for vre \"{}\" and type \"{}\"", vre.getVreId(), type.getSimpleName());
+      LOG.info("Creating a no op execute for vre \"{}\" and type \"{}\"", vre.getVreId(), type.getSimpleName());
       return NO_OP_INDEX;
     }
 

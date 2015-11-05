@@ -56,4 +56,14 @@ public class FloruitPeriod extends Period {
     return builder.toString();
   }
 
+  @Override
+  public boolean equals(Object obj) {
+    return super.equals(obj);
+  }
+
+  @Override
+  public int hashCode() {
+    return super.hashCode();
+  }
+
 }

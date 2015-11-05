@@ -22,9 +22,9 @@ package nl.knaw.huygens.timbuctoo.messages;
  * #L%
  */
 
-import javax.jms.JMSException;
-
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+
+import javax.jms.JMSException;
 
 public interface Producer {
 
@@ -34,4 +34,5 @@ public interface Producer {
 
   void closeQuietly();
 
+  void send(Action action) throws JMSException;
 }

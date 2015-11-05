@@ -22,27 +22,27 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-import java.util.Map;
-
-import nl.knaw.huygens.timbuctoo.config.Paths;
-
 import com.google.common.base.Joiner;
+import nl.knaw.huygens.timbuctoo.config.Paths;
+import org.apache.commons.lang.builder.ReflectionToStringBuilder;
+
+import java.util.Map;
 
 public class RelationDTO {
 
-  private final String type;
-  private final String id;
-  private final String path;
-  private final String relationName;
-  private final String sourceName;
-  private final String targetName;
-  private final Map<String, String> sourceData;
-  private final Map<String, String> targetData;
+  private String type; // internal type
+  private String id;
+  private String path;
+  private String relationName;
+  private String sourceName;
+  private String targetName;
+  private Map<String, ? extends Object> sourceData;
+  private Map<String, ? extends Object> targetData;
 
   public RelationDTO(String type, String xtype, String id, String relationName, DomainEntity source, DomainEntity target) {
     this.type = type;
     this.id = id;
-    this.path = Joiner.on('/').join(Paths.DOMAIN_PREFIX, xtype, id);
+    createPath(xtype, id);
     this.relationName = relationName;
 
     if (source != null) {
@@ -59,6 +59,10 @@ public class RelationDTO {
       targetName = "[unknown]";
       targetData = null;
     }
+  }
+
+  public RelationDTO() {
+
   }
 
   public String getType() {
@@ -85,12 +89,49 @@ public class RelationDTO {
     return targetName;
   }
 
-  public Map<String, String> getSourceData() {
+  public Map<String, ? extends Object> getSourceData() {
     return sourceData;
   }
 
-  public Map<String, String> getTargetData() {
+  public Map<String, ? extends Object> getTargetData() {
     return targetData;
   }
 
+  public void setSourceName(String sourceName) {
+    this.sourceName = sourceName;
+  }
+
+  public void setSourceData(Map<String, ? extends Object> sourceData) {
+    this.sourceData = sourceData;
+  }
+
+  public void setTargetName(String targetName) {
+    this.targetName = targetName;
+  }
+
+  public void setTargetData(Map<String, ? extends Object> targetData) {
+    this.targetData = targetData;
+  }
+
+  public void setType(String type) {
+    this.type = type;
+  }
+
+
+  public void setId(String id) {
+    this.id = id;
+  }
+
+  public void createPath(String xtype, String id) {
+    this.path = Joiner.on('/').join(Paths.DOMAIN_PREFIX, xtype, id);
+  }
+
+  public void setRelationName(String relationName) {
+    this.relationName = relationName;
+  }
+
+  @Override
+  public String toString() {
+    return ReflectionToStringBuilder.reflectionToString(this);
+  }
 }

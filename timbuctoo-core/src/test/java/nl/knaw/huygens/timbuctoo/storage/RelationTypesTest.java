@@ -49,37 +49,37 @@ public class RelationTypesTest {
 
   @Test
   public void testGetByIdWhenExceptionOccurs() throws Exception {
-    when(storageMock.getItem(RelationType.class, ID)).thenThrow(new StorageException());
+    when(storageMock.getEntity(RelationType.class, ID)).thenThrow(new StorageException());
 
     assertNull(instance.getById(ID, false));
-    verify(storageMock).getItem(RelationType.class, ID);
+    verify(storageMock).getEntity(RelationType.class, ID);
   }
 
   @Test
   public void testGetByIdWhenItemIsUnknown() throws Exception {
-    when(storageMock.getItem(RelationType.class, ID)).thenReturn(null);
+    when(storageMock.getEntity(RelationType.class, ID)).thenReturn(null);
 
     assertNull(instance.getById(ID, false));
-    verify(storageMock).getItem(RelationType.class, ID);
+    verify(storageMock).getEntity(RelationType.class, ID);
   }
 
   @Test
   public void testGetByIdWhenItemIsNotInCache() throws Exception {
     RelationType type = new RelationType();
-    when(storageMock.getItem(RelationType.class, ID)).thenReturn(type);
+    when(storageMock.getEntity(RelationType.class, ID)).thenReturn(type);
 
     assertEquals(type, instance.getById(ID, false));
-    verify(storageMock).getItem(RelationType.class, ID);
+    verify(storageMock).getEntity(RelationType.class, ID);
   }
 
   @Test
   public void testGetByIdWhenItemIsInCache() throws Exception {
     RelationType type = new RelationType();
-    when(storageMock.getItem(RelationType.class, ID)).thenReturn(type);
+    when(storageMock.getEntity(RelationType.class, ID)).thenReturn(type);
 
     assertEquals(type, instance.getById(ID, false));
     assertEquals(type, instance.getById(ID, false));
-    verify(storageMock, times(1)).getItem(RelationType.class, ID);
+    verify(storageMock, times(1)).getEntity(RelationType.class, ID);
   }
 
   @Test

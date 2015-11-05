@@ -22,24 +22,21 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.storage.Properties.propertyName;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
-import java.util.List;
-import java.util.Map;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
-
+import nl.knaw.huygens.timbuctoo.storage.mongo.MongoProperties;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
 import test.model.BaseDomainEntity;
 import test.model.DatableSystemEntity;
 import test.model.TestSystemEntity;
@@ -48,11 +45,11 @@ import test.model.projectb.SubBDomainEntity;
 import test.variation.model.TestSystemEntityPrimitive;
 import test.variation.model.TestSystemEntityPrimitiveCollections;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class EntityReducerTest {
 
@@ -72,13 +69,19 @@ public class EntityReducerTest {
 
   // ---------------------------------------------------------------------------
 
+  private Properties properties;
   private EntityReducer reducer;
   private ObjectMapper mapper;
 
   @Before
   public void setup() throws Exception {
-    reducer = new EntityReducer(registry);
+    properties = new MongoProperties();
+    reducer = new EntityReducer(properties, registry);
     mapper = new ObjectMapper();
+  }
+
+  private String propertyName(Class<? extends Entity> type, String fieldName) {
+    return properties.propertyName(type, fieldName);
   }
 
   private JsonNode newSystemEntityTree() {
@@ -225,7 +228,7 @@ public class EntityReducerTest {
   }
 
   @Test
-  public void testInduceDatable() throws Exception {
+  public void testReduceDatable() throws Exception {
     Class<? extends Entity> type = DatableSystemEntity.class;
 
     Map<String, Object> map = Maps.newHashMap();

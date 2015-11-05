@@ -22,25 +22,24 @@ package nl.knaw.huygens.timbuctoo.vre;
  * #L%
  */
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.Mockito.mock;
-
-import java.io.IOException;
-import java.util.List;
-
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.Language;
 import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLanguage;
 import nl.knaw.huygens.timbuctoo.model.base.BaseLocation;
-
+import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.google.common.collect.Lists;
+import java.io.IOException;
+import java.util.List;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Mockito.mock;
 
 public class BaseVRETest {
 
@@ -50,7 +49,8 @@ public class BaseVRETest {
   public static void setupVRE() throws IOException {
     List<String> receptionNames = Lists.newArrayList();
     Repository repositoryMock = mock(Repository.class);
-    vre = new PackageVRE("id", "Base VRE", "timbuctoo.model.base", receptionNames, repositoryMock);
+    RelationSearcher relationSearcher = mock(RelationSearcher.class);
+    vre = new PackageVRE("id", "Base VRE", "timbuctoo.model.base", repositoryMock, relationSearcher);
   }
 
   @AfterClass

@@ -76,7 +76,7 @@ public class MongoDB {
   }
 
   @VisibleForTesting
-  MongoDB(Mongo mongo, DB db) {
+  public MongoDB(Mongo mongo, DB db) {
     this.mongo = mongo;
     this.db = db;
   }
@@ -95,6 +95,10 @@ public class MongoDB {
     db.cleanCursors(true);
     mongo.close();
     LOG.info("Closed");
+  }
+
+  public boolean isAvailable() {
+    return mongo.getConnector().isOpen();
   }
 
   /**
@@ -141,7 +145,7 @@ public class MongoDB {
   }
 
   /**
-   * Creates an index on a set of fields, if one does not already exist,
+   * Creates an execute on a set of fields, if one does not already exist,
    * using the specified options.
    */
   public void createIndex(DBCollection collection, DBObject keys, DBObject options) throws StorageException {

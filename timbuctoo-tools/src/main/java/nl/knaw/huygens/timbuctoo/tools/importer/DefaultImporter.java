@@ -234,7 +234,7 @@ public abstract class DefaultImporter {
   // ---------------------------------------------------------------------------
 
   /**
-   * Deletes the non persisted entity's of {@code type} and it's relations from the storage and the index.
+   * Deletes the non persisted entity's of {@code type} and it's relations from the storage and the execute.
    */
   protected void removeNonPersistentEntities(Class<? extends DomainEntity> type) throws StorageException, IndexException {
     List<String> ids = repository.getAllIdsWithoutPID(type);

@@ -30,6 +30,8 @@ import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * The type of a relation between domain entities.
  *
@@ -38,9 +40,12 @@ import org.apache.commons.lang.builder.ToStringStyle;
 @IDPrefix(RelationType.ID_PREFIX)
 public class RelationType extends SystemEntity {
 
+  public static final String REGULAR_NAME = "regularName";
+
   public static final String ID_PREFIX = "RELT";
 
   /** The name of this relation type. */
+  @JsonProperty(REGULAR_NAME)
   private String regularName;
   /** The name of this relation type when source and target are interchanged. */
   private String inverseName;

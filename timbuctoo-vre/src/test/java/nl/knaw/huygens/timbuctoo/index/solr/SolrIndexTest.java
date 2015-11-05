@@ -31,10 +31,13 @@ import nl.knaw.huygens.facetedsearch.model.NoSuchFieldInIndexException;
 import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetedSearchParameters;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetField;
 import nl.knaw.huygens.facetedsearch.model.parameters.IndexDescription;
+import nl.knaw.huygens.facetedsearch.model.parameters.SortDirection;
+import nl.knaw.huygens.facetedsearch.model.parameters.SortParameter;
 import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -56,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.index.solr.SolrQueryMatcher.likeSolrQuery;
+import static nl.knaw.huygens.timbuctoo.index.solr.SortClauseMatcher.likeSortClause;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -65,6 +69,7 @@ import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -80,6 +85,9 @@ public class SolrIndexTest {
   public static final Map<String, Object> FILTERS = Maps.newHashMap();
   public static final String FILTER_VALUE = "filterValue";
   public static final String FILTER_NAME = "filterName";
+  public static final String ID_1 = "id1";
+  public static final String ID_2 = "id2";
+
   @Mock
   private List<? extends DomainEntity> variationsToAdd;
   private AbstractSolrServer solrServerMock;
@@ -88,6 +96,20 @@ public class SolrIndexTest {
   private FacetedSearchLibrary facetedSearchLibraryMock;
   private SolrIndex instance;
   private IndexDescription indexDescriptionMock;
+  public static final Map<String, Object> RESULT_1;
+  public static final Map<String, Object> RESULT_2;
+  public static final String SORT_FIELD_NAME = "field";
+  public static final SortDirection SORT_DIRECTION = SortDirection.ASCENDING;
+  public static final SolrQuery.ORDER SORT_ORDER = SolrQuery.ORDER.asc;
+  private static final List<SortParameter> SORT = Lists.newArrayList(new SortParameter(SORT_FIELD_NAME, SORT_DIRECTION));
+
+  static {
+    RESULT_1 = Maps.newHashMap();
+    RESULT_1.put("key", "value");
+    RESULT_2 = Maps.newHashMap();
+    RESULT_2.put("otherKey", "otherValue");
+  }
+
 
   @Before
   public void setUp() {
@@ -156,7 +178,7 @@ public class SolrIndexTest {
   @Test
   public void testAddWithEmptyVariationList() throws IndexException {
     // action
-    instance.add(Lists.<DomainEntity> newArrayList());
+    instance.add(Lists.<DomainEntity>newArrayList());
 
     // verify
     verifyZeroInteractions(documentCreatorMock, solrServerMock);
@@ -186,7 +208,7 @@ public class SolrIndexTest {
   @Test
   public void testUpdateWithEmptyVariationList() throws IndexException {
     // action
-    instance.update(Lists.<DomainEntity> newArrayList());
+    instance.update(Lists.<DomainEntity>newArrayList());
 
     // verify
     verifyZeroInteractions(documentCreatorMock, solrServerMock);
@@ -289,7 +311,7 @@ public class SolrIndexTest {
   @Test
   public void testDeleteMultipleByIdWithEmptyList() throws IndexException {
     // action
-    final ArrayList<String> emptyList = Lists.<String> newArrayList();
+    final ArrayList<String> emptyList = Lists.<String>newArrayList();
     instance.deleteById(emptyList);
 
     // verify
@@ -535,7 +557,7 @@ public class SolrIndexTest {
   }
 
   private void testSeachFacetedSearchLibraryThrowsAnException(Class<? extends Exception> exceptionToThrow) throws NoSuchFieldInIndexException, FacetedSearchException, SearchException,
-      SearchValidationException {
+    SearchValidationException {
     // setup
     DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
 
@@ -596,25 +618,23 @@ public class SolrIndexTest {
   @Test
   public void doRawSearchAddsTheAdditionalFiltersToTheQuery() throws SolrServerException, SearchException, RawSearchUnavailableException {
     // setup
-    Map<String, Object> result1 = Maps.newHashMap();
-    Map<String, Object> result2 = Maps.newHashMap();
 
     Map<String, Object> filters = Maps.newHashMap();
     filters.put(FILTER_NAME, FILTER_VALUE);
     SolrQueryMatcher expectedQuery = likeSolrQuery().withQuery(getSolrQueryWithAdditionalFilters(QUERY, filters)).withStart(START).withRows(ROWS);
-    setupQueryResponseForQueryWithResults(expectedQuery, result1, result2);
+    setupQueryResponseForQueryWithResults(expectedQuery, RESULT_1, RESULT_2);
 
     // action
     Iterable<Map<String, Object>> searchResult = instance.doRawSearch(QUERY, START, ROWS, filters);
 
     // verify
     verify(solrServerMock).search(argThat(expectedQuery));
-    assertThat(searchResult, containsInAnyOrder(result1, result2));
+    assertThat(searchResult, containsInAnyOrder(RESULT_1, RESULT_2));
   }
 
   private String getSolrQueryWithAdditionalFilters(String query, Map<String, Object> filters) {
-    StringBuilder completeQuery = new StringBuilder(String.format("+(%s)",getSolrQuery(query)));
-    for(Map.Entry<String, Object> filter: filters.entrySet()) {
+    StringBuilder completeQuery = new StringBuilder(String.format("+(%s)", getSolrQuery(query)));
+    for (Map.Entry<String, Object> filter : filters.entrySet()) {
       completeQuery.append(String.format(" +(%s:%s)", filter.getKey(), filter.getValue()));
     }
 
@@ -637,6 +657,7 @@ public class SolrIndexTest {
 
   private SolrDocument createDoc(Map<String, Object> result) {
     SolrDocument doc = mock(SolrDocument.class);
+    when(doc.entrySet()).thenReturn(result.entrySet());
     when(doc.getFieldValueMap()).thenReturn(result);
     return doc;
   }
@@ -655,5 +676,66 @@ public class SolrIndexTest {
 
     // action
     instance.doRawSearch(getSolrQuery(QUERY), START, ROWS, FILTERS);
+  }
+
+  @Test
+  public void getDataByIdsQuerysTheIdFieldOfTheObject() throws Exception {
+    // setup
+    List<String> ids = Lists.newArrayList(ID_1, ID_2);
+    setupQueryResponseForQueryWithResults(likeSolrQuery(), RESULT_1, RESULT_2);
+
+    // action
+    List<Map<String, Object>> actualData = instance.getDataByIds(ids, Lists.newArrayList());
+
+    // verify
+    assertThat(actualData, containsInAnyOrder(RESULT_1, RESULT_2));
+    verify(solrServerMock).search(argThat(likeSolrQuery()//
+      .withQuery(String.format("%s : (%s OR %s)", Entity.INDEX_FIELD_ID, ID_1, ID_2))//
+      .withRows(ids.size())));
+  }
+
+  @Test
+  public void getDataByIdsAppendsASortParamWhenSortIsNotEmpty() throws Exception {
+    // setup
+    List<String> ids = Lists.newArrayList(ID_1, ID_2);
+    setupQueryResponseForQueryWithResults(likeSolrQuery(), RESULT_1, RESULT_2);
+
+    // action
+    List<Map<String, Object>> actualData = instance.getDataByIds(ids, SORT);
+
+    // verify
+    assertThat(actualData, containsInAnyOrder(RESULT_1, RESULT_2));
+    verify(solrServerMock).search(argThat(likeSolrQuery()//
+      .withQuery(String.format("%s : (%s OR %s)", Entity.INDEX_FIELD_ID, ID_1, ID_2))//
+      .withRows(ids.size()) //
+      .withSorts(
+        likeSortClause()
+          .withItem(SORT_FIELD_NAME)
+          .withOrder(SORT_ORDER))));
+  }
+
+  @Test(expected = SearchException.class)
+  public void getDataByIdsThrowsASearchExceptionWhenTheSolrServerThrowsASolrServerException() throws Exception {
+    // setup
+    when(solrServerMock.search(any(SolrQuery.class))).thenThrow(new SolrServerException(MESSAGE));
+
+    instance.getDataByIds(Lists.newArrayList(ID_1, ID_2), SORT);
+  }
+
+  @Test
+  public void getDataByIdsSplitsTheQueryWhenMoreThan1000ItemsAreRequested() throws SearchException, SolrServerException {
+    // setup
+    setupQueryResponseForQueryWithResults(likeSolrQuery());
+    List<String> listWith2500Ids = Lists.newArrayList();
+    for (int i = 0; i < 2500; i++) {
+      listWith2500Ids.add("" + i);
+    }
+
+    // action
+    List<Map<String, Object>> actualData = instance.getDataByIds(listWith2500Ids, SORT);
+
+    // verify
+    verify(solrServerMock, times(2)).search(argThat(likeSolrQuery().withRows(1000)));
+    verify(solrServerMock).search(argThat(likeSolrQuery().withRows(500)));
   }
 }

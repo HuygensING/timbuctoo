@@ -24,26 +24,26 @@ package nl.knaw.huygens.timbuctoo.storage;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.lang.reflect.Field;
+import java.util.Map;
 import java.util.Set;
 
 import nl.knaw.huygens.timbuctoo.config.BusinessRules;
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.inject.Inject;
 
 public class EntityInducer {
 
-  private final ObjectMapper jsonMapper;
+  private final Properties properties;
 
   @Inject
-  public EntityInducer() {
-    jsonMapper = new ObjectMapper();
+  public EntityInducer(Properties properties) {
+    this.properties = properties;
   }
 
   /**
@@ -120,17 +120,30 @@ public class EntityInducer {
    * Creates a Json tree given an object and a field map.
    */
   private ObjectNode createJsonTree(Object object, Class<?> viewType, FieldMap fieldMap) {
-    Properties properties = new Properties(object, viewType, fieldMap);
-    return jsonMapper.valueToTree(properties);
+    try {
+      String prefix = properties.propertyPrefix(viewType);
+      ObjectNode tree = properties.createObjectNode();
+      for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
+        Field field = entry.getValue();
+        JsonNode node = properties.induce(field.getType(), field.get(object));
+        if (node != null) {
+          String fieldName = entry.getKey();
+          tree.put(properties.propertyName(prefix, fieldName), node);
+        }
+      }
+      return tree;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
    * Merges into a tree the values corresponding to the specified keys of the new tree.
    */
   private ObjectNode merge(ObjectNode tree, ObjectNode newTree, Class<?> type, Set<String> fieldNames) {
-    String iname = TypeNames.getInternalName(type);
+    String prefix = properties.propertyPrefix(type);
     for (String fieldName : fieldNames) {
-      String key = Properties.propertyName(iname, fieldName);
+      String key = properties.propertyName(prefix, fieldName);
       JsonNode newValue = newTree.get(key);
       if (newValue != null) {
         tree.put(key, newValue);

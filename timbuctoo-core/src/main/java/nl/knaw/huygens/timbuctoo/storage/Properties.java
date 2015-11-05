@@ -22,24 +22,21 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.Map;
-import java.util.TreeMap;
 
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.util.Datable;
+public interface Properties {
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-public class Properties extends TreeMap<String, Object> {
-
-  /** Separator between parts of a property name. */
-  public static final String SEPARATOR = ":";
+  /**
+   * Returns the prefix for a property name.
+   * @param type the type token of the entity.
+   * @return The prefix.
+   */
+  String propertyPrefix(Class<?> type);
 
   /**
    * Creates the property name for a field of an entity.
@@ -47,67 +44,36 @@ public class Properties extends TreeMap<String, Object> {
    * @param fieldName the name of the field; must not be null or empty.
    * @return The property name.
    */
-  public static String propertyName(Class<? extends Entity> type, String fieldName) {
-    return propertyName(getInternalName(type), fieldName);
-  }
+  String propertyName(Class<? extends Entity> type, String fieldName);
 
   /**
    * Creates the property name for a field of an entity.
-   * @param iname the internal name of the entity.
+   * @param prefix the prefix of the property name.
    * @param fieldName the name of the field; must not be null or empty.
    * @return The property name.
    */
-  public static String propertyName(String iname, String fieldName) {
-    return Character.isLetter(fieldName.charAt(0)) ? iname + SEPARATOR + fieldName : fieldName;
-  }
-
-  // ---------------------------------------------------------------------------
-
-  private static final long serialVersionUID = 1L;
-
-  private static final Logger LOG = LoggerFactory.getLogger(Properties.class);
-
-  public Properties() {}
-
-  public Properties(Object object, Class<?> type) {
-    this(object, type, FieldMap.getInstance(type));
-  }
-
-  public Properties(Object object, Class<?> type, FieldMap fieldMap) {
-    if (object != null) {
-      String iname = TypeNames.getInternalName(type);
-      for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
-        try {
-          Field field = entry.getValue();
-          Object value = convertToSerializable(field.getType(), field.get(object));
-          if (value != null) {
-            String name = propertyName(iname, entry.getKey());
-            put(name, value);
-          }
-        } catch (Exception e) {
-          LOG.error("Error for field '{}'", entry.getValue());
-          throw new RuntimeException(e);
-        }
-      }
-    }
-  }
+  String propertyName(String prefix, String fieldName);
 
   /**
-   * Converts a property value to a value that can be serialized to Json.
+   * @return
    */
-  private Object convertToSerializable(Class<?> type, Object value) {
-    if (value == null) {
-      return null;
-    } else if (type == Datable.class) {
-      return Datable.class.cast(value).getEDTF();
-    } else if (Collection.class.isAssignableFrom(type)) {
-      Collection<?> collection = Collection.class.cast(value);
-      if (collection.isEmpty()) {
-        return null;
-      }
-    }
-    // Assume Jackson can handle it
-    return value;
-  }
+  ObjectNode createObjectNode();
+
+  /**
+   * @param type
+   * @param value
+   * @return
+   * @throws StorageException
+   */
+  JsonNode induce(Class<?> type, Object value) throws StorageException;
+
+  /**
+   * Converts a json node from the storage to a property value.
+   * @param field the field to reduce the value for.
+   * @param node the json node to transform.
+   * @return the property value.
+   * @throws StorageException Thrown if conversion fails.
+   */
+  Object reduce(Field field, JsonNode node) throws StorageException;
 
 }

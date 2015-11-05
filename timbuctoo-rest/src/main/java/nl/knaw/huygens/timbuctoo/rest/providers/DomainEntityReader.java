@@ -103,7 +103,7 @@ public class DomainEntityReader implements MessageBodyReader<Entity> {
     }
 
     if (doc == null) {
-      throw new TimbuctooException(Status.BAD_REQUEST, "Failed to convert entity type %s", entityType);
+      throw new TimbuctooException(Status.BAD_REQUEST, "Failed to create entity type %s", entityType);
     }
 
     Set<ConstraintViolation<Entity>> validationErrors = validator.validate(doc);

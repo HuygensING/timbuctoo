@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.index;
 
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
+import nl.knaw.huygens.facetedsearch.model.parameters.SortParameter;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,12 +72,16 @@ public class NoOpIndex implements Index {
 
   @Override
   public <T extends FacetedSearchParameters<T>> FacetedSearchResult search(FacetedSearchParameters<T> searchParamaters) {
-    LOG.warn("Searching on a non existing index");
+    LOG.warn("Searching on a non existing execute");
     return new FacetedSearchResult();
   }
-
   @Override
   public Iterable<Map<String, Object>> doRawSearch(String query, int start, int rows, Map<String, Object> additionalFilters) {
     return null;
+  }
+
+  @Override
+  public List<Map<String, Object>> getDataByIds(List<String> ids, List<SortParameter> sort) {
+    throw new UnsupportedOperationException("Not implemented yet");
   }
 }

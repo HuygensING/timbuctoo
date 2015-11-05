@@ -22,7 +22,6 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.storage.Properties.propertyName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -33,8 +32,6 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
-
-import test.model.BaseDomainEntity;
 
 import com.google.common.collect.Maps;
 import com.mongodb.BasicDBObject;
@@ -69,9 +66,9 @@ public class MongoQueriesTest {
   @Test
   public void testSelectByProperty() {
     Map<String, Object> expected = Maps.newHashMap();
-    expected.put(propertyName(BaseDomainEntity.class, "value1"), "testValue");
+    expected.put("completePropertyName", "testValue");
 
-    DBObject query = queries.selectByProperty(BaseDomainEntity.class, "value1", "testValue");
+    DBObject query = queries.selectByProperty("completePropertyName", "testValue");
     assertEquals(expected, query.toMap());
   }
 

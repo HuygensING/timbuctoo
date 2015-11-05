@@ -22,18 +22,18 @@ package nl.knaw.huygens.timbuctoo;
  * #L%
  */
 
-import static com.google.common.base.Preconditions.checkState;
-
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.common.collect.UnmodifiableIterator;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import nl.knaw.huygens.timbuctoo.config.EntityMapper;
 import nl.knaw.huygens.timbuctoo.config.EntityMappers;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DerivedProperty;
-import nl.knaw.huygens.timbuctoo.model.DerivedRelationType;
+import nl.knaw.huygens.timbuctoo.model.DerivedRelationDescription;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Language;
@@ -43,7 +43,6 @@ import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
 import nl.knaw.huygens.timbuctoo.storage.RelationTypes;
 import nl.knaw.huygens.timbuctoo.storage.Storage;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
@@ -52,17 +51,22 @@ import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import nl.knaw.huygens.timbuctoo.storage.StorageStatus;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
 import nl.knaw.huygens.timbuctoo.util.KV;
-import nl.knaw.huygens.timbuctoo.util.RelationRefCreator;
-import nl.knaw.huygens.timbuctoo.util.RelationRefCreatorFactory;
+import nl.knaw.huygens.timbuctoo.util.RelationRefAdder;
+import nl.knaw.huygens.timbuctoo.util.RelationRefAdderFactory;
+import nl.knaw.huygens.timbuctoo.util.RepositoryException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
+
+import static com.google.common.base.Preconditions.checkState;
+import static nl.knaw.huygens.timbuctoo.DerivedRelation.aDerivedRelation;
 
 @Singleton
 public class Repository {
@@ -75,10 +79,10 @@ public class Repository {
   private final Storage storage;
   private final EntityMappers entityMappers;
   private final RelationTypes relationTypes;
-  private final RelationRefCreatorFactory relationRefCreatorFactory;
+  private final RelationRefAdderFactory relationRefCreatorFactory;
 
   @Inject
-  public Repository(TypeRegistry registry, Storage storage, RelationRefCreatorFactory relationRefCreatorFactory, RelationTypes relationTypes) throws StorageException {
+  public Repository(TypeRegistry registry, Storage storage, RelationRefAdderFactory relationRefCreatorFactory, RelationTypes relationTypes) throws StorageException {
     this.registry = registry;
     this.storage = storage;
     this.relationRefCreatorFactory = relationRefCreatorFactory;
@@ -162,13 +166,13 @@ public class Repository {
 
   /**
    * Ensures that the specified domain entity has a variation of the appropriate type.
-   *
+   * <p/>
    * Even though a variation of an entity may always be retrieved, it may be "virtual", i.e. constructed
    * with default vales for the fields that do not occur in the corresponding primitive domain entity.
    * This method makes sure that the variation is actually stored.
    */
   public <T extends DomainEntity> void ensureVariation(Class<T> type, String id, Change change) throws StorageException {
-    T entity = getEntity(type, id);
+    T entity = getEntityOrDefaultVariation(type, id);
     if (entity != null && !entity.hasVariation(type)) {
       updateDomainEntity(type, entity, change);
     }
@@ -182,16 +186,17 @@ public class Repository {
 
   /**
    * Deletes a DomainEntity from the database. When the DomainEntity is a primitive the complete DomainEntity
-   *  and it's Relations are removed. When the DomainEntity is a project variation the 
-   *  Variation is removed and the Relations are declined for the project.
-   *  
+   * and it's Relations are removed. When the DomainEntity is a project variation the
+   * Variation is removed and the Relations are declined for the project.
+   * <p/>
    * TODO: Make available for deleting primitives:
-   *  - The PID's should be updated
-   *  - The versions should be deleted
-   *  - The relations should be deleted:
-   *    Update PID's of the relations
+   * - The PID's should be updated
+   * - The versions should be deleted
+   * - The relations should be deleted:
+   * Update PID's of the relations
+   *
    * @param entity
-   * @return 
+   * @return
    * @throws StorageException
    */
   public <T extends DomainEntity> List<String> deleteDomainEntity(T entity) throws StorageException {
@@ -208,7 +213,7 @@ public class Repository {
       EntityMapper mapper = entityMappers.getEntityMapper(type);
       @SuppressWarnings("unchecked")
       Class<? extends Relation> relation = (Class<? extends Relation>) mapper.map(Relation.class);
-      storage.declineRelationsOfEntity(relation, id);
+      storage.declineRelationsOfEntity(relation, id, change);
       return storage.getRelationIds(Lists.newArrayList(id));
     }
   }
@@ -216,11 +221,11 @@ public class Repository {
   /**
    * Deletes non-persistent domain entities with the specified type and id's..
    * The idea behind this method is that domain entities without persistent identifier are not validated yet.
-   * After a bulk import non of the imported entity will have a persistent identifier, until a user has agreed with the imported collection.  
-   * 
-   * @param <T> extends {@code DomainEntity}, because system entities have no persistent identifiers.
+   * After a bulk import non of the imported entity will have a persistent identifier, until a user has agreed with the imported collection.
+   *
+   * @param <T>  extends {@code DomainEntity}, because system entities have no persistent identifiers.
    * @param type the type all of the objects should removed permanently from
-   * @param ids the id's to remove permanently
+   * @param ids  the id's to remove permanently
    * @throws StorageException when the storage layer throws an exception it will be forwarded
    */
   public <T extends DomainEntity> void deleteNonPersistent(Class<T> type, List<String> ids) throws StorageException {
@@ -246,19 +251,19 @@ public class Repository {
     }
   }
 
-  public <T extends Entity> T getEntity(Class<T> type, String id) {
+  public <T extends Entity> T getEntityOrDefaultVariation(Class<T> type, String id) {
     try {
-      return storage.getItem(type, id);
+      return storage.getEntityOrDefaultVariation(type, id);
     } catch (StorageException e) {
       LOG.error("Error in getEntity({}, {}): {}", type.getSimpleName(), id, e.getMessage());
       return null;
     }
   }
 
-  public <T extends DomainEntity> T getEntityWithRelations(Class<T> type, String id) {
+  public <T extends DomainEntity> T getEntityOrDefaultVariationWithRelations(Class<T> type, String id) {
     T entity = null;
     try {
-      entity = storage.getItem(type, id);
+      entity = storage.getEntityOrDefaultVariation(type, id);
       if (entity != null) {
         addRelationsToEntity(entity);
       }
@@ -355,8 +360,8 @@ public class Repository {
   }
 
   /**
-   * Retrieves all the id's of type {@code <T>} that does not have a persistent id. 
-   * 
+   * Retrieves all the id's of type {@code <T>} that does not have a persistent id.
+   *
    * @param type the type of the id's that should be retrieved
    * @return a list with all the ids.
    * @throws StorageException when the storage layer throws an exception it will be forwarded.
@@ -373,6 +378,7 @@ public class Repository {
 
   /**
    * Retrieves the relation type with the specified id.
+   *
    * @throws IllegalStateException when the relation type is required and does not exist.
    */
   public RelationType getRelationTypeById(String id, boolean required) throws IllegalStateException {
@@ -381,6 +387,7 @@ public class Repository {
 
   /**
    * Retrieves the relation type with the specified name, regular or inverse.
+   *
    * @throws IllegalStateException when the relation type is required and does not exist.
    */
   public RelationType getRelationTypeByName(String name, boolean required) throws IllegalStateException {
@@ -399,7 +406,7 @@ public class Repository {
 
   /**
    * Returns the id's of the relations, connected to the entities with the input id's.
-   * The input id's can be the source id as well as the target id of the Relation. 
+   * The input id's can be the source id as well as the target id of the Relation.
    */
   public List<String> getRelationIds(List<String> ids) throws StorageException {
     return storage.getRelationIds(ids);
@@ -415,11 +422,12 @@ public class Repository {
 
   /**
    * Get all the relations that have the type in {@code relationTypIds}.
-   * @param variation the project specific variation of the relation to get.
+   *
+   * @param variation       the project specific variation of the relation to get.
    * @param relationTypeIds the relation type should be in this collection.
    * @return a collection with the found relations.
-   * @throws StorageException 
-   * @deprecated will be removed when the MongoRelationSearcher will be removed. 
+   * @throws StorageException
+   * @deprecated will be removed when the MongoRelationSearcher will be removed.
    */
   @Deprecated
   public <T extends Relation> List<T> getRelationsByType(Class<T> variation, List<String> relationTypeIds) throws StorageException {
@@ -427,7 +435,8 @@ public class Repository {
   }
 
   /**
-   * Get all the relation types that have a name in the relationNames collection. 
+   * Get all the relation types that have a name in the relationNames collection.
+   *
    * @param relationTypeNames collection to get the relation types for.
    * @return the found relation types.
    */
@@ -437,10 +446,11 @@ public class Repository {
 
   /**
    * Adds relations for the specified entity as virtual properties.
-   *
+   * <p/>
    * NOTE We retrieve relations where the entity is source or target with one query;
    * handling them separately would cause complications with reflexive relations.
-   * @param entityMappers 
+   *
+   * @param entityMappers
    */
   private <T extends DomainEntity> void addRelationsTo(T entity, int limit, EntityMappers entityMappers) throws StorageException {
     if (entity != null && limit > 0) {
@@ -450,7 +460,7 @@ public class Repository {
       checkState(mapper != null, "No EntityMapper for type %s", entityType);
       @SuppressWarnings("unchecked")
       Class<? extends Relation> mappedType = (Class<? extends Relation>) mapper.map(Relation.class);
-      RelationRefCreator relationRefCreator = relationRefCreatorFactory.create(mappedType);
+      RelationRefAdder relationRefCreator = relationRefCreatorFactory.create(mappedType);
 
       for (Relation relation : getRelationsByEntityId(entityId, limit, mappedType)) {
         RelationType relType = getRelationTypeById(relation.getTypeId(), REQUIRED);
@@ -480,53 +490,39 @@ public class Repository {
   /**
    * Adds derived relations for the specified entity.
    * Makes sure each relation is added only once.
+   *
    * @param relationRefCreator TODO
    */
-  private <T extends DomainEntity> void addDerivedRelations(T entity, EntityMapper mapper, RelationRefCreator relationRefCreator) throws StorageException {
-    for (DerivedRelationType drtype : entity.getDerivedRelationTypes()) {
-      Set<String> ids = Sets.newHashSet();
+  private <T extends DomainEntity> void addDerivedRelations(T entity, EntityMapper mapper, RelationRefAdder relationRefCreator) throws StorageException {
+    String sourceTypeName = TypeNames.getInternalName(entity.getClass());
+    String sourceId = entity.getId();
 
-      RelationType relationType = getRelationTypeByName(drtype.getSecundaryTypeName(), REQUIRED);
-      boolean regular = relationType.getRegularName().equals(drtype.getSecundaryTypeName());
-      for (RelationRef ref : entity.getRelations(drtype.getPrimaryTypeName())) {
+    for (DerivedRelationDescription drDescription : entity.getDerivedRelationDescriptions()) {
+      Set<DerivedRelation> derivedRelations = Sets.newHashSet();
+
+      RelationType relationType = getRelationTypeByName(drDescription.getSecundaryTypeName(), REQUIRED);
+      boolean regular = relationType.getRegularName().equals(drDescription.getSecundaryTypeName());
+      for (RelationRef ref : entity.getRelations(drDescription.getPrimaryTypeName())) {
         for (Relation relation : findRelations(ref.getId(), relationType.getId(), regular)) {
-          ids.add(regular ? relation.getTargetId() : relation.getSourceId());
+          DerivedRelation derivedRelation = aDerivedRelation() //
+            .withDescription(drDescription) //
+            .withSource(sourceTypeName, sourceId);
+          if (regular) {
+            derivedRelations.add(derivedRelation //
+              .withTarget(relationType.getTargetTypeName(), relation.getTargetId()));
+          } else {
+            derivedRelations.add(derivedRelation //
+              .withTarget(relationType.getSourceTypeName(), relation.getSourceId()));
+          }
+
         }
       }
 
-      // TODO extract method
-      String derivedTypeName = drtype.getDerivedTypeName();
-      relationType = getRelationTypeByName(derivedTypeName, REQUIRED);
-      regular = relationType.getRegularName().equals(derivedTypeName);
-
-      @SuppressWarnings("unchecked")
-      Class<? extends Relation> projectRelationClass = (Class<? extends Relation>) mapper.map(Relation.class);
-
-      for (String id : ids) {
-        Relation relation = createDerivedRelation(relationType, projectRelationClass, entity, id);
-        relationRefCreator.addRelation(entity, mapper, relation, relationType);
+      for (DerivedRelation derivedRelation : derivedRelations) {
+        relationRefCreator.addRelation(entity, mapper, derivedRelation, derivedRelation.getRelationType());
       }
+
     }
-  }
-
-  private Relation createDerivedRelation(RelationType relationType, Class<? extends Relation> projectRelationClass, DomainEntity entity, String relatedId) {
-    RelationBuilder<? extends Relation> relationBuilder = RelationBuilder.newInstance(projectRelationClass);
-    relationBuilder.withRelationType(relationType);
-
-    String entityId = entity.getId();
-    if (isEntitySourceType(relationType, entity)) {
-      relationBuilder.withSourceId(entityId);
-      relationBuilder.withTargetId(relatedId);
-    } else {
-      relationBuilder.withTargetId(entityId);
-      relationBuilder.withSourceId(relatedId);
-    }
-
-    return relationBuilder.build();
-  }
-
-  private boolean isEntitySourceType(RelationType relationType, DomainEntity entity) {
-    return registry.getDomainEntityType(relationType.getSourceTypeName()).isAssignableFrom(entity.getClass());
   }
 
   public <T extends DomainEntity> void addDerivedProperties(VRE vre, T entity) {
@@ -541,7 +537,7 @@ public class Repository {
           String iname = regular ? relation.getTargetType() : relation.getSourceType();
           Class<? extends DomainEntity> type = vre.mapTypeName(iname, REQUIRED);
           String id = regular ? relation.getTargetId() : relation.getSourceId();
-          Object value = type.getMethod(property.getAccessor()).invoke(getEntity(type, id));
+          Object value = type.getMethod(property.getAccessor()).invoke(getEntityOrDefaultVariation(type, id));
           entity.addProperty(property.getPropertyName(), value);
         }
       } catch (Exception e) {
@@ -558,13 +554,56 @@ public class Repository {
 
   /**
    * Checks of a variation of the entity.
+   *
    * @param type the type of the variation
-   * @param id the id of the entity, that should contain the variation
+   * @param id   the id of the entity, that should contain the variation
    * @return true if the variation exist false if not.
-   * @throws StorageException wrapped exception around the database exceptions 
+   * @throws StorageException wrapped exception around the database exceptions
    */
   public boolean doesVariationExist(Class<? extends DomainEntity> type, String id) throws StorageException {
     return storage.doesVariationExist(type, id);
   }
 
+  public <T extends DomainEntity> List<T> getAllRevisions(Class<T> type, String id) throws StorageException {
+    return storage.getAllRevisions(type, id);
+  }
+
+  public Iterator<RelationType> getRelationTypes(Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) throws RepositoryException {
+
+    try {
+      StorageIterator<RelationType> relationTypes = storage.getSystemEntities(RelationType.class);
+      IsRelationTypeBetween isRelationTypeBetween = new IsRelationTypeBetween(sourceType, targetType);
+
+      UnmodifiableIterator<RelationType> filteredRelationTypes = Iterators.filter(relationTypes, relationType -> isRelationTypeBetween.test(relationType));
+
+      return filteredRelationTypes;
+    } catch (StorageException e) {
+      throw new RepositoryException(e);
+    }
+  }
+
+  private static class IsRelationTypeBetween implements Predicate<RelationType> {
+
+    private final String typeName1;
+    private final String typeName2;
+
+    public IsRelationTypeBetween(Class<? extends DomainEntity> type1, Class<? extends DomainEntity> type2) {
+      typeName1 = TypeNames.getInternalName(TypeRegistry.toBaseDomainEntity(type1));
+      typeName2 = TypeNames.getInternalName(TypeRegistry.toBaseDomainEntity(type2));
+    }
+
+
+    @Override
+    public boolean test(RelationType relationType) {
+      return isRegularMatch(relationType) || isInverseMatch(relationType);
+    }
+
+    private boolean isInverseMatch(RelationType relationType) {
+      return typeName1.equals(relationType.getTargetTypeName()) && typeName2.equals(relationType.getSourceTypeName());
+    }
+
+    private boolean isRegularMatch(RelationType relationType) {
+      return typeName1.equals(relationType.getSourceTypeName()) && typeName2.equals(relationType.getTargetTypeName());
+    }
+  }
 }

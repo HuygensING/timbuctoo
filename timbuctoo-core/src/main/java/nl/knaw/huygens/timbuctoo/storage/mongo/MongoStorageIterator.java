@@ -67,7 +67,6 @@ class MongoStorageIterator<T extends Entity> implements StorageIterator<T> {
     }
   }
 
-  @Override
   public int size() {
     return delegate.size();
   }

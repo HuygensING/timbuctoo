@@ -22,9 +22,15 @@ package nl.knaw.huygens.timbuctoo.index.solr;
  * #L%
  */
 
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
+import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.hamcrest.PropertyMatcher;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
+
+import java.util.List;
 
 public class SolrQueryMatcher extends CompositeMatcher<SolrQuery> {
 
@@ -36,7 +42,7 @@ public class SolrQueryMatcher extends CompositeMatcher<SolrQuery> {
   }
 
   public SolrQueryMatcher withQuery(String query) {
-    this.addMatcher(new PropertyMatcher<SolrQuery>("query", query) {
+    this.addMatcher(new PropertyEqualityMatcher<SolrQuery, String>("query", query) {
       @Override
       protected String getItemValue(SolrQuery item) {
         return item.getQuery();
@@ -47,22 +53,33 @@ public class SolrQueryMatcher extends CompositeMatcher<SolrQuery> {
   }
 
   public SolrQueryMatcher withStart(int start) {
-    // FIXME: change the code to an Integer matcher.
-    this.addMatcher(new PropertyMatcher<SolrQuery>("start", "" + start) {
+    this.addMatcher(new PropertyEqualityMatcher<SolrQuery, Integer>("start", start) {
       @Override
-      protected String getItemValue(SolrQuery item) {
-        return "" + item.getStart();
+      protected Integer getItemValue(SolrQuery item) {
+        return item.getStart();
       }
     });
     return this;
   }
 
   public SolrQueryMatcher withRows(int rows) {
-    // FIXME: change the code to an Integer matcher.
-    this.addMatcher(new PropertyMatcher<SolrQuery>("rows", "" + rows) {
+    this.addMatcher(new PropertyEqualityMatcher<SolrQuery, Integer>("rows", rows) {
       @Override
-      protected String getItemValue(SolrQuery item) {
-        return "" + item.getRows();
+      protected Integer getItemValue(SolrQuery item) {
+        return item.getRows();
+      }
+    });
+    return this;
+  }
+
+
+  public SolrQueryMatcher withSorts(SortClauseMatcher... sorts) {
+    List<? super SortClauseMatcher> sortClauseMatchers = Lists.newArrayList(sorts);
+
+    this.addMatcher(new PropertyMatcher<SolrQuery, Iterable<SolrQuery.SortClause>>("sorts", Matchers.containsInAnyOrder((Matcher[]) sorts)) {
+      @Override
+      protected Iterable<SolrQuery.SortClause> getItemValue(SolrQuery item) {
+        return item.getSorts();
       }
     });
     return this;

@@ -22,26 +22,23 @@ package nl.knaw.huygens.timbuctoo.persistence;
  * #L%
  */
 
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import nl.knaw.huygens.persistence.PersistenceException;
+import nl.knaw.huygens.persistence.PersistenceManager;
+import nl.knaw.huygens.timbuctoo.config.Paths;
+import org.junit.Before;
+import org.junit.Test;
+import test.rest.model.TestSystemEntity;
+import test.rest.model.projecta.ProjectADomainEntity;
 
 import java.util.Arrays;
 import java.util.List;
 
-import nl.knaw.huygens.persistence.PersistenceException;
-import nl.knaw.huygens.persistence.PersistenceManager;
-import nl.knaw.huygens.timbuctoo.config.Paths;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import test.rest.model.TestSystemEntity;
-import test.rest.model.projecta.ProjectADomainEntity;
-
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class PersistenceWrapperTest {
 
@@ -50,6 +47,8 @@ public class PersistenceWrapperTest {
   private static final String URL_WITH_ENDING_SLASH = "http://test.nl/";
   private static final Class<ProjectADomainEntity> DEFAULT_DOMAIN_TYPE = ProjectADomainEntity.class;
   private static final Class<TestSystemEntity> DEFAULT_SYSTEM_TYPE = TestSystemEntity.class;
+  public static final String HANDLE_PREFIX = "http://hdl.handle.net/11240/";
+  public static final String PID = "pid";
   private PersistenceManager persistenceManager;
 
   @Before
@@ -106,15 +105,21 @@ public class PersistenceWrapperTest {
   }
 
   @Test
-  public void updatePIDShouldChangeTheCurrentURLReferredInThePID() throws PersistenceException {
-    String pid = "pid";
+  public void updatePIDUpdatesThePIDOfTheEntity() throws PersistenceException {
+        PersistenceWrapper persistenceWrapper = createInstance(URL_WITH_ENDING_SLASH);
+    ProjectADomainEntity entity = new ProjectADomainEntity();
+    entity.setPid(String.format(HANDLE_PREFIX + "%s", PID));
+    entity.setId(DEFAULT_ID);
+    entity.setRev(10);
 
-    PersistenceWrapper persistenceWrapper = createInstance(URL_WITH_ENDING_SLASH);
+    // action
+    persistenceWrapper.updatePID(entity);
 
-    persistenceWrapper.updatePID(pid, DEFAULT_DOMAIN_TYPE, DEFAULT_ID, 10);
-
-    verify(persistenceManager).modifyURLForPersistentId(pid, createURL(Paths.DOMAIN_PREFIX, "basedomainentities/1234?rev=10"));
+    // verify
+    String expectedUrl = createURL(Paths.DOMAIN_PREFIX, String.format("basedomainentities/1234?rev=10"));
+    verify(persistenceManager).modifyURLForPersistentId(PID, expectedUrl);
   }
+
 
   private void verifyADomainEntityIsPersisted(String entityPath) throws PersistenceException {
     verify(persistenceManager).persistURL(createURL(Paths.DOMAIN_PREFIX, entityPath));

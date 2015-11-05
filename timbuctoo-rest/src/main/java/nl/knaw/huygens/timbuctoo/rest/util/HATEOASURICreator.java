@@ -22,32 +22,32 @@ package nl.knaw.huygens.timbuctoo.rest.util;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.config.Paths.SEARCH_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.V1_PATH;
-
-import java.net.URI;
-
-import javax.ws.rs.core.UriBuilder;
-
+import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 
-import com.google.inject.Inject;
+import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
+
+import static nl.knaw.huygens.timbuctoo.config.Paths.SEARCH_PATH;
 
 public class HATEOASURICreator {
 
+  public static final String PUBLIC_URL = "public_url";
   private final String publicUrl;
 
   @Inject
   public HATEOASURICreator(Configuration config) {
-    publicUrl = config.getSetting("public_url");
+    publicUrl = config.getSetting(PUBLIC_URL);
   }
 
   /**
    * Creates a uri for the search resource.
    */
-  public URI createHATEOASURI(int start, int rows, String queryId) {
+  private URI createHATEOASURI(int start, int rows, String queryId, String versionPath) {
     UriBuilder builder = UriBuilder.fromUri(publicUrl);
-    builder.path(V1_PATH);
+    if (versionPath != null) {
+      builder.path(versionPath);
+    }
     builder.path(SEARCH_PATH);
 
     builder.path(queryId);
@@ -59,7 +59,29 @@ public class HATEOASURICreator {
    * Convenience method for {@code createHATEOASURI}
    */
   public String createHATEOASURIAsString(final int start, final int rows, final String queryId) {
-    return createHATEOASURI(start, rows, queryId).toString();
+    return createHATEOASURI(start, rows, queryId, null).toString();
   }
+
+  public String createHATEOASURIAsString(int start, int rows, String queryId, String versionPath) {
+    return createHATEOASURI(start,rows, queryId, versionPath).toString();
+  }
+
+  public String createNextResultsAsString(int currentStart, int requestedRows, int totalFound, String queryId, String version) {
+    int nextStart = currentStart + requestedRows;
+    if (nextStart >= totalFound) {
+      return null;
+    }
+
+    return createHATEOASURIAsString(nextStart, requestedRows, queryId, version);
+  }
+
+  public String createPrevResultsAsString(int currentStart, int requestedRows, String queryId, String version) {
+    if(currentStart == 0){
+      return null;
+    }
+    int previousStart = Math.max(currentStart - requestedRows, 0);
+    return createHATEOASURIAsString(previousStart, requestedRows, queryId, version);
+  }
+
 
 }

@@ -22,7 +22,45 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.ClientResponse.Status;
+import com.sun.jersey.api.client.GenericType;
+import com.sun.jersey.api.client.WebResource;
+import nl.knaw.huygens.timbuctoo.config.Paths;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.messages.ActionType;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
+import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
+import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
+import nl.knaw.huygens.timbuctoo.storage.UpdateException;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
+import org.junit.Test;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
+import test.rest.model.BaseDomainEntity;
+import test.rest.model.projecta.OtherDomainEntity;
+import test.rest.model.projecta.ProjectADomainEntity;
+import test.rest.model.projecta.ProjectARelation;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Path;
+import javax.validation.Validator;
+import javax.validation.metadata.ConstraintDescriptor;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.List;
+
 import static com.google.common.net.HttpHeaders.AUTHORIZATION;
+import static nl.knaw.huygens.timbuctoo.config.Paths.PID_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.UPDATE_PID_PATH;
 import static nl.knaw.huygens.timbuctoo.config.TypeNames.getExternalName;
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 import static nl.knaw.huygens.timbuctoo.rest.util.QueryParameters.REVISION_KEY;
@@ -41,46 +79,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.List;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.Path;
-import javax.validation.Validator;
-import javax.validation.metadata.ConstraintDescriptor;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-
-import nl.knaw.huygens.timbuctoo.config.Paths;
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.messages.ActionType;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
-import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
-import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
-import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
-import nl.knaw.huygens.timbuctoo.storage.UpdateException;
-import nl.knaw.huygens.timbuctoo.vre.VRE;
-
-import org.junit.Test;
-import org.mockito.Matchers;
-import org.mockito.Mockito;
-
-import test.rest.model.BaseDomainEntity;
-import test.rest.model.projecta.OtherDomainEntity;
-import test.rest.model.projecta.ProjectADomainEntity;
-import test.rest.model.projecta.ProjectARelation;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.ClientResponse.Status;
-import com.sun.jersey.api.client.GenericType;
-import com.sun.jersey.api.client.WebResource;
-
 public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   protected static final Class<ProjectADomainEntity> DEFAULT_TYPE = ProjectADomainEntity.class;
@@ -89,9 +87,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   protected static final Class<BaseDomainEntity> BASE_TYPE = BaseDomainEntity.class;
   protected static final String BASE_RESOURCE = TypeNames.getExternalName(BASE_TYPE);
 
-  protected static final String PERSISTENCE_PRODUCER = "persistenceProducer";
-  protected static final String INDEX_PRODUCER = "indexProducer";
   protected static final String DEFAULT_ID = "TEST000000000001";
+  public static final String UNKNOWN_TYPE_RESOURCE = "unknowntypes";
+
 
   protected WebResource createResource(String... pathElements) {
     return addPathToWebResource(resource().path(getAPIVersion()).path(Paths.DOMAIN_PREFIX), pathElements);
@@ -109,7 +107,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   @Test
   public void testGetEntityExisting() throws Exception {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
-    when(repository.getEntityWithRelations(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariationWithRelations(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
 
     ClientResponse response = createResource(DEFAULT_RESOURCE, DEFAULT_ID) //
         .get(ClientResponse.class);
@@ -140,7 +138,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
   @Test
   public void testGetEntityNonExistingInstance() {
-    when(repository.getEntity(DEFAULT_TYPE, "TST0000000001")).thenReturn(null);
+    when(repository.getEntityOrDefaultVariation(DEFAULT_TYPE, "TST0000000001")).thenReturn(null);
 
     ClientResponse response = createResource(DEFAULT_RESOURCE, "TST0000000001") //
         .get(ClientResponse.class);
@@ -160,7 +158,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     StorageIterator<ProjectADomainEntity> iterator = StorageIteratorStub.newInstance(expectedList);
     when(repository.getDomainEntities(DEFAULT_TYPE)).thenReturn(iterator);
 
-    GenericType<List<ProjectADomainEntity>> genericType = new GenericType<List<ProjectADomainEntity>>() {};
+    GenericType<List<ProjectADomainEntity>> genericType = new GenericType<List<ProjectADomainEntity>>() {
+    };
 
     ClientResponse response = createResource(DEFAULT_RESOURCE) //
         .get(ClientResponse.class);
@@ -192,7 +191,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
 
-    when(repository.getEntity(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = createResource(DEFAULT_RESOURCE, DEFAULT_ID) //
@@ -215,7 +214,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
 
-    when(repository.getEntity(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = createResource(DEFAULT_RESOURCE, DEFAULT_ID) //
@@ -236,7 +235,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     makeVREAvailable(vre, VRE_ID);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
-    when(repository.getEntity(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = createResource(DEFAULT_RESOURCE, DEFAULT_ID) //
@@ -305,7 +304,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
       }
     };
 
-    when(validator.validate(entity)).thenReturn(Sets.<ConstraintViolation<ProjectADomainEntity>> newHashSet(violation));
+    when(validator.validate(entity)).thenReturn(Sets.<ConstraintViolation<ProjectADomainEntity>>newHashSet(violation));
 
     ClientResponse response = createResource(DEFAULT_RESOURCE, DEFAULT_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
@@ -327,8 +326,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
 
-    when(repository.getEntity(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
-    doThrow(UpdateException.class).when(repository).updateDomainEntity(Matchers.<Class<ProjectADomainEntity>> any(), any(ProjectADomainEntity.class), any(Change.class));
+    when(repository.getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
+    doThrow(UpdateException.class).when(repository).updateDomainEntity(Matchers.<Class<ProjectADomainEntity>>any(), any(ProjectADomainEntity.class), any(Change.class));
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = createResource(DEFAULT_RESOURCE, DEFAULT_ID) //
@@ -351,8 +350,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
 
-    when(repository.getEntity(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
-    doThrow(NoSuchEntityException.class).when(repository).updateDomainEntity(Matchers.<Class<ProjectADomainEntity>> any(), any(ProjectADomainEntity.class), any(Change.class));
+    when(repository.getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
+    doThrow(NoSuchEntityException.class).when(repository).updateDomainEntity(Matchers.<Class<ProjectADomainEntity>>any(), any(ProjectADomainEntity.class), any(Change.class));
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = createResource(DEFAULT_RESOURCE, DEFAULT_ID) //
@@ -477,7 +476,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .withTargetId(targetId) //
         .withPid("65262031-c5c2-44f9-b90e-11f9fc7736cf") //
         .build();
-    when(repository.getEntity(type, id)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariation(type, id)).thenReturn(entity);
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = createResource(getExternalName(type), id) //
@@ -510,7 +509,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     makeVREAvailable(vre, VRE_ID);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID, "test");
-    when(repository.addDomainEntity(Matchers.<Class<ProjectADomainEntity>> any(), any(DEFAULT_TYPE), any(Change.class))).thenReturn(DEFAULT_ID);
+    when(repository.addDomainEntity(Matchers.<Class<ProjectADomainEntity>>any(), any(DEFAULT_TYPE), any(Change.class))).thenReturn(DEFAULT_ID);
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = createResource(DEFAULT_RESOURCE) //
@@ -533,7 +532,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     makeVREAvailable(vre, VRE_ID);
 
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID, "test");
-    when(repository.addDomainEntity(Matchers.<Class<ProjectADomainEntity>> any(), any(DEFAULT_TYPE), any(Change.class))).thenReturn(DEFAULT_ID);
+    when(repository.addDomainEntity(Matchers.<Class<ProjectADomainEntity>>any(), any(DEFAULT_TYPE), any(Change.class))).thenReturn(DEFAULT_ID);
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = createResource(DEFAULT_RESOURCE) //
@@ -546,21 +545,6 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   }
 
   //Request handled by the framework.
-  @Test
-  public void testPostNonExistingCollection() throws Exception {
-    setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
-
-    ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID, "test");
-
-    ClientResponse response = createResource("unknown", "all") //
-        .type(MediaType.APPLICATION_JSON_TYPE) //
-        .header(AUTHORIZATION, CREDENTIALS) //
-        .header(VRE_ID_KEY, VRE_ID).post(ClientResponse.class, entity);
-    verifyResponseStatus(response, Status.NOT_FOUND);
-
-    verifyZeroInteractions(getChangeHelper());
-  }
-
   @Test
   public void testPostWrongType() throws Exception {
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
@@ -614,7 +598,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .withTargetType(targetType) //
         .withTargetId(targetId) //
         .build();
-    when(repository.addDomainEntity(Matchers.<Class<ProjectARelation>> any(), any(type), any(Change.class))).thenReturn(id);
+    when(repository.addDomainEntity(Matchers.<Class<ProjectARelation>>any(), any(type), any(Change.class))).thenReturn(id);
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = createResource(getExternalName(type)) //
@@ -651,7 +635,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     BaseDomainEntity entity = new BaseDomainEntity(DEFAULT_ID);
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
-    when(repository.getEntity(BASE_TYPE, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariation(BASE_TYPE, DEFAULT_ID)).thenReturn(entity);
 
     ClientResponse response = createResource(BASE_RESOURCE, DEFAULT_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
@@ -677,7 +661,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     verifyResponseStatus(response, Status.BAD_REQUEST);
 
     verifyZeroInteractions(getChangeHelper());
-    verify(repository, times(0)).getEntity(DEFAULT_TYPE, DEFAULT_ID);
+    verify(repository, times(0)).getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID);
   }
 
   @Test
@@ -685,7 +669,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
 
     BaseDomainEntity entity = new BaseDomainEntity(DEFAULT_ID);
-    when(repository.getEntity(BASE_TYPE, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariation(BASE_TYPE, DEFAULT_ID)).thenReturn(entity);
 
     ClientResponse response = createResource(BASE_RESOURCE, DEFAULT_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
@@ -701,7 +685,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
 
     setVREExist(VRE_ID, true);
-    when(repository.getEntity(BASE_TYPE, DEFAULT_ID)).thenReturn(null);
+    when(repository.getEntityOrDefaultVariation(BASE_TYPE, DEFAULT_ID)).thenReturn(null);
 
     ClientResponse response = createResource(BASE_RESOURCE, DEFAULT_ID) //
         .type(MediaType.APPLICATION_JSON_TYPE) //
@@ -743,7 +727,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   @Test
   public void testGetEntityNotLoggedIn() throws Exception {
     ProjectADomainEntity expectedDoc = new ProjectADomainEntity(DEFAULT_ID);
-    when(repository.getEntityWithRelations(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(expectedDoc);
+    when(repository.getEntityOrDefaultVariationWithRelations(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(expectedDoc);
 
     ClientResponse response = createResource(DEFAULT_RESOURCE, DEFAULT_ID) //
         .get(ClientResponse.class);
@@ -753,7 +737,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
   @Test
   public void testGetEntityEmptyAuthorizationKey() throws Exception {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
-    when(repository.getEntityWithRelations(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariationWithRelations(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
 
     ClientResponse response = createResource(DEFAULT_RESOURCE, DEFAULT_ID) //
         .get(ClientResponse.class);
@@ -885,7 +869,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = doPutPIDRequest(BASE_RESOURCE);
     verifyResponseStatus(response, Status.BAD_REQUEST);
 
-    verify(repository, never()).getAllIdsWithoutPID(Mockito.<Class<? extends DomainEntity>> any());
+    verify(repository, never()).getAllIdsWithoutPID(Mockito.<Class<? extends DomainEntity>>any());
     verifyZeroInteractions(getChangeHelper());
   }
 
@@ -900,7 +884,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = doPutPIDRequest(DEFAULT_RESOURCE);
     verifyResponseStatus(response, Status.FORBIDDEN);
 
-    verify(repository, never()).getAllIdsWithoutPID(Mockito.<Class<? extends DomainEntity>> any());
+    verify(repository, never()).getAllIdsWithoutPID(Mockito.<Class<? extends DomainEntity>>any());
     verifyZeroInteractions(getChangeHelper());
   }
 
@@ -910,10 +894,10 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     setVREExist(VRE_ID, true);
 
-    ClientResponse response = doPutPIDRequest("unknowntypes");
+    ClientResponse response = doPutPIDRequest(UNKNOWN_TYPE_RESOURCE);
     verifyResponseStatus(response, Status.NOT_FOUND);
 
-    verify(repository, never()).getAllIdsWithoutPID(Mockito.<Class<? extends DomainEntity>> any());
+    verify(repository, never()).getAllIdsWithoutPID(Mockito.<Class<? extends DomainEntity>>any());
     verifyZeroInteractions(getChangeHelper());
   }
 
@@ -923,15 +907,95 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     setVREExist(VRE_ID, true);
 
-    ClientResponse response = doPutPIDRequest("unknowntypes");
+    ClientResponse response = doPutPIDRequest(UNKNOWN_TYPE_RESOURCE);
     verifyResponseStatus(response, Status.FORBIDDEN);
 
-    verify(repository, never()).getAllIdsWithoutPID(Mockito.<Class<? extends DomainEntity>> any());
+    verify(repository, never()).getAllIdsWithoutPID(Mockito.<Class<? extends DomainEntity>>any());
     verifyZeroInteractions(getChangeHelper());
   }
 
   private ClientResponse doPutPIDRequest(String collectionName) {
-    return createResource(collectionName, "pid") //
+    return createResource(collectionName, PID_PATH) //
+        .header(AUTHORIZATION, CREDENTIALS) //
+        .header(VRE_ID_KEY, VRE_ID) //
+        .put(ClientResponse.class);
+  }
+
+
+  // update pids
+
+  @Test
+  public void updatePIDsUpdatesThePIDOfACertainType() {
+    // setup
+    setupUserWithRoles(VRE_ID, USER_ID, ADMIN_ROLE);
+
+    VRE vre = mock(VRE.class);
+    when(vre.inScope(BASE_TYPE)).thenReturn(true);
+    makeVREAvailable(vre, VRE_ID);
+
+    // action
+    ClientResponse response = doUpdatePIDRequest(DEFAULT_RESOURCE);
+
+
+    // verify
+    verifyResponseStatus(response, Status.NO_CONTENT);
+    verify(getChangeHelper()).sendUpdatePIDMessage(DEFAULT_TYPE);
+  }
+
+
+
+  @Test
+  public void updatePIDsReturnsNotFoundIfTheTypeIsUnknown() {
+    // setup
+    setupUserWithRoles(VRE_ID, USER_ID, ADMIN_ROLE);
+
+    setVREExist(VRE_ID, true);
+
+    // action
+    ClientResponse response = doUpdatePIDRequest(UNKNOWN_TYPE_RESOURCE);
+
+    // verify
+    verifyResponseStatus(response, Status.NOT_FOUND);
+    verify(getChangeHelper(), never()).sendUpdatePIDMessage(DEFAULT_TYPE);
+  }
+
+  @Test
+  public void updatePIDsReturnsForbiddenWhenTheUserIsNotAnAdmin() {
+    // setup
+    setupUserWithRoles(VRE_ID, USER_ID, USER_ROLE);
+
+    VRE vre = mock(VRE.class);
+    makeVREAvailable(vre, VRE_ID);
+
+    // action
+    ClientResponse response = doUpdatePIDRequest(UNKNOWN_TYPE_RESOURCE);
+
+
+    // verify
+    verifyResponseStatus(response, Status.FORBIDDEN);
+    verify(getChangeHelper(), never()).sendUpdatePIDMessage(DEFAULT_TYPE);
+  }
+
+  @Test
+  public void updatePIDsReturnsForbiddenWhenTheVREIsNotAllowedToEditTheBaseType() {
+    // setup
+    setupUserWithRoles(VRE_ID, USER_ID, ADMIN_ROLE);
+
+    VRE vre = mock(VRE.class);
+    when(vre.inScope(BASE_TYPE)).thenReturn(false);
+    makeVREAvailable(vre, VRE_ID);
+
+    // action
+    ClientResponse response = doUpdatePIDRequest(DEFAULT_RESOURCE);
+
+
+    // verify
+    verifyResponseStatus(response, Status.FORBIDDEN);
+    verify(getChangeHelper(), never()).sendUpdatePIDMessage(DEFAULT_TYPE);
+  }
+
+  private ClientResponse doUpdatePIDRequest(String collection) {
+    return  createResource(collection, UPDATE_PID_PATH) //
         .header(AUTHORIZATION, CREDENTIALS) //
         .header(VRE_ID_KEY, VRE_ID) //
         .put(ClientResponse.class);

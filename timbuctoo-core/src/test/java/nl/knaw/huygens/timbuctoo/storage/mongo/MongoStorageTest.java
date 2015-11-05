@@ -22,7 +22,6 @@ package nl.knaw.huygens.timbuctoo.storage.mongo;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.storage.Properties.propertyName;
 import static nl.knaw.huygens.timbuctoo.storage.mongo.JacksonDBObjectMatcher.jacksonDBObjectMatcherHasObject;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -41,12 +40,14 @@ import java.util.Map;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.storage.EntityInducer;
 import nl.knaw.huygens.timbuctoo.storage.EntityReducer;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
+import nl.knaw.huygens.timbuctoo.storage.Properties;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 
 import org.junit.AfterClass;
@@ -86,13 +87,19 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   // ---------------------------------------------------------------------------
 
+  private Properties properties;
   private MongoStorage storage;
 
   @Override
   protected void setupStorage() {
-    EntityInducer inducer = new EntityInducer();
-    EntityReducer reducer = new EntityReducer(registry);
-    storage = new MongoStorage(mongoDB, entityIds, inducer, reducer);
+    properties = new MongoProperties();
+    EntityInducer inducer = new EntityInducer(properties);
+    EntityReducer reducer = new EntityReducer(properties, registry);
+    storage = new MongoStorage(mongoDB, entityIds, properties, inducer, reducer);
+  }
+
+  private String propertyName(Class<? extends Entity> type, String fieldName) {
+    return properties.propertyName(type, fieldName);
   }
 
   // ---------------------------------------------------------------------------
@@ -309,7 +316,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
     propertiesWithValues.put(DomainEntity.PID, null);
 
     // action
-    storage.declineRelationsOfEntity(type, DEFAULT_ID);
+    storage.declineRelationsOfEntity(type, DEFAULT_ID, Change.newInternalInstance());
 
     // verify
     DBObject setQueryPart = queries.setPropertiesToValue(propertiesWithValues);
@@ -323,7 +330,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
   @Test(expected = IllegalArgumentException.class)
   public void declineRelationsOfEntityRemovesThrowsAnIllegalArgumentExceptionWhenTheRelationTypeIsPrimitive() throws Exception {
     try {
-      storage.declineRelationsOfEntity(Relation.class, DEFAULT_ID);
+      storage.declineRelationsOfEntity(Relation.class, DEFAULT_ID, Change.newInternalInstance());
     } finally {
       verifyZeroInteractions(mongoDB);
     }
@@ -415,7 +422,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetItemForSystemEntity() throws Exception {
-    storage.getItem(TestSystemEntity.class, DEFAULT_ID);
+    storage.getEntityOrDefaultVariation(TestSystemEntity.class, DEFAULT_ID);
 
     DBObject query = queries.selectById(DEFAULT_ID);
     verify(mongoDB).findOne(dbCollection, query);
@@ -424,7 +431,7 @@ public class MongoStorageTest extends MongoStorageTestBase {
 
   @Test
   public void testGetItemForDomainEntity() throws Exception {
-    storage.getItem(BaseVariationDomainEntity.class, DEFAULT_ID);
+    storage.getEntityOrDefaultVariation(BaseVariationDomainEntity.class, DEFAULT_ID);
 
     DBObject query = queries.selectById(DEFAULT_ID);
     verify(mongoDB).findOne(dbCollection, query);
@@ -500,15 +507,12 @@ public class MongoStorageTest extends MongoStorageTestBase {
   @Test
   public void testGetRelationsByType() throws Exception {
     // setup
-    final String id1 = "id1";
-    final String id2 = "id2";
-    List<String> relationTypeIds = Lists.newArrayList(id1, id2);
-
-    final Class<Relation> type = Relation.class;
-    DBObject query = queries.selectByProperty(type, Relation.TYPE_ID, relationTypeIds);
+    String propertyName = properties.propertyName(Relation.class, Relation.TYPE_ID);
+    List<String> relationTypeIds = Lists.newArrayList("id1", "id2");
+    DBObject query = queries.selectByProperty(propertyName, relationTypeIds);
 
     // action
-    storage.getRelationsByType(type, relationTypeIds);
+    storage.getRelationsByType(Relation.class, relationTypeIds);
 
     // verify
     verify(mongoDB).find(dbCollection, query);

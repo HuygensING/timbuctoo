@@ -22,31 +22,25 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static nl.knaw.huygens.timbuctoo.storage.Properties.propertyName;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.google.inject.Inject;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Entity;
+import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Entity;
-import nl.knaw.huygens.timbuctoo.model.SystemEntity;
-import nl.knaw.huygens.timbuctoo.model.util.Datable;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.google.inject.Inject;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * This is the complementary class of {@link EntityInducer}.
@@ -61,13 +55,13 @@ public class EntityReducer {
 
   private static final Logger LOG = LoggerFactory.getLogger(EntityReducer.class);
 
+  private final Properties properties;
   private final TypeRegistry typeRegistry;
-  private final ObjectMapper jsonMapper;
 
   @Inject
-  public EntityReducer(TypeRegistry registry) {
+  public EntityReducer(Properties properties, TypeRegistry registry) {
+    this.properties = properties;
     typeRegistry = registry;
-    jsonMapper = new ObjectMapper();
   }
 
   public <T extends Entity> T reduceVariation(Class<T> type, JsonNode tree) throws StorageException {
@@ -150,52 +144,20 @@ public class EntityReducer {
   private <T> T reduceObject(JsonNode tree, Class<T> type, Class<?> viewType) throws StorageException {
     try {
       T object = type.newInstance();
-      String iname = TypeNames.getInternalName(viewType);
+      String prefix = properties.propertyPrefix(viewType);
       FieldMap fields = FieldMap.getCombinedInstance(viewType);
       for (Map.Entry<String, Field> entry : fields.entrySet()) {
-        String key = propertyName(iname, entry.getKey());
+        String key = properties.propertyName(prefix, entry.getKey());
         JsonNode node = tree.findValue(key);
         if (node != null) {
           Field field = entry.getValue();
-          Object value = convertJsonNodeToValue(field.getType(), node);
+          Object value = properties.reduce(field, node);
           field.set(object, value);
         }
       }
       return object;
     } catch (Exception e) {
       LOG.error("Error while reducing object of type {}: {}", type, e.getMessage());
-      throw new StorageException(e);
-    }
-  }
-
-  private <T> Object convertJsonNodeToValue(Class<T> fieldType, JsonNode node) throws StorageException {
-    if (node.isArray()) {
-      return createCollection(node);
-    } else if (fieldType == Integer.class || fieldType == int.class) {
-      return node.asInt();
-    } else if (fieldType == Boolean.class || fieldType == boolean.class) {
-      return node.asBoolean();
-    } else if (fieldType == Character.class || fieldType == char.class) {
-      return node.asText().charAt(0);
-    } else if (fieldType == Double.class || fieldType == double.class) {
-      return node.asDouble();
-    } else if (fieldType == Float.class || fieldType == float.class) {
-      return (float) node.asDouble();
-    } else if (fieldType == Long.class || fieldType == long.class) {
-      return node.asLong();
-    } else if (fieldType == Short.class || fieldType == short.class) {
-      return (short) node.asInt();
-    } else if (Datable.class.isAssignableFrom(fieldType)) {
-      return new Datable(node.asText());
-    } else {
-      return jsonMapper.convertValue(node, fieldType);
-    }
-  }
-
-  private Object createCollection(JsonNode value) throws StorageException {
-    try {
-      return jsonMapper.readValue(value.toString(), new TypeReference<List<? extends Object>>() {});
-    } catch (Exception e) {
       throw new StorageException(e);
     }
   }

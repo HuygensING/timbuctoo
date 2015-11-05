@@ -22,17 +22,33 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
-import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
-import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.SEARCH_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.V1_OR_V2_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.VERSION_PARAM;
-import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
-
-import java.net.URI;
+import com.google.inject.Inject;
+import nl.knaw.huygens.solr.SearchParametersV1;
+import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
+import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.config.Paths;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.SearchResult;
+import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
+import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
+import nl.knaw.huygens.timbuctoo.rest.providers.CSVProvider;
+import nl.knaw.huygens.timbuctoo.rest.providers.XLSProvider;
+import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
+import nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultMapper;
+import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
+import nl.knaw.huygens.timbuctoo.rest.util.search.SearchResultMapper;
+import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
+import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -46,42 +62,21 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
 
-import nl.knaw.huygens.solr.RelationSearchParameters;
-import nl.knaw.huygens.solr.SearchParametersV1;
-import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
-import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
-import nl.knaw.huygens.timbuctoo.model.SearchResult;
-import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
-import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
-import nl.knaw.huygens.timbuctoo.rest.providers.CSVProvider;
-import nl.knaw.huygens.timbuctoo.rest.providers.XLSProvider;
-import nl.knaw.huygens.timbuctoo.rest.util.search.RegularSearchResultMapper;
-import nl.knaw.huygens.timbuctoo.rest.util.search.RelationSearchResultMapper;
-import nl.knaw.huygens.timbuctoo.rest.util.search.SearchRequestValidator;
-import nl.knaw.huygens.timbuctoo.rest.util.search.SearchResultMapper;
-import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
-import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
-import nl.knaw.huygens.timbuctoo.vre.VRE;
-import nl.knaw.huygens.timbuctoo.vre.VRECollection;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PARAM;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.SEARCH_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.V1_TO_V2_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.VERSION_PARAM;
+import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.inject.Inject;
-
-@Path(V1_OR_V2_PATH + SEARCH_PATH)
+@Path(V1_TO_V2_PATH + SEARCH_PATH)
 public class SearchResourceV1 extends ResourceBase {
 
-  private static final String RELATION_PARAM = "relationType";
-  private static final String RELATION_SEARCH_PREFIX = "{" + RELATION_PARAM + ": [a-z]*relations }";
   private static final Logger LOG = LoggerFactory.getLogger(SearchResourceV1.class);
 
   private final TypeRegistry registry;
@@ -93,7 +88,7 @@ public class SearchResourceV1 extends ResourceBase {
 
   @Inject
   public SearchResourceV1(TypeRegistry registry, Repository repository, Configuration config, SearchRequestValidator searchRequestValidator, RelationSearcher relationSearcher,
-      RegularSearchResultMapper regularSearchResultMapper, RelationSearchResultMapper relationSearchResultMapper, VRECollection vreCollection) {
+                          RegularSearchResultMapper regularSearchResultMapper, RelationSearchResultMapper relationSearchResultMapper, VRECollection vreCollection) {
     super(repository, vreCollection);
     this.registry = registry;
     this.config = config;
@@ -105,13 +100,13 @@ public class SearchResourceV1 extends ResourceBase {
 
   @POST
   @Path("/" + ENTITY_PATH)
-  @APIDesc("Searches the Solr index. Expects a search parameters body.")
+  @APIDesc("Searches the Solr execute. Expects a search parameters body.")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response regularPost( //
-      @PathParam(VERSION_PARAM) String version, //
-      @HeaderParam(VRE_ID_KEY) String vreId, //
-      @PathParam(ENTITY_PARAM) String typeString, //
-      SearchParametersV1 searchParams //
+                               @PathParam(VERSION_PARAM) String version, //
+                               @HeaderParam(VRE_ID_KEY) String vreId, //
+                               @PathParam(ENTITY_PARAM) String typeString, //
+                               SearchParametersV1 searchParams //
   ) {
 
     searchRequestValidator.validate(vreId, typeString, searchParams);
@@ -132,15 +127,15 @@ public class SearchResourceV1 extends ResourceBase {
     }
   }
 
-  @APIDesc("Searches the Solr index. Expects a relation search parameters body.")
+  @APIDesc("Searches the Solr execute. Expects a relation search parameters body.")
   @POST
-  @Path("/" + RELATION_SEARCH_PREFIX)
+  @Path("/" + Paths.RELATION_SEARCH_PREFIX)
   @Consumes(MediaType.APPLICATION_JSON)
   public Response relationPost( //
-      @PathParam(VERSION_PARAM) String version, //
-      @HeaderParam(VRE_ID_KEY) String vreId, //
-      @PathParam(RELATION_PARAM) String relationTypeString, //
-      RelationSearchParameters params //
+                                @PathParam(VERSION_PARAM) String version, //
+                                @HeaderParam(VRE_ID_KEY) String vreId, //
+                                @PathParam(Paths.RELATION_PARAM) String relationTypeString, //
+                                RelationSearchParameters params //
   ) {
 
     Class<? extends DomainEntity> relationType = registry.getTypeForXName(relationTypeString);
@@ -159,13 +154,14 @@ public class SearchResourceV1 extends ResourceBase {
   }
 
   @GET
-  @Path("/{id: " + SearchResult.ID_PREFIX + "\\d+}")
-  @Produces({ MediaType.APPLICATION_JSON })
+  @Path("/{id: " + Paths.ID_REGEX + "}")
+  @Produces({MediaType.APPLICATION_JSON})
   @APIDesc("Returns (paged) search results Query params: \"start\" (default: 0) \"rows\" (default: 10)")
   public Response get( //
-      @PathParam("id") String queryId, //
-      @QueryParam("start") @DefaultValue("0") final int start, //
-      @QueryParam("rows") @DefaultValue("10") final int rows) {
+                       @PathParam("id") String queryId, //
+                       @QueryParam("start") @DefaultValue("0") final int start, //
+                       @QueryParam("rows") @DefaultValue("10") final int rows, //
+                       @PathParam(VERSION_PARAM) String version) {
 
     // Retrieve result
     SearchResult result = getSearchResult(queryId);
@@ -176,14 +172,14 @@ public class SearchResourceV1 extends ResourceBase {
     Class<? extends DomainEntity> type = registry.getDomainEntityType(typeString);
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
 
-    SearchResultDTO dto = getSearchResultMapper(type).create(type, result, start, rows);
+    SearchResultDTO dto = getSearchResultMapper(type).create(type, result, start, rows, version);
     return Response.ok(dto).build();
   }
 
   @GET
-  @Path("/{id: " + SearchResult.ID_PREFIX + "\\d+}/csv")
-  @Produces({ CSVProvider.TEXT_CSV })
-  public Response getRelationSearchResultAsCSV(@PathParam("id") String queryId) {
+  @Path("/{id: " + SearchResult.ID_PREFIX + Paths.ID_REGEX + "}/csv")
+  @Produces({CSVProvider.TEXT_CSV})
+  public Response getRelationSearchResultAsCSV(@PathParam("id") String queryId, @PathParam(VERSION_PARAM) String version) {
     SearchResult result = getSearchResult(queryId);
     checkNotNull(result, NOT_FOUND, "No SearchResult with id %s", queryId);
 
@@ -192,17 +188,17 @@ public class SearchResourceV1 extends ResourceBase {
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
     checkCondition(Relation.class.isAssignableFrom(type), BAD_REQUEST, "Not a relation type: %s", typeString);
 
-    RelationSearchResultDTO dto = relationSearchResultMapper.create(type, result, 0, Integer.MAX_VALUE);
+    SearchResultDTO dto = relationSearchResultMapper.create(type, result, 0, Integer.MAX_VALUE, version);
     return Response.ok(dto) //
-        .header("Content-Disposition", "attachment; filename=" + queryId + ".csv") //
-        .build();
+      .header("Content-Disposition", "attachment; filename=" + queryId + ".csv") //
+      .build();
   }
 
   @APIDesc("Exports a search result to an Excel format.")
   @GET
-  @Path("/{id: " + SearchResult.ID_PREFIX + "\\d+}/xls")
-  @Produces({ XLSProvider.EXCEL_TYPE_STRING })
-  public Response getRelationSearchResultAsXLS(@PathParam("id") String queryId) {
+  @Path("/{id: " + SearchResult.ID_PREFIX + Paths.ID_REGEX + "}/xls")
+  @Produces({XLSProvider.EXCEL_TYPE_STRING})
+  public Response getRelationSearchResultAsXLS(@PathParam("id") String queryId, @PathParam(VERSION_PARAM) String version) {
     SearchResult result = getSearchResult(queryId);
     checkNotNull(result, NOT_FOUND, "No SearchResult with id %s", queryId);
 
@@ -211,10 +207,10 @@ public class SearchResourceV1 extends ResourceBase {
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
     checkCondition(Relation.class.isAssignableFrom(type), BAD_REQUEST, "Not a relation type: %s", typeString);
 
-    RelationSearchResultDTO dto = relationSearchResultMapper.create(type, result, 0, Integer.MAX_VALUE);
+    SearchResultDTO dto = relationSearchResultMapper.create(type, result, 0, Integer.MAX_VALUE, version);
     return Response.ok(dto) //
-        .header("Content-Disposition", "attachment; filename=" + queryId + ".xls") //
-        .build();
+      .header("Content-Disposition", "attachment; filename=" + queryId + ".xls") //
+      .build();
   }
 
   private SearchResultMapper getSearchResultMapper(Class<? extends DomainEntity> type) {
@@ -230,7 +226,7 @@ public class SearchResourceV1 extends ResourceBase {
   }
 
   private SearchResult getSearchResult(String id) {
-    return repository.getEntity(SearchResult.class, id);
+    return repository.getEntityOrDefaultVariation(SearchResult.class, id);
   }
 
   private String saveSearchResult(SearchResult result) throws StorageException, ValidationException {

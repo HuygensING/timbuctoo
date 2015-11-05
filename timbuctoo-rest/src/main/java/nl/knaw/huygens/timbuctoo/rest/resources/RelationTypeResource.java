@@ -22,10 +22,20 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.config.Paths.SYSTEM_PREFIX;
-import static nl.knaw.huygens.timbuctoo.config.Paths.VERSION_PATH_OPTIONAL;
-
-import java.util.List;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.inject.Inject;
+import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
+import nl.knaw.huygens.timbuctoo.config.Paths;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
+import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -34,27 +44,16 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
+import java.util.List;
 
-import nl.knaw.huygens.timbuctoo.Repository;
-import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.RelationType;
-import nl.knaw.huygens.timbuctoo.vre.VRECollection;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Predicate;
-import com.google.common.base.Strings;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.inject.Inject;
+import static nl.knaw.huygens.timbuctoo.config.Paths.SYSTEM_PREFIX;
+import static nl.knaw.huygens.timbuctoo.config.Paths.VERSION_PATH_OPTIONAL;
 
 @Path(VERSION_PATH_OPTIONAL + SYSTEM_PREFIX + "/relationtypes")
 public class RelationTypeResource extends ResourceBase {
 
   private static final String ID_PARAM = "id";
-  private static final String ID_PATH = "/{id: " + RelationType.ID_PREFIX + "\\d+}";
+  private static final String ID_PATH = "/{id: " + RelationType.ID_PREFIX + Paths.ID_REGEX + "}";
 
   private final TypeRegistry registry;
 
@@ -75,7 +74,7 @@ public class RelationTypeResource extends ResourceBase {
   @Path(ID_PATH)
   @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
   public RelationType getRelationType(@PathParam(ID_PARAM) String id) {
-    RelationType entity = repository.getEntity(RelationType.class, id);
+    RelationType entity = repository.getEntityOrDefaultVariation(RelationType.class, id);
     checkNotNull(entity, Status.NOT_FOUND, "No RelationType with id %s", id);
     return entity;
   }

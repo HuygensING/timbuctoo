@@ -26,6 +26,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
+import nl.knaw.huygens.facetedsearch.model.parameters.SortParameter;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.index.Index;
@@ -35,15 +36,22 @@ import nl.knaw.huygens.timbuctoo.index.IndexFactory;
 import nl.knaw.huygens.timbuctoo.index.IndexStatus;
 import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultProcessor;
 import nl.knaw.huygens.timbuctoo.search.FullTextSearchFieldFinder;
+import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.search.converters.SearchResultConverter;
+import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.util.RepositoryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,8 +68,6 @@ public class PackageVRE implements VRE {
 
   private final String vreId;
   private final String description;
-  private final List<String> receptions;
-
   private final Scope scope;
   /**
    * Maps internal names of primitive types to this VRE.
@@ -72,30 +78,25 @@ public class PackageVRE implements VRE {
 
   private final SearchResultConverter searchResultConverter;
 
-  private final Repository repository;
+  protected final Repository repository;
+  private final RelationSearcher relationSearcher;
 
-  public PackageVRE(String vreId, String description, String modelPackage, List<String> receptions, Repository repository) {
-    this.vreId = vreId;
-    this.description = description;
-    this.receptions = receptions;
-    this.repository = repository;
-    this.indexCollection = new IndexCollection();
-    this.searchResultConverter = new SearchResultConverter(vreId);
-    this.scope = createScope(modelPackage);
-    this.typeMap = createTypeMap();
+  public PackageVRE(String vreId, String description, String modelPackage, Repository repository, RelationSearcher relationSearcher) {
+    this(vreId, description, createScope(modelPackage), new IndexCollection(), new SearchResultConverter(vreId), repository, relationSearcher);
   }
 
   // For testing
-  PackageVRE(String vreId, String description, Scope scope, IndexCollection indexCollection, SearchResultConverter searchResultConverter, Repository repository) {
+  PackageVRE(String vreId, String description, Scope scope, IndexCollection indexCollection, SearchResultConverter searchResultConverter, Repository repository, RelationSearcher relationSearcher) {
     this.vreId = vreId;
     this.description = description;
     this.repository = repository;
-    this.receptions = Lists.newArrayList();
+    this.relationSearcher = relationSearcher;
     this.indexCollection = indexCollection;
     this.searchResultConverter = searchResultConverter;
     this.scope = scope;
     this.typeMap = createTypeMap();
   }
+
 
   @Override
   public String getVreId() {
@@ -107,12 +108,7 @@ public class PackageVRE implements VRE {
     return description;
   }
 
-  @Override
-  public List<String> getReceptionNames() {
-    return receptions;
-  }
-
-  private Scope createScope(String modelPackage) {
+  private static Scope createScope(String modelPackage) {
     try {
       return new PackageScope(modelPackage);
     } catch (IOException e) {
@@ -172,15 +168,20 @@ public class PackageVRE implements VRE {
     return scope.filter(entities);
   }
 
+  @Override
+  public Class<? extends DomainEntity> mapToScopeType(Class<? extends DomainEntity> baseType) throws NotInScopeException {
+    return scope.mapToScopeType(baseType);
+  }
+
   /******************************************************************************
    * Index methods
    ******************************************************************************/
 
   @Override
   public <T extends FacetedSearchParameters<T>> SearchResult search( //
-      Class<? extends DomainEntity> type, //
-      FacetedSearchParameters<T> parameters, //
-      FacetedSearchResultProcessor... processors //
+                                                                     Class<? extends DomainEntity> type, //
+                                                                     FacetedSearchParameters<T> parameters, //
+                                                                     FacetedSearchResultProcessor... processors //
   ) throws SearchException, SearchValidationException {
 
     prepareSearchParameters(type, parameters);
@@ -197,11 +198,11 @@ public class PackageVRE implements VRE {
   }
 
   /**
-   * Returns the index if the index for the type can be found,
-   * else it returns an index that does nothing and returns an empty search result.
+   * Returns the execute if the execute for the type can be found,
+   * else it returns an execute that does nothing and returns an empty search result.
    *
-   * @param type the type to find the index for
-   * @return the index
+   * @param type the type to find the execute for
+   * @return the execute
    */
   private Index getIndexForType(Class<? extends DomainEntity> type) {
     return indexCollection.getIndexByType(type);
@@ -275,7 +276,7 @@ public class PackageVRE implements VRE {
       try {
         index.close();
       } catch (IndexException e) {
-        LOG.error("closing of index {} went wrong", index.getName(), e);
+        LOG.error("closing of execute {} went wrong", index.getName(), e);
       }
     }
   }
@@ -301,15 +302,104 @@ public class PackageVRE implements VRE {
 
   @Override
   public Iterable<Map<String, Object>> doRawSearch(Class<? extends DomainEntity> type, String query, int start, int rows, Map<String, Object> additionalFilters) throws NotInScopeException, SearchException, RawSearchUnavailableException {
-    if (!inScope(type)) {
-      throw new NotInScopeException(type, vreId);
-    }
+    throwNotInScopeExceptionWhenNotInScope(type);
 
     return getIndexForType(type).doRawSearch(query, start, rows, additionalFilters);
+  }
+
+  private void throwNotInScopeExceptionWhenNotInScope(Class<? extends DomainEntity> type) throws NotInScopeException {
+    if (!inScope(type)) {
+      throw NotInScopeException.typeIsNotInScope(type, vreId);
+    }
+  }
+
+  @Override
+  public List<Map<String, Object>> getRawDataFor(Class<? extends DomainEntity> type, List<String> ids, List<SortParameter> sort) throws NotInScopeException, SearchException {
+    throwNotInScopeExceptionWhenNotInScope(type);
+
+    return getIndexForType(type).getDataByIds(ids, sort);
+  }
+
+  @Override
+  public String searchRelations(Class<? extends Relation> type, RelationSearchParameters parameters) throws SearchException, SearchValidationException {
+    String searchId = null;
+
+    SearchResult searchResult = relationSearcher.search(this, type, parameters);
+
+    try {
+      searchId = repository.addSystemEntity(SearchResult.class, searchResult);
+    } catch (StorageException | ValidationException e) {
+      LOG.error("Storage of search result failed.");
+      throw new SearchException(e);
+    }
+
+    return searchId;
+  }
+
+  private String notInScopeMessage(Class<? extends DomainEntity> type) {
+    return String.format("\"%s\" is not part of the scope of VRE \"%s\".", TypeNames.getInternalName(type), vreId);
+  }
+
+  @Override
+  public List<String> getRelationTypeNamesBetween(Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) throws VREException {
+    if (!inScope(sourceType)) {
+      throw new IllegalArgumentException(notInScopeMessage(sourceType));
+    }
+
+    if (!inScope(targetType)) {
+      throw new IllegalArgumentException(notInScopeMessage(targetType));
+    }
+
+    Iterator<RelationType> relationTypes = null;
+    try {
+      relationTypes = getRelationTypes(sourceType, targetType);
+    } catch (RepositoryException e) {
+      throw new VREException(e);
+    }
+    List<String> relationTypeNames = Lists.newArrayList();
+
+    for (; relationTypes.hasNext(); ) {
+      RelationType relationType = relationTypes.next();
+      if (isRegular(sourceType, relationType)) {
+        relationTypeNames.add(relationType.getRegularName());
+      } else {
+        relationTypeNames.add(relationType.getInverseName());
+      }
+    }
+
+    return relationTypeNames;
+  }
+
+  private Iterator<RelationType> getRelationTypes(Class<? extends DomainEntity> sourceType, Class<? extends DomainEntity> targetType) throws RepositoryException {
+    Iterator<RelationType> relationTypes = this.repository.getRelationTypes(sourceType, targetType);
+
+    return filterRelationTypes(relationTypes);
+  }
+
+  /**
+   * A VRE specific method the add an extra filter to the relation type to use when searching for relations.
+   *
+   * @param relationTypes the relation types to filter
+   * @return the filtered relations types.
+   */
+  protected Iterator<RelationType> filterRelationTypes(Iterator<RelationType> relationTypes) {
+    return relationTypes;
+  }
+
+  private boolean isRegular(Class<? extends DomainEntity> sourceType, RelationType relationType) {
+    return relationType.getSourceTypeName().equals(TypeNames.getInternalName(sourceType));
   }
 
   private interface IndexChanger {
     void change(Class<? extends DomainEntity> type, List<? extends DomainEntity> variations) throws IndexException;
   }
 
+  @Override
+  public VREInfo toVREInfo() {
+    VRE.VREInfo info = new VRE.VREInfo();
+    info.setName(getVreId());
+    info.setDescription(getDescription());
+
+    return info;
+  }
 }

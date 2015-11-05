@@ -22,6 +22,11 @@ package nl.knaw.huygens.timbuctoo.messages;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.DeliveryMode;
@@ -30,12 +35,6 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
-
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ActiveMQProducer implements Producer {
 
@@ -63,9 +62,14 @@ public class ActiveMQProducer implements Producer {
   public synchronized void send(ActionType action, Class<? extends DomainEntity> type, String id) throws JMSException {
     Message message = session.createMessage();
     message.setStringProperty(Broker.PROP_ACTION, action.getStringRepresentation());
-    message.setStringProperty(Broker.PROP_DOC_TYPE, TypeNames.getInternalName(type));
-    message.setStringProperty(Broker.PROP_DOC_ID, id);
+    message.setStringProperty(Broker.PROP_ENTITY_TYPE, TypeNames.getInternalName(type));
+    message.setStringProperty(Broker.PROP_ENTITY_ID, id);
     producer.send(message);
+  }
+
+  @Override
+  public synchronized void send(Action action) throws JMSException {
+    producer.send(action.createMessage(session));
   }
 
   @Override

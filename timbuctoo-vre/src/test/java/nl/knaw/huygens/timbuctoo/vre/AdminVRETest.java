@@ -22,23 +22,22 @@ package nl.knaw.huygens.timbuctoo.vre;
  * #L%
  */
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-
-import java.io.IOException;
-import java.util.List;
-
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.Location;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.User;
 import nl.knaw.huygens.timbuctoo.model.dcar.DCARPerson;
-
+import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.google.common.collect.Lists;
+import java.io.IOException;
+import java.util.List;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 public class AdminVRETest {
 
@@ -48,7 +47,8 @@ public class AdminVRETest {
   public static void setupVRE() throws IOException {
     List<String> receptionNames = Lists.newArrayList();
     Repository repositoryMock = mock(Repository.class);
-    vre = new PackageVRE("Admin", "Admin VRE", "timbuctoo.model", receptionNames, repositoryMock);
+    RelationSearcher relationSearcher = mock(RelationSearcher.class);
+    vre = new PackageVRE("Admin", "Admin VRE", "timbuctoo.model", repositoryMock, relationSearcher);
   }
 
   @Test

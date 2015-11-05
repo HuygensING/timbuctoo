@@ -36,7 +36,7 @@ import nl.knaw.huygens.timbuctoo.model.util.Range;
 import com.google.common.collect.Lists;
 
 /*
- *  It shares logic with nl.knaw.huygens.timbuctoo.index.SolrInputDocGenerator.
+ *  It shares logic with nl.knaw.huygens.timbuctoo.execute.SolrInputDocGenerator.
  *  See issue #2642
  */
 public class FacetFinder {

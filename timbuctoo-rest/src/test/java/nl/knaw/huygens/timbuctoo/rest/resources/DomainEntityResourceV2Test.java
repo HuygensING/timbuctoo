@@ -87,7 +87,7 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
 
     ProjectADomainEntity entity = createEntityWithIdRelations();
 
-    when(repository.getEntity(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = createResource(DEFAULT_RESOURCE, DEFAULT_ID) //
@@ -105,7 +105,7 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
   private ProjectADomainEntity createEntityWithIdRelations() {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
-    when(repository.getEntityWithRelations(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariationWithRelations(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
 
     return entity;
   }
@@ -113,7 +113,7 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
   private ProjectADomainEntity createEntity() {
     ProjectADomainEntity entity = new ProjectADomainEntity(DEFAULT_ID);
     entity.setPid("65262031-c5c2-44f9-b90e-11f9fc7736cf");
-    when(repository.getEntity(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(entity);
     return entity;
   }
 
@@ -148,8 +148,8 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
         .withTargetId(targetId) //
         .withPid("65262031-c5c2-44f9-b90e-11f9fc7736cf") //
         .build();
-    when(repository.getEntity(type, id)).thenReturn(entity);
-    when(repository.getEntityWithRelations(type, id)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariation(type, id)).thenReturn(entity);
+    when(repository.getEntityOrDefaultVariationWithRelations(type, id)).thenReturn(entity);
     whenJsonProviderReadFromThenReturn(entity);
 
     ClientResponse response = createResource(getExternalName(type), id) //
@@ -222,9 +222,9 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
     ArrayList<String> ids = Lists.newArrayList(relationId1, relationId2);
     when(repository.deleteDomainEntity(any(DEFAULT_TYPE))).thenReturn(ids);
     Relation relationMock1 = mock(Relation.class);
-    when(repository.getEntity(Relation.class, relationId1)).thenReturn(relationMock1);
+    when(repository.getEntityOrDefaultVariation(Relation.class, relationId1)).thenReturn(relationMock1);
     Relation relationMock2 = mock(Relation.class);
-    when(repository.getEntity(Relation.class, relationId2)).thenReturn(relationMock2);
+    when(repository.getEntityOrDefaultVariation(Relation.class, relationId2)).thenReturn(relationMock2);
 
     // action
     ClientResponse response = createResource(DEFAULT_RESOURCE, DEFAULT_ID) //
@@ -309,7 +309,7 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
         .header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
 
     verifyResponseStatus(response, Status.FORBIDDEN);
-    verify(repository, never()).getEntity(DEFAULT_TYPE, DEFAULT_ID);
+    verify(repository, never()).getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID);
     verify(repository, never()).deleteDomainEntity(any(DEFAULT_TYPE));
   }
 
@@ -325,7 +325,7 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
     when(repository.doesVariationExist(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(false);
 
     // The repository will always return an entity with the primitive with id exists
-    when(repository.getEntity(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(new ProjectADomainEntity());
+    when(repository.getEntityOrDefaultVariation(DEFAULT_TYPE, DEFAULT_ID)).thenReturn(new ProjectADomainEntity());
 
     // action
     ClientResponse response = createResource(DEFAULT_RESOURCE, DEFAULT_ID)//

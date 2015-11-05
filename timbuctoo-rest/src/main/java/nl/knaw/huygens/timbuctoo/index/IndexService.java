@@ -22,33 +22,38 @@ package nl.knaw.huygens.timbuctoo.index;
  * #L%
  */
 
-import javax.jms.JMSException;
-
+import com.google.inject.Inject;
+import nl.knaw.huygens.timbuctoo.index.indexer.IndexerFactory;
+import nl.knaw.huygens.timbuctoo.index.request.IndexRequest;
+import nl.knaw.huygens.timbuctoo.index.request.IndexRequestFactory;
+import nl.knaw.huygens.timbuctoo.index.request.IndexRequests;
 import nl.knaw.huygens.timbuctoo.messages.Action;
-import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.ConsumerService;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
+import javax.jms.JMSException;
 
 public class IndexService extends ConsumerService implements Runnable {
 
   private static final Logger LOG = LoggerFactory.getLogger(IndexService.class);
 
-  private final IndexManager manager;
+  private final IndexRequests indexRequests;
+  private final IndexerFactory indexerFactory;
+  private final IndexRequestFactory indexRequestFactory;
 
   @Inject
-  public IndexService(IndexManager manager, Broker broker) throws JMSException {
+  public IndexService(Broker broker, IndexRequests indexRequests, IndexRequestFactory indexRequestFactory, IndexerFactory indexerFactory) throws JMSException {
     super(broker, Broker.INDEX_QUEUE, "IndexService");
-    this.manager = manager;
+    this.indexRequests = indexRequests;
+    this.indexerFactory = indexerFactory;
+    this.indexRequestFactory = indexRequestFactory;
   }
 
   /**
-   * Needed to make it possible to log with the right Logger in the superclass; 
+   * Needed to make it possible to log with the right Logger in the superclass;
+   *
    * @return
    */
   @Override
@@ -58,28 +63,29 @@ public class IndexService extends ConsumerService implements Runnable {
 
   @Override
   protected void executeAction(Action action) {
-    ActionType actionType = action.getActionType();
-    Class<? extends DomainEntity> type = action.getType();
-    String id = action.getId();
+    // ignore multiple entity actions for now
+    if (!action.isForMultiEntities()) {
+      IndexRequest indexRequest = getIndexRequest(action);
 
-    try {
-      switch (actionType) {
-        case ADD:
-          manager.addEntity(type, id);
-          break;
-        case MOD:
-          manager.updateEntity(type, id);
-          break;
-        case DEL:
-          manager.deleteEntity(type, id);
-          break;
-        case END:
-          this.stop(); //stop the Runnable
+      Indexer indexer = indexerFactory.create(action.getActionType());
+
+      try {
+        indexRequest.execute(indexer);
+      } catch (IndexException e) {
+        getLogger().error("Error indexing ([{}]) object of type [{}]", action.getActionType(), indexRequest.getType());
+        getLogger().debug("Exception while indexing", e);
       }
-    } catch (IndexException ex) {
-      getLogger().error("Error indexing ({}) object of type {} with id {}", new Object[] { actionType, type, id });
-      getLogger().debug("Exception while indexing", ex);
     }
+  }
+
+  private IndexRequest getIndexRequest(Action action) {
+    IndexRequest indexRequest;
+    if (action.hasRequestId()) {
+      indexRequest = indexRequests.get(action.getRequestId());
+    } else {
+      indexRequest = indexRequestFactory.forEntity(action.getType(), action.getId());
+    }
+    return indexRequest;
   }
 
   public static void waitForCompletion(Thread thread, long patience) {

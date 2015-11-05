@@ -22,14 +22,15 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.storage.Properties.propertyName;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Map;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.SystemEntity;
+import nl.knaw.huygens.timbuctoo.storage.mongo.MongoProperties;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -50,13 +51,19 @@ public class EntityInducerTest {
   private final static String ID = "TEST042";
   private static final String PID = "test_pid";
 
+  private Properties properties;
   private EntityInducer inducer;
   private ObjectMapper mapper;
 
   @Before
   public void setup() throws Exception {
-    inducer = new EntityInducer();
+    properties = new MongoProperties();
+    inducer = new EntityInducer(new MongoProperties());
     mapper = new ObjectMapper();
+  }
+
+  private String propertyName(Class<? extends Entity> type, String fieldName) {
+    return properties.propertyName(type, fieldName);
   }
 
   private void addValue(Map<String, Object> map, String key, String value) {
