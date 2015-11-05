@@ -70,6 +70,12 @@ public class PersonTest {
   }
 
   @Test
+  public void ReaderIsAValidType() {
+    Person person = new Person();
+    person.setTypes(Lists.newArrayList("reader"));
+    assertThat(person.getTypes(), equalTo(Lists.newArrayList("READER")));
+  }
+  @Test
   public void InvalidTypesWontBeSet() {
     Person person = new Person();
     person.setTypes(Lists.newArrayList("Gangstah"));//Gangstah is, of course, not a valid type

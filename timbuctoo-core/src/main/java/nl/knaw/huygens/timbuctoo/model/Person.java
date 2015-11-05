@@ -265,6 +265,7 @@ public class Person extends DomainEntity {
     public static final String ARCHETYPE = "ARCHETYPE";
     public static final String AUTHOR = "AUTHOR";
     public static final String PSEUDONYM = "PSEUDONYM";
+    public static final String READER = "READER";
 
     public static String normalize(String text) {
       if (ARCHETYPE.equalsIgnoreCase(text)) {
@@ -273,6 +274,8 @@ public class Person extends DomainEntity {
         return AUTHOR;
       } else if (PSEUDONYM.equalsIgnoreCase(text)) {
         return PSEUDONYM;
+      } else if (READER.equalsIgnoreCase(text)) {
+        return READER;
       } else {
         return null;
       }
