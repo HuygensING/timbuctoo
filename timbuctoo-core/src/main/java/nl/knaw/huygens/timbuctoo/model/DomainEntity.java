@@ -226,6 +226,11 @@ public abstract class DomainEntity extends Entity {
     return null;
   }
 
+  @JsonIgnore
+  public <T> Map<String, T> createRelSearchRep(Map<String, T> input) {
+    return null;
+  }
+
   protected void addRelationToRepresentation(Map<String, String> data, String key, String relationName) {
     List<RelationRef> refs = getRelations(relationName);
     if (refs.size() == 0) {
@@ -256,5 +261,7 @@ public abstract class DomainEntity extends Entity {
   public void setDisplayName(String displayName) {
     this.displayName = displayName;
   }
+
+
 
 }

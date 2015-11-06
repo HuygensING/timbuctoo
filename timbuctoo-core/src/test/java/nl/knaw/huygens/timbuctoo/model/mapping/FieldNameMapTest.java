@@ -2,7 +2,9 @@ package nl.knaw.huygens.timbuctoo.model.mapping;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.util.List;
 import java.util.Map;
@@ -10,6 +12,8 @@ import java.util.Map;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.Is.is;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class FieldNameMapTest {
 
@@ -27,9 +31,10 @@ public class FieldNameMapTest {
   public static final List<String> LIST_VALUE = Lists.newArrayList(LIST_ENTRY_1, LIST_ENTRY_2);
 
   @Test
-  public void remapIteratesThroughAllTheFromFieldsAndRemapsThemIfTheyExistInTheSourceMap(){
+  public void remapIteratesThroughAllTheFromFieldsAndRemapsThemIfTheyExistInTheSourceMap() {
     // setup
-    FieldNameMap instance = new FieldNameMap();
+    DomainEntity entity = mock(DomainEntity.class);
+    FieldNameMap instance = new FieldNameMap(entity);
     instance.put(FROM_1, TO_1);
     instance.put(FROM_2, TO_2);
     instance.put(FROM_3, TO_3);
@@ -43,9 +48,13 @@ public class FieldNameMapTest {
     Map<String, Object> output = instance.remap(input);
 
     // verify
-    assertThat(output.keySet(), containsInAnyOrder(TO_1, TO_3));
-    assertThat(output.get(TO_1), is(SIMPLE_VALUE));
-    assertThat(output.get(TO_3), is(LIST_VALUE));
+    ArgumentCaptor<Map> mapArgumentCaptor = ArgumentCaptor.forClass(Map.class);
+    verify(entity).createRelSearchRep(mapArgumentCaptor.capture());
+
+    Map<String, Object> capturedMap = mapArgumentCaptor.getValue();
+    assertThat(capturedMap.keySet(), containsInAnyOrder(TO_1, TO_3));
+    assertThat(capturedMap.get(TO_1), is(SIMPLE_VALUE));
+    assertThat(capturedMap.get(TO_3), is(LIST_VALUE));
   }
 
 
