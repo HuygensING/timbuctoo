@@ -83,8 +83,8 @@ public class RelationDTOFactoryTest {
   private RelationDTOFactory instance;
   private Map<String, Object> relationData;
   private RelationType relationType;
-  public static final FieldNameMap SOURCE_FIELD_MAP = new FieldNameMap();
-  public static final FieldNameMap TARGET_FIELD_MAP = new FieldNameMap();
+  public static final FieldNameMap SOURCE_FIELD_MAP = new FieldNameMap(mock(SOURCE_TYPE));
+  public static final FieldNameMap TARGET_FIELD_MAP = new FieldNameMap(mock(TARGET_TYPE));
   private DomainEntityDTOFactory domainEntityDTOFactory;
   private DomainEntityDTO sourceDTO;
   private DomainEntityDTO targetDTO;

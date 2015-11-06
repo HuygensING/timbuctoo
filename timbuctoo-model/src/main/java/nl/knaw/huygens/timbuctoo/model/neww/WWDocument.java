@@ -42,6 +42,10 @@ import java.util.Map;
 
 public class WWDocument extends Document {
 
+  public static final String TYPE = "type";
+  public static final String DATE = "date";
+  public static final String GENRE = "genre";
+  public static final String LANGUAGE = "language";
   private boolean source;
   private String notes;
   private List<String> topoi;
@@ -343,6 +347,20 @@ public class WWDocument extends Document {
     return data;
   }
 
+  @Override
+  public <T> Map<String, T> createRelSearchRep(Map<String, T> mappedIndexInformation) {
+    Map<String, T> filteredMap = Maps.newTreeMap();
+    addValueToMap(mappedIndexInformation, filteredMap, ID_PROPERTY_NAME);
+    addValueToMap(mappedIndexInformation, filteredMap, "title");
+    addValueToMap(mappedIndexInformation, filteredMap, "documentType");
+    addValueToMap(mappedIndexInformation, filteredMap, "date");
+    addValueToMap(mappedIndexInformation, filteredMap, "genre");
+    addValueToMap(mappedIndexInformation, filteredMap, "language");
+    addValueToMap(mappedIndexInformation, filteredMap, "publishLocation");
+    addValueToMap(mappedIndexInformation, filteredMap, "authorName");
+    addValueToMap(mappedIndexInformation, filteredMap, "authorGender");
+    return filteredMap;
+  }
 
   // ---------------------------------------------------------------------------
   @JsonIgnore

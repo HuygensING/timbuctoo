@@ -130,7 +130,7 @@ public class CSVProvider implements MessageBodyWriter<RelationSearchable> {
 
   private void appendValuesTo(StringBuilder builder, Map<String, ? extends Object> data) {
     for (Map.Entry<String, ? extends Object> entry : data.entrySet()) {
-      appendTo(builder, "" + entry.getValue());
+      appendTo(builder, entry.getValue() == null ? "" : "" + entry.getValue());
     }
   }
 

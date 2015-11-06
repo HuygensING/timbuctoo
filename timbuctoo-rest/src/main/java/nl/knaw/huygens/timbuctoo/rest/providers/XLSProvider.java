@@ -134,12 +134,16 @@ public class XLSProvider implements MessageBodyWriter<RelationSearchable> {
   private void addDataToRow(HSSFRow row, RelationDTO dto) {
     int index = 0;
     for (Map.Entry<String, ? extends Object> entry : dto.getSourceData().entrySet()) {
-      index = addCell(row, index, "" + entry.getValue());
+      index = addCell(row, index, getValue(entry));
     }
     index = addCell(row, index, dto.getRelationName());
     for (Map.Entry<String, ? extends Object> entry : dto.getTargetData().entrySet()) {
-      index = addCell(row, index, "" + entry.getValue());
+      index = addCell(row, index, getValue(entry));
     }
+  }
+
+  private String getValue(Map.Entry<String, ? extends Object> entry) {
+    return entry.getValue() == null ? "" : "" + entry.getValue();
   }
 
   private int addCell(HSSFRow row, int index, String value) {

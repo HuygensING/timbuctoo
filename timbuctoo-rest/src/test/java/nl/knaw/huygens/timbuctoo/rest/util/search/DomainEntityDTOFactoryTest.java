@@ -23,11 +23,11 @@ import static org.mockito.Mockito.when;
 public class DomainEntityDTOFactoryTest {
 
   public static final String ID_VALUE = "idValue";
-  public static final Object DISPLAY_NAME = "displayName";
+  public static final String DISPLAY_NAME = "displayName";
   public static final Class<ProjectADomainEntity> TYPE = ProjectADomainEntity.class;
   public static final String EXTERNAL_NAME = TypeNames.getExternalName(TYPE);
   public static final String INTERNAL_NAME = TypeNames.getInternalName(TYPE);
-  public Map<String, Object> remappedData;
+  public Map<String, String> remappedData;
   private Map<String, Object> data;
   private DomainEntityDTOFactory instance;
   private FieldNameMap fieldNameMap;
@@ -46,7 +46,7 @@ public class DomainEntityDTOFactoryTest {
     remappedData = Maps.newHashMap();
     remappedData.put(Entity.ID_PROPERTY_NAME, ID_VALUE);
 
-    Map<String, Object>expectedMap = Maps.newHashMap();
+    Map<String, String>expectedMap = Maps.newHashMap();
     expectedMap.put(Entity.INDEX_FIELD_ID, ID_VALUE);
     expectedMap.put(Entity.INDEX_FIELD_IDENTIFICATION_NAME, DISPLAY_NAME);
 

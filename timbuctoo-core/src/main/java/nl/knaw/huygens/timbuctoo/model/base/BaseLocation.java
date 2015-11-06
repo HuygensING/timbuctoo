@@ -22,11 +22,11 @@ package nl.knaw.huygens.timbuctoo.model.base;
  * #L%
  */
 
-import java.util.Map;
-
 import com.google.common.collect.Maps;
-
 import nl.knaw.huygens.timbuctoo.model.Location;
+
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Used for importing in base VRE.
@@ -52,4 +52,13 @@ public class BaseLocation extends Location {
     return data;
   }
 
+  @Override
+  public <T> Map<String, T> createRelSearchRep(Map<String, T> mappedIndexInformation) {
+    TreeMap<String, T> filteredMap = Maps.newTreeMap();
+    addValueToMap(mappedIndexInformation, filteredMap, URN);
+    addValueToMap(mappedIndexInformation, filteredMap, LATITUDE);
+    addValueToMap(mappedIndexInformation, filteredMap, LONGITUDE);
+
+    return filteredMap;
+  }
 }

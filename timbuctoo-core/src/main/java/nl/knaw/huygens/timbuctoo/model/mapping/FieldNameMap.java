@@ -33,19 +33,53 @@ public class FieldNameMap {
    * Changes the keys of the input from the from-keys to the target-keys.
    *
    * @param input the map to be remapped
-   * @param <T>   the type of the value of the map.
    * @return the remapped map
    */
-  public <T> Map<String, T> remap(Map<String, T> input) {
-    Map<String, T> remapped = Maps.newHashMap();
+  public Map<String, String> remap(Map<String, String> input) {
+    Map<String, String> remapped = Maps.newHashMap();
     for (Map.Entry<String, String> entry : map.entrySet()) {
       String key = entry.getKey();
+
+      if (isRange(key)) {
+        addRangeValue(entry, input, remapped);
+      }
+
       if (input.containsKey(key)) {
         remapped.put(entry.getValue(), input.get(key));
       }
     }
 
     return entity.createRelSearchRep(remapped);
+  }
+
+  private String formatKey(String key) {
+    if (isRange(key)) {
+      if (key.endsWith("_low")) {
+        return key.substring(0, key.indexOf("_low"));
+      } else {
+        if (key.endsWith("_high")) {
+          return key.substring(0, key.indexOf("_high"));
+        }
+      }
+    }
+    return key;
+  }
+
+  private <T> void addRangeValue(Map.Entry<String, String> entry, Map<String, String> source, Map<String, String> target) {
+    String key = entry.getKey() + "_low";
+    if (source.containsKey(key)) {
+      target.put(entry.getValue(), getRangeValue(source, key));
+    }
+
+  }
+
+  private String getRangeValue(Map<String, String> source, String key) {
+    String value = source.get(key);
+    return value.substring(0, 4);
+  }
+
+  private boolean isRange(String key) {
+    return key.startsWith("dynamic_i");
   }
 
   @Override

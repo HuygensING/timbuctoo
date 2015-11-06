@@ -22,14 +22,14 @@ package nl.knaw.huygens.timbuctoo.model.ckcc;
  * #L%
  */
 
-import java.util.Map;
-
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.Collective;
 
-import com.google.common.collect.Maps;
+import java.util.Map;
 
 public class CKCCCollective extends Collective {
 
+  public static final String URN = "urn";
   /** Unique identifier for concordances */
   private String urn;
 
@@ -44,8 +44,15 @@ public class CKCCCollective extends Collective {
   @Override
   public Map<String, String> getClientRepresentation() {
     Map<String, String> data = Maps.newTreeMap();
-    addItemToRepresentation(data, "urn", getUrn());
+    addItemToRepresentation(data, URN, getUrn());
     return data;
   }
 
+  @Override
+  public <T> Map<String, T> createRelSearchRep(Map<String, T> mappedIndexInformation) {
+    Map<String, T> filteredMap = Maps.newTreeMap();
+    addValueToMap(mappedIndexInformation, filteredMap, URN);
+
+    return super.createRelSearchRep(mappedIndexInformation);
+  }
 }
