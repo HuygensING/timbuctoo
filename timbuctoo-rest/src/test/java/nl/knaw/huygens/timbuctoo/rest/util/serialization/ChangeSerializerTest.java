@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.rest.util.serialization;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import nl.knaw.huygens.timbuctoo.model.User;
@@ -13,8 +14,14 @@ import org.junit.Test;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.Date;
+import java.util.Map;
 
-import static org.hamcrest.Matchers.containsString;
+import static nl.knaw.huygens.timbuctoo.model.util.Change.CLIENT_PROP_TIME_STAMP;
+import static nl.knaw.huygens.timbuctoo.model.util.Change.CLIENT_PROP_USERNAME;
+import static nl.knaw.huygens.timbuctoo.model.util.Change.CLIENT_PROP_USER_ID;
+import static nl.knaw.huygens.timbuctoo.model.util.Change.CLIENT_PROP_VRE_ID;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -48,12 +55,18 @@ public class ChangeSerializerTest {
     instance.serialize(change, generator, NULL_PROVIDER);
 
     // verify
-    String generatedJson = writer.toString();
+    Map<String, Object> valueAsMap = valueAsMap(writer);
 
-    assertThat(generatedJson, containsString(String.format("\"userId\":\"%s\"", USER_ID)));
-    assertThat(generatedJson, containsString(String.format("\"vreId\":\"%s\"", VRE_ID)));
-    assertThat(generatedJson, containsString(String.format("\"timeStamp\":%d", TIMESTAMP)));
-    assertThat(generatedJson, containsString(String.format("\"username\":\"%s\"", USERNAME)));
+    assertThat(valueAsMap.keySet(), containsInAnyOrder(CLIENT_PROP_TIME_STAMP, CLIENT_PROP_USER_ID, CLIENT_PROP_USERNAME, CLIENT_PROP_VRE_ID));
+    assertThat(valueAsMap.get(CLIENT_PROP_USER_ID), is(USER_ID));
+    assertThat(valueAsMap.get(CLIENT_PROP_VRE_ID), is(VRE_ID));
+    assertThat(valueAsMap.get(CLIENT_PROP_TIME_STAMP), is(TIMESTAMP));
+    assertThat(valueAsMap.get(CLIENT_PROP_USERNAME), is(USERNAME));
+  }
+
+  private Map<String, Object> valueAsMap(StringWriter writer) throws IOException {
+    return new ObjectMapper().readValue(writer.toString(), new TypeReference<Map<String, Object>>() {
+    });
   }
 
   private void userWithNameFoundForId(String username, String userId) {
@@ -78,8 +91,8 @@ public class ChangeSerializerTest {
     instance.serialize(change, generator, NULL_PROVIDER);
 
     // verify
-    String generatedJson = writer.toString();
-    assertThat(generatedJson, containsString(String.format("\"username\":\"%s\"", USER_ID)));
+    Map<String, Object> valueAsMap = valueAsMap(writer);
+    assertThat(valueAsMap.get(CLIENT_PROP_USERNAME), is(USER_ID));
   }
 
   @Test
@@ -93,8 +106,8 @@ public class ChangeSerializerTest {
     instance.serialize(change, generator, NULL_PROVIDER);
 
     // verify
-    String generatedJson = writer.toString();
-    assertThat(generatedJson, containsString(String.format("\"username\":\"%s\"", USER_ID)));
+    Map<String, Object> valueAsMap = valueAsMap(writer);
+    assertThat(valueAsMap.get(CLIENT_PROP_USERNAME), is(USER_ID));
   }
 
   @Test
@@ -108,7 +121,7 @@ public class ChangeSerializerTest {
     instance.serialize(change, generator, NULL_PROVIDER);
 
     // verify
-    String generatedJson = writer.toString();
-    assertThat(generatedJson, containsString(String.format("\"username\":\"%s\"", USER_ID)));
+    Map<String, Object> valueAsMap = valueAsMap(writer);
+    assertThat(valueAsMap.get(CLIENT_PROP_USERNAME), is(USER_ID));
   }
 }
