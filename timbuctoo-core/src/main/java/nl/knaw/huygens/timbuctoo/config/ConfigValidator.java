@@ -62,10 +62,10 @@ public class ConfigValidator {
    * A method that validates the settings needed to be validated.
    */
   protected void validateSettings() {
+    validateHomeDirectoryIsWritable();
     validateSolrDirectory();
     validateAdminDataDirectory();
     validateGraphDatabase();
-    validateHomeDirectoryIsWritable();
   }
 
   /**
