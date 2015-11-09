@@ -25,7 +25,7 @@ public class ChangeSerializer extends JsonSerializer<Change> {
     jgen.writeStringField(Change.CLIENT_PROP_USER_ID, value.getUserId());
     jgen.writeStringField(Change.CLIENT_PROP_VRE_ID, value.getVreId());
     jgen.writeNumberField(Change.CLIENT_PROP_TIME_STAMP, value.getTimeStamp());
-    jgen.writeStringField("username", getUsername(value));
+    jgen.writeStringField(Change.CLIENT_PROP_USERNAME, getUsername(value));
 
     jgen.writeEndObject();
     jgen.flush(); // needed to write the data to the underlying java.io.Writer
