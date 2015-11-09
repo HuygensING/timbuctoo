@@ -300,6 +300,20 @@ public class WWPerson extends Person {
     return data;
   }
 
+  @Override
+  public <T> Map<String, T> createRelSearchRep(Map<String, T> mappedIndexInformation) {
+    Map<String, T> filteredMap = Maps.newTreeMap();
+
+    addValueToMap(mappedIndexInformation, filteredMap, ID_PROPERTY_NAME);
+    addValueToMap(mappedIndexInformation,filteredMap, "name");
+    addValueToMap(mappedIndexInformation,filteredMap, "gender");
+    addValueToMap(mappedIndexInformation,filteredMap, "birthDate");
+    addValueToMap(mappedIndexInformation,filteredMap, "deathDate");
+    addValueToMap(mappedIndexInformation,filteredMap, "residenceLocation");
+
+    return filteredMap;
+  }
+
   // ---------------------------------------------------------------------------
 
   // Not an enumerated type because of serialization problems.

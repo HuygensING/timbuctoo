@@ -42,6 +42,8 @@ public class Location extends DomainEntity {
 
   static final String INDEX_FIELD_NAME = "dynamic_t_name";
   public static final String URN = "^urn";
+  public static final String LATITUDE = "latitude";
+  public static final String LONGITUDE = "longitude";
 
   public static enum LocationType {
     UNKNOWN, DISTRICT, SETTLEMENT, REGION, COUNTRY, BLOC
@@ -72,7 +74,9 @@ public class Location extends DomainEntity {
   private LocationType locationType;
   @DBProperty(value = "names", type = FieldType.ADMINISTRATIVE)
   private Names names;
+  @JsonProperty(LATITUDE)
   private String latitude;
+  @JsonProperty(LONGITUDE)
   private String longitude;
   /** URN for making concordances. */
   private String urn;

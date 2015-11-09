@@ -26,7 +26,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.RelationDTO;
-import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
+import nl.knaw.huygens.timbuctoo.model.RelationSearchable;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +53,7 @@ import java.util.Map;
 @Provider
 @Produces(CSVProvider.TEXT_CSV)
 @Singleton
-public class CSVProvider implements MessageBodyWriter<RelationSearchResultDTO> {
+public class CSVProvider implements MessageBodyWriter<RelationSearchable> {
 
   public static final String TEXT_CSV = "text/csv";
   public static final MediaType TEXT_CSV_TYPE = new MediaType("text", "csv");
@@ -76,16 +76,16 @@ public class CSVProvider implements MessageBodyWriter<RelationSearchResultDTO> {
 
   @Override
   public boolean isWriteable(Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
-    return TEXT_CSV_TYPE.equals(mediaType) && RelationSearchResultDTO.class.isAssignableFrom(type);
+    return TEXT_CSV_TYPE.equals(mediaType) && RelationSearchable.class.isAssignableFrom(type);
   }
 
   @Override
-  public long getSize(RelationSearchResultDTO doc, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
+  public long getSize(RelationSearchable doc, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType) {
     return UNKNOWN_LENGTH;
   }
 
   @Override
-  public void writeTo(RelationSearchResultDTO dto, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out)
+  public void writeTo(RelationSearchable dto, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream out)
     throws IOException {
 
     List<RelationDTO> refs = dto.getRefs();
@@ -130,8 +130,7 @@ public class CSVProvider implements MessageBodyWriter<RelationSearchResultDTO> {
 
   private void appendValuesTo(StringBuilder builder, Map<String, ? extends Object> data) {
     for (Map.Entry<String, ? extends Object> entry : data.entrySet()) {
-      appendTo(builder, "" + entry.getValue());
-      // appendTo(builder, entry.getValue().replace(SEPARATOR, '.'));
+      appendTo(builder, entry.getValue() == null ? "" : "" + entry.getValue());
     }
   }
 

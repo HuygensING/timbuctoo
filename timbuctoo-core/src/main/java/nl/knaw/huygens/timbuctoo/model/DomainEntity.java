@@ -226,6 +226,19 @@ public abstract class DomainEntity extends Entity {
     return null;
   }
 
+  /**
+   * Map the information from the index to a clean representation.
+   *
+   * The method should be overridden when the {@link #getClientRepresentation} is.
+   * @param mappedIndexInformation the information from the client
+   * @param <T> the type of the values of the client information map
+   * @return the filtered map of with only the information analog to the client representation.
+   */
+  @JsonIgnore
+  public <T> Map<String, T> createRelSearchRep(Map<String, T> mappedIndexInformation) {
+    return Maps.newHashMap();
+  }
+
   protected void addRelationToRepresentation(Map<String, String> data, String key, String relationName) {
     List<RelationRef> refs = getRelations(relationName);
     if (refs.size() == 0) {
@@ -257,4 +270,8 @@ public abstract class DomainEntity extends Entity {
     this.displayName = displayName;
   }
 
+
+  protected  <T> void addValueToMap(Map<String, T> source, Map<String, T> target, String key) {
+    target.put(key, source.get(key));
+  }
 }

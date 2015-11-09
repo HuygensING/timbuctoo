@@ -16,15 +16,15 @@ import static nl.knaw.huygens.timbuctoo.storage.graph.MethodHelper.getMethodByNa
 
 public class FieldNameMapFactory {
   public <T extends DomainEntity> FieldNameMap create(Representation from, Representation to, Class<T> type) throws MappingException {
-    FieldNameMap fieldNameMap = new FieldNameMap();
-
+    T entity = createEntity(type);
+    FieldNameMap fieldNameMap = new FieldNameMap(entity);
 
     for (Class<?> typeToMap = type; isEntity(typeToMap); typeToMap = typeToMap.getSuperclass()) {
       addFields(from, to, typeToMap, fieldNameMap);
       addVirtualProperties(from, to, typeToMap, fieldNameMap);
     }
 
-    addDerivedProperties(from, to, type, fieldNameMap);
+    addDerivedProperties(from, to, type, fieldNameMap, entity);
 
 
     return fieldNameMap;
@@ -40,15 +40,20 @@ public class FieldNameMapFactory {
 
   }
 
-  private <T extends DomainEntity> void addDerivedProperties(Representation from, Representation to, Class<T> type, FieldNameMap fieldNameMap) throws MappingException {
-    try {
-      T instance = type.newInstance();
-      for (DerivedProperty derivedProperty : instance.getDerivedProperties()) {
-        String key = from.getFieldName(type, derivedProperty);
-        String value = to.getFieldName(type, derivedProperty);
+  private <T extends DomainEntity> void addDerivedProperties(Representation from, Representation to, Class<T> type, FieldNameMap fieldNameMap, T entity) throws MappingException {
 
-        addField(fieldNameMap, key, value);
-      }
+    for (DerivedProperty derivedProperty : entity.getDerivedProperties()) {
+      String key = from.getFieldName(type, derivedProperty);
+      String value = to.getFieldName(type, derivedProperty);
+
+      addField(fieldNameMap, key, value);
+    }
+
+  }
+
+  private <T extends DomainEntity> T createEntity(Class<T> type) throws MappingException {
+    try {
+      return type.newInstance();
     } catch (InstantiationException | IllegalAccessException e) {
       throw new MappingException(type, e);
     }
