@@ -9,7 +9,6 @@ import com.google.inject.Inject;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetParameter;
 import nl.knaw.huygens.facetedsearch.serialization.FacetParameterDeserializer;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
-import nl.knaw.huygens.timbuctoo.rest.util.serialization.ChangeDeserializer;
 import nl.knaw.huygens.timbuctoo.rest.util.serialization.ChangeSerializer;
 import nl.knaw.huygens.timbuctoo.security.UserConfigurationHandler;
 
@@ -35,7 +34,7 @@ public class ObjectMapperContextResolver implements ContextResolver<ObjectMapper
 
   private Module createTimbuctooModule(UserConfigurationHandler users) {
     SimpleModule simpleModule = new SimpleModule();
-   
+    simpleModule.addSerializer(Change.class, new ChangeSerializer(users));
     return simpleModule;
   }
 
