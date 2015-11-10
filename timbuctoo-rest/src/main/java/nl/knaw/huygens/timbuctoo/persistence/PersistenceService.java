@@ -57,8 +57,9 @@ public class PersistenceService extends ConsumerService implements Runnable {
     case MOD:
       if(action.isForMultiEntities()){
         updatePIDs(action);
+      }else {
+        setPID(action);
       }
-      setPID(action);
       break;
     case DEL:
       LOG.debug("Ignoring action {}", action);
@@ -103,7 +104,9 @@ public class PersistenceService extends ConsumerService implements Runnable {
 
     String pid = null;
     try {
+      LOG.info("Processing persistence request for entity of type \"{}\" with id \"{}\"", type, id);
       pid = persistenceWrapper.persistObject(type, id, revision);
+      LOG.info("Done processing persistence request for entity of type \"{}\" with id \"{}\" with pid \"{}\"", type, id, pid);
     } catch (PersistenceException e) {
       LOG.error("Creating a PID for {} with id {} went wrong.", type, id);
       LOG.debug("Exception", e);
