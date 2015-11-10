@@ -100,7 +100,7 @@ public class ChangeSerializerTest {
     // setup
     StringWriter writer = new StringWriter();
     JsonGenerator generator = createGenerator(writer);
-    userWithNameFoundForId(USERNAME, null);
+    userWithNameFoundForId(null, USER_ID);
 
     // action
     instance.serialize(change, generator, NULL_PROVIDER);
@@ -115,7 +115,7 @@ public class ChangeSerializerTest {
     // setup
     StringWriter writer = new StringWriter();
     JsonGenerator generator = createGenerator(writer);
-    userWithNameFoundForId(USERNAME, "");
+    userWithNameFoundForId("", USER_ID);
 
     // action
     instance.serialize(change, generator, NULL_PROVIDER);
