@@ -22,13 +22,21 @@ package nl.knaw.huygens.timbuctoo.model.util;
  * #L%
  */
 
-import java.util.Date;
-
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import java.util.Date;
+
+@JsonIgnoreProperties(Change.CLIENT_PROP_USERNAME)
 public class Change {
+
+  public static final String CLIENT_PROP_TIME_STAMP = "timeStamp";
+  public static final String CLIENT_PROP_USER_ID = "userId";
+  public static final String CLIENT_PROP_VRE_ID = "vreId";
+  public static final String CLIENT_PROP_USERNAME = "username";
 
   /**
    * Returns a new {@code Change} instance for internal use.
@@ -46,11 +54,15 @@ public class Change {
 
   // -------------------------------------------------------------------
 
+  @JsonProperty(CLIENT_PROP_TIME_STAMP)
   private long timeStamp;
+  @JsonProperty(CLIENT_PROP_USER_ID)
   private String userId;
+  @JsonProperty(CLIENT_PROP_VRE_ID)
   private String vreId;
 
-  public Change() {}
+  public Change() {
+  }
 
   public Change(long timeStamp, String userId, String vreId) {
     this.timeStamp = timeStamp;

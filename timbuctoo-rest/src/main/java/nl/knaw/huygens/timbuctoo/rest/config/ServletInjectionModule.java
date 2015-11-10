@@ -22,13 +22,6 @@ package nl.knaw.huygens.timbuctoo.rest.config;
  * #L%
  */
 
-import java.util.Map;
-
-import nl.knaw.huygens.security.client.filters.SecurityResourceFilterFactory;
-import nl.knaw.huygens.timbuctoo.rest.CORSFilter;
-import nl.knaw.huygens.timbuctoo.rest.filters.UserResourceFilterFactory;
-import nl.knaw.huygens.timbuctoo.rest.filters.VREAuthorizationFilterFactory;
-
 import com.google.common.collect.Maps;
 import com.sun.jersey.api.container.filter.GZIPContentEncodingFilter;
 import com.sun.jersey.api.container.filter.LoggingFilter;
@@ -38,6 +31,12 @@ import com.sun.jersey.api.core.ResourceConfig;
 import com.sun.jersey.guice.JerseyServletModule;
 import com.sun.jersey.guice.spi.container.servlet.GuiceContainer;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
+import nl.knaw.huygens.security.client.filters.SecurityResourceFilterFactory;
+import nl.knaw.huygens.timbuctoo.rest.CORSFilter;
+import nl.knaw.huygens.timbuctoo.rest.filters.UserResourceFilterFactory;
+import nl.knaw.huygens.timbuctoo.rest.filters.VREAuthorizationFilterFactory;
+
+import java.util.Map;
 
 public class ServletInjectionModule extends JerseyServletModule {
 
@@ -45,7 +44,7 @@ public class ServletInjectionModule extends JerseyServletModule {
   protected void configureServlets() {
     Map<String, String> params = Maps.newHashMap();
     params.put(PackagesResourceConfig.PROPERTY_PACKAGES,
-        "nl.knaw.huygens.timbuctoo.rest.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.timbuctoo.rest.providers;nl.knaw.huygens.facetedsearch.serialization.providers;");
+        "nl.knaw.huygens.timbuctoo.rest.resources;com.fasterxml.jackson.jaxrs.json;nl.knaw.huygens.timbuctoo.rest.providers;");
     params.put(ResourceConfig.PROPERTY_CONTAINER_REQUEST_FILTERS, ServletInjectionModelHelper.getClassNamesString(GZIPContentEncodingFilter.class, LoggingFilter.class));
     params.put(ResourceConfig.PROPERTY_RESOURCE_FILTER_FACTORIES, ServletInjectionModelHelper.getClassNamesString(SecurityResourceFilterFactory.class, VREAuthorizationFilterFactory.class,
         UserResourceFilterFactory.class, RolesAllowedResourceFilterFactory.class));
