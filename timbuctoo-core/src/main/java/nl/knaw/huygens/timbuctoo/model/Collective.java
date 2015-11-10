@@ -22,15 +22,14 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
-import java.util.List;
-
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.annotations.IDPrefix;
 import nl.knaw.huygens.timbuctoo.annotations.RawSearchField;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
 import nl.knaw.huygens.timbuctoo.model.util.Period;
 
-import com.google.common.collect.Lists;
+import java.util.List;
 
 /**
  * Any named collection of people regarded as a single unit.
@@ -56,6 +55,7 @@ public class Collective extends DomainEntity {
     return getName();
   }
 
+  @IndexAnnotation(fieldName = "dynamic_s_type", isFaceted = true)
   public String getType() {
     return type;
   }
