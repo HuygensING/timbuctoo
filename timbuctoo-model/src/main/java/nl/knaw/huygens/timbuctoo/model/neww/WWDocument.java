@@ -99,6 +99,7 @@ public class WWDocument extends Document {
     this.source = source;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_notes", isFaceted = false)
   public String getNotes() {
     return notes;
   }
