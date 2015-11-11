@@ -151,6 +151,18 @@
       </dependencies>
     </profile>
     <profile>
+      <id>conversion</id>
+      <dependencies>
+        <dependency>
+          <groupId>nl.knaw.huygens</groupId>
+          <artifactId>timbuctoo-war-config-conversion</artifactId>
+          <version>${timbuctoo.config.version}</version>
+          <type>war</type>
+          <scope>runtime</scope>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
       <id>example</id>
       <dependencies>
         <dependency>
