@@ -22,15 +22,15 @@ package nl.knaw.huygens.hamcrest;
  * #L%
  */
 
-import static org.hamcrest.Matchers.equalTo;
-
 import org.hamcrest.Description;
 
-public abstract class PropertyEqualtityMatcher<T, V> extends PropertyMatcher<T, V> {
+import static org.hamcrest.Matchers.equalTo;
+
+public abstract class PropertyEqualityMatcher<T, V> extends PropertyMatcher<T, V> {
   private final String propertyName;
   private final V propertyValue;
 
-  public PropertyEqualtityMatcher(String propertyName, V propertyValue) {
+  public PropertyEqualityMatcher(String propertyName, V propertyValue) {
     super(propertyName, equalTo(propertyValue));
     this.propertyName = propertyName;
     this.propertyValue = propertyValue;

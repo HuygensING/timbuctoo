@@ -27,7 +27,6 @@ import com.sun.jersey.api.client.ClientResponse.Status;
 import com.sun.jersey.api.client.GenericType;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
-import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.config.Paths;
@@ -38,8 +37,7 @@ import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
@@ -69,13 +67,13 @@ import static org.mockito.Mockito.when;
 
 public class SearchResourceV1Test extends SearchResourceTestBase {
 
-  private static final Class<Class<? extends Relation>> RELATION_TYPE = new GenericType<Class<? extends Relation>>() {
+  protected static final Class<Class<? extends Relation>> RELATION_TYPE = new GenericType<Class<? extends Relation>>() {
   }.getRawClass();
   private static final String TYPE_STRING = "persons";
   private static final String RELATION_TYPE_STRING = "testrelations";
   private static final String RELATION_SEARCH_RESULT_TYPE = "testrelation";
 
-  private void setupPublicUrl(String url) {
+  protected void setupPublicUrl(String url) {
     when(injector.getInstance(Configuration.class).getSetting("public_url")).thenReturn(url);
   }
 
@@ -284,7 +282,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
    */
 
   @Test
-  public void aSuccessfulRelationSearchPostShouldResponseWithStatusCodeCreatedandALocationHeader() throws SearchException, SearchValidationException, StorageException, ValidationException {
+  public void aSuccessfulRelationSearchPostShouldResponseWithStatusCodeCreatedAndALocationHeader() throws Exception {
     RelationSearcher searcher = injector.getInstance(RelationSearcher.class);
     RelationSearchParameters parameters = new RelationSearchParameters();
     setupPublicUrl(resource().getURI().toString());
@@ -308,7 +306,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
   }
 
   @Test
-  public void anInvalidSearchRequestPostShouldRespondWithABadRequestStatus() throws StorageException, ValidationException {
+  public void anInvalidSearchRequestPostShouldRespondWithABadRequestStatus() throws Exception {
     RelationSearcher searcher = injector.getInstance(RelationSearcher.class);
     RelationSearchParameters parameters = new RelationSearchParameters();
     doThrow(new TimbuctooException(Response.Status.BAD_REQUEST, "Error")).when(searchRequestValidator).validateRelationRequest(anyString(), anyString(), any(RelationSearchParameters.class));
@@ -323,7 +321,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
   }
 
   @Test
-  public void whenTheRepositoryCannotStoreTheRelationSearchResultAnInternalServerErrorShouldBeReturned() throws StorageException, ValidationException, Exception {
+  public void whenTheRepositoryCannotStoreTheRelationSearchResultAnInternalServerErrorShouldBeReturned() throws Exception {
     RelationSearcher searcher = injector.getInstance(RelationSearcher.class);
     RelationSearchParameters parameters = new RelationSearchParameters();
 
@@ -346,7 +344,7 @@ public class SearchResourceV1Test extends SearchResourceTestBase {
   }
 
   @Test
-  public void whenTheRelationSearcherThrowsAnSearchExceptionAnInternalServerErrorShouldBeReturned() throws StorageException, ValidationException, Exception {
+  public void whenASearchExceptionIsThrownAnInternalServerErrorShouldBeReturned() throws Exception {
     RelationSearcher searcher = injector.getInstance(RelationSearcher.class);
     RelationSearchParameters parameters = new RelationSearchParameters();
 

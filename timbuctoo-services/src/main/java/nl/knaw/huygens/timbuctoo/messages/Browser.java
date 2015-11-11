@@ -30,6 +30,8 @@ public interface Browser {
 
   public abstract int numElements();
 
+  String status();
+
   public abstract void close() throws JMSException;
 
 }

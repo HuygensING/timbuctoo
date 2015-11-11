@@ -22,8 +22,12 @@ package nl.knaw.huygens.timbuctoo.model;
  * #L%
  */
 
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -65,4 +69,16 @@ public class PersonTest {
    Assert.assertEquals("Huygens, Christiaan", person.getSortName());
   }
 
+  @Test
+  public void ReaderIsAValidType() {
+    Person person = new Person();
+    person.setTypes(Lists.newArrayList("reader"));
+    assertThat(person.getTypes(), equalTo(Lists.newArrayList("READER")));
+  }
+  @Test
+  public void InvalidTypesWontBeSet() {
+    Person person = new Person();
+    person.setTypes(Lists.newArrayList("Gangstah"));//Gangstah is, of course, not a valid type
+    assertThat(person.getTypes(),  equalTo(Lists.newArrayList()));
+  }
 }

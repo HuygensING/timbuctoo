@@ -4,7 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
-import nl.knaw.huygens.hamcrest.PropertyEqualtityMatcher;
+import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.hamcrest.PropertyMatcher;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import test.model.TestSystemEntityWrapper;
@@ -17,7 +17,7 @@ public class TestSystemEntityWrapperMatcher extends CompositeMatcher<TestSystemE
   }
 
   public TestSystemEntityWrapperMatcher withId(String id) {
-    addMatcher(new PropertyEqualtityMatcher<TestSystemEntityWrapper, String>("id", id) {
+    addMatcher(new PropertyEqualityMatcher<TestSystemEntityWrapper, String>("id", id) {
 
       @Override
       protected String getItemValue(TestSystemEntityWrapper item) {
@@ -62,7 +62,7 @@ public class TestSystemEntityWrapperMatcher extends CompositeMatcher<TestSystemE
   }
 
   public TestSystemEntityWrapperMatcher withRevision(int revisionNumber) {
-    addMatcher(new PropertyEqualtityMatcher<TestSystemEntityWrapper, Integer>("rev", revisionNumber) {
+    addMatcher(new PropertyEqualityMatcher<TestSystemEntityWrapper, Integer>("rev", revisionNumber) {
 
       @Override
       protected Integer getItemValue(TestSystemEntityWrapper item) {

@@ -17,6 +17,7 @@ import test.model.BaseDomainEntity;
 import test.model.TestSystemEntityWrapper;
 import test.model.projecta.SubADomainEntity;
 import test.model.projecta.SubARelation;
+import test.model.projectb.SubBDomainEntity;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -65,7 +66,7 @@ public class GraphLegacyStorageWrapperTest {
   private static final int FIRST_REVISION = 1;
   private static final int SECOND_REVISION = 2;
   private static final String ID = "id";
-  private static final Change CHANGE = new Change();
+  private static final Change CHANGE = new Change("user", "vre");
   private static final String PID_VALUE = "pid";
   private static final Class<SubADomainEntity> DOMAIN_ENTITY_TYPE = SubADomainEntity.class;
   private static final Class<SubARelation> RELATION_TYPE = SubARelation.class;
@@ -121,9 +122,10 @@ public class GraphLegacyStorageWrapperTest {
       argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE)//
         .withoutAPID()//
         .withId(ID) //
-        .withACreatedValue() //
-        .withAModifiedValue() //
-        .withRevision(FIRST_REVISION)), //
+        .withCreated(CHANGE) //
+        .withModified(CHANGE) //
+        .withRevision(FIRST_REVISION) //
+        .withVariations(DOMAIN_ENTITY_TYPE, PRIMITIVE_DOMAIN_ENTITY_TYPE)), //
       argThat(is(CHANGE)));
   }
 
@@ -190,7 +192,7 @@ public class GraphLegacyStorageWrapperTest {
   @Test
   public void getEntityOrDefaultVariationDelegatesToGraphStorageGetDefaultVariationIfTheVariantDoesNotExist() throws Exception {
     // setup
-    variantDoesNotExist();
+    variantDoesNotExist(DOMAIN_ENTITY_TYPE);
     SubADomainEntity entity = aDomainEntity().build();
     when(graphStorageMock.getDefaultVariation(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entity);
 
@@ -204,7 +206,7 @@ public class GraphLegacyStorageWrapperTest {
   @Test(expected = StorageException.class)
   public void getEntityOrDefaultVariationThrowsAStorageExceptionifGraphStorageGetDefaultVariationDoes() throws Exception {
     // setup
-    variantDoesNotExist();
+    variantDoesNotExist(DOMAIN_ENTITY_TYPE);
     when(graphStorageMock.getDefaultVariation(DOMAIN_ENTITY_TYPE, ID)).thenThrow(new StorageException());
 
     // action
@@ -214,7 +216,7 @@ public class GraphLegacyStorageWrapperTest {
   @Test
   public void getEntityOrDefaultVariationForRelationDelegatesToGraphStorageGetRelationIfTheVariantExists() throws Exception {
     // setup
-    relationExists(true);
+    relationExists(true, ID);
     SubARelation relation = aRelation().build();
     when(graphStorageMock.getRelation(RELATION_TYPE, ID)).thenReturn(relation);
 
@@ -226,14 +228,15 @@ public class GraphLegacyStorageWrapperTest {
     assertThat(actualRelation, is(sameInstance(relation)));
   }
 
-  private void relationExists(boolean value) {
-    when(graphStorageMock.relationExists(RELATION_TYPE, ID)).thenReturn(value);
+  private void relationExists(boolean value, String id) throws StorageException {
+    when(graphStorageMock.getRelation(PRIMITIVE_RELATION_TYPE, id)).thenReturn(aRelation().withVariations(RELATION_TYPE, PRIMITIVE_RELATION_TYPE).build());
+    when(graphStorageMock.relationExists(RELATION_TYPE, id)).thenReturn(value);
   }
 
   @Test(expected = StorageException.class)
   public void getEntityOrDefaultVariationForRelationForRelationThrowsAStorageExceptionifGraphStorageGetRelationDoes() throws Exception {
     // setup
-    relationExists(true);
+    relationExists(true, ID);
     when(graphStorageMock.getRelation(RELATION_TYPE, ID)).thenThrow(new StorageException());
 
     // action
@@ -243,7 +246,7 @@ public class GraphLegacyStorageWrapperTest {
   @Test
   public void getEntityOrDefaultVariationForRelationDelegatesToGraphStorageGetDefaultRelationIfTheVariantDoesNotExist() throws Exception {
     // setup
-    relationExists(false);
+    relationExists(false, ID);
     SubARelation relation = aRelation().build();
     when(graphStorageMock.getDefaultRelation(RELATION_TYPE, ID)).thenReturn(relation);
 
@@ -258,7 +261,7 @@ public class GraphLegacyStorageWrapperTest {
   @Test(expected = StorageException.class)
   public void getEntityOrDefaultVariationForRelationThrowsAStorageExceptionifGraphStorageGetDefaultRelationDoes() throws Exception {
     // setup
-    relationExists(false);
+    relationExists(false, ID);
     when(graphStorageMock.getDefaultRelation(RELATION_TYPE, ID)).thenThrow(new StorageException());
 
     // action
@@ -380,15 +383,40 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void updateDomainEntityDelegatesToGraphStorage() throws Exception {
+  public void updateDomainEntityManagesTheLifeCycle() throws Exception {
     // setup
     Change oldModified = new Change();
     SubADomainEntity entity = aDomainEntity() //
+      .withId(ID) //
+      .withAPid() //
+      .withModified(oldModified)//
+      .withRev(FIRST_REVISION) //
+      .build();
+    entityAndVariantExist();
+
+    // action
+    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+
+    // verify
+    verify(graphStorageMock).updateEntity( //
+      argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
+      argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
         .withId(ID) //
-        .withAPid() //
-        .withModified(oldModified)//
-        .withRev(FIRST_REVISION) //
-        .build();
+        .withRevision(SECOND_REVISION) //
+        .withVariations(DOMAIN_ENTITY_TYPE, PRIMITIVE_DOMAIN_ENTITY_TYPE)
+        .withModified(CHANGE)));
+  }
+
+  @Test
+  public void updateDomainEntityRemovesThePIDAfterTheUpdate() throws Exception {
+    // setup
+    Change oldModified = new Change();
+    SubADomainEntity entity = aDomainEntity() //
+      .withId(ID) //
+      .withAPid() //
+      .withModified(oldModified)//
+      .withRev(FIRST_REVISION) //
+      .build();
     entityAndVariantExist();
 
     // action
@@ -396,70 +424,80 @@ public class GraphLegacyStorageWrapperTest {
 
     // verify
     InOrder inOrder = inOrder(graphStorageMock);
-    inOrder.verify(graphStorageMock).removePropertyFromEntity(DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
-    inOrder.verify(graphStorageMock).updateEntity( //
-        argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
-        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
-            .withId(ID) //
-            .withRevision(SECOND_REVISION) //
-            .withAModifiedValueNotEqualTo(oldModified)));
+    inOrder.verify(graphStorageMock).updateEntity(DOMAIN_ENTITY_TYPE, entity);
+    inOrder.verify(graphStorageMock).removePropertyFromEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
   }
 
-  private void entityAndVariantExist() {
-    when(graphStorageMock.entityExists(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(true);
+  private void entityAndVariantExist() throws StorageException {
+    entityExists();
     variantExists();
   }
 
+  private void entityExists() throws StorageException {
+    when(graphStorageMock.entityExists(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(true);
+    when(graphStorageMock.getEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(aDomainEntity().withVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_TYPE).build());
+  }
+
   @Test(expected = StorageException.class)
-  public void updateDomainEntityThrowAStorageExceptionWhenTheDelegateDoes() throws Exception {
+  public void updateDomainEntityDoesNotRemoveThePIDAndRethrowsAStorageExceptionOfTheDelegate() throws Exception {
     // setup
     SubADomainEntity entity = aDomainEntity().withId(ID).build();
     entityAndVariantExist();
 
     doThrow(StorageException.class).when(graphStorageMock).updateEntity(DOMAIN_ENTITY_TYPE, entity);
 
-    // action
-    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+    try {
+      // action
+      instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+    } finally {
+      // verify
+      verify(graphStorageMock, never()).removePropertyFromEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
+    }
 
   }
 
   @Test
-  public void updateDomainEntityDelegatesToGraphStoragesAddNewVariantWhenTheVariantDoesNotExist() throws Exception {
+  public void updateDomainEntityAddsNewVariantWhenTheVariantDoesNotExist() throws Exception {
     // setup
     Change oldModified = new Change();
-    SubADomainEntity entity = aDomainEntity() //
-        .withId(ID) //
-        .withAPid() //
-        .withModified(oldModified)//
-        .withRev(FIRST_REVISION) //
-        .build();
-    entityAndVariantExist();
-    variantDoesNotExist();
+    SubBDomainEntity entity = new SubBDomainEntity();
+    entity.setId(ID);
+    entity.setRev(1);
+    entity.setModified(oldModified);
+
+    Class<SubBDomainEntity> typeToAdd = SubBDomainEntity.class;
+
+    entityExists();
+    variantDoesNotExist(typeToAdd);
 
     // action
-    instance.updateDomainEntity(DOMAIN_ENTITY_TYPE, entity, CHANGE);
+    instance.updateDomainEntity(typeToAdd, entity, CHANGE);
 
     // verify
     InOrder inOrder = inOrder(graphStorageMock);
+
+    inOrder.verify(graphStorageMock).addVariant(//
+      argThat(is(equalTo(typeToAdd))), //
+      argThat(likeDomainEntity(typeToAdd) //
+        .withId(ID) //
+        .withRevision(SECOND_REVISION) //
+        .withAModifiedValueNotEqualTo(oldModified)
+        .withVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_TYPE, typeToAdd)));
     inOrder.verify(graphStorageMock).removePropertyFromEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
-    verify(graphStorageMock).addVariant(//
-        argThat(is(equalTo(DOMAIN_ENTITY_TYPE))), //
-        argThat(likeDomainEntity(DOMAIN_ENTITY_TYPE) //
-            .withId(ID) //
-            .withRevision(SECOND_REVISION) //
-            .withAModifiedValueNotEqualTo(oldModified)));
+
   }
 
-  private void variantDoesNotExist() {
+  private void variantDoesNotExist(Class<? extends BaseDomainEntity> type) throws StorageException {
     when(graphStorageMock.entityExists(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(true);
-    when(graphStorageMock.entityExists(DOMAIN_ENTITY_TYPE, ID)).thenReturn(false);
+    when(graphStorageMock.getEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID)).thenReturn(aDomainEntity().withVariations(PRIMITIVE_DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_TYPE).build());
+    when(graphStorageMock.entityExists(type, ID)).thenReturn(false);
   }
 
   @Test(expected = StorageException.class)
   public void updateDomainEntityThrowsAStorageExceptionWhenGraphStoragesAddNewVariantWhenTheVariantDoesNotExist() throws Exception {
     // setup
     SubADomainEntity entity = aDomainEntity().withId(ID).build();
-    variantDoesNotExist();
+    variantDoesNotExist(DOMAIN_ENTITY_TYPE);
 
     doThrow(StorageException.class).when(graphStorageMock).addVariant(DOMAIN_ENTITY_TYPE, entity);
 
@@ -526,8 +564,8 @@ public class GraphLegacyStorageWrapperTest {
 
   private void verifyEntityDeleted(String id) throws StorageException {
     verify(graphStorageMock).deleteDomainEntity(//
-        argThat(equalTo(PRIMITIVE_DOMAIN_ENTITY_TYPE)), //
-        argThat(equalTo(id)));
+      argThat(equalTo(PRIMITIVE_DOMAIN_ENTITY_TYPE)), //
+      argThat(equalTo(id)));
   }
 
   @Test(expected = StorageException.class)
@@ -538,8 +576,8 @@ public class GraphLegacyStorageWrapperTest {
     List<String> ids = Lists.newArrayList(id1, id2);
 
     doThrow(StorageException.class).when(graphStorageMock).deleteDomainEntity( //
-        argThat(equalTo(PRIMITIVE_DOMAIN_ENTITY_TYPE)), //
-        argThat(equalTo(id1)));
+      argThat(equalTo(PRIMITIVE_DOMAIN_ENTITY_TYPE)), //
+      argThat(equalTo(id1)));
 
     // action
     instance.deleteNonPersistent(DOMAIN_ENTITY_TYPE, ids);
@@ -559,16 +597,17 @@ public class GraphLegacyStorageWrapperTest {
     verifyZeroInteractions(graphStorageMock);
   }
 
+
   @Test
   public void deleteVariationDelegatesToGraphStorage() throws Exception {
     // setup
     Change oldModified = new Change();
     SubADomainEntity entity = aDomainEntity() //
-        .withId(ID) //
-        .withAPid() //
-        .withModified(oldModified)//
-        .withRev(FIRST_REVISION) //
-        .build();
+      .withId(ID) //
+      .withAPid() //
+      .withModified(oldModified)//
+      .withRev(FIRST_REVISION) //
+      .build();
     when(graphStorageMock.getEntity(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entity);
 
     // action
@@ -576,12 +615,30 @@ public class GraphLegacyStorageWrapperTest {
 
     // verify
     InOrder inOrder = inOrder(graphStorageMock);
-    inOrder.verify(graphStorageMock).removePropertyFromEntity(DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
-    inOrder.verify(graphStorageMock).deleteVariant(argThat(//
-        likeDomainEntity(DOMAIN_ENTITY_TYPE) //
-            .withId(ID) //
-            .withRevision(SECOND_REVISION) //
-            .withAModifiedValueNotEqualTo(oldModified)));
+    inOrder.verify(graphStorageMock).deleteVariant(entity);
+    inOrder.verify(graphStorageMock).removePropertyFromEntity(PRIMITIVE_DOMAIN_ENTITY_TYPE, ID, PID_FIELD_NAME);
+  }
+
+  @Test
+  public void deleteVariationManagesTheLifeCylce() throws Exception {
+    Change oldModified = new Change();
+    SubADomainEntity entity = aDomainEntity() //
+      .withId(ID) //
+      .withAPid() //
+      .withModified(oldModified)//
+      .withRev(FIRST_REVISION) //
+      .build();
+    when(graphStorageMock.getEntity(DOMAIN_ENTITY_TYPE, ID)).thenReturn(entity);
+
+    // action
+    instance.deleteVariation(DOMAIN_ENTITY_TYPE, ID, CHANGE);
+
+    // verify
+    verify(graphStorageMock).deleteVariant(argThat(//
+      likeDomainEntity(DOMAIN_ENTITY_TYPE) //
+        .withId(ID) //
+        .withRevision(SECOND_REVISION) //
+        .withModified(CHANGE)));
   }
 
   @Test(expected = StorageException.class)
@@ -682,7 +739,7 @@ public class GraphLegacyStorageWrapperTest {
     // setup
     SubADomainEntity entity = aDomainEntity().build();
     when(graphStorageMock.findEntityByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY_NAME, PROPERTY_VALUE))//
-        .thenReturn(entity);
+      .thenReturn(entity);
 
     // action
     SubADomainEntity actualEntity = instance.findItemByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY_NAME, PROPERTY_VALUE);
@@ -695,7 +752,7 @@ public class GraphLegacyStorageWrapperTest {
   public void findItemByPropertyForDomainEntityThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
     when(graphStorageMock.findEntityByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY_NAME, PROPERTY_VALUE))//
-        .thenThrow(new StorageException());
+      .thenThrow(new StorageException());
 
     // action
     instance.findItemByProperty(DOMAIN_ENTITY_TYPE, DOMAIN_ENTITY_PROPERTY_NAME, PROPERTY_VALUE);
@@ -740,14 +797,15 @@ public class GraphLegacyStorageWrapperTest {
     // verify
     assertThat(id, is(equalTo(ID)));
     verify(graphStorageMock).addRelation(//
-        argThat(is(equalTo(RELATION_TYPE))), //
-        argThat(likeDomainEntity(RELATION_TYPE)//
-            .withId(ID) //
-            .withACreatedValue() //
-            .withAModifiedValue() //
-            .withRevision(FIRST_REVISION)//
-            .withoutAPID()), //
-        argThat(is(CHANGE)));
+      argThat(is(equalTo(RELATION_TYPE))), //
+      argThat(likeDomainEntity(RELATION_TYPE)//
+        .withId(ID) //
+        .withCreated(CHANGE) //
+        .withModified(CHANGE) //
+        .withRevision(FIRST_REVISION)//
+        .withoutAPID() //
+        .withVariations(RELATION_TYPE, PRIMITIVE_RELATION_TYPE)), //
+      argThat(is(CHANGE)));
   }
 
   @Test(expected = StorageException.class)
@@ -817,40 +875,69 @@ public class GraphLegacyStorageWrapperTest {
   }
 
   @Test
-  public void updateDomainEntityForRelationDelegatesToGraphStorageAddRelation() throws Exception {
+  public void updateDomainEntityForRelationManagesTheLifeCycle() throws Exception {
     // setup
     Change oldModified = new Change();
     SubARelation entity = aRelation() //
+      .withId(ID) //
+      .withAPID() //
+      .withModified(oldModified) //
+      .withRevision(FIRST_REVISION) //
+      .build();
+
+    relationExists(true, ID);
+
+    // action
+    instance.updateDomainEntity(RELATION_TYPE, entity, CHANGE);
+
+    // verify
+    verify(graphStorageMock).updateRelation( //
+      argThat(is(equalTo(RELATION_TYPE))), //
+      argThat(likeDomainEntity(RELATION_TYPE) //
         .withId(ID) //
-        .withAPID() //
-        .withModified(oldModified) //
-        .withRevision(FIRST_REVISION) //
-        .build();
+        .withModified(CHANGE)
+        .withRevision(SECOND_REVISION)
+        .withVariations(RELATION_TYPE, PRIMITIVE_RELATION_TYPE)), //
+      argThat(is(CHANGE)));
+  }
+
+  @Test
+  public void updateDomainEntityForRelationRemovesThePIDAfterTheUpdate() throws Exception {
+    // setup
+    Change oldModified = new Change();
+    SubARelation entity = aRelation() //
+      .withId(ID) //
+      .withAPID() //
+      .withModified(oldModified) //
+      .withRevision(FIRST_REVISION) //
+      .build();
+    relationExists(true, ID);
 
     // action
     instance.updateDomainEntity(RELATION_TYPE, entity, CHANGE);
 
     // verify
     InOrder inOrder = inOrder(graphStorageMock);
-    inOrder.verify(graphStorageMock).removePropertyFromRelation(RELATION_TYPE, ID, PID_FIELD_NAME);
-    inOrder.verify(graphStorageMock).updateRelation( //
-        argThat(is(equalTo(RELATION_TYPE))), //
-        argThat(likeDomainEntity(RELATION_TYPE) //
-            .withId(ID) //
-            .withAModifiedValueNotEqualTo(oldModified) //
-            .withRevision(SECOND_REVISION)), //
-        argThat(is(CHANGE)));
+    inOrder.verify(graphStorageMock).updateRelation(RELATION_TYPE, entity, CHANGE);
+    inOrder.verify(graphStorageMock).removePropertyFromRelation(PRIMITIVE_RELATION_TYPE, ID, PID_FIELD_NAME);
   }
 
   @Test(expected = StorageException.class)
-  public void updateDomainEntityForRelationThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
+  public void updateDomainEntityForRelationDoesNotRemoveThePIDAndReThrowsAStorageExceptionOfTheDelegate() throws Exception {
     // setup
-    SubARelation entity = aRelation().build();
+    SubARelation entity = aRelation().withId(ID).build();
+
+    relationExists(true, ID);
 
     doThrow(StorageException.class).when(graphStorageMock).updateRelation(RELATION_TYPE, entity, CHANGE);
 
-    // action
-    instance.updateDomainEntity(RELATION_TYPE, entity, CHANGE);
+    try {
+      // action
+      instance.updateDomainEntity(RELATION_TYPE, entity, CHANGE);
+    } finally {
+      // verify
+      verify(graphStorageMock, never()).removePropertyFromRelation(RELATION_TYPE, ID, PID_FIELD_NAME);
+    }
   }
 
   @Test
@@ -864,21 +951,24 @@ public class GraphLegacyStorageWrapperTest {
     StorageIteratorStub<SubARelation> foundRelations = StorageIteratorStub.newInstance(relation1, relation2);
     when(graphStorageMock.getRelationsByEntityId(RELATION_TYPE, ID)).thenReturn(foundRelations);
 
+    relationExists(true, relId1);
+    relationExists(true, relId2);
+
     // action
-    instance.declineRelationsOfEntity(RELATION_TYPE, ID);
+    instance.declineRelationsOfEntity(RELATION_TYPE, ID, CHANGE);
 
     // verify
-    verifyRelationIsDeclined(relId1);
-    verifyRelationIsDeclined(relId2);
+    verifyRelationIsDeclined(relId1, CHANGE);
+    verifyRelationIsDeclined(relId2, CHANGE);
   }
 
-  private void verifyRelationIsDeclined(String relId) throws NoSuchEntityException, StorageException {
-    InOrder inOrder1 = inOrder(graphStorageMock);
-    inOrder1.verify(graphStorageMock).removePropertyFromRelation(RELATION_TYPE, relId, PID_FIELD_NAME);
-    inOrder1.verify(graphStorageMock).updateRelation( //
-        argThat(equalTo(RELATION_TYPE)), //
-        argThat(likeRelation().withId(relId).isAccepted(false)), //
-        any(Change.class));
+  private void verifyRelationIsDeclined(String relId, Change change) throws NoSuchEntityException, StorageException {
+    InOrder inOrder = inOrder(graphStorageMock);
+    inOrder.verify(graphStorageMock).updateRelation( //
+      argThat(equalTo(RELATION_TYPE)), //
+      argThat(likeRelation().withId(relId).isAccepted(false).withModified(change)), //
+      any(Change.class));
+    inOrder.verify(graphStorageMock).removePropertyFromRelation(PRIMITIVE_RELATION_TYPE, relId, PID_FIELD_NAME);
   }
 
   @Test(expected = StorageException.class)
@@ -892,13 +982,16 @@ public class GraphLegacyStorageWrapperTest {
     StorageIteratorStub<SubARelation> foundRelations = StorageIteratorStub.newInstance(relation1, relation2);
     when(graphStorageMock.getRelationsByEntityId(RELATION_TYPE, ID)).thenReturn(foundRelations);
 
+    relationExists(true, relId1);
+    relationExists(true, relId2);
+
     doThrow(StorageException.class).when(graphStorageMock).updateRelation(//
-        argThat(equalTo(RELATION_TYPE)), //
-        argThat(is(aRelation().withId(relId1).build())), //
-        any(Change.class));
+      argThat(equalTo(RELATION_TYPE)), //
+      argThat(is(aRelation().withId(relId1).build())), //
+      any(Change.class));
 
     // action
-    instance.declineRelationsOfEntity(RELATION_TYPE, ID);
+    instance.declineRelationsOfEntity(RELATION_TYPE, ID, Change.newInternalInstance());
 
   }
 
@@ -908,13 +1001,13 @@ public class GraphLegacyStorageWrapperTest {
     when(graphStorageMock.getRelationsByEntityId(RELATION_TYPE, ID)).thenThrow(new StorageException());
 
     // action
-    instance.declineRelationsOfEntity(RELATION_TYPE, ID);
+    instance.declineRelationsOfEntity(RELATION_TYPE, ID, Change.newInternalInstance());
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void declineRelationsOfEntityThrowsAnIllegalArgumentExceptionWhenTheTypeIsAPrimitive() throws Exception {
     // action
-    instance.declineRelationsOfEntity(PRIMITIVE_RELATION_TYPE, ID);
+    instance.declineRelationsOfEntity(PRIMITIVE_RELATION_TYPE, ID, Change.newInternalInstance());
   }
 
   @Test
@@ -955,7 +1048,7 @@ public class GraphLegacyStorageWrapperTest {
   public void doesVariationExistForRelationDelegatesToGraphStorageRelationExists() throws Exception {
     // setup
     boolean relationExists = true;
-    relationExists(relationExists);
+    relationExists(relationExists, ID);
 
     // action
     boolean variationExists = instance.doesVariationExist(RELATION_TYPE, ID);
@@ -1084,7 +1177,7 @@ public class GraphLegacyStorageWrapperTest {
     // setup
     SubARelation entity = aRelation().build();
     when(graphStorageMock.findRelationByProperty(RELATION_TYPE, RELATION_PROPERTY_NAME, PROPERTY_VALUE))//
-        .thenReturn(entity);
+      .thenReturn(entity);
 
     // action
     SubARelation actualEntity = instance.findItemByProperty(RELATION_TYPE, RELATION_PROPERTY_NAME, PROPERTY_VALUE);
@@ -1097,7 +1190,7 @@ public class GraphLegacyStorageWrapperTest {
   public void findItemByPropertyForRelationThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
     when(graphStorageMock.findRelationByProperty(RELATION_TYPE, RELATION_PROPERTY_NAME, PROPERTY_VALUE))//
-        .thenThrow(new StorageException());
+      .thenThrow(new StorageException());
 
     // action
     instance.findItemByProperty(RELATION_TYPE, RELATION_PROPERTY_NAME, PROPERTY_VALUE);
@@ -1120,7 +1213,7 @@ public class GraphLegacyStorageWrapperTest {
   public void entityExistsForRelationDelegatesToGraphStorageRelationExists() throws Exception {
     // setup
     boolean relationExists = true;
-    relationExists(relationExists);
+    relationExists(relationExists, ID);
 
     // action
     boolean actualEntityExists = instance.entityExists(RELATION_TYPE, ID);
@@ -1142,12 +1235,12 @@ public class GraphLegacyStorageWrapperTest {
     // verify
     assertThat(actualId, is(equalTo(ID)));
     verify(graphStorageMock).addSystemEntity(//
-        argThat(is(equalTo(SYSTEM_ENTITY_TYPE))), //
-        argThat(likeTestSystemEntityWrapper() //
-            .withId(actualId) //
-            .withACreatedValue() //
-            .withAModifiedValue() //
-            .withRevision(FIRST_REVISION)));
+      argThat(is(equalTo(SYSTEM_ENTITY_TYPE))), //
+      argThat(likeTestSystemEntityWrapper() //
+        .withId(actualId) //
+        .withACreatedValue() //
+        .withAModifiedValue() //
+        .withRevision(FIRST_REVISION)));
   }
 
   @Test
@@ -1158,7 +1251,7 @@ public class GraphLegacyStorageWrapperTest {
     SubARelation relation = aRelation().build();
 
     when(graphStorageMock.findRelation(RELATION_TYPE, sourceId, targetId, relationTypeId))//
-        .thenReturn(relation);
+      .thenReturn(relation);
 
     // action
     SubARelation foundRelation = instance.findRelation(RELATION_TYPE, sourceId, targetId, relationTypeId);
@@ -1174,7 +1267,7 @@ public class GraphLegacyStorageWrapperTest {
     String relationTypeId = "relationTypeId";
 
     when(graphStorageMock.findRelation(RELATION_TYPE, sourceId, targetId, relationTypeId)) //
-        .thenThrow(new StorageException());
+      .thenThrow(new StorageException());
 
     // action
     instance.findRelation(RELATION_TYPE, sourceId, targetId, relationTypeId);
@@ -1191,7 +1284,7 @@ public class GraphLegacyStorageWrapperTest {
     StorageIterator<SubARelation> relations = mock(StorageIterator.class);
 
     when(graphStorageMock.findRelations(RELATION_TYPE, sourceId, targetId, relationTypeId))//
-        .thenReturn(relations);
+      .thenReturn(relations);
 
     // action
     StorageIterator<SubARelation> actualRelations = instance.findRelations(RELATION_TYPE, sourceId, targetId, relationTypeId);
@@ -1260,21 +1353,21 @@ public class GraphLegacyStorageWrapperTest {
     // setup
     Change oldModified = new Change();
     TestSystemEntityWrapper entity = aSystemEntity() //
-        .withId(ID) //
-        .withModified(oldModified) //
-        .withRev(FIRST_REVISION) //
-        .build();
+      .withId(ID) //
+      .withModified(oldModified) //
+      .withRev(FIRST_REVISION) //
+      .build();
 
     // action
     instance.updateSystemEntity(SYSTEM_ENTITY_TYPE, entity);
 
     // verify
     verify(graphStorageMock).updateEntity( //
-        argThat(is(equalTo(SYSTEM_ENTITY_TYPE))), //
-        argThat(likeTestSystemEntityWrapper() //
-            .withId(ID) //
-            .withAModifiedValueNotEqualTo(oldModified) //
-            .withRevision(SECOND_REVISION)));
+      argThat(is(equalTo(SYSTEM_ENTITY_TYPE))), //
+      argThat(likeTestSystemEntityWrapper() //
+        .withId(ID) //
+        .withAModifiedValueNotEqualTo(oldModified) //
+        .withRevision(SECOND_REVISION)));
   }
 
   @Test(expected = StorageException.class)
@@ -1393,7 +1486,7 @@ public class GraphLegacyStorageWrapperTest {
     // setup
     TestSystemEntityWrapper entity = aSystemEntity().build();
     when(graphStorageMock.findEntityByProperty(SYSTEM_ENTITY_TYPE, SYSTEM_ENTITY_PROPERTY, PROPERTY_VALUE))//
-        .thenReturn(entity);
+      .thenReturn(entity);
 
     // action
     TestSystemEntityWrapper actualEntity = instance.findItemByProperty(SYSTEM_ENTITY_TYPE, SYSTEM_ENTITY_PROPERTY, PROPERTY_VALUE);
@@ -1406,7 +1499,7 @@ public class GraphLegacyStorageWrapperTest {
   public void findItemByPropertyForSystemEntityThrowsAStorageExceptionWhenTheDelegateDoes() throws Exception {
     // setup
     when(graphStorageMock.findEntityByProperty(SYSTEM_ENTITY_TYPE, SYSTEM_ENTITY_PROPERTY, PROPERTY_VALUE))//
-        .thenThrow(new StorageException());
+      .thenThrow(new StorageException());
 
     // action
     instance.findItemByProperty(SYSTEM_ENTITY_TYPE, SYSTEM_ENTITY_PROPERTY, PROPERTY_VALUE);

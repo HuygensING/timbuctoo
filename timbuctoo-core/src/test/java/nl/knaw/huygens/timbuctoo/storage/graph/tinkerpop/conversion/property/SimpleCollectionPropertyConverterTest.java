@@ -115,7 +115,7 @@ public class SimpleCollectionPropertyConverterTest implements PropertyConverterT
 
   @Test(expected = ConversionException.class)
   @Override
-  public void setValueOfVertexThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalArgumentExceptionIsThrown() throws Exception {
+  public void setPropertyOfElementThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalArgumentExceptionIsThrown() throws Exception {
     // setup
     SimpleCollectionPropertyConverter<Integer> instance = new SimpleCollectionPropertyConverter<Integer>(COMPONENT_TYPE) {
       @Override

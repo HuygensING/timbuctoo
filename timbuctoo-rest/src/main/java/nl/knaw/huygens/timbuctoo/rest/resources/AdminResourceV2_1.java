@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.index.request.IndexRequests;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
+import nl.knaw.huygens.timbuctoo.messages.Browser;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.util.ClientIndexRequest;
@@ -37,6 +38,7 @@ import java.net.URI;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static nl.knaw.huygens.timbuctoo.messages.Broker.INDEX_QUEUE;
+import static nl.knaw.huygens.timbuctoo.messages.Broker.PERSIST_QUEUE;
 import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 
 @RolesAllowed({UserRoles.ADMIN_ROLE})
@@ -66,6 +68,7 @@ public class AdminResourceV2_1 {
 
   @POST
   @Path(Paths.INDEX_REQUEST_PATH)
+  @Produces(MediaType.APPLICATION_JSON)
   public Response postIndexRequest(ClientIndexRequest clientRequest, @HeaderParam(VRE_ID_KEY) String vreId) {
     String collectionName = clientRequest.getCollectionName();
     if (collectionName == null) {
@@ -121,6 +124,42 @@ public class AdminResourceV2_1 {
     }
 
     return Response.ok(indexRequest.toClientRep()).build();
+  }
+
+  @GET
+  @Path("persistencequeue")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getPersistence(){
+    try {
+      Browser browser = broker.newBrowser(PERSIST_QUEUE);
+
+      String status = browser.status();
+      
+      browser.close();
+      return Response.ok().entity(status).build();
+    } catch (JMSException e) {
+      LOG.error("Could not get browser for queue [{}]", PERSIST_QUEUE);
+      LOG.error("Exception thrown", e);
+      return Response.serverError().entity("Could not retrieve persistence queue").build();
+    }
+  }
+
+  @GET
+  @Path("indexqueue")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response getIndex(){
+    try {
+      Browser browser = broker.newBrowser(INDEX_QUEUE);
+
+      String status = browser.status();
+
+      browser.close();
+      return Response.ok().entity(status).build();
+    } catch (JMSException e) {
+      LOG.error("Could not get browser for queue [{}]", INDEX_QUEUE);
+      LOG.error("Exception thrown", e);
+      return Response.serverError().entity("Could not retrieve index queue").build();
+    }
   }
 
   private class ExceptionMessage {

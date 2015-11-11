@@ -50,6 +50,7 @@ public abstract class DomainEntity extends Entity {
   public static final String DELETED = "^deleted";
   public static final String VARIATIONS = "^variations";
   public static final String DB_PID_PROP_NAME = "pid";
+  public static final String DB_VARIATIONS_PROP_NAME = "variations";
 
   @JsonProperty("^displayName")
   @DBProperty(value = "displayName", type = FieldType.ADMINISTRATIVE)
@@ -64,6 +65,7 @@ public abstract class DomainEntity extends Entity {
   private final Map<String, Object> properties = Maps.newHashMap();
   @DBProperty(value = "relations", type = FieldType.VIRTUAL)
   private final Map<String, Set<RelationRef>> relations = Maps.newHashMap();
+  @DBProperty(value = DB_VARIATIONS_PROP_NAME, type = FieldType.ADMINISTRATIVE)
   private List<String> variations = Lists.newArrayList();
 
   public DomainEntity() {
@@ -120,7 +122,7 @@ public abstract class DomainEntity extends Entity {
   // ---------------------------------------------------------------------------
 
   @JsonIgnore
-  public List<DerivedRelationType> getDerivedRelationTypes() {
+  public List<DerivedRelationDescription> getDerivedRelationDescriptions() {
     return ImmutableList.of();
   }
 
@@ -224,6 +226,19 @@ public abstract class DomainEntity extends Entity {
     return null;
   }
 
+  /**
+   * Map the information from the index to a clean representation.
+   *
+   * The method should be overridden when the {@link #getClientRepresentation} is.
+   * @param mappedIndexInformation the information from the client
+   * @param <T> the type of the values of the client information map
+   * @return the filtered map of with only the information analog to the client representation.
+   */
+  @JsonIgnore
+  public <T> Map<String, T> createRelSearchRep(Map<String, T> mappedIndexInformation) {
+    return Maps.newHashMap();
+  }
+
   protected void addRelationToRepresentation(Map<String, String> data, String key, String relationName) {
     List<RelationRef> refs = getRelations(relationName);
     if (refs.size() == 0) {
@@ -255,4 +270,8 @@ public abstract class DomainEntity extends Entity {
     this.displayName = displayName;
   }
 
+
+  protected  <T> void addValueToMap(Map<String, T> source, Map<String, T> target, String key) {
+    target.put(key, source.get(key));
+  }
 }

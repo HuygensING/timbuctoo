@@ -23,6 +23,7 @@ package nl.knaw.huygens.timbuctoo.storage;
  */
 
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.Person.Gender;
@@ -85,7 +86,9 @@ public abstract class StorageIntegrationTest {
 
   // DomainEntity constants
   private static final Class<ProjectAPerson> DOMAIN_ENTITY_TYPE = ProjectAPerson.class;
+  public static final String DOMAIN_ENTITY_TYPE_NAME = TypeNames.getInternalName(DOMAIN_ENTITY_TYPE);
   private static final Class<Person> PRIMITIVE_DOMAIN_ENTITY_TYPE = Person.class;
+  public static final String PRIMITIVE_DOMAIN_ENTITY_TYPE_NAME = TypeNames.getInternalName(PRIMITIVE_DOMAIN_ENTITY_TYPE);
   private static final Datable BIRTH_DATE = new Datable("1800");
   private static final Datable BIRTH_DATE1 = new Datable("10001213");
   private static final Datable BIRTH_DATE2 = new Datable("18000312");
@@ -193,13 +196,12 @@ public abstract class StorageIntegrationTest {
         .withRegularName(REGULAR_NAME2));
 
     assertThat(storedSystemEntities, hasSize(3));
-    assertThat(storedSystemEntities, containsInAnyOrder(relationTypeMatchers.toArray(new RelationTypeMatcher[0])));
+    assertThat(storedSystemEntities, containsInAnyOrder(relationTypeMatchers.toArray(new RelationTypeMatcher[relationTypeMatchers.size()])));
   }
 
   private String addSystemEntity(String regularName, String inverseName) throws StorageException {
     RelationType systemEntityToStore1 = createRelationType(regularName, inverseName);
-    String id1 = instance.addSystemEntity(SYSTEM_ENTITY_TYPE, systemEntityToStore1);
-    return id1;
+    return instance.addSystemEntity(SYSTEM_ENTITY_TYPE, systemEntityToStore1);
   }
 
   @Test
@@ -323,6 +325,18 @@ public abstract class StorageIntegrationTest {
         .withGender(GENDER)//
         .withBirthDate(BIRTH_DATE)//
         .withDeathDate(DEATH_DATE));
+  }
+
+  @Test
+  public void addDomainEntityFillsTheVariationsOfTheEntity() throws Exception {
+    // setup
+    ProjectAPerson domainEntityToStore = createProjectAPerson(GENDER, PERSON_NAME, PROJECT_A_PERSON_PROPERTY, BIRTH_DATE, DEATH_DATE);
+
+    // action
+    String id = instance.addDomainEntity(DOMAIN_ENTITY_TYPE, domainEntityToStore, CHANGE_TO_SAVE);
+
+    // verify
+    assertThat(instance.getEntity(DOMAIN_ENTITY_TYPE, id).getVariations(), containsInAnyOrder(DOMAIN_ENTITY_TYPE_NAME, PRIMITIVE_DOMAIN_ENTITY_TYPE_NAME));
   }
 
   @SuppressWarnings("unchecked")
@@ -465,7 +479,7 @@ public abstract class StorageIntegrationTest {
   // FIXME this is a hack with Mongo update and should eventually be extracted to a different method.
   // see TIM-156
   @Test
-  public void updateDomainEntityWithADifferentTypeAddsTheNewFields() throws Exception {
+  public void updateDomainEntityWithADifferentTypeAddsAVariant() throws Exception {
     // setup
     String id = addDefaultProjectAPerson();
 
@@ -485,7 +499,9 @@ public abstract class StorageIntegrationTest {
 
     assertThat(foundProjectBPerson.getNames(), contains(PERSON_NAME2));
     assertThat(foundProjectBPerson.getBirthDate(), is(BIRTH_DATE2));
-
+    String addedTypeName = TypeNames.getInternalName(ProjectBPerson.class);
+    assertThat(foundProjectBPerson.getVariations(), containsInAnyOrder(DOMAIN_ENTITY_TYPE_NAME,
+      PRIMITIVE_DOMAIN_ENTITY_TYPE_NAME, addedTypeName));
   }
 
   @Test
@@ -585,10 +601,10 @@ public abstract class StorageIntegrationTest {
     assertThat(instance.getEntity(PRIMITIVE_RELATION_TYPE, relationId), likeDefaultAcceptedRelation(sourceId, targetId, typeId));
 
     // action
-    instance.declineRelationsOfEntity(PROJECT_RELATION_TYPE, sourceId);
+    instance.declineRelationsOfEntity(PROJECT_RELATION_TYPE, sourceId, Change.newInternalInstance());
 
     // verify
-    assertThat(instance.getEntity(PROJECT_RELATION_TYPE, relationId), likeDefaultNotAcceptionRelation(sourceId, targetId, typeId));
+    assertThat(instance.getEntity(PROJECT_RELATION_TYPE, relationId), likeDefaultNotAcceptedRelation(sourceId, targetId, typeId));
     assertThat(instance.getEntity(PRIMITIVE_RELATION_TYPE, relationId), likeDefaultAcceptedRelation(sourceId, targetId, typeId));
   }
 
@@ -609,13 +625,70 @@ public abstract class StorageIntegrationTest {
         .withPID());
 
     // action
-    instance.declineRelationsOfEntity(PROJECT_RELATION_TYPE, sourceId);
+    instance.declineRelationsOfEntity(PROJECT_RELATION_TYPE, sourceId, Change.newInternalInstance());
 
     // verify
     SubARelation declinedRelation = instance.getEntity(RELATION_TYPE, id);
     assertThat(declinedRelation, //
-      likeDefaultNotAcceptionRelation(sourceId, targetId, typeId) //
+      likeDefaultNotAcceptedRelation(sourceId, targetId, typeId) //
         .withoutPID());
+  }
+
+  @Test
+  public void declineRelationsOfEntityOnlyAffectsRelationsWithThatContainTheRequestedVariant() throws Exception {
+    // setup
+    String sourceId = addDefaultProjectAPerson();
+    String targetId = addDefaultProjectAPerson();
+
+    String typeId = addRelationType();
+
+    String subARelationId = addDefaultSubARelation(sourceId, targetId, typeId);
+
+    addVariantToEntity(sourceId);
+
+    // add a relation project a does not have a variant on.
+    String otherTargetId = addDefaultProjectBPerson();
+    String subBRelationId = addDefaultSubBRelation(sourceId, otherTargetId, typeId);
+
+    // action
+    instance.declineRelationsOfEntity(SubARelation.class, sourceId, Change.newInternalInstance());
+
+    // verify
+    assertThat(instance.getEntity(SubARelation.class, subARelationId), //
+      likeDefaultNotAcceptedRelation(sourceId, targetId, typeId));
+
+    assertThat(instance.getEntity(SubBRelation.class, subBRelationId),
+      likeRelation() //
+        .withType(SubBRelation.class) //
+        .withSourceId(sourceId) //
+        .withTargetId(otherTargetId) //
+        .withTypeId(typeId) //
+        .isAccepted(true));
+  }
+
+  private String addDefaultSubBRelation(String sourceId, String targetId, String typeId) throws StorageException {
+    SubBRelation relation = new SubBRelation();
+    relation.setAccepted(ACCEPTED);
+    relation.setSourceId(sourceId);
+    relation.setSourceType(RELATION_SOURCE_TYPE);
+    relation.setTargetId(targetId);
+    relation.setTargetType(RELATION_TARGET_TYPE);
+    relation.setTypeId(typeId);
+    relation.setTypeType(RELATIONTYPE_TYPE_STRING);
+
+    return instance.addDomainEntity(SubBRelation.class, relation, CHANGE_TO_SAVE);
+  }
+
+  private void addVariantToEntity(String sourceId) throws StorageException {
+    ProjectAPerson projectAPerson = instance.getEntity(ProjectAPerson.class, sourceId);
+
+    ProjectBPerson projectBPerson = new ProjectBPerson();
+    projectBPerson.addName(PERSON_NAME2);
+    projectBPerson.setBirthDate(BIRTH_DATE2);
+    projectBPerson.setId(projectAPerson.getId());
+    projectBPerson.setRev(projectAPerson.getRev());
+
+    instance.updateDomainEntity(ProjectBPerson.class, projectBPerson, UPDATE_CHANGE);
   }
 
   @Test
@@ -797,9 +870,9 @@ public abstract class StorageIntegrationTest {
     return person;
   }
 
-  private void addDefaultProjectBPerson() throws StorageException {
+  private String addDefaultProjectBPerson() throws StorageException {
     ProjectBPerson entity = createProjectBPerson(GENDER, PERSON_NAME, BIRTH_DATE, DEATH_DATE);
-    instance.addDomainEntity(ProjectBPerson.class, entity, CHANGE_TO_SAVE);
+    return instance.addDomainEntity(ProjectBPerson.class, entity, CHANGE_TO_SAVE);
   }
 
   private String addDefaultProjectAPerson() throws StorageException {
@@ -911,13 +984,11 @@ public abstract class StorageIntegrationTest {
     relation.setTypeId(typeId);
     relation.setTypeType(RELATIONTYPE_TYPE_STRING);
 
-    String id = instance.addDomainEntity(PROJECT_RELATION_TYPE, relation, CHANGE_TO_SAVE);
-    return id;
+    return instance.addDomainEntity(PROJECT_RELATION_TYPE, relation, CHANGE_TO_SAVE);
   }
 
   private String addRelationType() throws StorageException {
-    String typeId = addSystemEntity(REGULAR_NAME, INVERSE_NAME);
-    return typeId;
+    return addSystemEntity(REGULAR_NAME, INVERSE_NAME);
   }
 
   @Test
@@ -1061,7 +1132,7 @@ public abstract class StorageIntegrationTest {
 
   //Relation test helpers
 
-  private RelationMatcher likeDefaultNotAcceptionRelation(String sourceId, String targetId, String typeId) {
+  private RelationMatcher likeDefaultNotAcceptedRelation(String sourceId, String targetId, String typeId) {
     return likeRelation()//
       .withSourceId(sourceId) //
       .withSourceType(RELATION_SOURCE_TYPE) //
@@ -1175,7 +1246,7 @@ public abstract class StorageIntegrationTest {
 
     String id = addDefaultSubARelation(sourceId, targetId, typeId);
     instance.setPID(RELATION_TYPE, id, PID);
-    instance.declineRelationsOfEntity(RELATION_TYPE, sourceId);
+    instance.declineRelationsOfEntity(RELATION_TYPE, sourceId, Change.newInternalInstance());
     instance.setPID(RELATION_TYPE, id, PID2);
 
     // action
@@ -1185,7 +1256,7 @@ public abstract class StorageIntegrationTest {
     assertThat(revisions, hasSize(2));
     assertThat(revisions, containsInAnyOrder(//
       likeDefaultAcceptedRelation(sourceId, targetId, typeId).withRevision(1), //
-      likeDefaultNotAcceptionRelation(sourceId, targetId, typeId).withRevision(2)));
+      likeDefaultNotAcceptedRelation(sourceId, targetId, typeId).withRevision(2)));
   }
 
   @Test

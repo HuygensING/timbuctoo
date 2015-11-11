@@ -22,15 +22,13 @@ package nl.knaw.huygens.timbuctoo.search.converters;
  * #L%
  */
 
-import java.util.List;
-
+import com.google.common.base.Objects;
 import nl.knaw.huygens.facetedsearch.model.parameters.DefaultFacetParameter;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetParameter;
-
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 
-import com.google.common.base.Objects;
+import java.util.List;
 
 public class DefaultFacetParameterMatcher extends TypeSafeMatcher<FacetParameter> {
 
@@ -44,9 +42,9 @@ public class DefaultFacetParameterMatcher extends TypeSafeMatcher<FacetParameter
 
   @Override
   public void describeTo(Description description) {
-    description.appendText("DefaultFacetParameter with name") //
+    description.appendText("DefaultFacetParameter with name ") //
         .appendValue(name) //
-        .appendText("values") //
+        .appendText(" values ") //
         .appendValue(values);
 
   }

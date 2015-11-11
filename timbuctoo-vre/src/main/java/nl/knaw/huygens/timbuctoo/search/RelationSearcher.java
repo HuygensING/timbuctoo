@@ -22,33 +22,90 @@ package nl.knaw.huygens.timbuctoo.search;
  * #L%
  */
 
-import java.util.List;
-
-import nl.knaw.huygens.solr.RelationSearchParameters;
+import com.google.inject.Inject;
+import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
+import nl.knaw.huygens.timbuctoo.search.converters.RelationSearchParametersConverter;
+import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
+import nl.knaw.huygens.timbuctoo.vre.VREException;
 
-public abstract class RelationSearcher {
+import java.util.List;
+
+public class RelationSearcher {
 
   protected final Repository repository;
+  private final RelationSearchParametersConverter relationSearchParametersConverter;
+  private final TypeRegistry typeRegistry;
+  private final CollectionConverter collectionConverter;
 
-  public RelationSearcher(Repository repository) {
+  @Inject
+  public RelationSearcher(Repository repository, RelationSearchParametersConverter relationSearchParametersConverter, TypeRegistry typeRegistry, CollectionConverter collectionConverter) {
     this.repository = repository;
+    this.relationSearchParametersConverter = relationSearchParametersConverter;
+    this.typeRegistry = typeRegistry;
+    this.collectionConverter = collectionConverter;
   }
 
-  public abstract SearchResult search(VRE vre, Class<? extends DomainEntity> relationType, RelationSearchParameters relationSearchParameters) throws SearchException, SearchValidationException;
+  public SearchResult search(VRE vre, Class<? extends DomainEntity> relationType, RelationSearchParameters parameters) throws SearchException, SearchValidationException {
+    SearchResult sourceResult = repository.getEntityOrDefaultVariation(SearchResult.class, parameters.getSourceSearchId());
+    String sourceType = sourceResult.getSearchType();
+    List<String> sourceSearchIds = sourceResult.getIds();
 
-  protected List<String> getRelationTypes(List<String> relationTypeIds, VRE vre) {
-    if (relationTypeIds != null && !relationTypeIds.isEmpty()) {
-      return relationTypeIds;
+    SearchResult targetResult = repository.getEntityOrDefaultVariation(SearchResult.class, parameters.getTargetSearchId());
+    String targetType = targetResult.getSearchType();
+    List<String> targetSearchIds = targetResult.getIds();
+
+    List<String> relationTypeIds = null;
+
+    relationTypeIds = getRelationTypeIds(vre, parameters, sourceType, targetType);
+    if (parameters.getRelationTypeIds().isEmpty()) {
+      parameters.setRelationTypeIds(relationTypeIds);
     }
 
-    // TODO find a more generic way, to retrieve the relation ids of a VRE.
-    return repository.getRelationTypeIdsByName(vre.getReceptionNames());
+    SearchParametersV1 parametersV1 = relationSearchParametersConverter.toSearchParametersV1(parameters);
+    parametersV1.getQueryOptimizer().setRows(1000000); // TODO find a better way to get all the found solr entries.
+
+    String typeString = parameters.getTypeString();
+    Class<? extends DomainEntity> type = typeRegistry.getDomainEntityType(typeString);
+
+    SearchResult searchResult = vre.search(type, parametersV1, createRelationFacetedSearchResultFilter(sourceSearchIds, targetSearchIds));
+
+    searchResult.setVreId(vre.getVreId());
+    searchResult.setRelationSearch(true);
+    searchResult.setSourceType(sourceType);
+    searchResult.setSourceIds(sourceSearchIds);
+    searchResult.setTargetType(targetType);
+    searchResult.setTargetIds(targetSearchIds);
+    searchResult.setRelationTypeIds(relationTypeIds);
+    searchResult.setFacets(targetResult.getFacets());
+    searchResult.setTerm(targetResult.getTerm());
+
+    return searchResult;
   }
 
+  private List<String> getRelationTypeIds(VRE vre, RelationSearchParameters parameters, String sourceTypeName, String targetTypeName) throws SearchException {
+
+    if (parameters.getRelationTypeIds() == null || parameters.getRelationTypeIds().isEmpty()) {
+      try {
+        Class<? extends DomainEntity> sourceType = typeRegistry.getDomainEntityType(sourceTypeName);
+        Class<? extends DomainEntity> targetType = typeRegistry.getDomainEntityType(targetTypeName);
+
+        return repository.getRelationTypeIdsByName(vre.getRelationTypeNamesBetween(sourceType, targetType));
+      } catch (VREException e) {
+        throw new SearchException(e);
+      }
+    }
+
+    return repository.getRelationTypeIdsByName(parameters.getRelationTypeIds());
+  }
+
+  protected RelationFacetedSearchResultFilter createRelationFacetedSearchResultFilter(List<String> sourceIds, List<String> targetIds) {
+    return new RelationFacetedSearchResultFilter(collectionConverter, sourceIds, targetIds);
+  }
 }

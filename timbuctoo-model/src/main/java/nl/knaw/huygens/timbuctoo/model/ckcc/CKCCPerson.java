@@ -22,19 +22,22 @@ package nl.knaw.huygens.timbuctoo.model.ckcc;
  * #L%
  */
 
-import java.util.Map;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Maps;
+import java.util.Map;
 
 public class CKCCPerson extends Person {
 
-  /** Unique identifier for concordances */
+  /**
+   * Unique identifier for concordances
+   */
   private String urn;
-  /** Either a Pica PPN or a name */
+  /**
+   * Either a Pica PPN or a name
+   */
   private String cenId;
   private String notes;
 
@@ -125,4 +128,13 @@ public class CKCCPerson extends Person {
     return data;
   }
 
+  @Override
+  public <T> Map<String, T> createRelSearchRep(Map<String, T> mappedIndexInformation) {
+    Map<String, T> filteredMap = Maps.newTreeMap();
+    addValueToMap(mappedIndexInformation, filteredMap, "urn");
+    addValueToMap(mappedIndexInformation, filteredMap, "cen");
+    addValueToMap(mappedIndexInformation, filteredMap, "notes");
+
+    return filteredMap;
+  }
 }

@@ -3,6 +3,12 @@ package nl.knaw.huygens.timbuctoo.storage.graph;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import test.model.projecta.SubARelation;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static nl.knaw.huygens.timbuctoo.config.TypeNames.getInternalName;
+
 public class SubARelationBuilder {
   private String sourceId;
   private String sourceType;
@@ -15,8 +21,10 @@ public class SubARelationBuilder {
   private int revision;
   private Change modified;
   private String pid;
+  private List<String> variations;
 
-  private SubARelationBuilder() {}
+  private SubARelationBuilder() {
+  }
 
   public static SubARelationBuilder aRelation() {
     return new SubARelationBuilder();
@@ -72,6 +80,11 @@ public class SubARelationBuilder {
     return this;
   }
 
+  public SubARelationBuilder withVariations(Class<?>... types) {
+    this.variations = Arrays.stream(types).map(type -> getInternalName(type)).collect(Collectors.toList());
+    return this;
+  }
+
   public SubARelation build() {
     SubARelation relation = new SubARelation();
     relation.setId(id);
@@ -85,6 +98,7 @@ public class SubARelationBuilder {
     relation.setRev(revision);
     relation.setModified(modified);
     relation.setPid(pid);
+    relation.setVariations(variations);
 
     return relation;
   }
@@ -93,5 +107,6 @@ public class SubARelationBuilder {
     this.pid = "pid";
     return this;
   }
+
 
 }

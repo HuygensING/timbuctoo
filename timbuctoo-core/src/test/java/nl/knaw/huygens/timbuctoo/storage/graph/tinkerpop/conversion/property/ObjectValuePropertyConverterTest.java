@@ -100,7 +100,7 @@ public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
 
   @Test(expected = ConversionException.class)
   @Override
-  public void setValueOfVertexThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalArgumentExceptionIsThrown() throws Exception {
+  public void setPropertyOfElementThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalArgumentExceptionIsThrown() throws Exception {
     // setup
     ObjectValuePropertyConverter instance = new ObjectValuePropertyConverter() {
       @Override
@@ -116,7 +116,7 @@ public class ObjectValuePropertyConverterTest implements PropertyConverterTest {
   }
 
   @Test(expected = ConversionException.class)
-  public void setValueOfVertexThrowsAConversionExceptionIfFormatThrowsAnIllegalArgumentException() throws Exception {
+  public void setPropertyOfElementThrowsAConversionExceptionIfFormatThrowsAnIllegalArgumentException() throws Exception {
     // setup
     entity.setObjectValue(DEFAULT_VALUE);
 

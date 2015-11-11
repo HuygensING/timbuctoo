@@ -1,4 +1,4 @@
-package nl.knaw.huygens.solr;
+package nl.knaw.huygens.timbuctoo.vre;
 
 /*
  * #%L
@@ -22,9 +22,9 @@ package nl.knaw.huygens.solr;
  * #L%
  */
 
-import java.util.List;
-
 import com.google.common.collect.Lists;
+
+import java.util.List;
 
 public class RelationSearchParameters {
 

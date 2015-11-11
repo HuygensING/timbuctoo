@@ -23,6 +23,7 @@ package nl.knaw.huygens.timbuctoo.model.util;
  */
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Reference;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
@@ -142,4 +143,11 @@ public class RelationBuilder<T extends Relation> {
     }
   }
 
+  public RelationBuilder<T> withSource(DomainEntity source) {
+    return this.withSourceId(source.getId()).withSourceType(TypeNames.getInternalName(source.getClass()));
+  }
+
+  public RelationBuilder<T> withTarget(DomainEntity source) {
+    return this.withTargetId(source.getId()).withTargetType(TypeNames.getInternalName(source.getClass()));
+  }
 }

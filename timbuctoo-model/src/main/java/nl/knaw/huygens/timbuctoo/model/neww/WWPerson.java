@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
-import nl.knaw.huygens.timbuctoo.model.DerivedRelationType;
+import nl.knaw.huygens.timbuctoo.model.DerivedRelationDescription;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.RelationRef;
 import nl.knaw.huygens.timbuctoo.model.mapping.VirtualProperty;
@@ -262,14 +262,26 @@ public class WWPerson extends Person {
     return getRelations("hasEducation");
   }
 
-  // ---------------------------------------------------------------------------
-  private static final DerivedRelationType PERSON_LANGUAGE = new DerivedRelationType("hasPersonLanguage", "isCreatorOf", "hasWorkLanguage");
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_profession", accessors = {"getDisplayName"}, isFaceted = true, canBeEmpty = true)
+  public List<RelationRef> getProfessions() {
+    return getRelations("hasProfession");
+  }
 
-  private static final List<DerivedRelationType> DERIVED_RELATION_TYPES = ImmutableList.of(PERSON_LANGUAGE);
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_financials", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
+  public List<RelationRef> getFinancials() {
+    return getRelations("hasFinancialSituation");
+  }
+
+  // ---------------------------------------------------------------------------
+  private static final DerivedRelationDescription PERSON_LANGUAGE = new DerivedRelationDescription("hasPersonLanguage", "isCreatorOf", "hasWorkLanguage");
+
+  private static final List<DerivedRelationDescription> DERIVED_RELATION_TYPES = ImmutableList.of(PERSON_LANGUAGE);
 
 
   @Override
-  public List<DerivedRelationType> getDerivedRelationTypes() {
+  public List<DerivedRelationDescription> getDerivedRelationDescriptions() {
     return DERIVED_RELATION_TYPES;
   }
 
@@ -286,6 +298,20 @@ public class WWPerson extends Person {
     addItemToRepresentation(data, "deathDate", getDeathDate() != null ? getDeathDate().getFromYear() : null);
     addRelationToRepresentation(data, "residenceLocation", "hasResidenceLocation");
     return data;
+  }
+
+  @Override
+  public <T> Map<String, T> createRelSearchRep(Map<String, T> mappedIndexInformation) {
+    Map<String, T> filteredMap = Maps.newTreeMap();
+
+    addValueToMap(mappedIndexInformation, filteredMap, ID_PROPERTY_NAME);
+    addValueToMap(mappedIndexInformation,filteredMap, "name");
+    addValueToMap(mappedIndexInformation,filteredMap, "gender");
+    addValueToMap(mappedIndexInformation,filteredMap, "birthDate");
+    addValueToMap(mappedIndexInformation,filteredMap, "deathDate");
+    addValueToMap(mappedIndexInformation,filteredMap, "residenceLocation");
+
+    return filteredMap;
   }
 
   // ---------------------------------------------------------------------------

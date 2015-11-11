@@ -23,7 +23,6 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  */
 
 import com.google.inject.Inject;
-import nl.knaw.huygens.solr.RelationSearchParameters;
 import nl.knaw.huygens.solr.SearchParametersV1;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
@@ -32,7 +31,6 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
-import nl.knaw.huygens.timbuctoo.model.RelationSearchResultDTO;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.model.SearchResultDTO;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
@@ -45,6 +43,7 @@ import nl.knaw.huygens.timbuctoo.rest.util.search.SearchResultMapper;
 import nl.knaw.huygens.timbuctoo.search.RelationSearcher;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.storage.ValidationException;
+import nl.knaw.huygens.timbuctoo.vre.RelationSearchParameters;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
@@ -78,8 +77,6 @@ import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 @Path(V1_TO_V2_PATH + SEARCH_PATH)
 public class SearchResourceV1 extends ResourceBase {
 
-  private static final String RELATION_PARAM = "relationType";
-  private static final String RELATION_SEARCH_PREFIX = "{" + RELATION_PARAM + ": [a-z]*relations }";
   private static final Logger LOG = LoggerFactory.getLogger(SearchResourceV1.class);
 
   private final TypeRegistry registry;
@@ -132,12 +129,12 @@ public class SearchResourceV1 extends ResourceBase {
 
   @APIDesc("Searches the Solr execute. Expects a relation search parameters body.")
   @POST
-  @Path("/" + RELATION_SEARCH_PREFIX)
+  @Path("/" + Paths.RELATION_SEARCH_PREFIX)
   @Consumes(MediaType.APPLICATION_JSON)
   public Response relationPost( //
                                 @PathParam(VERSION_PARAM) String version, //
                                 @HeaderParam(VRE_ID_KEY) String vreId, //
-                                @PathParam(RELATION_PARAM) String relationTypeString, //
+                                @PathParam(Paths.RELATION_PARAM) String relationTypeString, //
                                 RelationSearchParameters params //
   ) {
 
@@ -180,7 +177,7 @@ public class SearchResourceV1 extends ResourceBase {
   }
 
   @GET
-  @Path("/{id: " + SearchResult.ID_PREFIX + Paths.ID_REGEX + "}/csv")
+  @Path("/{id: " + Paths.ID_REGEX + "}/csv")
   @Produces({CSVProvider.TEXT_CSV})
   public Response getRelationSearchResultAsCSV(@PathParam("id") String queryId, @PathParam(VERSION_PARAM) String version) {
     SearchResult result = getSearchResult(queryId);
@@ -191,7 +188,7 @@ public class SearchResourceV1 extends ResourceBase {
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
     checkCondition(Relation.class.isAssignableFrom(type), BAD_REQUEST, "Not a relation type: %s", typeString);
 
-    RelationSearchResultDTO dto = relationSearchResultMapper.create(type, result, 0, Integer.MAX_VALUE, version);
+    SearchResultDTO dto = relationSearchResultMapper.create(type, result, 0, Integer.MAX_VALUE, version);
     return Response.ok(dto) //
       .header("Content-Disposition", "attachment; filename=" + queryId + ".csv") //
       .build();
@@ -199,7 +196,7 @@ public class SearchResourceV1 extends ResourceBase {
 
   @APIDesc("Exports a search result to an Excel format.")
   @GET
-  @Path("/{id: " + SearchResult.ID_PREFIX + Paths.ID_REGEX + "}/xls")
+  @Path("/{id: " + Paths.ID_REGEX + "}/xls")
   @Produces({XLSProvider.EXCEL_TYPE_STRING})
   public Response getRelationSearchResultAsXLS(@PathParam("id") String queryId, @PathParam(VERSION_PARAM) String version) {
     SearchResult result = getSearchResult(queryId);
@@ -210,7 +207,7 @@ public class SearchResourceV1 extends ResourceBase {
     checkNotNull(type, BAD_REQUEST, "No domain entity type for %s", typeString);
     checkCondition(Relation.class.isAssignableFrom(type), BAD_REQUEST, "Not a relation type: %s", typeString);
 
-    RelationSearchResultDTO dto = relationSearchResultMapper.create(type, result, 0, Integer.MAX_VALUE, version);
+    SearchResultDTO dto = relationSearchResultMapper.create(type, result, 0, Integer.MAX_VALUE, version);
     return Response.ok(dto) //
       .header("Content-Disposition", "attachment; filename=" + queryId + ".xls") //
       .build();

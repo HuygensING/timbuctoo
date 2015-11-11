@@ -17,7 +17,7 @@ public class DomainEntityDTOFactory {
 
   public DomainEntityDTO create(Class<? extends DomainEntity> type, FieldNameMap fieldNameMap, Map<String, Object> data) {
     LOG.debug("fieldNameMap: {}", fieldNameMap);
-    Map<String, Object> formattedData = format(data);
+    Map<String, String> formattedData = format(data);
     LOG.debug("data: {}", formattedData);
 
     DomainEntityDTO dto = new DomainEntityDTO();
@@ -31,25 +31,25 @@ public class DomainEntityDTOFactory {
     return dto;
   }
 
-  private Map<String, Object> format(Map<String, Object> data) {
-    Map<String, Object> formattedMap = Maps.newHashMap();
+  private Map<String, String> format(Map<String, Object> data) {
+    Map<String, String> formattedMap = Maps.newHashMap();
 
     for (Map.Entry<String, Object> entry : data.entrySet()) {
-      Object formattedValue = formatValue(entry.getValue());
+      String formattedValue = formatValue(entry.getValue());
       formattedMap.put(entry.getKey(), formattedValue);
     }
 
     return formattedMap;
   }
 
-  private Object formatValue(Object value) {
+  private String formatValue(Object value) {
     if (value instanceof Iterable) {
       return Joiner.on(';').join((Iterable<?>) value);
     }
-    return value;
+    return "" + value;
   }
 
-  private String getAsString(Map<String, Object> data, String key) {
+  private String getAsString(Map<String, String> data, String key) {
     Object value = data.get(key);
     return value != null ? value.toString() : null;
   }

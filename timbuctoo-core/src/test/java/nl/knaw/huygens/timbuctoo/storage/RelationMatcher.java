@@ -22,13 +22,15 @@ package nl.knaw.huygens.timbuctoo.storage;
  * #L%
  */
 
+import nl.knaw.huygens.hamcrest.CompositeMatcher;
+import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
+import nl.knaw.huygens.hamcrest.PropertyMatcher;
+import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.model.util.Change;
+
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
-import nl.knaw.huygens.hamcrest.CompositeMatcher;
-import nl.knaw.huygens.hamcrest.PropertyEqualtityMatcher;
-import nl.knaw.huygens.hamcrest.PropertyMatcher;
-import nl.knaw.huygens.timbuctoo.model.Relation;
 
 public class RelationMatcher extends CompositeMatcher<Relation> {
   private RelationMatcher() {}
@@ -38,7 +40,7 @@ public class RelationMatcher extends CompositeMatcher<Relation> {
   }
 
   public RelationMatcher withSourceId(String sourceId) {
-    addMatcher(new PropertyEqualtityMatcher<Relation, String>(Relation.SOURCE_ID, sourceId) {
+    addMatcher(new PropertyEqualityMatcher<Relation, String>(Relation.SOURCE_ID, sourceId) {
 
       @Override
       protected String getItemValue(Relation item) {
@@ -50,7 +52,7 @@ public class RelationMatcher extends CompositeMatcher<Relation> {
   }
 
   public RelationMatcher withSourceType(String sourceType) {
-    addMatcher(new PropertyEqualtityMatcher<Relation, String>("sourceType", sourceType) {
+    addMatcher(new PropertyEqualityMatcher<Relation, String>("sourceType", sourceType) {
 
       @Override
       protected String getItemValue(Relation item) {
@@ -63,7 +65,7 @@ public class RelationMatcher extends CompositeMatcher<Relation> {
   }
 
   public RelationMatcher withTargetId(String targetId) {
-    addMatcher(new PropertyEqualtityMatcher<Relation, String>(Relation.TARGET_ID, targetId) {
+    addMatcher(new PropertyEqualityMatcher<Relation, String>(Relation.TARGET_ID, targetId) {
 
       @Override
       protected String getItemValue(Relation item) {
@@ -75,7 +77,7 @@ public class RelationMatcher extends CompositeMatcher<Relation> {
   }
 
   public RelationMatcher withTargetType(String targetType) {
-    addMatcher(new PropertyEqualtityMatcher<Relation, String>("targetType", targetType) {
+    addMatcher(new PropertyEqualityMatcher<Relation, String>("targetType", targetType) {
 
       @Override
       protected String getItemValue(Relation item) {
@@ -88,7 +90,7 @@ public class RelationMatcher extends CompositeMatcher<Relation> {
   }
 
   public RelationMatcher withTypeId(String typeId) {
-    addMatcher(new PropertyEqualtityMatcher<Relation, String>(Relation.TYPE_ID, typeId) {
+    addMatcher(new PropertyEqualityMatcher<Relation, String>(Relation.TYPE_ID, typeId) {
 
       @Override
       protected String getItemValue(Relation item) {
@@ -100,7 +102,7 @@ public class RelationMatcher extends CompositeMatcher<Relation> {
   }
 
   public RelationMatcher isAccepted(boolean accepted) {
-    addMatcher(new PropertyEqualtityMatcher<Relation, Boolean>("accepted", accepted) {
+    addMatcher(new PropertyEqualityMatcher<Relation, Boolean>("accepted", accepted) {
 
       @Override
       protected Boolean getItemValue(Relation item) {
@@ -112,7 +114,7 @@ public class RelationMatcher extends CompositeMatcher<Relation> {
   }
 
   public RelationMatcher withTypeType(String typeType) {
-    addMatcher(new PropertyEqualtityMatcher<Relation, String>("typeType", typeType) {
+    addMatcher(new PropertyEqualityMatcher<Relation, String>("typeType", typeType) {
 
       @Override
       protected String getItemValue(Relation item) {
@@ -123,7 +125,7 @@ public class RelationMatcher extends CompositeMatcher<Relation> {
   }
 
   public RelationMatcher withRevision(int revision) {
-    addMatcher(new PropertyEqualtityMatcher<Relation, Integer>("rev", revision) {
+    addMatcher(new PropertyEqualityMatcher<Relation, Integer>("rev", revision) {
 
       @Override
       protected Integer getItemValue(Relation item) {
@@ -134,7 +136,7 @@ public class RelationMatcher extends CompositeMatcher<Relation> {
   }
 
   public RelationMatcher withId(String id) {
-    addMatcher(new PropertyEqualtityMatcher<Relation, String>("id", id) {
+    addMatcher(new PropertyEqualityMatcher<Relation, String>("id", id) {
 
       @Override
       protected String getItemValue(Relation item) {
@@ -145,7 +147,7 @@ public class RelationMatcher extends CompositeMatcher<Relation> {
   }
 
   public RelationMatcher withType(Class<? extends Relation> type) {
-    addMatcher(new PropertyEqualtityMatcher<Relation, Class<? extends Relation>>("type", type) {
+    addMatcher(new PropertyEqualityMatcher<Relation, Class<? extends Relation>>("type", type) {
 
       @Override
       protected Class<? extends Relation> getItemValue(Relation item) {
@@ -174,6 +176,18 @@ public class RelationMatcher extends CompositeMatcher<Relation> {
       @Override
       protected String getItemValue(Relation item) {
         return item.getPid();
+      }
+    });
+
+    return this;
+  }
+
+  public RelationMatcher withModified(Change modified) {
+    addMatcher(new PropertyEqualityMatcher<Relation, Change>("modified", modified) {
+
+      @Override
+      protected Change getItemValue(Relation item) {
+        return item.getModified();
       }
     });
 

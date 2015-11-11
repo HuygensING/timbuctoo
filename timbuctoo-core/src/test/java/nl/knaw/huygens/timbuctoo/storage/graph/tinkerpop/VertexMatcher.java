@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
-import nl.knaw.huygens.hamcrest.PropertyEqualtityMatcher;
+import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 
 import com.tinkerpop.blueprints.Vertex;
@@ -14,7 +14,7 @@ public class VertexMatcher extends CompositeMatcher<Vertex> {
   }
 
   public VertexMatcher withId(String id) {
-    addMatcher(new PropertyEqualtityMatcher<Vertex, String>(Entity.DB_ID_PROP_NAME, id) {
+    addMatcher(new PropertyEqualityMatcher<Vertex, String>(Entity.DB_ID_PROP_NAME, id) {
 
       @Override
       protected String getItemValue(Vertex item) {

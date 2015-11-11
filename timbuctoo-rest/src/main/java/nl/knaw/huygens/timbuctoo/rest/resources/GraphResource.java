@@ -46,6 +46,8 @@ import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
 import com.google.inject.Inject;
 
+import java.util.List;
+
 /**
  * Domain entities as graph.
  * 
@@ -86,26 +88,25 @@ public class GraphResource extends ResourceBase {
   }
 
   // --- API -----------------------------------------------------------
-
   @APIDesc("Get the network of an entity. Query param: \"depth\" (default: 1)")
   @GET
   @Path(ID_PATH)
   @Produces({ MediaType.APPLICATION_JSON })
   public Object getEntity( //
-      @PathParam(ENTITY_PARAM) String entityName, //
-      @PathParam(ID_PARAM) String id, //
-      @QueryParam("depth") @DefaultValue("1") int depth) //
+    @PathParam(ENTITY_PARAM) String entityName, //
+    @PathParam(ID_PARAM) String id, //
+    @QueryParam("depth") @DefaultValue("1") int depth, //
+    @QueryParam("types") List<String> types) //
   {
     Class<? extends DomainEntity> type = registry.getTypeForXName(entityName);
     checkNotNull(type, NOT_FOUND, "No domain entity collection %s", entityName);
-    type = TypeRegistry.toBaseDomainEntity(type);
 
     DomainEntity entity = repository.getEntityOrDefaultVariation(type, id);
     checkNotNull(entity, NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
 
     try {
       GraphBuilder builder = new GraphBuilder(repository);
-      builder.addEntity(entity, depth);
+      builder.addEntity(entity, depth, types);
       return builder.getGraph();
     } catch (Exception e) {
       throw new TimbuctooException(INTERNAL_SERVER_ERROR);

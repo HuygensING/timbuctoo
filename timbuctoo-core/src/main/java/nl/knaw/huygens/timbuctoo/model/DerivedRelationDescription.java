@@ -29,13 +29,13 @@ package nl.knaw.huygens.timbuctoo.model;
  * secundary relation: node2 --> node3
  * derived relation: node1 --> node3
  */
-public class DerivedRelationType {
+public class DerivedRelationDescription {
 
   private final String derivedTypeName;
   private final String primaryTypeName;
   private final String secundaryTypeName;
 
-  public DerivedRelationType(String derivedTypeName, String primaryTypeName, String secundaryTypeName) {
+  public DerivedRelationDescription(String derivedTypeName, String primaryTypeName, String secundaryTypeName) {
     this.derivedTypeName = derivedTypeName;
     this.primaryTypeName = primaryTypeName;
     this.secundaryTypeName = secundaryTypeName;

@@ -25,8 +25,8 @@
     <home>
       <!-- The directory that contains all the timbuctoo data directories, 
       like solr and admin_data -->
-      <directory>{path to config directory}</directory>
-      <use_user_home>false</use_user_home> <!-- is the path in the user home dir -->
+      <directory>repository</directory>
+      <use_user_home>true</use_user_home> <!-- is the path in the user home dir -->
     </home>
     <graph>
       <!-- check nl.knaw.huygens.timbuctoo.config.GraphTypes for more types. -->
@@ -72,7 +72,8 @@
       <!-- ActiveMQ message broker -->
       <broker_name>timbuctoo</broker_name>
       <enabled>true</enabled>
-      <persistent>false</persistent>
+      <persistent>true</persistent>
+      <data_dir>queue</data_dir>
       <system_usage>
         <memory_mb>10</memory_mb>
         <store_mb>100</store_mb>

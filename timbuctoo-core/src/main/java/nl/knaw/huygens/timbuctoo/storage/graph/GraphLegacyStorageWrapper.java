@@ -24,7 +24,7 @@ import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
 import static nl.knaw.huygens.timbuctoo.model.DomainEntity.PID;
 import static nl.knaw.huygens.timbuctoo.model.Entity.ID_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.model.Relation.*;
+import static nl.knaw.huygens.timbuctoo.model.Relation.TYPE_ID;
 
 public class GraphLegacyStorageWrapper implements Storage {
 
@@ -46,7 +46,7 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public void createIndex(boolean unique, Class<? extends Entity> type, String... fields) throws StorageException {
-    for(String field : fields){
+    for (String field : fields) {
       graphStorage.createIndex(type, field);
     }
 
@@ -71,15 +71,14 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends SystemEntity> String addSystemEntity(Class<T> type, T entity) throws StorageException {
-    String id = addAdministrativeValues(type, entity);
+    String id = addGeneralAdministrativeValues(type, entity, Change.newInternalInstance());
     graphStorage.addSystemEntity(type, entity);
     return id;
   }
 
   @Override
   public <T extends DomainEntity> String addDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
-    removePIDFromEntity(entity); // to make sure no bogus PID is set to the entity
-    String id = addAdministrativeValues(type, entity);
+    String id = addAdministrativeValues(type, entity, change);
 
     if (isRelation(type)) {
       graphStorage.addRelation(asRelation(type), (Relation) entity, change);
@@ -91,14 +90,32 @@ public class GraphLegacyStorageWrapper implements Storage {
   }
 
   /**
-   * Adds the administrative values to the entity.
-   * @param type the type to generate the id for
+   * Adds all the administrative values for DomainEntities.
+   * @param type the type of the DomainEntity
    * @param entity the entity to add the values to
+   * @param change
+   * @param <T> the generic of the type
    * @return the generated id
    */
-  private <T extends Entity> String addAdministrativeValues(Class<T> type, T entity) {
+  private <T extends DomainEntity> String addAdministrativeValues(Class<T> type, T entity, Change change) {
+    removePIDFromEntity(entity); // to make sure no bogus PID is set to the entity
+    entity.addVariation(type);
+    entity.addVariation(toBaseDomainEntity(type));
+
+    return addGeneralAdministrativeValues(type, entity, change);
+  }
+
+  /**
+   * Adds the administrative values to the entity, shared by both the SystemEntities and DomainEntities.
+   *
+   * @param type   the type to generate the id for
+   * @param entity the entity to add the values to
+   * @param change
+   * @param <T> the generic of the type
+   * @return the generated id
+   */
+  private <T extends Entity> String addGeneralAdministrativeValues(Class<T> type, T entity, Change change) {
     String id = idGenerator.nextIdFor(type);
-    Change change = Change.newInternalInstance();
 
     entity.setCreated(change);
     entity.setModified(change);
@@ -112,8 +129,8 @@ public class GraphLegacyStorageWrapper implements Storage {
     entity.setPid(null);
   }
 
-  private <T extends Entity> void updateAdministrativeValues(T entity) {
-    entity.setModified(Change.newInternalInstance());
+  private <T extends Entity> void updateAdministrativeValues(T entity, Change modified) {
+    entity.setModified(modified);
     updateRevision(entity);
   }
 
@@ -124,28 +141,44 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends SystemEntity> void updateSystemEntity(Class<T> type, T entity) throws StorageException {
-    updateAdministrativeValues(entity);
+    updateAdministrativeValues(entity, Change.newInternalInstance());
     graphStorage.updateEntity(type, entity);
   }
 
   @Override
   public <T extends DomainEntity> void updateDomainEntity(Class<T> type, T entity, Change change) throws StorageException {
-    updateAdministrativeValues(entity);
+    updateAdministrativeValues(entity, change);
     if (isRelation(type)) {
       Class<? extends Relation> relationType = asRelation(type);
+      Relation relation = (Relation) entity;
+
+      resetVariationsForRelation(relation);
+      graphStorage.updateRelation(relationType, relation, change);
       removePIDFromDatabase(type, entity.getId());
-      graphStorage.updateRelation(relationType, (Relation) entity, change);
     } else {
       if (baseTypeExists(type, entity) && variantExists(type, entity)) {
-        removePIDFromDatabase(type, entity.getId());
+        resetVariations(type, entity);
         graphStorage.updateEntity(type, entity);
+        removePIDFromDatabase(type, entity.getId());
       } else if (baseTypeExists(type, entity)) {
-        removePIDFromDatabase(toBaseDomainEntity(type), entity.getId());
+        resetVariations(type, entity);
+        entity.addVariation(type);
         graphStorage.addVariant(type, entity);
+        removePIDFromDatabase(toBaseDomainEntity(type), entity.getId());
       } else {
         throw new UpdateException(String.format("%s with id %s does not exist.", type, entity.getId()));
       }
     }
+  }
+
+  private <T extends Relation> void resetVariationsForRelation(T entity) throws StorageException {
+    Relation prevEntity = graphStorage.getRelation(RELATION_TYPE, entity.getId());
+    entity.setVariations(prevEntity.getVariations());
+  }
+
+  private <T extends DomainEntity> void resetVariations(Class<T> type, T entity) throws StorageException {
+    DomainEntity prevEntity = graphStorage.getEntity(toBaseDomainEntity(type), entity.getId());
+    entity.setVariations(prevEntity.getVariations());
   }
 
   private <T extends DomainEntity> boolean variantExists(Class<T> type, T entity) {
@@ -173,7 +206,7 @@ public class GraphLegacyStorageWrapper implements Storage {
   @Override
   public <T extends SystemEntity> int deleteSystemEntities(Class<T> type) throws StorageException {
     int numberOfDeletions = 0;
-    for (StorageIterator<T> iterator = graphStorage.getEntities(type); iterator.hasNext();) {
+    for (StorageIterator<T> iterator = graphStorage.getEntities(type); iterator.hasNext(); ) {
       numberOfDeletions += graphStorage.deleteSystemEntity(type, iterator.next().getId());
     }
 
@@ -184,7 +217,7 @@ public class GraphLegacyStorageWrapper implements Storage {
   public <T extends SystemEntity> int deleteByModifiedDate(Class<T> type, Date dateValue) throws StorageException {
     int numberOfDeletions = 0;
     long timeStampToDelete = dateValue.getTime();
-    for (StorageIterator<T> entities = graphStorage.getEntities(type); entities.hasNext();) {
+    for (StorageIterator<T> entities = graphStorage.getEntities(type); entities.hasNext(); ) {
       T entity = entities.next();
       Change modified = entity.getModified();
 
@@ -219,7 +252,7 @@ public class GraphLegacyStorageWrapper implements Storage {
       return;
     }
     for (String id : ids) {
-      graphStorage.deleteDomainEntity(TypeRegistry.toBaseDomainEntity(type), id);
+      graphStorage.deleteDomainEntity(toBaseDomainEntity(type), id);
     }
   }
 
@@ -239,51 +272,58 @@ public class GraphLegacyStorageWrapper implements Storage {
       throw new NoSuchEntityException(type, id);
     }
 
-    removePIDFromDatabase(type, id);
-    updateAdministrativeValues(entity);
+    updateAdministrativeValues(entity, change);
 
     graphStorage.deleteVariant(entity);
+    removePIDFromDatabase(type, id);
   }
 
   /**
    * Remove the PID from the database of Entity or Relation.
-   * @param type the type of the to remove the PID from 
-   * @param id the id to remove the PID from
-   * @throws NoSuchEntityException when the Entity could not be found
+   *
+   * @param type the type of the to remove the PID from
+   * @param id   the id to remove the PID from
+   * @throws NoSuchEntityException   when the Entity could not be found
    * @throws NoSuchRelationException when the Relation could not be found
    */
   @SuppressWarnings("unchecked")
   private <T extends DomainEntity> void removePIDFromDatabase(Class<T> type, String id) throws NoSuchEntityException, NoSuchRelationException {
     if (RELATION_TYPE.isAssignableFrom(type)) {
-      graphStorage.removePropertyFromRelation((Class<? extends Relation>) type, id, PID);
+      graphStorage.removePropertyFromRelation(RELATION_TYPE, id, PID);
     } else {
-      graphStorage.removePropertyFromEntity(type, id, PID);
+      graphStorage.removePropertyFromEntity(TypeRegistry.toBaseDomainEntity(type), id, PID);
     }
   }
 
   @Override
   public void deleteRelationsOfEntity(Class<Relation> type, String id) throws StorageException {
-    for (StorageIterator<Relation> relations = graphStorage.getRelationsByEntityId(type, id); relations.hasNext();) {
+    for (StorageIterator<Relation> relations = graphStorage.getRelationsByEntityId(type, id); relations.hasNext(); ) {
       graphStorage.deleteRelation(RELATION_TYPE, relations.next().getId());
     }
 
   }
 
   @Override
-  public <T extends Relation> void declineRelationsOfEntity(Class<T> type, String id) throws IllegalArgumentException, StorageException {
+  public <T extends Relation> void declineRelationsOfEntity(Class<T> type, String id, Change change) throws IllegalArgumentException, StorageException {
     if (TypeRegistry.isPrimitiveDomainEntity(type)) {
       throw new IllegalArgumentException("Use deleteRelation for removing primitive relation.");
     }
 
-    for (StorageIterator<T> relationsOfEntity = graphStorage.getRelationsByEntityId(type, id); relationsOfEntity.hasNext();) {
+    for (StorageIterator<T> relationsOfEntity = graphStorage.getRelationsByEntityId(type, id); relationsOfEntity.hasNext(); ) {
       T relation = relationsOfEntity.next();
-      declineRelation(type, relation);
+      /*
+       * getRelationsByEntityId returns more relations than we like in this case.
+       * In this case we want to decline the relations the project variant of the is available.
+       */
+      if (entityExists(type, relation.getId())) {
+        declineRelation(type, relation, change);
+      }
     }
   }
 
-  private <T extends Relation> void declineRelation(Class<T> type, T relation) throws StorageException {
+  private <T extends Relation> void declineRelation(Class<T> type, T relation, Change change) throws StorageException {
     relation.setAccepted(false);
-    this.updateDomainEntity(type, relation, Change.newInternalInstance());
+    this.updateDomainEntity(type, relation, change);
   }
 
   @Override
@@ -297,7 +337,7 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends Entity> T getEntityOrDefaultVariation(Class<T> type, String id) throws StorageException {
-    if(isRelation(type)){
+    if (isRelation(type)) {
       return getRelationOrDefaultVariant(type, id);
     }
 
@@ -313,10 +353,9 @@ public class GraphLegacyStorageWrapper implements Storage {
   }
 
   private <T extends Entity> T getRelationOrDefaultVariant(Class<T> type, String id) throws StorageException {
-    if(graphStorage.relationExists(asRelation(type), id)) {
+    if (graphStorage.relationExists(asRelation(type), id)) {
       return (T) graphStorage.getRelation(asRelation(type), id);
-    }
-    else {
+    } else {
       return (T) graphStorage.getDefaultRelation(asRelation(type), id);
     }
   }
@@ -340,7 +379,7 @@ public class GraphLegacyStorageWrapper implements Storage {
 
   @Override
   public <T extends DomainEntity> StorageIterator<T> getDomainEntities(Class<T> type) throws StorageException {
-    if(isRelation(type)){
+    if (isRelation(type)) {
       return (StorageIterator<T>) graphStorage.getRelations(asRelation(type));
     }
     return graphStorage.getEntities(type);
@@ -408,9 +447,9 @@ public class GraphLegacyStorageWrapper implements Storage {
   @Override
   public <T extends DomainEntity> List<T> getAllRevisions(Class<T> type, String id) throws StorageException {
     TimbuctooQuery query = queryFactory.newQuery(type) //
-        .hasNotNullProperty(ID_PROPERTY_NAME, id)//
-        .hasDistinctValue(REVISION_PROPERTY_NAME) //
-        .searchLatestOnly(false);
+      .hasNotNullProperty(ID_PROPERTY_NAME, id)//
+      .hasDistinctValue(REVISION_PROPERTY_NAME) //
+      .searchLatestOnly(false);
 
     if (RELATION_TYPE.isAssignableFrom(type)) {
       query.searchByType(false);
@@ -453,7 +492,7 @@ public class GraphLegacyStorageWrapper implements Storage {
     for (String id : ids) {
       StorageIterator<Relation> iterator = graphStorage.getRelationsByEntityId(RELATION_TYPE, id);
 
-      for (; iterator.hasNext();) {
+      for (; iterator.hasNext(); ) {
         relationIds.add(iterator.next().getId());
       }
 

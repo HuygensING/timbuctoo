@@ -8,7 +8,7 @@ public interface PropertyConverterTest {
 
   void setPropertyOfElementThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalAccessException() throws Exception;
 
-  void setValueOfVertexThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalArgumentExceptionIsThrown() throws Exception;
+  void setPropertyOfElementThrowsAConversionExceptionIfGetFieldValueThrowsAnIllegalArgumentExceptionIsThrown() throws Exception;
 
   void addValueToEntitySetTheFieldOfTheEntityWithTheValue() throws Exception;
 

@@ -2,17 +2,17 @@ package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Set;
 
-import static nl.knaw.huygens.timbuctoo.model.Entity.DB_REV_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.model.Entity.DB_ID_PROP_NAME;
+import static nl.knaw.huygens.timbuctoo.model.Entity.DB_REV_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
 
 public class ElementHelper {
@@ -46,16 +46,16 @@ public class ElementHelper {
     return edge.getVertex(Direction.IN);
   }
 
-  public static List<String> getTypes(Element element) {
+  public static Set<String> getTypes(Element element) {
     ObjectMapper objectMapper = new ObjectMapper();
 
-    List<String> types = null;
+    Set<String> types = null;
     try {
-      types = objectMapper.readValue((String) element.getProperty(ELEMENT_TYPES), new TypeReference<List<String>>() {});
+      types = objectMapper.readValue((String) element.getProperty(ELEMENT_TYPES), new TypeReference<Set<String>>() {});
     } catch (IOException e) {
       e.printStackTrace();
     }
 
-    return types != null ? types : Lists.<String> newArrayList();
+    return types != null ? types : Sets.newHashSet();
   }
 }

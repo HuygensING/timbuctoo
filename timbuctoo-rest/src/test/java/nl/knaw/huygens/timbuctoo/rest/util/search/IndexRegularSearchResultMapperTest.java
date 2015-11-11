@@ -3,6 +3,8 @@ package nl.knaw.huygens.timbuctoo.rest.util.search;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.facetedsearch.model.Facet;
+import nl.knaw.huygens.facetedsearch.model.parameters.SortDirection;
+import nl.knaw.huygens.facetedsearch.model.parameters.SortParameter;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
@@ -53,6 +55,7 @@ public class IndexRegularSearchResultMapperTest {
   private static final String TERM = "term";
   private static final ArrayList<DomainEntityDTO> REFS = Lists.<DomainEntityDTO>newArrayList();
   private static final String VERSION = "v1";
+  private static final List<SortParameter> SORT = Lists.newArrayList(new SortParameter("field", SortDirection.ASCENDING));
   private IndexRegularSearchResultMapper instance;
   private Repository repository;
   private SortableFieldFinder sortableFieldFinder;
@@ -100,7 +103,7 @@ public class IndexRegularSearchResultMapperTest {
     vreCollection = mock(VRECollection.class);
     vre = mock(VRE.class);
     when(vreCollection.getVREById(VRE_ID)).thenReturn(vre);
-    when(vre.getRawDataFor(DEFAULT_TYPE, ID_SUBLIST)).thenReturn(RAW_DATA);
+    when(vre.getRawDataFor(DEFAULT_TYPE, ID_SUBLIST, SORT)).thenReturn(RAW_DATA);
 
   }
 
@@ -112,6 +115,7 @@ public class IndexRegularSearchResultMapperTest {
     searchResult.setFacets(FACETS);
     searchResult.setTerm(TERM);
     searchResult.setVreId(VRE_ID);
+    searchResult.setSort(SORT);
   }
 
   private void setupRangeHelper() {
@@ -145,11 +149,11 @@ public class IndexRegularSearchResultMapperTest {
       .withTerm(TERM)
       .withRefs(REFS));
 
-    verify(vre).getRawDataFor(DEFAULT_TYPE, ID_SUBLIST);
+    verify(vre).getRawDataFor(DEFAULT_TYPE, ID_SUBLIST, SORT);
   }
 
   @Test
-  public void createRetrievesAllTheInfromationFromTheIndexAndHasNoInteractionWithTheRepository() throws Exception {
+  public void createRetrievesAllTheInformationFromTheIndexAndHasNoInteractionWithTheRepository() throws Exception {
     // action
     instance.create(DEFAULT_TYPE, searchResult, START, ROWS, VERSION);
 
@@ -164,7 +168,7 @@ public class IndexRegularSearchResultMapperTest {
   public void createThrowsARuntimeExceptionWhenGetRawDataForThrowsANotInScopeException() throws Exception {
     // setup
     NotInScopeException notInScopeException = NotInScopeException.typeIsNotInScope(DEFAULT_TYPE, VRE_ID);
-    when(vre.getRawDataFor(DEFAULT_TYPE, ID_SUBLIST)).thenThrow(notInScopeException);
+    when(vre.getRawDataFor(DEFAULT_TYPE, ID_SUBLIST, SORT)).thenThrow(notInScopeException);
 
     exception.expect(RuntimeException.class);
     exception.expectCause(is(notInScopeException));
@@ -177,7 +181,7 @@ public class IndexRegularSearchResultMapperTest {
   public void createThrowsARuntimeExceptionWhenGetRawDataForThrowsASearchException() throws Exception {
     // setup
     SearchException searchException = new SearchException(new Exception());
-    when(vre.getRawDataFor(DEFAULT_TYPE, ID_SUBLIST)).thenThrow(searchException);
+    when(vre.getRawDataFor(DEFAULT_TYPE, ID_SUBLIST, SORT)).thenThrow(searchException);
 
     exception.expect(RuntimeException.class);
     exception.expectCause(is(searchException));

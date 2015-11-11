@@ -22,10 +22,14 @@ package nl.knaw.huygens.timbuctoo.config;
  * #L%
  */
 
-import java.io.File;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+
+import static nl.knaw.huygens.timbuctoo.config.Configuration.KEY_HOME_DIR;
 
 /**
  * Validates the configuration.
@@ -58,7 +62,7 @@ public class ConfigValidator {
    * A method that validates the settings needed to be validated.
    */
   protected void validateSettings() {
-    checkSettingExists(Configuration.KEY_HOME_DIR);
+    validateHomeDirectoryIsWritable();
     validateSolrDirectory();
     validateAdminDataDirectory();
     validateGraphDatabase();
@@ -85,6 +89,16 @@ public class ConfigValidator {
     String key = "admin_data.directory";
     if (checkSettingExists(key)) {
       checkDirectoryExists(key);
+    }
+  }
+
+  private void validateHomeDirectoryIsWritable() {
+    if (checkSettingExists(KEY_HOME_DIR)) {
+      String homeDirectory = config.getHomeDir();
+      LOG.info("home dir: {}", homeDirectory);
+
+      String errorMessage = String.format("\"%s\" should be writable", homeDirectory);
+      checkCondition(Files.isWritable(FileSystems.getDefault().getPath(homeDirectory)), errorMessage);
     }
   }
 

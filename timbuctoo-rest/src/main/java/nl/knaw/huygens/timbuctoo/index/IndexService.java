@@ -70,6 +70,7 @@ public class IndexService extends ConsumerService implements Runnable {
       Indexer indexer = indexerFactory.create(action.getActionType());
 
       try {
+        LOG.info("Processing index request for entity of type \"{}\" with id \"{}\"", action.getType(), action.getId());
         indexRequest.execute(indexer);
       } catch (IndexException e) {
         getLogger().error("Error indexing ([{}]) object of type [{}]", action.getActionType(), indexRequest.getType());

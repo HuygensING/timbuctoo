@@ -22,20 +22,18 @@ package nl.knaw.huygens.timbuctoo.config;
  * #L%
  */
 
-import java.io.InputStream;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.util.Text;
-
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
 import org.apache.commons.lang.StringUtils;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import java.io.InputStream;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class Configuration {
 
@@ -141,8 +139,16 @@ public class Configuration {
   }
 
   public String getDirectory(String key) {
-    String path = concatenatePaths(getSetting(KEY_HOME_DIR), getSetting(key));
-    return getBooleanSetting("home.use_user_home") ? pathInUserHome(path) : path;
+    String requestedPath = getSetting(key);
+    return concatenatePaths(getHomeDir(), requestedPath);
+  }
+
+  public String getHomeDir() {
+    return useUserHome() ? pathInUserHome(getSetting(KEY_HOME_DIR)) : getSetting(KEY_HOME_DIR);
+  }
+
+  private boolean useUserHome() {
+    return getBooleanSetting("home.use_user_home");
   }
 
   // --- VRE's -----------------------------------------------------------------

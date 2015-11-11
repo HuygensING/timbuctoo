@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.messages;
 
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
-import nl.knaw.huygens.hamcrest.PropertyEqualtityMatcher;
+import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 public class ActionMatcher extends CompositeMatcher<Action> {
@@ -15,7 +15,7 @@ public class ActionMatcher extends CompositeMatcher<Action> {
   }
 
   public ActionMatcher withActionType(ActionType actionType) {
-    this.addMatcher(new PropertyEqualtityMatcher<Action, ActionType>("actionType", actionType) {
+    this.addMatcher(new PropertyEqualityMatcher<Action, ActionType>("actionType", actionType) {
       @Override
       protected ActionType getItemValue(Action item) {
         return item.getActionType();
@@ -25,7 +25,7 @@ public class ActionMatcher extends CompositeMatcher<Action> {
   }
 
   public ActionMatcher withType(Class<? extends DomainEntity> type) {
-    this.addMatcher(new PropertyEqualtityMatcher<Action, Class<? extends DomainEntity>>("type", type) {
+    this.addMatcher(new PropertyEqualityMatcher<Action, Class<? extends DomainEntity>>("type", type) {
       @Override
       protected Class<? extends DomainEntity> getItemValue(Action item) {
         return item.getType();
@@ -35,7 +35,7 @@ public class ActionMatcher extends CompositeMatcher<Action> {
   }
 
   public ActionMatcher withId(String id) {
-    this.addMatcher(new PropertyEqualtityMatcher<Action, String>("id", id) {
+    this.addMatcher(new PropertyEqualityMatcher<Action, String>("id", id) {
       @Override
       protected String getItemValue(Action item) {
         return item.getId();
@@ -45,7 +45,7 @@ public class ActionMatcher extends CompositeMatcher<Action> {
   }
 
   public ActionMatcher withForMultiEntitiesFlag(boolean forMultiEntitiesFlag){
-    this.addMatcher(new PropertyEqualtityMatcher<Action, Boolean>("forMultiEntities", forMultiEntitiesFlag) {
+    this.addMatcher(new PropertyEqualityMatcher<Action, Boolean>("forMultiEntities", forMultiEntitiesFlag) {
       @Override
       protected Boolean getItemValue(Action item) {
         return item.isForMultiEntities();

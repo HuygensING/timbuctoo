@@ -29,8 +29,10 @@ import com.google.common.collect.Maps;
 import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.DerivedProperty;
+import nl.knaw.huygens.timbuctoo.model.DerivedRelationDescription;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.RelationRef;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.oaipmh.DublinCoreMetadataField;
 import nl.knaw.huygens.timbuctoo.oaipmh.OAIDublinCoreField;
 import nl.knaw.huygens.timbuctoo.util.Text;
@@ -40,6 +42,10 @@ import java.util.Map;
 
 public class WWDocument extends Document {
 
+  public static final String TYPE = "type";
+  public static final String DATE = "date";
+  public static final String GENRE = "genre";
+  public static final String LANGUAGE = "language";
   private boolean source;
   private String notes;
   private List<String> topoi;
@@ -83,6 +89,12 @@ public class WWDocument extends Document {
     return source;
   }
 
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_sources", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
+  public List<RelationRef> getSources() {
+    return getRelations("hasDocumentSource");
+  }
+
   public void setSource(boolean source) {
     this.source = source;
   }
@@ -121,7 +133,7 @@ public class WWDocument extends Document {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_firstPublisher", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_s_firstPublisher", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public RelationRef getFirstPublisher() {
     WWRelationRef firstPublisher = null;
 
@@ -147,11 +159,16 @@ public class WWDocument extends Document {
 
   // ---------------------------------------------------------------------------
 
+  private static final DerivedProperty AUTHOR_NAME = new DerivedProperty("authorName", "isCreatedBy", "getIndexedName", "getAuthorName");
   private static final DerivedProperty AUTHOR_GENDER = new DerivedProperty("authorGender", "isCreatedBy", "getGender", "getAuthorGender");
+  private static final DerivedProperty AUTHOR_BIRTH_DATE = new DerivedProperty("authorBirthDate", "isCreatedBy", "getBirthDate", "getAuthorBirthDate");
+  private static final DerivedProperty AUTHOR_DEATH_DATE = new DerivedProperty("authorDeathDate", "isCreatedBy", "getDeathDate", "getAuthorDeathDate");
+  private static final DerivedProperty AUTHOR_CHILDREN = new DerivedProperty("authorChildren", "isCreatedBy", "getChildren", "getAuthorChildren");
+  private static final DerivedProperty AUTHOR_TYPE = new DerivedProperty("authorTypes", "isCreatedBy", "getTypes", "getAuthorTypes");
   private static final DerivedProperty GENRES = new DerivedProperty("genre", "hasGenre", "getIdentificationName", "getGenres");
   private static final DerivedProperty LIBRARIES = new DerivedProperty("library", "isStoredAt", "getIdentificationName", "getLibraries");
   private static final DerivedProperty ORIGINS = new DerivedProperty("publishLocation", "hasPublishLocation", "getIdentificationName", "getOrigin");
-  private static final List<DerivedProperty> DERIVED_PROPERTIES = ImmutableList.of(AUTHOR_GENDER, GENRES, LIBRARIES, ORIGINS);
+  private static final List<DerivedProperty> DERIVED_PROPERTIES = ImmutableList.of(AUTHOR_NAME, AUTHOR_GENDER, GENRES, LIBRARIES, ORIGINS, AUTHOR_BIRTH_DATE, AUTHOR_DEATH_DATE, AUTHOR_CHILDREN, AUTHOR_TYPE);
 
   @Override
   public List<DerivedProperty> getDerivedProperties() {
@@ -159,9 +176,39 @@ public class WWDocument extends Document {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_author_gender", canBeEmpty = true)
+  @IndexAnnotation(fieldName = "dynamic_s_author_gender", canBeEmpty = true, isFaceted = true)
   public Object getAuthorGender() {
     return this.getProperty(AUTHOR_GENDER.getPropertyName());
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_t_author_name", canBeEmpty = true)
+  public Object getAuthorName() {
+    return this.getProperty(AUTHOR_NAME.getPropertyName());
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_i_author_birthDate", canBeEmpty = true, isFaceted = true, facetType = FacetType.RANGE)
+  public Datable getAuthorBirthDate() {
+    return (Datable) this.getProperty(AUTHOR_BIRTH_DATE.getPropertyName());
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_i_author_deathDate", canBeEmpty = true, isFaceted = true, facetType = FacetType.RANGE)
+  public Datable getAuthordeathDate() {
+    return (Datable) this.getProperty(AUTHOR_DEATH_DATE.getPropertyName());
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_author_children", canBeEmpty = true, isFaceted = true)
+  public Object getAuthorChildren() {
+    return this.getProperty(AUTHOR_CHILDREN.getPropertyName());
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_author_types", canBeEmpty = true, isFaceted = true)
+  public Object getAuthorType() {
+    return this.getProperty(AUTHOR_TYPE.getPropertyName());
   }
 
   @JsonIgnore
@@ -183,6 +230,108 @@ public class WWDocument extends Document {
     return getProperty(ORIGINS.getPropertyName());
   }
 
+  private static final DerivedRelationDescription AUTHOR_RESIDENCE = new DerivedRelationDescription("hasAuthorResidence", "isCreatedBy", "hasResidenceLocation");
+  private static final DerivedRelationDescription AUTHOR_BIRTHPLACE = new DerivedRelationDescription("hasAuthorBirthPlace", "isCreatedBy", "hasBirthPlace");
+  private static final DerivedRelationDescription AUTHOR_DEATHPLACE = new DerivedRelationDescription("hasAuthorDeathPlace", "isCreatedBy", "hasDeathPlace");
+  private static final DerivedRelationDescription AUTHOR_RELIGION = new DerivedRelationDescription("hasAuthorReligion", "isCreatedBy", "hasReligion");
+  private static final DerivedRelationDescription AUTHOR_MEMBERSHIPS = new DerivedRelationDescription("hasAuthorMemberships", "isCreatedBy", "isMemberOf");
+  private static final DerivedRelationDescription AUTHOR_MARITAL_STATUS = new DerivedRelationDescription("hasAuthorMaritalStatus", "isCreatedBy", "hasMaritalStatus");
+  private static final DerivedRelationDescription AUTHOR_SOCIAL_CLASS = new DerivedRelationDescription("hasAuthorSocialClass", "isCreatedBy", "hasSocialClass");
+  private static final DerivedRelationDescription AUTHOR_EDUCATION = new DerivedRelationDescription("hasAuthorEducation", "isCreatedBy", "hasEducation");
+  private static final DerivedRelationDescription AUTHOR_PROFESSION = new DerivedRelationDescription("hasAuthorProfession", "isCreatedBy", "hasProfession");
+  private static final DerivedRelationDescription AUTHOR_FINANCIALS = new DerivedRelationDescription("hasAuthorFinancialSituation", "isCreatedBy", "hasFinancialSituation");
+  private static final List<DerivedRelationDescription> DERIVED_RELATION_TYPES = ImmutableList.of(AUTHOR_BIRTHPLACE, AUTHOR_DEATHPLACE, AUTHOR_MEMBERSHIPS, AUTHOR_RELIGION, AUTHOR_RESIDENCE, AUTHOR_MARITAL_STATUS, AUTHOR_EDUCATION, AUTHOR_SOCIAL_CLASS, AUTHOR_FINANCIALS, AUTHOR_PROFESSION);
+
+  @Override
+  public List<DerivedRelationDescription> getDerivedRelationDescriptions() {
+    return DERIVED_RELATION_TYPES;
+  }
+
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_author_residence", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
+  public List<RelationRef> getAuthorResidence() {
+    return getRelations(AUTHOR_RESIDENCE.getDerivedTypeName());
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_author_birthplace", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
+  public List<RelationRef> getAuthorBirthPlace() {
+    return getRelations(AUTHOR_BIRTHPLACE.getDerivedTypeName());
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_author_deathplace", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
+  public List<RelationRef> getAuthorDeathPlace() {
+    return getRelations(AUTHOR_DEATHPLACE.getDerivedTypeName());
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_author_religion", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
+  public List<RelationRef> getAuthorReligion() {
+    return getRelations(AUTHOR_RELIGION.getDerivedTypeName());
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_author_collective", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
+  public List<RelationRef> getAuthorMembership() {
+    return getRelations(AUTHOR_MEMBERSHIPS.getDerivedTypeName());
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_author_social_class", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
+  public List<RelationRef> getAuthorSocialClass() {
+    return getRelations(AUTHOR_SOCIAL_CLASS.getDerivedTypeName());
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_author_marital_status", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
+  public List<RelationRef> getAuthorMaritalStatus() {
+    return getRelations(AUTHOR_MARITAL_STATUS.getDerivedTypeName());
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_author_education", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
+  public List<RelationRef> getAuthorEducation() {
+    return getRelations(AUTHOR_EDUCATION.getDerivedTypeName());
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_author_profession", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
+  public List<RelationRef> getAuthorProfession() {
+    return getRelations(AUTHOR_PROFESSION.getDerivedTypeName());
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_author_financials", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
+  public List<RelationRef> getAuthorFinancials() {
+    return getRelations(AUTHOR_FINANCIALS.getDerivedTypeName());
+  }
+
+  @JsonIgnore
+  @IndexAnnotation(fieldName = "dynamic_s_author_relatedLocations", canBeEmpty = true, isFaceted = true)
+  public List<RelationRef> getAuthorRelatedLocations() {
+    List<RelationRef> relatedLocations = Lists.newArrayList();
+
+    List<RelationRef> residenceLocations = this.getAuthorResidence();
+    if (residenceLocations != null) {
+      relatedLocations.addAll(residenceLocations);
+    }
+
+    List<RelationRef> birthPlaces = getAuthorBirthPlace();
+    if (birthPlaces != null) {
+      relatedLocations.addAll(birthPlaces);
+    }
+
+    List<RelationRef> deathPlaces = getAuthorDeathPlace();
+    if (deathPlaces != null) {
+      relatedLocations.addAll(deathPlaces);
+    }
+
+    return relatedLocations;
+  }
+
+
   @Override
   public Map<String, String> getClientRepresentation() {
     Map<String, String> data = Maps.newTreeMap();
@@ -196,6 +345,21 @@ public class WWDocument extends Document {
     addRelationToRepresentation(data, "createdBy", "isCreatedBy");
     addItemToRepresentation(data, "authorGender", getProperty("authorGender"));
     return data;
+  }
+
+  @Override
+  public <T> Map<String, T> createRelSearchRep(Map<String, T> mappedIndexInformation) {
+    Map<String, T> filteredMap = Maps.newTreeMap();
+    addValueToMap(mappedIndexInformation, filteredMap, ID_PROPERTY_NAME);
+    addValueToMap(mappedIndexInformation, filteredMap, "title");
+    addValueToMap(mappedIndexInformation, filteredMap, "documentType");
+    addValueToMap(mappedIndexInformation, filteredMap, "date");
+    addValueToMap(mappedIndexInformation, filteredMap, "genre");
+    addValueToMap(mappedIndexInformation, filteredMap, "language");
+    addValueToMap(mappedIndexInformation, filteredMap, "publishLocation");
+    addValueToMap(mappedIndexInformation, filteredMap, "authorName");
+    addValueToMap(mappedIndexInformation, filteredMap, "authorGender");
+    return filteredMap;
   }
 
   // ---------------------------------------------------------------------------
