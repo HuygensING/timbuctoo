@@ -51,6 +51,13 @@
       </properties>
     </profile>
     <profile>
+      <id>conversion</id>
+      <properties>
+        <environment>conversion</environment>
+        <config.version>${timbuctoo.config.version}</config.version>
+      </properties>
+    </profile>
+    <profile>
       <id>example</id>
       <properties>
         <environment>example</environment>
