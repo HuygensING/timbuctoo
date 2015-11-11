@@ -28,6 +28,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.DerivedProperty;
 import nl.knaw.huygens.timbuctoo.model.DerivedRelationDescription;
 import nl.knaw.huygens.timbuctoo.model.Document;
@@ -37,6 +38,8 @@ import nl.knaw.huygens.timbuctoo.oaipmh.DublinCoreMetadataField;
 import nl.knaw.huygens.timbuctoo.oaipmh.OAIDublinCoreField;
 import nl.knaw.huygens.timbuctoo.util.Text;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +49,7 @@ public class WWDocument extends Document {
   public static final String DATE = "date";
   public static final String GENRE = "genre";
   public static final String LANGUAGE = "language";
+  private static final SimpleDateFormat YYYY_MM_DD_DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
   private boolean source;
   private String notes;
   private List<String> topoi;
@@ -99,6 +103,7 @@ public class WWDocument extends Document {
     this.source = source;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_notes", isFaceted = false)
   public String getNotes() {
     return notes;
   }
@@ -386,4 +391,15 @@ public class WWDocument extends Document {
     return sb.toString();
   }
 
+
+  // A method to provide an index field to retrieve the latest changed.
+  @JsonIgnore
+  @IndexAnnotations({
+    @IndexAnnotation(fieldName = "dynamic_i_modified", isFaceted = true, facetType = FacetType.RANGE),
+    @IndexAnnotation(fieldName = "dynamic_k_modified", isSortable = true)
+  })
+  public Datable getModifiedDate() {
+    String dateString = YYYY_MM_DD_DATE_FORMAT.format(new Date(getModified().getTimeStamp()));
+    return new Datable(dateString);
+  }
 }
