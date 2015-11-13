@@ -109,7 +109,7 @@ public class PersistenceService extends ConsumerService implements Runnable {
       LOG.info("Done processing persistence request for entity of type \"{}\" with id \"{}\" with pid \"{}\"", type, id, pid);
     } catch (PersistenceException e) {
       LOG.error("Creating a PID for {} with id {} went wrong.", type, id);
-      LOG.debug("Exception", e);
+      LOG.error("Exception", e);
       return;
     }
 
@@ -122,7 +122,7 @@ public class PersistenceService extends ConsumerService implements Runnable {
     } catch (StorageException e) {
       deletePID(pid);
       LOG.error("Persisting {} with id {} went wrong", type, id);
-      LOG.debug("Exception", e);
+      LOG.error("Exception", e);
     }
   }
 
@@ -131,7 +131,7 @@ public class PersistenceService extends ConsumerService implements Runnable {
       persistenceWrapper.deletePersistentId(pid);
     } catch (PersistenceException e) {
       LOG.error("Deleting PID {} went wrong.", pid);
-      LOG.debug("Exception", e);
+      LOG.error("Exception", e);
     }
   }
 

@@ -82,6 +82,7 @@ public class ChangeHelper {
   private void sendIndexMessage(ActionType actionType, Class<? extends DomainEntity> type, String id) {
     try {
       Producer producer = broker.getProducer(INDEX_MSG_PRODUCER, Broker.INDEX_QUEUE);
+      LOG.info("Queueing index request for type \"{}\" with id \"{}\"", type, id);
       producer.send(actionType, type, id);
     } catch (JMSException e) {
       LOG.error("Failed to send execute message {} - {} - {}. \n{}", actionType, type, id, e.getMessage());
@@ -92,6 +93,7 @@ public class ChangeHelper {
   public void sendPersistMessage(ActionType actionType, Class<? extends DomainEntity> type, String id) {
     try {
       Producer producer = broker.getProducer(PERSIST_MSG_PRODUCER, Broker.PERSIST_QUEUE);
+      LOG.info("Queueing persistence request for type \"{}\" with id \"{}\"", type, id);
       producer.send(actionType, type, id);
     } catch (JMSException e) {
       LOG.error("Failed to send persistence message {} - {} - {}. \n{}", actionType, type, id, e.getMessage());
