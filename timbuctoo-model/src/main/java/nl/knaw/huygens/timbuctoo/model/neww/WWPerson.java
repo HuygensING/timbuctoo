@@ -46,6 +46,7 @@ import java.util.Map;
 
 public class WWPerson extends Person {
   private static final SimpleDateFormat YYYY_MM_DD_DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
+  public static final String VIRTUAL_PROPERTY_MODIFIED_DATE = "modified_date";
 
   private String bibliography;
   private String children;
@@ -307,15 +308,16 @@ public class WWPerson extends Person {
   }
 
   @Override
-  public <T> Map<String, T> createRelSearchRep(Map<String, T> mappedIndexInformation) {
-    Map<String, T> filteredMap = Maps.newTreeMap();
+  public Map<String, String> createRelSearchRep(Map<String, String> mappedIndexInformation) {
+    Map<String, String> filteredMap = Maps.newTreeMap();
 
     addValueToMap(mappedIndexInformation, filteredMap, ID_PROPERTY_NAME);
     addValueToMap(mappedIndexInformation, filteredMap, "name");
     addValueToMap(mappedIndexInformation, filteredMap, "gender");
-    addValueToMap(mappedIndexInformation, filteredMap, "birthDate");
-    addValueToMap(mappedIndexInformation, filteredMap, "deathDate");
+    addYearsOfDateToMap(mappedIndexInformation, filteredMap, "birthDate");
+    addYearsOfDateToMap(mappedIndexInformation, filteredMap, "deathDate");
     addValueToMap(mappedIndexInformation, filteredMap, "residenceLocation");
+    addValueToMap(mappedIndexInformation, filteredMap, VIRTUAL_PROPERTY_MODIFIED_DATE);
 
     return filteredMap;
   }
@@ -345,9 +347,9 @@ public class WWPerson extends Person {
     @IndexAnnotation(fieldName = "dynamic_i_modified", isFaceted = true, facetType = FacetType.RANGE),
     @IndexAnnotation(fieldName = "dynamic_k_modified", isSortable = true)
   })
+  @VirtualProperty(propertyName = VIRTUAL_PROPERTY_MODIFIED_DATE)
   public Datable getModifiedDate() {
     String dateString = YYYY_MM_DD_DATE_FORMAT.format(new Date(getModified().getTimeStamp()));
     return new Datable(dateString);
   }
-
 }

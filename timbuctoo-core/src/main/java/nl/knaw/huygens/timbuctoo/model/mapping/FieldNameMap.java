@@ -75,7 +75,7 @@ public class FieldNameMap {
 
   private String getRangeValue(Map<String, String> source, String key) {
     String value = source.get(key);
-    return value.substring(0, 4);
+    return value;
   }
 
   private boolean isRange(String key) {

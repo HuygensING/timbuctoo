@@ -53,8 +53,8 @@ public class BaseLocation extends Location {
   }
 
   @Override
-  public <T> Map<String, T> createRelSearchRep(Map<String, T> mappedIndexInformation) {
-    TreeMap<String, T> filteredMap = Maps.newTreeMap();
+  public Map<String, String> createRelSearchRep(Map<String, String> mappedIndexInformation) {
+    TreeMap<String, String> filteredMap = Maps.newTreeMap();
     addValueToMap(mappedIndexInformation, filteredMap, URN);
     addValueToMap(mappedIndexInformation, filteredMap, LATITUDE);
     addValueToMap(mappedIndexInformation, filteredMap, LONGITUDE);
