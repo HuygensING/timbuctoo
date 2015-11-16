@@ -36,14 +36,12 @@ import static nl.knaw.huygens.timbuctoo.messages.Broker.INDEX_QUEUE;
 import static nl.knaw.huygens.timbuctoo.rest.resources.ActionMatcher.likeAction;
 import static nl.knaw.huygens.timbuctoo.rest.resources.AdminResourceV2_1.INDEX_PRODUCER;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class AdminResourceV2_1Test extends WebServiceTestSetup {
 
-  public static final String REQUEST_ID = "7659943b-bdee-4ad3-b8fc-a0f1329d6e9f";
   public static final String EXCEPTION_MESSAGE = "Exception message";
   public static final Class<SubADomainEntity> TYPE = SubADomainEntity.class;
   public static final Map<String, Object> CLIENT_REP = Maps.newHashMap();
@@ -57,7 +55,6 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
   @Before
   public void setup() throws JMSException, ModelException {
     setupBroker();
-    setupIndexRequest();
     setupIndexRequestFactory();
     TypeRegistry typeRegistry = injector.getInstance(TypeRegistry.class);
     typeRegistry.init(TYPE.getPackage().getName());
@@ -69,13 +66,6 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
     indexRequestFactory = injector.getInstance(IndexRequestFactory.class);
     when(indexRequestFactory.forCollectionOf(TYPE)).thenReturn(indexRequest);
   }
-
-  private void setupIndexRequest() {
-    indexRequest = mock(IndexRequest.class);
-    when(indexRequest.toClientRep()).thenReturn(CLIENT_REP);
-    doReturn(TYPE).when(indexRequest).getType();
-  }
-
 
   private void setupBroker() throws JMSException {
     broker = injector.getInstance(Broker.class);

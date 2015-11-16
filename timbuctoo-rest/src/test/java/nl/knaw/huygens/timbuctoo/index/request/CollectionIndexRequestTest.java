@@ -5,7 +5,6 @@ import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import org.junit.Test;
-import org.mockito.InOrder;
 import test.rest.model.projecta.ProjectADomainEntity;
 
 import static org.mockito.Mockito.doThrow;
@@ -22,7 +21,7 @@ public class CollectionIndexRequestTest extends AbstractIndexRequestTest {
   @Override
   protected IndexRequest createInstance() {
     createRequestItemStatus();
-    return new CollectionIndexRequest(TYPE, createRepository(), requestedStatus, requestItemStatus);
+    return new CollectionIndexRequest(TYPE, createRepository());
   }
 
   private void createRequestItemStatus() {
@@ -52,12 +51,6 @@ public class CollectionIndexRequestTest extends AbstractIndexRequestTest {
     verify(indexer).executeIndexAction(TYPE, ID_2);
   }
 
-  @Override
-  protected void verifyIndexAction(InOrder inOrder) throws IndexException {
-    inOrder.verify(indexer).executeIndexAction(TYPE, ID_1);
-    inOrder.verify(indexer).executeIndexAction(TYPE, ID_2);
-  }
-
   @Test(expected = IndexException.class)
   public void executeThrowsAnIndexExceptionWhenTheIndexerDoes() throws Exception {
     // setup
@@ -66,17 +59,5 @@ public class CollectionIndexRequestTest extends AbstractIndexRequestTest {
     // action
     getInstance().execute(indexer);
   }
-
-  @Test
-  public void executeAddsAllTheFoundIdsToTheTodoListAndRemovesThemWhenDoneIndexing() throws Exception {
-    // action
-    getInstance().execute(indexer);
-
-    // verify
-    verify(requestItemStatus).setToDo(Lists.newArrayList(ID_1, ID_2));
-    verify(requestItemStatus).done(ID_1);
-    verify(requestItemStatus).done(ID_2);
-  }
-
 
 }

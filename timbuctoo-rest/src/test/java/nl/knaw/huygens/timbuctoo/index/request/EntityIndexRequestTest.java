@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.index.request;
 
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import org.junit.Test;
-import org.mockito.InOrder;
 
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -13,12 +12,7 @@ public class EntityIndexRequestTest extends AbstractIndexRequestTest {
 
   @Override
   protected IndexRequest createInstance() {
-    return new EntityIndexRequest(TYPE, ID, requestedStatus);
-  }
-
-  @Override
-  protected void verifyIndexAction(InOrder inOrder) throws IndexException {
-    inOrder.verify(indexer).executeIndexAction(TYPE, ID);
+    return new EntityIndexRequest(TYPE, ID);
   }
 
   @Test
