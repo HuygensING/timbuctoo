@@ -1,12 +1,15 @@
 package nl.knaw.huygens.timbuctoo.index.request;
 
 import nl.knaw.huygens.timbuctoo.Repository;
-import org.hamcrest.Matchers;
+import nl.knaw.huygens.timbuctoo.messages.Action;
+import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import org.junit.Before;
 import org.junit.Test;
 import test.rest.model.projecta.ProjectADomainEntity;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 
 public class IndexRequestFactoryTest {
@@ -26,15 +29,33 @@ public class IndexRequestFactoryTest {
     IndexRequest indexRequest = instance.forCollectionOf(TYPE);
 
     // verify
-    assertThat(indexRequest, Matchers.is(Matchers.instanceOf(CollectionIndexRequest.class)));
+    assertThat(indexRequest, is(instanceOf(CollectionIndexRequest.class)));
   }
 
   @Test
-  public void forEntityCreatesAEntityIndexRequest() throws Exception {
+  public void forEntityCreatesAnEntityIndexRequest() throws Exception {
     // action
     IndexRequest indexRequest = instance.forEntity(TYPE, ID);
 
     // verify
-    assertThat(indexRequest, Matchers.is(Matchers.instanceOf(EntityIndexRequest.class)));
+    assertThat(indexRequest, is(instanceOf(EntityIndexRequest.class)));
+  }
+
+  @Test
+  public void forActionCreatesACollectionIndexRequestIfTheActionIsForMultipleEntities(){
+    // action
+    IndexRequest indexRequest = instance.forAction(Action.multiUpdateActionFor(TYPE));
+
+    // verify
+    assertThat(indexRequest, is(instanceOf(CollectionIndexRequest.class)));
+  }
+
+  @Test
+  public void forActionCreatesAnEnityIndexRequestIfTheActionIsForASingleEntity(){
+    // action
+    IndexRequest indexRequest = instance.forAction(new Action(ActionType.MOD, TYPE, ID));
+
+    // verify
+    assertThat(indexRequest, is(instanceOf(EntityIndexRequest.class)));
   }
 }

@@ -22,6 +22,10 @@ public class IndexRequestFactory {
   }
 
   public IndexRequest forAction(Action action) {
-    throw new UnsupportedOperationException("Yet to be implemented");
+    if(action.isForMultiEntities()) {
+      return forCollectionOf(action.getType());
+    }
+
+    return forEntity(action.getType(), action.getId());
   }
 }
