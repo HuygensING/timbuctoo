@@ -46,7 +46,7 @@ public class IndexServiceTest {
   private void setupIndexerFactory() {
     indexer = mock(Indexer.class);
     indexerFactory = mock(IndexerFactory.class);
-    when(indexerFactory.create(ACTION_TYPE)).thenReturn(indexer);
+    when(indexerFactory.create(any(IndexRequest.class))).thenReturn(indexer);
   }
 
 

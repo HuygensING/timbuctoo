@@ -62,7 +62,7 @@ public class IndexService extends ConsumerService implements Runnable {
   protected void executeAction(Action action) {
     IndexRequest indexRequest = indexRequestFactory.forAction(action);
 
-      Indexer indexer = indexerFactory.create(action.getActionType());
+      Indexer indexer = indexerFactory.create(indexRequest);
 
       try {
         LOG.info("Processing index request for entity of type \"{}\" with id \"{}\"", action.getType(), action.getId());

@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.index.request;
 import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.messages.Action;
+import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 public class IndexRequestFactory {
@@ -13,19 +14,19 @@ public class IndexRequestFactory {
     this.repository = repository;
   }
 
-  public IndexRequest forCollectionOf(Class<? extends DomainEntity> type) {
-    return new CollectionIndexRequest(type, repository);
+  public IndexRequest forCollectionOf(ActionType actionType, Class<? extends DomainEntity> type) {
+    return new CollectionIndexRequest(actionType, type, repository);
   }
 
-  public IndexRequest forEntity(Class<? extends DomainEntity> type, String id) {
-    return new EntityIndexRequest(type, id);
+  public IndexRequest forEntity(ActionType actionType, Class<? extends DomainEntity> type, String id) {
+    return new EntityIndexRequest(actionType, type, id);
   }
 
   public IndexRequest forAction(Action action) {
     if(action.isForMultiEntities()) {
-      return forCollectionOf(action.getType());
+      return forCollectionOf(action.getActionType(), action.getType());
     }
 
-    return forEntity(action.getType(), action.getId());
+    return forEntity(action.getActionType(), action.getType(), action.getId());
   }
 }

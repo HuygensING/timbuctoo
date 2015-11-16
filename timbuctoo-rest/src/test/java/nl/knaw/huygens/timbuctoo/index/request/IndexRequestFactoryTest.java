@@ -16,6 +16,7 @@ public class IndexRequestFactoryTest {
 
   public static final Class<ProjectADomainEntity> TYPE = ProjectADomainEntity.class;
   public static final String ID = "id";
+  public static final ActionType ACTION_TYPE = ActionType.MOD;
   private IndexRequestFactory instance;
 
   @Before
@@ -26,7 +27,7 @@ public class IndexRequestFactoryTest {
   @Test
   public void forCollectionOfCreatesACollectionIndexRequest() throws Exception {
     // action
-    IndexRequest indexRequest = instance.forCollectionOf(TYPE);
+    IndexRequest indexRequest = instance.forCollectionOf(ActionType.MOD, TYPE);
 
     // verify
     assertThat(indexRequest, is(instanceOf(CollectionIndexRequest.class)));
@@ -35,7 +36,7 @@ public class IndexRequestFactoryTest {
   @Test
   public void forEntityCreatesAnEntityIndexRequest() throws Exception {
     // action
-    IndexRequest indexRequest = instance.forEntity(TYPE, ID);
+    IndexRequest indexRequest = instance.forEntity(ACTION_TYPE, TYPE, ID);
 
     // verify
     assertThat(indexRequest, is(instanceOf(EntityIndexRequest.class)));

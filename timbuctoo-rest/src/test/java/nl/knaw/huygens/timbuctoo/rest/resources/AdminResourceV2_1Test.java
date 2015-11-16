@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.request.IndexRequest;
 import nl.knaw.huygens.timbuctoo.index.request.IndexRequestFactory;
+import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
@@ -50,7 +51,6 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
   public static final ClientIndexRequest CLIENT_INDEX_REQUEST = new ClientIndexRequest(TypeNames.getExternalName(TYPE));
   private VRE vre;
   private IndexRequestFactory indexRequestFactory;
-  private IndexRequest indexRequest;
 
   @Before
   public void setup() throws JMSException, ModelException {
@@ -63,8 +63,11 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
   }
 
   private void setupIndexRequestFactory() {
+    IndexRequest indexRequest = mock(IndexRequest.class);
+    ActionType actionType = ActionType.MOD;
+    when(indexRequest.toAction()).thenReturn(new Action(actionType, TYPE));
     indexRequestFactory = injector.getInstance(IndexRequestFactory.class);
-    when(indexRequestFactory.forCollectionOf(TYPE)).thenReturn(indexRequest);
+    when(indexRequestFactory.forCollectionOf(actionType, TYPE)).thenReturn(indexRequest);
   }
 
   private void setupBroker() throws JMSException {
@@ -85,7 +88,7 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
     // verify
     verifyResponseStatus(response, OK);
 
-    verify(indexRequestFactory).forCollectionOf(TYPE);
+    verify(indexRequestFactory).forCollectionOf(ActionType.MOD, TYPE);
     verify(indexProducer).send(argThat( //
       likeAction() //
         .withActionType(ActionType.MOD) //

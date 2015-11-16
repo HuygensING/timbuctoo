@@ -5,7 +5,7 @@ import nl.knaw.huygens.timbuctoo.config.Paths;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.request.IndexRequest;
 import nl.knaw.huygens.timbuctoo.index.request.IndexRequestFactory;
-import nl.knaw.huygens.timbuctoo.messages.Action;
+import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Browser;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
@@ -84,9 +84,9 @@ public class AdminResourceV2_1 {
     try {
       Producer producer = broker.getProducer(INDEX_PRODUCER, INDEX_QUEUE);
 
-      IndexRequest request = indexRequestFactory.forCollectionOf(type);
+      IndexRequest request = indexRequestFactory.forCollectionOf(ActionType.MOD, type);
 
-      producer.send(Action.multiUpdateActionFor(type));
+      producer.send(request.toAction());
 
       return Response.ok().build();
 
@@ -100,12 +100,12 @@ public class AdminResourceV2_1 {
   @GET
   @Path("persistencequeue")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getPersistence(){
+  public Response getPersistence() {
     try {
       Browser browser = broker.newBrowser(PERSIST_QUEUE);
 
       String status = browser.status();
-      
+
       browser.close();
       return Response.ok().entity(status).build();
     } catch (JMSException e) {
@@ -118,7 +118,7 @@ public class AdminResourceV2_1 {
   @GET
   @Path("indexqueue")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getIndex(){
+  public Response getIndex() {
     try {
       Browser browser = broker.newBrowser(INDEX_QUEUE);
 

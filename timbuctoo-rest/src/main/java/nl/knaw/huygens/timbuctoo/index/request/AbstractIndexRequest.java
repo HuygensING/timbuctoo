@@ -2,13 +2,16 @@ package nl.knaw.huygens.timbuctoo.index.request;
 
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.Indexer;
+import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 abstract class AbstractIndexRequest implements IndexRequest {
 
+  private final ActionType actionType;
   private final Class<? extends DomainEntity> type;
 
-  protected AbstractIndexRequest(Class<? extends DomainEntity> type) {
+  protected AbstractIndexRequest(ActionType actionType, Class<? extends DomainEntity> type) {
+    this.actionType = actionType;
     this.type = type;
   }
 
@@ -23,4 +26,10 @@ abstract class AbstractIndexRequest implements IndexRequest {
   }
 
   protected abstract void executeIndexAction(Indexer indexer) throws IndexException;
+
+  @Override
+  public ActionType getActionType() {
+    return actionType;
+  }
+
 }

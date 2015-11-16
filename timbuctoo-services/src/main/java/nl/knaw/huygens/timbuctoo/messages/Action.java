@@ -53,7 +53,7 @@ public class Action {
     this.forMultiEntities = false;
   }
 
-  private Action(ActionType actionType, Class<? extends DomainEntity> type) {
+  public Action(ActionType actionType, Class<? extends DomainEntity> type) {
     this.actionType = actionType;
     this.type = type;
     this.forMultiEntities = true;

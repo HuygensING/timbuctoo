@@ -1,22 +1,21 @@
 package nl.knaw.huygens.timbuctoo.index.indexer;
 
 import com.google.inject.Inject;
-import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.index.Indexer;
+import nl.knaw.huygens.timbuctoo.index.request.IndexRequest;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 
 public class IndexerFactory {
-  private final Repository repository;
   private final IndexManager indexManager;
 
   @Inject
-  public IndexerFactory(Repository repository, IndexManager indexManager){
-    this.repository = repository;
+  public IndexerFactory(IndexManager indexManager){
     this.indexManager = indexManager;
   }
 
-  public Indexer create(ActionType actionType) {
+  public Indexer create(IndexRequest indexRequest) {
+    ActionType actionType = indexRequest.getActionType();
     switch (actionType) {
       case ADD:
         return new AddIndexer(indexManager);

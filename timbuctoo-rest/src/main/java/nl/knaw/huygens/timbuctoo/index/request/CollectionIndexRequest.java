@@ -3,14 +3,16 @@ package nl.knaw.huygens.timbuctoo.index.request;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.Indexer;
+import nl.knaw.huygens.timbuctoo.messages.Action;
+import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
 class CollectionIndexRequest extends AbstractIndexRequest {
   private final Repository repository;
 
-  public CollectionIndexRequest(Class<? extends DomainEntity> type, Repository repository) {
-    super(type);
+  public CollectionIndexRequest(ActionType actionType, Class<? extends DomainEntity> type, Repository repository) {
+    super(actionType, type);
     this.repository = repository;
   }
 
@@ -23,5 +25,10 @@ class CollectionIndexRequest extends AbstractIndexRequest {
     for (; entities.hasNext();) {
       indexer.executeIndexAction(type, entities.next().getId());
     }
+  }
+
+  @Override
+  public Action toAction() {
+    return new Action(getActionType(), getType());
   }
 }

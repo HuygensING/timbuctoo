@@ -3,10 +3,14 @@ package nl.knaw.huygens.timbuctoo.index.request;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
+import nl.knaw.huygens.timbuctoo.messages.Action;
+import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import org.junit.Test;
 import test.rest.model.projecta.ProjectADomainEntity;
 
+import static nl.knaw.huygens.timbuctoo.rest.resources.ActionMatcher.likeAction;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -16,12 +20,13 @@ public class CollectionIndexRequestTest extends AbstractIndexRequestTest {
 
   public static final String ID_1 = "id1";
   public static final String ID_2 = "id2";
+  public static final ActionType ACTION_TYPE = ActionType.MOD;
   private RequestItemStatus requestItemStatus;
 
   @Override
   protected IndexRequest createInstance() {
     createRequestItemStatus();
-    return new CollectionIndexRequest(TYPE, createRepository());
+    return new CollectionIndexRequest(ACTION_TYPE, TYPE, createRepository());
   }
 
   private void createRequestItemStatus() {
@@ -58,6 +63,19 @@ public class CollectionIndexRequestTest extends AbstractIndexRequestTest {
 
     // action
     getInstance().execute(indexer);
+  }
+
+  @Override
+  @Test
+  public void toActionCreatesAnActionThatCanBeUsedByTheProducer() {
+    // action
+    Action action = getInstance().toAction();
+
+    // verify
+    assertThat(action, likeAction() //
+      .withForMultiEntitiesFlag(true) //
+      .withType(TYPE) //
+      .withActionType(ACTION_TYPE));
   }
 
 }
