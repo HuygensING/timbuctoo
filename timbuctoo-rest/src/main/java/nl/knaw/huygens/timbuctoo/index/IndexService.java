@@ -37,6 +37,7 @@ import javax.jms.JMSException;
 public class IndexService extends ConsumerService implements Runnable {
 
   private static final Logger LOG = LoggerFactory.getLogger(IndexService.class);
+  public static final int FIVE_SECONDS = 5000;
 
   private final IndexerFactory indexerFactory;
   private final IndexRequestFactory indexRequestFactory;
@@ -76,15 +77,13 @@ public class IndexService extends ConsumerService implements Runnable {
         getLogger().error("Exception while indexing", e);
 
         shouldExecute = ++numberOfTries < 5;
-        while(!isTimeToRetry(timeOfLastTry)){
-          
+        try {
+          Thread.sleep(FIVE_SECONDS);
+        } catch (InterruptedException e1) {
+          getLogger().warn("Thread interrupted", e1);
         }
       }
     }
-  }
-
-  private boolean isTimeToRetry(long timeOfLastTry) {
-    return System.currentTimeMillis() - timeOfLastTry >= 5000;
   }
 
   public static void waitForCompletion(Thread thread, long patience) {
