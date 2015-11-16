@@ -4,7 +4,7 @@ import nl.knaw.huygens.timbuctoo.Repository;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
-import test.variation.model.projecta.ProjectADomainEntity;
+import test.rest.model.projecta.ProjectADomainEntity;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;

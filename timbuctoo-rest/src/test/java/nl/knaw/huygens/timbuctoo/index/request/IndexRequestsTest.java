@@ -5,7 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import test.variation.model.projecta.ProjectADomainEntity;
+import test.rest.model.projecta.ProjectADomainEntity;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;

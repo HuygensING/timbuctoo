@@ -6,7 +6,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import org.junit.Test;
 import org.mockito.InOrder;
-import test.variation.model.projecta.ProjectADomainEntity;
+import test.rest.model.projecta.ProjectADomainEntity;
 
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;

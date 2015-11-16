@@ -5,7 +5,7 @@ import nl.knaw.huygens.timbuctoo.index.Indexer;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
-import test.variation.model.projecta.ProjectADomainEntity;
+import test.rest.model.projecta.ProjectADomainEntity;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
