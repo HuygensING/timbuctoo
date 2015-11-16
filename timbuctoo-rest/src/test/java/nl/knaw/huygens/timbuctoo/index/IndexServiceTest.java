@@ -12,6 +12,7 @@ import org.junit.Test;
 import test.rest.model.projecta.ProjectADomainEntity;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class IndexServiceTest {
@@ -58,12 +59,12 @@ public class IndexServiceTest {
   }
 
   @Test
-  public void executeActionForActionWithRequestIdSetsTheIndexRequestToInProgressAndLetAnIndexerExcecuteTheAction() throws Exception {
+  public void executeActionForActionWithRequestIdSetsTheIndexRequestToInProgressAndLetAnIndexerExecuteTheAction() throws Exception {
     // action
     instance.executeAction(ACTION_WITH_REQUEST_ID);
 
     // verify
-    indexRequestFromIndexRequests.execute(indexer);
+    verify(indexRequestFromIndexRequests).execute(indexer);
   }
 
   @Test
@@ -72,6 +73,6 @@ public class IndexServiceTest {
     instance.executeAction(ACTION_FOR_SINGLE_ENTITY);
 
     // verify
-    indexRequestFromFactory.execute(indexer);
+    verify(indexRequestFromFactory).execute(indexer);
   }
 }
