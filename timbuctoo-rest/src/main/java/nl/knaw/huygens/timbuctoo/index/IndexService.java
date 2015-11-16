@@ -67,7 +67,7 @@ public class IndexService extends ConsumerService implements Runnable {
     boolean shouldExecute = true;
     int numberOfTries = 0;
     long timeOfLastTry = System.currentTimeMillis();
-    while (shouldExecute) {
+    while (shouldExecute && numberOfTries < 5) {
       try {
         LOG.info("Processing index request for entity of type \"{}\" with id \"{}\"", action.getType(), action.getId());
         indexRequest.execute(indexer);
@@ -76,7 +76,7 @@ public class IndexService extends ConsumerService implements Runnable {
         getLogger().error("Error indexing ([{}]) object of type [{}]", action.getActionType(), indexRequest.getType());
         getLogger().error("Exception while indexing", e);
 
-        shouldExecute = ++numberOfTries < 5;
+        numberOfTries += 1;
         try {
           Thread.sleep(FIVE_SECONDS);
         } catch (InterruptedException e1) {
