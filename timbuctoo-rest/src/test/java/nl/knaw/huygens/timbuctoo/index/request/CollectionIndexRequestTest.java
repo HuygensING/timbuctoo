@@ -3,11 +3,14 @@ package nl.knaw.huygens.timbuctoo.index.request;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
+import nl.knaw.huygens.timbuctoo.messages.Action;
+import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import org.junit.Test;
-import org.mockito.InOrder;
-import test.variation.model.projecta.ProjectADomainEntity;
+import test.rest.model.projecta.ProjectADomainEntity;
 
+import static nl.knaw.huygens.timbuctoo.rest.resources.ActionMatcher.likeAction;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -17,12 +20,13 @@ public class CollectionIndexRequestTest extends AbstractIndexRequestTest {
 
   public static final String ID_1 = "id1";
   public static final String ID_2 = "id2";
+  public static final ActionType ACTION_TYPE = ActionType.MOD;
   private RequestItemStatus requestItemStatus;
 
   @Override
   protected IndexRequest createInstance() {
     createRequestItemStatus();
-    return new CollectionIndexRequest(TYPE, createRepository(), requestedStatus, requestItemStatus);
+    return new CollectionIndexRequest(ACTION_TYPE, TYPE, createRepository());
   }
 
   private void createRequestItemStatus() {
@@ -52,12 +56,6 @@ public class CollectionIndexRequestTest extends AbstractIndexRequestTest {
     verify(indexer).executeIndexAction(TYPE, ID_2);
   }
 
-  @Override
-  protected void verifyIndexAction(InOrder inOrder) throws IndexException {
-    inOrder.verify(indexer).executeIndexAction(TYPE, ID_1);
-    inOrder.verify(indexer).executeIndexAction(TYPE, ID_2);
-  }
-
   @Test(expected = IndexException.class)
   public void executeThrowsAnIndexExceptionWhenTheIndexerDoes() throws Exception {
     // setup
@@ -67,16 +65,17 @@ public class CollectionIndexRequestTest extends AbstractIndexRequestTest {
     getInstance().execute(indexer);
   }
 
+  @Override
   @Test
-  public void executeAddsAllTheFoundIdsToTheTodoListAndRemovesThemWhenDoneIndexing() throws Exception {
+  public void toActionCreatesAnActionThatCanBeUsedByTheProducer() {
     // action
-    getInstance().execute(indexer);
+    Action action = getInstance().toAction();
 
     // verify
-    verify(requestItemStatus).setToDo(Lists.newArrayList(ID_1, ID_2));
-    verify(requestItemStatus).done(ID_1);
-    verify(requestItemStatus).done(ID_2);
+    assertThat(action, likeAction() //
+      .withForMultiEntitiesFlag(true) //
+      .withType(TYPE) //
+      .withActionType(ACTION_TYPE));
   }
-
 
 }

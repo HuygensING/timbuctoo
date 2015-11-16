@@ -26,7 +26,6 @@ import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.index.indexer.IndexerFactory;
 import nl.knaw.huygens.timbuctoo.index.request.IndexRequest;
 import nl.knaw.huygens.timbuctoo.index.request.IndexRequestFactory;
-import nl.knaw.huygens.timbuctoo.index.request.IndexRequests;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.ConsumerService;
@@ -38,15 +37,14 @@ import javax.jms.JMSException;
 public class IndexService extends ConsumerService implements Runnable {
 
   private static final Logger LOG = LoggerFactory.getLogger(IndexService.class);
+  public static final int FIVE_SECONDS = 5000;
 
-  private final IndexRequests indexRequests;
   private final IndexerFactory indexerFactory;
   private final IndexRequestFactory indexRequestFactory;
 
   @Inject
-  public IndexService(Broker broker, IndexRequests indexRequests, IndexRequestFactory indexRequestFactory, IndexerFactory indexerFactory) throws JMSException {
+  public IndexService(Broker broker, IndexRequestFactory indexRequestFactory, IndexerFactory indexerFactory) throws JMSException {
     super(broker, Broker.INDEX_QUEUE, "IndexService");
-    this.indexRequests = indexRequests;
     this.indexerFactory = indexerFactory;
     this.indexRequestFactory = indexRequestFactory;
   }
@@ -63,30 +61,29 @@ public class IndexService extends ConsumerService implements Runnable {
 
   @Override
   protected void executeAction(Action action) {
-    // ignore multiple entity actions for now
-    if (!action.isForMultiEntities()) {
-      IndexRequest indexRequest = getIndexRequest(action);
+    IndexRequest indexRequest = indexRequestFactory.forAction(action);
 
-      Indexer indexer = indexerFactory.create(action.getActionType());
-
+    Indexer indexer = indexerFactory.create(indexRequest);
+    boolean shouldExecute = true;
+    int numberOfTries = 0;
+    long timeOfLastTry = System.currentTimeMillis();
+    while (shouldExecute && numberOfTries < 5) {
       try {
         LOG.info("Processing index request for entity of type \"{}\" with id \"{}\"", action.getType(), action.getId());
         indexRequest.execute(indexer);
-      } catch (IndexException e) {
+        shouldExecute = false;
+      } catch (IndexException | RuntimeException e) {
         getLogger().error("Error indexing ([{}]) object of type [{}]", action.getActionType(), indexRequest.getType());
         getLogger().error("Exception while indexing", e);
+
+        numberOfTries += 1;
+        try {
+          Thread.sleep(FIVE_SECONDS);
+        } catch (InterruptedException e1) {
+          getLogger().warn("Thread interrupted", e1);
+        }
       }
     }
-  }
-
-  private IndexRequest getIndexRequest(Action action) {
-    IndexRequest indexRequest;
-    if (action.hasRequestId()) {
-      indexRequest = indexRequests.get(action.getRequestId());
-    } else {
-      indexRequest = indexRequestFactory.forEntity(action.getType(), action.getId());
-    }
-    return indexRequest;
   }
 
   public static void waitForCompletion(Thread thread, long patience) {

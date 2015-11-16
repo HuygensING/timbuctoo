@@ -13,7 +13,6 @@ import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_ACTION;
 import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_ENTITY_ID;
 import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_ENTITY_TYPE;
 import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_FOR_MULTI_ENTITIES;
-import static nl.knaw.huygens.timbuctoo.messages.Broker.PROP_REQUEST_ID;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -61,21 +60,6 @@ public class ActionTest {
     verify(message).setStringProperty(PROP_ACTION, MOD.getStringRepresentation());
     verify(message).setStringProperty(PROP_ENTITY_TYPE, TypeNames.getInternalName(TYPE));
     verify(message).setBooleanProperty(PROP_FOR_MULTI_ENTITIES, true);
-    verifyNoMoreInteractions(message);
-  }
-
-  @Test
-  public void createMessageDoesNotAddTheIdTypeAndAddsTheRequestWhenItIsHasARequestId() throws JMSException {
-    // setup
-    String requestId = "requestId";
-    Action action = Action.forRequestWithId(MOD, requestId);
-
-    // action
-    Message message = action.createMessage(session);
-
-    // verify
-    verify(message).setStringProperty(PROP_ACTION, MOD.getStringRepresentation());
-    verify(message).setStringProperty(PROP_REQUEST_ID, requestId);
     verifyNoMoreInteractions(message);
   }
 }
