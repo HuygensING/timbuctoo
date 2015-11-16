@@ -62,15 +62,29 @@ public class IndexService extends ConsumerService implements Runnable {
   protected void executeAction(Action action) {
     IndexRequest indexRequest = indexRequestFactory.forAction(action);
 
-      Indexer indexer = indexerFactory.create(indexRequest);
-
+    Indexer indexer = indexerFactory.create(indexRequest);
+    boolean shouldExecute = true;
+    int numberOfTries = 0;
+    long timeOfLastTry = System.currentTimeMillis();
+    while (shouldExecute) {
       try {
         LOG.info("Processing index request for entity of type \"{}\" with id \"{}\"", action.getType(), action.getId());
         indexRequest.execute(indexer);
-      } catch (IndexException e) {
+        shouldExecute = false;
+      } catch (IndexException | RuntimeException e) {
         getLogger().error("Error indexing ([{}]) object of type [{}]", action.getActionType(), indexRequest.getType());
         getLogger().error("Exception while indexing", e);
+
+        shouldExecute = ++numberOfTries < 5;
+        while(!isTimeToRetry(timeOfLastTry)){
+          
+        }
       }
+    }
+  }
+
+  private boolean isTimeToRetry(long timeOfLastTry) {
+    return System.currentTimeMillis() - timeOfLastTry >= 5000;
   }
 
   public static void waitForCompletion(Thread thread, long patience) {

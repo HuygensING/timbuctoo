@@ -12,8 +12,11 @@ import org.mockito.InOrder;
 import test.rest.model.projecta.ProjectADomainEntity;
 
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class IndexServiceTest {
@@ -59,5 +62,29 @@ public class IndexServiceTest {
     InOrder inOrder = inOrder(indexRequestFactory, indexRequest);
     inOrder.verify(indexRequestFactory).forAction(ACTION);
     inOrder.verify(indexRequest).execute(indexer);
+  }
+  
+  @Test
+  public void executeActionStopsRetryingAfterFiveTimesWhenAnIndexExceptionIsThrown() throws Exception {
+    // setup
+    doThrow(IndexException.class).when(indexRequest).execute(indexer);
+
+    // action
+    instance.executeAction(ACTION);
+
+    // verify
+    verify(indexRequest, times(5)).execute(indexer);
+  }
+
+  @Test
+  public void executeActionStopsRetryingAfterFiveTimesWhenARuntimeExceptionIsThjrow() throws Exception {
+    // setup
+    doThrow(RuntimeException.class).when(indexRequest).execute(indexer);
+
+    // action
+    instance.executeAction(ACTION);
+
+    // verify
+    verify(indexRequest, times(5)).execute(indexer);
   }
 }
