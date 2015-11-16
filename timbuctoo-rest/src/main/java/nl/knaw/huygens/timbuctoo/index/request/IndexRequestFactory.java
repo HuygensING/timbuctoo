@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.index.request;
 
 import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 public class IndexRequestFactory {
@@ -18,5 +19,9 @@ public class IndexRequestFactory {
 
   public IndexRequest forEntity(Class<? extends DomainEntity> type, String id) {
     return new EntityIndexRequest(type, id);
+  }
+
+  public IndexRequest forAction(Action action) {
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 }
