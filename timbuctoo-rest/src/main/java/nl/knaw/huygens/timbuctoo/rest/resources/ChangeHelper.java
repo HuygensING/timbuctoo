@@ -72,7 +72,7 @@ public class ChangeHelper {
         break;
       default:
         LOG.error("Unexpected action {}", actionType);
-        break;
+        return;
     }
 
     // TODO improve this solution

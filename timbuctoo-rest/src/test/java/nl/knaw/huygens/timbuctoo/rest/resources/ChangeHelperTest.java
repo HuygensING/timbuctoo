@@ -203,7 +203,7 @@ public class ChangeHelperTest {
   @Test
   public void notifyChangeForRelationWithActionTypeENDDoesNotSendActions() {
     // action
-    instance.notifyChange(END, TYPE, DOMAIN_ENTITY, ID);
+    instance.notifyChange(END, RELATION_TYPE, relation(), ID);
 
     // verify
     verifyZeroInteractions(indexProducer, persistenceProducer);
