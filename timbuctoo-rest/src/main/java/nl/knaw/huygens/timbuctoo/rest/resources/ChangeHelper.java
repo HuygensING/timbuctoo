@@ -41,12 +41,20 @@ public class ChangeHelper {
   private static final Logger LOG = LoggerFactory.getLogger(ChangeHelper.class);
 
   private final TypeRegistry typeRegistry;
-  private final Broker broker;
+  private final Producer indexProducer;
+  private final Producer persistenceProducer;
 
   @Inject
-  public ChangeHelper(Broker broker, TypeRegistry typeRegistry) {
-    this.broker = broker;
+  public ChangeHelper(Broker broker, TypeRegistry typeRegistry) throws JMSException {
     this.typeRegistry = typeRegistry;
+
+    indexProducer = createProducer(broker, INDEX_MSG_PRODUCER, Broker.INDEX_QUEUE);
+    persistenceProducer = createProducer(broker, PERSIST_MSG_PRODUCER, Broker.PERSIST_QUEUE);
+
+  }
+
+  private Producer createProducer(Broker broker, String producerName, String queue) throws JMSException {
+    return broker.getProducer(producerName, queue);
   }
 
   /**
@@ -81,9 +89,8 @@ public class ChangeHelper {
 
   private void sendIndexMessage(ActionType actionType, Class<? extends DomainEntity> type, String id) {
     try {
-      Producer producer = broker.getProducer(INDEX_MSG_PRODUCER, Broker.INDEX_QUEUE);
       LOG.info("Queueing index request for type \"{}\" with id \"{}\"", type, id);
-      producer.send(actionType, type, id);
+      indexProducer.send(new Action(actionType, type, id));
     } catch (JMSException e) {
       LOG.error("Failed to send execute message {} - {} - {}. \n{}", actionType, type, id, e.getMessage());
       LOG.debug("Exception", e);
@@ -92,9 +99,8 @@ public class ChangeHelper {
 
   public void sendPersistMessage(ActionType actionType, Class<? extends DomainEntity> type, String id) {
     try {
-      Producer producer = broker.getProducer(PERSIST_MSG_PRODUCER, Broker.PERSIST_QUEUE);
       LOG.info("Queueing persistence request for type \"{}\" with id \"{}\"", type, id);
-      producer.send(actionType, type, id);
+      persistenceProducer.send(new Action(actionType, type, id));
     } catch (JMSException e) {
       LOG.error("Failed to send persistence message {} - {} - {}. \n{}", actionType, type, id, e.getMessage());
       LOG.debug("Exception", e);
@@ -105,8 +111,7 @@ public class ChangeHelper {
 
     Action action = Action.multiUpdateActionFor(type);
     try {
-      Producer producer = broker.getProducer(PERSIST_MSG_PRODUCER, Broker.PERSIST_QUEUE);
-      producer.send(action);
+      persistenceProducer.send(action);
     } catch (JMSException e) {
       LOG.error("Failed to send persistence message {} - . \n{}", action, e.getMessage());
       LOG.debug("Exception", e);
