@@ -24,7 +24,8 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
 
 import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.messages.Action;
+import nl.knaw.huygens.timbuctoo.index.request.IndexRequest;
+import nl.knaw.huygens.timbuctoo.index.request.IndexRequestFactory;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
@@ -44,13 +45,15 @@ public class ChangeHelper {
 
   private final TypeRegistry typeRegistry;
   private final PersistenceRequestFactory persistenceRequestFactory;
+  private final IndexRequestFactory indexRequestFactory;
   private final Producer indexProducer;
   private final Producer persistenceProducer;
 
   @Inject
-  public ChangeHelper(Broker broker, TypeRegistry typeRegistry, PersistenceRequestFactory persistenceRequestFactory) throws JMSException {
+  public ChangeHelper(Broker broker, TypeRegistry typeRegistry, PersistenceRequestFactory persistenceRequestFactory, IndexRequestFactory indexRequestFactory) throws JMSException {
     this.typeRegistry = typeRegistry;
     this.persistenceRequestFactory = persistenceRequestFactory;
+    this.indexRequestFactory = indexRequestFactory;
 
     indexProducer = createProducer(broker, INDEX_MSG_PRODUCER, Broker.INDEX_QUEUE);
     persistenceProducer = createProducer(broker, PERSIST_MSG_PRODUCER, Broker.PERSIST_QUEUE);
@@ -69,10 +72,10 @@ public class ChangeHelper {
       case ADD:
       case MOD:
         sendPersistMessage(persistenceRequestFactory.forEntity(actionType, type, id));
-        sendIndexMessage(actionType, type, id);
+        sendIndexMessage(indexRequestFactory.forEntity(actionType, type, id));
         break;
       case DEL:
-        sendIndexMessage(actionType, type, id);
+        sendIndexMessage(indexRequestFactory.forEntity(actionType, type, id));
         break;
       default:
         LOG.error("Unexpected action {}", actionType);
@@ -87,20 +90,20 @@ public class ChangeHelper {
     }
   }
 
-  private void updateIndex(String iName, String id) {
-    sendIndexMessage(ActionType.MOD, typeRegistry.getDomainEntityType(iName), id);
-  }
-
-  private void sendIndexMessage(ActionType actionType, Class<? extends DomainEntity> type, String id) {
+  private void sendIndexMessage(IndexRequest indexRequest) {
     try {
-      LOG.info("Queueing index request for type \"{}\" with id \"{}\"", type, id);
-      indexProducer.send(new Action(actionType, type, id));
+      LOG.info("Queueing index request \"{}\"", indexRequest);
+      indexProducer.send(indexRequest.toAction());
     } catch (JMSException e) {
-      LOG.error("Failed to send execute message {} - {} - {}. \n{}", actionType, type, id, e.getMessage());
+      LOG.error("Failed to send execute message \"{}\". \n{}", indexRequest, e.getMessage());
       LOG.debug("Exception", e);
     }
   }
 
+  private void updateIndex(String iName, String id) {
+    sendIndexMessage(indexRequestFactory.forEntity(ActionType.MOD, typeRegistry.getDomainEntityType(iName), id));
+  }
+  
   public void sendPersistMessage(PersistenceRequest persistenceRequest) {
     try {
       LOG.info("Queueing persistence request \"{}\"", persistenceRequest);
