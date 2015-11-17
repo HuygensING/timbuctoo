@@ -30,6 +30,8 @@ import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.persistence.PersistenceRequest;
+import nl.knaw.huygens.timbuctoo.persistence.PersistenceRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,12 +43,14 @@ public class ChangeHelper {
   private static final Logger LOG = LoggerFactory.getLogger(ChangeHelper.class);
 
   private final TypeRegistry typeRegistry;
+  private final PersistenceRequestFactory persistenceRequestFactory;
   private final Producer indexProducer;
   private final Producer persistenceProducer;
 
   @Inject
-  public ChangeHelper(Broker broker, TypeRegistry typeRegistry) throws JMSException {
+  public ChangeHelper(Broker broker, TypeRegistry typeRegistry, PersistenceRequestFactory persistenceRequestFactory) throws JMSException {
     this.typeRegistry = typeRegistry;
+    this.persistenceRequestFactory = persistenceRequestFactory;
 
     indexProducer = createProducer(broker, INDEX_MSG_PRODUCER, Broker.INDEX_QUEUE);
     persistenceProducer = createProducer(broker, PERSIST_MSG_PRODUCER, Broker.PERSIST_QUEUE);
@@ -64,7 +68,7 @@ public class ChangeHelper {
     switch (actionType) {
       case ADD:
       case MOD:
-        sendPersistMessage(actionType, type, id);
+        sendPersistMessage(persistenceRequestFactory.forEntity(actionType, type, id));
         sendIndexMessage(actionType, type, id);
         break;
       case DEL:
@@ -83,8 +87,8 @@ public class ChangeHelper {
     }
   }
 
-  private void updateIndex(String iname, String id) {
-    sendIndexMessage(ActionType.MOD, typeRegistry.getDomainEntityType(iname), id);
+  private void updateIndex(String iName, String id) {
+    sendIndexMessage(ActionType.MOD, typeRegistry.getDomainEntityType(iName), id);
   }
 
   private void sendIndexMessage(ActionType actionType, Class<? extends DomainEntity> type, String id) {
@@ -97,25 +101,13 @@ public class ChangeHelper {
     }
   }
 
-  public void sendPersistMessage(ActionType actionType, Class<? extends DomainEntity> type, String id) {
+  public void sendPersistMessage(PersistenceRequest persistenceRequest) {
     try {
-      LOG.info("Queueing persistence request for type \"{}\" with id \"{}\"", type, id);
-      persistenceProducer.send(new Action(actionType, type, id));
+      LOG.info("Queueing persistence request \"{}\"", persistenceRequest);
+      persistenceProducer.send(persistenceRequest.toAction());
     } catch (JMSException e) {
-      LOG.error("Failed to send persistence message {} - {} - {}. \n{}", actionType, type, id, e.getMessage());
+      LOG.error("Failed to send persistence message \"{}\"  exception: \n{}", persistenceRequest, e.getMessage());
       LOG.debug("Exception", e);
     }
-  }
-
-  public void sendUpdatePIDMessage(Class<? extends DomainEntity> type) {
-
-    Action action = Action.multiUpdateActionFor(type);
-    try {
-      persistenceProducer.send(action);
-    } catch (JMSException e) {
-      LOG.error("Failed to send persistence message {} - . \n{}", action, e.getMessage());
-      LOG.debug("Exception", e);
-    }
-
   }
 }

@@ -2,11 +2,14 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
 
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
+import nl.knaw.huygens.timbuctoo.persistence.PersistenceRequest;
+import nl.knaw.huygens.timbuctoo.persistence.PersistenceRequestFactory;
 import org.junit.Before;
 import org.junit.Test;
 import test.rest.model.projecta.ProjectADomainEntity;
@@ -47,7 +50,7 @@ public class ChangeHelperTest {
   public void setUp() throws Exception {
     setupBroker();
     setupTypeRegistry();
-    instance = new ChangeHelper(broker, typeRegistry);
+    instance = new ChangeHelper(broker, typeRegistry, new PersistenceRequestFactory());
   }
 
   private void setupTypeRegistry() throws ModelException {
@@ -64,31 +67,18 @@ public class ChangeHelperTest {
   }
 
   @Test
-  public void updatePidsSendsAnUpdateAllMessageOnWithThePersistenceProducer() throws JMSException {
-    // action
-    instance.sendUpdatePIDMessage(TYPE);
-
-    // verify
-    verify(persistenceProducer).send(argThat(likeAction() //
-      .withActionType(MOD) //
-      .withType(TYPE) //
-      .withForMultiEntitiesFlag(true)));
-
-  }
-
-  @Test
   public void sendPersistMessageSendsAnActionCreatedFromTheParametersOfTheMethod() throws JMSException {
     // setup
     ActionType actionType = ADD;
 
     // action
-    instance.sendPersistMessage(actionType, TYPE, ID);
+    PersistenceRequest persistenceRequest = mock(PersistenceRequest.class);
+    Action action = new Action();
+    when(persistenceRequest.toAction()).thenReturn(action);
+    instance.sendPersistMessage(persistenceRequest);
 
     // verify
-    verify(persistenceProducer).send(argThat(likeAction() //
-      .withActionType(actionType) //
-      .withType(TYPE) //
-      .withId(ID)));
+    verify(persistenceProducer).send(action);
   }
 
   @Test

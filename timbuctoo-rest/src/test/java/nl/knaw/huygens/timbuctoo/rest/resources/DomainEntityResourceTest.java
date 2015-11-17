@@ -34,6 +34,8 @@ import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
+import nl.knaw.huygens.timbuctoo.persistence.PersistenceRequest;
+import nl.knaw.huygens.timbuctoo.persistence.PersistenceRequestFactory;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
@@ -71,6 +73,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -844,6 +847,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     when(vre.inScope(BASE_TYPE)).thenReturn(true);
     makeVREAvailable(vre, VRE_ID);
 
+    PersistenceRequestFactory persistenceRequestFactory = injector.getInstance(PersistenceRequestFactory.class);
+    when(persistenceRequestFactory.forEntity(any(ActionType.class), any(), anyString())).thenReturn(mock(PersistenceRequest.class));
+
     String id1 = "ID1";
     String id2 = "ID2";
     String id3 = "ID3";
@@ -853,9 +859,12 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     ClientResponse response = doPutPIDRequest(DEFAULT_RESOURCE);
     verifyResponseStatus(response, Status.NO_CONTENT);
 
-    verify(getChangeHelper()).sendPersistMessage(ActionType.MOD, DEFAULT_TYPE, id1);
-    verify(getChangeHelper()).sendPersistMessage(ActionType.MOD, DEFAULT_TYPE, id2);
-    verify(getChangeHelper()).sendPersistMessage(ActionType.MOD, DEFAULT_TYPE, id3);
+    // verify
+    verify(persistenceRequestFactory).forEntity(ActionType.MOD, DEFAULT_TYPE, id1);
+    verify(persistenceRequestFactory).forEntity(ActionType.MOD, DEFAULT_TYPE, id2);
+    verify(persistenceRequestFactory).forEntity(ActionType.MOD, DEFAULT_TYPE, id3);
+
+    verify(getChangeHelper(), times(3)).sendPersistMessage(any(PersistenceRequest.class));
   }
 
   @Test
@@ -929,6 +938,10 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     // setup
     setupUserWithRoles(VRE_ID, USER_ID, ADMIN_ROLE);
 
+    PersistenceRequest persistenceRequest = mock(PersistenceRequest.class);
+    PersistenceRequestFactory persistenceRequestFactory = injector.getInstance(PersistenceRequestFactory.class);
+    when(persistenceRequestFactory.forCollection(any(), any())).thenReturn(persistenceRequest);
+
     VRE vre = mock(VRE.class);
     when(vre.inScope(BASE_TYPE)).thenReturn(true);
     makeVREAvailable(vre, VRE_ID);
@@ -939,7 +952,8 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     // verify
     verifyResponseStatus(response, Status.NO_CONTENT);
-    verify(getChangeHelper()).sendUpdatePIDMessage(DEFAULT_TYPE);
+    verify(persistenceRequestFactory).forCollection(ActionType.MOD, DEFAULT_TYPE);
+    verify(getChangeHelper()).sendPersistMessage(persistenceRequest);
   }
 
 
@@ -956,7 +970,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     // verify
     verifyResponseStatus(response, Status.NOT_FOUND);
-    verify(getChangeHelper(), never()).sendUpdatePIDMessage(DEFAULT_TYPE);
+    verifyZeroInteractions(getChangeHelper());
   }
 
   @Test
@@ -973,7 +987,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     // verify
     verifyResponseStatus(response, Status.FORBIDDEN);
-    verify(getChangeHelper(), never()).sendUpdatePIDMessage(DEFAULT_TYPE);
+    verifyZeroInteractions(getChangeHelper());
   }
 
   @Test
@@ -991,7 +1005,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     // verify
     verifyResponseStatus(response, Status.FORBIDDEN);
-    verify(getChangeHelper(), never()).sendUpdatePIDMessage(DEFAULT_TYPE);
+    verifyZeroInteractions(getChangeHelper());
   }
 
   private ClientResponse doUpdatePIDRequest(String collection) {
