@@ -1,7 +1,8 @@
-package nl.knaw.huygens.timbuctoo.persistence;
+package nl.knaw.huygens.timbuctoo.persistence.request;
 
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.persistence.PersistenceRequest;
 
 public class PersistenceRequestFactory {
   public PersistenceRequest forEntity(ActionType actionType, Class<? extends DomainEntity> type, String id) {

@@ -35,7 +35,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
 import nl.knaw.huygens.timbuctoo.model.util.RelationBuilder;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceRequest;
-import nl.knaw.huygens.timbuctoo.persistence.PersistenceRequestFactory;
+import nl.knaw.huygens.timbuctoo.persistence.request.PersistenceRequestFactory;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;

@@ -11,7 +11,7 @@ import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.ModelException;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceRequest;
-import nl.knaw.huygens.timbuctoo.persistence.PersistenceRequestFactory;
+import nl.knaw.huygens.timbuctoo.persistence.request.PersistenceRequestFactory;
 import org.junit.Before;
 import org.junit.Test;
 import test.rest.model.projecta.ProjectADomainEntity;

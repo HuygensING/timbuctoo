@@ -1,6 +1,10 @@
-package nl.knaw.huygens.timbuctoo.persistence;
+package nl.knaw.huygens.timbuctoo.persistence.request;
 
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
+import nl.knaw.huygens.timbuctoo.persistence.PersistenceRequest;
+import nl.knaw.huygens.timbuctoo.persistence.request.CollectionPersistenceRequest;
+import nl.knaw.huygens.timbuctoo.persistence.request.EntityPersistenceRequest;
+import nl.knaw.huygens.timbuctoo.persistence.request.PersistenceRequestFactory;
 import org.junit.Test;
 import test.model.projecta.ProjectAPerson;
 

@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.persistence;
+package nl.knaw.huygens.timbuctoo.persistence.request;
 
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import org.junit.Test;
