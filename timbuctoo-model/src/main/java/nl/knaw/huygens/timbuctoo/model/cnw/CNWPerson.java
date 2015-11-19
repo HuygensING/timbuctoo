@@ -143,6 +143,7 @@ public class CNWPerson extends Person {
 		return combinedDomains;
 	}
 
+	@JsonIgnore
 	@IndexAnnotation(title = "(Sub)domein (sorteerveld)", fieldName = "dynamic_sort_combineddomain", canBeEmpty = false, isFaceted = false, isSortable = true)
 	public String getCombinedDomainSortKey() {
 		return Joiner.on(";").join(combinedDomains);
@@ -176,9 +177,9 @@ public class CNWPerson extends Person {
 		return characteristics;
 	}
 
+	@JsonIgnore
 	@IndexAnnotation(title = "Karakteristieken (sorteerveld)", fieldName = "dynamic_sort_characteristic", canBeEmpty = false, isFaceted = false, isSortable = true)
 	public String getCharacteristicSortKey() {
-//		Collections.sort(characteristics);
 		return Joiner.on(";").join(characteristics);
 	}
 
