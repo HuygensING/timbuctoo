@@ -25,6 +25,7 @@ package nl.knaw.huygens.timbuctoo.model.cnw;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -32,8 +33,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
@@ -43,17 +44,15 @@ import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
 public class CNWPerson extends Person {
 
-	public static final String NONE = "(empty)";
-
 	private String name = "";
 	private String koppelnaam = "";
-	private List<String> networkDomains = Lists.newArrayList();
-	private List<String> domains = Lists.newArrayList();
-	private List<String> subdomains = Lists.newArrayList();
-	private List<String> combinedDomains = Lists.newArrayList();
-	private List<String> characteristics = Lists.newArrayList();
-	private List<String> periodicals = Lists.newArrayList(); // Periodieken
-	private List<String> memberships = Lists.newArrayList(); // Lidmaatschappen : Om te zetten naar facet met sorteerbare lijst
+	private Set<String> networkDomains = Sets.newTreeSet();
+	private Set<String> domains = Sets.newTreeSet();
+	private Set<String> subdomains = Sets.newTreeSet();
+	private Set<String> combinedDomains = Sets.newTreeSet();
+	private Set<String> characteristics = Sets.newTreeSet();
+	private Set<String> periodicals = Sets.newTreeSet(); // Periodieken
+	private Set<String> memberships = Sets.newTreeSet(); // Lidmaatschappen : Om te zetten naar facet met sorteerbare lijst
 	private String biodesurl = "";//Bioport url, Link, mogelijkheid tot doorklikken
 	private String dbnlUrl = "";//Link, mogelijkheid tot doorklikken
 	private List<CNWLink> verwijzingen = Lists.newArrayList();
@@ -75,7 +74,6 @@ public class CNWPerson extends Person {
 		public AltNames() {
 			list = Lists.newArrayList();
 		}
-
 	}
 
 	@IndexAnnotations({ @IndexAnnotation(title = "Geslacht", fieldName = "dynamic_s_gender", isFaceted = true, canBeEmpty = true), //
@@ -107,16 +105,16 @@ public class CNWPerson extends Person {
 	}
 
 	@IndexAnnotation(title = "Periodiek", fieldName = "dynamic_s_periodical", canBeEmpty = true, isFaceted = true)
-	public List<String> getPeriodicals() {
-		return specialValueEmptyWhenNone(periodicals);
+	public Set<String> getPeriodicals() {
+		return periodicals;
 	}
 
 	@IndexAnnotation(title = "Lidmaatschap", fieldName = "dynamic_s_membership", canBeEmpty = true, isFaceted = true)
-	public List<String> getMemberships() {
-		return specialValueEmptyWhenNone(memberships);
+	public Set<String> getMemberships() {
+		return memberships;
 	}
 
-	public void setActivities(List<String> activities) {
+	public void setActivities(Set<String> activities) {
 		this.memberships = activities;
 	}
 
@@ -136,52 +134,51 @@ public class CNWPerson extends Person {
 		this.dbnlUrl = dbnlUrl;
 	}
 
-	public void setCombinedDomains(List<String> combineddomains) {
+	public void setCombinedDomains(Set<String> combineddomains) {
 		this.combinedDomains = combineddomains;
 	}
 
 	@IndexAnnotation(title = "(Sub)domein", fieldName = "dynamic_s_combineddomain", canBeEmpty = false, isFaceted = true)
-	public List<String> getCombinedDomains() {
+	public Set<String> getCombinedDomains() {
 		return combinedDomains;
 	}
 
 	@IndexAnnotation(title = "(Sub)domein (sorteerveld)", fieldName = "dynamic_sort_combineddomain", canBeEmpty = false, isFaceted = false, isSortable = true)
 	public String getCombinedDomainSortKey() {
-		Collections.sort(combinedDomains);
 		return Joiner.on(";").join(combinedDomains);
 	}
 
-	public void setDomains(List<String> domains) {
+	public void setDomains(Set<String> domains) {
 		this.domains = domains;
 	}
 
 	@IndexAnnotation(title = "Domein", fieldName = "dynamic_s_domain", canBeEmpty = false, isFaceted = true)
-	public List<String> getDomains() {
-		return specialValueEmptyWhenNone(domains);
+	public Set<String> getDomains() {
+		return domains;
 	}
 
-	public void setSubDomains(List<String> subdomains) {
+	public void setSubDomains(Set<String> subdomains) {
 		this.subdomains = subdomains;
 	}
 
 	@IndexAnnotation(title = "Subdomein", fieldName = "dynamic_s_subdomain", canBeEmpty = false, isFaceted = true)
-	public List<String> getSubDomains() {
-		return specialValueEmptyWhenNone(subdomains);
+	public Set<String> getSubDomains() {
+		return subdomains;
 	}
 
-	public void setCharacteristics(List<String> characteristicList) {
+	public void setCharacteristics(Set<String> characteristicList) {
 		this.characteristics = characteristicList;
 	}
 
 	@IndexAnnotation(title = "Karakteristiek", fieldName = "dynamic_s_characteristic", canBeEmpty = false, isFaceted = true)
-	public List<String> getCharacteristics() {
-		Collections.sort(characteristics);
-		return specialValueEmptyWhenNone(characteristics);
+	public Set<String> getCharacteristics() {
+//		Collections.sort(characteristics);
+		return characteristics;
 	}
 
 	@IndexAnnotation(title = "Karakteristieken (sorteerveld)", fieldName = "dynamic_sort_characteristic", canBeEmpty = false, isFaceted = false, isSortable = true)
 	public String getCharacteristicSortKey() {
-		Collections.sort(characteristics);
+//		Collections.sort(characteristics);
 		return Joiner.on(";").join(characteristics);
 	}
 
@@ -234,11 +231,11 @@ public class CNWPerson extends Person {
 		this.verwijzingen = verwijzingen;
 	}
 
-	public void setNetworkDomains(List<String> networkDomains) {
+	public void setNetworkDomains(Set<String> networkDomains) {
 		this.networkDomains = networkDomains;
 	}
 
-	public List<String> getNetworkDomains() {
+	public Set<String> getNetworkDomains() {
 		return networkDomains;
 	}
 
@@ -412,10 +409,6 @@ public class CNWPerson extends Person {
 
 	public void setDeathDateQualifier(String qualifier) {
 		deathdateQualifier = qualifier;
-	}
-
-	private List<String> specialValueEmptyWhenNone(List<String> list) {
-		return list.isEmpty() ? Lists.newArrayList(NONE) : list;
 	}
 
 }
