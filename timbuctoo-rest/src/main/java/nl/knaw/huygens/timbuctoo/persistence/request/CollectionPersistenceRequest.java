@@ -4,7 +4,6 @@ import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceRequest;
-import nl.knaw.huygens.timbuctoo.persistence.PersisterFactory;
 
 class CollectionPersistenceRequest implements PersistenceRequest {
   private final ActionType actionType;
@@ -21,7 +20,7 @@ class CollectionPersistenceRequest implements PersistenceRequest {
   }
 
   @Override
-  public void execute(PersisterFactory persisterFactory) {
+  public void execute() {
     throw new UnsupportedOperationException("Not implemented yet");
   }
 }

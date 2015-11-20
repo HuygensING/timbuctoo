@@ -37,19 +37,17 @@ public class PersistenceService extends ConsumerService implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(PersistenceService.class);
 
   private final PersistenceRequestFactory persistenceRequestFactory;
-  private final PersisterFactory persisterFactory;
 
   @Inject
-  public PersistenceService(Broker broker, PersistenceRequestFactory persistenceRequestFactory, PersisterFactory persisterFactory) throws JMSException {
+  public PersistenceService(Broker broker, PersistenceRequestFactory persistenceRequestFactory) throws JMSException {
     super(broker, Broker.PERSIST_QUEUE, "PersistenceService");
     this.persistenceRequestFactory = persistenceRequestFactory;
-    this.persisterFactory = persisterFactory;
   }
 
   @Override
   protected void executeAction(Action action) {
     PersistenceRequest persistenceRequest = persistenceRequestFactory.forAction(action);
-    persistenceRequest.execute(persisterFactory);
+    persistenceRequest.execute();
   }
 
   @Override

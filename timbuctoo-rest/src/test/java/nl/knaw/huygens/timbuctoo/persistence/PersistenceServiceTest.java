@@ -49,7 +49,6 @@ public class PersistenceServiceTest {
   private Action action;
   private PersistenceRequest persistenceRequest;
   private PersistenceRequestFactory persistenceRequestFactory;
-  private PersisterFactory persisterFactory;
 
   @Before
   public void setUp() throws Exception {
@@ -63,9 +62,8 @@ public class PersistenceServiceTest {
 
     action = mock(Action.class);
     persistenceRequest = mock(PersistenceRequest.class);
-    persisterFactory = mock(PersisterFactory.class);
     setupPersistenceRequestFactory();
-    instance = new PersistenceService(broker, persistenceRequestFactory, persisterFactory);
+    instance = new PersistenceService(broker, persistenceRequestFactory);
   }
 
   private void setupPersistenceRequestFactory() {
@@ -81,6 +79,6 @@ public class PersistenceServiceTest {
     instance.executeAction(action);
 
     // verify
-    verify(persistenceRequest).execute(persisterFactory);
+    verify(persistenceRequest).execute();
   }
 }
