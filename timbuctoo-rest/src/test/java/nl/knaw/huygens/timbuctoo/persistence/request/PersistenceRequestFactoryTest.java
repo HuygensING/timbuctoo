@@ -1,8 +1,10 @@
 package nl.knaw.huygens.timbuctoo.persistence.request;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceRequest;
+import nl.knaw.huygens.timbuctoo.persistence.PersisterFactory;
 import org.junit.Before;
 import org.junit.Test;
 import test.model.projecta.ProjectAPerson;
@@ -10,6 +12,7 @@ import test.model.projecta.ProjectAPerson;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.mock;
 
 public class PersistenceRequestFactoryTest {
 
@@ -20,7 +23,7 @@ public class PersistenceRequestFactoryTest {
 
   @Before
   public void setUp() throws Exception {
-    instance = new PersistenceRequestFactory();
+    instance = new PersistenceRequestFactory(mock(Repository.class), mock(PersisterFactory.class));
   }
 
   @Test
