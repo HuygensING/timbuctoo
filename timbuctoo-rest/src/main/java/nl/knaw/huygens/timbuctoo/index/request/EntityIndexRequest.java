@@ -17,7 +17,7 @@ class EntityIndexRequest extends AbstractIndexRequest {
 
   @Override
   public void execute() throws IndexException {
-    Indexer indexer = getIndexerFactory().create(this);
+    Indexer indexer = getIndexerFactory().create(this.getActionType());
     indexer.executeIndexAction(getType(), id);
   }
 

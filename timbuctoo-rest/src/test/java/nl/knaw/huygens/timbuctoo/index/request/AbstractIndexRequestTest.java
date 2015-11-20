@@ -7,7 +7,6 @@ import org.junit.Before;
 import org.junit.Test;
 import test.rest.model.projecta.ProjectADomainEntity;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -27,7 +26,7 @@ public abstract class AbstractIndexRequestTest {
   private void setupIndexerFactory() {
     indexer = mock(Indexer.class);
     indexerFactory = mock(IndexerFactory.class);
-    when(indexerFactory.create(any(IndexRequest.class))).thenReturn(indexer);
+    when(indexerFactory.create(ACTION_TYPE)).thenReturn(indexer);
   }
 
   protected IndexRequest getInstance() {

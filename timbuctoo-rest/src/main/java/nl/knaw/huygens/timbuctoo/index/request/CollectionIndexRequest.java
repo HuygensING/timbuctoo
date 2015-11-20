@@ -19,7 +19,7 @@ class CollectionIndexRequest extends AbstractIndexRequest {
 
   @Override
   public void execute() throws IndexException {
-    Indexer indexer = getIndexerFactory().create(this);
+    Indexer indexer = getIndexerFactory().create(this.getActionType());
     Class<? extends DomainEntity> type = getType();
 
     StorageIterator<? extends DomainEntity> entities = repository.getDomainEntities(type);

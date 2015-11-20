@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.index.indexer;
 import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.index.IndexManager;
 import nl.knaw.huygens.timbuctoo.index.Indexer;
-import nl.knaw.huygens.timbuctoo.index.request.IndexRequest;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 
 public class IndexerFactory {
@@ -14,8 +13,7 @@ public class IndexerFactory {
     this.indexManager = indexManager;
   }
 
-  public Indexer create(IndexRequest indexRequest) {
-    ActionType actionType = indexRequest.getActionType();
+  public Indexer create(ActionType actionType) {
     switch (actionType) {
       case ADD:
         return new AddIndexer(indexManager);
