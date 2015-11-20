@@ -20,7 +20,7 @@ public class PersistenceRequestFactory {
   }
 
   public PersistenceRequest forEntity(ActionType actionType, Class<? extends DomainEntity> type, String id) {
-    return new EntityPersistenceRequest(actionType, type, id);
+    return new EntityPersistenceRequest(repository, persisterFactory, actionType, type, id);
   }
 
   public PersistenceRequest forCollection(ActionType actionType, Class<? extends DomainEntity> type) {
