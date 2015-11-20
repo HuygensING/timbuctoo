@@ -14,8 +14,10 @@ public class PersistenceRequestFactory {
     return new CollectionPersistenceRequest(actionType, type);
   }
 
-
   public PersistenceRequest forAction(Action action) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    if (action.isForMultiEntities()) {
+      return forCollection(action.getActionType(), action.getType());
+    }
+    return forEntity(action.getActionType(), action.getType(), action.getId());
   }
 }
