@@ -71,7 +71,7 @@ public class ChangeHelper {
     switch (actionType) {
       case ADD:
       case MOD:
-        sendPersistMessage(persistenceRequestFactory.forEntity(actionType, type, id));
+        sendPersistMessage(persistenceRequestFactory.forEntity(ActionType.ADD, type, id)); // we are adding a pid to the latest version of the document.
         sendIndexMessage(indexRequestFactory.forEntity(actionType, type, id));
         break;
       case DEL:

@@ -7,6 +7,11 @@ import nl.knaw.huygens.timbuctoo.persistence.Persister;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+
+/**
+ * A Persister that updates the PID of the entity. For example when a Timbuctoo instance is moved to a new url the pids
+ * have to point to this new url.
+ */
 class ModPersister implements Persister {
   private static final Logger LOG = LoggerFactory.getLogger(ModPersister.class);
   private final PersistenceWrapper persistenceWrapper;

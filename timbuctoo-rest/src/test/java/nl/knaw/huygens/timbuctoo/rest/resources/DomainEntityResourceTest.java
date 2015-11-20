@@ -860,9 +860,9 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     verifyResponseStatus(response, Status.NO_CONTENT);
 
     // verify
-    verify(persistenceRequestFactory).forEntity(ActionType.MOD, DEFAULT_TYPE, id1);
-    verify(persistenceRequestFactory).forEntity(ActionType.MOD, DEFAULT_TYPE, id2);
-    verify(persistenceRequestFactory).forEntity(ActionType.MOD, DEFAULT_TYPE, id3);
+    verify(persistenceRequestFactory).forEntity(ActionType.ADD, DEFAULT_TYPE, id1);
+    verify(persistenceRequestFactory).forEntity(ActionType.ADD, DEFAULT_TYPE, id2);
+    verify(persistenceRequestFactory).forEntity(ActionType.ADD, DEFAULT_TYPE, id3);
 
     verify(getChangeHelper(), times(3)).sendPersistMessage(any(PersistenceRequest.class));
   }

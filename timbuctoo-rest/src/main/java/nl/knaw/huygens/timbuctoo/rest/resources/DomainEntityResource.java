@@ -258,7 +258,7 @@ public class DomainEntityResource extends ResourceBase {
 
     try {
       for (String id : repository.getAllIdsWithoutPID(type)) {
-        changeHelper.sendPersistMessage(persistenceRequestFactory.forEntity(ActionType.MOD, type, id));
+        changeHelper.sendPersistMessage(persistenceRequestFactory.forEntity(ActionType.ADD, type, id));
       }
     } catch (StorageException e) {
       throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());

@@ -108,12 +108,21 @@ public class ChangeHelperTest {
   }
 
   @Test
-  public void notifyChangeWithActionTypeMODSendsAModificationActionToTheIndexAndThePersistenceQueue() throws JMSException {
+  public void notifyChangeWithActionTypeMODSendsAModificationActionToTheIndexAndAnAddActionThePersistenceQueue() throws JMSException {
     // action
     instance.notifyChange(MOD, TYPE, DOMAIN_ENTITY, ID);
 
     // verify
-    verifyActionIsSendToIndexAndPersistenceQueue(MOD, TYPE);
+    // verify
+    verify(indexProducer).send(argThat(likeAction() //
+      .withActionType(MOD) //
+      .withType(TYPE) //
+      .withId(ID)));
+
+    verify(persistenceProducer).send(argThat(likeAction() //
+      .withActionType(ADD) //
+      .withType(TYPE) //
+      .withId(ID)));
 
   }
 
