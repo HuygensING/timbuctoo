@@ -1,9 +1,9 @@
 package nl.knaw.huygens.timbuctoo.persistence.persister;
 
 import nl.knaw.huygens.persistence.PersistenceException;
+import nl.knaw.huygens.timbuctoo.AlreadyHasAPidException;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -86,15 +86,44 @@ public class AddPersisterTest {
   }
 
   @Test
-  public void executeTriesToStoreAtMostFiveTimeWhenAStorageExceptionIsThrownThenDeletesThePID() throws Exception {
+  public void executeTriesToStoreAtMostFiveTimeWhenAnExceptionIsThrownThenDeletesThePID() throws Exception {
     // setup
     when(persistenceWrapper.persistObject(any(), anyString(), anyInt())).thenReturn(PID);
-    doThrow(StorageException.class).when(repository).setPID(any(), anyString(), anyString());
+    doThrow(Exception.class).when(repository).setPID(any(), anyString(), anyString());
+
     // action
     instance.execute(DOMAIN_ENTITY);
 
     // verify
     verify(repository, times(5)).setPID(TYPE, ID, PID);
+    verify(persistenceWrapper).deletePersistentId(PID);
+  }
+
+  @Test
+  public void executeTriesToStoreAtMostFiveTimeWhenARuntimeExceptionIsThrownByTheStorageThenDeletesThePID() throws Exception {
+    // setup
+    when(persistenceWrapper.persistObject(any(), anyString(), anyInt())).thenReturn(PID);
+    doThrow(RuntimeException.class).when(repository).setPID(any(), anyString(), anyString());
+
+    // action
+    instance.execute(DOMAIN_ENTITY);
+
+    // verify
+    verify(repository, times(5)).setPID(TYPE, ID, PID);
+    verify(persistenceWrapper).deletePersistentId(PID);
+  }
+
+  @Test
+  public void executeRemovesThePidWithoutRetryingWhenStorageThrowsAnEntityAlreadyHasAPidException() throws Exception{
+    // setup
+    when(persistenceWrapper.persistObject(any(), anyString(), anyInt())).thenReturn(PID);
+    doThrow(AlreadyHasAPidException.class).when(repository).setPID(any(), anyString(), anyString());
+
+    // action
+    instance.execute(DOMAIN_ENTITY);
+
+    // verify
+    verify(repository, times(1)).setPID(TYPE, ID, PID);
     verify(persistenceWrapper).deletePersistentId(PID);
   }
 

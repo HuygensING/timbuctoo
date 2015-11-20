@@ -1,11 +1,11 @@
 package nl.knaw.huygens.timbuctoo.persistence.persister;
 
 import nl.knaw.huygens.persistence.PersistenceException;
+import nl.knaw.huygens.timbuctoo.AlreadyHasAPidException;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
 import nl.knaw.huygens.timbuctoo.persistence.Persister;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,11 +39,14 @@ class AddPersister implements Persister {
         try {
           repository.setPID(type, id, pid);
           shouldTry = false;
-        } catch (StorageException e) {
+        } catch (AlreadyHasAPidException e) {
+          deletePID(pid);
+          shouldTry = false;
+        } catch (Exception e) {
           LOG.error("Could not set pid \"{}\" to entity \"{}\" with id \"{}\".", pid, type, id);
           LOG.error("Exception caught", e);
           timesToTry--;
-          if(timesToTry == 0){
+          if (timesToTry == 0) {
             deletePID(pid);
           }
           try {
