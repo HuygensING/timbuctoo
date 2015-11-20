@@ -5,6 +5,13 @@ import nl.knaw.huygens.timbuctoo.persistence.Persister;
 
 public class PersisterFactory {
   public Persister forActionType(ActionType actionType) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    switch (actionType) {
+      case ADD:
+        return new AddPersister();
+      case MOD:
+        return new ModPersister();
+      default:
+        return new NoOpPersister();
+    }
   }
 }

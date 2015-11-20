@@ -5,7 +5,7 @@ import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceRequest;
-import nl.knaw.huygens.timbuctoo.persistence.PersisterFactory;
+import nl.knaw.huygens.timbuctoo.persistence.persister.PersisterFactory;
 
 class EntityPersistenceRequest implements PersistenceRequest {
   private final ActionType actionType;

@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.persistence.request;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.persistence.Persister;
-import nl.knaw.huygens.timbuctoo.persistence.PersisterFactory;
+import nl.knaw.huygens.timbuctoo.persistence.persister.PersisterFactory;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import org.junit.Before;

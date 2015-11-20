@@ -4,7 +4,7 @@ import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceRequest;
-import nl.knaw.huygens.timbuctoo.persistence.PersisterFactory;
+import nl.knaw.huygens.timbuctoo.persistence.persister.PersisterFactory;
 import org.junit.Before;
 import org.junit.Test;
 import test.model.projecta.ProjectAPerson;

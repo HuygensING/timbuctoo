@@ -6,7 +6,7 @@ import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceRequest;
 import nl.knaw.huygens.timbuctoo.persistence.Persister;
-import nl.knaw.huygens.timbuctoo.persistence.PersisterFactory;
+import nl.knaw.huygens.timbuctoo.persistence.persister.PersisterFactory;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 
 class CollectionPersistenceRequest implements PersistenceRequest {
