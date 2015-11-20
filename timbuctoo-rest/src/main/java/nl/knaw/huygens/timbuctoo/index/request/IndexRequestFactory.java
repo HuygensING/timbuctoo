@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.index.indexer.IndexerFactory;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.model.Relation;
 
 public class IndexRequestFactory {
   private final IndexerFactory indexerFactory;
@@ -22,6 +23,9 @@ public class IndexRequestFactory {
   }
 
   public IndexRequest forEntity(ActionType actionType, Class<? extends DomainEntity> type, String id) {
+    if(Relation.class.isAssignableFrom(type)){
+      return new RelationIndexRequest(indexerFactory, actionType, type, id);
+    }
     return new EntityIndexRequest(indexerFactory, actionType, type, id);
   }
 
