@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
+import nl.knaw.huygens.timbuctoo.index.indexer.IndexerFactory;
 import nl.knaw.huygens.timbuctoo.index.request.IndexRequestFactory;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
@@ -53,7 +54,7 @@ public class ChangeHelperTest {
   public void setUp() throws Exception {
     setupBroker();
     setupTypeRegistry();
-    instance = new ChangeHelper(broker, typeRegistry, new PersistenceRequestFactory(mock(Repository.class), mock(PersisterFactory.class)), new IndexRequestFactory(mock(Repository.class)));
+    instance = new ChangeHelper(broker, typeRegistry, new PersistenceRequestFactory(mock(Repository.class), mock(PersisterFactory.class)), new IndexRequestFactory(mock(IndexerFactory.class), mock(Repository.class)));
   }
 
   private void setupTypeRegistry() throws ModelException {

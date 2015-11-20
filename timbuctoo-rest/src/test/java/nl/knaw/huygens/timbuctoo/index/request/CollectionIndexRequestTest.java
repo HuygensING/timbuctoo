@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.messages.Action;
-import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.storage.StorageIteratorStub;
 import org.junit.Test;
 import test.rest.model.projecta.ProjectADomainEntity;
@@ -20,13 +19,12 @@ public class CollectionIndexRequestTest extends AbstractIndexRequestTest {
 
   public static final String ID_1 = "id1";
   public static final String ID_2 = "id2";
-  public static final ActionType ACTION_TYPE = ActionType.MOD;
   private RequestItemStatus requestItemStatus;
 
   @Override
   protected IndexRequest createInstance() {
     createRequestItemStatus();
-    return new CollectionIndexRequest(ACTION_TYPE, TYPE, createRepository());
+    return new CollectionIndexRequest(getIndexerFactory(), ACTION_TYPE, TYPE, createRepository());
   }
 
   private void createRequestItemStatus() {
@@ -49,20 +47,20 @@ public class CollectionIndexRequestTest extends AbstractIndexRequestTest {
   @Test
   public void executeIndexesEveryEntityFoundByTheRepository() throws Exception {
     // action
-    getInstance().execute(indexer);
+    getInstance().execute();
 
     // verify
-    verify(indexer).executeIndexAction(TYPE, ID_1);
-    verify(indexer).executeIndexAction(TYPE, ID_2);
+    verify(getIndexer()).executeIndexAction(TYPE, ID_1);
+    verify(getIndexer()).executeIndexAction(TYPE, ID_2);
   }
 
   @Test(expected = IndexException.class)
   public void executeThrowsAnIndexExceptionWhenTheIndexerDoes() throws Exception {
     // setup
-    doThrow(IndexException.class).when(indexer).executeIndexAction(TYPE, ID_1);
+    doThrow(IndexException.class).when(getIndexer()).executeIndexAction(TYPE, ID_1);
 
     // action
-    getInstance().execute(indexer);
+    getInstance().execute();
   }
 
   @Override

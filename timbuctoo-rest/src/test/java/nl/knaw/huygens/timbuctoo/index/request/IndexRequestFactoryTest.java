@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.index.request;
 
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.index.indexer.IndexerFactory;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import org.junit.Before;
@@ -21,7 +22,7 @@ public class IndexRequestFactoryTest {
 
   @Before
   public void setUp() throws Exception {
-    instance = new IndexRequestFactory(mock(Repository.class));
+    instance = new IndexRequestFactory(mock(IndexerFactory.class), mock(Repository.class));
   }
 
   @Test
@@ -43,7 +44,7 @@ public class IndexRequestFactoryTest {
   }
 
   @Test
-  public void forActionCreatesACollectionIndexRequestIfTheActionIsForMultipleEntities(){
+  public void forActionCreatesACollectionIndexRequestIfTheActionIsForMultipleEntities() {
     // action
     IndexRequest indexRequest = instance.forAction(Action.multiUpdateActionFor(TYPE));
 
@@ -52,7 +53,7 @@ public class IndexRequestFactoryTest {
   }
 
   @Test
-  public void forActionCreatesAnEnityIndexRequestIfTheActionIsForASingleEntity(){
+  public void forActionCreatesAnEnityIndexRequestIfTheActionIsForASingleEntity() {
     // action
     IndexRequest indexRequest = instance.forAction(new Action(ActionType.MOD, TYPE, ID));
 

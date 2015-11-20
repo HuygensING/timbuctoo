@@ -1,16 +1,18 @@
 package nl.knaw.huygens.timbuctoo.index.request;
 
 import nl.knaw.huygens.timbuctoo.index.IndexException;
-import nl.knaw.huygens.timbuctoo.index.Indexer;
+import nl.knaw.huygens.timbuctoo.index.indexer.IndexerFactory;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 abstract class AbstractIndexRequest implements IndexRequest {
 
+  private final IndexerFactory indexerFactory;
   private final ActionType actionType;
   private final Class<? extends DomainEntity> type;
 
-  protected AbstractIndexRequest(ActionType actionType, Class<? extends DomainEntity> type) {
+  protected AbstractIndexRequest(IndexerFactory indexerFactory, ActionType actionType, Class<? extends DomainEntity> type) {
+    this.indexerFactory = indexerFactory;
     this.actionType = actionType;
     this.type = type;
   }
@@ -21,11 +23,11 @@ abstract class AbstractIndexRequest implements IndexRequest {
   }
 
   @Override
-  public final void execute(Indexer indexer) throws IndexException {
-    executeIndexAction(indexer);
-  }
+  public abstract void execute() throws IndexException;
 
-  protected abstract void executeIndexAction(Indexer indexer) throws IndexException;
+  protected IndexerFactory getIndexerFactory(){
+    return this.indexerFactory;
+  }
 
   @Override
   public ActionType getActionType() {

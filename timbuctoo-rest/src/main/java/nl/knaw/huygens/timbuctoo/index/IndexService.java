@@ -23,7 +23,6 @@ package nl.knaw.huygens.timbuctoo.index;
  */
 
 import com.google.inject.Inject;
-import nl.knaw.huygens.timbuctoo.index.indexer.IndexerFactory;
 import nl.knaw.huygens.timbuctoo.index.request.IndexRequest;
 import nl.knaw.huygens.timbuctoo.index.request.IndexRequestFactory;
 import nl.knaw.huygens.timbuctoo.messages.Action;
@@ -39,13 +38,11 @@ public class IndexService extends ConsumerService implements Runnable {
   private static final Logger LOG = LoggerFactory.getLogger(IndexService.class);
   public static final int FIVE_SECONDS = 5000;
 
-  private final IndexerFactory indexerFactory;
   private final IndexRequestFactory indexRequestFactory;
 
   @Inject
-  public IndexService(Broker broker, IndexRequestFactory indexRequestFactory, IndexerFactory indexerFactory) throws JMSException {
+  public IndexService(Broker broker, IndexRequestFactory indexRequestFactory) throws JMSException {
     super(broker, Broker.INDEX_QUEUE, "IndexService");
-    this.indexerFactory = indexerFactory;
     this.indexRequestFactory = indexRequestFactory;
   }
 
@@ -63,14 +60,12 @@ public class IndexService extends ConsumerService implements Runnable {
   protected void executeAction(Action action) {
     IndexRequest indexRequest = indexRequestFactory.forAction(action);
 
-    Indexer indexer = indexerFactory.create(indexRequest);
     boolean shouldExecute = true;
     int numberOfTries = 0;
-    long timeOfLastTry = System.currentTimeMillis();
     while (shouldExecute && numberOfTries < 5) {
       try {
         LOG.info("Processing index request for entity of type \"{}\" with id \"{}\"", action.getType(), action.getId());
-        indexRequest.execute(indexer);
+        indexRequest.execute();
         shouldExecute = false;
       } catch (IndexException | RuntimeException e) {
         getLogger().error("Error indexing ([{}]) object of type [{}]", action.getActionType(), indexRequest.getType());

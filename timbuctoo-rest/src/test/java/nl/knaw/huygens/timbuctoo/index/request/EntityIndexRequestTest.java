@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.index.request;
 
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.messages.Action;
-import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import org.junit.Test;
 
 import static nl.knaw.huygens.timbuctoo.rest.resources.ActionMatcher.likeAction;
@@ -13,30 +12,29 @@ import static org.mockito.Mockito.verify;
 public class EntityIndexRequestTest extends AbstractIndexRequestTest {
 
   private static final String ID = "id";
-  public static final ActionType ACTION_TYPE = ActionType.MOD;
 
   @Override
   protected IndexRequest createInstance() {
-    return new EntityIndexRequest(ACTION_TYPE, TYPE, ID);
+    return new EntityIndexRequest(getIndexerFactory(), ACTION_TYPE, TYPE, ID);
   }
 
 
   @Test
   public void executeLetsTheIndexerExecuteAnIndexAction() throws Exception {
     // action
-    getInstance().execute(indexer);
+    getInstance().execute();
 
     // verify
-    verify(indexer).executeIndexAction(TYPE, ID);
+    verify(getIndexer()).executeIndexAction(TYPE, ID);
   }
 
   @Test(expected = IndexException.class)
   public void executeThrowsAnIndexExceptionWhenTheIndexerDoes() throws Exception {
     // setup
-    doThrow(IndexException.class).when(indexer).executeIndexAction(TYPE, ID);
+    doThrow(IndexException.class).when(getIndexer()).executeIndexAction(TYPE, ID);
 
     // action
-    getInstance().execute(indexer);
+    getInstance().execute();
   }
 
   @Override
