@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.index.request;
 
 import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.indexer.IndexerFactory;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
@@ -11,11 +12,13 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 public class IndexRequestFactory {
   private final IndexerFactory indexerFactory;
   private final Repository repository;
+  private final TypeRegistry typeRegistry;
 
   @Inject
-  public IndexRequestFactory(IndexerFactory indexerFactory, Repository repository) {
+  public IndexRequestFactory(IndexerFactory indexerFactory, Repository repository, TypeRegistry typeRegistry) {
     this.indexerFactory = indexerFactory;
     this.repository = repository;
+    this.typeRegistry = typeRegistry;
   }
 
   public IndexRequest forCollectionOf(ActionType actionType, Class<? extends DomainEntity> type) {
@@ -23,14 +26,14 @@ public class IndexRequestFactory {
   }
 
   public IndexRequest forEntity(ActionType actionType, Class<? extends DomainEntity> type, String id) {
-    if(Relation.class.isAssignableFrom(type)){
-      return new RelationIndexRequest(indexerFactory, actionType, type, id);
+    if (Relation.class.isAssignableFrom(type)) {
+      return new RelationIndexRequest(indexerFactory, repository, typeRegistry, actionType, type, id);
     }
     return new EntityIndexRequest(indexerFactory, actionType, type, id);
   }
 
   public IndexRequest forAction(Action action) {
-    if(action.isForMultiEntities()) {
+    if (action.isForMultiEntities()) {
       return forCollectionOf(action.getActionType(), action.getType());
     }
 

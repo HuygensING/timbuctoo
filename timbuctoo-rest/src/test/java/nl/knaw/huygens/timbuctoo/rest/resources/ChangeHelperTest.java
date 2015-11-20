@@ -54,7 +54,7 @@ public class ChangeHelperTest {
   public void setUp() throws Exception {
     setupBroker();
     setupTypeRegistry();
-    instance = new ChangeHelper(broker, typeRegistry, new PersistenceRequestFactory(mock(Repository.class), mock(PersisterFactory.class)), new IndexRequestFactory(mock(IndexerFactory.class), mock(Repository.class)));
+    instance = new ChangeHelper(broker, typeRegistry, new PersistenceRequestFactory(mock(Repository.class), mock(PersisterFactory.class)), new IndexRequestFactory(mock(IndexerFactory.class), mock(Repository.class), mock(TypeRegistry.class)));
   }
 
   private void setupTypeRegistry() throws ModelException {

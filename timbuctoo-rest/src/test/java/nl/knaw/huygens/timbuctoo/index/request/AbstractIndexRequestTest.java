@@ -11,7 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public abstract class AbstractIndexRequestTest {
-  public static final ActionType ACTION_TYPE = ActionType.MOD;
+  public static final ActionType ACTION_TYPE = ActionType.ADD;
   protected static final Class<ProjectADomainEntity> TYPE = ProjectADomainEntity.class;
   private Indexer indexer;
   private IndexRequest instance;

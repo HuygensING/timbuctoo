@@ -25,4 +25,8 @@ class EntityIndexRequest extends AbstractIndexRequest {
   public Action toAction() {
     return new Action(getActionType(), getType(), id);
   }
+
+  protected String getId() {
+    return this.id;
+  }
 }
