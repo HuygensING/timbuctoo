@@ -4,4 +4,6 @@ import nl.knaw.huygens.timbuctoo.messages.Action;
 
 public interface PersistenceRequest {
   Action toAction();
+
+  void execute(PersisterFactory persisterFactory);
 }
