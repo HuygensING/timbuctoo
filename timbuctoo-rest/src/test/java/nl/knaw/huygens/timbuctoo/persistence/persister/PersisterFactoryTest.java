@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.persistence.persister;
 
+import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
+import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
 import nl.knaw.huygens.timbuctoo.persistence.Persister;
 import org.junit.Before;
 import org.junit.Test;
@@ -8,6 +10,7 @@ import org.junit.Test;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 
 public class PersisterFactoryTest {
 
@@ -15,7 +18,7 @@ public class PersisterFactoryTest {
 
   @Before
   public void setUp() throws Exception {
-    instance = new PersisterFactory();
+    instance = new PersisterFactory(mock(Repository.class), mock(PersistenceWrapper.class));
   }
 
   @Test

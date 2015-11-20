@@ -2,10 +2,14 @@ package nl.knaw.huygens.timbuctoo.persistence.persister;
 
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.persistence.Persister;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class NoOpPersister implements Persister {
+class NoOpPersister implements Persister {
+  Logger LOG = LoggerFactory.getLogger(NoOpPersister.class);
+
   @Override
   public void execute(DomainEntity domainEntity) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    LOG.info("Doing nothing for DomainEntity of type \"{}\" with id \"{}\"", domainEntity.getClass(), domainEntity.getId());
   }
 }
