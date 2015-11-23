@@ -203,7 +203,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .header(VRE_ID_KEY, VRE_ID).put(ClientResponse.class, entity);
     verifyResponseStatus(response, Status.NO_CONTENT);
 
-    verify(getChangeHelper()).notifyChange(ActionType.MOD, DEFAULT_TYPE, entity, DEFAULT_ID);
+    verify(getChangeHelper()).notifyChange(ActionType.MOD, DEFAULT_TYPE, DEFAULT_ID);
   }
 
   @Test
@@ -489,7 +489,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
     verifyResponseStatus(response, Status.NO_CONTENT);
 
     // handling of the relation entity itself
-    verify(getChangeHelper()).notifyChange(ActionType.MOD, type, entity, id);
+    verify(getChangeHelper()).notifyChange(ActionType.MOD, type, id);
   }
 
   // --- POST ------------------------------------------------------------------
@@ -523,7 +523,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     String location = response.getHeaders().getFirst("Location");
     assertThat(location, containsString(Paths.DOMAIN_PREFIX + "/projectadomainentities/" + DEFAULT_ID));
-    verify(getChangeHelper()).notifyChange(ActionType.ADD, DEFAULT_TYPE, entity, DEFAULT_ID);
+    verify(getChangeHelper()).notifyChange(ActionType.ADD, DEFAULT_TYPE, DEFAULT_ID);
   }
 
   @Test
@@ -613,7 +613,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
 
     String path = Paths.DOMAIN_PREFIX + "/" + getExternalName(type) + "/" + id;
     assertThat(response.getHeaders().getFirst("Location"), containsString(path));
-    verify(getChangeHelper()).notifyChange(ActionType.ADD, type, entity, id);
+    verify(getChangeHelper()).notifyChange(ActionType.ADD, type, id);
 
   }
 
@@ -646,7 +646,7 @@ public class DomainEntityResourceTest extends WebServiceTestSetup {
         .header(VRE_ID_KEY, VRE_ID).delete(ClientResponse.class);
     verifyResponseStatus(response, Status.NO_CONTENT);
 
-    verify(getChangeHelper()).notifyChange(ActionType.DEL, BASE_TYPE, entity, DEFAULT_ID);
+    verify(getChangeHelper()).notifyChange(ActionType.DEL, BASE_TYPE, DEFAULT_ID);
   }
 
   @Test

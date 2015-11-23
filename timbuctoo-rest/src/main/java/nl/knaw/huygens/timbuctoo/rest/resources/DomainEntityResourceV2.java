@@ -220,7 +220,7 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
 
     try {
       List<String> updatedRelationIds = repository.deleteDomainEntity(entity);
-      changeHelper.notifyChange(ActionType.MOD, type, entity, id);
+      changeHelper.notifyChange(ActionType.MOD, type, id);
       try {
         // FIXME: Ugly hack to remove the entity from the execute of the VRE.
         vre.deleteFromIndex(type, id);
@@ -231,7 +231,7 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
       // FIXME: Quick hack to execute and persist the updated relations.
       // TODO: Find a better way to do this.
       for (String relationId : updatedRelationIds) {
-        changeHelper.notifyChange(ActionType.MOD, Relation.class, repository.getEntityOrDefaultVariation(Relation.class, relationId), relationId);
+        changeHelper.notifyChange(ActionType.MOD, Relation.class, relationId);
       }
 
     } catch (NoSuchEntityException e) {

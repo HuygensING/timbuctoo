@@ -161,7 +161,7 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
     verifyDomainEntity(type, response.getEntity(type), id);
 
     // handling of the relation entity itself
-    verify(getChangeHelper()).notifyChange(ActionType.MOD, type, entity, id);
+    verify(getChangeHelper()).notifyChange(ActionType.MOD, type, id);
   }
 
   @Override
@@ -239,9 +239,9 @@ public class DomainEntityResourceV2Test extends DomainEntityResourceTest {
     verifyResponseStatus(response, Status.NO_CONTENT);
     verify(repository).deleteDomainEntity(any(DEFAULT_TYPE));
     verify(vre).deleteFromIndex(DEFAULT_TYPE, DEFAULT_ID);
-    verify(changeHelper).notifyChange(ActionType.MOD, DEFAULT_TYPE, entity, DEFAULT_ID);
-    verify(changeHelper).notifyChange(ActionType.MOD, Relation.class, relationMock1, relationId1);
-    verify(changeHelper).notifyChange(ActionType.MOD, Relation.class, relationMock2, relationId2);
+    verify(changeHelper).notifyChange(ActionType.MOD, DEFAULT_TYPE, DEFAULT_ID);
+    verify(changeHelper).notifyChange(ActionType.MOD, Relation.class, relationId1);
+    verify(changeHelper).notifyChange(ActionType.MOD, Relation.class, relationId2);
   }
 
   @Test

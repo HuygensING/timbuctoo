@@ -23,14 +23,12 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  */
 
 import com.google.inject.Inject;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.request.IndexRequest;
 import nl.knaw.huygens.timbuctoo.index.request.IndexRequestFactory;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceRequest;
 import nl.knaw.huygens.timbuctoo.persistence.request.PersistenceRequestFactory;
 import org.slf4j.Logger;
@@ -43,15 +41,13 @@ public class ChangeHelper {
   public static final String PERSIST_MSG_PRODUCER = "ResourcePersistProducer";
   private static final Logger LOG = LoggerFactory.getLogger(ChangeHelper.class);
 
-  private final TypeRegistry typeRegistry;
   private final PersistenceRequestFactory persistenceRequestFactory;
   private final IndexRequestFactory indexRequestFactory;
   private final Producer indexProducer;
   private final Producer persistenceProducer;
 
   @Inject
-  public ChangeHelper(Broker broker, TypeRegistry typeRegistry, PersistenceRequestFactory persistenceRequestFactory, IndexRequestFactory indexRequestFactory) throws JMSException {
-    this.typeRegistry = typeRegistry;
+  public ChangeHelper(Broker broker, PersistenceRequestFactory persistenceRequestFactory, IndexRequestFactory indexRequestFactory) throws JMSException {
     this.persistenceRequestFactory = persistenceRequestFactory;
     this.indexRequestFactory = indexRequestFactory;
 
@@ -67,26 +63,11 @@ public class ChangeHelper {
   /**
    * Notify other software components of a change in the data.
    */
-  public void notifyChange(ActionType actionType, Class<? extends DomainEntity> type, DomainEntity entity, String id) {
-    switch (actionType) {
-      case ADD:
-      case MOD:
-        sendPersistMessage(persistenceRequestFactory.forEntity(ActionType.ADD, type, id)); // we are adding a pid to the latest version of the document.
-        sendIndexMessage(indexRequestFactory.forEntity(actionType, type, id));
-        break;
-      case DEL:
-        sendIndexMessage(indexRequestFactory.forEntity(actionType, type, id));
-        break;
-      default:
-        LOG.error("Unexpected action {}", actionType);
-        return;
-    }
-
-    // TODO improve this solution
-    if (Relation.class.isAssignableFrom(type)) {
-      Relation relation = (Relation) entity;
-      updateIndex(relation.getSourceType(), relation.getSourceId());
-      updateIndex(relation.getTargetType(), relation.getTargetId());
+  public void notifyChange(ActionType actionType, Class<? extends DomainEntity> type, String id) {
+    if (!ActionType.END.equals(actionType)) {
+      // we are adding a pid to the latest version of the document.
+      sendPersistMessage(persistenceRequestFactory.forEntity(ActionType.ADD, type, id));
+      sendIndexMessage(indexRequestFactory.forEntity(actionType, type, id));
     }
   }
 
@@ -100,10 +81,6 @@ public class ChangeHelper {
     }
   }
 
-  private void updateIndex(String iName, String id) {
-    sendIndexMessage(indexRequestFactory.forEntity(ActionType.MOD, typeRegistry.getDomainEntityType(iName), id));
-  }
-  
   public void sendPersistMessage(PersistenceRequest persistenceRequest) {
     try {
       LOG.info("Queueing persistence request \"{}\"", persistenceRequest);

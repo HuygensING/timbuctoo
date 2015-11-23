@@ -163,7 +163,7 @@ public class DomainEntityResource extends ResourceBase {
     } catch (ValidationException e) {
       throw new TimbuctooException(BAD_REQUEST, "Invalid entity; %s", e.getMessage());
     }
-    changeHelper.notifyChange(ActionType.ADD, type, input, id);
+    changeHelper.notifyChange(ActionType.ADD, type, id);
 
     return Response.created(new URI(id)).build();
   }
@@ -226,7 +226,7 @@ public class DomainEntityResource extends ResourceBase {
     try {
       Change change = new Change(userId, vreId);
       repository.updateDomainEntity((Class<T>) type, (T) input, change);
-      changeHelper.notifyChange(ActionType.MOD, type, entity, id);
+      changeHelper.notifyChange(ActionType.MOD, type, id);
     } catch (NoSuchEntityException e) {
       throw new TimbuctooException(NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
     } catch (UpdateException e) {
@@ -307,7 +307,7 @@ public class DomainEntityResource extends ResourceBase {
 
     try {
       repository.deleteDomainEntity(entity);
-      changeHelper.notifyChange(ActionType.DEL, type, entity, id);
+      changeHelper.notifyChange(ActionType.DEL, type, id);
       return Response.status(Status.NO_CONTENT).build();
     } catch (NoSuchEntityException e) {
       throw new TimbuctooException(NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
