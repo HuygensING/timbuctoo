@@ -15,6 +15,7 @@ public class ModPersisterTest {
 
   public static final ProjectADomainEntity DOMAIN_ENTITY = new ProjectADomainEntity();
   public static final Class<ProjectADomainEntity> TYPE = ProjectADomainEntity.class;
+  public static final int A_MILLISECOND = 1;
 
   private PersistenceWrapper persistenceWrapper;
   private ModPersister instance;
@@ -22,7 +23,7 @@ public class ModPersisterTest {
   @Before
   public void setUp() throws Exception {
     persistenceWrapper = mock(PersistenceWrapper.class);
-    instance = new ModPersister(persistenceWrapper);
+    instance = new ModPersister(persistenceWrapper, A_MILLISECOND);
   }
 
   @Test

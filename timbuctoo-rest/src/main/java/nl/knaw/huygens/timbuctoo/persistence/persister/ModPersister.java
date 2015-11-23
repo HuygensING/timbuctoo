@@ -16,9 +16,15 @@ import org.slf4j.LoggerFactory;
 class ModPersister implements Persister {
   private static final Logger LOG = LoggerFactory.getLogger(ModPersister.class);
   private final PersistenceWrapper persistenceWrapper;
+  private final int sleepTime;
 
   public ModPersister(PersistenceWrapper persistenceWrapper) {
+    this(persistenceWrapper, FIVE_SECONDS);
+  }
+
+  ModPersister(PersistenceWrapper persistenceWrapper, int sleepTime) {
     this.persistenceWrapper = persistenceWrapper;
+    this.sleepTime = sleepTime;
   }
 
   @Override
@@ -34,9 +40,9 @@ class ModPersister implements Persister {
         LOG.error("Exception caught", e);
         timesToTry--;
         try {
-          Thread.sleep(FIVE_SECONDS);
+          Thread.sleep(sleepTime);
         } catch (InterruptedException e1) {
-          LOG.warn("Could not sleep for 5 seconds.", e1);
+          LOG.warn("Sleep interrupted.", e1);
         }
       }
   }

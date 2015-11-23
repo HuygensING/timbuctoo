@@ -27,6 +27,7 @@ public class AddPersisterTest {
   public static final String ID = "id";
   public static final int REVISION = 1;
   public static final String PID = "pid";
+  public static final int A_MILLISECOND = 1;
 
   static {
     DOMAIN_ENTITY.setId(ID);
@@ -41,7 +42,7 @@ public class AddPersisterTest {
   public void setUp() throws Exception {
     persistenceWrapper = mock(PersistenceWrapper.class);
     repository = mock(Repository.class);
-    instance = new AddPersister(repository, persistenceWrapper);
+    instance = new AddPersister(repository, persistenceWrapper, A_MILLISECOND);
   }
 
   @Test

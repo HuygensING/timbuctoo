@@ -24,6 +24,7 @@ public class IndexServiceTest {
   public static final Class<ProjectADomainEntity> TYPE = ProjectADomainEntity.class;
   public static final String ENTITY_ID = "entityId";
   public static final Action ACTION = new Action(ACTION_TYPE, TYPE, ENTITY_ID);
+  public static final int A_MILLISECOND = 1;
   private IndexService instance;
   private IndexRequestFactory indexRequestFactory;
   private IndexRequest indexRequest;
@@ -32,7 +33,7 @@ public class IndexServiceTest {
   @Before
   public void setUp() throws Exception {
     setupIndexRequestFactory();
-    instance = new IndexService(mock(Broker.class), indexRequestFactory);
+    instance = new IndexService(mock(Broker.class), indexRequestFactory, A_MILLISECOND);
   }
 
   private void setupIndexRequestFactory() {

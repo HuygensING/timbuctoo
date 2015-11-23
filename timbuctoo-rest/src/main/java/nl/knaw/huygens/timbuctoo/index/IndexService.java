@@ -36,14 +36,21 @@ import javax.jms.JMSException;
 public class IndexService extends ConsumerService implements Runnable {
 
   private static final Logger LOG = LoggerFactory.getLogger(IndexService.class);
-  public static final int FIVE_SECONDS = 5000;
+  private static final int FIVE_SECONDS = 5000;
 
   private final IndexRequestFactory indexRequestFactory;
+  private final int timeout;
 
   @Inject
   public IndexService(Broker broker, IndexRequestFactory indexRequestFactory) throws JMSException {
+    this(broker, indexRequestFactory, FIVE_SECONDS);
+  }
+
+  // a constructor for the tests to be able to shorten the timeout
+  IndexService(Broker broker, IndexRequestFactory indexRequestFactory, int timeout) throws JMSException {
     super(broker, Broker.INDEX_QUEUE, "IndexService");
     this.indexRequestFactory = indexRequestFactory;
+    this.timeout = timeout;
   }
 
   /**
@@ -73,9 +80,9 @@ public class IndexService extends ConsumerService implements Runnable {
 
         numberOfTries += 1;
         try {
-          Thread.sleep(FIVE_SECONDS);
+          Thread.sleep(timeout);
         } catch (InterruptedException e1) {
-          getLogger().warn("Thread interrupted", e1);
+          getLogger().warn("Sleep interrupted.", e1);
         }
       }
     }

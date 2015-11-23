@@ -15,10 +15,16 @@ class AddPersister implements Persister {
   public static final Logger LOG = LoggerFactory.getLogger(AddPersister.class);
   private final Repository repository;
   private final PersistenceWrapper persistenceWrapper;
+  private final int sleepTime;
 
   public AddPersister(Repository repository, PersistenceWrapper persistenceWrapper) {
+    this(repository, persistenceWrapper, FIVE_SECONDS);
+  }
+
+  AddPersister(Repository repository, PersistenceWrapper persistenceWrapper, int sleepTime){
     this.repository = repository;
     this.persistenceWrapper = persistenceWrapper;
+    this.sleepTime = sleepTime;
   }
 
   @Override
@@ -51,9 +57,9 @@ class AddPersister implements Persister {
             deletePID(pid);
           }
           try {
-            Thread.sleep(FIVE_SECONDS);
+            Thread.sleep(sleepTime);
           } catch (InterruptedException e1) {
-            LOG.warn("Could not sleep for 5 seconds.", e1);
+            LOG.warn("Sleep interrupted.", e1);
           }
         }
       }
@@ -69,7 +75,7 @@ class AddPersister implements Persister {
   }
 
   private String persistEntity(DomainEntity domainEntity, Class<? extends DomainEntity> type, String id) {
-    int timesToTry = 5;
+    int timesToTry = MAX_TRIES;
     String pid = null;
     while (pid == null && timesToTry > 0) {
       try {
@@ -79,9 +85,9 @@ class AddPersister implements Persister {
         LOG.error("Exception caught", e);
         timesToTry--;
         try {
-          Thread.sleep(FIVE_SECONDS);
+          Thread.sleep(sleepTime);
         } catch (InterruptedException e1) {
-          LOG.warn("Could not sleep for 5 seconds.", e1);
+          LOG.warn("Sleep interrupted.", e1);
         }
       }
     }
