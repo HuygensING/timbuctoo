@@ -4,6 +4,7 @@ import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
 import nl.knaw.huygens.timbuctoo.persistence.Persister;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,5 +39,10 @@ class ModPersister implements Persister {
           LOG.warn("Could not sleep for 5 seconds.", e1);
         }
       }
+  }
+
+  @Override
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this);
   }
 }

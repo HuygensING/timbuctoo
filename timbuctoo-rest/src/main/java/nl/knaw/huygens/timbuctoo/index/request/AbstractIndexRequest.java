@@ -4,6 +4,7 @@ import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.indexer.IndexerFactory;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 abstract class AbstractIndexRequest implements IndexRequest {
 
@@ -34,4 +35,8 @@ abstract class AbstractIndexRequest implements IndexRequest {
     return actionType;
   }
 
+  @Override
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this);
+  }
 }

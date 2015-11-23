@@ -47,6 +47,7 @@ public class PersistenceService extends ConsumerService implements Runnable {
   @Override
   protected void executeAction(Action action) {
     PersistenceRequest persistenceRequest = persistenceRequestFactory.forAction(action);
+    LOG.info("Executing persistence request {}", persistenceRequest);
     persistenceRequest.execute();
   }
 
