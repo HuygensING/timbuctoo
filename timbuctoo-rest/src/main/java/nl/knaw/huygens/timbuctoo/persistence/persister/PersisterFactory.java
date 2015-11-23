@@ -5,10 +5,13 @@ import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
 import nl.knaw.huygens.timbuctoo.persistence.Persister;
 
+import javax.inject.Inject;
+
 public class PersisterFactory {
   private final Repository repository;
   private final PersistenceWrapper persistenceWrapper;
 
+  @Inject
   public PersisterFactory(Repository repository, PersistenceWrapper persistenceWrapper) {
     this.repository = repository;
     this.persistenceWrapper = persistenceWrapper;
