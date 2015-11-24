@@ -23,13 +23,14 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  */
 
 import com.google.inject.Inject;
-import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
-import nl.knaw.huygens.timbuctoo.messages.Action;
+import nl.knaw.huygens.timbuctoo.index.request.IndexRequest;
+import nl.knaw.huygens.timbuctoo.index.request.IndexRequestFactory;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.persistence.PersistenceRequest;
+import nl.knaw.huygens.timbuctoo.persistence.request.PersistenceRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,77 +41,53 @@ public class ChangeHelper {
   public static final String PERSIST_MSG_PRODUCER = "ResourcePersistProducer";
   private static final Logger LOG = LoggerFactory.getLogger(ChangeHelper.class);
 
-  private final TypeRegistry typeRegistry;
-  private final Broker broker;
+  private final PersistenceRequestFactory persistenceRequestFactory;
+  private final IndexRequestFactory indexRequestFactory;
+  private final Producer indexProducer;
+  private final Producer persistenceProducer;
 
   @Inject
-  public ChangeHelper(Broker broker, TypeRegistry typeRegistry) {
-    this.broker = broker;
-    this.typeRegistry = typeRegistry;
+  public ChangeHelper(Broker broker, PersistenceRequestFactory persistenceRequestFactory, IndexRequestFactory indexRequestFactory) throws JMSException {
+    this.persistenceRequestFactory = persistenceRequestFactory;
+    this.indexRequestFactory = indexRequestFactory;
+
+    indexProducer = createProducer(broker, INDEX_MSG_PRODUCER, Broker.INDEX_QUEUE);
+    persistenceProducer = createProducer(broker, PERSIST_MSG_PRODUCER, Broker.PERSIST_QUEUE);
+
+  }
+
+  private Producer createProducer(Broker broker, String producerName, String queue) throws JMSException {
+    return broker.getProducer(producerName, queue);
   }
 
   /**
    * Notify other software components of a change in the data.
    */
-  public void notifyChange(ActionType actionType, Class<? extends DomainEntity> type, DomainEntity entity, String id) {
-    switch (actionType) {
-      case ADD:
-      case MOD:
-        sendPersistMessage(actionType, type, id);
-        sendIndexMessage(actionType, type, id);
-        break;
-      case DEL:
-        sendIndexMessage(actionType, type, id);
-        break;
-      default:
-        LOG.error("Unexpected action {}", actionType);
-        break;
-    }
-
-    // TODO improve this solution
-    if (Relation.class.isAssignableFrom(type)) {
-      Relation relation = (Relation) entity;
-      updateIndex(relation.getSourceType(), relation.getSourceId());
-      updateIndex(relation.getTargetType(), relation.getTargetId());
+  public void notifyChange(ActionType actionType, Class<? extends DomainEntity> type, String id) {
+    if (!ActionType.END.equals(actionType)) {
+      // we are adding a pid to the latest version of the document.
+      sendPersistMessage(persistenceRequestFactory.forEntity(ActionType.ADD, type, id));
+      sendIndexMessage(indexRequestFactory.forEntity(actionType, type, id));
     }
   }
 
-  private void updateIndex(String iname, String id) {
-    sendIndexMessage(ActionType.MOD, typeRegistry.getDomainEntityType(iname), id);
-  }
-
-  private void sendIndexMessage(ActionType actionType, Class<? extends DomainEntity> type, String id) {
+  private void sendIndexMessage(IndexRequest indexRequest) {
     try {
-      Producer producer = broker.getProducer(INDEX_MSG_PRODUCER, Broker.INDEX_QUEUE);
-      LOG.info("Queueing index request for type \"{}\" with id \"{}\"", type, id);
-      producer.send(actionType, type, id);
+      LOG.info("Queueing index request \"{}\"", indexRequest);
+      indexProducer.send(indexRequest.toAction());
     } catch (JMSException e) {
-      LOG.error("Failed to send execute message {} - {} - {}. \n{}", actionType, type, id, e.getMessage());
+      LOG.error("Failed to send execute message \"{}\". \n{}", indexRequest, e.getMessage());
       LOG.debug("Exception", e);
     }
   }
 
-  public void sendPersistMessage(ActionType actionType, Class<? extends DomainEntity> type, String id) {
+  public void sendPersistMessage(PersistenceRequest persistenceRequest) {
     try {
-      Producer producer = broker.getProducer(PERSIST_MSG_PRODUCER, Broker.PERSIST_QUEUE);
-      LOG.info("Queueing persistence request for type \"{}\" with id \"{}\"", type, id);
-      producer.send(actionType, type, id);
+      LOG.info("Queueing persistence request \"{}\"", persistenceRequest);
+      persistenceProducer.send(persistenceRequest.toAction());
     } catch (JMSException e) {
-      LOG.error("Failed to send persistence message {} - {} - {}. \n{}", actionType, type, id, e.getMessage());
+      LOG.error("Failed to send persistence message \"{}\"  exception: \n{}", persistenceRequest, e.getMessage());
       LOG.debug("Exception", e);
     }
-  }
-
-  public void sendUpdatePIDMessage(Class<? extends DomainEntity> type) {
-
-    Action action = Action.multiUpdateActionFor(type);
-    try {
-      Producer producer = broker.getProducer(PERSIST_MSG_PRODUCER, Broker.PERSIST_QUEUE);
-      producer.send(action);
-    } catch (JMSException e) {
-      LOG.error("Failed to send persistence message {} - . \n{}", action, e.getMessage());
-      LOG.debug("Exception", e);
-    }
-
   }
 }

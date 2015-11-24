@@ -37,6 +37,7 @@ import nl.knaw.huygens.timbuctoo.index.request.IndexRequestFactory;
 import nl.knaw.huygens.timbuctoo.mail.MailSender;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
+import nl.knaw.huygens.timbuctoo.persistence.request.PersistenceRequestFactory;
 import nl.knaw.huygens.timbuctoo.rest.util.AdditionalFilterTranslator;
 import nl.knaw.huygens.timbuctoo.rest.util.AutocompleteResultConverter;
 import nl.knaw.huygens.timbuctoo.rest.util.search.IndexRegularSearchResultMapper;
@@ -99,6 +100,7 @@ class ResourceTestModule extends JerseyServletModule {
   private AutocompleteResultConverter autoCompleteResultConverter;
   private AdditionalFilterTranslator additionalfilterTranslator;
   private IndexRequestFactory indexRequestFactory;
+  private PersistenceRequestFactory persistenceRequestFactory;
   private RelationSearchParametersConverter relationSearchParametersConverter;
 
 
@@ -131,6 +133,7 @@ class ResourceTestModule extends JerseyServletModule {
       indexRegularSearchResultMapper = mock(IndexRegularSearchResultMapper.class);
       indexRelationSearchResultMapper = mock(IndexRelationSearchResultMapper.class);
       indexRequestFactory = mock(IndexRequestFactory.class);
+      persistenceRequestFactory = mock(PersistenceRequestFactory.class);
       relationSearchParametersConverter = mock(RelationSearchParametersConverter.class);
 
 
@@ -146,7 +149,7 @@ class ResourceTestModule extends JerseyServletModule {
   public void cleanUpMocks() {
     reset(config, repository, userConfigurationHandler, jsonProvider, validator, mailSender, authenticationHandler, broker, indexProducer, persistenceProducer, indexManager, searchRequestValidator,
       searchParametersConverter, relationSearcher, regularClientSearchResultCreator, regularClientSearchResultCreator, basicAuthenticationHandler, changeHelper, vreCollection, autoCompleteResultConverter,
-      additionalfilterTranslator, indexRegularSearchResultMapper, indexRelationSearchResultMapper, indexRequestFactory, relationSearchParametersConverter);
+      additionalfilterTranslator, indexRegularSearchResultMapper, indexRelationSearchResultMapper, indexRequestFactory, relationSearchParametersConverter, persistenceRequestFactory);
   }
 
   @Override
@@ -336,7 +339,13 @@ class ResourceTestModule extends JerseyServletModule {
 
   @Singleton
   @Provides
-  public RelationSearchParametersConverter provideRelationSearchParametersConverter(){
+  public PersistenceRequestFactory providePersistenceRequestFactory() {
+    return persistenceRequestFactory;
+  }
+
+  @Singleton
+  @Provides
+  public RelationSearchParametersConverter provideRelationSearchParametersConverter() {
     return relationSearchParametersConverter;
   }
 }

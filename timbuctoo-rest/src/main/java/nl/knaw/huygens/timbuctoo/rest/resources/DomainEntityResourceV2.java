@@ -33,6 +33,7 @@ import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.DomainEntityDTO;
 import nl.knaw.huygens.timbuctoo.model.Relation;
+import nl.knaw.huygens.timbuctoo.persistence.request.PersistenceRequestFactory;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
@@ -80,8 +81,8 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
   private static Logger LOG = LoggerFactory.getLogger(DomainEntityResourceV2.class);
 
   @Inject
-  public DomainEntityResourceV2(TypeRegistry registry, Repository repository, ChangeHelper changeHelper, VRECollection vreCollection) {
-    super(registry, repository, changeHelper, vreCollection);
+  public DomainEntityResourceV2(TypeRegistry registry, Repository repository, ChangeHelper changeHelper, VRECollection vreCollection, PersistenceRequestFactory persistenceRequestFactory) {
+    super(registry, repository, changeHelper, vreCollection, persistenceRequestFactory);
   }
 
   @APIDesc("Get an number of entities. Query params: \"rows\" (default: 200) and \"start\" (default: 0).")
@@ -219,7 +220,7 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
 
     try {
       List<String> updatedRelationIds = repository.deleteDomainEntity(entity);
-      changeHelper.notifyChange(ActionType.MOD, type, entity, id);
+      changeHelper.notifyChange(ActionType.MOD, type, id);
       try {
         // FIXME: Ugly hack to remove the entity from the execute of the VRE.
         vre.deleteFromIndex(type, id);
@@ -230,7 +231,7 @@ public class DomainEntityResourceV2 extends DomainEntityResource {
       // FIXME: Quick hack to execute and persist the updated relations.
       // TODO: Find a better way to do this.
       for (String relationId : updatedRelationIds) {
-        changeHelper.notifyChange(ActionType.MOD, Relation.class, repository.getEntityOrDefaultVariation(Relation.class, relationId), relationId);
+        changeHelper.notifyChange(ActionType.MOD, Relation.class, relationId);
       }
 
     } catch (NoSuchEntityException e) {

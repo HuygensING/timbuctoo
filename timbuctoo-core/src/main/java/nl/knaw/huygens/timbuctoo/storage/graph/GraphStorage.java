@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
+import nl.knaw.huygens.timbuctoo.AlreadyHasAPidException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -64,9 +65,9 @@ public interface GraphStorage {
 
   <T extends Relation> T getRelationRevision(Class<T> type, String id, int revision) throws StorageException;
 
-  <T extends DomainEntity> void setDomainEntityPID(Class<T> type, String id, String pid) throws NoSuchEntityException, ConversionException, StorageException;
+  <T extends DomainEntity> void setDomainEntityPID(Class<T> type, String id, String pid) throws AlreadyHasAPidException, NoSuchEntityException, ConversionException, StorageException;
 
-  <T extends Relation> void setRelationPID(Class<T> type, String id, String pid) throws NoSuchEntityException, ConversionException, StorageException;
+  <T extends Relation> void setRelationPID(Class<T> type, String id, String pid) throws AlreadyHasAPidException, NoSuchEntityException, ConversionException, StorageException;
 
   void close();
 

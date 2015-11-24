@@ -11,6 +11,7 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
 import com.tinkerpop.blueprints.Vertex;
+import nl.knaw.huygens.timbuctoo.AlreadyHasAPidException;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
@@ -516,7 +517,7 @@ public class TinkerPopStorage implements GraphStorage {
 
   private <T extends DomainEntity> void validateEntityHasNoPID(Class<T> type, T entity) {
     if (hasPID(entity)) {
-      throw new IllegalStateException(String.format("%s with %s already has a pid: %s", type.getSimpleName(), entity.getId(), entity.getPid()));
+      throw new AlreadyHasAPidException(type, entity);
     }
   }
 
