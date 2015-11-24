@@ -158,7 +158,7 @@
     <tinkerpop.version>2.6.0</tinkerpop.version>
     <!-- must be the same as timbuctoo version (without SNAPSHOT) -->
     <timbuctoo.config.version>3.0.0</timbuctoo.config.version>
-    <timbuctoo-webpages.version>3.1.0</timbuctoo-webpages.version>
+    <timbuctoo-webpages.version>3.2.0</timbuctoo-webpages.version>
     <!-- Plugin versions -->
     <appassembler.version>1.5</appassembler.version>
     <assembly.version>2.5.5</assembly.version>

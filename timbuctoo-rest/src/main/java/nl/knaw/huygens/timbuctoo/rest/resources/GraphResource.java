@@ -22,19 +22,7 @@ package nl.knaw.huygens.timbuctoo.rest.resources;
  * #L%
  */
 
-import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
-import static javax.ws.rs.core.Response.Status.NOT_FOUND;
-import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
-import static nl.knaw.huygens.timbuctoo.config.Paths.VERSION_PATH_OPTIONAL;
-
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-
+import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.annotations.APIDesc;
 import nl.knaw.huygens.timbuctoo.config.Paths;
@@ -42,33 +30,46 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.graph.GraphBuilder;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
 
-import com.google.inject.Inject;
-
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import java.util.List;
+
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
+import static nl.knaw.huygens.timbuctoo.config.Paths.ENTITY_PATH;
+import static nl.knaw.huygens.timbuctoo.config.Paths.VERSION_PATH_OPTIONAL;
+import static nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders.VRE_ID_KEY;
 
 /**
  * Domain entities as graph.
- * 
+ * <p/>
  * Uses d3.js format:
  * {
- *   nodes: [
- *     {
- *       key: 'persons/PERS000000000042'
- *       type: 'person',
- *       label: 'John Doe',
- *     },
- *     ...
- *   ],
- *   links: [
- *     {
- *       source: 0,
- *       target: 2
- *       type: 'isParentOf'
- *     },
- *     ...
- *   ]
+ * nodes: [
+ * {
+ * key: 'persons/PERS000000000042'
+ * type: 'person',
+ * label: 'John Doe',
+ * },
+ * ...
+ * ],
+ * links: [
+ * {
+ * source: 0,
+ * target: 2
+ * type: 'isParentOf'
+ * },
+ * ...
+ * ]
  * }
  */
 @Path(VERSION_PATH_OPTIONAL + "graph/" + ENTITY_PATH)
@@ -91,12 +92,13 @@ public class GraphResource extends ResourceBase {
   @APIDesc("Get the network of an entity. Query param: \"depth\" (default: 1)")
   @GET
   @Path(ID_PATH)
-  @Produces({ MediaType.APPLICATION_JSON })
+  @Produces({MediaType.APPLICATION_JSON})
   public Object getEntity( //
-    @PathParam(ENTITY_PARAM) String entityName, //
-    @PathParam(ID_PARAM) String id, //
-    @QueryParam("depth") @DefaultValue("1") int depth, //
-    @QueryParam("types") List<String> types) //
+                           @PathParam(ENTITY_PARAM) String entityName, //
+                           @PathParam(ID_PARAM) String id, //
+                           @HeaderParam(VRE_ID_KEY) String vreId, //
+                           @QueryParam("depth") @DefaultValue("1") int depth, //
+                           @QueryParam("types") List<String> types) //
   {
     Class<? extends DomainEntity> type = registry.getTypeForXName(entityName);
     checkNotNull(type, NOT_FOUND, "No domain entity collection %s", entityName);
@@ -104,8 +106,10 @@ public class GraphResource extends ResourceBase {
     DomainEntity entity = repository.getEntityOrDefaultVariation(type, id);
     checkNotNull(entity, NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
 
+    VRE vre = getValidVRE(vreId);
+
     try {
-      GraphBuilder builder = new GraphBuilder(repository);
+      GraphBuilder builder = new GraphBuilder(repository, vre);
       builder.addEntity(entity, depth, types);
       return builder.getGraph();
     } catch (Exception e) {

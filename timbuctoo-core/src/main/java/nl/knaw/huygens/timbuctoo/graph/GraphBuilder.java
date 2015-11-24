@@ -22,13 +22,7 @@ package nl.knaw.huygens.timbuctoo.graph;
  * #L%
  */
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import com.google.common.collect.Sets;
-
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
@@ -36,6 +30,10 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
+import nl.knaw.huygens.timbuctoo.vre.VRE;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * Creates a relation graph for visualization with d3.js.
@@ -45,12 +43,14 @@ import nl.knaw.huygens.timbuctoo.storage.StorageException;
 public class GraphBuilder {
 
   private final Repository repository;
+  private final VRE vre;
   private final TypeRegistry registry;
 
   private final D3Graph graph;
 
-  public GraphBuilder(Repository repository) {
+  public GraphBuilder(Repository repository, VRE vre) {
     this.repository = repository;
+    this.vre = vre;
     registry = repository.getTypeRegistry();
     graph = new D3Graph();
   }
@@ -116,8 +116,7 @@ public class GraphBuilder {
   }
 
   private DomainEntity getEntity(String iname, String id) {
-    Class<? extends DomainEntity> type = registry.getDomainEntityType(iname);
-    return repository.getEntityOrDefaultVariation(type, id);
+    return repository.getEntityOrDefaultVariation(vre.mapTypeName(iname, true), id);
   }
 
 }
