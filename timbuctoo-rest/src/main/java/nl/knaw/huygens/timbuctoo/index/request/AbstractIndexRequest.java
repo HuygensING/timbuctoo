@@ -18,8 +18,7 @@ abstract class AbstractIndexRequest implements IndexRequest {
     this.type = type;
   }
 
-  @Override
-  public Class<? extends DomainEntity> getType() {
+  protected Class<? extends DomainEntity> getType() {
     return type;
   }
 
@@ -30,8 +29,7 @@ abstract class AbstractIndexRequest implements IndexRequest {
     return this.indexerFactory;
   }
 
-  @Override
-  public ActionType getActionType() {
+  protected ActionType getActionType() {
     return actionType;
   }
 

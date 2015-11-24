@@ -71,11 +71,11 @@ public class IndexService extends ConsumerService implements Runnable {
     int numberOfTries = 0;
     while (shouldExecute && numberOfTries < 5) {
       try {
-        LOG.info("Processing index request for entity of type \"{}\" with id \"{}\"", action.getType(), action.getId());
+        LOG.info("Processing index request \"{}\"", indexRequest);
         indexRequest.execute();
         shouldExecute = false;
       } catch (IndexException | RuntimeException e) {
-        getLogger().error("Error indexing ([{}]) object of type [{}]", action.getActionType(), indexRequest.getType());
+        getLogger().error("Error executing index request \"{}\"", indexRequest);
         getLogger().error("Exception while indexing", e);
 
         numberOfTries += 1;

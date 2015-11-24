@@ -6,11 +6,7 @@ import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 
 public interface IndexRequest {
-  Class<? extends DomainEntity> getType();
-
   void execute() throws IndexException;
 
   Action toAction();
-
-  ActionType getActionType();
 }
