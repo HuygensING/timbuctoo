@@ -26,6 +26,8 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.tinkerpop.blueprints.Graph;
+import com.tinkerpop.blueprints.impls.tg.TinkerGraph;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.persistence.PersistenceManagerCreationException;
 import nl.knaw.huygens.persistence.PersistenceManagerFactory;
@@ -52,17 +54,23 @@ import org.slf4j.LoggerFactory;
  * A class to make it possible to use Guice @see http://code.google.com/p/google-guice.
  */
 public class ToolsInjectionModule extends BasicInjectionModule {
+  private final boolean useDatabase;
   private boolean useSolr;
   private static Configuration config;
 
   public static Injector createInjector() throws ConfigurationException {
     config = getConfiguration();
-    return Guice.createInjector(new ToolsInjectionModule(config, true));
+    return Guice.createInjector(new ToolsInjectionModule(config, true, true));
   }
 
   public static Injector createInjectorWithoutSolr() throws ConfigurationException {
     config = getConfiguration();
-    return Guice.createInjector(new ToolsInjectionModule(config, false));
+    return Guice.createInjector(new ToolsInjectionModule(config, false, true));
+  }
+
+  public static Injector createInjectorWithoutSolrAndDatabase() throws ConfigurationException {
+    config = getConfiguration();
+    return Guice.createInjector(new ToolsInjectionModule(config, false, false));
   }
 
   private static Configuration getConfiguration() throws ConfigurationException {
@@ -70,9 +78,10 @@ public class ToolsInjectionModule extends BasicInjectionModule {
     return config;
   }
 
-  public ToolsInjectionModule(Configuration config, boolean useSolr) {
+  public ToolsInjectionModule(Configuration config, boolean useSolr, boolean useDatabase) {
     super(config);
     this.useSolr = useSolr;
+    this.useDatabase = useDatabase;
   }
 
   @Override
@@ -87,6 +96,11 @@ public class ToolsInjectionModule extends BasicInjectionModule {
     }
     bind(VRECollection.class).to(VREs.class);
     bind(AbstractSolrServerBuilder.class).toProvider(AbstractSolrServerBuilderProvider.class);
+  }
+
+  @Override
+  protected void bindGraph() {
+    bind(Graph.class).to(TinkerGraph.class);
   }
 
   @Singleton

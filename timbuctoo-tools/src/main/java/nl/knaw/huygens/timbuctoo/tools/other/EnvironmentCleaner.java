@@ -46,7 +46,7 @@ public class EnvironmentCleaner {
 
     Configuration config = new Configuration("config.xml");
 
-    new EnvironmentCleaner().clean(config, Guice.createInjector(new ToolsInjectionModule(config, true)));
+    new EnvironmentCleaner().clean(config, Guice.createInjector(new ToolsInjectionModule(config, true, true)));
 
     LOG.info("Time used: {}", stopWatch);
   }
