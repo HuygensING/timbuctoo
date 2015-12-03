@@ -100,7 +100,11 @@ public class ToolsInjectionModule extends BasicInjectionModule {
 
   @Override
   protected void bindGraph() {
-    bind(Graph.class).to(TinkerGraph.class);
+    if (useDatabase) {
+      super.bindGraph();
+    } else {
+      bind(Graph.class).to(TinkerGraph.class);
+    }
   }
 
   @Singleton
@@ -113,7 +117,7 @@ public class ToolsInjectionModule extends BasicInjectionModule {
   @Singleton
   PersistenceManager providePersistenceManager() throws PersistenceManagerCreationException {
     PersistenceManager persistenceManager = PersistenceManagerFactory.newPersistenceManager(config.getBooleanSetting("handle.enabled", true), config.getSetting("handle.cipher"),
-        config.getSetting("handle.naming_authority"), config.getSetting("handle.prefix"), config.getSetting("handle.private_key_file"));
+      config.getSetting("handle.naming_authority"), config.getSetting("handle.prefix"), config.getSetting("handle.private_key_file"));
     return persistenceManager;
   }
 
