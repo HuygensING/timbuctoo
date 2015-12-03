@@ -67,8 +67,12 @@ public class BasicInjectionModule extends AbstractModule {
 
     bind(Storage.class).to(GraphLegacyStorageWrapper.class);
     bind(GraphStorage.class).to(TinkerPopStorage.class);
-    bind(Graph.class).toInstance(createDB());
+    bindGraph();
 
+  }
+
+  protected void bindGraph() {
+    bind(Graph.class).toInstance(createDB());
   }
 
   private Graph createDB() {

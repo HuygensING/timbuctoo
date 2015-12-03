@@ -22,117 +22,33 @@ package nl.knaw.huygens.timbuctoo.persistence;
  * #L%
  */
 
-import com.google.inject.Inject;
-import nl.knaw.huygens.persistence.PersistenceException;
-import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.ConsumerService;
-import nl.knaw.huygens.timbuctoo.model.DomainEntity;
-import nl.knaw.huygens.timbuctoo.storage.StorageException;
-import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
+import nl.knaw.huygens.timbuctoo.persistence.request.PersistenceRequestFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import javax.jms.JMSException;
 
 public class PersistenceService extends ConsumerService implements Runnable {
 
   private static final Logger LOG = LoggerFactory.getLogger(PersistenceService.class);
 
-  private final PersistenceWrapper persistenceWrapper;
-  private final Repository repository;
+  private final PersistenceRequestFactory persistenceRequestFactory;
 
   @Inject
-  public PersistenceService(Broker broker, PersistenceWrapper persistenceWrapper, Repository repository) throws JMSException {
+  public PersistenceService(Broker broker, PersistenceRequestFactory persistenceRequestFactory) throws JMSException {
     super(broker, Broker.PERSIST_QUEUE, "PersistenceService");
-    this.persistenceWrapper = persistenceWrapper;
-    this.repository = repository;
+    this.persistenceRequestFactory = persistenceRequestFactory;
   }
 
   @Override
   protected void executeAction(Action action) {
-    switch (action.getActionType()) {
-    case ADD:
-    case MOD:
-      if(action.isForMultiEntities()){
-        updatePIDs(action);
-      }else {
-        setPID(action);
-      }
-      break;
-    case DEL:
-      LOG.debug("Ignoring action {}", action);
-      break;
-    default:
-      LOG.warn("Unexpected action {}", action);
-      break;
-    }
-  }
-
-  private void updatePIDs(Action action) {
-    Class<? extends DomainEntity> type = action.getType();
-    StorageIterator<? extends DomainEntity> entitiesToUpdate = repository.getDomainEntities(type);
-
-    for(;entitiesToUpdate.hasNext();){
-      DomainEntity entity = entitiesToUpdate.next();
-      String id = entity.getId();
-
-      try {
-        for(DomainEntity rev : repository.getAllRevisions(type, id)){
-          persistenceWrapper.updatePID(rev);
-        }
-      } catch (StorageException e) {
-        LOG.error("Could not retrieve revisions of \"{}\" with id \"{}\"", type, id);
-      } catch (PersistenceException e) {
-        LOG.error("Could not retrieve revisions of \"{}\" with id \"{}\"", type, id);
-      }
-    }
-
-  }
-
-  private void setPID(Action action) {
-    Class<? extends DomainEntity> type = action.getType();
-    String id = action.getId();
-
-    DomainEntity entity = repository.getEntityOrDefaultVariation(type, id);
-    if (entity == null) {
-      LOG.error("No {} with id {}", type, id);
-      return;
-    }
-    int revision = entity.getRev();
-
-    String pid = null;
-    try {
-      LOG.info("Processing persistence request for entity of type \"{}\" with id \"{}\"", type, id);
-      pid = persistenceWrapper.persistObject(type, id, revision);
-      LOG.info("Done processing persistence request for entity of type \"{}\" with id \"{}\" with pid \"{}\"", type, id, pid);
-    } catch (PersistenceException e) {
-      LOG.error("Creating a PID for {} with id {} went wrong.", type, id);
-      LOG.debug("Exception", e);
-      return;
-    }
-
-    try {
-      // The only way to show the PIDs as a URI is to save them as a URI.
-      repository.setPID(type, id, persistenceWrapper.getPersistentURL(pid));
-    } catch (IllegalStateException e) {
-      deletePID(pid);
-      LOG.error("{} with id {} already has a PID", type, id);
-    } catch (StorageException e) {
-      deletePID(pid);
-      LOG.error("Persisting {} with id {} went wrong", type, id);
-      LOG.debug("Exception", e);
-    }
-  }
-
-  private void deletePID(String pid) {
-    try {
-      persistenceWrapper.deletePersistentId(pid);
-    } catch (PersistenceException e) {
-      LOG.error("Deleting PID {} went wrong.", pid);
-      LOG.debug("Exception", e);
-    }
+    PersistenceRequest persistenceRequest = persistenceRequestFactory.forAction(action);
+    LOG.info("Executing persistence request {}", persistenceRequest);
+    persistenceRequest.execute();
   }
 
   @Override

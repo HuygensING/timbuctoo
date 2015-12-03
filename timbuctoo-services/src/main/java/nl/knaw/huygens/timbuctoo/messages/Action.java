@@ -22,7 +22,6 @@ package nl.knaw.huygens.timbuctoo.messages;
  * #L%
  */
 
-import com.google.common.base.Strings;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -46,7 +45,6 @@ public class Action {
   private String id;
   private Class<? extends DomainEntity> type;
   private boolean forMultiEntities;
-  private String requestId;
 
   public Action(ActionType actionType, Class<? extends DomainEntity> type, String id) {
     this.actionType = actionType;
@@ -55,7 +53,7 @@ public class Action {
     this.forMultiEntities = false;
   }
 
-  private Action(ActionType actionType, Class<? extends DomainEntity> type) {
+  public Action(ActionType actionType, Class<? extends DomainEntity> type) {
     this.actionType = actionType;
     this.type = type;
     this.forMultiEntities = true;
@@ -101,14 +99,11 @@ public class Action {
 
     message.setStringProperty(PROP_ACTION, actionType.getStringRepresentation());
 
-    if (hasRequestId()) {
-      message.setStringProperty(PROP_REQUEST_ID, requestId);
-    } else {
-      message.setStringProperty(PROP_ENTITY_TYPE, TypeNames.getInternalName(type));
-      message.setBooleanProperty(PROP_FOR_MULTI_ENTITIES, forMultiEntities);
-      if (!forMultiEntities) {
-        message.setStringProperty(PROP_ENTITY_ID, id);
-      }
+
+    message.setStringProperty(PROP_ENTITY_TYPE, TypeNames.getInternalName(type));
+    message.setBooleanProperty(PROP_FOR_MULTI_ENTITIES, forMultiEntities);
+    if (!forMultiEntities) {
+      message.setStringProperty(PROP_ENTITY_ID, id);
     }
 
     return message;
@@ -121,9 +116,6 @@ public class Action {
   public static Action fromMessage(Message message, TypeRegistry typeRegistry) throws JMSException {
     ActionType actionType = getActionType(message);
     String requestId = message.getStringProperty(PROP_REQUEST_ID);
-    if(requestId != null){
-      return forRequestWithId(actionType, requestId);
-    }
 
     boolean forMultiEntities = message.getBooleanProperty(PROP_FOR_MULTI_ENTITIES);
 
@@ -131,11 +123,9 @@ public class Action {
     Class<? extends DomainEntity> type = typeRegistry.getDomainEntityType(typeString);
 
 
-
     if (forMultiEntities) {
       return forMultiEntities(actionType, type);
     }
-
 
 
     String id = message.getStringProperty(PROP_ENTITY_ID);
@@ -152,24 +142,4 @@ public class Action {
     return new Action(actionType, type);
   }
 
-  /**
-   * Get the request id, the id that matches the id of the (temporary) stored request.
-   *
-   * @return the request id
-   */
-  public String getRequestId() {
-    return requestId;
-  }
-
-  public static Action forRequestWithId(ActionType actionType, String id) {
-    Action action = new Action();
-    action.requestId = id;
-    action.actionType = actionType;
-
-    return action;
-  }
-
-  public boolean hasRequestId() {
-    return !Strings.isNullOrEmpty(requestId);
-  }
 }

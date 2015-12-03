@@ -1,9 +1,32 @@
 package nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop;
 
+/*
+ * #%L
+ * Timbuctoo core
+ * =======
+ * Copyright (C) 2012 - 2015 Huygens ING
+ * =======
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
 import com.google.common.collect.Lists;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
+import nl.knaw.huygens.timbuctoo.AlreadyHasAPidException;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
@@ -938,16 +961,24 @@ public class TinkerPopStorageTest {
     inOrder.verify(dbMock).commit();
   }
 
-  @Test(expected = IllegalStateException.class)
-  public void setDomainEntityPIDThrowsAnIllegalStateExceptionWhenTheEntityAlreadyHasAPID() throws Exception {
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
+
+  @Test
+  public void setDomainEntityPIDThrowsAnAlreadyHasAPidExceptionWhenTheEntityAlreadyHasAPID() throws Exception {
     // setup
     Vertex foundVertex = aVertex().build();
     latestVertexFoundFor(DOMAIN_ENTITY_TYPE, ID, foundVertex);
 
-    SubADomainEntity entityWithPID = aDomainEntity().withAPid().build();
+    SubADomainEntity entityWithPID = aDomainEntity().withId(ID).withAPid().build();
 
     VertexConverter<SubADomainEntity> converter = vertexConverterCreatedFor(DOMAIN_ENTITY_TYPE);
     when(converter.convertToEntity(foundVertex)).thenReturn(entityWithPID);
+
+    // setup expected Exception
+    expectedException.expect(AlreadyHasAPidException.class);
+    expectedException.expectMessage(DOMAIN_ENTITY_TYPE.getSimpleName());
+    expectedException.expectMessage(ID);
 
     // action
     instance.setDomainEntityPID(DOMAIN_ENTITY_TYPE, ID, PID);
@@ -1856,6 +1887,7 @@ public class TinkerPopStorageTest {
 
     return edgeConverter;
   }
+
   private <T extends Relation> EdgeConverter<? super T> createPrimitiveConverterFor(Class<T> type) {
     @SuppressWarnings("unchecked")
     EdgeConverter<? super T> edgeConverter = mock(EdgeConverter.class);
@@ -2028,14 +2060,19 @@ public class TinkerPopStorageTest {
     inOrder.verify(dbMock).commit();
   }
 
-  @Test(expected = IllegalStateException.class)
-  public void setRelationPIDThrowsAnIllegalStateExceptionIfTheRelationAlreadyHasAPID() throws Exception {
+  @Test
+  public void setRelationPIDThrowsAnAlreadyHasAPidExceptionIfTheRelationAlreadyHasAPID() throws Exception {
     // setup
     Edge edge = latestEdgeFoundWithId(RELATION_TYPE, ID, anEdge().build());
-    SubARelation relationWithAPID = aRelation().withAPID().build();
+    SubARelation relationWithAPID = aRelation().withId(ID).withAPID().build();
 
     EdgeConverter<SubARelation> converter = createEdgeConverterFor(RELATION_TYPE);
     when(converter.convertToEntity(edge)).thenReturn(relationWithAPID);
+
+    // setup expected exception
+    expectedException.expect(AlreadyHasAPidException.class);
+    expectedException.expectMessage(ID);
+    expectedException.expectMessage(RELATION_TYPE.getSimpleName());
 
     // action
     instance.setRelationPID(RELATION_TYPE, ID, PID);

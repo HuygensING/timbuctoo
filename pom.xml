@@ -5,7 +5,7 @@
 
   <groupId>nl.knaw.huygens</groupId>
   <artifactId>timbuctoo</artifactId>
-  <version>3.0.0-SNAPSHOT</version>
+  <version>3.1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Timbuctoo</name>
   <description>Back-end software that provides different front-ends to share data and variations on that data.
@@ -157,8 +157,8 @@
     <solr.wrapper.version>1.1.0</solr.wrapper.version>
     <tinkerpop.version>2.6.0</tinkerpop.version>
     <!-- must be the same as timbuctoo version (without SNAPSHOT) -->
-    <timbuctoo.config.version>3.0.0</timbuctoo.config.version>
-    <timbuctoo-webpages.version>3.1.0</timbuctoo-webpages.version>
+    <timbuctoo.config.version>3.1.0</timbuctoo.config.version>
+    <timbuctoo-webpages.version>3.2.0</timbuctoo-webpages.version>
     <!-- Plugin versions -->
     <appassembler.version>1.5</appassembler.version>
     <assembly.version>2.5.5</assembly.version>

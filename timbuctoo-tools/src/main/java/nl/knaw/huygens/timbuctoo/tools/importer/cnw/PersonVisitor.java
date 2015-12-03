@@ -23,6 +23,13 @@ package nl.knaw.huygens.timbuctoo.tools.importer.cnw;
  */
 
 import java.util.Map;
+import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableMap;
 
 import nl.knaw.huygens.tei.DelegatingVisitor;
 import nl.knaw.huygens.tei.Element;
@@ -39,14 +46,10 @@ import nl.knaw.huygens.timbuctoo.model.util.PersonName;
 import nl.knaw.huygens.timbuctoo.model.util.PersonNameComponent.Type;
 import nl.knaw.huygens.timbuctoo.tools.importer.CaptureHandler;
 
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.ImmutableMap;
-
 public class PersonVisitor extends DelegatingVisitor<PersonContext> {
+  private static final String NONE = "(leeg)";
 	private static final Logger LOG = LoggerFactory.getLogger(PersonVisitor.class);
+
 	private Map<String, Map<String, String>> listMaps;
 
 	public PersonVisitor(PersonContext personContext, Map<String, Map<String, String>> listMaps) {
@@ -129,7 +132,8 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 	}
 
 	private class PersonHandler implements ElementHandler<PersonContext> {
-		@Override
+
+    @Override
 		public Traversal enterElement(Element element, PersonContext context) {
 			context.person = new CNWPerson();
 			context.person.setId(context.pid);
@@ -138,12 +142,22 @@ public class PersonVisitor extends DelegatingVisitor<PersonContext> {
 
 		@Override
 		public Traversal leaveElement(Element element, PersonContext context) {
-			if (context.person.getCombinedDomains().isEmpty()) {
-				context.person.getCombinedDomains().add("(leeg)");
-			}
+      addLeegWhenEmpty(context.person.getNetworkDomains());
+      addLeegWhenEmpty(context.person.getDomains());
+      addLeegWhenEmpty(context.person.getSubDomains());
+      addLeegWhenEmpty(context.person.getCombinedDomains());
+      addLeegWhenEmpty(context.person.getCharacteristics());
+      addLeegWhenEmpty(context.person.getMemberships());
+      addLeegWhenEmpty(context.person.getPeriodicals());
 			LOG.info("person={}", context.person);
 			return Traversal.NEXT;
 		}
+
+    private void addLeegWhenEmpty(Set<String> list) {
+      if (list.isEmpty()) {
+        list.add(NONE);
+      }
+    }
 	}
 
 	private class CNWPersNameHandler implements ElementHandler<PersonContext> {

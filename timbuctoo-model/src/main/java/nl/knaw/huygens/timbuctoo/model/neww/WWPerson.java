@@ -26,20 +26,27 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.DerivedRelationDescription;
 import nl.knaw.huygens.timbuctoo.model.Person;
 import nl.knaw.huygens.timbuctoo.model.RelationRef;
 import nl.knaw.huygens.timbuctoo.model.mapping.VirtualProperty;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.oaipmh.DublinCoreMetadataField;
 import nl.knaw.huygens.timbuctoo.oaipmh.OAIDublinCoreField;
 import nl.knaw.huygens.timbuctoo.util.Text;
 import org.apache.commons.lang3.StringUtils;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 public class WWPerson extends Person {
+  private static final SimpleDateFormat YYYY_MM_DD_DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
+  public static final String VIRTUAL_PROPERTY_MODIFIED_DATE = "modified_date";
 
   private String bibliography;
   private String children;
@@ -301,15 +308,16 @@ public class WWPerson extends Person {
   }
 
   @Override
-  public <T> Map<String, T> createRelSearchRep(Map<String, T> mappedIndexInformation) {
-    Map<String, T> filteredMap = Maps.newTreeMap();
+  public Map<String, String> createRelSearchRep(Map<String, String> mappedIndexInformation) {
+    Map<String, String> filteredMap = Maps.newTreeMap();
 
     addValueToMap(mappedIndexInformation, filteredMap, ID_PROPERTY_NAME);
-    addValueToMap(mappedIndexInformation,filteredMap, "name");
-    addValueToMap(mappedIndexInformation,filteredMap, "gender");
-    addValueToMap(mappedIndexInformation,filteredMap, "birthDate");
-    addValueToMap(mappedIndexInformation,filteredMap, "deathDate");
-    addValueToMap(mappedIndexInformation,filteredMap, "residenceLocation");
+    addValueToMap(mappedIndexInformation, filteredMap, "name");
+    addValueToMap(mappedIndexInformation, filteredMap, "gender");
+    addYearsOfDateToMap(mappedIndexInformation, filteredMap, "birthDate");
+    addYearsOfDateToMap(mappedIndexInformation, filteredMap, "deathDate");
+    addValueToMap(mappedIndexInformation, filteredMap, "residenceLocation");
+    addValueToMap(mappedIndexInformation, filteredMap, VIRTUAL_PROPERTY_MODIFIED_DATE);
 
     return filteredMap;
   }
@@ -333,4 +341,15 @@ public class WWPerson extends Person {
     }
   }
 
+  // A method to provide an index field to retrieve the latest changed.
+  @JsonIgnore
+  @IndexAnnotations({
+    @IndexAnnotation(fieldName = "dynamic_i_modified", isFaceted = true, facetType = FacetType.RANGE),
+    @IndexAnnotation(fieldName = "dynamic_k_modified", isSortable = true)
+  })
+  @VirtualProperty(propertyName = VIRTUAL_PROPERTY_MODIFIED_DATE)
+  public Datable getModifiedDate() {
+    String dateString = YYYY_MM_DD_DATE_FORMAT.format(new Date(getModified().getTimeStamp()));
+    return new Datable(dateString);
+  }
 }

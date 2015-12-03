@@ -1,5 +1,27 @@
 package nl.knaw.huygens.timbuctoo.rest.resources;
 
+/*
+ * #%L
+ * Timbuctoo REST api
+ * =======
+ * Copyright (C) 2012 - 2015 Huygens ING
+ * =======
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
 import com.google.common.collect.Maps;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -7,7 +29,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.request.IndexRequest;
 import nl.knaw.huygens.timbuctoo.index.request.IndexRequestFactory;
-import nl.knaw.huygens.timbuctoo.index.request.IndexRequests;
+import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Producer;
@@ -26,10 +48,8 @@ import javax.ws.rs.core.MediaType;
 import java.util.Map;
 
 import static com.sun.jersey.api.client.ClientResponse.Status.BAD_REQUEST;
-import static com.sun.jersey.api.client.ClientResponse.Status.CREATED;
 import static com.sun.jersey.api.client.ClientResponse.Status.FORBIDDEN;
 import static com.sun.jersey.api.client.ClientResponse.Status.INTERNAL_SERVER_ERROR;
-import static com.sun.jersey.api.client.ClientResponse.Status.NOT_FOUND;
 import static com.sun.jersey.api.client.ClientResponse.Status.OK;
 import static com.sun.jersey.api.client.ClientResponse.Status.UNAUTHORIZED;
 import static nl.knaw.huygens.timbuctoo.config.Paths.ADMIN_PATH;
@@ -38,35 +58,26 @@ import static nl.knaw.huygens.timbuctoo.config.Paths.V2_1_PATH;
 import static nl.knaw.huygens.timbuctoo.messages.Broker.INDEX_QUEUE;
 import static nl.knaw.huygens.timbuctoo.rest.resources.ActionMatcher.likeAction;
 import static nl.knaw.huygens.timbuctoo.rest.resources.AdminResourceV2_1.INDEX_PRODUCER;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class AdminResourceV2_1Test extends WebServiceTestSetup {
 
-  public static final String REQUEST_ID = "7659943b-bdee-4ad3-b8fc-a0f1329d6e9f";
   public static final String EXCEPTION_MESSAGE = "Exception message";
   public static final Class<SubADomainEntity> TYPE = SubADomainEntity.class;
   public static final Map<String, Object> CLIENT_REP = Maps.newHashMap();
   private Broker broker;
   private Producer indexProducer;
-  private IndexRequests indexRequests;
   public static final ClientIndexRequest CLIENT_INDEX_REQUEST = new ClientIndexRequest(TypeNames.getExternalName(TYPE));
   private VRE vre;
   private IndexRequestFactory indexRequestFactory;
-  private IndexRequest indexRequest;
 
   @Before
   public void setup() throws JMSException, ModelException {
     setupBroker();
-    setupIndexRequest();
     setupIndexRequestFactory();
-    setupIndexRequests();
     TypeRegistry typeRegistry = injector.getInstance(TypeRegistry.class);
     typeRegistry.init(TYPE.getPackage().getName());
     vre = mock(VRE.class);
@@ -74,27 +85,37 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
   }
 
   private void setupIndexRequestFactory() {
+    IndexRequest indexRequest = mock(IndexRequest.class);
+    ActionType actionType = ActionType.MOD;
+    when(indexRequest.toAction()).thenReturn(new Action(actionType, TYPE));
     indexRequestFactory = injector.getInstance(IndexRequestFactory.class);
-    when(indexRequestFactory.forCollectionOf(TYPE)).thenReturn(indexRequest);
-  }
-
-  private void setupIndexRequest() {
-    indexRequest = mock(IndexRequest.class);
-    when(indexRequest.toClientRep()).thenReturn(CLIENT_REP);
-    doReturn(TYPE).when(indexRequest).getType();
-  }
-
-
-  private void setupIndexRequests() {
-    indexRequests = injector.getInstance(IndexRequests.class);
-    when(indexRequests.add(any(IndexRequest.class))).thenReturn(REQUEST_ID);
-    when(indexRequests.get(REQUEST_ID)).thenReturn(indexRequest);
+    when(indexRequestFactory.forCollectionOf(actionType, TYPE)).thenReturn(indexRequest);
   }
 
   private void setupBroker() throws JMSException {
     broker = injector.getInstance(Broker.class);
     indexProducer = mock(Producer.class);
     when(broker.getProducer(INDEX_PRODUCER, INDEX_QUEUE)).thenReturn(indexProducer);
+  }
+
+  @Test
+  public void postIndexRequestInitiatesAIndexationOfACollection() throws Exception {
+    // setup
+    setupUserWithRoles(VRE_ID, USER_ID, UserRoles.ADMIN_ROLE);
+    when(vre.inScope(TYPE)).thenReturn(true);
+
+    // action
+    ClientResponse response = withHeaders(asJsonRequest(indexRequestResource())).post(ClientResponse.class, CLIENT_INDEX_REQUEST);
+
+    // verify
+    verifyResponseStatus(response, OK);
+
+    verify(indexRequestFactory).forCollectionOf(ActionType.MOD, TYPE);
+    verify(indexProducer).send(argThat( //
+      likeAction() //
+        .withActionType(ActionType.MOD) //
+        .withType(TYPE)
+        .withForMultiEntitiesFlag(true)));
   }
 
   @Test
@@ -111,33 +132,9 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
     verifyResponseStatus(response, INTERNAL_SERVER_ERROR);
   }
 
-  @Test
-  public void postIndexRequestCreatesAnIndexRequestForTheCollectionAndPostsItToTheBroker() throws Exception {
-    // setup
-    setupUserWithRoles(VRE_ID, USER_ID, UserRoles.ADMIN_ROLE);
-    when(vre.inScope(TYPE)).thenReturn(true);
-    String expectedLocationHeader = getExpectedLocationHeader(REQUEST_ID);
-
-    // action
-    ClientResponse response = withHeaders(asJsonRequest(indexRequestResource())).post(ClientResponse.class, CLIENT_INDEX_REQUEST);
-
-    // verify
-    verifyResponseStatus(response, CREATED);
-
-    String location = response.getHeaders().getFirst(HttpHeaders.LOCATION);
-    assertThat(location, is(expectedLocationHeader));
-
-
-    verify(indexRequestFactory).forCollectionOf(TYPE);
-    verify(indexRequests).add(indexRequest);
-    verify(indexProducer).send(argThat( //
-      likeAction() //
-        .withActionType(ActionType.MOD) //
-        .withRequestId(REQUEST_ID)));
-  }
 
   @Test
-  public void postIndexRequestReturnsABadRequestStatusWhenTheClientIndexRequestCollectionNameIsNotNull() throws Exception {
+  public void postIndexRequestReturnsABadRequestStatusWhenTheClientIndexRequestCollectionNameIsNull() throws Exception {
     // setup
     setupUserWithRoles(VRE_ID, USER_ID, UserRoles.ADMIN_ROLE);
     when(vre.inScope(TYPE)).thenReturn(true);
@@ -165,7 +162,7 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
   }
 
   @Test
-  public void postWithoutVREAndAuthorizationHandlersReturnsAUnauthorized(){
+  public void postWithoutVREAndAuthorizationHandlersReturnsAUnauthorized() {
     // action
     ClientResponse response = withHeaders(asJsonRequest(indexRequestResource())).post(ClientResponse.class, CLIENT_INDEX_REQUEST);
 
@@ -174,7 +171,7 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
   }
 
   @Test
-  public void postWithVREAndAuthorizationReturnsForbiddenIfTheUserHasTheUserRole(){
+  public void postWithVREAndAuthorizationReturnsForbiddenIfTheUserHasTheUserRole() {
     // setup
     setupUserWithRoles(VRE_ID, USER_ID, UserRoles.USER_ROLE);
     when(vre.inScope(TYPE)).thenReturn(true);
@@ -187,7 +184,7 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
   }
 
   @Test
-  public void postWithVREAndAuthorizationReturnsForbiddenIfTheUserHasTheUnverifiedUserRole(){
+  public void postWithVREAndAuthorizationReturnsForbiddenIfTheUserHasTheUnverifiedUserRole() {
     // setup
     setupUserWithRoles(VRE_ID, USER_ID, UserRoles.UNVERIFIED_USER_ROLE);
     when(vre.inScope(TYPE)).thenReturn(true);
@@ -200,7 +197,7 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
   }
 
   @Test
-  public void postWithVREAndAuthorizationReturnsForbiddenIfTheVREDoesNotContainTheCollection(){
+  public void postWithVREAndAuthorizationReturnsForbiddenIfTheVREDoesNotContainTheCollection() {
     // setup
     setupUserWithRoles(VRE_ID, USER_ID, UserRoles.ADMIN_ROLE);
     when(vre.inScope(TYPE)).thenReturn(false);
@@ -214,82 +211,6 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
 
   //--------------------------------------------------------------------------------------------------------------------
 
-  @Test
-  public void getIndexRequestReturnsTheDescriptionOfTheIndexRequestAndThatItIsRunning() {
-    // setup
-    setupUserWithRoles(VRE_ID, USER_ID, UserRoles.ADMIN_ROLE);
-    when(vre.inScope(TYPE)).thenReturn(true);
-
-    // action
-    ClientResponse response = withHeaders(asJsonRequest(indexRequestResource().path(REQUEST_ID))).get(ClientResponse.class);
-
-    // verify
-    verifyResponseStatus(response, OK);
-    assertThat(response.getEntity(Map.class), is(CLIENT_REP));
-  }
-
-  @Test
-  public void getIndexRequestReturnsNotFoundIfTheRequestCouldNotBeFound() {
-    // setup
-    setupUserWithRoles(VRE_ID, USER_ID, UserRoles.ADMIN_ROLE);
-    when(vre.inScope(TYPE)).thenReturn(true);
-    when(indexRequests.get(REQUEST_ID)).thenReturn(null);
-
-    // action
-    ClientResponse response = withHeaders(asJsonRequest(indexRequestResource().path(REQUEST_ID))).get(ClientResponse.class);
-
-    // verify
-    verifyResponseStatus(response, NOT_FOUND);
-    verify(indexRequests).get(REQUEST_ID);
-  }
-
-  @Test
-  public void getReturnsUnauthorizedIfNoVREAndUserHeadingsAreSent(){
-    // action
-    ClientResponse response = withHeaders(asJsonRequest(indexRequestResource().path(REQUEST_ID))).get(ClientResponse.class);
-
-    // verify
-    verifyResponseStatus(response, UNAUTHORIZED);
-  }
-
-  @Test
-  public void getReturnsForbiddenIfTheUserHasTheRoleUser(){
-    // setup
-    setupUserWithRoles(VRE_ID, USER_ID, UserRoles.USER_ROLE);
-
-    // action
-    ClientResponse response = withHeaders(asJsonRequest(indexRequestResource().path(REQUEST_ID))).get(ClientResponse.class);
-
-    // verify
-    verifyResponseStatus(response, FORBIDDEN);
-  }
-
-  @Test
-  public void getReturnsForbiddenIfTheUserHasTheRoleUnverifiedUser(){
-    // setup
-    setupUserWithRoles(VRE_ID, USER_ID, UserRoles.UNVERIFIED_USER_ROLE);
-
-    // action
-    ClientResponse response = withHeaders(asJsonRequest(indexRequestResource().path(REQUEST_ID))).get(ClientResponse.class);
-
-    // verify
-    verifyResponseStatus(response, FORBIDDEN);
-  }
-
-  @Test
-  public void getReturnsForbiddenWhenTheVREDoesNotContainTheCollection(){
-    // setup
-    setupUserWithRoles(VRE_ID, USER_ID, UserRoles.ADMIN_ROLE);
-    when(vre.inScope(TYPE)).thenReturn(false);
-
-
-
-    // action
-    ClientResponse response = withHeaders(asJsonRequest(indexRequestResource().path(REQUEST_ID))).get(ClientResponse.class);
-
-    // verify
-    verifyResponseStatus(response, FORBIDDEN);
-  }
 
   private WebResource.Builder withHeaders(WebResource.Builder resource) {
     return resource.header(CustomHeaders.VRE_ID_KEY, VRE_ID).header(HttpHeaders.AUTHORIZATION, USER_ID);
@@ -297,10 +218,6 @@ public class AdminResourceV2_1Test extends WebServiceTestSetup {
 
   private WebResource.Builder asJsonRequest(WebResource webResource) {
     return webResource.accept(MediaType.APPLICATION_JSON_TYPE).type(MediaType.APPLICATION_JSON_TYPE);
-  }
-
-  private String getExpectedLocationHeader(String requestId) {
-    return indexRequestResource().getUriBuilder().path(requestId).build().toString();
   }
 
   private WebResource indexRequestResource() {

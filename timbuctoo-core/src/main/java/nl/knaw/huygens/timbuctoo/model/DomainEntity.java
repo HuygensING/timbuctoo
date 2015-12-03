@@ -228,14 +228,14 @@ public abstract class DomainEntity extends Entity {
 
   /**
    * Map the information from the index to a clean representation.
-   *
+   * <p/>
    * The method should be overridden when the {@link #getClientRepresentation} is.
+   *
    * @param mappedIndexInformation the information from the client
-   * @param <T> the type of the values of the client information map
    * @return the filtered map of with only the information analog to the client representation.
    */
   @JsonIgnore
-  public <T> Map<String, T> createRelSearchRep(Map<String, T> mappedIndexInformation) {
+  public Map<String, String> createRelSearchRep(Map<String, String> mappedIndexInformation) {
     return Maps.newHashMap();
   }
 
@@ -271,7 +271,11 @@ public abstract class DomainEntity extends Entity {
   }
 
 
-  protected  <T> void addValueToMap(Map<String, T> source, Map<String, T> target, String key) {
+  protected <T> void addValueToMap(Map<String, T> source, Map<String, T> target, String key) {
     target.put(key, source.get(key));
+  }
+
+  protected void addYearsOfDateToMap(Map<String, String> source, Map<String, String> target, String key) {
+    target.put(key, source.get(key) == null ? null : source.get(key).substring(0, 4));
   }
 }

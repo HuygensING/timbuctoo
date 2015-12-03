@@ -28,15 +28,19 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.DerivedProperty;
 import nl.knaw.huygens.timbuctoo.model.DerivedRelationDescription;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.RelationRef;
+import nl.knaw.huygens.timbuctoo.model.mapping.VirtualProperty;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.oaipmh.DublinCoreMetadataField;
 import nl.knaw.huygens.timbuctoo.oaipmh.OAIDublinCoreField;
 import nl.knaw.huygens.timbuctoo.util.Text;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -46,10 +50,12 @@ public class WWDocument extends Document {
   public static final String DATE = "date";
   public static final String GENRE = "genre";
   public static final String LANGUAGE = "language";
+  private static final SimpleDateFormat YYYY_MM_DD_DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
   private boolean source;
   private String notes;
   private List<String> topoi;
   private String englishTitle;
+  public static final String VIRTUAL_PROPERTY_MODIFIED_DATE = "modified_date";
 
   // --- temporary fields ------------------------------------------------------
 
@@ -99,6 +105,7 @@ public class WWDocument extends Document {
     this.source = source;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_notes", isFaceted = false)
   public String getNotes() {
     return notes;
   }
@@ -348,17 +355,19 @@ public class WWDocument extends Document {
   }
 
   @Override
-  public <T> Map<String, T> createRelSearchRep(Map<String, T> mappedIndexInformation) {
-    Map<String, T> filteredMap = Maps.newTreeMap();
+  public Map<String, String> createRelSearchRep(Map<String, String> mappedIndexInformation) {
+    Map<String, String> filteredMap = Maps.newTreeMap();
     addValueToMap(mappedIndexInformation, filteredMap, ID_PROPERTY_NAME);
     addValueToMap(mappedIndexInformation, filteredMap, "title");
     addValueToMap(mappedIndexInformation, filteredMap, "documentType");
-    addValueToMap(mappedIndexInformation, filteredMap, "date");
+    addYearsOfDateToMap(mappedIndexInformation, filteredMap, "date");
     addValueToMap(mappedIndexInformation, filteredMap, "genre");
     addValueToMap(mappedIndexInformation, filteredMap, "language");
     addValueToMap(mappedIndexInformation, filteredMap, "publishLocation");
     addValueToMap(mappedIndexInformation, filteredMap, "authorName");
     addValueToMap(mappedIndexInformation, filteredMap, "authorGender");
+
+    addValueToMap(mappedIndexInformation, filteredMap, VIRTUAL_PROPERTY_MODIFIED_DATE);
     return filteredMap;
   }
 
@@ -386,4 +395,16 @@ public class WWDocument extends Document {
     return sb.toString();
   }
 
+
+  // A method to provide an index field to retrieve the latest changed.
+  @JsonIgnore
+  @IndexAnnotations({
+    @IndexAnnotation(fieldName = "dynamic_i_modified", isFaceted = true, facetType = FacetType.RANGE),
+    @IndexAnnotation(fieldName = "dynamic_k_modified", isSortable = true)
+  })
+  @VirtualProperty(propertyName = VIRTUAL_PROPERTY_MODIFIED_DATE)
+  public Datable getModifiedDate() {
+    String dateString = YYYY_MM_DD_DATE_FORMAT.format(new Date(getModified().getTimeStamp()));
+    return new Datable(dateString);
+  }
 }

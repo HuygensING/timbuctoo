@@ -58,7 +58,7 @@ public class PrototypeCreator {
 
   public static void main(String[] args) throws Exception {
     Configuration config = new Configuration("config.xml");
-    Injector injector = Guice.createInjector(new ToolsInjectionModule(config, true));
+    Injector injector = Guice.createInjector(new ToolsInjectionModule(config, true, true));
     TypeRegistry registry = injector.getInstance(TypeRegistry.class);
 
     PrototypeCreator creator = new PrototypeCreator();

@@ -1,13 +1,32 @@
 package nl.knaw.huygens.timbuctoo.rest.resources;
 
+/*
+ * #%L
+ * Timbuctoo REST api
+ * =======
+ * Copyright (C) 2012 - 2015 Huygens ING
+ * =======
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
 import com.google.inject.Inject;
 import nl.knaw.huygens.timbuctoo.config.Paths;
-import nl.knaw.huygens.timbuctoo.config.TypeNames;
 import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.request.IndexRequest;
 import nl.knaw.huygens.timbuctoo.index.request.IndexRequestFactory;
-import nl.knaw.huygens.timbuctoo.index.request.IndexRequests;
-import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.Browser;
@@ -27,13 +46,11 @@ import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.net.URI;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
@@ -52,15 +69,13 @@ public class AdminResourceV2_1 {
   public static final String INDEX_PRODUCER = "IndexProducer";
   public static final Logger LOG = LoggerFactory.getLogger(AdminResourceV2_1.class);
   private final Broker broker;
-  private final IndexRequests indexRequestStatus;
   private final TypeRegistry typeRegistry;
   private final VRECollection vreCollection;
   private final IndexRequestFactory indexRequestFactory;
 
   @Inject
-  public AdminResourceV2_1(Broker broker, IndexRequests indexRequestStatus, TypeRegistry typeRegistry, VRECollection vreCollection, IndexRequestFactory indexRequestFactory) {
+  public AdminResourceV2_1(Broker broker, TypeRegistry typeRegistry, VRECollection vreCollection, IndexRequestFactory indexRequestFactory) {
     this.broker = broker;
-    this.indexRequestStatus = indexRequestStatus;
     this.typeRegistry = typeRegistry;
     this.vreCollection = vreCollection;
     this.indexRequestFactory = indexRequestFactory;
@@ -69,7 +84,7 @@ public class AdminResourceV2_1 {
   @POST
   @Path(Paths.INDEX_REQUEST_PATH)
   @Produces(MediaType.APPLICATION_JSON)
-  public Response postIndexRequest(ClientIndexRequest clientRequest, @HeaderParam(VRE_ID_KEY) String vreId) {
+  public Response indexCollection(ClientIndexRequest clientRequest, @HeaderParam(VRE_ID_KEY) String vreId) {
     String collectionName = clientRequest.getCollectionName();
     if (collectionName == null) {
 
@@ -91,13 +106,11 @@ public class AdminResourceV2_1 {
     try {
       Producer producer = broker.getProducer(INDEX_PRODUCER, INDEX_QUEUE);
 
-      String id = indexRequestStatus.add(indexRequestFactory.forCollectionOf(type));
+      IndexRequest request = indexRequestFactory.forCollectionOf(ActionType.MOD, type);
 
-      producer.send(Action.forRequestWithId(ActionType.MOD, id));
+      producer.send(request.toAction());
 
-      URI location = uriInfo.getAbsolutePathBuilder().path(id).build();
-      LOG.info("location: [{}]", location);
-      return Response.created(location).build();
+      return Response.ok().build();
 
     } catch (JMSException e) {
       LOG.error("Could not get producer with name [{}] and queue [{}]", INDEX_PRODUCER, INDEX_QUEUE);
@@ -107,34 +120,14 @@ public class AdminResourceV2_1 {
   }
 
   @GET
-  @Path(Paths.INDEX_REQUEST_PATH + Paths.INDEX_REQUEST_ID_VALUE_PATH)
-  @Produces(MediaType.APPLICATION_JSON)
-  public Response getIndexRequest(@PathParam(Paths.ID_PARAM) String id, @HeaderParam(VRE_ID_KEY) String vreId) {
-    LOG.info("id: " + id);
-
-    IndexRequest indexRequest = indexRequestStatus.get(id);
-    if (indexRequest == null) {
-      return Response.status(Response.Status.NOT_FOUND).build();
-    }
-
-    VRE vre = vreCollection.getVREById(vreId);
-    Class<? extends DomainEntity> type = indexRequest.getType();
-    if (!vre.inScope(type)) {
-      return Response.status(FORBIDDEN).entity(new ExceptionMessage(String.format("[%s] is not in scopr of [%s].", TypeNames.getExternalName(type), vreId))).build();
-    }
-
-    return Response.ok(indexRequest.toClientRep()).build();
-  }
-
-  @GET
   @Path("persistencequeue")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getPersistence(){
+  public Response getPersistence() {
     try {
       Browser browser = broker.newBrowser(PERSIST_QUEUE);
 
       String status = browser.status();
-      
+
       browser.close();
       return Response.ok().entity(status).build();
     } catch (JMSException e) {
@@ -147,7 +140,7 @@ public class AdminResourceV2_1 {
   @GET
   @Path("indexqueue")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getIndex(){
+  public Response getIndex() {
     try {
       Browser browser = broker.newBrowser(INDEX_QUEUE);
 

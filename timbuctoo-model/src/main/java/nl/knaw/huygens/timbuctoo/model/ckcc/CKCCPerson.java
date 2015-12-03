@@ -129,8 +129,8 @@ public class CKCCPerson extends Person {
   }
 
   @Override
-  public <T> Map<String, T> createRelSearchRep(Map<String, T> mappedIndexInformation) {
-    Map<String, T> filteredMap = Maps.newTreeMap();
+  public  Map<String, String> createRelSearchRep(Map<String, String> mappedIndexInformation) {
+    Map<String, String> filteredMap = Maps.newTreeMap();
     addValueToMap(mappedIndexInformation, filteredMap, "urn");
     addValueToMap(mappedIndexInformation, filteredMap, "cen");
     addValueToMap(mappedIndexInformation, filteredMap, "notes");

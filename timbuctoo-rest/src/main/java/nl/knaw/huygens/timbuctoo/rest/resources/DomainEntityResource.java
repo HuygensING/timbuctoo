@@ -31,6 +31,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.messages.ActionType;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.util.Change;
+import nl.knaw.huygens.timbuctoo.persistence.request.PersistenceRequestFactory;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.storage.DuplicateException;
 import nl.knaw.huygens.timbuctoo.storage.NoSuchEntityException;
@@ -92,12 +93,14 @@ public class DomainEntityResource extends ResourceBase {
 
   protected final TypeRegistry typeRegistry;
   protected final ChangeHelper changeHelper;
+  private final PersistenceRequestFactory persistenceRequestFactory;
 
   @Inject
-  public DomainEntityResource(TypeRegistry registry, Repository repository, ChangeHelper changeHelper, VRECollection vreCollection) {
+  public DomainEntityResource(TypeRegistry registry, Repository repository, ChangeHelper changeHelper, VRECollection vreCollection, PersistenceRequestFactory persistenceRequestFactory) {
     super(repository, vreCollection);
     this.typeRegistry = registry;
     this.changeHelper = changeHelper;
+    this.persistenceRequestFactory = persistenceRequestFactory;
   }
 
   // --- API -----------------------------------------------------------
@@ -112,7 +115,7 @@ public class DomainEntityResource extends ResourceBase {
                                @QueryParam("start") @DefaultValue("0") int start //
   ) {
     Stopwatch stopwatch = Stopwatch.createStarted();
-    LOG.info("Begin retrieving entities: [{}]",entityName);
+    LOG.info("Begin retrieving entities: [{}]", entityName);
     Class<? extends DomainEntity> entityType = getValidEntityType(entityName);
     List<? extends DomainEntity> list = retrieveEntities(entityType, typeValue, rows, start);
     LOG.info("Done retrievingEntities: [{}] in [{}]", entityName, stopwatch.stop());
@@ -160,7 +163,7 @@ public class DomainEntityResource extends ResourceBase {
     } catch (ValidationException e) {
       throw new TimbuctooException(BAD_REQUEST, "Invalid entity; %s", e.getMessage());
     }
-    changeHelper.notifyChange(ActionType.ADD, type, input, id);
+    changeHelper.notifyChange(ActionType.ADD, type, id);
 
     return Response.created(new URI(id)).build();
   }
@@ -223,7 +226,7 @@ public class DomainEntityResource extends ResourceBase {
     try {
       Change change = new Change(userId, vreId);
       repository.updateDomainEntity((Class<T>) type, (T) input, change);
-      changeHelper.notifyChange(ActionType.MOD, type, entity, id);
+      changeHelper.notifyChange(ActionType.MOD, type, id);
     } catch (NoSuchEntityException e) {
       throw new TimbuctooException(NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);
     } catch (UpdateException e) {
@@ -255,7 +258,7 @@ public class DomainEntityResource extends ResourceBase {
 
     try {
       for (String id : repository.getAllIdsWithoutPID(type)) {
-        changeHelper.sendPersistMessage(ActionType.MOD, type, id);
+        changeHelper.sendPersistMessage(persistenceRequestFactory.forEntity(ActionType.ADD, type, id));
       }
     } catch (StorageException e) {
       throw new TimbuctooException(INTERNAL_SERVER_ERROR, "Exception: %s", e.getMessage());
@@ -278,7 +281,7 @@ public class DomainEntityResource extends ResourceBase {
     Class<? extends DomainEntity> baseType = TypeRegistry.toBaseDomainEntity(type);
     isInScope(vredId, vre, baseType);
 
-    changeHelper.sendUpdatePIDMessage(type);
+    changeHelper.sendPersistMessage(persistenceRequestFactory.forCollection(ActionType.MOD, type));
   }
 
   @APIDesc("Delete an specific entity.")
@@ -304,7 +307,7 @@ public class DomainEntityResource extends ResourceBase {
 
     try {
       repository.deleteDomainEntity(entity);
-      changeHelper.notifyChange(ActionType.DEL, type, entity, id);
+      changeHelper.notifyChange(ActionType.DEL, type, id);
       return Response.status(Status.NO_CONTENT).build();
     } catch (NoSuchEntityException e) {
       throw new TimbuctooException(NOT_FOUND, "No %s with id %s", type.getSimpleName(), id);

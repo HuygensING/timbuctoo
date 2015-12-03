@@ -1,5 +1,28 @@
 package nl.knaw.huygens.timbuctoo.storage.graph;
 
+/*
+ * #%L
+ * Timbuctoo core
+ * =======
+ * Copyright (C) 2012 - 2015 Huygens ING
+ * =======
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
+import nl.knaw.huygens.timbuctoo.AlreadyHasAPidException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.model.Relation;
@@ -64,9 +87,9 @@ public interface GraphStorage {
 
   <T extends Relation> T getRelationRevision(Class<T> type, String id, int revision) throws StorageException;
 
-  <T extends DomainEntity> void setDomainEntityPID(Class<T> type, String id, String pid) throws NoSuchEntityException, ConversionException, StorageException;
+  <T extends DomainEntity> void setDomainEntityPID(Class<T> type, String id, String pid) throws AlreadyHasAPidException, NoSuchEntityException, ConversionException, StorageException;
 
-  <T extends Relation> void setRelationPID(Class<T> type, String id, String pid) throws NoSuchEntityException, ConversionException, StorageException;
+  <T extends Relation> void setRelationPID(Class<T> type, String id, String pid) throws AlreadyHasAPidException, NoSuchEntityException, ConversionException, StorageException;
 
   void close();
 

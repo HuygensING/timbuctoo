@@ -23,10 +23,8 @@ package nl.knaw.huygens.timbuctoo.index;
  */
 
 import com.google.inject.Inject;
-import nl.knaw.huygens.timbuctoo.index.indexer.IndexerFactory;
 import nl.knaw.huygens.timbuctoo.index.request.IndexRequest;
 import nl.knaw.huygens.timbuctoo.index.request.IndexRequestFactory;
-import nl.knaw.huygens.timbuctoo.index.request.IndexRequests;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.messages.ConsumerService;
@@ -38,17 +36,21 @@ import javax.jms.JMSException;
 public class IndexService extends ConsumerService implements Runnable {
 
   private static final Logger LOG = LoggerFactory.getLogger(IndexService.class);
+  private static final int FIVE_SECONDS = 5000;
 
-  private final IndexRequests indexRequests;
-  private final IndexerFactory indexerFactory;
   private final IndexRequestFactory indexRequestFactory;
+  private final int timeout;
 
   @Inject
-  public IndexService(Broker broker, IndexRequests indexRequests, IndexRequestFactory indexRequestFactory, IndexerFactory indexerFactory) throws JMSException {
+  public IndexService(Broker broker, IndexRequestFactory indexRequestFactory) throws JMSException {
+    this(broker, indexRequestFactory, FIVE_SECONDS);
+  }
+
+  // a constructor for the tests to be able to shorten the timeout
+  IndexService(Broker broker, IndexRequestFactory indexRequestFactory, int timeout) throws JMSException {
     super(broker, Broker.INDEX_QUEUE, "IndexService");
-    this.indexRequests = indexRequests;
-    this.indexerFactory = indexerFactory;
     this.indexRequestFactory = indexRequestFactory;
+    this.timeout = timeout;
   }
 
   /**
@@ -63,30 +65,27 @@ public class IndexService extends ConsumerService implements Runnable {
 
   @Override
   protected void executeAction(Action action) {
-    // ignore multiple entity actions for now
-    if (!action.isForMultiEntities()) {
-      IndexRequest indexRequest = getIndexRequest(action);
+    IndexRequest indexRequest = indexRequestFactory.forAction(action);
 
-      Indexer indexer = indexerFactory.create(action.getActionType());
-
+    boolean shouldExecute = true;
+    int numberOfTries = 0;
+    while (shouldExecute && numberOfTries < 5) {
       try {
-        LOG.info("Processing index request for entity of type \"{}\" with id \"{}\"", action.getType(), action.getId());
-        indexRequest.execute(indexer);
-      } catch (IndexException e) {
-        getLogger().error("Error indexing ([{}]) object of type [{}]", action.getActionType(), indexRequest.getType());
-        getLogger().debug("Exception while indexing", e);
+        LOG.info("Processing index request \"{}\"", indexRequest);
+        indexRequest.execute();
+        shouldExecute = false;
+      } catch (IndexException | RuntimeException e) {
+        getLogger().error("Error executing index request \"{}\"", indexRequest);
+        getLogger().error("Exception while indexing", e);
+
+        numberOfTries += 1;
+        try {
+          Thread.sleep(timeout);
+        } catch (InterruptedException e1) {
+          getLogger().warn("Sleep interrupted.", e1);
+        }
       }
     }
-  }
-
-  private IndexRequest getIndexRequest(Action action) {
-    IndexRequest indexRequest;
-    if (action.hasRequestId()) {
-      indexRequest = indexRequests.get(action.getRequestId());
-    } else {
-      indexRequest = indexRequestFactory.forEntity(action.getType(), action.getId());
-    }
-    return indexRequest;
   }
 
   public static void waitForCompletion(Thread thread, long patience) {
