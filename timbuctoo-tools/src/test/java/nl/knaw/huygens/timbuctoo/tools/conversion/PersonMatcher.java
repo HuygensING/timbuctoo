@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.tools.conversion;
 
 /*
  * #%L
- * Timbuctoo core
+ * Timbuctoo tools
  * =======
  * Copyright (C) 2012 - 2015 Huygens ING
  * =======

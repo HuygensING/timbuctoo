@@ -2,7 +2,7 @@ package test.model.projecta;
 
 /*
  * #%L
- * Timbuctoo core
+ * Timbuctoo tools
  * =======
  * Copyright (C) 2012 - 2015 Huygens ING
  * =======
