@@ -31,17 +31,20 @@ import nl.knaw.huygens.timbuctoo.model.Relation;
 import nl.knaw.huygens.timbuctoo.model.RelationType;
 import nl.knaw.huygens.timbuctoo.storage.StorageException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Set;
 
 /**
  * Creates a relation graph for visualization with d3.js.
- * 
+ * <p/>
  * TODO Prevent duplicate links
  */
 public class GraphBuilder {
 
+  public static final Logger LOG = LoggerFactory.getLogger(GraphBuilder.class);
   private final Repository repository;
   private final VRE vre;
   private final TypeRegistry registry;
@@ -116,7 +119,18 @@ public class GraphBuilder {
   }
 
   private DomainEntity getEntity(String iname, String id) {
-    return repository.getEntityOrDefaultVariation(vre.mapTypeName(iname, true), id);
+    Class<? extends DomainEntity> type = getType(iname);
+    return repository.getEntityOrDefaultVariation(type, id);
+  }
+
+  private Class<? extends DomainEntity> getType(String iname) {
+    try {
+      return vre.mapTypeName(iname, true);
+    } catch (IllegalStateException e) {
+      LOG.info("Type |{}| could not be mapped in vre |{}|, defaulting to the primitive", iname, vre.getVreId());
+      return registry.getDomainEntityType(iname);
+    }
+
   }
 
 }
