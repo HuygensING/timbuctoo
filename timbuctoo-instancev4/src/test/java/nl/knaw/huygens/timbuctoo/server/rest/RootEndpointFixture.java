@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.rest;
+package nl.knaw.huygens.timbuctoo.server.rest;
 
 import io.dropwizard.testing.junit.ResourceTestRule;
 import org.concordion.integration.junit4.ConcordionRunner;

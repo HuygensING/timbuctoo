@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.rest;
+package nl.knaw.huygens.timbuctoo.server.rest;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

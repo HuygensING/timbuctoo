@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo;
+package nl.knaw.huygens.timbuctoo.server;
 
 
 import io.dropwizard.Configuration;
