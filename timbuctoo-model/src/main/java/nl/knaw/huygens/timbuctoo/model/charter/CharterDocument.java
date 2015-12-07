@@ -23,9 +23,11 @@ package nl.knaw.huygens.timbuctoo.model.charter;
  */
 
 import java.util.List;
+import java.util.Map;
 
 import com.google.common.collect.Lists;
 
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.model.Document;
@@ -203,5 +205,12 @@ public class CharterDocument extends Document {
         index++;
       }
     } catch (IndexOutOfBoundsException ioobe) {}
+  }
+
+  @Override
+  public Map<String, String> createRelSearchRep(Map<String, String> mappedIndexInformation) {
+    Map<String, String> filteredMap = Maps.newTreeMap();
+    filteredMap.put("date", new Datable(mappedIndexInformation.get("date")).getFromYear() + "");
+    return filteredMap;
   }
 }

@@ -22,17 +22,14 @@ package nl.knaw.huygens.timbuctoo.tools.other;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.config.Configuration;
-import nl.knaw.huygens.timbuctoo.index.IndexManager;
-import nl.knaw.huygens.timbuctoo.storage.mongo.MongoDB;
-import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.base.Stopwatch;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import nl.knaw.huygens.timbuctoo.config.Configuration;
+import nl.knaw.huygens.timbuctoo.index.IndexManager;
+import nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A class to clean up the database and the execute.
@@ -52,11 +49,6 @@ public class EnvironmentCleaner {
   }
 
   public void clean(Configuration config, Injector injector) throws Exception {
-    // clean the database
-    MongoDB mongoDB = new MongoDB(config);
-    mongoDB.dropDatabase();
-    mongoDB.close();
-
     // clean the execute
     IndexManager indexManager = injector.getInstance(IndexManager.class);
     indexManager.deleteAllEntities();
