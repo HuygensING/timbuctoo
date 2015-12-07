@@ -13,18 +13,46 @@
 
   <properties>
     <dropwizard.version>0.9.1</dropwizard.version>
+    <concoridion.version>1.5.1</concoridion.version>
   </properties>
 
 
   <dependencies>
-    <!-- Timbuctoo dependencies -->
-   
-    <!-- Framework dependencies -->
+    <!-- ## Main dependencies ## -->
+    <!-- Dropwizard -->
     <dependency>
       <groupId>io.dropwizard</groupId>
       <artifactId>dropwizard-core</artifactId>
       <version>${dropwizard.version}</version>
     </dependency>
+    <!-- ## End of main dependencies ## -->
+
+    <!-- ## Test dependencies ## -->
+    <!-- Concordion acceptance test framework -->
+    <dependency>
+      <groupId>org.concordion</groupId>
+      <artifactId>concordion</artifactId>
+      <version>${concoridion.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Dropwizard test dependencies -->
+    <dependency>
+      <groupId>io.dropwizard</groupId>
+      <artifactId>dropwizard-testing</artifactId>
+      <version>${dropwizard.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- JUnit -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- ## End of test dependencies ## -->
 
   </dependencies>
 
