@@ -32,6 +32,8 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.TimbuctooException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
 import nl.knaw.huygens.timbuctoo.vre.VRECollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -79,6 +81,7 @@ public class GraphResource extends ResourceBase {
 
   private static final String ID_PARAM = "id";
   private static final String ID_PATH = "/{id: " + Paths.ID_REGEX + "}";
+  public static final Logger LOG = LoggerFactory.getLogger(GraphResource.class);
 
   private final TypeRegistry registry;
 
@@ -113,6 +116,7 @@ public class GraphResource extends ResourceBase {
       builder.addEntity(entity, depth, types);
       return builder.getGraph();
     } catch (Exception e) {
+      LOG.error("Could not create graph.", e);
       throw new TimbuctooException(INTERNAL_SERVER_ERROR);
     }
   }

@@ -54,22 +54,23 @@ import static org.mockito.Mockito.when;
 
 public class GraphBuilderTest {
 
-  public static final String REPLACES_TYPE_ID = "replacesRel";
-  public static final String REPLACES_TYPE_NAME = "replacesType";
-  public static final String TRANSLATION_TYPE_ID = "translationRel";
-  public static final String TRANSLATION_TYPE_NAME = "translatesType";
-  public static final String CRITIQUE_TYPE_ID = "critiqueRel";
-  public static final String CRITIQUES_TYPE_NAME = "critiquesType";
-  public static final String START_DOC_ID = "startDoc";
-  public static final String PREV_VERSION_DOC_ID = "prevVersion";
-  public static final String TRANSLATION_DOC_ID = "translation";
-  public static final String CRITIQUE_DOC_ID = "critique";
-  public static final String REPLACES_INSTANCE_ID = "replaces";
-  public static final String TRANSLATES_INSTANCE_ID = "translates";
-  public static final String CRITIQUES_INSTANCE_ID = "critiques";
-  public static final Class<Document> BASE_TYPE = Document.class;
-  public static final String BASE_TYPE_NAME = TypeNames.getInternalName(BASE_TYPE);
-  public static final Class<ProjectADocument> TYPE = ProjectADocument.class;
+  private static final String REPLACES_TYPE_ID = "replacesRel";
+  private static final String REPLACES_TYPE_NAME = "replacesType";
+  private static final String TRANSLATION_TYPE_ID = "translationRel";
+  private static final String TRANSLATION_TYPE_NAME = "translatesType";
+  private static final String CRITIQUE_TYPE_ID = "critiqueRel";
+  private static final String CRITIQUES_TYPE_NAME = "critiquesType";
+  private static final String START_DOC_ID = "startDoc";
+  private static final String PREV_VERSION_DOC_ID = "prevVersion";
+  private static final String TRANSLATION_DOC_ID = "translation";
+  private static final String CRITIQUE_DOC_ID = "critique";
+  private static final String REPLACES_INSTANCE_ID = "replaces";
+  private static final String TRANSLATES_INSTANCE_ID = "translates";
+  private static final String CRITIQUES_INSTANCE_ID = "critiques";
+  private static final Class<Document> BASE_TYPE = Document.class;
+  private static final String BASE_TYPE_NAME = TypeNames.getInternalName(BASE_TYPE);
+  private static final Class<ProjectADocument> TYPE = ProjectADocument.class;
+  private VRE vre;
 
   private class TestFixture {
     public GraphBuilder builder;
@@ -140,7 +141,7 @@ public class GraphBuilderTest {
     TestFixture result = new TestFixture();
     result.startDoc = startDoc;
 
-    VRE vre = mock(VRE.class);
+    vre = mock(VRE.class);
     // Map the TYPE as the scoped type of BASE_TYPE
     doReturn(TYPE).when(vre).mapTypeName(BASE_TYPE_NAME, true);
 
@@ -229,4 +230,21 @@ public class GraphBuilderTest {
     //verify
     assertThat(b.getGraph().nodeCount(), is(3));
   }
+
+  @Test
+  public void aCallWithATypeThatDoesNoExistInTheVREWillRetrieveTheBaseTypeFromTheDatabase() throws Exception {
+    //setup
+    TestFixture fixture = initializeRepository();
+    GraphBuilder b = fixture.builder;
+    ProjectADocument startDoc = fixture.startDoc;
+    when(vre.mapTypeName(BASE_TYPE_NAME, true)).thenThrow(new IllegalStateException());
+
+    //action
+    b.addEntity(startDoc, 1, null);
+
+    // verify
+    verify(fixture.repository, times(3)).getEntityOrDefaultVariation(argThat(equalTo(BASE_TYPE)), anyString());
+    verify(fixture.repository, never()).getEntityOrDefaultVariation(argThat(equalTo(TYPE)), anyString());
+  }
+
 }
