@@ -30,6 +30,7 @@
     <module>timbuctoo-instance</module>
     <module>timbuctoo-tools-instance</module>
     <module>timbuctoo-test-services</module>
+    <module>timbuctoo-instancev4</module>
   </modules>
 
   <prerequisites>
