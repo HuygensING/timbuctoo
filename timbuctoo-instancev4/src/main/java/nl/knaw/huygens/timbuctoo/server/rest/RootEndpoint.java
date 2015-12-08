@@ -16,4 +16,8 @@ public class RootEndpoint {
       .getContextClassLoader().getResourceAsStream("index.html");
     return Response.ok(indexPage).build();
   }
+
+  public boolean concordionWorks() {
+    return true;
+  }
 }
