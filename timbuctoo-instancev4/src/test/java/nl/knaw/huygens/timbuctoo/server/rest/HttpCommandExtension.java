@@ -1,8 +1,18 @@
 package nl.knaw.huygens.timbuctoo.server.rest;
 
-import org.concordion.api.*;
+import org.concordion.api.AbstractCommand;
+import org.concordion.api.CommandCall;
+import org.concordion.api.Element;
+import org.concordion.api.Evaluator;
+import org.concordion.api.Result;
+import org.concordion.api.ResultRecorder;
 import org.concordion.api.extension.ConcordionExtender;
 import org.concordion.api.extension.ConcordionExtension;
+import org.concordion.api.listener.AssertEqualsListener;
+import org.concordion.api.listener.AssertFailureEvent;
+import org.concordion.api.listener.AssertSuccessEvent;
+import org.concordion.internal.listener.AssertResultRenderer;
+import org.concordion.internal.util.Announcer;
 
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
@@ -15,6 +25,7 @@ public class HttpCommandExtension implements ConcordionExtension {
   public HttpCommandExtension(HttpCaller caller) {
     this.caller = caller;
     httpCommand = new HttpCommand();
+    httpCommand.addListener(new AssertResultRenderer());
   }
 
   @Override
@@ -27,22 +38,40 @@ public class HttpCommandExtension implements ConcordionExtension {
   private class RequestCommand extends AbstractCommand {
 
   }
+
   private class ResponseCommand extends AbstractCommand {
 
   }
 
   private class HttpCommand extends AbstractCommand {
+    private final Announcer<AssertEqualsListener> listeners = Announcer.to(AssertEqualsListener.class);
+
+    public void addListener(AssertEqualsListener listener) {
+      this.listeners.addListener(listener);
+    }
+
     @Override
     public void execute(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder) {
       HttpRequest request = parseRequest(commandCall.getChildren().get(0).getElement());
-      HttpExpectation expectation = parseExpectation(commandCall.getChildren().get(1).getElement());
+      Element expectationElement = commandCall.getChildren().get(1).getElement();
+      HttpExpectation expectation = parseExpectation(expectationElement);
       Response callResult = caller.call(request);
 
       if (callResult.getStatus() == expectation.status) {
-        resultRecorder.record(Result.SUCCESS);
+        succes(resultRecorder, expectationElement);
       } else {
-        resultRecorder.record(Result.FAILURE);
+        failure(resultRecorder, expectationElement, "" + expectation.status, "" + callResult.getStatus());
       }
+    }
+
+    private void failure(ResultRecorder resultRecorder, Element element, String expected, String actual) {
+      resultRecorder.record(Result.FAILURE);
+      listeners.announce().failureReported(new AssertFailureEvent(element, expected, actual));
+    }
+
+    private void succes(ResultRecorder resultRecorder, Element element) {
+      resultRecorder.record(Result.SUCCESS);
+      listeners.announce().successReported(new AssertSuccessEvent(element));
     }
 
     private HttpExpectation parseExpectation(Element expectation) {
@@ -78,7 +107,7 @@ public class HttpCommandExtension implements ConcordionExtension {
       String url = content[1].trim().split(" ")[1];
 
       MultivaluedHashMap<String, Object> headers = new MultivaluedHashMap<>();
-      for (int i = 2; i< content.length - 1; i++) {
+      for (int i = 2; i < content.length - 1; i++) {
         String name = content[i].split(":")[0].trim();
         String value = content[i].split(":")[1].trim();
         headers.add(name, value);
@@ -87,9 +116,11 @@ public class HttpCommandExtension implements ConcordionExtension {
       return new HttpRequest(method, url, headers);
     }
   }
+
   public interface HttpCaller {
     Response call(HttpRequest value);
   }
+
   public class HttpRequest {
     final String method;
     final String url;
@@ -101,6 +132,7 @@ public class HttpCommandExtension implements ConcordionExtension {
       this.headers = headers;
     }
   }
+
   public class HttpExpectation {
     final int status;
     final String body;

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:h="http://huygens.knaw.nl/concordion-http-verifier">
+<head>
+  <meta charset="UTF-8" />
+  <title>Timbuctoo v2.1 WWPerson API</title>
+  <script src='https://www.w3.org/Tools/respec/respec-w3c-common' async='async' class='remove'>
+    Some content to trick concordion into treating this element as non-empty
+  </script>
+  <script class='remove'>
+        var respecConfig = {
+          specStatus: "unofficial",
+          editors: [
+            {
+              name:       "Jauco Noordzij",
+              company:    "Huygens ING"
+            },
+            {
+              name:       "Martijn Maas",
+              company:    "Huygens ING"
+            }
+          ],
+          issueBase: "http://jira.huygens.knaw.nl/TIM-",
+          shortName: "timbuctoov2.1"
+        };
+  </script>
+</head>
+<body>
+  <section id='abstract'>
+    <p>
+      This specification describes the workings of the v2.1 version of the Timbuctoo REST API for wwpersons
+    </p>
+  </section>
+  <section id="GET">
+     <pre class="example" h:http="">
+    <span h:request="">
+      GET /wwpersons
+      accept: application/json
+      VRE_ID: women-writers
+    </span>
+    <span h:response="">
+      HTTP/1.1 200
+      content-type: application/json
+      VRE_ID: women-writers
+
+      {
+
+      }
+    </span>
+  </pre>
+  </section>
+</body>
+</html>
