@@ -1,5 +1,14 @@
 package nl.knaw.huygens.timbuctoo.server.rest;
 
+import com.google.common.collect.Lists;
+import org.apache.http.Header;
+import org.apache.http.HttpException;
+import org.apache.http.HttpResponse;
+import org.apache.http.StatusLine;
+import org.apache.http.impl.io.DefaultHttpRequestParser;
+import org.apache.http.impl.io.DefaultHttpResponseParser;
+import org.apache.http.impl.io.HttpTransportMetricsImpl;
+import org.apache.http.impl.io.SessionInputBufferImpl;
 import org.concordion.api.AbstractCommand;
 import org.concordion.api.CommandCall;
 import org.concordion.api.Element;
@@ -17,6 +26,11 @@ import org.concordion.internal.util.Announcer;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.AbstractMap;
+import java.util.List;
 
 public class HttpCommandExtension implements ConcordionExtension {
   private HttpCommand httpCommand;
@@ -45,23 +59,79 @@ public class HttpCommandExtension implements ConcordionExtension {
 
   private class HttpCommand extends AbstractCommand {
     private final Announcer<AssertEqualsListener> listeners = Announcer.to(AssertEqualsListener.class);
+    private HttpExpectation expectation;
+    private HttpRequest httpRequest;
+    private Element expectedStatusElement;
+    private List<Element> expectedHeaderElements;
+    private Element expectedBodyElement;
 
     public void addListener(AssertEqualsListener listener) {
       this.listeners.addListener(listener);
     }
 
     @Override
-    public void execute(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder) {
-      HttpRequest request = parseRequest(commandCall.getChildren().get(0).getElement());
+    public void setUp(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder) {
+      httpRequest = parseRequest(commandCall.getChildren().get(0).getElement());
       Element expectationElement = commandCall.getChildren().get(1).getElement();
-      HttpExpectation expectation = parseExpectation(expectationElement);
-      Response callResult = caller.call(request);
+      expectation = parseExpectedResponse(expectationElement);
+
+      Element parentElement = expectationElement.getParentElement();
+      parentElement.removeChild(expectationElement);
+
+      Element response = new Element("span").addAttribute("class", "response");
+
+      expectedStatusElement = new Element("span").appendText("" + expectation.status).addAttribute("class", "respStatus");
+      response.appendChild(expectedStatusElement);
+      response.appendText("\n");
+      expectedHeaderElements = Lists.newArrayList();
+      for (AbstractMap.SimpleEntry<String, String> header : expectation.headers) {
+        Element headerEl = new Element("span").addAttribute("class", "respHeader");
+        expectedHeaderElements.add(headerEl);
+        headerEl.appendText(header.getKey() + ": ");
+        headerEl.appendChild(new Element("span").appendText(header.getValue()).addAttribute("class", "respHeaderValue"));
+        response.appendChild(headerEl);
+        response.appendText("\n");
+      }
+      response.appendText("\n");
+      expectedBodyElement = new Element("span").appendText(expectation.body).addAttribute("class", "respBody");
+      response.appendChild(expectedBodyElement);
+      parentElement.appendChild(response);
+
+
+    }
+
+    @Override
+    public void execute(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder) {
+      Response callResult = caller.call(httpRequest);
 
       if (callResult.getStatus() == expectation.status) {
-        succes(resultRecorder, expectationElement);
+        success(resultRecorder, expectedStatusElement);
       } else {
-        failure(resultRecorder, expectationElement, "" + expectation.status, "" + callResult.getStatus());
+        failure(resultRecorder, expectedStatusElement, "" + expectation.status, "" + callResult.getStatus());
       }
+
+      for (int i = 0; i < expectation.headers.size(); i++) {
+        AbstractMap.SimpleEntry<String, String> header = expectation.headers.get(i);
+        if (!callResult.getHeaders().containsKey(header.getKey())) {
+          failure(resultRecorder, expectedHeaderElements.get(i), header.getKey() + ": " + header.getValue(), "");
+        } else {
+          Object actual = callResult.getHeaders().getFirst(header.getKey());
+          if (header.getValue() != null && !actual.equals(header.getValue())) {
+            failure(resultRecorder, expectedHeaderElements.get(i).getFirstChildElement("span"), header.getValue(), actual.toString());
+          } else {
+            success(resultRecorder, expectedHeaderElements.get(i));
+          }
+        }
+      }
+      if (expectation.body != null) {
+        String resultBody = callResult.readEntity(String.class);
+        if (expectation.body.equals(resultBody)) {
+          success(resultRecorder, expectedBodyElement);
+        } else {
+          failure(resultRecorder, expectedBodyElement, expectation.body, resultBody);
+        }
+      }
+
     }
 
     private void failure(ResultRecorder resultRecorder, Element element, String expected, String actual) {
@@ -69,32 +139,52 @@ public class HttpCommandExtension implements ConcordionExtension {
       listeners.announce().failureReported(new AssertFailureEvent(element, expected, actual));
     }
 
-    private void succes(ResultRecorder resultRecorder, Element element) {
+    private void success(ResultRecorder resultRecorder, Element element) {
       resultRecorder.record(Result.SUCCESS);
       listeners.announce().successReported(new AssertSuccessEvent(element));
     }
 
-    private HttpExpectation parseExpectation(Element expectation) {
-      String[] content = splitLines(expectation.getText());
-      String statusCode = content[1].trim().split(" ")[1].trim();
+    private HttpExpectation parseExpectedResponse(Element expectation) {
+      String text = formatValue(expectation.getText());
+      SessionInputBufferImpl buffer = new SessionInputBufferImpl(new HttpTransportMetricsImpl(), text.length());
+      buffer.bind(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)));
+      DefaultHttpResponseParser defaultHttpResponseParser = new DefaultHttpResponseParser(buffer);
 
-      MultivaluedHashMap<String, Object> headers = new MultivaluedHashMap<>();
-      int i = 2;
-      while (!content[i].trim().equals("")) {
-        String name = content[i].split(":")[0].trim();
-        String value = content[i].split(":")[1].trim();
-        headers.add(name, value);
-        i++;
+      HttpResponse httpResponse = null;
+      try {
+        httpResponse = defaultHttpResponseParser.parse();
+      } catch (IOException e) {
+        e.printStackTrace();
+      } catch (HttpException e) {
+        e.printStackTrace();
       }
+
+      StatusLine statusLine = httpResponse.getStatusLine();
+
+      int statusCode = statusLine.getStatusCode();
+      List<AbstractMap.SimpleEntry<String, String>> headers = Lists.newArrayList();
+
+
+      for (Header header : httpResponse.getAllHeaders()) {
+        headers.add(new AbstractMap.SimpleEntry<>(header.getName(), header.getValue()));
+      }
+
+
       String body = null;
-      if (i < content.length - 1) {
-        body = "";
-        for (int j = i; j < content.length - 1; j++) {
-          body += content[j] + "\n";
+      try {
+        if (buffer.hasBufferedData()) {
+          body = "";
+
+          while (buffer.hasBufferedData()) {
+            body += (char) buffer.read();
+          }
         }
+      } catch (IOException e) {
+        e.printStackTrace();
       }
 
-      return new HttpExpectation(Integer.parseInt(statusCode), body, headers);
+
+      return new HttpExpectation(statusCode, body, headers);
     }
 
     private String[] splitLines(String input) {
@@ -102,18 +192,46 @@ public class HttpCommandExtension implements ConcordionExtension {
     }
 
     private HttpRequest parseRequest(Element request) {
-      String[] content = splitLines(request.getText());
-      String method = content[1].trim().split(" ")[0];
-      String url = content[1].trim().split(" ")[1];
+      String text = formatValue(request.getText());
 
-      MultivaluedHashMap<String, Object> headers = new MultivaluedHashMap<>();
-      for (int i = 2; i < content.length - 1; i++) {
-        String name = content[i].split(":")[0].trim();
-        String value = content[i].split(":")[1].trim();
-        headers.add(name, value);
+      SessionInputBufferImpl buffer = new SessionInputBufferImpl(new HttpTransportMetricsImpl(), text.length());
+      buffer.bind(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)));
+      DefaultHttpRequestParser defaultHttpRequestParser = new DefaultHttpRequestParser(buffer);
+
+      org.apache.http.HttpRequest httpRequest = null;
+      try {
+        httpRequest = defaultHttpRequestParser.parse();
+      } catch (IOException e) {
+        e.printStackTrace();
+      } catch (HttpException e) {
+        e.printStackTrace();
       }
 
+      String method = httpRequest.getRequestLine().getMethod();
+      String url = httpRequest.getRequestLine().getUri();
+
+      MultivaluedHashMap<String, Object> headers = new MultivaluedHashMap<>();
+      for (Header header : httpRequest.getAllHeaders()) {
+        headers.add(header.getName(), header.getValue());
+      }
       return new HttpRequest(method, url, headers);
+    }
+
+    private String formatValue(String text) {
+      StringBuilder prefix = new StringBuilder();
+      for (char ch : text.toCharArray()) {
+        if (ch == '\n' || ch == '\r') {
+          prefix.delete(0, prefix.length());
+          continue;
+        }
+        if (ch != ' ' && ch != '\t') {
+          break;
+        }
+
+        prefix.append(ch);
+      }
+
+      return text.replace("\n" + prefix, "\n").trim();
     }
   }
 
@@ -136,9 +254,9 @@ public class HttpCommandExtension implements ConcordionExtension {
   public class HttpExpectation {
     final int status;
     final String body;
-    final MultivaluedMap<String, Object> headers;
+    final List<AbstractMap.SimpleEntry<String, String>> headers;
 
-    public HttpExpectation(int status, String body, MultivaluedMap<String, Object> headers) {
+    public HttpExpectation(int status, String body, List<AbstractMap.SimpleEntry<String, String>> headers) {
       this.status = status;
       this.body = body;
       this.headers = headers;

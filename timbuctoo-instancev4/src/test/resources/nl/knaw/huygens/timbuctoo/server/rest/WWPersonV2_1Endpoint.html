@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"
+      xmlns:c="http://www.concordion.org/2007/concordion"
       xmlns:h="http://huygens.knaw.nl/concordion-http-verifier">
 <head>
   <meta charset="UTF-8" />
@@ -32,22 +33,20 @@
     </p>
   </section>
   <section id="GET">
-     <pre class="example" h:http="">
-    <span h:request="">
-      GET /wwpersons
-      accept: application/json
-      VRE_ID: women-writers
-    </span>
-    <span h:response="">
-      HTTP/1.1 200
-      content-type: application/json
-      VRE_ID: women-writers
+    <p>GET</p>
+    <pre class="example" h:http="response">
+      <span h:request="">
+        GET /v2.1/domain/wwpersons HTTP/1.1
+        VRE_ID: women-writers
+        Accept: application/json
+      </span>
+      <span h:response="">
+        HTTP/1.1 200
+        Content-Type: application/json
 
-      {
-
-      }
-    </span>
-  </pre>
+        {}
+      </span>
+    </pre>
   </section>
 </body>
 </html>

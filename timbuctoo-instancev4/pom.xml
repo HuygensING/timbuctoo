@@ -15,6 +15,7 @@
     <dropwizard.version>0.9.1</dropwizard.version>
     <concoridion.version>1.5.1</concoridion.version>
     <appassembler.version>1.10</appassembler.version>
+    <httpcore.version>4.4.4</httpcore.version>
   </properties>
 
   <dependencies>
@@ -41,6 +42,14 @@
       <groupId>io.dropwizard</groupId>
       <artifactId>dropwizard-testing</artifactId>
       <version>${dropwizard.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Http core for parsing the acceptance test inputs -->
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpcore</artifactId>
+      <version>${httpcore.version}</version>
       <scope>test</scope>
     </dependency>
 

@@ -6,20 +6,19 @@ import org.concordion.integration.junit4.ConcordionRunner;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
 
-import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
 
 @RunWith(ConcordionRunner.class)
-public class WWPersonV2_1Fixture {
+public class WWPersonV2_1EndpointFixture {
   @Extension
   public HttpCommandExtension commandExtension = new HttpCommandExtension(this::doHttpCommand);
 
   @Rule
-  public final ResourceTestRule resources = ResourceTestRule.builder().addResource(WWPersonsEndPoint.class).build();
+  public final ResourceTestRule resources = ResourceTestRule.builder().addResource(new WWPersonCollectionV2_1EndPoint()).build();
 
   private Response doHttpCommand(HttpCommandExtension.HttpRequest httpRequest) {
-    Invocation.Builder response = resources.client().target(httpRequest.url).request();
-    response.headers(httpRequest.headers);
-    return response.method(httpRequest.method);
+    return resources.client().target(httpRequest.url).request() //
+      .headers(httpRequest.headers)
+      .method(httpRequest.method);
   }
 }
