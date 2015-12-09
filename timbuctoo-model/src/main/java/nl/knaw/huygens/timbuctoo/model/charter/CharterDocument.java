@@ -30,6 +30,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.Document;
 import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import nl.knaw.huygens.timbuctoo.model.util.Link;
@@ -184,7 +185,10 @@ public class CharterDocument extends Document {
   }
 
   @Override
-  @IndexAnnotation(isFaceted = true, fieldName = "dynamic_i_date", facetType = FacetType.RANGE)
+  @IndexAnnotations({
+    @IndexAnnotation(isFaceted = true, fieldName = "dynamic_i_date", facetType = FacetType.RANGE),
+    @IndexAnnotation(fieldName = "dynamic_k_date", isSortable = true)
+  })
   public Datable getDate() {
     return super.getDate();
   }
