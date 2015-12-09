@@ -75,7 +75,7 @@ public enum EDTFPattern {
   // Some day in the month 06/2004: 200406??
   // date and time: 20040611T121212
   // range, years: 2004/2006
-  YEAR_RANGE("^\\d{4}/\\d{4}(\\?)?$");
+  YEAR_RANGE("^\\d{4}/\\d{4}(\\?)?$"),
   // range, year-month/year-month: 2004-06/2006-08
   // range, unknown start: unknown/2006
   // range, unknown end: 2004/unknown
@@ -98,7 +98,10 @@ public enum EDTFPattern {
   // range, year-month-day/year-month-day: 20050705/20050706
   // range, year-month-day-time/year-month-day-time: 20050705T0715/20050705T0720
   // range, time zone indicated: 20050705T0715-0500/20050705T0720-0500
-  // range, with hyphens: 2005-07-05T07:15-05:00/2005-07-05T07:20-05:00
+  // range, with hyphens: 2005-07-05/2005-07-05
+  HYPHENATED_RANGE("^\\d{4}-\\d{2}-\\d{2}/\\d{4}-\\d{2}-\\d{2}$"),
+  ;
+  // range, with hyphens and date: 2005-07-05T07:15-05:00/2005-07-05T07:20-05:00
   // Z for time zone: 2004-01-01T10:10:10Z/2004-01-01T10:10:10+01:00
 
   private final Pattern pattern;
