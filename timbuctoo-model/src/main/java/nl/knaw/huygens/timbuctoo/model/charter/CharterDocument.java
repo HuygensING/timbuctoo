@@ -25,10 +25,12 @@ package nl.knaw.huygens.timbuctoo.model.charter;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.facetedsearch.model.FacetType;
+import nl.knaw.huygens.timbuctoo.annotations.RawSearchField;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.Document;
@@ -115,7 +117,26 @@ public class CharterDocument extends Document {
     this.regestNummer = regestNummer;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_t_titel", isFaceted = false)
+  @IndexAnnotation(fieldName = "dynamic_t_alltext", isFaceted = false)
+  public String getAllText() {
+    String result = "";
+    if (inventaristekst != null) {
+      result += Joiner.on(" ").join(inventaristekst);
+    }
+    if (additioneleInformatie != null) {
+      result += " " + additioneleInformatie;
+    }
+    if (tekstRegest != null) {
+      result += " " + Joiner.on(" ").join(tekstRegest);
+    }
+    return result;
+  }
+
+  @Override
+  public String getIdentificationName() {
+    return getSignature() + " " + Joiner.on(" ").join(inventaristekst);
+  }
+
   //  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_s_inventaristekst", canBeEmpty = true),//
   //      @IndexAnnotation(fieldName = "dynamic_sort_inventaristekst", canBeEmpty = true, isSortable = false) })
   //  @IndexAnnotation(fieldName = "dynamic_s_inventaristekst", canBeEmpty = true, isFaceted = false)
@@ -178,6 +199,11 @@ public class CharterDocument extends Document {
 
   public String getOverige() {
     return overige;
+  }
+
+  @IndexAnnotation(fieldName = "dynamic_t_signature")
+  public String getSignature() {
+    return archief + "-" + fonds + "-" + inventarisNummer;
   }
 
   public void setOverige(String overige) {
