@@ -8,7 +8,7 @@ public class HttpCommandExtension implements ConcordionExtension {
   private HttpCommand httpCommand;
 
   public HttpCommandExtension(HttpCaller caller) {
-    httpCommand = new HttpCommand(caller);
+    httpCommand = new HttpCommand(caller, "http", "http://huygens.knaw.nl/concordion-http-verifier");
     httpCommand.addListener(new AssertResultRenderer());
   }
 

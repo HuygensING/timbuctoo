@@ -26,18 +26,24 @@ import java.util.List;
 class HttpCommand extends AbstractCommand {
   private final Announcer<AssertEqualsListener> listeners = Announcer.to(AssertEqualsListener.class);
   private final HttpCaller caller;
+  private final String commandName;
+  private final String namespace;
   private HttpExpectation expectation;
   private HttpRequest httpRequest;
   private Element expectedStatusElement;
   private List<Element> expectedHeaderElements;
   private Element expectedBodyElement;
 
-  public HttpCommand(HttpCaller caller) {
+  public HttpCommand(HttpCaller caller, String commandName, String namespace) {
     this.caller = caller;
+    this.commandName = commandName;
+    this.namespace = namespace;
   }
 
   @Override
   public void setUp(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder) {
+    stripCommandAttribute(commandCall.getElement());
+
     Element requestElement = commandCall.getChildren().get(0).getElement();
     httpRequest = parseRequest(requestElement);
     formatRequestExpectation(requestElement);
@@ -45,6 +51,10 @@ class HttpCommand extends AbstractCommand {
     Element expectationElement = commandCall.getChildren().get(1).getElement();
     expectation = parseExpectedResponse(expectationElement);
     formatResponseExpectation(expectationElement);
+  }
+
+  private void stripCommandAttribute(Element element) {
+    element.removeAttribute(commandName, namespace);
   }
 
   @Override
