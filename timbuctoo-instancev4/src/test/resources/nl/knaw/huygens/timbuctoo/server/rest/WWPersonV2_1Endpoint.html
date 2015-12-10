@@ -47,6 +47,45 @@
     </aside>
     <span>A GET of the wwperson collection will return a json body that is <span c:assertTrue="isValidJsonBody(#response)">not empty</span>.</span>
   </section>
+  <section>
+    <h2>Faceted search</h2>
+    Timboctoo has support for building faceted searches. A faceted search usually follows the following steps.
+    <ol>
+      <li>You perform an empty POST to the search endpoint, and GET the returned location</li>
+      <li>You present the returned facets to the user</li>
+      <li>The user selects some combination of facets</li>
+      <li>You perform a new POST to the search endpoint and GET the returned location</li>
+      <li>You present the returned results to the user and update your facet list based on the new facets</li>
+      <li>The user updates its combination of facets</li>
+      <li>etc.</li>
+    </ol>
+    <aside class="example">
+      <h3>An initial request</h3>
+      Let's assume we're searching the collection <b>ckccpersons</b>.
+      <div h:http="#response">
+        <span h:request="">
+          POST /v2.1/search/ckccpersons HTTP/1.1
+          VRE_ID: CKCC
+          Content-type: application/json
+
+          {}
+        </span>
+        <span h:response="">
+          HTTP/1.1 201
+          Location:
+        </span>
+      </div>
+      You then get a Location header back (In this case <span c:echo="#response.headers.location"></span>) that you can GET.
+      <div h:http="">
+        <span h:request="">
+          GET #response.headers.location HTTP/1.1
+        </span>
+        <span h:response="">
+          HTTP/1.1 200
+        </span>
+      </div>
+    </aside>
+  </section>
 
 </body>
 </html>
