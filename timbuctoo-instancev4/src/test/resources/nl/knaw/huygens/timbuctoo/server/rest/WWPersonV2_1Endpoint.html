@@ -33,7 +33,7 @@
     </p>
   </section>
   <section id="GET">
-    <p>GET</p>
+    <h2>GET wwperson collection</h2>
     <pre class="example" h:http="response">
       <span h:request="">
         GET /v2.1/domain/wwpersons HTTP/1.1
@@ -43,10 +43,10 @@
       <span h:response="">
         HTTP/1.1 200
         Content-Type: application/json
-
-        {}
       </span>
     </pre>
+    <!--<span id="get_wwpersons_body" c:set="#body" style="display:none"> </span>-->
+    <span>A GET of the wwperson collection will return a json body that is <span c:assertEquals="isEmpty(#body)">not empty</span>.</span>
   </section>
 </body>
 </html>

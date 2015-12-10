@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.rest;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import org.apache.http.Header;
 import org.apache.http.HttpException;
@@ -102,7 +103,9 @@ public class HttpCommandExtension implements ConcordionExtension {
         response.appendText("\n");
       }
       response.appendText("\n");
-      expectedBodyElement = new Element("span").appendText(expectation.body).addAttribute("class", "respBody");
+      if (expectation.hasBody()) {
+        expectedBodyElement = new Element("span").appendText(expectation.body).addAttribute("class", "respBody");
+      }
       response.appendChild(expectedBodyElement);
       parentElement.appendChild(response);
     }
@@ -117,6 +120,7 @@ public class HttpCommandExtension implements ConcordionExtension {
         failure(resultRecorder, expectedStatusElement, "" + expectation.status, "" + callResult.getStatus());
       }
 
+
       for (int i = 0; i < expectation.headers.size(); i++) {
         AbstractMap.SimpleEntry<String, String> header = expectation.headers.get(i);
         if (!callResult.getHeaders().containsKey(header.getKey())) {
@@ -130,8 +134,10 @@ public class HttpCommandExtension implements ConcordionExtension {
           }
         }
       }
+      String resultBody = callResult.readEntity(String.class);
+      evaluator.setVariable("#body", resultBody);
+
       if (expectation.body != null) {
-        String resultBody = callResult.readEntity(String.class);
         if (expectation.body.equals(resultBody)) {
           success(resultRecorder, expectedBodyElement);
         } else {
@@ -260,6 +266,10 @@ public class HttpCommandExtension implements ConcordionExtension {
       this.status = status;
       this.body = body;
       this.headers = headers;
+    }
+
+    private boolean hasBody() {
+      return Strings.isNullOrEmpty(body);
     }
   }
 }
