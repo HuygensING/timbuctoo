@@ -100,7 +100,6 @@ class HttpCommand extends AbstractCommand {
 
   private void formatResponseExpectation(Element expectationElement) {
     Element parentElement = expectationElement.getParentElement();
-    parentElement.removeChild(expectationElement);
 
     Element response = new Element("span").addAttribute("class", "response");
 
@@ -121,7 +120,8 @@ class HttpCommand extends AbstractCommand {
       expectedBodyElement = new Element("span").appendText(expectation.body).addAttribute("class", "respBody");
     }
     response.appendChild(expectedBodyElement);
-    parentElement.appendChild(response);
+    expectationElement.appendSister(response);
+    parentElement.removeChild(expectationElement);
   }
 
   private void formatRequestExpectation(Element requestElement) {
