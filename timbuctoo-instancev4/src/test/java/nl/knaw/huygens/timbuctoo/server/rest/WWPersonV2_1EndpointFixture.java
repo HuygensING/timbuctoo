@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.server.rest;
 import nl.knaw.huygens.concordion.extensions.HttpCommandExtension;
 import nl.knaw.huygens.concordion.extensions.HttpRequest;
 import nl.knaw.huygens.concordion.extensions.HttpResult;
+import nl.knaw.huygens.concordion.extensions.ReplaceEmbeddedStylesheetExtension;
 import org.apache.commons.lang3.StringUtils;
 import org.concordion.api.extension.Extension;
 import org.concordion.integration.junit4.ConcordionRunner;
@@ -17,7 +18,9 @@ import java.util.AbstractMap;
 @RunWith(ConcordionRunner.class)
 public class WWPersonV2_1EndpointFixture {
   @Extension
-  public HttpCommandExtension commandExtension = new HttpCommandExtension(this::doHttpCommand);
+  public HttpCommandExtension commandExtension = new HttpCommandExtension(this::doHttpCommand, false);
+  @Extension
+  public ReplaceEmbeddedStylesheetExtension removeExtension = new ReplaceEmbeddedStylesheetExtension("/nl/knaw/huygens/timbuctoo/server/rest/concordion.css");
 
 //  @Rule
 //  public final ResourceTestRule resources = ResourceTestRule.builder().addResource(new WWPersonCollectionV2_1EndPoint()).build();
