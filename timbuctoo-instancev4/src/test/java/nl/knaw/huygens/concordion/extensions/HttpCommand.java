@@ -76,16 +76,16 @@ public class HttpCommand extends AbstractCommand {
     if (httpResult.getStatus() == expectation.status) {
       success(resultRecorder, expectedStatusElement);
     } else {
-      failure(resultRecorder, expectedStatusElement, "" + expectation.status, "" + callResult.getStatus());
+      failure(resultRecorder, expectedStatusElement, "" + expectation.status, "" + httpResult.getStatus());
     }
 
 
     for (int i = 0; i < expectation.headers.size(); i++) {
       AbstractMap.SimpleEntry<String, String> header = expectation.headers.get(i);
-      if (!httpResult.getHeaders().containsKey(header.getKey())) {
+      if (!httpResult.getHeaders().containsKey(header.getKey().toLowerCase())) {
         failure(resultRecorder, expectedHeaderElements.get(i), header.getKey() + ": " + header.getValue(), "");
       } else {
-        Object actual = callResult.getHeaders().getFirst(header.getKey());
+        Object actual = httpResult.getHeaders().get(header.getKey().toLowerCase());
         if (StringUtils.isBlank(header.getValue())) {
           success(resultRecorder, expectedHeaderElements.get(i));
           expectedHeaderElements.get(i).appendText("" + actual);
@@ -231,7 +231,7 @@ public class HttpCommand extends AbstractCommand {
     return new HttpExpectation(statusCode, body, headers);
   }
 
-  private HttpRequest parseRequest(Element element) {
+  private HttpRequest parseRequest(Element element, Evaluator evaluator) {
     String contents = getTextAndRemoveIndent(element);
     SessionInputBufferImpl buffer = new SessionInputBufferImpl(new HttpTransportMetricsImpl(), contents.length());
     buffer.bind(new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8)));
@@ -245,6 +245,9 @@ public class HttpCommand extends AbstractCommand {
       org.apache.http.HttpRequest httpRequest = defaultHttpRequestParser.parse();
       method = httpRequest.getRequestLine().getMethod();
       url = httpRequest.getRequestLine().getUri();
+      if (url.startsWith("#")) {
+        url = "" + evaluator.evaluate(url);
+      }
 
       for (Header header : httpRequest.getAllHeaders()) {
         headers.add(new AbstractMap.SimpleEntry<>(header.getName(), header.getValue()));
