@@ -42,6 +42,7 @@ public class CharterDocument extends Document {
   // vindplaats, opgesplitst:
   private String archief;
   private String fonds;
+  private String fondsNaam;
   private String inventarisNummer;
   private String volgNummer;
   private String regestNummer;
@@ -242,5 +243,13 @@ public class CharterDocument extends Document {
     Map<String, String> filteredMap = Maps.newTreeMap();
     filteredMap.put("date", new Datable(mappedIndexInformation.get("date")).getFromYear() + "");
     return filteredMap;
+  }
+
+  public String getFondsNaam() {
+    return fondsNaam;
+  }
+
+  public void setFondsNaam(String fondsNaam) {
+    this.fondsNaam = fondsNaam;
   }
 }
