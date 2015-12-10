@@ -182,6 +182,10 @@ public class HttpCommand extends AbstractCommand {
     for (AbstractMap.SimpleEntry<String, String> header : httpRequest.headers) {
       requestPre.appendText("\n" + header.getKey() + ": " + header.getValue());
     }
+    if (httpRequest.body != null) {
+      requestPre.appendText("\n\n");
+      requestPre.appendChild(new Element("span").appendText(httpRequest.body).addAttribute("class", "reqBody"));
+    }
   }
 
   private String getTextAndRemoveIndent(Element element) {
