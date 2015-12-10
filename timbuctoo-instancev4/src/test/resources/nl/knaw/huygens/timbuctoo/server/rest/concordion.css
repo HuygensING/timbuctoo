@@ -1,8 +1,5 @@
-.success, .success * {
-  background-color: #afa !important;
-}
-.success pre {
-  background-color: #bbffbb;
+.success:hover, .success:hover * {
+  background-color: #afa;
 }
 .failure, .failure * {
   background-color: #ffb0b0;
@@ -13,11 +10,7 @@
   color: #bb5050;
 }
 .ignored, .ignored * {
-  background-color: #f0f0f0 !important;
-}
-
-ins {
-  text-decoration: none;
+  background-color: #f0f0f0;
 }
 
 .exceptionMessage {
