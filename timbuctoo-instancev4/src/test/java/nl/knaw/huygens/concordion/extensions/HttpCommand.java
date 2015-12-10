@@ -207,9 +207,9 @@ class HttpCommand extends AbstractCommand {
     String method = httpRequest.getRequestLine().getMethod();
     String url = httpRequest.getRequestLine().getUri();
 
-    MultivaluedHashMap<String, Object> headers = new MultivaluedHashMap<>();
+    List<AbstractMap.SimpleEntry<String, String>> headers = Lists.newArrayList();
     for (Header header : httpRequest.getAllHeaders()) {
-      headers.add(header.getName(), header.getValue());
+      headers.add(new AbstractMap.SimpleEntry<>(header.getName(), header.getValue()));
     }
     return new HttpRequest(method, url, headers);
   }

@@ -8,8 +8,11 @@ import org.concordion.integration.junit4.ConcordionRunner;
 import org.junit.runner.RunWith;
 
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import java.util.AbstractMap;
 
 @RunWith(ConcordionRunner.class)
 public class WWPersonV2_1EndpointFixture {
@@ -21,9 +24,15 @@ public class WWPersonV2_1EndpointFixture {
 
   private Response doHttpCommand(HttpRequest httpRequest) {
     WebTarget target = ClientBuilder.newClient().target("http://acc.repository.huygens.knaw.nl");
-    return target.path(httpRequest.url).request() //
-      .headers(httpRequest.headers)
-      .method(httpRequest.method);
+    Invocation.Builder request = target
+      .path(httpRequest.url)
+      .request();
+
+    for (AbstractMap.SimpleEntry<String, String> header : httpRequest.headers) {
+      request = request.header(header.getKey(), header.getValue());
+    }
+
+    return request.method(httpRequest.method);
   }
 
   public String isEmpty(String value) {

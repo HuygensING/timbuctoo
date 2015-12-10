@@ -1,13 +1,14 @@
 package nl.knaw.huygens.concordion.extensions;
 
-import javax.ws.rs.core.MultivaluedMap;
+import java.util.AbstractMap;
+import java.util.List;
 
 public class HttpRequest {
   public final String method;
   public final String url;
-  public final MultivaluedMap<String, Object> headers;
+  public final List<AbstractMap.SimpleEntry<String, String>> headers;
 
-  public HttpRequest(String method, String url, MultivaluedMap<String, Object> headers) {
+  public HttpRequest(String method, String url, List<AbstractMap.SimpleEntry<String, String>> headers) {
     this.method = method;
     this.url = url;
     this.headers = headers;
