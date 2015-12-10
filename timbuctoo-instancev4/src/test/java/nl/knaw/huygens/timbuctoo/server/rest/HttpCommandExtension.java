@@ -34,11 +34,9 @@ import java.util.List;
 
 public class HttpCommandExtension implements ConcordionExtension {
   private HttpCommand httpCommand;
-  private final HttpCaller caller;
 
   public HttpCommandExtension(HttpCaller caller) {
-    this.caller = caller;
-    httpCommand = new HttpCommand();
+    httpCommand = new HttpCommand(caller);
     httpCommand.addListener(new AssertResultRenderer());
   }
 
@@ -57,13 +55,18 @@ public class HttpCommandExtension implements ConcordionExtension {
 
   }
 
-  private class HttpCommand extends AbstractCommand {
+  private static class HttpCommand extends AbstractCommand {
     private final Announcer<AssertEqualsListener> listeners = Announcer.to(AssertEqualsListener.class);
+    private final HttpCaller caller;
     private HttpExpectation expectation;
     private HttpRequest httpRequest;
     private Element expectedStatusElement;
     private List<Element> expectedHeaderElements;
     private Element expectedBodyElement;
+
+    public HttpCommand(HttpCaller caller) {
+      this.caller = caller;
+    }
 
     public void addListener(AssertEqualsListener listener) {
       this.listeners.addListener(listener);
@@ -71,10 +74,16 @@ public class HttpCommandExtension implements ConcordionExtension {
 
     @Override
     public void setUp(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder) {
-      httpRequest = parseRequest(commandCall.getChildren().get(0).getElement());
+      String formattedRequest = formatValue(commandCall.getChildren().get(0).getElement().getText());
+      httpRequest = parseRequest(formattedRequest);
       Element expectationElement = commandCall.getChildren().get(1).getElement();
-      expectation = parseExpectedResponse(expectationElement);
+      expectation = parseExpectedResponse(formatValue(expectationElement.getText()));
 
+      formatResponseExpectation(expectationElement);
+
+    }
+
+    private void formatResponseExpectation(Element expectationElement) {
       Element parentElement = expectationElement.getParentElement();
       parentElement.removeChild(expectationElement);
 
@@ -96,8 +105,6 @@ public class HttpCommandExtension implements ConcordionExtension {
       expectedBodyElement = new Element("span").appendText(expectation.body).addAttribute("class", "respBody");
       response.appendChild(expectedBodyElement);
       parentElement.appendChild(response);
-
-
     }
 
     @Override
@@ -144,10 +151,9 @@ public class HttpCommandExtension implements ConcordionExtension {
       listeners.announce().successReported(new AssertSuccessEvent(element));
     }
 
-    private HttpExpectation parseExpectedResponse(Element expectation) {
-      String text = formatValue(expectation.getText());
-      SessionInputBufferImpl buffer = new SessionInputBufferImpl(new HttpTransportMetricsImpl(), text.length());
-      buffer.bind(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)));
+    private HttpExpectation parseExpectedResponse(String value) {
+      SessionInputBufferImpl buffer = new SessionInputBufferImpl(new HttpTransportMetricsImpl(), value.length());
+      buffer.bind(new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8)));
       DefaultHttpResponseParser defaultHttpResponseParser = new DefaultHttpResponseParser(buffer);
 
       HttpResponse httpResponse = null;
@@ -187,15 +193,9 @@ public class HttpCommandExtension implements ConcordionExtension {
       return new HttpExpectation(statusCode, body, headers);
     }
 
-    private String[] splitLines(String input) {
-      return input.split("\n");
-    }
-
-    private HttpRequest parseRequest(Element request) {
-      String text = formatValue(request.getText());
-
-      SessionInputBufferImpl buffer = new SessionInputBufferImpl(new HttpTransportMetricsImpl(), text.length());
-      buffer.bind(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)));
+    private HttpRequest parseRequest(String value) {
+      SessionInputBufferImpl buffer = new SessionInputBufferImpl(new HttpTransportMetricsImpl(), value.length());
+      buffer.bind(new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8)));
       DefaultHttpRequestParser defaultHttpRequestParser = new DefaultHttpRequestParser(buffer);
 
       org.apache.http.HttpRequest httpRequest = null;
@@ -239,7 +239,7 @@ public class HttpCommandExtension implements ConcordionExtension {
     Response call(HttpRequest value);
   }
 
-  public class HttpRequest {
+  public static class HttpRequest {
     final String method;
     final String url;
     final MultivaluedMap<String, Object> headers;
@@ -251,7 +251,7 @@ public class HttpCommandExtension implements ConcordionExtension {
     }
   }
 
-  public class HttpExpectation {
+  private static class HttpExpectation {
     final int status;
     final String body;
     final List<AbstractMap.SimpleEntry<String, String>> headers;
