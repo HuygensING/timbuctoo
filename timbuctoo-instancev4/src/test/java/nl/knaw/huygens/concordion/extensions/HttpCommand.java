@@ -36,10 +36,6 @@ class HttpCommand extends AbstractCommand {
     this.caller = caller;
   }
 
-  public void addListener(AssertEqualsListener listener) {
-    this.listeners.addListener(listener);
-  }
-
   @Override
   public void setUp(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder) {
     String formattedRequest = formatValue(commandCall.getChildren().get(0).getElement().getText());
@@ -48,32 +44,6 @@ class HttpCommand extends AbstractCommand {
     expectation = parseExpectedResponse(formatValue(expectationElement.getText()));
 
     formatResponseExpectation(expectationElement);
-  }
-
-  private void formatResponseExpectation(Element expectationElement) {
-    Element parentElement = expectationElement.getParentElement();
-    parentElement.removeChild(expectationElement);
-
-    Element response = new Element("span").addAttribute("class", "response");
-
-    expectedStatusElement = new Element("span").appendText("" + expectation.status).addAttribute("class", "respStatus");
-    response.appendChild(expectedStatusElement);
-    response.appendText("\n");
-    expectedHeaderElements = Lists.newArrayList();
-    for (AbstractMap.SimpleEntry<String, String> header : expectation.headers) {
-      Element headerEl = new Element("span").addAttribute("class", "respHeader");
-      expectedHeaderElements.add(headerEl);
-      headerEl.appendText(header.getKey() + ": ");
-      headerEl.appendChild(new Element("span").appendText(header.getValue()).addAttribute("class", "respHeaderValue"));
-      response.appendChild(headerEl);
-      response.appendText("\n");
-    }
-    response.appendText("\n");
-    if (expectation.hasBody()) {
-      expectedBodyElement = new Element("span").appendText(expectation.body).addAttribute("class", "respBody");
-    }
-    response.appendChild(expectedBodyElement);
-    parentElement.appendChild(response);
   }
 
   @Override
@@ -113,6 +83,10 @@ class HttpCommand extends AbstractCommand {
 
   }
 
+  public void addListener(AssertEqualsListener listener) {
+    this.listeners.addListener(listener);
+  }
+
   private void failure(ResultRecorder resultRecorder, Element element, String expected, String actual) {
     resultRecorder.record(Result.FAILURE);
     listeners.announce().failureReported(new AssertFailureEvent(element, expected, actual));
@@ -121,6 +95,49 @@ class HttpCommand extends AbstractCommand {
   private void success(ResultRecorder resultRecorder, Element element) {
     resultRecorder.record(Result.SUCCESS);
     listeners.announce().successReported(new AssertSuccessEvent(element));
+  }
+
+  private void formatResponseExpectation(Element expectationElement) {
+    Element parentElement = expectationElement.getParentElement();
+    parentElement.removeChild(expectationElement);
+
+    Element response = new Element("span").addAttribute("class", "response");
+
+    expectedStatusElement = new Element("span").appendText("" + expectation.status).addAttribute("class", "respStatus");
+    response.appendChild(expectedStatusElement);
+    response.appendText("\n");
+    expectedHeaderElements = Lists.newArrayList();
+    for (AbstractMap.SimpleEntry<String, String> header : expectation.headers) {
+      Element headerEl = new Element("span").addAttribute("class", "respHeader");
+      expectedHeaderElements.add(headerEl);
+      headerEl.appendText(header.getKey() + ": ");
+      headerEl.appendChild(new Element("span").appendText(header.getValue()).addAttribute("class", "respHeaderValue"));
+      response.appendChild(headerEl);
+      response.appendText("\n");
+    }
+    response.appendText("\n");
+    if (expectation.hasBody()) {
+      expectedBodyElement = new Element("span").appendText(expectation.body).addAttribute("class", "respBody");
+    }
+    response.appendChild(expectedBodyElement);
+    parentElement.appendChild(response);
+  }
+
+  private String formatValue(String text) {
+    StringBuilder prefix = new StringBuilder();
+    for (char ch : text.toCharArray()) {
+      if (ch == '\n' || ch == '\r') {
+        prefix.delete(0, prefix.length());
+        continue;
+      }
+      if (ch != ' ' && ch != '\t') {
+        break;
+      }
+
+      prefix.append(ch);
+    }
+
+    return text.replace("\n" + prefix, "\n").trim();
   }
 
   private HttpExpectation parseExpectedResponse(String value) {
@@ -187,22 +204,5 @@ class HttpCommand extends AbstractCommand {
       headers.add(header.getName(), header.getValue());
     }
     return new HttpRequest(method, url, headers);
-  }
-
-  private String formatValue(String text) {
-    StringBuilder prefix = new StringBuilder();
-    for (char ch : text.toCharArray()) {
-      if (ch == '\n' || ch == '\r') {
-        prefix.delete(0, prefix.length());
-        continue;
-      }
-      if (ch != ' ' && ch != '\t') {
-        break;
-      }
-
-      prefix.append(ch);
-    }
-
-    return text.replace("\n" + prefix, "\n").trim();
   }
 }
