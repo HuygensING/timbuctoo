@@ -17,6 +17,6 @@ public class HttpExpectation {
   }
 
   public boolean hasBody() {
-    return Strings.isNullOrEmpty(body);
+    return !Strings.isNullOrEmpty(body);
   }
 }

@@ -101,27 +101,34 @@ class HttpCommand extends AbstractCommand {
   private void formatResponseExpectation(Element expectationElement) {
     Element parentElement = expectationElement.getParentElement();
 
-    Element response = new Element("span").addAttribute("class", "response");
+    Element responseHeader = new Element("div").addAttribute("class", "responseCaption").appendText("Response:");
+    expectationElement.appendSister(responseHeader);
+    parentElement.removeChild(expectationElement);
 
+    Element response = new Element("div").addAttribute("class", "responseContent");
+    responseHeader.appendSister(response);
+
+    Element responsePre = new Element("pre");
+    response.appendChild(responsePre);
+
+    responsePre.appendChild(new Element("span").addAttribute("class", "defaultValue").appendText("HTTP/1.1"));
+    responsePre.appendText(" ");
     expectedStatusElement = new Element("span").appendText("" + expectation.status).addAttribute("class", "respStatus");
-    response.appendChild(expectedStatusElement);
-    response.appendText("\n");
+    responsePre.appendChild(expectedStatusElement);
     expectedHeaderElements = Lists.newArrayList();
     for (AbstractMap.SimpleEntry<String, String> header : expectation.headers) {
+      responsePre.appendText("\n");
       Element headerEl = new Element("span").addAttribute("class", "respHeader");
       expectedHeaderElements.add(headerEl);
       headerEl.appendText(header.getKey() + ": ");
       headerEl.appendChild(new Element("span").appendText(header.getValue()).addAttribute("class", "respHeaderValue"));
-      response.appendChild(headerEl);
-      response.appendText("\n");
+      responsePre.appendChild(headerEl);
     }
-    response.appendText("\n");
     if (expectation.hasBody()) {
+      responsePre.appendText("\n\n");
       expectedBodyElement = new Element("span").appendText(expectation.body).addAttribute("class", "respBody");
+      responsePre.appendChild(expectedBodyElement);
     }
-    response.appendChild(expectedBodyElement);
-    expectationElement.appendSister(response);
-    parentElement.removeChild(expectationElement);
   }
 
   private void formatRequestExpectation(Element requestElement) {
