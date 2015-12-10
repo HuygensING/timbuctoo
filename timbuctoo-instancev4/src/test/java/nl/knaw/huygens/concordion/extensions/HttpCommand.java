@@ -199,28 +199,18 @@ public class HttpCommand extends AbstractCommand {
     buffer.bind(new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8)));
     DefaultHttpResponseParser defaultHttpResponseParser = new DefaultHttpResponseParser(buffer);
 
-    HttpResponse httpResponse = null;
-    try {
-      httpResponse = defaultHttpResponseParser.parse();
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (HttpException e) {
-      e.printStackTrace();
-    }
-
-    StatusLine statusLine = httpResponse.getStatusLine();
-
-    int statusCode = statusLine.getStatusCode();
-    List<AbstractMap.SimpleEntry<String, String>> headers = Lists.newArrayList();
-
-
-    for (Header header : httpResponse.getAllHeaders()) {
-      headers.add(new AbstractMap.SimpleEntry<>(header.getName(), header.getValue()));
-    }
-
-
+    int statusCode = -1;
     String body = null;
+    List<AbstractMap.SimpleEntry<String, String>> headers = Lists.newArrayList();
     try {
+      HttpResponse httpResponse = defaultHttpResponseParser.parse();
+      StatusLine statusLine = httpResponse.getStatusLine();
+      statusCode = statusLine.getStatusCode();
+
+      for (Header header : httpResponse.getAllHeaders()) {
+        headers.add(new AbstractMap.SimpleEntry<>(header.getName(), header.getValue()));
+      }
+
       if (buffer.hasBufferedData()) {
         body = "";
 
@@ -230,8 +220,9 @@ public class HttpCommand extends AbstractCommand {
       }
     } catch (IOException e) {
       e.printStackTrace();
+    } catch (HttpException e) {
+      e.printStackTrace();
     }
-
 
     return new HttpExpectation(statusCode, body, headers);
   }
@@ -242,22 +233,23 @@ public class HttpCommand extends AbstractCommand {
     buffer.bind(new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8)));
     DefaultHttpRequestParser defaultHttpRequestParser = new DefaultHttpRequestParser(buffer);
 
-    org.apache.http.HttpRequest httpRequest = null;
+    String method = "";
+    String url = "";
+    List<AbstractMap.SimpleEntry<String, String>> headers = Lists.newArrayList();
     try {
-      httpRequest = defaultHttpRequestParser.parse();
+      org.apache.http.HttpRequest httpRequest = defaultHttpRequestParser.parse();
+      method = httpRequest.getRequestLine().getMethod();
+      url = httpRequest.getRequestLine().getUri();
+
+      for (Header header : httpRequest.getAllHeaders()) {
+        headers.add(new AbstractMap.SimpleEntry<>(header.getName(), header.getValue()));
+      }
     } catch (IOException e) {
       e.printStackTrace();
     } catch (HttpException e) {
       e.printStackTrace();
     }
 
-    String method = httpRequest.getRequestLine().getMethod();
-    String url = httpRequest.getRequestLine().getUri();
-
-    List<AbstractMap.SimpleEntry<String, String>> headers = Lists.newArrayList();
-    for (Header header : httpRequest.getAllHeaders()) {
-      headers.add(new AbstractMap.SimpleEntry<>(header.getName(), header.getValue()));
-    }
     return new HttpRequest(method, url, headers);
   }
 }
