@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class HttpCommand extends AbstractCommand {
   private final Announcer<AssertEqualsListener> listeners = Announcer.to(AssertEqualsListener.class);
@@ -55,8 +57,8 @@ public class HttpCommand extends AbstractCommand {
     }
 
     Element requestElement = commandCall.getChildren().get(0).getElement();
-    httpRequest = parseRequest(requestElement);
-    formatRequestExpectation(requestElement);
+    httpRequest = parseRequest(requestElement, evaluator);
+    formatRequest(requestElement);
 
     Element expectationElement = commandCall.getChildren().get(1).getElement();
     expectation = parseExpectedResponse(expectationElement);
@@ -158,10 +160,13 @@ public class HttpCommand extends AbstractCommand {
     }
   }
 
-  private void formatRequestExpectation(Element requestElement) {
+  private void formatRequest(Element requestElement) {
     Element parentElement = requestElement.getParentElement();
 
     Element requestHeader = new Element("div").addAttribute("class", "requestCaption").appendText("Request:");
+    if (httpRequest.server != null) {
+      requestHeader.appendChild(new Element("small").appendText(" (to " + httpRequest.server + ")"));
+    }
     requestElement.appendSister(requestHeader);
     parentElement.removeChild(requestElement);
 
@@ -241,12 +246,18 @@ public class HttpCommand extends AbstractCommand {
     String url = "";
     List<AbstractMap.SimpleEntry<String, String>> headers = Lists.newArrayList();
     String body = null;
+    String server = null;
     try {
       org.apache.http.HttpRequest httpRequest = defaultHttpRequestParser.parse();
       method = httpRequest.getRequestLine().getMethod();
       url = httpRequest.getRequestLine().getUri();
       if (url.startsWith("#")) {
         url = "" + evaluator.evaluate(url);
+      }
+      Matcher matcher = Pattern.compile("(https?://[^/]+)(/.*)").matcher(url);
+      if (matcher.matches()) {
+        server = matcher.group(1);
+        url = matcher.group(2);
       }
 
       for (Header header : httpRequest.getAllHeaders()) {
@@ -266,6 +277,6 @@ public class HttpCommand extends AbstractCommand {
       e.printStackTrace();
     }
 
-    return new HttpRequest(method, url, headers, body);
+    return new HttpRequest(method, url, headers, body, server);
   }
 }

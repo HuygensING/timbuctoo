@@ -28,7 +28,7 @@ public class WWPersonV2_1EndpointFixture {
 //  public final ResourceTestRule resources = ResourceTestRule.builder().addResource(new WWPersonCollectionV2_1EndPoint()).build();
 
   private Response doHttpCommand(HttpRequest httpRequest) {
-    WebTarget target = ClientBuilder.newClient().target("http://acc.repository.huygens.knaw.nl");
+    WebTarget target = ClientBuilder.newClient().target(httpRequest.server != null ? httpRequest.server : "http://acc.repository.huygens.knaw.nl");
     Invocation.Builder request = target
       .path(httpRequest.url)
       .request();
