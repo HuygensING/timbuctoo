@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.rest;
 
 import nl.knaw.huygens.concordion.extensions.HttpCommandExtension;
 import nl.knaw.huygens.concordion.extensions.HttpRequest;
+import nl.knaw.huygens.concordion.extensions.HttpResult;
 import org.apache.commons.lang3.StringUtils;
 import org.concordion.api.extension.Extension;
 import org.concordion.integration.junit4.ConcordionRunner;
@@ -10,7 +11,6 @@ import org.junit.runner.RunWith;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.util.AbstractMap;
 
@@ -38,4 +38,9 @@ public class WWPersonV2_1EndpointFixture {
   public String isEmpty(String value) {
     return StringUtils.isBlank(value) ? "empty" : "not empty";
   }
+
+  public boolean isValidJsonBody(HttpResult result) {
+    return result.getBody() != "";
+  }
+
 }

@@ -9,13 +9,17 @@ import org.apache.http.impl.io.DefaultHttpRequestParser;
 import org.apache.http.impl.io.DefaultHttpResponseParser;
 import org.apache.http.impl.io.HttpTransportMetricsImpl;
 import org.apache.http.impl.io.SessionInputBufferImpl;
-import org.concordion.api.*;
+import org.concordion.api.AbstractCommand;
+import org.concordion.api.CommandCall;
+import org.concordion.api.Element;
+import org.concordion.api.Evaluator;
+import org.concordion.api.Result;
+import org.concordion.api.ResultRecorder;
 import org.concordion.api.listener.AssertEqualsListener;
 import org.concordion.api.listener.AssertFailureEvent;
 import org.concordion.api.listener.AssertSuccessEvent;
 import org.concordion.internal.util.Announcer;
 
-import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -23,7 +27,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
 import java.util.List;
 
-class HttpCommand extends AbstractCommand {
+public class HttpCommand extends AbstractCommand {
   private final Announcer<AssertEqualsListener> listeners = Announcer.to(AssertEqualsListener.class);
   private final HttpCaller caller;
   private final String commandName;
@@ -33,6 +37,7 @@ class HttpCommand extends AbstractCommand {
   private Element expectedStatusElement;
   private List<Element> expectedHeaderElements;
   private Element expectedBodyElement;
+  private String variableName;
 
   public HttpCommand(HttpCaller caller, String commandName, String namespace) {
     this.caller = caller;
@@ -43,6 +48,10 @@ class HttpCommand extends AbstractCommand {
   @Override
   public void setUp(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder) {
     stripCommandAttribute(commandCall.getElement());
+    variableName = commandCall.getExpression();
+    if (!variableName.isEmpty() && !variableName.startsWith("#")) {
+      throw new RuntimeException(variableName + " should start with a #, to be a valid Concordion variable.");
+    }
 
     Element requestElement = commandCall.getChildren().get(0).getElement();
     httpRequest = parseRequest(requestElement);
@@ -61,7 +70,9 @@ class HttpCommand extends AbstractCommand {
   public void execute(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder) {
     Response callResult = caller.call(httpRequest);
 
-    if (callResult.getStatus() == expectation.status) {
+    HttpResult httpResult = new HttpResult(callResult);
+
+    if (httpResult.getStatus() == expectation.status) {
       success(resultRecorder, expectedStatusElement);
     } else {
       failure(resultRecorder, expectedStatusElement, "" + expectation.status, "" + callResult.getStatus());
@@ -70,7 +81,7 @@ class HttpCommand extends AbstractCommand {
 
     for (int i = 0; i < expectation.headers.size(); i++) {
       AbstractMap.SimpleEntry<String, String> header = expectation.headers.get(i);
-      if (!callResult.getHeaders().containsKey(header.getKey())) {
+      if (!httpResult.getHeaders().containsKey(header.getKey())) {
         failure(resultRecorder, expectedHeaderElements.get(i), header.getKey() + ": " + header.getValue(), "");
       } else {
         Object actual = callResult.getHeaders().getFirst(header.getKey());
@@ -81,10 +92,9 @@ class HttpCommand extends AbstractCommand {
         }
       }
     }
-    String resultBody = callResult.readEntity(String.class);
-    evaluator.setVariable("#body", resultBody);
 
     if (expectation.body != null) {
+      String resultBody = httpResult.getBody();
       if (expectation.body.equals(resultBody)) {
         success(resultRecorder, expectedBodyElement);
       } else {
@@ -92,6 +102,9 @@ class HttpCommand extends AbstractCommand {
       }
     }
 
+    if (!variableName.isEmpty()) {
+      evaluator.setVariable(variableName, httpResult);
+    }
   }
 
   public void addListener(AssertEqualsListener listener) {
