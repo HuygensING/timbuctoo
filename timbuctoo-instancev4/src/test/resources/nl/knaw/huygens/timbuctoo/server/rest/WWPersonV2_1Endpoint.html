@@ -34,7 +34,7 @@
   </section>
   <section id="GET">
     <h2>GET wwperson collection</h2>
-    <pre class="example" h:http="response">
+    <aside class="example" h:http="response">
       <span h:request="">
         GET /v2.1/domain/wwpersons HTTP/1.1
         VRE_ID: women-writers
@@ -44,8 +44,7 @@
         HTTP/1.1 200
         Content-Type: application/json
       </span>
-    </pre>
-    <!--<span id="get_wwpersons_body" c:set="#body" style="display:none"> </span>-->
+    </aside>
     <span>A GET of the wwperson collection will return a json body that is <span c:assertEquals="isEmpty(#body)">not empty</span>.</span>
   </section>
 </body>
