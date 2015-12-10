@@ -38,11 +38,12 @@ class HttpCommand extends AbstractCommand {
 
   @Override
   public void setUp(CommandCall commandCall, Evaluator evaluator, ResultRecorder resultRecorder) {
-    String formattedRequest = formatValue(commandCall.getChildren().get(0).getElement().getText());
-    httpRequest = parseRequest(formattedRequest);
-    Element expectationElement = commandCall.getChildren().get(1).getElement();
-    expectation = parseExpectedResponse(formatValue(expectationElement.getText()));
+    Element requestElement = commandCall.getChildren().get(0).getElement();
+    httpRequest = parseRequest(requestElement);
+    formatRequestExpectation(requestElement);
 
+    Element expectationElement = commandCall.getChildren().get(1).getElement();
+    expectation = parseExpectedResponse(expectationElement);
     formatResponseExpectation(expectationElement);
   }
 
@@ -123,7 +124,12 @@ class HttpCommand extends AbstractCommand {
     parentElement.appendChild(response);
   }
 
-  private String formatValue(String text) {
+  private void formatRequestExpectation(Element requestElement) {
+
+  }
+
+  private String getTextAndRemoveIndent(Element element) {
+    String text = element.getText();
     StringBuilder prefix = new StringBuilder();
     for (char ch : text.toCharArray()) {
       if (ch == '\n' || ch == '\r') {
@@ -140,9 +146,10 @@ class HttpCommand extends AbstractCommand {
     return text.replace("\n" + prefix, "\n").trim();
   }
 
-  private HttpExpectation parseExpectedResponse(String value) {
-    SessionInputBufferImpl buffer = new SessionInputBufferImpl(new HttpTransportMetricsImpl(), value.length());
-    buffer.bind(new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8)));
+  private HttpExpectation parseExpectedResponse(Element element) {
+    String contents = getTextAndRemoveIndent(element);
+    SessionInputBufferImpl buffer = new SessionInputBufferImpl(new HttpTransportMetricsImpl(), contents.length());
+    buffer.bind(new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8)));
     DefaultHttpResponseParser defaultHttpResponseParser = new DefaultHttpResponseParser(buffer);
 
     HttpResponse httpResponse = null;
@@ -182,9 +189,10 @@ class HttpCommand extends AbstractCommand {
     return new HttpExpectation(statusCode, body, headers);
   }
 
-  private HttpRequest parseRequest(String value) {
-    SessionInputBufferImpl buffer = new SessionInputBufferImpl(new HttpTransportMetricsImpl(), value.length());
-    buffer.bind(new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8)));
+  private HttpRequest parseRequest(Element element) {
+    String contents = getTextAndRemoveIndent(element);
+    SessionInputBufferImpl buffer = new SessionInputBufferImpl(new HttpTransportMetricsImpl(), contents.length());
+    buffer.bind(new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8)));
     DefaultHttpRequestParser defaultHttpRequestParser = new DefaultHttpRequestParser(buffer);
 
     org.apache.http.HttpRequest httpRequest = null;
