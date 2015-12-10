@@ -32,7 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.google.inject.Inject;
 
 public class CMDIDublinCoreRecordCreator {
-  static final String MD_PROFILE = "clarin.eu:cr1:p_1345561703673"; //default for CMDI Dublin Core Records see: http://catalog.clarin.eu/ds/ComponentRegistry/rest/registry/profiles/clarin.eu:cr1:p_1288172614023
+  static final String MD_PROFILE = "clarin.eu:cr1:p_1288172614023"; //default for CMDI Dublin Core Records see: http://catalog.clarin.eu/ds/ComponentRegistry/rest/registry/profiles/clarin.eu:cr1:p_1288172614023
   private final CMDICollectionNameCreator collectionNameCreator;
 
   @Inject
