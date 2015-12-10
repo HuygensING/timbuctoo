@@ -269,6 +269,7 @@ public class Repository {
       }
     } catch (StorageException e) {
       logError("getEntityWithRelations", e, type, id);
+      throw new RuntimeException(e);
     }
     return entity;
   }

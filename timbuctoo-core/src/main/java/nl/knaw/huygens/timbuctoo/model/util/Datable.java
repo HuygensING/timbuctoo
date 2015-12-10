@@ -35,7 +35,9 @@ import com.google.common.base.Objects;
 @SuppressWarnings("serial")
 public class Datable implements Comparable<Datable>, Serializable, Range {
 
-  /** Central European Time */
+  /**
+   * Central European Time
+   */
   static final TimeZone CET = TimeZone.getTimeZone("CET");
   private static final DateFormat FORMAT = new SimpleDateFormat("yyyyMMdd");
 
@@ -104,87 +106,98 @@ public class Datable implements Comparable<Datable>, Serializable, Range {
     } else {
       Calendar calendar = getCalendar();
       switch (edtf) {
-      case YEAR:
-        setCertainty(Certainty.HIGH);
-        setFromYear(text);
-        break;
-      case YEAR_Q:
-        setCertainty(Certainty.LOW);
-        setFromYear(text.replace("?", ""));
-        break;
-      case YEAR_A:
-        setCertainty(Certainty.MEDIUM);
-        setFromYear(text.replace("~", ""));
-        break;
-      case YEAR_RANGE_Q1:
-      case YEAR_RANGE_Q2:
-      case YEAR_RANGE_Q3:
-        setCertainty(Certainty.LOW);
-        int firstYear = Integer.parseInt(text.replace("?", "0"));
-        int lastYear = Integer.parseInt(text.replace("?", "9"));
-        calendar.clear();
-        set(calendar, firstYear, Calendar.JANUARY, 1);
-        setFromDate(calendar);
-        calendar.clear();
-        set(calendar, lastYear, Calendar.DECEMBER, 31);
-        setToDate(calendar);
-        break;
-      case YEAR_MONTH:
-        setCertainty(Certainty.HIGH);
-        setFromMonthYear(text);
-        break;
-      case YEAR_MONTH_Q:
-        setCertainty(Certainty.LOW);
-        setFromMonthYear(text.replace("?", ""));
-        break;
-      case YEAR_MONTH_A:
-        setCertainty(Certainty.MEDIUM);
-        setFromMonthYear(text.replace("~", ""));
-        break;
-      case YEAR_MONTH_RANGE:
-        setCertainty(Certainty.MEDIUM);
-        setFromYear(text.replace("-??", ""));
-        break;
-      case DAY_MONTH_YEAR:
-        setCertainty(Certainty.HIGH);
-        String[] dmy = text.split("-");
-        calendar.clear();
-        set(calendar, Integer.parseInt(dmy[2]), Integer.parseInt(dmy[1]) - 1, Integer.parseInt(dmy[0]));
-        setFromDate(calendar);
-        setToDate(calendar);
-        break;
-      case MONTH_YEAR_RX:
-        setCertainty(Certainty.MEDIUM);
-        String[] dmy1 = text.split("-");
-        setFromMonthYear(dmy1[1] + "-" + dmy1[0]);
-        break;
-      case YEAR_MONTH_DAY_H: // "^\\d{4}-\\d{2}-\\d{2}$"
-      case YEAR_MONTH_DAY: // "^\\d{8}$"
-        setCertainty(Certainty.HIGH);
-        handleYearMonthDay(text);
-        break;
-      case YEAR_MONTH_DAY_HQ: // "^\\d{4}-\\d{2}-\\d{2}\\?$"
-      case YEAR_MONTH_DAY_Q: // "^\\d{8}\\?$"
-        setCertainty(Certainty.LOW);
-        handleYearMonthDay(text);
-        break;
-      case YEAR_MONTH_DAY_HA: // "^\\d{4}-\\d{2}-\\d{2}\\~$"
-      case YEAR_MONTH_DAY_A: // "^\\d{8}\\~$"
-        setCertainty(Certainty.MEDIUM);
-        handleYearMonthDay(text);
-        break;
-      case YEAR_RANGE:
-        setCertainty(text.contains("?") ? Certainty.LOW : Certainty.MEDIUM);
-        String[] dmy2 = text.replace("?", "").split("/");
-        calendar.clear();
-        set(calendar, Integer.parseInt(dmy2[0]), Calendar.JANUARY, 1);
-        setFromDate(calendar);
-        calendar.clear();
-        set(calendar, Integer.parseInt(dmy2[1]), Calendar.DECEMBER, 31);
-        setToDate(calendar);
-        break;
-      default:
-        throw new RuntimeException("Unhandled case: " + edtf);
+        case YEAR:
+          setCertainty(Certainty.HIGH);
+          setFromYear(text);
+          break;
+        case YEAR_Q:
+          setCertainty(Certainty.LOW);
+          setFromYear(text.replace("?", ""));
+          break;
+        case YEAR_A:
+          setCertainty(Certainty.MEDIUM);
+          setFromYear(text.replace("~", ""));
+          break;
+        case YEAR_RANGE_Q1:
+        case YEAR_RANGE_Q2:
+        case YEAR_RANGE_Q3:
+          setCertainty(Certainty.LOW);
+          int firstYear = Integer.parseInt(text.replace("?", "0"));
+          int lastYear = Integer.parseInt(text.replace("?", "9"));
+          calendar.clear();
+          set(calendar, firstYear, Calendar.JANUARY, 1);
+          setFromDate(calendar);
+          calendar.clear();
+          set(calendar, lastYear, Calendar.DECEMBER, 31);
+          setToDate(calendar);
+          break;
+        case YEAR_MONTH:
+          setCertainty(Certainty.HIGH);
+          setFromMonthYear(text);
+          break;
+        case YEAR_MONTH_Q:
+          setCertainty(Certainty.LOW);
+          setFromMonthYear(text.replace("?", ""));
+          break;
+        case YEAR_MONTH_A:
+          setCertainty(Certainty.MEDIUM);
+          setFromMonthYear(text.replace("~", ""));
+          break;
+        case YEAR_MONTH_RANGE:
+          setCertainty(Certainty.MEDIUM);
+          setFromYear(text.replace("-??", ""));
+          break;
+        case DAY_MONTH_YEAR:
+          setCertainty(Certainty.HIGH);
+          String[] dmy = text.split("-");
+          calendar.clear();
+          set(calendar, Integer.parseInt(dmy[2]), Integer.parseInt(dmy[1]) - 1, Integer.parseInt(dmy[0]));
+          setFromDate(calendar);
+          setToDate(calendar);
+          break;
+        case MONTH_YEAR_RX:
+          setCertainty(Certainty.MEDIUM);
+          String[] dmy1 = text.split("-");
+          setFromMonthYear(dmy1[1] + "-" + dmy1[0]);
+          break;
+        case YEAR_MONTH_DAY_H: // "^\\d{4}-\\d{2}-\\d{2}$"
+        case YEAR_MONTH_DAY: // "^\\d{8}$"
+          setCertainty(Certainty.HIGH);
+          handleYearMonthDay(text);
+          break;
+        case YEAR_MONTH_DAY_HQ: // "^\\d{4}-\\d{2}-\\d{2}\\?$"
+        case YEAR_MONTH_DAY_Q: // "^\\d{8}\\?$"
+          setCertainty(Certainty.LOW);
+          handleYearMonthDay(text);
+          break;
+        case YEAR_MONTH_DAY_HA: // "^\\d{4}-\\d{2}-\\d{2}\\~$"
+        case YEAR_MONTH_DAY_A: // "^\\d{8}\\~$"
+          setCertainty(Certainty.MEDIUM);
+          handleYearMonthDay(text);
+          break;
+        case YEAR_RANGE:
+          setCertainty(text.contains("?") ? Certainty.LOW : Certainty.MEDIUM);
+          String[] dmy2 = text.replace("?", "").split("/");
+          calendar.clear();
+          set(calendar, Integer.parseInt(dmy2[0]), Calendar.JANUARY, 1);
+          setFromDate(calendar);
+          calendar.clear();
+          set(calendar, Integer.parseInt(dmy2[1]), Calendar.DECEMBER, 31);
+          setToDate(calendar);
+          break;
+        case HYPHENATED_RANGE:
+          String[] fromAndTo = text.split("/");
+          String[] from = fromAndTo[0].split("-");
+          String[] to = fromAndTo[1].split("-");
+          calendar.clear();
+          set(calendar, Integer.parseInt(from[0]), Integer.parseInt(from[1]), Integer.parseInt(from[2]));
+          setFromDate(calendar);
+          calendar.clear();
+          set(calendar, Integer.parseInt(to[0]), Integer.parseInt(to[1]), Integer.parseInt(to[2]));
+          setToDate(calendar);
+          break;
+        default:
+          throw new RuntimeException("Unhandled case: " + edtf);
       }
     }
   }
