@@ -1,6 +1,7 @@
 package nl.knaw.huygens.concordion.extensions;
 
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpException;
 import org.apache.http.HttpResponse;
@@ -85,10 +86,13 @@ public class HttpCommand extends AbstractCommand {
         failure(resultRecorder, expectedHeaderElements.get(i), header.getKey() + ": " + header.getValue(), "");
       } else {
         Object actual = callResult.getHeaders().getFirst(header.getKey());
-        if (header.getValue() != null && !actual.equals(header.getValue())) {
-          failure(resultRecorder, expectedHeaderElements.get(i).getFirstChildElement("span"), header.getValue(), actual.toString());
-        } else {
+        if (StringUtils.isBlank(header.getValue())) {
           success(resultRecorder, expectedHeaderElements.get(i));
+          expectedHeaderElements.get(i).appendText("" + actual);
+        } else if (actual.equals(header.getValue())) {
+          success(resultRecorder, expectedHeaderElements.get(i));
+        } else {
+          failure(resultRecorder, expectedHeaderElements.get(i).getFirstChildElement("span"), header.getValue(), actual.toString());
         }
       }
     }
@@ -236,6 +240,7 @@ public class HttpCommand extends AbstractCommand {
     String method = "";
     String url = "";
     List<AbstractMap.SimpleEntry<String, String>> headers = Lists.newArrayList();
+    String body = null;
     try {
       org.apache.http.HttpRequest httpRequest = defaultHttpRequestParser.parse();
       method = httpRequest.getRequestLine().getMethod();
@@ -244,12 +249,20 @@ public class HttpCommand extends AbstractCommand {
       for (Header header : httpRequest.getAllHeaders()) {
         headers.add(new AbstractMap.SimpleEntry<>(header.getName(), header.getValue()));
       }
+
+      if (buffer.hasBufferedData()) {
+        body = "";
+
+        while (buffer.hasBufferedData()) {
+          body += (char) buffer.read();
+        }
+      }
     } catch (IOException e) {
       e.printStackTrace();
     } catch (HttpException e) {
       e.printStackTrace();
     }
 
-    return new HttpRequest(method, url, headers);
+    return new HttpRequest(method, url, headers, body);
   }
 }

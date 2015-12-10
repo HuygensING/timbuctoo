@@ -10,8 +10,10 @@ import org.concordion.integration.junit4.ConcordionRunner;
 import org.junit.runner.RunWith;
 
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.AbstractMap;
 
@@ -35,7 +37,11 @@ public class WWPersonV2_1EndpointFixture {
       request = request.header(header.getKey(), header.getValue());
     }
 
-    return request.method(httpRequest.method);
+    if (httpRequest.body != null) {
+      return request.method(httpRequest.method, Entity.json(httpRequest.body));
+    } else {
+      return request.method(httpRequest.method);
+    }
   }
 
   public String isEmpty(String value) {
