@@ -125,7 +125,24 @@ class HttpCommand extends AbstractCommand {
   }
 
   private void formatRequestExpectation(Element requestElement) {
+    Element parentElement = requestElement.getParentElement();
 
+    Element requestHeader = new Element("div").addAttribute("class", "requestCaption").appendText("Request:");
+    requestElement.appendSister(requestHeader);
+    parentElement.removeChild(requestElement);
+
+    Element request = new Element("div").addAttribute("class", "requestContent");
+    requestHeader.appendSister(request);
+
+    Element requestPre = new Element("pre");
+    request.appendChild(requestPre);
+
+    requestPre.appendChild(new Element("span").appendText(httpRequest.method + " "));
+    requestPre.appendChild(new Element("b").appendText(httpRequest.url + " "));
+    requestPre.appendChild(new Element("span").addAttribute("class", "defaultValue").appendText("HTTP/1.1"));
+    for (AbstractMap.SimpleEntry<String, String> header : httpRequest.headers) {
+      requestPre.appendText("\n" + header.getKey() + ": " + header.getValue());
+    }
   }
 
   private String getTextAndRemoveIndent(Element element) {
