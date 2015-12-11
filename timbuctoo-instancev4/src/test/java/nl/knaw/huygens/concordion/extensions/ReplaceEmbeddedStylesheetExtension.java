@@ -1,21 +1,11 @@
 package nl.knaw.huygens.concordion.extensions;
 
-import com.google.common.collect.Lists;
-import com.sun.javaws.exceptions.InvalidArgumentException;
-import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Elements;
-import nu.xom.Text;
 import org.concordion.api.Resource;
-import org.concordion.api.Target;
 import org.concordion.api.extension.ConcordionExtender;
 import org.concordion.api.extension.ConcordionExtension;
-import org.concordion.api.listener.ConcordionBuildEvent;
-import org.concordion.api.listener.ConcordionBuildListener;
-import org.concordion.api.listener.DocumentParsingListener;
 import org.concordion.internal.util.IOUtil;
-
-import java.util.List;
 
 public class ReplaceEmbeddedStylesheetExtension implements ConcordionExtension {
 
