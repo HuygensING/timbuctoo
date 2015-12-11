@@ -12,11 +12,17 @@
   <artifactId>timbuctoo-instancev4</artifactId>
 
   <properties>
+    <!-- code dependencies -->
     <dropwizard.version>0.9.1</dropwizard.version>
     <concoridion.version>1.5.1</concoridion.version>
     <appassembler.version>1.10</appassembler.version>
     <httpcore.version>4.4.4</httpcore.version>
     <jsonassert.version>1.2.3</jsonassert.version>
+    <!-- test output -->
+    <concordion.output.dir>${basedir}/target/concordion</concordion.output.dir>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <!-- plugins -->
+    <maven-failsafe-plugin.version>2.18.1</maven-failsafe-plugin.version>
   </properties>
 
   <dependencies>
@@ -91,11 +97,38 @@
         <configuration>
           <programs>
             <program>
-              <name>timbuctoo</name>
+              <id>timbuctoo</id>
               <mainClass>nl.knaw.huygens.timbuctoo.server.TimbuctooV4</mainClass>
             </program>
           </programs>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${maven-failsafe-plugin.version}</version>
+        <configuration>
+          <forkMode>pertest</forkMode>
+          <argLine>-Xms1024m -Xmx1024m</argLine>
+          <testFailureIgnore>false</testFailureIgnore>
+          <skip>false</skip>
+          <testSourceDirectory>${project.build.testOutputDirectory}</testSourceDirectory>
+          <includes>
+            <include>**/*Fixture.java</include>
+          </includes>
+          <systemPropertyVariables>
+            <concordion.output.dir>${concordion.output.dir}</concordion.output.dir>
+          </systemPropertyVariables>
+        </configuration>
+        <executions>
+          <execution>
+            <id>run-integration-tests</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
