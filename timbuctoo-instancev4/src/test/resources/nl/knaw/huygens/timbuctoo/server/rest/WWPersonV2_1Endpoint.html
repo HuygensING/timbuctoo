@@ -46,7 +46,7 @@
       </span>
     </aside>
     <span>A GET of the wwperson collection will return a json body that has <span
-        c:assertEquals="getNumberOfItems(#response)">200</span> entries.
+        c:assertEquals="getNumberOfItems(#response)">200</span> entries by default.
     </span>
 
     <aside class="example" h:http="#response">
@@ -62,6 +62,21 @@
     </aside>
     <span>The rows query parameter is set to <span c:set="#rows">20</span> the number of items returned is <span
         c:assertEquals="getNumberOfItems(#response)">20</span>
+    </span>
+
+    <aside class="example" h:http="#pagResponse">
+      <span h:request="">
+        GET /v2.1/domain/wwpersons?rows=20&amp;start=20 HTTP/1.1
+        VRE_ID: women-writers
+        Accept: application/json
+      </span>
+      <span h:response="">
+        HTTP/1.1 200
+        Content-Type: application/json
+      </span>
+    </aside>
+    <span>When start is set to 20 it skips the first 20 persons, so
+      <span c:assertTrue="doesNotContainResult(#pagResponse, #response)">it does not contain any result of the previous request.</span>
     </span>
   </section>
 
