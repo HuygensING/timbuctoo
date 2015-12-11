@@ -177,7 +177,7 @@ public class HttpCommand extends AbstractCommand {
     request.appendChild(requestPre);
 
     requestPre.appendChild(new Element("span").appendText(httpRequest.method + " "));
-    requestPre.appendChild(new Element("b").appendText(httpRequest.url + " "));
+    requestPre.appendChild(new Element("b").appendText(getUrl() + " "));
     requestPre.appendChild(new Element("span").addAttribute("class", "defaultValue").appendText("HTTP/1.1"));
     for (AbstractMap.SimpleEntry<String, String> header : httpRequest.headers) {
       requestPre.appendText("\n" + header.getKey() + ": " + header.getValue());
@@ -186,6 +186,25 @@ public class HttpCommand extends AbstractCommand {
       requestPre.appendText("\n\n");
       requestPre.appendChild(new Element("span").appendText(httpRequest.body).addAttribute("class", "reqBody"));
     }
+  }
+
+  private String getUrl() {
+
+    String url = httpRequest.url;
+
+    boolean isFirst = true;
+    for (AbstractMap.SimpleEntry<String, String> queryParameter : httpRequest.queryParameters) {
+      if (isFirst) {
+        url += "?";
+        isFirst = false;
+      } else {
+        url += "&";
+      }
+      url += String.format("%s=%s", queryParameter.getKey(), queryParameter.getValue());
+    }
+
+
+    return url;
   }
 
   private String getTextAndRemoveIndent(Element element) {
@@ -245,6 +264,7 @@ public class HttpCommand extends AbstractCommand {
     SessionInputBufferImpl buffer = new SessionInputBufferImpl(new HttpTransportMetricsImpl(), contents.length());
     buffer.bind(new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8)));
     DefaultHttpRequestParser defaultHttpRequestParser = new DefaultHttpRequestParser(buffer);
+    List<AbstractMap.SimpleEntry<String, String>> queryParameters = Lists.newArrayList();
 
     String method = "";
     String url = "";
@@ -264,6 +284,16 @@ public class HttpCommand extends AbstractCommand {
         url = matcher.group(2);
       }
 
+      if (url.contains("?")) {
+        String[] urlAndQueryParameters = url.split("\\?");
+        url = urlAndQueryParameters[0];
+        for (String queryParameter : urlAndQueryParameters[1].split("&")) {
+          String[] parameter = queryParameter.split("=");
+
+          queryParameters.add(new AbstractMap.SimpleEntry<String, String>(parameter[0], parameter[1]));
+        }
+      }
+
       for (Header header : httpRequest.getAllHeaders()) {
         headers.add(new AbstractMap.SimpleEntry<>(header.getName(), header.getValue()));
       }
@@ -281,6 +311,7 @@ public class HttpCommand extends AbstractCommand {
       e.printStackTrace();
     }
 
-    return new HttpRequest(method, url, headers, body, server);
+
+    return new HttpRequest(method, url, headers, body, server, queryParameters);
   }
 }

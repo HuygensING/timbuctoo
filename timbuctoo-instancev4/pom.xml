@@ -16,6 +16,7 @@
     <concoridion.version>1.5.1</concoridion.version>
     <appassembler.version>1.10</appassembler.version>
     <httpcore.version>4.4.4</httpcore.version>
+    <jsonassert.version>1.2.3</jsonassert.version>
   </properties>
 
   <dependencies>
@@ -50,6 +51,14 @@
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpcore</artifactId>
       <version>${httpcore.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- JSONassert a library to help verifying JSON -->
+    <dependency>
+      <groupId>org.skyscreamer</groupId>
+      <artifactId>jsonassert</artifactId>
+      <version>${jsonassert.version}</version>
       <scope>test</scope>
     </dependency>
 

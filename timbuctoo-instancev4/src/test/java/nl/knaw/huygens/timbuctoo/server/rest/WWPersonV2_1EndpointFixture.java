@@ -1,5 +1,8 @@
 package nl.knaw.huygens.timbuctoo.server.rest;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.concordion.extensions.HttpCommandExtension;
 import nl.knaw.huygens.concordion.extensions.HttpRequest;
 import nl.knaw.huygens.concordion.extensions.HttpResult;
@@ -13,8 +16,8 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.util.AbstractMap;
 
 @RunWith(ConcordionRunner.class)
@@ -28,9 +31,15 @@ public class WWPersonV2_1EndpointFixture {
 //  public final ResourceTestRule resources = ResourceTestRule.builder().addResource(new WWPersonCollectionV2_1EndPoint()).build();
 
   private Response doHttpCommand(HttpRequest httpRequest) {
-    WebTarget target = ClientBuilder.newClient().target(httpRequest.server != null ? httpRequest.server : "http://acc.repository.huygens.knaw.nl");
+    WebTarget target = ClientBuilder.newClient()
+      .target(httpRequest.server != null ? httpRequest.server : "http://acc.repository.huygens.knaw.nl")
+      .path(httpRequest.url);
+
+    for (AbstractMap.SimpleEntry<String, String> queryParameter : httpRequest.queryParameters) {
+      target = target.queryParam(queryParameter.getKey(), queryParameter.getValue());
+    }
+
     Invocation.Builder request = target
-      .path(httpRequest.url)
       .request();
 
     for (AbstractMap.SimpleEntry<String, String> header : httpRequest.headers) {
@@ -48,8 +57,17 @@ public class WWPersonV2_1EndpointFixture {
     return StringUtils.isBlank(value) ? "empty" : "not empty";
   }
 
-  public boolean isValidJsonBody(HttpResult result) {
-    return result.getBody() != "";
+  public int getNumberOfItems(HttpResult result) {
+    try {
+      JsonNode jsonNode = new ObjectMapper().readTree(result.getBody().getBytes());
+      return Lists.newArrayList(jsonNode.elements()).size();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public boolean returnFalse() {
+    return false;
   }
 
 }
