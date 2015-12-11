@@ -221,7 +221,7 @@ class TinkerPopLowLevelAPI {
   }
 
   public Iterator<Edge> findEdgesWithoutProperty(Class<? extends Relation> relationType, String propertyName) {
-    Iterable<Edge> edges = db.query().hasNot(propertyName).edges();
+    Iterable<Edge> edges = queryByType(relationType).hasNot(propertyName).edges();
 
     return edges.iterator();
   }
