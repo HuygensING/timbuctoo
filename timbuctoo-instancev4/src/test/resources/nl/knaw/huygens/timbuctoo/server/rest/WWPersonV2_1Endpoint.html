@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:c="http://www.concordion.org/2007/concordion"
+      xmlns:h="http://huygens.knaw.nl/concordion-http-verifier">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Timbuctoo v2.1 WWPerson API</title>
+  <script src='https://www.w3.org/Tools/respec/respec-w3c-common' async='async' class='remove'>
+    Some content to trick concordion into treating this element as non-empty
+  </script>
+  <script class='remove'>
+        var respecConfig = {
+          specStatus: "unofficial",
+          editors: [
+            {
+              name:       "Jauco Noordzij",
+              company:    "Huygens ING"
+            },
+            {
+              name:       "Martijn Maas",
+              company:    "Huygens ING"
+            }
+          ],
+          issueBase: "http://jira.huygens.knaw.nl/TIM-",
+          shortName: "timbuctoov2.1"
+        };
+  </script>
+</head>
+<body>
+  <section id='abstract'>
+    <p>
+      This specification describes the workings of the v2.1 version of the Timbuctoo REST API for wwpersons
+    </p>
+  </section>
+  <section id="GETCollection">
+    <h2>GET wwperson collection</h2>
+    <h3>A simple request</h3>
+    <aside class="example" h:http="#response">
+      <span h:request="">
+        GET /v2.1/domain/wwpersons HTTP/1.1
+        Accept: application/json
+      </span>
+      <span h:response="">
+        HTTP/1.1 200
+        Content-Type: application/json
+      </span>
+    </aside>
+    <span>A GET of the wwperson collection will return a json body that has <span
+        c:assertEquals="getNumberOfItems(#response)">200</span> entries by default.
+    </span>
+
+    <h3>Pagination</h3>
+    <aside class="example" h:http="#response">
+      <span h:request="">
+        GET /v2.1/domain/wwpersons?rows=20 HTTP/1.1
+        Accept: application/json
+      </span>
+      <span h:response="">
+        HTTP/1.1 200
+        Content-Type: application/json
+      </span>
+    </aside>
+    <span>The rows query parameter is set to <span c:set="#rows">20</span> the number of items returned is <span
+        c:assertEquals="getNumberOfItems(#response)">20</span>
+    </span>
+
+    <aside class="example" h:http="#pagResponse">
+      <span h:request="">
+        GET /v2.1/domain/wwpersons?rows=20&amp;start=20 HTTP/1.1
+        Accept: application/json
+      </span>
+      <span h:response="">
+        HTTP/1.1 200
+        Content-Type: application/json
+      </span>
+    </aside>
+    <span>When start is set to 20 it skips the first 20 persons, so
+      <span c:assertTrue="doesNotContainResult(#pagResponse, #response)">it does not contain any result of the previous request.</span>
+    </span>
+  </section>
+
+  <section id="GETSingle">
+    <h2>Get a single wwperson</h2>
+    <aside class="example" h:http="#response">
+
+      <p>When an unknown wwperson with id '00000000-0000-0000-0000-000000000000' is requested.</p>
+
+      <span h:request="">
+        GET /v2.1/domain/wwpersons/00000000-0000-0000-0000-000000000000 HTTP/1.1
+        Accept: application/json
+      </span>
+      <p>The response will look like this:</p>
+      <span h:response="">
+        HTTP/1.1 404
+        Content-Type: text/html;charset=utf-8
+      </span>
+    </aside>
+
+    <!--<aside class="example" h:http="#response">-->
+
+      <!--<p>A ww person with id '6b206d36-ba15-4ffa-98b1-530c4a06d799' is known/</p>-->
+
+      <!--<span h:request="">-->
+        <!--GET /v2.1/domain/wwpersons/6b206d36-ba15-4ffa-98b1-530c4a06d799 HTTP/1.1-->
+        <!--Accept: application/json-->
+      <!--</span>-->
+      <!--<span h:response="">-->
+        <!--HTTP/1.1 200-->
+        <!--Content-Type: application/json-->
+      <!--</span>-->
+    <!--</aside>-->
+  </section>
+
+  <section>
+    <h2>Faceted search</h2>
+    Timbuctoo has support for building faceted searches. A faceted search usually follows the following steps.
+    <ol>
+      <li>You perform an empty POST to the search endpoint, and GET the returned location</li>
+      <li>You present the returned facets to the user</li>
+      <li>The user selects some combination of facets</li>
+      <li>You perform a new POST to the search endpoint and GET the returned location</li>
+      <li>You present the returned results to the user and update your facet list based on the new facets</li>
+      <li>The user updates its combination of facets</li>
+      <li>etc.</li>
+    </ol>
+    <aside class="example">
+      <h3>An initial request</h3>
+      Let's assume we're searching the collection <b>ckccpersons</b>.
+      <div h:http="#response">
+        <span h:request="">
+          POST /v2.1/search/ckccpersons HTTP/1.1
+          VRE_ID: CKCC
+          Content-type: application/json
+
+          {}
+        </span>
+        <span h:response="">
+          HTTP/1.1 201
+          Location:
+        </span>
+      </div>
+      You then get a Location header back (In this case <span c:echo="#response.headers.location"></span>) that you can GET.
+      <div h:http="">
+        <span h:request="">
+          GET #response.headers.location HTTP/1.1
+        </span>
+        <span h:response="">
+          HTTP/1.1 200
+        </span>
+      </div>
+    </aside>
+  </section>
+
+</body>
+</html>

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <artifactId>timbuctoo</artifactId>
+    <groupId>nl.knaw.huygens</groupId>
+    <version>3.1.0-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>timbuctoo-instancev4</artifactId>
+
+  <properties>
+    <!-- code dependencies -->
+    <dropwizard.version>0.9.1</dropwizard.version>
+    <concoridion.version>1.5.1</concoridion.version>
+    <appassembler.version>1.10</appassembler.version>
+    <httpcore.version>4.4.4</httpcore.version>
+    <jsonassert.version>1.2.3</jsonassert.version>
+    <!-- test output -->
+    <concordion.output.dir>${basedir}/target/concordion</concordion.output.dir>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <!-- plugins -->
+    <maven-failsafe-plugin.version>2.18.1</maven-failsafe-plugin.version>
+  </properties>
+
+  <dependencies>
+    <!-- ## Main dependencies ## -->
+    <!-- Dropwizard -->
+    <dependency>
+      <groupId>io.dropwizard</groupId>
+      <artifactId>dropwizard-core</artifactId>
+      <version>${dropwizard.version}</version>
+    </dependency>
+    <!-- ## End of main dependencies ## -->
+
+    <!-- ## Test dependencies ## -->
+    <!-- Concordion acceptance test framework -->
+    <dependency>
+      <groupId>org.concordion</groupId>
+      <artifactId>concordion</artifactId>
+      <version>${concoridion.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Dropwizard test dependencies -->
+    <dependency>
+      <groupId>io.dropwizard</groupId>
+      <artifactId>dropwizard-testing</artifactId>
+      <version>${dropwizard.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Http core for parsing the acceptance test inputs -->
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpcore</artifactId>
+      <version>${httpcore.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- JSONassert a library to help verifying JSON -->
+    <dependency>
+      <groupId>org.skyscreamer</groupId>
+      <artifactId>jsonassert</artifactId>
+      <version>${jsonassert.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- JUnit -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- ## End of test dependencies ## -->
+
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>appassembler-maven-plugin</artifactId>
+        <version>${appassembler.version}</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>assemble</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <programs>
+            <program>
+              <id>timbuctoo</id>
+              <mainClass>nl.knaw.huygens.timbuctoo.server.TimbuctooV4</mainClass>
+            </program>
+          </programs>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${maven-failsafe-plugin.version}</version>
+        <configuration>
+          <forkMode>pertest</forkMode>
+          <argLine>-Xms1024m -Xmx1024m</argLine>
+          <testFailureIgnore>false</testFailureIgnore>
+          <skip>false</skip>
+          <testSourceDirectory>${project.build.testOutputDirectory}</testSourceDirectory>
+          <includes>
+            <include>**/*Fixture.java</include>
+          </includes>
+          <systemPropertyVariables>
+            <concordion.output.dir>${concordion.output.dir}</concordion.output.dir>
+          </systemPropertyVariables>
+        </configuration>
+        <executions>
+          <execution>
+            <id>run-integration-tests</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>integration-test</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
