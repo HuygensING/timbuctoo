@@ -22,20 +22,18 @@ package nl.knaw.huygens.timbuctoo.tools.oaipmh.neww;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule.createInjectorWithoutSolr;
+import com.google.inject.Injector;
 import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.config.Configuration;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.neww.WWDocument;
-import nl.knaw.huygens.timbuctoo.model.neww.WWPerson;
 import nl.knaw.huygens.timbuctoo.storage.StorageIterator;
 import nl.knaw.huygens.timbuctoo.tools.oaipmh.OAIRecordCreator;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Injector;
+import static nl.knaw.huygens.timbuctoo.tools.config.ToolsInjectionModule.createInjectorWithoutSolr;
 
 public class WWOAIPMHTool {
   private static final String VRE_ID = "WomenWriters";
@@ -56,7 +54,7 @@ public class WWOAIPMHTool {
       //      createOAIRecordForThreeEntities(WWDocument.class, frontEndURL, VRE_ID, oaiRecordCreator, repo);
       //      createOAIRecordForThreeEntities(WWPerson.class, frontEndURL, VRE_ID, oaiRecordCreator, repo);
       createOAIRecordForAllEntities(WWDocument.class, frontEndURL, VRE_ID, oaiRecordCreator, repo);
-      createOAIRecordForAllEntities(WWPerson.class, frontEndURL, VRE_ID, oaiRecordCreator, repo);
+//      createOAIRecordForAllEntities(WWPerson.class, frontEndURL, VRE_ID, oaiRecordCreator, repo);
     } finally {
       repo.close();
     }
