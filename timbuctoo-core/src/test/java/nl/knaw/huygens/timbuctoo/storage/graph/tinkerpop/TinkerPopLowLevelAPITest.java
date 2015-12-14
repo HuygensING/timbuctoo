@@ -670,11 +670,12 @@ public class TinkerPopLowLevelAPITest {
   }
 
   @Test
-  public void findEdgesWithoutPropertyReturnsVerticesDoNotContainACertainProperty() {
+  public void findEdgesWithoutPropertyReturnsEdgesThatDoNotContainACertainProperty() {
     // setup
     Edge edge1 = anEdge().build();
     Edge edge2 = anEdge().build();
     EdgeSearchResultBuilder.QueryVerifier queryVerifier = anEdgeSearchResult()//
+      .forType(RELATION_TYPE) //
       .withoutProperty(PROPERTY_NAME)//
       .containsEdge(edge1) //
       .containsEdge(edge2) //
@@ -691,7 +692,7 @@ public class TinkerPopLowLevelAPITest {
   @Test
   public void findEdgesWithoutPropertyReturnsAnEmptyIteratorWhenNoneAreFound() {
     // setup
-    anEmptyEdgeSearchResult().withoutProperty(PROPERTY_NAME).foundInDatabase(dbMock);
+    anEmptyEdgeSearchResult().forType(RELATION_TYPE).withoutProperty(PROPERTY_NAME).foundInDatabase(dbMock);
 
     // action
     Iterator<Edge> vertices = instance.findEdgesWithoutProperty(RELATION_TYPE, PROPERTY_NAME);
