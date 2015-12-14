@@ -86,6 +86,9 @@ public class CharterDocument extends Document {
   }
 
   @IndexAnnotation(fieldName = "dynamic_s_fonds", isFaceted = true)
+  public String getFondsFacet() {
+    return fondsNaam + " (" + fonds + ")";
+  }
   public String getFonds() {
     return fonds;
   }
