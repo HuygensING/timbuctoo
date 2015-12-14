@@ -32,12 +32,12 @@
       This specification describes the workings of the v2.1 version of the Timbuctoo REST API for wwpersons
     </p>
   </section>
-  <section id="GET">
+  <section id="GETCollection">
     <h2>GET wwperson collection</h2>
+    <h3>A simple request</h3>
     <aside class="example" h:http="#response">
       <span h:request="">
         GET /v2.1/domain/wwpersons HTTP/1.1
-        VRE_ID: women-writers
         Accept: application/json
       </span>
       <span h:response="">
@@ -49,10 +49,10 @@
         c:assertEquals="getNumberOfItems(#response)">200</span> entries by default.
     </span>
 
+    <h3>Pagination</h3>
     <aside class="example" h:http="#response">
       <span h:request="">
         GET /v2.1/domain/wwpersons?rows=20 HTTP/1.1
-        VRE_ID: women-writers
         Accept: application/json
       </span>
       <span h:response="">
@@ -67,7 +67,6 @@
     <aside class="example" h:http="#pagResponse">
       <span h:request="">
         GET /v2.1/domain/wwpersons?rows=20&amp;start=20 HTTP/1.1
-        VRE_ID: women-writers
         Accept: application/json
       </span>
       <span h:response="">
@@ -78,6 +77,38 @@
     <span>When start is set to 20 it skips the first 20 persons, so
       <span c:assertTrue="doesNotContainResult(#pagResponse, #response)">it does not contain any result of the previous request.</span>
     </span>
+  </section>
+
+  <section id="GETSingle">
+    <h2>Get a single wwperson</h2>
+    <aside class="example" h:http="#response">
+
+      <p>When an unknown wwperson with id '00000000-0000-0000-0000-000000000000' is requested.</p>
+
+      <span h:request="">
+        GET /v2.1/domain/wwpersons/00000000-0000-0000-0000-000000000000 HTTP/1.1
+        Accept: application/json
+      </span>
+      <p>The response will look like this:</p>
+      <span h:response="">
+        HTTP/1.1 404
+        Content-Type: text/html;charset=utf-8
+      </span>
+    </aside>
+
+    <!--<aside class="example" h:http="#response">-->
+
+      <!--<p>A ww person with id '6b206d36-ba15-4ffa-98b1-530c4a06d799' is known/</p>-->
+
+      <!--<span h:request="">-->
+        <!--GET /v2.1/domain/wwpersons/6b206d36-ba15-4ffa-98b1-530c4a06d799 HTTP/1.1-->
+        <!--Accept: application/json-->
+      <!--</span>-->
+      <!--<span h:response="">-->
+        <!--HTTP/1.1 200-->
+        <!--Content-Type: application/json-->
+      <!--</span>-->
+    <!--</aside>-->
   </section>
 
   <section>
