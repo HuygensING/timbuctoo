@@ -2,19 +2,32 @@ package nl.knaw.huygens.concordion.extensions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONString;
-import org.skyscreamer.jsonassert.*;
+import org.json.JSONObject;
+import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.skyscreamer.jsonassert.JSONCompareResult;
+import org.skyscreamer.jsonassert.LocationAwareValueMatcher;
+import org.skyscreamer.jsonassert.RegularExpressionValueMatcher;
+import org.skyscreamer.jsonassert.ValueMatcherException;
 import org.skyscreamer.jsonassert.comparator.DefaultComparator;
 import org.skyscreamer.jsonassert.comparator.JSONComparator;
 
 import java.text.MessageFormat;
 
 public class JsonSpecComparator extends DefaultComparator {
-  RegularExpressionValueMatcher<Object> regexMatcher = new RegularExpressionValueMatcher<>();
-  ArraySpecMatcher<Object> arrayMatcher = new ArraySpecMatcher<>(this);
+  private final RegularExpressionValueMatcher<Object> regexMatcher;
+  private final ArraySpecMatcher<Object> arrayMatcher;
 
   public JsonSpecComparator() {
+    this(new ArraySpecMatcher<Object>(), new RegularExpressionValueMatcher<>());
+  }
+
+
+  public JsonSpecComparator(ArraySpecMatcher<Object> arrayMatcher, RegularExpressionValueMatcher<Object> regexMatcher) {
     super(JSONCompareMode.LENIENT);
+    this.arrayMatcher = arrayMatcher;
+    arrayMatcher.setComparator(this);
+    this.regexMatcher = regexMatcher;
+
   }
 
   @Override
@@ -25,7 +38,7 @@ public class JsonSpecComparator extends DefaultComparator {
       } catch (ValueMatcherException e) {
         result.fail(prefix, e);
       }
-    } else if (expectedValue instanceof JSONString || expectedValue instanceof String) {
+    } else if (expectedValue instanceof String) {
       String expectationString = expectedValue.toString();
       if (expectationString.startsWith("?")) {
         if (expectationString.equals("?Number") || expectationString.equals("?Boolean")) {
@@ -46,17 +59,23 @@ public class JsonSpecComparator extends DefaultComparator {
           result.fail(prefix, e);
         }
       }
-    } else {
+    } else if (expectedValue instanceof JSONObject) {
       super.compareValues(prefix, expectedValue, actualValue, result);
+    } else {
+      throw new IllegalArgumentException(expectedValue + " is not a supported expectation");
     }
   }
 
-  private class ArraySpecMatcher<T> implements LocationAwareValueMatcher<T> {
-    private final JSONComparator comparator;
+  static class ArraySpecMatcher<T> implements LocationAwareValueMatcher<T> {
+    private JSONComparator comparator;
 
-    public ArraySpecMatcher(JSONComparator subComparator) {
-      comparator = subComparator;
+    public ArraySpecMatcher() {
     }
+
+    private void setComparator(JSONComparator comparator) {
+      this.comparator = comparator;
+    }
+
 
     @Override
     public boolean equal(T o1, T o2) {
@@ -94,5 +113,7 @@ public class JsonSpecComparator extends DefaultComparator {
         throw new RuntimeException(e);
       }
     }
+
+
   }
 }
