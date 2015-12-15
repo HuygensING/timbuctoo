@@ -99,12 +99,13 @@ public class HttpCommand extends AbstractCommand {
       }
     }
 
+    String resultBody = httpResult.getBody();
     if (expectation.body != null) {
-      String resultBody = httpResult.getBody();
-      if (expectation.body.equals(resultBody)) {
+      String errorMessages = JsonSpecValidator.equals(resultBody, expectation.body);
+      if (StringUtils.isBlank(errorMessages)) {
         success(resultRecorder, expectedBodyElement);
       } else {
-        failure(resultRecorder, expectedBodyElement, expectation.body, resultBody);
+        failure(resultRecorder, expectedBodyElement, "", errorMessages);
       }
     }
 
