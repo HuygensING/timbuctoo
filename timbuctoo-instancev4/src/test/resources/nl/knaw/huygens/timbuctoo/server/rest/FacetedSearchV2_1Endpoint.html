@@ -4,7 +4,7 @@
       xmlns:h="http://huygens.knaw.nl/concordion-http-verifier">
 <head>
   <meta charset="UTF-8"/>
-  <title>Timbuctoo v2.1 WWPerson API</title>
+  <title>Timbuctoo v2.1 Faceted search API</title>
   <script src='https://www.w3.org/Tools/respec/respec-w3c-common' async='async' class='remove'>
     Some content to trick concordion into treating this element as non-empty
   </script>
@@ -48,7 +48,7 @@
     <aside class="example">
       <h3>An initial request</h3>
       Let's assume we're searching the collection <b>ckccpersons</b>.
-      <div h:http="#response">
+      <div h:http="#searchPost">
           <span h:request="">
             POST /v2.1/search/ckccpersons HTTP/1.1
             VRE_ID: CKCC
@@ -61,15 +61,38 @@
             Location:
           </span>
       </div>
-      You then get a Location header back (In this case <span c:echo="#response.headers.location"></span>) that you can GET.
-      <div h:http="">
+      You then get a Location header back (In this case <span c:echo="#searchPost.headers.location"></span>) that you can GET for a few hours. If it returns a 404 you are expected to retry the POST.
+      <div h:http="#searchGet">
           <span h:request="">
-            GET #response.headers.location HTTP/1.1
+            GET #searchPost.headers.location HTTP/1.1
           </span>
           <span h:response="">
             HTTP/1.1 200
+
+            {
+              _next: "https?://.*",
+              facets: [
+                {
+                  name: "dynamic_s_.+",
+                  type: "LIST",
+                  options: [{
+                    name: ".+",
+                    count: "?Number"
+                  }]
+                },
+                {
+                  name: "dynamic_i_.+",
+                  type: "RANGE",
+                  options: [{
+                    upperLimit: "?Number",
+                    lowerLimit: "?Number"
+                  }]
+                }
+              ]
+            }
           </span>
       </div>
+
     </aside>
   </section>
 
