@@ -51,18 +51,26 @@ public class JsonSpecComparator extends DefaultComparator {
   private void checkStrings(String prefix, Object expectedValue, Object actualValue, JSONCompareResult result) {
     String expectationString = expectedValue.toString();
     if (expectationString.startsWith("?")) {
-      if (expectationString.equals("?Number") || expectationString.equals("?Boolean") ||
-        expectationString.equals("?Datable")) {
-        if (expectationString.equals("?Number") && !(actualValue instanceof Number)) {
-          result.fail(prefix, "a number", actualValue);
-        } else if (expectationString.equals("?Boolean") && !(actualValue instanceof Boolean)) {
-          result.fail(prefix, "a boolean", actualValue);
-        } else if (expectationString.equals("?Datable") && !(actualValue instanceof String)) { //
-          result.fail(prefix, "a datable", actualValue);
-        }
-      } else {
-        result.fail(prefix,
-          new ValueMatcherException("Not a valid expectation", "?Number or ?Boolean or ?Datable", expectationString));
+      switch (expectationString) {
+        case "?Number":
+          if (!(actualValue instanceof Number)) {
+            result.fail(prefix, "a number", actualValue);
+          }
+          break;
+        case "?Boolean":
+          if (!(actualValue instanceof Boolean)) {
+            result.fail(prefix, "a boolean", actualValue);
+          }
+          break;
+        case "?Datable":
+          if (!(actualValue instanceof String)) {
+            result.fail(prefix, "a datable", actualValue);
+          }
+          break;
+        default:
+          result.fail(prefix,
+            new ValueMatcherException("Not a valid expectation", "?Number or ?Boolean or ?Datable", expectationString));
+
       }
     } else {
       try {
