@@ -35,19 +35,21 @@
     <p>
       This specification describes the workings of the v2.1 version of the Timbuctoo REST API for wwpersons
     </p>
+    <span c:execute="#token=getAuthenticationToken()">For each test we expect the user is logged in and uses token
+      <b><span c:echo="#token"></span></b>.</span>
   </section>
   <section id="GETCollection">
     <h2>GET wwperson collection</h2>
     <h3>A simple request</h3>
     <aside class="example" h:http="#response">
-      <span h:request="">
+      <div h:request="">
         GET /v2.1/domain/wwpersons HTTP/1.1
         Accept: application/json
-      </span>
-      <span h:response="">
+      </div>
+      <div h:response="">
         HTTP/1.1 200
         Content-Type: application/json
-      </span>
+      </div>
     </aside>
     <span>A GET of the wwperson collection will return a json body that has <span
         c:assertEquals="getNumberOfItems(#response)">200</span> entries by default.
@@ -55,29 +57,29 @@
 
     <h3>Pagination</h3>
     <aside class="example" h:http="#response">
-      <span h:request="">
+      <div h:request="">
         GET /v2.1/domain/wwpersons?rows=20 HTTP/1.1
         Accept: application/json
-      </span>
-      <span h:response="">
+      </div>
+      <div h:response="">
         HTTP/1.1 200
         Content-Type: application/json
-      </span>
+      </div>
     </aside>
     <span>The rows query parameter is set to <span c:set="#rows">20</span> the number of items returned is <span
         c:assertEquals="getNumberOfItems(#response)">20</span>
     </span>
 
     <aside class="example" h:http="#pagResponse">
-      <span h:request="">
+      <div h:request="">
         GET /v2.1/domain/wwpersons?rows=20&amp;start=20 HTTP/1.1
         Accept: application/json
-      </span>
-      <span h:response="">
+      </div>
+      <div h:response="">
         HTTP/1.1 200
         Content-Type: application/json
 
-      </span>
+      </div>
     </aside>
     <span>When start is set to 20 it skips the first 20 persons, so
       <span c:assertTrue="doesNotContainResult(#pagResponse, #response)">it does not contain any result of the previous request.</span>

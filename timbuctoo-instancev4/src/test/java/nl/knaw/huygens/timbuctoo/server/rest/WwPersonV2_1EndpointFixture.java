@@ -5,12 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import io.dropwizard.testing.junit.ResourceTestRule;
 import nl.knaw.huygens.concordion.extensions.HttpExpectation;
+import nl.knaw.huygens.concordion.extensions.HttpRequest;
 import nl.knaw.huygens.concordion.extensions.HttpResult;
 import org.concordion.integration.junit4.ConcordionRunner;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
 
+import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -59,5 +62,17 @@ public class WwPersonV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
   @Override
   public String validate(HttpExpectation expectation, HttpResult reality) {
     return "";
+  }
+
+  public String getAuthenticationToken(){
+    List<AbstractMap.SimpleEntry<String, String>> headers = Lists.newArrayList();
+    headers.add(new AbstractMap.SimpleEntry<String, String>("Authorization",  "Basic dXNlcjpwYXNzd29yZA=="));
+
+    HttpRequest loginRequest =
+      new HttpRequest("POST", "/v2.1/authenticate", headers, null, null, Lists.newArrayList());
+
+    Response response = doHttpCommand(loginRequest);
+
+    return response.getHeaderString("x_auth_token");
   }
 }
