@@ -80,7 +80,7 @@ public class WwDocumentV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
             "Expected response to contain: '" + expected + "', but got: '" + reality.getBody() + "'";
   }
 
-  public String getAuthenticationToken(){
+  public String getAuthenticationToken() {
     List<AbstractMap.SimpleEntry<String, String>> headers = Lists.newArrayList();
     headers.add(new AbstractMap.SimpleEntry<String, String>("Authorization",  "Basic dXNlcjpwYXNzd29yZA=="));
 
