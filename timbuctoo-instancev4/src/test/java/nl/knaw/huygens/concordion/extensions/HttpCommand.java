@@ -298,7 +298,7 @@ public class HttpCommand extends AbstractCommand {
       }
 
       for (Header header : httpRequest.getAllHeaders()) {
-        headers.add(new AbstractMap.SimpleEntry<>(header.getName(), header.getValue()));
+        headers.add(new AbstractMap.SimpleEntry<>(header.getName(), getHeaderValue(evaluator, header)));
       }
 
       if (buffer.hasBufferedData()) {
@@ -316,5 +316,13 @@ public class HttpCommand extends AbstractCommand {
 
 
     return new HttpRequest(method, url, headers, body, server, queryParameters);
+  }
+
+  private String getHeaderValue(Evaluator evaluator, Header header) {
+    String value = header.getValue();
+    if (value.startsWith("#")) {
+      return evaluator.evaluate(value).toString();
+    }
+    return value;
   }
 }
