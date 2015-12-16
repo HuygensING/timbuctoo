@@ -95,7 +95,6 @@
         <p>A 401 unauthorized statusCode is returned by the server response headers</p>
         <div h:response="">
             HTTP/1.1 401
-            Content-Type: text/html;charset=utf-8
         </div>
     </aside>
     <aside class="example" h:http="#response">
@@ -125,7 +124,6 @@
         <p>The server will respond with a 415 statusCode: Unsupported media type</p>
         <div h:response="">
             HTTP/1.1 415
-            Content-Type: text/html;charset=utf-8
         </div>
     </aside>
     <aside class="example" h:http="#response">
@@ -141,7 +139,6 @@
         <p>The server will respond with a 400 statusCode</p>
         <div h:response="validatePostWithEmptyBodyResponse">
             HTTP/1.1 400
-            Content-Type: text/plain; charset=UTF-8
 
             [...] missing property '@type' [...]
         </div>
@@ -155,7 +152,14 @@
             Content-type: application/json
             VRE_ID: WomenWriters
 
-            {"@type": "wwdocument"}
+            {
+                "@type": "wwdocument",
+                "documentType": "PERIODICAL",
+                "englishTitle": "English title",
+                "title": "Title",
+                "date": "1850",
+                "reference": "A reference"
+            }
         </div>
         <p>The server will respond with a location header containing the URL of the created resource</p>
         <div h:response="">
@@ -163,7 +167,31 @@
             Location:
         </div>
     </aside>
+</section>
 
+<section id="GETsingle">
+    <h2>Performing GET to the recently created wwdocument resource</h2>
+    <aside class="example" h:http="#response">
+        <p>When a valid POST is performed to wwdocuments</p>
+        <div h:request="">
+            GET #createResponse.headers.location HTTP/1.1
+            Accept: application/json
+        </div>
+        <p>The server will respond with the created resource</p>
+        <div h:response="">
+            HTTP/1.1 200
+            Content-type: application/json
+
+            {
+                "@type": "wwdocument",
+                "date": "1850",
+                "title": "Title",
+                "englishTitle": "English title",
+                "documentType": "PERIODICAL"
+            }
+        </div>
+        <span style="color: red">TODO:</span> extend JSON
+    </aside>
 </section>
 
 <section id="DELETE">
