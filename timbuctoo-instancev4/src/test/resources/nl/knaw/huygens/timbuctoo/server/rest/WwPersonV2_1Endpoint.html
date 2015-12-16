@@ -52,7 +52,7 @@
       </div>
     </aside>
     <span>A GET of the wwperson collection will return a json body that has <span
-        c:assertEquals="getNumberOfItems(#response)">200</span> entries by default.
+        c:assertEquals="getNumberOfItems(#response)"><b>200</b></span> entries by default.
     </span>
 
     <h3>Pagination</h3>
@@ -66,8 +66,8 @@
         Content-Type: application/json
       </div>
     </aside>
-    <span>The rows query parameter is set to <span c:set="#rows">20</span> the number of items returned is <span
-        c:assertEquals="getNumberOfItems(#response)">20</span>
+    <span>The rows query parameter is set to <b>20</b> the number of items returned is <span
+        c:assertEquals="getNumberOfItems(#response)"><b>20</b></span>.
     </span>
 
     <aside class="example" h:http="#pagResponse">
@@ -78,11 +78,11 @@
       <div h:response="">
         HTTP/1.1 200
         Content-Type: application/json
-
       </div>
     </aside>
     <span>When start is set to 20 it skips the first 20 persons, so
-      <span c:assertTrue="doesNotContainResult(#pagResponse, #response)">it does not contain any result of the previous request.</span>
+      <span c:assertTrue="doesNotContainResult(#pagResponse, #response)"><i>it does not contain any result of the
+        previous request</i>.</span>
     </span>
   </section>
 
@@ -90,99 +90,19 @@
     <h2>Get a single wwperson</h2>
     <aside class="example" h:http="#response">
 
-      <p>When an unknown wwperson with id '00000000-0000-0000-0000-000000000000' is requested.</p>
+      <p>When a wwperson with unknown id '00000000-0000-0000-0000-000000000000' is requested.</p>
 
-      <span h:request="">
+      <div h:request="">
         GET /v2.1/domain/wwpersons/00000000-0000-0000-0000-000000000000 HTTP/1.1
         Accept: application/json
-      </span>
+      </div>
       <p>The response will look like this:</p>
-      <span h:response="">
+      <div h:response="">
         HTTP/1.1 404
         Content-Type: text/html;charset=utf-8
-      </span>
+      </div>
     </aside>
 
-    <aside class="example" h:http="#response">
-
-      <p>A ww person with id '6b206d36-ba15-4ffa-98b1-530c4a06d799' is known/</p>
-
-      <span h:request="">
-        GET /v2.1/domain/wwpersons/6b206d36-ba15-4ffa-98b1-530c4a06d799 HTTP/1.1
-        Accept: application/json
-      </span>
-      <span h:response="">
-        HTTP/1.1 200
-        Content-Type: application/json
-
-        {
-          "_id": "6b206d36-ba15-4ffa-98b1-530c4a06d799",
-          "names":[
-            {
-              "components":[
-                {
-                  "type": "FORENAME",
-                  "value": ".*"
-                },
-                {
-                  "type": "SURNAME",
-                  "value": ".*"
-                },
-                {
-                  "type": "NAME_LINK",
-                  "value": ".*"
-                },
-                {
-                  "type": "ROLE_NAME",
-                  "value": ".*"
-                },
-                {
-                  "type": "ADD_NAME",
-                  "value": ".*"
-                },
-                {
-                  "type": "GEN_NAME",
-                  "value": ".*"
-                }
-              ]
-            }
-          ],
-          "birthDate": "?Datable",
-          "deathDate": "?Datable",
-          "types": [".*"],
-          "links": [
-            {url: ".*", label: ".*"}
-          ],
-          "bibliography": "(.|\\n|\\r)*",
-          "notes": "(.|\\n|\\r)*",
-          "^rev": "?Number",
-          "^created": {
-            "timeStamp": "?Number",
-            "userId": ".*",
-            "username": ".*",
-            "vreId": ".*"
-          },
-          "^modified": {
-            "timeStamp": "?Number",
-            "userId": ".*",
-            "username": ".*",
-            "vreId": ".*"
-          },
-          "^deleted": "?Boolean",
-          "^displayName": ".*",
-          "^pid": "http://hdl.handle.net/[0-9]+/[a-z0-9\-]+",
-          "@relationCount": "?Number",
-          "@relations": {},
-          "@properties": {},
-          "@variationRefs": [
-            {"id": "6b206d36-ba15-4ffa-98b1-530c4a06d799", type: ".*person"}
-          ],
-        }
-      </span>
-    </aside>
-    <!--<span>The number of @relations should equal the value of @relationCount-->
-      <!--<span c:assertTrue="numberOfRelationsEqualsRelationObjects(#response)">the @relationCount matches the number of @relations</span>-->
-    <!--</span>-->
   </section>
 
 </body>
