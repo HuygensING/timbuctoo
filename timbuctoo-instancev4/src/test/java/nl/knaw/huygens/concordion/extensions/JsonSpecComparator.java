@@ -41,14 +41,16 @@ public class JsonSpecComparator extends DefaultComparator {
     } else if (expectedValue instanceof String) {
       String expectationString = expectedValue.toString();
       if (expectationString.startsWith("?")) {
-        if (expectationString.equals("?Number") || expectationString.equals("?Boolean")) {
+        if (expectationString.equals("?Number") || expectationString.equals("?Boolean") || expectationString.equals("?Datable")) {
           if (expectationString.equals("?Number") && !(actualValue instanceof Number)) {
             result.fail(prefix, "a number", actualValue);
           } else if (expectationString.equals("?Boolean") && !(actualValue instanceof Boolean)) {
             result.fail(prefix, "a boolean", actualValue);
+          } else if (expectationString.equals("?Datable") && !(actualValue instanceof String)){ //
+            result.fail(prefix, "a datable", actualValue);
           }
         } else {
-          result.fail(prefix, new ValueMatcherException("Not a valid expectation", "?Number or ?Boolean", expectationString));
+          result.fail(prefix, new ValueMatcherException("Not a valid expectation", "?Number or ?Boolean or ?Datable", expectationString));
         }
       } else {
         try {

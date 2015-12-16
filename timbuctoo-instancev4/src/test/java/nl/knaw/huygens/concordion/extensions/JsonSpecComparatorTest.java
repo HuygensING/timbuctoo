@@ -45,12 +45,10 @@ public class JsonSpecComparatorTest {
     actualValue.put(5);
 
     // action
-    JSONCompareResult jsonCompareResult = mock(JSONCompareResult.class);
-    String prefix = "prefix";
-    instance.compareValues(prefix, expectedValue, actualValue, jsonCompareResult);
+    instance.compareValues(PREFIX, expectedValue, actualValue, jsonCompareResult);
 
     // verify
-    verify(arrayMatcher).equal(prefix, actualValue, expectedValue, jsonCompareResult);
+    verify(arrayMatcher).equal(PREFIX, actualValue, expectedValue, jsonCompareResult);
     verifyZeroInteractions(jsonCompareResult);
   }
 
@@ -65,12 +63,10 @@ public class JsonSpecComparatorTest {
     actualValue.put(5);
 
     // action
-    JSONCompareResult jsonCompareResult = mock(JSONCompareResult.class);
-    String prefix = "prefix";
-    instance.compareValues(prefix, expectedValue, actualValue, jsonCompareResult);
+    instance.compareValues(PREFIX, expectedValue, actualValue, jsonCompareResult);
 
     // verify
-    verify(arrayMatcher).equal(prefix, actualValue, expectedValue, jsonCompareResult);
+    verify(arrayMatcher).equal(PREFIX, actualValue, expectedValue, jsonCompareResult);
     verifyZeroInteractions(jsonCompareResult);
   }
 
@@ -167,6 +163,33 @@ public class JsonSpecComparatorTest {
 
     // verify
     verifyZeroInteractions(jsonCompareResult);
+  }
+
+  @Test
+  public void compareValuesCallsFailOnJsonCompareResultWhenTheExpectedValueSpecifiesADatableAndTheActualValueIsNotAString() throws Exception {
+    // setup
+    String expectedValue = "?Datable";
+    int notADatableString = 14;
+
+    // action
+    instance.compareValues(PREFIX, expectedValue, notADatableString, jsonCompareResult);
+
+    // verify
+    verify(jsonCompareResult).fail(PREFIX, "a datable", notADatableString);
+  }
+
+  @Test
+  public void compareValuesDoesNotCallFailOnJsonCompareResultWhenTheExpectedValueSpecifiesADatableAndTheActualValueIsADatable() throws Exception {
+    // setup
+    String expectedValue = "?Datable";
+    String actualValue = "20150604";
+
+    // action
+    instance.compareValues(PREFIX, expectedValue, actualValue, jsonCompareResult);
+
+    // verify
+    verifyZeroInteractions(jsonCompareResult);
+
   }
 
   @Test
