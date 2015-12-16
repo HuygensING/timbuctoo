@@ -22,12 +22,13 @@ public class FacetedSearchV2_1EndpointFixture extends AbstractV2_1EndpointFixtur
   }
 
   @Override
-  public String validateRequest(HttpExpectation expectation, HttpResult reality) {
+  public String validate(HttpExpectation expectation, HttpResult reality) {
     if (expectation.body == null) {
       return "";
     } else {
       try {
-        JSONCompareResult result = JSONCompare.compareJSON(expectation.body, reality.getBody(), JSONCompareMode.LENIENT);
+        JSONCompareResult result =
+          JSONCompare.compareJSON(expectation.body, reality.getBody(), JSONCompareMode.LENIENT);
         return result.getMessage();
       } catch (JSONException e) {
         throw new RuntimeException(e);

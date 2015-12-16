@@ -109,7 +109,9 @@ public class HttpCommand extends AbstractCommand {
     if (!StringUtils.isBlank(verificationMethod)) {
       evaluator.setVariable("#nl_knaw_huygens_httpcommand_result", httpResult);
       evaluator.setVariable("#nl_knaw_huygens_httpcommand_expectation", expectation);
-      errorMessages = (String) evaluator.evaluate(verificationMethod + "(#nl_knaw_huygens_httpcommand_expectation, #nl_knaw_huygens_httpcommand_result)");
+      errorMessages = (String) evaluator.evaluate(
+        verificationMethod + "(#nl_knaw_huygens_httpcommand_expectation, #nl_knaw_huygens_httpcommand_result)"
+      );
       evaluator.setVariable("#nl_knaw_huygens_httpcommand_result", null);
       evaluator.setVariable("#nl_knaw_huygens_httpcommand_expectation", null);
     } else {
