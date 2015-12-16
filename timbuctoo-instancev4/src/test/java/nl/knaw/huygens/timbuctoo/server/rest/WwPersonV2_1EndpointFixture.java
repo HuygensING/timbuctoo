@@ -25,8 +25,6 @@ public class WwPersonV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
   public WwPersonV2_1EndpointFixture() {
     objectMapper = new ObjectMapper();
     resources = ResourceTestRule.builder().addResource(new WwPersonCollectionV2_1EndPoint()).build();
-    removeExtension = new ReplaceEmbeddedStylesheetExtension("/nl/knaw/huygens/timbuctoo/server/rest/concordion.css");
-    commandExtension = new HttpCommandExtension(this::doHttpCommand, false);
   }
 
   public int getNumberOfItems(HttpResult result) {
