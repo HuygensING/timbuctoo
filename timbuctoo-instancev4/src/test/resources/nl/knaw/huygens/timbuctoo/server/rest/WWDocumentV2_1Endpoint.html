@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:c="http://www.concordion.org/2007/concordion"
+      xmlns:h="http://huygens.knaw.nl/concordion-http-verifier">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Timbuctoo v2.1 WWDocument API</title>
+    <script src='https://www.w3.org/Tools/respec/respec-w3c-common' async='async' class='remove'>
+    Some content to trick concordion into treating this element as non-empty
+  </script>
+    <script class='remove'>
+        var respecConfig = {
+          specStatus: "unofficial",
+          editors: [
+            {
+              name:       "Jauco Noordzij",
+              company:    "Huygens ING"
+            },
+            {
+              name:       "Martijn Maas",
+              company:    "Huygens ING"
+            },
+            {
+              name:       "René van der Ark",
+              company:    "Huygens ING"
+            }
+          ],
+          issueBase: "http://jira.huygens.knaw.nl/TIM-",
+          shortName: "timbuctoov2.1"
+        };
+  </script>
+</head>
+<body>
+<section id='abstract'>
+    <p>
+        This specification describes the workings of the v2.1 version of the Timbuctoo REST API for wwdocuments
+    </p>
+</section>
+<section id="GETCollection">
+    <h2>GET wwdocuments collection</h2>
+    <h3>A simple request</h3>
+    <aside class="example" h:http="#response">
+      <span h:request="">
+        GET /v2.1/domain/wwdocuments HTTP/1.1
+        Accept: application/json
+      </span>
+      <span h:response="">
+        HTTP/1.1 200
+        Content-Type: application/json
+      </span>
+    </aside>
+    <span>A GET of the wwdocuments collection will return a json body that has <span
+            c:assertEquals="getNumberOfItems(#response)">200</span> entries by default.
+    </span>
+
+    <h3>Pagination</h3>
+    <aside class="example" h:http="#response">
+      <span h:request="">
+        GET /v2.1/domain/wwdocuments?rows=20 HTTP/1.1
+        Accept: application/json
+      </span>
+      <span h:response="">
+        HTTP/1.1 200
+        Content-Type: application/json
+      </span>
+    </aside>
+    <span>The rows query parameter is set to <span c:set="#rows">20</span> the number of items returned is <span
+            c:assertEquals="getNumberOfItems(#response)">20</span>
+    </span>
+
+    <aside class="example" h:http="#pagResponse">
+      <span h:request="">
+        GET /v2.1/domain/wwdocuments?rows=20&amp;start=20 HTTP/1.1
+        Accept: application/json
+      </span>
+      <span h:response="">
+        HTTP/1.1 200
+        Content-Type: application/json
+      </span>
+    </aside>
+    <span>When start is set to 20 it skips the first 20 persons, so
+      <span c:assertTrue="doesNotContainResult(#pagResponse, #response)">it does not contain any result of the previous request.</span>
+    </span>
+</section>
+
+<section id="GETSingle">
+    <h2>Get a single wwdocument</h2>
+    <aside class="example" h:http="#response">
+
+        <p>When an unknown wwdocument with id '00000000-0000-0000-0000-000000000000' is requested.</p>
+
+      <span h:request="">
+        GET /v2.1/domain/wwdocuments/00000000-0000-0000-0000-000000000000 HTTP/1.1
+        Accept: application/json
+      </span>
+        <p>The response will look like this:</p>
+      <span h:response="">
+        HTTP/1.1 404
+        Content-Type: text/html;charset=utf-8
+      </span>
+    </aside>
+
+    <aside class="example" h:http="#response">
+
+        <p>A wwdocument with id '5d4e0b05-185d-423d-abee-07acc3e9739a' is known to have both @variationRefs and @relations/</p>
+
+        <span h:request="">
+            GET /v2.1/domain/wwdocuments/5d4e0b05-185d-423d-abee-07acc3e9739a HTTP/1.1
+            Accept: application/json
+        </span>
+        <span h:response="">
+            HTTP/1.1 200
+            Content-Type: application/json
+
+            {
+                @properties: {},
+                @relationCount: "?Number",
+                @relations: {},
+                @type: "wwdocument",
+                @variationRefs: [
+                    {id: ".*", type: ".*document"}
+                ],
+                ^created: {
+                    timeStamp: "?Number",
+                    userId: ".*",
+                    username: ".*",
+                    vreId: ".*"
+                },
+                ^deleted: "?Boolean",
+                ^displayName: ".*"
+            }
+        </span>
+        <!-- TODO: this test does not make assertions on all properties of a wwdocument yet -->
+    </aside>
+</section>
+
+</body>
+</html>
