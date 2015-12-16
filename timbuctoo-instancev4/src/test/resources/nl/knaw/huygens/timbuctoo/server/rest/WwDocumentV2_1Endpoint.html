@@ -85,7 +85,7 @@
     </span>
 </section>
 
-<section id="POSTUnauthorized">
+<section id="POST">
     <h2>POST to wwdocuments</h2>
     <aside class="example" h:http="#response">
         <p>When a POST is performed to wwdocuments without an authentication token</p>
@@ -133,6 +133,7 @@
         <div h:request="">
             POST /v2.1/domain/wwdocuments HTTP/1.1
             Authorization: #token
+            Content-type: application/json
             VRE_ID: WomenWriters
 
             {}
@@ -146,8 +147,55 @@
         </div>
     </aside>
 
+    <aside class="example" h:http="#createResponse">
+        <p>When a valid POST is performed to wwdocuments</p>
+        <div h:request="">
+            POST /v2.1/domain/wwdocuments HTTP/1.1
+            Authorization: #token
+            Content-type: application/json
+            VRE_ID: WomenWriters
+
+            {"@type": "wwdocument"}
+        </div>
+        <p>The server will respond with a location header containing the URL of the created resource</p>
+        <div h:response="">
+            HTTP/1.1 201
+            Location:
+        </div>
+    </aside>
+
 </section>
 
+<section id="DELETE">
+    <h2>Deleting a wwdocument</h2>
+    <aside class="example" h:http="#response">
+        <p>When a DELETE is sent to an existing wwdocument resource</p>
+        <div h:request="">
+            DELETE #createResponse.headers.location HTTP/1.1
+            Authorization: #token
+            VRE_ID: WomenWriters
+        </div>
+        <p>The server will respond with statusCode 204 no content</p>
+        <div h:response="">
+            HTTP/1.1 204
+        </div>
+    </aside>
+</section>
+
+<section id="GET-after-DELETE">
+    <h2>Trying to retrieve the deleted record</h2>
+    <aside class="example" h:http="#response">
+        <p>When a GET is sent to the recently deleted wwdocument resource</p>
+        <div h:request="">
+            GET #createResponse.headers.location HTTP/1.1
+            Accept: application/json
+        </div>
+        <p>The server will respond with statusCode 404 not found</p>
+        <div h:response="">
+            HTTP/1.1 404
+        </div>
+    </aside>
+</section>
 
 
 <!--<section id="GETSingle">-->
