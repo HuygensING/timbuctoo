@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.server.rest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.concordion.extensions.HttpExpectation;
 import nl.knaw.huygens.concordion.extensions.HttpResult;
 import org.concordion.integration.junit4.ConcordionRunner;
 import org.junit.runner.RunWith;
@@ -48,5 +49,10 @@ public class WwDocumentV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
     }
 
     return ids;
+  }
+
+  @Override
+  public String validate(HttpExpectation expectation, HttpResult reality) {
+    return "";
   }
 }

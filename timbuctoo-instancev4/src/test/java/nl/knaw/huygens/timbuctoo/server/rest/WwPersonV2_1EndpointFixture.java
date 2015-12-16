@@ -4,9 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import io.dropwizard.testing.junit.ResourceTestRule;
-import nl.knaw.huygens.concordion.extensions.HttpCommandExtension;
+import nl.knaw.huygens.concordion.extensions.HttpExpectation;
 import nl.knaw.huygens.concordion.extensions.HttpResult;
-import nl.knaw.huygens.concordion.extensions.ReplaceEmbeddedStylesheetExtension;
 import org.concordion.integration.junit4.ConcordionRunner;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
@@ -57,4 +56,8 @@ public class WwPersonV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
     return ids;
   }
 
+  @Override
+  public String validate(HttpExpectation expectation, HttpResult reality) {
+    return "";
+  }
 }

@@ -49,7 +49,6 @@ public abstract class AbstractV2_1EndpointFixture {
     }
   }
 
-  public String validate(HttpExpectation expectation, HttpResult reality) {
-    return "";
-  }
+  public abstract String validate(HttpExpectation expectation, HttpResult reality);
+
 }
