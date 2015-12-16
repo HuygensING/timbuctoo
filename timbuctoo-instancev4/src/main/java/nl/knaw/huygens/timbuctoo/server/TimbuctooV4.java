@@ -7,6 +7,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
   public static void main(String[] args) throws Exception {
     new TimbuctooV4().run(args);
   }
+
   @Override
   public void run(TimbuctooConfiguration configuration, Environment environment) throws Exception {
 

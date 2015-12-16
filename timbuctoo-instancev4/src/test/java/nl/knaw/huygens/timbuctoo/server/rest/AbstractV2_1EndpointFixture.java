@@ -10,7 +10,11 @@ import javax.ws.rs.core.Response;
 import java.util.AbstractMap;
 
 public abstract class AbstractV2_1EndpointFixture {
-  public Response doHttpCommand(HttpRequest httpRequest) {
+
+  /**
+   * Implements the actual http call for the concordion HTTPCommand.
+   */
+  protected Response doHttpCommand(HttpRequest httpRequest) {
     WebTarget target = ClientBuilder.newClient()
       .target(httpRequest.server != null ? httpRequest.server : "http://acc.repository.huygens.knaw.nl")
       .path(httpRequest.url);

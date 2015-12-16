@@ -11,5 +11,7 @@ public class FacetedSearchV2_1EndpointFixture extends AbstractV2_1EndpointFixtur
   @Extension
   public HttpCommandExtension commandExtension = new HttpCommandExtension(this::doHttpCommand, false);
   @Extension
-  public ReplaceEmbeddedStylesheetExtension removeExtension = new ReplaceEmbeddedStylesheetExtension("/nl/knaw/huygens/timbuctoo/server/rest/concordion.css");
+  public ReplaceEmbeddedStylesheetExtension removeExtension = new ReplaceEmbeddedStylesheetExtension(
+    "/nl/knaw/huygens/timbuctoo/server/rest/concordion.css"
+  );
 }

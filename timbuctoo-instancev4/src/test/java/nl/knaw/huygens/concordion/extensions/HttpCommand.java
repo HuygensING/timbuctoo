@@ -84,17 +84,19 @@ public class HttpCommand extends AbstractCommand {
 
     for (int i = 0; i < expectation.headers.size(); i++) {
       AbstractMap.SimpleEntry<String, String> header = expectation.headers.get(i);
+      Element headerElement = expectedHeaderElements.get(i);
       if (!httpResult.getHeaders().containsKey(header.getKey().toLowerCase())) {
-        failure(resultRecorder, expectedHeaderElements.get(i), header.getKey() + ": " + header.getValue(), "");
+        failure(resultRecorder, headerElement, header.getKey() + ": " + header.getValue(), "");
       } else {
         Object actual = httpResult.getHeaders().get(header.getKey().toLowerCase());
         if (StringUtils.isBlank(header.getValue())) {
-          success(resultRecorder, expectedHeaderElements.get(i));
-          expectedHeaderElements.get(i).appendText("" + actual);
+          success(resultRecorder, headerElement);
+          headerElement.appendText("" + actual);
         } else if (actual.equals(header.getValue())) {
-          success(resultRecorder, expectedHeaderElements.get(i));
+          success(resultRecorder, headerElement);
         } else {
-          failure(resultRecorder, expectedHeaderElements.get(i).getFirstChildElement("span"), header.getValue(), actual.toString());
+          failure(
+            resultRecorder, headerElement.getFirstChildElement("span"), header.getValue(), actual.toString());
         }
       }
     }

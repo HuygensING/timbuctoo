@@ -1,10 +1,11 @@
 package nl.knaw.huygens.concordion.extensions;
 
 import org.json.JSONException;
-import org.skyscreamer.jsonassert.*;
+import org.skyscreamer.jsonassert.JSONCompare;
+import org.skyscreamer.jsonassert.JSONCompareResult;
 
 /**
- * A Comparator that matches values to a regex, and arrays using an or structure
+ * A Comparator that matches values to a regex, and arrays using an or structure.
  */
 public class JsonSpecValidator {
 
