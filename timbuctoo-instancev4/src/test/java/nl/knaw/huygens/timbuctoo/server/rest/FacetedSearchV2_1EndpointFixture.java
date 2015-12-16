@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.rest;
 
 import nl.knaw.huygens.concordion.extensions.HttpExpectation;
 import nl.knaw.huygens.concordion.extensions.HttpResult;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.concordion.api.FullOGNL;
 import org.concordion.integration.junit4.ConcordionRunner;
 import org.json.JSONException;
@@ -21,20 +22,26 @@ public class FacetedSearchV2_1EndpointFixture extends AbstractV2_1EndpointFixtur
     }
   }
 
+  public String dontCheck(HttpExpectation expectation, HttpResult reality) {
+    return "";
+  }
+
   @Override
   public String validate(HttpExpectation expectation, HttpResult reality) {
-    if (expectation.body == null) {
-      return "";
-    } else if (reality.getHeaders().get("content-type").equals("")) {
+    if (expectation.hasBody()) {
       try {
-        JSONCompareResult result =
-          JSONCompare.compareJSON(expectation.body, reality.getBody(), JSONCompareMode.LENIENT);
+        JSONCompareResult result = JSONCompare.compareJSON(
+          expectation.body,
+          reality.getBody(),
+          JSONCompareMode.LENIENT
+        );
+
         return result.getMessage();
       } catch (JSONException e) {
-        throw new RuntimeException(e);
+        return ExceptionUtils.getStackTrace(e);
       }
     } else {
-      return "Not a json response body.";
+      return "";
     }
   }
 }
