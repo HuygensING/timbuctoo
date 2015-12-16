@@ -7,7 +7,6 @@ import io.dropwizard.testing.junit.ResourceTestRule;
 import nl.knaw.huygens.concordion.extensions.HttpCommandExtension;
 import nl.knaw.huygens.concordion.extensions.HttpResult;
 import nl.knaw.huygens.concordion.extensions.ReplaceEmbeddedStylesheetExtension;
-import org.concordion.api.extension.Extension;
 import org.concordion.integration.junit4.ConcordionRunner;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
@@ -19,10 +18,6 @@ import java.util.List;
 
 @RunWith(ConcordionRunner.class)
 public class WwPersonV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
-  @Extension
-  public HttpCommandExtension commandExtension;
-  @Extension
-  public ReplaceEmbeddedStylesheetExtension removeExtension;
   @Rule
   public final ResourceTestRule resources;
   private final ObjectMapper objectMapper;

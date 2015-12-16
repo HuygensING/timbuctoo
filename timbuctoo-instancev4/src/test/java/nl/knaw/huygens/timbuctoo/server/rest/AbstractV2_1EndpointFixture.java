@@ -1,6 +1,9 @@
 package nl.knaw.huygens.timbuctoo.server.rest;
 
+import nl.knaw.huygens.concordion.extensions.HttpCommandExtension;
 import nl.knaw.huygens.concordion.extensions.HttpRequest;
+import nl.knaw.huygens.concordion.extensions.ReplaceEmbeddedStylesheetExtension;
+import org.concordion.api.extension.Extension;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -10,6 +13,13 @@ import javax.ws.rs.core.Response;
 import java.util.AbstractMap;
 
 public abstract class AbstractV2_1EndpointFixture {
+
+  @Extension
+  public HttpCommandExtension commandExtension = new HttpCommandExtension(this::doHttpCommand, false);
+  @Extension
+  public ReplaceEmbeddedStylesheetExtension removeExtension = new ReplaceEmbeddedStylesheetExtension(
+    "/nl/knaw/huygens/timbuctoo/server/rest/concordion.css"
+  );
 
   /**
    * Implements the actual http call for the concordion HTTPCommand.

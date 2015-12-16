@@ -106,6 +106,12 @@
 
   <developers>
     <developer>
+      <id>RA</id>
+      <name>René van der Ark</name>
+      <organization>Huygens ING</organization>
+      <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
+    </developer>
+    <developer>
       <id>RD</id>
       <name>Ronald Haentjens Dekker</name>
       <organization>Huygens ING</organization>
@@ -114,6 +120,12 @@
     <developer>
       <id>MM</id>
       <name>Martijn Maas</name>
+      <organization>Huygens ING</organization>
+      <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
+    </developer>
+    <developer>
+      <id>JN</id>
+      <name>Jauco Noordzij</name>
       <organization>Huygens ING</organization>
       <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
     </developer>
