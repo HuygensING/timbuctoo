@@ -28,73 +28,174 @@
 </head>
 <body>
   <section id='abstract'>
-    <p>
-      This specification describes the workings of the v2.1 version of the Timbuctoo REST API for wwpersons
-    </p>
-  </section>
-
-  <section>
-    <h2>Faceted search</h2>
-    Timbuctoo has support for building faceted searches. A faceted search usually follows the following steps.
+    Timbuctoo has support for building faceted searches. Doing a faceted search usually follows the following steps.
     <ol>
-      <li>You perform an empty POST to the search endpoint, and GET the returned location</li>
+      <li>You <a href="#retrievingFacets">retrieve facets</a> by performing an empty POST to the search endpoint, and GET the returned location</li>
       <li>You present the returned facets to the user</li>
       <li>The user selects some combination of facets</li>
-      <li>You perform a new POST to the search endpoint and GET the returned location</li>
+      <li>You <a href="#searchingUsingFacets">search</a> using the selected facets</li>
       <li>You present the returned results to the user and update your facet list based on the new facets</li>
       <li>The user updates its combination of facets</li>
       <li>etc.</li>
     </ol>
-    <aside class="example">
-      <h3>An initial request</h3>
-      Let's assume we're searching the collection <b>ckccpersons</b>.
-      <div h:http="#searchPost">
-          <span h:request="">
-            POST /v2.1/search/ckccpersons HTTP/1.1
-            VRE_ID: CKCC
-            Content-type: application/json
+  </section>
+  <section id="retrievingFacets">
+    <h2>Retrieving facets</h2>
+    Let's assume we're searching the collection <b>ckccpersons</b>.
+    <aside class="example highlight" h:http="#searchPost">
+        <div h:request="">
+          POST /v2.1/search/ckccpersons HTTP/1.1
+          VRE_ID: CKCC
+          Content-type: application/json
 
-            {}
-          </span>
-          <span h:response="">
-            HTTP/1.1 201
-            Location:
-          </span>
+          {}
+        </div>
+        <div h:response="">
+          HTTP/1.1 201
+          Location:
+        </div>
+    </aside>
+    <p>
+      You then get a Location header back (In this case <small><span c:echo="#searchPost.headers.location"></span></small>)
+      that contains <span c:assertEquals="isFullyQualified(#searchPost.headers.location)">a fully qualified HTTP url</span>.
+      This url is valid during the next few hours. Once it starts returning 404's you are expected to retry the POST.
+    </p>
+    <aside id="emptyRetrieveResponse" class="example highlight" h:http="#searchGet">
+      <div h:request="">
+        GET #searchPost.headers.location HTTP/1.1
       </div>
-      You then get a Location header back (In this case <span c:echo="#searchPost.headers.location"></span>) that you can GET for a few hours. If it returns a 404 you are expected to retry the POST.
-      <div h:http="#searchGet">
-          <span h:request="">
-            GET #searchPost.headers.location HTTP/1.1
-          </span>
-          <span h:response="">
-            HTTP/1.1 200
+      <div h:response="">
+        HTTP/1.1 200
 
+        {
+          _next: "https?://.*",
+          facets: [
             {
-              _next: "https?://.*",
-              facets: [
-                {
-                  name: "dynamic_s_.+",
-                  type: "LIST",
-                  options: [{
-                    name: ".+",
-                    count: "?Number"
-                  }]
-                },
-                {
-                  name: "dynamic_i_.+",
-                  type: "RANGE",
-                  options: [{
-                    upperLimit: "?Number",
-                    lowerLimit: "?Number"
-                  }]
-                }
+              name: "dynamic_s_.+",
+              type: "LIST",
+              options: [{
+                name: ".+",
+                count: "?Number"
+              }]
+            },
+            {
+              name: "dynamic_i_.+",
+              type: "RANGE",
+              options: [{
+                upperLimit: "?Number",
+                lowerLimit: "?Number"
+              }]
+            }
+          ],
+          fullTextSearchFields: ["dynamic_t_.+"],
+          refs: [{
+            data: {},
+            displayName: ".+",
+            path: "[^/].*"
+          }],
+          sortableFields: ["dynamic_(k|sort)_.+"],
+          start: "?Number",
+          rows: "?Number",
+          numFound: "?Number"
+        }
+      </div>
+    </aside>
+    <ul>
+      <li>
+        numFound contains the total number of records that match the query and is therefore always greater than, or
+        equal to the facet numbers and the rows property.
+      </li>
+      <li>
+        start contains the offset, in items
+      </li>
+      <li>
+        rows contains the amount of rows in the returned dataset. This is always equal to the length of the terms array
+      </li>
+      <li>
+        Rows might be less then 10 when the resultset contains no more items.
+      </li>
+    </ul>
+  </section>
+  <section id="searchingUsingFacets">
+    <h2>Searching with the selected facets</h2>
+    <p>
+      You can use the information in the facets, sortableFields and fullTextSearchFields to create a query form. You can
+      use the information from the refs property to show a set of results.
+    </p>
+    <p>
+      The form should then create a POST containing those facets and fulltext fields that you wish to filter on. Let's
+      use a different domain (charterportaal) for our next search.
+    </p>
+    <aside class="example highlight" h:http="#filteredPost">
+      <div h:request="">
+        POST /v2.1/search/charterdocuments HTTP/1.1
+        VRE_ID: Charter
+        Content-type: application/json
+
+        {
+          "facetValues":[
+            {
+              "name": "dynamic_s_fonds",
+              "values": [
+                "Graven van Holland (3.01.01)"
               ]
             }
-          </span>
+          ],
+          "fullTextSearchParameters": [
+            {
+              "name": "dynamic_t_alltext",
+              "term": "akte"
+            }
+          ]
+        }
       </div>
+      <div h:response="">
+        HTTP/1.1 201
+        Location:
+      </div>
+    </aside>
+    So you present a LIST facet with an array of strings
+    <aside class="example highlight" h:http="">
+      <div h:request="">
+        GET #filteredPost.headers.location HTTP/1.1
+      </div>
+      (the response spec below is identical to spec in the example of <a href="#emptyRetrieveResponse">retrieving facets</a>)
+      <div h:response="">
+        HTTP/1.1 200
 
+        {
+          _next: "https?://.*",
+          facets: [
+            {
+              name: "dynamic_s_.+",
+              type: "LIST",
+              options: [{
+                name: ".+",
+                count: "?Number"
+              }]
+            },
+            {
+              name: "dynamic_i_.+",
+              type: "RANGE",
+              options: [{
+                upperLimit: "?Number",
+                lowerLimit: "?Number"
+              }]
+            }
+          ],
+          fullTextSearchFields: ["dynamic_t_.+"],
+          refs: [{
+            data: {},
+            displayName: ".+",
+            path: "[^/].*"
+          }],
+          sortableFields: ["dynamic_(k|sort)_.+"],
+          start: "?Number",
+          rows: "?Number",
+          numFound: "?Number"
+        }
+      </div>
     </aside>
   </section>
-
 </body>
 </html>
