@@ -130,18 +130,24 @@ public class HttpCommand extends AbstractCommand {
     listeners.announce().successReported(new AssertSuccessEvent(element));
   }
 
-  private void formatResponseExpectation(Element expectationElement) {
-    Element parentElement = expectationElement.getParentElement();
+  private void formatResponseExpectation(Element origExpectationElement) {
+    Element parentElement = origExpectationElement.getParentElement();
 
     Element responseHeader = new Element("div").addAttribute("class", "responseCaption").appendText("Response:");
-    expectationElement.appendSister(responseHeader);
-    parentElement.removeChild(expectationElement);
+    origExpectationElement.appendSister(responseHeader);
+    parentElement.removeChild(origExpectationElement);
 
-    Element response = new Element("div").addAttribute("class", "responseContent");
-    responseHeader.appendSister(response);
+    //replacing the entire element because we're not sure how to remove mixed text/xml content otherwise
+    Element newExpectationElement = new Element(origExpectationElement.getLocalName());
+    origExpectationElement.moveAttributesTo(newExpectationElement);
+    String className = newExpectationElement.getAttributeValue("class");
+    newExpectationElement
+      .addAttribute("class", className == null ? "requestContent" : className + " requestContent")
+      .removeAttribute("response", namespace);
+    responseHeader.appendSister(newExpectationElement);
 
     Element responsePre = new Element("pre");
-    response.appendChild(responsePre);
+    newExpectationElement.appendChild(responsePre);
 
     responsePre.appendChild(new Element("span").addAttribute("class", "defaultValue").appendText("HTTP/1.1"));
     responsePre.appendText(" ");
@@ -163,21 +169,27 @@ public class HttpCommand extends AbstractCommand {
     }
   }
 
-  private void formatRequest(Element requestElement) {
-    Element parentElement = requestElement.getParentElement();
+  private void formatRequest(Element origRequestElement) {
+    Element parentElement = origRequestElement.getParentElement();
 
     Element requestHeader = new Element("div").addAttribute("class", "requestCaption").appendText("Request:");
     if (httpRequest.server != null) {
       requestHeader.appendChild(new Element("small").appendText(" (to " + httpRequest.server + ")"));
     }
-    requestElement.appendSister(requestHeader);
-    parentElement.removeChild(requestElement);
+    origRequestElement.appendSister(requestHeader);
+    parentElement.removeChild(origRequestElement);
 
-    Element request = new Element("div").addAttribute("class", "requestContent");
-    requestHeader.appendSister(request);
+    //replacing the entire element because we're not sure how to remove mixed text/xml content otherwise
+    Element newRequestElement = new Element(origRequestElement.getLocalName());
+    origRequestElement.moveAttributesTo(newRequestElement);
+    String className = newRequestElement.getAttributeValue("class");
+    newRequestElement
+      .addAttribute("class", className == null ? "requestContent" : className + " requestContent")
+      .removeAttribute("request", namespace);
+    requestHeader.appendSister(newRequestElement);
 
     Element requestPre = new Element("pre");
-    request.appendChild(requestPre);
+    newRequestElement.appendChild(requestPre);
 
     requestPre.appendChild(new Element("span").appendText(httpRequest.method + " "));
     requestPre.appendChild(new Element("b").appendText(getUrl() + " "));
