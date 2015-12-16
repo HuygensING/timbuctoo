@@ -35,19 +35,21 @@
     <p>
         This specification describes the workings of the v2.1 version of the Timbuctoo REST API for wwdocuments
     </p>
+    <span c:execute="#token=getAuthenticationToken()">For each test we expect the user is logged in and uses token
+      <b><span c:echo="#token"></span></b>.</span>
 </section>
 <section id="GETCollection">
     <h2>GET wwdocuments collection</h2>
     <h3>A simple request</h3>
     <aside class="example" h:http="#response">
-      <span h:request="">
+      <div h:request="">
         GET /v2.1/domain/wwdocuments HTTP/1.1
         Accept: application/json
-      </span>
-      <span h:response="">
+      </div>
+      <div h:response="">
         HTTP/1.1 200
         Content-Type: application/json
-      </span>
+      </div>
     </aside>
     <span>A GET of the wwdocuments collection will return a json body that has <span
             c:assertEquals="getNumberOfItems(#response)">200</span> entries by default.
@@ -55,85 +57,150 @@
 
     <h3>Pagination</h3>
     <aside class="example" h:http="#response">
-      <span h:request="">
+      <div h:request="">
         GET /v2.1/domain/wwdocuments?rows=20 HTTP/1.1
         Accept: application/json
-      </span>
-      <span h:response="">
+      </div>
+      <div h:response="">
         HTTP/1.1 200
         Content-Type: application/json
-      </span>
+      </div>
     </aside>
     <span>The rows query parameter is set to <span c:set="#rows">20</span> the number of items returned is <span
             c:assertEquals="getNumberOfItems(#response)">20</span>
     </span>
 
     <aside class="example" h:http="#pagResponse">
-      <span h:request="">
+      <div h:request="">
         GET /v2.1/domain/wwdocuments?rows=20&amp;start=20 HTTP/1.1
         Accept: application/json
-      </span>
-      <span h:response="">
+      </div>
+      <div h:response="">
         HTTP/1.1 200
         Content-Type: application/json
-      </span>
+      </div>
     </aside>
     <span>When start is set to 20 it skips the first 20 persons, so
       <span c:assertTrue="doesNotContainResult(#pagResponse, #response)">it does not contain any result of the previous request.</span>
     </span>
 </section>
 
-<section id="GETSingle">
-    <h2>Get a single wwdocument</h2>
+<section id="POSTUnauthorized">
+    <h2>POST to wwdocuments</h2>
     <aside class="example" h:http="#response">
-
-        <p>When an unknown wwdocument with id '00000000-0000-0000-0000-000000000000' is requested.</p>
-
-      <span h:request="">
-        GET /v2.1/domain/wwdocuments/00000000-0000-0000-0000-000000000000 HTTP/1.1
-        Accept: application/json
-      </span>
-        <p>The response will look like this:</p>
-      <span h:response="">
-        HTTP/1.1 404
-        Content-Type: text/html;charset=utf-8
-      </span>
+        <p>When a POST is performed to wwdocuments without an authentication token</p>
+        <div h:request="">
+            POST /v2.1/domain/wwdocuments HTTP/1.1
+        </div>
+        <p>A 401 unauthorized statusCode is returned by the server response headers</p>
+        <div h:response="">
+            HTTP/1.1 401
+            Content-Type: text/html;charset=utf-8
+        </div>
     </aside>
-
     <aside class="example" h:http="#response">
-
-        <p>A wwdocument with id '5d4e0b05-185d-423d-abee-07acc3e9739a' is known to have both @variationRefs and @relations/</p>
-
-        <span h:request="">
-            GET /v2.1/domain/wwdocuments/5d4e0b05-185d-423d-abee-07acc3e9739a HTTP/1.1
-            Accept: application/json
-        </span>
-        <span h:response="">
-            HTTP/1.1 200
+        <p>When a POST is performed to wwdocuments without a VRE_ID</p>
+        <div h:request="">
+            POST /v2.1/domain/wwdocuments HTTP/1.1
+            Authorization: #token
+        </div>
+        <p>The expected response will be</p>
+        <div h:response="">
+            HTTP/1.1 401
             Content-Type: application/json
 
             {
-                _id: "5d4e0b05-185d-423d-abee-07acc3e9739a",
-                @properties: {},
-                @relationCount: "?Number",
-                @relations: {},
-                @type: "wwdocument",
-                @variationRefs: [
-                    {id: "5d4e0b05-185d-423d-abee-07acc3e9739a", type: ".*document"}
-                ],
-                ^created: {
-                    timeStamp: "?Number",
-                    userId: ".*",
-                    username: ".*",
-                    vreId: ".*"
-                },
-                ^deleted: "?Boolean",
-                ^displayName: ".*"
+                "statusCode": 401,
+                "message": "Missing VRE id"
             }
-        </span>
-        <!-- TODO: this test does not make assertions on all properties of a wwdocument yet -->
+        </div>
     </aside>
+    <aside class="example" h:http="#response">
+        <p>When a POST is performed to wwdocuments without a content body</p>
+        <div h:request="">
+            POST /v2.1/domain/wwdocuments HTTP/1.1
+            Authorization: #token
+            VRE_ID: WomenWriters
+        </div>
+        <p>The server will respond with a 415 statusCode: Unsupported media type</p>
+        <div h:response="">
+            HTTP/1.1 415
+            Content-Type: text/html;charset=utf-8
+        </div>
+    </aside>
+    <aside class="example" h:http="#response">
+        <p>When a POST is performed to wwdocuments with an empty JSON body</p>
+        <div h:request="">
+            POST /v2.1/domain/wwdocuments HTTP/1.1
+            Authorization: #token
+            VRE_ID: WomenWriters
+
+            {}
+        </div>
+        <p>The server will respond with a 400 statusCode</p>
+        <div h:response="validatePostWithEmptyBodyResponse">
+            HTTP/1.1 400
+            Content-Type: text/plain; charset=UTF-8
+
+            [...] missing property '@type' [...]
+        </div>
+    </aside>
+
 </section>
+
+
+
+<!--<section id="GETSingle">-->
+    <!--<h2>Get a single wwdocument</h2>-->
+    <!--<aside class="example" h:http="#response">-->
+
+        <!--<p>When an unknown wwdocument with id '00000000-0000-0000-0000-000000000000' is requested.</p>-->
+
+      <!--<span h:request="">-->
+        <!--GET /v2.1/domain/wwdocuments/00000000-0000-0000-0000-000000000000 HTTP/1.1-->
+        <!--Accept: application/json-->
+      <!--</span>-->
+        <!--<p>The response will look like this:</p>-->
+      <!--<span h:response="">-->
+        <!--HTTP/1.1 404-->
+        <!--Content-Type: text/html;charset=utf-8-->
+      <!--</span>-->
+    <!--</aside>-->
+
+    <!--<aside class="example" h:http="#response">-->
+
+        <!--<p>A wwdocument with id '5d4e0b05-185d-423d-abee-07acc3e9739a' is known to have both @variationRefs and @relations/</p>-->
+
+        <!--<span h:request="">-->
+            <!--GET /v2.1/domain/wwdocuments/5d4e0b05-185d-423d-abee-07acc3e9739a HTTP/1.1-->
+            <!--Accept: application/json-->
+        <!--</span>-->
+        <!--<span h:response="">-->
+            <!--HTTP/1.1 200-->
+            <!--Content-Type: application/json-->
+
+            <!--{-->
+                <!--_id: "5d4e0b05-185d-423d-abee-07acc3e9739a",-->
+                <!--@properties: {},-->
+                <!--@relationCount: "?Number",-->
+                <!--@relations: {},-->
+                <!--@type: "wwdocument",-->
+                <!--@variationRefs: [-->
+                    <!--{id: "5d4e0b05-185d-423d-abee-07acc3e9739a", type: ".*document"}-->
+                <!--],-->
+                <!--^created: {-->
+                    <!--timeStamp: "?Number",-->
+                    <!--userId: ".*",-->
+                    <!--username: ".*",-->
+                    <!--vreId: ".*"-->
+                <!--},-->
+                <!--^deleted: "?Boolean",-->
+                <!--^displayName: ".*"-->
+            <!--}-->
+        <!--</span>-->
+        <!--&lt;!&ndash; TODO: this test does not make assertions on all properties of a wwdocument yet &ndash;&gt;-->
+    <!--</aside>-->
+<!--</section>-->
 
 </body>
 </html>
