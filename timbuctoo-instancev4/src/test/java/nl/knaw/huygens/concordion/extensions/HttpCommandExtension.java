@@ -8,14 +8,14 @@ public class HttpCommandExtension implements ConcordionExtension {
   private final boolean embedCss;
   private HttpCommand httpCommand;
 
-  public HttpCommandExtension(HttpCaller caller) {
-    httpCommand = new HttpCommand(caller, "http", "http://huygens.knaw.nl/concordion-http-verifier");
+  public HttpCommandExtension(HttpCaller caller, ResultValidator validator) {
+    httpCommand = new HttpCommand(caller, validator, "http", "http://huygens.knaw.nl/concordion-http-verifier");
     httpCommand.addListener(new AssertResultRenderer());
     embedCss = true;
   }
 
-  public HttpCommandExtension(HttpCaller caller, boolean embedCss) {
-    httpCommand = new HttpCommand(caller, "http", "http://huygens.knaw.nl/concordion-http-verifier");
+  public HttpCommandExtension(HttpCaller caller, ResultValidator validator, boolean embedCss) {
+    httpCommand = new HttpCommand(caller, validator, "http", "http://huygens.knaw.nl/concordion-http-verifier");
     httpCommand.addListener(new AssertResultRenderer());
     this.embedCss = embedCss;
   }

@@ -6,9 +6,9 @@ import java.util.AbstractMap;
 import java.util.List;
 
 public class HttpExpectation {
-  final int status;
-  final String body;
-  final List<AbstractMap.SimpleEntry<String, String>> headers;
+  public final int status;
+  public final String body;
+  public final List<AbstractMap.SimpleEntry<String, String>> headers;
 
   public HttpExpectation(int status, String body, List<AbstractMap.SimpleEntry<String, String>> headers) {
     this.status = status;

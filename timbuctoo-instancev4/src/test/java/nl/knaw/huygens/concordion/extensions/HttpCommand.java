@@ -35,16 +35,19 @@ public class HttpCommand extends AbstractCommand {
   private final HttpCaller caller;
   private final String commandName;
   private final String namespace;
+  private final ResultValidator defaultValidator;
   private HttpExpectation expectation;
   private HttpRequest httpRequest;
   private Element expectedStatusElement;
   private List<Element> expectedHeaderElements;
   private Element expectedBodyElement;
   private String variableName;
+  private String verificationMethod;
 
-  public HttpCommand(HttpCaller caller, String commandName, String namespace) {
+  public HttpCommand(HttpCaller caller, ResultValidator defaultValidator, String commandName, String namespace) {
     this.caller = caller;
     this.commandName = commandName;
+    this.defaultValidator = defaultValidator;
     this.namespace = namespace;
   }
 
@@ -101,14 +104,21 @@ public class HttpCommand extends AbstractCommand {
       }
     }
 
-    String resultBody = httpResult.getBody();
-    if (expectation.body != null) {
-      String errorMessages = JsonSpecValidator.equals(resultBody, expectation.body);
-      if (StringUtils.isBlank(errorMessages)) {
-        success(resultRecorder, expectedBodyElement);
-      } else {
-        failure(resultRecorder, expectedBodyElement, "", errorMessages);
-      }
+
+    String errorMessages;
+    if (!StringUtils.isBlank(verificationMethod)) {
+      evaluator.setVariable("#nl_knaw_huygens_httpcommand_result", httpResult);
+      evaluator.setVariable("#nl_knaw_huygens_httpcommand_expectation", expectation);
+      errorMessages = (String) evaluator.evaluate(verificationMethod + "(#nl_knaw_huygens_httpcommand_expectation, #nl_knaw_huygens_httpcommand_result)");
+      evaluator.setVariable("#nl_knaw_huygens_httpcommand_result", null);
+      evaluator.setVariable("#nl_knaw_huygens_httpcommand_expectation", null);
+    } else {
+      errorMessages = defaultValidator.validate(expectation, httpResult);
+    }
+    if (StringUtils.isBlank(errorMessages)) {
+      success(resultRecorder, expectedBodyElement);
+    } else {
+      failure(resultRecorder, expectedBodyElement, httpResult.getBody(), errorMessages);
     }
 
     if (!variableName.isEmpty()) {
@@ -162,11 +172,9 @@ public class HttpCommand extends AbstractCommand {
       headerEl.appendChild(new Element("span").appendText(header.getValue()).addAttribute("class", "respHeaderValue"));
       responsePre.appendChild(headerEl);
     }
-    if (expectation.hasBody()) {
-      responsePre.appendText("\n\n");
-      expectedBodyElement = new Element("span").appendText(expectation.body).addAttribute("class", "respBody");
-      responsePre.appendChild(expectedBodyElement);
-    }
+    responsePre.appendText("\n\n");
+    expectedBodyElement = new Element("span").appendText(expectation.body).addAttribute("class", "respBody");
+    responsePre.appendChild(expectedBodyElement);
   }
 
   private void formatRequest(Element origRequestElement) {
@@ -242,6 +250,7 @@ public class HttpCommand extends AbstractCommand {
 
   private HttpExpectation parseExpectedResponse(Element element) {
     String contents = getTextAndRemoveIndent(element);
+    verificationMethod = element.getAttributeValue("response", namespace);
     SessionInputBufferImpl buffer = new SessionInputBufferImpl(new HttpTransportMetricsImpl(), contents.length());
     buffer.bind(new ByteArrayInputStream(contents.getBytes(StandardCharsets.UTF_8)));
     DefaultHttpResponseParser defaultHttpResponseParser = new DefaultHttpResponseParser(buffer);
