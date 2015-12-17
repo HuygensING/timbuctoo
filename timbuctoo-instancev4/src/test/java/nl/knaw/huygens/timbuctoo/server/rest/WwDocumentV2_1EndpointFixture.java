@@ -9,7 +9,11 @@ import nl.knaw.huygens.concordion.extensions.HttpResult;
 import org.concordion.integration.junit4.ConcordionRunner;
 import org.json.JSONException;
 import org.junit.runner.RunWith;
-import org.skyscreamer.jsonassert.*;
+import org.skyscreamer.jsonassert.JSONCompare;
+import org.skyscreamer.jsonassert.JSONCompareMode;
+import org.skyscreamer.jsonassert.JSONCompareResult;
+import org.skyscreamer.jsonassert.RegularExpressionValueMatcher;
+import org.skyscreamer.jsonassert.ValueMatcherException;
 import org.skyscreamer.jsonassert.comparator.DefaultComparator;
 
 import javax.ws.rs.core.Response;
@@ -76,9 +80,9 @@ public class WwDocumentV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
     return validate(expectation.body, reality.getBody());
   }
 
-  private static class RegexJSONComparator extends DefaultComparator {
+  private static class RegexJsonComparator extends DefaultComparator {
 
-    public RegexJSONComparator(JSONCompareMode mode) {
+    public RegexJsonComparator(JSONCompareMode mode) {
       super(mode);
     }
 
@@ -103,17 +107,12 @@ public class WwDocumentV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
   private String validate(String expectationBody, String realityBody) {
     try {
       JSONCompareResult jsonCompareResult =
-              JSONCompare.compareJSON(expectationBody, realityBody, new RegexJSONComparator(JSONCompareMode.LENIENT));
-      
+              JSONCompare.compareJSON(expectationBody, realityBody, new RegexJsonComparator(JSONCompareMode.LENIENT));
+
       return jsonCompareResult.getMessage();
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  public String validateGetWithRecordId(HttpExpectation expectation, HttpResult reality) {
-    String expectedBody = expectation.body.replace("#recordId", recordId);
-    return validate(expectedBody, reality.getBody());
   }
 
   public String validatePostWithEmptyBodyResponse(HttpExpectation expectation, HttpResult reality) {
@@ -133,6 +132,17 @@ public class WwDocumentV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
     Response response = doHttpCommand(loginRequest);
 
     return response.getHeaderString("x_auth_token");
+  }
+
+  public String retrievePid() {
+    String pid = null;
+    HttpRequest getRequest =
+        new HttpRequest("GET", "/v2.1/domain/wwdocuments/" + recordId,
+            Lists.newArrayList(), null, null, Lists.newArrayList());
+
+    Response response = doHttpCommand(getRequest);
+
+    return pid;
   }
 
   public String getRecordId() {

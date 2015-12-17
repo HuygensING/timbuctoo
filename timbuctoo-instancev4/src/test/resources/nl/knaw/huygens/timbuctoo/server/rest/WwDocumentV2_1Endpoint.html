@@ -264,6 +264,10 @@
             }
         </div>
     </aside>
+    <aside>
+        <p>After <b>[N]</b> seconds the new record should have persistent ID in the field <b>pid</b></p>:
+        <span c:execute="#pid=retrievePid()">The persistent ID is: <b><span c:echo="#pid"></span></b>.</span>
+    </aside>
 </section>
 
 <section id="DELETE">

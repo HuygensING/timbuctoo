@@ -28,7 +28,7 @@ public abstract class AbstractV2_1EndpointFixture {
    */
   protected Response doHttpCommand(HttpRequest httpRequest) {
     WebTarget target = ClientBuilder.newClient()
-      .target(httpRequest.server != null ? httpRequest.server : "http://acc.repository.huygens.knaw.nl")
+      .target(httpRequest.server != null ? httpRequest.server : "http://test.repository.huygens.knaw.nl")
       .path(httpRequest.url);
 
     for (AbstractMap.SimpleEntry<String, String> queryParameter : httpRequest.queryParameters) {
