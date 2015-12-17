@@ -351,6 +351,9 @@ public class HttpCommand extends AbstractCommand {
           body += (char) buffer.read();
         }
       }
+
+      body = replaceVariableReferences(evaluator, body);
+
     } catch (IOException e) {
       e.printStackTrace();
     } catch (HttpException e) {

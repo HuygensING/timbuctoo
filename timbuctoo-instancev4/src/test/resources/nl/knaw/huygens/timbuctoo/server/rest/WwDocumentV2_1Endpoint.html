@@ -86,63 +86,7 @@
 </section>
 
 <section id="POST">
-    <h2>POST to wwdocuments</h2>
-    <aside class="example" h:http="#response">
-        <p>When a POST is performed to wwdocuments without an authentication token</p>
-        <div h:request="">
-            POST /v2.1/domain/wwdocuments HTTP/1.1
-        </div>
-        <p>A 401 unauthorized statusCode is returned by the server response headers</p>
-        <div h:response="">
-            HTTP/1.1 401
-        </div>
-    </aside>
-    <aside class="example" h:http="#response">
-        <p>When a POST is performed to wwdocuments without a VRE_ID</p>
-        <div h:request="">
-            POST /v2.1/domain/wwdocuments HTTP/1.1
-            Authorization: #token
-        </div>
-        <p>The expected response will be</p>
-        <div h:response="">
-            HTTP/1.1 401
-            Content-Type: application/json
-
-            {
-                "statusCode": 401,
-                "message": "Missing VRE id"
-            }
-        </div>
-    </aside>
-    <aside class="example" h:http="#response">
-        <p>When a POST is performed to wwdocuments without a content body</p>
-        <div h:request="">
-            POST /v2.1/domain/wwdocuments HTTP/1.1
-            Authorization: #token
-            VRE_ID: WomenWriters
-        </div>
-        <p>The server will respond with a 415 statusCode: Unsupported media type</p>
-        <div h:response="">
-            HTTP/1.1 415
-        </div>
-    </aside>
-    <aside class="example" h:http="#response">
-        <p>When a POST is performed to wwdocuments with an empty JSON body</p>
-        <div h:request="">
-            POST /v2.1/domain/wwdocuments HTTP/1.1
-            Authorization: #token
-            Content-type: application/json
-            VRE_ID: WomenWriters
-
-            {}
-        </div>
-        <p>The server will respond with a 400 statusCode</p>
-        <div h:response="validatePostWithEmptyBodyResponse">
-            HTTP/1.1 400
-
-            [...] missing property '@type' [...]
-        </div>
-    </aside>
+    <h2>Create a new wwdocument with POST</h2>
 
     <aside class="example" h:http="#createResponse">
         <p>When a valid POST is performed to wwdocuments</p>
@@ -208,10 +152,11 @@
 
 </section>
 
+
 <section id="GETsingle">
     <h2>Performing GET to the recently created wwdocument resource</h2>
     <aside class="example" h:http="#response">
-        <p>When a GET is performed to wwdocuments </p>
+        <p>When a GET is performed to the wwdocument </p>
         <div h:request="">
             GET #createResponse.headers.location HTTP/1.1
             Accept: application/json
@@ -276,6 +221,65 @@
     </p>
 </section>
 
+<section id="PUT">
+    <h2>Update the wwdocument with PUT</h2>
+
+    <aside class="example" h:http="#response">
+        <p>When a valid PUT is performed the wwdocument</p>
+        <div h:request="">
+            PUT #createResponse.headers.location HTTP/1.1
+            Authorization: #token
+            Content-type: application/json
+            VRE_ID: WomenWriters
+
+            {
+                "_id": "#recordId",
+                "@type": "wwdocument",
+                "documentType": "PERIODICAL",
+                "englishTitle": "English title updated",
+                "title": "Title updated",
+                "date": "1850",
+                "reference": "A reference",
+                "notes": "A note",
+                "links": [{
+                    "url": "http://example.com",
+                    "label": "Test link"
+                }],
+                "^rev": 1
+            }
+        </div>
+        <p>The server will respond with a 200 OK status code.</p>
+        <div h:response="">
+            HTTP/1.1 200
+        </div>
+    </aside>
+</section>
+
+<section id="GETsingle-updated">
+    <h2>Performing GET to the recently updated wwdocument resource</h2>
+    <aside class="example" h:http="#response">
+        <p>When a GET is performed to the wwdocument </p>
+        <div h:request="">
+            GET #createResponse.headers.location HTTP/1.1
+            Accept: application/json
+        </div>
+        <p>The server will respond with the updated resource</p>
+        <div h:response="">
+            HTTP/1.1 200
+            Content-type: application/json
+
+            {
+                "_id": "#recordId",
+                "@type": "wwdocument",
+                "^rev": 2,
+                "title": "Title updated",
+                "englishTitle": "English title updated",
+                "date": "1850"
+            }
+        </div>
+    </aside>
+</section>
+
 <section id="DELETE">
     <h2>Deleting a wwdocument</h2>
     <aside class="example" h:http="#response">
@@ -307,58 +311,64 @@
     </aside>
 </section>
 
+<section id="POST-invalid">
+    <h2>Invalid POST requests</h2>
+    <aside class="example" h:http="#response">
+        <p>When a POST is performed to wwdocuments without an authentication token</p>
+        <div h:request="">
+            POST /v2.1/domain/wwdocuments HTTP/1.1
+        </div>
+        <p>A 401 unauthorized statusCode is returned by the server response headers</p>
+        <div h:response="">
+            HTTP/1.1 401
+        </div>
+    </aside>
+    <aside class="example" h:http="#response">
+        <p>When a POST is performed to wwdocuments without a VRE_ID</p>
+        <div h:request="">
+            POST /v2.1/domain/wwdocuments HTTP/1.1
+            Authorization: #token
+        </div>
+        <p>The expected response will be</p>
+        <div h:response="">
+            HTTP/1.1 401
+            Content-Type: application/json
 
-<!--<section id="GETSingle">-->
-    <!--<h2>Get a single wwdocument</h2>-->
-    <!--<aside class="example" h:http="#response">-->
+            {
+            "statusCode": 401,
+            "message": "Missing VRE id"
+            }
+        </div>
+    </aside>
+    <aside class="example" h:http="#response">
+        <p>When a POST is performed to wwdocuments without a content body</p>
+        <div h:request="">
+            POST /v2.1/domain/wwdocuments HTTP/1.1
+            Authorization: #token
+            VRE_ID: WomenWriters
+        </div>
+        <p>The server will respond with a 415 statusCode: Unsupported media type</p>
+        <div h:response="">
+            HTTP/1.1 415
+        </div>
+    </aside>
+    <aside class="example" h:http="#response">
+        <p>When a POST is performed to wwdocuments with an empty JSON body</p>
+        <div h:request="">
+            POST /v2.1/domain/wwdocuments HTTP/1.1
+            Authorization: #token
+            Content-type: application/json
+            VRE_ID: WomenWriters
 
-        <!--<p>When an unknown wwdocument with id '00000000-0000-0000-0000-000000000000' is requested.</p>-->
+            {}
+        </div>
+        <p>The server will respond with a 400 statusCode</p>
+        <div h:response="validatePostWithEmptyBodyResponse">
+            HTTP/1.1 400
 
-      <!--<span h:request="">-->
-        <!--GET /v2.1/domain/wwdocuments/00000000-0000-0000-0000-000000000000 HTTP/1.1-->
-        <!--Accept: application/json-->
-      <!--</span>-->
-        <!--<p>The response will look like this:</p>-->
-      <!--<span h:response="">-->
-        <!--HTTP/1.1 404-->
-        <!--Content-Type: text/html;charset=utf-8-->
-      <!--</span>-->
-    <!--</aside>-->
-
-    <!--<aside class="example" h:http="#response">-->
-
-        <!--<p>A wwdocument with id '5d4e0b05-185d-423d-abee-07acc3e9739a' is known to have both @variationRefs and @relations/</p>-->
-
-        <!--<span h:request="">-->
-            <!--GET /v2.1/domain/wwdocuments/5d4e0b05-185d-423d-abee-07acc3e9739a HTTP/1.1-->
-            <!--Accept: application/json-->
-        <!--</span>-->
-        <!--<span h:response="">-->
-            <!--HTTP/1.1 200-->
-            <!--Content-Type: application/json-->
-
-            <!--{-->
-                <!--_id: "5d4e0b05-185d-423d-abee-07acc3e9739a",-->
-                <!--@properties: {},-->
-                <!--@relationCount: "?Number",-->
-                <!--@relations: {},-->
-                <!--@type: "wwdocument",-->
-                <!--@variationRefs: [-->
-                    <!--{id: "5d4e0b05-185d-423d-abee-07acc3e9739a", type: ".*document"}-->
-                <!--],-->
-                <!--^created: {-->
-                    <!--timeStamp: "?Number",-->
-                    <!--userId: ".*",-->
-                    <!--username: ".*",-->
-                    <!--vreId: ".*"-->
-                <!--},-->
-                <!--^deleted: "?Boolean",-->
-                <!--^displayName: ".*"-->
-            <!--}-->
-        <!--</span>-->
-        <!--&lt;!&ndash; TODO: this test does not make assertions on all properties of a wwdocument yet &ndash;&gt;-->
-    <!--</aside>-->
-<!--</section>-->
-
+            [...] missing property '@type' [...]
+        </div>
+    </aside>
+</section>
 </body>
 </html>
