@@ -147,7 +147,7 @@ public class WwDocumentV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
     headers.add(new AbstractMap.SimpleEntry<String, String>("Accept", "application/json"));
     HttpRequest getRequest = new HttpRequest("GET", path, headers, null, null, Lists.newArrayList());
 
-    while ((pid == null || pid.equalsIgnoreCase("null")) && attempts < 6) {
+    while ((pid == null || pid.equalsIgnoreCase("null")) && attempts < 12) {
       Response response = doHttpCommand(getRequest);
       JSONObject data = new JSONObject(response.readEntity(String.class));
       pid = data.getString("^pid");
