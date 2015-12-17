@@ -55,19 +55,19 @@ public class PersistenceWrapper {
     Preconditions.checkNotNull(this.manager);
   }
 
-  public String getPersistentURL(String persistentId) {
-    return manager.getPersistentURL(persistentId);
-  }
-
   public String persistObject(Class<? extends Entity> type, String objectId) throws PersistenceException {
     String url = createURL(type, objectId);
-    return manager.persistURL(url);
+    return persistUrl(url);
+  }
+
+  private String persistUrl(String url) throws PersistenceException {
+    return manager.getPersistentURL(manager.persistURL(url));
   }
 
   public String persistObject(Class<? extends Entity> type, String objectId, int revision) throws PersistenceException {
     String url = createURL(type, objectId, revision);
 
-    return manager.persistURL(url);
+    return persistUrl(url);
   }
 
   public void deletePersistentId(String persistentId) throws PersistenceException {

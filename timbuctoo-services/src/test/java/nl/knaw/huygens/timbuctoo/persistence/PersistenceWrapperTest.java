@@ -35,6 +35,8 @@ import test.rest.model.projecta.ProjectADomainEntity;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -50,10 +52,17 @@ public class PersistenceWrapperTest {
   public static final String HANDLE_PREFIX = "http://hdl.handle.net/11240/";
   public static final String PID = "pid";
   private PersistenceManager persistenceManager;
+  public static final String PERSISTENT_URL = "www.example.com";
 
   @Before
-  public void setUp() {
+  public void setUp() throws PersistenceException {
+    setupPersistenceManager();
+  }
+
+  private void setupPersistenceManager() throws PersistenceException {
     persistenceManager = mock(PersistenceManager.class);
+    when(persistenceManager.persistURL(anyString())).thenReturn(PID);
+    when(persistenceManager.getPersistentURL(anyString())).thenReturn(PERSISTENT_URL);
   }
 
   private PersistenceWrapper createInstance(String url) {
@@ -62,8 +71,14 @@ public class PersistenceWrapperTest {
 
   @Test
   public void testPersistDomainEntitySuccess() throws PersistenceException {
+    // setup
     PersistenceWrapper persistenceWrapper = createInstanceWithoutEndingSlash();
-    persistenceWrapper.persistObject(DEFAULT_DOMAIN_TYPE, DEFAULT_ID);
+
+    // action
+    String pid = persistenceWrapper.persistObject(DEFAULT_DOMAIN_TYPE, DEFAULT_ID);
+
+    // verify
+    assertThat(pid, is(PERSISTENT_URL));
     verifyADomainEntityIsPersisted("basedomainentities/1234");
   }
 
@@ -73,29 +88,49 @@ public class PersistenceWrapperTest {
 
   @Test
   public void testPersistSystemEntitySuccess() throws PersistenceException {
+    // setup
     PersistenceWrapper persistenceWrapper = createInstanceWithoutEndingSlash();
-    persistenceWrapper.persistObject(DEFAULT_SYSTEM_TYPE, DEFAULT_ID);
+
+    // action
+    String pid = persistenceWrapper.persistObject(DEFAULT_SYSTEM_TYPE, DEFAULT_ID);
+
+    assertThat(pid, is(PERSISTENT_URL));
     verify(persistenceManager).persistURL(createURL(Paths.SYSTEM_PREFIX, "testsystementities/1234"));
   }
 
   @Test
   public void testPersistDomainEntityWithRevision() throws PersistenceException {
+    // setup
     PersistenceWrapper persistenceWrapper = createInstanceWithoutEndingSlash();
-    persistenceWrapper.persistObject(DEFAULT_DOMAIN_TYPE, DEFAULT_ID, 12);
+
+    // action
+    String pid = persistenceWrapper.persistObject(DEFAULT_DOMAIN_TYPE, DEFAULT_ID, 12);
+
+    //verify
+    assertThat(pid, is(PERSISTENT_URL));
     verifyADomainEntityIsPersisted("basedomainentities/1234?rev=12");
   }
 
   @Test
   public void testPersistObjectSuccesUrlEndOnSlash() throws PersistenceException {
+    // setup
     PersistenceWrapper persistenceWrapper = createInstance(URL_WITH_ENDING_SLASH);
-    persistenceWrapper.persistObject(DEFAULT_DOMAIN_TYPE, DEFAULT_ID);
+
+    // action
+    String pid = persistenceWrapper.persistObject(DEFAULT_DOMAIN_TYPE, DEFAULT_ID);
+
+    //verify
+    assertThat(pid, is(PERSISTENT_URL));
     verifyADomainEntityIsPersisted("basedomainentities/1234");
   }
 
   @Test(expected = PersistenceException.class)
   public void testPersistObjectException() throws PersistenceException {
+    // setup
     when(persistenceManager.persistURL(anyString())).thenThrow(new PersistenceException("error"));
     PersistenceWrapper persistenceWrapper = createInstance(URL_WITH_ENDING_SLASH);
+
+    // action
     persistenceWrapper.persistObject(DEFAULT_DOMAIN_TYPE, DEFAULT_ID);
   }
 
@@ -106,7 +141,8 @@ public class PersistenceWrapperTest {
 
   @Test
   public void updatePIDUpdatesThePIDOfTheEntity() throws PersistenceException {
-        PersistenceWrapper persistenceWrapper = createInstance(URL_WITH_ENDING_SLASH);
+    // setup
+    PersistenceWrapper persistenceWrapper = createInstance(URL_WITH_ENDING_SLASH);
     ProjectADomainEntity entity = new ProjectADomainEntity();
     entity.setPid(String.format(HANDLE_PREFIX + "%s", PID));
     entity.setId(DEFAULT_ID);
@@ -116,7 +152,7 @@ public class PersistenceWrapperTest {
     persistenceWrapper.updatePID(entity);
 
     // verify
-    String expectedUrl = createURL(Paths.DOMAIN_PREFIX, String.format("basedomainentities/1234?rev=10"));
+    String expectedUrl = createURL(Paths.DOMAIN_PREFIX, "basedomainentities/1234?rev=10");
     verify(persistenceManager).modifyURLForPersistentId(PID, expectedUrl);
   }
 
