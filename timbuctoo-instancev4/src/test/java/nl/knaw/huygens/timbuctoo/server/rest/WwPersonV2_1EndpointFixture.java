@@ -7,7 +7,10 @@ import io.dropwizard.testing.junit.ResourceTestRule;
 import nl.knaw.huygens.concordion.extensions.HttpExpectation;
 import nl.knaw.huygens.concordion.extensions.HttpRequest;
 import nl.knaw.huygens.concordion.extensions.HttpResult;
+import org.apache.commons.lang3.StringUtils;
 import org.concordion.integration.junit4.ConcordionRunner;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
 
@@ -23,6 +26,7 @@ public class WwPersonV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
   @Rule
   public final ResourceTestRule resources;
   private final ObjectMapper objectMapper;
+  private String pid;
 
   public WwPersonV2_1EndpointFixture() {
     objectMapper = new ObjectMapper();
@@ -80,5 +84,32 @@ public class WwPersonV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
     String[] locationHeaderArray = result.getHeaders().get("location").split("/");
 
     return locationHeaderArray[locationHeaderArray.length - 1];
+  }
+
+  public boolean isValidPid(String result) throws JSONException {
+
+    return !StringUtils.isBlank(result);
+  }
+
+  public String retrievePid(HttpResult result) throws JSONException {
+    int attempts = 0;
+    String path =  "/v2.1/domain/wwpersons/" + getRecordId(result);
+    List<AbstractMap.SimpleEntry<String, String>> headers = Lists.newArrayList();
+    headers.add(new AbstractMap.SimpleEntry<String, String>("Accept", "application/json"));
+    HttpRequest getRequest = new HttpRequest("GET", path, headers, null, null, Lists.newArrayList());
+
+    while ((pid == null || pid.equalsIgnoreCase("null")) && attempts < 6) {
+      Response response = doHttpCommand(getRequest);
+      JSONObject data = new JSONObject(response.readEntity(String.class));
+      pid = data.getString("^pid");
+
+      attempts++;
+      try {
+        Thread.sleep(5000);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return pid;
   }
 }

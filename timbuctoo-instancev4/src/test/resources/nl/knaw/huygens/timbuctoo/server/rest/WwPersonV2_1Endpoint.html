@@ -142,6 +142,8 @@
         </ul>
       </p>
     </div>
+    <span c:execute="#pid=retrievePid(#postResponse)"></span>
+    <span c:assertTrue="isValidPid(#pid)"><span c:echo="#pid"></span></span>
   </section>
   <section id="GETSingle">
     <h2>GET a single wwperson</h2>
@@ -242,6 +244,21 @@
       <p>The response will look like this:</p>
       <div h:response="">
         HTTP/1.1 404
+      </div>
+    </aside>
+  </section>
+
+  <section id="DELETEWWPerson">
+    <h2>Delete the created person</h2>
+    <aside class="example" h:http="#response">
+      <div h:request="">
+        DELETE #postResponse.headers.location HTTP/1.1
+        Authorization: #token
+        VRE_ID: WomenWriters
+      </div>
+      <p>The response will look like this:</p>
+      <div h:response="">
+        HTTP/1.1 204
       </div>
     </aside>
   </section>
