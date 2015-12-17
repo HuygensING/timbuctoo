@@ -58,6 +58,7 @@ public class WwDocumentV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
   public boolean recordHasPid() {
     return pid != null && !pid.equalsIgnoreCase("null");
   }
+
   private List<String> getIds(HttpResult result) {
     JsonNode body = getBody(result);
     ArrayList<String> ids = Lists.newArrayList();
@@ -146,14 +147,17 @@ public class WwDocumentV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
     headers.add(new AbstractMap.SimpleEntry<String, String>("Accept", "application/json"));
     HttpRequest getRequest = new HttpRequest("GET", path, headers, null, null, Lists.newArrayList());
 
-    while((pid == null || pid.equalsIgnoreCase("null")) && attempts < 6) {
+    while ((pid == null || pid.equalsIgnoreCase("null")) && attempts < 6) {
       Response response = doHttpCommand(getRequest);
       JSONObject data = new JSONObject(response.readEntity(String.class));
-      System.err.println(data.toString());
       pid = data.getString("^pid");
 
       attempts++;
-      try { Thread.sleep(5000); } catch (InterruptedException e) { throw new RuntimeException(e); }
+      try {
+        Thread.sleep(5000);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
     }
     return pid;
   }
