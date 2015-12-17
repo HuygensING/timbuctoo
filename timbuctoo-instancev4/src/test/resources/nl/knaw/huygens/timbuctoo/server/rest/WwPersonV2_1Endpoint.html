@@ -143,7 +143,11 @@
       </p>
     </div>
     <span c:execute="#pid=retrievePid(#postResponse)"></span>
-    <span c:assertTrue="isValidPid(#pid)"><span c:echo="#pid"></span></span>
+    <span c:assertTrue="isValidPid(#pid)">Has a valid pid within 1 minute:
+      <b>
+        <span c:echo="#pid"></span>
+      </b>
+    </span>
   </section>
   <section id="GETSingle">
     <h2>GET a single wwperson</h2>
