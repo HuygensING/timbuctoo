@@ -22,30 +22,18 @@ package nl.knaw.huygens.timbuctoo.persistence;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.Repository;
 import nl.knaw.huygens.timbuctoo.messages.Action;
 import nl.knaw.huygens.timbuctoo.messages.Broker;
 import nl.knaw.huygens.timbuctoo.persistence.request.PersistenceRequestFactory;
 import org.junit.Before;
 import org.junit.Test;
-import test.rest.model.projecta.ProjectADomainEntity;
 
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class PersistenceServiceTest {
-
-  private static final int DEFAULT_REVISION = 2;
-  private static final Class<ProjectADomainEntity> DEFAULT_TYPE = ProjectADomainEntity.class;
-  private static final String DEFAULT_ID = "PADE00000000001";
-  public static final String DEFAULT_PID = "1234567-sdfya378t14-231423746123-sadfasf";
-  public static final String DEFAULT_PID_URL = "http://test.test.org/prefix/" + DEFAULT_PID;
-
   private PersistenceService instance;
-  private PersistenceWrapper persistenceWrapper;
-  private Repository repository;
   private Action action;
   private PersistenceRequest persistenceRequest;
   private PersistenceRequestFactory persistenceRequestFactory;
@@ -53,12 +41,6 @@ public class PersistenceServiceTest {
   @Before
   public void setUp() throws Exception {
     Broker broker = mock(Broker.class);
-
-    persistenceWrapper = mock(PersistenceWrapper.class);
-    when(persistenceWrapper.persistObject(DEFAULT_TYPE, DEFAULT_ID, DEFAULT_REVISION)).thenReturn(DEFAULT_PID);
-    when(persistenceWrapper.getPersistentURL(anyString())).thenReturn(DEFAULT_PID_URL);
-
-    repository = mock(Repository.class);
 
     action = mock(Action.class);
     persistenceRequest = mock(PersistenceRequest.class);
@@ -73,8 +55,6 @@ public class PersistenceServiceTest {
 
   @Test
   public void executeCreatesAnIndexRequestFromTheActionAndExecutesIt(){
-    // setup
-
     // action
     instance.executeAction(action);
 

@@ -75,4 +75,10 @@ public class WwPersonV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
 
     return response.getHeaderString("x_auth_token");
   }
+
+  public String getRecordId(HttpResult result) {
+    String[] locationHeaderArray = result.getHeaders().get("location").split("/");
+
+    return locationHeaderArray[locationHeaderArray.length - 1];
+  }
 }
