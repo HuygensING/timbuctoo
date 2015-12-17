@@ -8,6 +8,7 @@ import nl.knaw.huygens.concordion.extensions.HttpRequest;
 import nl.knaw.huygens.concordion.extensions.HttpResult;
 import org.concordion.integration.junit4.ConcordionRunner;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONCompare;
 import org.skyscreamer.jsonassert.JSONCompareMode;
@@ -28,6 +29,7 @@ public class WwDocumentV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
   private final ObjectMapper objectMapper;
 
   private String recordId;
+  private String pid;
 
   public WwDocumentV2_1EndpointFixture() {
     this.objectMapper = new ObjectMapper();
@@ -53,6 +55,9 @@ public class WwDocumentV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
     return !idsToTest.containsAll(idsToBeContained);
   }
 
+  public boolean recordHasPid() {
+    return pid != null && !pid.equalsIgnoreCase("null");
+  }
   private List<String> getIds(HttpResult result) {
     JsonNode body = getBody(result);
     ArrayList<String> ids = Lists.newArrayList();
@@ -134,16 +139,26 @@ public class WwDocumentV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
     return response.getHeaderString("x_auth_token");
   }
 
-  public String retrievePid() {
-    String pid = null;
-    HttpRequest getRequest =
-        new HttpRequest("GET", "/v2.1/domain/wwdocuments/" + recordId,
-            Lists.newArrayList(), null, null, Lists.newArrayList());
+  public String retrievePid() throws JSONException {
+    int attempts = 0;
+    String path =  "/v2.1/domain/wwdocuments/" + recordId;
+    List<AbstractMap.SimpleEntry<String, String>> headers = Lists.newArrayList();
+    headers.add(new AbstractMap.SimpleEntry<String, String>("Accept", "application/json"));
+    HttpRequest getRequest = new HttpRequest("GET", path, headers, null, null, Lists.newArrayList());
 
-    Response response = doHttpCommand(getRequest);
+    while((pid == null || pid.equalsIgnoreCase("null")) && attempts < 6) {
+      Response response = doHttpCommand(getRequest);
+      JSONObject data = new JSONObject(response.readEntity(String.class));
+      System.err.println(data.toString());
+      pid = data.getString("^pid");
 
+      attempts++;
+      try { Thread.sleep(5000); } catch (InterruptedException e) { throw new RuntimeException(e); }
+    }
     return pid;
   }
+
+
 
   public String getRecordId() {
     return recordId;
