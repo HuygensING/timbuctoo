@@ -25,6 +25,7 @@ package nl.knaw.huygens.timbuctoo.persistence.persister;
 import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.timbuctoo.AlreadyHasAPidException;
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
 import nl.knaw.huygens.timbuctoo.persistence.Persister;
@@ -55,7 +56,8 @@ class AddPersister implements Persister {
       throw new IllegalArgumentException(DOMAIN_ENTITY_CANNOT_BE_NULL_MESSAGE);
     }
 
-    Class<? extends DomainEntity> type = domainEntity.getClass();
+    // We persist the primitive because it is the only one left after deleting
+    Class<? extends DomainEntity> type = TypeRegistry.toBaseDomainEntity(domainEntity.getClass());
     String id = domainEntity.getId();
     String pid = null;
 
