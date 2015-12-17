@@ -104,7 +104,7 @@ public class WwDocumentV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
     try {
       JSONCompareResult jsonCompareResult =
               JSONCompare.compareJSON(expectationBody, realityBody, new RegexJSONComparator(JSONCompareMode.LENIENT));
-      System.err.println(realityBody);
+      
       return jsonCompareResult.getMessage();
     } catch (JSONException e) {
       throw new RuntimeException(e);
