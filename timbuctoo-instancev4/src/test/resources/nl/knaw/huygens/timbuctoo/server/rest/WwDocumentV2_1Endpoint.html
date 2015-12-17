@@ -158,7 +158,12 @@
                 "englishTitle": "English title",
                 "title": "Title",
                 "date": "1850",
-                "reference": "A reference"
+                "reference": "A reference",
+                "notes": "A note",
+                "links": [{
+                    "url": "http://example.com",
+                    "label": "Test link"
+                }]
             }
         </div>
         <p>The server will respond with a location header containing the URL of the created resource</p>
@@ -167,9 +172,40 @@
             Location:
         </div>
     </aside>
-    <span c:execute="#recordId=getRecordId()">
-        A valid UUID is generated for this record: <b><span c:echo="#recordId"></span></b>.
-    </span>
+    <span c:execute="#recordId=getRecordId()"></span>
+    <p>
+        The field <b>documentType</b> should have one of these values:
+        <ul>
+            <li>UNKNOWN</li>
+            <li>ANTHOLOGY</li>
+            <li>ARTICLE</li>
+            <li>AWARD</li>
+            <li>CATALOGUE</li>
+            <li>COMPILATION</li>
+            <li>DIARY</li>
+            <li>LETTER</li>
+            <li>LIST</li>
+            <li>MONOGRAPH</li>
+            <li>PERIODICAL</li>
+            <li>PICTURE</li>
+            <li>PUBLICITY</li>
+            <li>SHEETMUSIC</li>
+            <li>THEATERSCRIPT</li>
+            <li>WORK</li>
+        </ul>
+    </p>
+
+    <p>
+        The field <b>resourceType</b> is currently not used by the frontend but should be one of these values:
+        <ul>
+            <li>UNKNOWN</li>
+            <li>IMAGE</li>
+            <li>SOUND</li>
+            <li>TEXT</li>
+        </ul>
+        It will now default to <b>UNKNOWN</b>
+    </p>
+
 </section>
 
 <section id="GETsingle">
@@ -188,10 +224,43 @@
             {
                 "_id": "#recordId",
                 "@type": "wwdocument",
+                "@relations": {},
+                "@relationCount": 0,
+                "@variationRefs": [
+                    {
+                        "id": "#recordId",
+                        "type": "wwdocument"
+                    },
+                    {
+                        "id": "#recordId",
+                        "type": "document"
+                    }
+                ],
+                "^created": {
+                    "username": "/.*/",
+                    "userId": "/.*/",
+                    "vreId": "WomenWriters",
+                    "timeStamp": "/^\\d+$/"
+                },
+                "^modified": {
+                    "username": "/.*/",
+                    "userId": "/.*/",
+                    "vreId": "WomenWriters",
+                    "timeStamp": "/^\\d+$/"
+                },
+                "^rev": 1,
+                "^pid": "/.*/",
+                "^deleted": false,
                 "date": "1850",
                 "title": "Title",
                 "englishTitle": "English title",
-                "documentType": "PERIODICAL"
+                "documentType": "PERIODICAL",
+                "reference": "A reference",
+                "notes": "A note",
+                "links": [{
+                    "url": "http://example.com",
+                    "label": "Test link"
+                }]
             }
         </div>
         <span style="color: red">TODO:</span> extend JSON
