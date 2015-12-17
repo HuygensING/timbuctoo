@@ -28,6 +28,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.tinkerpop.blueprints.Element;
 import nl.knaw.huygens.timbuctoo.config.TypeNames;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Entity;
 import nl.knaw.huygens.timbuctoo.storage.graph.ConversionException;
 import nl.knaw.huygens.timbuctoo.storage.graph.EntityInstantiator;
@@ -46,7 +47,8 @@ import static nl.knaw.huygens.timbuctoo.model.Entity.REVISION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementFields.ELEMENT_TYPES;
 import static nl.knaw.huygens.timbuctoo.storage.graph.tinkerpop.ElementHelper.getTypes;
 
-abstract class AbstractExtendableElementConverter<T extends Entity, E extends Element> implements ElementConverter<T, E> {
+abstract class AbstractExtendableElementConverter<T extends Entity, E extends Element>
+  implements ElementConverter<T, E> {
 
   private ObjectMapper objectMapper;
   private static Logger LOG = LoggerFactory.getLogger(ExtendableVertexConverter.class);
@@ -54,7 +56,8 @@ abstract class AbstractExtendableElementConverter<T extends Entity, E extends El
   protected final Class<T> type;
   private Map<String, PropertyConverter> fieldNamePropertyConverterMap;
 
-  public AbstractExtendableElementConverter(Class<T> type, Collection<PropertyConverter> propertyConverters, EntityInstantiator entityInstantiator) {
+  public AbstractExtendableElementConverter(Class<T> type, Collection<PropertyConverter> propertyConverters,
+                                            EntityInstantiator entityInstantiator) {
     this.type = type;
     this.entityInstantiator = entityInstantiator;
     mapPropertyConverters(propertyConverters);
@@ -89,7 +92,9 @@ abstract class AbstractExtendableElementConverter<T extends Entity, E extends El
 
   protected final void setTypesProperty(E element, Collection<String> types) {
     try {
-      element.setProperty(ELEMENT_TYPES, objectMapper.writeValueAsString(types));
+      String typesString = objectMapper.writeValueAsString(types);
+      element.setProperty(ELEMENT_TYPES, typesString);
+      element.setProperty(DomainEntity.DB_VARIATIONS_PROP_NAME, typesString);
     } catch (JsonProcessingException e) {
       throw new IllegalArgumentException(e);
     }
