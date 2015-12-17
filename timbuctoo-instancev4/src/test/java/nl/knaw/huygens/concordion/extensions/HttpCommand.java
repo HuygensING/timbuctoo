@@ -26,6 +26,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -64,7 +65,7 @@ public class HttpCommand extends AbstractCommand {
     formatRequest(requestElement);
 
     Element expectationElement = commandCall.getChildren().get(1).getElement();
-    expectation = parseExpectedResponse(expectationElement);
+    expectation = parseExpectedResponse(expectationElement, evaluator);
     formatResponseExpectation(expectationElement);
   }
 
@@ -250,7 +251,7 @@ public class HttpCommand extends AbstractCommand {
     return text.replace("\n" + prefix, "\n").trim();
   }
 
-  private HttpExpectation parseExpectedResponse(Element element) {
+  private HttpExpectation parseExpectedResponse(Element element, Evaluator evaluator) {
     String contents = getTextAndRemoveIndent(element);
     verificationMethod = element.getAttributeValue("response", namespace);
     SessionInputBufferImpl buffer = new SessionInputBufferImpl(new HttpTransportMetricsImpl(), contents.length());
@@ -276,6 +277,8 @@ public class HttpCommand extends AbstractCommand {
           body += (char) buffer.read();
         }
       }
+      body = replaceVariableReferences(evaluator, body);
+
     } catch (IOException e) {
       e.printStackTrace();
     } catch (HttpException e) {
@@ -283,6 +286,23 @@ public class HttpCommand extends AbstractCommand {
     }
 
     return new HttpExpectation(statusCode, body, headers);
+  }
+
+  private String replaceVariableReferences(Evaluator evaluator, String body) {
+    if (body == null) {
+      return null;
+    }
+
+    Matcher matcher = Pattern.compile("#[a-zA-Z][a-zA-Z_0-9]*").matcher(body);
+    StringBuffer sb = new StringBuffer();
+    while (matcher.find()) {
+      if (evaluator.getVariable(matcher.group()) == null) {
+        throw new RuntimeException("Variable reference " + matcher.group() + " is not defined");
+      }
+      matcher.appendReplacement(sb, evaluator.evaluate(matcher.group()).toString());
+    }
+    matcher.appendTail(sb);
+    return sb.toString();
   }
 
   private HttpRequest parseRequest(Element element, Evaluator evaluator) {

@@ -162,17 +162,20 @@
             }
         </div>
         <p>The server will respond with a location header containing the URL of the created resource</p>
-        <div h:response="">
+        <div h:response="validateIdFromLocationHeader">
             HTTP/1.1 201
             Location:
         </div>
     </aside>
+    <span c:execute="#recordId=getRecordId()">
+        A valid UUID is generated for this record: <b><span c:echo="#recordId"></span></b>.
+    </span>
 </section>
 
 <section id="GETsingle">
     <h2>Performing GET to the recently created wwdocument resource</h2>
     <aside class="example" h:http="#response">
-        <p>When a valid POST is performed to wwdocuments</p>
+        <p>When a GET is performed to wwdocuments </p>
         <div h:request="">
             GET #createResponse.headers.location HTTP/1.1
             Accept: application/json
@@ -183,6 +186,7 @@
             Content-type: application/json
 
             {
+                "_id": "#recordId",
                 "@type": "wwdocument",
                 "date": "1850",
                 "title": "Title",

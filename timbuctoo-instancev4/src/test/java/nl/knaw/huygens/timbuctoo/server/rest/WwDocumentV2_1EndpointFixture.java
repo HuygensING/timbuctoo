@@ -24,6 +24,8 @@ import java.util.List;
 public class WwDocumentV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
   private final ObjectMapper objectMapper;
 
+  private String recordId;
+
   public WwDocumentV2_1EndpointFixture() {
     this.objectMapper = new ObjectMapper();
   }
@@ -58,19 +60,36 @@ public class WwDocumentV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
     return ids;
   }
 
+  public String validateIdFromLocationHeader(HttpExpectation expectation, HttpResult reality) {
+    recordId = reality.getHeaders().get("location").replaceAll(".*\\/", "");
+    if (!recordId.matches("^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")) {
+      return "not a valid UUID: " + recordId;
+    }
+    return "";
+  }
+
   @Override
   public String validate(HttpExpectation expectation, HttpResult reality) {
     if (expectation.body == null) {
       return "";
     }
 
+    return validate(expectation.body, reality.getBody());
+  }
+
+  private String validate(String expectationBody, String realityBody) {
     try {
       JSONCompareResult jsonCompareResult =
-              JSONCompare.compareJSON(expectation.body, reality.getBody(), JSONCompareMode.LENIENT);
+              JSONCompare.compareJSON(expectationBody, realityBody, JSONCompareMode.LENIENT);
       return jsonCompareResult.getMessage();
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public String validateGetWithRecordId(HttpExpectation expectation, HttpResult reality) {
+    String expectedBody = expectation.body.replace("#recordId", recordId);
+    return validate(expectedBody, reality.getBody());
   }
 
   public String validatePostWithEmptyBodyResponse(HttpExpectation expectation, HttpResult reality) {
@@ -90,5 +109,9 @@ public class WwDocumentV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
     Response response = doHttpCommand(loginRequest);
 
     return response.getHeaderString("x_auth_token");
+  }
+
+  public String getRecordId() {
+    return recordId;
   }
 }
