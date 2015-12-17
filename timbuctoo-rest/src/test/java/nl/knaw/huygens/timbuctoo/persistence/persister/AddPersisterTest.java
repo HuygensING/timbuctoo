@@ -25,6 +25,7 @@ package nl.knaw.huygens.timbuctoo.persistence.persister;
 import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.timbuctoo.AlreadyHasAPidException;
 import nl.knaw.huygens.timbuctoo.Repository;
+import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.persistence.PersistenceWrapper;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,6 +33,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import test.rest.model.projecta.ProjectADomainEntity;
 
+import static nl.knaw.huygens.timbuctoo.config.TypeRegistry.toBaseDomainEntity;
 import static nl.knaw.huygens.timbuctoo.persistence.persister.AddPersister.DOMAIN_ENTITY_CANNOT_BE_NULL_MESSAGE;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
@@ -45,7 +47,7 @@ import static org.mockito.Mockito.when;
 
 public class AddPersisterTest {
   public static final ProjectADomainEntity DOMAIN_ENTITY = new ProjectADomainEntity();
-  public static final Class<ProjectADomainEntity> TYPE = ProjectADomainEntity.class;
+  public static final Class<? extends DomainEntity> BASE_TYPE = toBaseDomainEntity(ProjectADomainEntity.class);
   public static final String ID = "id";
   public static final int REVISION = 1;
   public static final String PID = "pid";
@@ -76,8 +78,8 @@ public class AddPersisterTest {
     instance.execute(DOMAIN_ENTITY);
 
     // verify
-    verify(persistenceWrapper, times(1)).persistObject(TYPE, ID, REVISION);
-    verify(repository, times(1)).setPID(TYPE, ID, PID);
+    verify(persistenceWrapper, times(1)).persistObject(BASE_TYPE, ID, REVISION);
+    verify(repository, times(1)).setPID(BASE_TYPE, ID, PID);
   }
 
   @Rule
@@ -104,7 +106,7 @@ public class AddPersisterTest {
     instance.execute(DOMAIN_ENTITY);
 
     // verify
-    verify(persistenceWrapper, times(5)).persistObject(TYPE, ID, REVISION);
+    verify(persistenceWrapper, times(5)).persistObject(BASE_TYPE, ID, REVISION);
     verifyZeroInteractions(repository);
   }
 
@@ -118,7 +120,7 @@ public class AddPersisterTest {
     instance.execute(DOMAIN_ENTITY);
 
     // verify
-    verify(repository, times(5)).setPID(TYPE, ID, PID);
+    verify(repository, times(5)).setPID(BASE_TYPE, ID, PID);
     verify(persistenceWrapper).deletePersistentId(PID);
   }
 
@@ -132,7 +134,7 @@ public class AddPersisterTest {
     instance.execute(DOMAIN_ENTITY);
 
     // verify
-    verify(repository, times(5)).setPID(TYPE, ID, PID);
+    verify(repository, times(5)).setPID(BASE_TYPE, ID, PID);
     verify(persistenceWrapper).deletePersistentId(PID);
   }
 
@@ -146,7 +148,7 @@ public class AddPersisterTest {
     instance.execute(DOMAIN_ENTITY);
 
     // verify
-    verify(repository, times(1)).setPID(TYPE, ID, PID);
+    verify(repository, times(1)).setPID(BASE_TYPE, ID, PID);
     verify(persistenceWrapper).deletePersistentId(PID);
   }
 
