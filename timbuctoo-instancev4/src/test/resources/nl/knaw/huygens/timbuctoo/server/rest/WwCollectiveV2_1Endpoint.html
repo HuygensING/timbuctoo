@@ -171,6 +171,15 @@
             HTTP/1.1 200
         </div>
     </aside>
+    <p>
+        After at most <b>60</b> seconds the updated record
+        <span c:execute="#pid=retrievePid()">
+            <span c:assertTrue="recordHasPid()">
+                should receive a new persistent ID:
+                <b><span c:echo="#pid"></span></b>
+            </span>.
+        </span>
+    </p>
 </section>
 
 <section id="GETsingle-updated">
