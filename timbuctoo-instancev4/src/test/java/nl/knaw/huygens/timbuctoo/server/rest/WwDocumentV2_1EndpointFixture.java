@@ -31,6 +31,30 @@ public class WwDocumentV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
   private String recordId;
   private String pid;
 
+  private static class RegexJsonComparator extends DefaultComparator {
+
+    public RegexJsonComparator(JSONCompareMode mode) {
+      super(mode);
+    }
+
+    @Override
+    public void compareValues(String prefix, Object expectedValue, Object actualValue, JSONCompareResult result)
+        throws JSONException {
+
+      if (expectedValue instanceof String && ((String) expectedValue).startsWith("/") &&
+          ((String) expectedValue).endsWith("/")) {
+        RegularExpressionValueMatcher<Object> matcher = new RegularExpressionValueMatcher<>();
+        try {
+          matcher.equal(actualValue, ((String) expectedValue).substring(1, ((String) expectedValue).length() - 1));
+        } catch (ValueMatcherException e) {
+          result.fail(prefix, e);
+        }
+      } else {
+        super.compareValues(prefix, expectedValue, actualValue, result);
+      }
+    }
+  }
+
   public WwDocumentV2_1EndpointFixture() {
     this.objectMapper = new ObjectMapper();
   }
@@ -86,40 +110,18 @@ public class WwDocumentV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
     return validate(expectation.body, reality.getBody());
   }
 
-  private static class RegexJsonComparator extends DefaultComparator {
-
-    public RegexJsonComparator(JSONCompareMode mode) {
-      super(mode);
-    }
-
-    @Override
-    public void compareValues(String prefix, Object expectedValue, Object actualValue, JSONCompareResult result)
-            throws JSONException {
-
-      if (expectedValue instanceof String && ((String) expectedValue).startsWith("/") &&
-              ((String) expectedValue).endsWith("/")) {
-        RegularExpressionValueMatcher<Object> matcher = new RegularExpressionValueMatcher<>();
-        try {
-          matcher.equal(actualValue, ((String) expectedValue).substring(1, ((String) expectedValue).length() - 1));
-        } catch (ValueMatcherException e) {
-          result.fail(prefix, e);
-        }
-      } else {
-        super.compareValues(prefix, expectedValue, actualValue, result);
-      }
-    }
-  }
-
   private String validate(String expectationBody, String realityBody) {
     try {
       JSONCompareResult jsonCompareResult =
-              JSONCompare.compareJSON(expectationBody, realityBody, new RegexJsonComparator(JSONCompareMode.LENIENT));
+          JSONCompare.compareJSON(expectationBody, realityBody, new RegexJsonComparator(JSONCompareMode.LENIENT));
 
       return jsonCompareResult.getMessage();
     } catch (JSONException e) {
       throw new RuntimeException(e);
     }
   }
+
+
 
   public String validatePostWithEmptyBodyResponse(HttpExpectation expectation, HttpResult reality) {
     final String expected = "missing property '@type'";
@@ -128,17 +130,6 @@ public class WwDocumentV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
             "Expected response to contain: '" + expected + "', but got: '" + reality.getBody() + "'";
   }
 
-  public String getAuthenticationToken() {
-    List<AbstractMap.SimpleEntry<String, String>> headers = Lists.newArrayList();
-    headers.add(new AbstractMap.SimpleEntry<String, String>("Authorization",  "Basic dXNlcjpwYXNzd29yZA=="));
-
-    HttpRequest loginRequest =
-            new HttpRequest("POST", "/v2.1/authenticate", headers, null, null, Lists.newArrayList());
-
-    Response response = doHttpCommand(loginRequest);
-
-    return response.getHeaderString("x_auth_token");
-  }
 
   public String retrievePid() throws JSONException {
     int attempts = 0;
@@ -166,5 +157,18 @@ public class WwDocumentV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
 
   public String getRecordId() {
     return recordId;
+  }
+
+
+  public String getAuthenticationToken() {
+    List<AbstractMap.SimpleEntry<String, String>> headers = Lists.newArrayList();
+    headers.add(new AbstractMap.SimpleEntry<String, String>("Authorization",  "Basic dXNlcjpwYXNzd29yZA=="));
+
+    HttpRequest loginRequest =
+        new HttpRequest("POST", "/v2.1/authenticate", headers, null, null, Lists.newArrayList());
+
+    Response response = doHttpCommand(loginRequest);
+
+    return response.getHeaderString("x_auth_token");
   }
 }
