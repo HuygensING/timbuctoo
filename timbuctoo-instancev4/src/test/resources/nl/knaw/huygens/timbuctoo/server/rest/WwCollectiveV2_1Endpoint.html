@@ -77,6 +77,15 @@
             <li>SHOP</li>
         </ul>
     </p>
+    <p>
+        After at most <b>60</b> seconds the new record
+        <span c:execute="#pid=retrievePid()">
+            <span c:assertTrue="recordHasPid()">
+                should have persistent ID in the field <i>^pid</i>:
+                <b><span c:echo="#pid"></span></b>
+            </span>.
+        </span>
+    </p>
 </section>
 
 <section id="GETsingle">
@@ -131,15 +140,7 @@
             }
         </div>
     </aside>
-    <p>
-        After at most <b>60</b> seconds the new record
-        <span c:execute="#pid=retrievePid()">
-            <span c:assertTrue="recordHasPid()">
-                should have persistent ID in the field <i>^pid</i>:
-                <b><span c:echo="#pid"></span></b>
-            </span>.
-        </span>
-    </p>
+
 </section>
 
 <section id="PUT">
