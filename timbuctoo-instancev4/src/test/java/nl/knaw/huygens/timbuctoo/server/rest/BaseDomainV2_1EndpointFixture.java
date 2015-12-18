@@ -29,6 +29,7 @@ public class BaseDomainV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
   private String recordId;
   private String recordLocation;
   private String pid;
+  private String authenticationToken;
 
   private static class RegexJsonComparator extends DefaultComparator {
 
@@ -162,6 +163,9 @@ public class BaseDomainV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
   }
 
   public String getAuthenticationToken() {
+    if(authenticationToken != null) {
+      return authenticationToken;
+    }
     List<AbstractMap.SimpleEntry<String, String>> headers = Lists.newArrayList();
     headers.add(new AbstractMap.SimpleEntry<String, String>("Authorization",  "Basic dXNlcjpwYXNzd29yZA=="));
 
@@ -169,8 +173,8 @@ public class BaseDomainV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
         new HttpRequest("POST", "/v2.1/authenticate", headers, null, null, Lists.newArrayList());
 
     Response response = doHttpCommand(loginRequest);
-
-    return response.getHeaderString("x_auth_token");
+    authenticationToken = response.getHeaderString("x_auth_token");
+    return authenticationToken;
   }
 
   public boolean isValidPid(String result) throws JSONException {
