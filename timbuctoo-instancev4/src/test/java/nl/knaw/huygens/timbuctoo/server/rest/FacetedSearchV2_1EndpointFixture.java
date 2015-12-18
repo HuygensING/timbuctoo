@@ -25,7 +25,7 @@ public class FacetedSearchV2_1EndpointFixture extends AbstractV2_1EndpointFixtur
   public String validate(HttpExpectation expectation, HttpResult reality) {
     if (expectation.body == null) {
       return "";
-    } else {
+    } else if (reality.getHeaders().get("content-type").equals("")) {
       try {
         JSONCompareResult result =
           JSONCompare.compareJSON(expectation.body, reality.getBody(), JSONCompareMode.LENIENT);
@@ -33,6 +33,8 @@ public class FacetedSearchV2_1EndpointFixture extends AbstractV2_1EndpointFixtur
       } catch (JSONException e) {
         throw new RuntimeException(e);
       }
+    } else {
+      return "Not a json response body.";
     }
   }
 }
