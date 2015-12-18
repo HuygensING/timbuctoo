@@ -1,0 +1,11 @@
+#!/bin/bash
+# Create the integration test documentation
+#cd ../../../target/concordion/
+#find . -name *.html
+# Compose the documentation
+RESOURCE_DIR=$1
+TARGET_DIR=$2
+echo "Directory of the template page: $RESOURCE_DIR"
+#cd $RESOURCE_DIR 
+echo "Generate target page: $TARGET_DIR/index.html"
+xmllint --dropdtd --noent $RESOURCE_DIR/schema/htmlbook.xsd $RESOURCE_DIR/index.html > $TARGET_DIR/index.html

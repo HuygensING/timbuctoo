@@ -152,6 +152,26 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.4.0</version>
+        <executions>
+          <execution>
+            <id>build-docs</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>exec</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <executable>${basedir}/src/test/scripts/builddoc</executable>
+          <commandlineArgs>
+            ${basedir}/src/test/resources/ ${basedir}/target/concordion/
+          </commandlineArgs>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>
