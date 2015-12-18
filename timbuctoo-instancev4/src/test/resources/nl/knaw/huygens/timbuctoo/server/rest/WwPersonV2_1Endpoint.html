@@ -1,37 +1,13 @@
-<!DOCTYPE html>
 <html lang="en"
       xmlns:c="http://www.concordion.org/2007/concordion"
       xmlns:h="http://huygens.knaw.nl/concordion-http-verifier">
 <head>
   <meta charset="UTF-8"/>
   <title>Timbuctoo v2.1 WWPerson API</title>
-  <script src='https://www.w3.org/Tools/respec/respec-w3c-common' async='async' class='remove'>
-    Some content to trick concordion into treating this element as non-empty
-  </script>
-  <script class='remove'>
-        var respecConfig = {
-          specStatus: "unofficial",
-          editors: [
-            {
-              name:       "Jauco Noordzij",
-              company:    "Huygens ING"
-            },
-            {
-              name:       "Martijn Maas",
-              company:    "Huygens ING"
-            },
-            {
-              name:       "René van der Ark",
-              company:    "Huygens ING"
-            }
-          ],
-          issueBase: "http://jira.huygens.knaw.nl/TIM-",
-          shortName: "timbuctoov2.1"
-        };
-  </script>
 </head>
 <body>
-  <section id='abstract'>
+  <section data-type="chapter">
+    <h2>Preface</h2>
     <p>
       This specification describes the workings of the v2.1 version of the Timbuctoo REST API for wwpersons
     </p>
@@ -39,7 +15,7 @@
       <b><span c:echo="#token"></span></b>.</span>
   </section>
 
-  <section id="POST">
+  <section data-type="chapter">
     <h2>POST wwperson</h2>
     <aside class="example" h:http="#postResponse">
       <div h:request="">
@@ -149,7 +125,7 @@
       </b>
     </span>
   </section>
-  <section id="GETSingle">
+  <section >
     <h2>GET a single wwperson</h2>
 
     <h3>GET an existing wwperson</h3>
@@ -252,7 +228,7 @@
     </aside>
   </section>
 
-  <section id="DELETEWWPerson">
+  <section data-type="chapter">
     <h2>Delete the created person</h2>
     <aside class="example" h:http="#response">
       <div h:request="">
@@ -267,7 +243,7 @@
     </aside>
   </section>
 
-  <section id="GETCollection">
+  <section data-type="chapter">
     <h2>GET wwperson collection</h2>
     <h3>A simple request</h3>
     <aside class="example" h:http="#response">
