@@ -183,6 +183,6 @@ public class BaseDomainV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
 
   public boolean isValidPid(String result) throws JSONException {
 
-    return !StringUtils.isBlank(result);
+    return !StringUtils.isBlank(result) && !result.equals("null");
   }
 }
