@@ -8,5 +8,5 @@ Contents
 
 Generate a test html book
 -------------------------
-1. From the parent folder run: mvn integration-test
+1. From the module root run: mvn integration-test
 2. In this folder run: xmllint --dropdtd --noent schema/htmlbook.xsd index.html > <output-file>.html

@@ -18,6 +18,15 @@ public class WwRelationV2_1EndpointFixture extends BaseDomainV2_1EndpointFixture
 
   private String personPath;
   private String personId;
+
+  public String getPersonPath() {
+    return personPath;
+  }
+
+  public String getDocumentPath() {
+    return documentPath;
+  }
+
   private String documentId;
   private String documentPath;
 
@@ -28,8 +37,9 @@ public class WwRelationV2_1EndpointFixture extends BaseDomainV2_1EndpointFixture
         new HttpRequest("POST", "/v2.1/domain/wwdocuments", headers, makeDocumentJson(), null, Lists.newArrayList());
 
     Response response = doHttpCommand(postRequest);
-    documentPath = response.getHeaderString("Location").replaceAll("http://[a-z]+.repository.huygens.knaw.nl", "");
+    documentPath = response.getHeaderString("Location").replaceAll("http://[^/]+/", "");;
     documentId = documentPath.replaceAll(".*\\/", "");
+    retrievePid(documentPath);
     return documentId;
   }
 
@@ -39,8 +49,9 @@ public class WwRelationV2_1EndpointFixture extends BaseDomainV2_1EndpointFixture
         new HttpRequest("POST", "/v2.1/domain/wwpersons", headers, makePersonJson(), null, Lists.newArrayList());
 
     Response response = doHttpCommand(postRequest);
-    personPath = response.getHeaderString("Location").replaceAll("http://[a-z]+.repository.huygens.knaw.nl", "");
+    personPath = response.getHeaderString("Location").replaceAll("http://[^/]+/", "");;
     personId = personPath.replaceAll(".*\\/", "");
+    retrievePid(personPath);
     return personId;
   }
 
@@ -63,11 +74,13 @@ public class WwRelationV2_1EndpointFixture extends BaseDomainV2_1EndpointFixture
   private String makePersonJson() throws JSONException {
     JSONObject personObject = new JSONObject();
     JSONArray types = new JSONArray("[\"AUTHOR\"]");
+    JSONArray names = new JSONArray("[{\"components\": [{\"type\": \"FORENAME\", \"value\": \"name\"}]}]");
     personObject.put("@type", "wwperson");
     personObject.put("gender", "MALE");
     personObject.put("birthDate", "1589");
     personObject.put("deathDate", "1653");
     personObject.put("types", types);
+    personObject.put("names", names);
     return personObject.toString();
   }
 

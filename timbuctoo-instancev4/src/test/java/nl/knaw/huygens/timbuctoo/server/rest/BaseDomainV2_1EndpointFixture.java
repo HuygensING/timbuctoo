@@ -116,11 +116,11 @@ public class BaseDomainV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
     return pid != null && !pid.equalsIgnoreCase("null");
   }
 
-  public String retrievePid() throws JSONException {
+  public String retrievePid(String path)  {
     int attempts = 0;
     List<AbstractMap.SimpleEntry<String, String>> headers = Lists.newArrayList();
     headers.add(new AbstractMap.SimpleEntry<String, String>("Accept", "application/json"));
-    HttpRequest getRequest = new HttpRequest("GET", recordLocation, headers, null, null, Lists.newArrayList());
+    HttpRequest getRequest = new HttpRequest("GET", path, headers, null, null, Lists.newArrayList());
 
     while ((pid == null || pid.equalsIgnoreCase("null")) && attempts < 24) {
       Response response = doHttpCommand(getRequest);
@@ -140,9 +140,13 @@ public class BaseDomainV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
     return pid;
   }
 
+  public String retrievePid()  {
+    return retrievePid(recordLocation);
+  }
+
 
   public String validateIdFromLocationHeader(HttpExpectation expectation, HttpResult reality) {
-    recordLocation = reality.getHeaders().get("location").replaceAll("http://[a-z]+.repository.huygens.knaw.nl", "");
+    recordLocation = reality.getHeaders().get("location").replaceAll("http://[^/]+/", "");
     recordId = reality.getHeaders().get("location").replaceAll(".*\\/", "");
 
     if (!recordId.matches("^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")) {
@@ -163,7 +167,7 @@ public class BaseDomainV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
   }
 
   public String getAuthenticationToken() {
-    if(authenticationToken != null) {
+    if (authenticationToken != null) {
       return authenticationToken;
     }
     List<AbstractMap.SimpleEntry<String, String>> headers = Lists.newArrayList();
