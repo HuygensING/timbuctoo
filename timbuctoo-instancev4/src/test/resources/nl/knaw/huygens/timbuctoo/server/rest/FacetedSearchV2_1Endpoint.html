@@ -1,33 +1,13 @@
-<!DOCTYPE html>
 <html lang="en"
       xmlns:c="http://www.concordion.org/2007/concordion"
       xmlns:h="http://huygens.knaw.nl/concordion-http-verifier">
 <head>
   <meta charset="UTF-8"/>
   <title>Timbuctoo v2.1 Faceted search API</title>
-  <script src='https://www.w3.org/Tools/respec/respec-w3c-common' async='async' class='remove'>
-    Some content to trick concordion into treating this element as non-empty
-  </script>
-  <script class='remove'>
-        var respecConfig = {
-          specStatus: "unofficial",
-          editors: [
-            {
-              name:       "Jauco Noordzij",
-              company:    "Huygens ING"
-            },
-            {
-              name:       "Martijn Maas",
-              company:    "Huygens ING"
-            }
-          ],
-          issueBase: "http://jira.huygens.knaw.nl/TIM-",
-          shortName: "timbuctoov2.1"
-        };
-  </script>
 </head>
 <body>
-  <section id='abstract'>
+  <section data-type="chapter">
+    <h2>Preface</h2>
     Timbuctoo has support for building faceted searches. Doing a faceted search usually follows the following steps.
     <ol>
       <li>You <a href="#retrievingFacets">retrieve facets</a> by performing an empty POST to the search endpoint, and GET the returned location</li>
@@ -39,7 +19,7 @@
       <li>etc.</li>
     </ol>
   </section>
-  <section id="retrievingFacets">
+  <section data-type="chapter">
     <h2>Retrieving facets</h2>
     Let's assume we're searching the collection <b>ckccpersons</b>.
     <aside class="example highlight" h:http="#searchPost">
@@ -116,7 +96,7 @@
       </li>
     </ul>
   </section>
-  <section id="searchingUsingFacets">
+  <section data-type="chapter">
     <h2>Searching with the selected facets</h2>
     <p>
       You can use the information in the facets, sortableFields and fullTextSearchFields to create a query form. You can
