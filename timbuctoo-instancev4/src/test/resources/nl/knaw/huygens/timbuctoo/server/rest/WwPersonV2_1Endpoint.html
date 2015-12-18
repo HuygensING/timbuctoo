@@ -116,12 +116,12 @@
           "personalSituation":"Some multi-lined\n text"
         }
       </div>
-      <div h:response="">
+      <div h:response="validateIdFromLocationHeader">
         HTTP/1.1 201
         Location:
       </div>
     </aside>
-    <span c:execute="#recordId=getRecordId(#postResponse)">
+    <span c:execute="#recordId=getRecordId()">
       A valid UUID is generated for this record: <b><span c:echo="#recordId"></span></b>.
     </span>
     <div>
@@ -142,7 +142,7 @@
         </ul>
       </p>
     </div>
-    <span c:execute="#pid=retrievePid(#postResponse)"></span>
+    <span c:execute="#pid=retrievePid()"></span>
     <span c:assertTrue="isValidPid(#pid)">Has a valid pid within 1 minute:
       <b>
         <span c:echo="#pid"></span>
@@ -164,8 +164,8 @@
 
         {
           "_id": "#recordId",
-          "^rev": "1",
-          "^pid": "https?//:.*",
+          "^rev": 1,
+          "^pid": "/.*/",
           "@type": "wwperson",
           "names": [
             {
