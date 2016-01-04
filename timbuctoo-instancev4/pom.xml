@@ -166,9 +166,9 @@
           </execution>
         </executions>
         <configuration>
-          <executable>${basedir}/src/test/scripts/builddoc</executable>
+          <executable>${basedir}/src/spec/scripts/builddoc</executable>
           <commandlineArgs>
-            ${basedir}/src/test/resources/ ${basedir}/target/concordion/
+            ${basedir}/src/spec/resources/ ${basedir}/target/concordion/
           </commandlineArgs>
         </configuration>
       </plugin>
