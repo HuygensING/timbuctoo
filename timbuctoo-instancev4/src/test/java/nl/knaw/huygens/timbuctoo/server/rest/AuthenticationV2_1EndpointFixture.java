@@ -12,9 +12,11 @@ import org.skyscreamer.jsonassert.RegularExpressionValueMatcher;
 import org.skyscreamer.jsonassert.ValueMatcherException;
 import org.skyscreamer.jsonassert.comparator.DefaultComparator;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+
 @RunWith(ConcordionRunner.class)
 public class AuthenticationV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
-
 
   @Override
   public String validate(HttpExpectation expectation, HttpResult reality) {
@@ -22,7 +24,23 @@ public class AuthenticationV2_1EndpointFixture extends AbstractV2_1EndpointFixtu
       return "";
     }
 
-    return validate(expectation.body, reality.getBody());
+    return validateBody(expectation.body, reality.getBody());
+  }
+
+  private String validateBody(String expectationBody, String realityBody) {
+    try {
+      JSONCompareResult jsonCompareResult =
+        JSONCompare.compareJSON(expectationBody, realityBody, new RegexJsonComparator(JSONCompareMode.LENIENT));
+
+      return jsonCompareResult.getMessage();
+    } catch (JSONException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  protected Client getClient() {
+    return ClientBuilder.newClient();
   }
 
   private static class RegexJsonComparator extends DefaultComparator {
@@ -33,10 +51,10 @@ public class AuthenticationV2_1EndpointFixture extends AbstractV2_1EndpointFixtu
 
     @Override
     public void compareValues(String prefix, Object expectedValue, Object actualValue, JSONCompareResult result)
-        throws JSONException {
+      throws JSONException {
 
       if (expectedValue instanceof String && ((String) expectedValue).startsWith("/") &&
-          ((String) expectedValue).endsWith("/")) {
+        ((String) expectedValue).endsWith("/")) {
         RegularExpressionValueMatcher<Object> matcher = new RegularExpressionValueMatcher<>();
         try {
           matcher.equal(actualValue, ((String) expectedValue).substring(1, ((String) expectedValue).length() - 1));
@@ -46,17 +64,6 @@ public class AuthenticationV2_1EndpointFixture extends AbstractV2_1EndpointFixtu
       } else {
         super.compareValues(prefix, expectedValue, actualValue, result);
       }
-    }
-  }
-
-  private String validate(String expectationBody, String realityBody) {
-    try {
-      JSONCompareResult jsonCompareResult =
-          JSONCompare.compareJSON(expectationBody, realityBody, new RegexJsonComparator(JSONCompareMode.LENIENT));
-
-      return jsonCompareResult.getMessage();
-    } catch (JSONException e) {
-      throw new RuntimeException(e);
     }
   }
 

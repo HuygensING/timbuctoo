@@ -17,6 +17,8 @@ import org.skyscreamer.jsonassert.RegularExpressionValueMatcher;
 import org.skyscreamer.jsonassert.ValueMatcherException;
 import org.skyscreamer.jsonassert.comparator.DefaultComparator;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.AbstractMap;
@@ -30,6 +32,11 @@ public class BaseDomainV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
   private String recordLocation;
   private String pid;
   private String authenticationToken;
+
+  @Override
+  protected Client getClient() {
+    return ClientBuilder.newClient();
+  }
 
   private static class RegexJsonComparator extends DefaultComparator {
 

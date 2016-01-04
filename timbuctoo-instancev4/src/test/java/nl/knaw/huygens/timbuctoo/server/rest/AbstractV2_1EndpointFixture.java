@@ -7,7 +7,7 @@ import nl.knaw.huygens.concordion.extensions.HttpResult;
 import nl.knaw.huygens.concordion.extensions.ReplaceEmbeddedStylesheetExtension;
 import org.concordion.api.extension.Extension;
 
-import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
@@ -27,7 +27,7 @@ public abstract class AbstractV2_1EndpointFixture {
    * Implements the actual http call for the concordion HTTPCommand.
    */
   protected Response doHttpCommand(HttpRequest httpRequest) {
-    WebTarget target = ClientBuilder.newClient()
+    WebTarget target = getClient()
       .target(httpRequest.server != null ? httpRequest.server : "http://test.repository.huygens.knaw.nl")
       .path(httpRequest.url);
 
@@ -48,6 +48,8 @@ public abstract class AbstractV2_1EndpointFixture {
       return request.method(httpRequest.method);
     }
   }
+
+  protected abstract Client getClient();
 
   public abstract String validate(HttpExpectation expectation, HttpResult reality);
 

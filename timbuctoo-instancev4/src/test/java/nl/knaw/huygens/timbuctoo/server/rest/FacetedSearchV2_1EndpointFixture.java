@@ -11,6 +11,9 @@ import org.skyscreamer.jsonassert.JSONCompare;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.JSONCompareResult;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+
 @FullOGNL
 @RunWith(ConcordionRunner.class)
 public class FacetedSearchV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
@@ -43,5 +46,10 @@ public class FacetedSearchV2_1EndpointFixture extends AbstractV2_1EndpointFixtur
     } else {
       return "";
     }
+  }
+
+  @Override
+  protected Client getClient() {
+    return ClientBuilder.newClient();
   }
 }
