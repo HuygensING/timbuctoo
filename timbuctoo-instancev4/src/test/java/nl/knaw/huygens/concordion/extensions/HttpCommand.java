@@ -26,7 +26,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -367,7 +366,10 @@ public class HttpCommand extends AbstractCommand {
   private String getHeaderValue(Evaluator evaluator, Header header) {
     String value = header.getValue();
     if (value.startsWith("#")) {
-      return evaluator.evaluate(value).toString();
+      if(evaluator.evaluate(value) != null) {
+        return evaluator.evaluate(value).toString();
+      }
+      return null;
     }
     return value;
   }
