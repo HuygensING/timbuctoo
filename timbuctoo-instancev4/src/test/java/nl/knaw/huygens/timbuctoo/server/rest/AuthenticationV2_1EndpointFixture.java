@@ -8,9 +8,6 @@ import org.junit.runner.RunWith;
 import org.skyscreamer.jsonassert.JSONCompare;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.JSONCompareResult;
-import org.skyscreamer.jsonassert.RegularExpressionValueMatcher;
-import org.skyscreamer.jsonassert.ValueMatcherException;
-import org.skyscreamer.jsonassert.comparator.DefaultComparator;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -41,30 +38,6 @@ public class AuthenticationV2_1EndpointFixture extends AbstractV2_1EndpointFixtu
   @Override
   protected Client getClient() {
     return ClientBuilder.newClient();
-  }
-
-  private static class RegexJsonComparator extends DefaultComparator {
-
-    public RegexJsonComparator(JSONCompareMode mode) {
-      super(mode);
-    }
-
-    @Override
-    public void compareValues(String prefix, Object expectedValue, Object actualValue, JSONCompareResult result)
-      throws JSONException {
-
-      if (expectedValue instanceof String && ((String) expectedValue).startsWith("/") &&
-        ((String) expectedValue).endsWith("/")) {
-        RegularExpressionValueMatcher<Object> matcher = new RegularExpressionValueMatcher<>();
-        try {
-          matcher.equal(actualValue, ((String) expectedValue).substring(1, ((String) expectedValue).length() - 1));
-        } catch (ValueMatcherException e) {
-          result.fail(prefix, e);
-        }
-      } else {
-        super.compareValues(prefix, expectedValue, actualValue, result);
-      }
-    }
   }
 
 }
