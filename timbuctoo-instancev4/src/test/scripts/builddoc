@@ -1,4 +1,10 @@
 #!/bin/bash
+
+# fail with an error message
+set -o errexit
+set -o pipefail
+set -o nounset
+
 # Create the integration test documentation
 #cd ../../../target/concordion/
 #find . -name *.html
