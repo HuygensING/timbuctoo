@@ -366,7 +366,7 @@ public class HttpCommand extends AbstractCommand {
   private String getHeaderValue(Evaluator evaluator, Header header) {
     String value = header.getValue();
     if (value.startsWith("#")) {
-      if(evaluator.evaluate(value) != null) {
+      if (evaluator.evaluate(value) != null) {
         return evaluator.evaluate(value).toString();
       }
       return null;

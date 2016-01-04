@@ -32,7 +32,7 @@ public class AuthenticationV2_1EndpointFixture extends AbstractV2_1EndpointFixtu
   }
 
   private String validateBody(String expectationBody, String actualBody) {
-    if(StringUtils.isBlank(actualBody)){
+    if (StringUtils.isBlank(actualBody)) {
       return "Actual body is empty";
     }
     try {
