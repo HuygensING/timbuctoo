@@ -1,21 +1,14 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd" [
-    <!ENTITY chapter.1 SYSTEM "../../../target/concordion/nl/knaw/huygens/timbuctoo/server/rest/AuthenticationV2_1Endpoint.html">
-    <!ENTITY chapter.2 SYSTEM "../../../target/concordion/nl/knaw/huygens/timbuctoo/server/rest/FacetedSearchV2_1Endpoint.html">
-    <!ENTITY chapter.3 SYSTEM "../../../target/concordion/nl/knaw/huygens/timbuctoo/server/rest/WwCollectiveV2_1Endpoint.html">
-    <!ENTITY chapter.4 SYSTEM "../../../target/concordion/nl/knaw/huygens/timbuctoo/server/rest/WwDocumentV2_1Endpoint.html">
-    <!ENTITY chapter.5 SYSTEM "../../../target/concordion/nl/knaw/huygens/timbuctoo/server/rest/WwPersonV2_1Endpoint.html">
-    <!ENTITY chapter.6 SYSTEM "../../../target/concordion/nl/knaw/huygens/timbuctoo/server/rest/WwRelationV2_1Endpoint.html">
-]>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html lang="en"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="http://www.w3.org/1999/xhtml ./schema/htmlbook.xsd"
-      xmlns="http://www.w3.org/1999/xhtml">
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+>
 <head>
   <meta charset="UTF-8" />
   <title>Timbuctoo REST API V2.1 documentation</title>
   <script src='https://www.w3.org/Tools/respec/respec-w3c-common' async='async' class='remove'>
-
   </script>
   <script class='remove'>
     var respecConfig = {
@@ -49,32 +42,32 @@
   </section>
   <section data-type="chapter">
     <h2>Authentication</h2>
-    &chapter.1;
+    <xi:include href="nl/knaw/huygens/timbuctoo/server/rest/AuthenticationV2_1Endpoint.html" xpointer="xpointer(//body/*)" />
   </section>
   <hr />
   <section data-type="chapter">
     <h2>Faceted Search</h2>
-    &chapter.2;
+    <xi:include href="nl/knaw/huygens/timbuctoo/server/rest/FacetedSearchV2_1Endpoint.html" xpointer="xpointer(//body/*)" />
   </section>
   <hr />
   <section data-type="chapter">
     <h2>WWCollective</h2>
-    &chapter.3;
+    <xi:include href="nl/knaw/huygens/timbuctoo/server/rest/WwCollectiveV2_1Endpoint.html" xpointer="xpointer(//body/*)" />
   </section>
   <hr />
   <section data-type="chapter">
     <h2>WWDocument</h2>
-    &chapter.4;
+    <xi:include href="nl/knaw/huygens/timbuctoo/server/rest/WwDocumentV2_1Endpoint.html" xpointer="xpointer(//body/*)" />
   </section>
   <hr />
   <section data-type="chapter">
     <h2>WWPerson</h2>
-    &chapter.5;
+    <xi:include href="nl/knaw/huygens/timbuctoo/server/rest/WwPersonV2_1Endpoint.html" xpointer="xpointer(//body/*)" />
   </section>
   <hr />
   <section data-type="chapter">
     <h2>WWRelation</h2>
-    &chapter.6;
+    <xi:include href="nl/knaw/huygens/timbuctoo/server/rest/WwRelationV2_1Endpoint.html" xpointer="xpointer(//body/*)" />
   </section>
   <hr />
 </body>
