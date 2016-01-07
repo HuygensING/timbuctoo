@@ -6,7 +6,7 @@ import java.util.Map;
 /**
  * Will determine if a user's credentials are valid and return a token.
  * Will be able to return the user belonging to a token.
- *
+ * <p/>
  * <p>Needs: An object from which to retrieve valid users, an object to store logged in users</p>
  */
 public class LoggedInUserStore {
@@ -23,12 +23,12 @@ public class LoggedInUserStore {
     return users.get(authHeader);
   }
 
-  public String userTokenFor(String username, String password) {
+  public String userTokenFor(String username, String password) throws LocalLoginUnavailableException {
     String id = null;
     try {
       id = jsonBasedAuthenticator.authenticate(username, password);
     } catch (LocalLoginUnavailableException e) {
-      e.printStackTrace();
+      throw e;
     }
     users.put(id, new User());
     return id;

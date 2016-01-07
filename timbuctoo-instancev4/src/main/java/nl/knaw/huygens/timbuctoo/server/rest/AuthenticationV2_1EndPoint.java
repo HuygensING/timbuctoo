@@ -32,6 +32,8 @@ public class AuthenticationV2_1EndPoint {
         .status(Response.Status.UNAUTHORIZED)
         .header(HttpHeaders.WWW_AUTHENTICATE, "Basic realm=\"timbuctoo\"")
         .build();
+    } catch (LocalLoginUnavailableException e) {
+      return Response.serverError().entity(e.getMessage()).build();
     }
   }
 }
