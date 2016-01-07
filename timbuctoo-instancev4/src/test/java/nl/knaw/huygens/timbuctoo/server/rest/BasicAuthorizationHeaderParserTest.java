@@ -100,23 +100,7 @@ public class BasicAuthorizationHeaderParserTest {
 
     BasicAuthorizationHeaderParser.parse(makeHeader("InvalidAuthString"));
   }
-
-  @Test
-  public void parseThrowsAnInvalidAuthorizationHeaderExceptionWhenTheHeaderValueIsNull()
-    throws InvalidAuthorizationHeaderException {
-    expectedException.expect(InvalidAuthorizationHeaderException.class);
-
-    BasicAuthorizationHeaderParser.parse(null);
-  }
-
-  @Test
-  public void parseThrowsAnInvalidAuthorizationHeaderExceptionWhenTheHeaderValueIsAnEmptyString()
-    throws InvalidAuthorizationHeaderException {
-    expectedException.expect(InvalidAuthorizationHeaderException.class);
-
-    BasicAuthorizationHeaderParser.parse("");
-  }
-
+  
   private String makeHeader(String authString) {
     String encodedAuthString = encodeBase64(authString);
     return String.format("Basic %s", encodedAuthString);

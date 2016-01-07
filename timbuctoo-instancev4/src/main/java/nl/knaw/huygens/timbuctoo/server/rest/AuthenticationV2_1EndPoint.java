@@ -25,6 +25,12 @@ public class AuthenticationV2_1EndPoint {
   @POST
   public Response authenticate(@HeaderParam(HttpHeaders.AUTHORIZATION) String encodedAuthString) {
     try {
+      if (encodedAuthString == null) {
+        return Response
+          .status(Response.Status.UNAUTHORIZED)
+          .header(HttpHeaders.WWW_AUTHENTICATE, "Basic realm=\"timbuctoo\"")
+          .build();
+      }
       BasicAuthorizationHeaderParser.Credentials credentials = BasicAuthorizationHeaderParser
         .parse(encodedAuthString);
 

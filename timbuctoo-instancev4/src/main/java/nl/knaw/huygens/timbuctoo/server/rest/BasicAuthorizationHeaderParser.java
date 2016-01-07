@@ -12,10 +12,6 @@ public class BasicAuthorizationHeaderParser {
    *                                             or when there is no ':' in the decoded string.
    */
   public static Credentials parse(String authorizationHeader) throws InvalidAuthorizationHeaderException {
-    if (authorizationHeader == null) {
-      throw new InvalidAuthorizationHeaderException("Authorization header value is null.");
-    }
-
     if (!authorizationHeader.toLowerCase().startsWith("basic ")) {
       throw new InvalidAuthorizationHeaderException("Header must start with the word 'Basic' followed by 1 space.");
     }
