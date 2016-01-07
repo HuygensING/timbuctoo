@@ -30,7 +30,7 @@ public class LoggedInUserStore {
     } catch (LocalLoginUnavailableException e) {
       throw e;
     }
-    users.put(id, new User());
+    users.put(id, new User(id));
     return id;
   }
 }
