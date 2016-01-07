@@ -1,5 +1,8 @@
 package nl.knaw.huygens.timbuctoo.server.rest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -12,6 +15,7 @@ import javax.ws.rs.core.Response;
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthenticationV2_1EndPoint {
 
+  public static final Logger LOG = LoggerFactory.getLogger(AuthenticationV2_1EndPoint.class);
   private final LoggedInUserStore loggedInUserStore;
 
   public AuthenticationV2_1EndPoint(LoggedInUserStore loggedInUserStore) {
@@ -22,12 +26,13 @@ public class AuthenticationV2_1EndPoint {
   public Response authenticate(@HeaderParam(HttpHeaders.AUTHORIZATION) String encodedAuthString) {
     try {
       BasicAuthorizationHeaderParser.Credentials credentials = BasicAuthorizationHeaderParser
-        .authenticate(encodedAuthString);
+        .parse(encodedAuthString);
 
       String token = loggedInUserStore.userTokenFor(credentials.getUsername(), credentials.getPassword());
 
       return Response.noContent().header("X_AUTH_TOKEN", token).build();
-    } catch (IllegalArgumentException e) {
+    } catch (InvalidAuthorizationHeaderException e) {
+      LOG.info(e.getMessage());
       return Response
         .status(Response.Status.UNAUTHORIZED)
         .header(HttpHeaders.WWW_AUTHENTICATE, "Basic realm=\"timbuctoo\"")

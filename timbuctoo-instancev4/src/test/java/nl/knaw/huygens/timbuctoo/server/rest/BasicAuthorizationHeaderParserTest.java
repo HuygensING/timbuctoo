@@ -21,73 +21,77 @@ public class BasicAuthorizationHeaderParserTest {
   public static final String VALID_AUTH_STRING = String.format("%s:%s", KNOWN_USER, CORRECT_PASSWORD);
 
   @Test
-  public void authenticateThrowsAnIllegalArgumentExceptionIfTheAuthenticationStringIsInvalid() {
+  public void parseThrowsAnInvalidAuthorizationHeaderExceptionIfTheAuthenticationStringIsInvalidBase64()
+    throws InvalidAuthorizationHeaderException {
 
-    expectedException.expect(IllegalArgumentException.class);
+    expectedException.expect(InvalidAuthorizationHeaderException.class);
 
-    BasicAuthorizationHeaderParser.authenticate(makeHeader("InvalidAuthString"));
+    BasicAuthorizationHeaderParser.parse("Basic InvalidAuthString");
   }
 
   @Test
-  public void authenticateReturnsATokenWhenTheAuthenticationStringIsValid() {
+  public void parseReturnsATokenWhenTheAuthenticationStringIsValid() throws InvalidAuthorizationHeaderException {
     //A valid header is Basic YTpi
     //'YTpi' decodes to a:b
 
-    BasicAuthorizationHeaderParser.Credentials result = BasicAuthorizationHeaderParser.authenticate("Basic YTpi");
+    BasicAuthorizationHeaderParser.Credentials result = BasicAuthorizationHeaderParser.parse("Basic YTpi");
     assertThat(result.getUsername(), is("a"));
     assertThat(result.getPassword(), is("b"));
   }
 
 
   @Test
-  public void authenticateSupportsColonsInPasswords() {
+  public void parseSupportsColonsInPasswords() throws InvalidAuthorizationHeaderException {
     BasicAuthorizationHeaderParser.Credentials result = null;
     try {
-      result = BasicAuthorizationHeaderParser.authenticate(makeHeader("user:test:password"));
+      result = BasicAuthorizationHeaderParser.parse(makeHeader("user:test:password"));
     } finally {
       assertThat(result.getPassword(), is("test:password"));
     }
   }
 
   @Test
-  public void authenticateSupportsBasicIsSpelledWithLowercaseB() {
+  public void parseSupportsBasicIsSpelledWithLowercaseB() throws InvalidAuthorizationHeaderException {
     String encodedAuthString = encodeBase64(VALID_AUTH_STRING);
     String header = String.format("basic %s", encodedAuthString);
 
-    BasicAuthorizationHeaderParser.Credentials result = BasicAuthorizationHeaderParser.authenticate(header);
+    BasicAuthorizationHeaderParser.Credentials result = BasicAuthorizationHeaderParser.parse(header);
 
-    assertThat(result, is(not(nullValue())));//the real assertion is that no error is thrown
+    assertThat(result, is(not(nullValue()))); //the real assertion is that no error is thrown
   }
 
   @Test
-  public void authenticateSupportsBasicIsSpelledInAllUppercase() {
+  public void parseSupportsBasicIsSpelledInAllUppercase() throws InvalidAuthorizationHeaderException {
     String encodedAuthString = encodeBase64(VALID_AUTH_STRING);
     String header = String.format("BASIC %s", encodedAuthString);
 
-    BasicAuthorizationHeaderParser.Credentials result = BasicAuthorizationHeaderParser.authenticate(header);
+    BasicAuthorizationHeaderParser.Credentials result = BasicAuthorizationHeaderParser.parse(header);
 
     assertThat(result, is(not(nullValue())));
   }
 
   @Test
-  public void authenticateRequiresTheHeaderToStartWithBasic() {
+  public void parseRequiresTheHeaderToStartWithBasic() throws InvalidAuthorizationHeaderException {
     String encodedAuthString = encodeBase64(VALID_AUTH_STRING);
     String header = String.format("absic %s", encodedAuthString);
 
-    expectedException.expect(IllegalArgumentException.class);
+    expectedException.expect(InvalidAuthorizationHeaderException.class);
 
-    BasicAuthorizationHeaderParser.authenticate(header);
+    BasicAuthorizationHeaderParser.parse(header);
   }
 
   @Test
-  public void authenticateFailsWhenTheHeaderOnlyHasTheHash() {
+  public void parseFailsWhenTheHeaderOnlyHasTheHash() throws InvalidAuthorizationHeaderException {
     String encodedAuthString = encodeBase64(VALID_AUTH_STRING);
     String header = String.format("%s", encodedAuthString);
 
-    expectedException.expect(IllegalArgumentException.class);
+    expectedException.expect(InvalidAuthorizationHeaderException.class);
 
-    BasicAuthorizationHeaderParser.authenticate(header);
+    BasicAuthorizationHeaderParser.parse(header);
   }
+
+  //FIXME: add test for null header value
+  //FIXME: add test for empty string header value
 
 
   private String makeHeader(String authString) {
