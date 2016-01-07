@@ -68,7 +68,7 @@ public class AuthenticationV2_1EndpointFixture extends AbstractV2_1EndpointFixtu
 
     headers.add(new AbstractMap.SimpleEntry<>("Authorization", "Basic INCORRECT_AUTHORIZATION_TOKEN"));
     ArrayList<AbstractMap.SimpleEntry<String, String>> queryParameters = Lists.newArrayList();
-    HttpRequest httpRequest = new HttpRequest("POST", "/v2.1/authenticate", headers, "", "", queryParameters);
+    HttpRequest httpRequest = new HttpRequest("POST", "/v2.1/authenticate", headers, null, null, queryParameters);
     Response response = super.doHttpCommand(httpRequest);
 
     return String.format("%s %s", response.getStatus(), response.getStatusInfo());
