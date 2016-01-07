@@ -12,7 +12,7 @@ import java.util.Map;
 public class LoggedInUserStore {
 
   private final JsonBasedAuthenticator jsonBasedAuthenticator;
-  private Map<String, User> users;
+  private final Map<String, User> users;
 
   public LoggedInUserStore(JsonBasedAuthenticator jsonBasedAuthenticator) {
     this.jsonBasedAuthenticator = jsonBasedAuthenticator;
