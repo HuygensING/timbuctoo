@@ -34,8 +34,14 @@
     </span>
     <aside class="note">
       <span>
-        If you use a wrong user password combination the response will be
+        If you use a wrong user password combination, the response will be
         <span c:assertEquals="doFailingLogin()">401 Unauthorized</span>.
+      </span>
+    </aside>
+    <aside class="note">
+      <span>
+        If the request does not contain a  &#39;Authorization&#39; header, the response will be
+        <span c:assertEquals="doLoginWithoutHeader()">401 Unauthorized</span>.
       </span>
     </aside>
   </section>

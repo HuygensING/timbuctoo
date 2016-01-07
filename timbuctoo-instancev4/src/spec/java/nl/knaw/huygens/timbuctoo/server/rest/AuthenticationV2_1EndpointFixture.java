@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.server.rest;
 
-import com.google.common.collect.Lists;
 import io.dropwizard.testing.junit.ResourceTestRule;
 import nl.knaw.huygens.concordion.extensions.HttpExpectation;
 import nl.knaw.huygens.concordion.extensions.HttpRequest;
@@ -19,8 +18,6 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Response;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.AbstractMap;
-import java.util.ArrayList;
 
 @FullOGNL
 @RunWith(ConcordionRunner.class)
@@ -63,12 +60,17 @@ public class AuthenticationV2_1EndpointFixture extends AbstractV2_1EndpointFixtu
   }
 
   public String doFailingLogin() {
+    HttpRequest httpRequest = new HttpRequest("POST", "/v2.1/authenticate")
+      .withHeader("Authorization", "Basic INCORRECT_AUTHORIZATION_TOKEN");
 
-    ArrayList<AbstractMap.SimpleEntry<String, String>> headers = Lists.newArrayList();
+    Response response = super.doHttpCommand(httpRequest);
 
-    headers.add(new AbstractMap.SimpleEntry<>("Authorization", "Basic INCORRECT_AUTHORIZATION_TOKEN"));
-    ArrayList<AbstractMap.SimpleEntry<String, String>> queryParameters = Lists.newArrayList();
-    HttpRequest httpRequest = new HttpRequest("POST", "/v2.1/authenticate", headers, null, null, queryParameters);
+    return String.format("%s %s", response.getStatus(), response.getStatusInfo());
+  }
+
+  public String doLoginWithoutHeader() {
+    HttpRequest httpRequest = new HttpRequest("POST", "/v2.1/authenticate");
+
     Response response = super.doHttpCommand(httpRequest);
 
     return String.format("%s %s", response.getStatus(), response.getStatusInfo());
