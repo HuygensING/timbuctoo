@@ -24,7 +24,12 @@ public class LoggedInUserStore {
   }
 
   public String userTokenFor(String username, String password) {
-    String id = jsonBasedAuthenticator.authenticate(username, password);
+    String id = null;
+    try {
+      id = jsonBasedAuthenticator.authenticate(username, password);
+    } catch (LocalLoginUnavailableException e) {
+      e.printStackTrace();
+    }
     users.put(id, new User());
     return id;
   }
