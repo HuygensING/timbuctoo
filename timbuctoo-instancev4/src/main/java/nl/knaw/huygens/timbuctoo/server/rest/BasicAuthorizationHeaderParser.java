@@ -12,10 +12,12 @@ public class BasicAuthorizationHeaderParser {
    *                                             or when there is no ':' in the decoded string.
    */
   public static Credentials parse(String authorizationHeader) throws InvalidAuthorizationHeaderException {
-
+    if (authorizationHeader == null) {
+      throw new InvalidAuthorizationHeaderException("Authorization header value is null.");
+    }
 
     if (!authorizationHeader.toLowerCase().startsWith("basic ")) {
-      throw InvalidAuthorizationHeaderException.notBasicAuthorizationHeader();
+      throw new InvalidAuthorizationHeaderException("Header must start with the word 'Basic' followed by 1 space.");
     }
     int indexOfWhitespace = authorizationHeader.indexOf(" ");
     String rawAuthString = authorizationHeader.substring(indexOfWhitespace + 1);
@@ -24,11 +26,13 @@ public class BasicAuthorizationHeaderParser {
     try {
       decodedAuth = new String(Base64.getDecoder().decode(rawAuthString.getBytes()));
     } catch (IllegalArgumentException e) {
-      throw InvalidAuthorizationHeaderException.wrap(e);
+      throw new InvalidAuthorizationHeaderException(e.getMessage());
     }
 
     if (!decodedAuth.contains(":")) {
-      throw InvalidAuthorizationHeaderException.invalidBasicAuthValue(decodedAuth);
+      throw new InvalidAuthorizationHeaderException(String.format(
+        "The username and password should be seperated by a ':' but that character was not found in '%s'.",
+        decodedAuth));
     }
 
     int indexOfFirstColon = decodedAuth.indexOf(":");
