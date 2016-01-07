@@ -23,7 +23,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
   public void run(TimbuctooConfiguration configuration, Environment environment) throws Exception {
     Path loginsPath = getLoginsPath();
 
-    JsonBasedAuthenticator authenticator = new JsonBasedAuthenticator(loginsPath.toFile(), ENCRYPTION_ALGORITHM);
+    JsonBasedAuthenticator authenticator = new JsonBasedAuthenticator(loginsPath, ENCRYPTION_ALGORITHM);
     LoggedInUserStore loggedInUserStore = new LoggedInUserStore(authenticator);
     environment.jersey().register(new AuthenticationV2_1EndPoint(loggedInUserStore));
     environment.jersey().register(new UserV2_1Endpoint(loggedInUserStore));

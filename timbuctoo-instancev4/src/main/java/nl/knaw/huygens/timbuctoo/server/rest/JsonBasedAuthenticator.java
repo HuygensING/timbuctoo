@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -15,14 +15,14 @@ import java.util.Optional;
 public class JsonBasedAuthenticator {
   public static final Logger LOG = LoggerFactory.getLogger(JsonBasedAuthenticator.class);
   private final ObjectMapper objectMapper;
-  private final File loginsFile;
+  private final Path loginsFile;
   private final String algorithm;
 
-  public JsonBasedAuthenticator(File loginsFile) {
+  public JsonBasedAuthenticator(Path loginsFile) {
     this(loginsFile, "SHA-256");
   }
 
-  public JsonBasedAuthenticator(File loginsFile, String encryptionAlgorithm) {
+  public JsonBasedAuthenticator(Path loginsFile, String encryptionAlgorithm) {
     objectMapper = new ObjectMapper();
     this.loginsFile = loginsFile;
     this.algorithm = encryptionAlgorithm;
@@ -30,7 +30,7 @@ public class JsonBasedAuthenticator {
 
   public String authenticate(String username, String password) throws LocalLoginUnavailableException {
     try {
-      List<Login> logins = objectMapper.readValue(loginsFile, new TypeReference<List<Login>>() {
+      List<Login> logins = objectMapper.readValue(loginsFile.toFile(), new TypeReference<List<Login>>() {
       });
 
       Optional<Login> first = logins.stream().filter(login -> login.getUsername().equals(username)).findFirst();
@@ -42,7 +42,7 @@ public class JsonBasedAuthenticator {
         return isCorrectPassword(password, login) ? login.getUserPid() : null;
       }
     } catch (IOException e) {
-      LOG.error("Could not read \"{}\"", loginsFile.getAbsoluteFile());
+      LOG.error("Could not read \"{}\"", loginsFile.toAbsolutePath());
       LOG.error("Exception", e);
 
       throw new LocalLoginUnavailableException(e.getMessage());

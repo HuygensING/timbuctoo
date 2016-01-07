@@ -5,7 +5,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
@@ -15,7 +16,7 @@ import static org.hamcrest.core.Is.is;
 public class JsonBasedAuthenticatorTest {
 
   public static final String KNOWN_USER = "knownUser";
-  public static final File LOGINS_FILE = new File("src/test/resources/logins.json");
+  public static final Path LOGINS_FILE = Paths.get("src","test","resources","logins.json");
   public static final String CORRECT_PASSWORD = "correctPassword";
   private JsonBasedAuthenticator instance;
 
@@ -51,7 +52,7 @@ public class JsonBasedAuthenticatorTest {
   @Test
   public void authenticateThrowsALocalLoginUnavailableExceptionWhenTheLoginsFileCouldBeRead()
     throws LocalLoginUnavailableException {
-    JsonBasedAuthenticator instance = new JsonBasedAuthenticator(new File("unavailableLoginsFile"));
+    JsonBasedAuthenticator instance = new JsonBasedAuthenticator(Paths.get("unavailableLoginsFile"));
 
     expectedException.expect(LocalLoginUnavailableException.class);
 
@@ -61,7 +62,7 @@ public class JsonBasedAuthenticatorTest {
   @Test
   public void authenticateThrowsALocalLoginUnavailableExceptionWhenTheEncryptionAlgorithmIsUnavailable()
     throws LocalLoginUnavailableException {
-    JsonBasedAuthenticator instance = new JsonBasedAuthenticator(LOGINS_FILE, "bogusAlogrithm");
+    JsonBasedAuthenticator instance = new JsonBasedAuthenticator(LOGINS_FILE, "bogusAlgorithm");
 
     expectedException.expect(LocalLoginUnavailableException.class);
 

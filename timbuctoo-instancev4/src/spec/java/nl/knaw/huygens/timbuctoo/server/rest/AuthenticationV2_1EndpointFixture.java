@@ -17,7 +17,8 @@ import org.skyscreamer.jsonassert.JSONCompareResult;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.Response;
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 
@@ -29,7 +30,7 @@ public class AuthenticationV2_1EndpointFixture extends AbstractV2_1EndpointFixtu
   public static final ResourceTestRule resources;
 
   static {
-    File loginsFile = new File("src/spec/resources/logins.json");
+    Path loginsFile = Paths.get("src", "spec", "resources", "logins.json");
     LoggedInUserStore loggedInUserStore = new LoggedInUserStore(new JsonBasedAuthenticator(
       loginsFile));
     resources = ResourceTestRule.builder()
