@@ -30,8 +30,14 @@ public class AuthenticationV2_1EndpointFixture extends AbstractV2_1EndpointFixtu
 
   static {
     Path loginsFile = Paths.get("src", "spec", "resources", "logins.json");
-    LoggedInUserStore loggedInUserStore = new LoggedInUserStore(new JsonBasedAuthenticator(
-      loginsFile), null, new Timeout(8, HOURS));
+    JsonBasedAuthenticator authenticator = new JsonBasedAuthenticator(loginsFile);
+
+    Path usersFile = Paths.get("src", "spec", "resources", "users.json");
+    JsonBasedUserStore userStore = new JsonBasedUserStore(usersFile);
+
+    LoggedInUserStore loggedInUserStore = new LoggedInUserStore(authenticator, userStore, new Timeout(8, HOURS));
+
+
     resources = ResourceTestRule.builder()
                                 .addResource(new AuthenticationV2_1EndPoint(loggedInUserStore))
                                 .addResource(new UserV2_1Endpoint(loggedInUserStore))

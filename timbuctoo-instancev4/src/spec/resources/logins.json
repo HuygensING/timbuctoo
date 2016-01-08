@@ -1,1 +1,17 @@
-[{"@type":"login","userPid":"pid","password":"�\u0005t#��+0\u0014��\u0011\rOb$<[��'v�%����\u001BL�","givenName":"givenName","surname":"surname","emailAddress":"email","organization":"organization","salt":"MDgxM2FlMTMtZDVmZC00Y2JmLTk5ODEtOTRhNWZmM2FjNjYz","userName":"knownUser","_id":"LOGI000000000002","^rev":0,"^created":null,"^modified":null},{"@type":"login","userPid":"pid","password":"D�vmF~ީL�|j�V���|�Qc�ɏ]H����e�","givenName":"givenName","surname":"surname","emailAddress":"email","organization":"organization","salt":"ZmNkNDk3YWQtODg5YS00MjgyLTgyOTAtYWI2NDgyYzYxM2Iy","userName":"user","_id":"LOGI000000000001","^rev":0,"^created":null,"^modified":null}]
+[
+  {
+    "@type": "login",
+    "userPid": "pid",
+    "password": "D�vmF~ީL�|j�V���|�Qc�ɏ]H����e�",
+    "givenName": "givenName",
+    "surname": "surname",
+    "emailAddress": "email",
+    "organization": "organization",
+    "salt": "ZmNkNDk3YWQtODg5YS00MjgyLTgyOTAtYWI2NDgyYzYxM2Iy",
+    "userName": "user",
+    "_id": "LOGI000000000001",
+    "^rev": 0,
+    "^created": null,
+    "^modified": null
+  }
+]
