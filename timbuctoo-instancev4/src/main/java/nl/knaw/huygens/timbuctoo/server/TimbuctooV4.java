@@ -5,6 +5,7 @@ import io.dropwizard.Application;
 import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.timbuctoo.server.rest.AuthenticationV2_1EndPoint;
 import nl.knaw.huygens.timbuctoo.server.rest.JsonBasedAuthenticator;
+import nl.knaw.huygens.timbuctoo.server.rest.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.server.rest.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.rest.Timeout;
 import nl.knaw.huygens.timbuctoo.server.rest.UserV2_1Endpoint;
@@ -27,22 +28,33 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     Path loginsPath = getLoginsPath();
 
     JsonBasedAuthenticator authenticator = new JsonBasedAuthenticator(loginsPath, ENCRYPTION_ALGORITHM);
-    LoggedInUserStore loggedInUserStore = new LoggedInUserStore(authenticator, null, new Timeout(8, HOURS));
+    Path usersPath = getUsersPath();
+    JsonBasedUserStore userStore = new JsonBasedUserStore(usersPath);
+    LoggedInUserStore loggedInUserStore = new LoggedInUserStore(authenticator, userStore, new Timeout(8, HOURS));
     environment.jersey().register(new AuthenticationV2_1EndPoint(loggedInUserStore));
     environment.jersey().register(new UserV2_1Endpoint(loggedInUserStore));
 
     // register health checks
     registerHealthCheck(environment, "Encryption algorithm", new EncryptionAlgorithmHealthCheck(ENCRYPTION_ALGORITHM));
     registerHealthCheck(environment, "Local logins", new FileHealthCheck(loginsPath));
-    // TODO: add HealthCheck for users file
+    registerHealthCheck(environment, "Users", new FileHealthCheck(usersPath));
   }
 
   private Path getLoginsPath() {
-    String userHome = System.getProperty("user.home");
-    return Paths.get(userHome, "repository", "data", "logins.json");
+    return Paths.get(userHome(), "repository", "data", "logins.json");
+  }
+
+  private Path getUsersPath() {
+    return Paths.get(userHome(), "repository", "data", "logins.json");
+  }
+
+  private String userHome() {
+    return System.getProperty("user.home");
   }
 
   private void registerHealthCheck(Environment environment, String name, HealthCheck healthCheck) {
     environment.healthChecks().register(name, healthCheck);
   }
+
+
 }
