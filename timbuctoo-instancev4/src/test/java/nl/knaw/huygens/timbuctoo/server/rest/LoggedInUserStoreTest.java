@@ -9,6 +9,7 @@ import java.util.Optional;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static nl.knaw.huygens.timbuctoo.server.rest.OptionalPresentMatcher.present;
+import static nl.knaw.huygens.timbuctoo.server.rest.UserStoreMockBuilder.userStore;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.not;
@@ -29,14 +30,19 @@ public class LoggedInUserStoreTest {
     // set default value
     given(jsonBasedAuthenticator.authenticate(anyString(), anyString())).willReturn(Optional.empty());
     given(jsonBasedAuthenticator.authenticate("a", "b")).willReturn(Optional.of("pid"));
-    userStoreWithUserA = new LoggedInUserStore(jsonBasedAuthenticator, ONE_SECOND_TIMEOUT);
+
+    JsonBasedUserStore userStore = userStore().withUserFor("pid").build();
+
+    userStoreWithUserA = new LoggedInUserStore(jsonBasedAuthenticator, userStore, ONE_SECOND_TIMEOUT);
 
     jsonBasedAuthenticator = mock(JsonBasedAuthenticator.class);
-
     given(jsonBasedAuthenticator.authenticate(anyString(), anyString())).willReturn(Optional.empty());
     given(jsonBasedAuthenticator.authenticate("a", "b")).willReturn(Optional.of("pid"));
     given(jsonBasedAuthenticator.authenticate("c", "d")).willReturn(Optional.of("otherPid"));
-    userStoreWithUserAAndB = new LoggedInUserStore(jsonBasedAuthenticator, ONE_SECOND_TIMEOUT);
+
+    JsonBasedUserStore userStore1 = userStore().withUserFor("pid").withUserFor("otherPid").build();
+
+    userStoreWithUserAAndB = new LoggedInUserStore(jsonBasedAuthenticator, userStore1, ONE_SECOND_TIMEOUT);
 
   }
 
@@ -134,7 +140,7 @@ public class LoggedInUserStoreTest {
   public void throwsLocalLoginUnavailableExceptionWhenTheUserCouldNotBeAuthenticatedLocallyDueToASystemError()
     throws LocalLoginUnavailableException {
     JsonBasedAuthenticator authenticator = mock(JsonBasedAuthenticator.class);
-    LoggedInUserStore instance = new LoggedInUserStore(authenticator, ONE_SECOND_TIMEOUT);
+    LoggedInUserStore instance = new LoggedInUserStore(authenticator, null, ONE_SECOND_TIMEOUT);
     given(authenticator.authenticate(anyString(), anyString())).willThrow(new LocalLoginUnavailableException(""));
 
     expectedException.expect(LocalLoginUnavailableException.class);

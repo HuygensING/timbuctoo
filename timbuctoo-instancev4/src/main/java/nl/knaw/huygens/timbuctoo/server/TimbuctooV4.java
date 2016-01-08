@@ -27,7 +27,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     Path loginsPath = getLoginsPath();
 
     JsonBasedAuthenticator authenticator = new JsonBasedAuthenticator(loginsPath, ENCRYPTION_ALGORITHM);
-    LoggedInUserStore loggedInUserStore = new LoggedInUserStore(authenticator, new Timeout(8, HOURS));
+    LoggedInUserStore loggedInUserStore = new LoggedInUserStore(authenticator, null, new Timeout(8, HOURS));
     environment.jersey().register(new AuthenticationV2_1EndPoint(loggedInUserStore));
     environment.jersey().register(new UserV2_1Endpoint(loggedInUserStore));
 

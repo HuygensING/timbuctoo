@@ -14,11 +14,14 @@ import java.util.Optional;
 public class LoggedInUserStore {
 
   private final JsonBasedAuthenticator jsonBasedAuthenticator;
+  private final JsonBasedUserStore userStore;
   private final Cache<String, User> users;
 
-  public LoggedInUserStore(JsonBasedAuthenticator jsonBasedAuthenticator, Timeout inactivityTimeout) {
+  public LoggedInUserStore(JsonBasedAuthenticator jsonBasedAuthenticator, JsonBasedUserStore userStore,
+                           Timeout inactivityTimeout) {
     this.jsonBasedAuthenticator = jsonBasedAuthenticator;
-    users = createCache(inactivityTimeout);
+    this.userStore = userStore;
+    this.users = createCache(inactivityTimeout);
   }
 
   private static Cache<String, User> createCache(Timeout timeout) {
@@ -37,8 +40,10 @@ public class LoggedInUserStore {
       throw e;
     }
     if (id.isPresent()) {
-      users.put(id.get(), new User(id.get()));
-
+      Optional<User> user = userStore.userFor(id.get());
+      if (user.isPresent()) {
+        users.put(id.get(), user.get());
+      }
     }
 
     return id;
