@@ -19,6 +19,8 @@ import javax.ws.rs.core.Response;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static java.util.concurrent.TimeUnit.HOURS;
+
 @FullOGNL
 @RunWith(ConcordionRunner.class)
 public class AuthenticationV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
@@ -29,7 +31,7 @@ public class AuthenticationV2_1EndpointFixture extends AbstractV2_1EndpointFixtu
   static {
     Path loginsFile = Paths.get("src", "spec", "resources", "logins.json");
     LoggedInUserStore loggedInUserStore = new LoggedInUserStore(new JsonBasedAuthenticator(
-      loginsFile));
+      loginsFile), new Timeout(8, HOURS));
     resources = ResourceTestRule.builder()
                                 .addResource(new AuthenticationV2_1EndPoint(loggedInUserStore))
                                 .addResource(new UserV2_1Endpoint(loggedInUserStore))
@@ -62,7 +64,7 @@ public class AuthenticationV2_1EndpointFixture extends AbstractV2_1EndpointFixtu
   public String doLoginWithInvalidUsernameAndPassword() {
     HttpRequest httpRequest = new HttpRequest("POST", "/v2.1/authenticate")
       // Authorization header for unknownUser:password
-      .withHeader("Authorization",  "Basic dW5rbm93blVzZXI6cGFzc3dvcmQ=");
+      .withHeader("Authorization", "Basic dW5rbm93blVzZXI6cGFzc3dvcmQ=");
 
     Response response = super.doHttpCommand(httpRequest);
 

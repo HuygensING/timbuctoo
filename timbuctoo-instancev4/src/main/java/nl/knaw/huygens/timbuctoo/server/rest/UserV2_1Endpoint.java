@@ -7,6 +7,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Optional;
 
 @Path("/v2.1/system/users/me")
 @Produces(MediaType.APPLICATION_JSON)
@@ -19,11 +20,12 @@ public class UserV2_1Endpoint {
 
   @GET
   public Response get(@HeaderParam("Authorization") String authHeader) {
-    User user = loggedInUserStore.userFor(authHeader);
-    if (user == null) {
-      return Response.status(Response.Status.UNAUTHORIZED).build();
+    Optional<User> user = loggedInUserStore.userFor(authHeader);
+    if (user.isPresent()) {
+      return Response.ok().entity(user.get()).build();
+
     } else {
-      return Response.ok().entity(user).build();
+      return Response.status(Response.Status.UNAUTHORIZED).build();
     }
   }
 }

@@ -6,10 +6,13 @@ import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.timbuctoo.server.rest.AuthenticationV2_1EndPoint;
 import nl.knaw.huygens.timbuctoo.server.rest.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.server.rest.LoggedInUserStore;
+import nl.knaw.huygens.timbuctoo.server.rest.Timeout;
 import nl.knaw.huygens.timbuctoo.server.rest.UserV2_1Endpoint;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import static java.util.concurrent.TimeUnit.HOURS;
 
 public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
@@ -24,7 +27,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     Path loginsPath = getLoginsPath();
 
     JsonBasedAuthenticator authenticator = new JsonBasedAuthenticator(loginsPath, ENCRYPTION_ALGORITHM);
-    LoggedInUserStore loggedInUserStore = new LoggedInUserStore(authenticator);
+    LoggedInUserStore loggedInUserStore = new LoggedInUserStore(authenticator, new Timeout(8, HOURS));
     environment.jersey().register(new AuthenticationV2_1EndPoint(loggedInUserStore));
     environment.jersey().register(new UserV2_1Endpoint(loggedInUserStore));
 

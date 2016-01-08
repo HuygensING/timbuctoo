@@ -1,7 +1,8 @@
 package nl.knaw.huygens.timbuctoo.server.rest;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
 import java.util.Optional;
 
 /**
@@ -13,15 +14,19 @@ import java.util.Optional;
 public class LoggedInUserStore {
 
   private final JsonBasedAuthenticator jsonBasedAuthenticator;
-  private final Map<String, User> users;
+  private final Cache<String, User> users;
 
-  public LoggedInUserStore(JsonBasedAuthenticator jsonBasedAuthenticator) {
+  public LoggedInUserStore(JsonBasedAuthenticator jsonBasedAuthenticator, Timeout inactivityTimeout) {
     this.jsonBasedAuthenticator = jsonBasedAuthenticator;
-    users = new HashMap<>();
+    users = createCache(inactivityTimeout);
   }
 
-  public User userFor(String authHeader) {
-    return users.get(authHeader);
+  private static Cache<String, User> createCache(Timeout timeout) {
+    return CacheBuilder.newBuilder().expireAfterAccess(timeout.duration, timeout.timeUnit).build();
+  }
+
+  public Optional<User> userFor(String authHeader) {
+    return Optional.ofNullable(users.getIfPresent(authHeader));
   }
 
   public Optional<String> userTokenFor(String username, String password) throws LocalLoginUnavailableException {

@@ -7,8 +7,8 @@ import org.junit.rules.ExpectedException;
 
 import java.util.Optional;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static nl.knaw.huygens.timbuctoo.server.rest.OptionalPresentMatcher.present;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.not;
@@ -19,6 +19,7 @@ import static org.mockito.Mockito.mock;
 
 public class LoggedInUserStoreTest {
 
+  public static final Timeout ONE_SECOND_TIMEOUT = new Timeout(1, SECONDS);
   private LoggedInUserStore userStoreWithUserA;
   private LoggedInUserStore userStoreWithUserAandB;
 
@@ -28,14 +29,14 @@ public class LoggedInUserStoreTest {
     // set default value
     given(jsonBasedAuthenticator.authenticate(anyString(), anyString())).willReturn(Optional.empty());
     given(jsonBasedAuthenticator.authenticate("a", "b")).willReturn(Optional.of("pid"));
-    userStoreWithUserA = new LoggedInUserStore(jsonBasedAuthenticator);
+    userStoreWithUserA = new LoggedInUserStore(jsonBasedAuthenticator, ONE_SECOND_TIMEOUT);
 
     jsonBasedAuthenticator = mock(JsonBasedAuthenticator.class);
 
     given(jsonBasedAuthenticator.authenticate(anyString(), anyString())).willReturn(Optional.empty());
     given(jsonBasedAuthenticator.authenticate("a", "b")).willReturn(Optional.of("pid"));
     given(jsonBasedAuthenticator.authenticate("c", "d")).willReturn(Optional.of("otherPid"));
-    userStoreWithUserAandB = new LoggedInUserStore(jsonBasedAuthenticator);
+    userStoreWithUserAandB = new LoggedInUserStore(jsonBasedAuthenticator, ONE_SECOND_TIMEOUT);
 
   }
 
@@ -54,9 +55,9 @@ public class LoggedInUserStoreTest {
     LoggedInUserStore instance = userStoreWithUserA;
     String token = instance.userTokenFor("a", "b").get();
 
-    User user = instance.userFor(token);
+    Optional<User> user = instance.userFor(token);
 
-    assertThat(user, is(not(nullValue())));
+    assertThat(user, is(present()));
   }
 
   @Test
@@ -76,8 +77,8 @@ public class LoggedInUserStoreTest {
     LoggedInUserStore instance = userStoreWithUserA;
     String token = instance.userTokenFor("a", "b").get();
 
-    User user = instance.userFor(token);
-    User sameUser = instance.userFor(token);
+    User user = instance.userFor(token).get();
+    User sameUser = instance.userFor(token).get();
 
     assertThat(user, is(sameUser));
   }
@@ -88,20 +89,20 @@ public class LoggedInUserStoreTest {
     String tokenA = instance.userTokenFor("a", "b").get();
     String tokenB = instance.userTokenFor("c", "d").get();
 
-    User userA = instance.userFor(tokenA);
-    User userB = instance.userFor(tokenB);
+    User userA = instance.userFor(tokenA).get();
+    User userB = instance.userFor(tokenB).get();
 
     assertThat(userA, is(not(userB)));
   }
 
   @Test
-  public void returnsNullForABogusToken() {
+  public void returnsAnEmptyOptionalForABogusToken() {
     LoggedInUserStore instance = userStoreWithUserA;
     String bogusToken = "bogus";
 
-    User user = instance.userFor(bogusToken);
+    Optional<User> user = instance.userFor(bogusToken);
 
-    assertThat(user, is(nullValue()));
+    assertThat(user, is(not(present())));
   }
 
   @Test
@@ -113,6 +114,19 @@ public class LoggedInUserStoreTest {
     assertThat(token, is(not(present())));
   }
 
+  @Test
+  public void returnsAnEmptyOptionalIfTheUserIsRetrievedAfterATimeout() throws LocalLoginUnavailableException,
+    InterruptedException {
+    LoggedInUserStore instance = this.userStoreWithUserA;
+    String token = instance.userTokenFor("a", "b").get();
+
+    Thread.sleep(ONE_SECOND_TIMEOUT.toMiliSeconds() + 1);
+
+    Optional<User> user = instance.userFor(token);
+
+    assertThat(user, is(not(present())));
+  }
+
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
 
@@ -120,7 +134,7 @@ public class LoggedInUserStoreTest {
   public void throwsLocalLoginUnavailableExceptionWhenTheUserCouldNotBeAuthenticatedLocallyDueToASystemError()
     throws LocalLoginUnavailableException {
     JsonBasedAuthenticator authenticator = mock(JsonBasedAuthenticator.class);
-    LoggedInUserStore instance = new LoggedInUserStore(authenticator);
+    LoggedInUserStore instance = new LoggedInUserStore(authenticator, ONE_SECOND_TIMEOUT);
     given(authenticator.authenticate(anyString(), anyString())).willThrow(new LocalLoginUnavailableException(""));
 
     expectedException.expect(LocalLoginUnavailableException.class);

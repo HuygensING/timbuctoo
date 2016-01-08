@@ -17,7 +17,7 @@ public class OptionalPresentMatcher extends TypeSafeMatcher<Optional<?>> {
 
   @Override
   public void describeTo(Description description) {
-    description.appendText("Expected to be present.");
+    description.appendText("to have a value");
   }
 
   public static OptionalPresentMatcher present() {
