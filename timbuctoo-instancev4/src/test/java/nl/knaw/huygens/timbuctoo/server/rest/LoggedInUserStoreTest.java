@@ -47,7 +47,8 @@ public class LoggedInUserStoreTest {
   }
 
   @Test
-  public void canStoreAUserAndReturnsAToken() throws LocalLoginUnavailableException {
+  public void canStoreAUserAndReturnsAToken() throws LocalLoginUnavailableException,
+    AuthenticationUnavailableException {
     LoggedInUserStore instance = userStoreWithUserA;
 
     Optional<String> token = instance.userTokenFor("a", "b");
@@ -57,7 +58,7 @@ public class LoggedInUserStoreTest {
   }
 
   @Test
-  public void canRetrieveAStoredUser() throws LocalLoginUnavailableException {
+  public void canRetrieveAStoredUser() throws LocalLoginUnavailableException, AuthenticationUnavailableException {
     LoggedInUserStore instance = userStoreWithUserA;
     String token = instance.userTokenFor("a", "b").get();
 
@@ -67,7 +68,8 @@ public class LoggedInUserStoreTest {
   }
 
   @Test
-  public void willReturnAUniqueTokenForEachUser() throws LocalLoginUnavailableException {
+  public void willReturnAUniqueTokenForEachUser()
+    throws LocalLoginUnavailableException, AuthenticationUnavailableException {
     LoggedInUserStore instance = userStoreWithUserAAndB;
 
     String tokenA = instance.userTokenFor("a", "b").get();
@@ -79,7 +81,8 @@ public class LoggedInUserStoreTest {
   //FIXME: same token same user?
 
   @Test
-  public void willReturnTheSameUserForATokenEachTime() throws LocalLoginUnavailableException {
+  public void willReturnTheSameUserForATokenEachTime()
+    throws LocalLoginUnavailableException, AuthenticationUnavailableException {
     LoggedInUserStore instance = userStoreWithUserA;
     String token = instance.userTokenFor("a", "b").get();
 
@@ -90,7 +93,8 @@ public class LoggedInUserStoreTest {
   }
 
   @Test
-  public void willReturnTheUserBelongingToTheToken() throws LocalLoginUnavailableException {
+  public void willReturnTheUserBelongingToTheToken()
+    throws LocalLoginUnavailableException, AuthenticationUnavailableException {
     LoggedInUserStore instance = userStoreWithUserAAndB;
     String tokenA = instance.userTokenFor("a", "b").get();
     String tokenB = instance.userTokenFor("c", "d").get();
@@ -112,7 +116,8 @@ public class LoggedInUserStoreTest {
   }
 
   @Test
-  public void returnsNoTokenIfTheUserIsUnknown() throws LocalLoginUnavailableException {
+  public void returnsNoTokenIfTheUserIsUnknown()
+    throws LocalLoginUnavailableException, AuthenticationUnavailableException {
     LoggedInUserStore instance = userStoreWithUserA;
 
     Optional<String> token = instance.userTokenFor("unknownUser", "");
@@ -122,7 +127,7 @@ public class LoggedInUserStoreTest {
 
   @Test
   public void returnsAnEmptyOptionalIfTheUserIsRetrievedAfterATimeout() throws LocalLoginUnavailableException,
-    InterruptedException {
+    InterruptedException, AuthenticationUnavailableException {
     LoggedInUserStore instance = this.userStoreWithUserA;
     String token = instance.userTokenFor("a", "b").get();
 
@@ -138,7 +143,7 @@ public class LoggedInUserStoreTest {
 
   @Test
   public void throwsLocalLoginUnavailableExceptionWhenTheUserCouldNotBeAuthenticatedLocallyDueToASystemError()
-    throws LocalLoginUnavailableException {
+    throws LocalLoginUnavailableException, AuthenticationUnavailableException {
     JsonBasedAuthenticator authenticator = mock(JsonBasedAuthenticator.class);
     LoggedInUserStore instance = new LoggedInUserStore(authenticator, null, ONE_SECOND_TIMEOUT);
     given(authenticator.authenticate(anyString(), anyString())).willThrow(new LocalLoginUnavailableException(""));
@@ -148,6 +153,19 @@ public class LoggedInUserStoreTest {
     instance.userTokenFor("", "");
   }
 
-  // TODO: add test to handle AuthenticationUnavailableException
+  @Test
+  public void throwsAnAuthenticationUnavailableExceptionWhenTheUserCouldNotBeRetrievedDueToASystemError()
+    throws AuthenticationUnavailableException, LocalLoginUnavailableException {
+    JsonBasedUserStore userStore = mock(JsonBasedUserStore.class);
+    given(userStore.userFor(anyString())).willThrow(new AuthenticationUnavailableException(""));
+    JsonBasedAuthenticator authenticator = mock(JsonBasedAuthenticator.class);
+    given(authenticator.authenticate(anyString(), anyString())).willReturn(Optional.of("pid"));
+    LoggedInUserStore instance = new LoggedInUserStore(authenticator, userStore, ONE_SECOND_TIMEOUT);
+
+    expectedException.expect(AuthenticationUnavailableException.class);
+
+    instance.userTokenFor("", "");
+
+  }
 
 }

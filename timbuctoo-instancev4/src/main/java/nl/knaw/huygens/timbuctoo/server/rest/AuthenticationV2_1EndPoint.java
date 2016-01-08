@@ -41,7 +41,7 @@ public class AuthenticationV2_1EndPoint {
     } catch (InvalidAuthorizationHeaderException e) {
       LOG.info(e.getMessage());
       return unauthorizedResponse();
-    } catch (LocalLoginUnavailableException e) {
+    } catch (LocalLoginUnavailableException | AuthenticationUnavailableException e) {
       return Response.serverError().entity(e.getMessage()).build();
     }
   }

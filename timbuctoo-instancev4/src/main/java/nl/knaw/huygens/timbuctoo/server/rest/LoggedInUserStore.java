@@ -32,7 +32,8 @@ public class LoggedInUserStore {
     return Optional.ofNullable(users.getIfPresent(authHeader));
   }
 
-  public Optional<String> userTokenFor(String username, String password) throws LocalLoginUnavailableException {
+  public Optional<String> userTokenFor(String username, String password)
+    throws LocalLoginUnavailableException, AuthenticationUnavailableException {
     Optional<String> id;
     try {
       id = jsonBasedAuthenticator.authenticate(username, password);
@@ -46,7 +47,7 @@ public class LoggedInUserStore {
           users.put(id.get(), user.get());
         }
       } catch (AuthenticationUnavailableException e) {
-        e.printStackTrace();
+        throw e;
       }
     }
 

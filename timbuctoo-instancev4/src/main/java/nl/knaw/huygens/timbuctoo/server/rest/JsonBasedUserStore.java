@@ -29,7 +29,7 @@ public class JsonBasedUserStore {
     } catch (IOException e) {
       LOG.error("Cannot read {}", usersFile.toAbsolutePath());
       LOG.error("Exception thrown", e);
-      throw new AuthenticationUnavailableException(String.format("Could not read %s", usersFile.toAbsolutePath()));
+      throw new AuthenticationUnavailableException(e.getMessage());
     }
 
     return users.stream().filter(user -> user.getPersistentId().equals(pid)).findFirst();
