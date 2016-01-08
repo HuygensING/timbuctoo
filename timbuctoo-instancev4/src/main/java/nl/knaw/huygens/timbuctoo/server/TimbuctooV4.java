@@ -45,7 +45,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
   }
 
   private Path getUsersPath() {
-    return Paths.get(userHome(), "repository", "data", "logins.json");
+    return Paths.get(userHome(), "repository", "data", "users.json");
   }
 
   private String userHome() {
