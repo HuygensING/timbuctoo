@@ -8,6 +8,7 @@ import org.junit.rules.ExpectedException;
 import java.util.Optional;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static nl.knaw.huygens.timbuctoo.server.rest.AuthenticatorMockBuilder.authenticator;
 import static nl.knaw.huygens.timbuctoo.server.rest.OptionalPresentMatcher.present;
 import static nl.knaw.huygens.timbuctoo.server.rest.UserStoreMockBuilder.userStore;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -26,23 +27,18 @@ public class LoggedInUserStoreTest {
 
   @Before
   public void setUp() throws Exception {
-    JsonBasedAuthenticator jsonBasedAuthenticator = mock(JsonBasedAuthenticator.class);
-    // set default value
-    given(jsonBasedAuthenticator.authenticate(anyString(), anyString())).willReturn(Optional.empty());
-    given(jsonBasedAuthenticator.authenticate("a", "b")).willReturn(Optional.of("pid"));
-
+    JsonBasedAuthenticator authenticator = authenticator().withPidFor("a", "b", "pid").build();
     JsonBasedUserStore userStore = userStore().withUserFor("pid").build();
 
-    userStoreWithUserA = new LoggedInUserStore(jsonBasedAuthenticator, userStore, ONE_SECOND_TIMEOUT);
+    userStoreWithUserA = new LoggedInUserStore(authenticator, userStore, ONE_SECOND_TIMEOUT);
 
-    jsonBasedAuthenticator = mock(JsonBasedAuthenticator.class);
-    given(jsonBasedAuthenticator.authenticate(anyString(), anyString())).willReturn(Optional.empty());
-    given(jsonBasedAuthenticator.authenticate("a", "b")).willReturn(Optional.of("pid"));
-    given(jsonBasedAuthenticator.authenticate("c", "d")).willReturn(Optional.of("otherPid"));
-
+    JsonBasedAuthenticator authenticator1 = authenticator()
+      .withPidFor("a", "b", "pid")
+      .withPidFor("c", "d", "otherPid")
+      .build();
     JsonBasedUserStore userStore1 = userStore().withUserFor("pid").withUserFor("otherPid").build();
 
-    userStoreWithUserAAndB = new LoggedInUserStore(jsonBasedAuthenticator, userStore1, ONE_SECOND_TIMEOUT);
+    userStoreWithUserAAndB = new LoggedInUserStore(authenticator1, userStore1, ONE_SECOND_TIMEOUT);
 
   }
 
@@ -145,8 +141,8 @@ public class LoggedInUserStoreTest {
   public void throwsLocalLoginUnavailableExceptionWhenTheUserCouldNotBeAuthenticatedLocallyDueToASystemError()
     throws LocalLoginUnavailableException, AuthenticationUnavailableException {
     JsonBasedAuthenticator authenticator = mock(JsonBasedAuthenticator.class);
-    LoggedInUserStore instance = new LoggedInUserStore(authenticator, null, ONE_SECOND_TIMEOUT);
     given(authenticator.authenticate(anyString(), anyString())).willThrow(new LocalLoginUnavailableException(""));
+    LoggedInUserStore instance = new LoggedInUserStore(authenticator, null, ONE_SECOND_TIMEOUT);
 
     expectedException.expect(LocalLoginUnavailableException.class);
 
@@ -158,13 +154,12 @@ public class LoggedInUserStoreTest {
     throws AuthenticationUnavailableException, LocalLoginUnavailableException {
     JsonBasedUserStore userStore = mock(JsonBasedUserStore.class);
     given(userStore.userFor(anyString())).willThrow(new AuthenticationUnavailableException(""));
-    JsonBasedAuthenticator authenticator = mock(JsonBasedAuthenticator.class);
-    given(authenticator.authenticate(anyString(), anyString())).willReturn(Optional.of("pid"));
+    JsonBasedAuthenticator authenticator = authenticator().withPidFor("a", "b", "pid").build();
     LoggedInUserStore instance = new LoggedInUserStore(authenticator, userStore, ONE_SECOND_TIMEOUT);
 
     expectedException.expect(AuthenticationUnavailableException.class);
 
-    instance.userTokenFor("", "");
+    instance.userTokenFor("a", "b");
 
   }
 
