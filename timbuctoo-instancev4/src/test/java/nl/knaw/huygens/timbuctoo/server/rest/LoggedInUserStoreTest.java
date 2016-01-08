@@ -148,4 +148,6 @@ public class LoggedInUserStoreTest {
     instance.userTokenFor("", "");
   }
 
+  // TODO: add test to handle AuthenticationUnavailableException
+
 }

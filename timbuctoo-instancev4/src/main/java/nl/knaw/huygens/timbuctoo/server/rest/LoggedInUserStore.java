@@ -40,9 +40,13 @@ public class LoggedInUserStore {
       throw e;
     }
     if (id.isPresent()) {
-      Optional<User> user = userStore.userFor(id.get());
-      if (user.isPresent()) {
-        users.put(id.get(), user.get());
+      try {
+        Optional<User> user = userStore.userFor(id.get());
+        if (user.isPresent()) {
+          users.put(id.get(), user.get());
+        }
+      } catch (AuthenticationUnavailableException e) {
+        e.printStackTrace();
       }
     }
 

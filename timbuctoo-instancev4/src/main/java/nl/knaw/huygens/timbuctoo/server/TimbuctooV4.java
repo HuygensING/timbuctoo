@@ -34,6 +34,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     // register health checks
     registerHealthCheck(environment, "Encryption algorithm", new EncryptionAlgorithmHealthCheck(ENCRYPTION_ALGORITHM));
     registerHealthCheck(environment, "Local logins", new FileHealthCheck(loginsPath));
+    // TODO: add HealthCheck for users file
   }
 
   private Path getLoginsPath() {

@@ -10,7 +10,7 @@ public class UserStoreMockBuilder {
 
   private final JsonBasedUserStore userStore;
 
-  private UserStoreMockBuilder() {
+  private UserStoreMockBuilder() throws AuthenticationUnavailableException {
     userStore = mock(JsonBasedUserStore.class);
     when(userStore.userFor(anyString())).thenReturn(Optional.empty());
   }
@@ -19,11 +19,11 @@ public class UserStoreMockBuilder {
     return userStore;
   }
 
-  public static UserStoreMockBuilder userStore() {
+  public static UserStoreMockBuilder userStore() throws AuthenticationUnavailableException {
     return new UserStoreMockBuilder();
   }
 
-  public UserStoreMockBuilder withUserFor(String pid) {
+  public UserStoreMockBuilder withUserFor(String pid) throws AuthenticationUnavailableException {
     when(userStore.userFor(pid)).thenReturn(Optional.of(new User()));
     return this;
   }
