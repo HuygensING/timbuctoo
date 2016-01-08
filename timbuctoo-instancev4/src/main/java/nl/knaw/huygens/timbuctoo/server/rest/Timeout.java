@@ -11,7 +11,7 @@ public class Timeout {
     this.timeUnit = timeUnit;
   }
 
-  public long toMiliSeconds() {
+  public long toMilliseconds() {
     return timeUnit.toMillis(duration);
   }
 }
