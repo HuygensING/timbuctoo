@@ -25,10 +25,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
   @Override
   public void run(TimbuctooConfiguration configuration, Environment environment) throws Exception {
-    Path loginsPath = getLoginsPath();
-
+    Path loginsPath = dataPath().resolve("logins.json");
     JsonBasedAuthenticator authenticator = new JsonBasedAuthenticator(loginsPath, ENCRYPTION_ALGORITHM);
-    Path usersPath = getUsersPath();
+
+    Path usersPath = dataPath().resolve("users.json");
     JsonBasedUserStore userStore = new JsonBasedUserStore(usersPath);
     LoggedInUserStore loggedInUserStore = new LoggedInUserStore(authenticator, userStore, new Timeout(8, HOURS));
     environment.jersey().register(new AuthenticationV2_1EndPoint(loggedInUserStore));
@@ -40,16 +40,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     registerHealthCheck(environment, "Users", new FileHealthCheck(usersPath));
   }
 
-  private Path getLoginsPath() {
-    return Paths.get(userHome(), "repository", "data", "logins.json");
-  }
-
-  private Path getUsersPath() {
-    return Paths.get(userHome(), "repository", "data", "users.json");
-  }
-
-  private String userHome() {
-    return System.getProperty("user.home");
+  private Path dataPath() {
+    return Paths.get(System.getProperty("user.home"), "repository", "data");
   }
 
   private void registerHealthCheck(Environment environment, String name, HealthCheck healthCheck) {
