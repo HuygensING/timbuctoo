@@ -21,7 +21,7 @@ public class LoggedInUserStoreTest {
 
   public static final Timeout ONE_SECOND_TIMEOUT = new Timeout(1, SECONDS);
   private LoggedInUserStore userStoreWithUserA;
-  private LoggedInUserStore userStoreWithUserAandB;
+  private LoggedInUserStore userStoreWithUserAAndB;
 
   @Before
   public void setUp() throws Exception {
@@ -36,7 +36,7 @@ public class LoggedInUserStoreTest {
     given(jsonBasedAuthenticator.authenticate(anyString(), anyString())).willReturn(Optional.empty());
     given(jsonBasedAuthenticator.authenticate("a", "b")).willReturn(Optional.of("pid"));
     given(jsonBasedAuthenticator.authenticate("c", "d")).willReturn(Optional.of("otherPid"));
-    userStoreWithUserAandB = new LoggedInUserStore(jsonBasedAuthenticator, ONE_SECOND_TIMEOUT);
+    userStoreWithUserAAndB = new LoggedInUserStore(jsonBasedAuthenticator, ONE_SECOND_TIMEOUT);
 
   }
 
@@ -62,7 +62,7 @@ public class LoggedInUserStoreTest {
 
   @Test
   public void willReturnAUniqueTokenForEachUser() throws LocalLoginUnavailableException {
-    LoggedInUserStore instance = userStoreWithUserAandB;
+    LoggedInUserStore instance = userStoreWithUserAAndB;
 
     String tokenA = instance.userTokenFor("a", "b").get();
     String tokenB = instance.userTokenFor("c", "d").get();
@@ -85,7 +85,7 @@ public class LoggedInUserStoreTest {
 
   @Test
   public void willReturnTheUserBelongingToTheToken() throws LocalLoginUnavailableException {
-    LoggedInUserStore instance = userStoreWithUserAandB;
+    LoggedInUserStore instance = userStoreWithUserAAndB;
     String tokenA = instance.userTokenFor("a", "b").get();
     String tokenB = instance.userTokenFor("c", "d").get();
 
