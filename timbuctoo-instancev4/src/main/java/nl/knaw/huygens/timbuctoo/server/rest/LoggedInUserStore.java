@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.rest;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Will determine if a user's credentials are valid and return a token.
@@ -23,14 +24,18 @@ public class LoggedInUserStore {
     return users.get(authHeader);
   }
 
-  public String userTokenFor(String username, String password) throws LocalLoginUnavailableException {
-    String id = null;
+  public Optional<String> userTokenFor(String username, String password) throws LocalLoginUnavailableException {
+    Optional<String> id;
     try {
       id = jsonBasedAuthenticator.authenticate(username, password);
     } catch (LocalLoginUnavailableException e) {
       throw e;
     }
-    users.put(id, new User(id));
+    if (id.isPresent()) {
+      users.put(id.get(), new User(id.get()));
+
+    }
+
     return id;
   }
 }

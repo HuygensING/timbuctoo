@@ -7,16 +7,17 @@ import org.junit.rules.ExpectedException;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.server.rest.OptionalPresentMatcher.present;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
 
 public class JsonBasedAuthenticatorTest {
 
   public static final String KNOWN_USER = "knownUser";
-  public static final Path LOGINS_FILE = Paths.get("src","test","resources","logins.json");
+  public static final Path LOGINS_FILE = Paths.get("src", "test", "resources", "logins.json");
   public static final String CORRECT_PASSWORD = "correctPassword";
   private JsonBasedAuthenticator instance;
 
@@ -27,23 +28,23 @@ public class JsonBasedAuthenticatorTest {
 
   @Test
   public void authenticateReturnsNullWhenTheUsernameIsUnknown() throws LocalLoginUnavailableException {
-    String pid = instance.authenticate("unknownUser", "password");
+    Optional<String> pid = instance.authenticate("unknownUser", "password");
 
-    assertThat(pid, is(nullValue()));
+    assertThat(pid, is(not(present())));
   }
 
   @Test
   public void authenticateReturnsThePidWhenTheUsernameAndPasswordAreCorrect() throws LocalLoginUnavailableException {
-    String pid = instance.authenticate(KNOWN_USER, CORRECT_PASSWORD);
+    Optional<String> pid = instance.authenticate(KNOWN_USER, CORRECT_PASSWORD);
 
-    assertThat(pid, is(notNullValue()));
+    assertThat(pid, is(present()));
   }
 
   @Test
   public void authenticateReturnsNullWhenThePasswordIsIncorrect() throws LocalLoginUnavailableException {
-    String pid = instance.authenticate(KNOWN_USER, "incorrectPassword");
+    Optional<String> pid = instance.authenticate(KNOWN_USER, "incorrectPassword");
 
-    assertThat(pid, is(nullValue()));
+    assertThat(pid, is(not(present())));
   }
 
   @Rule

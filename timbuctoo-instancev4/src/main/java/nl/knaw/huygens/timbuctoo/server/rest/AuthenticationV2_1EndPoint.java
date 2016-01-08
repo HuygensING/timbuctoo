@@ -10,6 +10,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Optional;
 
 @Path("/v2.1/authenticate")
 @Produces(MediaType.APPLICATION_JSON)
@@ -26,25 +27,29 @@ public class AuthenticationV2_1EndPoint {
   public Response authenticate(@HeaderParam(HttpHeaders.AUTHORIZATION) String encodedAuthString) {
     try {
       if (encodedAuthString == null) {
-        return Response
-          .status(Response.Status.UNAUTHORIZED)
-          .header(HttpHeaders.WWW_AUTHENTICATE, "Basic realm=\"timbuctoo\"")
-          .build();
+        return unauthorizedResponse();
       }
       BasicAuthorizationHeaderParser.Credentials credentials = BasicAuthorizationHeaderParser
         .parse(encodedAuthString);
 
-      String token = loggedInUserStore.userTokenFor(credentials.getUsername(), credentials.getPassword());
-
-      return Response.noContent().header("X_AUTH_TOKEN", token).build();
+      Optional<String> token = loggedInUserStore.userTokenFor(credentials.getUsername(), credentials.getPassword());
+      if (token.isPresent()) {
+        return Response.noContent().header("X_AUTH_TOKEN", token.get()).build();
+      } else {
+        return unauthorizedResponse();
+      }
     } catch (InvalidAuthorizationHeaderException e) {
       LOG.info(e.getMessage());
-      return Response
-        .status(Response.Status.UNAUTHORIZED)
-        .header(HttpHeaders.WWW_AUTHENTICATE, "Basic realm=\"timbuctoo\"")
-        .build();
+      return unauthorizedResponse();
     } catch (LocalLoginUnavailableException e) {
       return Response.serverError().entity(e.getMessage()).build();
     }
+  }
+
+  private Response unauthorizedResponse() {
+    return Response
+      .status(Response.Status.UNAUTHORIZED)
+      .header(HttpHeaders.WWW_AUTHENTICATE, "Basic realm=\"timbuctoo\"")
+      .build();
   }
 }

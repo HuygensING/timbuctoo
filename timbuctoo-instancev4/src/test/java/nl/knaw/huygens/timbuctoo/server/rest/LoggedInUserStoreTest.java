@@ -5,6 +5,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.util.Optional;
+
+import static nl.knaw.huygens.timbuctoo.server.rest.OptionalPresentMatcher.present;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isEmptyString;
@@ -22,12 +25,16 @@ public class LoggedInUserStoreTest {
   @Before
   public void setUp() throws Exception {
     JsonBasedAuthenticator jsonBasedAuthenticator = mock(JsonBasedAuthenticator.class);
-    given(jsonBasedAuthenticator.authenticate("a", "b")).willReturn("pid");
+    // set default value
+    given(jsonBasedAuthenticator.authenticate(anyString(), anyString())).willReturn(Optional.empty());
+    given(jsonBasedAuthenticator.authenticate("a", "b")).willReturn(Optional.of("pid"));
     userStoreWithUserA = new LoggedInUserStore(jsonBasedAuthenticator);
 
     jsonBasedAuthenticator = mock(JsonBasedAuthenticator.class);
-    given(jsonBasedAuthenticator.authenticate("a", "b")).willReturn("pid");
-    given(jsonBasedAuthenticator.authenticate("c", "d")).willReturn("otherPid");
+
+    given(jsonBasedAuthenticator.authenticate(anyString(), anyString())).willReturn(Optional.empty());
+    given(jsonBasedAuthenticator.authenticate("a", "b")).willReturn(Optional.of("pid"));
+    given(jsonBasedAuthenticator.authenticate("c", "d")).willReturn(Optional.of("otherPid"));
     userStoreWithUserAandB = new LoggedInUserStore(jsonBasedAuthenticator);
 
   }
@@ -36,15 +43,16 @@ public class LoggedInUserStoreTest {
   public void canStoreAUserAndReturnsAToken() throws LocalLoginUnavailableException {
     LoggedInUserStore instance = userStoreWithUserA;
 
-    String token = instance.userTokenFor("a", "b");
+    Optional<String> token = instance.userTokenFor("a", "b");
 
-    assertThat(token, not(isEmptyString()));
+    assertThat(token, is(present()));
+    assertThat(token.get(), not(isEmptyString()));
   }
 
   @Test
   public void canRetrieveAStoredUser() throws LocalLoginUnavailableException {
     LoggedInUserStore instance = userStoreWithUserA;
-    String token = instance.userTokenFor("a", "b");
+    String token = instance.userTokenFor("a", "b").get();
 
     User user = instance.userFor(token);
 
@@ -55,8 +63,8 @@ public class LoggedInUserStoreTest {
   public void willReturnAUniqueTokenForEachUser() throws LocalLoginUnavailableException {
     LoggedInUserStore instance = userStoreWithUserAandB;
 
-    String tokenA = instance.userTokenFor("a", "b");
-    String tokenB = instance.userTokenFor("c", "d");
+    String tokenA = instance.userTokenFor("a", "b").get();
+    String tokenB = instance.userTokenFor("c", "d").get();
 
     assertThat(tokenA, is(not(tokenB)));
   }
@@ -66,7 +74,7 @@ public class LoggedInUserStoreTest {
   @Test
   public void willReturnTheSameUserForATokenEachTime() throws LocalLoginUnavailableException {
     LoggedInUserStore instance = userStoreWithUserA;
-    String token = instance.userTokenFor("a", "b");
+    String token = instance.userTokenFor("a", "b").get();
 
     User user = instance.userFor(token);
     User sameUser = instance.userFor(token);
@@ -77,8 +85,8 @@ public class LoggedInUserStoreTest {
   @Test
   public void willReturnTheUserBelongingToTheToken() throws LocalLoginUnavailableException {
     LoggedInUserStore instance = userStoreWithUserAandB;
-    String tokenA = instance.userTokenFor("a", "b");
-    String tokenB = instance.userTokenFor("c", "b");
+    String tokenA = instance.userTokenFor("a", "b").get();
+    String tokenB = instance.userTokenFor("c", "d").get();
 
     User userA = instance.userFor(tokenA);
     User userB = instance.userFor(tokenB);
@@ -100,9 +108,9 @@ public class LoggedInUserStoreTest {
   public void returnsNoTokenIfTheUserIsUnknown() throws LocalLoginUnavailableException {
     LoggedInUserStore instance = userStoreWithUserA;
 
-    String token = instance.userTokenFor("unknownUser", "");
+    Optional<String> token = instance.userTokenFor("unknownUser", "");
 
-    assertThat(token, is(nullValue()));
+    assertThat(token, is(not(present())));
   }
 
   @Rule

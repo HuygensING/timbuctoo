@@ -59,9 +59,10 @@ public class AuthenticationV2_1EndpointFixture extends AbstractV2_1EndpointFixtu
     }
   }
 
-  public String doFailingLogin() {
+  public String doLoginWithInvalidUsernameAndPassword() {
     HttpRequest httpRequest = new HttpRequest("POST", "/v2.1/authenticate")
-      .withHeader("Authorization", "Basic INCORRECT_AUTHORIZATION_TOKEN");
+      // Authorization header for unknownUser:password
+      .withHeader("Authorization",  "Basic dW5rbm93blVzZXI6cGFzc3dvcmQ=");
 
     Response response = super.doHttpCommand(httpRequest);
 

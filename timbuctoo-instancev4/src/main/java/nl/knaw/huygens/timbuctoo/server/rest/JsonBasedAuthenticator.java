@@ -28,7 +28,7 @@ public class JsonBasedAuthenticator {
     this.algorithm = encryptionAlgorithm;
   }
 
-  public String authenticate(String username, String password) throws LocalLoginUnavailableException {
+  public Optional<String> authenticate(String username, String password) throws LocalLoginUnavailableException {
     try {
       List<Login> logins = objectMapper.readValue(loginsFile.toFile(), new TypeReference<List<Login>>() {
       });
@@ -39,7 +39,7 @@ public class JsonBasedAuthenticator {
 
         Login login = first.get();
 
-        return isCorrectPassword(password, login) ? login.getUserPid() : null;
+        return isCorrectPassword(password, login) ? Optional.of(login.getUserPid()) : Optional.empty();
       }
     } catch (IOException e) {
       LOG.error("Could not read \"{}\"", loginsFile.toAbsolutePath());
@@ -50,7 +50,7 @@ public class JsonBasedAuthenticator {
       LOG.error("Encryption algorithm can not be found.", e);
       throw new LocalLoginUnavailableException(e.getMessage());
     }
-    return null;
+    return Optional.empty();
   }
 
   private boolean isCorrectPassword(String password, Login login) throws NoSuchAlgorithmException {
