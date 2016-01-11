@@ -44,62 +44,107 @@
       <div h:request="">
         GET #searchPost.headers.location HTTP/1.1
       </div>
-      <div h:response="dontCheck">
+      <div h:response="">
         HTTP/1.1 200
 
         {
-          _next: (a url starting with http or https)
-          facets: [
-            A list of either:
-            {
-
-              name: (some string),
-              type: "LIST",
-              options: [{
-                name: (some string),
-                count: (a number)
-              }]
-            }
-            or
-            {
-              name: (some string),
-              type: "RANGE",
-              options: [{
-                upperLimit: (a number),
-                lowerLimit: (a number)
-              }]
-            }
-          ],
-          fullTextSearchFields: ["dynamic_t_.+"],
-          refs: [{
-            data: {
-              some data, this differs per collection
-            },
-            displayName: (some string),
-            path: (a path _not_ starting with a /)
-          }],
-          sortableFields: ["fieldnameA", "fieldNameB"],
-          start: (a number),
-          rows: (a number),
-          numFound: (a number)
+          "facets": [],
+          "fullTextSearchFields": [],
+          "refs": [],
+          "sortableFields": [],
+          "start": "/[0-9]+/",
+          "rows": "/[0-9]+/",
+          "numFound": "/[0-9]+/"
         }
       </div>
     </aside>
     <ul>
       <li>
-        numFound contains the total number of records that match the query and is therefore always greater than, or
-        equal to the facet numbers and the rows property.
+        <em>numFound</em> contains the total number of records that match the query and is therefore always greater than,
+        or equal to the facet numbers and the rows property.
       </li>
       <li>
-        start contains the offset, in items
+        <em>start</em> contains the offset, in items
       </li>
       <li>
-        rows contains the amount of rows in the returned dataset. This is always equal to the length of the terms array
+        <em>rows</em> contains the amount of rows in the returned dataset.
+        <ul>
+          <li>
+            This is always equal to the length of the <em>refs</em> array.
+          </li>
+          <li>
+            Might be less then 10 when the resultset contains less then 10 items.
+          </li>
+        </ul>
       </li>
       <li>
-        Rows might be less then 10 when the resultset contains no more items.
+        <em>_next</em> contains a fully qualified url to the next results, if there are next results.
+      </li>
+      <li>
+        <em>_prev</em> contains a fully qualified url to the previous results, if there are previous results.
+      </li>
+      <li>
+        <em>sortableFields</em> is an array of names of sort parameters.
+      </li>
+      <li>
+        <em>sortableFields</em> is an collections of names that can be used as sort parameters.
+      </li>
+      <li>
+        <em>fullTextSearchFields</em> contains the names of the fields that can be used for full text search.
       </li>
     </ul>
+    <div>
+      <h3>Facets</h3>
+      Timbuctoo supports two types of facets.
+      <span>A general facet could contain the following values in the <em>type</em> property:</span>
+      <ul>
+        <li>BOOLEAN, has 2 options with the names <em>true</em> and <em>false</em>.</li>
+        <li>LIST, has a list with of options with unpredictable names and has an unpredictable length.</li>
+      </ul>
+      <pre class="requestContent">
+        {
+          "name": "facet name",
+          "type": "(possible values described above)",
+          "options": [
+            {
+               "name": "option1",
+               "count": 1176
+            },
+            {
+               "name": "option2",
+               "count": 126
+            },
+          ]
+        }
+      </pre>
+      <span>The ranges facets are used to search on date ranges. They have one option with an <em>upperLimit</em> and a
+      <em>lowerLimit</em>. The values are date converted to a number. The format is <em>yyyyMMdd</em> years after the
+        first millennium. Years after the first century will have the format <em>yyyMMdd</em>. So only the <em>MM</em>
+        and <em>dd</em> part of the format is ensured. The years part could be as little as one <em>y</em>.</span>
+      <pre class="requestContent">
+        {
+          "name": "facet name",
+          "type": "RANGE",
+          "options": [{
+            "upperLimit": 20150204,
+            "lowerLimit": 20120114
+          }]
+        }
+      </pre>
+    </div>
+    <div>
+      <h3>Refs</h3>
+      <span>Each ref consists of 3 fields. The <em>datafield</em> contains no fields that describe the entity.
+      The <em>displayName</em> contains a simple display name. The <em>path</em> contains a relative path to the
+      complete entity.</span>
+      <pre class="requestContent">
+        {
+          "data": {},
+          "displayName": "Name",
+          "path": "path/to/entity"
+        }
+      </pre>
+    </div>
   </section>
   <!--<section data-type="chapter">-->
     <!--<h2>Searching with the selected facets</h2>-->
