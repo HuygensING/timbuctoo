@@ -9,7 +9,7 @@ import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 // FIXME Find a better way for deserialization
 @JsonTypeIdResolver(LoginTypeIdResolver.class) // be able to map the login java type and the serialized version
 @JsonIgnoreProperties(ignoreUnknown = true) // ignore the unknown properties
-public class Login {
+class Login {
 
   private String userPid;
   private String password;

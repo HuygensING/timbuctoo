@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
 
-public class LoginTypeIdResolver implements TypeIdResolver {
+class LoginTypeIdResolver implements TypeIdResolver {
 
 
   public static final String TYPENAME = "login";

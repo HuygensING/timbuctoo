@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
-public class UserTypeIdResolver implements TypeIdResolver {
+class UserTypeIdResolver implements TypeIdResolver {
   public static final String TYPENAME = "user";
   public static final JavaType JAVA_TYPE = TypeFactory.defaultInstance().uncheckedSimpleType(User.class);
 
