@@ -1,0 +1,37 @@
+package nl.knaw.huygens.timbuctoo.security;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
+// FIXME Find a better way for deserialization
+@JsonTypeIdResolver(UserTypeIdResolver.class) // be able to map the login java type and the serialized version
+@JsonIgnoreProperties(ignoreUnknown = true) // ignore the unknown properties
+public class User {
+  private String displayName;
+  private String persistentId;
+
+  public User() {
+  }
+
+  public User(String displayName) {
+    this.displayName = displayName;
+  }
+
+  public String getDisplayName() {
+    return displayName;
+  }
+
+  public void setDisplayName(String displayName) {
+    this.displayName = displayName;
+  }
+
+  public String getPersistentId() {
+    return persistentId;
+  }
+
+  public void setPersistentId(String persistentId) {
+    this.persistentId = persistentId;
+  }
+}

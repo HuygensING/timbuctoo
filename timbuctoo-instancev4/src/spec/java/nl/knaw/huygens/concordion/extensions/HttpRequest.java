@@ -1,5 +1,7 @@
 package nl.knaw.huygens.concordion.extensions;
 
+import com.google.common.collect.Lists;
+
 import java.util.AbstractMap;
 import java.util.List;
 
@@ -26,5 +28,20 @@ public class HttpRequest {
     this.server = server;
 
     this.queryParameters = queryParameters;
+  }
+
+  public HttpRequest(String method, String url) {
+    this.method = method;
+    this.url = url;
+    this.body = null;
+    this.server = null;
+    this.headers = Lists.newArrayList();
+    this.queryParameters = Lists.newArrayList();
+  }
+
+
+  public HttpRequest withHeader(String key, String value) {
+    headers.add(new AbstractMap.SimpleEntry<>(key, value));
+    return this;
   }
 }
