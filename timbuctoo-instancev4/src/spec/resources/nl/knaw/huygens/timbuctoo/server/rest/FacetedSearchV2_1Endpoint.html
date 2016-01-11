@@ -40,67 +40,67 @@
       that contains <span c:assertEquals="isFullyQualified(#searchPost.headers.location)">a fully qualified HTTP url</span>.
       This url is valid during the next few hours. Once it starts returning 404's you are expected to retry the POST.
     </p>
-    <!--<aside id="emptyRetrieveResponse" class="example highlight" h:http="#searchGet">-->
-      <!--<div h:request="">-->
-        <!--GET #searchPost.headers.location HTTP/1.1-->
-      <!--</div>-->
-      <!--<div h:response="dontCheck">-->
-        <!--HTTP/1.1 200-->
+    <aside id="emptyRetrieveResponse" class="example highlight" h:http="#searchGet">
+      <div h:request="">
+        GET #searchPost.headers.location HTTP/1.1
+      </div>
+      <div h:response="dontCheck">
+        HTTP/1.1 200
 
-        <!--{-->
-          <!--_next: (a url starting with http or https)-->
-          <!--facets: [-->
-            <!--A list of either:-->
-            <!--{-->
+        {
+          _next: (a url starting with http or https)
+          facets: [
+            A list of either:
+            {
 
-              <!--name: (some string),-->
-              <!--type: "LIST",-->
-              <!--options: [{-->
-                <!--name: (some string),-->
-                <!--count: (a number)-->
-              <!--}]-->
-            <!--}-->
-            <!--or-->
-            <!--{-->
-              <!--name: (some string),-->
-              <!--type: "RANGE",-->
-              <!--options: [{-->
-                <!--upperLimit: (a number),-->
-                <!--lowerLimit: (a number)-->
-              <!--}]-->
-            <!--}-->
-          <!--],-->
-          <!--fullTextSearchFields: ["dynamic_t_.+"],-->
-          <!--refs: [{-->
-            <!--data: {-->
-              <!--some data, this differs per collection-->
-            <!--},-->
-            <!--displayName: (some string),-->
-            <!--path: (a path _not_ starting with a /)-->
-          <!--}],-->
-          <!--sortableFields: ["fieldnameA", "fieldNameB"],-->
-          <!--start: (a number),-->
-          <!--rows: (a number),-->
-          <!--numFound: (a number)-->
-        <!--}-->
-      <!--</div>-->
-    <!--</aside>-->
-    <!--<ul>-->
-      <!--<li>-->
-        <!--numFound contains the total number of records that match the query and is therefore always greater than, or-->
-        <!--equal to the facet numbers and the rows property.-->
-      <!--</li>-->
-      <!--<li>-->
-        <!--start contains the offset, in items-->
-      <!--</li>-->
-      <!--<li>-->
-        <!--rows contains the amount of rows in the returned dataset. This is always equal to the length of the terms array-->
-      <!--</li>-->
-      <!--<li>-->
-        <!--Rows might be less then 10 when the resultset contains no more items.-->
-      <!--</li>-->
-    <!--</ul>-->
-  <!--</section>-->
+              name: (some string),
+              type: "LIST",
+              options: [{
+                name: (some string),
+                count: (a number)
+              }]
+            }
+            or
+            {
+              name: (some string),
+              type: "RANGE",
+              options: [{
+                upperLimit: (a number),
+                lowerLimit: (a number)
+              }]
+            }
+          ],
+          fullTextSearchFields: ["dynamic_t_.+"],
+          refs: [{
+            data: {
+              some data, this differs per collection
+            },
+            displayName: (some string),
+            path: (a path _not_ starting with a /)
+          }],
+          sortableFields: ["fieldnameA", "fieldNameB"],
+          start: (a number),
+          rows: (a number),
+          numFound: (a number)
+        }
+      </div>
+    </aside>
+    <ul>
+      <li>
+        numFound contains the total number of records that match the query and is therefore always greater than, or
+        equal to the facet numbers and the rows property.
+      </li>
+      <li>
+        start contains the offset, in items
+      </li>
+      <li>
+        rows contains the amount of rows in the returned dataset. This is always equal to the length of the terms array
+      </li>
+      <li>
+        Rows might be less then 10 when the resultset contains no more items.
+      </li>
+    </ul>
+  </section>
   <!--<section data-type="chapter">-->
     <!--<h2>Searching with the selected facets</h2>-->
     <!--<p>-->
@@ -440,6 +440,6 @@
       <!--}-->
       <!--</div>-->
     <!--</aside>-->
-  </section>
+  <!--</section>-->
 </body>
 </html>
