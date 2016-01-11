@@ -22,12 +22,12 @@ public class FacetedSearchV2_1EndpointFixture extends AbstractV2_1EndpointFixtur
 
   @ClassRule
   public static ResourceTestRule resourcesTestRule = ResourceTestRule.builder()
-    .addResource(FacetedSearchV2_1Endpoint.class)
+    .addResource(new FacetedSearchV2_1Endpoint())
     .build();
 
   public String isFullyQualified(String url) {
 
-    if (StringUtils.isBlank(url) || !url.startsWith("http://") || !url.startsWith("https://")) {
+    if (StringUtils.isBlank(url) || (!url.startsWith("http://") && !url.startsWith("https://"))) {
       return "not a fully qualified HTTP url";
     } else {
       return "a fully qualified HTTP url";
