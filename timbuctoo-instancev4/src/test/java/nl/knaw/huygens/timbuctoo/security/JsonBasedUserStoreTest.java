@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.server.rest;
+package nl.knaw.huygens.timbuctoo.security;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-import static nl.knaw.huygens.timbuctoo.server.rest.OptionalPresentMatcher.present;
+import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;

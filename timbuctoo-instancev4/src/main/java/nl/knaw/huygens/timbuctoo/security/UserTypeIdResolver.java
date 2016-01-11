@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.server.rest;
+package nl.knaw.huygens.timbuctoo.security;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.DatabindContext;

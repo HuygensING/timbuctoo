@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.server.rest;
+package nl.knaw.huygens.timbuctoo.util;
 
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;

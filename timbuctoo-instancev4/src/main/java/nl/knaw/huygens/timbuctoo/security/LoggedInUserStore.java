@@ -1,7 +1,8 @@
-package nl.knaw.huygens.timbuctoo.server.rest;
+package nl.knaw.huygens.timbuctoo.security;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import nl.knaw.huygens.timbuctoo.util.Timeout;
 
 import java.util.Optional;
 import java.util.UUID;

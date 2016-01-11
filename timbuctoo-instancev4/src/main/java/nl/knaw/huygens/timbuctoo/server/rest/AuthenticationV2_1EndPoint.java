@@ -1,5 +1,10 @@
 package nl.knaw.huygens.timbuctoo.server.rest;
 
+import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.LocalLoginUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
+import nl.knaw.huygens.timbuctoo.server.security.BasicAuthorizationHeaderParser;
+import nl.knaw.huygens.timbuctoo.server.security.InvalidAuthorizationHeaderException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

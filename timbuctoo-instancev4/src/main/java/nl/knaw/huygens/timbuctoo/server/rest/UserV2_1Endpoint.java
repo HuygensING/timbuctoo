@@ -1,6 +1,9 @@
 package nl.knaw.huygens.timbuctoo.server.rest;
 
 
+import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
+import nl.knaw.huygens.timbuctoo.security.User;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;

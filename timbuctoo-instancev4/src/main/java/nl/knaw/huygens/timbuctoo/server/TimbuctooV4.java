@@ -4,10 +4,10 @@ import com.codahale.metrics.health.HealthCheck;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.timbuctoo.server.rest.AuthenticationV2_1EndPoint;
-import nl.knaw.huygens.timbuctoo.server.rest.JsonBasedAuthenticator;
-import nl.knaw.huygens.timbuctoo.server.rest.JsonBasedUserStore;
-import nl.knaw.huygens.timbuctoo.server.rest.LoggedInUserStore;
-import nl.knaw.huygens.timbuctoo.server.rest.Timeout;
+import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
+import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
+import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
+import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.server.rest.UserV2_1Endpoint;
 
 import java.nio.file.Path;

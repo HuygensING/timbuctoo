@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.server.rest;
+package nl.knaw.huygens.timbuctoo.server.security;
 
 import org.junit.Rule;
 import org.junit.Test;
