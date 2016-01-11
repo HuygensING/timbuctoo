@@ -15,12 +15,12 @@ public class FacetedSearchV2_1Endpoint {
   @Path("wwpersons")
   public Response post() {
     UUID uuid = UUID.randomUUID();
-    URI uri = UriBuilder.fromUri("http://localhost:8080/v2.1/search/{id}").build(new Object[]{uuid});
+    URI uri = UriBuilder.fromResource(FacetedSearchV2_1Endpoint.class).path("{id}").build(new Object[]{uuid});
     return Response.created(uri).build();
   }
 
   @GET
-  @Path("{id: [a-z0-9\\-]+}")
+  @Path("{id: [a-f0-9\\-]+}")
   public Response get() {
     return Response.ok("{}").build();
   }
