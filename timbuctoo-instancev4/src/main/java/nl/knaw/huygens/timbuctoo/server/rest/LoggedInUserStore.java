@@ -4,6 +4,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Will determine if a user's credentials are valid and return a token.
@@ -35,6 +36,7 @@ public class LoggedInUserStore {
   public Optional<String> userTokenFor(String username, String password)
     throws LocalLoginUnavailableException, AuthenticationUnavailableException {
     Optional<String> id;
+    Optional<String> token = Optional.empty();
     try {
       id = jsonBasedAuthenticator.authenticate(username, password);
     } catch (LocalLoginUnavailableException e) {
@@ -44,13 +46,15 @@ public class LoggedInUserStore {
       try {
         Optional<User> user = userStore.userFor(id.get());
         if (user.isPresent()) {
-          users.put(id.get(), user.get());
+          String uuid = UUID.randomUUID().toString();
+          token = Optional.empty().of(uuid);
+          users.put(uuid, user.get());
         }
       } catch (AuthenticationUnavailableException e) {
         throw e;
       }
     }
 
-    return id;
+    return token;
   }
 }

@@ -134,6 +134,19 @@ public class LoggedInUserStoreTest {
     assertThat(user, is(not(present())));
   }
 
+  @Test
+  public void willGenerateADifferentTokenEachSession() throws LocalLoginUnavailableException,
+    InterruptedException, AuthenticationUnavailableException {
+    LoggedInUserStore instance = this.userStoreWithUserA;
+    String token = instance.userTokenFor("a", "b").get();
+
+    Thread.sleep(ONE_SECOND_TIMEOUT.toMilliseconds() + 1);
+
+    String otherToken = instance.userTokenFor("a", "b").get();
+
+    assertThat(token, is(not(otherToken)));
+  }
+
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
 
