@@ -29,7 +29,9 @@ public class FacetedSearchV2_1Endpoint {
   @GET
   @Path("{id: [a-f0-9\\-]+}")
   public Response get() {
-    return Response.ok(new SearchResponseV2_1()).build();
+    SearchResponseV2_1 searchResponse = new SearchResponseV2_1();
+    searchResponse.setSortableFields(new WWPersonsFacetedSearchDescription().getSortableFields());
+    return Response.ok(searchResponse).build();
   }
 
   static class SearchRequestV2_1 {
@@ -44,7 +46,7 @@ public class FacetedSearchV2_1Endpoint {
     private int rows;
     private int numFound;
 
-    public SearchResponseV2_1(){
+    public SearchResponseV2_1() {
       facets = Lists.newArrayList();
       fullTextSearchFields = Lists.newArrayList();
       refs = Lists.newArrayList();
@@ -67,6 +69,10 @@ public class FacetedSearchV2_1Endpoint {
       return sortableFields;
     }
 
+    public void setSortableFields(List<String> sortableFields){
+      this.sortableFields = sortableFields;
+    }
+
     public int getStart() {
       return start;
     }
@@ -83,6 +89,18 @@ public class FacetedSearchV2_1Endpoint {
     }
 
     private static class Ref {
+    }
+  }
+
+  private static class WWPersonsFacetedSearchDescription {
+    private static final List<String> SORTABLE_FIELDS = Lists.newArrayList(
+      "dynamic_k_modified",
+      "dynamic_k_birthDate",
+      "dynamic_sort_name",
+      "dynamic_k_deathDate");
+
+    public List<String> getSortableFields() {
+      return SORTABLE_FIELDS;
     }
   }
 }
