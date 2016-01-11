@@ -6,7 +6,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 
-@Path("/v2.1/search/ckccpersons")
+@Path("/v2.1/search/wwpersons")
 public class FacetedSearchV2_1Endpoint {
 
   @POST
