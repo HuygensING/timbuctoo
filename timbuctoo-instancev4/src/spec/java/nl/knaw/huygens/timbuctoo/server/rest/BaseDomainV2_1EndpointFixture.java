@@ -13,12 +13,9 @@ import org.json.JSONObject;
 import org.skyscreamer.jsonassert.JSONCompare;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.JSONCompareResult;
-import org.skyscreamer.jsonassert.RegularExpressionValueMatcher;
-import org.skyscreamer.jsonassert.ValueMatcherException;
-import org.skyscreamer.jsonassert.comparator.DefaultComparator;
 
-import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.AbstractMap;
@@ -26,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class BaseDomainV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
+public abstract class BaseDomainV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
 
   private String recordId;
   private String recordLocation;
@@ -34,8 +31,9 @@ public class BaseDomainV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
   private String authenticationToken;
 
   @Override
-  protected Client getClient() {
-    return ClientBuilder.newClient();
+  protected WebTarget returnUrlToMockedOrRealServer(String serverAddress) {
+    String address = serverAddress != null ? serverAddress : "http://test.repository.huygens.knaw.nl";
+    return ClientBuilder.newClient().target(address);
   }
 
   private final ObjectMapper objectMapper;
@@ -106,7 +104,7 @@ public class BaseDomainV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
     HttpRequest getRequest = new HttpRequest("GET", path, headers, null, null, Lists.newArrayList());
 
     while ((pid == null || pid.equalsIgnoreCase("null")) && attempts < 24) {
-      Response response = doHttpCommand(getRequest);
+      Response response = executeRequestUsingJaxRs(getRequest);
       try {
         JSONObject data = new JSONObject(response.readEntity(String.class));
         pid = data.getString("^pid");
@@ -159,7 +157,7 @@ public class BaseDomainV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
     HttpRequest loginRequest =
         new HttpRequest("POST", "/v2.1/authenticate", headers, null, null, Lists.newArrayList());
 
-    Response response = doHttpCommand(loginRequest);
+    Response response = executeRequestUsingJaxRs(loginRequest);
     authenticationToken = response.getHeaderString("x_auth_token");
     return authenticationToken;
   }

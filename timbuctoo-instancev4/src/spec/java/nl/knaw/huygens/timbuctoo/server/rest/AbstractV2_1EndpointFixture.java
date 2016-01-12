@@ -7,7 +7,6 @@ import nl.knaw.huygens.concordion.extensions.HttpResult;
 import nl.knaw.huygens.concordion.extensions.ReplaceEmbeddedStylesheetExtension;
 import org.concordion.api.extension.Extension;
 
-import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
@@ -17,7 +16,8 @@ import java.util.AbstractMap;
 public abstract class AbstractV2_1EndpointFixture {
 
   @Extension
-  public HttpCommandExtension commandExtension = new HttpCommandExtension(this::doHttpCommand, this::validate, false);
+  public HttpCommandExtension commandExtension =
+    new HttpCommandExtension(this::executeRequestUsingJaxRs, this::validate, false);
   @Extension
   public ReplaceEmbeddedStylesheetExtension removeExtension = new ReplaceEmbeddedStylesheetExtension(
     "/nl/knaw/huygens/timbuctoo/server/rest/concordion.css"
@@ -26,9 +26,8 @@ public abstract class AbstractV2_1EndpointFixture {
   /**
    * Implements the actual http call for the concordion HTTPCommand.
    */
-  protected Response doHttpCommand(HttpRequest httpRequest) {
-    WebTarget target = getClient()
-      .target(httpRequest.server != null ? httpRequest.server : "http://test.repository.huygens.knaw.nl")
+  protected Response executeRequestUsingJaxRs(HttpRequest httpRequest) {
+    WebTarget target = returnUrlToMockedOrRealServer(httpRequest.server)
       .path(httpRequest.url);
 
     for (AbstractMap.SimpleEntry<String, String> queryParameter : httpRequest.queryParameters) {
@@ -49,8 +48,8 @@ public abstract class AbstractV2_1EndpointFixture {
     }
   }
 
-  protected abstract Client getClient();
+  protected abstract WebTarget returnUrlToMockedOrRealServer(String serverAddress);
 
-  public abstract String validate(HttpExpectation expectation, HttpResult reality);
+  protected abstract String validate(HttpExpectation expectation, HttpResult reality);
 
 }

@@ -1,0 +1,3 @@
+# JSON files
+loginsFilePath: "./src/spec/resources/logins.json"
+usersFilePath: "./src/spec/resources/users.json"

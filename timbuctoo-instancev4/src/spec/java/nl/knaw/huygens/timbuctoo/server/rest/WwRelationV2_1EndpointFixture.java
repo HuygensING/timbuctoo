@@ -36,7 +36,7 @@ public class WwRelationV2_1EndpointFixture extends BaseDomainV2_1EndpointFixture
     HttpRequest postRequest =
         new HttpRequest("POST", "/v2.1/domain/wwdocuments", headers, makeDocumentJson(), null, Lists.newArrayList());
 
-    Response response = doHttpCommand(postRequest);
+    Response response = executeRequestUsingJaxRs(postRequest);
     documentPath = response.getHeaderString("Location").replaceAll("http://[^/]+/", "");;
     documentId = documentPath.replaceAll(".*\\/", "");
     retrievePid(documentPath);
@@ -48,7 +48,7 @@ public class WwRelationV2_1EndpointFixture extends BaseDomainV2_1EndpointFixture
     HttpRequest postRequest =
         new HttpRequest("POST", "/v2.1/domain/wwpersons", headers, makePersonJson(), null, Lists.newArrayList());
 
-    Response response = doHttpCommand(postRequest);
+    Response response = executeRequestUsingJaxRs(postRequest);
     personPath = response.getHeaderString("Location").replaceAll("http://[^/]+/", "");;
     personId = personPath.replaceAll(".*\\/", "");
     retrievePid(personPath);
@@ -60,8 +60,8 @@ public class WwRelationV2_1EndpointFixture extends BaseDomainV2_1EndpointFixture
     HttpRequest deletePersonRequest = new HttpRequest("DELETE", personPath, headers, null, null, Lists.newArrayList());
     HttpRequest deleteDocumentRequest =
         new HttpRequest("DELETE", documentPath, headers, null, null, Lists.newArrayList());
-    doHttpCommand(deletePersonRequest);
-    doHttpCommand(deleteDocumentRequest);
+    executeRequestUsingJaxRs(deletePersonRequest);
+    executeRequestUsingJaxRs(deleteDocumentRequest);
   }
 
   private String makeDocumentJson() throws JSONException {

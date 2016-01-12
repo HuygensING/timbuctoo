@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.rest.AuthenticationV2_1EndPoint;
+import nl.knaw.huygens.timbuctoo.server.rest.FacetedSearchV2_1Endpoint;
 import nl.knaw.huygens.timbuctoo.server.rest.UserV2_1Endpoint;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 
@@ -51,6 +52,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     // register REST endpoints
     environment.jersey().register(new AuthenticationV2_1EndPoint(loggedInUserStore));
     environment.jersey().register(new UserV2_1Endpoint(loggedInUserStore));
+    environment.jersey().register(new FacetedSearchV2_1Endpoint());
 
     // register health checks
     registerHealthCheck(environment, "Encryption algorithm", new EncryptionAlgorithmHealthCheck(ENCRYPTION_ALGORITHM));
