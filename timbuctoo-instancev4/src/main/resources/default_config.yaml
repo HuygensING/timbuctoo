@@ -1,0 +1,4 @@
+# JSON files
+loginsFilePath: "./repository/data/logins.json"
+usersFilePath: "./repository/data/users.json"
+
