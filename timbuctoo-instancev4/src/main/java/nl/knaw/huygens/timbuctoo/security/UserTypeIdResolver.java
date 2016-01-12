@@ -3,16 +3,12 @@ package nl.knaw.huygens.timbuctoo.security;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.DatabindContext;
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
+import com.fasterxml.jackson.databind.jsontype.impl.TypeIdResolverBase;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
-class UserTypeIdResolver implements TypeIdResolver {
+class UserTypeIdResolver extends TypeIdResolverBase {
   public static final String TYPENAME = "user";
   public static final JavaType JAVA_TYPE = TypeFactory.defaultInstance().uncheckedSimpleType(User.class);
-
-  @Override
-  public void init(JavaType baseType) {
-  }
 
   @Override
   public String idFromValue(Object value) {
@@ -27,11 +23,6 @@ class UserTypeIdResolver implements TypeIdResolver {
   @Override
   public String idFromBaseType() {
     return TYPENAME;
-  }
-
-  @Override
-  public JavaType typeFromId(String id) {
-    return JAVA_TYPE;
   }
 
   @Override

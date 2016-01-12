@@ -25,11 +25,11 @@ package nl.knaw.huygens.timbuctoo.security;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.DatabindContext;
 import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
+import com.fasterxml.jackson.databind.jsontype.impl.TypeIdResolverBase;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
 
-class LoginTypeIdResolver implements TypeIdResolver {
+class LoginTypeIdResolver extends TypeIdResolverBase {
 
 
   public static final String TYPENAME = "login";
@@ -52,11 +52,6 @@ class LoginTypeIdResolver implements TypeIdResolver {
   @Override
   public String idFromBaseType() {
     return TYPENAME;
-  }
-
-  @Override
-  public JavaType typeFromId(String id) {
-    return JAVA_TYPE;
   }
 
   @Override
