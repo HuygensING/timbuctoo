@@ -40,6 +40,13 @@ public class FacetedSearchV2_1Endpoint {
 
   @GET
   @Path("{id}")
+  /*
+   * Use UUIDParam instead of UUID, because we want to be explicit to the user of this API the request is not
+   * supported. When UUID is used Jersery returns a '404 Not Found' if the request contains a malformed one. The
+   * UUIDParam will return a '400 Bad Request' for malformed UUID's.
+   * See: http://www.dropwizard.io/0.9.1/dropwizard-jersey/apidocs/io/dropwizard/jersey/params/AbstractParam.html
+   * Or: http://codahale.com/what-makes-jersey-interesting-parameter-classes/
+   */
   public Response get(@PathParam("id") UUIDParam id) {
     WwPersonSearchDescription description = getDescription();
 
