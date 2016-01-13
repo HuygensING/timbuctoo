@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.rest;
 
+import io.dropwizard.jersey.params.UUIDParam;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -38,7 +40,7 @@ public class FacetedSearchV2_1Endpoint {
 
   @GET
   @Path("{id}")
-  public Response get(@PathParam("id") UUID id) {
+  public Response get(@PathParam("id") UUIDParam id) {
     WwPersonSearchDescription description = getDescription();
 
     return Response.ok(SearchResponseV2_1.from(description)).build();

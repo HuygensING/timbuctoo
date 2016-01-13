@@ -19,6 +19,7 @@ import org.skyscreamer.jsonassert.JSONCompareResult;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
 
 @FullOGNL
 @RunWith(ConcordionRunner.class)
@@ -43,6 +44,12 @@ public class FacetedSearchV2_1EndpointFixture extends AbstractV2_1EndpointFixtur
 
   public String dontCheck(HttpExpectation expectation, HttpResult reality) {
     return "";
+  }
+
+  public String doRequestWithMalformedUUID(){
+    Response response = returnUrlToMockedOrRealServer(null).path("v2.1").path("search").path("malformedUUID").request().get();
+
+    return String.format("%s %s", response.getStatus(), response.getStatusInfo());
   }
 
   @Override

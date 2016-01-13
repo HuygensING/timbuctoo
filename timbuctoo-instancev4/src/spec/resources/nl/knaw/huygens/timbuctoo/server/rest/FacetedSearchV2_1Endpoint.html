@@ -67,10 +67,14 @@
         }
       </div>
     </aside>
+    <aside class="note">
+      When a GET request is done with a malformed UUID <span c:assertEquals="doRequestWithMalformedUUID()">
+      400 Bad Request</span> is returned.
+    </aside>
     <ul>
       <li>
-        <em>numFound</em> contains the total number of records that match the query and is therefore always greater than,
-        or equal to the facet numbers and the rows property.
+        <em>numFound</em> contains the total number of records that match the query and is therefore always greater than
+        , or equal to the facet numbers and the rows property.
       </li>
       <li>
         <em>start</em> contains the offset, in items
