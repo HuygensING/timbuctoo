@@ -57,11 +57,11 @@ class SearchResponseV2_1 {
   }
 
   public static SearchResponseV2_1 from(WwPersonSearchDescription description) {
-    SearchResponseV2_1 searchResponseV2_1 = new SearchResponseV2_1();
-    searchResponseV2_1.setFullTextSearchFields(description.getFullTextSearchFields());
-    searchResponseV2_1.setSortableFields(description.getSortableFields());
+    SearchResponseV2_1 searchResponse = new SearchResponseV2_1();
+    searchResponse.setFullTextSearchFields(description.getFullTextSearchFields());
+    searchResponse.setSortableFields(description.getSortableFields());
 
-    return searchResponseV2_1;
+    return searchResponse;
   }
 
   private static class Facet {

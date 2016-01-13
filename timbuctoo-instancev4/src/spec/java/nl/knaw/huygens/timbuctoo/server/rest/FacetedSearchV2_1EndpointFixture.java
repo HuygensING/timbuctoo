@@ -46,8 +46,11 @@ public class FacetedSearchV2_1EndpointFixture extends AbstractV2_1EndpointFixtur
     return "";
   }
 
-  public String doRequestWithMalformedUUID(){
-    Response response = returnUrlToMockedOrRealServer(null).path("v2.1").path("search").path("malformedUUID").request().get();
+  public String doRequestWithMalformedUuid() {
+    Response response = returnUrlToMockedOrRealServer(null)
+      .path("v2.1").path("search").path("malformedUUID")
+      .request()
+      .get();
 
     return String.format("%s %s", response.getStatus(), response.getStatusInfo());
   }

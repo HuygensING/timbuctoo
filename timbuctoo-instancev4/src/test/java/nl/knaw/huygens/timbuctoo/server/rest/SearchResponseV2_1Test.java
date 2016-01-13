@@ -12,17 +12,17 @@ public class SearchResponseV2_1Test {
 
   @Test
   public void fromReturnsASearchResponseV2_1WithTheFullTextSearchFieldsOfTheDescription() {
-    SearchResponseV2_1 searchResponseV2_1 = SearchResponseV2_1.from(DESCRIPTION);
+    SearchResponseV2_1 searchResponse = SearchResponseV2_1.from(DESCRIPTION);
 
-    assertThat(searchResponseV2_1, is(likeSearchResponse()
+    assertThat(searchResponse, is(likeSearchResponse()
       .withFullTextSearchFields(DESCRIPTION.getFullTextSearchFields())));
   }
 
   @Test
-  public void fromReturnsASearchResponseV2_1WithTheSortableFieldsOfTheDescription(){
-    SearchResponseV2_1 searchResponseV2_1 = SearchResponseV2_1.from(DESCRIPTION);
+  public void fromReturnsASearchResponseV2_1WithTheSortableFieldsOfTheDescription() {
+    SearchResponseV2_1 searchResponse = SearchResponseV2_1.from(DESCRIPTION);
 
-    assertThat(searchResponseV2_1, is(likeSearchResponse()
+    assertThat(searchResponse, is(likeSearchResponse()
       .withSortableFields(DESCRIPTION.getSortableFields())));
   }
 
