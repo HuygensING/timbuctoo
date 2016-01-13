@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 
 import java.util.List;
 
-public class WwPersonsFacetedSearchDescription {
+public class WwPersonSearchDescription {
   private static final List<String> SORTABLE_FIELDS = Lists.newArrayList(
     "dynamic_k_modified",
     "dynamic_k_birthDate",
@@ -25,6 +25,6 @@ public class WwPersonsFacetedSearchDescription {
   }
 
   public TimbuctooQuery createQuery(SearchRequestV2_1 searchRequest) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return new TimbuctooQuery(this);
   }
 }

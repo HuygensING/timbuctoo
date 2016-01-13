@@ -36,7 +36,7 @@ class SearchResponseV2_1 {
     return sortableFields;
   }
 
-  public void setSortableFields(List<String> sortableFields) {
+  private void setSortableFields(List<String> sortableFields) {
     this.sortableFields = sortableFields;
   }
 
@@ -52,13 +52,16 @@ class SearchResponseV2_1 {
     return numFound;
   }
 
-  public void setFullTextSearchFields(List<String> fullTextSearchFields) {
+  private void setFullTextSearchFields(List<String> fullTextSearchFields) {
     this.fullTextSearchFields = fullTextSearchFields;
   }
 
-  public static SearchResponseV2_1 from(SearchResult searchResult) {
-    return new SearchResponseV2_1();
+  public static SearchResponseV2_1 from(WwPersonSearchDescription description) {
+    SearchResponseV2_1 searchResponseV2_1 = new SearchResponseV2_1();
+    searchResponseV2_1.setFullTextSearchFields(description.getFullTextSearchFields());
+    searchResponseV2_1.setSortableFields(description.getSortableFields());
 
+    return searchResponseV2_1;
   }
 
   private static class Facet {

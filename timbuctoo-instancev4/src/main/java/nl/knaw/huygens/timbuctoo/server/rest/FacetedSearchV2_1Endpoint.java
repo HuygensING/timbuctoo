@@ -25,10 +25,7 @@ public class FacetedSearchV2_1Endpoint {
   @POST
   @Path("wwpersons")
   public Response post(SearchRequestV2_1 searchRequest) {
-
-    TimbuctooQuery query = new WwPersonsFacetedSearchDescription().createQuery(searchRequest);
-
-    UUID uuid = searcher.search(query);
+    UUID uuid = UUID.randomUUID();
 
     URI uri = createUri(uuid);
 
@@ -42,9 +39,13 @@ public class FacetedSearchV2_1Endpoint {
   @GET
   @Path("{id}")
   public Response get(@PathParam("id") UUID id) {
-    SearchResult searchResult = searcher.getSearchResult(id);
+    WwPersonSearchDescription description = getDescription();
 
-    return Response.ok(SearchResponseV2_1.from(searchResult)).build();
+    return Response.ok(SearchResponseV2_1.from(description)).build();
+  }
+
+  private WwPersonSearchDescription getDescription() {
+    return new WwPersonSearchDescription();
   }
 
 }
