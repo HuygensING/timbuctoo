@@ -4,12 +4,13 @@ import nl.knaw.huygens.timbuctoo.util.Timeout;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.mockito.BDDMockito.given;
@@ -41,9 +42,9 @@ public class SearcherTest {
   public void getSearchResultReturnsASearchResult() {
     UUID id = instance.search(query);
 
-    SearchResult searchResult = instance.getSearchResult(id);
+    Optional<SearchResult> searchResult = instance.getSearchResult(id);
 
-    assertThat(searchResult, is(notNullValue()));
+    assertThat(searchResult, is(present()));
   }
 
   @Test
@@ -58,8 +59,8 @@ public class SearcherTest {
   public void getSearchResultReturnsTheSameResultForTheSameId() {
     UUID id = instance.search(query);
 
-    SearchResult retrieval1 = instance.getSearchResult(id);
-    SearchResult retrieval2 = instance.getSearchResult(id);
+    SearchResult retrieval1 = instance.getSearchResult(id).get();
+    SearchResult retrieval2 = instance.getSearchResult(id).get();
 
     assertThat(retrieval1, is(retrieval2));
   }
@@ -69,30 +70,30 @@ public class SearcherTest {
     UUID id1 = instance.search(query);
     UUID id2 = instance.search(query);
 
-    SearchResult searchResult1 = instance.getSearchResult(id1);
-    SearchResult searchResult2 = instance.getSearchResult(id2);
+    SearchResult searchResult1 = instance.getSearchResult(id1).get();
+    SearchResult searchResult2 = instance.getSearchResult(id2).get();
 
     assertThat(searchResult1, is(not(searchResult2)));
   }
 
   @Test
   public void getSearchResultReturnsNullIfTheSearchResultIsNotFound() {
-    SearchResult searchResult = instance.getSearchResult(UUID.randomUUID());
+    Optional<SearchResult> searchResult = instance.getSearchResult(UUID.randomUUID());
 
-    assertThat(searchResult, is(nullValue()));
+    assertThat(searchResult, is(not(present())));
   }
 
   @Test
   public void getSearchResultReturnsNullIfTheSearchAfterTheTimeOut() throws InterruptedException {
     UUID id = instance.search(query);
 
-    SearchResult searchResult = instance.getSearchResult(id);
-    assertThat(searchResult, is(notNullValue()));
+    Optional<SearchResult> searchResult = instance.getSearchResult(id);
+    assertThat(searchResult, is(present()));
 
     Thread.sleep(ONE_SECOND_TIMEOUT.toMilliseconds() + 1);
 
-    SearchResult searchResultAfterTimeout = instance.getSearchResult(id);
-    assertThat(searchResultAfterTimeout, is(nullValue()));
+    Optional<SearchResult> searchResultAfterTimeout = instance.getSearchResult(id);
+    assertThat(searchResultAfterTimeout, is(not(present())));
   }
 
 }

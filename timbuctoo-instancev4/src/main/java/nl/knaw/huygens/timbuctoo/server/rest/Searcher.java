@@ -5,6 +5,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public class Searcher {
@@ -19,8 +20,8 @@ public class Searcher {
     return CacheBuilder.newBuilder().expireAfterAccess(timeout.duration, timeout.timeUnit).build();
   }
 
-  public SearchResult getSearchResult(UUID id) {
-    return cache.getIfPresent(id);
+  public Optional<SearchResult> getSearchResult(UUID id) {
+    return Optional.ofNullable(cache.getIfPresent(id));
   }
 
   public UUID search(TimbuctooQuery query) {
