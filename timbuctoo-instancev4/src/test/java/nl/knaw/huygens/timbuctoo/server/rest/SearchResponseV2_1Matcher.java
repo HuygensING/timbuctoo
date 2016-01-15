@@ -45,4 +45,26 @@ public class SearchResponseV2_1Matcher extends CompositeMatcher<SearchResponseV2
     });
     return this;
   }
+
+  public SearchResponseV2_1Matcher withStart(int start) {
+    this.addMatcher(new PropertyEqualityMatcher<SearchResponseV2_1, Integer>("start", start) {
+      @Override
+      protected Integer getItemValue(SearchResponseV2_1 item) {
+        return item.getStart();
+      }
+    });
+
+    return this;
+  }
+
+  public SearchResponseV2_1Matcher withRows(int rows) {
+    this.addMatcher(new PropertyEqualityMatcher<SearchResponseV2_1, Integer>("rows", rows) {
+      @Override
+      protected Integer getItemValue(SearchResponseV2_1 item) {
+        return item.getRows();
+      }
+    });
+
+    return this;
+  }
 }
