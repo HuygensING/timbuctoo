@@ -16,6 +16,6 @@ public class TimbuctooQuery {
     List<Vertex> vertices = description.filterByType(graph.traversal().V()).toList();
 
     List<EntityRef> refs = description.createRefs(vertices);
-    return new SearchResult(refs);
+    return new SearchResult(refs, description);
   }
 }

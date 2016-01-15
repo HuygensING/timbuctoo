@@ -53,11 +53,9 @@ public class FacetedSearchV2_1Endpoint {
   public Response get(@PathParam("id") UUIDParam id,
                       @QueryParam("rows") @DefaultValue("10") int rows,
                       @QueryParam("start") @DefaultValue("0") int start) {
-    WwPersonSearchDescription description = getDescription();
-
     Optional<SearchResult> searchResult = searcher.getSearchResult(id.get());
     if (searchResult.isPresent()) {
-      return Response.ok(SearchResponseV2_1.from(description, searchResult.get(), rows, start)).build();
+      return Response.ok(SearchResponseV2_1.from(searchResult.get(), rows, start)).build();
     }
 
     return Response

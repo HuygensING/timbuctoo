@@ -61,13 +61,12 @@ class SearchResponseV2_1 {
     this.fullTextSearchFields = fullTextSearchFields;
   }
 
-  public static SearchResponseV2_1 from(WwPersonSearchDescription description,
-                                        SearchResult searchResult,
+  public static SearchResponseV2_1 from(SearchResult searchResult,
                                         int rows,
                                         int start) {
     SearchResponseV2_1 searchResponse = new SearchResponseV2_1();
-    searchResponse.setFullTextSearchFields(description.getFullTextSearchFields());
-    searchResponse.setSortableFields(description.getSortableFields());
+    searchResponse.setFullTextSearchFields(searchResult.getFullTextSearchFields());
+    searchResponse.setSortableFields(searchResult.getSortableFields());
     searchResponse.start = start;
 
     List<EntityRef> refs = searchResult.getRefs();
