@@ -17,6 +17,7 @@
     <concoridion.version>1.5.1</concoridion.version>
     <httpcore.version>4.4.4</httpcore.version>
     <jsonassert.version>1.2.3</jsonassert.version>
+    <tinkerpop3.version>3.1.0-incubating</tinkerpop3.version>
     <!-- test output -->
     <concordion.output.dir>${basedir}/target/concordion</concordion.output.dir>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -26,6 +27,7 @@
     <exec-maven-plugin.version>1.4.0</exec-maven-plugin.version>
     <maven-checkstyle-plugin.version>2.17</maven-checkstyle-plugin.version>
     <maven-failsafe-plugin.version>2.18.1</maven-failsafe-plugin.version>
+
   </properties>
 
   <dependencies>
@@ -35,6 +37,30 @@
       <groupId>io.dropwizard</groupId>
       <artifactId>dropwizard-core</artifactId>
       <version>${dropwizard.version}</version>
+    </dependency>
+
+    <!-- TinkerPop library for support graph databases -->
+    <dependency>
+      <groupId>org.apache.tinkerpop</groupId>
+      <artifactId>gremlin-core</artifactId>
+      <version>${tinkerpop3.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tinkerpop</groupId>
+      <artifactId>neo4j-gremlin</artifactId>
+      <version>${tinkerpop3.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.neo4j</groupId>
+      <artifactId>neo4j-tinkerpop-api-impl</artifactId>
+      <version>0.3-2.3.0</version>
     </dependency>
     <!-- ## End of main dependencies ## -->
 
@@ -63,7 +89,7 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- JSONassert a library to help verifying JSON -->
+    <!-- JSON assert a library to help verifying JSON -->
     <dependency>
       <groupId>org.skyscreamer</groupId>
       <artifactId>jsonassert</artifactId>
@@ -76,6 +102,21 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.neo4j</groupId>
+      <artifactId>neo4j-kernel</artifactId>
+      <version>2.3.1</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.neo4j</groupId>
+      <artifactId>neo4j-io</artifactId>
+      <version>2.3.1</version>
+      <type>test-jar</type>
       <scope>test</scope>
     </dependency>
 

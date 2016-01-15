@@ -16,6 +16,8 @@ public class TimbuctooConfiguration extends Configuration {
   private String loginsFilePath;
   @NotEmpty
   private String usersFilePath;
+  @NotEmpty
+  private String databasePath;
 
   public String getLoginsFilePath() {
     return loginsFilePath;
@@ -23,5 +25,9 @@ public class TimbuctooConfiguration extends Configuration {
 
   public String getUsersFilePath() {
     return usersFilePath;
+  }
+
+  public String getDatabasePath() {
+    return databasePath;
   }
 }

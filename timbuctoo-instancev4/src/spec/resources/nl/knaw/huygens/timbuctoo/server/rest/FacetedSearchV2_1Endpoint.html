@@ -54,7 +54,48 @@
             "dynamic_t_notes",
             "dynamic_t_name"
           ],
-          "refs": [],
+          "refs": [
+            {
+              "type": "wwperson",
+              "id": "/.+/",
+            },
+            {
+              "type": "wwperson",
+              "id": "/.+/",
+            },
+            {
+              "type": "wwperson",
+              "id": "/.+/",
+            },
+            {
+              "type": "wwperson",
+              "id": "/.+/",
+            },
+            {
+              "type": "wwperson",
+              "id": "/.+/",
+            },
+            {
+              "type": "wwperson",
+              "id": "/.+/",
+            },
+            {
+              "type": "wwperson",
+              "id": "/.+/",
+            },
+            {
+              "type": "wwperson",
+              "id": "/.+/",
+            },
+            {
+              "type": "wwperson",
+              "id": "/.+/",
+            },
+            {
+              "type": "wwperson",
+              "id": "/.+/",
+            }
+          ],
           "sortableFields": [
             "dynamic_k_modified",
             "dynamic_k_birthDate",
@@ -70,6 +111,10 @@
     <aside class="note">
       When a GET request is done with a malformed UUID, <em><span c:assertEquals="doRequestWithMalformedUuid()">
       400 Bad Request</span></em> is returned.
+    </aside>
+    <aside class="note">
+      When a an unknown search result is requested, <em><span c:assertEquals="doGetOfUnknown()">
+      404 Not Found</span></em> is returned.
     </aside>
     <ul>
       <li>
@@ -157,6 +202,25 @@
           "path": "path/to/entity"
         }
       </pre>
+    </div>
+    <div>
+      <h3>Query parameters</h3>
+      <span>In the get request above no query parameters are used. The search requests supports two query paramters
+        <ul>
+          <li>rows
+            <ul>
+              <li>Defines the maximum number of results that are returned.</li>
+              <li>Has as default value 10.</li>
+            </ul>
+          </li>
+          <li>start
+            <ul>
+              <li>Defines the offset of the search result</li>
+              <li>Has as default value 0.</li>
+            </ul>
+          </li>
+        </ul>
+      </span>
     </div>
   </section>
   <!--<section data-type="chapter">-->

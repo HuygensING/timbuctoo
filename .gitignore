@@ -12,3 +12,6 @@ reports
 
 # shade plugin output
 **/dependency-reduced-pom.xml
+
+# timbuctoo acceptance test files
+**/database

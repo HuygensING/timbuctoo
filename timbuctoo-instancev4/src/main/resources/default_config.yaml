@@ -1,4 +1,5 @@
 # JSON files
+databasePath: "./repository/database" #do not refer to a soft link
 loginsFilePath: "./repository/data/logins.json"
 usersFilePath: "./repository/data/users.json"
 

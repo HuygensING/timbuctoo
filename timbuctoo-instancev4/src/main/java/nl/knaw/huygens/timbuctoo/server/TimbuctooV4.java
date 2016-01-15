@@ -10,11 +10,18 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.rest.AuthenticationV2_1EndPoint;
-import nl.knaw.huygens.timbuctoo.server.rest.Searcher;
 import nl.knaw.huygens.timbuctoo.server.rest.FacetedSearchV2_1Endpoint;
+import nl.knaw.huygens.timbuctoo.server.rest.Searcher;
 import nl.knaw.huygens.timbuctoo.server.rest.UserV2_1Endpoint;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.graphdb.factory.GraphDatabaseSettings;
+import org.neo4j.tinkerpop.api.impl.Neo4jGraphAPIImpl;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -42,10 +49,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
   @Override
   public void run(TimbuctooConfiguration configuration, Environment environment) throws Exception {
-    Path loginsPath = Paths.get(configuration.getLoginsFilePath()); // dataPath().resolve("logins.json");
+    Path loginsPath = Paths.get(configuration.getLoginsFilePath());
     JsonBasedAuthenticator authenticator = new JsonBasedAuthenticator(loginsPath, ENCRYPTION_ALGORITHM);
 
-    Path usersPath = Paths.get(configuration.getUsersFilePath()); // dataPath().resolve("users.json");
+    Path usersPath = Paths.get(configuration.getUsersFilePath());
     JsonBasedUserStore userStore = new JsonBasedUserStore(usersPath);
 
     LoggedInUserStore loggedInUserStore = new LoggedInUserStore(authenticator, userStore, new Timeout(8, HOURS));
@@ -53,7 +60,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     // register REST endpoints
     environment.jersey().register(new AuthenticationV2_1EndPoint(loggedInUserStore));
     environment.jersey().register(new UserV2_1Endpoint(loggedInUserStore));
-    environment.jersey().register(new FacetedSearchV2_1Endpoint(new Searcher(new Timeout(8, HOURS))));
+    environment.jersey()
+               .register(new FacetedSearchV2_1Endpoint(new Searcher(getGraph(configuration), new Timeout(8, HOURS))));
 
     // register health checks
     registerHealthCheck(environment, "Encryption algorithm", new EncryptionAlgorithmHealthCheck(ENCRYPTION_ALGORITHM));
@@ -61,8 +69,15 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     registerHealthCheck(environment, "Users file", new FileHealthCheck(usersPath));
   }
 
-  private Path dataPath() {
-    return Paths.get(System.getProperty("user.home"), "repository", "data");
+  private Graph getGraph(TimbuctooConfiguration configuration) {
+
+    GraphDatabaseService graphDatabase = new GraphDatabaseFactory()
+      .newEmbeddedDatabaseBuilder(new File(configuration.getDatabasePath()))
+      .setConfig(GraphDatabaseSettings.allow_store_upgrade, "true")
+      .newGraphDatabase();
+
+
+    return Neo4jGraph.open(new Neo4jGraphAPIImpl(graphDatabase));
   }
 
   private void registerHealthCheck(Environment environment, String name, HealthCheck healthCheck) {

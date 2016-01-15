@@ -1,3 +1,4 @@
 # JSON files
+databasePath: "./src/spec/resources/database" #do not refer to a soft link
 loginsFilePath: "./src/spec/resources/logins.json"
 usersFilePath: "./src/spec/resources/users.json"

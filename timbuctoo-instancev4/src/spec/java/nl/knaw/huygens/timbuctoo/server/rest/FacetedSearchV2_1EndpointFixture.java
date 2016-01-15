@@ -55,6 +55,15 @@ public class FacetedSearchV2_1EndpointFixture extends AbstractV2_1EndpointFixtur
     return String.format("%s %s", response.getStatus(), response.getStatusInfo());
   }
 
+  public String doGetOfUnknown() {
+    Response response = returnUrlToMockedOrRealServer(null)
+      .path("v2.1").path("search").path("058f1746-c115-4cbe-9b57-cebd105046eb")
+      .request()
+      .get();
+
+    return String.format("%s %s", response.getStatus(), response.getStatusInfo());
+  }
+
   @Override
   public String validate(HttpExpectation expectation, HttpResult reality) {
     if (expectation.hasBody()) {

@@ -2,14 +2,17 @@ package nl.knaw.huygens.timbuctoo.server.rest;
 
 import io.dropwizard.jersey.params.UUIDParam;
 
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
+import java.util.Optional;
 import java.util.UUID;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -27,7 +30,7 @@ public class FacetedSearchV2_1Endpoint {
   @POST
   @Path("wwpersons")
   public Response post(SearchRequestV2_1 searchRequest) {
-    UUID uuid = UUID.randomUUID();
+    UUID uuid = searcher.search(getDescription().createQuery(searchRequest));
 
     URI uri = createUri(uuid);
 
@@ -47,14 +50,32 @@ public class FacetedSearchV2_1Endpoint {
    * See: http://www.dropwizard.io/0.9.1/dropwizard-jersey/apidocs/io/dropwizard/jersey/params/AbstractParam.html
    * Or: http://codahale.com/what-makes-jersey-interesting-parameter-classes/
    */
-  public Response get(@PathParam("id") UUIDParam id) {
+  public Response get(@PathParam("id") UUIDParam id,
+                      @QueryParam("rows") @DefaultValue("10") int rows,
+                      @QueryParam("start") @DefaultValue("0") int start) {
     WwPersonSearchDescription description = getDescription();
 
-    return Response.ok(SearchResponseV2_1.from(description)).build();
+    Optional<SearchResult> searchResult = searcher.getSearchResult(id.get());
+    if (searchResult.isPresent()) {
+      return Response.ok(SearchResponseV2_1.from(description, searchResult.get(), rows, start)).build();
+    }
+
+    return Response
+      .status(Response.Status.NOT_FOUND)
+      .entity(new NotFoundMessage(id))
+      .build();
   }
 
   private WwPersonSearchDescription getDescription() {
     return new WwPersonSearchDescription();
   }
 
+  private class NotFoundMessage {
+    public final String message;
+    public final int statusCode = 404;
+
+    public NotFoundMessage(UUIDParam id) {
+      message = String.format("No SearchResult with id '%s'", id.get());
+    }
+  }
 }
