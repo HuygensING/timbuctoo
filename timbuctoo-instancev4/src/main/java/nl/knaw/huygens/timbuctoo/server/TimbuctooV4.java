@@ -15,7 +15,6 @@ import nl.knaw.huygens.timbuctoo.server.rest.Searcher;
 import nl.knaw.huygens.timbuctoo.server.rest.UserV2_1Endpoint;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.GraphDatabaseSettings;
@@ -60,8 +59,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     // register REST endpoints
     environment.jersey().register(new AuthenticationV2_1EndPoint(loggedInUserStore));
     environment.jersey().register(new UserV2_1Endpoint(loggedInUserStore));
-    environment.jersey()
-               .register(new FacetedSearchV2_1Endpoint(new Searcher(getGraph(configuration), new Timeout(8, HOURS))));
+    environment.jersey().register(new FacetedSearchV2_1Endpoint(
+      new Searcher(getGraph(environment, configuration), new Timeout(8, HOURS))));
 
     // register health checks
     registerHealthCheck(environment, "Encryption algorithm", new EncryptionAlgorithmHealthCheck(ENCRYPTION_ALGORITHM));
@@ -69,13 +68,14 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     registerHealthCheck(environment, "Users file", new FileHealthCheck(usersPath));
   }
 
-  private Graph getGraph(TimbuctooConfiguration configuration) {
-
+  private Neo4jGraph getGraph(Environment environment, TimbuctooConfiguration configuration) {
+    File databasePath = new File(configuration.getDatabasePath());
     GraphDatabaseService graphDatabase = new GraphDatabaseFactory()
-      .newEmbeddedDatabaseBuilder(new File(configuration.getDatabasePath()))
+      .newEmbeddedDatabaseBuilder(databasePath)
       .setConfig(GraphDatabaseSettings.allow_store_upgrade, "true")
       .newGraphDatabase();
 
+    registerHealthCheck(environment, "Neo4j database connection", new Neo4jHealthCheck(graphDatabase, databasePath));
 
     return Neo4jGraph.open(new Neo4jGraphAPIImpl(graphDatabase));
   }
