@@ -5,7 +5,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class WwPersonSearchDescription {
   private static final List<String> SORTABLE_FIELDS = Lists.newArrayList(
@@ -32,12 +31,13 @@ public class WwPersonSearchDescription {
     return new TimbuctooQuery(this);
   }
 
-  public List<EntityRef> createRefs(List<Vertex> vertices) {
-    return vertices.stream().map(vertex -> new EntityRef(type, vertex.<String>property("tim_id").value()))
-                   .collect(Collectors.toList());
+  public EntityRef createRef(Vertex vertex) {
+    return new EntityRef(type, vertex.<String>property("tim_id").value());
   }
 
   public GraphTraversal<Vertex, Vertex> filterByType(GraphTraversal<Vertex, Vertex> vertices) {
     return vertices.filter(x -> ((String) x.get().property("types").value()).contains(type));
   }
+
+
 }
