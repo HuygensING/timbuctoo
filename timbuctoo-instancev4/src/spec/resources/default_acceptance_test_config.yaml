@@ -2,3 +2,13 @@
 databasePath: "./src/spec/resources/database" #do not refer to a soft link
 loginsFilePath: "./src/spec/resources/logins.json"
 usersFilePath: "./src/spec/resources/users.json"
+
+# Timeouts
+# the 'duration' is a number
+# the timeUnit is a 'java.util.concurrent.TimeUnit'
+autoLogoutTimeout:
+  duration: 8
+  timeUnit: HOURS
+searchResultAvailabilityTimeout:
+  duration: 8
+  timeUnit: HOURS

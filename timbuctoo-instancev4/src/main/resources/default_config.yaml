@@ -3,3 +3,14 @@ databasePath: "./repository/database" #do not refer to a soft link
 loginsFilePath: "./repository/data/logins.json"
 usersFilePath: "./repository/data/users.json"
 
+# Timeouts
+# the 'duration' is a number
+# the timeUnit is a 'java.util.concurrent.TimeUnit'
+autoLogoutTimeout:
+  duration: 8
+  timeUnit: HOURS
+searchResultAvailabilityTimeout:
+  duration: 8
+  timeUnit: HOURS
+
+
