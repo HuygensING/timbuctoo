@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.rest;
 
 import com.google.common.collect.Lists;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -10,9 +11,15 @@ import static nl.knaw.huygens.timbuctoo.server.rest.SearchResponseV2_1Matcher.li
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
-public class SearchResponseV2_1Test {
+public class SearchResponseV2_1FactoryTest {
 
   public static final WwPersonSearchDescription DESCRIPTION = new WwPersonSearchDescription();
+  private SearchResponseV2_1Factory instance;
+
+  @Before
+  public void setup(){
+    instance = new SearchResponseV2_1Factory();
+  }
 
   @Test
   public void fromReturnsASearchResponseV2_1WithTheFullTextSearchFieldsOfTheSearchResult() {
@@ -20,7 +27,7 @@ public class SearchResponseV2_1Test {
     ArrayList<EntityRef> refs = Lists.newArrayList();
     SearchResult searchResult = new SearchResult(refs, fullTextSearchFields, Lists.newArrayList());
 
-    SearchResponseV2_1 searchResponse = SearchResponseV2_1.from(searchResult, 10, 0);
+    SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 10, 0);
 
     assertThat(searchResponse, is(likeSearchResponse().withFullTextSearchFields(fullTextSearchFields)));
   }
@@ -34,7 +41,7 @@ public class SearchResponseV2_1Test {
 
     SearchResult searchResult = new SearchResult(refs, fullTextSearchFields, sortableFields);
 
-    SearchResponseV2_1 searchResponse = SearchResponseV2_1.from(searchResult, 10, 0);
+    SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 10, 0);
 
     assertThat(searchResponse, is(likeSearchResponse().withSortableFields(sortableFields)));
   }
@@ -44,7 +51,7 @@ public class SearchResponseV2_1Test {
     List<EntityRef> refs = Lists.newArrayList(new EntityRef("type", "id"));
     SearchResult searchResult = new SearchResult(refs, Lists.newArrayList(), Lists.newArrayList());
 
-    SearchResponseV2_1 searchResponse = SearchResponseV2_1.from(searchResult, 10, 0);
+    SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 10, 0);
 
     assertThat(searchResponse, is(likeSearchResponse().withRefs(refs)));
   }
@@ -54,7 +61,7 @@ public class SearchResponseV2_1Test {
     List<EntityRef> refs = Lists.newArrayList(new EntityRef("type", "id"), new EntityRef("type", "id2"));
     SearchResult searchResult = new SearchResult(refs, Lists.newArrayList(), Lists.newArrayList());
 
-    SearchResponseV2_1 searchResponse = SearchResponseV2_1.from(searchResult, 1, 0);
+    SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 1, 0);
 
     assertThat(searchResponse, is(likeSearchResponse().withRefs(Lists.newArrayList(new EntityRef("type", "id")))));
   }
@@ -65,7 +72,7 @@ public class SearchResponseV2_1Test {
     SearchResult searchResult = new SearchResult(refs, Lists.newArrayList(), Lists.newArrayList());
 
 
-    SearchResponseV2_1 searchResponse = SearchResponseV2_1.from(searchResult, 10, 0);
+    SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 10, 0);
 
     assertThat(searchResponse, is(likeSearchResponse().withRefs(refs)));
   }
@@ -75,7 +82,7 @@ public class SearchResponseV2_1Test {
     List<EntityRef> refs = Lists.newArrayList(new EntityRef("type", "id"), new EntityRef("type", "id2"));
     SearchResult searchResult = new SearchResult(refs, Lists.newArrayList(), Lists.newArrayList());
 
-    SearchResponseV2_1 searchResponse = SearchResponseV2_1.from(searchResult, 1, 1);
+    SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 1, 1);
 
     assertThat(searchResponse, is(likeSearchResponse().withRefs(Lists.newArrayList(new EntityRef("type", "id2")))));
   }
@@ -86,7 +93,7 @@ public class SearchResponseV2_1Test {
       Lists.newArrayList());
     int start = 1;
 
-    SearchResponseV2_1 searchResponse = SearchResponseV2_1.from(searchResult, 1, start);
+    SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 1, start);
 
     assertThat(searchResponse, is(likeSearchResponse().withStart(start)));
   }
@@ -97,7 +104,7 @@ public class SearchResponseV2_1Test {
       Lists.newArrayList());
     int rows = 2;
 
-    SearchResponseV2_1 searchResponse = SearchResponseV2_1.from(searchResult, rows, 0);
+    SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, rows, 0);
 
     int numberOfRefs = searchResponse.getRefs().size();
     assertThat(searchResponse, is(likeSearchResponse().withRows(numberOfRefs)));
@@ -107,7 +114,7 @@ public class SearchResponseV2_1Test {
   public void fromReturnsASearchResponseWithoutRefsWhenTheSearchResultDoesNotContainARef() {
     SearchResult searchResult = new SearchResult(Lists.newArrayList(), Lists.newArrayList(), Lists.newArrayList());
 
-    SearchResponseV2_1 searchResponse = SearchResponseV2_1.from(searchResult, 2, 0);
+    SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 2, 0);
 
     assertThat(searchResponse, is(likeSearchResponse().withRefs(Lists.newArrayList()).withRows(0)));
   }
@@ -117,7 +124,7 @@ public class SearchResponseV2_1Test {
     SearchResult searchResult = new SearchResult(Lists.newArrayList(new EntityRef("type", "id")), Lists.newArrayList(),
       Lists.newArrayList());
 
-    SearchResponseV2_1 searchResponse = SearchResponseV2_1.from(searchResult, 2, 2);
+    SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 2, 2);
 
     assertThat(searchResponse, is(likeSearchResponse().withRefs(Lists.newArrayList()).withRows(0)));
   }

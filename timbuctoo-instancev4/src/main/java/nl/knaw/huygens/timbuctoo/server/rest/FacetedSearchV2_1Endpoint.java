@@ -22,9 +22,11 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 public class FacetedSearchV2_1Endpoint {
 
   private Searcher searcher;
+  private final SearchResponseV2_1Factory searchResponseV2_1Factory;
 
   public FacetedSearchV2_1Endpoint(Searcher searcher) {
     this.searcher = searcher;
+    searchResponseV2_1Factory = new SearchResponseV2_1Factory();
   }
 
   @POST
@@ -55,7 +57,7 @@ public class FacetedSearchV2_1Endpoint {
                       @QueryParam("start") @DefaultValue("0") int start) {
     Optional<SearchResult> searchResult = searcher.getSearchResult(id.get());
     if (searchResult.isPresent()) {
-      return Response.ok(SearchResponseV2_1.from(searchResult.get(), rows, start)).build();
+      return Response.ok(searchResponseV2_1Factory.createResponse(searchResult.get(), rows, start)).build();
     }
 
     return Response

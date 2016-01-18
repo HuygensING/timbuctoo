@@ -32,7 +32,7 @@ class SearchResponseV2_1 {
     return refs;
   }
 
-  private void setRefs(List<EntityRef> refs) {
+  public void setRefs(List<EntityRef> refs) {
     this.refs = refs;
     this.rows = refs.size();
   }
@@ -41,7 +41,7 @@ class SearchResponseV2_1 {
     return sortableFields;
   }
 
-  private void setSortableFields(List<String> sortableFields) {
+  public void setSortableFields(List<String> sortableFields) {
     this.sortableFields = sortableFields;
   }
 
@@ -57,43 +57,32 @@ class SearchResponseV2_1 {
     return numFound;
   }
 
-  private void setFullTextSearchFields(List<String> fullTextSearchFields) {
+  public void setFullTextSearchFields(List<String> fullTextSearchFields) {
     this.fullTextSearchFields = fullTextSearchFields;
   }
 
-  public static SearchResponseV2_1 from(SearchResult searchResult,
-                                        int rows,
-                                        int start) {
-    SearchResponseV2_1 searchResponse = new SearchResponseV2_1();
-    searchResponse.setFullTextSearchFields(searchResult.getFullTextSearchFields());
-    searchResponse.setSortableFields(searchResult.getSortableFields());
-    searchResponse.start = start;
 
-    List<EntityRef> refs = searchResult.getRefs();
-    int numFound = refs.size();
-    int normalizedStart = mapToRange(start, 0, numFound);
-    int normalizedRows = mapToRange(rows, 0, numFound - normalizedStart);
-    int end = normalizedStart + normalizedRows;
-    searchResponse.setRefs(refs.subList(normalizedStart, end));
 
-    return searchResponse;
-  }
-
-  /**
-   * Make sure {@code value} is between {@code minValue} and {@code maxValue}.
-   * @param value the value that has to be in the range
-   * @param minValue the minimum value of the range
-   * @param maxValue the maximum value of the range
-   * @return {@code value} if it's in the range,
-   * {@code minValue} if {@code value} is lower than the {@code minValue},
-   * {@code maxValue} if {@code value} is higher than the {@code maxValue}
-   */
-  private static int mapToRange(int value, int minValue, int maxValue) {
-    return Math.min(Math.max(value, minValue), maxValue);
+  public void setStart(int start) {
+    this.start = start;
   }
 
 
   private static class Facet {
+  }
+
+  static class SearchResponseRef{
+
+    private String type;
+    private String id;
+
+    public String getType() {
+      return type;
+    }
+
+    public String getId() {
+      return id;
+    }
   }
 
 }
