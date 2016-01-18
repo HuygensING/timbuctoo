@@ -6,6 +6,7 @@ import org.junit.Test;
 import static nl.knaw.huygens.timbuctoo.server.rest.MockVertexBuilder.vertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
 public class WwPersonSearchDescriptionTest {
@@ -77,4 +78,18 @@ public class WwPersonSearchDescriptionTest {
 
     assertThat(ref.getDisplayName(), is(nullValue()));
   }
+
+  @Test
+  public void createRefAddsDataPropertyToTheRef() {
+    WwPersonSearchDescription instance = new WwPersonSearchDescription();
+    String id = "id";
+    Vertex vertex = vertex()
+      .withId(id)
+      .build();
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), is(notNullValue()));
+  }
+
 }

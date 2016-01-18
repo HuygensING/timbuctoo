@@ -53,4 +53,14 @@ public class SearchResponseV2_1RefMatcher extends CompositeMatcher<SearchRespons
     });
     return this;
   }
+
+  public SearchResponseV2_1RefMatcher withData(Object data) {
+    this.addMatcher(new PropertyEqualityMatcher<SearchResponseV2_1Ref, Object>("data", data) {
+      @Override
+      protected Object getItemValue(SearchResponseV2_1Ref item) {
+        return item.getData();
+      }
+    });
+    return this;
+  }
 }

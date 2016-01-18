@@ -23,8 +23,8 @@ public class TimbuctooQueryTest {
     SearchResult searchResult = instance.execute(graph);
 
     assertThat(searchResult.getRefs(), containsInAnyOrder(
-      new EntityRef("wwperson", "id1"),
-      new EntityRef("wwperson", "id3")));
+      EntityRefMatcher.likeEntityRef().withId("id1").withType("wwperson"),
+      EntityRefMatcher.likeEntityRef().withId("id3").withType("wwperson")));
     assertThat(searchResult.getFullTextSearchFields(),
       containsInAnyOrder(DESCRIPTION.getFullTextSearchFields().toArray()));
     assertThat(searchResult.getSortableFields(), containsInAnyOrder(DESCRIPTION.getSortableFields().toArray()));

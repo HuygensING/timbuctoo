@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -48,6 +49,9 @@ public class WwPersonSearchDescription {
   public EntityRef createRef(Vertex vertex) {
     EntityRef ref = new EntityRef(type, vertex.value(ID_DB_PROP));
     setDisplayName(vertex, ref);
+
+    ref.setData(Maps.newHashMap());
+
     return ref;
   }
 

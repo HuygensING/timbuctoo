@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.rest;
 
+import java.util.Map;
+
 import static org.apache.commons.lang.builder.ToStringBuilder.reflectionToString;
 import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
 import static org.apache.commons.lang3.builder.HashCodeBuilder.reflectionHashCode;
@@ -8,6 +10,7 @@ public class EntityRef {
   private String id;
   private String type;
   private String displayName;
+  private Map<String, Object> data;
 
   public EntityRef(String type, String id) {
     this.id = id;
@@ -43,5 +46,13 @@ public class EntityRef {
 
   public void setDisplayName(String displayName) {
     this.displayName = displayName;
+  }
+
+  public Map<String, Object> getData() {
+    return data;
+  }
+
+  public void setData(Map<String, Object> data) {
+    this.data = data;
   }
 }
