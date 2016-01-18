@@ -26,7 +26,7 @@ public class FacetedSearchV2_1Endpoint {
 
   public FacetedSearchV2_1Endpoint(Searcher searcher) {
     this.searcher = searcher;
-    searchResponseV2_1Factory = new SearchResponseV2_1Factory();
+    searchResponseV2_1Factory = new SearchResponseV2_1Factory(new SearchResponseV2_1RefAdder());
   }
 
   @POST

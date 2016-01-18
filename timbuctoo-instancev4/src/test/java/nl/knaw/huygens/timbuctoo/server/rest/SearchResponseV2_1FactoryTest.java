@@ -10,15 +10,21 @@ import java.util.List;
 import static nl.knaw.huygens.timbuctoo.server.rest.SearchResponseV2_1Matcher.likeSearchResponse;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 public class SearchResponseV2_1FactoryTest {
 
   public static final WwPersonSearchDescription DESCRIPTION = new WwPersonSearchDescription();
   private SearchResponseV2_1Factory instance;
+  private SearchResponseV2_1RefAdder refAdder;
 
   @Before
-  public void setup(){
-    instance = new SearchResponseV2_1Factory();
+  public void setup() {
+    refAdder = mock(SearchResponseV2_1RefAdder.class);
+    instance = new SearchResponseV2_1Factory(refAdder);
   }
 
   @Test
@@ -48,43 +54,52 @@ public class SearchResponseV2_1FactoryTest {
 
   @Test
   public void fromReturnsASearchResponseV2_1WithTheRefsFromTheSearchResult() {
-    List<EntityRef> refs = Lists.newArrayList(new EntityRef("type", "id"));
+    EntityRef entityRef = new EntityRef("type", "id");
+    List<EntityRef> refs = Lists.newArrayList(entityRef);
     SearchResult searchResult = new SearchResult(refs, Lists.newArrayList(), Lists.newArrayList());
 
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 10, 0);
 
-    assertThat(searchResponse, is(likeSearchResponse().withRefs(refs)));
+    verify(refAdder).addRef(searchResponse, entityRef);
   }
 
   @Test
   public void fromReturnsASearchResponseV2_1WithTheMaximumNumberOfRefsDescribed() {
-    List<EntityRef> refs = Lists.newArrayList(new EntityRef("type", "id"), new EntityRef("type", "id2"));
+    EntityRef entityRef1 = new EntityRef("type", "id");
+    List<EntityRef> refs = Lists.newArrayList(entityRef1, new EntityRef("type", "id2"));
     SearchResult searchResult = new SearchResult(refs, Lists.newArrayList(), Lists.newArrayList());
 
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 1, 0);
 
-    assertThat(searchResponse, is(likeSearchResponse().withRefs(Lists.newArrayList(new EntityRef("type", "id")))));
+    verify(refAdder).addRef(searchResponse, entityRef1);
+    verifyNoMoreInteractions(refAdder);
   }
 
   @Test
   public void fromReturnsASearchResponseV2_1WithTheWithAllTheResultsIfTheRowsIsLargerThanTheNumberOfRefs() {
-    List<EntityRef> refs = Lists.newArrayList(new EntityRef("type", "id"), new EntityRef("type", "id2"));
+    EntityRef entityRef1 = new EntityRef("type", "id");
+    EntityRef entityRef2 = new EntityRef("type", "id2");
+    List<EntityRef> refs = Lists.newArrayList(entityRef1, entityRef2);
     SearchResult searchResult = new SearchResult(refs, Lists.newArrayList(), Lists.newArrayList());
 
 
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 10, 0);
 
-    assertThat(searchResponse, is(likeSearchResponse().withRefs(refs)));
+    verify(refAdder).addRef(searchResponse, entityRef1);
+    verify(refAdder).addRef(searchResponse, entityRef2);
+    verifyNoMoreInteractions(refAdder);
   }
 
   @Test
   public void fromSkipsTheNumberOfRefsDefinedInStart() {
-    List<EntityRef> refs = Lists.newArrayList(new EntityRef("type", "id"), new EntityRef("type", "id2"));
+    EntityRef entityRef2 = new EntityRef("type", "id2");
+    List<EntityRef> refs = Lists.newArrayList(new EntityRef("type", "id"), entityRef2);
     SearchResult searchResult = new SearchResult(refs, Lists.newArrayList(), Lists.newArrayList());
 
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 1, 1);
 
-    assertThat(searchResponse, is(likeSearchResponse().withRefs(Lists.newArrayList(new EntityRef("type", "id2")))));
+    verify(refAdder).addRef(searchResponse, entityRef2);
+    verifyNoMoreInteractions(refAdder);
   }
 
   @Test
@@ -116,7 +131,8 @@ public class SearchResponseV2_1FactoryTest {
 
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 2, 0);
 
-    assertThat(searchResponse, is(likeSearchResponse().withRefs(Lists.newArrayList()).withRows(0)));
+    assertThat(searchResponse, is(likeSearchResponse().withRows(0)));
+    verifyZeroInteractions(refAdder);
   }
 
   @Test
@@ -126,7 +142,8 @@ public class SearchResponseV2_1FactoryTest {
 
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 2, 2);
 
-    assertThat(searchResponse, is(likeSearchResponse().withRefs(Lists.newArrayList()).withRows(0)));
+    assertThat(searchResponse, is(likeSearchResponse().withRows(0)));
+    verifyZeroInteractions(refAdder);
   }
 
 }

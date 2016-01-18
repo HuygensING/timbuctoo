@@ -7,7 +7,7 @@ import java.util.List;
 class SearchResponseV2_1 {
   private List<Facet> facets;
   private List<String> fullTextSearchFields;
-  private List<EntityRef> refs;
+  private List<SearchResponseV2_1Ref> refs;
   private List<String> sortableFields;
   private int start;
   private int rows;
@@ -28,13 +28,8 @@ class SearchResponseV2_1 {
     return fullTextSearchFields;
   }
 
-  public List<EntityRef> getRefs() {
+  public List<SearchResponseV2_1Ref> getRefs() {
     return refs;
-  }
-
-  public void setRefs(List<EntityRef> refs) {
-    this.refs = refs;
-    this.rows = refs.size();
   }
 
   public List<String> getSortableFields() {
@@ -61,28 +56,16 @@ class SearchResponseV2_1 {
     this.fullTextSearchFields = fullTextSearchFields;
   }
 
-
-
   public void setStart(int start) {
     this.start = start;
   }
 
-
-  private static class Facet {
+  public void addRef(SearchResponseV2_1Ref searchResponseV2_1Ref) {
+    refs.add(searchResponseV2_1Ref);
   }
 
-  static class SearchResponseRef{
 
-    private String type;
-    private String id;
-
-    public String getType() {
-      return type;
-    }
-
-    public String getId() {
-      return id;
-    }
+  private static class Facet {
   }
 
 }

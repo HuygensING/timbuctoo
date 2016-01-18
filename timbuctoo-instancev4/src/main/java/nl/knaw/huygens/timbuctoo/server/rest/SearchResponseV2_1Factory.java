@@ -4,6 +4,12 @@ import java.util.List;
 
 public class SearchResponseV2_1Factory {
 
+  private final SearchResponseV2_1RefAdder refCreator;
+
+  public SearchResponseV2_1Factory(SearchResponseV2_1RefAdder refCreator) {
+    this.refCreator = refCreator;
+  }
+
   public SearchResponseV2_1 createResponse(SearchResult searchResult,
                                            int rows,
                                            int start) {
@@ -12,12 +18,14 @@ public class SearchResponseV2_1Factory {
     searchResponse.setSortableFields(searchResult.getSortableFields());
     searchResponse.setStart(start);
 
+
+
     List<EntityRef> refs = searchResult.getRefs();
     int numFound = refs.size();
     int normalizedStart = mapToRange(start, 0, numFound);
     int normalizedRows = mapToRange(rows, 0, numFound - normalizedStart);
     int end = normalizedStart + normalizedRows;
-    searchResponse.setRefs(refs.subList(normalizedStart, end));
+    refs.subList(normalizedStart, end).forEach(ref -> refCreator.addRef(searchResponse, ref));
 
     return searchResponse;
   }

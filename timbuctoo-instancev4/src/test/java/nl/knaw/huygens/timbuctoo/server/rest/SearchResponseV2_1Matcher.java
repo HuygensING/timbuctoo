@@ -36,16 +36,6 @@ public class SearchResponseV2_1Matcher extends CompositeMatcher<SearchResponseV2
     return this;
   }
 
-  public SearchResponseV2_1Matcher withRefs(List<EntityRef> refs) {
-    this.addMatcher(new PropertyEqualityMatcher<SearchResponseV2_1, List<EntityRef>>("refs", refs) {
-      @Override
-      protected List<EntityRef> getItemValue(SearchResponseV2_1 item) {
-        return item.getRefs();
-      }
-    });
-    return this;
-  }
-
   public SearchResponseV2_1Matcher withStart(int start) {
     this.addMatcher(new PropertyEqualityMatcher<SearchResponseV2_1, Integer>("start", start) {
       @Override
