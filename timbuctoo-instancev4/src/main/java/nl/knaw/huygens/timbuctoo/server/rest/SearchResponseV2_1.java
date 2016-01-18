@@ -60,8 +60,8 @@ class SearchResponseV2_1 {
     this.start = start;
   }
 
-  public void addRef(SearchResponseV2_1Ref searchResponseV2_1Ref) {
-    refs.add(searchResponseV2_1Ref);
+  public void addRef(SearchResponseV2_1Ref ref) {
+    refs.add(ref);
   }
 
 

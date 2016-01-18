@@ -2,14 +2,14 @@ package nl.knaw.huygens.timbuctoo.server.rest;
 
 public class SearchResponseV2_1RefAdder {
   public void addRef(SearchResponseV2_1 searchResponse, EntityRef entityRef) {
-    SearchResponseV2_1Ref searchResponseV2_1Ref = new SearchResponseV2_1Ref(
+    SearchResponseV2_1Ref searchResponseRef = new SearchResponseV2_1Ref(
       entityRef.getId(),
       entityRef.getType(),
       createPath(entityRef),
       entityRef.getDisplayName());
 
 
-    searchResponse.addRef(searchResponseV2_1Ref);
+    searchResponse.addRef(searchResponseRef);
   }
 
   private String createPath(EntityRef entityRef) {
