@@ -7,6 +7,7 @@ import static org.apache.commons.lang3.builder.HashCodeBuilder.reflectionHashCod
 public class EntityRef {
   private String id;
   private String type;
+  private String displayName;
 
   public EntityRef(String type, String id) {
     this.id = id;
@@ -36,4 +37,11 @@ public class EntityRef {
     return reflectionToString(this);
   }
 
+  public String getDisplayName() {
+    return displayName;
+  }
+
+  public void setDisplayName(String displayName) {
+    this.displayName = displayName;
+  }
 }
