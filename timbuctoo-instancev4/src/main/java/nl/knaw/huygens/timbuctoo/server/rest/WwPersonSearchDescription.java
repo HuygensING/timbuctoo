@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public class WwPersonSearchDescription {
   public static final Logger LOG = LoggerFactory.getLogger(WwPersonSearchDescription.class);
@@ -50,7 +51,9 @@ public class WwPersonSearchDescription {
     EntityRef ref = new EntityRef(type, vertex.value(ID_DB_PROP));
     setDisplayName(vertex, ref);
 
-    ref.setData(Maps.newHashMap());
+    Map data = Maps.newHashMap();
+    data.put("_id", vertex.value(ID_DB_PROP));
+    ref.setData(data);
 
     return ref;
   }
