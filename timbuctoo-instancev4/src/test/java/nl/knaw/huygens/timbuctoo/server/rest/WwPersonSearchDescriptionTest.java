@@ -166,4 +166,24 @@ public class WwPersonSearchDescriptionTest {
     assertThat(ref.getData(), hasEntry("deathDate", "1486"));
   }
 
+  @Test
+  public void createRefAddsAGenderWithValueNullWhenTheVertexDoesNotContainTheProperty() {
+    String id = "id";
+    Vertex vertex = vertexWithId(id).build();
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), hasEntry(equalTo("gender"), nullValue()));
+  }
+
+  @Test
+  public void createRefAddsTheGenderToTheData() {
+    String id = "id";
+    Vertex vertex = vertexWithId(id).withProperty("wwperson_gender", "UNKNOWN").build();
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), hasEntry("gender", "UNKNOWN"));
+  }
+
 }

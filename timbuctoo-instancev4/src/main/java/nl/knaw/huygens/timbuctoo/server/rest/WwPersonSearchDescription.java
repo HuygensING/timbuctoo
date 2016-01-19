@@ -56,9 +56,18 @@ public class WwPersonSearchDescription {
     data.put("name", ref.getDisplayName());
     setDate(vertex, data, "wwperson_birthDate", "birthDate");
     setDate(vertex, data, "wwperson_deathDate", "deathDate");
+    setGender(data, vertex);
     ref.setData(data);
 
     return ref;
+  }
+
+  private void setGender(Map<String, Object> data, Vertex vertex) {
+    if (vertex.keys().contains("wwperson_gender")) {
+      data.put("gender", vertex.value("wwperson_gender"));
+    } else {
+      data.put("gender", null);
+    }
   }
 
   private void setDate(Vertex vertex, Map data, String sourceProperty, String targetProperty) {
