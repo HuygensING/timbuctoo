@@ -51,7 +51,7 @@ public class WwPersonSearchDescription {
     EntityRef ref = new EntityRef(type, vertex.value(ID_DB_PROP));
     setDisplayName(vertex, ref);
 
-    Map data = Maps.newHashMap();
+    Map<String, Object> data = Maps.newHashMap();
     data.put("_id", vertex.value(ID_DB_PROP));
     data.put("name", ref.getDisplayName());
     setDate(vertex, data, "wwperson_birthDate", "birthDate");
