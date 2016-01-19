@@ -6,7 +6,8 @@ public class SearchResponseV2_1RefAdder {
       entityRef.getId(),
       entityRef.getType(),
       createPath(entityRef),
-      entityRef.getDisplayName());
+      entityRef.getDisplayName(),
+      entityRef.getData());
 
 
     searchResponse.addRef(searchResponseRef);

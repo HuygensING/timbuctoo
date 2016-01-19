@@ -23,6 +23,14 @@ public class MockVertexBuilder {
     keys = Sets.newHashSet();
   }
 
+  public static MockVertexBuilder vertex() {
+    return new MockVertexBuilder();
+  }
+
+  public static MockVertexBuilder vertexWithId(String id) {
+    return vertex().withId(id);
+  }
+
   public MockVertexBuilder withProperty(String key, String value) {
     keys.add(key);
     when(vertex.value(key)).thenReturn(value);
@@ -39,10 +47,6 @@ public class MockVertexBuilder {
 
   public MockVertexBuilder withId(String id) {
     return withProperty(ID_DB_PROP, id);
-  }
-
-  public static MockVertexBuilder vertex() {
-    return new MockVertexBuilder();
   }
 
   public Vertex build() {

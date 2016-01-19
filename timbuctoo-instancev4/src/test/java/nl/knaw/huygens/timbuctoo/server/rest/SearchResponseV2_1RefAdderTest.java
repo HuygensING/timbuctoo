@@ -1,6 +1,9 @@
 package nl.knaw.huygens.timbuctoo.server.rest;
 
+import com.google.common.collect.Maps;
 import org.junit.Test;
+
+import java.util.HashMap;
 
 import static nl.knaw.huygens.timbuctoo.server.rest.SearchResponseV2_1RefMatcher.likeSearchResponseRef;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -24,5 +27,21 @@ public class SearchResponseV2_1RefAdderTest {
       .withType("type")
       .withDisplayName("displayName")
       .withPath("v2.1/domain/types/id")));
+  }
+
+  @Test
+  public void addsTheDataOfTheEntityRefToTheSearchResponseV2_1Ref() {
+    SearchResponseV2_1RefAdder instance = new SearchResponseV2_1RefAdder();
+
+    SearchResponseV2_1 searchResponse = new SearchResponseV2_1();
+
+    EntityRef entityRef = new EntityRef("type", "id");
+    HashMap<String, Object> data = Maps.newHashMap();
+    entityRef.setData(data);
+
+    instance.addRef(searchResponse, entityRef);
+
+    assertThat(searchResponse.getRefs(), contains(likeSearchResponseRef()
+      .withData(data)));
   }
 }
