@@ -14,7 +14,9 @@ public class TimbuctooQuery {
   }
 
   public SearchResult execute(Graph graph) {
-    List<Vertex> vertices = description.filterByType(graph.traversal().V()).toList();
+    List<Vertex> vertices = description
+      .filterByType(graph.traversal().V()).has("isLatest", true)
+      .toList();
 
     List<EntityRef> refs = vertices.stream().map(vertex -> description.createRef(vertex)).collect(Collectors.toList());
     return new SearchResult(refs, description);

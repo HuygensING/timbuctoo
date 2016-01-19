@@ -32,4 +32,14 @@ public class EntityRefMatcher extends CompositeMatcher<EntityRef> {
     });
     return this;
   }
+
+  public EntityRefMatcher withDisplayName(String displayName) {
+    this.addMatcher(new PropertyEqualityMatcher<EntityRef, String>("displayName", displayName) {
+      @Override
+      protected String getItemValue(EntityRef item) {
+        return item.getDisplayName();
+      }
+    });
+    return this;
+  }
 }

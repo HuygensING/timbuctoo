@@ -25,11 +25,8 @@ public class WwPersonSearchDescriptionTest {
   public void createRefCreatesARefWithTheIdOfTheVertexAndTheTypeOfTheDescription() {
     String id = "id";
     EntityRef expectedRef = new EntityRef(instance.getType(), id);
-    WwPersonSearchDescription.Names names = new WwPersonSearchDescription.Names();
-    PersonName name1 = PersonName.newInstance("forename", "surname");
-    names.list.add(name1);
-    names.list.add(PersonName.newInstance("forename2", "surname2"));
-    Vertex vertex = vertexWithId(id).withProperty("names", names).build();
+
+    Vertex vertex = vertexWithId(id).build();
 
     EntityRef actualRef = instance.createRef(vertex);
 
