@@ -146,7 +146,7 @@ public class WwPersonSearchDescriptionTest {
 
     EntityRef ref = instance.createRef(vertex);
 
-    assertThat(ref.getData(), hasEntry("birthDate", 1486));
+    assertThat(ref.getData(), hasEntry("birthDate", "1486"));
   }
 
   @Test
@@ -166,7 +166,7 @@ public class WwPersonSearchDescriptionTest {
 
     EntityRef ref = instance.createRef(vertex);
 
-    assertThat(ref.getData(), hasEntry("deathDate", 1486));
+    assertThat(ref.getData(), hasEntry("deathDate", "1486"));
   }
 
 }
