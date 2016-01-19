@@ -4,7 +4,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 
-import static nl.knaw.huygens.timbuctoo.server.rest.MockVertexBuilder.vertex;
+import static nl.knaw.huygens.timbuctoo.server.rest.MockVertexBuilder.vertexWithId;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -29,7 +29,7 @@ public class WwPersonSearchDescriptionTest {
     PersonName name1 = PersonName.newInstance("forename", "surname");
     names.list.add(name1);
     names.list.add(PersonName.newInstance("forename2", "surname2"));
-    Vertex vertex = vertex().withId(id).withProperty("names", names).build();
+    Vertex vertex = vertexWithId(id).withProperty("names", names).build();
 
     EntityRef actualRef = instance.createRef(vertex);
 
@@ -44,7 +44,7 @@ public class WwPersonSearchDescriptionTest {
     PersonName name1 = PersonName.newInstance("forename", "surname");
     names.list.add(name1);
     names.list.add(PersonName.newInstance("forename2", "surname2"));
-    Vertex vertex = vertex().withId(id).withProperty("names", names).build();
+    Vertex vertex = vertexWithId(id).withProperty("wwperson_names", names).build();
 
     EntityRef ref = instance.createRef(vertex);
 
@@ -55,7 +55,7 @@ public class WwPersonSearchDescriptionTest {
   public void createRefAddsTheTempNameAsDisplayNameWhenNamesDoesNotExist() {
     String id = "id";
     String tempName = "temp name";
-    Vertex vertex = vertex().withId(id).withProperty("tempName", tempName).build();
+    Vertex vertex = vertexWithId(id).withProperty("wwperson_tempName", tempName).build();
 
     EntityRef ref = instance.createRef(vertex);
 
@@ -65,7 +65,7 @@ public class WwPersonSearchDescriptionTest {
   @Test
   public void createRefAddsNoDisplayNameWithNamesAndTempNameAreNotAvailable() {
     String id = "id";
-    Vertex vertex = vertex().withId(id).build();
+    Vertex vertex = vertexWithId(id).build();
 
     EntityRef ref = instance.createRef(vertex);
 
@@ -76,7 +76,7 @@ public class WwPersonSearchDescriptionTest {
   public void createAddsNoDisplayNameWhenTheDeserializationOfNamesFails() {
     String id = "id";
     String invalidNames = "invalidNames";
-    Vertex vertex = vertex().withId(id).withProperty("names", invalidNames).build();
+    Vertex vertex = vertexWithId(id).withProperty("wwperson_names", invalidNames).build();
 
     EntityRef ref = instance.createRef(vertex);
 
@@ -86,8 +86,7 @@ public class WwPersonSearchDescriptionTest {
   @Test
   public void createRefAddsDataPropertyToTheRef() {
     String id = "id";
-    Vertex vertex = vertex()
-      .withId(id)
+    Vertex vertex = vertexWithId(id)
       .build();
 
     EntityRef ref = instance.createRef(vertex);
@@ -98,8 +97,7 @@ public class WwPersonSearchDescriptionTest {
   @Test
   public void createRefsAddsDataWithTheKeyIdWithTheIdOfTheVertex() {
     String id = "id";
-    Vertex vertex = vertex()
-      .withId(id)
+    Vertex vertex = vertexWithId(id)
       .build();
 
     EntityRef ref = instance.createRef(vertex);
@@ -114,7 +112,7 @@ public class WwPersonSearchDescriptionTest {
     PersonName name1 = PersonName.newInstance("forename", "surname");
     names.list.add(name1);
     names.list.add(PersonName.newInstance("forename2", "surname2"));
-    Vertex vertex = vertex().withId(id).withProperty("names", names).build();
+    Vertex vertex = vertexWithId(id).withProperty("wwperson_names", names).build();
 
     EntityRef ref = instance.createRef(vertex);
 
@@ -122,12 +120,33 @@ public class WwPersonSearchDescriptionTest {
   }
 
   @Test
-  public void createRefsAddsAddsANamePropertyToDataWithTheValueNullWhenTheVertexContainsNoName() {
+  public void createRefsAddsANamePropertyToDataWithTheValueNullWhenTheVertexDoesNotContainAName() {
     String id = "id";
-    Vertex vertex = vertex().withId(id).build();
+    Vertex vertex = vertexWithId(id).build();
 
     EntityRef ref = instance.createRef(vertex);
 
-    assertThat(ref.getData(), hasEntry(equalTo("name"), is(nullValue())));
+    assertThat(ref.getData(), hasEntry(equalTo("name"), nullValue()));
   }
+
+  @Test
+  public void createRefAddsABirthDateWithValueNullWhenTheVertexDoesNotContainTheProperty() {
+    String id = "id";
+    Vertex vertex = vertexWithId(id).build();
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), hasEntry(equalTo("birthDate"), nullValue()));
+  }
+
+  @Test
+  public void createRefAddsTheBirthDateToTheData() {
+    String id = "id";
+    Vertex vertex = vertexWithId(id).withProperty("wwperson_birthDate", "1486-09-14").build();
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), hasEntry("birthDate", 1486));
+  }
+
 }
