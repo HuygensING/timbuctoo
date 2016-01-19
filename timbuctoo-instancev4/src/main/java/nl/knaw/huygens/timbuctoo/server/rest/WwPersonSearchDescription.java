@@ -54,17 +54,18 @@ public class WwPersonSearchDescription {
     Map data = Maps.newHashMap();
     data.put("_id", vertex.value(ID_DB_PROP));
     data.put("name", ref.getDisplayName());
-    setBirthDate(vertex, data);
+    setDate(vertex, data, "wwperson_birthDate", "birthDate");
+    setDate(vertex, data, "wwperson_deathDate", "deathDate");
     ref.setData(data);
 
     return ref;
   }
 
-  private void setBirthDate(Vertex vertex, Map data) {
-    if (vertex.keys().contains("wwperson_birthDate")) {
-      data.put("birthDate", new Datable(vertex.value("wwperson_birthDate")).getFromYear());
+  private void setDate(Vertex vertex, Map data, String sourceProperty, String targetProperty) {
+    if (vertex.keys().contains(sourceProperty)) {
+      data.put(targetProperty, new Datable(vertex.value(sourceProperty)).getFromYear());
     } else {
-      data.put("birthDate", null);
+      data.put(targetProperty, null);
     }
   }
 

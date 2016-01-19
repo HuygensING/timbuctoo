@@ -149,4 +149,24 @@ public class WwPersonSearchDescriptionTest {
     assertThat(ref.getData(), hasEntry("birthDate", 1486));
   }
 
+  @Test
+  public void createRefAddsADeathDateWithValueNullWhenTheVertexDoesNotContainTheProperty() {
+    String id = "id";
+    Vertex vertex = vertexWithId(id).build();
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), hasEntry(equalTo("deathDate"), nullValue()));
+  }
+
+  @Test
+  public void createRefAddsTheDeathDateToTheData() {
+    String id = "id";
+    Vertex vertex = vertexWithId(id).withProperty("wwperson_deathDate", "1486-09-14").build();
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), hasEntry("deathDate", 1486));
+  }
+
 }
