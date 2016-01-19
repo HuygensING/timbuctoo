@@ -106,4 +106,17 @@ public class WwPersonSearchDescriptionTest {
     assertThat(ref.getData(), hasEntry("_id", id));
   }
 
+  @Test
+  public void createRefsAddsNamePropertyToDataWithValueMatchingDisplayName() {
+    String id = "id";
+    WwPersonSearchDescription.Names names = new WwPersonSearchDescription.Names();
+    PersonName name1 = PersonName.newInstance("forename", "surname");
+    names.list.add(name1);
+    names.list.add(PersonName.newInstance("forename2", "surname2"));
+    Vertex vertex = vertex().withId(id).withProperty("names", names).build();
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), hasEntry("name", name1.getShortName()));
+  }
 }

@@ -53,6 +53,7 @@ public class WwPersonSearchDescription {
 
     Map data = Maps.newHashMap();
     data.put("_id", vertex.value(ID_DB_PROP));
+    data.put("name", ref.getDisplayName());
     ref.setData(data);
 
     return ref;
@@ -62,14 +63,15 @@ public class WwPersonSearchDescription {
     if (vertex.keys().contains("names")) {
       String names = vertex.value("names");
       try {
-        ref.setDisplayName(objectMapper.readValue(names, Names.class).defaultName().getShortName());
+        ref.setDisplayName(objectMapper.readValue(names, Names.class)
+                                       .defaultName()
+                                       .getShortName());
       } catch (IOException e) {
         LOG.error("'names' could not be read.", e);
       }
     } else if (vertex.keys().contains("tempName")) {
       ref.setDisplayName(vertex.value("tempName"));
     }
-
   }
 
   public GraphTraversal<Vertex, Vertex> filterByType(GraphTraversal<Vertex, Vertex> vertices) {
