@@ -63,7 +63,7 @@ public class WwPersonSearchDescription {
 
   private void setDate(Vertex vertex, Map data, String sourceProperty, String targetProperty) {
     if (vertex.keys().contains(sourceProperty)) {
-      data.put(targetProperty, new Datable(vertex.value(sourceProperty)).getFromYear());
+      data.put(targetProperty, "" + new Datable(vertex.value(sourceProperty)).getFromYear());
     } else {
       data.put(targetProperty, null);
     }
