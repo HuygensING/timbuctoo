@@ -11,6 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -57,9 +59,26 @@ public class WwPersonSearchDescription {
     setDate(vertex, data, "wwperson_birthDate", "birthDate");
     setDate(vertex, data, "wwperson_deathDate", "deathDate");
     setGender(data, vertex);
+    setModifiedDate(vertex, data);
     ref.setData(data);
 
     return ref;
+  }
+
+  private void setModifiedDate(Vertex vertex, Map<String, Object> data) {
+    String modified = getValueAsString(vertex, "modified");
+    if (modified != null) {
+      try {
+        Change change = objectMapper.readValue(modified, Change.class);
+        Date date = new Date(change.getTimeStamp());
+        data.put("modified_date", new SimpleDateFormat("yyyyMMdd").format(date));
+      } catch (IOException e) {
+        LOG.error("'modified' could not be read.", e);
+        data.put("modified_date", null);
+      }
+    } else {
+      data.put("modified_date", null);
+    }
   }
 
   private void setGender(Map<String, Object> data, Vertex vertex) {

@@ -186,4 +186,38 @@ public class WwPersonSearchDescriptionTest {
     assertThat(ref.getData(), hasEntry("gender", "UNKNOWN"));
   }
 
+  @Test
+  public void createRefAddsAModifiedDateWithValueNullWhenTheVertexDoesNotContainTheProperty() {
+    String id = "id";
+    Vertex vertex = vertexWithId(id).build();
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), hasEntry(equalTo("modified_date"), nullValue()));
+  }
+
+  @Test
+  public void createRefAddsAModifiedDateWithValueNullWhenTheValueCouldNotBeRead() {
+    String id = "id";
+    Vertex vertex = vertexWithId(id).withProperty("modified", "malformedChange").build();
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), hasEntry(equalTo("modified_date"), nullValue()));
+  }
+
+  @Test
+  public void createRefAddsModifiedDateToTheData() {
+    String id = "id";
+
+    long timeStampOnJan20th2016 = 1453290593000L;
+    Change change = new Change(timeStampOnJan20th2016, "user", "vre");
+
+    Vertex vertex = vertexWithId(id).withProperty("modified", change).build();
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), hasEntry("modified_date", "20160120"));
+  }
+
 }
