@@ -63,16 +63,22 @@ public class WwPersonSearchDescription {
   }
 
   private void setGender(Map<String, Object> data, Vertex vertex) {
-    if (vertex.keys().contains("wwperson_gender")) {
-      data.put("gender", vertex.value("wwperson_gender"));
-    } else {
-      data.put("gender", null);
+    data.put("gender", getValueAsString(vertex, "wwperson_gender"));
+  }
+
+  private String getValueAsString(Vertex vertex, String propertyName) {
+    String value = null;
+    if (vertex.keys().contains(propertyName)) {
+      value = vertex.value(propertyName);
     }
+    return value;
   }
 
   private void setDate(Vertex vertex, Map data, String sourceProperty, String targetProperty) {
-    if (vertex.keys().contains(sourceProperty)) {
-      data.put(targetProperty, "" + new Datable(vertex.value(sourceProperty)).getFromYear());
+    String property = getValueAsString(vertex, sourceProperty);
+
+    if (property != null) {
+      data.put(targetProperty, "" + new Datable(property).getFromYear());
     } else {
       data.put(targetProperty, null);
     }
