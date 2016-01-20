@@ -85,8 +85,8 @@ public class WwPersonSearchDescription {
   }
 
   private void setDisplayName(Vertex vertex, EntityRef ref) {
-    if (vertex.keys().contains("wwperson_names")) {
-      String names = vertex.value("wwperson_names");
+    String names = getValueAsString(vertex, "wwperson_names");
+    if (names != null) {
       try {
         ref.setDisplayName(objectMapper.readValue(names, Names.class)
                                        .defaultName()
@@ -94,8 +94,11 @@ public class WwPersonSearchDescription {
       } catch (IOException e) {
         LOG.error("'names' could not be read.", e);
       }
-    } else if (vertex.keys().contains("wwperson_tempName")) {
-      ref.setDisplayName(vertex.value("wwperson_tempName"));
+    } else {
+      String tempName = getValueAsString(vertex, "wwperson_tempName");
+      if (tempName != null) {
+        ref.setDisplayName(tempName);
+      }
     }
   }
 
