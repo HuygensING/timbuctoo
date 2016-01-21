@@ -3,10 +3,8 @@ package nl.knaw.huygens.timbuctoo.server.search;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.server.search.LocationNames.LocationType;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
+import nl.knaw.huygens.timbuctoo.server.search.LocationNames.LocationType;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -14,8 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -58,12 +54,19 @@ public class WwPersonSearchDescription {
     setDisplayName(vertex, ref);
 
     Map<String, Object> data = Maps.newHashMap();
-    data.put("_id", vertex.value(ID_DB_PROP));
+    data.put("_id", new SinglePropDescriptor(
+      new LocalPropGetter(ID_DB_PROP), new StringPropParser()).get(vertex));
     data.put("name", ref.getDisplayName());
-    setDate(vertex, data, "wwperson_birthDate", "birthDate");
-    setDate(vertex, data, "wwperson_deathDate", "deathDate");
-    setGender(data, vertex);
-    setModifiedDate(vertex, data);
+
+    data.put("birthDate", new SinglePropDescriptor(
+      new LocalPropGetter("wwperson_birthDate"), new DatableFromYearPropParser()).get(vertex));
+    data.put("deathDate", new SinglePropDescriptor(
+      new LocalPropGetter("wwperson_deathDate"), new DatableFromYearPropParser()).get(vertex));
+    data.put("gender",
+      new SinglePropDescriptor(new LocalPropGetter("wwperson_gender"), new GenderPropParser()).get(vertex));
+
+    data.put("modified_date",
+      new SinglePropDescriptor(new LocalPropGetter("modified"), new ChangeDatePropParser()).get(vertex));
     setResidenceLocation(vertex, data);
     ref.setData(data);
 
@@ -103,26 +106,6 @@ public class WwPersonSearchDescription {
     }
   }
 
-  private void setModifiedDate(Vertex vertex, Map<String, Object> data) {
-    String modified = getValueAsString(vertex, "modified");
-    if (modified != null) {
-      try {
-        Change change = objectMapper.readValue(modified, Change.class);
-        Date date = new Date(change.getTimeStamp());
-        data.put("modified_date", new SimpleDateFormat("yyyyMMdd").format(date));
-      } catch (IOException e) {
-        LOG.error("'modified' could not be read.", e);
-        data.put("modified_date", null);
-      }
-    } else {
-      data.put("modified_date", null);
-    }
-  }
-
-  private void setGender(Map<String, Object> data, Vertex vertex) {
-    data.put("gender", getValueAsString(vertex, "wwperson_gender"));
-  }
-
   private String getValueAsString(Vertex vertex, String propertyName) {
     String value = null;
     if (vertex.keys().contains(propertyName)) {
@@ -131,32 +114,12 @@ public class WwPersonSearchDescription {
     return value;
   }
 
-  private void setDate(Vertex vertex, Map data, String sourceProperty, String targetProperty) {
-    String property = getValueAsString(vertex, sourceProperty);
-
-    if (property != null) {
-      data.put(targetProperty, "" + new Datable(property).getFromYear());
-    } else {
-      data.put(targetProperty, null);
-    }
-  }
-
   private void setDisplayName(Vertex vertex, EntityRef ref) {
-    String names = getValueAsString(vertex, "wwperson_names");
-    if (names != null) {
-      try {
-        ref.setDisplayName(objectMapper.readValue(names, Names.class)
-                                       .defaultName()
-                                       .getShortName());
-      } catch (IOException e) {
-        LOG.error("'names' could not be read.", e);
-      }
-    } else {
-      String tempName = getValueAsString(vertex, "wwperson_tempName");
-      if (tempName != null) {
-        ref.setDisplayName(tempName);
-      }
-    }
+    CompositePropDescriptor descriptor = new CompositePropDescriptor(
+      new SinglePropDescriptor(new LocalPropGetter("wwperson_names"), new PersonNamesDefaultNamePropParser()),
+      new SinglePropDescriptor(new LocalPropGetter("wwperson_tempName"), new StringPropParser()));
+
+    ref.setDisplayName(descriptor.get(vertex));
   }
 
   public GraphTraversal<Vertex, Vertex> filterByType(GraphTraversal<Vertex, Vertex> vertices) {
@@ -165,28 +128,6 @@ public class WwPersonSearchDescription {
 
   String getType() {
     return type;
-  }
-
-  static class Names {
-    public List<PersonName> list;
-
-    public Names() {
-      list = Lists.newArrayList();
-    }
-
-    public PersonName defaultName() {
-      return (list != null && !list.isEmpty()) ? list.get(0) : new PersonName();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      return EqualsBuilder.reflectionEquals(this, obj, false);
-    }
-
-    @Override
-    public int hashCode() {
-      return HashCodeBuilder.reflectionHashCode(this, false);
-    }
   }
 
 }

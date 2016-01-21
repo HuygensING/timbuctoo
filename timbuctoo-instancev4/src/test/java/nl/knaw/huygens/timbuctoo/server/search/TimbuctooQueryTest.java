@@ -35,7 +35,7 @@ public class TimbuctooQueryTest {
   public void returnsOnlyTheLatestRefsInTheSearchResult() {
     TimbuctooQuery instance = new TimbuctooQuery(DESCRIPTION);
 
-    WwPersonSearchDescription.Names names1 = new WwPersonSearchDescription.Names();
+    PersonNames names1 = new PersonNames();
     PersonName name = PersonName.newInstance("forename", "surname");
     names1.list.add(name);
     names1.list.add(PersonName.newInstance("forename2", "surname2"));

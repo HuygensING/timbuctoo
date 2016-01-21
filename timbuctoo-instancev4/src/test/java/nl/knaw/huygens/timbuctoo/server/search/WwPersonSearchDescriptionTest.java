@@ -36,7 +36,7 @@ public class WwPersonSearchDescriptionTest {
 
   @Test
   public void createRefAddsADisplayNameToTheRefWhichIsTheFirstNameOfTheVertex() {
-    WwPersonSearchDescription.Names names = new WwPersonSearchDescription.Names();
+    PersonNames names = new PersonNames();
     PersonName name1 = PersonName.newInstance("forename", "surname");
     names.list.add(name1);
     names.list.add(PersonName.newInstance("forename2", "surname2"));
@@ -100,7 +100,7 @@ public class WwPersonSearchDescriptionTest {
 
   @Test
   public void createRefsAddsNamePropertyToDataWithValueMatchingDisplayName() {
-    WwPersonSearchDescription.Names names = new WwPersonSearchDescription.Names();
+    PersonNames names = new PersonNames();
     PersonName name1 = PersonName.newInstance("forename", "surname");
     names.list.add(name1);
     names.list.add(PersonName.newInstance("forename2", "surname2"));
@@ -167,7 +167,7 @@ public class WwPersonSearchDescriptionTest {
 
   @Test
   public void createRefAddsTheGenderToTheData() {
-    Vertex vertex = MockVertexBuilder.vertexWithId("id").withProperty("wwperson_gender", "UNKNOWN").build();
+    Vertex vertex = MockVertexBuilder.vertexWithId("id").withProperty("wwperson_gender", "\"UNKNOWN\"").build();
 
     EntityRef ref = instance.createRef(vertex);
 

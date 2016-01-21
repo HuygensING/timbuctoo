@@ -67,8 +67,6 @@ public class MockVertexBuilder {
     for (Map.Entry<String, List<Vertex>> entry : outGoingRelationMap.entrySet()) {
       when(vertex.vertices(Direction.OUT, entry.getKey())).thenReturn(entry.getValue().iterator());
     }
-
-
     return vertex;
   }
 
