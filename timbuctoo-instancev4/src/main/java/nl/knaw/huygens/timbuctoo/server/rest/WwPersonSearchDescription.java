@@ -3,9 +3,11 @@ package nl.knaw.huygens.timbuctoo.server.rest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import nl.knaw.huygens.timbuctoo.server.rest.LocationNames.LocationType;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -60,9 +63,43 @@ public class WwPersonSearchDescription {
     setDate(vertex, data, "wwperson_deathDate", "deathDate");
     setGender(data, vertex);
     setModifiedDate(vertex, data);
+    setResidenceLocation(vertex, data);
     ref.setData(data);
 
     return ref;
+  }
+
+  private void setResidenceLocation(Vertex vertex, Map<String, Object> data) {
+    Iterator<Vertex> residenceLocations = vertex.vertices(Direction.OUT, "hasResidenceLocation");
+    StringBuilder sb = new StringBuilder();
+    for (; residenceLocations.hasNext(); ) {
+      Vertex location = residenceLocations.next();
+
+      String names = getValueAsString(location, "names");
+      String locationType = getValueAsString(location, "locationType");
+
+
+      if (names != null && locationType != null) {
+        if (sb.length() > 0) {
+          sb.append(";");
+        }
+        try {
+
+          LocationNames names1 = objectMapper.readValue(names, LocationNames.class);
+          sb.append(names1.getDefaultName(objectMapper.readValue(locationType, LocationType.class)));
+
+        } catch (IOException e) {
+          LOG.error("Could not convert 'location name' with value '{}'", names);
+          LOG.error("Exception throw", e);
+        }
+      }
+      if (sb.length() > 0) {
+        data.put("residenceLocation", sb.toString());
+      }
+    }
+    if (!data.containsKey("residenceLocation")) {
+      data.put("residenceLocation", null);
+    }
   }
 
   private void setModifiedDate(Vertex vertex, Map<String, Object> data) {
@@ -150,4 +187,5 @@ public class WwPersonSearchDescription {
       return HashCodeBuilder.reflectionHashCode(this, false);
     }
   }
+
 }
