@@ -11,7 +11,7 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.rest.AuthenticationV2_1EndPoint;
 import nl.knaw.huygens.timbuctoo.server.rest.FacetedSearchV2_1Endpoint;
-import nl.knaw.huygens.timbuctoo.server.rest.Searcher;
+import nl.knaw.huygens.timbuctoo.server.search.Searcher;
 import nl.knaw.huygens.timbuctoo.server.rest.UserV2_1Endpoint;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.neo4j.graphdb.GraphDatabaseService;

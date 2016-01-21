@@ -1,6 +1,12 @@
 package nl.knaw.huygens.timbuctoo.server.rest;
 
 import io.dropwizard.jersey.params.UUIDParam;
+import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;
+import nl.knaw.huygens.timbuctoo.server.rest.search.SearchResponseV2_1Factory;
+import nl.knaw.huygens.timbuctoo.server.rest.search.SearchResponseV2_1RefAdder;
+import nl.knaw.huygens.timbuctoo.server.search.SearchResult;
+import nl.knaw.huygens.timbuctoo.server.search.Searcher;
+import nl.knaw.huygens.timbuctoo.server.search.WwPersonSearchDescription;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
