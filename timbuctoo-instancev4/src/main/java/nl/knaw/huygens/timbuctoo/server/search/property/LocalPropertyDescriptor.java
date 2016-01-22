@@ -1,10 +1,10 @@
 package nl.knaw.huygens.timbuctoo.server.search.property;
 
-import nl.knaw.huygens.timbuctoo.server.search.PropDescriptor;
+import nl.knaw.huygens.timbuctoo.server.search.PropertyDescriptor;
 import nl.knaw.huygens.timbuctoo.server.search.PropertyParser;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-class LocalPropertyDescriptor implements PropDescriptor {
+class LocalPropertyDescriptor implements PropertyDescriptor {
   private final String propertyName;
   private final PropertyParser parser;
 

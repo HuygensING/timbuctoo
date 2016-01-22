@@ -21,6 +21,7 @@ import java.util.Map;
 public class WwPersonSearchDescription {
   public static final Logger LOG = LoggerFactory.getLogger(WwPersonSearchDescription.class);
   private final PropertyParserFactory propertyParserFactory;
+  private final PropertyDescriptorFactory propertyDescriptorFactory;
   private ObjectMapper objectMapper;
 
   private static final List<String> SORTABLE_FIELDS = Lists.newArrayList(
@@ -39,6 +40,7 @@ public class WwPersonSearchDescription {
   public WwPersonSearchDescription() {
     objectMapper = new ObjectMapper();
     propertyParserFactory = new PropertyParserFactory();
+    propertyDescriptorFactory = new PropertyDescriptorFactory();
   }
 
   public List<String> getSortableFields() {
@@ -54,21 +56,28 @@ public class WwPersonSearchDescription {
   }
 
   public EntityRef createRef(Vertex vertex) {
-    EntityRef ref = new EntityRef(type, vertex.value(ID_DB_PROP));
-    setDisplayName(vertex, ref);
+    String id = getSinglePropDescriptor(
+      new PropertyParserFactory().getParser(String.class), ID_DB_PROP).get(vertex);
+
+    EntityRef ref = new EntityRef(type, id);
+
+    PropertyDescriptor descriptor = propertyDescriptorFactory.getComposite(
+      getSinglePropDescriptor(new PropertyParserFactory().getParser(PersonNames.class), "wwperson_names"),
+      getSinglePropDescriptor(new PropertyParserFactory().getParser(String.class), "wwperson_tempName"));
+
+    String displayName = descriptor.get(vertex);
+    ref.setDisplayName(displayName);
 
     Map<String, Object> data = Maps.newHashMap();
-    data.put("_id", getSinglePropDescriptor(
-      new PropertyParserFactory().getParser(String.class), ID_DB_PROP).get(vertex));
-    data.put("name", ref.getDisplayName());
+    data.put("_id", id);
+    data.put("name", displayName);
 
     data.put("birthDate", getSinglePropDescriptor(
       new PropertyParserFactory().getParser(Datable.class), "wwperson_birthDate").get(vertex));
     data.put("deathDate", getSinglePropDescriptor(
       new PropertyParserFactory().getParser(Datable.class), "wwperson_deathDate").get(vertex));
-    data.put("gender",
-      getSinglePropDescriptor(
-        new PropertyParserFactory().getParser(Gender.class), "wwperson_gender").get(vertex));
+    data.put("gender", getSinglePropDescriptor(
+      new PropertyParserFactory().getParser(Gender.class), "wwperson_gender").get(vertex));
 
     data.put("modified_date",
       getSinglePropDescriptor(
@@ -79,8 +88,8 @@ public class WwPersonSearchDescription {
     return ref;
   }
 
-  public PropDescriptor getSinglePropDescriptor(PropertyParser parser, String propertyName) {
-    return new PropertyDescriptorFactory().getLocal(propertyName, parser);
+  public PropertyDescriptor getSinglePropDescriptor(PropertyParser parser, String propertyName) {
+    return propertyDescriptorFactory.getLocal(propertyName, parser);
   }
 
   private void setResidenceLocation(Vertex vertex, Map<String, Object> data) {
@@ -122,16 +131,6 @@ public class WwPersonSearchDescription {
       value = vertex.value(propertyName);
     }
     return value;
-  }
-
-  private void setDisplayName(Vertex vertex, EntityRef ref) {
-    CompositePropDescriptor descriptor = new CompositePropDescriptor(
-      getSinglePropDescriptor(
-        new PropertyParserFactory().getParser(PersonNames.class), "wwperson_names"),
-      getSinglePropDescriptor(
-        new PropertyParserFactory().getParser(String.class), "wwperson_tempName"));
-
-    ref.setDisplayName(descriptor.get(vertex));
   }
 
   public GraphTraversal<Vertex, Vertex> filterByType(GraphTraversal<Vertex, Vertex> vertices) {
