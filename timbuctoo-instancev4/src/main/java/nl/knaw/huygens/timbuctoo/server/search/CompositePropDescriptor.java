@@ -4,19 +4,19 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 public class CompositePropDescriptor implements PropDescriptor {
 
-  private final PropDescriptor propDescriptor1;
-  private final PropDescriptor propDescriptor2;
+  private final PropDescriptor preferredDescriptor;
+  private final PropDescriptor backUpDescriptor;
 
-  public CompositePropDescriptor(PropDescriptor propDescriptor1, PropDescriptor propDescriptor2) {
-    this.propDescriptor1 = propDescriptor1;
-    this.propDescriptor2 = propDescriptor2;
+  public CompositePropDescriptor(PropDescriptor preferredDescriptor, PropDescriptor backUpDescriptor) {
+    this.preferredDescriptor = preferredDescriptor;
+    this.backUpDescriptor = backUpDescriptor;
   }
 
   @Override
   public String get(Vertex vertex) {
-    String value = propDescriptor1.get(vertex);
+    String value = preferredDescriptor.get(vertex);
     if (value == null) {
-      value = propDescriptor2.get(vertex);
+      value = backUpDescriptor.get(vertex);
     }
     return value;
 
