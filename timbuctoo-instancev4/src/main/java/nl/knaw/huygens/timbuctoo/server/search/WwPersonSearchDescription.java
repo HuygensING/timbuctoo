@@ -5,7 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;
 import nl.knaw.huygens.timbuctoo.server.search.LocationNames.LocationType;
-import nl.knaw.huygens.timbuctoo.server.search.propertygetter.PropertyGetterFactory;
+import nl.knaw.huygens.timbuctoo.server.search.property.PropertyDescriptorFactory;
 import nl.knaw.huygens.timbuctoo.server.search.propertyparser.PropertyParserFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -20,6 +20,7 @@ import java.util.Map;
 
 public class WwPersonSearchDescription {
   public static final Logger LOG = LoggerFactory.getLogger(WwPersonSearchDescription.class);
+  private final PropertyParserFactory propertyParserFactory;
   private ObjectMapper objectMapper;
 
   private static final List<String> SORTABLE_FIELDS = Lists.newArrayList(
@@ -34,11 +35,10 @@ public class WwPersonSearchDescription {
     "dynamic_t_name");
   public static final String ID_DB_PROP = "tim_id";
   private final String type = "wwperson";
-  private final PropertyGetterFactory propertyGetterFactory;
 
   public WwPersonSearchDescription() {
     objectMapper = new ObjectMapper();
-    propertyGetterFactory = new PropertyGetterFactory();
+    propertyParserFactory = new PropertyParserFactory();
   }
 
   public List<String> getSortableFields() {
@@ -58,30 +58,29 @@ public class WwPersonSearchDescription {
     setDisplayName(vertex, ref);
 
     Map<String, Object> data = Maps.newHashMap();
-    data.put("_id", new SinglePropDescriptor(getPropertyGetter(ID_DB_PROP), getParser(String.class)).get(vertex));
+    data.put("_id", getSinglePropDescriptor(
+      new PropertyParserFactory().getParser(String.class), ID_DB_PROP).get(vertex));
     data.put("name", ref.getDisplayName());
 
-    data.put("birthDate", new SinglePropDescriptor(
-      getPropertyGetter("wwperson_birthDate"), getParser(Datable.class)).get(vertex));
-    data.put("deathDate", new SinglePropDescriptor(
-      getPropertyGetter("wwperson_deathDate"), getParser(Datable.class)).get(vertex));
+    data.put("birthDate", getSinglePropDescriptor(
+      new PropertyParserFactory().getParser(Datable.class), "wwperson_birthDate").get(vertex));
+    data.put("deathDate", getSinglePropDescriptor(
+      new PropertyParserFactory().getParser(Datable.class), "wwperson_deathDate").get(vertex));
     data.put("gender",
-      new SinglePropDescriptor(getPropertyGetter("wwperson_gender"), getParser(Gender.class)).get(vertex));
+      getSinglePropDescriptor(
+        new PropertyParserFactory().getParser(Gender.class), "wwperson_gender").get(vertex));
 
     data.put("modified_date",
-      new SinglePropDescriptor(getPropertyGetter("modified"), getParser(Change.class)).get(vertex));
+      getSinglePropDescriptor(
+        propertyParserFactory.getParser(Change.class), "modified").get(vertex));
     setResidenceLocation(vertex, data);
     ref.setData(data);
 
     return ref;
   }
 
-  private PropertyParser getParser(Class<?> type) {
-    return new PropertyParserFactory().getParser(type);
-  }
-
-  private PropertyGetter getPropertyGetter(String idDbProp) {
-    return propertyGetterFactory.getLocal(idDbProp);
+  public PropDescriptor getSinglePropDescriptor(PropertyParser parser, String propertyName) {
+    return new PropertyDescriptorFactory().getLocal(propertyName, parser);
   }
 
   private void setResidenceLocation(Vertex vertex, Map<String, Object> data) {
@@ -127,8 +126,10 @@ public class WwPersonSearchDescription {
 
   private void setDisplayName(Vertex vertex, EntityRef ref) {
     CompositePropDescriptor descriptor = new CompositePropDescriptor(
-      new SinglePropDescriptor(getPropertyGetter("wwperson_names"), getParser(PersonNames.class)),
-      new SinglePropDescriptor(getPropertyGetter("wwperson_tempName"), getParser(String.class)));
+      getSinglePropDescriptor(
+        new PropertyParserFactory().getParser(PersonNames.class), "wwperson_names"),
+      getSinglePropDescriptor(
+        new PropertyParserFactory().getParser(String.class), "wwperson_tempName"));
 
     ref.setDisplayName(descriptor.get(vertex));
   }
