@@ -1,14 +1,16 @@
-package nl.knaw.huygens.timbuctoo.server.search;
+package nl.knaw.huygens.timbuctoo.server.search.propertyparser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.knaw.huygens.timbuctoo.server.search.PersonNames;
+import nl.knaw.huygens.timbuctoo.server.search.PropertyParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class PersonNamesDefaultNamePropParser implements PropParser {
+class PersonNamesDefaultNamePropertyParser implements PropertyParser {
 
-  public static final Logger LOG = LoggerFactory.getLogger(PersonNamesDefaultNamePropParser.class);
+  private static final Logger LOG = LoggerFactory.getLogger(PersonNamesDefaultNamePropertyParser.class);
 
   @Override
   public String parse(String value) {

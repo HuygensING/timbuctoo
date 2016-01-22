@@ -1,5 +1,6 @@
-package nl.knaw.huygens.timbuctoo.server.search;
+package nl.knaw.huygens.timbuctoo.server.search.propertyparser;
 
+import nl.knaw.huygens.timbuctoo.server.search.PropertyParser;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -7,13 +8,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
-public class DatableFromYearPropParserTest extends AbstractPropParserTest {
+public class DatableFromYearPropertyParserTest extends AbstractPropertyParserTest {
 
-  private DatableFromYearPropParser instance;
+  private DatableFromYearPropertyParser instance;
 
   @Before
   public void setUp() throws Exception {
-    instance = new DatableFromYearPropParser();
+    instance = new DatableFromYearPropertyParser();
   }
 
   @Test
@@ -35,7 +36,7 @@ public class DatableFromYearPropParserTest extends AbstractPropParserTest {
   }
 
   @Override
-  protected PropParser getInstance() {
+  protected PropertyParser getInstance() {
     return instance;
   }
 }

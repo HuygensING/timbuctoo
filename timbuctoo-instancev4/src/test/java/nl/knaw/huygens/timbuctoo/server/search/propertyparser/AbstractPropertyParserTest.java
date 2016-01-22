@@ -1,12 +1,13 @@
-package nl.knaw.huygens.timbuctoo.server.search;
+package nl.knaw.huygens.timbuctoo.server.search.propertyparser;
 
+import nl.knaw.huygens.timbuctoo.server.search.PropertyParser;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
-public abstract class AbstractPropParserTest {
+public abstract class AbstractPropertyParserTest {
   @Test
   public void parseReturnsNullIfTheInputIsNull() {
 
@@ -15,5 +16,5 @@ public abstract class AbstractPropParserTest {
     assertThat(output, is(nullValue()));
   }
 
-  protected abstract PropParser getInstance();
+  protected abstract PropertyParser getInstance();
 }

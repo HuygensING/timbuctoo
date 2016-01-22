@@ -1,5 +1,5 @@
 package nl.knaw.huygens.timbuctoo.server.search;
 
-public interface PropParser {
+public interface PropertyParser {
   String parse(String value);
 }

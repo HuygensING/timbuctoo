@@ -4,10 +4,10 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 public class SinglePropDescriptor implements PropDescriptor {
 
-  private final PropParser parser;
-  private final PropGetter getter;
+  private final PropertyParser parser;
+  private final PropertyGetter getter;
 
-  public SinglePropDescriptor(PropGetter getter, PropParser parser) {
+  public SinglePropDescriptor(PropertyGetter getter, PropertyParser parser) {
     this.getter = getter;
     this.parser = parser;
   }

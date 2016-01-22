@@ -1,7 +1,10 @@
-package nl.knaw.huygens.timbuctoo.server.search;
+package nl.knaw.huygens.timbuctoo.server.search.propertyparser;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.knaw.huygens.timbuctoo.server.search.PersonName;
+import nl.knaw.huygens.timbuctoo.server.search.PersonNames;
+import nl.knaw.huygens.timbuctoo.server.search.PropertyParser;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -9,13 +12,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
-public class PersonNamesDefaultNamePropParserTest extends AbstractPropParserTest {
+public class PersonNamesDefaultNamePropertyParserTest extends AbstractPropertyParserTest {
 
-  private PersonNamesDefaultNamePropParser instance;
+  private PersonNamesDefaultNamePropertyParser instance;
 
   @Before
   public void setUp() throws Exception {
-    instance = new PersonNamesDefaultNamePropParser();
+    instance = new PersonNamesDefaultNamePropertyParser();
   }
 
   @Test
@@ -39,7 +42,7 @@ public class PersonNamesDefaultNamePropParserTest extends AbstractPropParserTest
   }
 
   @Override
-  protected PropParser getInstance() {
+  protected PropertyParser getInstance() {
     return instance;
   }
 }

@@ -1,6 +1,8 @@
-package nl.knaw.huygens.timbuctoo.server.search;
+package nl.knaw.huygens.timbuctoo.server.search.propertyparser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.knaw.huygens.timbuctoo.server.search.Change;
+import nl.knaw.huygens.timbuctoo.server.search.PropertyParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,12 +10,12 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class ChangeDatePropParser implements PropParser {
+class ChangeDatePropertyParser implements PropertyParser {
 
-  public static final Logger LOG = LoggerFactory.getLogger(ChangeDatePropParser.class);
+  public static final Logger LOG = LoggerFactory.getLogger(ChangeDatePropertyParser.class);
   private final ObjectMapper objectMapper;
 
-  public ChangeDatePropParser() {
+  public ChangeDatePropertyParser() {
     objectMapper = new ObjectMapper();
   }
 

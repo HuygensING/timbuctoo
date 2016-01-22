@@ -1,12 +1,13 @@
-package nl.knaw.huygens.timbuctoo.server.search;
+package nl.knaw.huygens.timbuctoo.server.search.propertygetter;
 
+import nl.knaw.huygens.timbuctoo.server.search.PropertyGetter;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-public class LocalPropGetter implements PropGetter {
+class LocalPropertyGetter implements PropertyGetter {
 
   private String propName;
 
-  public LocalPropGetter(String propName) {
+  public LocalPropertyGetter(String propName) {
     this.propName = propName;
   }
 

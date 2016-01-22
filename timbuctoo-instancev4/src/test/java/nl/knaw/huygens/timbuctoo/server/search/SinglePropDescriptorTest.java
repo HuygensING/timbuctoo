@@ -16,32 +16,32 @@ import static org.mockito.Mockito.verify;
 public class SinglePropDescriptorTest {
 
   public static final String PROP_NAME = "propName";
-  private PropGetter propGetter;
-  private PropParser dataPropParser;
+  private PropertyGetter propertyGetter;
+  private PropertyParser dataPropertyParser;
   private SinglePropDescriptor instance;
 
   @Before
   public void setUp() throws Exception {
-    propGetter = mock(PropGetter.class);
-    dataPropParser = mock(PropParser.class);
-    instance = new SinglePropDescriptor(propGetter, dataPropParser);
+    propertyGetter = mock(PropertyGetter.class);
+    dataPropertyParser = mock(PropertyParser.class);
+    instance = new SinglePropDescriptor(propertyGetter, dataPropertyParser);
   }
 
   @Test
   public void getRetrievesTheValueFromTheDataPropGetterAndLetsItParseByTheDataPropParser() {
     String value = "value";
     Vertex vertex = vertex().build();
-    given(propGetter.get(vertex)).willReturn(value);
+    given(propertyGetter.get(vertex)).willReturn(value);
 
     instance.get(vertex);
 
-    verify(propGetter).get(vertex);
-    verify(dataPropParser).parse(value);
+    verify(propertyGetter).get(vertex);
+    verify(dataPropertyParser).parse(value);
   }
 
   @Test
   public void getReturnsStringValueFromDataPropParserParse() {
-    given(dataPropParser.parse(anyString())).willReturn("value");
+    given(dataPropertyParser.parse(anyString())).willReturn("value");
 
     String result = instance.get(vertex().build());
 

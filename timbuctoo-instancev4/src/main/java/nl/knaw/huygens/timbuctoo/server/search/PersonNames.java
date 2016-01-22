@@ -6,7 +6,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.List;
 
-class PersonNames {
+public class PersonNames {
   public List<PersonName> list;
 
   public PersonNames() {

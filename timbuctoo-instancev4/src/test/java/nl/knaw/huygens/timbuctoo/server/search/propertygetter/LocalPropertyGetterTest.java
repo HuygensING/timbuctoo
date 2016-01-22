@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.server.search;
+package nl.knaw.huygens.timbuctoo.server.search.propertygetter;
 
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
@@ -9,19 +9,19 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
-public class LocalPropGetterTest {
+public class LocalPropertyGetterTest {
 
   public static final String PROP_NAME = "testProp";
-  private LocalPropGetter instance;
+  private LocalPropertyGetter instance;
 
   @Before
   public void setUp() throws Exception {
-    instance = new LocalPropGetter(PROP_NAME);
+    instance = new LocalPropertyGetter(PROP_NAME);
   }
 
   @Test
   public void getReturnsNullIfTheVertexDoesNotContainTheProperty() {
-    LocalPropGetter instance = new LocalPropGetter(PROP_NAME);
+    LocalPropertyGetter instance = new LocalPropertyGetter(PROP_NAME);
 
     String value = instance.get(vertex().build());
 

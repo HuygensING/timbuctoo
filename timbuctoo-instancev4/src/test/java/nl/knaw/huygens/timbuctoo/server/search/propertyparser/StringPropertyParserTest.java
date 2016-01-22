@@ -1,5 +1,6 @@
-package nl.knaw.huygens.timbuctoo.server.search;
+package nl.knaw.huygens.timbuctoo.server.search.propertyparser;
 
+import nl.knaw.huygens.timbuctoo.server.search.PropertyParser;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -7,13 +8,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
-public class StringPropParserTest extends AbstractPropParserTest{
+public class StringPropertyParserTest extends AbstractPropertyParserTest {
 
-  private StringPropParser instance;
+  private StringPropertyParser instance;
 
   @Before
   public void setUp() throws Exception {
-    instance = new StringPropParser();
+    instance = new StringPropertyParser();
   }
 
   @Test
@@ -26,7 +27,7 @@ public class StringPropParserTest extends AbstractPropParserTest{
   }
 
   @Override
-  protected PropParser getInstance() {
+  protected PropertyParser getInstance() {
     return instance;
   }
 }
