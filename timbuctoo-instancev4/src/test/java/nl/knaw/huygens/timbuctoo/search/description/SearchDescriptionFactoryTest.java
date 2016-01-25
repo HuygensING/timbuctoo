@@ -17,11 +17,20 @@ public class SearchDescriptionFactoryTest {
     assertThat(searchDescription, is(instanceOf(WwPersonSearchDescription.class)));
   }
 
+  @Test
+  public void createCreatesAWwDocumentSearchDescriptionForTheStringWwDocument() {
+    SearchDescriptionFactory instance = new SearchDescriptionFactory();
+
+    SearchDescription searchDescription = instance.create("wwdocument");
+
+    assertThat(searchDescription, is(instanceOf(WwDocumentSearchDescription.class)));
+  }
+
   @Test(expected = IllegalArgumentException.class)
   public void createThrowsAnIllegalArgumentExceptionForAnUnknownType() {
     SearchDescriptionFactory instance = new SearchDescriptionFactory();
 
     instance.create("unknownType");
   }
-
 }
+
