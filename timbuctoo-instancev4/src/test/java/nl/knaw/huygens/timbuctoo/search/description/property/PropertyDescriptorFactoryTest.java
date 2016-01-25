@@ -37,6 +37,15 @@ public class PropertyDescriptorFactoryTest {
     assertThat(descriptor, is(instanceOf(DerivedPropertyDescriptor.class)));
   }
 
+  @Test
+  public void getDerivedWithSeparatorReturnsADerivedPropertyDescriptor() {
+    PropertyParser parser = mock(PropertyParser.class);
+
+    PropertyDescriptor descriptor = instance.getDerivedWithSeparator("relationName", "propertyName", parser, "--");
+
+    assertThat(descriptor, is(instanceOf(DerivedPropertyDescriptor.class)));
+  }
+
 
   @Test
   public void getCompositeReturnsACompositePropertyDescriptor() {

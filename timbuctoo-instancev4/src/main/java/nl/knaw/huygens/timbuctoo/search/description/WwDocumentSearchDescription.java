@@ -1,6 +1,9 @@
 package nl.knaw.huygens.timbuctoo.search.description;
 
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.model.Datable;
+import nl.knaw.huygens.timbuctoo.model.LocationNames;
+import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.TimbuctooQuery;
@@ -23,12 +26,14 @@ public class WwDocumentSearchDescription implements SearchDescription {
       "dynamic_t_title",
       "dynamic_t_notes");
 
+  private final PropertyParserFactory propertyParserFactory;
   private final PropertyDescriptorFactory propertyDescriptorFactory;
 
   private final String type = "wwdocument";
 
   public WwDocumentSearchDescription() {
     propertyDescriptorFactory = new PropertyDescriptorFactory();
+    propertyParserFactory = new PropertyParserFactory();
   }
 
   @Override
@@ -48,12 +53,43 @@ public class WwDocumentSearchDescription implements SearchDescription {
 
   @Override
   public EntityRef createRef(Vertex vertex) {
-    String id =
-        propertyDescriptorFactory.getLocal(ID_DB_PROP, new PropertyParserFactory().getParser(String.class)).get(vertex);
+    String id = propertyDescriptorFactory
+        .getLocal(ID_DB_PROP, new PropertyParserFactory().getParser(String.class)).get(vertex);
 
     EntityRef ref = new EntityRef(type, id);
 
+    ref.setDisplayName(getDisplayName(vertex));
+
     return ref;
+  }
+
+  private String getDisplayName(Vertex vertex) {
+    String authorNames = propertyDescriptorFactory.getDerivedWithSeparator(
+        "isCreatedBy",
+        "wwperson_names",
+        propertyParserFactory.getParser(PersonNames.class),
+        "; ").get(vertex);
+
+    String title = propertyDescriptorFactory.getLocal("wwdocument_title",
+        propertyParserFactory.getParser(String.class)).get(vertex);
+
+    String date = propertyDescriptorFactory.getLocal("date",
+        propertyParserFactory.getParser(Datable.class)).get(vertex);
+
+    StringBuilder displayNameBuilder = new StringBuilder();
+
+    if (authorNames != null) {
+      displayNameBuilder.append(authorNames).append(" - ");
+    }
+
+    displayNameBuilder.append(title);
+
+    if (date != null) {
+      displayNameBuilder.append(" (").append(date).append(")");
+    }
+
+    return displayNameBuilder.toString();
+
   }
 
   @Override

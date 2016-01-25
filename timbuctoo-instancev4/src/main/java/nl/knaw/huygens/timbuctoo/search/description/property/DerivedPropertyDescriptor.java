@@ -9,15 +9,23 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.util.List;
 
 public class DerivedPropertyDescriptor implements PropertyDescriptor {
+  private static final String DEFAULT_SEPARATOR = ";";
   private final String relationName;
   private final String propertyName;
   private final PropertyParser parser;
+  private final String separator;
 
   public DerivedPropertyDescriptor(String relationName, String propertyName, PropertyParser parser) {
+    this(relationName, propertyName, parser, DEFAULT_SEPARATOR);
+  }
+
+  public DerivedPropertyDescriptor(String relationName, String propertyName, PropertyParser parser, String separator) {
     this.relationName = relationName;
     this.propertyName = propertyName;
     this.parser = parser;
+    this.separator = separator;
   }
+
 
   @Override
   public String get(Vertex vertex) {
@@ -27,6 +35,6 @@ public class DerivedPropertyDescriptor implements PropertyDescriptor {
       values.add(parser.parse(vertex1.value(propertyName)));
     });
 
-    return values.isEmpty() ? null : String.join(";", values);
+    return values.isEmpty() ? null : String.join(separator, values);
   }
 }
