@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.rest.search;
 
-import nl.knaw.huygens.timbuctoo.server.search.EntityRef;
+import nl.knaw.huygens.timbuctoo.search.EntityRef;
 
 public class SearchResponseV2_1RefAdder {
   public void addRef(SearchResponseV2_1 searchResponse, EntityRef entityRef) {

@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.rest.search;
 
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.server.search.EntityRef;
+import nl.knaw.huygens.timbuctoo.search.EntityRef;
 import org.junit.Test;
 
 import java.util.HashMap;

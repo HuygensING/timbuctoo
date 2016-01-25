@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.rest.search;
 
-import nl.knaw.huygens.timbuctoo.server.search.EntityRef;
-import nl.knaw.huygens.timbuctoo.server.search.SearchResult;
+import nl.knaw.huygens.timbuctoo.search.EntityRef;
+import nl.knaw.huygens.timbuctoo.search.SearchResult;
 
 import java.util.List;
 
