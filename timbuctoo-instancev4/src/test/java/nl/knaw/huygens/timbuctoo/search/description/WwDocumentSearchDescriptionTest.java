@@ -10,6 +10,7 @@ import org.junit.Test;
 
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 
 public class WwDocumentSearchDescriptionTest {
@@ -89,4 +90,26 @@ public class WwDocumentSearchDescriptionTest {
     assertThat(ref.getDisplayName(), is("the title (1850)"));
   }
 
+  @Test
+  public void createRefAddsSemiColonSeparatedTheNamesOfTheAuthors() {
+    PersonNames names1 = new PersonNames();
+    PersonNames names2 = new PersonNames();
+    names1.list.add(PersonName.newInstance("forename", "surname"));
+    names2.list.add(PersonName.newInstance("forename2", "surname2"));
+
+
+    Vertex authorVertex = MockVertexBuilder.vertex().withProperty("wwperson_names", names1).build();
+    Vertex authorVertex2 = MockVertexBuilder.vertex().withProperty("wwperson_names", names2).build();
+
+    Vertex vertex = MockVertexBuilder
+        .vertexWithId("id")
+        .withOutgoingRelation("isCreatedBy", authorVertex)
+        .withOutgoingRelation("isCreatedBy", authorVertex2)
+        .build();
+
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), hasEntry("authorName", "forename surname; forename2 surname2"));
+  }
 }

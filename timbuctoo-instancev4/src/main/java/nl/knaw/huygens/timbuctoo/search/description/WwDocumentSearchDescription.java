@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.search.description;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
@@ -14,6 +15,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.List;
+import java.util.Map;
 
 public class WwDocumentSearchDescription implements SearchDescription {
   private static final List<String> SORTABLE_FIELDS = Lists.newArrayList(
@@ -56,20 +58,22 @@ public class WwDocumentSearchDescription implements SearchDescription {
     String id = propertyDescriptorFactory
         .getLocal(ID_DB_PROP, new PropertyParserFactory().getParser(String.class)).get(vertex);
 
-    EntityRef ref = new EntityRef(type, id);
-
-    ref.setDisplayName(getDisplayName(vertex));
-
-    return ref;
-  }
-
-  private String getDisplayName(Vertex vertex) {
     String authorNames = propertyDescriptorFactory.getDerivedWithSeparator(
         "isCreatedBy",
         "wwperson_names",
         propertyParserFactory.getParser(PersonNames.class),
         "; ").get(vertex);
 
+    EntityRef ref = new EntityRef(type, id);
+    Map<String, Object> data = Maps.newHashMap();
+    data.put("authorName", authorNames);
+    ref.setData(data);
+    ref.setDisplayName(getDisplayName(vertex, authorNames));
+
+    return ref;
+  }
+
+  private String getDisplayName(Vertex vertex, String authorNames) {
     String title = propertyDescriptorFactory.getLocal("wwdocument_title",
         propertyParserFactory.getParser(String.class)).get(vertex);
 
