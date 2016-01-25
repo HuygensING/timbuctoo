@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.server.search;
+package nl.knaw.huygens.timbuctoo.model;
 
 /*
  * #%L
@@ -23,8 +23,8 @@ package nl.knaw.huygens.timbuctoo.server.search;
  */
 
 import com.google.common.base.Objects;
-import nl.knaw.huygens.timbuctoo.server.search.Datable;
-import nl.knaw.huygens.timbuctoo.server.search.EdtfPattern;
+import nl.knaw.huygens.timbuctoo.model.Datable;
+import nl.knaw.huygens.timbuctoo.model.EdtfPattern;
 import org.junit.Assert;
 import org.junit.Test;
 

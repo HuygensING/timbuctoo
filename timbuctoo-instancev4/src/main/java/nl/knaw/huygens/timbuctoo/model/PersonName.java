@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.server.search;
+package nl.knaw.huygens.timbuctoo.model;
 
 /*
  * #%L
@@ -25,12 +25,17 @@ package nl.knaw.huygens.timbuctoo.server.search;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.model.PersonNameComponent.Type;
 
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import static nl.knaw.huygens.timbuctoo.server.search.PersonNameComponent.Type;
+import static nl.knaw.huygens.timbuctoo.model.PersonNameComponent.Type.ADD_NAME;
+import static nl.knaw.huygens.timbuctoo.model.PersonNameComponent.Type.FORENAME;
+import static nl.knaw.huygens.timbuctoo.model.PersonNameComponent.Type.GEN_NAME;
+import static nl.knaw.huygens.timbuctoo.model.PersonNameComponent.Type.NAME_LINK;
+import static nl.knaw.huygens.timbuctoo.model.PersonNameComponent.Type.SURNAME;
 
 /**
  * A person name consisting of components (the order is important).
@@ -40,13 +45,13 @@ public class PersonName {
 
   public static PersonName newInstance(String forename, String surname) {
     PersonName name = new PersonName();
-    name.addNameComponent(Type.FORENAME, forename);
-    name.addNameComponent(Type.SURNAME, surname);
+    name.addNameComponent(FORENAME, forename);
+    name.addNameComponent(SURNAME, surname);
     return name;
   }
 
-  private static final Set<PersonNameComponent.Type> ALL = EnumSet.allOf(Type.class);
-  private static final Set<PersonNameComponent.Type> SHORT = EnumSet.of(Type.FORENAME, Type.SURNAME, Type.NAME_LINK);
+  private static final Set<Type> ALL = EnumSet.allOf(Type.class);
+  private static final Set<Type> SHORT = EnumSet.of(FORENAME, SURNAME, NAME_LINK);
 
   private List<PersonNameComponent> components;
 
@@ -85,16 +90,16 @@ public class PersonName {
   @JsonIgnore
   public String getSortName() {
     PersonNameBuilder builder = new PersonNameBuilder();
-    int surnames = appendTo(builder, EnumSet.of(Type.SURNAME));
+    int surnames = appendTo(builder, EnumSet.of(SURNAME));
     appendForenames(builder);
-    appendTo(builder, EnumSet.of(Type.NAME_LINK));
+    appendTo(builder, EnumSet.of(NAME_LINK));
     if (surnames == 0) {
-      appendTo(builder, EnumSet.of(Type.ADD_NAME));
+      appendTo(builder, EnumSet.of(ADD_NAME));
     }
     return builder.getName();
   }
 
-  private int appendTo(PersonNameBuilder builder, Set<PersonNameComponent.Type> types) {
+  private int appendTo(PersonNameBuilder builder, Set<Type> types) {
     int count = 0;
     for (PersonNameComponent component : components) {
       if (types.contains(component.getType())) {
@@ -109,7 +114,7 @@ public class PersonName {
     Type prev = null;
     for (PersonNameComponent component : components) {
       Type type = component.getType();
-      if (type == Type.FORENAME || (type == Type.GEN_NAME && prev == Type.FORENAME)) {
+      if (type == FORENAME || (type == GEN_NAME && prev == FORENAME)) {
         builder.addComponent(component);
       }
       prev = type;

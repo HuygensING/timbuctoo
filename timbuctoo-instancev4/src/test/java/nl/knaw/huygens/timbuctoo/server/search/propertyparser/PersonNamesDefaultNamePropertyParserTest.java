@@ -2,8 +2,8 @@ package nl.knaw.huygens.timbuctoo.server.search.propertyparser;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.huygens.timbuctoo.server.search.PersonName;
-import nl.knaw.huygens.timbuctoo.server.search.PersonNames;
+import nl.knaw.huygens.timbuctoo.model.PersonName;
+import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.server.search.PropertyParser;
 import org.junit.Before;
 import org.junit.Test;

@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.search;
 
+import nl.knaw.huygens.timbuctoo.model.PersonName;
+import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.hamcrest.Matchers;
 import org.junit.Test;

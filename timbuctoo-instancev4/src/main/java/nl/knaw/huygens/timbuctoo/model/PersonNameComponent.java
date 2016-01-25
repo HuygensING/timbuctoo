@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.server.search;
+package nl.knaw.huygens.timbuctoo.model;
 
 /*
  * #%L
@@ -100,7 +100,7 @@ public class PersonNameComponent {
 
     private final String name;
 
-    private Type(String name) {
+    Type(String name) {
       this.name = name;
     }
 

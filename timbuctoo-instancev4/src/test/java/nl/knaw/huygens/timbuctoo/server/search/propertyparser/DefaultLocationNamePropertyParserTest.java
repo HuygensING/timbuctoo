@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.search.propertyparser;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.huygens.timbuctoo.server.search.LocationNames;
+import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;

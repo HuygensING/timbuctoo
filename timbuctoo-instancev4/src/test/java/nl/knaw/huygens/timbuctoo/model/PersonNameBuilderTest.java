@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.server.search;
+package nl.knaw.huygens.timbuctoo.model;
 
 /*
  * #%L
@@ -22,9 +22,9 @@ package nl.knaw.huygens.timbuctoo.server.search;
  * #L%
  */
 
-import nl.knaw.huygens.timbuctoo.server.search.PersonNameBuilder;
-import nl.knaw.huygens.timbuctoo.server.search.PersonNameComponent;
-import nl.knaw.huygens.timbuctoo.server.search.PersonNameComponent.Type;
+import nl.knaw.huygens.timbuctoo.model.PersonNameBuilder;
+import nl.knaw.huygens.timbuctoo.model.PersonNameComponent;
+import nl.knaw.huygens.timbuctoo.model.PersonNameComponent.Type;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;

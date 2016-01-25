@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.server.search;
+package nl.knaw.huygens.timbuctoo.model;
 
 /*
  * #%L
@@ -24,6 +24,7 @@ package nl.knaw.huygens.timbuctoo.server.search;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Objects;
+import nl.knaw.huygens.timbuctoo.server.search.Range;
 
 import java.io.Serializable;
 import java.text.DateFormat;

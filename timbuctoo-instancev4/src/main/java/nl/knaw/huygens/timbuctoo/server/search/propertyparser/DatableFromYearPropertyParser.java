@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.search.propertyparser;
 
-import nl.knaw.huygens.timbuctoo.server.search.Datable;
+import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.server.search.PropertyParser;
 
 class DatableFromYearPropertyParser implements PropertyParser {

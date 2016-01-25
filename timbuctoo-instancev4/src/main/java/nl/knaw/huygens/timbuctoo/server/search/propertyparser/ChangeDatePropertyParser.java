@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.search.propertyparser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.huygens.timbuctoo.server.search.Change;
+import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.server.search.PropertyParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

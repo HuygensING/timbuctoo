@@ -1,10 +1,14 @@
 package nl.knaw.huygens.timbuctoo.server.search;
 
+import nl.knaw.huygens.timbuctoo.model.Change;
+import nl.knaw.huygens.timbuctoo.model.LocationNames;
+import nl.knaw.huygens.timbuctoo.model.PersonName;
+import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 
-import static nl.knaw.huygens.timbuctoo.server.search.LocationNames.LocationType.COUNTRY;
+import static nl.knaw.huygens.timbuctoo.model.LocationNames.LocationType.COUNTRY;
 import static nl.knaw.huygens.timbuctoo.server.search.MockVertexBuilder.vertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;

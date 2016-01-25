@@ -1,10 +1,10 @@
 package nl.knaw.huygens.timbuctoo.server.search.propertyparser;
 
-import nl.knaw.huygens.timbuctoo.server.search.Change;
-import nl.knaw.huygens.timbuctoo.server.search.Datable;
-import nl.knaw.huygens.timbuctoo.server.search.Gender;
-import nl.knaw.huygens.timbuctoo.server.search.LocationNames;
-import nl.knaw.huygens.timbuctoo.server.search.PersonNames;
+import nl.knaw.huygens.timbuctoo.model.Change;
+import nl.knaw.huygens.timbuctoo.model.Datable;
+import nl.knaw.huygens.timbuctoo.model.Gender;
+import nl.knaw.huygens.timbuctoo.model.LocationNames;
+import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.server.search.PropertyParser;
 import org.junit.Before;
 import org.junit.Test;
