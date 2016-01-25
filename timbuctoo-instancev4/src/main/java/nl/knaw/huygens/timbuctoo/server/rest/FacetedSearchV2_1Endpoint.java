@@ -1,12 +1,13 @@
 package nl.knaw.huygens.timbuctoo.server.rest;
 
 import io.dropwizard.jersey.params.UUIDParam;
+import nl.knaw.huygens.timbuctoo.search.SearchDescription;
+import nl.knaw.huygens.timbuctoo.search.SearchDescriptionFactory;
+import nl.knaw.huygens.timbuctoo.search.SearchResult;
+import nl.knaw.huygens.timbuctoo.search.Searcher;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchResponseV2_1Factory;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchResponseV2_1RefAdder;
-import nl.knaw.huygens.timbuctoo.search.SearchResult;
-import nl.knaw.huygens.timbuctoo.search.Searcher;
-import nl.knaw.huygens.timbuctoo.search.WwPersonSearchDescription;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -29,16 +30,18 @@ public class FacetedSearchV2_1Endpoint {
 
   private Searcher searcher;
   private final SearchResponseV2_1Factory searchResponseFactory;
+  private final SearchDescriptionFactory searchDescriptionFactory;
 
   public FacetedSearchV2_1Endpoint(Searcher searcher) {
     this.searcher = searcher;
-    searchResponseFactory = new SearchResponseV2_1Factory(new SearchResponseV2_1RefAdder());
+    this.searchResponseFactory = new SearchResponseV2_1Factory(new SearchResponseV2_1RefAdder());
+    searchDescriptionFactory = new SearchDescriptionFactory();
   }
 
   @POST
-  @Path("wwpersons")
-  public Response post(SearchRequestV2_1 searchRequest) {
-    UUID uuid = searcher.search(getDescription().createQuery(searchRequest));
+  @Path("{entityName: [a-z]+}s")
+  public Response post(@PathParam("entityName") String entityName, SearchRequestV2_1 searchRequest) {
+    UUID uuid = searcher.search(getDescription(entityName).createQuery(searchRequest));
 
     URI uri = createUri(uuid);
 
@@ -72,8 +75,8 @@ public class FacetedSearchV2_1Endpoint {
       .build();
   }
 
-  private WwPersonSearchDescription getDescription() {
-    return new WwPersonSearchDescription();
+  private SearchDescription getDescription(String entityName) {
+    return searchDescriptionFactory.create(entityName);
   }
 
   private class NotFoundMessage {

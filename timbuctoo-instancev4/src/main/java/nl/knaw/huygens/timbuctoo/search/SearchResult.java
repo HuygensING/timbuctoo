@@ -14,7 +14,7 @@ public class SearchResult {
     this.sortableFields = sortableFields;
   }
 
-  public SearchResult(List<EntityRef> refs, WwPersonSearchDescription description) {
+  public SearchResult(List<EntityRef> refs, SearchDescription description) {
     this(refs, description.getFullTextSearchFields(), description.getSortableFields());
   }
 

@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class TimbuctooQuery {
-  private final WwPersonSearchDescription description;
+  private final SearchDescription description;
 
-  public TimbuctooQuery(WwPersonSearchDescription description) {
+  public TimbuctooQuery(SearchDescription description) {
     this.description = description;
   }
 

@@ -13,7 +13,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 
 public class TimbuctooQueryTest {
 
-  public static final WwPersonSearchDescription DESCRIPTION = new WwPersonSearchDescription();
+  public static final SearchDescription DESCRIPTION = new WwPersonSearchDescription();
 
   @Test
   public void returnsASearchRefsWithTheRefsOfTheVerticesWithTheTypeOfTheDescription() {

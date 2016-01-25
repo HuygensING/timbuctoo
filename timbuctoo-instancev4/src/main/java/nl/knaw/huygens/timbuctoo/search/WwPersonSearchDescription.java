@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 
-public class WwPersonSearchDescription {
+public class WwPersonSearchDescription implements SearchDescription {
   public static final Logger LOG = LoggerFactory.getLogger(WwPersonSearchDescription.class);
   private final PropertyParserFactory propertyParserFactory;
   private final PropertyDescriptorFactory propertyDescriptorFactory;
@@ -35,7 +35,6 @@ public class WwPersonSearchDescription {
     "dynamic_t_tempspouse",
     "dynamic_t_notes",
     "dynamic_t_name");
-  public static final String ID_DB_PROP = "tim_id";
   private final String type = "wwperson";
 
   public WwPersonSearchDescription() {
@@ -44,18 +43,22 @@ public class WwPersonSearchDescription {
     propertyDescriptorFactory = new PropertyDescriptorFactory();
   }
 
+  @Override
   public List<String> getSortableFields() {
     return SORTABLE_FIELDS;
   }
 
+  @Override
   public List<String> getFullTextSearchFields() {
     return FULL_TEXT_SEARCH_FIELDS;
   }
 
+  @Override
   public TimbuctooQuery createQuery(SearchRequestV2_1 searchRequest) {
     return new TimbuctooQuery(this);
   }
 
+  @Override
   public EntityRef createRef(Vertex vertex) {
     String id =
       propertyDescriptorFactory.getLocal(ID_DB_PROP, new PropertyParserFactory().getParser(String.class)).get(vertex);
@@ -94,6 +97,7 @@ public class WwPersonSearchDescription {
     return ref;
   }
 
+  @Override
   public GraphTraversal<Vertex, Vertex> filterByType(GraphTraversal<Vertex, Vertex> vertices) {
     return vertices.filter(x -> ((String) x.get().property("types").value()).contains(type));
   }
