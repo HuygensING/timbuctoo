@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.rest;
 
 import io.dropwizard.jersey.params.UUIDParam;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
-import nl.knaw.huygens.timbuctoo.search.SearchDescriptionFactory;
+import nl.knaw.huygens.timbuctoo.search.description.SearchDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.search.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.Searcher;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;

@@ -2,9 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.rest.search;
 
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
-import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.SearchResult;
-import nl.knaw.huygens.timbuctoo.search.WwPersonSearchDescription;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,7 +19,6 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 
 public class SearchResponseV2_1FactoryTest {
 
-  public static final SearchDescription DESCRIPTION = new WwPersonSearchDescription();
   private SearchResponseV2_1Factory instance;
   private SearchResponseV2_1RefAdder refAdder;
 

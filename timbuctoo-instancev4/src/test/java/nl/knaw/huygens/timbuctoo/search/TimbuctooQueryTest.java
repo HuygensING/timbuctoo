@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.search;
 
 import nl.knaw.huygens.timbuctoo.model.PersonName;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
+import nl.knaw.huygens.timbuctoo.search.description.SearchDescriptionFactory;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -13,11 +14,11 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 
 public class TimbuctooQueryTest {
 
-  public static final SearchDescription DESCRIPTION = new WwPersonSearchDescription();
+  public static final SearchDescription WWPERSON_DESC = new SearchDescriptionFactory().create("wwperson");
 
   @Test
   public void returnsASearchRefsWithTheRefsOfTheVerticesWithTheTypeOfTheDescription() {
-    TimbuctooQuery instance = new TimbuctooQuery(DESCRIPTION);
+    TimbuctooQuery instance = new TimbuctooQuery(WWPERSON_DESC);
     Graph graph = newGraph()
       .withVertex(vertex().withType("wwperson").isLatest(true).withId("id1"))
       .withVertex(vertex().withType("otherperson").isLatest(true).withId("id2"))
@@ -29,13 +30,13 @@ public class TimbuctooQueryTest {
       EntityRefMatcher.likeEntityRef().withId("id1").withType("wwperson"),
       EntityRefMatcher.likeEntityRef().withId("id3").withType("wwperson")));
     assertThat(searchResult.getFullTextSearchFields(),
-      containsInAnyOrder(DESCRIPTION.getFullTextSearchFields().toArray()));
-    assertThat(searchResult.getSortableFields(), containsInAnyOrder(DESCRIPTION.getSortableFields().toArray()));
+      containsInAnyOrder(WWPERSON_DESC.getFullTextSearchFields().toArray()));
+    assertThat(searchResult.getSortableFields(), containsInAnyOrder(WWPERSON_DESC.getSortableFields().toArray()));
   }
 
   @Test
   public void returnsOnlyTheLatestRefsInTheSearchResult() {
-    TimbuctooQuery instance = new TimbuctooQuery(DESCRIPTION);
+    TimbuctooQuery instance = new TimbuctooQuery(WWPERSON_DESC);
 
     PersonNames names1 = new PersonNames();
     PersonName name = PersonName.newInstance("forename", "surname");
