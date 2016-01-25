@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.server.search.propertyparser;
 import nl.knaw.huygens.timbuctoo.server.search.Change;
 import nl.knaw.huygens.timbuctoo.server.search.Datable;
 import nl.knaw.huygens.timbuctoo.server.search.Gender;
+import nl.knaw.huygens.timbuctoo.server.search.LocationNames;
 import nl.knaw.huygens.timbuctoo.server.search.PersonNames;
 import nl.knaw.huygens.timbuctoo.server.search.PropertyParser;
 
@@ -19,6 +20,8 @@ public class PropertyParserFactory {
       return new GenderPropertyParser();
     } else if (PersonNames.class.isAssignableFrom(type)) {
       return new PersonNamesDefaultNamePropertyParser();
+    } else if (LocationNames.class.isAssignableFrom(type)) {
+      return new DefaultLocationNamePropertyParser();
     }
 
     throw new UnparsableTypeException("Type " + type + " is not supported");

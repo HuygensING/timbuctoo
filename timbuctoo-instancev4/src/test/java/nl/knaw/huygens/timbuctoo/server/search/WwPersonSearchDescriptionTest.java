@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static nl.knaw.huygens.timbuctoo.server.search.LocationNames.LocationType.COUNTRY;
+import static nl.knaw.huygens.timbuctoo.server.search.MockVertexBuilder.vertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -231,10 +232,10 @@ public class WwPersonSearchDescriptionTest {
     LocationNames names = new LocationNames("test");
     names.addCountryName("test", name);
 
-    return MockVertexBuilder.vertex()
-                            .withProperty("names", names)
-                            .withProperty("locationType", COUNTRY)
-                            .build();
+    return vertex()
+      .withProperty("names", names)
+      .withProperty("locationType", COUNTRY)
+      .build();
   }
 
 }

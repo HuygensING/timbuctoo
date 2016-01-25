@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.search;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -8,19 +9,19 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import java.util.Map;
 
 // Container class, for entity reducer
-class LocationNames {
+public class LocationNames {
   @JsonProperty("defLang")
   private String defLang;
   @JsonProperty("map")
   private Map<String, PlaceName> map;
 
   public LocationNames(String defLang) {
+    this();
     this.defLang = defLang;
-    map = Maps.newHashMap();
   }
 
-  public LocationNames(){
-
+  public LocationNames() {
+    map = Maps.newHashMap();
   }
 
   @Override
@@ -37,8 +38,9 @@ class LocationNames {
     map.put(lang, new PlaceName().setCountry(name));
   }
 
-  public String getDefaultName(LocationType locationType) {
-    return map.get(defLang).getDisplayName(locationType);
+  @JsonIgnore
+  public String getDefaultName() {
+    return map.containsKey(defLang) ? map.get(defLang).getDefaultName() : null;
   }
 
   public enum LocationType {

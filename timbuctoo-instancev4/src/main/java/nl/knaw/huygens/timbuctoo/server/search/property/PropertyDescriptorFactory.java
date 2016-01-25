@@ -11,4 +11,8 @@ public class PropertyDescriptorFactory {
   public PropertyDescriptor getComposite(PropertyDescriptor preferred, PropertyDescriptor backUp) {
     return new CompositePropertyDescriptor(preferred, backUp);
   }
+
+  public PropertyDescriptor getDerived(String relationName, String propertyName, PropertyParser parser) {
+    return new DerivedPropertyDescriptor(relationName, propertyName, parser);
+  }
 }

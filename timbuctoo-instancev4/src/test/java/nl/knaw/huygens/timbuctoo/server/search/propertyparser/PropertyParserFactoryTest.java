@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.server.search.propertyparser;
 import nl.knaw.huygens.timbuctoo.server.search.Change;
 import nl.knaw.huygens.timbuctoo.server.search.Datable;
 import nl.knaw.huygens.timbuctoo.server.search.Gender;
+import nl.knaw.huygens.timbuctoo.server.search.LocationNames;
 import nl.knaw.huygens.timbuctoo.server.search.PersonNames;
 import nl.knaw.huygens.timbuctoo.server.search.PropertyParser;
 import org.junit.Before;
@@ -60,9 +61,16 @@ public class PropertyParserFactoryTest {
   }
 
   @Test
-  public void getParserReturnsAPersonNamesDefaultPropertyParserFor() {
+  public void getParserReturnsAPersonNamesDefaultPropertyParserForPersonNames() {
     PropertyParser parser = instance.getParser(PersonNames.class);
 
     assertThat(parser, is(instanceOf(PersonNamesDefaultNamePropertyParser.class)));
+  }
+
+  @Test
+  public void getParserReturnsADefaultLocationNamePropertyParserForLocationNames() {
+    PropertyParser parser = instance.getParser(LocationNames.class);
+
+    assertThat(parser, is(instanceOf(DefaultLocationNamePropertyParser.class)));
   }
 }
