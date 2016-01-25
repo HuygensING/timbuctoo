@@ -24,7 +24,6 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Objects;
-import nl.knaw.huygens.timbuctoo.search.Range;
 
 import java.io.Serializable;
 import java.text.DateFormat;
