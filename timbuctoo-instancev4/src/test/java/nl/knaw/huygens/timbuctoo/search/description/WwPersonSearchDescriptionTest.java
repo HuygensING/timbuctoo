@@ -1,15 +1,24 @@
 package nl.knaw.huygens.timbuctoo.search.description;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.Change;
+import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.model.Gender;
 import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonName;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
 import nl.knaw.huygens.timbuctoo.search.MockVertexBuilder;
+import nl.knaw.huygens.timbuctoo.search.SearchDescription;
+import nl.knaw.huygens.timbuctoo.search.description.facet.FacetDescriptionFactory;
+import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
+import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.HashMap;
 
 import static nl.knaw.huygens.timbuctoo.model.LocationNames.LocationType.COUNTRY;
 import static nl.knaw.huygens.timbuctoo.search.MockVertexBuilder.vertex;
@@ -22,11 +31,57 @@ import static org.hamcrest.Matchers.nullValue;
 
 public class WwPersonSearchDescriptionTest {
 
-  private WwPersonSearchDescription instance;
+  private DefaultSearchDescription instance;
+  private FacetDescriptionFactory facetDescriptionFactory;
+  private PropertyParserFactory propertyParserFactory;
+  private PropertyDescriptorFactory propertyDescriptorFactory;
 
   @Before
   public void setUp() throws Exception {
-    instance = new WwPersonSearchDescription();
+    propertyParserFactory = new PropertyParserFactory();
+    facetDescriptionFactory = new FacetDescriptionFactory(propertyParserFactory);
+    propertyDescriptorFactory = new PropertyDescriptorFactory(propertyParserFactory);
+    HashMap<String, PropertyDescriptor> dataPropertyDescriptors = Maps.newHashMap();
+    setupPropertyDescriptors(dataPropertyDescriptors);
+    instance = new DefaultSearchDescription(
+      propertyDescriptorFactory
+        .getLocal(SearchDescription.ID_DB_PROP, new PropertyParserFactory().getParser(String.class)),
+      propertyDescriptorFactory.getComposite(
+        propertyDescriptorFactory.getLocal("wwperson_names", propertyParserFactory.getParser(PersonNames.class)),
+        propertyDescriptorFactory.getLocal("wwperson_tempName", propertyParserFactory.getParser(String.class))),
+      Lists.newArrayList(
+        facetDescriptionFactory.createListFacetDescription("dynamic_s_gender",
+          "wwperson_gender",
+          propertyParserFactory.getParser(Gender.class))), dataPropertyDescriptors, Lists.newArrayList(
+            "dynamic_k_modified",
+            "dynamic_k_birthDate",
+            "dynamic_sort_name",
+            "dynamic_k_deathDate"), Lists.newArrayList(
+              "dynamic_t_tempspouse",
+              "dynamic_t_notes",
+              "dynamic_t_name"), "wwperson"
+    );
+  }
+
+  private void setupPropertyDescriptors(HashMap<String, PropertyDescriptor> dataPropertyDescriptors) {
+    dataPropertyDescriptors.put("birthDate", propertyDescriptorFactory
+      .getLocal("wwperson_birthDate", propertyParserFactory.getParser(Datable.class)));
+    dataPropertyDescriptors.put("deathDate", propertyDescriptorFactory
+      .getLocal("wwperson_deathDate", propertyParserFactory.getParser(Datable.class)));
+    dataPropertyDescriptors.put("gender", propertyDescriptorFactory
+      .getLocal("wwperson_gender", propertyParserFactory.getParser(Gender.class)));
+    dataPropertyDescriptors.put("modified_date",
+      propertyDescriptorFactory.getLocal("modified", propertyParserFactory.getParser(Change.class)));
+    dataPropertyDescriptors.put("residenceLocation", propertyDescriptorFactory.getDerived(
+      "hasResidenceLocation",
+      "names",
+      propertyParserFactory
+        .getParser(LocationNames.class)));
+    dataPropertyDescriptors.put("name", propertyDescriptorFactory.getComposite(
+      propertyDescriptorFactory.getLocal("wwperson_names", propertyParserFactory.getParser(PersonNames.class)),
+      propertyDescriptorFactory.getLocal("wwperson_tempName", propertyParserFactory.getParser(String.class))));
+    dataPropertyDescriptors
+      .put("_id", propertyDescriptorFactory.getLocal("tim_id", new PropertyParserFactory().getParser(String.class)));
   }
 
   @Test

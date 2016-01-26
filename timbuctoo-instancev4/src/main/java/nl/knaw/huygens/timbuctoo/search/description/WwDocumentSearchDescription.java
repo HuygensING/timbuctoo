@@ -38,8 +38,8 @@ public class WwDocumentSearchDescription implements SearchDescription {
   private final String type = "wwdocument";
 
   public WwDocumentSearchDescription() {
-    propertyDescriptorFactory = new PropertyDescriptorFactory();
     propertyParserFactory = new PropertyParserFactory();
+    propertyDescriptorFactory = new PropertyDescriptorFactory(propertyParserFactory);
   }
 
   @Override

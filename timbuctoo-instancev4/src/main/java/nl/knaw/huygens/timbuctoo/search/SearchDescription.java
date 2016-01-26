@@ -21,4 +21,5 @@ public interface SearchDescription {
   EntityRef createRef(Vertex vertex);
 
   GraphTraversal<Vertex, Vertex> filterByType(GraphTraversal<Vertex, Vertex> vertices);
+
 }

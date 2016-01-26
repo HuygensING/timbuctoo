@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.search.description.property;
 
 import nl.knaw.huygens.timbuctoo.search.description.PropertyDescriptor;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
+import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -9,14 +10,17 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class PropertyDescriptorFactoryTest {
 
   private PropertyDescriptorFactory instance;
+  private PropertyParserFactory parserFactory;
 
   @Before
   public void setUp() throws Exception {
-    instance = new PropertyDescriptorFactory();
+    parserFactory = mock(PropertyParserFactory.class);
+    instance = new PropertyDescriptorFactory(parserFactory);
   }
 
   @Test
@@ -29,12 +33,26 @@ public class PropertyDescriptorFactoryTest {
   }
 
   @Test
+  public void getLocalLetsThePropertyParserFactoryCreateAPropertyParser() {
+    instance.getLocal("propertyName", String.class);
+
+    verify(parserFactory).getParser(String.class);
+  }
+
+  @Test
   public void getDerivedReturnsADerivedPropertyDescriptor() {
     PropertyParser parser = mock(PropertyParser.class);
 
     PropertyDescriptor descriptor = instance.getDerived("relationName", "propertyName", parser);
 
     assertThat(descriptor, is(instanceOf(DerivedPropertyDescriptor.class)));
+  }
+
+  @Test
+  public void getDerivedLetsThePropertyParserFactoryCreateAPropertyParser() {
+    instance.getDerived("relationName", "propertyName", String.class);
+
+    verify(parserFactory).getParser(String.class);
   }
 
   @Test
