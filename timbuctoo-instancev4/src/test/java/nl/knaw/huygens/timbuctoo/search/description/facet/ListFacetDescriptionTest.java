@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.search.description.facet;
 
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
+import nl.knaw.huygens.timbuctoo.search.description.facet.Facet.Option;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -9,8 +10,7 @@ import java.util.List;
 
 import static nl.knaw.huygens.timbuctoo.search.MockVertexBuilder.vertex;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.mockito.BDDMockito.given;
@@ -54,6 +54,9 @@ public class ListFacetDescriptionTest {
     Facet facet = instance.getFacet(vertices);
 
     // L is needed because the counts are longs
-    assertThat(facet.getCounts(), allOf(hasEntry(value, 2L), hasEntry(value1, 3L), hasEntry(value2, 1L)));
+    assertThat(facet.getOptions(), containsInAnyOrder(
+      new Option(value, 2L),
+      new Option(value1, 3L),
+      new Option(value2, 1L)));
   }
 }

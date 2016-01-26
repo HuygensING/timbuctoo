@@ -9,12 +9,16 @@ public class SearchResult {
   private List<EntityRef> refs;
   private List<String> fullTextSearchFields;
   private List<String> sortableFields;
+  private List<Facet> facets;
 
-  public SearchResult(List<EntityRef> refs, List<String> fullTextSearchFields, List<String> sortableFields,
+  public SearchResult(List<EntityRef> refs,
+                      List<String> fullTextSearchFields,
+                      List<String> sortableFields,
                       List<Facet> facets) {
     this.refs = refs;
     this.fullTextSearchFields = fullTextSearchFields;
     this.sortableFields = sortableFields;
+    this.facets = facets;
   }
 
   public SearchResult(List<EntityRef> refs, SearchDescription description, List<Facet> facets) {
@@ -31,5 +35,9 @@ public class SearchResult {
 
   public List<String> getSortableFields() {
     return sortableFields;
+  }
+
+  public List<Facet> getFacets() {
+    return facets;
   }
 }

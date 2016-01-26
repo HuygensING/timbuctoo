@@ -3,14 +3,17 @@ package nl.knaw.huygens.timbuctoo.server.rest.search;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
 import nl.knaw.huygens.timbuctoo.search.SearchResult;
+import nl.knaw.huygens.timbuctoo.search.description.facet.Facet;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static nl.knaw.huygens.timbuctoo.server.rest.search.FacetMatcher.likeFacet;
 import static nl.knaw.huygens.timbuctoo.server.rest.search.SearchResponseV2_1Matcher.likeSearchResponse;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -152,5 +155,16 @@ public class SearchResponseV2_1FactoryTest {
     assertThat(searchResponse, is(likeSearchResponse().withRows(0)));
     verifyZeroInteractions(refAdder);
   }
+
+  @Test
+  public void fromReturnsASearchResponseWithTheFacets() {
+    SearchResult searchResult = new SearchResult(Lists.newArrayList(), Lists.newArrayList(), Lists.newArrayList(),
+      Lists.newArrayList(new Facet("name", Lists.newArrayList())));
+
+    SearchResponseV2_1 response = instance.createResponse(searchResult, 2, 2);
+
+    assertThat(response.getFacets(), contains(likeFacet().withName("name")));
+  }
+
 
 }

@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.rest.search;
 
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.search.description.facet.Facet;
 
 import java.util.List;
 
@@ -64,8 +65,7 @@ class SearchResponseV2_1 {
     refs.add(ref);
   }
 
-
-  private static class Facet {
+  public void setFacets(List<Facet> facets) {
+    this.facets = facets;
   }
-
 }

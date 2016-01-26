@@ -20,7 +20,7 @@ public class SearchResponseV2_1Factory {
     searchResponse.setFullTextSearchFields(searchResult.getFullTextSearchFields());
     searchResponse.setSortableFields(searchResult.getSortableFields());
     searchResponse.setStart(start);
-
+    searchResponse.setFacets(searchResult.getFacets());
 
 
     List<EntityRef> refs = searchResult.getRefs();
@@ -29,6 +29,7 @@ public class SearchResponseV2_1Factory {
     int normalizedRows = mapToRange(rows, 0, numFound - normalizedStart);
     int end = normalizedStart + normalizedRows;
     refs.subList(normalizedStart, end).forEach(ref -> refCreator.addRef(searchResponse, ref));
+
 
     return searchResponse;
   }
