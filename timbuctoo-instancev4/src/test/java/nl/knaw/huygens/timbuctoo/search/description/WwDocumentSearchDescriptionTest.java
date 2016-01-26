@@ -226,5 +226,22 @@ public class WwDocumentSearchDescriptionTest {
     assertThat(ref.getData(), hasEntry("modified_date", "20160120"));
   }
 
+  @Test
+  public void createRefAddsSemiColonSeparatedTheGenres() {
+
+    Vertex genreVertex = vertex().withProperty("wwkeyword_value", "Novel").build();
+    Vertex genreVertex1 = vertex().withProperty("wwkeyword_value", "Other").build();
+
+    Vertex vertex = vertexWithId("id")
+        .withOutgoingRelation("hasGenre", genreVertex)
+        .withOutgoingRelation("hasGenre", genreVertex1)
+        .build();
+
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), hasEntry("genre", "Novel;Other"));
+  }
+
 
 }

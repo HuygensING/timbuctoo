@@ -99,8 +99,11 @@ public class WwDocumentSearchDescription implements SearchDescription {
         .getLocal("wwdocument_documentType", propertyParserFactory.getParser(DocumentType.class))
         .get(vertex));
 
-    data.put("modified_date",
-        propertyDescriptorFactory.getLocal("modified", propertyParserFactory.getParser(Change.class)).get(vertex));
+    data.put("modified_date",propertyDescriptorFactory
+        .getLocal("modified", propertyParserFactory.getParser(Change.class)).get(vertex));
+
+    data.put("genre", propertyDescriptorFactory
+        .getDerived("hasGenre", "wwkeyword_value", propertyParserFactory.getParser(String.class)).get(vertex));
 
     ref.setData(data);
 
