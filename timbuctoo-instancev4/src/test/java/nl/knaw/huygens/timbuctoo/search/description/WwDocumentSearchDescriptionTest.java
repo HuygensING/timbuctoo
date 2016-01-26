@@ -148,6 +148,17 @@ public class WwDocumentSearchDescriptionTest {
     assertThat(ref.getData(), hasEntry("_id", id));
   }
 
+
+  @Test
+  public void createRefsAddsDataWithTheTitle() {
+    String title = "the title";
+    Vertex vertex = vertex().withProperty("wwdocument_title", title).build();
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), hasEntry("title", title));
+  }
+
   @Test
   public void createRefAddsTheAuthorGenderToTheData() {
     Vertex authorVertex = vertex().withProperty("wwperson_gender", Gender.UNKNOWN).build();

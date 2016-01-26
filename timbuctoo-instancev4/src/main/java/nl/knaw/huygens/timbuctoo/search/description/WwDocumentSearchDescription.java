@@ -86,6 +86,7 @@ public class WwDocumentSearchDescription implements SearchDescription {
     data.put("_id", id);
     data.put("authorName", authorNames);
     data.put("date", date);
+    data.put("title", title);
     data.put("authorGender", propertyDescriptorFactory.getDerived(
         "isCreatedBy",
         "wwperson_gender",
