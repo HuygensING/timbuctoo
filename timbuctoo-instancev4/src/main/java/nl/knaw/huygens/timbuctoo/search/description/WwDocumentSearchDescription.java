@@ -77,6 +77,7 @@ public class WwDocumentSearchDescription implements SearchDescription {
     Map<String, Object> data = Maps.newHashMap();
     data.put("_id", id);
     data.put("authorName", authorNames);
+    data.put("date", date);
     data.put("authorGender", propertyDescriptorFactory.getDerived(
         "isCreatedBy",
         "wwperson_gender",

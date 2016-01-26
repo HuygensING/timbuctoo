@@ -143,4 +143,15 @@ public class WwDocumentSearchDescriptionTest {
 
     assertThat(ref.getData(), hasEntry("authorGender", "UNKNOWN"));
   }
+
+  @Test
+  public void createRefAddsTheDateToTheData() {
+    Vertex vertex = vertexWithId("id")
+        .withProperty("date", "1850")
+        .build();
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), hasEntry("date", "1850"));
+  }
 }
