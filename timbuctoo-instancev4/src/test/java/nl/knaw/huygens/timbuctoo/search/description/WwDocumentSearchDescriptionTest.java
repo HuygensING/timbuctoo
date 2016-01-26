@@ -1,9 +1,11 @@
 package nl.knaw.huygens.timbuctoo.search.description;
 
+import nl.knaw.huygens.timbuctoo.model.DocumentType;
 import nl.knaw.huygens.timbuctoo.model.Gender;
 import nl.knaw.huygens.timbuctoo.model.PersonName;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
+import nl.knaw.huygens.timbuctoo.search.MockVertexBuilder;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
@@ -168,4 +170,17 @@ public class WwDocumentSearchDescriptionTest {
 
     assertThat(ref.getData(), hasEntry("date", "1850"));
   }
+
+  @Test
+  public void createRefAddsTheDocumentTypeToTheData() {
+    Vertex vertex = MockVertexBuilder.vertexWithId("id")
+        .withProperty("wwdocument_documentType", DocumentType.DIARY)
+        .build();
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), hasEntry("documentType", "DIARY"));
+  }
+
+
 }
