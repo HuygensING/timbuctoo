@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.search.description;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.DocumentType;
 import nl.knaw.huygens.timbuctoo.model.Gender;
+import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonName;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
@@ -12,6 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 
+import static nl.knaw.huygens.timbuctoo.model.LocationNames.LocationType.COUNTRY;
 import static nl.knaw.huygens.timbuctoo.search.MockVertexBuilder.vertex;
 import static nl.knaw.huygens.timbuctoo.search.MockVertexBuilder.vertexWithId;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -244,4 +246,36 @@ public class WwDocumentSearchDescriptionTest {
   }
 
 
+  @Test
+  public void createRefAddsNullForResidenceLocationWhenThePersonHasNoPublishLocations() {
+    Vertex vertex = MockVertexBuilder.vertexWithId("id").build();
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), hasEntry(equalTo("publishLocation"), nullValue()));
+  }
+
+  @Test
+  public void createRefAddsSemiColonSeparatedTheNamesOfThePublishLocations() {
+    Vertex location1 = locationVertexWithName("testCountry");
+    Vertex location2 = locationVertexWithName("otherCountry");
+    Vertex vertex = MockVertexBuilder.vertexWithId("id")
+        .withOutgoingRelation("hasPublishLocation", location1)
+        .withOutgoingRelation("hasPublishLocation", location2)
+        .build();
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), hasEntry("publishLocation", "testCountry;otherCountry"));
+  }
+
+  private Vertex locationVertexWithName(String name) {
+    LocationNames names = new LocationNames("test");
+    names.addCountryName("test", name);
+
+    return vertex()
+        .withProperty("names", names)
+        .withProperty("locationType", COUNTRY)
+        .build();
+  }
 }

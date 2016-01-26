@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.model.DocumentType;
 import nl.knaw.huygens.timbuctoo.model.Gender;
+import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
@@ -104,6 +105,13 @@ public class WwDocumentSearchDescription implements SearchDescription {
 
     data.put("genre", propertyDescriptorFactory
         .getDerived("hasGenre", "wwkeyword_value", propertyParserFactory.getParser(String.class)).get(vertex));
+
+    data.put("publishLocation", propertyDescriptorFactory.getDerived(
+        "hasPublishLocation",
+        "names",
+        propertyParserFactory
+            .getParser(LocationNames.class)).get(vertex));
+
 
     ref.setData(data);
 
