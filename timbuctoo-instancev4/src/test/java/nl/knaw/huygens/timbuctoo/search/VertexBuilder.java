@@ -14,6 +14,7 @@ import java.util.Map;
 public class VertexBuilder {
 
   private final HashMap<String, Object> properties;
+  private final HashMap<String, List<Vertex>> outGoingRelationMap;
   private List<String> types;
   private String id;
   private final ObjectMapper objectMapper;
@@ -23,13 +24,15 @@ public class VertexBuilder {
     types = Lists.newArrayList();
     objectMapper = new ObjectMapper();
     properties = Maps.newHashMap();
+    outGoingRelationMap = Maps.newHashMap();
+
   }
 
   public static VertexBuilder vertex() {
     return new VertexBuilder();
   }
 
-  public void build(Graph graph) {
+  public Vertex build(Graph graph) {
     try {
       Vertex vertex = graph.addVertex();
       vertex.property("types", objectMapper.writeValueAsString(Lists.newArrayList(types)));
@@ -40,7 +43,12 @@ public class VertexBuilder {
         vertex.property(entry.getKey(), entry.getValue());
       }
 
-
+      for (Map.Entry<String, List<Vertex>> entry : outGoingRelationMap.entrySet()) {
+        for (Vertex vertex1 : entry.getValue()) {
+          vertex.addEdge(entry.getKey(), vertex1);
+        }
+      }
+      return vertex;
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
@@ -67,6 +75,16 @@ public class VertexBuilder {
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }
+    return this;
+  }
+
+  public VertexBuilder withOutgoingRelation(String relationName, Vertex otherVertex) {
+    if (!outGoingRelationMap.containsKey(relationName)) {
+      outGoingRelationMap.put(relationName, Lists.newArrayList());
+    }
+
+    outGoingRelationMap.get(relationName).add(otherVertex);
+
     return this;
   }
 }
