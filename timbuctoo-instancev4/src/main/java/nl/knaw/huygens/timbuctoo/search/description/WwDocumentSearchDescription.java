@@ -59,7 +59,7 @@ public class WwDocumentSearchDescription implements SearchDescription {
 
   @Override
   public List<Facet> createFacets(List<Vertex> vertices) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return null;
   }
 
   @Override
