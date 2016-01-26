@@ -118,6 +118,11 @@ public class WwDocumentSearchDescription implements SearchDescription {
         propertyParserFactory
             .getParser(LocationNames.class)).get(vertex));
 
+    data.put("language", propertyDescriptorFactory.getDerived(
+        "hasWorkLanguage",
+        "wwlanguage_name",
+        propertyParserFactory
+            .getParser(String.class)).get(vertex));
 
     ref.setData(data);
 

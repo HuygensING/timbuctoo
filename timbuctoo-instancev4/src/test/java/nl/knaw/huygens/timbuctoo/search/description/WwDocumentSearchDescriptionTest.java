@@ -247,7 +247,7 @@ public class WwDocumentSearchDescriptionTest {
 
 
   @Test
-  public void createRefAddsNullForResidenceLocationWhenThePersonHasNoPublishLocations() {
+  public void createRefAddsNullForPublishLocationWhenTheDocumentHasNoPublishLocations() {
     Vertex vertex = MockVertexBuilder.vertexWithId("id").build();
 
     EntityRef ref = instance.createRef(vertex);
@@ -269,6 +269,30 @@ public class WwDocumentSearchDescriptionTest {
     assertThat(ref.getData(), hasEntry("publishLocation", "testCountry;otherCountry"));
   }
 
+
+  @Test
+  public void createRefAddsNullForLanguageWhenTheDocumentHasNoLanguage() {
+    Vertex vertex = MockVertexBuilder.vertexWithId("id").build();
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), hasEntry(equalTo("language"), nullValue()));
+  }
+
+  @Test
+  public void createRefAddsSemiColonSeparatedTheNamesOfTheLanguages() {
+    Vertex location1 = languageVertexWithName("language1");
+    Vertex location2 = languageVertexWithName("language2");
+    Vertex vertex = MockVertexBuilder.vertexWithId("id")
+        .withOutgoingRelation("hasWorkLanguage", location1)
+        .withOutgoingRelation("hasWorkLanguage", location2)
+        .build();
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), hasEntry("language", "language1;language2"));
+  }
+  
   private Vertex locationVertexWithName(String name) {
     LocationNames names = new LocationNames("test");
     names.addCountryName("test", name);
@@ -276,6 +300,12 @@ public class WwDocumentSearchDescriptionTest {
     return vertex()
         .withProperty("names", names)
         .withProperty("locationType", COUNTRY)
+        .build();
+  }
+
+  private Vertex languageVertexWithName(String language) {
+    return vertex()
+        .withProperty("wwlanguage_name", language)
         .build();
   }
 }
