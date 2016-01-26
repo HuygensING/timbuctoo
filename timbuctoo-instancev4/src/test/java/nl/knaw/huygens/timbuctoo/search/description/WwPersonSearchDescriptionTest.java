@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.search.description;
 
 import nl.knaw.huygens.timbuctoo.model.Change;
+import nl.knaw.huygens.timbuctoo.model.Gender;
 import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonName;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
@@ -174,7 +175,7 @@ public class WwPersonSearchDescriptionTest {
 
   @Test
   public void createRefAddsTheGenderToTheData() {
-    Vertex vertex = MockVertexBuilder.vertexWithId("id").withProperty("wwperson_gender", "\"UNKNOWN\"").build();
+    Vertex vertex = MockVertexBuilder.vertexWithId("id").withProperty("wwperson_gender", Gender.UNKNOWN).build();
 
     EntityRef ref = instance.createRef(vertex);
 

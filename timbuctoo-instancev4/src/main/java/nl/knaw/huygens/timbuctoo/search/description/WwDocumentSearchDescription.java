@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.search.description;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.Datable;
+import nl.knaw.huygens.timbuctoo.model.Gender;
 import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
@@ -76,6 +77,12 @@ public class WwDocumentSearchDescription implements SearchDescription {
     Map<String, Object> data = Maps.newHashMap();
     data.put("_id", id);
     data.put("authorName", authorNames);
+    data.put("authorGender", propertyDescriptorFactory.getDerived(
+        "isCreatedBy",
+        "wwperson_gender",
+        propertyParserFactory.getParser(Gender.class))
+        .get(vertex));
+
     ref.setData(data);
 
     return ref;
