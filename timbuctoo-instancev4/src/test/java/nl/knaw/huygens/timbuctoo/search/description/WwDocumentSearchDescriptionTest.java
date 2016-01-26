@@ -91,6 +91,18 @@ public class WwDocumentSearchDescriptionTest {
   }
 
   @Test
+  public void createRefAddsParensEmptyWhenNoTitleOrOtherDataIsAvailable() {
+    Vertex vertex = MockVertexBuilder
+        .vertexWithId("id")
+        .build();
+
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getDisplayName(), is("(empty)"));
+  }
+
+  @Test
   public void createRefAddsSemiColonSeparatedTheNamesOfTheAuthors() {
     PersonNames names1 = new PersonNames();
     PersonNames names2 = new PersonNames();
@@ -111,5 +123,16 @@ public class WwDocumentSearchDescriptionTest {
     EntityRef ref = instance.createRef(vertex);
 
     assertThat(ref.getData(), hasEntry("authorName", "forename surname; forename2 surname2"));
+  }
+
+  @Test
+  public void createRefsAddsDataWithTheKeyIdWithTheIdOfTheVertex() {
+    String id = "id";
+    Vertex vertex = MockVertexBuilder.vertexWithId(id)
+        .build();
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), hasEntry("_id", id));
   }
 }

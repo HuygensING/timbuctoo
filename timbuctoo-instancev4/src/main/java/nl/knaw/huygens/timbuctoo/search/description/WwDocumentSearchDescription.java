@@ -64,36 +64,41 @@ public class WwDocumentSearchDescription implements SearchDescription {
         propertyParserFactory.getParser(PersonNames.class),
         "; ").get(vertex);
 
-    EntityRef ref = new EntityRef(type, id);
-    Map<String, Object> data = Maps.newHashMap();
-    data.put("authorName", authorNames);
-    ref.setData(data);
-    ref.setDisplayName(getDisplayName(vertex, authorNames));
-
-    return ref;
-  }
-
-  private String getDisplayName(Vertex vertex, String authorNames) {
     String title = propertyDescriptorFactory.getLocal("wwdocument_title",
         propertyParserFactory.getParser(String.class)).get(vertex);
 
     String date = propertyDescriptorFactory.getLocal("date",
         propertyParserFactory.getParser(Datable.class)).get(vertex);
 
+    EntityRef ref = new EntityRef(type, id);
+    ref.setDisplayName(getDisplayName(vertex, title, authorNames, date));
+
+    Map<String, Object> data = Maps.newHashMap();
+    data.put("_id", id);
+    data.put("authorName", authorNames);
+    ref.setData(data);
+
+    return ref;
+  }
+
+  private String getDisplayName(Vertex vertex, String title, String authorNames, String date) {
     StringBuilder displayNameBuilder = new StringBuilder();
 
     if (authorNames != null) {
       displayNameBuilder.append(authorNames).append(" - ");
     }
 
+    if (title == null && date == null && authorNames == null) {
+      title = "(empty)";
+    }
     displayNameBuilder.append(title);
 
     if (date != null) {
       displayNameBuilder.append(" (").append(date).append(")");
     }
 
-    return displayNameBuilder.toString();
 
+    return displayNameBuilder.toString();
   }
 
   @Override
