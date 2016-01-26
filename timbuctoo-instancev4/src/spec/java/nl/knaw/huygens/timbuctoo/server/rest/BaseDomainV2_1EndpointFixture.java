@@ -4,12 +4,17 @@ package nl.knaw.huygens.timbuctoo.server.rest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import io.dropwizard.testing.ResourceHelpers;
+import io.dropwizard.testing.junit.DropwizardAppRule;
 import nl.knaw.huygens.concordion.extensions.HttpExpectation;
 import nl.knaw.huygens.concordion.extensions.HttpRequest;
 import nl.knaw.huygens.concordion.extensions.HttpResult;
+import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
+import nl.knaw.huygens.timbuctoo.server.TimbuctooV4;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.junit.ClassRule;
 import org.skyscreamer.jsonassert.JSONCompare;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 import org.skyscreamer.jsonassert.JSONCompareResult;
@@ -30,9 +35,19 @@ public abstract class BaseDomainV2_1EndpointFixture extends AbstractV2_1Endpoint
   private String pid;
   private String authenticationToken;
 
+  @ClassRule
+  public static final DropwizardAppRule<TimbuctooConfiguration> APPLICATION;
+
+  static {
+    APPLICATION = new DropwizardAppRule<>(TimbuctooV4.class,
+      ResourceHelpers.resourceFilePath("default_acceptance_test_config.yaml"));
+  }
+
   @Override
   protected WebTarget returnUrlToMockedOrRealServer(String serverAddress) {
-    String address = serverAddress != null ? serverAddress : "http://test.repository.huygens.knaw.nl";
+    String defaultAddress = String.format("http://localhost:%d", APPLICATION.getLocalPort());
+    String address = serverAddress != null ? serverAddress : defaultAddress;
+
     return ClientBuilder.newClient().target(address);
   }
 
@@ -61,7 +76,6 @@ public abstract class BaseDomainV2_1EndpointFixture extends AbstractV2_1Endpoint
 
     return !idsToTest.containsAll(idsToBeContained);
   }
-
 
   private List<String> getIds(HttpResult result) {
     JsonNode body = getBody(result);
