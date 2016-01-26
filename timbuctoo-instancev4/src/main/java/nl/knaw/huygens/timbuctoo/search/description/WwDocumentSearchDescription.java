@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.model.Gender;
-import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
@@ -59,11 +58,19 @@ public class WwDocumentSearchDescription implements SearchDescription {
     String id = propertyDescriptorFactory
         .getLocal(ID_DB_PROP, new PropertyParserFactory().getParser(String.class)).get(vertex);
 
-    String authorNames = propertyDescriptorFactory.getDerivedWithSeparator(
+    PropertyDescriptor authorNameDescriptor = propertyDescriptorFactory.getDerivedWithSeparator(
         "isCreatedBy",
         "wwperson_names",
         propertyParserFactory.getParser(PersonNames.class),
-        "; ").get(vertex);
+        "; ");
+    PropertyDescriptor authorTempNameDescriptor = propertyDescriptorFactory.getDerivedWithSeparator(
+        "isCreatedBy",
+        "wwperson_tempName",
+        propertyParserFactory.getParser(String.class),
+        "; ");
+
+    String authorNames = propertyDescriptorFactory
+        .getComposite(authorNameDescriptor, authorTempNameDescriptor).get(vertex);
 
     String title = propertyDescriptorFactory.getLocal("wwdocument_title",
         propertyParserFactory.getParser(String.class)).get(vertex);

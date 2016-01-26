@@ -101,6 +101,20 @@ public class WwDocumentSearchDescriptionTest {
   }
 
   @Test
+  public void createRefAddsTheAuthorTempNameAsDisplayNameWhenNamesDoesNotExist() {
+    Vertex authorVertex = vertex().withProperty("wwperson_tempName", "temp name").build();
+    Vertex vertex = vertexWithId("id")
+        .withProperty("date", "1850")
+        .withProperty("wwdocument_title", "the title")
+        .withOutgoingRelation("isCreatedBy", authorVertex)
+        .build();
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getDisplayName(), is("temp name - the title (1850)"));
+  }
+
+  @Test
   public void createRefAddsSemiColonSeparatedTheNamesOfTheAuthors() {
     PersonNames names1 = new PersonNames();
     PersonNames names2 = new PersonNames();
