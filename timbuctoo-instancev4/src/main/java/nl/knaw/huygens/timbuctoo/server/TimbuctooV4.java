@@ -45,46 +45,41 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
   @Override
   public void run(TimbuctooConfiguration configuration, Environment environment) throws Exception {
-    Path loginsPath = Paths.get(configuration.getLoginsFilePath());
-    JsonBasedAuthenticator authenticator = new JsonBasedAuthenticator(loginsPath, ENCRYPTION_ALGORITHM);
+    // Support services
+    final Path loginsPath = Paths.get(configuration.getLoginsFilePath());
+    final Path usersPath = Paths.get(configuration.getUsersFilePath());
 
-    Path usersPath = Paths.get(configuration.getUsersFilePath());
     JsonBasedUserStore userStore = new JsonBasedUserStore(usersPath);
-
-    LoggedInUserStore loggedInUserStore = new LoggedInUserStore(
-      authenticator,
+    final LoggedInUserStore loggedInUserStore = new LoggedInUserStore(
+      new JsonBasedAuthenticator(loginsPath, ENCRYPTION_ALGORITHM),
       userStore,
-      configuration.getAutoLogoutTimeout());
+      configuration.getAutoLogoutTimeout()
+    );
+
+    final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration);
+    final Searcher searcher = new Searcher(graphManager, configuration.getSearchResultAvailabilityTimeout());
+
+    // lifecycle managers
+    environment.lifecycle().manage(graphManager);
 
     // register REST endpoints
-    environment.jersey().register(new AuthenticationV2_1EndPoint(loggedInUserStore));
-    environment.jersey().register(new UserV2_1Endpoint(loggedInUserStore));
-    environment.jersey().register(new FacetedSearchV2_1Endpoint(
-      new Searcher(getGraph(environment, configuration), configuration.getSearchResultAvailabilityTimeout())));
+    register(environment, new AuthenticationV2_1EndPoint(loggedInUserStore));
+    register(environment, new UserV2_1Endpoint(loggedInUserStore));
+    register(environment, new FacetedSearchV2_1Endpoint(searcher));
 
     // register health checks
-    registerHealthCheck(environment, "Encryption algorithm", new EncryptionAlgorithmHealthCheck(ENCRYPTION_ALGORITHM));
-    registerHealthCheck(environment, "Local logins file", new FileHealthCheck(loginsPath));
-    registerHealthCheck(environment, "Users file", new FileHealthCheck(usersPath));
+    register(environment, "Encryption algorithm", new EncryptionAlgorithmHealthCheck(ENCRYPTION_ALGORITHM));
+    register(environment, "Local logins file", new FileHealthCheck(loginsPath));
+    register(environment, "Users file", new FileHealthCheck(usersPath));
+    register(environment, "Neo4j database connection", graphManager);
   }
 
-
-
-  private Neo4jGraph getGraph(Environment environment, TimbuctooConfiguration configuration) {
-    File databasePath = new File(configuration.getDatabasePath());
-    GraphDatabaseService graphDatabase = new GraphDatabaseFactory()
-      .newEmbeddedDatabaseBuilder(databasePath)
-      .setConfig(GraphDatabaseSettings.allow_store_upgrade, "true")
-      .newGraphDatabase();
-
-    registerHealthCheck(environment, "Neo4j database connection", new Neo4jHealthCheck(graphDatabase, databasePath));
-
-    return Neo4jGraph.open(new Neo4jGraphAPIImpl(graphDatabase));
-  }
-
-  private void registerHealthCheck(Environment environment, String name, HealthCheck healthCheck) {
+  private void register(Environment environment, String name, HealthCheck healthCheck) {
     environment.healthChecks().register(name, healthCheck);
   }
 
+  private void register(Environment environment, Object component) {
+    environment.jersey().register(component);
+  }
 
 }

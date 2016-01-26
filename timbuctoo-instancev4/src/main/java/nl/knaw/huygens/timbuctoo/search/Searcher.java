@@ -3,8 +3,9 @@ package nl.knaw.huygens.timbuctoo.search;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -12,10 +13,10 @@ import java.util.UUID;
 public class Searcher {
 
   private final Cache<UUID, SearchResult> cache;
-  private final Graph graph;
+  private final GraphWrapper graphManager;
 
-  public Searcher(Graph graph, Timeout searchResultAvailabilityTime) {
-    this.graph = graph;
+  public Searcher(GraphWrapper graphManager, Timeout searchResultAvailabilityTime) {
+    this.graphManager = graphManager;
     cache = createCache(searchResultAvailabilityTime);
   }
 
@@ -28,9 +29,8 @@ public class Searcher {
   }
 
   public UUID search(TimbuctooQuery query) {
-
     UUID id = UUID.randomUUID();
-    cache.put(id, query.execute(graph));
+    cache.put(id, query.execute(graphManager.getGraph()));
     return id;
   }
 

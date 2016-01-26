@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.search;
 
+import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Before;
@@ -16,6 +17,7 @@ import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class SearcherTest {
 
@@ -30,7 +32,10 @@ public class SearcherTest {
     // makes sure a new search result is created with each invocation
     given(query.execute(NULL_GRAPH)).willAnswer(invocation -> mock(SearchResult.class));
 
-    instance = new Searcher(NULL_GRAPH, ONE_SECOND_TIMEOUT);
+    GraphWrapper graphWrapper = mock(GraphWrapper.class);
+    when(graphWrapper.getGraph()).thenReturn(NULL_GRAPH);
+
+    instance = new Searcher(graphWrapper, ONE_SECOND_TIMEOUT);
   }
 
   @Test
