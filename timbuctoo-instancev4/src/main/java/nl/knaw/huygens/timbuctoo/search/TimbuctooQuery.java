@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.search;
 
+import nl.knaw.huygens.timbuctoo.search.description.facet.Facet;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -19,6 +20,8 @@ public class TimbuctooQuery {
       .toList();
 
     List<EntityRef> refs = vertices.stream().map(vertex -> description.createRef(vertex)).collect(Collectors.toList());
-    return new SearchResult(refs, description);
+    List<Facet> facets = description.createFacets(vertices);
+
+    return new SearchResult(refs, description, facets);
   }
 }

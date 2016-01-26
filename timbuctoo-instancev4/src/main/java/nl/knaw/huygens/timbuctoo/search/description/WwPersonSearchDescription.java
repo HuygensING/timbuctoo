@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.search.description;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.Change;
@@ -11,9 +10,11 @@ import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.TimbuctooQuery;
-import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;
+import nl.knaw.huygens.timbuctoo.search.description.facet.Facet;
+import nl.knaw.huygens.timbuctoo.search.description.facet.FacetDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
+import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
@@ -22,11 +23,12 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.stream.Collectors.toList;
+
 class WwPersonSearchDescription implements SearchDescription {
   public static final Logger LOG = LoggerFactory.getLogger(WwPersonSearchDescription.class);
   private final PropertyParserFactory propertyParserFactory;
   private final PropertyDescriptorFactory propertyDescriptorFactory;
-  private ObjectMapper objectMapper;
 
   private static final List<String> SORTABLE_FIELDS = Lists.newArrayList(
     "dynamic_k_modified",
@@ -39,11 +41,19 @@ class WwPersonSearchDescription implements SearchDescription {
     "dynamic_t_notes",
     "dynamic_t_name");
   private final String type = "wwperson";
+  private List<FacetDescription> facetDescriptions;
 
   public WwPersonSearchDescription() {
-    objectMapper = new ObjectMapper();
     propertyParserFactory = new PropertyParserFactory();
     propertyDescriptorFactory = new PropertyDescriptorFactory();
+
+    FacetDescriptionFactory facetDescriptionFactory = new FacetDescriptionFactory();
+
+    facetDescriptions = Lists.newArrayList(
+      facetDescriptionFactory.createListFacetDescription("dynamic_s_gender",
+        "wwperson_gender",
+        propertyParserFactory.getParser(Gender.class)));
+
   }
 
   @Override
@@ -59,6 +69,12 @@ class WwPersonSearchDescription implements SearchDescription {
   @Override
   public TimbuctooQuery createQuery(SearchRequestV2_1 searchRequest) {
     return new TimbuctooQuery(this);
+  }
+
+  @Override
+  public List<Facet> createFacets(List<Vertex> vertices) {
+
+    return facetDescriptions.stream().map(facetDescription -> facetDescription.getFacet(vertices)).collect(toList());
   }
 
   @Override

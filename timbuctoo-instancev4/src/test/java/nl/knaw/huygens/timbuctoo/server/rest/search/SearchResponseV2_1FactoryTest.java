@@ -32,7 +32,8 @@ public class SearchResponseV2_1FactoryTest {
   public void fromReturnsASearchResponseV2_1WithTheFullTextSearchFieldsOfTheSearchResult() {
     List<String> fullTextSearchFields = Lists.newArrayList("field1", "field2");
     ArrayList<EntityRef> refs = Lists.newArrayList();
-    SearchResult searchResult = new SearchResult(refs, fullTextSearchFields, Lists.newArrayList());
+    SearchResult searchResult =
+      new SearchResult(refs, fullTextSearchFields, Lists.newArrayList(), Lists.newArrayList());
 
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 10, 0);
 
@@ -46,7 +47,7 @@ public class SearchResponseV2_1FactoryTest {
     List<String> fullTextSearchFields = Lists.newArrayList();
     List<String> sortableFields = Lists.newArrayList("field1", "field2");
 
-    SearchResult searchResult = new SearchResult(refs, fullTextSearchFields, sortableFields);
+    SearchResult searchResult = new SearchResult(refs, fullTextSearchFields, sortableFields, Lists.newArrayList());
 
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 10, 0);
 
@@ -57,7 +58,8 @@ public class SearchResponseV2_1FactoryTest {
   public void fromReturnsASearchResponseV2_1WithTheRefsFromTheSearchResult() {
     EntityRef entityRef = new EntityRef("type", "id");
     List<EntityRef> refs = Lists.newArrayList(entityRef);
-    SearchResult searchResult = new SearchResult(refs, Lists.newArrayList(), Lists.newArrayList());
+    SearchResult searchResult =
+      new SearchResult(refs, Lists.newArrayList(), Lists.newArrayList(), Lists.newArrayList());
 
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 10, 0);
 
@@ -68,7 +70,8 @@ public class SearchResponseV2_1FactoryTest {
   public void fromReturnsASearchResponseV2_1WithTheMaximumNumberOfRefsDescribed() {
     EntityRef entityRef1 = new EntityRef("type", "id");
     List<EntityRef> refs = Lists.newArrayList(entityRef1, new EntityRef("type", "id2"));
-    SearchResult searchResult = new SearchResult(refs, Lists.newArrayList(), Lists.newArrayList());
+    SearchResult searchResult =
+      new SearchResult(refs, Lists.newArrayList(), Lists.newArrayList(), Lists.newArrayList());
 
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 1, 0);
 
@@ -81,7 +84,8 @@ public class SearchResponseV2_1FactoryTest {
     EntityRef entityRef1 = new EntityRef("type", "id");
     EntityRef entityRef2 = new EntityRef("type", "id2");
     List<EntityRef> refs = Lists.newArrayList(entityRef1, entityRef2);
-    SearchResult searchResult = new SearchResult(refs, Lists.newArrayList(), Lists.newArrayList());
+    SearchResult searchResult =
+      new SearchResult(refs, Lists.newArrayList(), Lists.newArrayList(), Lists.newArrayList());
 
 
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 10, 0);
@@ -95,7 +99,8 @@ public class SearchResponseV2_1FactoryTest {
   public void fromSkipsTheNumberOfRefsDefinedInStart() {
     EntityRef entityRef2 = new EntityRef("type", "id2");
     List<EntityRef> refs = Lists.newArrayList(new EntityRef("type", "id"), entityRef2);
-    SearchResult searchResult = new SearchResult(refs, Lists.newArrayList(), Lists.newArrayList());
+    SearchResult searchResult =
+      new SearchResult(refs, Lists.newArrayList(), Lists.newArrayList(), Lists.newArrayList());
 
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 1, 1);
 
@@ -106,7 +111,7 @@ public class SearchResponseV2_1FactoryTest {
   @Test
   public void fromSetsTheStartWithTheStartParameter() {
     SearchResult searchResult = new SearchResult(Lists.newArrayList(new EntityRef("type", "id")), Lists.newArrayList(),
-      Lists.newArrayList());
+      Lists.newArrayList(), Lists.newArrayList());
     int start = 1;
 
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 1, start);
@@ -117,7 +122,7 @@ public class SearchResponseV2_1FactoryTest {
   @Test
   public void fromSetsTheRowsWithTheNumberOfRefsInTheResult() {
     SearchResult searchResult = new SearchResult(Lists.newArrayList(new EntityRef("type", "id")), Lists.newArrayList(),
-      Lists.newArrayList());
+      Lists.newArrayList(), Lists.newArrayList());
     int rows = 2;
 
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, rows, 0);
@@ -128,7 +133,8 @@ public class SearchResponseV2_1FactoryTest {
 
   @Test
   public void fromReturnsASearchResponseWithoutRefsWhenTheSearchResultDoesNotContainARef() {
-    SearchResult searchResult = new SearchResult(Lists.newArrayList(), Lists.newArrayList(), Lists.newArrayList());
+    SearchResult searchResult = new SearchResult(Lists.newArrayList(), Lists.newArrayList(), Lists.newArrayList(),
+      Lists.newArrayList());
 
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 2, 0);
 
@@ -139,7 +145,7 @@ public class SearchResponseV2_1FactoryTest {
   @Test
   public void fromReturnsASearchResponseWithoutRefsWhenTheStartIsLargerThanTheNumberOfRows() {
     SearchResult searchResult = new SearchResult(Lists.newArrayList(new EntityRef("type", "id")), Lists.newArrayList(),
-      Lists.newArrayList());
+      Lists.newArrayList(), Lists.newArrayList());
 
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 2, 2);
 

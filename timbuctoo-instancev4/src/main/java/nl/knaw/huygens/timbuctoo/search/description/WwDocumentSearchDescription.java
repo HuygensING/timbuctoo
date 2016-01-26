@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.TimbuctooQuery;
+import nl.knaw.huygens.timbuctoo.search.description.facet.Facet;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;
@@ -54,6 +55,11 @@ public class WwDocumentSearchDescription implements SearchDescription {
   @Override
   public TimbuctooQuery createQuery(SearchRequestV2_1 searchRequest) {
     return new TimbuctooQuery(this);
+  }
+
+  @Override
+  public List<Facet> createFacets(List<Vertex> vertices) {
+    throw new UnsupportedOperationException("Not implemented yet");
   }
 
   @Override
