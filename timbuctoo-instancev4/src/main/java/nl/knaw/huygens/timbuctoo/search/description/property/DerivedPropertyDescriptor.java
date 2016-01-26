@@ -32,7 +32,9 @@ public class DerivedPropertyDescriptor implements PropertyDescriptor {
     List<String> values = Lists.newArrayList();
 
     vertex.vertices(Direction.OUT, relationName).forEachRemaining(vertex1 -> {
-      values.add(parser.parse(vertex1.value(propertyName)));
+      if (vertex1.keys().contains(propertyName)) {
+        values.add(parser.parse(vertex1.value(propertyName)));
+      }
     });
 
     return values.isEmpty() ? null : String.join(separator, values);
