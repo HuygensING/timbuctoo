@@ -2,13 +2,17 @@ package nl.knaw.huygens.timbuctoo.search;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -65,7 +69,9 @@ public class MockVertexBuilder {
     when(vertex.vertices(any(Direction.class), anyString())).thenReturn(Lists.<Vertex>newArrayList().iterator());
 
     for (Map.Entry<String, List<Vertex>> entry : outGoingRelationMap.entrySet()) {
-      when(vertex.vertices(Direction.OUT, entry.getKey())).thenReturn(entry.getValue().iterator());
+      // Problem: with thenReturn iterator() is invoked at creation time,
+      // fixed by using thenAnswer() because iterator() is now invoked on vertices
+      when(vertex.vertices(Direction.OUT, entry.getKey())).thenAnswer(invocationOnMock -> entry.getValue().iterator());
     }
     return vertex;
   }
