@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.search.description;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.model.DocumentType;
 import nl.knaw.huygens.timbuctoo.model.Gender;
@@ -87,14 +88,19 @@ public class WwDocumentSearchDescription implements SearchDescription {
     data.put("authorName", authorNames);
     data.put("date", date);
     data.put("title", title);
+
     data.put("authorGender", propertyDescriptorFactory.getDerived(
         "isCreatedBy",
         "wwperson_gender",
         propertyParserFactory.getParser(Gender.class))
         .get(vertex));
+
     data.put("documentType", propertyDescriptorFactory
         .getLocal("wwdocument_documentType", propertyParserFactory.getParser(DocumentType.class))
         .get(vertex));
+
+    data.put("modified_date",
+        propertyDescriptorFactory.getLocal("modified", propertyParserFactory.getParser(Change.class)).get(vertex));
 
     ref.setData(data);
 

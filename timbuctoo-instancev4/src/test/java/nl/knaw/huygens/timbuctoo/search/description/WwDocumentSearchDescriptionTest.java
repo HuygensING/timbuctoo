@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.search.description;
 
+import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.DocumentType;
 import nl.knaw.huygens.timbuctoo.model.Gender;
 import nl.knaw.huygens.timbuctoo.model.PersonName;
@@ -14,7 +15,9 @@ import org.junit.Test;
 import static nl.knaw.huygens.timbuctoo.search.MockVertexBuilder.vertex;
 import static nl.knaw.huygens.timbuctoo.search.MockVertexBuilder.vertexWithId;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
 
 public class WwDocumentSearchDescriptionTest {
@@ -191,6 +194,36 @@ public class WwDocumentSearchDescriptionTest {
     EntityRef ref = instance.createRef(vertex);
 
     assertThat(ref.getData(), hasEntry("documentType", "DIARY"));
+  }
+
+  @Test
+  public void createRefAddsAModifiedDateWithValueNullWhenTheVertexDoesNotContainTheProperty() {
+    Vertex vertex = MockVertexBuilder.vertexWithId("id").build();
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), hasEntry(equalTo("modified_date"), nullValue()));
+  }
+
+  @Test
+  public void createRefAddsAModifiedDateWithValueNullWhenTheValueCouldNotBeRead() {
+    Vertex vertex = MockVertexBuilder.vertexWithId("id").withProperty("modified", "malformedChange").build();
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), hasEntry(equalTo("modified_date"), nullValue()));
+  }
+
+  @Test
+  public void createRefAddsModifiedDateToTheData() {
+    long timeStampOnJan20th2016 = 1453290593000L;
+    Change change = new Change(timeStampOnJan20th2016, "user", "vre");
+
+    Vertex vertex = MockVertexBuilder.vertexWithId("id").withProperty("modified", change).build();
+
+    EntityRef ref = instance.createRef(vertex);
+
+    assertThat(ref.getData(), hasEntry("modified_date", "20160120"));
   }
 
 
