@@ -59,11 +59,11 @@ public class SearchDescriptionFactory {
       .put("_id", propertyDescriptorFactory.getLocal("tim_id", String.class));
 
     List<FacetDescription> facetDescriptions = Lists.newArrayList(
-      facetDescriptionFactory.createListFacetDescription("dynamic_s_gender", "wwperson_gender", Gender.class),
+      facetDescriptionFactory.createListFacetDescription("dynamic_s_gender", Gender.class, "wwperson_gender"),
       facetDescriptionFactory
-        .createListFacetDescription("dynamic_s_deathplace", "names", LocationNames.class, "hasDeathPlace"),
+        .createListFacetDescription("dynamic_s_deathplace", LocationNames.class, "names", "hasDeathPlace"),
       facetDescriptionFactory
-        .createListFacetDescription("dynamic_s_birthplace", "names", LocationNames.class, "hasBirthPlace"));
+        .createListFacetDescription("dynamic_s_birthplace", LocationNames.class, "names", "hasBirthPlace"));
 
     PropertyDescriptor displayNameDescriptor = propertyDescriptorFactory.getComposite(
       propertyDescriptorFactory.getLocal("wwperson_names", PersonNames.class),

@@ -28,14 +28,14 @@ public class FacetDescriptionFactoryTest {
   public void createListFacetDescriptionCreatesAListFacetDescription() {
     PropertyParser parser = mock(PropertyParser.class);
 
-    FacetDescription description = instance.createListFacetDescription("facetName", "propertyName", parser);
+    FacetDescription description = instance.createListFacetDescription("propertyName", parser, "facetName");
 
     assertThat(description, is(instanceOf(ListFacetDescription.class)));
   }
 
   @Test
   public void createListFacetLetsThePropertyParserFactoryCreateAParser() {
-    FacetDescription description = instance.createListFacetDescription("facetName", "propertyName", String.class);
+    FacetDescription description = instance.createListFacetDescription("facetName", String.class, "propertyName");
 
     assertThat(description, is(notNullValue()));
     verify(parserFactory).getParser(String.class);
@@ -45,7 +45,7 @@ public class FacetDescriptionFactoryTest {
   public void createListFacetDescriptionWithARelationCreatesADerivedListFacetDescription() {
     PropertyParser parser = mock(PropertyParser.class);
 
-    FacetDescription description = instance.createListFacetDescription("facetName", "propertyName", parser, "relation");
+    FacetDescription description = instance.createListFacetDescription("facetName", parser, "propertyName", "relation");
 
     assertThat(description, is(instanceOf(DerivedListFacetDescription.class)));
   }
@@ -53,7 +53,7 @@ public class FacetDescriptionFactoryTest {
   @Test
   public void createListFacetWithARelationLetsThePropertyParserFactoryCreateAParser() {
     FacetDescription description =
-      instance.createListFacetDescription("facetName", "propertyName", String.class, "relation");
+      instance.createListFacetDescription("facetName", String.class, "propertyName", "relation");
 
     verify(parserFactory).getParser(String.class);
   }
