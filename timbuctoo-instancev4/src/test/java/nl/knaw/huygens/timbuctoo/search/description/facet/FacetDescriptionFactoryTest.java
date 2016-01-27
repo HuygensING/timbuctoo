@@ -9,6 +9,7 @@ import org.junit.Test;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -35,6 +36,24 @@ public class FacetDescriptionFactoryTest {
   @Test
   public void createListFacetLetsThePropertyParserFactoryCreateAParser() {
     FacetDescription description = instance.createListFacetDescription("facetName", "propertyName", String.class);
+
+    assertThat(description, is(notNullValue()));
+    verify(parserFactory).getParser(String.class);
+  }
+
+  @Test
+  public void createListFacetDescriptionWithARelationCreatesADerivedListFacetDescription() {
+    PropertyParser parser = mock(PropertyParser.class);
+
+    FacetDescription description = instance.createListFacetDescription("facetName", "propertyName", parser, "relation");
+
+    assertThat(description, is(instanceOf(DerivedListFacetDescription.class)));
+  }
+
+  @Test
+  public void createListFacetWithARelationLetsThePropertyParserFactoryCreateAParser() {
+    FacetDescription description =
+      instance.createListFacetDescription("facetName", "propertyName", String.class, "relation");
 
     verify(parserFactory).getParser(String.class);
   }

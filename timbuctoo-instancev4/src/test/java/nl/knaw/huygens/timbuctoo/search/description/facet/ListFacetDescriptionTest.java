@@ -6,15 +6,17 @@ import nl.knaw.huygens.timbuctoo.search.description.facet.Facet.Option;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static nl.knaw.huygens.timbuctoo.search.MockVertexBuilder.vertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 
 public class ListFacetDescriptionTest {
@@ -33,9 +35,26 @@ public class ListFacetDescriptionTest {
   }
 
   @Test
+  public void getFacetReturnsAnEmptyListOfCountsWhenNotVerticesContainTheProperty() {
+    PropertyParser parser = mock(PropertyParser.class);
+    String facetName = "facetName";
+    String property = "property";
+    ListFacetDescription instance = new ListFacetDescription(facetName, property, parser);
+
+    ArrayList<Vertex> vertices = Lists.newArrayList(
+      vertex().build(),
+      vertex().build()
+    );
+
+    Facet facet = instance.getFacet(vertices);
+
+    assertThat(facet.getOptions(), is(empty()));
+  }
+
+  @Test
   public void getFacetReturnsTheFacetWithItsCounts() {
     PropertyParser parser = mock(PropertyParser.class);
-    given(parser.parse(any())).willAnswer(invocation -> invocation.getArguments()[0]);
+    given(parser.parse(anyString())).willAnswer(invocation -> invocation.getArguments()[0]);
     String facetName = "facetName";
     String property = "property";
     ListFacetDescription instance = new ListFacetDescription(facetName, property, parser);
