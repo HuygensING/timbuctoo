@@ -44,7 +44,7 @@ public class DefaultSearchDescriptionTest {
   }
 
   @Test
-  public void createFacetsLetsEachFacetDescriptionFillAListOfFacets(){
+  public void createFacetsLetsEachFacetDescriptionFillAListOfFacets() {
     FacetDescription facetDescription1 = mock(FacetDescription.class);
     FacetDescription facetDescription2 = mock(FacetDescription.class);
     List<FacetDescription> facetDescriptions = Lists.newArrayList(facetDescription1, facetDescription2);
