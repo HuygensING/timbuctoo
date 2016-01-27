@@ -61,7 +61,9 @@ public class SearchDescriptionFactory {
     List<FacetDescription> facetDescriptions = Lists.newArrayList(
       facetDescriptionFactory.createListFacetDescription("dynamic_s_gender", "wwperson_gender", Gender.class),
       facetDescriptionFactory
-        .createListFacetDescription("dynamic_s_deathplace", "names", LocationNames.class, "hasDeathPlace"));
+        .createListFacetDescription("dynamic_s_deathplace", "names", LocationNames.class, "hasDeathPlace"),
+      facetDescriptionFactory
+        .createListFacetDescription("dynamic_s_birthplace", "names", LocationNames.class, "hasBirthPlace"));
 
     PropertyDescriptor displayNameDescriptor = propertyDescriptorFactory.getComposite(
       propertyDescriptorFactory.getLocal("wwperson_names", PersonNames.class),
