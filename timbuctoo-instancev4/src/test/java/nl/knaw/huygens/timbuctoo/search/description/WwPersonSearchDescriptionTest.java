@@ -50,8 +50,8 @@ public class WwPersonSearchDescriptionTest {
         propertyDescriptorFactory.getLocal("wwperson_names", propertyParserFactory.getParser(PersonNames.class)),
         propertyDescriptorFactory.getLocal("wwperson_tempName", propertyParserFactory.getParser(String.class))),
       Lists.newArrayList(
-        facetDescriptionFactory.createListFacetDescription("wwperson_gender",
-          propertyParserFactory.getParser(Gender.class), "dynamic_s_gender"
+        facetDescriptionFactory.createListFacetDescription("dynamic_s_gender",
+          propertyParserFactory.getParser(Gender.class), "wwperson_gender"
         )), dataPropertyDescriptors, Lists.newArrayList(
             "dynamic_k_modified",
             "dynamic_k_birthDate",

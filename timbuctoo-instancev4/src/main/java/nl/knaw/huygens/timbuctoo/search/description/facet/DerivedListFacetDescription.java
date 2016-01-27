@@ -16,13 +16,14 @@ public class DerivedListFacetDescription implements FacetDescription {
   private final String facetName;
   private final String propertyName;
   private final PropertyParser parser;
-  private final String relation;
+  private final String[] relations;
 
-  public DerivedListFacetDescription(String facetName, String propertyName, PropertyParser parser, String relation) {
+  public DerivedListFacetDescription(String facetName, String propertyName, PropertyParser parser,
+                                     String... relations) {
     this.facetName = facetName;
     this.propertyName = propertyName;
     this.parser = parser;
-    this.relation = relation;
+    this.relations = relations;
   }
 
   @Override
@@ -30,7 +31,7 @@ public class DerivedListFacetDescription implements FacetDescription {
     Map<String, Long> counts = Maps.newHashMap();
 
     for (Vertex vertex : vertices) {
-      for (Iterator<Vertex> related = vertex.vertices(Direction.OUT, relation); related.hasNext(); ) {
+      for (Iterator<Vertex> related = vertex.vertices(Direction.OUT, relations); related.hasNext(); ) {
         Vertex next = related.next();
         if (next.keys().contains(propertyName)) {
           String value = parser.parse(next.value(propertyName));

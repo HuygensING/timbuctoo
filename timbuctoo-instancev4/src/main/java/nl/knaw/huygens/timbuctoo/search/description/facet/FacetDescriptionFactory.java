@@ -11,21 +11,21 @@ public class FacetDescriptionFactory {
     this.parserFactory = parserFactory;
   }
 
-  public FacetDescription createListFacetDescription(String propertyName, PropertyParser parser, String facetName) {
+  public FacetDescription createListFacetDescription(String facetName, PropertyParser parser, String propertyName) {
     return new ListFacetDescription(facetName, propertyName, parser);
   }
 
   public FacetDescription createListFacetDescription(String facetName, Class<?> typeToParse, String propertyName) {
-    return this.createListFacetDescription(propertyName, parserFactory.getParser(typeToParse), facetName);
+    return this.createListFacetDescription(facetName, parserFactory.getParser(typeToParse), propertyName);
   }
 
   public FacetDescription createListFacetDescription(String facetName, PropertyParser parser, String propertyName,
-                                                     String relation) {
-    return new DerivedListFacetDescription(facetName, propertyName, parser, relation);
+                                                     String... relations) {
+    return new DerivedListFacetDescription(facetName, propertyName, parser, relations);
   }
 
   public FacetDescription createListFacetDescription(String facetName, Class<?> typeToParse, String propertyName,
-                                                     String relation) {
-    return this.createListFacetDescription(facetName, parserFactory.getParser(typeToParse), propertyName, relation);
+                                                     String... relations) {
+    return this.createListFacetDescription(facetName, parserFactory.getParser(typeToParse), propertyName, relations);
   }
 }

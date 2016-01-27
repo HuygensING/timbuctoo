@@ -63,7 +63,12 @@ public class SearchDescriptionFactory {
       facetDescriptionFactory
         .createListFacetDescription("dynamic_s_deathplace", LocationNames.class, "names", "hasDeathPlace"),
       facetDescriptionFactory
-        .createListFacetDescription("dynamic_s_birthplace", LocationNames.class, "names", "hasBirthPlace"));
+        .createListFacetDescription("dynamic_s_birthplace", LocationNames.class, "names", "hasBirthPlace"),
+      facetDescriptionFactory.createListFacetDescription(
+        "dynamic_s_relatedLocations",
+        LocationNames.class,
+        "names",
+        "hasBirthPlace", "hasDeathPlace", "hasResidenceLocation"));
 
     PropertyDescriptor displayNameDescriptor = propertyDescriptorFactory.getComposite(
       propertyDescriptorFactory.getLocal("wwperson_names", PersonNames.class),

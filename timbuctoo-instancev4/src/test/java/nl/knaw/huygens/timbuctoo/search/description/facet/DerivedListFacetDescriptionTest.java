@@ -27,30 +27,31 @@ public class DerivedListFacetDescriptionTest {
   public static final String PROPERTY = "property";
   public static final String VALUE1 = "value1";
   public static final String VALUE2 = "value2";
-  private DerivedListFacetDescription instance;
+  public static final String RELATION_2 = "relation2";
   private PropertyParser parser;
 
   @Before
   public void setUp() throws Exception {
     parser = mock(PropertyParser.class);
     given(parser.parse(anyString())).willAnswer(invocation -> invocation.getArguments()[0]);
-    instance = new DerivedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION);
   }
 
   @Test
   public void getFacetReturnsTheFacetWithItsName() {
-    String facetName = FACET_NAME;
     DerivedListFacetDescription instance =
-      new DerivedListFacetDescription(facetName, PROPERTY, mock(PropertyParser.class), RELATION);
+      new DerivedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION);
 
     Facet facet = instance.getFacet(Lists.newArrayList(vertex().build()));
 
     assertThat(facet, is(notNullValue()));
-    assertThat(facet.getName(), is(facetName));
+    assertThat(facet.getName(), is(FACET_NAME));
   }
 
   @Test
   public void getFacetReturnsTheFacetWithAnEmptyOptionsListWhenTheVerticesListIsEmpty() {
+    DerivedListFacetDescription instance =
+      new DerivedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION);
+
     Facet facet = instance.getFacet(Lists.newArrayList());
 
     assertThat(facet.getOptions(), is(empty()));
@@ -58,6 +59,8 @@ public class DerivedListFacetDescriptionTest {
 
   @Test
   public void getFacetReturnsTheFacetWithAnEmptyOptionsListWhenTheVerticesDoNotContainTheRelation() {
+    DerivedListFacetDescription instance =
+      new DerivedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION);
     List<Vertex> vertices = Lists.newArrayList(vertex().build(), vertex().build());
 
     Facet facet = instance.getFacet(vertices);
@@ -67,6 +70,8 @@ public class DerivedListFacetDescriptionTest {
 
   @Test
   public void getFacetReturnsTheFacetWithAnEmptyOptionsListWhenTheRelatedVerticesDoNotContainTheProperty() {
+    DerivedListFacetDescription instance =
+      new DerivedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION);
     List<Vertex> vertices = Lists.newArrayList(
       vertex().withOutgoingRelation(RELATION, vertex().build()).build(),
       vertex().withOutgoingRelation(RELATION, vertex().build()).build());
@@ -78,6 +83,8 @@ public class DerivedListFacetDescriptionTest {
 
   @Test
   public void getFacetAddsTheDifferentValuesToTheOptionsList() {
+    DerivedListFacetDescription instance =
+      new DerivedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION);
     List<Vertex> vertices = Lists.newArrayList(
       vertex().withOutgoingRelation(RELATION, vertex().withProperty(PROPERTY, VALUE1).build()).build(),
       vertex().withOutgoingRelation(RELATION, vertex().withProperty(PROPERTY, VALUE2).build()).build());
@@ -89,6 +96,8 @@ public class DerivedListFacetDescriptionTest {
 
   @Test
   public void getFacetLetsTheParserParseEachValue() {
+    DerivedListFacetDescription instance =
+      new DerivedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION);
     List<Vertex> vertices = Lists.newArrayList(
       vertex().withOutgoingRelation(RELATION, vertex().withProperty(PROPERTY, VALUE1).build()).build(),
       vertex().withOutgoingRelation(RELATION, vertex().withProperty(PROPERTY, VALUE2).build()).build(),
@@ -102,6 +111,8 @@ public class DerivedListFacetDescriptionTest {
 
   @Test
   public void getFacetGroupsTheCountsOfOneValue() {
+    DerivedListFacetDescription instance =
+      new DerivedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION);
     List<Vertex> vertices = Lists.newArrayList(
       vertex().withOutgoingRelation(RELATION, vertex().withProperty(PROPERTY, VALUE1).build()).build(),
       vertex().withOutgoingRelation(RELATION, vertex().withProperty(PROPERTY, VALUE1).build()).build());
@@ -113,9 +124,24 @@ public class DerivedListFacetDescriptionTest {
 
   @Test
   public void getFacetAddsTheValueOfEachRelatedVertex() {
+    DerivedListFacetDescription instance =
+      new DerivedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION);
     List<Vertex> vertices = Lists.newArrayList(
       vertex().withOutgoingRelation(RELATION, vertex().withProperty(PROPERTY, VALUE1).build())
               .withOutgoingRelation(RELATION, vertex().withProperty(PROPERTY, VALUE2).build()).build());
+
+    Facet facet = instance.getFacet(vertices);
+
+    assertThat(facet.getOptions(), containsInAnyOrder(new Facet.Option(VALUE1, 1), new Facet.Option(VALUE2, 1)));
+  }
+
+  @Test
+  public void getFacetAddsTheValueOfEachRelationType() {
+    DerivedListFacetDescription instance =
+      new DerivedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION, RELATION_2);
+    List<Vertex> vertices = Lists.newArrayList(
+      vertex().withOutgoingRelation(RELATION, vertex().withProperty(PROPERTY, VALUE1).build())
+              .withOutgoingRelation(RELATION_2, vertex().withProperty(PROPERTY, VALUE2).build()).build());
 
     Facet facet = instance.getFacet(vertices);
 

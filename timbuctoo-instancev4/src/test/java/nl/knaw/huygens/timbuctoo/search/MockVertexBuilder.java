@@ -2,24 +2,22 @@ package nl.knaw.huygens.timbuctoo.search;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static nl.knaw.huygens.timbuctoo.search.SearchDescription.ID_DB_PROP;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.anyVararg;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -28,7 +26,7 @@ public class MockVertexBuilder {
   private final Vertex vertex;
   private final ObjectMapper objectMapper;
   private final Set<String> keys;
-  private final HashMap<String, List<Vertex>> outGoingRelationMap;
+  private final Map<String, List<Vertex>> outGoingRelationMap;
 
   private MockVertexBuilder() {
     objectMapper = new ObjectMapper();
@@ -68,11 +66,26 @@ public class MockVertexBuilder {
 
     when(vertex.vertices(any(Direction.class), anyString())).thenReturn(Lists.<Vertex>newArrayList().iterator());
 
-    for (Map.Entry<String, List<Vertex>> entry : outGoingRelationMap.entrySet()) {
-      // Problem: with thenReturn iterator() is invoked at creation time,
-      // fixed by using thenAnswer() because iterator() is now invoked on vertices
-      when(vertex.vertices(Direction.OUT, entry.getKey())).thenAnswer(invocationOnMock -> entry.getValue().iterator());
-    }
+    // Problem: with thenReturn iterator() is invoked at creation time,
+    // fixed by using thenAnswer() because iterator() is now invoked on vertices
+    // Problem2: vertices accepts a vararg, to support the vararg the vertices of all the relations should be combined
+    when(vertex.vertices(argThat(is(Direction.OUT)), anyVararg())).thenAnswer(invocationOnMock -> {
+      List<Object> vertices = Lists.newArrayList();
+      boolean isFirst = true;
+
+      for (Object argument : invocationOnMock.getArguments()) {
+        if (isFirst) {
+          isFirst = false;
+          continue;
+        }
+        if (outGoingRelationMap.containsKey(argument)) {
+          vertices.addAll(outGoingRelationMap.get(argument));
+        }
+      }
+
+      return vertices.iterator();
+    });
+
     return vertex;
   }
 
