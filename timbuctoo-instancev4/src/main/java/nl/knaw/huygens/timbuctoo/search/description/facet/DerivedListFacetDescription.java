@@ -45,9 +45,9 @@ public class DerivedListFacetDescription implements FacetDescription {
     }
 
     List<Facet.Option> options = counts.entrySet().stream().map(
-      count -> new Facet.Option(count.getKey(), count.getValue())).collect(toList());
+      count -> new Facet.DefaultOption(count.getKey(), count.getValue())).collect(toList());
 
 
-    return new Facet(facetName, options);
+    return new Facet(facetName, options, "LIST");
   }
 }

@@ -51,7 +51,7 @@ public class FacetDescriptionFactoryTest {
   }
 
   @Test
-  public void createListFacetWithARelationLetsThePropertyParserFactoryCreateAParser() {
+  public void createListFacetDescriptionWithARelationLetsThePropertyParserFactoryCreateAParser() {
     FacetDescription description =
       instance.createListFacetDescription("facetName", String.class, "propertyName", "relation");
 
@@ -69,11 +69,18 @@ public class FacetDescriptionFactoryTest {
   }
 
   @Test
-  public void createListFacetWithMultipleRelationsLetsThePropertyParserFactoryCreateAParser() {
+  public void createListFacetDescriptionWithMultipleRelationsLetsThePropertyParserFactoryCreateAParser() {
     FacetDescription description =
       instance.createListFacetDescription("facetName", String.class, "propertyName", "relation", "relation2");
 
     verify(parserFactory).getParser(String.class);
+  }
+
+  @Test
+  public void createRangeFacetCreatesARangeFacetDescriptionCreateARangeFacetDescription() {
+    FacetDescription facetDescription = instance.createRangeFacetDescription("facetName", "propertyName");
+
+    assertThat(facetDescription, is(instanceOf(DateRangeFacetDescription.class)));
   }
 
 }

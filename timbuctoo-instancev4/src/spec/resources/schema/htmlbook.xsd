@@ -230,12 +230,12 @@
 <xs:element name="div">
   <xs:complexType mixed="true">
     <xs:choice>
-      <!-- Option 1: Optional heading(s) followed by block elements -->
+      <!-- DefaultOption 1: Optional heading(s) followed by block elements -->
       <xs:sequence>
         <xs:group ref="headings" minOccurs="0" maxOccurs="unbounded"/>
         <xs:group ref="blockelements" minOccurs="0" maxOccurs="unbounded"/>
       </xs:sequence>
-      <!-- Option 2: inlines and text only -->
+      <!-- DefaultOption 2: inlines and text only -->
       <xs:group ref="inlineelements" minOccurs="0" maxOccurs="unbounded"/>
     </xs:choice>
     <xs:attributeGroup ref="globals"/>

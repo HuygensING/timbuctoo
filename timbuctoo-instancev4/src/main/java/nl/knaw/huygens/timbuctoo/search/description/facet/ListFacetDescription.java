@@ -31,8 +31,8 @@ public class ListFacetDescription implements FacetDescription {
                                          groupingBy(vertex1 -> parser.parse(vertex1.value(propertyName)), counting()));
 
     List<Facet.Option> options =
-      counts.entrySet().stream().map(entry -> new Facet.Option(entry.getKey(), entry.getValue()))
+      counts.entrySet().stream().map(entry -> new Facet.DefaultOption(entry.getKey(), entry.getValue()))
             .collect(Collectors.toList());
-    return new Facet(facetName, options);
+    return new Facet(facetName, options, "LIST");
   }
 }

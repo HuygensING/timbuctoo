@@ -159,7 +159,7 @@ public class SearchResponseV2_1FactoryTest {
   @Test
   public void fromReturnsASearchResponseWithTheFacets() {
     SearchResult searchResult = new SearchResult(Lists.newArrayList(), Lists.newArrayList(), Lists.newArrayList(),
-      Lists.newArrayList(new Facet("name", Lists.newArrayList())));
+      Lists.newArrayList(new Facet("name", Lists.newArrayList(), "LIST")));
 
     SearchResponseV2_1 response = instance.createResponse(searchResult, 2, 2);
 

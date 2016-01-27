@@ -10,10 +10,12 @@ import java.util.List;
 
 import static nl.knaw.huygens.timbuctoo.search.MockVertexBuilder.vertex;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -37,14 +39,15 @@ public class DerivedListFacetDescriptionTest {
   }
 
   @Test
-  public void getFacetReturnsTheFacetWithItsName() {
+  public void getFacetReturnsTheFacetWithItsNameAndTypeList() {
     DerivedListFacetDescription instance =
       new DerivedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION);
 
     Facet facet = instance.getFacet(Lists.newArrayList(vertex().build()));
 
-    assertThat(facet, is(notNullValue()));
-    assertThat(facet.getName(), is(FACET_NAME));
+    assertThat(facet, allOf(
+      hasProperty("name", equalTo(FACET_NAME)),
+      hasProperty("type", equalTo("LIST"))));
   }
 
   @Test
@@ -91,7 +94,8 @@ public class DerivedListFacetDescriptionTest {
 
     Facet facet = instance.getFacet(vertices);
 
-    assertThat(facet.getOptions(), containsInAnyOrder(new Facet.Option(VALUE1, 1), new Facet.Option(VALUE2, 1)));
+    assertThat(facet.getOptions(),
+      containsInAnyOrder(new Facet.DefaultOption(VALUE1, 1), new Facet.DefaultOption(VALUE2, 1)));
   }
 
   @Test
@@ -119,7 +123,7 @@ public class DerivedListFacetDescriptionTest {
 
     Facet facet = instance.getFacet(vertices);
 
-    assertThat(facet.getOptions(), containsInAnyOrder(new Facet.Option(VALUE1, 2)));
+    assertThat(facet.getOptions(), containsInAnyOrder(new Facet.DefaultOption(VALUE1, 2)));
   }
 
   @Test
@@ -132,7 +136,8 @@ public class DerivedListFacetDescriptionTest {
 
     Facet facet = instance.getFacet(vertices);
 
-    assertThat(facet.getOptions(), containsInAnyOrder(new Facet.Option(VALUE1, 1), new Facet.Option(VALUE2, 1)));
+    assertThat(facet.getOptions(),
+      containsInAnyOrder(new Facet.DefaultOption(VALUE1, 1), new Facet.DefaultOption(VALUE2, 1)));
   }
 
   @Test
@@ -145,7 +150,8 @@ public class DerivedListFacetDescriptionTest {
 
     Facet facet = instance.getFacet(vertices);
 
-    assertThat(facet.getOptions(), containsInAnyOrder(new Facet.Option(VALUE1, 1), new Facet.Option(VALUE2, 1)));
+    assertThat(facet.getOptions(),
+      containsInAnyOrder(new Facet.DefaultOption(VALUE1, 1), new Facet.DefaultOption(VALUE2, 1)));
   }
 
 

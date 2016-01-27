@@ -28,4 +28,8 @@ public class FacetDescriptionFactory {
                                                      String... relations) {
     return this.createListFacetDescription(facetName, parserFactory.getParser(typeToParse), propertyName, relations);
   }
+
+  public FacetDescription createRangeFacetDescription(String facetName, String propertyName) {
+    return new DateRangeFacetDescription(facetName, propertyName);
+  }
 }

@@ -68,7 +68,8 @@ public class SearchDescriptionFactory {
         "dynamic_s_relatedLocations",
         LocationNames.class,
         "names",
-        "hasBirthPlace", "hasDeathPlace", "hasResidenceLocation"));
+        "hasBirthPlace", "hasDeathPlace", "hasResidenceLocation"),
+      facetDescriptionFactory.createRangeFacetDescription("dynamic_i_deathDate", "wwperson_deathDate"));
 
     PropertyDescriptor displayNameDescriptor = propertyDescriptorFactory.getComposite(
       propertyDescriptorFactory.getLocal("wwperson_names", PersonNames.class),
