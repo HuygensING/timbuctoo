@@ -59,4 +59,65 @@ public class DefaultSearchDescriptionTest {
     verify(facetDescription1).getFacet(vertices);
     verify(facetDescription2).getFacet(vertices);
   }
+
+  static class DefaultSearchDescription extends AbstractSearchDescription {
+    private final List<String> sortableFields;
+
+    private final List<String> fullTextSearchFields;
+    private final String type;
+    private final PropertyDescriptor idDescriptor;
+    private List<FacetDescription> facetDescriptions;
+    private final Map<String, PropertyDescriptor> dataPropertyDescriptors;
+    private final PropertyDescriptor displayNameDescriptor;
+
+    public DefaultSearchDescription(PropertyDescriptor idDescriptor, PropertyDescriptor displayNameDescriptor,
+                                    List<FacetDescription> facetDescriptions,
+                                    Map<String, PropertyDescriptor> dataPropertyDescriptors,
+                                    List<String> sortableFields, List<String> fullTextSearchFields,
+                                    String type) {
+      this.facetDescriptions = facetDescriptions;
+      this.dataPropertyDescriptors = dataPropertyDescriptors;
+      this.displayNameDescriptor = displayNameDescriptor;
+      this.idDescriptor = idDescriptor;
+      this.sortableFields = sortableFields;
+      this.fullTextSearchFields = fullTextSearchFields;
+      this.type = type;
+    }
+
+    @Override
+    public List<String> getSortableFields() {
+      return sortableFields;
+    }
+
+    @Override
+    public List<String> getFullTextSearchFields() {
+      return fullTextSearchFields;
+    }
+
+    @Override
+    protected List<FacetDescription> getFacetDescriptions() {
+      return facetDescriptions;
+    }
+
+    @Override
+    protected Map<String, PropertyDescriptor> getDataPropertyDescriptors() {
+      return dataPropertyDescriptors;
+    }
+
+    @Override
+    protected PropertyDescriptor getDisplayNameDescriptor() {
+      return displayNameDescriptor;
+    }
+
+    @Override
+    protected PropertyDescriptor getIdDescriptor() {
+      return idDescriptor;
+    }
+
+    @Override
+    protected String getType() {
+      return type;
+    }
+
+  }
 }

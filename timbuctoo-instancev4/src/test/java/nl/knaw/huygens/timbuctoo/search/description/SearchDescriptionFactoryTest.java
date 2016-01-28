@@ -29,7 +29,7 @@ public class SearchDescriptionFactoryTest {
   public void createCreatesADefaultSearchDescriptionForTheStringWwPerson() {
     Optional<SearchDescription> searchDescription = instance.create("wwperson");
 
-    assertThat(searchDescription.get(), is(instanceOf(DefaultSearchDescription.class)));
+    assertThat(searchDescription.get(), is(instanceOf(WwPersonSearchDescription.class)));
   }
 
   @Test
