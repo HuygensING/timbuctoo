@@ -16,6 +16,7 @@ import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParse
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 public class SearchDescriptionFactory {
   private FacetDescriptionFactory facetDescriptionFactory;
@@ -33,13 +34,13 @@ public class SearchDescriptionFactory {
     this.propertyDescriptorFactory = propertyDescriptorFactory;
   }
 
-  public SearchDescription create(String entityName) {
+  public Optional<SearchDescription> create(String entityName) {
     if (Objects.equals(entityName, "wwperson")) {
-      return getWwPersonSearchDescription();
+      return Optional.of(getWwPersonSearchDescription());
     } else if (Objects.equals(entityName, "wwdocument")) {
-      return new WwDocumentSearchDescription();
+      return Optional.of(new WwDocumentSearchDescription());
     }
-    throw new IllegalArgumentException(String.format("No SearchDescription for '%s'", entityName));
+    return Optional.empty();
   }
 
   private SearchDescription getWwPersonSearchDescription() {

@@ -2,9 +2,9 @@ package nl.knaw.huygens.timbuctoo.server.rest;
 
 import io.dropwizard.jersey.params.UUIDParam;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
-import nl.knaw.huygens.timbuctoo.search.description.SearchDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.search.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.Searcher;
+import nl.knaw.huygens.timbuctoo.search.description.SearchDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchResponseV2_1Factory;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchResponseV2_1RefAdder;
@@ -41,11 +41,18 @@ public class FacetedSearchV2_1Endpoint {
   @POST
   @Path("{entityName: [a-z]+}s")
   public Response post(@PathParam("entityName") String entityName, SearchRequestV2_1 searchRequest) {
-    UUID uuid = searcher.search(getDescription(entityName).createQuery(searchRequest));
 
-    URI uri = createUri(uuid);
+    Optional<SearchDescription> description = getDescription(entityName);
 
-    return Response.created(uri).build();
+    if (description.isPresent()) {
+      UUID uuid = searcher.search(description.get().createQuery(searchRequest));
+
+      URI uri = createUri(uuid);
+
+      return Response.created(uri).build();
+    }
+
+    return Response.status(Response.Status.BAD_REQUEST).entity(new InvalidCollectionMessage(entityName)).build();
   }
 
   private URI createUri(UUID uuid) {
@@ -75,7 +82,7 @@ public class FacetedSearchV2_1Endpoint {
       .build();
   }
 
-  private SearchDescription getDescription(String entityName) {
+  private Optional<SearchDescription> getDescription(String entityName) {
     return searchDescriptionFactory.create(entityName);
   }
 
@@ -85,6 +92,15 @@ public class FacetedSearchV2_1Endpoint {
 
     public NotFoundMessage(UUIDParam id) {
       message = String.format("No SearchResult with id '%s'", id.get());
+    }
+  }
+
+  private class InvalidCollectionMessage {
+    public final String message;
+    public final int statusCode = 400;
+
+    public InvalidCollectionMessage(String entityName) {
+      message = String.format("'%s' is not a valid collection", entityName);
     }
   }
 }

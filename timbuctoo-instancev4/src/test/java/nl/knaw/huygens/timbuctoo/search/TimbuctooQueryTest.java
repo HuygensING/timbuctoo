@@ -14,7 +14,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 
 public class TimbuctooQueryTest {
 
-  public static final SearchDescription WWPERSON_DESC = new SearchDescriptionFactory().create("wwperson");
+  public static final SearchDescription WWPERSON_DESC = new SearchDescriptionFactory().create("wwperson").get();
 
   @Test
   public void returnsASearchRefsWithTheRefsOfTheVerticesWithTheTypeOfTheDescription() {

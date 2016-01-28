@@ -35,6 +35,11 @@
           Location:
         </div>
     </aside>
+    <aside class="note">
+        <span>A request for search to an unknown collection will result in a <em>
+          <span c:assertEquals="doSearchToUnknownColletion()">400 Bad Request</span></em>
+        </span>
+    </aside>
     <p>
       You then get a Location header back (In this case <small><span c:echo="#searchPost.headers.location"></span></small>)
       that contains <span c:assertEquals="isFullyQualified(#searchPost.headers.location)">a fully qualified HTTP url</span>.
