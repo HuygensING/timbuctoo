@@ -61,13 +61,13 @@ public class SearchDescriptionFactory {
     List<FacetDescription> facetDescriptions = Lists.newArrayList(
       facetDescriptionFactory.createListFacetDescription("dynamic_s_gender", Gender.class, "wwperson_gender"),
       facetDescriptionFactory
-        .createListFacetDescription("dynamic_s_deathplace", LocationNames.class, "names", "hasDeathPlace"),
+        .createListFacetDescription("dynamic_s_deathplace", LocationNames.class, "wwlocation_names", "hasDeathPlace"),
       facetDescriptionFactory
-        .createListFacetDescription("dynamic_s_birthplace", LocationNames.class, "names", "hasBirthPlace"),
+        .createListFacetDescription("dynamic_s_birthplace", LocationNames.class, "wwlocation_names", "hasBirthPlace"),
       facetDescriptionFactory.createListFacetDescription(
         "dynamic_s_relatedLocations",
         LocationNames.class,
-        "names",
+        "wwlocation_names",
         "hasBirthPlace", "hasDeathPlace", "hasResidenceLocation"),
       facetDescriptionFactory.createRangeFacetDescription("dynamic_i_deathDate", "wwperson_deathDate"),
       facetDescriptionFactory.createListFacetDescription("dynamic_s_children", String.class, "wwperson_children"),
