@@ -19,12 +19,14 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class SearcherTest {
+public class SearchStoreTest {
 
   private static final Graph NULL_GRAPH = null;
+  public static final SearchResult SEARCH_RESULT = new SearchResult(null, null, null, null);
+  public static final SearchResult OTHER_SEARCH_RESULT1 = new SearchResult(null, null, null, null);
   private TimbuctooQuery query;
   private static final Timeout ONE_SECOND_TIMEOUT = new Timeout(1, TimeUnit.SECONDS);
-  private Searcher instance;
+  private SearchStore instance;
 
   @Before
   public void setUp() throws Exception {
@@ -35,19 +37,19 @@ public class SearcherTest {
     GraphWrapper graphWrapper = mock(GraphWrapper.class);
     when(graphWrapper.getGraph()).thenReturn(NULL_GRAPH);
 
-    instance = new Searcher(graphWrapper, ONE_SECOND_TIMEOUT);
+    instance = new SearchStore(ONE_SECOND_TIMEOUT);
   }
 
   @Test
-  public void searchReturnsAnId() {
-    UUID id = instance.search(query);
+  public void addReturnsAnId() {
+    UUID id = instance.add(SEARCH_RESULT);
 
     assertThat(id, is(notNullValue()));
   }
 
   @Test
   public void getSearchResultReturnsASearchResult() {
-    UUID id = instance.search(query);
+    UUID id = instance.add(SEARCH_RESULT);
 
     Optional<SearchResult> searchResult = instance.getSearchResult(id);
 
@@ -56,15 +58,15 @@ public class SearcherTest {
 
   @Test
   public void searchCreatesADifferentIdEachCall() {
-    UUID id1 = instance.search(query);
-    UUID id2 = instance.search(query);
+    UUID id1 = instance.add(SEARCH_RESULT);
+    UUID id2 = instance.add(SEARCH_RESULT);
 
     assertThat(id1, is(not(id2)));
   }
 
   @Test
   public void getSearchResultReturnsTheSameResultForTheSameId() {
-    UUID id = instance.search(query);
+    UUID id = instance.add(SEARCH_RESULT);
 
     SearchResult retrieval1 = instance.getSearchResult(id).get();
     SearchResult retrieval2 = instance.getSearchResult(id).get();
@@ -74,8 +76,8 @@ public class SearcherTest {
 
   @Test
   public void getSearchResultReturnsADifferentResultForDifferentIds() {
-    UUID id1 = instance.search(query);
-    UUID id2 = instance.search(query);
+    UUID id1 = instance.add(SEARCH_RESULT);
+    UUID id2 = instance.add(OTHER_SEARCH_RESULT1);
 
     SearchResult searchResult1 = instance.getSearchResult(id1).get();
     SearchResult searchResult2 = instance.getSearchResult(id2).get();
@@ -92,7 +94,7 @@ public class SearcherTest {
 
   @Test
   public void getSearchResultReturnsNullIfTheSearchAfterTheTimeOut() throws InterruptedException {
-    UUID id = instance.search(query);
+    UUID id = instance.add(SEARCH_RESULT);
 
     Optional<SearchResult> searchResult = instance.getSearchResult(id);
     assertThat(searchResult, is(present()));

@@ -3,20 +3,16 @@ package nl.knaw.huygens.timbuctoo.search;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 
 import java.util.Optional;
 import java.util.UUID;
 
-public class Searcher {
+public class SearchStore {
 
   private final Cache<UUID, SearchResult> cache;
-  private final GraphWrapper graphManager;
 
-  public Searcher(GraphWrapper graphManager, Timeout searchResultAvailabilityTime) {
-    this.graphManager = graphManager;
+  public SearchStore(Timeout searchResultAvailabilityTime) {
     cache = createCache(searchResultAvailabilityTime);
   }
 
@@ -28,10 +24,9 @@ public class Searcher {
     return Optional.ofNullable(cache.getIfPresent(id));
   }
 
-  public UUID search(TimbuctooQuery query) {
+  public UUID add(SearchResult searchResult) {
     UUID id = UUID.randomUUID();
-    cache.put(id, query.execute(graphManager.getGraph()));
+    cache.put(id, searchResult);
     return id;
   }
-
 }

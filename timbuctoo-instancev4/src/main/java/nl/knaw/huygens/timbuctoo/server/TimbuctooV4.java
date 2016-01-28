@@ -6,20 +6,14 @@ import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import nl.knaw.huygens.timbuctoo.search.SearchStore;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.rest.AuthenticationV2_1EndPoint;
 import nl.knaw.huygens.timbuctoo.server.rest.FacetedSearchV2_1Endpoint;
-import nl.knaw.huygens.timbuctoo.search.Searcher;
 import nl.knaw.huygens.timbuctoo.server.rest.UserV2_1Endpoint;
-import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.factory.GraphDatabaseFactory;
-import org.neo4j.graphdb.factory.GraphDatabaseSettings;
-import org.neo4j.tinkerpop.api.impl.Neo4jGraphAPIImpl;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -57,7 +51,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     );
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration);
-    final Searcher searcher = new Searcher(graphManager, configuration.getSearchResultAvailabilityTimeout());
+    final SearchStore searchStore = new SearchStore(configuration.getSearchResultAvailabilityTimeout());
 
     // lifecycle managers
     environment.lifecycle().manage(graphManager);
@@ -65,7 +59,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     // register REST endpoints
     register(environment, new AuthenticationV2_1EndPoint(loggedInUserStore));
     register(environment, new UserV2_1Endpoint(loggedInUserStore));
-    register(environment, new FacetedSearchV2_1Endpoint(searcher));
+    register(environment, new FacetedSearchV2_1Endpoint(searchStore, graphManager));
 
     // register health checks
     register(environment, "Encryption algorithm", new EncryptionAlgorithmHealthCheck(ENCRYPTION_ALGORITHM));

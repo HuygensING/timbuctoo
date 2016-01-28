@@ -3,8 +3,9 @@ package nl.knaw.huygens.timbuctoo.server.rest;
 import io.dropwizard.jersey.params.UUIDParam;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.SearchResult;
-import nl.knaw.huygens.timbuctoo.search.Searcher;
+import nl.knaw.huygens.timbuctoo.search.SearchStore;
 import nl.knaw.huygens.timbuctoo.search.description.SearchDescriptionFactory;
+import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchResponseV2_1Factory;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchResponseV2_1RefAdder;
@@ -28,12 +29,14 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Produces(APPLICATION_JSON)
 public class FacetedSearchV2_1Endpoint {
 
-  private Searcher searcher;
+  private SearchStore searchStore;
   private final SearchResponseV2_1Factory searchResponseFactory;
   private final SearchDescriptionFactory searchDescriptionFactory;
+  private final TinkerpopGraphManager graphManager;
 
-  public FacetedSearchV2_1Endpoint(Searcher searcher) {
-    this.searcher = searcher;
+  public FacetedSearchV2_1Endpoint(SearchStore searchStore, TinkerpopGraphManager graphManager) {
+    this.searchStore = searchStore;
+    this.graphManager = graphManager;
     this.searchResponseFactory = new SearchResponseV2_1Factory(new SearchResponseV2_1RefAdder());
     searchDescriptionFactory = new SearchDescriptionFactory();
   }
@@ -45,7 +48,7 @@ public class FacetedSearchV2_1Endpoint {
     Optional<SearchDescription> description = getDescription(entityName);
 
     if (description.isPresent()) {
-      UUID uuid = searcher.search(description.get().createQuery(searchRequest));
+      UUID uuid = searchStore.add(description.get().createQuery(searchRequest).execute(graphManager.getGraph()));
 
       URI uri = createUri(uuid);
 
@@ -71,7 +74,7 @@ public class FacetedSearchV2_1Endpoint {
   public Response get(@PathParam("id") UUIDParam id,
                       @QueryParam("rows") @DefaultValue("10") int rows,
                       @QueryParam("start") @DefaultValue("0") int start) {
-    Optional<SearchResult> searchResult = searcher.getSearchResult(id.get());
+    Optional<SearchResult> searchResult = searchStore.getSearchResult(id.get());
     if (searchResult.isPresent()) {
       return Response.ok(searchResponseFactory.createResponse(searchResult.get(), rows, start)).build();
     }
