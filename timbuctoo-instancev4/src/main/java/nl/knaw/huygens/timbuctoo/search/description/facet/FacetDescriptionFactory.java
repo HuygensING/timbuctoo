@@ -29,7 +29,16 @@ public class FacetDescriptionFactory {
     return this.createListFacetDescription(facetName, parserFactory.getParser(typeToParse), propertyName, relations);
   }
 
+  /**
+   * A convenience method, for creating a {@code ListFacetDescription} for related keywords.
+   */
+  public FacetDescription createKeywordDescription(String facetName, String relationName) {
+    return this.createListFacetDescription(facetName, String.class, "wwkeyword_value", relationName);
+  }
+
   public FacetDescription createRangeFacetDescription(String facetName, String propertyName) {
     return new DateRangeFacetDescription(facetName, propertyName);
   }
+
+
 }

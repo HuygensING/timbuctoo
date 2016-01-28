@@ -69,7 +69,19 @@ public class SearchDescriptionFactory {
         LocationNames.class,
         "names",
         "hasBirthPlace", "hasDeathPlace", "hasResidenceLocation"),
-      facetDescriptionFactory.createRangeFacetDescription("dynamic_i_deathDate", "wwperson_deathDate"));
+      facetDescriptionFactory.createRangeFacetDescription("dynamic_i_deathDate", "wwperson_deathDate"),
+      facetDescriptionFactory.createListFacetDescription("dynamic_s_children", String.class, "wwperson_children"),
+      facetDescriptionFactory.createKeywordDescription("dynamic_s_religion", "hasReligion"),
+      facetDescriptionFactory.createListFacetDescription("dynamic_s_residence", LocationNames.class, "wwlocation_names",
+        "hasResidenceLocation"),
+      facetDescriptionFactory.createKeywordDescription("dynamic_s_marital_status", "hasMaritalStatus"),
+      facetDescriptionFactory
+        .createListFacetDescription("dynamic_s_collective", String.class, "wwcollective_name", "isMemberOf"),
+      facetDescriptionFactory.createKeywordDescription("dynamic_s_education", "hasEducation"),
+      facetDescriptionFactory.createKeywordDescription("dynamic_s_social_class", "hasSocialClass"),
+      facetDescriptionFactory.createKeywordDescription("dynamic_s_financials", "hasFinancialStatus"),
+      facetDescriptionFactory.createRangeFacetDescription("dynamic_i_birthDate", "wwperson_birthDate"),
+      facetDescriptionFactory.createKeywordDescription("dynamic_s_profession", "hasProfession"));
 
     PropertyDescriptor displayNameDescriptor = propertyDescriptorFactory.getComposite(
       propertyDescriptorFactory.getLocal("wwperson_names", PersonNames.class),
