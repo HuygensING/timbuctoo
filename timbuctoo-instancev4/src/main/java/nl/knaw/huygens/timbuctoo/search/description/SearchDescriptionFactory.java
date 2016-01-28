@@ -71,17 +71,17 @@ public class SearchDescriptionFactory {
         "hasBirthPlace", "hasDeathPlace", "hasResidenceLocation"),
       facetDescriptionFactory.createRangeFacetDescription("dynamic_i_deathDate", "wwperson_deathDate"),
       facetDescriptionFactory.createListFacetDescription("dynamic_s_children", String.class, "wwperson_children"),
-      facetDescriptionFactory.createKeywordDescription("dynamic_s_religion", "hasReligion"),
+      facetDescriptionFactory.createKeywordDescription("dynamic_s_religion", "hasReligion", "ww"),
       facetDescriptionFactory.createListFacetDescription("dynamic_s_residence", LocationNames.class, "wwlocation_names",
         "hasResidenceLocation"),
-      facetDescriptionFactory.createKeywordDescription("dynamic_s_marital_status", "hasMaritalStatus"),
+      facetDescriptionFactory.createKeywordDescription("dynamic_s_marital_status", "hasMaritalStatus", "ww"),
       facetDescriptionFactory
         .createListFacetDescription("dynamic_s_collective", String.class, "wwcollective_name", "isMemberOf"),
-      facetDescriptionFactory.createKeywordDescription("dynamic_s_education", "hasEducation"),
-      facetDescriptionFactory.createKeywordDescription("dynamic_s_social_class", "hasSocialClass"),
-      facetDescriptionFactory.createKeywordDescription("dynamic_s_financials", "hasFinancialStatus"),
+      facetDescriptionFactory.createKeywordDescription("dynamic_s_education", "hasEducation", "ww"),
+      facetDescriptionFactory.createKeywordDescription("dynamic_s_social_class", "hasSocialClass", "ww"),
+      facetDescriptionFactory.createKeywordDescription("dynamic_s_financials", "hasFinancialStatus", "ww"),
       facetDescriptionFactory.createRangeFacetDescription("dynamic_i_birthDate", "wwperson_birthDate"),
-      facetDescriptionFactory.createKeywordDescription("dynamic_s_profession", "hasProfession"));
+      facetDescriptionFactory.createKeywordDescription("dynamic_s_profession", "hasProfession", "ww"));
 
     PropertyDescriptor displayNameDescriptor = propertyDescriptorFactory.getComposite(
       propertyDescriptorFactory.getLocal("wwperson_names", PersonNames.class),

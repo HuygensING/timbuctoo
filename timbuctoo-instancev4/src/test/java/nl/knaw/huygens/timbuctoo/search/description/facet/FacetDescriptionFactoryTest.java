@@ -78,7 +78,7 @@ public class FacetDescriptionFactoryTest {
 
   @Test
   public void createKeywordFacetDescriptionCreatesADerivedListFacetDescription() {
-    FacetDescription description = instance.createKeywordDescription("facetName", "relationName");
+    FacetDescription description = instance.createKeywordDescription("facetName", "relationName", "ww");
 
     assertThat(description, is(instanceOf(DerivedListFacetDescription.class)));
     verify(parserFactory).getParser(String.class);

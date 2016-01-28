@@ -32,8 +32,9 @@ public class FacetDescriptionFactory {
   /**
    * A convenience method, for creating a {@code ListFacetDescription} for related keywords.
    */
-  public FacetDescription createKeywordDescription(String facetName, String relationName) {
-    return this.createListFacetDescription(facetName, String.class, "wwkeyword_value", relationName);
+  public FacetDescription createKeywordDescription(String facetName, String relationName, final String projectPrefix) {
+    String propertyName = String.format("%skeyword_value", projectPrefix);
+    return this.createListFacetDescription(facetName, String.class, propertyName, relationName);
   }
 
   public FacetDescription createRangeFacetDescription(String facetName, String propertyName) {
