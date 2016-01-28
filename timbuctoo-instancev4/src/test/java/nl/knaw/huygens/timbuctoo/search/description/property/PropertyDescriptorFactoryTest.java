@@ -45,7 +45,7 @@ public class PropertyDescriptorFactoryTest {
 
     PropertyDescriptor descriptor = instance.getDerived("relationName", "propertyName", parser);
 
-    assertThat(descriptor, is(instanceOf(DerivedPropertyDescriptor.class)));
+    assertThat(descriptor, is(instanceOf(RelatedPropertyDescriptor.class)));
   }
 
   @Test
@@ -61,7 +61,7 @@ public class PropertyDescriptorFactoryTest {
 
     PropertyDescriptor descriptor = instance.getDerivedWithSeparator("relationName", "propertyName", parser, "--");
 
-    assertThat(descriptor, is(instanceOf(DerivedPropertyDescriptor.class)));
+    assertThat(descriptor, is(instanceOf(RelatedPropertyDescriptor.class)));
   }
 
 

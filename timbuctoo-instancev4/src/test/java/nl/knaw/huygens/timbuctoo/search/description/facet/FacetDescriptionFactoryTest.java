@@ -47,7 +47,7 @@ public class FacetDescriptionFactoryTest {
 
     FacetDescription description = instance.createListFacetDescription("facetName", parser, "propertyName", "relation");
 
-    assertThat(description, is(instanceOf(DerivedListFacetDescription.class)));
+    assertThat(description, is(instanceOf(RelatedListFacetDescription.class)));
   }
 
   @Test
@@ -65,7 +65,7 @@ public class FacetDescriptionFactoryTest {
     FacetDescription description =
       instance.createListFacetDescription("facetName", parser, "propertyName", "relation", "relation2");
 
-    assertThat(description, is(instanceOf(DerivedListFacetDescription.class)));
+    assertThat(description, is(instanceOf(RelatedListFacetDescription.class)));
   }
 
   @Test
@@ -80,7 +80,7 @@ public class FacetDescriptionFactoryTest {
   public void createKeywordFacetDescriptionCreatesADerivedListFacetDescription() {
     FacetDescription description = instance.createKeywordDescription("facetName", "relationName", "ww");
 
-    assertThat(description, is(instanceOf(DerivedListFacetDescription.class)));
+    assertThat(description, is(instanceOf(RelatedListFacetDescription.class)));
     verify(parserFactory).getParser(String.class);
   }
 

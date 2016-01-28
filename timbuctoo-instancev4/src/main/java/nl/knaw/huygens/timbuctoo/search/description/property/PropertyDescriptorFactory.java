@@ -24,7 +24,7 @@ public class PropertyDescriptorFactory {
   }
 
   public PropertyDescriptor getDerived(String relationName, String propertyName, PropertyParser parser) {
-    return new DerivedPropertyDescriptor(relationName, propertyName, parser);
+    return new RelatedPropertyDescriptor(relationName, propertyName, parser);
   }
 
   public PropertyDescriptor getDerived(String relationName, String propertyName, Class<?> typeToParse) {
@@ -34,6 +34,6 @@ public class PropertyDescriptorFactory {
 
   public PropertyDescriptor getDerivedWithSeparator(String relationName, String propertyName, PropertyParser parser,
                                                     String separator) {
-    return new DerivedPropertyDescriptor(relationName, propertyName, parser, separator);
+    return new RelatedPropertyDescriptor(relationName, propertyName, parser, separator);
   }
 }

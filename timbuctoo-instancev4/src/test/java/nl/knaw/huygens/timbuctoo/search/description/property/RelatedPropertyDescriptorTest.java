@@ -16,12 +16,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-public class DerivedPropertyDescriptorTest {
+public class RelatedPropertyDescriptorTest {
 
   @Test
   public void getReturnsNullIfTheVertexDoesNotHaveRelationOfRelationName() {
-    DerivedPropertyDescriptor instance =
-      new DerivedPropertyDescriptor("relationName", "propertyName", mock(PropertyParser.class));
+    RelatedPropertyDescriptor instance =
+      new RelatedPropertyDescriptor("relationName", "propertyName", mock(PropertyParser.class));
     Vertex vertex = vertex().build();
 
     String actual = instance.get(vertex);
@@ -35,7 +35,7 @@ public class DerivedPropertyDescriptorTest {
     given(parser.parse(anyString())).willReturn("parsedValue");
     String propertyName = "propertyName";
     String relationName = "relationName";
-    DerivedPropertyDescriptor instance = new DerivedPropertyDescriptor(relationName, propertyName, parser);
+    RelatedPropertyDescriptor instance = new RelatedPropertyDescriptor(relationName, propertyName, parser);
     String derivedPropValue = "propValue";
     Vertex vertex = vertex()
       .withOutgoingRelation(relationName, vertex().withProperty(propertyName, derivedPropValue).build())
@@ -53,7 +53,7 @@ public class DerivedPropertyDescriptorTest {
     given((parser.parse(anyString()))).willReturn("parsed");
     String propertyName = "propertyName";
     String relationName = "relationName";
-    DerivedPropertyDescriptor instance = new DerivedPropertyDescriptor(relationName, propertyName, parser);
+    RelatedPropertyDescriptor instance = new RelatedPropertyDescriptor(relationName, propertyName, parser);
     String derivedPropValue = "val";
     Vertex vertex = vertex()
       .withOutgoingRelation(relationName, vertex().withProperty(propertyName, derivedPropValue).build())

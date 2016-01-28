@@ -8,18 +8,18 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.List;
 
-public class DerivedPropertyDescriptor implements PropertyDescriptor {
+public class RelatedPropertyDescriptor implements PropertyDescriptor {
   private static final String DEFAULT_SEPARATOR = ";";
   private final String relationName;
   private final String propertyName;
   private final PropertyParser parser;
   private final String separator;
 
-  public DerivedPropertyDescriptor(String relationName, String propertyName, PropertyParser parser) {
+  public RelatedPropertyDescriptor(String relationName, String propertyName, PropertyParser parser) {
     this(relationName, propertyName, parser, DEFAULT_SEPARATOR);
   }
 
-  public DerivedPropertyDescriptor(String relationName, String propertyName, PropertyParser parser, String separator) {
+  public RelatedPropertyDescriptor(String relationName, String propertyName, PropertyParser parser, String separator) {
     this.relationName = relationName;
     this.propertyName = propertyName;
     this.parser = parser;

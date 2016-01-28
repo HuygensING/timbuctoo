@@ -21,7 +21,7 @@ public class FacetDescriptionFactory {
 
   public FacetDescription createListFacetDescription(String facetName, PropertyParser parser, String propertyName,
                                                      String... relations) {
-    return new DerivedListFacetDescription(facetName, propertyName, parser, relations);
+    return new RelatedListFacetDescription(facetName, propertyName, parser, relations);
   }
 
   public FacetDescription createListFacetDescription(String facetName, Class<?> typeToParse, String propertyName,

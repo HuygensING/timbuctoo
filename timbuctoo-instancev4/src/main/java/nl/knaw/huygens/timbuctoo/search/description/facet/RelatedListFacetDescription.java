@@ -12,13 +12,16 @@ import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
 
-public class DerivedListFacetDescription implements FacetDescription {
+/**
+ * A facet description that creates a "LIST" facet with properties from connected vertices.
+ */
+public class RelatedListFacetDescription implements FacetDescription {
   private final String facetName;
   private final String propertyName;
   private final PropertyParser parser;
   private final String[] relations;
 
-  public DerivedListFacetDescription(String facetName, String propertyName, PropertyParser parser,
+  public RelatedListFacetDescription(String facetName, String propertyName, PropertyParser parser,
                                      String... relations) {
     this.facetName = facetName;
     this.propertyName = propertyName;
