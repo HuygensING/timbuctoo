@@ -48,7 +48,7 @@ public class FacetedSearchV2_1Endpoint {
     Optional<SearchDescription> description = getDescription(entityName);
 
     if (description.isPresent()) {
-      UUID uuid = searchStore.add(description.get().createQuery(searchRequest).execute(graphManager.getGraph()));
+      UUID uuid = searchStore.add(description.get().execute(graphManager.getGraph(), searchRequest));
 
       URI uri = createUri(uuid);
 

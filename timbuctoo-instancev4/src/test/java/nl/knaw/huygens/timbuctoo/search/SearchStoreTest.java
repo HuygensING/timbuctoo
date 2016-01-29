@@ -15,7 +15,6 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -24,16 +23,11 @@ public class SearchStoreTest {
   private static final Graph NULL_GRAPH = null;
   public static final SearchResult SEARCH_RESULT = new SearchResult(null, null, null, null);
   public static final SearchResult OTHER_SEARCH_RESULT1 = new SearchResult(null, null, null, null);
-  private TimbuctooQuery query;
   private static final Timeout ONE_SECOND_TIMEOUT = new Timeout(1, TimeUnit.SECONDS);
   private SearchStore instance;
 
   @Before
   public void setUp() throws Exception {
-    query = mock(TimbuctooQuery.class);
-    // makes sure a new search result is created with each invocation
-    given(query.execute(NULL_GRAPH)).willAnswer(invocation -> mock(SearchResult.class));
-
     GraphWrapper graphWrapper = mock(GraphWrapper.class);
     when(graphWrapper.getGraph()).thenReturn(NULL_GRAPH);
 

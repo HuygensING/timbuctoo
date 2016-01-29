@@ -3,23 +3,20 @@ package nl.knaw.huygens.timbuctoo.search.description;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
-import nl.knaw.huygens.timbuctoo.search.TimbuctooQuery;
+import nl.knaw.huygens.timbuctoo.search.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.description.facet.Facet;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
 public abstract class AbstractSearchDescription implements SearchDescription {
-  @Override
-  public TimbuctooQuery createQuery(SearchRequestV2_1 searchRequest) {
-    return new TimbuctooQuery(this);
-  }
-
   @Override
   public List<Facet> createFacets(List<Vertex> vertices) {
 
@@ -46,9 +43,22 @@ public abstract class AbstractSearchDescription implements SearchDescription {
   }
 
   @Override
+  public SearchResult execute(Graph graph, SearchRequestV2_1 searchRequest) {
+    List<Vertex> vertices = filterByType(graph.traversal().V()).has("isLatest", true)
+                                                               .toList();
+
+    List<EntityRef> refs = vertices.stream().map(vertex -> createRef(vertex)).collect(Collectors.toList());
+    List<Facet> facets = createFacets(vertices);
+
+    return new SearchResult(refs, this, facets);
+  }
+
+  @Override
   public GraphTraversal<Vertex, Vertex> filterByType(GraphTraversal<Vertex, Vertex> vertices) {
     return vertices.filter(x -> ((String) x.get().property("types").value()).contains(getType()));
   }
+
+  // Hooks
 
   protected abstract List<FacetDescription> getFacetDescriptions();
 
@@ -60,3 +70,5 @@ public abstract class AbstractSearchDescription implements SearchDescription {
 
   protected abstract String getType();
 }
+
+

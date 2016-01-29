@@ -28,7 +28,7 @@ public class AppenderPropertyDescriptorTest {
   }
 
   @Test
-  public void getReturnsOnlyTheValueOfTheFirstDescriptorIfTheSecondReturnsNull(){
+  public void getReturnsOnlyTheValueOfTheFirstDescriptorIfTheSecondReturnsNull() {
     PropertyDescriptor propertyDescriptor1 = propertyDescriptorThatReturns("value1");
     PropertyDescriptor propertyDescriptor2 = propertyDescriptorThatReturns(null);
     String separator = " ";
@@ -42,7 +42,7 @@ public class AppenderPropertyDescriptorTest {
   }
 
   @Test
-  public void getReturnsOnlyTheValueOfTheSecondDescriptorIfTheFirstReturnsNull(){
+  public void getReturnsOnlyTheValueOfTheSecondDescriptorIfTheFirstReturnsNull() {
     PropertyDescriptor propertyDescriptor1 = propertyDescriptorThatReturns(null);
     PropertyDescriptor propertyDescriptor2 = propertyDescriptorThatReturns("value2");
     String separator = " ";
