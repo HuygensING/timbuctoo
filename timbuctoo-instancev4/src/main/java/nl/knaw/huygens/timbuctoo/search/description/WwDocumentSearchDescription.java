@@ -11,8 +11,6 @@ import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.List;
 import java.util.Map;
@@ -110,11 +108,6 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
 
     return propertyDescriptorFactory
       .getComposite(authorNameDescriptor, authorTempNameDescriptor);
-  }
-
-  @Override
-  public GraphTraversal<Vertex, Vertex> filterByType(GraphTraversal<Vertex, Vertex> vertices) {
-    return vertices.filter(x -> ((String) x.get().property("types").value()).contains(type));
   }
 
   @Override

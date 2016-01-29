@@ -7,6 +7,8 @@ import nl.knaw.huygens.timbuctoo.search.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.description.facet.Facet;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -15,17 +17,20 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 
 public abstract class AbstractSearchDescription implements SearchDescription {
-  @Override
-  public List<Facet> createFacets(List<Vertex> vertices) {
+
+  public static final SubgraphStrategy LATEST_ONLY =
+    SubgraphStrategy.build().vertexCriterion(has("isLatest", true)).create();
+
+  protected List<Facet> createFacets(List<Vertex> vertices) {
 
     return getFacetDescriptions().stream().map(facetDescription -> facetDescription.getFacet(vertices))
                                  .collect(toList());
   }
 
-  @Override
-  public EntityRef createRef(Vertex vertex) {
+  protected EntityRef createRef(Vertex vertex) {
     String id = getIdDescriptor().get(vertex);
 
     EntityRef ref = new EntityRef(getType(), id);
@@ -44,8 +49,8 @@ public abstract class AbstractSearchDescription implements SearchDescription {
 
   @Override
   public SearchResult execute(Graph graph, SearchRequestV2_1 searchRequest) {
-    List<Vertex> vertices = filterByType(graph.traversal().V()).has("isLatest", true)
-                                                               .toList();
+    GraphTraversalSource latestVertices = GraphTraversalSource.build().with(LATEST_ONLY).create(graph);
+    List<Vertex> vertices = filterByType(latestVertices).toList();
 
     List<EntityRef> refs = vertices.stream().map(vertex -> createRef(vertex)).collect(Collectors.toList());
     List<Facet> facets = createFacets(vertices);
@@ -53,9 +58,8 @@ public abstract class AbstractSearchDescription implements SearchDescription {
     return new SearchResult(refs, this, facets);
   }
 
-  @Override
-  public GraphTraversal<Vertex, Vertex> filterByType(GraphTraversal<Vertex, Vertex> vertices) {
-    return vertices.filter(x -> ((String) x.get().property("types").value()).contains(getType()));
+  protected GraphTraversal<Vertex, Vertex> filterByType(GraphTraversalSource traversalSource) {
+    return traversalSource.V().filter(x -> ((String) x.get().property("types").value()).contains(getType()));
   }
 
   // Hooks
