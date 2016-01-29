@@ -10,6 +10,7 @@ import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -18,6 +19,7 @@ import static nl.knaw.huygens.timbuctoo.search.VertexBuilder.vertex;
 import static nl.knaw.huygens.timbuctoo.search.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -35,6 +37,23 @@ public class AbstractSearchDescriptionTest {
     SearchResult searchResult = instance.execute(newGraph().build(), new SearchRequestV2_1());
 
     assertThat(searchResult, is(Matchers.notNullValue()));
+  }
+
+  @Test
+  public void executeCreatesASearchResultWithTheSortableAndFullTextSearchFieldsOfTheDescription() {
+    String sortableField1 = "sortableField1";
+    String sortableField2 = "sortableField2";
+    String searchField1 = "searchField1";
+    String searchField2 = "searchField2";
+    AbstractSearchDescription instance = searchDescription()
+      .withSortableFields(sortableField1, sortableField2)
+      .withFullTextSearchFields(searchField1, searchField2)
+      .build();
+
+    SearchResult searchResult = instance.execute(newGraph().build(), new SearchRequestV2_1());
+
+    assertThat(searchResult.getSortableFields(), containsInAnyOrder(sortableField1, sortableField2));
+    assertThat(searchResult.getFullTextSearchFields(), containsInAnyOrder(searchField1, searchField2));
   }
 
   // TODO extract ref creator class
@@ -97,7 +116,6 @@ public class AbstractSearchDescriptionTest {
     verify(facetDescription2, times(1)).getFacet(captor1.capture());
     assertThat((List<Vertex>) captor1.getValue(), contains(likeVertex().withType(type)));
   }
-
 
   private AbstractSearchDescriptionBuilder searchDescription() {
     return new AbstractSearchDescriptionBuilder();
@@ -213,6 +231,16 @@ public class AbstractSearchDescriptionTest {
     private AbstractSearchDescriptionBuilder withType(String type) {
       this.type = type;
 
+      return this;
+    }
+
+    private AbstractSearchDescriptionBuilder withSortableFields(String... sortableFields) {
+      this.sortableFields.addAll(Arrays.asList(sortableFields));
+      return this;
+    }
+
+    private AbstractSearchDescriptionBuilder withFullTextSearchFields(String... fullTextSearchFields) {
+      this.fullTextSearchFields.addAll(Arrays.asList(fullTextSearchFields));
       return this;
     }
   }
