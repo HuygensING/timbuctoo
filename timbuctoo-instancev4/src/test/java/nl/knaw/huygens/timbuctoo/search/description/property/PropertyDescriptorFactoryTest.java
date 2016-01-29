@@ -33,8 +33,24 @@ public class PropertyDescriptorFactoryTest {
   }
 
   @Test
+  public void getLocalWithPrefixAndPostfixReturnsLocalPropertyDescriptor() {
+    PropertyParser parser = mock(PropertyParser.class);
+
+    PropertyDescriptor descriptor = instance.getLocal("propertyName", parser, "prefix", "postfix");
+
+    assertThat(descriptor, is(instanceOf(LocalPropertyDescriptor.class)));
+  }
+
+  @Test
   public void getLocalLetsThePropertyParserFactoryCreateAPropertyParser() {
     instance.getLocal("propertyName", String.class);
+
+    verify(parserFactory).getParser(String.class);
+  }
+
+  @Test
+  public void getLocalWithPrefixAndPostfixLetsThePropertyParserFactoryCreateAPropertyParser() {
+    instance.getLocal("propertyName", String.class, "prefix", "postfix");
 
     verify(parserFactory).getParser(String.class);
   }
@@ -64,13 +80,20 @@ public class PropertyDescriptorFactoryTest {
     assertThat(descriptor, is(instanceOf(RelatedPropertyDescriptor.class)));
   }
 
-
   @Test
   public void getCompositeReturnsACompositePropertyDescriptor() {
     PropertyDescriptor descriptor =
       instance.getComposite(mock(PropertyDescriptor.class), mock(PropertyDescriptor.class));
 
     assertThat(descriptor, is(instanceOf(CompositePropertyDescriptor.class)));
+  }
+
+  @Test
+  public void getAppenderReturnsAnAppenderPropertyDescriptor() {
+    PropertyDescriptor descriptor =
+      instance.getAppender(mock(PropertyDescriptor.class), mock(PropertyDescriptor.class), " ");
+
+    assertThat(descriptor, is(instanceOf(AppenderPropertyDescriptor.class)));
   }
 
 }

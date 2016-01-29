@@ -8,38 +8,73 @@ import nl.knaw.huygens.timbuctoo.model.DocumentType;
 import nl.knaw.huygens.timbuctoo.model.Gender;
 import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
-import nl.knaw.huygens.timbuctoo.search.EntityRef;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
-import nl.knaw.huygens.timbuctoo.search.TimbuctooQuery;
-import nl.knaw.huygens.timbuctoo.search.description.facet.Facet;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
-import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.List;
 import java.util.Map;
 
-public class WwDocumentSearchDescription implements SearchDescription {
+public class WwDocumentSearchDescription extends AbstractSearchDescription implements SearchDescription {
   private static final List<String> SORTABLE_FIELDS = Lists.newArrayList(
-      "dynamic_sort_title",
-      "dynamic_k_modified",
-      "dynamic_sort_creator");
+    "dynamic_sort_title",
+    "dynamic_k_modified",
+    "dynamic_sort_creator");
 
   private static final List<String> FULL_TEXT_SEARCH_FIELDS = Lists.newArrayList(
-      "dynamic_t_author_name",
-      "dynamic_t_title",
-      "dynamic_t_notes");
+    "dynamic_t_author_name",
+    "dynamic_t_title",
+    "dynamic_t_notes");
 
   private final PropertyParserFactory propertyParserFactory;
   private final PropertyDescriptorFactory propertyDescriptorFactory;
 
   private final String type = "wwdocument";
+  private final Map<String, PropertyDescriptor> dataDescriptors;
+  private final List<FacetDescription> facetDescriptions;
+  private final PropertyDescriptor idDescriptor;
+  private final PropertyDescriptor displayNameDescriptor;
 
   public WwDocumentSearchDescription() {
     propertyParserFactory = new PropertyParserFactory();
     propertyDescriptorFactory = new PropertyDescriptorFactory(propertyParserFactory);
+
+    dataDescriptors = createDataDescriptors();
+    facetDescriptions = Lists.newArrayList();
+
+    idDescriptor = propertyDescriptorFactory
+      .getLocal(ID_DB_PROP, String.class);
+    displayNameDescriptor = createDisplayNameDescriptor();
+  }
+
+  private Map<String, PropertyDescriptor> createDataDescriptors() {
+    Map<String, PropertyDescriptor> dataDescriptors = Maps.newHashMap();
+    dataDescriptors.put("_id", propertyDescriptorFactory.getLocal(ID_DB_PROP, String.class));
+    dataDescriptors.put("authorName", createAuthorDescriptor());
+    dataDescriptors.put("title", propertyDescriptorFactory.getLocal("wwdocument_title", String.class));
+    dataDescriptors.put("date", propertyDescriptorFactory.getLocal("date", Datable.class));
+    dataDescriptors.put("authorGender", propertyDescriptorFactory.getDerived(
+      "isCreatedBy",
+      "wwperson_gender",
+      Gender.class));
+    dataDescriptors.put("documentType", propertyDescriptorFactory
+      .getLocal("wwdocument_documentType", DocumentType.class));
+    dataDescriptors.put("modified_date", propertyDescriptorFactory
+      .getLocal("modified", propertyParserFactory.getParser(Change.class)));
+    dataDescriptors.put("genre", propertyDescriptorFactory
+      .getDerived("hasGenre", "wwkeyword_value", String.class));
+    dataDescriptors.put("publishLocation", propertyDescriptorFactory.getDerived(
+      "hasPublishLocation",
+      "names",
+      LocationNames.class));
+    dataDescriptors.put("language", propertyDescriptorFactory.getDerived(
+      "hasWorkLanguage",
+      "wwlanguage_name",
+      String.class));
+
+    return dataDescriptors;
   }
 
   @Override
@@ -52,101 +87,29 @@ public class WwDocumentSearchDescription implements SearchDescription {
     return FULL_TEXT_SEARCH_FIELDS;
   }
 
-  @Override
-  public TimbuctooQuery createQuery(SearchRequestV2_1 searchRequest) {
-    return new TimbuctooQuery(this);
+  private PropertyDescriptor createDisplayNameDescriptor() {
+    PropertyDescriptor titleDescriptor = propertyDescriptorFactory.getLocal("wwdocument_title", String.class);
+    PropertyDescriptor dateDescriptor = propertyDescriptorFactory.getLocal("wwdocument_date", Datable.class, "(", ")");
+
+    PropertyDescriptor documentDescriptor = propertyDescriptorFactory.getAppender(titleDescriptor, dateDescriptor, " ");
+
+    return propertyDescriptorFactory.getAppender(createAuthorDescriptor(), documentDescriptor, " - ");
   }
 
-  @Override
-  public List<Facet> createFacets(List<Vertex> vertices) {
-    return null;
-  }
-
-  @Override
-  public EntityRef createRef(Vertex vertex) {
-    String id = propertyDescriptorFactory
-        .getLocal(ID_DB_PROP, new PropertyParserFactory().getParser(String.class)).get(vertex);
-
+  private PropertyDescriptor createAuthorDescriptor() {
     PropertyDescriptor authorNameDescriptor = propertyDescriptorFactory.getDerivedWithSeparator(
-        "isCreatedBy",
-        "wwperson_names",
-        propertyParserFactory.getParser(PersonNames.class),
-        "; ");
+      "isCreatedBy",
+      "wwperson_names",
+      propertyParserFactory.getParser(PersonNames.class),
+      "; ");
     PropertyDescriptor authorTempNameDescriptor = propertyDescriptorFactory.getDerivedWithSeparator(
-        "isCreatedBy",
-        "wwperson_tempName",
-        propertyParserFactory.getParser(String.class),
-        "; ");
+      "isCreatedBy",
+      "wwperson_tempName",
+      propertyParserFactory.getParser(String.class),
+      "; ");
 
-    String authorNames = propertyDescriptorFactory
-        .getComposite(authorNameDescriptor, authorTempNameDescriptor).get(vertex);
-
-    String title = propertyDescriptorFactory.getLocal("wwdocument_title",
-        propertyParserFactory.getParser(String.class)).get(vertex);
-
-    String date = propertyDescriptorFactory.getLocal("date",
-        propertyParserFactory.getParser(Datable.class)).get(vertex);
-
-    EntityRef ref = new EntityRef(type, id);
-    ref.setDisplayName(getDisplayName(vertex, title, authorNames, date));
-
-    Map<String, Object> data = Maps.newHashMap();
-    data.put("_id", id);
-    data.put("authorName", authorNames);
-    data.put("date", date);
-    data.put("title", title);
-
-    data.put("authorGender", propertyDescriptorFactory.getDerived(
-        "isCreatedBy",
-        "wwperson_gender",
-        propertyParserFactory.getParser(Gender.class))
-        .get(vertex));
-
-    data.put("documentType", propertyDescriptorFactory
-        .getLocal("wwdocument_documentType", propertyParserFactory.getParser(DocumentType.class))
-        .get(vertex));
-
-    data.put("modified_date",propertyDescriptorFactory
-        .getLocal("modified", propertyParserFactory.getParser(Change.class)).get(vertex));
-
-    data.put("genre", propertyDescriptorFactory
-        .getDerived("hasGenre", "wwkeyword_value", propertyParserFactory.getParser(String.class)).get(vertex));
-
-    data.put("publishLocation", propertyDescriptorFactory.getDerived(
-        "hasPublishLocation",
-        "names",
-        propertyParserFactory
-            .getParser(LocationNames.class)).get(vertex));
-
-    data.put("language", propertyDescriptorFactory.getDerived(
-        "hasWorkLanguage",
-        "wwlanguage_name",
-        propertyParserFactory
-            .getParser(String.class)).get(vertex));
-
-    ref.setData(data);
-
-    return ref;
-  }
-
-  private String getDisplayName(Vertex vertex, String title, String authorNames, String date) {
-    StringBuilder displayNameBuilder = new StringBuilder();
-
-    if (authorNames != null) {
-      displayNameBuilder.append(authorNames).append(" - ");
-    }
-
-    if (title == null && date == null && authorNames == null) {
-      title = "(empty)";
-    }
-    displayNameBuilder.append(title);
-
-    if (date != null) {
-      displayNameBuilder.append(" (").append(date).append(")");
-    }
-
-
-    return displayNameBuilder.toString();
+    return propertyDescriptorFactory
+      .getComposite(authorNameDescriptor, authorTempNameDescriptor);
   }
 
   @Override
@@ -154,6 +117,27 @@ public class WwDocumentSearchDescription implements SearchDescription {
     return vertices.filter(x -> ((String) x.get().property("types").value()).contains(type));
   }
 
+  @Override
+  protected List<FacetDescription> getFacetDescriptions() {
+    return facetDescriptions;
+  }
+
+  @Override
+  protected Map<String, PropertyDescriptor> getDataPropertyDescriptors() {
+    return dataDescriptors;
+  }
+
+  @Override
+  protected PropertyDescriptor getDisplayNameDescriptor() {
+    return displayNameDescriptor;
+  }
+
+  @Override
+  protected PropertyDescriptor getIdDescriptor() {
+    return idDescriptor;
+  }
+
+  @Override
   public String getType() {
     return type;
   }

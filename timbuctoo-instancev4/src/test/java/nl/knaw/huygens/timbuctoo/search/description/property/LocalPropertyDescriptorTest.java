@@ -6,9 +6,12 @@ import org.junit.Test;
 
 import static nl.knaw.huygens.timbuctoo.search.MockVertexBuilder.vertex;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.startsWith;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -38,6 +41,38 @@ public class LocalPropertyDescriptorTest {
 
     assertThat(value, is(equalTo(expectedValue)));
     verify(parser).parse(anyString());
+  }
+
+  @Test
+  public void getReturnsTheValueWithAPrefixAndAPostfixIfTheyAreConfigured() {
+    String propertyName = "propName";
+    String expectedValue = "a string";
+    String prefix = "[";
+    String postfix = "]";
+    PropertyParser parser = mock(PropertyParser.class);
+    given(parser.parse(anyString())).willReturn(expectedValue);
+    Vertex vertex = vertex().withProperty(propertyName, "a string 2").build();
+    LocalPropertyDescriptor instance = new LocalPropertyDescriptor(propertyName, parser, prefix, postfix);
+
+    String value = instance.get(vertex);
+
+    assertThat(value, allOf(startsWith(prefix), endsWith(postfix)));
+    verify(parser).parse(anyString());
+  }
+
+  @Test
+  public void getReturnsNullIfTheParserReturnsNull() {
+    String propertyName = "propName";
+    String prefix = "[";
+    String postfix = "]";
+    PropertyParser parser = mock(PropertyParser.class);
+    given(parser.parse(anyString())).willReturn(null);
+    Vertex vertex = vertex().withProperty(propertyName, "a string 2").build();
+    LocalPropertyDescriptor instance = new LocalPropertyDescriptor(propertyName, parser, prefix, postfix);
+
+    String value = instance.get(vertex);
+
+    assertThat(value, is(nullValue()));
   }
 
 }
