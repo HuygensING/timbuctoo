@@ -127,6 +127,12 @@
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
+    <!--hamcrest matcher for asserting json -->
+    <dependency>
+      <groupId>uk.co.datumedge</groupId>
+      <artifactId>hamcrest-json</artifactId>
+      <version>0.2</version>
+    </dependency>
     <!-- ## End of test dependencies ## -->
   </dependencies>
 

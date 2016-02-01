@@ -141,6 +141,10 @@ public abstract class BaseDomainV2_1EndpointFixture extends AbstractV2_1Endpoint
 
 
   public String validateIdFromLocationHeader(HttpExpectation expectation, HttpResult reality) {
+    if (!reality.getHeaders().containsKey("location")) {
+      return "Location header not found";
+    }
+
     recordLocation = reality.getHeaders().get("location").replaceAll("http://[^/]+/", "");
     recordId = reality.getHeaders().get("location").replaceAll(".*\\/", "");
 

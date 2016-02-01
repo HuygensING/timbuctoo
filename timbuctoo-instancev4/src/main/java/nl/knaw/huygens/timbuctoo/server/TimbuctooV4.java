@@ -8,6 +8,7 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.timbuctoo.search.SearchStore;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
+import nl.knaw.huygens.timbuctoo.model.vre.neww.JsonToTinkerpopMappings;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
@@ -54,7 +55,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration);
     final SearchStore searchStore = new SearchStore(configuration.getSearchResultAvailabilityTimeout());
-    final TinkerpopJsonCrudService crudService = new TinkerpopJsonCrudService(graphManager);
+    final TinkerpopJsonCrudService crudService = new TinkerpopJsonCrudService(
+      graphManager,
+      JsonToTinkerpopMappings.getMappings()
+    );
 
     // lifecycle managers
     environment.lifecycle().manage(graphManager);
