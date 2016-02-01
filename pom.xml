@@ -140,7 +140,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jdk.version>1.8</jdk.version>
-    <activemq.version>5.7.0</activemq.version>
+    <activemq.version>5.13.0</activemq.version>
     <classloader-leak-prevention.version>1.10.0</classloader-leak-prevention.version>
     <commons.configuration.version>1.9</commons.configuration.version>
     <commons.lang.version>3.1</commons.lang.version>

@@ -1,11 +1,14 @@
 package nl.knaw.huygens.timbuctoo.server;
 
 import com.codahale.metrics.health.HealthCheck;
+import com.kjetland.dropwizard.activemq.ActiveMQBundle;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import nl.knaw.huygens.persistence.PersistenceManager;
+import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.search.SearchStore;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
 import nl.knaw.huygens.timbuctoo.model.vre.neww.JsonToTinkerpopMappings;
@@ -23,6 +26,7 @@ import java.nio.file.Paths;
 public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
   public static final String ENCRYPTION_ALGORITHM = "SHA-256";
+  private ActiveMQBundle activeMqBundle;
 
   public static void main(String[] args) throws Exception {
     new TimbuctooV4().run(args);
@@ -30,6 +34,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
   @Override
   public void initialize(Bootstrap<TimbuctooConfiguration> bootstrap) {
+    activeMqBundle = new ActiveMQBundle();
+    bootstrap.addBundle(activeMqBundle);
     /*
      * Make it possible to use environment variables in the config.
      * see: http://www.dropwizard.io/0.9.1/docs/manual/core.html#environment-variables
@@ -54,10 +60,13 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     );
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration);
+    final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
     final SearchStore searchStore = new SearchStore(configuration.getSearchResultAvailabilityTimeout());
+    final HandleAdder handleAdder = new HandleAdder(activeMqBundle, "pids", graphManager, persistenceManager);
     final TinkerpopJsonCrudService crudService = new TinkerpopJsonCrudService(
       graphManager,
-      JsonToTinkerpopMappings.getMappings()
+      JsonToTinkerpopMappings.getMappings(),
+      handleAdder
     );
 
     // lifecycle managers

@@ -30,7 +30,13 @@ public class DomainCrudCollectionV2_1EndPoint {
   @POST
   public Response createNew(@PathParam("collection") String collectionName, ObjectNode body) throws URISyntaxException {
     try {
-      UUID id = crudService.create(collectionName, body, "");
+      UUID id = crudService.create(collectionName, body, "", (idParam, revParam) -> {
+        try {
+          return new URI("http://example.com");
+        } catch (URISyntaxException e) {
+          throw new RuntimeException(e);
+        }
+      });
       return Response.created(new URI("http://example.com/" + id)).build(); //shim for now. FIXME replace when get() is available
     } catch (InvalidCollectionException e) {
       return Response.status(Response.Status.NOT_FOUND).build();

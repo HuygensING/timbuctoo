@@ -9,10 +9,12 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.IOException;
+import java.net.URI;
 import java.time.Clock;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -26,12 +28,15 @@ public class TinkerpopJsonCrudService {
   );
 
   private final GraphWrapper graphwrapper;
+  private final HandleAdder handleAdder;
   private final Map<String, Map<String, JsonToTinkerpopPropertyMap>> mappingPerJson;
   private final Clock clock;
   private final JsonNodeFactory nodeFactory;
 
-  public TinkerpopJsonCrudService(GraphWrapper graphwrapper, Map<String, List<JsonToTinkerpopPropertyMap>> mappings) {
+  public TinkerpopJsonCrudService(GraphWrapper graphwrapper, Map<String, List<JsonToTinkerpopPropertyMap>> mappings,
+                                  HandleAdder handleAdder) {
     this.graphwrapper = graphwrapper;
+    this.handleAdder = handleAdder;
     this.mappingPerJson = makeIndexed(mappings, JsonToTinkerpopPropertyMap::getJsonName);
     nodeFactory = JsonNodeFactory.instance;
 
@@ -39,15 +44,16 @@ public class TinkerpopJsonCrudService {
   }
 
   public TinkerpopJsonCrudService(GraphWrapper graphwrapper, Map<String, List<JsonToTinkerpopPropertyMap>> mappings,
-                                  Clock clock) {
+                                  HandleAdder handleAdder, Clock clock) {
     this.graphwrapper = graphwrapper;
+    this.handleAdder = handleAdder;
     this.mappingPerJson = makeIndexed(mappings, JsonToTinkerpopPropertyMap::getJsonName);
     nodeFactory = JsonNodeFactory.instance;
 
     this.clock = clock;
   }
 
-  public UUID create(String collectionName, ObjectNode input, String userId)
+  public UUID create(String collectionName, ObjectNode input, String userId, BiFunction<UUID, Integer, URI> urlFor)
     throws InvalidCollectionException, IOException {
 
     Map<String, JsonToTinkerpopPropertyMap> mappings = this.mappingPerJson.get(collectionName);
@@ -86,7 +92,7 @@ public class TinkerpopJsonCrudService {
     setCreated(vertex, userId);
 
     duplicateVertex(graph, vertex);
-
+    handleAdder.add(new HandleAdderParameters(vertex.id(), urlFor.apply(id, 1)));
     //Make sure this is the last line of the method. We don't want to commit if an exception happens halfway
     //the return statement below should return a variable directly without any additional logic
     graph.tx().commit();

@@ -1,10 +1,15 @@
 package nl.knaw.huygens.timbuctoo.server;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.kjetland.dropwizard.activemq.ActiveMQConfig;
+import com.kjetland.dropwizard.activemq.ActiveMQConfigHolder;
 import io.dropwizard.Configuration;
+import nl.knaw.huygens.timbuctoo.crud.HandleManagerFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import org.hibernate.validator.constraints.NotEmpty;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.concurrent.TimeUnit;
 
@@ -15,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  *  - example authorization
  *  - example database
  */
-public class TimbuctooConfiguration extends Configuration {
+public class TimbuctooConfiguration extends Configuration implements ActiveMQConfigHolder {
   @NotEmpty
   private String loginsFilePath;
   @NotEmpty
@@ -27,10 +32,26 @@ public class TimbuctooConfiguration extends Configuration {
   @NotNull
   private TimeoutFactory searchResultAvailabilityTimeout;
 
+  @JsonProperty
+  @NotNull
+  @Valid
+  private ActiveMQConfig activeMq;
+
+  {
+    activeMq = new ActiveMQConfig();
+    activeMq.brokerUrl = "vm://timbuctoo?broker.persistent=false"; //if no config is provided we use a vm-local activeMq
+  }
+
+  @JsonProperty
+  private HandleManagerFactory persistenceManagerFactory = new HandleManagerFactory();
+
+  public HandleManagerFactory getPersistenceManagerFactory() {
+    return persistenceManagerFactory;
+  }
+
   public Timeout getAutoLogoutTimeout() {
     return autoLogoutTimeout.createTimeout();
   }
-
 
   public String getLoginsFilePath() {
     return loginsFilePath;
@@ -48,13 +69,17 @@ public class TimbuctooConfiguration extends Configuration {
     return searchResultAvailabilityTimeout.createTimeout();
   }
 
+  @Override
+  public ActiveMQConfig getActiveMQ() {
+    return activeMq;
+  }
+
   // A class to configure timeouts without compromising the Timeout class.
   private class TimeoutFactory {
     private long duration;
     private TimeUnit timeUnit;
 
     public TimeoutFactory() {
-
     }
 
     public void setDuration(long duration) {
