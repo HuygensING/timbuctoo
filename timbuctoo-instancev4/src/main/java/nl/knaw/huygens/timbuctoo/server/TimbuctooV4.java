@@ -7,10 +7,12 @@ import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.timbuctoo.search.SearchStore;
+import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.rest.AuthenticationV2_1EndPoint;
+import nl.knaw.huygens.timbuctoo.server.rest.DomainCrudCollectionV2_1EndPoint;
 import nl.knaw.huygens.timbuctoo.server.rest.FacetedSearchV2_1Endpoint;
 import nl.knaw.huygens.timbuctoo.server.rest.UserV2_1Endpoint;
 
@@ -52,6 +54,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration);
     final SearchStore searchStore = new SearchStore(configuration.getSearchResultAvailabilityTimeout());
+    final TinkerpopJsonCrudService crudService = new TinkerpopJsonCrudService(graphManager);
 
     // lifecycle managers
     environment.lifecycle().manage(graphManager);
@@ -60,6 +63,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new AuthenticationV2_1EndPoint(loggedInUserStore));
     register(environment, new UserV2_1Endpoint(loggedInUserStore));
     register(environment, new FacetedSearchV2_1Endpoint(searchStore, graphManager));
+    register(environment, new DomainCrudCollectionV2_1EndPoint(crudService));
 
     // register health checks
     register(environment, "Encryption algorithm", new EncryptionAlgorithmHealthCheck(ENCRYPTION_ALGORITHM));
