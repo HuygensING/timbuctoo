@@ -12,12 +12,10 @@ import nl.knaw.huygens.timbuctoo.model.JsonToTinkerpopPropertyMap;
 import nl.knaw.huygens.timbuctoo.search.TestGraphBuilder;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.LambdaExceptionUtil;
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -35,7 +33,7 @@ import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
 
-import static nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudServiceTest.JsonBuilder.jsn;
+import static nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudServiceCreateTest.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.search.TestGraphBuilder.newGraph;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -48,7 +46,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
-public class TinkerpopJsonCrudServiceTest {
+public class TinkerpopJsonCrudServiceCreateTest {
   private final BiFunction<UUID, Integer, URI> dummyPidGenerator = (id, rev) -> {
     try {
       return new URI("http://example.com/");

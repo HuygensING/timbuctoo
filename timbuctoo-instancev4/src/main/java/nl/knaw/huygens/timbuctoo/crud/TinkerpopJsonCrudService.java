@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -99,6 +100,10 @@ public class TinkerpopJsonCrudService {
     return id;
   }
 
+  public JsonNode get(String collectionName, UUID id) {
+    return null;
+  }
+
   private void setCreated(Vertex vertex, String userId) {
     String value = String.format("{\"timeStamp\":%s,\"userId\":%s}",
       clock.millis(),
@@ -125,4 +130,5 @@ public class TinkerpopJsonCrudService {
     ));
 
   }
+
 }

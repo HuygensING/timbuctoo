@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.rest;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
 
@@ -10,6 +11,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 
 import java.io.IOException;
 
@@ -21,6 +23,13 @@ import java.util.UUID;
 @Produces(MediaType.APPLICATION_JSON)
 public class DomainCrudCollectionV2_1EndPoint {
 
+  public static URI makeUrl(String collectionName) {
+    return UriBuilder.fromResource(DomainCrudCollectionV2_1EndPoint.class)
+      .buildFromMap(ImmutableMap.of(
+        "collection", collectionName
+      ));
+  }
+
   private final TinkerpopJsonCrudService crudService;
 
   public DomainCrudCollectionV2_1EndPoint(TinkerpopJsonCrudService crudService) {
@@ -30,14 +39,13 @@ public class DomainCrudCollectionV2_1EndPoint {
   @POST
   public Response createNew(@PathParam("collection") String collectionName, ObjectNode body) throws URISyntaxException {
     try {
-      UUID id = crudService.create(collectionName, body, "", (idParam, revParam) -> {
-        try {
-          return new URI("http://example.com");
-        } catch (URISyntaxException e) {
-          throw new RuntimeException(e);
-        }
-      });
-      return Response.created(new URI("http://example.com/" + id)).build(); //shim for now. FIXME replace when get() is available
+      UUID id = crudService.create(
+        collectionName,
+        body,
+        "",
+        (idParam, rev) -> DomainCrudEntityV2_1EndPoint.makeUrl(collectionName, idParam, rev)
+      );
+      return Response.created(DomainCrudEntityV2_1EndPoint.makeUrl(collectionName, id)).build();
     } catch (InvalidCollectionException e) {
       return Response.status(Response.Status.NOT_FOUND).build();
     } catch (IOException e) {
