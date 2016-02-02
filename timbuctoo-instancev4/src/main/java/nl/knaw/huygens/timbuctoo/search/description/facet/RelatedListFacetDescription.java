@@ -1,12 +1,11 @@
 package nl.knaw.huygens.timbuctoo.search.description.facet;
 
-import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -30,26 +29,12 @@ public class RelatedListFacetDescription implements FacetDescription {
   }
 
   @Override
-  public Facet getFacet(List<Vertex> vertices) {
-    Map<String, Long> counts = Maps.newHashMap();
-
-    for (Vertex vertex : vertices) {
-      for (Iterator<Vertex> related = vertex.vertices(Direction.OUT, relations); related.hasNext(); ) {
-        Vertex next = related.next();
-        if (next.keys().contains(propertyName)) {
-          String value = parser.parse(next.value(propertyName));
-          long count = 1;
-          if (counts.containsKey(value)) {
-            count = counts.get(value) + 1;
-          }
-          counts.put(value, count);
-        }
-      }
-    }
+  public Facet getFacet(GraphTraversal<Vertex, Vertex> searchResult) {
+    Map<String, Long> counts = searchResult.to(Direction.OUT, relations).has(propertyName)
+      .<String>groupCount().by(propertyName).next();
 
     List<Facet.Option> options = counts.entrySet().stream().map(
-      count -> new Facet.DefaultOption(count.getKey(), count.getValue())).collect(toList());
-
+      count -> new Facet.DefaultOption(parser.parse(count.getKey()), count.getValue())).collect(toList());
 
     return new Facet(facetName, options, "LIST");
   }

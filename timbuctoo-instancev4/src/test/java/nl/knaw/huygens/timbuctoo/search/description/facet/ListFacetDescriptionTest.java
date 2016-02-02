@@ -1,15 +1,10 @@
 package nl.knaw.huygens.timbuctoo.search.description.facet;
 
-import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
-import nl.knaw.huygens.timbuctoo.search.description.facet.Facet.DefaultOption;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static nl.knaw.huygens.timbuctoo.search.MockVertexBuilder.vertex;
+import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -30,7 +25,9 @@ public class ListFacetDescriptionTest {
     String property = "property";
     ListFacetDescription instance = new ListFacetDescription(facetName, property, parser);
 
-    Facet facet = instance.getFacet(Lists.newArrayList());
+    Graph graph = newGraph().build();
+
+    Facet facet = instance.getFacet(graph.traversal().V());
 
     assertThat(facet, allOf(
       hasProperty("name", equalTo(facetName)),
@@ -43,12 +40,9 @@ public class ListFacetDescriptionTest {
     PropertyParser parser = mock(PropertyParser.class);
     ListFacetDescription instance = new ListFacetDescription("facetName", "property", parser);
 
-    ArrayList<Vertex> vertices = Lists.newArrayList(
-      vertex().build(),
-      vertex().build()
-    );
+    Graph graph = newGraph().withVertex(v -> v.withTimId("id")).withVertex(v -> v.withTimId("id1")).build();
 
-    Facet facet = instance.getFacet(vertices);
+    Facet facet = instance.getFacet(graph.traversal().V());
 
     assertThat(facet.getOptions(), is(empty()));
   }
@@ -63,20 +57,21 @@ public class ListFacetDescriptionTest {
     String value = "value";
     String value1 = "value1";
     String value2 = "value2";
-    List<Vertex> vertices = Lists.newArrayList(
-      vertex().withProperty(property, value).build(),
-      vertex().withProperty(property, value).build(),
-      vertex().withProperty(property, value1).build(),
-      vertex().withProperty(property, value1).build(),
-      vertex().withProperty(property, value1).build(),
-      vertex().withProperty(property, value2).build()
-    );
 
-    Facet facet = instance.getFacet(vertices);
+    Graph graph = newGraph()
+      .withVertex(v -> v.withTimId("id").withProperty(property, value))
+      .withVertex(v -> v.withTimId("id1").withProperty(property, value))
+      .withVertex(v -> v.withTimId("id2").withProperty(property, value1))
+      .withVertex(v -> v.withTimId("id3").withProperty(property, value1))
+      .withVertex(v -> v.withTimId("id4").withProperty(property, value1))
+      .withVertex(v -> v.withTimId("id5").withProperty(property, value2))
+      .build();
+
+    Facet facet = instance.getFacet(graph.traversal().V());
 
     // L is needed because the counts are longs
     assertThat(facet.getOptions(), containsInAnyOrder(
-      new DefaultOption(value, 2L),
+      new Facet.DefaultOption(value, 2L),
       new Facet.DefaultOption(value1, 3L),
       new Facet.DefaultOption(value2, 1L)));
   }

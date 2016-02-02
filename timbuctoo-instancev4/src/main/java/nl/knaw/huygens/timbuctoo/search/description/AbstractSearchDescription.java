@@ -14,7 +14,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
@@ -24,9 +23,9 @@ public abstract class AbstractSearchDescription implements SearchDescription {
   public static final SubgraphStrategy LATEST_ONLY =
     SubgraphStrategy.build().vertexCriterion(has("isLatest", true)).create();
 
-  protected List<Facet> createFacets(List<Vertex> vertices) {
+  protected List<Facet> createFacets(GraphTraversalSource vertices) {
 
-    return getFacetDescriptions().stream().map(facetDescription -> facetDescription.getFacet(vertices))
+    return getFacetDescriptions().stream().map(facetDescription -> facetDescription.getFacet(filterByType(vertices)))
                                  .collect(toList());
   }
 
@@ -50,10 +49,10 @@ public abstract class AbstractSearchDescription implements SearchDescription {
   @Override
   public SearchResult execute(Graph graph, SearchRequestV2_1 searchRequest) {
     GraphTraversalSource latestVertices = GraphTraversalSource.build().with(LATEST_ONLY).create(graph);
-    List<Vertex> vertices = filterByType(latestVertices).toList();
+    GraphTraversal<Vertex, Vertex> vertices = filterByType(latestVertices);
 
-    List<EntityRef> refs = vertices.stream().map(vertex -> createRef(vertex)).collect(Collectors.toList());
-    List<Facet> facets = createFacets(vertices);
+    List<EntityRef> refs = vertices.map(vertex -> createRef(vertex.get())).toList();
+    List<Facet> facets = createFacets(latestVertices);
 
     return new SearchResult(refs, this, facets);
   }

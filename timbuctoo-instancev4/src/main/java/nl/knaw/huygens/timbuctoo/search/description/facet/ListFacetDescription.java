@@ -2,14 +2,13 @@ package nl.knaw.huygens.timbuctoo.search.description.facet;
 
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.counting;
-import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 
 public class ListFacetDescription implements FacetDescription {
   private final String facetName;
@@ -23,16 +22,15 @@ public class ListFacetDescription implements FacetDescription {
   }
 
   @Override
-  public Facet getFacet(List<Vertex> vertices) {
+  public Facet getFacet(GraphTraversal<Vertex, Vertex> searchResult) {
 
-    Map<String, Long> counts = vertices.stream()
-                                       .filter(vertex -> vertex.keys().contains(propertyName))
-                                       .collect(
-                                         groupingBy(vertex1 -> parser.parse(vertex1.value(propertyName)), counting()));
+    Map<String, Long> counts =
+      searchResult.has(propertyName).<String>groupCount().by(propertyName).next();
 
     List<Facet.Option> options =
       counts.entrySet().stream().map(entry -> new Facet.DefaultOption(entry.getKey(), entry.getValue()))
-            .collect(Collectors.toList());
+            .collect(toList());
+
     return new Facet(facetName, options, "LIST");
   }
 }

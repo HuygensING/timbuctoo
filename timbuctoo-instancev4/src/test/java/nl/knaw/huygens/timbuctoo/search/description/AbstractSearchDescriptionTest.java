@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.search.SearchResult;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.hamcrest.Matchers;
@@ -14,8 +15,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.search.VertexMatcher.likeVertex;
+import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -108,12 +109,12 @@ public class AbstractSearchDescriptionTest {
 
     assertThat(searchResult.getFacets(), is(Matchers.notNullValue()));
 
-    ArgumentCaptor<List> captor = ArgumentCaptor.forClass(List.class);
+    ArgumentCaptor<GraphTraversal> captor = ArgumentCaptor.forClass(GraphTraversal.class);
     verify(facetDescription1, times(1)).getFacet(captor.capture());
-    assertThat((List<Vertex>) captor.getValue(), contains(likeVertex().withType(type)));
-    ArgumentCaptor<List> captor1 = ArgumentCaptor.forClass(List.class);
+    assertThat(((GraphTraversal<Vertex, Vertex>) captor.getValue()).toList(), contains(likeVertex().withType(type)));
+    ArgumentCaptor<GraphTraversal> captor1 = ArgumentCaptor.forClass(GraphTraversal.class);
     verify(facetDescription2, times(1)).getFacet(captor1.capture());
-    assertThat((List<Vertex>) captor1.getValue(), contains(likeVertex().withType(type)));
+    assertThat(((GraphTraversal<Vertex, Vertex>) captor1.getValue()).toList(), contains(likeVertex().withType(type)));
   }
 
   private AbstractSearchDescriptionBuilder searchDescription() {

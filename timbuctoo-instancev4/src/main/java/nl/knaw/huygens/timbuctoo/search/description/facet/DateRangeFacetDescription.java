@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.search.description.facet;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.text.SimpleDateFormat;
@@ -19,23 +20,21 @@ public class DateRangeFacetDescription implements FacetDescription {
   }
 
   @Override
-  public Facet getFacet(List<Vertex> vertices) {
+  public Facet getFacet(GraphTraversal<Vertex, Vertex> searchResult) {
     List<Long> dates = Lists.newArrayList();
 
-    vertices.stream()
-            .filter(vertex -> vertex.keys().contains(propertyName))
-            .forEach(vertex -> {
-              String value = vertex.value(propertyName);
+    searchResult.has(propertyName).forEachRemaining(vertex -> {
+      String value = vertex.value(propertyName);
 
-              Datable datable = new Datable(value);
+      Datable datable = new Datable(value);
 
-              if (datable.isValid()) {
-                dates.add(Long.valueOf(FORMAT.format(datable.getFromDate())));
-                dates.add(Long.valueOf(FORMAT.format(datable.getToDate())));
-              }
-            });
+      if (datable.isValid()) {
+        dates.add(Long.valueOf(FORMAT.format(datable.getFromDate())));
+        dates.add(Long.valueOf(FORMAT.format(datable.getToDate())));
+      }
+    });
 
-    dates.sort((value1, value2) -> value1.compareTo(value2));
+    dates.sort(Long::compareTo);
 
     // set default values
     Long lowerLimit = 0L;
@@ -45,7 +44,6 @@ public class DateRangeFacetDescription implements FacetDescription {
       upperLimit = dates.get(dates.size() - 1);
     }
 
-    List<Facet.Option> options = Lists.newArrayList(new Facet.RangeOption(lowerLimit, upperLimit));
-    return new Facet(facetName, options, "RANGE");
+    return new Facet(facetName, Lists.newArrayList(new Facet.RangeOption(lowerLimit, upperLimit)), "RANGE");
   }
 }

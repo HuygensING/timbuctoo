@@ -1,14 +1,11 @@
 package nl.knaw.huygens.timbuctoo.search.description.facet;
 
-import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.List;
-
-import static nl.knaw.huygens.timbuctoo.search.MockVertexBuilder.vertex;
+import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -19,7 +16,6 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class RelatedListFacetDescriptionTest {
@@ -40,10 +36,11 @@ public class RelatedListFacetDescriptionTest {
 
   @Test
   public void getFacetReturnsTheFacetWithItsNameAndTypeList() {
+    Graph graph = newGraph().withVertex(v -> v.withTimId("id")).build();
     RelatedListFacetDescription instance =
       new RelatedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION);
 
-    Facet facet = instance.getFacet(Lists.newArrayList(vertex().build()));
+    Facet facet = instance.getFacet(graph.traversal().V());
 
     assertThat(facet, allOf(
       hasProperty("name", equalTo(FACET_NAME)),
@@ -54,8 +51,9 @@ public class RelatedListFacetDescriptionTest {
   public void getFacetReturnsTheFacetWithAnEmptyOptionsListWhenTheVerticesListIsEmpty() {
     RelatedListFacetDescription instance =
       new RelatedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION);
+    Graph graph = newGraph().build();
 
-    Facet facet = instance.getFacet(Lists.newArrayList());
+    Facet facet = instance.getFacet(graph.traversal().V());
 
     assertThat(facet.getOptions(), is(empty()));
   }
@@ -64,9 +62,9 @@ public class RelatedListFacetDescriptionTest {
   public void getFacetReturnsTheFacetWithAnEmptyOptionsListWhenTheVerticesDoNotContainTheRelation() {
     RelatedListFacetDescription instance =
       new RelatedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION);
-    List<Vertex> vertices = Lists.newArrayList(vertex().build(), vertex().build());
+    Graph graph = newGraph().withVertex(v -> v.withTimId("id")).withVertex(v -> v.withTimId("id2")).build();
 
-    Facet facet = instance.getFacet(vertices);
+    Facet facet = instance.getFacet(graph.traversal().V());
 
     assertThat(facet.getOptions(), is(empty()));
   }
@@ -75,11 +73,14 @@ public class RelatedListFacetDescriptionTest {
   public void getFacetReturnsTheFacetWithAnEmptyOptionsListWhenTheRelatedVerticesDoNotContainTheProperty() {
     RelatedListFacetDescription instance =
       new RelatedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION);
-    List<Vertex> vertices = Lists.newArrayList(
-      vertex().withOutgoingRelation(RELATION, vertex().build()).build(),
-      vertex().withOutgoingRelation(RELATION, vertex().build()).build());
 
-    Facet facet = instance.getFacet(vertices);
+    Graph graph = newGraph().withVertex("v1", v -> v.withTimId("id1"))
+                            .withVertex("v2", v -> v.withTimId("id2").withOutgoingRelation(RELATION, "v1"))
+                            .withVertex("v3", v -> v.withTimId("id3"))
+                            .withVertex("v4", v -> v.withTimId("id4").withOutgoingRelation(RELATION, "v3"))
+                            .build();
+
+    Facet facet = instance.getFacet(graph.traversal().V());
 
     assertThat(facet.getOptions(), is(empty()));
   }
@@ -88,40 +89,47 @@ public class RelatedListFacetDescriptionTest {
   public void getFacetAddsTheDifferentValuesToTheOptionsList() {
     RelatedListFacetDescription instance =
       new RelatedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION);
-    List<Vertex> vertices = Lists.newArrayList(
-      vertex().withOutgoingRelation(RELATION, vertex().withProperty(PROPERTY, VALUE1).build()).build(),
-      vertex().withOutgoingRelation(RELATION, vertex().withProperty(PROPERTY, VALUE2).build()).build());
+    Graph graph = newGraph().withVertex("v1", v -> v.withTimId("id1").withProperty(PROPERTY, VALUE1))
+                            .withVertex("v2", v -> v.withTimId("id2").withOutgoingRelation(RELATION, "v1"))
+                            .withVertex("v3", v -> v.withTimId("id3").withProperty(PROPERTY, VALUE2))
+                            .withVertex("v4", v -> v.withTimId("id4").withOutgoingRelation(RELATION, "v3"))
+                            .build();
 
-    Facet facet = instance.getFacet(vertices);
+    Facet facet = instance.getFacet(graph.traversal().V());
 
     assertThat(facet.getOptions(),
       containsInAnyOrder(new Facet.DefaultOption(VALUE1, 1), new Facet.DefaultOption(VALUE2, 1)));
   }
 
   @Test
-  public void getFacetLetsTheParserParseEachValue() {
+  public void getFacetLetsTheParserParseEachValueOnce() {
     RelatedListFacetDescription instance =
       new RelatedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION);
-    List<Vertex> vertices = Lists.newArrayList(
-      vertex().withOutgoingRelation(RELATION, vertex().withProperty(PROPERTY, VALUE1).build()).build(),
-      vertex().withOutgoingRelation(RELATION, vertex().withProperty(PROPERTY, VALUE2).build()).build(),
-      vertex().withOutgoingRelation(RELATION, vertex().withProperty(PROPERTY, VALUE2).build()).build());
+    Graph graph = newGraph().withVertex("v1", v -> v.withTimId("id1").withProperty(PROPERTY, VALUE1))
+                            .withVertex("v2", v -> v.withTimId("id2").withOutgoingRelation(RELATION, "v1"))
+                            .withVertex("v3", v -> v.withTimId("id3").withProperty(PROPERTY, VALUE2))
+                            .withVertex("v4", v -> v.withTimId("id4").withOutgoingRelation(RELATION, "v3"))
+                            .withVertex("v5", v -> v.withTimId("id5").withProperty(PROPERTY, VALUE2))
+                            .withVertex("v6", v -> v.withTimId("id6").withOutgoingRelation(RELATION, "v5"))
+                            .build();
 
-    instance.getFacet(vertices);
+    instance.getFacet(graph.traversal().V());
 
     verify(parser).parse(VALUE1);
-    verify(parser, times(2)).parse(VALUE2);
+    verify(parser).parse(VALUE2);
   }
 
   @Test
   public void getFacetGroupsTheCountsOfOneValue() {
     RelatedListFacetDescription instance =
       new RelatedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION);
-    List<Vertex> vertices = Lists.newArrayList(
-      vertex().withOutgoingRelation(RELATION, vertex().withProperty(PROPERTY, VALUE1).build()).build(),
-      vertex().withOutgoingRelation(RELATION, vertex().withProperty(PROPERTY, VALUE1).build()).build());
+    Graph graph = newGraph().withVertex("v1", v -> v.withTimId("id1").withProperty(PROPERTY, VALUE1))
+                            .withVertex("v2", v -> v.withTimId("id2").withOutgoingRelation(RELATION, "v1"))
+                            .withVertex("v3", v -> v.withTimId("id3").withProperty(PROPERTY, VALUE1))
+                            .withVertex("v4", v -> v.withTimId("id4").withOutgoingRelation(RELATION, "v3"))
+                            .build();
 
-    Facet facet = instance.getFacet(vertices);
+    Facet facet = instance.getFacet(graph.traversal().V());
 
     assertThat(facet.getOptions(), containsInAnyOrder(new Facet.DefaultOption(VALUE1, 2)));
   }
@@ -130,11 +138,13 @@ public class RelatedListFacetDescriptionTest {
   public void getFacetAddsTheValueOfEachRelatedVertex() {
     RelatedListFacetDescription instance =
       new RelatedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION);
-    List<Vertex> vertices = Lists.newArrayList(
-      vertex().withOutgoingRelation(RELATION, vertex().withProperty(PROPERTY, VALUE1).build())
-              .withOutgoingRelation(RELATION, vertex().withProperty(PROPERTY, VALUE2).build()).build());
+    Graph graph = newGraph().withVertex("v1", v -> v.withTimId("id1").withProperty(PROPERTY, VALUE1))
+                            .withVertex("v2", v -> v.withTimId("id2").withProperty(PROPERTY, VALUE2))
+                            .withVertex("v3", v -> v.withTimId("id3").withOutgoingRelation(RELATION, "v1")
+                                                    .withOutgoingRelation(RELATION, "v2"))
+                            .build();
 
-    Facet facet = instance.getFacet(vertices);
+    Facet facet = instance.getFacet(graph.traversal().V());
 
     assertThat(facet.getOptions(),
       containsInAnyOrder(new Facet.DefaultOption(VALUE1, 1), new Facet.DefaultOption(VALUE2, 1)));
@@ -144,11 +154,14 @@ public class RelatedListFacetDescriptionTest {
   public void getFacetAddsTheValueOfEachRelationType() {
     RelatedListFacetDescription instance =
       new RelatedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION, RELATION_2);
-    List<Vertex> vertices = Lists.newArrayList(
-      vertex().withOutgoingRelation(RELATION, vertex().withProperty(PROPERTY, VALUE1).build())
-              .withOutgoingRelation(RELATION_2, vertex().withProperty(PROPERTY, VALUE2).build()).build());
+    Graph graph = newGraph().withVertex("v1", v -> v.withTimId("id1").withProperty(PROPERTY, VALUE1))
+                            .withVertex("v2", v -> v.withTimId("id2").withProperty(PROPERTY, VALUE2))
+                            .withVertex("v3", v -> v.withTimId("id3").withOutgoingRelation(RELATION, "v1")
+                                                    .withOutgoingRelation(RELATION_2, "v2"))
+                            .build();
 
-    Facet facet = instance.getFacet(vertices);
+
+    Facet facet = instance.getFacet(graph.traversal().V());
 
     assertThat(facet.getOptions(),
       containsInAnyOrder(new Facet.DefaultOption(VALUE1, 1), new Facet.DefaultOption(VALUE2, 1)));

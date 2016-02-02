@@ -1,12 +1,9 @@
 package nl.knaw.huygens.timbuctoo.search.description.facet;
 
-import com.google.common.collect.Lists;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Test;
 
-import java.util.List;
-
-import static nl.knaw.huygens.timbuctoo.search.MockVertexBuilder.vertex;
+import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -22,9 +19,10 @@ public class DateRangeFacetDescriptionTest {
   @Test
   public void getFacetReturnsAFacetWithItsNameAndTypeRange() {
     DateRangeFacetDescription instance = new DateRangeFacetDescription(FACET_NAME, PROPERTY_NAME);
-    List<Vertex> vertices = Lists.newArrayList(vertex().build());
 
-    Facet facet = instance.getFacet(vertices);
+    Graph graph = newGraph().withVertex(v -> v.withTimId("id")).build();
+
+    Facet facet = instance.getFacet(graph.traversal().V());
 
     assertThat(facet, allOf(
       hasProperty("name", equalTo(FACET_NAME)),
@@ -34,9 +32,9 @@ public class DateRangeFacetDescriptionTest {
   @Test
   public void getFacetReturnsFacetWithOneOptionWithDefaultValuesWhenTheVerticesDoNotContainTheProperty() {
     DateRangeFacetDescription instance = new DateRangeFacetDescription(FACET_NAME, PROPERTY_NAME);
-    List<Vertex> vertices = Lists.newArrayList(vertex().build());
+    Graph graph = newGraph().withVertex(v -> v.withTimId("id")).build();
 
-    Facet facet = instance.getFacet(vertices);
+    Facet facet = instance.getFacet(graph.traversal().V());
 
     assertThat(facet.getOptions(), containsInAnyOrder(new Facet.RangeOption(0, 0)));
   }
@@ -44,9 +42,11 @@ public class DateRangeFacetDescriptionTest {
   @Test
   public void getFacetReturnsRangeOptionWithDefaultValuesWhenTheStoredDatabaseIsNotValid() {
     DateRangeFacetDescription instance = new DateRangeFacetDescription(FACET_NAME, PROPERTY_NAME);
-    List<Vertex> vertices = Lists.newArrayList(vertex().withProperty(PROPERTY_NAME, "invalidDatable").build());
+    Graph graph = newGraph().withVertex(
+      v -> v.withTimId("id").withProperty(PROPERTY_NAME, "invalidDatable")
+    ).build();
 
-    Facet facet = instance.getFacet(vertices);
+    Facet facet = instance.getFacet(graph.traversal().V());
 
     assertThat(facet.getOptions(), containsInAnyOrder(new Facet.RangeOption(0, 0)));
   }
@@ -54,9 +54,10 @@ public class DateRangeFacetDescriptionTest {
   @Test
   public void getFacetReturnsTheUpperAndLowerLimitInYearMonthDayFormat() {
     DateRangeFacetDescription instance = new DateRangeFacetDescription(FACET_NAME, PROPERTY_NAME);
-    List<Vertex> vertices = Lists.newArrayList(vertex().withProperty(PROPERTY_NAME, "2015-01").build());
+    Graph graph = newGraph().withVertex(v -> v.withTimId("id").withProperty(PROPERTY_NAME, "2015-01"))
+                            .build();
 
-    Facet facet = instance.getFacet(vertices);
+    Facet facet = instance.getFacet(graph.traversal().V());
 
     assertThat(facet.getOptions(), contains(new Facet.RangeOption(20150101, 20150131)));
   }
@@ -64,12 +65,13 @@ public class DateRangeFacetDescriptionTest {
   @Test
   public void getFacetReturnsLowestLowerLimitAndTheHighestUpperLimit() {
     DateRangeFacetDescription instance = new DateRangeFacetDescription(FACET_NAME, PROPERTY_NAME);
-    List<Vertex> vertices = Lists.newArrayList(
-      vertex().withProperty(PROPERTY_NAME, "2015-01").build(),
-      vertex().withProperty(PROPERTY_NAME, "0015-01").build(),
-      vertex().withProperty(PROPERTY_NAME, "0190-01").build());
 
-    Facet facet = instance.getFacet(vertices);
+    Graph graph = newGraph().withVertex(v -> v.withTimId("id1").withProperty(PROPERTY_NAME, "2015-01"))
+                            .withVertex(v -> v.withTimId("id2").withProperty(PROPERTY_NAME, "0015-01"))
+                            .withVertex(v -> v.withTimId("id3").withProperty(PROPERTY_NAME, "0190-01"))
+                            .build();
+
+    Facet facet = instance.getFacet(graph.traversal().V());
 
     assertThat(facet.getOptions(), contains(new Facet.RangeOption(150101, 20150131)));
   }
