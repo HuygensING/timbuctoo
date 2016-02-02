@@ -14,8 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static nl.knaw.huygens.timbuctoo.search.TestGraphBuilder.newGraph;
-import static nl.knaw.huygens.timbuctoo.search.VertexBuilder.vertex;
+import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.search.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -72,9 +71,9 @@ public class AbstractSearchDescriptionTest {
       .withDataDescriptor("desc2", dataDescriptor2)
       .build();
     Graph graph = newGraph()
-      .withVertex(vertex().withId("id").isLatest(true).withType(type))
-      .withVertex(vertex().withId("id1").isLatest(true).withType("otherType"))
-      .withVertex(vertex().withId("id").isLatest(false).withType(type))
+      .withVertex(vertex -> vertex.withTimId("id").isLatest(true).withType(type))
+      .withVertex(vertex -> vertex.withTimId("id1").isLatest(true).withType("otherType"))
+      .withVertex(vertex -> vertex.withTimId("id").isLatest(false).withType(type))
       .build();
 
     SearchResult searchResult = instance.execute(graph, new SearchRequestV2_1());
@@ -99,9 +98,9 @@ public class AbstractSearchDescriptionTest {
       .withFacetDescription(facetDescription2)
       .build();
     Graph graph = newGraph()
-      .withVertex(vertex().withId("id").isLatest(true).withType(type))
-      .withVertex(vertex().withId("id1").isLatest(true).withType("otherType"))
-      .withVertex(vertex().withId("id").isLatest(false).withType(type))
+      .withVertex(vertex -> vertex.withTimId("id").isLatest(true).withType(type))
+      .withVertex(vertex -> vertex.withTimId("id1").isLatest(true).withType("otherType"))
+      .withVertex(vertex -> vertex.withTimId("id").isLatest(false).withType(type))
       .build();
 
 
