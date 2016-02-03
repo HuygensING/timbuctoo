@@ -41,19 +41,17 @@ public class TinkerpopJsonCrudServiceReadTest {
   public TinkerpopJsonCrudService basicInstance(Graph graph) {
     return customInstance(graph, null, null);
   }
+
   public TinkerpopJsonCrudService basicInstanceWithUserStore(Graph graph, JsonBasedUserStore userStore) {
     return customInstance(graph, userStore, null);
   }
+
   public TinkerpopJsonCrudService basicInstanceWithGenerator(Graph graph, UrlGenerator gen) {
     return customInstance(graph, null, gen);
   }
 
   public TinkerpopJsonCrudService customInstance(Graph graph, JsonBasedUserStore userStore, UrlGenerator gen) {
-    Map<String, List<JsonToTinkerpopPropertyMap>> ONLY_WWPERSONS = ImmutableMap.of(
-      "wwpersons", Lists.newArrayList(
-        new JsonToTinkerpopPropertyMap("name", "wwperson_name")
-      )
-    );
+
 
     if (gen == null) {
       gen = (collection, id, rev) -> URI.create("http://example.com/");
@@ -68,7 +66,13 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     Clock clock = Clock.systemDefaultZone();
 
-    return new TinkerpopJsonCrudService(graphWrapper, ONLY_WWPERSONS, handleAdder, userStore, gen, clock);
+    Map<String, List<JsonToTinkerpopPropertyMap>> onlyWwPersons = ImmutableMap.of(
+      "wwpersons", Lists.newArrayList(
+        new JsonToTinkerpopPropertyMap("name", "wwperson_name")
+      )
+    );
+
+    return new TinkerpopJsonCrudService(graphWrapper, onlyWwPersons, handleAdder, userStore, gen, clock);
   }
 
   @Rule
@@ -328,12 +332,7 @@ public class TinkerpopJsonCrudServiceReadTest {
       "@relations", jsn(
         "isCreatorOf", jsn(
           jsn(
-            //"type", jsn("wwdocument"),
             "id", jsn(workId.toString())
-            //"path", jsn("domain/wwdocuments/#documentRecordId"),
-            //"relationId", jsn("#recordId"),
-            //"accepted", jsn(true),
-            //"rev", jsn(1)
           )
         )
       )
@@ -370,11 +369,8 @@ public class TinkerpopJsonCrudServiceReadTest {
       "@relations", jsn(
         "isPseudonymOf", jsn(
           jsn(
-            //"type", jsn("wwperson"),
             "id", jsn("f005ba11-0000-0000-0000-000000000000"),
             "path", jsn("/wwpersons/f005ba11-0000-0000-0000-000000000000/null")
-            //"relationId", jsn("#recordId"),
-            //"rev", jsn(1)
           )
         )
       )
@@ -382,10 +378,10 @@ public class TinkerpopJsonCrudServiceReadTest {
   }
 
   //toon de properties van de andere vertex
-    //path is de url van de andere vertex
+  //path is de url van de andere vertex
   //derived relations moet je ook doen. die moet je ergens configureren
   //doesn't show accepted false
-      //FIXME displayname
+  //FIXME displayname
 
 
   @Test

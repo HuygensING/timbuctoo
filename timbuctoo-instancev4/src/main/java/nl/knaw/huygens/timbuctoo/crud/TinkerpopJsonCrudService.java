@@ -51,7 +51,7 @@ public class TinkerpopJsonCrudService {
     "wwperson", "neww",
     "wwdocument", "neww"
   );
-  private final Map<String, Set<String>> entityTypePerVRE = ImmutableMap.of(
+  private final Map<String, Set<String>> entityTypePerVre = ImmutableMap.of(
     "neww", Sets.newHashSet("wwperson", "wwdocument")
   );
 
@@ -195,10 +195,10 @@ public class TinkerpopJsonCrudService {
       .filter(edge -> !edge.label().equals("VERSION_OF"))
       .map(edge -> new Tuple<>(edge.outVertex(), edge.label()))
       .map(edge -> new Tuple<>(edge.getLeft(), (String) graphwrapper.getGraph().traversal()
-        .V()
-        .has("relationtype_regularName", edge.getRight())
-        .next()
-        .value("relationtype_inverseName"))
+                                                                    .V()
+                                                                    .has("relationtype_regularName", edge.getRight())
+                                                                    .next()
+                                                                    .value("relationtype_inverseName"))
       );
 
     Map<String, List<ObjectNode>> relations = concat(incoming, outgoing)
@@ -208,9 +208,10 @@ public class TinkerpopJsonCrudService {
         String uuid = vertex.value("tim_id");
         try {
           Set<String> types = getProp(vertex, "types", String.class)
-            .map(rethrowFunction(ty -> (Set<String>) mapper.readValue(ty, new TypeReference<Set<String>>(){})))
+            .map(rethrowFunction(ty -> (Set<String>) mapper.readValue(ty, new TypeReference<Set<String>>() {
+            })))
             .orElseThrow(IOException::new);
-          String curVreVariant = Sets.intersection(entityTypePerVRE.get(curVre), types).iterator().next();
+          String curVreVariant = Sets.intersection(entityTypePerVre.get(curVre), types).iterator().next();
           return Optional.of(jsn(
             "id", jsn(uuid),
             "path", jsn(urlFor.apply(curVreVariant + "s", UUID.fromString(uuid), null).toString()),
@@ -269,10 +270,10 @@ public class TinkerpopJsonCrudService {
       .map(modifiedObj -> {
         try {
           userStore.userForId(modifiedObj.get("userId").asText(""))
-            .map(User::getDisplayName)
-            .ifPresent(userName -> {
-              modifiedObj.set("username", nodeFactory.textNode(userName));
-            });
+                   .map(User::getDisplayName)
+                   .ifPresent(userName -> {
+                     modifiedObj.set("username", nodeFactory.textNode(userName));
+                   });
         } catch (AuthenticationUnavailableException e) {
           modifiedObj.set("username", nodeFactory.nullNode());
         }
@@ -296,10 +297,12 @@ public class TinkerpopJsonCrudService {
   private Optional<Vertex> getEntity(UUID id/*, String entityTypeName*/) {
     Optional<Vertex> resultEntity;
     GraphTraversal<Vertex, Vertex> resultSet = graphwrapper.getGraph().traversal()
-      .V()
-      //.has("types", P.test((types, o2) -> types instanceof String && ((String) types).contains(entityTypeName), null))
-      .has("tim_id", id.toString())
-      .has("isLatest", true);
+                                                           .V()
+                                                           //.has("types", P.test((types, o2) -> types instanceof
+                                                           // String && ((String) types).contains(entityTypeName),
+                                                           // null))
+                                                           .has("tim_id", id.toString())
+                                                           .has("isLatest", true);
     if (resultSet.hasNext()) {
       resultEntity = Optional.of(resultSet.next());
     } else {
@@ -311,11 +314,13 @@ public class TinkerpopJsonCrudService {
   private Optional<Vertex> getEntity(UUID id, int rev/*, String entityTypeName*/) {
     Optional<Vertex> resultEntity;
     GraphTraversal<Vertex, Vertex> resultSet = graphwrapper.getGraph().traversal()
-      .V()
-      //.has("types", P.test((types, o2) -> types instanceof String && ((String) types).contains(entityTypeName), null))
-      .has("tim_id", id.toString())
-      .has("rev", rev)
-      .has("isLatest", false);
+                                                           .V()
+                                                           //.has("types", P.test((types, o2) -> types instanceof
+                                                           // String && ((String) types).contains(entityTypeName),
+                                                           // null))
+                                                           .has("tim_id", id.toString())
+                                                           .has("rev", rev)
+                                                           .has("isLatest", false);
     if (resultSet.hasNext()) {
       resultEntity = Optional.of(resultSet.next());
     } else {
