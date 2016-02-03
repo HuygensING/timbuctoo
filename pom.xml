@@ -5,7 +5,7 @@
 
   <groupId>nl.knaw.huygens</groupId>
   <artifactId>timbuctoo</artifactId>
-  <version>3.0.1</version>
+  <version>3.0.2</version>
   <packaging>pom</packaging>
   <name>Timbuctoo</name>
   <description>Back-end software that provides different front-ends to share data and variations on that data.
