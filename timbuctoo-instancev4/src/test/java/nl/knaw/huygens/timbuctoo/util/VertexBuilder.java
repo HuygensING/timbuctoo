@@ -18,19 +18,23 @@ public class VertexBuilder {
   private String id;
   private final ObjectMapper objectMapper;
   private boolean isLatest;
+  private final HashMap<String, List<String>> incomingRelationMap;
 
   VertexBuilder() {
-    types = Lists.newArrayList();
     objectMapper = new ObjectMapper();
     properties = Maps.newHashMap();
     outGoingRelationMap = Maps.newHashMap();
-
+    incomingRelationMap = Maps.newHashMap();
   }
 
   public Vertex build(Vertex vertex) {
     try {
-      vertex.property("types", objectMapper.writeValueAsString(Lists.newArrayList(types)));
-      vertex.property("tim_id", id);
+      if (types != null) {
+        vertex.property("types", objectMapper.writeValueAsString(Lists.newArrayList(types)));
+      }
+      if (id != null) {
+        vertex.property("tim_id", id);
+      }
       vertex.property("isLatest", isLatest);
 
       for (Map.Entry<String, Object> entry : properties.entrySet()) {
@@ -50,9 +54,18 @@ public class VertexBuilder {
         self.addEdge(entry.getKey(), other);
       }
     }
+    for (Map.Entry<String, List<String>> entry : incomingRelationMap.entrySet()) {
+      for (String vertexLookup : entry.getValue()) {
+        Vertex other = others.get(vertexLookup);
+        other.addEdge(entry.getKey(), self);
+      }
+    }
   }
 
   public VertexBuilder withType(String type) {
+    if (types == null) {
+      types = Lists.newArrayList();
+    }
     this.types.add(type);
     return this;
   }
@@ -164,6 +177,17 @@ public class VertexBuilder {
     }
 
     outGoingRelationMap.get(relationName).add(otherVertex);
+
+    return this;
+  }
+
+
+  public VertexBuilder withIncomingRelation(String relationName, String otherVertex) {
+    if (!incomingRelationMap.containsKey(relationName)) {
+      incomingRelationMap.put(relationName, Lists.newArrayList());
+    }
+
+    incomingRelationMap.get(relationName).add(otherVertex);
 
     return this;
   }

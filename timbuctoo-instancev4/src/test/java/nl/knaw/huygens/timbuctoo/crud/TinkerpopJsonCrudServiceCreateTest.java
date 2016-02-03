@@ -1,21 +1,15 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.NumericNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.model.JsonToTinkerpopPropertyMap;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import nl.knaw.huygens.timbuctoo.util.LambdaExceptionUtil;
 import nl.knaw.huygens.timbuctoo.util.TestGraphBuilder;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -30,10 +24,9 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.BiFunction;
 import java.util.regex.Pattern;
 
-import static nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudServiceCreateTest.JsonBuilder.jsn;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -47,41 +40,57 @@ import static org.mockito.Mockito.when;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 public class TinkerpopJsonCrudServiceCreateTest {
-  private final BiFunction<UUID, Integer, URI> dummyPidGenerator = (id, rev) -> {
-    try {
-      return new URI("http://example.com/");
-    } catch (URISyntaxException e) {
-      throw new RuntimeException(e);
-    }
-  };
-
-  private static final Map<String, List<JsonToTinkerpopPropertyMap>> ONLY_WWPERSONS = ImmutableMap.of(
-    "wwpersons", Lists.newArrayList()
-  );
-
-  private HandleAdder handleAdder;
-
-  @Before
-  public void mockHandleAdder() {
-    handleAdder = mock(HandleAdder.class);
-  }
-
-  public GraphWrapper asWrapper(Graph graph) {
-    GraphWrapper graphWrapper = mock(GraphWrapper.class);
-    when(graphWrapper.getGraph()).thenReturn(graph);
-    return graphWrapper;
-  }
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
+
+  public TinkerpopJsonCrudService basicInstance(Graph graph) {
+    return customInstanceMaker(graph, null, null, null, null);
+  }
+
+  public TinkerpopJsonCrudService basicInstanceWithClock(Graph graph, Clock clock) {
+    return customInstanceMaker(graph, null, null, clock, null);
+  }
+
+  public TinkerpopJsonCrudService basicInstanceWithMap(Graph graph, Map<String, List<JsonToTinkerpopPropertyMap>> map) {
+    return customInstanceMaker(graph, map, null, null, null);
+  }
+
+  private TinkerpopJsonCrudService basicInstanceWithUrlGenerator(Graph graph, UrlGenerator urlGen, HandleAdder adder) {
+    return customInstanceMaker(graph, null, urlGen, null, adder);
+  }
+
+  private TinkerpopJsonCrudService customInstanceMaker(Graph graph, Map<String, List<JsonToTinkerpopPropertyMap>> map,
+                                                       UrlGenerator generator, Clock clock, HandleAdder handleAdder) {
+    if (map == null) {
+      map = ImmutableMap.of(
+        "wwpersons", Lists.newArrayList()
+      );
+    }
+    if (generator == null) {
+      generator = (collection, id, rev) -> URI.create("http://example.com/");
+    }
+    if (clock == null) {
+      clock = Clock.systemDefaultZone();
+    }
+    if (handleAdder == null) {
+      handleAdder = mock(HandleAdder.class);
+    }
+
+    GraphWrapper graphWrapper = mock(GraphWrapper.class);
+    when(graphWrapper.getGraph()).thenReturn(graph);
+
+    return new TinkerpopJsonCrudService(graphWrapper, map, handleAdder, null, generator, clock);
+  }
+
 
   @Test
   public void addsVertexToTheGraph() throws IOException, InvalidCollectionException {
     Graph graph = newGraph().build();
 
-    TinkerpopJsonCrudService instance = new TinkerpopJsonCrudService(asWrapper(graph), ONLY_WWPERSONS, handleAdder);
+    TinkerpopJsonCrudService instance = basicInstance(graph);
 
-    instance.create("wwpersons", jsn(), "", dummyPidGenerator);
+    instance.create("wwpersons", jsn(), "");
 
     assertThat(graph.vertices().next(), is(not(nullValue())));
   }
@@ -89,19 +98,19 @@ public class TinkerpopJsonCrudServiceCreateTest {
   @Test
   public void throwsOnUnknownMappings() throws IOException, InvalidCollectionException {
     Graph graph = newGraph().build();
-    TinkerpopJsonCrudService instance = new TinkerpopJsonCrudService(asWrapper(graph), ONLY_WWPERSONS, handleAdder);
+    TinkerpopJsonCrudService instance = basicInstance(graph);
 
     expectedException.expect(InvalidCollectionException.class);
 
-    instance.create("not_wwpersons", jsn(), "", dummyPidGenerator);
+    instance.create("not_wwpersons", jsn(), "");
   }
 
   @Test
   public void setsTheTimIdPropertyAndReturnsIt() throws IOException, InvalidCollectionException {
     Graph graph = newGraph().build();
-    TinkerpopJsonCrudService instance = new TinkerpopJsonCrudService(asWrapper(graph), ONLY_WWPERSONS, handleAdder);
+    TinkerpopJsonCrudService instance = basicInstance(graph);
 
-    UUID id = instance.create("wwpersons", jsn(), "", dummyPidGenerator);
+    UUID id = instance.create("wwpersons", jsn(), "");
 
     assertThat(graph.vertices().next().value("tim_id"), is(id.toString()));
   }
@@ -110,9 +119,9 @@ public class TinkerpopJsonCrudServiceCreateTest {
   public void setsRevisionToOne() throws IOException, InvalidCollectionException {
     //because a newly created item is always revision 1
     Graph graph = newGraph().build();
-    TinkerpopJsonCrudService instance = new TinkerpopJsonCrudService(asWrapper(graph), ONLY_WWPERSONS, handleAdder);
+    TinkerpopJsonCrudService instance = basicInstance(graph);
 
-    instance.create("wwpersons", jsn(), "", dummyPidGenerator);
+    instance.create("wwpersons", jsn(), "");
 
     assertThat(graph.vertices().next().value("rev"), is(1));
   }
@@ -121,9 +130,9 @@ public class TinkerpopJsonCrudServiceCreateTest {
   public void setsTypeToCollectionAndBaseCollection() throws IOException, InvalidCollectionException {
     //a wwperson is also a person
     Graph graph = newGraph().build();
-    TinkerpopJsonCrudService instance = new TinkerpopJsonCrudService(asWrapper(graph), ONLY_WWPERSONS, handleAdder);
+    TinkerpopJsonCrudService instance = basicInstance(graph);
 
-    instance.create("wwpersons", jsn(), "", dummyPidGenerator);
+    instance.create("wwpersons", jsn(), "");
 
     assertThat(graph.vertices().next().value("types"), is("[\"wwperson\", \"person\"]"));
   }
@@ -132,14 +141,12 @@ public class TinkerpopJsonCrudServiceCreateTest {
   public void setsCreated() throws IOException, InvalidCollectionException {
     Graph graph = newGraph().build();
     int oneSecondPast1970 = 1000;
-    TinkerpopJsonCrudService instance = new TinkerpopJsonCrudService(
-      asWrapper(graph),
-      ONLY_WWPERSONS,
-      handleAdder,
+    TinkerpopJsonCrudService instance = basicInstanceWithClock(
+      graph,
       Clock.fixed(Instant.ofEpochMilli(oneSecondPast1970), ZoneId.systemDefault())
     );
 
-    instance.create("wwpersons", jsn(), "despicable_me", dummyPidGenerator);
+    instance.create("wwpersons", jsn(), "despicable_me");
 
     assertThat(
       graph.vertices().next().value("created"),
@@ -150,9 +157,9 @@ public class TinkerpopJsonCrudServiceCreateTest {
   @Test
   public void setsCreatedAndModifiedToTheSameValue() throws IOException, InvalidCollectionException {
     Graph graph = newGraph().build();
-    TinkerpopJsonCrudService instance = new TinkerpopJsonCrudService(asWrapper(graph), ONLY_WWPERSONS, handleAdder);
+    TinkerpopJsonCrudService instance = basicInstance(graph);
 
-    instance.create("wwpersons", jsn(), "", dummyPidGenerator);
+    instance.create("wwpersons", jsn(), "");
 
     assertThat(graph.vertices().next().value("created"), is(graph.vertices().next().value("modified").toString()));
   }
@@ -160,29 +167,27 @@ public class TinkerpopJsonCrudServiceCreateTest {
   @Test
   public void throwsOnUnknownProperties() throws IOException, InvalidCollectionException {
     Graph graph = newGraph().build();
-    TinkerpopJsonCrudService instance = new TinkerpopJsonCrudService(
-      asWrapper(graph),
-      ImmutableMap.of("wwpersons", Lists.newArrayList(new EncodeJsonMap("name", "wwname"))),
-      handleAdder
+    TinkerpopJsonCrudService instance = basicInstanceWithMap(
+      graph,
+      ImmutableMap.of("wwpersons", Lists.newArrayList(new EncodeJsonMap("name", "wwname")))
     );
 
     expectedException.expect(IOException.class);
     //message should contain the property that is unrecognized
     expectedException.expectMessage(new RegexMatcher(Pattern.compile(".*birthplace.*")));
 
-    instance.create("wwpersons", jsn("birthplace", jsn("Moordrecht")), "", dummyPidGenerator);
+    instance.create("wwpersons", jsn("birthplace", jsn("Moordrecht")), "");
   }
 
   @Test
   public void setsJsonPropertyMapForKnownProperties() throws IOException, InvalidCollectionException {
     Graph graph = newGraph().build();
-    TinkerpopJsonCrudService instance = new TinkerpopJsonCrudService(
-      asWrapper(graph),
+    TinkerpopJsonCrudService instance = basicInstanceWithMap(
+      graph,
       ImmutableMap.of("wwpersons", Lists.newArrayList(
         new EncodeJsonMap("name", "wwname"),
         new EncodeJsonMap("age", "wwage")
-      )),
-      handleAdder
+      ))
     );
 
     instance.create(
@@ -191,8 +196,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
         "name", jsn("Hans"),
         "age", jsn(12)
       ),
-      "",
-      dummyPidGenerator
+      ""
     );
     assertThat(graph.vertices().next().value("wwname"), is("\"Hans\""));
     assertThat(graph.vertices().next().value("wwage"), is("12"));
@@ -208,12 +212,11 @@ public class TinkerpopJsonCrudServiceCreateTest {
     when(throwingMap.getTinkerpopName()).thenReturn("wwname");
 
     Graph graph = newGraph().build();
-    TinkerpopJsonCrudService instance = new TinkerpopJsonCrudService(
-      asWrapper(graph),
+    TinkerpopJsonCrudService instance = basicInstanceWithMap(
+      graph,
       ImmutableMap.of("wwpersons", Lists.newArrayList(
         throwingMap
-      )),
-      handleAdder
+      ))
     );
     expectedException.expect(IOException.class);
     //message should contain the property that is unrecognized
@@ -224,8 +227,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
       jsn(
         "name", jsn("Hans")
       ),
-      "",
-      dummyPidGenerator
+      ""
     );
   }
 
@@ -236,7 +238,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
   @Test
   public void ignoresAtTypeProperty() throws IOException, InvalidCollectionException {
     Graph graph = newGraph().build();
-    TinkerpopJsonCrudService instance = new TinkerpopJsonCrudService(asWrapper(graph), ONLY_WWPERSONS, handleAdder);
+    TinkerpopJsonCrudService instance = basicInstance(graph);
 
     assertThat(graph.vertices().hasNext(), is(false));
     instance.create(
@@ -244,8 +246,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
       jsn(
         "@type", jsn("foo")
       ),
-      "",
-      dummyPidGenerator
+      ""
     );
     assertThat(graph.vertices().hasNext(), is(true));
   }
@@ -254,14 +255,13 @@ public class TinkerpopJsonCrudServiceCreateTest {
   public void commitsChangesIfEverythingSucceeds() throws Exception {
     TestGraphBuilder graphBuilder = newGraph();
     Graph graph = graphBuilder.build();
-    TinkerpopJsonCrudService instance = new TinkerpopJsonCrudService(asWrapper(graph), ONLY_WWPERSONS, handleAdder);
+    TinkerpopJsonCrudService instance = basicInstance(graph);
 
     assertThat(graph.vertices().hasNext(), is(false));
     instance.create(
       "wwpersons",
       jsn(),
-      "",
-      dummyPidGenerator
+      ""
     );
     graph.tx().close();
     assertThat(graph.vertices().hasNext(), is(true));
@@ -271,14 +271,13 @@ public class TinkerpopJsonCrudServiceCreateTest {
   public void preparesBackupCopyAfterMakingChanges() throws Exception {
     TestGraphBuilder graphBuilder = newGraph();
     Graph graph = graphBuilder.build();
-    TinkerpopJsonCrudService instance = new TinkerpopJsonCrudService(asWrapper(graph), ONLY_WWPERSONS, handleAdder);
+    TinkerpopJsonCrudService instance = basicInstance(graph);
 
     assertThat(graph.vertices().hasNext(), is(false));
     instance.create(
       "wwpersons",
       jsn(),
-      "",
-      dummyPidGenerator
+      ""
     );
 
     //graph contains two nodes with a
@@ -288,27 +287,28 @@ public class TinkerpopJsonCrudServiceCreateTest {
     assertThat(Iterators.size(copy.edges(Direction.IN, "VERSION_OF")), is(1));
     assertThat(copy.edges(Direction.IN, "VERSION_OF").next().outVertex().id(), is(original.id()));
     assertThat(Iterators.size(graph.vertices()), is(2));
+    assertThat(copy.value("rev"), is((Integer) original.value("rev")));
   }
 
   @Test
   public void addsPersistentId() throws Exception {
     TestGraphBuilder graphBuilder = newGraph();
     Graph graph = graphBuilder.build();
-    TinkerpopJsonCrudService instance = new TinkerpopJsonCrudService(asWrapper(graph), ONLY_WWPERSONS, handleAdder);
-
-    instance.create(
-      "wwpersons",
-      jsn(),
-      "",
-      LambdaExceptionUtil.rethrowBiFunction((id, rev) -> new URI("http://example.com?id=" + id + "&rev=" + rev))
+    HandleAdder handleAdder = mock(HandleAdder.class);
+    TinkerpopJsonCrudService instance = basicInstanceWithUrlGenerator(
+      graph,
+      (collectionName, id, rev) -> URI.create("http://example.com?id=" + id + "&rev=" + rev),
+      handleAdder
     );
+
+    instance.create("wwpersons", jsn(), "");
 
     Vertex orig = graph.traversal().V().has("isLatest", false).next();
     String uuid = orig.value("tim_id");
     Object vertexId = orig.id();
 
     verify(handleAdder, times(1)).add(
-      new HandleAdderParameters(vertexId, new URI("http://example.com?id=" + uuid + "&rev=1"))
+      new HandleAdderParameters(vertexId, URI.create("http://example.com?id=" + uuid + "&rev=1"))
     );
   }
 
@@ -323,32 +323,4 @@ public class TinkerpopJsonCrudServiceCreateTest {
     }
   }
 
-  public static class JsonBuilder {
-    public static JsonNodeFactory factory = JsonNodeFactory.instance;
-
-    public static ObjectNode jsn(String prop1, JsonNode contents1) {
-      ObjectNode result = factory.objectNode();
-      result.set(prop1, contents1);
-      return result;
-    }
-
-    public static ObjectNode jsn(String prop1, JsonNode contents1, String prop2, JsonNode contents2) {
-      ObjectNode result = factory.objectNode();
-      result.set(prop1, contents1);
-      result.set(prop2, contents2);
-      return result;
-    }
-
-    public static TextNode jsn(String val) {
-      return factory.textNode(val);
-    }
-
-    public static NumericNode jsn(int val) {
-      return factory.numberNode(val);
-    }
-
-    public static ObjectNode jsn() {
-      return factory.objectNode();
-    }
-  }
 }

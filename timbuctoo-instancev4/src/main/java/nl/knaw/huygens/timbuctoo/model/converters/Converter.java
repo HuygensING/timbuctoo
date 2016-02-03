@@ -6,4 +6,6 @@ import java.io.IOException;
 
 public interface Converter {
   Object jsonToTinkerpop(JsonNode json) throws IOException;
+
+  JsonNode tinkerpopToJson(Object value) throws IOException;
 }

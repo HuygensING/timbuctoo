@@ -46,13 +46,13 @@ public class DomainCrudEntityV2_1EndPoint {
 
   @GET
   public Response get(@PathParam("collection") String collectionName, @PathParam("id") UUIDParam id) {
-    //try {
-    JsonNode result = crudService.get(collectionName, id.get());
-    return Response.ok(result).build();
-    //} catch (InvalidCollectionException e) {
-    //  return Response.status(Response.Status.NOT_FOUND).build();
+    try {
+      JsonNode result = crudService.get(collectionName, id.get());
+      return Response.ok(result).build();
+    } catch (InvalidCollectionException e) {
+      return Response.status(Response.Status.NOT_FOUND).build();
     //} catch (NotFoundException e) {
     //  return Response.status(Response.Status.NOT_FOUND).build();
-    //}
+    }
   }
 }

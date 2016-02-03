@@ -34,4 +34,18 @@ public class JsonBasedUserStore {
 
     return users.stream().filter(user -> user.getPersistentId().equals(pid)).findFirst();
   }
+
+  public Optional<User> userForId(String userId) throws AuthenticationUnavailableException {
+    List<User> users;
+    try {
+      users = objectMapper.readValue(usersFile.toFile(), new TypeReference<List<User>>() {
+      });
+    } catch (IOException e) {
+      LOG.error("Cannot read {}", usersFile.toAbsolutePath());
+      LOG.error("Exception thrown", e);
+      throw new AuthenticationUnavailableException(e.getMessage());
+    }
+
+    return users.stream().filter(user -> user.getId().equals(userId)).findFirst();
+  }
 }

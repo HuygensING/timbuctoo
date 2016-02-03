@@ -39,12 +39,7 @@ public class DomainCrudCollectionV2_1EndPoint {
   @POST
   public Response createNew(@PathParam("collection") String collectionName, ObjectNode body) throws URISyntaxException {
     try {
-      UUID id = crudService.create(
-        collectionName,
-        body,
-        "",
-        (idParam, rev) -> DomainCrudEntityV2_1EndPoint.makeUrl(collectionName, idParam, rev)
-      );
+      UUID id = crudService.create(collectionName, body, "");
       return Response.created(DomainCrudEntityV2_1EndPoint.makeUrl(collectionName, id)).build();
     } catch (InvalidCollectionException e) {
       return Response.status(Response.Status.NOT_FOUND).build();

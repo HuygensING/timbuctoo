@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.security;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 
@@ -11,6 +12,8 @@ import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 public class User {
   private String displayName;
   private String persistentId;
+  @JsonProperty("_id")
+  private String id;
 
   public User() {
   }
@@ -33,5 +36,9 @@ public class User {
 
   public void setPersistentId(String persistentId) {
     this.persistentId = persistentId;
+  }
+
+  public String getId() {
+    return id;
   }
 }

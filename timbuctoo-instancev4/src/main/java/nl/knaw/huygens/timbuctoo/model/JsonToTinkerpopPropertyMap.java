@@ -35,4 +35,8 @@ public class JsonToTinkerpopPropertyMap {
   public String getTinkerpopName() {
     return tinkerpopName;
   }
+
+  public JsonNode tinkerpopToJson(Object value) throws IOException {
+    return this.converter.tinkerpopToJson(value);
+  }
 }

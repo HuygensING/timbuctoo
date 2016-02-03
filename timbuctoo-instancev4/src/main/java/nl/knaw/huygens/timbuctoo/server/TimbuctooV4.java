@@ -23,6 +23,7 @@ import nl.knaw.huygens.timbuctoo.server.rest.UserV2_1Endpoint;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Clock;
 
 public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
@@ -67,8 +68,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final TinkerpopJsonCrudService crudService = new TinkerpopJsonCrudService(
       graphManager,
       JsonToTinkerpopMappings.getMappings(),
-      handleAdder
-    );
+      handleAdder,
+      userStore,
+      DomainCrudEntityV2_1EndPoint::makeUrl,
+      Clock.systemDefaultZone());
 
     // lifecycle managers
     environment.lifecycle().manage(graphManager);
