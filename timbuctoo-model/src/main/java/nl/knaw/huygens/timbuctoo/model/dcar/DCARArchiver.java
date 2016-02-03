@@ -107,6 +107,7 @@ public class DCARArchiver extends Archiver {
     this.origFilename = origFilename;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_nameNLD", canBeEmpty = true, isFaceted = false)
   public String getNameNld() {
     return nameNld;
   }
@@ -116,7 +117,7 @@ public class DCARArchiver extends Archiver {
   }
 
   @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_sort_name", canBeEmpty = true, isFaceted = false, isSortable = true),
-      @IndexAnnotation(fieldName = "dynamic_t_text", canBeEmpty = true, isFaceted = false, isSortable = false) })
+      @IndexAnnotation(fieldName = "dynamic_t_nameEng", canBeEmpty = true, isFaceted = false, isSortable = false) })
   public String getNameEng() {
     return nameEng;
   }
@@ -158,7 +159,7 @@ public class DCARArchiver extends Archiver {
     periodDescription = description;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_t_text", canBeEmpty = true, isFaceted = false)
+  @IndexAnnotation(fieldName = "dynamic_t_history", canBeEmpty = true, isFaceted = false)
   public String getHistory() {
     return history;
   }
@@ -197,7 +198,7 @@ public class DCARArchiver extends Archiver {
     return getRelations(HAS_ARCHIVER_PERSON.regular);
   }
 
-  @IndexAnnotation(fieldName = "dynamic_t_text", canBeEmpty = true, isFaceted = false)
+  @IndexAnnotation(fieldName = "dynamic_t_notes", canBeEmpty = true, isFaceted = false)
   public String getNotes() {
     return notes;
   }

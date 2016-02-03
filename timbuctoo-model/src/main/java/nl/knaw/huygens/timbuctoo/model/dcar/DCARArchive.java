@@ -199,6 +199,7 @@ public class DCARArchive extends Archive {
     this.itemNo = itemNo;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_titleNLD", canBeEmpty = true, isFaceted = false)
   public String getTitleNld() {
     return titleNld;
   }
@@ -208,7 +209,7 @@ public class DCARArchive extends Archive {
   }
 
   @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_sort_title", canBeEmpty = true, isFaceted = false, isSortable = true),
-      @IndexAnnotation(fieldName = "dynamic_t_text", canBeEmpty = true, isFaceted = false, isSortable = false) })
+      @IndexAnnotation(fieldName = "dynamic_t_titleEng", canBeEmpty = true, isFaceted = false, isSortable = false) })
   public String getTitleEng() {
     return titleEng;
   }
@@ -298,7 +299,7 @@ public class DCARArchive extends Archive {
     return getRelations(HAS_ARCHIVE_PERSON.regular);
   }
 
-  @IndexAnnotation(fieldName = "dynamic_t_text", canBeEmpty = true, isFaceted = false)
+  @IndexAnnotation(fieldName = "dynamic_t_notes", canBeEmpty = true, isFaceted = false)
   public String getNotes() {
     return notes;
   }

@@ -133,6 +133,7 @@ public class DCARLegislation extends Legislation {
     this.pages = pages;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_titleNLD", canBeEmpty = true, isFaceted = false)
   public String getTitleNld() {
     return titleNld;
   }
@@ -187,7 +188,7 @@ public class DCARLegislation extends Legislation {
     return getRelations(HAS_LEGISLATION_PERSON.regular);
   }
 
-  @IndexAnnotation(fieldName = "dynamic_t_text", canBeEmpty = true, isFaceted = false)
+  @IndexAnnotation(fieldName = "dynamic_t_contents", canBeEmpty = true, isFaceted = false)
   public String getContents() {
     return contents;
   }
