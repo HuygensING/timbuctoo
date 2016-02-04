@@ -29,7 +29,9 @@ import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_SIBLING_ARCH
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.IS_CREATOR_OF;
 
 import java.util.List;
+import java.util.Map;
 
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
@@ -250,6 +252,31 @@ public class DCARArchiver extends Archiver {
 
   public void addType(String type) {
     types.add(type);
+  }
+
+  @Override
+  public Map<String, String> createRelSearchRep(Map<String, String> mappedIndexInformation) {
+    Map<String, String> data = Maps.newTreeMap();
+
+    addValueToMap(mappedIndexInformation, data, ID_PROPERTY_NAME);
+    addValueToMap(mappedIndexInformation, data, "nameEng");
+    addValueToMap(mappedIndexInformation, data, "beginDate");
+    addValueToMap(mappedIndexInformation, data, "endDate");
+    addValueToMap(mappedIndexInformation, data, "types");
+
+    return data;
+  }
+
+  @Override
+  public Map<String, String> getClientRepresentation() {
+    Map<String, String> data = Maps.newTreeMap();
+    addItemToRepresentation(data, ID_PROPERTY_NAME, getId());
+    addItemToRepresentation(data, "nameEng", getNameEng());
+    addItemToRepresentation(data, "beginDate", getBeginDate());
+    addItemToRepresentation(data, "endDate", getEndDate());
+    addItemToRepresentation(data, "types", getTypes());
+
+    return data;
   }
 
 }
