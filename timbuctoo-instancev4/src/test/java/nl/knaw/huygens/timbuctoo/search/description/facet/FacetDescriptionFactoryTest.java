@@ -85,10 +85,17 @@ public class FacetDescriptionFactoryTest {
   }
 
   @Test
-  public void createRangeFacetCreatesARangeFacetDescriptionCreateARangeFacetDescription() {
+  public void createRangeFacetDescriptionCreatesARangeFacetDescriptionCreateARangeFacetDescription() {
     FacetDescription facetDescription = instance.createRangeFacetDescription("facetName", "propertyName");
 
     assertThat(facetDescription, is(instanceOf(DateRangeFacetDescription.class)));
+  }
+
+  @Test
+  public void createWwPersonLanguageFacetDescriptionCreatesAWwPersonLanguageFacetDescription() {
+    FacetDescription description = instance.createWwPersonLanguageFacetDescription("name");
+
+    assertThat(description, is(instanceOf(WwPersonLanguageFacetDescription.class)));
   }
 
 }

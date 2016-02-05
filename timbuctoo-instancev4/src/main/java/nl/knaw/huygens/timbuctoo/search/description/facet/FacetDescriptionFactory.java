@@ -42,4 +42,7 @@ public class FacetDescriptionFactory {
   }
 
 
+  public FacetDescription createWwPersonLanguageFacetDescription(String facetName) {
+    return new WwPersonLanguageFacetDescription(facetName);
+  }
 }
