@@ -20,7 +20,9 @@ public class DatableRangeFacetDescriptionTest {
   public void getFacetReturnsAFacetWithItsNameAndTypeRange() {
     DatableRangeFacetDescription instance = new DatableRangeFacetDescription(FACET_NAME, PROPERTY_NAME);
 
-    Graph graph = newGraph().withVertex(v -> v.withTimId("id")).build();
+    Graph graph = newGraph()
+      .withVertex(v -> v.withTimId("id"))
+      .build();
 
     Facet facet = instance.getFacet(graph.traversal().V());
 
@@ -32,7 +34,9 @@ public class DatableRangeFacetDescriptionTest {
   @Test
   public void getFacetReturnsFacetWithOneOptionWithDefaultValuesWhenTheVerticesDoNotContainTheProperty() {
     DatableRangeFacetDescription instance = new DatableRangeFacetDescription(FACET_NAME, PROPERTY_NAME);
-    Graph graph = newGraph().withVertex(v -> v.withTimId("id")).build();
+    Graph graph = newGraph()
+      .withVertex(v -> v.withTimId("id"))
+      .build();
 
     Facet facet = instance.getFacet(graph.traversal().V());
 
@@ -42,9 +46,9 @@ public class DatableRangeFacetDescriptionTest {
   @Test
   public void getFacetReturnsRangeOptionWithDefaultValuesWhenTheStoredDatabaseIsNotValid() {
     DatableRangeFacetDescription instance = new DatableRangeFacetDescription(FACET_NAME, PROPERTY_NAME);
-    Graph graph = newGraph().withVertex(
-      v -> v.withTimId("id").withProperty(PROPERTY_NAME, "invalidDatable")
-    ).build();
+    Graph graph = newGraph()
+      .withVertex(v -> v.withTimId("id").withProperty(PROPERTY_NAME, "invalidDatable"))
+      .build();
 
     Facet facet = instance.getFacet(graph.traversal().V());
 
@@ -54,7 +58,8 @@ public class DatableRangeFacetDescriptionTest {
   @Test
   public void getFacetReturnsTheUpperAndLowerLimitInYearMonthDayFormat() {
     DatableRangeFacetDescription instance = new DatableRangeFacetDescription(FACET_NAME, PROPERTY_NAME);
-    Graph graph = newGraph().withVertex(v -> v.withTimId("id").withProperty(PROPERTY_NAME, "2015-01"))
+    Graph graph = newGraph().withVertex(v -> v.withProperty(PROPERTY_NAME, asSerializedDatable(
+      "2015-01")))
                             .build();
 
     Facet facet = instance.getFacet(graph.traversal().V());
@@ -66,14 +71,19 @@ public class DatableRangeFacetDescriptionTest {
   public void getFacetReturnsLowestLowerLimitAndTheHighestUpperLimit() {
     DatableRangeFacetDescription instance = new DatableRangeFacetDescription(FACET_NAME, PROPERTY_NAME);
 
-    Graph graph = newGraph().withVertex(v -> v.withTimId("id1").withProperty(PROPERTY_NAME, "2015-01"))
-                            .withVertex(v -> v.withTimId("id2").withProperty(PROPERTY_NAME, "0015-01"))
-                            .withVertex(v -> v.withTimId("id3").withProperty(PROPERTY_NAME, "0190-01"))
-                            .build();
+    Graph graph = newGraph()
+      .withVertex(v -> v.withProperty(PROPERTY_NAME, asSerializedDatable("2015-01")))
+      .withVertex(v -> v.withProperty(PROPERTY_NAME, asSerializedDatable("0015-01")))
+      .withVertex(v -> v.withProperty(PROPERTY_NAME, asSerializedDatable("0190-01")))
+      .build();
 
     Facet facet = instance.getFacet(graph.traversal().V());
 
     assertThat(facet.getOptions(), contains(new Facet.RangeOption(150101, 20150131)));
+  }
+
+  private String asSerializedDatable(String datableString) {
+    return String.format("\"%s\"", datableString);
   }
 
 }

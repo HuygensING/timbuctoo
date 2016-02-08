@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.search.description.facet;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
+import org.apache.commons.lang.StringUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -24,7 +25,7 @@ public class DatableRangeFacetDescription implements FacetDescription {
     List<Long> dates = Lists.newArrayList();
 
     searchResult.has(propertyName).forEachRemaining(vertex -> {
-      String value = vertex.value(propertyName);
+      String value = StringUtils.strip(vertex.value(propertyName), "\"");
 
       Datable datable = new Datable(value);
 
