@@ -11,14 +11,14 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 
-public class DateRangeFacetDescriptionTest {
+public class DatableRangeFacetDescriptionTest {
 
   public static final String FACET_NAME = "facetName";
   public static final String PROPERTY_NAME = "propertyName";
 
   @Test
   public void getFacetReturnsAFacetWithItsNameAndTypeRange() {
-    DateRangeFacetDescription instance = new DateRangeFacetDescription(FACET_NAME, PROPERTY_NAME);
+    DatableRangeFacetDescription instance = new DatableRangeFacetDescription(FACET_NAME, PROPERTY_NAME);
 
     Graph graph = newGraph().withVertex(v -> v.withTimId("id")).build();
 
@@ -31,7 +31,7 @@ public class DateRangeFacetDescriptionTest {
 
   @Test
   public void getFacetReturnsFacetWithOneOptionWithDefaultValuesWhenTheVerticesDoNotContainTheProperty() {
-    DateRangeFacetDescription instance = new DateRangeFacetDescription(FACET_NAME, PROPERTY_NAME);
+    DatableRangeFacetDescription instance = new DatableRangeFacetDescription(FACET_NAME, PROPERTY_NAME);
     Graph graph = newGraph().withVertex(v -> v.withTimId("id")).build();
 
     Facet facet = instance.getFacet(graph.traversal().V());
@@ -41,7 +41,7 @@ public class DateRangeFacetDescriptionTest {
 
   @Test
   public void getFacetReturnsRangeOptionWithDefaultValuesWhenTheStoredDatabaseIsNotValid() {
-    DateRangeFacetDescription instance = new DateRangeFacetDescription(FACET_NAME, PROPERTY_NAME);
+    DatableRangeFacetDescription instance = new DatableRangeFacetDescription(FACET_NAME, PROPERTY_NAME);
     Graph graph = newGraph().withVertex(
       v -> v.withTimId("id").withProperty(PROPERTY_NAME, "invalidDatable")
     ).build();
@@ -53,7 +53,7 @@ public class DateRangeFacetDescriptionTest {
 
   @Test
   public void getFacetReturnsTheUpperAndLowerLimitInYearMonthDayFormat() {
-    DateRangeFacetDescription instance = new DateRangeFacetDescription(FACET_NAME, PROPERTY_NAME);
+    DatableRangeFacetDescription instance = new DatableRangeFacetDescription(FACET_NAME, PROPERTY_NAME);
     Graph graph = newGraph().withVertex(v -> v.withTimId("id").withProperty(PROPERTY_NAME, "2015-01"))
                             .build();
 
@@ -64,7 +64,7 @@ public class DateRangeFacetDescriptionTest {
 
   @Test
   public void getFacetReturnsLowestLowerLimitAndTheHighestUpperLimit() {
-    DateRangeFacetDescription instance = new DateRangeFacetDescription(FACET_NAME, PROPERTY_NAME);
+    DatableRangeFacetDescription instance = new DatableRangeFacetDescription(FACET_NAME, PROPERTY_NAME);
 
     Graph graph = newGraph().withVertex(v -> v.withTimId("id1").withProperty(PROPERTY_NAME, "2015-01"))
                             .withVertex(v -> v.withTimId("id2").withProperty(PROPERTY_NAME, "0015-01"))

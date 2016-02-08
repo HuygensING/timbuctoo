@@ -9,12 +9,12 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
-public class DateRangeFacetDescription implements FacetDescription {
+public class DatableRangeFacetDescription implements FacetDescription {
   public static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd");
   private final String facetName;
   private final String propertyName;
 
-  public DateRangeFacetDescription(String facetName, String propertyName) {
+  public DatableRangeFacetDescription(String facetName, String propertyName) {
     this.facetName = facetName;
     this.propertyName = propertyName;
   }

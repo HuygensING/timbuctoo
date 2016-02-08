@@ -37,12 +37,17 @@ public class FacetDescriptionFactory {
     return this.createListFacetDescription(facetName, String.class, propertyName, relationName);
   }
 
-  public FacetDescription createRangeFacetDescription(String facetName, String propertyName) {
-    return new DateRangeFacetDescription(facetName, propertyName);
+  public FacetDescription createDatableRangeFacetDescription(String facetName, String propertyName) {
+    return new DatableRangeFacetDescription(facetName, propertyName);
   }
 
+  public FacetDescription createChangeRangeFacetDescription(String facetName, String propertyName) {
+    return new ChangeRangeFacetDescription(facetName, propertyName);
+  }
 
   public FacetDescription createWwPersonLanguageFacetDescription(String facetName) {
     return new WwPersonLanguageFacetDescription(facetName);
   }
+
+
 }

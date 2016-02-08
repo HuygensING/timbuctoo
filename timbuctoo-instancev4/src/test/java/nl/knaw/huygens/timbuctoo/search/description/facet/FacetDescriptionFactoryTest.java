@@ -85,10 +85,17 @@ public class FacetDescriptionFactoryTest {
   }
 
   @Test
-  public void createRangeFacetDescriptionCreatesARangeFacetDescriptionCreateARangeFacetDescription() {
-    FacetDescription facetDescription = instance.createRangeFacetDescription("facetName", "propertyName");
+  public void createDatableRangeFacetDescriptionCreatesADatableRangeFacetDescription() {
+    FacetDescription facetDescription = instance.createDatableRangeFacetDescription("facetName", "propertyName");
 
-    assertThat(facetDescription, is(instanceOf(DateRangeFacetDescription.class)));
+    assertThat(facetDescription, is(instanceOf(DatableRangeFacetDescription.class)));
+  }
+
+  @Test
+  public void createChangeRangeFacetDescriptionCreatesAChangeRangeFacetDescriptionIfTheTypeIsChange() {
+    FacetDescription facetDescription = instance.createChangeRangeFacetDescription("facetName", "propertyName");
+
+    assertThat(facetDescription, is(instanceOf(ChangeRangeFacetDescription.class)));
   }
 
   @Test
