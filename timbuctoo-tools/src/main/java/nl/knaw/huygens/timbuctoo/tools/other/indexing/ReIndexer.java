@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.tools.other;
+package nl.knaw.huygens.timbuctoo.tools.other.indexing;
 
 /*
  * #%L
@@ -79,48 +79,5 @@ public class ReIndexer {
     executor.shutdown();
     countDownLatch.await(); // wait until all tasks are completed
   }
-
-  protected static class Indexer implements Runnable {
-
-    private final Repository repository;
-    private final IndexManager indexManager;
-    private final Class<? extends DomainEntity> type;
-    private final CountDownLatch countDownLatch;
-
-    public Indexer(Class<? extends DomainEntity> type, Repository repository, IndexManager indexManager, CountDownLatch countDownLatch) {
-      this.type = type;
-      this.repository = repository;
-      this.indexManager = indexManager;
-      this.countDownLatch = countDownLatch;
-    }
-
-    @Override
-    public void run() {
-      String typeName = TypeNames.getInternalName(type);
-      LOG.info("Start indexing for {}.", typeName);
-      StorageIterator<? extends DomainEntity> iterator = repository.getDomainEntities(type);
-      while (iterator.hasNext()) {
-
-        String id = iterator.next().getId();
-        try {
-          indexManager.addEntity(type, id);
-        } catch (IndexException e) {
-          LOG.error("Error indexing for {} with id {}.", typeName, id);
-          LOG.debug("Error: {}", e);
-        } catch (RuntimeException e) {
-          LOG.error("Error indexing for {} with id {}.", typeName, id);
-          LOG.debug("Error: {}", e);
-          countDownLatch.countDown();
-          throw e;
-        }
-      }
-
-      iterator.close();
-
-      LOG.info("End indexing for {}.", typeName);
-      countDownLatch.countDown();
-      LOG.info("Incomplete tasks: {}", countDownLatch.getCount());
-    }
-  }
-
+  
 }
