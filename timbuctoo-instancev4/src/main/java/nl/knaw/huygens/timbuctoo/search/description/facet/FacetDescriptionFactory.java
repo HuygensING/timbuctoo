@@ -50,4 +50,7 @@ public class FacetDescriptionFactory {
   }
 
 
+  public FacetDescription createMultiValueListFacetDescription(String facetName, String propertyName) {
+    return new MultiValueListFacetDescription(facetName, propertyName);
+  }
 }

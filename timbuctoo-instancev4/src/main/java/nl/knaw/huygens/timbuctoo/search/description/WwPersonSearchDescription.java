@@ -72,7 +72,8 @@ public class WwPersonSearchDescription extends AbstractSearchDescription {
       facetDescriptionFactory.createKeywordDescription("dynamic_s_financials", "hasFinancialStatus", "ww"),
       facetDescriptionFactory.createDatableRangeFacetDescription("dynamic_i_birthDate", "wwperson_birthDate"),
       facetDescriptionFactory.createKeywordDescription("dynamic_s_profession", "hasProfession", "ww"),
-      facetDescriptionFactory.createChangeRangeFacetDescription("dynamic_i_modified", "modified"));
+      facetDescriptionFactory.createChangeRangeFacetDescription("dynamic_i_modified", "modified"),
+      facetDescriptionFactory.createMultiValueListFacetDescription("dynamic_s_types", "wwperson_types"));
   }
 
   private Map<String, PropertyDescriptor> createDataPropertyDescriptions(

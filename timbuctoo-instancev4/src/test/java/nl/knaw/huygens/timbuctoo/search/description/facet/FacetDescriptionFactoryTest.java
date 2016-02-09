@@ -70,8 +70,7 @@ public class FacetDescriptionFactoryTest {
 
   @Test
   public void createListFacetDescriptionWithMultipleRelationsLetsThePropertyParserFactoryCreateAParser() {
-    FacetDescription description =
-      instance.createListFacetDescription("facetName", String.class, "propertyName", "relation", "relation2");
+    instance.createListFacetDescription("facetName", String.class, "propertyName", "relation", "relation2");
 
     verify(parserFactory).getParser(String.class);
   }
@@ -86,9 +85,9 @@ public class FacetDescriptionFactoryTest {
 
   @Test
   public void createDatableRangeFacetDescriptionCreatesADatableRangeFacetDescription() {
-    FacetDescription facetDescription = instance.createDatableRangeFacetDescription("facetName", "propertyName");
+    FacetDescription description = instance.createDatableRangeFacetDescription("facetName", "propertyName");
 
-    assertThat(facetDescription, is(instanceOf(DatableRangeFacetDescription.class)));
+    assertThat(description, is(instanceOf(DatableRangeFacetDescription.class)));
   }
 
   @Test
@@ -103,6 +102,13 @@ public class FacetDescriptionFactoryTest {
     FacetDescription description = instance.createWwPersonLanguageFacetDescription("name");
 
     assertThat(description, is(instanceOf(WwPersonLanguageFacetDescription.class)));
+  }
+
+  @Test
+  public void createMultiValueFacetDescriptionCreatesAMultiValueFacetDescription() {
+    FacetDescription description = instance.createMultiValueListFacetDescription("facetName", "propertyName");
+
+    assertThat(description, is(instanceOf(MultiValueListFacetDescription.class)));
   }
 
 }
