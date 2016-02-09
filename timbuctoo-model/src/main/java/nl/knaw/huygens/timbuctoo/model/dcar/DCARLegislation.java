@@ -22,42 +22,57 @@ package nl.knaw.huygens.timbuctoo.model.dcar;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import nl.knaw.huygens.facetedsearch.model.FacetType;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
+import nl.knaw.huygens.timbuctoo.model.Legislation;
+import nl.knaw.huygens.timbuctoo.model.RelationRef;
+
+import java.util.List;
+import java.util.Map;
+
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_LEGISLATION_KEYWORD;
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_LEGISLATION_PERSON;
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_LEGISLATION_PLACE;
 
-import java.util.List;
-
-import nl.knaw.huygens.facetedsearch.model.FacetType;
-import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
-import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
-import nl.knaw.huygens.timbuctoo.model.RelationRef;
-import nl.knaw.huygens.timbuctoo.model.Legislation;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Lists;
-
 public class DCARLegislation extends Legislation {
 
-  /** Migration: Name of source file */
+  /**
+   * Migration: Name of source file
+   */
   private String origFilename;
 
-  /** ING Forms: "Reference"; text searchable */
+  /**
+   * ING Forms: "Reference"; text searchable
+   */
   private String reference;
 
-  /** ING Forms: "Pages" */
+  /**
+   * ING Forms: "Pages"
+   */
   private String pages;
 
-  /** ING Forms: "Short title" */
+  /**
+   * ING Forms: "Short title"
+   */
   private String titleNld;
 
-  /** ING Forms: "English title"; text searchable */
+  /**
+   * ING Forms: "English title"; text searchable
+   */
   private String titleEng;
 
-  /** ING Forms: "Date" */
+  /**
+   * ING Forms: "Date"
+   */
   private String date1;
 
-  /** ING Forms: "Date 2" */
+  /**
+   * ING Forms: "Date 2"
+   */
   private String date2;
 
   /** ING Forms: "Keyword(s) geography"; as relation ; place facet */
@@ -68,34 +83,54 @@ public class DCARLegislation extends Legislation {
 
   /** ING Forms: "Keyword(s) person"; as relation; person facet */
 
-  /** ING Forms: "Summary of contents"; text searchable */
+  /**
+   * ING Forms: "Summary of contents"; text searchable
+   */
   private String contents;
 
-  /** ING Forms: "See also" */
+  /**
+   * ING Forms: "See also"
+   */
   private List<String> seeAlso;
 
-  /** ING Forms: "Earlier/later publications" */
+  /**
+   * ING Forms: "Earlier/later publications"
+   */
   private List<String> otherPublications;
 
-  /** ING Forms: "Original archival source" */
+  /**
+   * ING Forms: "Original archival source"
+   */
   private String originalArchivalSource;
 
-  /** ING Forms: "Link archival database" */
+  /**
+   * ING Forms: "Link archival database"
+   */
   private String linkArchivalDBase;
 
-  /** ING Forms: "Remarks" */
+  /**
+   * ING Forms: "Remarks"
+   */
   private String remarks;
 
-  /** ING Forms: "Scan" */
+  /**
+   * ING Forms: "Scan"
+   */
   private String scan;
 
-  /** ING Forms: "Parts to scan" */
+  /**
+   * ING Forms: "Parts to scan"
+   */
   private String partsToScan;
 
-  /** ING Forms: "Record made by-" */
+  /**
+   * ING Forms: "Record made by-"
+   */
   private String madeBy;
 
-  /** ING Forms: "Reminders" */
+  /**
+   * ING Forms: "Reminders"
+   */
   private String reminders;
 
   public DCARLegislation() {
@@ -133,6 +168,7 @@ public class DCARLegislation extends Legislation {
     this.pages = pages;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_titleNLD", canBeEmpty = true, isFaceted = false)
   public String getTitleNld() {
     return titleNld;
   }
@@ -141,8 +177,9 @@ public class DCARLegislation extends Legislation {
     this.titleNld = title;
   }
 
-  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_sort_title", canBeEmpty = true, isFaceted = false, isSortable = true),
-      @IndexAnnotation(fieldName = "dynamic_t_title", canBeEmpty = true, isFaceted = false, isSortable = false) })
+  @IndexAnnotations({
+    @IndexAnnotation(fieldName = "dynamic_sort_title", canBeEmpty = true, isFaceted = false, isSortable = true),
+    @IndexAnnotation(fieldName = "dynamic_t_title", canBeEmpty = true, isFaceted = false, isSortable = false)})
   public String getTitleEng() {
     return titleEng;
   }
@@ -151,8 +188,11 @@ public class DCARLegislation extends Legislation {
     this.titleEng = title;
   }
 
-  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_k_date", canBeEmpty = true, isFaceted = false, facetType = FacetType.DATE, isSortable = true),
-      @IndexAnnotation(fieldName = "dynamic_s_date", canBeEmpty = true, isFaceted = true, facetType = FacetType.DATE, isSortable = false) })
+  @IndexAnnotations({
+    @IndexAnnotation(fieldName = "dynamic_k_date", canBeEmpty = true, isFaceted = false, facetType = FacetType.DATE,
+      isSortable = true),
+    @IndexAnnotation(fieldName = "dynamic_s_date", canBeEmpty = true, isFaceted = true, facetType = FacetType.DATE,
+      isSortable = false)})
   public String getDate1() {
     return date1;
   }
@@ -170,24 +210,24 @@ public class DCARLegislation extends Legislation {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_place", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_s_place", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getPlaceKeywords() {
     return getRelations(HAS_LEGISLATION_PLACE.regular);
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_s_subject", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getSubjectKeywords() {
     return getRelations(HAS_LEGISLATION_KEYWORD.regular);
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_person", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_s_person", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getPersons() {
     return getRelations(HAS_LEGISLATION_PERSON.regular);
   }
 
-  @IndexAnnotation(fieldName = "dynamic_t_text", canBeEmpty = true, isFaceted = false)
+  @IndexAnnotation(fieldName = "dynamic_t_contents", canBeEmpty = true, isFaceted = false)
   public String getContents() {
     return contents;
   }
@@ -274,6 +314,27 @@ public class DCARLegislation extends Legislation {
 
   public void setReminders(String reminders) {
     this.reminders = reminders;
+  }
+
+  @Override
+  public Map<String, String> createRelSearchRep(Map<String, String> mappedIndexInformation) {
+    Map<String, String> data = Maps.newTreeMap();
+
+    addValueToMap(mappedIndexInformation, data, ID_PROPERTY_NAME);
+    addValueToMap(mappedIndexInformation, data, "titleEng");
+    addValueToMap(mappedIndexInformation, data, "date1");
+
+    return data;
+  }
+
+  @Override
+  public Map<String, String> getClientRepresentation() {
+    Map<String, String> data = Maps.newTreeMap();
+    addItemToRepresentation(data, ID_PROPERTY_NAME, getId());
+    addItemToRepresentation(data, "titleEng", getTitleEng());
+    addItemToRepresentation(data, "date1", getDate1());
+
+    return data;
   }
 
 }

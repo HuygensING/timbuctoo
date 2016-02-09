@@ -22,6 +22,18 @@ package nl.knaw.huygens.timbuctoo.model.dcar;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import nl.knaw.huygens.facetedsearch.model.FacetType;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
+import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
+import nl.knaw.huygens.timbuctoo.model.Archive;
+import nl.knaw.huygens.timbuctoo.model.RelationRef;
+
+import java.util.List;
+import java.util.Map;
+
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_ARCHIVE_KEYWORD;
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_ARCHIVE_PERSON;
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_ARCHIVE_PLACE;
@@ -29,64 +41,83 @@ import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_PARENT_ARCHI
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_SIBLING_ARCHIVE;
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.IS_CREATOR_OF;
 
-import java.util.List;
-
-import nl.knaw.huygens.facetedsearch.model.FacetType;
-import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
-import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
-import nl.knaw.huygens.timbuctoo.model.Archive;
-import nl.knaw.huygens.timbuctoo.model.RelationRef;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Lists;
-
 public class DCARArchive extends Archive {
 
-  /** Migration: Name of source file */
+  /**
+   * Migration: Name of source file
+   */
   private String origFilename;
 
-  /** ING Forms: "Ref. code country"; refcode facet */
+  /**
+   * ING Forms: "Ref. code country"; refcode facet
+   */
   private List<String> countries;
 
-  /** ING Forms: "Ref. code repository"; refcode facet */
+  /**
+   * ING Forms: "Ref. code repository"; refcode facet
+   */
   private String refCodeArchive;
 
-  /** ING Forms: "Reference code" */
+  /**
+   * ING Forms: "Reference code"
+   */
   private String refCode;
 
-  /** ING Forms: "Code or indication of sub-fonds" */
+  /**
+   * ING Forms: "Code or indication of sub-fonds"
+   */
   private String subCode;
 
-  /** ING Forms: "Indication of series, Nos." */
+  /**
+   * ING Forms: "Indication of series, Nos."
+   */
   private String series;
 
-  /** ING Forms: "Item, No." */
+  /**
+   * ING Forms: "Item, No."
+   */
   private String itemNo;
 
-  /** ING Forms: "Title" */
+  /**
+   * ING Forms: "Title"
+   */
   private String titleNld;
 
-  /** ING Forms: "English title"; text searchable */
+  /**
+   * ING Forms: "English title"; text searchable
+   */
   private String titleEng;
 
-  /** ING Forms: "Begin date"; date facet */
+  /**
+   * ING Forms: "Begin date"; date facet
+   */
   private String beginDate;
 
-  /** ING Forms: "End date"; date facet */
+  /**
+   * ING Forms: "End date"; date facet
+   */
   private String endDate;
 
-  /** ING Forms: "Period description" */
+  /**
+   * ING Forms: "Period description"
+   */
   private String periodDescription;
 
-  /** ING Forms: "Extent" */
+  /**
+   * ING Forms: "Extent"
+   */
   private String extent;
 
-  /** ING Forms: "Additional finding aid" */
+  /**
+   * ING Forms: "Additional finding aid"
+   */
   private String findingAid;
 
   /** ING Forms: "Name(s) of Creator(s)"; as relation */
 
-  /** ING Forms: "Scope and content" */
+  /**
+   * ING Forms: "Scope and content"
+   */
   private String scope;
 
   /** ING Forms: "Keyword(s) geography"; as relation; place facet */
@@ -95,20 +126,28 @@ public class DCARArchive extends Archive {
 
   /** ING Forms: "Keyword(s) person"; as relation; person facet */
 
-  /** ING Forms: "Remarks"; text searchable */
+  /**
+   * ING Forms: "Remarks"; text searchable
+   */
   private String notes;
 
-  /** ING Forms: "Record made by-" */
+  /**
+   * ING Forms: "Record made by-"
+   */
   private String madeBy;
 
-  /** ING Forms: "Reminders" */
+  /**
+   * ING Forms: "Reminders"
+   */
   private String reminders;
 
   /** ING Forms: "Title related overhead level of description; as relation" */
 
   /** ING Forms: "Title(s) related underlying level(s) of description; as relation" */
 
-  /** ING Forms: "Other related units of description; as relation" */
+  /**
+   * ING Forms: "Other related units of description; as relation"
+   */
 
   public DCARArchive() {
     countries = Lists.newArrayList();
@@ -127,6 +166,7 @@ public class DCARArchive extends Archive {
     this.origFilename = origFilename;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_s_countries", canBeEmpty = true)
   public List<String> getCountries() {
     return countries;
   }
@@ -139,6 +179,7 @@ public class DCARArchive extends Archive {
     countries.add(country);
   }
 
+  @IndexAnnotation(fieldName = "dynamic_s_refCodeArchive", canBeEmpty = true)
   public String getRefCodeArchive() {
     return refCodeArchive;
   }
@@ -147,6 +188,7 @@ public class DCARArchive extends Archive {
     this.refCodeArchive = refCodeArchive;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_s_refCode", canBeEmpty = true)
   public String getRefCode() {
     return refCode;
   }
@@ -155,6 +197,7 @@ public class DCARArchive extends Archive {
     this.refCode = refCode;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_s_subCode", canBeEmpty = true)
   public String getSubCode() {
     return subCode;
   }
@@ -183,6 +226,7 @@ public class DCARArchive extends Archive {
     }
   }
 
+  @IndexAnnotation(fieldName = "dynamic_s_series", canBeEmpty = true)
   public String getSeries() {
     return series;
   }
@@ -191,6 +235,7 @@ public class DCARArchive extends Archive {
     this.series = series;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_s_itemNo", canBeEmpty = true)
   public String getItemNo() {
     return itemNo;
   }
@@ -199,6 +244,7 @@ public class DCARArchive extends Archive {
     this.itemNo = itemNo;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_titleNLD", canBeEmpty = true, isFaceted = false)
   public String getTitleNld() {
     return titleNld;
   }
@@ -207,8 +253,9 @@ public class DCARArchive extends Archive {
     titleNld = title;
   }
 
-  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_sort_title", canBeEmpty = true, isFaceted = false, isSortable = true),
-      @IndexAnnotation(fieldName = "dynamic_t_text", canBeEmpty = true, isFaceted = false, isSortable = false) })
+  @IndexAnnotations({
+    @IndexAnnotation(fieldName = "dynamic_sort_title", canBeEmpty = true, isFaceted = false, isSortable = true),
+    @IndexAnnotation(fieldName = "dynamic_t_titleEng", canBeEmpty = true, isFaceted = false, isSortable = false)})
   public String getTitleEng() {
     return titleEng;
   }
@@ -236,8 +283,11 @@ public class DCARArchive extends Archive {
   }
 
   @JsonIgnore
-  @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_k_period", canBeEmpty = true, isFaceted = false, facetType = FacetType.PERIOD, isSortable = true),
-      @IndexAnnotation(fieldName = "dynamic_s_period", canBeEmpty = true, isFaceted = true, facetType = FacetType.PERIOD, isSortable = false) })
+  @IndexAnnotations({
+    @IndexAnnotation(fieldName = "dynamic_k_period", canBeEmpty = true, isFaceted = false, facetType = FacetType
+      .PERIOD, isSortable = true),
+    @IndexAnnotation(fieldName = "dynamic_s_period", canBeEmpty = true, isFaceted = true, facetType = FacetType
+      .PERIOD, isSortable = false)})
   public String getActivePeriod() {
     return PeriodHelper.createPeriod(beginDate, endDate);
   }
@@ -267,7 +317,8 @@ public class DCARArchive extends Archive {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_creator", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
+  @IndexAnnotation(fieldName = "dynamic_s_creator", accessors = {
+    "getDisplayName"}, canBeEmpty = true, isFaceted = false)
   public List<RelationRef> getCreators() {
     return getRelations(IS_CREATOR_OF.inverse);
   }
@@ -281,24 +332,24 @@ public class DCARArchive extends Archive {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_place", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_s_place", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getPlaceKeywords() {
     return getRelations(HAS_ARCHIVE_PLACE.regular);
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_subject", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_s_subject", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getSubjectKeywords() {
     return getRelations(HAS_ARCHIVE_KEYWORD.regular);
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_person", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = true)
+  @IndexAnnotation(fieldName = "dynamic_s_person", accessors = {"getDisplayName"}, canBeEmpty = true, isFaceted = true)
   public List<RelationRef> getPersons() {
     return getRelations(HAS_ARCHIVE_PERSON.regular);
   }
 
-  @IndexAnnotation(fieldName = "dynamic_t_text", canBeEmpty = true, isFaceted = false)
+  @IndexAnnotation(fieldName = "dynamic_t_notes", canBeEmpty = true, isFaceted = false)
   public String getNotes() {
     return notes;
   }
@@ -324,21 +375,58 @@ public class DCARArchive extends Archive {
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_related_archive", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
+  @IndexAnnotation(fieldName = "dynamic_s_related_archive", accessors = {
+    "getDisplayName"}, canBeEmpty = true, isFaceted = false)
   public List<RelationRef> getOverheadArchives() {
     return getRelations(HAS_PARENT_ARCHIVE.regular);
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_related_archive", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
+  @IndexAnnotation(fieldName = "dynamic_s_related_archive", accessors = {
+    "getDisplayName"}, canBeEmpty = true, isFaceted = false)
   public List<RelationRef> getUnderlyingArchives() {
     return getRelations(HAS_PARENT_ARCHIVE.inverse);
   }
 
   @JsonIgnore
-  @IndexAnnotation(fieldName = "dynamic_s_related_archive", accessors = { "getDisplayName" }, canBeEmpty = true, isFaceted = false)
+  @IndexAnnotation(fieldName = "dynamic_s_related_archive", accessors = {
+    "getDisplayName"}, canBeEmpty = true, isFaceted = false)
   public List<RelationRef> getRelatedUnitArchives() {
     return getRelations(HAS_SIBLING_ARCHIVE.regular);
   }
 
+  @Override
+  public Map<String, String> createRelSearchRep(Map<String, String> mappedIndexInformation) {
+    Map<String, String> data = Maps.newTreeMap();
+
+    addValueToMap(mappedIndexInformation, data, ID_PROPERTY_NAME);
+    addValueToMap(mappedIndexInformation, data, "titleEng");
+    addValueToMap(mappedIndexInformation, data, "beginDate");
+    addValueToMap(mappedIndexInformation, data, "endDate");
+    addValueToMap(mappedIndexInformation, data, "countries");
+    addValueToMap(mappedIndexInformation, data, "refCodeArchive");
+    addValueToMap(mappedIndexInformation, data, "refCode");
+    addValueToMap(mappedIndexInformation, data, "subCode");
+    addValueToMap(mappedIndexInformation, data, "itemNo");
+    addValueToMap(mappedIndexInformation, data, "series");
+
+    return data;
+  }
+
+  @Override
+  public Map<String, String> getClientRepresentation() {
+    Map<String, String> data = Maps.newTreeMap();
+    addItemToRepresentation(data, ID_PROPERTY_NAME, getId());
+    addItemToRepresentation(data, "titleEng", getTitleEng());
+    addItemToRepresentation(data, "beginDate", getBeginDate());
+    addItemToRepresentation(data, "endDate", getEndDate());
+    addItemToRepresentation(data, "countries", getCountries());
+    addItemToRepresentation(data, "refCodeArchive", getRefCodeArchive());
+    addItemToRepresentation(data, "refCode", getRefCode());
+    addItemToRepresentation(data, "subCode", getSubCode());
+    addItemToRepresentation(data, "itemNo", getItemNo());
+    addItemToRepresentation(data, "series", getSeries());
+
+    return data;
+  }
 }

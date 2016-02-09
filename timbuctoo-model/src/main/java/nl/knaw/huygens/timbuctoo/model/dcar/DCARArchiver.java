@@ -29,7 +29,9 @@ import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.HAS_SIBLING_ARCH
 import static nl.knaw.huygens.timbuctoo.model.dcar.RelTypeNames.IS_CREATOR_OF;
 
 import java.util.List;
+import java.util.Map;
 
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.facetedsearch.model.FacetType;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
@@ -107,6 +109,7 @@ public class DCARArchiver extends Archiver {
     this.origFilename = origFilename;
   }
 
+  @IndexAnnotation(fieldName = "dynamic_t_nameNLD", canBeEmpty = true, isFaceted = false)
   public String getNameNld() {
     return nameNld;
   }
@@ -116,7 +119,7 @@ public class DCARArchiver extends Archiver {
   }
 
   @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_sort_name", canBeEmpty = true, isFaceted = false, isSortable = true),
-      @IndexAnnotation(fieldName = "dynamic_t_text", canBeEmpty = true, isFaceted = false, isSortable = false) })
+      @IndexAnnotation(fieldName = "dynamic_t_nameEng", canBeEmpty = true, isFaceted = false, isSortable = false) })
   public String getNameEng() {
     return nameEng;
   }
@@ -158,7 +161,7 @@ public class DCARArchiver extends Archiver {
     periodDescription = description;
   }
 
-  @IndexAnnotation(fieldName = "dynamic_t_text", canBeEmpty = true, isFaceted = false)
+  @IndexAnnotation(fieldName = "dynamic_t_history", canBeEmpty = true, isFaceted = false)
   public String getHistory() {
     return history;
   }
@@ -197,7 +200,7 @@ public class DCARArchiver extends Archiver {
     return getRelations(HAS_ARCHIVER_PERSON.regular);
   }
 
-  @IndexAnnotation(fieldName = "dynamic_t_text", canBeEmpty = true, isFaceted = false)
+  @IndexAnnotation(fieldName = "dynamic_t_notes", canBeEmpty = true, isFaceted = false)
   public String getNotes() {
     return notes;
   }
@@ -249,6 +252,31 @@ public class DCARArchiver extends Archiver {
 
   public void addType(String type) {
     types.add(type);
+  }
+
+  @Override
+  public Map<String, String> createRelSearchRep(Map<String, String> mappedIndexInformation) {
+    Map<String, String> data = Maps.newTreeMap();
+
+    addValueToMap(mappedIndexInformation, data, ID_PROPERTY_NAME);
+    addValueToMap(mappedIndexInformation, data, "nameEng");
+    addValueToMap(mappedIndexInformation, data, "beginDate");
+    addValueToMap(mappedIndexInformation, data, "endDate");
+    addValueToMap(mappedIndexInformation, data, "types");
+
+    return data;
+  }
+
+  @Override
+  public Map<String, String> getClientRepresentation() {
+    Map<String, String> data = Maps.newTreeMap();
+    addItemToRepresentation(data, ID_PROPERTY_NAME, getId());
+    addItemToRepresentation(data, "nameEng", getNameEng());
+    addItemToRepresentation(data, "beginDate", getBeginDate());
+    addItemToRepresentation(data, "endDate", getEndDate());
+    addItemToRepresentation(data, "types", getTypes());
+
+    return data;
   }
 
 }

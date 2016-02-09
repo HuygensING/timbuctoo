@@ -136,7 +136,11 @@
             </program>
             <program>
               <name>reindex</name>
-              <mainClass>nl.knaw.huygens.timbuctoo.tools.other.ReIndexer</mainClass>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.other.indexing.ReIndexer</mainClass>
+            </program>
+            <program>
+              <name>reindexVre</name>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.other.indexing.VREReIndexer</mainClass>
             </program>
             <program>
               <name>resetpids</name>
