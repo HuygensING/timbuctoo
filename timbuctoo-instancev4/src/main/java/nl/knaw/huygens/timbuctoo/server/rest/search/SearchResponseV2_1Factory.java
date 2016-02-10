@@ -45,6 +45,7 @@ public class SearchResponseV2_1Factory {
 
     List<EntityRef> refs = searchResult.getRefs();
     int numFound = refs.size();
+    searchResponse.setNumFound(numFound);
     int normalizedStart = mapToRange(start, 0, numFound);
     int normalizedRows = mapToRange(rows, 0, numFound - normalizedStart);
     int end = normalizedStart + normalizedRows;

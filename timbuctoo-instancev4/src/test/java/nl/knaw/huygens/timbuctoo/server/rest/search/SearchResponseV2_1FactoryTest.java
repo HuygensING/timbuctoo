@@ -198,4 +198,15 @@ public class SearchResponseV2_1FactoryTest {
     verify(navigationCreator).prev(searchResponse, rows, start, refs.size(), resultId);
   }
 
+  @Test
+  public void fromReturnsASearchResponseWithNumFoundEqualToTheNumberOfRefs() {
+    List<EntityRef> refs = Lists.newArrayList(new EntityRef("type", "id"), new EntityRef("type", "id2"));
+    SearchResult searchResult =
+      new SearchResult(refs, Lists.newArrayList(), Lists.newArrayList(), Lists.newArrayList());
+
+    SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 1, 0);
+
+    assertThat(searchResponse, hasProperty("numFound", equalTo(refs.size())));
+  }
+
 }

@@ -69,6 +69,10 @@ public class SearchResponseV2_1 {
     return numFound;
   }
 
+  public void setNumFound(int numFound) {
+    this.numFound = numFound;
+  }
+
   public void addRef(SearchResponseV2_1Ref ref) {
     refs.add(ref);
   }
@@ -83,13 +87,14 @@ public class SearchResponseV2_1 {
     this.next = next;
   }
 
-  public void setPrev(String prev) {
-    this.prev = prev;
-  }
-
   @JsonProperty("_prev")
   @JsonInclude(JsonInclude.Include.NON_NULL)
   public String getPrev() {
     return prev;
   }
+
+  public void setPrev(String prev) {
+    this.prev = prev;
+  }
+
 }
