@@ -29,13 +29,17 @@ public class DomainCrudEntityV2_1EndPoint {
       ));
   }
 
-  public static URI makeUrl(String collectionName, UUID id, int rev) {
-    return UriBuilder.fromResource(DomainCrudEntityV2_1EndPoint.class)
-      .queryParam("rev", rev)
-      .buildFromMap(ImmutableMap.of(
-        "collection", collectionName,
-        "id", id
-      ));
+  public static URI makeUrl(String collectionName, UUID id, Integer rev) {
+    if (rev == null) {
+      return makeUrl(collectionName, id);
+    } else {
+      return UriBuilder.fromResource(DomainCrudEntityV2_1EndPoint.class)
+        .queryParam("rev", rev)
+        .buildFromMap(ImmutableMap.of(
+          "collection", collectionName,
+          "id", id
+        ));
+    }
   }
 
   private final TinkerpopJsonCrudService crudService;
