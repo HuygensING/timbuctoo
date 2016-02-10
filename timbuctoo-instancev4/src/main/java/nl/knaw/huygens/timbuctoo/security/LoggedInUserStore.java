@@ -31,7 +31,8 @@ public class LoggedInUserStore {
   }
 
   public Optional<User> userFor(String authHeader) {
-    return Optional.ofNullable(users.getIfPresent(authHeader));
+    return Optional.ofNullable(authHeader)
+      .flatMap(hdr -> Optional.ofNullable(users.getIfPresent(hdr))) ;
   }
 
   public Optional<String> userTokenFor(String username, String password)
