@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.server;
 
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.kjetland.dropwizard.activemq.ActiveMQConfig;
 import com.kjetland.dropwizard.activemq.ActiveMQConfigHolder;
@@ -20,7 +19,7 @@ import java.util.concurrent.TimeUnit;
  *  - example authorization
  *  - example database
  */
-public class TimbuctooConfiguration extends Configuration implements ActiveMQConfigHolder {
+public class TimbuctooConfiguration extends Configuration implements ActiveMQConfigHolder, SearchConfig {
   @NotEmpty
   private String loginsFilePath;
   @NotEmpty
@@ -31,19 +30,20 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   private TimeoutFactory autoLogoutTimeout;
   @NotNull
   private TimeoutFactory searchResultAvailabilityTimeout;
+  @NotNull
+  private String baseUri;
 
   @JsonProperty
   @NotNull
   @Valid
   private ActiveMQConfig activeMq;
+  @JsonProperty
+  private HandleManagerFactory persistenceManagerFactory = new HandleManagerFactory();
 
   {
     activeMq = new ActiveMQConfig();
     activeMq.brokerUrl = "vm://timbuctoo?broker.persistent=false"; //if no config is provided we use a vm-local activeMq
   }
-
-  @JsonProperty
-  private HandleManagerFactory persistenceManagerFactory = new HandleManagerFactory();
 
   public HandleManagerFactory getPersistenceManagerFactory() {
     return persistenceManagerFactory;
@@ -65,13 +65,21 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
     return databasePath;
   }
 
-  public Timeout getSearchResultAvailabilityTimeout() {
-    return searchResultAvailabilityTimeout.createTimeout();
-  }
-
+  // ActiveMQConfigHolder implementation
   @Override
   public ActiveMQConfig getActiveMQ() {
     return activeMq;
+  }
+
+  // SearchConfig implementation
+  @Override
+  public String getBaseUri() {
+    return baseUri;
+  }
+
+  @Override
+  public Timeout getSearchResultAvailabilityTimeout() {
+    return searchResultAvailabilityTimeout.createTimeout();
   }
 
   // A class to configure timeouts without compromising the Timeout class.

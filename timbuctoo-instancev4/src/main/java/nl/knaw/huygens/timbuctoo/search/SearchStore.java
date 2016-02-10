@@ -27,6 +27,7 @@ public class SearchStore {
   public UUID add(SearchResult searchResult) {
     UUID id = UUID.randomUUID();
     cache.put(id, searchResult);
+    searchResult.setId(id);
     return id;
   }
 }

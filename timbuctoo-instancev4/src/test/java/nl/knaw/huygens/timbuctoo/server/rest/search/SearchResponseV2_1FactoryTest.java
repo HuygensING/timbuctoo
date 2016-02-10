@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static nl.knaw.huygens.timbuctoo.server.rest.search.FacetMatcher.likeFacet;
 import static nl.knaw.huygens.timbuctoo.server.rest.search.SearchResponseV2_1Matcher.likeSearchResponse;
@@ -24,11 +25,13 @@ public class SearchResponseV2_1FactoryTest {
 
   private SearchResponseV2_1Factory instance;
   private SearchResponseV2_1RefAdder refAdder;
+  private NavigationCreator navigationCreator;
 
   @Before
   public void setup() {
     refAdder = mock(SearchResponseV2_1RefAdder.class);
-    instance = new SearchResponseV2_1Factory(refAdder);
+    navigationCreator = mock(NavigationCreator.class);
+    instance = new SearchResponseV2_1Factory(refAdder, navigationCreator);
   }
 
   @Test
@@ -89,7 +92,6 @@ public class SearchResponseV2_1FactoryTest {
     List<EntityRef> refs = Lists.newArrayList(entityRef1, entityRef2);
     SearchResult searchResult =
       new SearchResult(refs, Lists.newArrayList(), Lists.newArrayList(), Lists.newArrayList());
-
 
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 10, 0);
 
@@ -166,5 +168,20 @@ public class SearchResponseV2_1FactoryTest {
     assertThat(response.getFacets(), contains(likeFacet().withName("name")));
   }
 
+  @Test
+  public void fromLetsTheNavigationCreatorCreateANextLink() {
+    EntityRef entityRef1 = new EntityRef("type", "id");
+    List<EntityRef> refs = Lists.newArrayList(entityRef1, new EntityRef("type", "id2"));
+    SearchResult searchResult =
+      new SearchResult(refs, Lists.newArrayList(), Lists.newArrayList(), Lists.newArrayList());
+    UUID resultId = UUID.randomUUID();
+    searchResult.setId(resultId);
+
+    int rows = 1;
+    int start = 0;
+    SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, rows, start);
+
+    verify(navigationCreator).next(searchResponse, rows, start, refs.size(), resultId);
+  }
 
 }

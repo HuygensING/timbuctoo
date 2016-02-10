@@ -3,13 +3,17 @@ package nl.knaw.huygens.timbuctoo.search;
 import nl.knaw.huygens.timbuctoo.search.description.facet.Facet;
 
 import java.util.List;
+import java.util.UUID;
 
 public class SearchResult {
+
+  // TODO add id used to store the result
 
   private List<EntityRef> refs;
   private List<String> fullTextSearchFields;
   private List<String> sortableFields;
   private List<Facet> facets;
+  private UUID id;
 
   public SearchResult(List<EntityRef> refs,
                       List<String> fullTextSearchFields,
@@ -39,5 +43,13 @@ public class SearchResult {
 
   public List<Facet> getFacets() {
     return facets;
+  }
+
+  public UUID getId() {
+    return id;
+  }
+
+  public void setId(UUID id) {
+    this.id = id;
   }
 }

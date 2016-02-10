@@ -63,7 +63,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
-    final SearchStore searchStore = new SearchStore(configuration.getSearchResultAvailabilityTimeout());
     final HandleAdder handleAdder = new HandleAdder(activeMqBundle, "pids", graphManager, persistenceManager);
     final TinkerpopJsonCrudService crudService = new TinkerpopJsonCrudService(
       graphManager,
@@ -79,7 +78,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     // register REST endpoints
     register(environment, new AuthenticationV2_1EndPoint(loggedInUserStore));
     register(environment, new UserV2_1Endpoint(loggedInUserStore));
-    register(environment, new FacetedSearchV2_1Endpoint(searchStore, graphManager));
+    register(environment, new FacetedSearchV2_1Endpoint(configuration, graphManager));
     register(environment, new DomainCrudCollectionV2_1EndPoint(crudService));
     register(environment, new DomainCrudEntityV2_1EndPoint(crudService));
 

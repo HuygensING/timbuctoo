@@ -5,10 +5,10 @@ import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.SearchStore;
 import nl.knaw.huygens.timbuctoo.search.description.SearchDescriptionFactory;
+import nl.knaw.huygens.timbuctoo.server.SearchConfig;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchResponseV2_1Factory;
-import nl.knaw.huygens.timbuctoo.server.rest.search.SearchResponseV2_1RefAdder;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -34,10 +34,10 @@ public class FacetedSearchV2_1Endpoint {
   private final SearchDescriptionFactory searchDescriptionFactory;
   private final TinkerpopGraphManager graphManager;
 
-  public FacetedSearchV2_1Endpoint(SearchStore searchStore, TinkerpopGraphManager graphManager) {
-    this.searchStore = searchStore;
+  public FacetedSearchV2_1Endpoint(SearchConfig searchConfig, TinkerpopGraphManager graphManager) {
+    this.searchStore = new SearchStore(searchConfig.getSearchResultAvailabilityTimeout());
     this.graphManager = graphManager;
-    this.searchResponseFactory = new SearchResponseV2_1Factory(new SearchResponseV2_1RefAdder());
+    this.searchResponseFactory = new SearchResponseV2_1Factory(searchConfig);
     searchDescriptionFactory = new SearchDescriptionFactory();
   }
 
@@ -91,7 +91,6 @@ public class FacetedSearchV2_1Endpoint {
 
   private class NotFoundMessage {
     public final String message;
-    public final int statusCode = 404;
 
     public NotFoundMessage(UUIDParam id) {
       message = String.format("No SearchResult with id '%s'", id.get());
@@ -100,7 +99,6 @@ public class FacetedSearchV2_1Endpoint {
 
   private class InvalidCollectionMessage {
     public final String message;
-    public final int statusCode = 400;
 
     public InvalidCollectionMessage(String entityName) {
       message = String.format("'%s' is not a valid collection", entityName);
