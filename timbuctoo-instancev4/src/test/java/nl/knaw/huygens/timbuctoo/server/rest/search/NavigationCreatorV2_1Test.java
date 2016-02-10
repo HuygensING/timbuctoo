@@ -17,12 +17,13 @@ import static org.mockito.Mockito.mock;
 
 public class NavigationCreatorV2_1Test {
 
+  public static final String BASE_URI = "http://example.com";
   private NavigationCreator instance;
-  private SearchConfig searchConfig;
 
   @Before
   public void setUp() throws Exception {
-    searchConfig = mock(SearchConfig.class);
+    SearchConfig searchConfig = mock(SearchConfig.class);
+    given(searchConfig.getBaseUri()).willReturn(BASE_URI);
     instance = new NavigationCreator(searchConfig);
   }
 
@@ -58,14 +59,54 @@ public class NavigationCreatorV2_1Test {
   }
 
   @Test
-  public void nextAddsAUrlThatStartsWithTheBaseUrlFromTheSearchConfig() {
+  public void nextAddsANextLinkThatStartsWithTheBaseUriFromTheSearchConfig() {
     SearchResponseV2_1 searchResponse = new SearchResponseV2_1();
     UUID id = UUID.fromString("17baf00d-0089-4446-a9bd-2a4add3e55ea");
-    given(searchConfig.getBaseUri()).willReturn("http://example.com");
 
     instance.next(searchResponse, 10, 0, 20, id);
 
-    assertThat(searchResponse, hasProperty("next", startsWith("http://example.com")));
+    assertThat(searchResponse, hasProperty("next", startsWith(BASE_URI)));
   }
 
+  @Test
+  public void prevAddsAPrevLinkToTheSearchResult() {
+    SearchResponseV2_1 searchResponse = new SearchResponseV2_1();
+    UUID id = UUID.fromString("17baf00d-0089-4446-a9bd-2a4add3e55ea");
+
+    instance.prev(searchResponse, 10, 10, 20, id);
+
+    assertThat(searchResponse,
+      hasProperty("prev", endsWith("/v2.1/search/17baf00d-0089-4446-a9bd-2a4add3e55ea?start=0&rows=10")));
+  }
+
+  @Test
+  public void prevAddsAPrevLinkThatStartsWithTheBaseUriFromTheSearchConfig() {
+    SearchResponseV2_1 searchResponse = new SearchResponseV2_1();
+    UUID id = UUID.fromString("17baf00d-0089-4446-a9bd-2a4add3e55ea");
+
+    instance.prev(searchResponse, 10, 10, 20, id);
+
+    assertThat(searchResponse, hasProperty("prev", startsWith(BASE_URI)));
+  }
+
+  @Test
+  public void prevDoesNotAddALinkWhenTheCurrentStartIsZero() {
+    SearchResponseV2_1 searchResponse = new SearchResponseV2_1();
+    UUID id = UUID.fromString("17baf00d-0089-4446-a9bd-2a4add3e55ea");
+
+    instance.prev(searchResponse, 10, 0, 20, id);
+
+    assertThat(searchResponse, hasProperty("prev", is(nullValue())));
+  }
+
+  @Test
+  public void prevSetTheStartToZeroWhenThePrevStartWillBeLessThanZero() {
+    SearchResponseV2_1 searchResponse = new SearchResponseV2_1();
+    UUID id = UUID.fromString("17baf00d-0089-4446-a9bd-2a4add3e55ea");
+
+    instance.prev(searchResponse, 10, 7, 20, id);
+
+    assertThat(searchResponse,
+      hasProperty("prev", endsWith("/v2.1/search/17baf00d-0089-4446-a9bd-2a4add3e55ea?start=0&rows=10")));
+  }
 }

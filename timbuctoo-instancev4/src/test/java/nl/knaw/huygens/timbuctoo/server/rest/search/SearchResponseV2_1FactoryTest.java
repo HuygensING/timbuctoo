@@ -176,12 +176,28 @@ public class SearchResponseV2_1FactoryTest {
       new SearchResult(refs, Lists.newArrayList(), Lists.newArrayList(), Lists.newArrayList());
     UUID resultId = UUID.randomUUID();
     searchResult.setId(resultId);
-
     int rows = 1;
     int start = 0;
+
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, rows, start);
 
     verify(navigationCreator).next(searchResponse, rows, start, refs.size(), resultId);
+  }
+
+  @Test
+  public void fromLetsTheNavigationCreatorCreateAPrevLink() {
+    EntityRef entityRef1 = new EntityRef("type", "id");
+    List<EntityRef> refs = Lists.newArrayList(entityRef1, new EntityRef("type", "id2"));
+    SearchResult searchResult =
+      new SearchResult(refs, Lists.newArrayList(), Lists.newArrayList(), Lists.newArrayList());
+    UUID resultId = UUID.randomUUID();
+    searchResult.setId(resultId);
+    int rows = 1;
+    int start = 0;
+
+    SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, rows, start);
+
+    verify(navigationCreator).prev(searchResponse, rows, start, refs.size(), resultId);
   }
 
 }

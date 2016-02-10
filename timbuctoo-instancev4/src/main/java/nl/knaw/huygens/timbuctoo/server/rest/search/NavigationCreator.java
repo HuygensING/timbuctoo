@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.rest.search;
 
 import nl.knaw.huygens.timbuctoo.server.SearchConfig;
 
+import javax.ws.rs.core.UriBuilder;
 import java.util.UUID;
 
 class NavigationCreator {
@@ -15,7 +16,23 @@ class NavigationCreator {
     int nextStart = currentStart + rows;
     if (numFound > nextStart) {
       searchResponse
-        .setNext(String.format("%s/v2.1/search/%s?start=%d&rows=%d", searchConfig.getBaseUri(), id, nextStart, rows));
+        .setNext(createUri(id, nextStart, rows));
     }
+  }
+
+  public void prev(SearchResponseV2_1 searchResponse, int rows, int currentStart, int numFound, UUID id) {
+    if (currentStart > 0) {
+      int prevStart = Math.max(0, currentStart - rows);
+      searchResponse.setPrev(createUri(id, prevStart, rows));
+    }
+  }
+
+  private String createUri(UUID id, int start, int rows) {
+
+    return UriBuilder.fromUri(searchConfig.getBaseUri()).path("/v2.1/search/{id}")
+                     .queryParam("start", start)
+                     .queryParam("rows", rows)
+                     .build(id)
+                     .toString();
   }
 }

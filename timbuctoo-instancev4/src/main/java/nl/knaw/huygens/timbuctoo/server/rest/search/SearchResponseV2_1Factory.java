@@ -50,6 +50,7 @@ public class SearchResponseV2_1Factory {
     int end = normalizedStart + normalizedRows;
     refs.subList(normalizedStart, end).forEach(ref -> refCreator.addRef(searchResponse, ref));
     navigationCreator.next(searchResponse, rows, start, numFound, searchResult.getId());
+    navigationCreator.prev(searchResponse, rows, start, numFound, searchResult.getId());
 
     return searchResponse;
   }

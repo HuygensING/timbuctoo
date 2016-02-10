@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.rest.search;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.search.description.facet.Facet;
@@ -15,6 +16,7 @@ public class SearchResponseV2_1 {
   private int rows;
   private int numFound;
   private String next;
+  private String prev;
 
   public SearchResponseV2_1() {
     facets = Lists.newArrayList();
@@ -72,11 +74,22 @@ public class SearchResponseV2_1 {
   }
 
   @JsonProperty("_next")
+  @JsonInclude(JsonInclude.Include.NON_NULL)
   public String getNext() {
     return next;
   }
 
   public void setNext(String next) {
     this.next = next;
+  }
+
+  public void setPrev(String prev) {
+    this.prev = prev;
+  }
+
+  @JsonProperty("_prev")
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  public String getPrev() {
+    return prev;
   }
 }
