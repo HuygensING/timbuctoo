@@ -12,10 +12,10 @@ import java.util.List;
 import java.util.UUID;
 
 import static nl.knaw.huygens.timbuctoo.server.rest.search.FacetMatcher.likeFacet;
-import static nl.knaw.huygens.timbuctoo.server.rest.search.SearchResponseV2_1Matcher.likeSearchResponse;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.core.Is.is;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -43,21 +43,19 @@ public class SearchResponseV2_1FactoryTest {
 
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 10, 0);
 
-    assertThat(searchResponse, is(likeSearchResponse().withFullTextSearchFields(fullTextSearchFields)));
+    assertThat(searchResponse, hasProperty("fullTextSearchFields", equalTo(fullTextSearchFields)));
   }
 
   @Test
   public void fromReturnsASearchResponseV2_1WithTheSortableFieldsOfTheSearchResult() {
-
     List<EntityRef> refs = Lists.newArrayList();
     List<String> fullTextSearchFields = Lists.newArrayList();
     List<String> sortableFields = Lists.newArrayList("field1", "field2");
-
     SearchResult searchResult = new SearchResult(refs, fullTextSearchFields, sortableFields, Lists.newArrayList());
 
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 10, 0);
 
-    assertThat(searchResponse, is(likeSearchResponse().withSortableFields(sortableFields)));
+    assertThat(searchResponse, hasProperty("sortableFields", equalTo(sortableFields)));
   }
 
   @Test
@@ -121,7 +119,7 @@ public class SearchResponseV2_1FactoryTest {
 
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 1, start);
 
-    assertThat(searchResponse, is(likeSearchResponse().withStart(start)));
+    assertThat(searchResponse, hasProperty("start", equalTo(start)));
   }
 
   @Test
@@ -133,7 +131,7 @@ public class SearchResponseV2_1FactoryTest {
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, rows, 0);
 
     int numberOfRefs = searchResponse.getRefs().size();
-    assertThat(searchResponse, is(likeSearchResponse().withRows(numberOfRefs)));
+    assertThat(searchResponse, hasProperty("rows", equalTo(numberOfRefs)));
   }
 
   @Test
@@ -143,7 +141,7 @@ public class SearchResponseV2_1FactoryTest {
 
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 2, 0);
 
-    assertThat(searchResponse, is(likeSearchResponse().withRows(0)));
+    assertThat(searchResponse, hasProperty("rows", equalTo(0)));
     verifyZeroInteractions(refAdder);
   }
 
@@ -154,7 +152,7 @@ public class SearchResponseV2_1FactoryTest {
 
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 2, 2);
 
-    assertThat(searchResponse, is(likeSearchResponse().withRows(0)));
+    assertThat(searchResponse, hasProperty("rows", equalTo(0)));
     verifyZeroInteractions(refAdder);
   }
 
@@ -165,7 +163,7 @@ public class SearchResponseV2_1FactoryTest {
 
     SearchResponseV2_1 response = instance.createResponse(searchResult, 2, 2);
 
-    assertThat(response.getFacets(), contains(likeFacet().withName("name")));
+    assertThat(response, hasProperty("facets", contains(likeFacet().withName("name"))));
   }
 
   @Test
