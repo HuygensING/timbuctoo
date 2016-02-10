@@ -29,10 +29,10 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Produces(APPLICATION_JSON)
 public class FacetedSearchV2_1Endpoint {
 
-  private SearchStore searchStore;
   private final SearchResponseV2_1Factory searchResponseFactory;
   private final SearchDescriptionFactory searchDescriptionFactory;
   private final TinkerpopGraphManager graphManager;
+  private SearchStore searchStore;
 
   public FacetedSearchV2_1Endpoint(SearchConfig searchConfig, TinkerpopGraphManager graphManager) {
     this.searchStore = new SearchStore(searchConfig.getSearchResultAvailabilityTimeout());
@@ -48,6 +48,11 @@ public class FacetedSearchV2_1Endpoint {
     Optional<SearchDescription> description = getDescription(entityName);
 
     if (description.isPresent()) {
+      /*
+       * The previous implementation of the faceted search v2.1 did validate the search request. For reasons of time
+       * this feature is omitted, until proven necessary. Execute will just ignore unknown facets, full text search
+       * fields and sort fields.
+       */
       UUID uuid = searchStore.add(description.get().execute(graphManager.getGraph(), searchRequest));
 
       URI uri = createUri(uuid);
