@@ -22,6 +22,15 @@ public class JsonToTinkerpopMappings {
       new JsonToTinkerpopPropertyMap("tempLocationPlacename", "wwcollective_tempLocationPlacename"),
       new JsonToTinkerpopPropertyMap("tempOrigin", "wwcollective_tempOrigin"),
       new JsonToTinkerpopPropertyMap("tempShortName", "wwcollective_tempShortName")
+    ),
+    "wwdocuments", Lists.newArrayList(
+      new JsonToTinkerpopPropertyMap("links", "wwdocument_links", Converters.arrayToEncodedArray),
+      new JsonToTinkerpopPropertyMap("date", "wwdocument_date"),
+      new JsonToTinkerpopPropertyMap("title", "wwdocument_title"),
+      new JsonToTinkerpopPropertyMap("englishTitle", "wwdocument_englishTitle"),
+      new JsonToTinkerpopPropertyMap("documentType", "wwdocument_documentType"),
+      new JsonToTinkerpopPropertyMap("reference", "wwdocument_reference"),
+      new JsonToTinkerpopPropertyMap("notes", "wwdocument_notes")
     )
   );
 

@@ -56,64 +56,68 @@
         <li>SHOP</li>
       </ul>
     </p>
-    <!--    <p>
-          After at most <b>60</b> seconds the new record
-          <span c:execute="#pid=retrievePid()">
-             <span c:assertTrue="recordHasPid()">
-               should have persistent ID in the field <i>^pid</i>:
-               <b><span c:echo="#pid"></span></b>
-             </span>.
-          </span>
-        </p>
-      </section>
+    <p>
+      After at most <b>60</b> seconds the new record
+      <span c:execute="#pid=retrievePid()">
+         <span c:assertTrue="recordHasPid()">
+           should have persistent ID in the field <i>^pid</i>:
+           <b><span c:echo="#pid"></span></b>
+         </span>.
+      </span>
+    </p>
+  </section>
 
-      <section data-type="chapter">
-        <h2>Performing GET to the recently created wwcollective resource</h2>
-        <aside class="example" h:http="#response">
-          <p>When a GET is performed to the wwcollective </p>
-          <div h:request="">
-            GET #createResponse.headers.location HTTP/1.1
-            Accept: application/json
-          </div>
-          <p>The server will respond with the created resource</p>
-          <div h:response="">
-            HTTP/1.1 200
-            Content-type: application/json
+  <section data-type="chapter">
+    <h2>Performing GET to the recently created wwcollective resource</h2>
+    <aside class="example" h:http="#response">
+      <p>When a GET is performed to the wwcollective </p>
+      <div h:request="">
+        GET #createResponse.headers.location HTTP/1.1
+        Accept: application/json
+      </div>
+      <p>The server will respond with the created resource</p>
+      <div h:response="">
+        HTTP/1.1 200
+        Content-type: application/json
 
-            {
-                "_id": "#recordId",
-                "@type": "wwcollective",
-                "@relations": {},
-                "@relationCount": 0,
-                "@variationRefs": [
-                    {
-                        "id": "#recordId",
-                        "type": "wwcollective"
-                    }
-                ],
-                "^created": {
-                    "username": "/.*/",
-                    "userId": "/.*/",
-                    "timeStamp": "/^\\d+$/"
+        {
+            "_id": "#recordId",
+            "@type": "wwcollective",
+            "@relations": {},
+            "@relationCount": 0,
+            "@variationRefs": [
+                {
+                    "id": "#recordId",
+                    "type": "wwcollective"
                 },
-                "^modified": {
-                    "username": "/.*/",
-                    "userId": "/.*/",
-                    "timeStamp": "/^\\d+$/"
-                },
-                "^rev": 1,
-                "^pid": "/.*/",
-                "^deleted": false,
-                "type": "ACADEMY",
-                "name": "Testcollective",
-                "links": [{
-                    "url": "http://example.com",
-                    "label": "Test link"
-                }]
-            }
-          </div>
-        </aside>
-      </section>
+                {
+                  "id": "#recordId",
+                  "type": "collective"
+                }
+            ],
+            "^created": {
+                "username": "/.*/",
+                "userId": "/.*/",
+                "timeStamp": "/^\\d+$/"
+            },
+            "^modified": {
+                "username": "/.*/",
+                "userId": "/.*/",
+                "timeStamp": "/^\\d+$/"
+            },
+            "^rev": 1,
+            "^pid": "/.*/",
+            "^deleted": false,
+            "type": "ACADEMY",
+            "name": "Testcollective",
+            "links": [{
+                "url": "http://example.com",
+                "label": "Test link"
+            }]
+        }
+      </div>
+    </aside>
+  </section><!--
       <section data-type="chapter">
         <h2>Update the wwcollective with PUT</h2>
         <aside class="example" h:http="#response">
@@ -211,6 +215,6 @@
             HTTP/1.1 404
           </div>
         </aside>
--->      </section>
+      </section>-->
 </body>
 </html>

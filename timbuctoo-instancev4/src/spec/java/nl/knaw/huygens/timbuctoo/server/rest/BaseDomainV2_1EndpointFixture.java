@@ -170,7 +170,7 @@ public abstract class BaseDomainV2_1EndpointFixture extends AbstractV2_1Endpoint
       return authenticationToken;
     }
     List<AbstractMap.SimpleEntry<String, String>> headers = Lists.newArrayList();
-    headers.add(new AbstractMap.SimpleEntry<String, String>("Authorization",  "Basic dXNlcjpwYXNzd29yZA=="));
+    headers.add(new AbstractMap.SimpleEntry<>("Authorization", "Basic dXNlcjpwYXNzd29yZA=="));
 
     HttpRequest loginRequest =
         new HttpRequest("POST", "/v2.1/authenticate", headers, null, null, Lists.newArrayList());

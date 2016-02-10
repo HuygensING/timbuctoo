@@ -4,21 +4,25 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+
+import static nl.knaw.huygens.timbuctoo.util.RelationData.RelationDataBuilder.makeRelationData;
 
 public class VertexBuilder {
 
   private final HashMap<String, Object> properties;
-  private final HashMap<String, List<String>> outGoingRelationMap;
+  private final HashMap<String, List<RelationData>> outGoingRelationMap;
   private List<String> types;
   private String id;
   private final ObjectMapper objectMapper;
   private boolean isLatest;
-  private final HashMap<String, List<String>> incomingRelationMap;
+  private final HashMap<String, List<RelationData>> incomingRelationMap;
 
   VertexBuilder() {
     objectMapper = new ObjectMapper();
@@ -48,16 +52,18 @@ public class VertexBuilder {
   }
 
   public void setRelations(Vertex self, Map<String, Vertex> others) {
-    for (Map.Entry<String, List<String>> entry : outGoingRelationMap.entrySet()) {
-      for (String vertexLookup : entry.getValue()) {
-        Vertex other = others.get(vertexLookup);
-        self.addEdge(entry.getKey(), other);
+    for (Map.Entry<String, List<RelationData>> entry : outGoingRelationMap.entrySet()) {
+      for (RelationData data : entry.getValue()) {
+        Vertex other = others.get(data.getOtherKey());
+        Edge edge = self.addEdge(entry.getKey(), other);
+        data.setProperties(edge);
       }
     }
-    for (Map.Entry<String, List<String>> entry : incomingRelationMap.entrySet()) {
-      for (String vertexLookup : entry.getValue()) {
-        Vertex other = others.get(vertexLookup);
-        other.addEdge(entry.getKey(), self);
+    for (Map.Entry<String, List<RelationData>> entry : incomingRelationMap.entrySet()) {
+      for (RelationData data : entry.getValue()) {
+        Vertex other = others.get(data.getOtherKey());
+        Edge edge = other.addEdge(entry.getKey(), self);
+        data.setProperties(edge);
       }
     }
   }
@@ -176,18 +182,43 @@ public class VertexBuilder {
       outGoingRelationMap.put(relationName, Lists.newArrayList());
     }
 
-    outGoingRelationMap.get(relationName).add(otherVertex);
+    outGoingRelationMap.get(relationName).add(new RelationData(otherVertex));
 
     return this;
   }
 
+
+  public VertexBuilder withOutgoingRelation(String relationName, String otherVertex,
+                                            Function<RelationData.RelationDataBuilder,
+                                              RelationData.RelationDataBuilder> relationBuilder) {
+    if (!outGoingRelationMap.containsKey(relationName)) {
+      outGoingRelationMap.put(relationName, Lists.newArrayList());
+    }
+
+    outGoingRelationMap.get(relationName).add(relationBuilder.apply(makeRelationData(otherVertex)).build());
+
+    return this;
+  }
 
   public VertexBuilder withIncomingRelation(String relationName, String otherVertex) {
     if (!incomingRelationMap.containsKey(relationName)) {
       incomingRelationMap.put(relationName, Lists.newArrayList());
     }
 
-    incomingRelationMap.get(relationName).add(otherVertex);
+    incomingRelationMap.get(relationName).add(new RelationData(otherVertex));
+
+    return this;
+  }
+
+
+  public VertexBuilder withIncomingRelation(String relationName, String otherVertex,
+                                            Function<RelationData.RelationDataBuilder,
+                                              RelationData.RelationDataBuilder> relationBuilder) {
+    if (!incomingRelationMap.containsKey(relationName)) {
+      incomingRelationMap.put(relationName, Lists.newArrayList());
+    }
+
+    incomingRelationMap.get(relationName).add(relationBuilder.apply(makeRelationData(otherVertex)).build());
 
     return this;
   }

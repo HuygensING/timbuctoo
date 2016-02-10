@@ -7,15 +7,13 @@ import nl.knaw.huygens.timbuctoo.model.JsonToTinkerpopPropertyMap;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.Clock;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +77,7 @@ public class TinkerpopJsonCrudServiceReadTest {
   public ExpectedException expectedException = ExpectedException.none();
 
   @Test
-  public void throwsOnUnknownMappings() throws IOException, InvalidCollectionException {
+  public void throwsOnUnknownMappings() throws Exception {
     Graph graph = newGraph().build();
     TinkerpopJsonCrudService instance = basicInstance(graph);
 
@@ -93,7 +91,7 @@ public class TinkerpopJsonCrudServiceReadTest {
    * We've chosen to not throw a 400 when the collection and the type mismatch
    */
   @Test
-  public void echoesAtTypeAndIdProperty() throws IOException, InvalidCollectionException {
+  public void echoesAtTypeAndIdProperty() throws Exception {
     UUID id = UUID.randomUUID();
     Graph graph = newGraph()
       .withVertex(v -> v
@@ -107,7 +105,7 @@ public class TinkerpopJsonCrudServiceReadTest {
     assertThat(
       instance.get("wwpersons", id).toString(),
       sameJSONAs(
-        jsn(
+        JsonBuilder.jsnO(
           "@type", jsn("wwperson"),
           "_id", jsn(id.toString())
         ).toString()
@@ -116,7 +114,7 @@ public class TinkerpopJsonCrudServiceReadTest {
   }
 
   @Test
-  public void returnsThePropertiesFromTheMapper() throws IOException, InvalidCollectionException {
+  public void returnsThePropertiesFromTheMapper() throws Exception {
     UUID id = UUID.randomUUID();
     Graph graph = newGraph()
       .withVertex(v -> v
@@ -140,7 +138,7 @@ public class TinkerpopJsonCrudServiceReadTest {
   }
 
   @Test
-  public void getsTheLatestEntityWhenNoRevIsSpecified() throws InvalidCollectionException {
+  public void getsTheLatestEntityWhenNoRevIsSpecified() throws Exception {
 
     UUID uuid = UUID.randomUUID();
 
@@ -175,7 +173,7 @@ public class TinkerpopJsonCrudServiceReadTest {
   }
 
   @Test
-  public void getsTheRequestedRevWhenSpecified() throws InvalidCollectionException {
+  public void getsTheRequestedRevWhenSpecified() throws Exception {
 
     UUID uuid = UUID.randomUUID();
 
@@ -228,8 +226,8 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(jsn(
-      "^modified", jsn(
+    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
+      "^modified", JsonBuilder.jsnO(
         "timeStamp", jsn(1427921175250L),
         "userId", jsn("USER1"),
         "username", jsn("Username for USER1")
@@ -256,8 +254,8 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(jsn(
-      "^created", jsn(
+    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
+      "^created", JsonBuilder.jsnO(
         "timeStamp", jsn(1427921175250L),
         "userId", jsn("USER1"),
         "username", jsn("Username for USER1")
@@ -288,11 +286,11 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(jsn(
+    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
       "@relationCount", jsn(1),
-      "@relations", jsn(
-        "isPseudonymOf", jsn(
-          jsn(
+      "@relations", JsonBuilder.jsnO(
+        "isPseudonymOf", JsonBuilder.jsnA(
+          JsonBuilder.jsnO(
             "id", jsn(pseudonymId.toString())
           )
         )
@@ -327,11 +325,11 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(jsn(
+    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
       "@relationCount", jsn(1),
-      "@relations", jsn(
-        "isCreatorOf", jsn(
-          jsn(
+      "@relations", JsonBuilder.jsnO(
+        "isCreatorOf", JsonBuilder.jsnA(
+          JsonBuilder.jsnO(
             "id", jsn(workId.toString())
           )
         )
@@ -340,7 +338,7 @@ public class TinkerpopJsonCrudServiceReadTest {
   }
 
   @Test
-  public void showsTheOtherVerticesProperties() throws Exception {
+  public void showsThePropertiesOfTheRelatedVertex() throws Exception {
     UUID id = UUID.randomUUID();
     Graph graph = newGraph()
       .withVertex("source", v -> v
@@ -364,11 +362,11 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(jsn(
+    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
       "@relationCount", jsn(1),
-      "@relations", jsn(
-        "isPseudonymOf", jsn(
-          jsn(
+      "@relations", JsonBuilder.jsnO(
+        "isPseudonymOf", JsonBuilder.jsnA(
+          JsonBuilder.jsnO(
             "id", jsn("f005ba11-0000-0000-0000-000000000000"),
             "path", jsn("/wwpersons/f005ba11-0000-0000-0000-000000000000/null")
           )
@@ -377,12 +375,250 @@ public class TinkerpopJsonCrudServiceReadTest {
     ).toString()).allowingExtraUnexpectedFields());
   }
 
-  //toon de properties van de andere vertex
-  //path is de url van de andere vertex
-  //derived relations moet je ook doen. die moet je ergens configureren
-  //doesn't show accepted false
-  //FIXME displayname
+  @Test
+  public void omitsRelationsWithIsLatestIsFalse() throws Exception {
+    UUID id = UUID.randomUUID();
+    Graph graph = newGraph()
+      .withVertex("source", v -> v
+        .withOutgoingRelation("isPseudonymOf", "work", relation -> relation
+          .withRev(1)
+          .withAccepted("wwrelation", true)
+          .withTim_id(UUID.fromString("deadbeaf-0000-0000-0000-000000000000"))
+          .withIsLatest(false)
+        )
+        .withOutgoingRelation("isPseudonymOf", "work", relation -> relation
+          .withRev(2)
+          .withIsLatest(true)
+        )
+        .withType("wwperson")
+        .withType("person")
+        .isLatest(true)
+        .withTimId(id.toString())
+      )
+      .withVertex("work", v -> v
+        .withType("wwperson")
+        .withType("person")
+        .withTimId("f005ba11-0000-0000-0000-000000000000")
+      )
+      .build();
 
+    TinkerpopJsonCrudService instance = basicInstance(graph);
+    String resultJson = instance.get("wwpersons", id).toString();
+
+    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
+      "@relationCount", jsn(1),
+      "@relations", JsonBuilder.jsnO(
+        "isPseudonymOf", JsonBuilder.jsnA(
+          JsonBuilder.jsnO(
+            "rev", jsn(2)
+          )
+        )
+      )
+    ).toString()).allowingExtraUnexpectedFields());
+  }
+
+  @Test
+  public void omitsRelationsOutsideMyVre() throws Exception {
+    UUID id = UUID.randomUUID();
+    Graph graph = newGraph()
+      .withVertex("source", v -> v
+        .withOutgoingRelation("isPseudonymOf", "work", relation -> relation
+          .withRev(1)
+          .addType("ckcc")
+        )
+        .withOutgoingRelation("isPseudonymOf", "work", relation -> relation
+          .withRev(2)
+          .addType("ww")
+        )
+        .withType("wwperson")
+        .withType("person")
+        .isLatest(true)
+        .withTimId(id.toString())
+      )
+      .withVertex("work", v -> v
+        .withType("wwperson")
+        .withType("person")
+        .withTimId("f005ba11-0000-0000-0000-000000000000")
+      )
+      .build();
+
+    TinkerpopJsonCrudService instance = basicInstance(graph);
+    String resultJson = instance.get("wwpersons", id).toString();
+
+    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
+      "@relationCount", jsn(1),
+      "@relations", JsonBuilder.jsnO(
+        "isPseudonymOf", JsonBuilder.jsnA(
+          JsonBuilder.jsnO(
+            "rev", jsn(2)
+          )
+        )
+      )
+    ).toString()).allowingExtraUnexpectedFields());
+  }
+
+  @Test
+  public void omitsDeletedRelations() throws Exception {
+    UUID id = UUID.randomUUID();
+    Graph graph = newGraph()
+      .withVertex("source", v -> v
+        .withOutgoingRelation("isPseudonymOf", "work", relation -> relation
+          .withRev(1)
+          .withDeleted(null) //when no deleted prop is present, it should assume that the prop is not deleted
+        )
+        .withOutgoingRelation("isPseudonymOf", "work", relation -> relation
+          .withRev(2)
+          .withDeleted(false)
+        )
+        .withOutgoingRelation("isPseudonymOf", "work", relation -> relation
+          .withRev(2)
+          .withDeleted(true)
+        )
+        .withType("wwperson")
+        .withType("person")
+        .isLatest(true)
+        .withTimId(id.toString())
+      )
+      .withVertex("work", v -> v
+        .withType("wwperson")
+        .withType("person")
+        .withTimId("f005ba11-0000-0000-0000-000000000000")
+      )
+      .build();
+
+    TinkerpopJsonCrudService instance = basicInstance(graph);
+    String resultJson = instance.get("wwpersons", id).toString();
+
+    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
+      "@relationCount", jsn(2),
+      "@relations", JsonBuilder.jsnO(
+        "isPseudonymOf", JsonBuilder.jsnA(
+          JsonBuilder.jsnO(
+            "rev", jsn(1)
+          ),
+          JsonBuilder.jsnO(
+            "rev", jsn(2)
+          )
+        )
+      )
+    ).toString()).allowingExtraUnexpectedFields());
+  }
+
+  @Test
+  public void showsThePropertiesOfTheRelationItself() throws Exception {
+    UUID id = UUID.randomUUID();
+    Graph graph = newGraph()
+      .withVertex("source", v -> v
+        .withOutgoingRelation("isPseudonymOf", "work", relation -> relation
+          .withRev(5)
+          .withAccepted("wwrelation", true)
+          .withTim_id(UUID.fromString("deadbeaf-0000-0000-0000-000000000000"))
+        )
+        .withType("wwperson")
+        .withType("person")
+        .isLatest(true)
+        .withTimId(id.toString())
+      )
+      .withVertex("work", v -> v
+        .withType("wwperson")
+        .withType("person")
+        .withTimId("f005ba11-0000-0000-0000-000000000000")
+      )
+      .build();
+
+    TinkerpopJsonCrudService instance = basicInstance(graph);
+    String resultJson = instance.get("wwpersons", id).toString();
+
+    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
+      "@relationCount", jsn(1),
+      "@relations", JsonBuilder.jsnO(
+        "isPseudonymOf", JsonBuilder.jsnA(
+          JsonBuilder.jsnO(
+            "relationId", jsn("deadbeaf-0000-0000-0000-000000000000"),
+            "accepted", jsn(true),
+            "rev", jsn(5)
+          )
+        )
+      )
+    ).toString()).allowingExtraUnexpectedFields());
+  }
+
+  @Test
+  public void showsDisplayName() throws Exception {
+    UUID id = UUID.randomUUID();
+    Graph graph = newGraph()
+      .withVertex("source", v -> v
+        .withOutgoingRelation("isPseudonymOf", "pseudonym")
+        .withType("wwperson")
+        .isLatest(true)
+        .withTimId(id.toString())
+      )
+      .withVertex("pseudonym", v -> v
+        .withType("wwperson")
+        .withProperty("wwperson_names", "{\"list\":[{\"components\":[{\"type\":\"FORENAME\",\"value\":\"Pieter\"}," +
+          "{\"type\":\"NAME_LINK\",\"value\":\"van\"},{\"type\":\"SURNAME\",\"value\":\"Reigersberch\"}]}]}")
+        .withTimId("f005ba11-0000-0000-0000-000000000000")
+      )
+      .build();
+
+    TinkerpopJsonCrudService instance = basicInstance(graph);
+    String resultJson = instance.get("wwpersons", id).toString();
+
+    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
+      "@relations", JsonBuilder.jsnO(
+        "isPseudonymOf", JsonBuilder.jsnA(
+          JsonBuilder.jsnO(
+            "displayName", jsn("Pieter van Reigersberch")
+          )
+        )
+      )
+    ).toString()).allowingExtraUnexpectedFields());
+  }
+
+  @Test
+  public void showsDerivedRelations() throws Exception {
+    UUID id = UUID.randomUUID();
+    Graph graph = newGraph()
+      .withVertex("source", v -> v
+        .withOutgoingRelation("isCreatorOf", "someWork", r -> r
+          .addType("ww")
+          .withIsLatest(true)
+          .withDeleted(false)
+        )
+        .withType("wwperson")
+        .isLatest(true)
+        .withTimId(id.toString())
+      )
+      .withVertex("someWork", v -> v
+        .withOutgoingRelation("hasWorkLanguage", "dutch", r -> r
+          .addType("ww")
+          .withIsLatest(true)
+          .withDeleted(false)
+        )
+        .isLatest(true)
+        .withType("wwdocument")
+      )
+      .withVertex("dutch", v -> v
+        .withType("wwlanguage")
+        .withProperty("wwlanguage_name", "Dutch")
+        .isLatest(true)
+        .withTimId(UUID.randomUUID().toString())
+      )
+      .build();
+
+    TinkerpopJsonCrudService instance = basicInstance(graph);
+    String resultJson = instance.get("wwpersons", id).toString();
+
+    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
+      "@relations", JsonBuilder.jsnO(
+        "hasPersonLanguage", JsonBuilder.jsnA(
+          JsonBuilder.jsnO(
+            "displayName", jsn("Dutch")
+          )
+        )
+      )
+    ).toString()).allowingExtraUnexpectedFields());
+  }
 
   @Test
   public void showsTheVariationRefs() throws Exception {
@@ -400,13 +636,13 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(jsn(
-      "@variationRefs", jsn(
-        jsn(
+    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
+      "@variationRefs", JsonBuilder.jsnA(
+        JsonBuilder.jsnO(
           "id", jsn(id.toString()),
           "type", jsn("wwperson")
         ),
-        jsn(
+        JsonBuilder.jsnO(
           "id", jsn(id.toString()),
           "type", jsn("person")
         )
@@ -429,9 +665,9 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(jsn(
-      "@variationRefs", jsn(
-        jsn(
+    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
+      "@variationRefs", JsonBuilder.jsnA(
+        JsonBuilder.jsnO(
           "id", jsn(id.toString()),
           "type", jsn("wwperson")
         )
@@ -455,7 +691,7 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(jsn(
+    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
       "^deleted", jsn(true)
     ).toString()).allowingExtraUnexpectedFields());
   }
@@ -475,7 +711,7 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(jsn(
+    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
       "^deleted", jsn(false)
     ).toString()).allowingExtraUnexpectedFields());
   }
@@ -496,7 +732,7 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(jsn(
+    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
       "^pid", jsn("http://example.com/pid")
     ).toString()).allowingExtraUnexpectedFields());
   }
