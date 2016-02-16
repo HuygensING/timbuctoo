@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.google.common.collect.Lists;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ public class RelationData {
   private Boolean deleted = null;
   private UUID typeId = null;
   private String otherKey = null;
+  private List<String> typesToRemove = new ArrayList<>();
 
   public RelationData(String otherKey) {
     this.setOtherKey(otherKey);
@@ -62,7 +64,7 @@ public class RelationData {
     this.otherKey = otherKey;
   }
 
-  public void setProperties(Edge vertex) {
+  public void setProperties(Edge vertex, List<String> vertexVres) {
     if (rev != null) {
       vertex.property("rev", rev);
     } else {
@@ -73,11 +75,21 @@ public class RelationData {
     } else {
       vertex.property("tim_id", UUID.randomUUID().toString());
     }
-    if (types != null) {
-      ArrayNode types = JsonNodeFactory.instance.arrayNode();
-      this.types.forEach(type -> types.add(jsn(type + "relation")));
-      vertex.property("types", types.toString());
+    //types contains the explicitly configured vres
+    ArrayNode types = JsonNodeFactory.instance.arrayNode();
+    for (String vre : vertexVres) {
+      if (!typesToRemove.contains(vre)) {
+        types.add(jsn(vre + "relation"));
+      }
     }
+    if (this.types != null) {
+      for (String vre : this.types) {
+        if (!typesToRemove.contains(vre)) {
+          types.add(jsn(vre + "relation"));
+        }
+      }
+    }
+    vertex.property("types", types.toString());
     if (accepted != null) {
       accepted.forEach((key, val) -> {
         vertex.property(key + "_accepted", val);
@@ -98,11 +110,16 @@ public class RelationData {
     }
   }
 
+  public void setTypesToRemove(List<String> typesToRemove) {
+    this.typesToRemove = typesToRemove;
+  }
+
   public static class RelationDataBuilder {
     private String otherKey;
     private Integer rev;
     private UUID timId;
     private List<String> types = Lists.newArrayList();
+    private List<String> typesToRemove = Lists.newArrayList();
     private Map<String, Boolean> accepted = new HashMap<>();
     private Boolean deleted;
     private UUID typeId;
@@ -128,6 +145,11 @@ public class RelationData {
 
     public RelationDataBuilder addType(String type) {
       this.types.add(type);
+      return this;
+    }
+
+    public RelationDataBuilder removeType(String type) {
+      this.typesToRemove.add(type);
       return this;
     }
 
@@ -162,7 +184,9 @@ public class RelationData {
       relationData.setDeleted(deleted);
       relationData.setTypeId(typeId);
       relationData.setIsLatest(isLatest);
+      relationData.setTypesToRemove(typesToRemove);
       return relationData;
     }
+
   }
 }

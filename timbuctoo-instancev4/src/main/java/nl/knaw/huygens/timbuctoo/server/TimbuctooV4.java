@@ -9,9 +9,7 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
-import nl.knaw.huygens.timbuctoo.search.SearchStore;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
-import nl.knaw.huygens.timbuctoo.model.vre.neww.JsonToTinkerpopMappings;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
@@ -66,7 +64,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final HandleAdder handleAdder = new HandleAdder(activeMqBundle, "pids", graphManager, persistenceManager);
     final TinkerpopJsonCrudService crudService = new TinkerpopJsonCrudService(
       graphManager,
-      JsonToTinkerpopMappings.getMappings(),
+      HuygensIng.mappings,
       handleAdder,
       userStore,
       DomainCrudEntityV2_1EndPoint::makeUrl,

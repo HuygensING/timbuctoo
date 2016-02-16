@@ -53,7 +53,9 @@ public abstract class AbstractSearchDescription implements SearchDescription {
   }
 
   protected GraphTraversal<Vertex, Vertex> filterByType(GraphTraversalSource traversalSource) {
-    return traversalSource.V().filter(x -> ((String) x.get().property("types").value()).contains(getType()));
+    return traversalSource.V().filter(
+      x -> ((String) x.get().property("types").value()).contains("\"" + getType() + "\"")
+    );
   }
 
   // Hooks

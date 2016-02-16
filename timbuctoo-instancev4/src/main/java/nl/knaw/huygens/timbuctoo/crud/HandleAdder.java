@@ -6,11 +6,7 @@ import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.logmarkers.Logmarkers;
 import nl.knaw.huygens.timbuctoo.queued.ActiveMqExecutor;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.shaded.minlog.Log;
 import org.slf4j.Logger;
-
-import static nl.knaw.huygens.timbuctoo.util.LambdaExceptionUtil.rethrowConsumer;
 
 public class HandleAdder {
   private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(HandleAdder.class);

@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.model.converters;
+package nl.knaw.huygens.timbuctoo.model.properties.converters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 
 import java.io.IOException;
 
-class ArrayToEncodedArrayConverter implements Converter {
+public class ArrayToEncodedArrayConverter implements Converter {
   @Override
   public Object jsonToTinkerpop(JsonNode json) throws IOException {
     if (json.isArray()) {
@@ -19,7 +19,7 @@ class ArrayToEncodedArrayConverter implements Converter {
   ObjectMapper mapper = new ObjectMapper();
 
   @Override
-  public JsonNode tinkerpopToJson(Object value) throws IOException {
+  public ArrayNode tinkerpopToJson(Object value) throws IOException {
     if (value instanceof String) {
       JsonNode jsonNode = mapper.readTree((String) value);
       if (jsonNode instanceof ArrayNode) {
@@ -27,6 +27,15 @@ class ArrayToEncodedArrayConverter implements Converter {
       } else {
         throw new IOException("is encoded JSON, but not an array: " + jsonNode.toString());
       }
+    } else {
+      throw new IOException("should be an string encoded Array");
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  public <E> E[] tinkerpopToJava(Object value, Class<? extends E[]> clazz) throws IOException {
+    if (value instanceof String) {
+      return mapper.readValue((String) value, clazz);
     } else {
       throw new IOException("should be an string encoded Array");
     }

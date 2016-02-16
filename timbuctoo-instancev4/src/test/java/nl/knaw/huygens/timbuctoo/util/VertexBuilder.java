@@ -18,7 +18,8 @@ public class VertexBuilder {
 
   private final HashMap<String, Object> properties;
   private final HashMap<String, List<RelationData>> outGoingRelationMap;
-  private List<String> types;
+  private String type;
+  private List<String> vres;
   private String id;
   private final ObjectMapper objectMapper;
   private boolean isLatest;
@@ -33,9 +34,15 @@ public class VertexBuilder {
 
   public Vertex build(Vertex vertex) {
     try {
-      if (types != null) {
-        vertex.property("types", objectMapper.writeValueAsString(Lists.newArrayList(types)));
+      if (vres == null) {
+        vres = Lists.newArrayList("");
       }
+      if (type == null) {
+        type = "<type>";
+      }
+      vertex.property("types", objectMapper.writeValueAsString(
+        Lists.newArrayList(vres.stream().map(vre -> vre + type).iterator()))
+      );
       if (id != null) {
         vertex.property("tim_id", id);
       }
@@ -56,23 +63,28 @@ public class VertexBuilder {
       for (RelationData data : entry.getValue()) {
         Vertex other = others.get(data.getOtherKey());
         Edge edge = self.addEdge(entry.getKey(), other);
-        data.setProperties(edge);
+        data.setProperties(edge, vres);
       }
     }
     for (Map.Entry<String, List<RelationData>> entry : incomingRelationMap.entrySet()) {
       for (RelationData data : entry.getValue()) {
         Vertex other = others.get(data.getOtherKey());
         Edge edge = other.addEdge(entry.getKey(), self);
-        data.setProperties(edge);
+        data.setProperties(edge, vres);
       }
     }
   }
 
   public VertexBuilder withType(String type) {
-    if (types == null) {
-      types = Lists.newArrayList();
+    this.type = type;
+    return this;
+  }
+
+  public VertexBuilder withVre(String vre) {
+    if (vres == null) {
+      vres = Lists.newArrayList();
     }
-    this.types.add(type);
+    this.vres.add(vre);
     return this;
   }
 
@@ -222,4 +234,5 @@ public class VertexBuilder {
 
     return this;
   }
+
 }
