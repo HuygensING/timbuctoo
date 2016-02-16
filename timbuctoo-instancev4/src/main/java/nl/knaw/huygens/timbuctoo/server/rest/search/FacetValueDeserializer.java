@@ -17,8 +17,7 @@ public class FacetValueDeserializer extends JsonDeserializer<FacetValue> {
 
     if (facetValue.has("values")) {
       return jsonParser.readValueAs(ListFacetValue.class);
-    }
-    else {
+    } else {
       return jsonParser.readValueAs(DateRangeFacetValue.class);
     }
   }
