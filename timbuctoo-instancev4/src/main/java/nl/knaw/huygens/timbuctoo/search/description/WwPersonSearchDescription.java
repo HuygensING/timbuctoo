@@ -50,18 +50,18 @@ public class WwPersonSearchDescription extends AbstractSearchDescription {
     return Lists.newArrayList(
       facetDescriptionFactory.createListFacetDescription("dynamic_s_gender", Gender.class, "wwperson_gender"),
       facetDescriptionFactory
-        .createListFacetDescription("dynamic_s_deathplace", LocationNames.class, "wwlocation_names", "hasDeathPlace"),
+        .createListFacetDescription("dynamic_s_deathplace", LocationNames.class, "names", "hasDeathPlace"),
       facetDescriptionFactory
-        .createListFacetDescription("dynamic_s_birthplace", LocationNames.class, "wwlocation_names", "hasBirthPlace"),
+        .createListFacetDescription("dynamic_s_birthplace", LocationNames.class, "names", "hasBirthPlace"),
       facetDescriptionFactory.createListFacetDescription(
         "dynamic_s_relatedLocations",
         LocationNames.class,
-        "wwlocation_names",
+        "names", // names, because the same name is shared between VRE's, so wwlocation_names does not exist
         "hasBirthPlace", "hasDeathPlace", "hasResidenceLocation"),
       facetDescriptionFactory.createDatableRangeFacetDescription("dynamic_i_deathDate", "wwperson_deathDate"),
       facetDescriptionFactory.createListFacetDescription("dynamic_s_children", String.class, "wwperson_children"),
       facetDescriptionFactory.createKeywordDescription("dynamic_s_religion", "hasReligion", "ww"),
-      facetDescriptionFactory.createListFacetDescription("dynamic_s_residence", LocationNames.class, "wwlocation_names",
+      facetDescriptionFactory.createListFacetDescription("dynamic_s_residence", LocationNames.class, "names",
         "hasResidenceLocation"),
       facetDescriptionFactory.createWwPersonLanguageFacetDescription("dynamic_s_language"),
       facetDescriptionFactory.createKeywordDescription("dynamic_s_marital_status", "hasMaritalStatus", "ww"),
