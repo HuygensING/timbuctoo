@@ -25,7 +25,9 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class ListFacetDescriptionTest {
 
@@ -82,6 +84,28 @@ public class ListFacetDescriptionTest {
       new Facet.DefaultOption(value, 2L),
       new Facet.DefaultOption(value1, 3L),
       new Facet.DefaultOption(value2, 1L)));
+  }
+
+  @Test
+  public void getFacetLetsTheParserParseTheValue() {
+    given(propertyParser.parse(anyString())).willAnswer(invocation -> invocation.getArguments()[0]);
+    String value = "value";
+    String value1 = "value1";
+    String value2 = "value2";
+    Graph graph = newGraph()
+      .withVertex(v -> v.withTimId("id").withProperty(PROPERTY, value))
+      .withVertex(v -> v.withTimId("id1").withProperty(PROPERTY, value))
+      .withVertex(v -> v.withTimId("id2").withProperty(PROPERTY, value1))
+      .withVertex(v -> v.withTimId("id3").withProperty(PROPERTY, value1))
+      .withVertex(v -> v.withTimId("id4").withProperty(PROPERTY, value1))
+      .withVertex(v -> v.withTimId("id5").withProperty(PROPERTY, value2))
+      .build();
+
+    instance.getFacet(graph.traversal().V());
+
+    verify(propertyParser, atLeastOnce()).parse(value);
+    verify(propertyParser, atLeastOnce()).parse(value1);
+    verify(propertyParser, atLeastOnce()).parse(value2);
   }
 
   @Test

@@ -34,7 +34,7 @@ public class ListFacetDescription implements FacetDescription {
       searchResult.has(propertyName).<String>groupCount().by(propertyName).next();
 
     List<Facet.Option> options =
-      counts.entrySet().stream().map(entry -> new Facet.DefaultOption(entry.getKey(), entry.getValue()))
+      counts.entrySet().stream().map(entry -> new Facet.DefaultOption(parser.parse(entry.getKey()), entry.getValue()))
             .collect(toList());
 
     return new Facet(facetName, options, "LIST");
