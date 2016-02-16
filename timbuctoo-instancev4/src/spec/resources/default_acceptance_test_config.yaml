@@ -13,3 +13,8 @@ searchResultAvailabilityTimeout:
   duration: 8
   timeUnit: HOURS
 baseUri: http://example.com # used to generate next and previous links of a search result
+
+logging:
+  level: INFO
+  loggers:
+      "io.dropwizard": DEBUG
