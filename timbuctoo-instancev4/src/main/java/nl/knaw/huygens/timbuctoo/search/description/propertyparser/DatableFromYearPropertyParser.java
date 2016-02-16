@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.search.description.propertyparser;
 
 import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
+import org.apache.commons.lang3.StringUtils;
 
 class DatableFromYearPropertyParser implements PropertyParser {
 
@@ -11,7 +12,8 @@ class DatableFromYearPropertyParser implements PropertyParser {
       return null;
     }
 
-    Datable datable = new Datable(value);
+    String cleanedValue = StringUtils.strip(value, "\"");
+    Datable datable = new Datable(cleanedValue);
 
     return datable.isValid() ? String.valueOf(datable.getFromYear()) : null;
   }

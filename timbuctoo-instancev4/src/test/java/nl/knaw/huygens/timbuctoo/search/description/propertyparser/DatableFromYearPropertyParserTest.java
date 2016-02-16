@@ -19,7 +19,7 @@ public class DatableFromYearPropertyParserTest extends AbstractPropertyParserTes
 
   @Test
   public void parseReturnsTheFromYearAsAStringFromAValidDatable() {
-    String validDatableString = "2015-05-01";
+    String validDatableString = "\"2015-05-01\"";
 
     String result = instance.parse(validDatableString);
 
