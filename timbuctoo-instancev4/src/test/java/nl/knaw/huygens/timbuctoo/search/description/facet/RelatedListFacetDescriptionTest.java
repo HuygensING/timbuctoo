@@ -251,4 +251,23 @@ public class RelatedListFacetDescriptionTest {
         likeVertex().withTimId("id4")));
   }
 
+  @Test
+  public void filterLetsTheParserParseEachDatabaseValue() {
+    RelatedListFacetDescription instance =
+      new RelatedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION);
+    List<FacetValue> facets = Lists.newArrayList(new ListFacetValue(FACET_NAME, Lists.newArrayList(VALUE1)));
+    GraphTraversal<Vertex, Vertex> traversal = newGraph()
+      .withVertex("v1", v -> v.withTimId("id1").withProperty(PROPERTY, VALUE1))
+      .withVertex("v2", v -> v.withTimId("id2").withProperty(PROPERTY, VALUE2))
+      .withVertex("v3", v -> v.withTimId("id3").withOutgoingRelation(RELATION, "v1"))
+      .withVertex("v4", v -> v.withTimId("id4").withOutgoingRelation(RELATION, "v2"))
+      .build().traversal().V();
+
+    instance.filter(traversal, facets);
+    traversal.toList(); // needed to verify the parser
+
+    verify(parser).parse(VALUE1);
+    verify(parser).parse(VALUE2);
+  }
+
 }

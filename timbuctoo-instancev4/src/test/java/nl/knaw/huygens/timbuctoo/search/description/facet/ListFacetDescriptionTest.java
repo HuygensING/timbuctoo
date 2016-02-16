@@ -39,6 +39,7 @@ public class ListFacetDescriptionTest {
   @Before
   public void setUp() throws Exception {
     propertyParser = mock(PropertyParser.class);
+    given(propertyParser.parse(anyString())).willAnswer(invocation -> invocation.getArguments()[0]);
     instance = new ListFacetDescription(FACET_NAME, PROPERTY, propertyParser);
   }
 
@@ -64,7 +65,6 @@ public class ListFacetDescriptionTest {
 
   @Test
   public void getFacetReturnsTheFacetWithItsCounts() {
-    given(propertyParser.parse(anyString())).willAnswer(invocation -> invocation.getArguments()[0]);
     String value = "value";
     String value1 = "value1";
     String value2 = "value2";
@@ -172,6 +172,23 @@ public class ListFacetDescriptionTest {
 
     assertThat(traversal.toList(),
       containsInAnyOrder(VertexMatcher.likeVertex().withTimId("1"), VertexMatcher.likeVertex().withTimId("2")));
+  }
+
+  @Test
+  public void filterLetsTheParserParseEachDatabaseValue() {
+    String value1 = "value1";
+    List<FacetValue> facetValues = Lists.newArrayList(
+      new ListFacetValue(FACET_NAME, Lists.newArrayList(value1)));
+    GraphTraversal<Vertex, Vertex> traversal = newGraph()
+      .withVertex(v -> v.withProperty(PROPERTY, "value1").withTimId("1"))
+      .withVertex(v -> v.withProperty(PROPERTY, "value2").withTimId("2"))
+      .build().traversal().V();
+
+    instance.filter(traversal, facetValues);
+    traversal.toList(); // needed to verify the parser
+
+    verify(propertyParser).parse("value1");
+    verify(propertyParser).parse("value2");
   }
 
 }

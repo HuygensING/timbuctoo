@@ -4,10 +4,12 @@ import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
 import nl.knaw.huygens.timbuctoo.server.rest.search.ListFacetValue;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -15,7 +17,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
-import static org.apache.tinkerpop.gremlin.process.traversal.P.within;
 
 /**
  * A facet description that creates a "LIST" facet with properties from connected vertices.
@@ -56,10 +57,12 @@ public class RelatedListFacetDescription implements FacetDescription {
       if (facetValue instanceof ListFacetValue) {
         List<String> values = ((ListFacetValue) facetValue).getValues();
         if (!values.isEmpty()) {
-          graphTraversal.where(__.outE(relations).inV().where((__.has(propertyName, within(values)))));
+          graphTraversal.where(__.outE(relations).inV().where((__.has(propertyName, P.test((o1, o2) -> {
+            List<String> possibleValues = (List<String>) o2;
+            return possibleValues.contains(parser.parse("" + o1));
+          }, values)))));
         }
       }
     }
-
   }
 }

@@ -51,7 +51,10 @@ public class ListFacetDescription implements FacetDescription {
 
         List<String> values = ((ListFacetValue) value).getValues();
         if (!values.isEmpty()) {
-          graphTraversal.where(__.has(propertyName, P.within(values)));
+          graphTraversal.where(__.has(propertyName, P.test((o1, o2) -> {
+            List<String> possibileValues = (List<String>) o2;
+            return possibileValues.contains(parser.parse("" + o1));
+          }, values)));
         }
       }
     }
