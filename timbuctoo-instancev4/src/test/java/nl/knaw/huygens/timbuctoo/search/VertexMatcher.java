@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.search;
 
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
+import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.hamcrest.PropertyMatcher;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -22,6 +23,17 @@ public class VertexMatcher extends CompositeMatcher<Vertex> {
         return item.value("types");
       }
     });
+    return this;
+  }
+
+  public VertexMatcher withTimId(String timId) {
+    this.addMatcher(new PropertyEqualityMatcher<Vertex, String>("timId", timId) {
+      @Override
+      protected String getItemValue(Vertex item) {
+        return item.value("tim_id");
+      }
+    });
+
     return this;
   }
 }

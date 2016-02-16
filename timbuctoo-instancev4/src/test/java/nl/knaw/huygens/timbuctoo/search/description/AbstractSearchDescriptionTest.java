@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -89,7 +90,7 @@ public class AbstractSearchDescriptionTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  public void createFacetsLetsEachFacetDescriptionFillAListOfFacets() {
+  public void executeLetsEachFacetDescriptionFillAListOfFacets() {
     FacetDescription facetDescription1 = mock(FacetDescription.class);
     FacetDescription facetDescription2 = mock(FacetDescription.class);
     String type = "type";
@@ -104,7 +105,6 @@ public class AbstractSearchDescriptionTest {
       .withVertex(vertex -> vertex.withTimId("id").isLatest(false).withType(type))
       .build();
 
-
     SearchResult searchResult = instance.execute(graph, new SearchRequestV2_1());
 
     assertThat(searchResult.getFacets(), is(Matchers.notNullValue()));
@@ -116,6 +116,25 @@ public class AbstractSearchDescriptionTest {
     verify(facetDescription2, times(1)).getFacet(captor1.capture());
     assertThat(((GraphTraversal<Vertex, Vertex>) captor1.getValue()).toList(), contains(likeVertex().withType(type)));
   }
+
+  @Test
+  public void executeLetsEachFacetDescriptorFilterTheSearchResult() {
+    FacetDescription facetDescription1 = mock(FacetDescription.class);
+    FacetDescription facetDescription2 = mock(FacetDescription.class);
+    AbstractSearchDescription instance = searchDescription()
+      .withFacetDescription(facetDescription1)
+      .withFacetDescription(facetDescription2)
+      .build();
+    Graph graph = newGraph().build();
+    SearchRequestV2_1 searchRequest = new SearchRequestV2_1();
+
+    instance.execute(graph, searchRequest);
+
+    verify(facetDescription1).filter(any(GraphTraversal.class), argThat(is(searchRequest.getFacetValues())));
+    verify(facetDescription2).filter(any(GraphTraversal.class), argThat(is(searchRequest.getFacetValues())));
+  }
+
+  // TODO add tests to make sure the filtering happens before the creation of the facets and the results.
 
   private AbstractSearchDescriptionBuilder searchDescription() {
     return new AbstractSearchDescriptionBuilder();

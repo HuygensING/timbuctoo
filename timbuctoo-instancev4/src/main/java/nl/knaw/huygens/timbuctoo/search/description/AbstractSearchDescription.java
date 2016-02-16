@@ -50,9 +50,13 @@ public abstract class AbstractSearchDescription implements SearchDescription {
   public SearchResult execute(Graph graph, SearchRequestV2_1 searchRequest) {
     GraphTraversalSource latestVertices = GraphTraversalSource.build().with(LATEST_ONLY).create(graph);
     GraphTraversal<Vertex, Vertex> vertices = filterByType(latestVertices);
+    // filter by facets
+    getFacetDescriptions().forEach( desc -> desc.filter(vertices, searchRequest.getFacetValues()));
 
-    List<EntityRef> refs = vertices.map(vertex -> createRef(vertex.get())).toList();
+    List<EntityRef> refs = vertices.map(vertex -> createRef(vertex.get())).asAdmin().clone().toList();
     List<Facet> facets = createFacets(latestVertices);
+
+
 
     return new SearchResult(refs, this, facets);
   }

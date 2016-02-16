@@ -1,12 +1,18 @@
 package nl.knaw.huygens.timbuctoo.search.description.facet;
 
+import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
+import nl.knaw.huygens.timbuctoo.server.rest.search.ListFacetValue;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
@@ -32,5 +38,22 @@ public class ListFacetDescription implements FacetDescription {
             .collect(toList());
 
     return new Facet(facetName, options, "LIST");
+  }
+
+  @Override
+  public void filter(GraphTraversal<Vertex, Vertex> graphTraversal, List<FacetValue> facets) {
+    Optional<FacetValue> facetValue =
+      facets.stream().filter(facet -> Objects.equals(facet.getName(), facetName)).findFirst();
+
+    if (facetValue.isPresent()) {
+      FacetValue value = facetValue.get();
+      if (value instanceof ListFacetValue) {
+
+        List<String> values = ((ListFacetValue) value).getValues();
+        if (!values.isEmpty()) {
+          graphTraversal.where(__.has(propertyName, P.within(values)));
+        }
+      }
+    }
   }
 }
