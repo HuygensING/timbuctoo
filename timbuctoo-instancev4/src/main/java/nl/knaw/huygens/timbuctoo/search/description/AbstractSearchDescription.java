@@ -23,9 +23,10 @@ public abstract class AbstractSearchDescription implements SearchDescription {
   public static final SubgraphStrategy LATEST_ONLY =
     SubgraphStrategy.build().vertexCriterion(has("isLatest", true)).create();
 
-  protected List<Facet> createFacets(GraphTraversalSource vertices) {
+  protected List<Facet> createFacets(GraphTraversal<Vertex, Vertex> vertices) {
 
-    return getFacetDescriptions().stream().map(facetDescription -> facetDescription.getFacet(filterByType(vertices)))
+    return getFacetDescriptions().stream()
+                                 .map(facetDescription -> facetDescription.getFacet(vertices.asAdmin().clone()))
                                  .collect(toList());
   }
 
@@ -51,13 +52,11 @@ public abstract class AbstractSearchDescription implements SearchDescription {
     GraphTraversalSource latestVertices = GraphTraversalSource.build().with(LATEST_ONLY).create(graph);
     GraphTraversal<Vertex, Vertex> vertices = filterByType(latestVertices);
     // filter by facets
-    getFacetDescriptions().forEach( desc -> desc.filter(vertices, searchRequest.getFacetValues()));
+    getFacetDescriptions().forEach(desc -> desc.filter(vertices, searchRequest.getFacetValues()));
 
     GraphTraversal.Admin<Vertex, Vertex> refsClone = vertices.asAdmin().clone();
     List<EntityRef> refs = refsClone.map(vertex -> createRef(vertex.get())).toList();
-    List<Facet> facets = createFacets(latestVertices);
-
-
+    List<Facet> facets = createFacets(vertices);
 
     return new SearchResult(refs, this, facets);
   }
