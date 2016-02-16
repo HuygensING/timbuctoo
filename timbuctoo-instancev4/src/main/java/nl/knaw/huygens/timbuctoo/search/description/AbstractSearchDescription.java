@@ -53,7 +53,8 @@ public abstract class AbstractSearchDescription implements SearchDescription {
     // filter by facets
     getFacetDescriptions().forEach( desc -> desc.filter(vertices, searchRequest.getFacetValues()));
 
-    List<EntityRef> refs = vertices.map(vertex -> createRef(vertex.get())).asAdmin().clone().toList();
+    GraphTraversal.Admin<Vertex, Vertex> refsClone = vertices.asAdmin().clone();
+    List<EntityRef> refs = refsClone.map(vertex -> createRef(vertex.get())).toList();
     List<Facet> facets = createFacets(latestVertices);
 
 
