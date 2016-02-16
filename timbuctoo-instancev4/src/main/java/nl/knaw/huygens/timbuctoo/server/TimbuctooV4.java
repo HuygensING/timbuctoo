@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server;
 
 import com.codahale.metrics.health.HealthCheck;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.kjetland.dropwizard.activemq.ActiveMQBundle;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
@@ -9,6 +10,7 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
+import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.SearchStore;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
 import nl.knaw.huygens.timbuctoo.model.vre.neww.JsonToTinkerpopMappings;
@@ -20,6 +22,7 @@ import nl.knaw.huygens.timbuctoo.server.rest.DomainCrudCollectionV2_1EndPoint;
 import nl.knaw.huygens.timbuctoo.server.rest.DomainCrudEntityV2_1EndPoint;
 import nl.knaw.huygens.timbuctoo.server.rest.FacetedSearchV2_1Endpoint;
 import nl.knaw.huygens.timbuctoo.server.rest.UserV2_1Endpoint;
+import nl.knaw.huygens.timbuctoo.server.rest.search.FacetValueDeserializer;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -87,6 +90,16 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, "Local logins file", new FileHealthCheck(loginsPath));
     register(environment, "Users file", new FileHealthCheck(usersPath));
     register(environment, "Neo4j database connection", graphManager);
+    setupObjectMapping(environment);
+
+  }
+
+  private void setupObjectMapping(Environment environment) {
+    // object mapping
+    SimpleModule module = new SimpleModule();
+    module.addDeserializer(FacetValue.class, new FacetValueDeserializer());
+
+    environment.getObjectMapper().registerModule(module);
   }
 
   private void register(Environment environment, String name, HealthCheck healthCheck) {
