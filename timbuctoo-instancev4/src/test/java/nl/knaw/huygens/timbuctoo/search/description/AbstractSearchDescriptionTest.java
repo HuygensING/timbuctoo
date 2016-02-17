@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.search.description;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.search.SearchResult;
+import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -23,6 +24,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -33,8 +35,10 @@ public class AbstractSearchDescriptionTest {
   @Test
   public void executeCreatesASearchResult() {
     AbstractSearchDescription instance = searchDescription().build();
+    GraphWrapper graphWrapper = mock(GraphWrapper.class);
+    given(graphWrapper.getLatestState()).willReturn(newGraph().build().traversal());
 
-    SearchResult searchResult = instance.execute(newGraph().build(), new SearchRequestV2_1());
+    SearchResult searchResult = instance.execute(graphWrapper, new SearchRequestV2_1());
 
     assertThat(searchResult, is(Matchers.notNullValue()));
   }
@@ -49,8 +53,10 @@ public class AbstractSearchDescriptionTest {
       .withSortableFields(sortableField1, sortableField2)
       .withFullTextSearchFields(searchField1, searchField2)
       .build();
+    GraphWrapper graphWrapper = mock(GraphWrapper.class);
+    given(graphWrapper.getLatestState()).willReturn(newGraph().build().traversal());
 
-    SearchResult searchResult = instance.execute(newGraph().build(), new SearchRequestV2_1());
+    SearchResult searchResult = instance.execute(graphWrapper, new SearchRequestV2_1());
 
     assertThat(searchResult.getSortableFields(), containsInAnyOrder(sortableField1, sortableField2));
     assertThat(searchResult.getFullTextSearchFields(), containsInAnyOrder(searchField1, searchField2));
@@ -58,7 +64,7 @@ public class AbstractSearchDescriptionTest {
 
   // TODO extract ref creator class
   @Test
-  public void executeCreatesARefForEachLatestVertexWithTheRightType() {
+  public void executeCreatesARefForEachVertexWithTheRightType() {
     PropertyDescriptor idDescriptor = mock(PropertyDescriptor.class);
     PropertyDescriptor displayNameDescriptor = mock(PropertyDescriptor.class);
     PropertyDescriptor dataDescriptor1 = mock(PropertyDescriptor.class);
@@ -72,12 +78,13 @@ public class AbstractSearchDescriptionTest {
       .withDataDescriptor("desc2", dataDescriptor2)
       .build();
     Graph graph = newGraph()
-      .withVertex(vertex -> vertex.withTimId("id").isLatest(true).withType(type))
-      .withVertex(vertex -> vertex.withTimId("id1").isLatest(true).withType("otherType"))
-      .withVertex(vertex -> vertex.withTimId("id").isLatest(false).withType(type))
+      .withVertex(vertex -> vertex.withTimId("id").withType(type))
+      .withVertex(vertex -> vertex.withTimId("id1").withType("otherType"))
       .build();
+    GraphWrapper graphWrapper = mock(GraphWrapper.class);
+    given(graphWrapper.getLatestState()).willReturn(graph.traversal());
 
-    SearchResult searchResult = instance.execute(graph, new SearchRequestV2_1());
+    SearchResult searchResult = instance.execute(graphWrapper, new SearchRequestV2_1());
 
     assertThat(searchResult.getRefs(), is(not(empty())));
 
@@ -99,16 +106,15 @@ public class AbstractSearchDescriptionTest {
       .withFacetDescription(facetDescription2)
       .build();
     Graph graph = newGraph()
-      .withVertex(vertex -> vertex.withTimId("id").isLatest(true).withType(type))
-      .withVertex(vertex -> vertex.withTimId("id1").isLatest(true).withType("otherType"))
-      .withVertex(vertex -> vertex.withTimId("id").isLatest(false).withType(type))
+      .withVertex(vertex -> vertex.withTimId("id").withType(type))
+      .withVertex(vertex -> vertex.withTimId("id1").withType("otherType"))
       .build();
+    GraphWrapper graphWrapper = mock(GraphWrapper.class);
+    given(graphWrapper.getLatestState()).willReturn(graph.traversal());
 
-
-    SearchResult searchResult = instance.execute(graph, new SearchRequestV2_1());
+    SearchResult searchResult = instance.execute(graphWrapper, new SearchRequestV2_1());
 
     assertThat(searchResult.getFacets(), is(Matchers.notNullValue()));
-
     ArgumentCaptor<GraphTraversal> captor = ArgumentCaptor.forClass(GraphTraversal.class);
     verify(facetDescription1, times(1)).getFacet(captor.capture());
     assertThat(((GraphTraversal<Vertex, Vertex>) captor.getValue()).toList(), contains(likeVertex().withType(type)));

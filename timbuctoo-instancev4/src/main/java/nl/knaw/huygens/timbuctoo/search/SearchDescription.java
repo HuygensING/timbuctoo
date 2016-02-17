@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.search;
 
+import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
@@ -12,6 +13,6 @@ public interface SearchDescription {
 
   List<String> getFullTextSearchFields();
 
-  SearchResult execute(Graph graph, SearchRequestV2_1 searchRequest);
+  SearchResult execute(GraphWrapper graphWrapper, SearchRequestV2_1 searchRequest);
 
 }
