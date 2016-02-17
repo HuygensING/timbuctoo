@@ -18,7 +18,6 @@ import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 
 public class HuygensIng {
 
-  //FIXME: check of datables ooit als {} worden geserialiseerd
   public static Vres mappings = new Vres.Builder()
     .withVre("WomenWriters", "ww", vre -> vre
       .withCollection("wwcollectives", c -> c
