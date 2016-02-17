@@ -19,7 +19,7 @@ public class TimbuctooProperty {
   }
 
   public GraphTraversal<? extends Object, Try<JsonNode>> get() {
-    return getter;
+    return getter.asAdmin().clone();
   }
 
   public GraphTraversal<? extends Object, ? extends  Object> set(JsonNode value) throws IOException {

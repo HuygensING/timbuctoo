@@ -791,4 +791,25 @@ public class TinkerpopJsonCrudServiceReadTest {
       "^pid", jsn("http://example.com/pid")
     ).toString()).allowingExtraUnexpectedFields());
   }
+
+  @Test
+  public void bugFix_GettingTheSameResourceTwiceWouldReuseTinkerPopPipelines() throws Exception {
+    UUID id = UUID.randomUUID();
+    Graph graph = newGraph()
+      .withVertex(v -> v
+        .withTimId(id.toString())
+        .withProperty("isLatest", true)
+        .withProperty("rev", 1)
+        .withProperty("wwperson_name", "the name")
+      )
+      .build();
+    TinkerpopJsonCrudService instance = basicInstance(graph);
+
+    instance.get("wwpersons", id);
+    JsonNode entity = instance.get("wwpersons", id);
+
+    assertThat(entity.get("name").asText(""), is("the name"));
+  }
+
+
 }
