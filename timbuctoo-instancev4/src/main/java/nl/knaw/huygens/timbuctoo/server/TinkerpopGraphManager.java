@@ -16,10 +16,8 @@ import java.io.File;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 
 public class TinkerpopGraphManager extends HealthCheck implements Managed, GraphWrapper {
-  private static final SubgraphStrategy LATEST_VERTICES =
-    SubgraphStrategy.build().vertexCriterion(has("isLatest", true)).create();
-  private static final SubgraphStrategy LATEST_EDGES =
-    SubgraphStrategy.build().edgeCriterion(has("isLatest", true)).create();
+  private static final SubgraphStrategy LATEST_ELEMENTS =
+    SubgraphStrategy.build().edgeCriterion(has("isLatest", true)).vertexCriterion(has("isLatest", true)).create();
 
   final TimbuctooConfiguration configuration;
   private Neo4jGraph graph;
@@ -71,7 +69,7 @@ public class TinkerpopGraphManager extends HealthCheck implements Managed, Graph
 
   @Override
   public GraphTraversalSource getLatestState() {
-    return GraphTraversalSource.build().with(LATEST_EDGES).with(LATEST_VERTICES).create(graph);
+    return GraphTraversalSource.build().with(LATEST_ELEMENTS).create(graph);
   }
 
 }
