@@ -5,23 +5,18 @@ import nl.knaw.huygens.timbuctoo.search.EntityRef;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.description.facet.Facet;
+import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.List;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 
 public abstract class AbstractSearchDescription implements SearchDescription {
-
-  public static final SubgraphStrategy LATEST_ONLY =
-    SubgraphStrategy.build().vertexCriterion(has("isLatest", true)).create();
 
   protected List<Facet> createFacets(GraphTraversal<Vertex, Vertex> vertices) {
 
@@ -48,9 +43,9 @@ public abstract class AbstractSearchDescription implements SearchDescription {
   }
 
   @Override
-  public SearchResult execute(Graph graph, SearchRequestV2_1 searchRequest) {
-    GraphTraversalSource latestVertices = GraphTraversalSource.build().with(LATEST_ONLY).create(graph);
-    GraphTraversal<Vertex, Vertex> vertices = filterByType(latestVertices);
+  public SearchResult execute(GraphWrapper graphWrapper, SearchRequestV2_1 searchRequest) {
+    GraphTraversalSource latestStage = graphWrapper.getLatestState();
+    GraphTraversal<Vertex, Vertex> vertices = filterByType(latestStage);
     // filter by facets
     getFacetDescriptions().forEach(desc -> desc.filter(vertices, searchRequest.getFacetValues()));
 

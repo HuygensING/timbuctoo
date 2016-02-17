@@ -3,6 +3,8 @@ package nl.knaw.huygens.timbuctoo.server;
 import com.codahale.metrics.health.HealthCheck;
 import io.dropwizard.lifecycle.Managed;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
@@ -11,7 +13,13 @@ import org.neo4j.tinkerpop.api.impl.Neo4jGraphAPIImpl;
 
 import java.io.File;
 
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
+
 public class TinkerpopGraphManager extends HealthCheck implements Managed, GraphWrapper {
+  private static final SubgraphStrategy LATEST_VERTICES =
+    SubgraphStrategy.build().vertexCriterion(has("isLatest", true)).create();
+  private static final SubgraphStrategy LATEST_EDGES =
+    SubgraphStrategy.build().edgeCriterion(has("isLatest", true)).create();
 
   final TimbuctooConfiguration configuration;
   private Neo4jGraph graph;
@@ -60,4 +68,10 @@ public class TinkerpopGraphManager extends HealthCheck implements Managed, Graph
   public Graph getGraph() {
     return this.graph;
   }
+
+  @Override
+  public GraphTraversalSource getLatestState() {
+    return GraphTraversalSource.build().with(LATEST_EDGES).with(LATEST_VERTICES).create(graph);
+  }
+
 }

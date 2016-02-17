@@ -5,8 +5,8 @@ import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.SearchStore;
 import nl.knaw.huygens.timbuctoo.search.description.SearchDescriptionFactory;
+import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.SearchConfig;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchResponseV2_1Factory;
 
@@ -31,12 +31,12 @@ public class FacetedSearchV2_1Endpoint {
 
   private final SearchResponseV2_1Factory searchResponseFactory;
   private final SearchDescriptionFactory searchDescriptionFactory;
-  private final TinkerpopGraphManager graphManager;
+  private final GraphWrapper graphWrapper;
   private SearchStore searchStore;
 
-  public FacetedSearchV2_1Endpoint(SearchConfig searchConfig, TinkerpopGraphManager graphManager) {
+  public FacetedSearchV2_1Endpoint(SearchConfig searchConfig, GraphWrapper graphWrapper) {
     this.searchStore = new SearchStore(searchConfig.getSearchResultAvailabilityTimeout());
-    this.graphManager = graphManager;
+    this.graphWrapper = graphWrapper;
     this.searchResponseFactory = new SearchResponseV2_1Factory(searchConfig);
     searchDescriptionFactory = new SearchDescriptionFactory();
   }
@@ -53,7 +53,7 @@ public class FacetedSearchV2_1Endpoint {
        * this feature is omitted, until proven necessary. Execute will just ignore unknown facets, full text search
        * fields and sort fields.
        */
-      UUID uuid = searchStore.add(description.get().execute(graphManager.getGraph(), searchRequest));
+      UUID uuid = searchStore.add(description.get().execute(graphWrapper, searchRequest));
 
       URI uri = createUri(uuid);
 
