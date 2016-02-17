@@ -37,7 +37,7 @@
     </aside>
     <aside class="note">
         <span>A request for search to an unknown collection will result in a <em>
-          <span c:assertEquals="doSearchToUnknownColletion()">400 Bad Request</span></em>
+          <span c:assertEquals="doSearchToUnknownCollection()">400 Bad Request</span></em>
         </span>
     </aside>
     <p>
@@ -413,346 +413,333 @@
     </div>
   </section>
 
+  <section data-type="chapter">
+    <h2>Searching with the selected facets</h2>
+    <p>
+      You can use the information in the facets, sortableFields and fullTextSearchFields to create a query form. You can
+      use the information createResponse the refs property to show a set of results.
+    </p>
+    <p>
+      The form should then create a POST containing those facets and fulltext fields that you wish to filter on. Let's
+      use a different domain (charterportaal) for our next search.
+    </p>
+    <aside class="example highlight" h:http="#filteredPost">
+      <div h:request="">
+        POST /v2.1/search/wwpersons HTTP/1.1
+        VRE_ID: WomenWriters
+        Content-type: application/json
 
-  <!--<section data-type="chapter">-->
-    <!--<h2>Searching with the selected facets</h2>-->
-    <!--<p>-->
-      <!--You can use the information in the facets, sortableFields and fullTextSearchFields to create a query form. You can-->
-      <!--use the information createResponse the refs property to show a set of results.-->
-    <!--</p>-->
-    <!--<p>-->
-      <!--The form should then create a POST containing those facets and fulltext fields that you wish to filter on. Let's-->
-      <!--use a different domain (charterportaal) for our next search.-->
-    <!--</p>-->
-    <!--<aside class="example highlight" h:http="#filteredPost">-->
-      <!--<div h:request="">-->
-        <!--POST /v2.1/search/wwpersons HTTP/1.1-->
-        <!--VRE_ID: WomenWriters-->
-        <!--Content-type: application/json-->
+        {
+          "facetValues":[
+            {"name": "dynamic_s_gender","values":["FEMALE"]},
+            {"name": "dynamic_s_residence","values":["France"]},
+            {"name": "dynamic_s_language","values":["English"]},
+            {"name": "dynamic_s_marital_status","values":["Widowed"]}
+          ]
+        }
+      </div>
+      <div h:response="">
+        HTTP/1.1 201
+        Location:
+      </div>
+    </aside>
+    <aside class="example highlight" h:http="">
+      <div h:request="">
+        GET #filteredPost.headers.location HTTP/1.1
+        Accept: application/json
+      </div>
+      <div h:response="">
+      HTTP/1.1 200
 
-        <!--{-->
-          <!--"facetValues":[-->
-            <!--{"name": "dynamic_s_gender","values":["FEMALE"]},-->
-            <!--{"name": "dynamic_s_residence","values":["France"]},-->
-            <!--{"name": "dynamic_s_language","values":["English"]},-->
-            <!--{"name": "dynamic_s_marital_status","values":["Widowed"]}-->
-          <!--]-->
-        <!--}-->
-      <!--</div>-->
-      <!--<div h:response="">-->
-        <!--HTTP/1.1 201-->
-        <!--Location:-->
-      <!--</div>-->
-    <!--</aside>-->
-    <!--<aside class="example highlight" h:http="">-->
-      <!--<div h:request="">-->
-        <!--GET #filteredPost.headers.location HTTP/1.1-->
-        <!--Accept: application/json-->
-      <!--</div>-->
-      <!--<div h:response="">-->
-      <!--HTTP/1.1 200-->
-
-      <!--{-->
-        <!--"sortableFields": [-->
-          <!--"dynamic_k_modified",-->
-          <!--"dynamic_k_birthDate",-->
-          <!--"dynamic_sort_name",-->
-          <!--"dynamic_k_deathDate"-->
-        <!--],-->
-        <!--"numFound": 1,-->
-        <!--"start": 0,-->
-        <!--"rows": 1,-->
-        <!--"term": "*",-->
-        <!--"facets": [-->
-          <!--{-->
-            <!--"name": "dynamic_s_deathplace",-->
-            <!--"title": "",-->
-            <!--"options": [-->
-              <!--{-->
-                <!--"name": "Padova (ITA)",-->
-                <!--"count": 1-->
-              <!--}-->
-            <!--],-->
-            <!--"type": "LIST"-->
-          <!--},-->
-          <!--{-->
-            <!--"name": "dynamic_s_relatedLocations",-->
-            <!--"title": "",-->
-            <!--"options": [-->
-              <!--{-->
-                <!--"name": "Austria",-->
-                <!--"count": 1-->
-              <!--},-->
-              <!--{-->
-                <!--"name": "France",-->
-                <!--"count": 1-->
-              <!--},-->
-              <!--{-->
-                <!--"name": "Italy",-->
-                <!--"count": 1-->
-              <!--},-->
-              <!--{-->
-                <!--"name": "London (ENG)",-->
-                <!--"count": 1-->
-              <!--},-->
-              <!--{-->
-                <!--"name": "Padova (ITA)",-->
-                <!--"count": 1-->
-              <!--},-->
-              <!--{-->
-                <!--"name": "Venezia (ITA)",-->
-                <!--"count": 1-->
-              <!--}-->
-            <!--],-->
-            <!--"type": "LIST"-->
-          <!--},-->
-          <!--{-->
-            <!--"name": "dynamic_i_deathDate",-->
-            <!--"title": "",-->
-            <!--"options": [-->
-              <!--{-->
-                <!--"lowerLimit": 17910101,-->
-                <!--"upperLimit": 17911231-->
-              <!--}-->
-            <!--],-->
-            <!--"type": "RANGE"-->
-          <!--},-->
-          <!--{-->
-            <!--"name": "dynamic_s_birthplace",-->
-            <!--"title": "",-->
-            <!--"options": [-->
-              <!--{-->
-                <!--"name": "Venezia (ITA)",-->
-                <!--"count": 1-->
-              <!--}-->
-            <!--],-->
-            <!--"type": "LIST"-->
-          <!--},-->
-          <!--{-->
-            <!--"name": "dynamic_s_children",-->
-            <!--"title": "",-->
-            <!--"options": [-->
-              <!--{-->
-                <!--"name": "YES",-->
-                <!--"count": 1-->
-              <!--}-->
-            <!--],-->
-            <!--"type": "LIST"-->
-          <!--},-->
-          <!--{-->
-            <!--"name": "dynamic_s_religion",-->
-            <!--"title": "",-->
-            <!--"options": [-->
-              <!--{-->
-                <!--"name": "Catholic",-->
-                <!--"count": 1-->
-              <!--}-->
-            <!--],-->
-            <!--"type": "LIST"-->
-          <!--},-->
-          <!--{-->
-            <!--"name": "dynamic_s_residence",-->
-            <!--"title": "",-->
-            <!--"options": [-->
-              <!--{-->
-                <!--"name": "Austria",-->
-                <!--"count": 1-->
-              <!--},-->
-              <!--{-->
-                <!--"name": "France",-->
-                <!--"count": 1-->
-              <!--},-->
-              <!--{-->
-                <!--"name": "Italy",-->
-                <!--"count": 1-->
-              <!--},-->
-              <!--{-->
-                <!--"name": "London (ENG)",-->
-                <!--"count": 1-->
-              <!--},-->
-              <!--{-->
-                <!--"name": "Padova (ITA)",-->
-                <!--"count": 1-->
-              <!--},-->
-              <!--{-->
-                <!--"name": "Venezia (ITA)",-->
-                <!--"count": 1-->
-              <!--}-->
-            <!--],-->
-            <!--"type": "LIST"-->
-          <!--},-->
-          <!--{-->
-            <!--"name": "dynamic_s_language",-->
-            <!--"title": "",-->
-            <!--"options": [-->
-              <!--{-->
-                <!--"name": "English",-->
-                <!--"count": 1-->
-              <!--},-->
-              <!--{-->
-                <!--"name": "French",-->
-                <!--"count": 1-->
-              <!--},-->
-              <!--{-->
-                <!--"name": "Italian",-->
-                <!--"count": 1-->
-              <!--}-->
-            <!--],-->
-            <!--"type": "LIST"-->
-          <!--},-->
-          <!--{-->
-            <!--"name": "dynamic_s_marital_status",-->
-            <!--"title": "",-->
-            <!--"options": [-->
-              <!--{-->
-                <!--"name": "Liaison with man",-->
-                <!--"count": 1-->
-              <!--},-->
-              <!--{-->
-                <!--"name": "Married",-->
-                <!--"count": 1-->
-              <!--},-->
-              <!--{-->
-                <!--"name": "Widowed",-->
-                <!--"count": 1-->
-              <!--}-->
-            <!--],-->
-            <!--"type": "LIST"-->
-          <!--},-->
-          <!--{-->
-            <!--"name": "dynamic_s_education",-->
-            <!--"title": "",-->
-            <!--"options": [-->
-              <!--{-->
-                <!--"name": "Educated at home",-->
-                <!--"count": 1-->
-              <!--}-->
-            <!--],-->
-            <!--"type": "LIST"-->
-          <!--},-->
-          <!--{-->
-            <!--"name": "dynamic_i_modified",-->
-            <!--"title": "",-->
-            <!--"options": [-->
-              <!--{-->
-                <!--"lowerLimit": 20150610,-->
-                <!--"upperLimit": 20150610-->
-              <!--}-->
-            <!--],-->
-            <!--"type": "RANGE"-->
-          <!--},-->
-          <!--{-->
-            <!--"name": "dynamic_s_gender",-->
-            <!--"title": "",-->
-            <!--"options": [-->
-              <!--{-->
-                <!--"name": "FEMALE",-->
-                <!--"count": 1-->
-              <!--}-->
-            <!--],-->
-            <!--"type": "LIST"-->
-          <!--},-->
-          <!--{-->
-            <!--"name": "dynamic_s_social_class",-->
-            <!--"title": "",-->
-            <!--"options": [-->
-              <!--{-->
-                <!--"name": "Aristocracy by marriage",-->
-                <!--"count": 1-->
-              <!--},-->
-              <!--{-->
-                <!--"name": "Upper class",-->
-                <!--"count": 1-->
-              <!--}-->
-            <!--],-->
-            <!--"type": "LIST"-->
-          <!--},-->
-          <!--{-->
-            <!--"name": "dynamic_s_financials",-->
-            <!--"title": "",-->
-            <!--"options": [-->
-              <!--{-->
-                <!--"name": "Investing\/losing her own money",-->
-                <!--"count": 1-->
-              <!--},-->
-              <!--{-->
-                <!--"name": "Stipend\/allowance\/pension",-->
-                <!--"count": 1-->
-              <!--}-->
-            <!--],-->
-            <!--"type": "LIST"-->
-          <!--},-->
-          <!--{-->
-            <!--"name": "dynamic_i_birthDate",-->
-            <!--"title": "",-->
-            <!--"options": [-->
-              <!--{-->
-                <!--"lowerLimit": 17370101,-->
-                <!--"upperLimit": 17371231-->
-              <!--}-->
-            <!--],-->
-            <!--"type": "RANGE"-->
-          <!--},-->
-          <!--{-->
-            <!--"name": "dynamic_s_profession",-->
-            <!--"title": "",-->
-            <!--"options": [-->
-              <!--{-->
-                <!--"name": "Fiction writer\/novelist",-->
-                <!--"count": 1-->
-              <!--},-->
-              <!--{-->
-                <!--"name": "Poet",-->
-                <!--"count": 1-->
-              <!--},-->
-              <!--{-->
-                <!--"name": "Salonni\u00e8re",-->
-                <!--"count": 1-->
-              <!--},-->
-              <!--{-->
-                <!--"name": "Writer",-->
-                <!--"count": 1-->
-              <!--}-->
-            <!--],-->
-            <!--"type": "LIST"-->
-          <!--},-->
-          <!--{-->
-            <!--"name": "dynamic_s_types",-->
-            <!--"title": "",-->
-            <!--"options": [-->
-              <!--{-->
-                <!--"name": "AUTHOR",-->
-                <!--"count": 1-->
-              <!--}-->
-            <!--],-->
-            <!--"type": "LIST"-->
-          <!--}-->
-        <!--],-->
-        <!--"refs": [-->
-          <!--{-->
-            <!--"type": "wwperson",-->
-            <!--"id": "/.*/",-->
-            <!--"path": "/domain/wwpersons/.*/",-->
-            <!--"displayName": "Giustiniana Wynne",-->
-            <!--"data": {-->
-              <!--"_id": "/.*/",-->
-              <!--"birthDate": "1737",-->
-              <!--"deathDate": "1791",-->
-              <!--"gender": "FEMALE",-->
-              <!--"modified_date": "20150610",-->
-              <!--"name": "Giustiniana Wynne",-->
-              <!--"residenceLocation": "Austria;France;Italy;London (ENG);Padova (ITA);Venezia (ITA)"-->
-            <!--}-->
-          <!--}-->
-        <!--],-->
-        <!--"fullTextSearchFields": [-->
-          <!--"dynamic_t_tempspouse",-->
-          <!--"dynamic_t_notes",-->
-          <!--"dynamic_t_name"-->
-        <!--]-->
-      <!--}-->
-      <!--</div>-->
-    <!--</aside>-->
-  <!--</section>-->
+      {
+        "sortableFields": [
+          "dynamic_k_modified",
+          "dynamic_k_birthDate",
+          "dynamic_sort_name",
+          "dynamic_k_deathDate"
+        ],
+        "numFound": 1,
+        "start": 0,
+        "rows": 1,
+        "term": "*",
+        "facets": [
+          {
+            "name": "dynamic_s_gender",
+            "options": [
+              {
+                "name": "FEMALE",
+                "count": 1
+              }
+            ],
+            "type": "LIST"
+          },
+          {
+            "name": "dynamic_s_deathplace",
+            "options": [
+              {
+                "name": "Padova (ITA)",
+                "count": 1
+              }
+            ],
+            "type": "LIST"
+          },
+          {
+            "name": "dynamic_s_relatedLocations",
+            "options": [
+              {
+                "name": "Austria",
+                "count": 1
+              },
+              {
+                "name": "France",
+                "count": 1
+              },
+              {
+                "name": "Italy",
+                "count": 1
+              },
+              {
+                "name": "London (ENG)",
+                "count": 1
+              },
+              {
+                "name": "Padova (ITA)",
+                "count": 1
+              },
+              {
+                "name": "Venezia (ITA)",
+                "count": 1
+              }
+            ],
+            "type": "LIST"
+          },
+          {
+            "name": "dynamic_i_deathDate",
+            "options": [
+              {
+                "lowerLimit": 17910101,
+                "upperLimit": 17911231
+              }
+            ],
+            "type": "RANGE"
+          },
+          {
+            "name": "dynamic_s_birthplace",
+            "options": [
+              {
+                "name": "Venezia (ITA)",
+                "count": 1
+              }
+            ],
+            "type": "LIST"
+          },
+          {
+            "name": "dynamic_s_children",
+            "options": [
+              {
+                "name": "YES",
+                "count": 1
+              }
+            ],
+            "type": "LIST"
+          },
+          {
+            "name": "dynamic_s_religion",
+            "options": [
+              {
+                "name": "Catholic",
+                "count": 1
+              }
+            ],
+            "type": "LIST"
+          },
+          {
+            "name": "dynamic_s_residence",
+            "options": [
+              {
+                "name": "Austria",
+                "count": 1
+              },
+              {
+                "name": "France",
+                "count": 1
+              },
+              {
+                "name": "Italy",
+                "count": 1
+              },
+              {
+                "name": "London (ENG)",
+                "count": 1
+              },
+              {
+                "name": "Padova (ITA)",
+                "count": 1
+              },
+              {
+                "name": "Venezia (ITA)",
+                "count": 1
+              }
+            ],
+            "type": "LIST"
+          },
+          {
+            "name": "dynamic_s_language",
+            "options": [
+              {
+                "name": "English",
+                "count": 1
+              },
+              {
+                "name": "French",
+                "count": 1
+              },
+              {
+                "name": "Italian",
+                "count": 1
+              }
+            ],
+            "type": "LIST"
+          },
+          {
+            "name": "dynamic_s_marital_status",
+            "options": [
+              {
+                "name": "Liaison with man",
+                "count": 1
+              },
+              {
+                "name": "Married",
+                "count": 1
+              },
+              {
+                "name": "Widowed",
+                "count": 1
+              }
+            ],
+            "type": "LIST"
+          },
+          {
+            "name": "dynamic_s_collective",
+            "options": [],
+            "type": "LIST"
+          },
+          {
+            "name": "dynamic_s_education",
+            "options": [
+              {
+                "name": "Educated at home",
+                "count": 1
+              }
+            ],
+            "type": "LIST"
+          },
+          {
+            "name": "dynamic_i_modified",
+            "options": [
+              {
+                "lowerLimit": 20150610,
+                "upperLimit": 20150610
+              }
+            ],
+            "type": "RANGE"
+          },
+          {
+            "name": "dynamic_s_social_class",
+            "options": [
+              {
+                "name": "Aristocracy by marriage",
+                "count": 1
+              },
+              {
+                "name": "Upper class",
+                "count": 1
+              }
+            ],
+            "type": "LIST"
+          },
+          {
+            "name": "dynamic_s_financials",
+            "options": [
+              {
+                "name": "Investing\/losing her own money",
+                "count": 1
+              },
+              {
+                "name": "Stipend\/allowance\/pension",
+                "count": 1
+              }
+            ],
+            "type": "LIST"
+          },
+          {
+            "name": "dynamic_i_birthDate",
+            "options": [
+              {
+                "lowerLimit": 17370101,
+                "upperLimit": 17371231
+              }
+            ],
+            "type": "RANGE"
+          },
+          {
+            "name": "dynamic_s_profession",
+            "options": [
+              {
+                "name": "Fiction writer\/novelist",
+                "count": 1
+              },
+              {
+                "name": "Poet",
+                "count": 1
+              },
+              {
+                "name": "Salonni\u00e8re",
+                "count": 1
+              },
+              {
+                "name": "Writer",
+                "count": 1
+              }
+            ],
+            "type": "LIST"
+          },
+          {
+            "name": "dynamic_s_types",
+            "options": [
+              {
+                "name": "AUTHOR",
+                "count": 1
+              }
+            ],
+            "type": "LIST"
+          }
+        ],
+        "refs": [
+          {
+            "type": "wwperson",
+            "id": "/.*/",
+            "path": "/domain/wwpersons/.*/",
+            "displayName": "Giustiniana Wynne",
+            "data": {
+              "_id": "/.*/",
+              "birthDate": "1737",
+              "deathDate": "1791",
+              "gender": "FEMALE",
+              "modified_date": "20150610",
+              "name": "Giustiniana Wynne",
+              "residenceLocation": "Austria;France;Italy;London (ENG);Padova (ITA);Venezia (ITA)"
+            }
+          }
+        ],
+        "fullTextSearchFields": [
+          "dynamic_t_tempspouse",
+          "dynamic_t_notes",
+          "dynamic_t_name"
+        ]
+      }
+      </div>
+    </aside>
+  </section>
 </body>
 </html>

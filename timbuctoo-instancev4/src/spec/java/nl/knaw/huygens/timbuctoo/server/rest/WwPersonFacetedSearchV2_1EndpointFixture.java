@@ -64,7 +64,7 @@ public class WwPersonFacetedSearchV2_1EndpointFixture extends AbstractV2_1Endpoi
     return String.format("%s %s", response.getStatus(), response.getStatusInfo());
   }
 
-  public String doSearchToUnknownColletion() {
+  public String doSearchToUnknownCollection() {
     Response response = returnUrlToMockedOrRealServer(null)
       .path("v2.1").path("search").path("unknownentities")
       .request()
