@@ -13,7 +13,6 @@ public class SearchResponseV2_1 {
   private List<SearchResponseV2_1Ref> refs;
   private List<String> sortableFields;
   private int start;
-  private int rows;
   private int numFound;
   private String next;
   private String prev;
@@ -62,7 +61,7 @@ public class SearchResponseV2_1 {
   }
 
   public int getRows() {
-    return rows;
+    return refs.size();
   }
 
   public int getNumFound() {

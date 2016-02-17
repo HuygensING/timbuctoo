@@ -6,6 +6,8 @@ import nl.knaw.huygens.timbuctoo.search.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.description.facet.Facet;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +18,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -84,7 +88,7 @@ public class SearchResponseV2_1FactoryTest {
   }
 
   @Test
-  public void fromReturnsASearchResponseV2_1WithTheWithAllTheResultsIfTheRowsIsLargerThanTheNumberOfRefs() {
+  public void fromReturnsASearchResponseV2_1WithTheWithAllTheResultsIfTheRequestedRowsIsLargerThanTheNumberOfRefs() {
     EntityRef entityRef1 = new EntityRef("type", "id");
     EntityRef entityRef2 = new EntityRef("type", "id2");
     List<EntityRef> refs = Lists.newArrayList(entityRef1, entityRef2);
@@ -120,18 +124,6 @@ public class SearchResponseV2_1FactoryTest {
     SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, 1, start);
 
     assertThat(searchResponse, hasProperty("start", equalTo(start)));
-  }
-
-  @Test
-  public void fromSetsTheRowsWithTheNumberOfRefsInTheResult() {
-    SearchResult searchResult = new SearchResult(Lists.newArrayList(new EntityRef("type", "id")), Lists.newArrayList(),
-      Lists.newArrayList(), Lists.newArrayList());
-    int rows = 2;
-
-    SearchResponseV2_1 searchResponse = instance.createResponse(searchResult, rows, 0);
-
-    int numberOfRefs = searchResponse.getRefs().size();
-    assertThat(searchResponse, hasProperty("rows", equalTo(numberOfRefs)));
   }
 
   @Test
