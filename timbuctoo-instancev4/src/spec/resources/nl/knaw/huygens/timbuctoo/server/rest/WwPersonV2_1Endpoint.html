@@ -6,7 +6,7 @@
   <title>Timbuctoo v2.1 WWPerson API</title>
 </head>
 <body>
-  <!--<section data-type="chapter">
+  <section data-type="chapter">
     <h2>Preface</h2>
     <p>
       This specification describes the workings of the v2.1 version of the Timbuctoo REST API for wwpersons
@@ -227,68 +227,68 @@
       </div>
     </aside>
   </section>
+  <!--
+    <section data-type="chapter">
+      <h2>Delete the created person</h2>
+      <aside class="example" h:http="#response">
+        <div h:request="">
+          DELETE #postResponse.headers.location HTTP/1.1
+          Authorization: #token
+          VRE_ID: WomenWriters
+        </div>
+        <p>The response will look like this:</p>
+        <div h:response="">
+          HTTP/1.1 204
+        </div>
+      </aside>
+    </section>
 
-  <section data-type="chapter">
-    <h2>Delete the created person</h2>
-    <aside class="example" h:http="#response">
-      <div h:request="">
-        DELETE #postResponse.headers.location HTTP/1.1
-        Authorization: #token
-        VRE_ID: WomenWriters
-      </div>
-      <p>The response will look like this:</p>
-      <div h:response="">
-        HTTP/1.1 204
-      </div>
-    </aside>
-  </section>
+    <section data-type="chapter">
+      <h2>GET wwperson collection</h2>
+      <h3>A simple request</h3>
+      <aside class="example" h:http="#response">
+        <div h:request="">
+          GET /v2.1/domain/wwpersons HTTP/1.1
+          Accept: application/json
+        </div>
+        <div h:response="">
+          HTTP/1.1 200
+          Content-Type: application/json
+        </div>
+      </aside>
+      <span>A GET of the wwperson collection will return a json body that has <span
+          c:assertEquals="getNumberOfItems(#response)"><b>200</b></span> entries by default.
+      </span>
 
-  <section data-type="chapter">
-    <h2>GET wwperson collection</h2>
-    <h3>A simple request</h3>
-    <aside class="example" h:http="#response">
-      <div h:request="">
-        GET /v2.1/domain/wwpersons HTTP/1.1
-        Accept: application/json
-      </div>
-      <div h:response="">
-        HTTP/1.1 200
-        Content-Type: application/json
-      </div>
-    </aside>
-    <span>A GET of the wwperson collection will return a json body that has <span
-        c:assertEquals="getNumberOfItems(#response)"><b>200</b></span> entries by default.
-    </span>
+      <h3>Pagination</h3>
+      <aside class="example" h:http="#response">
+        <div h:request="">
+          GET /v2.1/domain/wwpersons?rows=20 HTTP/1.1
+          Accept: application/json
+        </div>
+        <div h:response="">
+          HTTP/1.1 200
+          Content-Type: application/json
+        </div>
+      </aside>
+      <span>The rows query parameter is set to <b>20</b> the number of items returned is <span
+          c:assertEquals="getNumberOfItems(#response)"><b>20</b></span>.
+      </span>
 
-    <h3>Pagination</h3>
-    <aside class="example" h:http="#response">
-      <div h:request="">
-        GET /v2.1/domain/wwpersons?rows=20 HTTP/1.1
-        Accept: application/json
-      </div>
-      <div h:response="">
-        HTTP/1.1 200
-        Content-Type: application/json
-      </div>
-    </aside>
-    <span>The rows query parameter is set to <b>20</b> the number of items returned is <span
-        c:assertEquals="getNumberOfItems(#response)"><b>20</b></span>.
-    </span>
-
-    <aside class="example" h:http="#pagResponse">
-      <div h:request="">
-        GET /v2.1/domain/wwpersons?rows=20&amp;start=20 HTTP/1.1
-        Accept: application/json
-      </div>
-      <div h:response="">
-        HTTP/1.1 200
-        Content-Type: application/json
-      </div>
-    </aside>
-    <span>When start is set to 20 it skips the first 20 persons, so
-      <span c:assertTrue="doesNotContainResult(#pagResponse, #response)"><i>it does not contain any result of the
-        previous request</i>.</span>
-    </span>
-  </section>-->
+      <aside class="example" h:http="#pagResponse">
+        <div h:request="">
+          GET /v2.1/domain/wwpersons?rows=20&amp;start=20 HTTP/1.1
+          Accept: application/json
+        </div>
+        <div h:response="">
+          HTTP/1.1 200
+          Content-Type: application/json
+        </div>
+      </aside>
+      <span>When start is set to 20 it skips the first 20 persons, so
+        <span c:assertTrue="doesNotContainResult(#pagResponse, #response)"><i>it does not contain any result of the
+          previous request</i>.</span>
+      </span>
+    </section>-->
 </body>
 </html>
