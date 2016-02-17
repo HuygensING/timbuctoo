@@ -22,7 +22,7 @@ public class StringArrayToEncodedArrayOfLimitedValues implements Converter {
   private void throwIfInvalid(JsonNode json) throws IOException {
     if (json instanceof ArrayNode) {
       json.forEach(rethrowConsumer(val -> {
-        StringToEncodedStringOfLimitedValuesConverter.throwIfInvalid(json, this.allowedValues);
+        StringToEncodedStringOfLimitedValuesConverter.throwIfInvalid(val, this.allowedValues);
       }));
     } else {
       throw new IOException("should be an array.");
