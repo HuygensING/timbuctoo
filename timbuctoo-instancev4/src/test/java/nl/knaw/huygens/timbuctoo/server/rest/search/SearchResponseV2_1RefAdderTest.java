@@ -28,7 +28,7 @@ public class SearchResponseV2_1RefAdderTest {
         .withId("id")
         .withType("type")
         .withDisplayName("displayName")
-        .withPath("v2.1/domain/types/id")));
+        .withPath("domain/types/id")));
   }
 
   @Test

@@ -16,6 +16,6 @@ class SearchResponseV2_1RefAdder {
   }
 
   private String createPath(EntityRef entityRef) {
-    return String.format("v2.1/domain/%ss/%s", entityRef.getType(), entityRef.getId());
+    return String.format("domain/%ss/%s", entityRef.getType(), entityRef.getId());
   }
 }
