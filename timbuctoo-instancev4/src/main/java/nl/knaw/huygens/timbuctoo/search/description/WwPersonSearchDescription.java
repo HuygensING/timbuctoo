@@ -69,7 +69,7 @@ public class WwPersonSearchDescription extends AbstractSearchDescription {
         .createListFacetDescription("dynamic_s_collective", String.class, "wwcollective_name", "isMemberOf"),
       facetDescriptionFactory.createKeywordDescription("dynamic_s_education", "hasEducation", "ww"),
       facetDescriptionFactory.createKeywordDescription("dynamic_s_social_class", "hasSocialClass", "ww"),
-      facetDescriptionFactory.createKeywordDescription("dynamic_s_financials", "hasFinancialStatus", "ww"),
+      facetDescriptionFactory.createKeywordDescription("dynamic_s_financials", "hasFinancialSituation", "ww"),
       facetDescriptionFactory.createDatableRangeFacetDescription("dynamic_i_birthDate", "wwperson_birthDate"),
       facetDescriptionFactory.createKeywordDescription("dynamic_s_profession", "hasProfession", "ww"),
       facetDescriptionFactory.createChangeRangeFacetDescription("dynamic_i_modified", "modified"),
