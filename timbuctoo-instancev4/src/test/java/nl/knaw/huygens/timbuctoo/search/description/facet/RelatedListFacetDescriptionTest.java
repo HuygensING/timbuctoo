@@ -177,6 +177,25 @@ public class RelatedListFacetDescriptionTest {
   }
 
   @Test
+  public void getFacetAddsAnUniqueSourceTargetVertexCombination() {
+    RelatedListFacetDescription instance =
+      new RelatedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION, RELATION_2);
+    Graph graph = newGraph().withVertex("target1", v -> v.withTimId("id1").withProperty(PROPERTY, VALUE1))
+                            .withVertex("target2", v -> v.withTimId("id2").withProperty(PROPERTY, VALUE2))
+                            .withVertex("source1", v -> v.withTimId("id3").withOutgoingRelation(RELATION, "target1")
+                                                         .withOutgoingRelation(RELATION_2, "target1"))
+                            .withVertex("source2", v -> v.withTimId("id3").withOutgoingRelation(RELATION, "target1")
+                                                         .withOutgoingRelation(RELATION_2, "target2"))
+                            .build();
+
+    Facet facet = instance.getFacet(graph.traversal().V());
+
+    assertThat(facet.getOptions(), containsInAnyOrder(
+      new Facet.DefaultOption(VALUE1, 2), // one connection with source1 and one with source2
+      new Facet.DefaultOption(VALUE2, 1))); // one connection with source2
+  }
+
+  @Test
   public void filterDoesNotAddFilterToTheGraphTraversalWhenTheFacetOfTheDescriptionIsNotPresent() {
     RelatedListFacetDescription instance =
       new RelatedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION);

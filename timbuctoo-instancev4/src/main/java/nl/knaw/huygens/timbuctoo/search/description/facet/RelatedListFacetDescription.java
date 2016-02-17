@@ -7,9 +7,7 @@ import nl.knaw.huygens.timbuctoo.server.rest.search.ListFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -37,8 +35,8 @@ public class RelatedListFacetDescription implements FacetDescription {
 
   @Override
   public Facet getFacet(GraphTraversal<Vertex, Vertex> searchResult) {
-    Map<String, Long> counts = searchResult.to(Direction.OUT, relations).has(propertyName)
-      .<String>groupCount().by(propertyName).next();
+    Map<String, Long> counts = searchResult.as("source").outE(relations).inV().has(propertyName).as("target")
+                                           .dedup("source", "target").<String>groupCount().by(propertyName).next();
 
     List<Facet.Option> options = counts.entrySet().stream().map(
       count -> new Facet.DefaultOption(parser.parse(count.getKey()), count.getValue())).collect(toList());
