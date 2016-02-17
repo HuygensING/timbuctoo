@@ -16,6 +16,7 @@ public class SearchResponseV2_1 {
   private int numFound;
   private String next;
   private String prev;
+  private String term = "*";
 
   public SearchResponseV2_1() {
     facets = Lists.newArrayList();
@@ -96,4 +97,7 @@ public class SearchResponseV2_1 {
     this.prev = prev;
   }
 
+  public String getTerm() {
+    return term;
+  }
 }

@@ -17,4 +17,11 @@ public class SearchResponseV2_1Test {
     assertThat(instance.getRows(), is(2));
   }
 
+  @Test
+  public void getTermReturnsAnAsteriskByDefault() {
+    SearchResponseV2_1 instance = new SearchResponseV2_1();
+
+    assertThat(instance.getTerm(), is("*"));
+  }
+
 }
