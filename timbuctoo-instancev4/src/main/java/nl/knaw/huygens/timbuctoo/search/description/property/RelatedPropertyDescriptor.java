@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Collections;
 import java.util.List;
 
 public class RelatedPropertyDescriptor implements PropertyDescriptor {
@@ -37,6 +38,7 @@ public class RelatedPropertyDescriptor implements PropertyDescriptor {
       }
     });
 
+    Collections.sort(values); // The values are sorted in the solrized version of Timbuctoo too.
     return values.isEmpty() ? null : String.join(separator, values);
   }
 }

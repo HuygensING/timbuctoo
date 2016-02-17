@@ -254,7 +254,7 @@ public class WwDocumentSearchDescriptionTest {
   }
 
   @Test
-  public void createRefAddsSemiColonSeparatedTheNamesOfThePublishLocations() {
+  public void createRefAddsSemiColonSeparatedTheNamesOfThePublishLocationsInAlphabeticOrder() {
     Vertex location1 = locationVertexWithName("testCountry");
     Vertex location2 = locationVertexWithName("otherCountry");
     Vertex vertex = MockVertexBuilder.vertexWithId("id")
@@ -264,7 +264,7 @@ public class WwDocumentSearchDescriptionTest {
 
     EntityRef ref = instance.createRef(vertex);
 
-    assertThat(ref.getData(), hasEntry("publishLocation", "testCountry;otherCountry"));
+    assertThat(ref.getData(), hasEntry("publishLocation", "otherCountry;testCountry"));
   }
 
 

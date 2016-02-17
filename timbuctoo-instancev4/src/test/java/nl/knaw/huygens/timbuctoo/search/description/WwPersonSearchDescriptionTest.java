@@ -232,7 +232,7 @@ public class WwPersonSearchDescriptionTest {
   }
 
   @Test
-  public void createRefAddsSemiColonSeparatedTheNamesOfTheResidenceLocations() {
+  public void createRefAddsSemiColonSeparatedTheNamesOfTheResidenceLocationsInAlphabeticOrder() {
     Vertex location1 = locationVertexWithName("testCountry");
     Vertex location2 = locationVertexWithName("otherCountry");
     Vertex wwPersonVertex = MockVertexBuilder.vertexWithId("id")
@@ -242,7 +242,7 @@ public class WwPersonSearchDescriptionTest {
 
     EntityRef ref = instance.createRef(wwPersonVertex);
 
-    assertThat(ref.getData(), hasEntry("residenceLocation", "testCountry;otherCountry"));
+    assertThat(ref.getData(), hasEntry("residenceLocation", "otherCountry;testCountry"));
   }
 
   private Vertex locationVertexWithName(String name) {

@@ -66,4 +66,21 @@ public class RelatedPropertyDescriptorTest {
     verify(parser, times(2)).parse(anyString());
   }
 
+  @Test
+  public void getOrdersTheValuesAlphabetically() {
+    PropertyParser parser = mock(PropertyParser.class);
+    given((parser.parse(anyString()))).willAnswer(invocationOnMock -> invocationOnMock.getArguments()[0]);
+    String propertyName = "propertyName";
+    String relationName = "relationName";
+    RelatedPropertyDescriptor instance = new RelatedPropertyDescriptor(relationName, propertyName, parser);
+    Vertex vertex = vertex()
+      .withOutgoingRelation(relationName, vertex().withProperty(propertyName, "def").build())
+      .withOutgoingRelation(relationName, vertex().withProperty(propertyName, "abc").build())
+      .withOutgoingRelation(relationName, vertex().withProperty(propertyName, "ghi").build())
+      .build();
+
+    String actual = instance.get(vertex);
+
+    assertThat(actual, is("abc;def;ghi"));
+  }
 }
