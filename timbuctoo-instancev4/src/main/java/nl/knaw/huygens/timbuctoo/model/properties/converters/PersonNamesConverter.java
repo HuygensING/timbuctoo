@@ -2,17 +2,22 @@ package nl.knaw.huygens.timbuctoo.model.properties.converters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 
 import java.io.IOException;
+
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
 public class PersonNamesConverter implements Converter {
   @Override
   public Object jsonToTinkerpop(JsonNode json) throws IOException {
     //convert to personNames as verification
-    new ObjectMapper().treeToValue(json, PersonNames.class);
+    //make the same as the database value
+    ObjectNode dbJson = jsnO("list", json);
+    new ObjectMapper().treeToValue(dbJson, PersonNames.class);
     //if this doesn't throw then it was a good personName apparently
-    return json.toString();
+    return dbJson.toString();
   }
 
   @Override
@@ -22,7 +27,7 @@ public class PersonNamesConverter implements Converter {
       //convert to personNames as verification
       new ObjectMapper().treeToValue(json, PersonNames.class);
       //if this doesn't throw then it was a good personName apparently
-      return json;
+      return json.get("list");
     } else {
       throw new IOException("must be a json value serialised as String");
     }
