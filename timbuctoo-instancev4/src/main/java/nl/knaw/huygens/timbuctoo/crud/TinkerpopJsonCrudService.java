@@ -160,7 +160,7 @@ public class TinkerpopJsonCrudService {
     GraphTraversal[] propertyGetters = mapping
       .entrySet().stream()
       //append error handling and result handling to the traversal
-      .map(prop -> prop.getValue().get().sideEffect(x ->
+      .map(prop -> prop.getValue().get().get().sideEffect(x ->
         x.get()
           .onSuccess( node -> result.set(prop.getKey(), node))
           .onFailure( e -> {
@@ -227,7 +227,7 @@ public class TinkerpopJsonCrudService {
     return traversalSource.withSack("").V(entity.id())
       .union(
         collection.getDerivedRelations().entrySet().stream().map(entry -> {
-          return __.sack((left,right) -> entry.getKey()).union(entry.getValue()).as("targetVertex");
+          return __.sack((left,right) -> entry.getKey()).union(entry.getValue().get()).as("targetVertex");
         }).toArray(GraphTraversal[]::new)
       )
       .map(x-> {
@@ -343,7 +343,7 @@ public class TinkerpopJsonCrudService {
     TimbuctooProperty displayNameProperty = targetCollection.getDisplayName();
     if (displayNameProperty != null) {
       GraphTraversal<Vertex, Try<JsonNode>> displayNameGetter = traversalSource.V(vertex.id()).union(
-        targetCollection.getDisplayName().get()
+        targetCollection.getDisplayName().get().get()
       );
       if (displayNameGetter.hasNext()) {
         Try<JsonNode> traversalResult = displayNameGetter.next();

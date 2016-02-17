@@ -13,7 +13,7 @@ public class PropertyTypes {
 
   public static TimbuctooProperty localProperty(String propName, Converter converter) {
     return new TimbuctooProperty(
-      __.<Object, String>values(propName).map(prop -> Try.of(() -> converter.tinkerpopToJson(prop.get()))),
+      () -> __.<Object, String>values(propName).map(prop -> Try.of(() -> converter.tinkerpopToJson(prop.get()))),
       (value) -> __.property(propName, converter.jsonToTinkerpop(value))
     );
   }

@@ -16,7 +16,7 @@ public class CollectionBuilder {
   private TimbuctooProperty displayName;
   private Map<String, TimbuctooProperty> properties = Maps.newHashMap();
   private Map<String, TimbuctooProperty> searchResultData;
-  private final Map<String, GraphTraversal<Object, Vertex>> derivedRelations = Maps.newHashMap();
+  private final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations = Maps.newHashMap();
 
   private CollectionBuilder(String collectionName, String defaultPrefix) {
     this.collectionName = collectionName;
@@ -53,7 +53,7 @@ public class CollectionBuilder {
   }
 
   public CollectionBuilder withDerivedRelation(String name, Supplier<GraphTraversal<Object, Vertex>> func) {
-    this.derivedRelations.put(name, func.get());
+    this.derivedRelations.put(name, func);
     return this;
   }
 

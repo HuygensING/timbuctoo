@@ -6,6 +6,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import javax.validation.constraints.NotNull;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class Collection {
   private final String entityTypeName;
@@ -15,12 +16,12 @@ public class Collection {
   private final TimbuctooProperty displayName;
   private final Map<String, TimbuctooProperty> properties;
   private final Map<String, TimbuctooProperty> searchResultData;
-  private final Map<String, GraphTraversal<Object, Vertex>> derivedRelations;
+  private final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations;
 
   Collection(@NotNull String entityTypeName, @NotNull String abstractType,
              @NotNull TimbuctooProperty displayName, @NotNull Map<String, TimbuctooProperty> properties,
              @NotNull Map<String, TimbuctooProperty> searchResultData, @NotNull String collectionName,
-             @NotNull Vre vre, @NotNull Map<String, GraphTraversal<Object, Vertex>> derivedRelations
+             @NotNull Vre vre, @NotNull Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations
   ) {
     this.entityTypeName = entityTypeName;
     this.abstractType = abstractType;
@@ -60,7 +61,7 @@ public class Collection {
     return vre;
   }
 
-  public Map<String, GraphTraversal<Object, Vertex>> getDerivedRelations() {
+  public Map<String, Supplier<GraphTraversal<Object, Vertex>>> getDerivedRelations() {
     return derivedRelations;
   }
   //derivedRelations
