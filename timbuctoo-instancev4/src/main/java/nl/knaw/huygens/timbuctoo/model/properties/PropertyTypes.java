@@ -17,4 +17,25 @@ public class PropertyTypes {
       (value) -> __.property(propName, converter.jsonToTinkerpop(value))
     );
   }
+  //
+  //public static TimbuctooProperty wwpersonDisplayNameProperty() {
+  //  //use names parser and take defaultName().getShortName()
+  //  //if name is empty ot not found return [TEMP] + tempName
+  //}
+  //
+  //public static TimbuctooProperty wwdocumentDisplayNameProperty() {
+  //
+  //  GraphTraversal<?, Try<JsonNode>> wwpersonGetter = wwpersonDisplayNameProperty().get();
+  //
+  //  __.as("doc")
+  //    .local(__.in("is_creator_of").union(wwpersonGetter).fold().map(x->""))
+  //    .select("doc")
+  //    .values("wwdocuments_title").map(x->"").select("doc")
+  //    .values("wwdocuments_date").map(x->"").select("doc"); //make datable and grab year
+  //
+  //  return new TimbuctooProperty(
+  //    __.<Object, String>values(propName).map(prop -> Try.of(() -> converter.tinkerpopToJson(prop.get()))),
+  //    (value) -> __.property(propName, converter.jsonToTinkerpop(value))
+  //  );
+  //}
 }
