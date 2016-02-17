@@ -79,7 +79,7 @@ public class TinkerpopJsonCrudService {
 
     Collection collection = mappings.get(collectionName);
     if (collection == null) {
-      throw new InvalidCollectionException();
+      throw new InvalidCollectionException(collectionName);
     }
     Map<String, TimbuctooProperty> mapping = collection.getProperties();
 
@@ -141,7 +141,7 @@ public class TinkerpopJsonCrudService {
 
     final Collection collection = mappings.get(collectionName);
     if (collection == null) {
-      throw new InvalidCollectionException();
+      throw new InvalidCollectionException(collectionName);
     }
     final Map<String, TimbuctooProperty> mapping = collection.getProperties();
     final String entityTypeName = collection.getEntityTypeName();

@@ -17,6 +17,9 @@ import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.util.UUID;
 
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
+
 @Path("/v2.1/domain/{collection}/{id}")
 @Produces(MediaType.APPLICATION_JSON)
 public class DomainCrudEntityV2_1EndPoint {
@@ -54,9 +57,9 @@ public class DomainCrudEntityV2_1EndPoint {
       JsonNode result = crudService.get(collectionName, id.get());
       return Response.ok(result).build();
     } catch (InvalidCollectionException e) {
-      return Response.status(Response.Status.NOT_FOUND).build();
+      return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
     } catch (NotFoundException e) {
-      return Response.status(Response.Status.NOT_FOUND).build();
+      return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn("not found"))).build();
     }
   }
 }
