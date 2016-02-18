@@ -62,6 +62,13 @@ public class VertexBuilder {
     for (Map.Entry<String, List<RelationData>> entry : outGoingRelationMap.entrySet()) {
       for (RelationData data : entry.getValue()) {
         Vertex other = others.get(data.getOtherKey());
+        if (other == null) {
+          throw new RuntimeException(
+            data.getOtherKey() +
+              " is not available as a named vertex. (Available vertices are: " +
+              String.join(", ", others.keySet())
+          );
+        }
         Edge edge = self.addEdge(entry.getKey(), other);
         data.setProperties(edge, vres);
       }
@@ -69,6 +76,13 @@ public class VertexBuilder {
     for (Map.Entry<String, List<RelationData>> entry : incomingRelationMap.entrySet()) {
       for (RelationData data : entry.getValue()) {
         Vertex other = others.get(data.getOtherKey());
+        if (other == null) {
+          throw new RuntimeException(
+            data.getOtherKey() +
+              " is not available as a named vertex. (Available vertices are: " +
+              String.join(", ", others.keySet())
+          );
+        }
         Edge edge = other.addEdge(entry.getKey(), self);
         data.setProperties(edge, vres);
       }
