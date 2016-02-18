@@ -23,6 +23,9 @@ import java.net.URISyntaxException;
 import java.util.Optional;
 import java.util.UUID;
 
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
+
 @Path("/v2.1/domain/{collection}")
 @Produces(MediaType.APPLICATION_JSON)
 public class DomainCrudCollectionV2_1EndPoint {
@@ -56,9 +59,9 @@ public class DomainCrudCollectionV2_1EndPoint {
         UUID id = crudService.create(collectionName, body, user.get().getId());
         return Response.created(DomainCrudEntityV2_1EndPoint.makeUrl(collectionName, id)).build();
       } catch (InvalidCollectionException e) {
-        return Response.status(Response.Status.NOT_FOUND).build();
+        return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
       } catch (IOException e) {
-        return Response.status(400).build();
+        return Response.status(Response.Status.BAD_REQUEST).entity(jsnO("message", jsn(e.getMessage()))).build();
       }
     }
   }

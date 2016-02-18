@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.util;
 
+import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -10,6 +11,12 @@ public final class LambdaExceptionUtil {
   public interface Consumer_WithExceptions<T, E extends Exception> {
     void accept(T val) throws E;
   }
+
+  @FunctionalInterface
+  public interface BiConsumer_WithExceptions<T, S, E extends Exception> {
+    void accept(T val, S val2) throws E;
+  }
+
 
   @FunctionalInterface
   public interface Function_WithExceptions<T, R, E extends Exception> {
@@ -26,6 +33,18 @@ public final class LambdaExceptionUtil {
     return t -> {
       try {
         consumer.accept(t);
+      } catch (Exception exception) {
+        throwActualException(exception);
+      }
+    };
+  }
+
+
+  public static <T, S, E extends Exception> BiConsumer<T, S> rethrowBiConsumer(
+    BiConsumer_WithExceptions<T, S, E> consumer) throws E {
+    return (val1, val2) -> {
+      try {
+        consumer.accept(val1, val2);
       } catch (Exception exception) {
         throwActualException(exception);
       }

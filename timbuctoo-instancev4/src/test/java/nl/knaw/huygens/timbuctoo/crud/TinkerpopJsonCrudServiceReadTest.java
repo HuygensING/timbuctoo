@@ -1,39 +1,37 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.model.JsonToTinkerpopPropertyMap;
+import nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes;
+import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.net.URI;
 import java.time.Clock;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
-import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
-import static org.hamcrest.CoreMatchers.not;
+import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
-import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONObjectAs;
 
 public class TinkerpopJsonCrudServiceReadTest {
   public TinkerpopJsonCrudService basicInstance(Graph graph) {
@@ -64,13 +62,31 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     Clock clock = Clock.systemDefaultZone();
 
-    Map<String, List<JsonToTinkerpopPropertyMap>> onlyWwPersons = ImmutableMap.of(
-      "wwpersons", Lists.newArrayList(
-        new JsonToTinkerpopPropertyMap("name", "wwperson_name")
+    Vres testVres = new Vres.Builder()
+      .withVre("WomenWriters", "ww", vre -> vre
+        .withCollection("wwdocuments")
+        .withCollection("wwrelations")
+        .withCollection("wwlanguages", c -> c
+          .withDisplayName(localProperty("wwlanguage_name"))
+        )
+        .withCollection("wwderivedrelations", c -> c
+          .withDerivedRelation("hasPersonLanguage", () -> {
+            P<String> isWw = new P<>((types, extra) -> types.contains("\"wwrelation\""), "");
+            return __
+              .outE("isCreatorOf").has("isLatest", true).not(has("isDeleted", true)).has("types", isWw).inV()
+              .outE("hasWorkLanguage").has("isLatest", true).not(has("isDeleted", true)).has("types", isWw).inV();
+          })
+        )
+        .withCollection("wwdisplaynames", c -> c
+          .withDisplayName(PropertyTypes.localProperty("wwperson_displayName"))
+        )
+        .withCollection("wwpersons", c -> c
+          .withProperty("name", localProperty("wwperson_name"))
+        )
       )
-    );
+      .build();
 
-    return new TinkerpopJsonCrudService(graphWrapper, onlyWwPersons, handleAdder, userStore, gen, clock);
+    return new TinkerpopJsonCrudService(graphWrapper, testVres, handleAdder, userStore, gen, clock);
   }
 
   @Rule
@@ -135,6 +151,25 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     assertThat(normalFieldCount, is(1L));
     assertThat(entity.get("name").asText(""), is("the name"));
+  }
+
+  @Test
+  public void omitsPropertiesThatAreNotStoredCorrectlyInTheDatabase() throws Exception {
+    UUID id = UUID.randomUUID();
+    Graph graph = newGraph()
+      .withVertex(v -> v
+        .withTimId(id.toString())
+        .withProperty("isLatest", true)
+        .withProperty("rev", 1)
+        .withProperty("wwperson_name", 2) //should be a string, not an int
+      )
+      .build();
+    TinkerpopJsonCrudService instance = basicInstance(graph);
+
+
+    JsonNode entity = instance.get("wwpersons", id);
+
+    assertThat(entity.get("name"), is(nullValue()));
   }
 
   @Test
@@ -270,13 +305,15 @@ public class TinkerpopJsonCrudServiceReadTest {
     Graph graph = newGraph()
       .withVertex("source", v -> v
         .withOutgoingRelation("isPseudonymOf", "pseudonym")
-        .withType("wwperson")
+        .withVre("ww")
+        .withVre("")
         .withType("person")
         .isLatest(true)
         .withTimId(id.toString())
       )
       .withVertex("pseudonym", v -> v
-        .withType("wwperson")
+        .withVre("ww")
+        .withVre("")
         .withType("person")
         .withTimId(pseudonymId.toString())
       )
@@ -305,13 +342,15 @@ public class TinkerpopJsonCrudServiceReadTest {
     Graph graph = newGraph()
       .withVertex("source", v -> v
         .withIncomingRelation("isCreatedBy", "work")
-        .withType("wwperson")
+        .withVre("ww")
+        .withVre("")
         .withType("person")
         .isLatest(true)
         .withTimId(id.toString())
       )
       .withVertex("work", v -> v
-        .withType("wwdocument")
+        .withVre("ww")
+        .withVre("")
         .withType("document")
         .withTimId(workId.toString())
       )
@@ -343,13 +382,15 @@ public class TinkerpopJsonCrudServiceReadTest {
     Graph graph = newGraph()
       .withVertex("source", v -> v
         .withOutgoingRelation("isPseudonymOf", "work")
-        .withType("wwperson")
+        .withVre("ww")
+        .withVre("")
         .withType("person")
         .isLatest(true)
         .withTimId(id.toString())
       )
       .withVertex("work", v -> v
-        .withType("wwperson")
+        .withVre("ww")
+        .withVre("")
         .withType("person")
         .withTimId("f005ba11-0000-0000-0000-000000000000")
       )
@@ -390,13 +431,15 @@ public class TinkerpopJsonCrudServiceReadTest {
           .withRev(2)
           .withIsLatest(true)
         )
-        .withType("wwperson")
+        .withVre("ww")
+        .withVre("")
         .withType("person")
         .isLatest(true)
         .withTimId(id.toString())
       )
       .withVertex("work", v -> v
-        .withType("wwperson")
+        .withVre("ww")
+        .withVre("")
         .withType("person")
         .withTimId("f005ba11-0000-0000-0000-000000000000")
       )
@@ -425,18 +468,20 @@ public class TinkerpopJsonCrudServiceReadTest {
         .withOutgoingRelation("isPseudonymOf", "work", relation -> relation
           .withRev(1)
           .addType("ckcc")
+          .removeType("ww")
         )
         .withOutgoingRelation("isPseudonymOf", "work", relation -> relation
           .withRev(2)
-          .addType("ww")
         )
-        .withType("wwperson")
+        .withVre("ww")
+        .withVre("")
         .withType("person")
         .isLatest(true)
         .withTimId(id.toString())
       )
       .withVertex("work", v -> v
-        .withType("wwperson")
+        .withVre("ww")
+        .withVre("")
         .withType("person")
         .withTimId("f005ba11-0000-0000-0000-000000000000")
       )
@@ -474,13 +519,15 @@ public class TinkerpopJsonCrudServiceReadTest {
           .withRev(2)
           .withDeleted(true)
         )
-        .withType("wwperson")
+        .withVre("ww")
+        .withVre("")
         .withType("person")
         .isLatest(true)
         .withTimId(id.toString())
       )
       .withVertex("work", v -> v
-        .withType("wwperson")
+        .withVre("ww")
+        .withVre("")
         .withType("person")
         .withTimId("f005ba11-0000-0000-0000-000000000000")
       )
@@ -514,13 +561,15 @@ public class TinkerpopJsonCrudServiceReadTest {
           .withAccepted("wwrelation", true)
           .withTim_id(UUID.fromString("deadbeaf-0000-0000-0000-000000000000"))
         )
-        .withType("wwperson")
+        .withVre("ww")
+        .withVre("")
         .withType("person")
         .isLatest(true)
         .withTimId(id.toString())
       )
       .withVertex("work", v -> v
-        .withType("wwperson")
+        .withVre("ww")
+        .withVre("")
         .withType("person")
         .withTimId("f005ba11-0000-0000-0000-000000000000")
       )
@@ -549,14 +598,15 @@ public class TinkerpopJsonCrudServiceReadTest {
     Graph graph = newGraph()
       .withVertex("source", v -> v
         .withOutgoingRelation("isPseudonymOf", "pseudonym")
-        .withType("wwperson")
+        .withVre("ww")
+        .withType("displayname")
         .isLatest(true)
         .withTimId(id.toString())
       )
       .withVertex("pseudonym", v -> v
-        .withType("wwperson")
-        .withProperty("wwperson_names", "{\"list\":[{\"components\":[{\"type\":\"FORENAME\",\"value\":\"Pieter\"}," +
-          "{\"type\":\"NAME_LINK\",\"value\":\"van\"},{\"type\":\"SURNAME\",\"value\":\"Reigersberch\"}]}]}")
+        .withVre("ww")
+        .withType("displayname")
+        .withProperty("wwperson_displayName", "Pieter van Reigersberch")
         .withTimId("f005ba11-0000-0000-0000-000000000000")
       )
       .build();
@@ -581,25 +631,26 @@ public class TinkerpopJsonCrudServiceReadTest {
     Graph graph = newGraph()
       .withVertex("source", v -> v
         .withOutgoingRelation("isCreatorOf", "someWork", r -> r
-          .addType("ww")
           .withIsLatest(true)
           .withDeleted(false)
         )
-        .withType("wwperson")
+        .withVre("ww")
+        .withType("derivedrelation")
         .isLatest(true)
         .withTimId(id.toString())
       )
       .withVertex("someWork", v -> v
         .withOutgoingRelation("hasWorkLanguage", "dutch", r -> r
-          .addType("ww")
           .withIsLatest(true)
           .withDeleted(false)
         )
         .isLatest(true)
-        .withType("wwdocument")
+        .withVre("ww")
+        .withType("document")
       )
       .withVertex("dutch", v -> v
-        .withType("wwlanguage")
+        .withVre("ww")
+        .withType("language")
         .withProperty("wwlanguage_name", "Dutch")
         .isLatest(true)
         .withTimId(UUID.randomUUID().toString())
@@ -607,7 +658,7 @@ public class TinkerpopJsonCrudServiceReadTest {
       .build();
 
     TinkerpopJsonCrudService instance = basicInstance(graph);
-    String resultJson = instance.get("wwpersons", id).toString();
+    String resultJson = instance.get("wwderivedrelations", id).toString();
 
     assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
       "@relations", JsonBuilder.jsnO(
@@ -660,6 +711,10 @@ public class TinkerpopJsonCrudServiceReadTest {
         .withProperty("rev", 1)
       )
       .build();
+
+    Vertex vertex = graph.traversal().V().has("tim_id", id.toString()).next();
+    vertex.property("types").remove();
+    graph.tx().commit();
 
     TinkerpopJsonCrudService instance = basicInstance(graph);
 
@@ -736,4 +791,25 @@ public class TinkerpopJsonCrudServiceReadTest {
       "^pid", jsn("http://example.com/pid")
     ).toString()).allowingExtraUnexpectedFields());
   }
+
+  @Test
+  public void bugFix_GettingTheSameResourceTwiceWouldReuseTinkerPopPipelines() throws Exception {
+    UUID id = UUID.randomUUID();
+    Graph graph = newGraph()
+      .withVertex(v -> v
+        .withTimId(id.toString())
+        .withProperty("isLatest", true)
+        .withProperty("rev", 1)
+        .withProperty("wwperson_name", "the name")
+      )
+      .build();
+    TinkerpopJsonCrudService instance = basicInstance(graph);
+
+    instance.get("wwpersons", id);
+    JsonNode entity = instance.get("wwpersons", id);
+
+    assertThat(entity.get("name").asText(""), is("the name"));
+  }
+
+
 }

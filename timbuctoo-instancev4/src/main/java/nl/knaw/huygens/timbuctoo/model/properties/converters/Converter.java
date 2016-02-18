@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.model.converters;
+package nl.knaw.huygens.timbuctoo.model.properties.converters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

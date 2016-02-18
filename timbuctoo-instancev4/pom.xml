@@ -29,8 +29,7 @@
     <exec-maven-plugin.version>1.4.0</exec-maven-plugin.version>
     <maven-checkstyle-plugin.version>2.17</maven-checkstyle-plugin.version>
     <maven-failsafe-plugin.version>2.18.1</maven-failsafe-plugin.version>
-
-
+    <javaslang.version>2.0.0-RC4</javaslang.version>
   </properties>
 
   <dependencies>
@@ -97,7 +96,12 @@
       <version>${activemq.version}</version>
       <scope>runtime</scope>
     </dependency>
-    <!-- ## End of main dependencies ## -->
+    <!--Try monad-->
+    <dependency>
+      <groupId>com.javaslang</groupId>
+      <artifactId>javaslang</artifactId>
+      <version>${javaslang.version}</version>
+    </dependency>    <!-- ## End of main dependencies ## -->
 
     <!-- ## Test dependencies ## -->
     <!-- Concordion acceptance test framework -->
