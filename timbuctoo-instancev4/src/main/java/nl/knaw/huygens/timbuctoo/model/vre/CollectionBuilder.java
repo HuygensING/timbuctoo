@@ -17,6 +17,7 @@ public class CollectionBuilder {
   private Map<String, TimbuctooProperty> properties = Maps.newHashMap();
   private Map<String, TimbuctooProperty> searchResultData;
   private final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations = Maps.newHashMap();
+  private boolean isRelationCollection = false;
 
   private CollectionBuilder(String collectionName, String defaultPrefix) {
     this.collectionName = collectionName;
@@ -57,6 +58,11 @@ public class CollectionBuilder {
     return this;
   }
 
+  public CollectionBuilder isRelationCollection() {
+    this.isRelationCollection = true;
+    return this;
+  }
+
   public void build(Vre vre) {
     if (entityTypeName == null) {
       if (collectionName.endsWith("s")) {
@@ -83,7 +89,8 @@ public class CollectionBuilder {
       searchResultData,
       collectionName,
       vre,
-      derivedRelations);
+      derivedRelations,
+      isRelationCollection);
     vre.addCollection(collection);
   }
 }

@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server;
 
+import nl.knaw.huygens.timbuctoo.model.vre.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -126,7 +127,7 @@ public class HuygensIng {
       .withCollection("wwlocations", c-> c
         .withDisplayName(localProperty("wwlocation_names", defaultLocationNameConverter))
       )
-      .withCollection("wwrelations")
+      .withCollection("wwrelations", CollectionBuilder::isRelationCollection)
     )
     .build();
 

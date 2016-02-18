@@ -11,6 +11,7 @@ public class VreBuilder {
   private final String vreName;
   private final String defaultPrefix;
   private List<CollectionBuilder> collections = Lists.newArrayList();
+  private String relationCollection;
 
   private VreBuilder(String name, String defaultPrefix) {
     this.vreName = name;

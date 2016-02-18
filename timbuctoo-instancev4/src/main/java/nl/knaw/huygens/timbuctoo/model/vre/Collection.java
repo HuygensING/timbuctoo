@@ -17,12 +17,13 @@ public class Collection {
   private final Map<String, TimbuctooProperty> properties;
   private final Map<String, TimbuctooProperty> searchResultData;
   private final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations;
+  private final boolean isRelationCollection;
 
   Collection(@NotNull String entityTypeName, @NotNull String abstractType,
              @NotNull TimbuctooProperty displayName, @NotNull Map<String, TimbuctooProperty> properties,
              @NotNull Map<String, TimbuctooProperty> searchResultData, @NotNull String collectionName,
-             @NotNull Vre vre, @NotNull Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations
-  ) {
+             @NotNull Vre vre, @NotNull Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations,
+             boolean isRelationCollection) {
     this.entityTypeName = entityTypeName;
     this.abstractType = abstractType;
     this.displayName = displayName;
@@ -31,6 +32,7 @@ public class Collection {
     this.collectionName = collectionName;
     this.vre = vre;
     this.derivedRelations = derivedRelations;
+    this.isRelationCollection = isRelationCollection;
   }
 
   public String getEntityTypeName() {
@@ -63,6 +65,10 @@ public class Collection {
 
   public Map<String, Supplier<GraphTraversal<Object, Vertex>>> getDerivedRelations() {
     return derivedRelations;
+  }
+
+  public boolean isRelationCollection() {
+    return isRelationCollection;
   }
   //derivedRelations
 }
