@@ -308,13 +308,10 @@ public class TinkerpopJsonCrudServiceCreateTest {
       handleAdder
     );
 
-    instance.create("wwpersons", JsonBuilder.jsnO(), "");
-
-    Vertex orig = graph.traversal().V().has("isLatest", false).next();
-    String uuid = orig.value("tim_id");
+    UUID uuid = instance.create("wwpersons", JsonBuilder.jsnO(), "");
 
     verify(handleAdder, times(1)).add(
-      new HandleAdderParameters(UUID.fromString(uuid), 1, URI.create("http://example.com?id=" + uuid + "&rev=1"))
+      new HandleAdderParameters(uuid, 1, URI.create("http://example.com?id=" + uuid + "&rev=1"))
     );
   }
 
