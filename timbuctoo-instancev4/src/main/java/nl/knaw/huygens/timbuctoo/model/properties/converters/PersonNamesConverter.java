@@ -20,6 +20,14 @@ public class PersonNamesConverter implements Converter {
     return dbJson.toString();
   }
 
+  public PersonNames tinkerpopToJava(Object value) throws IOException {
+    if (value instanceof String) {
+      return new ObjectMapper().readValue((String) value, PersonNames.class);
+    } else {
+      throw new IOException("must be a json value serialised as String");
+    }
+  }
+
   @Override
   public JsonNode tinkerpopToJson(Object value) throws IOException {
     if (value instanceof String) {

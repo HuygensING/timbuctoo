@@ -6,6 +6,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
+import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.wwPersonNameOrTempName;
+import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.wwdocumentDisplayNameProperty;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.datable;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.defaultLocationNameConverter;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.gender;
@@ -22,7 +24,7 @@ public class HuygensIng {
   public static Vres mappings = new Vres.Builder()
     .withVre("WomenWriters", "ww", vre -> vre
       .withCollection("wwcollectives", c -> c
-        .withDisplayName(localProperty("wwcollectives_name"))
+        .withDisplayName(localProperty("wwcollective_name"))
 
         .withProperty("name", localProperty("wwcollective_name"))
         .withProperty("type", localProperty("wwcollective_type", stringToUnencodedStringOf(
@@ -41,7 +43,7 @@ public class HuygensIng {
         .withProperty("tempType", localProperty("wwcollective_tempType"))
       )
       .withCollection("wwpersons", c -> c
-        //.withDisplayName(wwpersonDisplayNameProperty())
+        .withDisplayName(wwPersonNameOrTempName())
 
         .withProperty("names", localProperty("wwperson_names", personNames))
         .withProperty("types", localProperty("wwperson_types", stringArrayToEncodedArrayOf(
@@ -88,7 +90,7 @@ public class HuygensIng {
         })
       )
       .withCollection("wwdocuments", c-> c
-        //.withDisplayName(wwdocumentDisplayNameProperty())
+        .withDisplayName(wwdocumentDisplayNameProperty())
         .withProperty("title", localProperty("wwdocument_title"))
         .withProperty("englishTitle", localProperty("wwdocument_englishTitle"))
         .withProperty("documentType", localProperty("wwdocument_documentType", stringToEncodedStringOf(
@@ -119,7 +121,7 @@ public class HuygensIng {
         .withProperty("tempOrigin", localProperty("wwdocument_tempOrigin"))
       )
       .withCollection("wwkeywords", c-> c
-        .withDisplayName(localProperty("wwkeywords_value"))
+        .withDisplayName(localProperty("wwkeyword_value"))
       )
       .withCollection("wwlanguages", c-> c
         .withDisplayName(localProperty("wwlanguage_name"))
