@@ -288,7 +288,7 @@ public class TinkerpopJsonCrudService {
         .where(
           //FIXME move to strategy
           __.has("isLatest", true)
-            .not(__.has("deleted", false))
+            .not(__.has("deleted", true))
             .not(__.hasLabel("VERSION_OF"))
             .has("types", new P<>(
               (val, def) -> {

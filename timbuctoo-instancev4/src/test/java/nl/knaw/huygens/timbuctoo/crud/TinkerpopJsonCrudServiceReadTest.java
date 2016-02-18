@@ -890,4 +890,48 @@ public class TinkerpopJsonCrudServiceReadTest {
     ).toString()).allowingExtraUnexpectedFields());
   }
 
+
+  @Test
+  public void bugFix_handlesDeletedCorrectly() throws Exception {
+    UUID id = UUID.randomUUID();
+    UUID workId = UUID.randomUUID();
+    Graph graph = newGraph()
+      .withVertex("source", v -> v
+        .withIncomingRelation("isCreatedBy", "work", r -> r
+          .withDeleted(false)
+        )
+        .withVre("ww")
+        .withVre("")
+        .withType("person")
+        .isLatest(true)
+        .withTimId(id.toString())
+      )
+      .withVertex("work", v -> v
+        .withVre("ww")
+        .withType("document")
+        .withTimId(workId.toString())
+      )
+      .withVertex(v -> v
+        .withProperty("relationtype_regularName", "isCreatedBy")
+        .withProperty("relationtype_inverseName", "isCreatorOf")
+      )
+      .build();
+
+    TinkerpopJsonCrudService instance = basicInstance(graph);
+
+    String resultJson = instance.get("wwpersons", id).toString();
+
+    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
+      "@relationCount", jsn(1),
+      "@relations", JsonBuilder.jsnO(
+        "isCreatorOf", JsonBuilder.jsnA(
+          JsonBuilder.jsnO(
+            "id", jsn(workId.toString())
+          )
+        )
+      )
+    ).toString()).allowingExtraUnexpectedFields());
+  }
+
+
 }
