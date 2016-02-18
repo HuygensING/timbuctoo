@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.server.rest.search.DateRangeFacetValue;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,12 +88,12 @@ public class DatableRangeFacetDescription implements FacetDescription {
       Range<Date> range = Range.closed(FORMAT.parse(
         lowerLimitString), FORMAT.parse(upperLimitString));
 
-      graphTraversal.has(propertyName, P.test((o1, o2) -> {
+      graphTraversal.where(__.has(propertyName, P.test((o1, o2) -> {
         Datable datable = getDatable("" + o1);
 
         Range<Date> range1 = (Range<Date>) o2;
         return range1.contains(datable.getFromDate()) || range1.contains(datable.getToDate());
-      }, range));
+      }, range)));
     } catch (ParseException e) {
       e.printStackTrace();
     }

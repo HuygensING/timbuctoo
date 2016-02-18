@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
 import nl.knaw.huygens.timbuctoo.server.rest.search.DateRangeFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -84,7 +85,7 @@ class ChangeRangeFacetDescription implements FacetDescription {
     // Use range because the java.time.Period has no way to determine if a date falls in that Period.
     Range<LocalDate> period = Range.closed(lowerLimitDate, upperLimitDate);
 
-    graphTraversal.has(propertyName, P.test((o1, o2) -> {
+    graphTraversal.where(__.has(propertyName, P.test((o1, o2) -> {
       try {
         LocalDate localDate = getChangeLocalDate(o1);
 
@@ -93,7 +94,7 @@ class ChangeRangeFacetDescription implements FacetDescription {
         LOG.error("Date {} cannot be parsed.", o1);
       }
       return false;
-    }, period));
+    }, period)));
 
   }
 
