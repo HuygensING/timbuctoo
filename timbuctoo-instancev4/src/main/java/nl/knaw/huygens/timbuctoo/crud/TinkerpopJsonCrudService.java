@@ -269,16 +269,19 @@ public class TinkerpopJsonCrudService {
                                                               Collection collection) {
     final Vre vre = collection.getVre();
 
+    Object[] relationTypes = traversalSource.V().has("relationtype_regularName").id().toList().toArray();
+
     return traversalSource.V(entity.id())
         .union(
           __.outE().as("edge")
             .label().as("label")
             .select("edge"),
-          __.inE().as("edge")
-            .label().as("inverseLabel")
-            .V()
-            .has("relationtype_regularName", __.select("inverseLabel"))
-            .properties("relationtype_inverseName").map(x -> x.get().value())
+          __.inE()
+            .as("edge")
+            .label().as("edgeLabel")
+            .V(relationTypes)
+            .has("relationtype_regularName", __.where(P.eq("edgeLabel")))
+            .properties("relationtype_inverseName").value()
             .as("label")
             .select("edge")
         )
