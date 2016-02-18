@@ -82,7 +82,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new UserV2_1Endpoint(loggedInUserStore));
     register(environment, new FacetedSearchV2_1Endpoint(configuration, graphManager));
     register(environment, new DomainCrudCollectionV2_1EndPoint(crudService, loggedInUserStore));
-    register(environment, new DomainCrudEntityV2_1EndPoint(crudService));
+    register(environment, new DomainCrudEntityV2_1EndPoint(crudService, loggedInUserStore));
 
     // register health checks
     register(environment, "Encryption algorithm", new EncryptionAlgorithmHealthCheck(ENCRYPTION_ALGORITHM));

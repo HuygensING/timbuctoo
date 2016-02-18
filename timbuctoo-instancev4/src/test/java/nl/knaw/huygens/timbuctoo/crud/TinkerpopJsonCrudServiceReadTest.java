@@ -208,6 +208,24 @@ public class TinkerpopJsonCrudServiceReadTest {
   }
 
   @Test
+  public void throwsNotFoundWhenTheIdIsNotInTheDatabase() throws Exception {
+    UUID id = UUID.randomUUID();
+    UUID otherId = UUID.randomUUID();
+    Graph graph = newGraph()
+      .withVertex(v -> v
+        .withTimId(id.toString())
+        .withProperty("isLatest", true)
+        .withProperty("rev", 1)
+      )
+      .build();
+    TinkerpopJsonCrudService instance = basicInstance(graph);
+
+    expectedException.expect(NotFoundException.class);
+
+    instance.get("wwpersons", otherId);
+  }
+
+  @Test
   public void getsTheRequestedRevWhenSpecified() throws Exception {
 
     UUID uuid = UUID.randomUUID();
@@ -240,6 +258,23 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     assertThat(entity.get("^rev").asInt(), is(1));
     assertThat(entity.get("name").asText(), is("old"));
+  }
+
+  @Test
+  public void throwsNotFoundWhenTheRevIsNotInTheDatabase() throws Exception {
+    UUID id = UUID.randomUUID();
+    Graph graph = newGraph()
+      .withVertex(v -> v
+        .withTimId(id.toString())
+        .withProperty("isLatest", true)
+        .withProperty("rev", 1)
+      )
+      .build();
+    TinkerpopJsonCrudService instance = basicInstance(graph);
+
+    expectedException.expect(NotFoundException.class);
+
+    instance.get("wwpersons", id, 2);
   }
 
   @Test

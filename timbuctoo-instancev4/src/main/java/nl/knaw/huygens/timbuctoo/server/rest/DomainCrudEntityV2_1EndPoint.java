@@ -1,20 +1,28 @@
 package nl.knaw.huygens.timbuctoo.server.rest;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.dropwizard.jersey.params.UUIDParam;
+import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
+import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
+import nl.knaw.huygens.timbuctoo.security.User;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
+import java.io.IOException;
 import java.net.URI;
+import java.util.Optional;
 import java.util.UUID;
 
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
@@ -46,9 +54,11 @@ public class DomainCrudEntityV2_1EndPoint {
   }
 
   private final TinkerpopJsonCrudService crudService;
+  private final LoggedInUserStore loggedInUserStore;
 
-  public DomainCrudEntityV2_1EndPoint(TinkerpopJsonCrudService crudService) {
+  public DomainCrudEntityV2_1EndPoint(TinkerpopJsonCrudService crudService, LoggedInUserStore loggedInUserStore) {
     this.crudService = crudService;
+    this.loggedInUserStore = loggedInUserStore;
   }
 
   @GET
@@ -62,4 +72,31 @@ public class DomainCrudEntityV2_1EndPoint {
       return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn("not found"))).build();
     }
   }
+
+  //FIXME disallow edits from users of a different VRE
+  @PUT
+  public Response put(@PathParam("collection") String collectionName, @HeaderParam("Authorization") String authHeader,
+                      @PathParam("id") UUIDParam id, ObjectNode body) {
+    Optional<User> user = loggedInUserStore.userFor(authHeader);
+    if (!user.isPresent()) {
+      return Response.status(Response.Status.UNAUTHORIZED).build();
+    } else {
+      try {
+        crudService.replace(collectionName, id.get(), body, user.get().getId());
+        return Response.ok().build();
+      } catch (InvalidCollectionException e) {
+        return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
+      } catch (NotFoundException e) {
+        return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn("not found"))).build();
+      } catch (IOException e) {
+        return Response.status(Response.Status.BAD_REQUEST).entity(jsnO("message", jsn(e.getMessage()))).build();
+      } catch (AlreadyUpdatedException e) {
+        return Response
+          .status(Response.Status.EXPECTATION_FAILED)
+          .entity(jsnO("message", jsn("Entry was already updated")))
+          .build();
+      }
+    }
+  }
+
 }

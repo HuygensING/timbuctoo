@@ -116,71 +116,71 @@
         }
       </div>
     </aside>
-  </section><!--
-      <section data-type="chapter">
-        <h2>Update the wwcollective with PUT</h2>
-        <aside class="example" h:http="#response">
-          <p>When a valid PUT is performed the wwcollective</p>
-          <div h:request="">
-            PUT #createResponse.headers.location HTTP/1.1
-            Authorization: #token
-            Content-type: application/json
-            VRE_ID: WomenWriters
+  </section>
+  <section data-type="chapter">
+    <h2>Update the wwcollective with PUT</h2>
+    <aside class="example" h:http="#response">
+      <p>When a valid PUT is performed the wwcollective</p>
+      <div h:request="">
+        PUT #createResponse.headers.location HTTP/1.1
+        Authorization: #token
+        Content-type: application/json
+        VRE_ID: WomenWriters
 
-            {
-              "_id": "#recordId",
-              "@type": "wwcollective",
-              "type": "LIBRARY",
-              "name": "Testcollective updated",
-              "links": [{
-                "url": "http://example.com",
-                "label": "Test link"
-              }],
-              "^rev": 1
-            }
-          </div>
-          <p>The server will respond with a 200 OK status code.</p>
-          <div h:response="">
-            HTTP/1.1 200
-          </div>
-        </aside>
-        <p>
-          After at most <b>60</b> seconds the updated record
-          <span c:execute="#pid=retrievePid()">
-            <span c:assertTrue="recordHasPid()">
-              should receive a new persistent ID:
-              <b><span c:echo="#pid"></span></b>
-            </span>.
-          </span>
-        </p>
-      </section>
+        {
+          "_id": "#recordId",
+          "@type": "wwcollective",
+          "type": "LIBRARY",
+          "name": "Testcollective updated",
+          "links": [{
+            "url": "http://example.com",
+            "label": "Test link"
+          }],
+          "^rev": 1
+        }
+      </div>
+      <p>The server will respond with a 200 OK status code.</p>
+      <div h:response="">
+        HTTP/1.1 200
+      </div>
+    </aside>
+    <p>
+      After at most <b>60</b> seconds the updated record
+      <span c:execute="#pid=retrievePid()">
+        <span c:assertTrue="recordHasPid()">
+          should receive a new persistent ID:
+          <b><span c:echo="#pid"></span></b>
+        </span>.
+      </span>
+    </p>
+  </section>
 
-        <section data-type="chapter">
-          <h2>Performing GET to the recently updated wwcollective resource</h2>
-          <aside class="example" h:http="#response">
-            <p>When a GET is performed to the wwcollective </p>
+  <section data-type="chapter">
+    <h2>Performing GET to the recently updated wwcollective resource</h2>
+    <aside class="example" h:http="#response">
+      <p>When a GET is performed to the wwcollective </p>
 
-            <div h:request="">
-              GET #createResponse.headers.location HTTP/1.1
-              Accept: application/json
-            </div>
-            <p>The server will respond with the updated resource</p>
+      <div h:request="">
+        GET #createResponse.headers.location HTTP/1.1
+        Accept: application/json
+      </div>
+      <p>The server will respond with the updated resource</p>
 
-            <div h:response="">
-              HTTP/1.1 200
-              Content-type: application/json
+      <div h:response="">
+        HTTP/1.1 200
+        Content-type: application/json
 
-              {
-                "_id": "#recordId",
-                "@type": "wwcollective",
-                "^rev": 2,
-                "name": "Testcollective updated",
-                "type": "LIBRARY"
-              }
-            </div>
-          </aside>
-        </section>
-
+        {
+          "_id": "#recordId",
+          "@type": "wwcollective",
+          "^rev": 2,
+          "name": "Testcollective updated",
+          "type": "LIBRARY"
+        }
+      </div>
+    </aside>
+  </section>
+  <!--
         <section data-type="chapter">
           <h2>Deleting a wwcollective</h2>
           <aside class="example" h:http="#response">

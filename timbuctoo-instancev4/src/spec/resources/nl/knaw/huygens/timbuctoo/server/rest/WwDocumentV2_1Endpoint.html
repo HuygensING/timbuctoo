@@ -153,77 +153,77 @@
       </div>
     </aside>
   </section>
+  <section data-type="chapter">
+    <h2>Update the wwdocument with PUT</h2>
+
+    <aside class="example" h:http="#response">
+      <p>When a valid PUT is performed the wwdocument</p>
+
+      <div h:request="">
+        PUT #createResponse.headers.location HTTP/1.1
+        Authorization: #token
+        Content-type: application/json
+        VRE_ID: WomenWriters
+
+        {
+          "_id": "#recordId",
+          "@type": "wwdocument",
+          "documentType": "PERIODICAL",
+          "englishTitle": "English title updated",
+          "title": "Title updated",
+          "date": "1850",
+          "reference": "A reference",
+          "notes": "A note",
+          "links": [{
+            "url": "http://example.com",
+            "label": "Test link"
+          }],
+          "^rev": 1
+        }
+      </div>
+      <p>The server will respond with a 200 OK status code.</p>
+      <div h:response="">
+        HTTP/1.1 200
+      </div>
+    </aside>
+    <p>
+      After at most <b>60</b> seconds the updated record
+      <span c:execute="#pid=retrievePid()">
+        <span c:assertTrue="recordHasPid()">
+          should receive a new persistent ID:
+          <b><span c:echo="#pid"></span></b>
+        </span>.
+      </span>
+    </p>
+  </section>
+
+  <section data-type="chapter">
+    <h2>Performing GET to the recently updated wwdocument resource</h2>
+    <aside class="example" h:http="#response">
+      <p>When a GET is performed to the wwdocument </p>
+
+      <div h:request="">
+        GET #createResponse.headers.location HTTP/1.1
+        Accept: application/json
+      </div>
+      <p>The server will respond with the updated resource</p>
+
+      <div h:response="">
+        HTTP/1.1 200
+        Content-type: application/json
+
+        {
+          "_id": "#recordId",
+          "@type": "wwdocument",
+          "^rev": 2,
+          "title": "Title updated",
+          "englishTitle": "English title updated",
+          "date": "1850"
+        }
+      </div>
+    </aside>
+  </section>
   <!--
-    <section data-type="chapter">
-      <h2>Update the wwdocument with PUT</h2>
-
-      <aside class="example" h:http="#response">
-        <p>When a valid PUT is performed the wwdocument</p>
-
-        <div h:request="">
-          PUT #createResponse.headers.location HTTP/1.1
-          Authorization: #token
-          Content-type: application/json
-          VRE_ID: WomenWriters
-
-          {
-            "_id": "#recordId",
-            "@type": "wwdocument",
-            "documentType": "PERIODICAL",
-            "englishTitle": "English title updated",
-            "title": "Title updated",
-            "date": "1850",
-            "reference": "A reference",
-            "notes": "A note",
-            "links": [{
-              "url": "http://example.com",
-              "label": "Test link"
-            }],
-            "^rev": 1
-          }
-        </div>
-        <p>The server will respond with a 200 OK status code.</p>
-        <div h:response="">
-          HTTP/1.1 200
-        </div>
-      </aside>
-      <p>
-        After at most <b>60</b> seconds the updated record
-        <span c:execute="#pid=retrievePid()">
-          <span c:assertTrue="recordHasPid()">
-            should receive a new persistent ID:
-            <b><span c:echo="#pid"></span></b>
-          </span>.
-        </span>
-      </p>
-    </section>
-
-    <section data-type="chapter">
-      <h2>Performing GET to the recently updated wwdocument resource</h2>
-      <aside class="example" h:http="#response">
-        <p>When a GET is performed to the wwdocument </p>
-
-        <div h:request="">
-          GET #createResponse.headers.location HTTP/1.1
-          Accept: application/json
-        </div>
-        <p>The server will respond with the updated resource</p>
-
-        <div h:response="">
-          HTTP/1.1 200
-          Content-type: application/json
-
-          {
-            "_id": "#recordId",
-            "@type": "wwdocument",
-            "^rev": 2,
-            "title": "Title updated",
-            "englishTitle": "English title updated",
-            "date": "1850"
-          }
-        </div>
-      </aside>
-    </section>
 
     <section data-type="chapter">
       <h2>Deleting a wwdocument</h2>

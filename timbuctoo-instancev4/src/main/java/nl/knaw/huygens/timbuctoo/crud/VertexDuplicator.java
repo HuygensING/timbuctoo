@@ -19,7 +19,6 @@ public class VertexDuplicator {
       duplicate.property(property.key(), property.value());
     }
 
-
     moveIncomingEdges(vertex, duplicate);
     moveOutgoingEdges(vertex, duplicate);
 

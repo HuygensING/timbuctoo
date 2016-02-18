@@ -40,6 +40,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Stream.concat;
 import static nl.knaw.huygens.timbuctoo.crud.VertexDuplicator.duplicateVertex;
 import static nl.knaw.huygens.timbuctoo.logmarkers.Logmarkers.databaseInvariant;
@@ -463,5 +464,98 @@ public class TinkerpopJsonCrudService {
     );
     vertex.property("created", value);
     vertex.property("modified", value);
+  }
+
+  private void setModified(Vertex vertex, String userId) {
+    String value = String.format("{\"timeStamp\":%s,\"userId\":%s}",
+      clock.millis(),
+      nodeFactory.textNode(userId)
+    );
+    vertex.property("modified", value);
+  }
+
+  public void replace(String collectionName, UUID id, ObjectNode data, String userId)
+    throws InvalidCollectionException, IOException, NotFoundException, AlreadyUpdatedException {
+
+    final Collection collection = mappings.get(collectionName);
+    if (collection == null) {
+      throw new InvalidCollectionException(collectionName);
+    }
+    final Graph graph = graphwrapper.getGraph();
+    final GraphTraversalSource traversalSource = graph.traversal();
+
+    GraphTraversal<Vertex, Vertex> entityTraversal = getEntity(traversalSource, id, null);
+
+    if (!entityTraversal.hasNext()) {
+      throw new NotFoundException();
+    }
+    Vertex entity = entityTraversal.next();
+    int curRev = getProp(entity, "rev", Integer.class).orElse(1);
+    if (data.get("^rev") == null) {
+      throw new IOException("data object should have a ^rev property indicating the revision this update was based on");
+    }
+    if (curRev != data.get("^rev").asInt()) {
+      throw new AlreadyUpdatedException();
+    }
+
+    int newRev = curRev + 1;
+    entity.property("rev", newRev);
+
+    String entityTypesStr = getProp(entity, "types", String.class).orElse("[]");
+    if (!entityTypesStr.contains("\"" + collection.getEntityTypeName() + "\"")) {
+      try {
+        ArrayNode entityTypes = arrayToEncodedArray.tinkerpopToJson(entityTypesStr);
+        entityTypes.add(collection.getEntityTypeName());
+        entity.property("types", entityTypes.toString());
+      } catch (IOException e) {
+        LOG.error(Logmarkers.databaseInvariant, "property 'types' was not parseable");
+      }
+    }
+
+    final Map<String, TimbuctooProperty> collectionProperties = collection.getProperties();
+    final GraphTraversal[] setters = new GraphTraversal[collectionProperties.size()];
+
+    final List<String> dataFields = stream(data.fieldNames())
+      .filter(x -> !Objects.equals(x, "@type"))
+      .filter(x -> !Objects.equals(x, "_id"))
+      .filter(x -> !Objects.equals(x, "^rev"))
+      .collect(toList());
+
+    final List<String> omittedProperties = collectionProperties
+      .keySet().stream()
+      .filter(key -> !dataFields.contains(key))
+      .collect(toList());
+
+    for (int i = 0; i < dataFields.size(); i++) {
+      String name = dataFields.get(i);
+      if (!collectionProperties.containsKey(name)) {
+        throw new IOException(name + " is not a valid property");
+      }
+      try {
+        setters[i] = collectionProperties.get(name).set(data.get(name));
+      } catch (IOException e) {
+        throw new IOException(name + " could not be saved. " + e.getMessage(), e);
+      }
+    }
+
+    for (int i = 0; i < omittedProperties.size(); i++) {
+      String name = omittedProperties.get(i);
+      setters[dataFields.size() + i] = collectionProperties.get(name).set(null);
+    }
+
+    traversalSource
+      .V(entity.id())
+      .union(setters)
+      .forEachRemaining(x-> {
+        //trigger side effects
+      });
+
+    setModified(entity, userId);
+    duplicateVertex(graph, entity);
+    handleAdder.add(new HandleAdderParameters(id, newRev, urlFor.apply(collectionName, id, newRev)));
+
+    //Make sure this is the last line of the method. We don't want to commit half our changes
+    //this also means checking each function that we call to see if they don't call commit()
+    graph.tx().commit();
   }
 }
