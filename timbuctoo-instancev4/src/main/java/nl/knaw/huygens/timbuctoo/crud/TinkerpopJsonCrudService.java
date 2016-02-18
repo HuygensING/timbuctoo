@@ -231,9 +231,6 @@ public class TinkerpopJsonCrudService {
           return __.sack((left,right) -> entry.getKey()).union(entry.getValue().get()).as("targetVertex");
         }).toArray(GraphTraversal[]::new)
       )
-      .map(x-> {
-        return "";
-      })
       .sack().as("sack")
       .select("targetVertex", "sack")
       .map((Function<Traverser<Map<String, Object>>, ObjectNode>) r -> {
