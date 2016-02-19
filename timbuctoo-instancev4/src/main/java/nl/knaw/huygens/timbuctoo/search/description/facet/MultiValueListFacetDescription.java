@@ -52,6 +52,8 @@ class MultiValueListFacetDescription implements FacetDescription {
     }).toList();
 
     List<Option> options =
+      // Some multivalued fields contain null values, that are not part of the design.
+      // We ignore them because they do not have any significant meaning.
       vertexValues.stream().flatMap(Collection::stream).filter(value -> value != null)
                   .collect(Collectors.groupingBy(v -> v, counting()))
                   .entrySet().stream()
