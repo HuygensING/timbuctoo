@@ -55,10 +55,10 @@ public class RelatedListFacetDescription implements FacetDescription {
       if (facetValue instanceof ListFacetValue) {
         List<String> values = ((ListFacetValue) facetValue).getValues();
         if (!values.isEmpty()) {
-          graphTraversal.where(__.outE(relations).inV().where((__.has(propertyName, P.test((o1, o2) -> {
+          graphTraversal.where(__.outE(relations).inV().has(propertyName, P.test((o1, o2) -> {
             List<String> possibleValues = (List<String>) o2;
             return possibleValues.contains(parser.parse("" + o1));
-          }, values)))));
+          }, values)))  ;
         }
       }
     }
