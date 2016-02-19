@@ -30,9 +30,8 @@ class WwPersonLanguageFacetDescription implements FacetDescription {
      * because the Neo4jGraph will remove the label "b". This should be fixed in version 3.1.2.
      */
     Map<String, Long> languageCounts =
-      searchResult.as("a").inE("isCreatedBy").outV().outE("hasWorkLanguage").inV().as("b").dedup("a", "b")
-                  .has("wwlanguage_name").<String>groupCount()
-        .by("wwlanguage_name").next();
+      searchResult.as("a").inE("isCreatedBy").outV().outE("hasWorkLanguage").inV().has("wwlanguage_name").as("b")
+                  .dedup("a", "b").<String>groupCount().by("wwlanguage_name").next();
 
     List<Facet.Option> options = languageCounts.entrySet().stream()
                                                .map(count -> new Facet.DefaultOption(count.getKey(), count.getValue()))
