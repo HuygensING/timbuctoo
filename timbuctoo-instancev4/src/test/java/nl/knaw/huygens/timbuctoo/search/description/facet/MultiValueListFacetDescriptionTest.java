@@ -20,9 +20,11 @@ import static nl.knaw.huygens.timbuctoo.search.description.facet.DefaultFacetOpt
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.not;
 
 public class MultiValueListFacetDescriptionTest {
 
@@ -77,6 +79,17 @@ public class MultiValueListFacetDescriptionTest {
       new DefaultOption("value2", 2),
       new DefaultOption("value3", 2),
       new DefaultOption("value4", 1))));
+  }
+
+  @Test
+  public void getFacetIgnoresNullValues() {
+    Graph graph = newGraph()
+      .withVertex(v -> v.withProperty(PROPERTY_NAME, serializedListOf("value1", null)))
+      .build();
+
+    Facet facet = instance.getFacet(graph.traversal().V());
+
+    assertThat(facet, hasProperty("options", not(contains(likeDefaultFacetOption().withName(null)))));
   }
 
   @Test

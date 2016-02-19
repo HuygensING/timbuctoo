@@ -52,7 +52,7 @@ class MultiValueListFacetDescription implements FacetDescription {
     }).toList();
 
     List<Option> options =
-      vertexValues.stream().flatMap(Collection::stream)
+      vertexValues.stream().flatMap(Collection::stream).filter(value -> value != null)
                   .collect(Collectors.groupingBy(v -> v, counting()))
                   .entrySet().stream()
                   .map(entry -> new DefaultOption(entry.getKey().toString(), entry.getValue()))
