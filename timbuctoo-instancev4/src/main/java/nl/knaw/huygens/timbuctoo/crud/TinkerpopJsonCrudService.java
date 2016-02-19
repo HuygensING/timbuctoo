@@ -15,7 +15,6 @@ import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
@@ -47,6 +46,7 @@ import static nl.knaw.huygens.timbuctoo.logmarkers.Logmarkers.databaseInvariant;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 
 public class TinkerpopJsonCrudService {
@@ -249,7 +249,7 @@ public class TinkerpopJsonCrudService {
           String displayName = getDisplayname(traversalSource, vertex, collection.getVre().getCollection(targetType))
             .orElse("<No displayname found>");
 
-          return JsonBuilder.jsnO(
+          return jsnO(
             "id", jsn(uuid),
             "path", jsn(urlFor.apply(targetCollection, UUID.fromString(uuid), null).toString()),
             "type", jsn(relationType),
@@ -323,7 +323,7 @@ public class TinkerpopJsonCrudService {
             String targetCollection = targetEntityType + "s";
             String uuid = getProp(vertex, "tim_id", String.class).orElse("");
 
-            return JsonBuilder.jsnO(
+            return jsnO(
               "id", jsn(uuid),
               "path", jsn(urlFor.apply(targetCollection, UUID.fromString(uuid), null).toString()),
               "type", jsn(label),
@@ -398,7 +398,7 @@ public class TinkerpopJsonCrudService {
       //When something goes wrong we log the error and return a functional representation
       LOG.error(databaseInvariant, "Error while generating variation refs", e);
       return jsnA(
-        JsonBuilder.jsnO(
+        jsnO(
           "id", jsn(id.toString()),
           "type", jsn(entityTypeName)
         )
@@ -557,5 +557,60 @@ public class TinkerpopJsonCrudService {
     //Make sure this is the last line of the method. We don't want to commit half our changes
     //this also means checking each function that we call to see if they don't call commit()
     graph.tx().commit();
+  }
+
+  public ArrayNode autoComplete(String collectionName, String token) throws InvalidCollectionException {
+    final Collection collection = mappings.get(collectionName);
+    if (collection == null) {
+      throw new InvalidCollectionException(collectionName);
+    }
+    if (token.startsWith("*")) {
+      token = token.substring(1);
+    }
+    if (token.endsWith("*")) {
+      token = token.substring(0, token.length() - 1);
+    }
+    final String searchToken = token.toLowerCase();
+
+    final Graph graph = graphwrapper.getGraph();
+    final GraphTraversalSource traversalSource = graph.traversal();
+    List<ObjectNode> results = traversalSource.V()
+      .as("vertex")
+      .union(collection.getDisplayName().get().get())
+      .filter(x -> x.get().isSuccess())
+      .map(x -> x.get().get().asText())
+      .as("displayName")
+      .filter(x -> x.get().toLowerCase().contains(searchToken))
+      .select("vertex", "displayName")
+      .map(x -> {
+        Vertex vertex = (Vertex) x.get().get("vertex");
+        String dn = (String) x.get().get("displayName");
+        Optional<String> id = getProp(vertex, "tim_id", String.class);
+        Integer rev = getProp(vertex, "rev", Integer.class).orElse(1);
+        if (id.isPresent()) {
+          try {
+            UUID uuid = UUID.fromString(id.get());
+            return jsnO(
+              "key", jsn(dn),
+              "value", jsn(urlFor.apply(collection.getCollectionName(), uuid, rev).toString())
+            );
+          } catch (IllegalArgumentException e) {
+            LOG.error(Logmarkers.databaseInvariant, "Tim_id " + id + "is not a valid UUID");
+            return null;
+          }
+        } else {
+          LOG.error(Logmarkers.databaseInvariant, "No Tim_id found on vertex with id " + vertex.id());
+          return null;
+        }
+      })
+      .filter(x -> x != null)
+      .toList();
+
+    ArrayNode resultNode = jsnA();
+    for (ObjectNode n : results) {
+      resultNode.add(n);
+    }
+
+    return resultNode;
   }
 }

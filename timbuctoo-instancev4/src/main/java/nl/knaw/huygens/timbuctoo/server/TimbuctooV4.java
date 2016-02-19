@@ -16,6 +16,7 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.rest.AuthenticationV2_1EndPoint;
+import nl.knaw.huygens.timbuctoo.server.rest.DomainCrudAutocompleteV2_1EndPoint;
 import nl.knaw.huygens.timbuctoo.server.rest.DomainCrudCollectionV2_1EndPoint;
 import nl.knaw.huygens.timbuctoo.server.rest.DomainCrudEntityV2_1EndPoint;
 import nl.knaw.huygens.timbuctoo.server.rest.FacetedSearchV2_1Endpoint;
@@ -81,6 +82,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new AuthenticationV2_1EndPoint(loggedInUserStore));
     register(environment, new UserV2_1Endpoint(loggedInUserStore));
     register(environment, new FacetedSearchV2_1Endpoint(configuration, graphManager));
+    register(environment, new DomainCrudAutocompleteV2_1EndPoint(crudService));
     register(environment, new DomainCrudCollectionV2_1EndPoint(crudService, loggedInUserStore));
     register(environment, new DomainCrudEntityV2_1EndPoint(crudService, loggedInUserStore));
 
