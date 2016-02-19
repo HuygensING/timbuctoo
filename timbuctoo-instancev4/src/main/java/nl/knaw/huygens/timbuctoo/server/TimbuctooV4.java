@@ -16,6 +16,7 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.rest.AuthenticationV2_1EndPoint;
+import nl.knaw.huygens.timbuctoo.server.rest.DirectQueryEndpoint;
 import nl.knaw.huygens.timbuctoo.server.rest.DomainCrudAutocompleteV2_1EndPoint;
 import nl.knaw.huygens.timbuctoo.server.rest.DomainCrudCollectionV2_1EndPoint;
 import nl.knaw.huygens.timbuctoo.server.rest.DomainCrudEntityV2_1EndPoint;
@@ -85,6 +86,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new DomainCrudAutocompleteV2_1EndPoint(crudService));
     register(environment, new DomainCrudCollectionV2_1EndPoint(crudService, loggedInUserStore));
     register(environment, new DomainCrudEntityV2_1EndPoint(crudService, loggedInUserStore));
+    register(environment, new DirectQueryEndpoint(graphManager));
 
     // register health checks
     register(environment, "Encryption algorithm", new EncryptionAlgorithmHealthCheck(ENCRYPTION_ALGORITHM));
