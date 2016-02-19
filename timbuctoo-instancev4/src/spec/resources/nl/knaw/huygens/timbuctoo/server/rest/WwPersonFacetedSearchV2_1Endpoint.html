@@ -36,9 +36,9 @@
         </div>
     </aside>
     <aside class="note">
-        <span>A request for search to an unknown collection will result in a <em>
-          <span c:assertEquals="doSearchToUnknownCollection()">400 Bad Request</span></em>
-        </span>
+      <span>A request for search to an unknown collection will result in a <em>
+        <span c:assertEquals="doSearchToUnknownCollection()">400 Bad Request</span></em>
+      </span>
     </aside>
     <p>
       You then get a Location header back (In this case <small><span c:echo="#searchPost.headers.location"></span></small>)
@@ -739,6 +739,19 @@
         ]
       }
       </div>
+    </aside>
+    <aside class="note">
+      <span>The example above shows how to search with list facets. The search with date facets is a bit different. The
+        facet will look like the example below. The upper and lower limit have number representation of a date string
+        with the format 'yyyyMMdd'.
+        <pre class="requestContent">
+          {
+            "name": "facet name",
+            "lowerLimit":12505560,
+            "upperLimit":19301231
+          }
+        </pre>
+      </span>
     </aside>
   </section>
 </body>
