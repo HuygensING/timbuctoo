@@ -134,4 +134,9 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
   public String getType() {
     return type;
   }
+
+  @Override
+  public List<FullTextSearchDescription> getFullTextSearchDescriptions() {
+    return Lists.newArrayList();
+  }
 }

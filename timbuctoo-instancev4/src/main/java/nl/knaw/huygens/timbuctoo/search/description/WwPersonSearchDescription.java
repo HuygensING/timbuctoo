@@ -121,6 +121,11 @@ public class WwPersonSearchDescription extends AbstractSearchDescription {
   }
 
   @Override
+  public List<FullTextSearchDescription> getFullTextSearchDescriptions() {
+    return Lists.newArrayList();
+  }
+
+  @Override
   public List<String> getSortableFields() {
     return sortableFields;
   }

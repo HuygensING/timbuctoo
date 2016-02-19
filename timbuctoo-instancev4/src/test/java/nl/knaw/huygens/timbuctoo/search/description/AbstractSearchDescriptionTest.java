@@ -4,12 +4,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.search.SearchResult;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.rest.search.FullTextSearchParameter;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.hamcrest.Matchers;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -23,6 +23,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.BDDMockito.given;
@@ -31,20 +33,26 @@ import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 public class AbstractSearchDescriptionTest {
 
   @Test
   public void executeCreatesASearchResult() {
     AbstractSearchDescription instance = searchDescription().build();
-    GraphWrapper graphWrapper = mock(GraphWrapper.class);
     Graph graph = newGraph().build();
-    given(graphWrapper.getGraph()).willReturn(graph);
-    given(graphWrapper.getLatestState()).willReturn(graph.traversal());
+    GraphWrapper graphWrapper = createGraphWrapper(graph);
 
     SearchResult searchResult = instance.execute(graphWrapper, new SearchRequestV2_1());
 
     assertThat(searchResult, is(Matchers.notNullValue()));
+  }
+
+  private GraphWrapper createGraphWrapper(Graph graph) {
+    GraphWrapper graphWrapper = mock(GraphWrapper.class);
+    given(graphWrapper.getGraph()).willReturn(graph);
+    given(graphWrapper.getLatestState()).willReturn(graph.traversal());
+    return graphWrapper;
   }
 
   @Test
@@ -57,10 +65,8 @@ public class AbstractSearchDescriptionTest {
       .withSortableFields(sortableField1, sortableField2)
       .withFullTextSearchFields(searchField1, searchField2)
       .build();
-    GraphWrapper graphWrapper = mock(GraphWrapper.class);
     Graph graph = newGraph().build();
-    given(graphWrapper.getGraph()).willReturn(graph);
-    given(graphWrapper.getLatestState()).willReturn(graph.traversal());
+    GraphWrapper graphWrapper = createGraphWrapper(graph);
 
     SearchResult searchResult = instance.execute(graphWrapper, new SearchRequestV2_1());
 
@@ -87,9 +93,7 @@ public class AbstractSearchDescriptionTest {
       .withVertex(vertex -> vertex.withTimId("id").withType(type))
       .withVertex(vertex -> vertex.withTimId("id1").withType("otherType"))
       .build();
-    GraphWrapper graphWrapper = mock(GraphWrapper.class);
-    given(graphWrapper.getGraph()).willReturn(graph);
-    given(graphWrapper.getLatestState()).willReturn(graph.traversal());
+    GraphWrapper graphWrapper = createGraphWrapper(graph);
 
     SearchResult searchResult = instance.execute(graphWrapper, new SearchRequestV2_1());
 
@@ -116,9 +120,7 @@ public class AbstractSearchDescriptionTest {
       .withVertex(vertex -> vertex.withTimId("id").withType(type))
       .withVertex(vertex -> vertex.withTimId("id1").withType("otherType"))
       .build();
-    GraphWrapper graphWrapper = mock(GraphWrapper.class);
-    given(graphWrapper.getGraph()).willReturn(graph);
-    given(graphWrapper.getLatestState()).willReturn(graph.traversal());
+    GraphWrapper graphWrapper = createGraphWrapper(graph);
 
     SearchResult searchResult = instance.execute(graphWrapper, new SearchRequestV2_1());
 
@@ -140,18 +142,80 @@ public class AbstractSearchDescriptionTest {
       .withFacetDescription(facetDescription2)
       .build();
     Graph graph = newGraph().build();
-    GraphWrapper graphWrapper = mock(GraphWrapper.class);
-    given(graphWrapper.getGraph()).willReturn(graph);
-    given(graphWrapper.getLatestState()).willReturn(graph.traversal());
+    GraphWrapper graphWrapper = createGraphWrapper(graph);
     SearchRequestV2_1 searchRequest = new SearchRequestV2_1();
 
     instance.execute(graphWrapper, searchRequest);
 
-    verify(facetDescription1).filter(any(GraphTraversal.class), argThat(is(searchRequest.getFacetValues())));
-    verify(facetDescription2).filter(any(GraphTraversal.class), argThat(is(searchRequest.getFacetValues())));
+    verify(facetDescription1).filter(any(/*GraphTraversal*/), argThat(is(searchRequest.getFacetValues())));
+    verify(facetDescription2).filter(any(/*GraphTraversal*/), argThat(is(searchRequest.getFacetValues())));
+  }
+  // TODO add tests to make sure the filtering happens before the creation of the facets and the results.
+
+  @Test
+  public void executeLetsEachFullTextDescriptionFilterTheSearchResult() {
+    GraphWrapper graphWrapper = createGraphWrapper(newGraph().build());
+    SearchRequestV2_1 searchRequest = new SearchRequestV2_1();
+    List<FullTextSearchParameter> fullTextSearchParameters = Lists.newArrayList(
+      new FullTextSearchParameter("name1", "value1"),
+      new FullTextSearchParameter("name2", "value2"));
+    searchRequest.setFullTextSearchParameters(fullTextSearchParameters);
+    FullTextSearchDescription fullTextSearchDescription1 = fullTextSearchDescriptionWithName("name1");
+    FullTextSearchDescription fullTextSearchDescription2 = fullTextSearchDescriptionWithName("name2");
+    AbstractSearchDescription instance = searchDescription()
+      .withFullTextSearchDescription(fullTextSearchDescription1)
+      .withFullTextSearchDescription(fullTextSearchDescription2)
+      .build();
+
+    instance.execute(graphWrapper, searchRequest);
+
+    verify(fullTextSearchDescription1).filter(any(), argThat(hasProperty("name", equalTo("name1"))));
+    verify(fullTextSearchDescription2).filter(any(), argThat(hasProperty("name", equalTo("name2"))));
   }
 
-  // TODO add tests to make sure the filtering happens before the creation of the facets and the results.
+  @Test
+  public void executeIgnoreTheFullTextSearchParametersThatDoNotHaveADescriptions() {
+    GraphWrapper graphWrapper = createGraphWrapper(newGraph().build());
+    SearchRequestV2_1 searchRequest = new SearchRequestV2_1();
+    List<FullTextSearchParameter> fullTextSearchParameters = Lists.newArrayList(
+      new FullTextSearchParameter("name1", "value1"),
+      new FullTextSearchParameter("name3", "value3"));
+    searchRequest.setFullTextSearchParameters(fullTextSearchParameters);
+    FullTextSearchDescription fullTextSearchDescription1 = fullTextSearchDescriptionWithName("name1");
+    AbstractSearchDescription instance = searchDescription()
+      .withFullTextSearchDescription(fullTextSearchDescription1)
+      .build();
+
+    instance.execute(graphWrapper, searchRequest);
+
+    verify(fullTextSearchDescription1).filter(any(), argThat(hasProperty("name", equalTo("name1"))));
+  }
+
+  @Test
+  public void executeDoesNotFilterWithFullTextSearchDescriptionsThatHaveNoParameter() {
+    GraphWrapper graphWrapper = createGraphWrapper(newGraph().build());
+    SearchRequestV2_1 searchRequest = new SearchRequestV2_1();
+    List<FullTextSearchParameter> fullTextSearchParameters = Lists.newArrayList(
+      new FullTextSearchParameter("name1", "value1"));
+    searchRequest.setFullTextSearchParameters(fullTextSearchParameters);
+    FullTextSearchDescription fullTextSearchDescription1 = fullTextSearchDescriptionWithName("name1");
+    FullTextSearchDescription fullTextSearchDescription2 = fullTextSearchDescriptionWithName("name2");
+    AbstractSearchDescription instance = searchDescription()
+      .withFullTextSearchDescription(fullTextSearchDescription1)
+      .withFullTextSearchDescription(fullTextSearchDescription2)
+      .build();
+
+    instance.execute(graphWrapper, searchRequest);
+
+    verify(fullTextSearchDescription1).filter(any(), argThat(hasProperty("name", equalTo("name1"))));
+    verifyZeroInteractions(fullTextSearchDescription2);
+  }
+
+  private FullTextSearchDescription fullTextSearchDescriptionWithName(String name) {
+    FullTextSearchDescription fullTextSearchDescription1 = mock(FullTextSearchDescription.class);
+    given(fullTextSearchDescription1.getName()).willReturn(name);
+    return fullTextSearchDescription1;
+  }
 
   private AbstractSearchDescriptionBuilder searchDescription() {
     return new AbstractSearchDescriptionBuilder();
@@ -166,11 +230,13 @@ public class AbstractSearchDescriptionTest {
     private final List<FacetDescription> facetDescriptions;
     private final Map<String, PropertyDescriptor> dataPropertyDescriptors;
     private final PropertyDescriptor displayNameDescriptor;
+    private List<FullTextSearchDescription> fullTextSearchDescriptions;
 
     public DefaultSearchDescription(PropertyDescriptor idDescriptor, PropertyDescriptor displayNameDescriptor,
                                     List<FacetDescription> facetDescriptions,
                                     Map<String, PropertyDescriptor> dataPropertyDescriptors,
                                     List<String> sortableFields, List<String> fullTextSearchFields,
+                                    List<FullTextSearchDescription> fullTextSearchDescriptions,
                                     String type) {
       this.facetDescriptions = facetDescriptions;
       this.dataPropertyDescriptors = dataPropertyDescriptors;
@@ -178,6 +244,7 @@ public class AbstractSearchDescriptionTest {
       this.idDescriptor = idDescriptor;
       this.sortableFields = sortableFields;
       this.fullTextSearchFields = fullTextSearchFields;
+      this.fullTextSearchDescriptions = fullTextSearchDescriptions;
       this.type = type;
     }
 
@@ -216,6 +283,11 @@ public class AbstractSearchDescriptionTest {
       return type;
     }
 
+    @Override
+    public List<FullTextSearchDescription> getFullTextSearchDescriptions() {
+      return fullTextSearchDescriptions;
+    }
+
   }
 
   private static class AbstractSearchDescriptionBuilder {
@@ -227,6 +299,7 @@ public class AbstractSearchDescriptionTest {
     private List<String> sortableFields;
     private List<String> fullTextSearchFields;
     private String type;
+    private List<FullTextSearchDescription> fullTextSearchDescriptions;
 
     private AbstractSearchDescriptionBuilder() {
       idDescriptor = vertex -> "";
@@ -235,12 +308,13 @@ public class AbstractSearchDescriptionTest {
       dataPropertyDescriptions = Maps.newHashMap();
       sortableFields = Lists.newArrayList();
       fullTextSearchFields = Lists.newArrayList();
+      fullTextSearchDescriptions = Lists.newArrayList();
       type = null;
     }
 
     public AbstractSearchDescription build() {
       return new DefaultSearchDescription(idDescriptor, displayNameDescriptor, facetDescriptions,
-        dataPropertyDescriptions, sortableFields, fullTextSearchFields, type);
+        dataPropertyDescriptions, sortableFields, fullTextSearchFields, fullTextSearchDescriptions, type);
     }
 
     public AbstractSearchDescriptionBuilder withFacetDescription(FacetDescription facetDescription) {
@@ -277,6 +351,11 @@ public class AbstractSearchDescriptionTest {
 
     private AbstractSearchDescriptionBuilder withFullTextSearchFields(String... fullTextSearchFields) {
       this.fullTextSearchFields.addAll(Arrays.asList(fullTextSearchFields));
+      return this;
+    }
+
+    private AbstractSearchDescriptionBuilder withFullTextSearchDescription(FullTextSearchDescription description) {
+      this.fullTextSearchDescriptions.add(description);
       return this;
     }
   }

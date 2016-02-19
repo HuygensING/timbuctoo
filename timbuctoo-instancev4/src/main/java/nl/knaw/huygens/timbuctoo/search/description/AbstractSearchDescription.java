@@ -13,6 +13,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 
@@ -48,6 +50,15 @@ public abstract class AbstractSearchDescription implements SearchDescription {
     GraphTraversal<Vertex, Vertex> vertices = filterByType(latestStage);
     // filter by facets
     getFacetDescriptions().forEach(desc -> desc.filter(vertices, searchRequest.getFacetValues()));
+    searchRequest.getFullTextSearchParameters().forEach(param -> {
+      Optional<FullTextSearchDescription> first = getFullTextSearchDescriptions()
+        .stream()
+        .filter(desc -> Objects.equals(param.getName(), desc.getName()))
+        .findFirst();
+      if (first.isPresent()) {
+        first.get().filter(vertices, param);
+      }
+    });
 
     List<Vertex> vertexList = vertices.toList();
     GraphTraversal<Vertex, Vertex> searchResult = graphWrapper.getGraph().traversal().V(vertexList);
@@ -77,6 +88,8 @@ public abstract class AbstractSearchDescription implements SearchDescription {
   protected abstract PropertyDescriptor getIdDescriptor();
 
   protected abstract String getType();
+
+  public abstract List<FullTextSearchDescription> getFullTextSearchDescriptions();
 }
 
 
