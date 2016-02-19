@@ -9,6 +9,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.hamcrest.Matchers;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -37,7 +38,9 @@ public class AbstractSearchDescriptionTest {
   public void executeCreatesASearchResult() {
     AbstractSearchDescription instance = searchDescription().build();
     GraphWrapper graphWrapper = mock(GraphWrapper.class);
-    given(graphWrapper.getLatestState()).willReturn(newGraph().build().traversal());
+    Graph graph = newGraph().build();
+    given(graphWrapper.getGraph()).willReturn(graph);
+    given(graphWrapper.getLatestState()).willReturn(graph.traversal());
 
     SearchResult searchResult = instance.execute(graphWrapper, new SearchRequestV2_1());
 
@@ -55,7 +58,9 @@ public class AbstractSearchDescriptionTest {
       .withFullTextSearchFields(searchField1, searchField2)
       .build();
     GraphWrapper graphWrapper = mock(GraphWrapper.class);
-    given(graphWrapper.getLatestState()).willReturn(newGraph().build().traversal());
+    Graph graph = newGraph().build();
+    given(graphWrapper.getGraph()).willReturn(graph);
+    given(graphWrapper.getLatestState()).willReturn(graph.traversal());
 
     SearchResult searchResult = instance.execute(graphWrapper, new SearchRequestV2_1());
 
@@ -83,6 +88,7 @@ public class AbstractSearchDescriptionTest {
       .withVertex(vertex -> vertex.withTimId("id1").withType("otherType"))
       .build();
     GraphWrapper graphWrapper = mock(GraphWrapper.class);
+    given(graphWrapper.getGraph()).willReturn(graph);
     given(graphWrapper.getLatestState()).willReturn(graph.traversal());
 
     SearchResult searchResult = instance.execute(graphWrapper, new SearchRequestV2_1());
@@ -111,6 +117,7 @@ public class AbstractSearchDescriptionTest {
       .withVertex(vertex -> vertex.withTimId("id1").withType("otherType"))
       .build();
     GraphWrapper graphWrapper = mock(GraphWrapper.class);
+    given(graphWrapper.getGraph()).willReturn(graph);
     given(graphWrapper.getLatestState()).willReturn(graph.traversal());
 
     SearchResult searchResult = instance.execute(graphWrapper, new SearchRequestV2_1());
@@ -134,6 +141,7 @@ public class AbstractSearchDescriptionTest {
       .build();
     Graph graph = newGraph().build();
     GraphWrapper graphWrapper = mock(GraphWrapper.class);
+    given(graphWrapper.getGraph()).willReturn(graph);
     given(graphWrapper.getLatestState()).willReturn(graph.traversal());
     SearchRequestV2_1 searchRequest = new SearchRequestV2_1();
 
