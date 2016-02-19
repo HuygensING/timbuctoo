@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.rest;
 
+import com.codahale.metrics.annotation.Timed;
+import com.google.common.base.Stopwatch;
 import io.dropwizard.jersey.params.UUIDParam;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.SearchResult;
@@ -9,6 +11,8 @@ import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.SearchConfig;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchResponseV2_1Factory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -29,6 +33,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 @Produces(APPLICATION_JSON)
 public class FacetedSearchV2_1Endpoint {
 
+  public static final Logger LOG = LoggerFactory.getLogger(FacetedSearchV2_1Endpoint.class);
   private final SearchResponseV2_1Factory searchResponseFactory;
   private final SearchDescriptionFactory searchDescriptionFactory;
   private final GraphWrapper graphWrapper;
@@ -41,10 +46,11 @@ public class FacetedSearchV2_1Endpoint {
     searchDescriptionFactory = new SearchDescriptionFactory();
   }
 
+  @Timed
   @POST
   @Path("{entityName: [a-z]+}s")
   public Response post(@PathParam("entityName") String entityName, SearchRequestV2_1 searchRequest) {
-
+    Stopwatch stopwatch = Stopwatch.createStarted();
     Optional<SearchDescription> description = getDescription(entityName);
 
     if (description.isPresent()) {
@@ -56,7 +62,7 @@ public class FacetedSearchV2_1Endpoint {
       UUID uuid = searchStore.add(description.get().execute(graphWrapper, searchRequest));
 
       URI uri = createUri(uuid);
-
+      LOG.info("Duration of search request: {}", stopwatch);
       return Response.created(uri).build();
     }
 
