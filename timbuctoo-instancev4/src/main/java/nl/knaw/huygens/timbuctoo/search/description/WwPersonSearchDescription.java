@@ -18,14 +18,13 @@ import java.util.Map;
 
 public class WwPersonSearchDescription extends AbstractSearchDescription {
 
-
   private final List<String> sortableFields;
   private final List<String> fullTextSearchFields;
   private final PropertyDescriptor displayNameDescriptor;
   private final PropertyDescriptor idDescriptor;
   private final List<FacetDescription> facetDescriptions;
   private final Map<String, PropertyDescriptor> dataPropertyDescriptors;
-  private final List<FullTextSearchDescription>    fullTextSearchDescriptions;
+  private final List<FullTextSearchDescription> fullTextSearchDescriptions;
 
   public WwPersonSearchDescription(PropertyDescriptorFactory propertyDescriptorFactory,
                                    FacetDescriptionFactory facetDescriptionFactory) {
@@ -53,7 +52,8 @@ public class WwPersonSearchDescription extends AbstractSearchDescription {
   private ArrayList<FullTextSearchDescription> createFullTextSearchDescriptions() {
     return Lists.newArrayList(
       new LocalSimpleFullTextSearchDescription("dynamic_t_tempspouse", "wwperson_tempSpouse"),
-      new LocalSimpleFullTextSearchDescription("dynamic_t_notes", "wwperson_notes")
+      new LocalSimpleFullTextSearchDescription("dynamic_t_notes", "wwperson_notes"),
+      new LocalSimpleFullTextSearchDescription("dynamic_t_name", "wwperson_names")
     );
   }
 
