@@ -85,9 +85,9 @@
     </dependency>
     <!-- Apache ActiveMQ -->
     <!--<dependency>-->
-      <!--<groupId>org.apache.activemq</groupId>-->
-      <!--<artifactId>activemq-core</artifactId>-->
-      <!--<version>${activemq.version}</version>-->
+    <!--<groupId>org.apache.activemq</groupId>-->
+    <!--<artifactId>activemq-core</artifactId>-->
+    <!--<version>${activemq.version}</version>-->
     <!--</dependency>-->
     <!-- Activemq broker package contains the in memory version for easy quick run -->
     <dependency>
@@ -96,6 +96,14 @@
       <version>${activemq.version}</version>
       <scope>runtime</scope>
     </dependency>
+
+    <!-- Apache Commons -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.4</version>
+    </dependency>
+
     <!--Try monad-->
     <dependency>
       <groupId>com.javaslang</groupId>

@@ -9,8 +9,10 @@ import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.facet.FacetDescriptionFactory;
+import nl.knaw.huygens.timbuctoo.search.description.fulltext.LocalSimpleFullTextSearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +25,7 @@ public class WwPersonSearchDescription extends AbstractSearchDescription {
   private final PropertyDescriptor idDescriptor;
   private final List<FacetDescription> facetDescriptions;
   private final Map<String, PropertyDescriptor> dataPropertyDescriptors;
+  private final List<FullTextSearchDescription>    fullTextSearchDescriptions;
 
   public WwPersonSearchDescription(PropertyDescriptorFactory propertyDescriptorFactory,
                                    FacetDescriptionFactory facetDescriptionFactory) {
@@ -44,6 +47,14 @@ public class WwPersonSearchDescription extends AbstractSearchDescription {
 
     facetDescriptions = createFacetDescriptions(facetDescriptionFactory);
     dataPropertyDescriptors = createDataPropertyDescriptions(propertyDescriptorFactory);
+    fullTextSearchDescriptions = createFullTextSearchDescriptions();
+  }
+
+  private ArrayList<FullTextSearchDescription> createFullTextSearchDescriptions() {
+    return Lists.newArrayList(
+      new LocalSimpleFullTextSearchDescription("dynamic_t_tempspouse", "wwperson_tempSpouse"),
+      new LocalSimpleFullTextSearchDescription("dynamic_t_notes", "wwperson_notes")
+    );
   }
 
   private List<FacetDescription> createFacetDescriptions(FacetDescriptionFactory facetDescriptionFactory) {
@@ -122,7 +133,7 @@ public class WwPersonSearchDescription extends AbstractSearchDescription {
 
   @Override
   public List<FullTextSearchDescription> getFullTextSearchDescriptions() {
-    return Lists.newArrayList();
+    return fullTextSearchDescriptions;
   }
 
   @Override

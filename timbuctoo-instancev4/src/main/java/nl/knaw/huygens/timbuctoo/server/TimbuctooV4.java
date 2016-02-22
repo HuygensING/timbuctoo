@@ -21,6 +21,7 @@ import nl.knaw.huygens.timbuctoo.server.rest.DomainCrudEntityV2_1EndPoint;
 import nl.knaw.huygens.timbuctoo.server.rest.FacetedSearchV2_1Endpoint;
 import nl.knaw.huygens.timbuctoo.server.rest.UserV2_1Endpoint;
 import nl.knaw.huygens.timbuctoo.server.rest.search.FacetValueDeserializer;
+import nl.knaw.huygens.timbuctoo.server.rest.search.FullTextSearchParameter;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

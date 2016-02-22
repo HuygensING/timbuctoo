@@ -2,11 +2,15 @@ package nl.knaw.huygens.timbuctoo.server.rest.search;
 
 public class FullTextSearchParameter {
   private String name;
-  private String value;
+  private String term;
 
-  public FullTextSearchParameter(String name, String value) {
+  public FullTextSearchParameter(String name, String term) {
     this.name = name;
-    this.value = value;
+    this.term = term;
+  }
+
+  public FullTextSearchParameter(){
+
   }
 
   public String getName() {
@@ -17,11 +21,11 @@ public class FullTextSearchParameter {
     this.name = name;
   }
 
-  public String getValue() {
-    return value;
+  public String getTerm() {
+    return term;
   }
 
-  public void setValue(String value) {
-    this.value = value;
+  public void setTerm(String term) {
+    this.term = term;
   }
 }
