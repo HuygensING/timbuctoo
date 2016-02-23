@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.search.EntityRef;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.description.facet.Facet;
+import nl.knaw.huygens.timbuctoo.search.description.sort.SortDescription;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -19,6 +20,8 @@ import java.util.Optional;
 import static java.util.stream.Collectors.toList;
 
 public abstract class AbstractSearchDescription implements SearchDescription {
+
+  public static final SortDescription NO_OP_SORT_DESCRIPTION = new SortDescription();
 
   protected List<Facet> createFacets(GraphTraversal<Vertex, Vertex> vertices) {
 
@@ -50,6 +53,7 @@ public abstract class AbstractSearchDescription implements SearchDescription {
     GraphTraversal<Vertex, Vertex> vertices = filterByType(latestStage);
     // filter by facets
     getFacetDescriptions().forEach(desc -> desc.filter(vertices, searchRequest.getFacetValues()));
+    // filter by full text search
     searchRequest.getFullTextSearchParameters().forEach(param -> {
       Optional<FullTextSearchDescription> first = getFullTextSearchDescriptions()
         .stream()
@@ -59,6 +63,8 @@ public abstract class AbstractSearchDescription implements SearchDescription {
         first.get().filter(vertices, param);
       }
     });
+    // order / sort
+    getSortDescription().sort(vertices, searchRequest.getSortParameters());
 
     List<Vertex> vertexList = vertices.toList();
     GraphTraversal<Vertex, Vertex> searchResult = graphWrapper.getGraph().traversal().V(vertexList);
@@ -89,7 +95,11 @@ public abstract class AbstractSearchDescription implements SearchDescription {
 
   protected abstract String getType();
 
-  public abstract List<FullTextSearchDescription> getFullTextSearchDescriptions();
+  protected abstract List<FullTextSearchDescription> getFullTextSearchDescriptions();
+
+  protected SortDescription getSortDescription() {
+    return NO_OP_SORT_DESCRIPTION;
+  }
 }
 
 

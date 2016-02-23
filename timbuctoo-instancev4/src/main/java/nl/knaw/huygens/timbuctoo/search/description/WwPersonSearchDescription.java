@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.facet.FacetDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.search.description.fulltext.LocalSimpleFullTextSearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
+import nl.knaw.huygens.timbuctoo.search.description.sort.SortDescription;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -3,9 +3,11 @@ package nl.knaw.huygens.timbuctoo.search.description;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.search.SearchResult;
+import nl.knaw.huygens.timbuctoo.search.description.sort.SortDescription;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.rest.search.FullTextSearchParameter;
 import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;
+import nl.knaw.huygens.timbuctoo.server.rest.search.SortParameter;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -13,10 +15,12 @@ import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import static junit.framework.TestCase.fail;
 import static nl.knaw.huygens.timbuctoo.search.VertexMatcher.likeVertex;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -211,6 +215,21 @@ public class AbstractSearchDescriptionTest {
     verifyZeroInteractions(fullTextSearchDescription2);
   }
 
+  @Test
+  public void executeLetsEachSortDescriptionSort(){
+    GraphWrapper graphWrapper = createGraphWrapper(newGraph().build());
+    SearchRequestV2_1 searchRequestV2_1 = new SearchRequestV2_1();
+    ArrayList<SortParameter> sortParameters = Lists.newArrayList(
+      new SortParameter("field", SortParameter.Direction.asc));
+    searchRequestV2_1.setSortParameters(sortParameters);
+    SortDescription sortDescription = mock(SortDescription.class);
+    AbstractSearchDescription instance = searchDescription().withSortDescription(sortDescription).build();
+
+    instance.execute(graphWrapper, searchRequestV2_1);
+
+    verify(sortDescription).sort(any(), argThat(is(sortParameters)));
+  }
+
   private FullTextSearchDescription fullTextSearchDescriptionWithName(String name) {
     FullTextSearchDescription fullTextSearchDescription1 = mock(FullTextSearchDescription.class);
     given(fullTextSearchDescription1.getName()).willReturn(name);
@@ -225,6 +244,7 @@ public class AbstractSearchDescriptionTest {
     private final List<String> sortableFields;
 
     private final List<String> fullTextSearchFields;
+    private final SortDescription sortDescription;
     private final String type;
     private final PropertyDescriptor idDescriptor;
     private final List<FacetDescription> facetDescriptions;
@@ -237,7 +257,7 @@ public class AbstractSearchDescriptionTest {
                                     Map<String, PropertyDescriptor> dataPropertyDescriptors,
                                     List<String> sortableFields, List<String> fullTextSearchFields,
                                     List<FullTextSearchDescription> fullTextSearchDescriptions,
-                                    String type) {
+                                    SortDescription sortDescription, String type) {
       this.facetDescriptions = facetDescriptions;
       this.dataPropertyDescriptors = dataPropertyDescriptors;
       this.displayNameDescriptor = displayNameDescriptor;
@@ -245,6 +265,7 @@ public class AbstractSearchDescriptionTest {
       this.sortableFields = sortableFields;
       this.fullTextSearchFields = fullTextSearchFields;
       this.fullTextSearchDescriptions = fullTextSearchDescriptions;
+      this.sortDescription = sortDescription;
       this.type = type;
     }
 
@@ -288,6 +309,10 @@ public class AbstractSearchDescriptionTest {
       return fullTextSearchDescriptions;
     }
 
+    @Override
+    protected SortDescription getSortDescription() {
+      return sortDescription;
+    }
   }
 
   private static class AbstractSearchDescriptionBuilder {
@@ -300,6 +325,7 @@ public class AbstractSearchDescriptionTest {
     private List<String> fullTextSearchFields;
     private String type;
     private List<FullTextSearchDescription> fullTextSearchDescriptions;
+    private SortDescription sortDescription;
 
     private AbstractSearchDescriptionBuilder() {
       idDescriptor = vertex -> "";
@@ -309,12 +335,14 @@ public class AbstractSearchDescriptionTest {
       sortableFields = Lists.newArrayList();
       fullTextSearchFields = Lists.newArrayList();
       fullTextSearchDescriptions = Lists.newArrayList();
+      sortDescription = new SortDescription();
       type = null;
     }
 
     public AbstractSearchDescription build() {
       return new DefaultSearchDescription(idDescriptor, displayNameDescriptor, facetDescriptions,
-        dataPropertyDescriptions, sortableFields, fullTextSearchFields, fullTextSearchDescriptions, type);
+        dataPropertyDescriptions, sortableFields, fullTextSearchFields, fullTextSearchDescriptions, sortDescription,
+        type);
     }
 
     public AbstractSearchDescriptionBuilder withFacetDescription(FacetDescription facetDescription) {
@@ -356,6 +384,11 @@ public class AbstractSearchDescriptionTest {
 
     private AbstractSearchDescriptionBuilder withFullTextSearchDescription(FullTextSearchDescription description) {
       this.fullTextSearchDescriptions.add(description);
+      return this;
+    }
+
+    public AbstractSearchDescriptionBuilder withSortDescription(SortDescription sortDescription) {
+      this.sortDescription = sortDescription;
       return this;
     }
   }

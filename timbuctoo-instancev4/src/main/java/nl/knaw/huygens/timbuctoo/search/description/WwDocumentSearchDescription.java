@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
+import nl.knaw.huygens.timbuctoo.search.description.sort.SortDescription;
 
 import java.util.List;
 import java.util.Map;
@@ -139,4 +140,5 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
   public List<FullTextSearchDescription> getFullTextSearchDescriptions() {
     return Lists.newArrayList();
   }
+
 }

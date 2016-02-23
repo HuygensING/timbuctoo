@@ -3,13 +3,12 @@ package nl.knaw.huygens.timbuctoo.server.rest.search;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class SearchRequestV2_1 {
 
   private List<FacetValue> facetValues;
-  private List<Object> sortParameters;
+  private List<SortParameter> sortParameters;
   private String term;
   private List<FullTextSearchParameter> fullTextSearchParameters;
 
@@ -18,6 +17,7 @@ public class SearchRequestV2_1 {
     // Jackson will not reset it.
     facetValues = Lists.newArrayList();
     fullTextSearchParameters = Lists.newArrayList();
+    sortParameters = Lists.newArrayList();
   }
 
   public List<FacetValue> getFacetValues() {
@@ -28,11 +28,11 @@ public class SearchRequestV2_1 {
     this.facetValues = facetValues;
   }
 
-  public List<Object> getSortParameters() {
+  public List<SortParameter> getSortParameters() {
     return sortParameters;
   }
 
-  public void setSortParameters(List<Object> sortParameters) {
+  public void setSortParameters(List<SortParameter> sortParameters) {
     this.sortParameters = sortParameters;
   }
 
