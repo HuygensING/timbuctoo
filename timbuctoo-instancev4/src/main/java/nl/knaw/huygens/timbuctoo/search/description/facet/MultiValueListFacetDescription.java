@@ -42,9 +42,7 @@ class MultiValueListFacetDescription implements FacetDescription {
       String value = v.get().value(propertyName);
 
       try {
-        List<?> list = mapper.readValue(value, List.class);
-
-        return list;
+        return (List<?>) mapper.readValue(value, List.class);
       } catch (IOException e) {
         LOG.error("'{}' is not a valid multi valued field", value);
       }
@@ -85,10 +83,8 @@ class MultiValueListFacetDescription implements FacetDescription {
 
     graphTraversal
       .where(__.<String>has(propertyName, P.test((o1, o2) -> {
-        if (o1 instanceof String && o2 instanceof List) {
-          return ((List<?>) o2).stream().anyMatch(value -> ((String) o1).contains("\"" + value + "\""));
-        }
-        return false;
+        return o1 instanceof String && o2 instanceof List &&
+          ((List<?>) o2).stream().anyMatch(value -> ((String) o1).contains("\"" + value + "\""));
       }, values)));
 
   }

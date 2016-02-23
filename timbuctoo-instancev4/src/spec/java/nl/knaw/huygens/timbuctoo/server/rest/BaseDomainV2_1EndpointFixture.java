@@ -180,7 +180,7 @@ public abstract class BaseDomainV2_1EndpointFixture extends AbstractV2_1Endpoint
     return authenticationToken;
   }
 
-  public boolean isValidPid(String result) throws JSONException {
+  public boolean isValidPid(String result) {
 
     return !StringUtils.isBlank(result) && !result.equals("null");
   }

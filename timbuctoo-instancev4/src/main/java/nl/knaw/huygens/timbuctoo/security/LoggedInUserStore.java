@@ -32,28 +32,22 @@ public class LoggedInUserStore {
 
   public Optional<User> userFor(String authHeader) {
     return Optional.ofNullable(authHeader)
-      .flatMap(hdr -> Optional.ofNullable(users.getIfPresent(hdr))) ;
+                   .flatMap(hdr -> Optional.ofNullable(users.getIfPresent(hdr)));
   }
 
   public Optional<String> userTokenFor(String username, String password)
     throws LocalLoginUnavailableException, AuthenticationUnavailableException {
     Optional<String> id;
     Optional<String> token = Optional.empty();
-    try {
-      id = jsonBasedAuthenticator.authenticate(username, password);
-    } catch (LocalLoginUnavailableException e) {
-      throw e;
-    }
+
+    id = jsonBasedAuthenticator.authenticate(username, password);
+
     if (id.isPresent()) {
-      try {
-        Optional<User> user = userStore.userFor(id.get());
-        if (user.isPresent()) {
-          String uuid = UUID.randomUUID().toString();
-          token = Optional.empty().of(uuid);
-          users.put(uuid, user.get());
-        }
-      } catch (AuthenticationUnavailableException e) {
-        throw e;
+      Optional<User> user = userStore.userFor(id.get());
+      if (user.isPresent()) {
+        String uuid = UUID.randomUUID().toString();
+        token = Optional.of(uuid);
+        users.put(uuid, user.get());
       }
     }
 

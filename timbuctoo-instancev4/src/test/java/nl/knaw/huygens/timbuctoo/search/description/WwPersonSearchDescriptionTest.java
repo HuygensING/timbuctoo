@@ -26,15 +26,12 @@ import static org.hamcrest.Matchers.nullValue;
 public class WwPersonSearchDescriptionTest {
 
   private WwPersonSearchDescription instance;
-  private FacetDescriptionFactory facetDescriptionFactory;
-  private PropertyParserFactory propertyParserFactory;
-  private PropertyDescriptorFactory propertyDescriptorFactory;
 
   @Before
   public void setUp() throws Exception {
-    propertyParserFactory = new PropertyParserFactory();
-    facetDescriptionFactory = new FacetDescriptionFactory(propertyParserFactory);
-    propertyDescriptorFactory = new PropertyDescriptorFactory(propertyParserFactory);
+    PropertyParserFactory propertyParserFactory = new PropertyParserFactory();
+    FacetDescriptionFactory facetDescriptionFactory = new FacetDescriptionFactory(propertyParserFactory);
+    PropertyDescriptorFactory propertyDescriptorFactory = new PropertyDescriptorFactory(propertyParserFactory);
     instance = new WwPersonSearchDescription(propertyDescriptorFactory, facetDescriptionFactory);
 
   }

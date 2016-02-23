@@ -41,6 +41,7 @@ public class ListFacetDescription implements FacetDescription {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public void filter(GraphTraversal<Vertex, Vertex> graphTraversal, List<FacetValue> facets) {
     Optional<FacetValue> facetValue =
       facets.stream().filter(facet -> Objects.equals(facet.getName(), facetName)).findFirst();

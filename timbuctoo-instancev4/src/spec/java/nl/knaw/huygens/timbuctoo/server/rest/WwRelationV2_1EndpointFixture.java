@@ -37,7 +37,7 @@ public class WwRelationV2_1EndpointFixture extends BaseDomainV2_1EndpointFixture
         new HttpRequest("POST", "/v2.1/domain/wwdocuments", headers, makeDocumentJson(), null, Lists.newArrayList());
 
     Response response = executeRequestUsingJaxRs(postRequest);
-    documentPath = response.getHeaderString("Location").replaceAll("http://[^/]+/", "");;
+    documentPath = response.getHeaderString("Location").replaceAll("http://[^/]+/", "");
     documentId = documentPath.replaceAll(".*\\/", "");
     retrievePid(documentPath);
     return documentId;
@@ -49,7 +49,7 @@ public class WwRelationV2_1EndpointFixture extends BaseDomainV2_1EndpointFixture
         new HttpRequest("POST", "/v2.1/domain/wwpersons", headers, makePersonJson(), null, Lists.newArrayList());
 
     Response response = executeRequestUsingJaxRs(postRequest);
-    personPath = response.getHeaderString("Location").replaceAll("http://[^/]+/", "");;
+    personPath = response.getHeaderString("Location").replaceAll("http://[^/]+/", "");
     personId = personPath.replaceAll(".*\\/", "");
     retrievePid(personPath);
     return personId;

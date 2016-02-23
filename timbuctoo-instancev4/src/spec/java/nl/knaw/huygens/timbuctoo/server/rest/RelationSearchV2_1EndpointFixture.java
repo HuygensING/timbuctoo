@@ -33,9 +33,8 @@ public class RelationSearchV2_1EndpointFixture extends AbstractV2_1EndpointFixtu
         new HttpRequest("POST", "/v2.1/search/wwpersons", headers, "{}", null, Lists.newArrayList());
 
     Response response = executeRequestUsingJaxRs(postRequest);
-    String searchPath = response.getHeaderString("Location").replaceAll("http://[^/]+/", "");;
-    String searchId = searchPath.replaceAll(".*\\/", "");
-    return searchId;
+    String searchPath = response.getHeaderString("Location").replaceAll("http://[^/]+/", "");
+    return searchPath.replaceAll(".*\\/", "");
   }
 
   public String isFullyQualified(String url) {

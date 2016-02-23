@@ -106,7 +106,7 @@ public enum EdtfPattern {
 
   private final Pattern pattern;
 
-  private EdtfPattern(String regex) {
+  EdtfPattern(String regex) {
     pattern = Pattern.compile(regex);
   }
 

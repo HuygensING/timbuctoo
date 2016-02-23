@@ -123,10 +123,7 @@ public class PersonName {
 
   @Override
   public boolean equals(Object object) {
-    if (object instanceof PersonName) {
-      return Objects.equal(components, ((PersonName) object).components);
-    }
-    return false;
+    return object instanceof PersonName && Objects.equal(components, ((PersonName) object).components);
   }
 
   @Override

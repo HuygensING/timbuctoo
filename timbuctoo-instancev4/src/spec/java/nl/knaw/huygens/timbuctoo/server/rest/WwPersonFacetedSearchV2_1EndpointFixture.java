@@ -42,10 +42,6 @@ public class WwPersonFacetedSearchV2_1EndpointFixture extends AbstractV2_1Endpoi
     }
   }
 
-  public String dontCheck(HttpExpectation expectation, HttpResult reality) {
-    return "";
-  }
-
   public String doRequestWithMalformedUuid() {
     Response response = returnUrlToMockedOrRealServer(null)
       .path("v2.1").path("search").path("malformedUUID")

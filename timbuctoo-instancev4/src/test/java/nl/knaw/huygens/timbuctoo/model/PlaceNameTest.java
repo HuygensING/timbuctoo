@@ -12,7 +12,7 @@ public class PlaceNameTest {
   private PlaceName instance;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     instance = new PlaceName();
   }
 

@@ -76,7 +76,7 @@ public class PersonNameComponent {
 
   // -------------------------------------------------------------------
 
-  public static enum Type {
+  public enum Type {
     SURNAME("surname"), //
     FORENAME("forename"), //
     ROLE_NAME("roleName"), //
