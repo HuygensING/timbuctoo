@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooV4;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.concordion.api.ExpectedToFail;
 import org.concordion.api.FullOGNL;
 import org.concordion.integration.junit4.ConcordionRunner;
 import org.json.JSONException;
@@ -23,6 +24,7 @@ import javax.ws.rs.core.Response;
 
 @FullOGNL
 @RunWith(ConcordionRunner.class)
+@ExpectedToFail
 public class WwDocumentFacetedSearchV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
 
   @ClassRule
