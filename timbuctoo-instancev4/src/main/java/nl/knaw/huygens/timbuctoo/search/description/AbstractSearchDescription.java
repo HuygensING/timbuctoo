@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.search.description;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
@@ -21,7 +22,7 @@ import static java.util.stream.Collectors.toList;
 
 public abstract class AbstractSearchDescription implements SearchDescription {
 
-  public static final SortDescription NO_OP_SORT_DESCRIPTION = new SortDescription();
+  public static final SortDescription NO_OP_SORT_DESCRIPTION = new SortDescription(Lists.newArrayList());
 
   protected List<Facet> createFacets(GraphTraversal<Vertex, Vertex> vertices) {
 

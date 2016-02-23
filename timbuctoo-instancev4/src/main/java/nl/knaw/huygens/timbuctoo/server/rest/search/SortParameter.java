@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.rest.search;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
 
 public class SortParameter {
   @JsonProperty("fieldname")
@@ -13,7 +14,7 @@ public class SortParameter {
     this.direction = direction;
   }
 
-  public SortParameter (){
+  public SortParameter() {
     // constructor for Jackson
   }
 
@@ -34,6 +35,18 @@ public class SortParameter {
   }
 
   public enum Direction {
-    asc, desc
+    asc {
+      @Override
+      public Order toOrder() {
+        return Order.incr;
+      }
+    }, desc {
+      @Override
+      public Order toOrder() {
+        return Order.incr;
+      }
+    };
+
+    public abstract Order toOrder();
   }
 }

@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static junit.framework.TestCase.fail;
 import static nl.knaw.huygens.timbuctoo.search.VertexMatcher.likeVertex;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -216,16 +215,16 @@ public class AbstractSearchDescriptionTest {
   }
 
   @Test
-  public void executeLetsEachSortDescriptionSort(){
+  public void executeLetsEachSortDescriptionSort() {
     GraphWrapper graphWrapper = createGraphWrapper(newGraph().build());
-    SearchRequestV2_1 searchRequestV2_1 = new SearchRequestV2_1();
+    SearchRequestV2_1 searchRequest = new SearchRequestV2_1();
     ArrayList<SortParameter> sortParameters = Lists.newArrayList(
       new SortParameter("field", SortParameter.Direction.asc));
-    searchRequestV2_1.setSortParameters(sortParameters);
+    searchRequest.setSortParameters(sortParameters);
     SortDescription sortDescription = mock(SortDescription.class);
     AbstractSearchDescription instance = searchDescription().withSortDescription(sortDescription).build();
 
-    instance.execute(graphWrapper, searchRequestV2_1);
+    instance.execute(graphWrapper, searchRequest);
 
     verify(sortDescription).sort(any(), argThat(is(sortParameters)));
   }
@@ -335,7 +334,7 @@ public class AbstractSearchDescriptionTest {
       sortableFields = Lists.newArrayList();
       fullTextSearchFields = Lists.newArrayList();
       fullTextSearchDescriptions = Lists.newArrayList();
-      sortDescription = new SortDescription();
+      sortDescription = new SortDescription(Lists.newArrayList());
       type = null;
     }
 
