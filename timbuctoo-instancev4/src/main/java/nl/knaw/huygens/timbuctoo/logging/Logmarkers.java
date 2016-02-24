@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.logmarkers;
+package nl.knaw.huygens.timbuctoo.logging;
 
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
