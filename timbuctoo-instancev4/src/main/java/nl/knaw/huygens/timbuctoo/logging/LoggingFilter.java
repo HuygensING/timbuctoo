@@ -144,7 +144,7 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
     context.proceed();
     Stopwatch stopWatch = (Stopwatch) context.getProperty(STOPWATCH_PROPERTY);
     String durationLog;
-    if (stopWatch != null) {
+    if (stopWatch != null && stopWatch.isRunning()) {
       long duration;
       stopWatch.stop();
       duration = stopWatch.elapsed(TimeUnit.MILLISECONDS);
