@@ -10,8 +10,9 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
-import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
+import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
+import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
@@ -24,7 +25,6 @@ import nl.knaw.huygens.timbuctoo.server.rest.FacetedSearchV2_1Endpoint;
 import nl.knaw.huygens.timbuctoo.server.rest.RootEndpoint;
 import nl.knaw.huygens.timbuctoo.server.rest.UserV2_1Endpoint;
 import nl.knaw.huygens.timbuctoo.server.rest.search.FacetValueDeserializer;
-import nl.knaw.huygens.timbuctoo.server.rest.search.FullTextSearchParameter;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -95,8 +95,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, "Local logins file", new FileHealthCheck(loginsPath));
     register(environment, "Users file", new FileHealthCheck(usersPath));
     register(environment, "Neo4j database connection", graphManager);
-    setupObjectMapping(environment);
+    register(environment, new LoggingFilter(1024));
 
+    setupObjectMapping(environment);
   }
 
   private void setupObjectMapping(Environment environment) {
