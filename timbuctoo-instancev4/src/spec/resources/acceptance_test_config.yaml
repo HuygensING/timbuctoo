@@ -32,18 +32,4 @@ logging:
   appenders:
     - type: console
       logFormat: "- %-5p  %m [%c{30}]%n"
-#enable this to send the logs to an external log server
-#    - type: gelf
-#      host: 192.168.99.100
-#      port: 32768
-#      useMarker: true #
-#      includeFullMDC: true #We put the request information in the MDC
-  level: INFO
-
-#enable this to send the metrics to graphite
-#metrics:
-#  reporters:
-#     - type: graphite
-#       host: 192.168.99.100
-#       port: 32778
-#       prefix: timbuctoo
+  level: "OFF"

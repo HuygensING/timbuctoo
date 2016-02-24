@@ -40,7 +40,7 @@ public abstract class BaseDomainV2_1EndpointFixture extends AbstractV2_1Endpoint
 
   static {
     APPLICATION = new DropwizardAppRule<>(TimbuctooV4.class,
-      ResourceHelpers.resourceFilePath("default_acceptance_test_config.yaml"));
+      ResourceHelpers.resourceFilePath("acceptance_test_config.yaml"));
   }
 
   @Override

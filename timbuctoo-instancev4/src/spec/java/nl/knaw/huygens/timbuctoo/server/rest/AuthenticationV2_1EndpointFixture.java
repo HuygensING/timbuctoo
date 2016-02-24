@@ -30,7 +30,7 @@ public class AuthenticationV2_1EndpointFixture extends AbstractV2_1EndpointFixtu
 
   static {
     APPLICATION = new DropwizardAppRule<>(TimbuctooV4.class,
-      ResourceHelpers.resourceFilePath("default_acceptance_test_config.yaml"));
+      ResourceHelpers.resourceFilePath("acceptance_test_config.yaml"));
   }
 
   @Override
