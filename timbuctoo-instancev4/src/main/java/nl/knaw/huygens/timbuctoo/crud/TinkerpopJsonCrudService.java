@@ -17,6 +17,7 @@ import nl.knaw.huygens.timbuctoo.security.User;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -35,6 +36,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
@@ -231,7 +233,7 @@ public class TinkerpopJsonCrudService {
       )
       .sack().as("sack")
       .select("targetVertex", "sack")
-      .map(r -> {
+      .map((Function<Traverser<Map<String, Object>>, ObjectNode>) r -> {
         try {
           Vertex vertex = (Vertex) r.get().get("targetVertex");
           String relationType = (String) r.get().get("sack");
