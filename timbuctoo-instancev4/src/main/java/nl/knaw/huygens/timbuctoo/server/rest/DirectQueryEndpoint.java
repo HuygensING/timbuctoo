@@ -9,6 +9,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.slf4j.Logger;
 
 import javax.script.Bindings;
 import javax.script.ScriptException;
@@ -18,7 +19,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import java.util.ArrayList;
 
 import static org.apache.tinkerpop.gremlin.structure.Direction.IN;
@@ -27,6 +27,7 @@ import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
 @Path("/v2.1/gremlin")
 @Produces(MediaType.TEXT_PLAIN)
 public class DirectQueryEndpoint {
+  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(DirectQueryEndpoint.class);
 
   private final GremlinGroovyScriptEngine engine;
   private final GraphWrapper wrapper;
@@ -79,6 +80,7 @@ public class DirectQueryEndpoint {
       }
       return Response.ok(result.toString()).build();
     } catch (ScriptException e) {
+      LOG.error(e.getMessage(), e);
       return Response.status(500).entity(e.getMessage()).build();
     }
   }
