@@ -40,11 +40,6 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @JsonProperty
   private HandleManagerFactory persistenceManagerFactory = new HandleManagerFactory();
 
-  {
-    activeMq = new ActiveMQConfig();
-    activeMq.brokerUrl = "vm://timbuctoo?broker.persistent=false"; //if no config is provided we use a vm-local activeMq
-  }
-
   public HandleManagerFactory getPersistenceManagerFactory() {
     return persistenceManagerFactory;
   }

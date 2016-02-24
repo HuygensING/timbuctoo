@@ -20,6 +20,11 @@ searchResultAvailabilityTimeout:
 #Public timbuctoo url
 baseUri: http://localhost:8080 # used to generate next and previous links of a search result
 
+activeMq:
+  #persistent=false means that the broker does not try to store the queue. This is not needed in a debugrun.
+  #useShutdownHook=false is needed because the activeMq bundle already takes care of shutting down activeMq
+  brokerUrl: vm://timbuctoo?broker.persistent=false&broker.useShutdownHook=false
+
 server:
   applicationConnectors:
     - type: http #Note! if you change this you might or might not also want to change the baseUri
@@ -31,7 +36,7 @@ server:
 logging:
   appenders:
     - type: console
-      logFormat: "- %-5p  %m [%c{30}]%n"
+      logFormat: "- %-5p  %m [%c{60}]%n"
 #enable this to send the logs to an external log server
 #    - type: gelf
 #      host: 192.168.99.100
