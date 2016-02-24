@@ -21,6 +21,7 @@ import nl.knaw.huygens.timbuctoo.server.rest.DomainCrudAutocompleteV2_1EndPoint;
 import nl.knaw.huygens.timbuctoo.server.rest.DomainCrudCollectionV2_1EndPoint;
 import nl.knaw.huygens.timbuctoo.server.rest.DomainCrudEntityV2_1EndPoint;
 import nl.knaw.huygens.timbuctoo.server.rest.FacetedSearchV2_1Endpoint;
+import nl.knaw.huygens.timbuctoo.server.rest.RootEndpoint;
 import nl.knaw.huygens.timbuctoo.server.rest.UserV2_1Endpoint;
 import nl.knaw.huygens.timbuctoo.server.rest.search.FacetValueDeserializer;
 import nl.knaw.huygens.timbuctoo.server.rest.search.FullTextSearchParameter;
@@ -80,6 +81,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     environment.lifecycle().manage(graphManager);
 
     // register REST endpoints
+    register(environment, new RootEndpoint());
     register(environment, new AuthenticationV2_1EndPoint(loggedInUserStore));
     register(environment, new UserV2_1Endpoint(loggedInUserStore));
     register(environment, new FacetedSearchV2_1Endpoint(configuration, graphManager));
