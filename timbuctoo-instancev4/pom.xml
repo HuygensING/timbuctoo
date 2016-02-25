@@ -85,6 +85,13 @@
       <version>${activemq.version}</version>
       <scope>runtime</scope>
     </dependency>
+    <!-- Activemq persistence db to make the in-memory broker somewhat production viable-->
+    <dependency>
+      <groupId>org.apache.activemq</groupId>
+      <artifactId>activemq-kahadb-store</artifactId>
+      <version>${activemq.version}</version>
+      <scope>runtime</scope>
+    </dependency>
     <!-- SDK to create Handle persistent ids-->
     <dependency>
       <groupId>nl.knaw.huygens</groupId>
