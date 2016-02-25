@@ -53,7 +53,7 @@ public class PersonNamesDefaultNamePropertyParserTest extends AbstractPropertyPa
 
     Object value = instance.parseToRaw(input);
 
-    assertThat(value, is(name1.getFullName() + " " + name2.getFullName()));
+    assertThat(value, is(names.defaultName().toString()));
   }
 
   @Test

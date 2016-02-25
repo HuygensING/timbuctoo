@@ -27,13 +27,13 @@ class DefaultLocationNamePropertyParser implements PropertyParser {
   }
 
   @Override
-  public Object parseToRaw(String value) {
+  public Comparable<?> parseToRaw(String value) {
     String parsedValue = parse(value);
     return parsedValue == null ? getDefaultValue() : parsedValue;
   }
 
   @Override
-  public Object getDefaultValue() {
+  public Comparable<?> getDefaultValue() {
     return "";
   }
 

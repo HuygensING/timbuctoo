@@ -1,8 +1,7 @@
 package nl.knaw.huygens.timbuctoo.search.description.propertyparser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.model.PersonName;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
 import org.slf4j.Logger;
@@ -35,12 +34,12 @@ class PersonNamesDefaultNamePropertyParser implements PropertyParser {
   }
 
   @Override
-  public Object parseToRaw(String value) {
+  public Comparable<?> parseToRaw(String value) {
     if (value != null) {
       try {
         PersonNames personNames = readPersonNames(value);
 
-        return Joiner.on(" ").join(personNames.list);
+        return personNames.defaultName().toString();
       } catch (IOException e) {
         LOG.error("Cannot parse '{}' as Change", value);
         LOG.error("Exception thrown", e);
@@ -51,7 +50,7 @@ class PersonNamesDefaultNamePropertyParser implements PropertyParser {
   }
 
   @Override
-  public Object getDefaultValue() {
-    return "";
+  public Comparable<?> getDefaultValue() {
+    return new PersonName().toString();
   }
 }

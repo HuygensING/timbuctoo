@@ -9,12 +9,12 @@ class StringPropertyParser implements PropertyParser {
   }
 
   @Override
-  public Object parseToRaw(String value) {
+  public Comparable<?> parseToRaw(String value) {
     return value == null ? getDefaultValue() : parse(value);
   }
 
   @Override
-  public Object getDefaultValue() {
+  public Comparable<?> getDefaultValue() {
     return "";
   }
 }

@@ -43,7 +43,7 @@ class ChangeDatePropertyParser implements PropertyParser {
   }
 
   @Override
-  public Object parseToRaw(String value) {
+  public Comparable<?> parseToRaw(String value) {
     if (value == null) {
       return getDefaultValue();
     }
@@ -61,7 +61,7 @@ class ChangeDatePropertyParser implements PropertyParser {
   }
 
   @Override
-  public Object getDefaultValue() {
+  public Comparable<?> getDefaultValue() {
     return 0L;
   }
 }

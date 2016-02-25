@@ -2,9 +2,7 @@ package nl.knaw.huygens.timbuctoo.search.description.sort;
 
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -106,12 +104,12 @@ public class PropertyTest {
     }
 
     @Override
-    public Object parseToRaw(String value) {
+    public Comparable<?> parseToRaw(String value) {
       return Integer.parseInt(value);
     }
 
     @Override
-    public Object getDefaultValue() {
+    public Comparable<?> getDefaultValue() {
       return 0;
     }
   }
