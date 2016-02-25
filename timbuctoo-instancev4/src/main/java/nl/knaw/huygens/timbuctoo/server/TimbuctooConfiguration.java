@@ -41,10 +41,11 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @Valid
   private ActiveMQConfig activeMq;
   @JsonProperty
-  private HandleManagerFactory persistenceManagerFactory = new HandleManagerFactory();
+  @NotNull
+  private HandleManagerFactory persistenceManager;
 
   public HandleManagerFactory getPersistenceManagerFactory() {
-    return persistenceManagerFactory;
+    return persistenceManager;
   }
 
   public Timeout getAutoLogoutTimeout() {
