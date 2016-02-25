@@ -128,21 +128,27 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
       Integer.toString(responseContext.getStatus()) + " " +
       requestContext.getMethod() + " " +
       requestContext.getUriInfo().getRequestUri().toASCIIString();
-    requestContext.setProperty(LOG_TEXT_PROPERTY, log);
 
-    //make the outputStream a counting one so we can log the size
-    final CountingOutputStream stream = new CountingOutputStream(responseContext.getEntityStream());
-    responseContext.setEntityStream(stream);
-    requestContext.setProperty(WRAPPED_STREAM_PROPERTY, stream);
+    if (responseContext.hasEntity()) {
+      //delay logging until the result has been sent to the client so we can measure the size of the result
+      requestContext.setProperty(LOG_TEXT_PROPERTY, log);
+
+      //wrap the outputstream in one that measures the size
+      final CountingOutputStream stream = new CountingOutputStream(responseContext.getEntityStream());
+      responseContext.setEntityStream(stream);
+      requestContext.setProperty(WRAPPED_STREAM_PROPERTY, stream);
+    } else {
+      //log now, because the writeTo wrapper will not be called
+      MDC.put("OUTPUT_BYTECOUNT", "0");
+      String size = " (0 bytes)";
+
+      String durationLog = getDuration((Stopwatch) requestContext.getProperty(STOPWATCH_PROPERTY));
+
+      LOGGER.info(log + size + durationLog);
+    }
   }
 
-  @Override
-  public void aroundWriteTo(final WriterInterceptorContext context)
-    throws IOException, WebApplicationException {
-
-    final CountingOutputStream stream = (CountingOutputStream) context.getProperty(WRAPPED_STREAM_PROPERTY);
-    context.proceed();
-    Stopwatch stopWatch = (Stopwatch) context.getProperty(STOPWATCH_PROPERTY);
+  private String getDuration(Stopwatch stopWatch) {
     String durationLog;
     if (stopWatch != null && stopWatch.isRunning()) {
       long duration;
@@ -153,6 +159,18 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
     } else {
       durationLog = " (duration unknown)";
     }
+    return durationLog;
+  }
+
+  @Override
+  public void aroundWriteTo(final WriterInterceptorContext context)
+    throws IOException, WebApplicationException {
+
+    final CountingOutputStream stream = (CountingOutputStream) context.getProperty(WRAPPED_STREAM_PROPERTY);
+    context.proceed();
+
+    String durationLog = getDuration((Stopwatch) context.getProperty(STOPWATCH_PROPERTY));
+
     String size;
     if (stream != null) {
       MDC.put("OUTPUT_BYTECOUNT", stream.getCount() + "");
@@ -160,6 +178,7 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
     } else {
       size = " (outputSize unknown)";
     }
+
     LOGGER.info(context.getProperty(LOG_TEXT_PROPERTY) + size + durationLog);
   }
 }
