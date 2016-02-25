@@ -11,11 +11,16 @@ import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.facet.FacetDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.search.description.fulltext.LocalSimpleFullTextSearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
+import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 import nl.knaw.huygens.timbuctoo.search.description.sort.SortDescription;
+import nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static nl.knaw.huygens.timbuctoo.search.description.sort.Property.localProperty;
+import static nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription.newSortFieldDescription;
 
 public class WwPersonSearchDescription extends AbstractSearchDescription {
 
@@ -26,6 +31,7 @@ public class WwPersonSearchDescription extends AbstractSearchDescription {
   private final List<FacetDescription> facetDescriptions;
   private final Map<String, PropertyDescriptor> dataPropertyDescriptors;
   private final List<FullTextSearchDescription> fullTextSearchDescriptions;
+  private List<SortFieldDescription> sortFieldDescriptions;
 
   public WwPersonSearchDescription(PropertyDescriptorFactory propertyDescriptorFactory,
                                    FacetDescriptionFactory facetDescriptionFactory) {
@@ -48,6 +54,37 @@ public class WwPersonSearchDescription extends AbstractSearchDescription {
     facetDescriptions = createFacetDescriptions(facetDescriptionFactory);
     dataPropertyDescriptors = createDataPropertyDescriptions(propertyDescriptorFactory);
     fullTextSearchDescriptions = createFullTextSearchDescriptions();
+
+    sortFieldDescriptions = createSortFieldDescriptions();
+  }
+
+  protected ArrayList<SortFieldDescription> createSortFieldDescriptions() {
+    PropertyParserFactory propertyParserFactory = new PropertyParserFactory();
+    return Lists.newArrayList(
+      newSortFieldDescription()
+        .withName("dynamic_k_modified")
+        .withProperty(localProperty()
+          .withName("modified")
+          .withParser(propertyParserFactory.getParser(Change.class)))
+        .build(),
+      newSortFieldDescription()
+        .withName("dynamic_k_birthDate")
+        .withProperty(localProperty()
+          .withName("wwperson_birthDate")
+          .withParser(propertyParserFactory.getParser(Datable.class)))
+        .build(),
+      newSortFieldDescription()
+        .withName("dynamic_sort_name")
+        .withProperty(localProperty()
+          .withName("wwperson_names")
+          .withParser(propertyParserFactory.getParser(PersonNames.class)))
+        .build(),
+      newSortFieldDescription()
+        .withName("dynamic_k_deathDate")
+        .withProperty(localProperty()
+          .withName("wwperson_deathDate")
+          .withParser(propertyParserFactory.getParser(Datable.class)))
+        .build());
   }
 
   private ArrayList<FullTextSearchDescription> createFullTextSearchDescriptions() {
@@ -145,5 +182,11 @@ public class WwPersonSearchDescription extends AbstractSearchDescription {
   @Override
   public List<String> getFullTextSearchFields() {
     return fullTextSearchFields;
+  }
+
+  @Override
+  protected SortDescription getSortDescription() {
+
+    return new SortDescription(sortFieldDescriptions);
   }
 }

@@ -26,4 +26,15 @@ class DefaultLocationNamePropertyParser implements PropertyParser {
     return null;
   }
 
+  @Override
+  public Object parseToRaw(String value) {
+    String parsedValue = parse(value);
+    return parsedValue == null ? getDefaultValue() : parsedValue;
+  }
+
+  @Override
+  public Object getDefaultValue() {
+    return "";
+  }
+
 }

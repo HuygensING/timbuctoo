@@ -43,7 +43,7 @@ public class SortParameter {
     }, desc {
       @Override
       public Order toOrder() {
-        return Order.incr;
+        return Order.decr;
       }
     };
 

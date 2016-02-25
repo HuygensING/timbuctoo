@@ -3,19 +3,27 @@ package nl.knaw.huygens.timbuctoo.search.description.propertyparser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.model.LocationNames;
+import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
-public class DefaultLocationNamePropertyParserTest {
+public class DefaultLocationNamePropertyParserTest extends AbstractPropertyParserTest{
+
+  private DefaultLocationNamePropertyParser instance;
+
+  @Before
+  public void setUp() throws Exception {
+    instance = new DefaultLocationNamePropertyParser();
+  }
 
   @Test
   public void parseReturnsOutputOfPlaceNameGetDefaultName() throws JsonProcessingException {
     LocationNames locationNames = new LocationNames("defLang");
     locationNames.addCountryName("defLang", "Nederland");
-    DefaultLocationNamePropertyParser instance = new DefaultLocationNamePropertyParser();
 
     String value = instance.parse(new ObjectMapper().writeValueAsString(locationNames));
 
@@ -24,19 +32,30 @@ public class DefaultLocationNamePropertyParserTest {
 
   @Test
   public void parseReturnsNullIfTheInputStringCannotBeParsedToLocationNames() {
-    DefaultLocationNamePropertyParser instance = new DefaultLocationNamePropertyParser();
-
     String value = instance.parse("malformedLocationNames");
 
     assertThat(value, is(nullValue()));
   }
 
   @Test
-  public void parseReturnsNullIfTheInputIsNull() {
-    DefaultLocationNamePropertyParser instance = new DefaultLocationNamePropertyParser();
+  public void parseToRawReturnsOutputOfPlaceNameGetDefaultName() throws JsonProcessingException {
+    LocationNames locationNames = new LocationNames("defLang");
+    locationNames.addCountryName("defLang", "Nederland");
 
-    String value = instance.parse(null);
+    Object value = instance.parseToRaw(new ObjectMapper().writeValueAsString(locationNames));
 
-    assertThat(value, is(nullValue()));
+    assertThat(value, is(locationNames.getDefaultName()));
+  }
+
+  @Test
+  public void parseToRawReturnsTheDefaultValueIfTheInputStringCannotBeParsedToLocationNames() {
+    Object value = instance.parseToRaw("malformedLocationNames");
+
+    assertThat(value, is(instance.getDefaultValue()));
+  }
+
+  @Override
+  protected PropertyParser getInstance() {
+    return instance;
   }
 }

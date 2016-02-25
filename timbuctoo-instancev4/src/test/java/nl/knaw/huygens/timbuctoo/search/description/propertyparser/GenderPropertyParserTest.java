@@ -19,12 +19,21 @@ public class GenderPropertyParserTest extends AbstractPropertyParserTest {
 
 
   @Test
-  public void parseReturnsUnquotedStringIfTheValueIsNotNull() {
-    GenderPropertyParser instance = new GenderPropertyParser();
+  public void parseReturnsUnquotedString() {
     String input = "\"FEMALE\"";
     String expected = "FEMALE";
 
     String output = instance.parse(input);
+
+    assertThat(output, is(equalTo(expected)));
+  }
+
+  @Test
+  public void parseToRawReturnsUnquotedString() {
+    String input = "\"FEMALE\"";
+    String expected = "FEMALE";
+
+    Object output = instance.parseToRaw(input);
 
     assertThat(output, is(equalTo(expected)));
   }

@@ -12,5 +12,15 @@ public class DocumentTypePropertyParser implements PropertyParser {
 
     return StringUtils.strip(value, "\"");
   }
+
+  @Override
+  public Object parseToRaw(String value) {
+    return value == null ? getDefaultValue() : parse(value);
+  }
+
+  @Override
+  public Object getDefaultValue() {
+    return "";
+  }
 }
 

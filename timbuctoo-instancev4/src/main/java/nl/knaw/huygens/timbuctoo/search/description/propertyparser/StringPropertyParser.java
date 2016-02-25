@@ -7,4 +7,14 @@ class StringPropertyParser implements PropertyParser {
   public String parse(String value) {
     return value;
   }
+
+  @Override
+  public Object parseToRaw(String value) {
+    return value == null ? getDefaultValue() : parse(value);
+  }
+
+  @Override
+  public Object getDefaultValue() {
+    return "";
+  }
 }

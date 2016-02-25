@@ -16,5 +16,15 @@ public abstract class AbstractPropertyParserTest {
     assertThat(output, is(nullValue()));
   }
 
+  @Test
+  public void parseToRawReturnsTheDefaultValueIfTheInputValueIsNull() {
+    String nullString = null;
+    PropertyParser instance = getInstance();
+
+    Object result = instance.parseToRaw(nullString);
+
+    assertThat(result, is(instance.getDefaultValue()));
+  }
+
   protected abstract PropertyParser getInstance();
 }

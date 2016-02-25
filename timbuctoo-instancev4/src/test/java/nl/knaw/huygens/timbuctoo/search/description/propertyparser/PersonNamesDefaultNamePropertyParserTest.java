@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
@@ -22,7 +23,7 @@ public class PersonNamesDefaultNamePropertyParserTest extends AbstractPropertyPa
   }
 
   @Test
-  public void returnsTheShortNameOfTheFirstNameOfThePersonNames() throws JsonProcessingException {
+  public void parseReturnsTheShortNameOfTheFirstNameOfThePersonNames() throws JsonProcessingException {
     PersonNames names = new PersonNames();
     PersonName name1 = PersonName.newInstance("forename", "surname");
     names.list.add(name1);
@@ -35,11 +36,33 @@ public class PersonNamesDefaultNamePropertyParserTest extends AbstractPropertyPa
   }
 
   @Test
-  public void returnsNullIfTheInputCannotBeParse() throws JsonProcessingException {
+  public void parseReturnsNullIfTheInputCannotBeParsed() throws JsonProcessingException {
     String value = instance.parse("invalid serialized names");
 
     assertThat(value, is(nullValue()));
   }
+
+  @Test
+  public void parseToRawReturnsAStringThatConsistsOfAllTheNamesSeparatedByASpace() throws JsonProcessingException {
+    PersonNames names = new PersonNames();
+    PersonName name1 = PersonName.newInstance("forename", "surname");
+    names.list.add(name1);
+    PersonName name2 = PersonName.newInstance("forename2", "surname2");
+    names.list.add(name2);
+    String input = new ObjectMapper().writeValueAsString(names);
+
+    Object value = instance.parseToRaw(input);
+
+    assertThat(value, is(name1.getFullName() + " " + name2.getFullName()));
+  }
+
+  @Test
+  public void parseToRawReturnsTheDefaultIfTheInputCannotBeParsed() throws JsonProcessingException {
+    Object value = instance.parseToRaw("invalid serialized names");
+
+    assertThat(value, is(instance.getDefaultValue()));
+  }
+
 
   @Override
   protected PropertyParser getInstance() {

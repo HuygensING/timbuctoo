@@ -12,9 +12,29 @@ class DatableFromYearPropertyParser implements PropertyParser {
       return null;
     }
 
-    String cleanedValue = StringUtils.strip(value, "\"");
-    Datable datable = new Datable(cleanedValue);
+    Datable datable = deserializeDatable(value);
 
     return datable.isValid() ? String.valueOf(datable.getFromYear()) : null;
+  }
+
+  @Override
+  public Object parseToRaw(String value) {
+    if (value == null) {
+      return getDefaultValue();
+    }
+
+    Datable datable = deserializeDatable(value);
+
+    return datable.isValid() ? datable.getFromYear() : getDefaultValue();
+  }
+
+  @Override
+  public Object getDefaultValue() {
+    return 0;
+  }
+
+  private Datable deserializeDatable(String value) {
+    String cleanedValue = StringUtils.strip(value, "\"");
+    return new Datable(cleanedValue);
   }
 }

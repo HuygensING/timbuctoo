@@ -26,6 +26,15 @@ public class StringPropertyParserTest extends AbstractPropertyParserTest {
     assertThat(output, is(equalTo(input)));
   }
 
+  @Test
+  public void parseToRawReturnsTheInputValue() {
+    String input = "input";
+
+    Object output = instance.parseToRaw(input);
+
+    assertThat(output, is(equalTo(input)));
+  }
+
   @Override
   protected PropertyParser getInstance() {
     return instance;

@@ -23,8 +23,9 @@ class ChangeDatePropertyParser implements PropertyParser {
   public String parse(String value) {
     if (value != null) {
       try {
-        Change change = objectMapper.readValue(value, Change.class);
-        Date date = new Date(change.getTimeStamp());
+        long timeStamp = readTimeStamp(value);
+
+        Date date = new Date(timeStamp);
 
         return new SimpleDateFormat("yyyyMMdd").format(date);
       } catch (IOException e) {
@@ -34,6 +35,33 @@ class ChangeDatePropertyParser implements PropertyParser {
     }
 
     return null;
+  }
 
+  protected long readTimeStamp(String value) throws IOException {
+    Change change = objectMapper.readValue(value, Change.class);
+    return change.getTimeStamp();
+  }
+
+  @Override
+  public Object parseToRaw(String value) {
+    if (value == null) {
+      return getDefaultValue();
+    }
+
+    try {
+      long timeStamp = readTimeStamp(value);
+
+      return timeStamp;
+    } catch (IOException e) {
+      LOG.error("Cannot parse '{}' as Change", value);
+      LOG.error("Exception thrown", e);
+    }
+
+    return getDefaultValue();
+  }
+
+  @Override
+  public Object getDefaultValue() {
+    return 0L;
   }
 }
