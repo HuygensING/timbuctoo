@@ -23,6 +23,8 @@ baseUri: http://localhost:8080 # used to generate next and previous links of a s
 activeMq:
   #persistent=false means that the broker does not try to store the queue. This is not needed in a debugrun.
   #useShutdownHook=false is needed because the activeMq bundle already takes care of shutting down activeMq
+  #using a vm:// url will also add two amq metrics to the dropwizard metrics. Using a remote url means you have
+  #to export the metrics from the remote VM's jmx yourself. See http://activemq.apache.org/jmx.html for more info
   brokerUrl: vm://timbuctoo?broker.persistent=false&broker.useShutdownHook=false
 
 server:

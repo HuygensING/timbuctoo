@@ -10,7 +10,10 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /*
  *TODO: add good default environment for Timbuctoo
@@ -64,6 +67,27 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @Override
   public ActiveMQConfig getActiveMQ() {
     return activeMq;
+  }
+
+  public Optional<String> getLocalAmqJmxPath(String queueName) {
+    if (activeMq != null) {
+      if (activeMq.brokerUrl != null) {
+        //this only generates a metrics path when the amq brokerurl is a simple vm-local url
+        //A path for remote connections makes no sense because then this JVM can't get at the JMX data directly anyway.
+        //A path for the advanced url format might make sense, but I don't understand that format or its use.
+        Matcher matcher = Pattern.compile("^vm://([^?]*)").matcher(activeMq.brokerUrl);
+        if (matcher.find()) {
+          String brokerName = matcher.group(1);
+          return Optional.of(String.format(
+            //That's a pretty querystring! Did you knwo that you can make your own using https://github.com/cjmx/cjmx?
+            "org.apache.activemq:type=Broker,brokerName=%s,destinationType=Queue,destinationName=%s",
+            brokerName,
+            queueName
+          ));
+        }
+      }
+    }
+    return Optional.empty();
   }
 
   // SearchConfig implementation

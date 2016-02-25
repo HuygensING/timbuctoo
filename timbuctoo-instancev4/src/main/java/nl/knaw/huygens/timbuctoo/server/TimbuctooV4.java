@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server;
 
+import com.codahale.metrics.JmxAttributeGauge;
 import com.codahale.metrics.health.HealthCheck;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.kjetland.dropwizard.activemq.ActiveMQBundle;
@@ -26,13 +27,18 @@ import nl.knaw.huygens.timbuctoo.server.rest.RootEndpoint;
 import nl.knaw.huygens.timbuctoo.server.rest.UserV2_1Endpoint;
 import nl.knaw.huygens.timbuctoo.server.rest.search.FacetValueDeserializer;
 
+import javax.management.ObjectName;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Clock;
 
+import static com.codahale.metrics.MetricRegistry.name;
+import static nl.knaw.huygens.timbuctoo.util.LambdaExceptionUtil.rethrowConsumer;
+
 public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
   public static final String ENCRYPTION_ALGORITHM = "SHA-256";
+  public static final String HANDLE_QUEUE = "pids";
   private ActiveMQBundle activeMqBundle;
 
   public static void main(String[] args) throws Exception {
@@ -68,7 +74,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
-    final HandleAdder handleAdder = new HandleAdder(activeMqBundle, "pids", graphManager, persistenceManager);
+    final HandleAdder handleAdder = new HandleAdder(activeMqBundle, HANDLE_QUEUE, graphManager, persistenceManager);
     final TinkerpopJsonCrudService crudService = new TinkerpopJsonCrudService(
       graphManager,
       HuygensIng.mappings,
@@ -95,7 +101,25 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, "Local logins file", new FileHealthCheck(loginsPath));
     register(environment, "Users file", new FileHealthCheck(usersPath));
     register(environment, "Neo4j database connection", graphManager);
+
+    //Log all http requests
     register(environment, new LoggingFilter(1024));
+
+    //Add embedded AMQ (if any) to the metrics
+    configuration.getLocalAmqJmxPath(HANDLE_QUEUE).ifPresent(rethrowConsumer(jmxPath -> {
+      String dwMetricName = name(this.getClass(), "localAmq");
+      ObjectName jmxMetricName = new ObjectName(jmxPath);
+
+      environment.metrics().register(
+        dwMetricName + ".enqueueCount",
+        new JmxAttributeGauge(jmxMetricName, "EnqueueCount")
+      );
+      environment.metrics().register(
+        dwMetricName + ".dequeueCount",
+        new JmxAttributeGauge(jmxMetricName, "DequeueCount")
+      );
+    }));
+
 
     setupObjectMapping(environment);
   }
