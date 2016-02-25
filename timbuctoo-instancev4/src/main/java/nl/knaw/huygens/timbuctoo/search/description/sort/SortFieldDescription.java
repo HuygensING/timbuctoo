@@ -1,14 +1,17 @@
 package nl.knaw.huygens.timbuctoo.search.description.sort;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 
 public class SortFieldDescription {
   private final String name;
-  private final GraphTraversal<?, ?> traversal;
+  private final GraphTraversal<Object, Object> traversal;
+  private final Object defaultValue;
 
-  SortFieldDescription(String name, GraphTraversal<?, ?> traversal) {
+  SortFieldDescription(String name, GraphTraversal<Object, Object> traversal, Object defaultValue) {
     this.name = name;
     this.traversal = traversal;
+    this.defaultValue = defaultValue;
   }
 
   public static SortFieldDescriptionNameBuilder newSortFieldDescription() {
@@ -19,12 +22,17 @@ public class SortFieldDescription {
     return name;
   }
 
-  public GraphTraversal<?, ?> getTraversal() {
-    return traversal;
+  @SuppressWarnings("unchecked")
+  public GraphTraversal<Object, Object> getTraversal() {
+    return __.coalesce(traversal, __.map(x -> defaultValue));
   }
 
   public interface SortFieldDescriptionNameBuilder {
-    SortFieldDescriptionPropertyBuilder withName(String name);
+    SortFieldDescriptionDefaultValueBuilder withName(String name);
+  }
+
+  public interface SortFieldDescriptionDefaultValueBuilder {
+    SortFieldDescriptionPropertyBuilder withDefaultValue(Comparable<?> value);
   }
 
   public interface SortFieldDescriptionPropertyBuilder {
@@ -36,9 +44,10 @@ public class SortFieldDescription {
   }
 
   private static class Builder implements SortFieldDescriptionNameBuilder,
-    SortFieldDescriptionBuilder, SortFieldDescriptionPropertyBuilder {
+    SortFieldDescriptionBuilder, SortFieldDescriptionPropertyBuilder, SortFieldDescriptionDefaultValueBuilder {
     private String name;
     private Property property;
+    private Comparable<?> value;
 
     public SortFieldDescriptionBuilder withProperty(Property.PropertyBuilder property) {
       this.property = property.build();
@@ -46,11 +55,17 @@ public class SortFieldDescription {
     }
 
     public SortFieldDescription build() {
-      return new SortFieldDescription(name, property.getTraversal());
+      return new SortFieldDescription(name, property.getTraversal(), value);
     }
 
-    public Builder withName(String name) {
+    public SortFieldDescriptionDefaultValueBuilder withName(String name) {
       this.name = name;
+      return this;
+    }
+
+    @Override
+    public SortFieldDescriptionPropertyBuilder withDefaultValue(Comparable<?> value) {
+      this.value = value;
       return this;
     }
   }

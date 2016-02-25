@@ -63,24 +63,28 @@ public class WwPersonSearchDescription extends AbstractSearchDescription {
     return Lists.newArrayList(
       newSortFieldDescription()
         .withName("dynamic_k_modified")
+        .withDefaultValue(0L)
         .withProperty(localProperty()
           .withName("modified")
           .withParser(propertyParserFactory.getParser(Change.class)))
         .build(),
       newSortFieldDescription()
         .withName("dynamic_k_birthDate")
+        .withDefaultValue(0)
         .withProperty(localProperty()
           .withName("wwperson_birthDate")
           .withParser(propertyParserFactory.getParser(Datable.class)))
         .build(),
       newSortFieldDescription()
         .withName("dynamic_sort_name")
+        .withDefaultValue("")
         .withProperty(localProperty()
           .withName("wwperson_names")
           .withParser(propertyParserFactory.getParser(PersonNames.class)))
         .build(),
       newSortFieldDescription()
         .withName("dynamic_k_deathDate")
+        .withDefaultValue(0)
         .withProperty(localProperty()
           .withName("wwperson_deathDate")
           .withParser(propertyParserFactory.getParser(Datable.class)))

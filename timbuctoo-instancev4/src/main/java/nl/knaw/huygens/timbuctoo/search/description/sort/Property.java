@@ -18,14 +18,13 @@ public class Property {
     return new Property.Builder();
   }
 
-  public GraphTraversal<?, ?> getTraversal() {
+  public GraphTraversal<Object, Object> getTraversal() {
     if (parser == null) {
-      return __.coalesce(__.has(name).values(name), __.map(x -> ""));
+      return __.has(name).values(name);
     }
 
-    return __.coalesce(
-      __.has(name).values(name).map(x -> parser.parseToRaw("" + x.get())),
-      __.map(x -> parser.getDefaultValue()));
+    return
+      __.has(name).values(name).map(x -> parser.parseToRaw("" + x.get()));
   }
 
   public interface PropertyNameBuilder {

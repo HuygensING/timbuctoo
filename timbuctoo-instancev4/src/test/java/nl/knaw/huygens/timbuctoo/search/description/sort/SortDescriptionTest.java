@@ -30,8 +30,8 @@ public class SortDescriptionTest {
 
   @Before
   public void setUp() throws Exception {
-    sortFieldDescription1 = new SortFieldDescription(SORT_FIELD_1, __.has(PROPERTY_1).values(PROPERTY_1));
-    sortFieldDescription2 = new SortFieldDescription(SORT_FIELD_2, __.has(PROPERTY_2).values(PROPERTY_2));
+    sortFieldDescription1 = new SortFieldDescription(SORT_FIELD_1, __.has(PROPERTY_1).values(PROPERTY_1), "");
+    sortFieldDescription2 = new SortFieldDescription(SORT_FIELD_2, __.has(PROPERTY_2).values(PROPERTY_2), "");
     instance = new SortDescription(Lists.newArrayList(sortFieldDescription1,
       sortFieldDescription2));
   }
