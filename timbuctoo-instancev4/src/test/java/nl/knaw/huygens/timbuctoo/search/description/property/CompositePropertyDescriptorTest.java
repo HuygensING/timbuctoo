@@ -15,7 +15,7 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 public class CompositePropertyDescriptorTest {
 
   @Test
-  public void getReturnsTheValueOfTheFirstPropDescriptionIfItIsNotNull() {
+  public void getReturnsTheValueOfTheFirstPropDescription() {
     PropertyDescriptor propertyDescriptor1 = mock(PropertyDescriptor.class);
     String valueOfDesc1 = "notNull";
     given(propertyDescriptor1.get(any(Vertex.class))).willReturn(valueOfDesc1);
@@ -34,6 +34,23 @@ public class CompositePropertyDescriptorTest {
   public void getReturnsTheValueOfTheSecondPropDescriptionIfTheValueOfTheFirstOneItIsNull() {
     PropertyDescriptor propertyDescriptor1 = mock(PropertyDescriptor.class);
     given(propertyDescriptor1.get(any(Vertex.class))).willReturn(null);
+    PropertyDescriptor propertyDescriptor2 = mock(PropertyDescriptor.class);
+    String valueOfDesc2 = "notNull";
+    given(propertyDescriptor2.get(any(Vertex.class))).willReturn(valueOfDesc2);
+    CompositePropertyDescriptor instance = new CompositePropertyDescriptor(propertyDescriptor1, propertyDescriptor2);
+
+    String value = instance.get(mock(Vertex.class));
+
+    assertThat(value, is(valueOfDesc2));
+
+    verify(propertyDescriptor1).get(any(Vertex.class));
+    verify(propertyDescriptor2).get(any(Vertex.class));
+  }
+
+  @Test
+  public void getReturnsTheValueOfTheSecondPropDescriptionIfTheValueOfTheFirstOneIsAnEmptyString() {
+    PropertyDescriptor propertyDescriptor1 = mock(PropertyDescriptor.class);
+    given(propertyDescriptor1.get(any(Vertex.class))).willReturn("");
     PropertyDescriptor propertyDescriptor2 = mock(PropertyDescriptor.class);
     String valueOfDesc2 = "notNull";
     given(propertyDescriptor2.get(any(Vertex.class))).willReturn(valueOfDesc2);
