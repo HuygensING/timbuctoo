@@ -24,6 +24,7 @@ import java.util.Optional;
 
 public class DatableRangeFacetDescription implements FacetDescription {
   public static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd");
+  public static final SimpleDateFormat FILTER_FORMAT = new SimpleDateFormat("yyyy");
   public static final Logger LOG = LoggerFactory.getLogger(DatableRangeFacetDescription.class);
   private final String facetName;
   private final String propertyName;
@@ -81,21 +82,25 @@ public class DatableRangeFacetDescription implements FacetDescription {
     }
 
     // pad the strings to make them parsable
-    String lowerLimitString = Strings.padStart("" + ((DateRangeFacetValue) facetValue).getLowerLimit(), 8, '0');
-    String upperLimitString = Strings.padStart("" + ((DateRangeFacetValue) facetValue).getUpperLimit(), 8, '0');
+    String lowerLimitString =
+      Strings.padStart("" + ((DateRangeFacetValue) facetValue).getLowerLimit(), 8, '0').substring(0, 4);
+    String upperLimitString =
+      Strings.padStart("" + ((DateRangeFacetValue) facetValue).getUpperLimit(), 8, '0').substring(0, 4);
 
     try {
-      Range<Date> range = Range.closed(FORMAT.parse(
-        lowerLimitString), FORMAT.parse(upperLimitString));
+      Range<Date> range = Range.closed(FILTER_FORMAT.parse(lowerLimitString), FILTER_FORMAT.parse(upperLimitString));
 
       graphTraversal.where(__.has(propertyName, P.test((o1, o2) -> {
         Datable datable = getDatable("" + o1);
+        if (!datable.isValid()) {
+          return false;
+        }
 
         Range<Date> range1 = (Range<Date>) o2;
         return range1.contains(datable.getFromDate()) || range1.contains(datable.getToDate());
       }, range)));
     } catch (ParseException e) {
-      e.printStackTrace();
+      LOG.error("Cannot parse date", e);
     }
 
   }
