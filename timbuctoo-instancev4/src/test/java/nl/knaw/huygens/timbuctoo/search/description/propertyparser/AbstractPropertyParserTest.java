@@ -23,7 +23,7 @@ public abstract class AbstractPropertyParserTest {
 
     Object result = instance.parseToRaw(nullString);
 
-    assertThat(result, is(instance.getDefaultValue()));
+    assertThat(result, is(nullValue()));
   }
 
   protected abstract PropertyParser getInstance();

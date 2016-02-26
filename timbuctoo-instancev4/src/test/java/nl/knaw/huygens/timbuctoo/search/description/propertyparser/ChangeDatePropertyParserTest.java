@@ -51,10 +51,10 @@ public class ChangeDatePropertyParserTest extends AbstractPropertyParserTest {
   }
 
   @Test
-  public void parseToRawReturnsTheDefaultValueIfTheInputCannotBeParsed() {
+  public void parseToRawReturnsNullIfTheInputCannotBeParsed() {
     Object output = instance.parseToRaw("notASerializedChange");
 
-    assertThat(output, is(instance.getDefaultValue()));
+    assertThat(output, is(nullValue()));
   }
 
   @Override

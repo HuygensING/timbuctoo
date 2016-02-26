@@ -6,16 +6,21 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 public class SortFieldDescription {
   private final String name;
   private final GraphTraversal<Object, Object> traversal;
-  private final Object defaultValue;
+  private final Comparable<?> defaultValue;
+  private GraphTraversal<Object, Object> backUpTraversal;
 
-  SortFieldDescription(String name, GraphTraversal<Object, Object> traversal, Object defaultValue) {
+  private SortFieldDescription(String name, GraphTraversal<Object, Object> traversal,
+                       GraphTraversal<Object, Object> backUpTraversal,
+                       Comparable<?> defaultValue) {
     this.name = name;
     this.traversal = traversal;
+    this.backUpTraversal = backUpTraversal;
+
     this.defaultValue = defaultValue;
   }
 
   public static SortFieldDescriptionNameBuilder newSortFieldDescription() {
-    return new Builder();
+    return new BuilderSortFieldDescription();
   }
 
   public String getName() {
@@ -24,7 +29,10 @@ public class SortFieldDescription {
 
   @SuppressWarnings("unchecked")
   public GraphTraversal<Object, Object> getTraversal() {
-    return __.coalesce(traversal, __.map(x -> defaultValue));
+    if (backUpTraversal == null) {
+      return __.coalesce(traversal, __.map(x -> defaultValue));
+    }
+    return __.coalesce(traversal, backUpTraversal, __.map(x -> defaultValue));
   }
 
   public interface SortFieldDescriptionNameBuilder {
@@ -36,26 +44,26 @@ public class SortFieldDescription {
   }
 
   public interface SortFieldDescriptionPropertyBuilder {
-    SortFieldDescriptionBuilder withProperty(Property.PropertyBuilder property);
+    SortFieldDescriptionBackupPropertyBuilder withProperty(Property.PropertyBuilder property);
+  }
+
+  public interface SortFieldDescriptionBackupPropertyBuilder extends SortFieldDescriptionBuilder {
+    SortFieldDescriptionBuilder withBackupProperty(Property.PropertyBuilder property);
   }
 
   public interface SortFieldDescriptionBuilder {
     SortFieldDescription build();
   }
 
-  private static class Builder implements SortFieldDescriptionNameBuilder,
-    SortFieldDescriptionBuilder, SortFieldDescriptionPropertyBuilder, SortFieldDescriptionDefaultValueBuilder {
+  private static class BuilderSortFieldDescription implements SortFieldDescriptionNameBuilder,
+    SortFieldDescriptionBuilder, SortFieldDescriptionPropertyBuilder, SortFieldDescriptionDefaultValueBuilder,
+    SortFieldDescriptionBackupPropertyBuilder {
     private String name;
-    private Property property;
     private Comparable<?> value;
+    private Property property;
+    private Property otherProperty;
 
-    public SortFieldDescriptionBuilder withProperty(Property.PropertyBuilder property) {
-      this.property = property.build();
-      return this;
-    }
-
-    public SortFieldDescription build() {
-      return new SortFieldDescription(name, property.getTraversal(), value);
+    private BuilderSortFieldDescription() {
     }
 
     public SortFieldDescriptionDefaultValueBuilder withName(String name) {
@@ -68,6 +76,26 @@ public class SortFieldDescription {
       this.value = value;
       return this;
     }
+
+    @Override
+    public SortFieldDescriptionBackupPropertyBuilder withProperty(Property.PropertyBuilder property) {
+      this.property = property.build();
+      return this;
+    }
+
+    @Override
+    public SortFieldDescriptionBuilder withBackupProperty(Property.PropertyBuilder property) {
+      this.otherProperty = property.build();
+      return this;
+    }
+
+    public SortFieldDescription build() {
+      if (otherProperty == null) {
+        return new SortFieldDescription(name, property.getTraversal(), null, value);
+      }
+      return new SortFieldDescription(name, property.getTraversal(), otherProperty.getTraversal(), value);
+    }
+
   }
 
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.model.PersonName;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
+import org.neo4j.helpers.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,18 +40,18 @@ class PersonNamesDefaultNamePropertyParser implements PropertyParser {
       try {
         PersonNames personNames = readPersonNames(value);
 
-        return personNames.defaultName().toString();
+        String defaultName = personNames.defaultName().getSortName();
+        if (Strings.isBlank(defaultName)) {
+          return null;
+        }
+        return defaultName;
       } catch (IOException e) {
         LOG.error("Cannot parse '{}' as Change", value);
         LOG.error("Exception thrown", e);
       }
     }
 
-    return getDefaultValue();
+    return null;
   }
 
-  @Override
-  public Comparable<?> getDefaultValue() {
-    return new PersonName().toString();
-  }
 }

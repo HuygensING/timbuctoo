@@ -44,24 +44,18 @@ class ChangeDatePropertyParser implements PropertyParser {
 
   @Override
   public Comparable<?> parseToRaw(String value) {
-    if (value == null) {
-      return getDefaultValue();
+    if (value != null) {
+      try {
+        long timeStamp = readTimeStamp(value);
+
+        return timeStamp;
+      } catch (IOException e) {
+        LOG.error("Cannot parse '{}' as Change", value);
+        LOG.error("Exception thrown", e);
+      }
     }
 
-    try {
-      long timeStamp = readTimeStamp(value);
-
-      return timeStamp;
-    } catch (IOException e) {
-      LOG.error("Cannot parse '{}' as Change", value);
-      LOG.error("Exception thrown", e);
-    }
-
-    return getDefaultValue();
+    return null;
   }
 
-  @Override
-  public Comparable<?> getDefaultValue() {
-    return 0L;
-  }
 }

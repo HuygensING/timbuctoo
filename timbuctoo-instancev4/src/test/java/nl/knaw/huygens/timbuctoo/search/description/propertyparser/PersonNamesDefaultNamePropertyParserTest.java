@@ -43,7 +43,7 @@ public class PersonNamesDefaultNamePropertyParserTest extends AbstractPropertyPa
   }
 
   @Test
-  public void parseToRawReturnsAStringThatConsistsOfAllTheNamesSeparatedByASpace() throws JsonProcessingException {
+  public void parseToRawReturnsAStringThatConsistsOfSortNameVariantOfTheDefaultName() throws JsonProcessingException {
     PersonNames names = new PersonNames();
     PersonName name1 = PersonName.newInstance("forename", "surname");
     names.list.add(name1);
@@ -53,14 +53,24 @@ public class PersonNamesDefaultNamePropertyParserTest extends AbstractPropertyPa
 
     Object value = instance.parseToRaw(input);
 
-    assertThat(value, is(names.defaultName().toString()));
+    assertThat(value, is(names.defaultName().getSortName()));
   }
 
   @Test
-  public void parseToRawReturnsTheDefaultIfTheInputCannotBeParsed() throws JsonProcessingException {
+  public void parseToRawReturnsNullIfTheInputCannotBeParsed() throws JsonProcessingException {
     Object value = instance.parseToRaw("invalid serialized names");
 
-    assertThat(value, is(instance.getDefaultValue()));
+    assertThat(value, is(nullValue()));
+  }
+
+  @Test
+  public void parserToRawReturnsNullIfThePersonNamesIsEmpty() throws JsonProcessingException {
+    PersonNames names = new PersonNames();
+    String input = new ObjectMapper().writeValueAsString(names);
+
+    Object value = instance.parseToRaw(input);
+
+    assertThat(value, is(nullValue()));
   }
 
 

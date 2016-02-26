@@ -20,17 +20,12 @@ class DatableFromYearPropertyParser implements PropertyParser {
   @Override
   public Comparable<?> parseToRaw(String value) {
     if (value == null) {
-      return getDefaultValue();
+      return null;
     }
 
     Datable datable = deserializeDatable(value);
 
-    return datable.isValid() ? datable.getFromYear() : getDefaultValue();
-  }
-
-  @Override
-  public Comparable<?> getDefaultValue() {
-    return 0;
+    return datable.isValid() ?  datable.getFromYear() : null;
   }
 
   private Datable deserializeDatable(String value) {

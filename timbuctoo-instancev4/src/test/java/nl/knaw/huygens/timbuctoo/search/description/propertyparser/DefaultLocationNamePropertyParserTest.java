@@ -48,10 +48,10 @@ public class DefaultLocationNamePropertyParserTest extends AbstractPropertyParse
   }
 
   @Test
-  public void parseToRawReturnsTheDefaultValueIfTheInputStringCannotBeParsedToLocationNames() {
+  public void parseToRawReturnsNullIfTheInputStringCannotBeParsedToLocationNames() {
     Object value = instance.parseToRaw("malformedLocationNames");
 
-    assertThat(value, is(instance.getDefaultValue()));
+    assertThat(value, is(nullValue()));
   }
 
   @Override

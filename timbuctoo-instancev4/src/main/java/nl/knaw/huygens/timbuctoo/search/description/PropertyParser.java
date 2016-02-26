@@ -4,6 +4,4 @@ public interface PropertyParser {
   String parse(String value);
 
   Comparable<?> parseToRaw(String value);
-
-  Comparable<?> getDefaultValue();
 }

@@ -81,6 +81,8 @@ public class WwPersonSearchDescription extends AbstractSearchDescription {
         .withProperty(localProperty()
           .withName("wwperson_names")
           .withParser(propertyParserFactory.getParser(PersonNames.class)))
+        .withBackupProperty(localProperty()
+          .withName("wwperson_tempName"))
         .build(),
       newSortFieldDescription()
         .withName("dynamic_k_deathDate")

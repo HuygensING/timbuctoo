@@ -46,12 +46,12 @@ public class DatableFromYearPropertyParserTest extends AbstractPropertyParserTes
   }
 
   @Test
-  public void parseToRawReturnsTheDefaultValueIfTheDatableIsNotValid() {
+  public void parseToRawReturnsNullIfTheDatableIsNotValid() {
     String invalidDatableString = "hello world";
 
     Object result = instance.parseToRaw(invalidDatableString);
 
-    assertThat(result, is(instance.getDefaultValue()));
+    assertThat(result, is(nullValue()));
   }
 
   @Override

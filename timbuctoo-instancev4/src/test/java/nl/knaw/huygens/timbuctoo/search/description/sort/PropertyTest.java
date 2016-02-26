@@ -68,9 +68,5 @@ public class PropertyTest {
       return Integer.parseInt(value);
     }
 
-    @Override
-    public Comparable<?> getDefaultValue() {
-      return 0;
-    }
   }
 }

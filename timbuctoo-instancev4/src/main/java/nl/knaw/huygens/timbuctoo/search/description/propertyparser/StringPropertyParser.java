@@ -10,11 +10,7 @@ class StringPropertyParser implements PropertyParser {
 
   @Override
   public Comparable<?> parseToRaw(String value) {
-    return value == null ? getDefaultValue() : parse(value);
+    return parse(value);
   }
 
-  @Override
-  public Comparable<?> getDefaultValue() {
-    return "";
-  }
 }
