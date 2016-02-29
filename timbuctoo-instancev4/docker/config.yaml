@@ -1,0 +1,53 @@
+#You probably want to mount the paths below as volumes in your container
+#database files
+databasePath: "/root/database"
+#The defaults contain 1 user with username=username and pw=password
+loginsFilePath: "/root/resources/logins.json"
+usersFilePath: "/root/resources/users.json"
+
+#MUST BE PROVIDED AS -e BASE_URI to the container
+#baseUri: http://localhost
+
+#MUST BE PROVIDED AS -e USE_DUMMY_HANDLE_SERVER=yes or by specifying the options
+#persistenceManager:
+#  useDummy: yes
+#  privateKeyFile: $PERSISTENCE_MANAGER_PRIVATEKEYFILE
+#  cypher: $PERSISTENCE_MANAGER_CYPHER
+#  namingAuthority: $PERSISTENCE_MANAGER_NAMINGAUTHORITY
+#  prefix: $PERSISTENCE_MANAGER_PREFIX
+
+#You can provide a GELF server for receiving the logs using GELF_HOST and GELF_PORT
+#You can provide a graphite server for receiving the metrics using GRAPHITE_HOST and GRAPHITE_PORT
+#You can provide an activeMQ broker using ACTIVEMQ_BROKER_URL
+#Or you can, of course provide your own config file entirely by adding it as a volume to /root/config.yaml
+
+autoLogoutTimeout:
+  duration: 8
+  timeUnit: HOURS
+searchResultAvailabilityTimeout:
+  duration: 8
+  timeUnit: HOURS
+
+activeMq:
+  brokerUrl: vm://timbuctoo?broker.persistent=true&broker.useShutdownHook=false
+
+server:
+  applicationConnectors:
+    - type: http
+      port: 80
+  adminConnectors:
+    - type: http
+      port: 8081
+  requestLog:
+    appenders: [] #All requests are already logged using logging.LoggingFilter so the seperate requestlog is not needed
+
+logging:
+  level: INFO
+  appenders:
+    - type: console
+      logFormat: "- %-5p  %m [%c{60}]%n"
+    - type: file #placeholder for the gelf logger
+
+metrics:
+  reporters:
+     - type: console #replaced by graphite server when provided
