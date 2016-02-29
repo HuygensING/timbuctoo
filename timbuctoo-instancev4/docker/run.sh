@@ -71,6 +71,9 @@ else
   if [ -n "$ACTIVEMQ_BROKER_URL" ]; then
     overrides="$overrides -Ddw.activeMq.brokerUrl=$ACTIVEMQ_BROKER_URL"
   fi
+
+  echo "With the following overrides"
+  echo $overrides | tr ' ' '\n'
   #using exec so that dropwizard is the one that receives the SIGINT on docker stop
   JAVA_OPTS="$overrides $JAVA_OPTS" exec ./appassembler/bin/timbuctoo "$1" "$2"
 fi
