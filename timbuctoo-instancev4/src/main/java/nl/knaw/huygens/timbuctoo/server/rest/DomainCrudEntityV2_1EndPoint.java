@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
 
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PUT;
@@ -95,6 +96,26 @@ public class DomainCrudEntityV2_1EndPoint {
           .status(Response.Status.EXPECTATION_FAILED)
           .entity(jsnO("message", jsn("Entry was already updated")))
           .build();
+      }
+    }
+  }
+
+  //FIXME disallow deletes from users of a different VRE
+  @DELETE
+  public Response delete(@PathParam("collection") String collectionName,
+                         @HeaderParam("Authorization") String authHeader,
+                         @PathParam("id") UUIDParam id) {
+    Optional<User> user = loggedInUserStore.userFor(authHeader);
+    if (!user.isPresent()) {
+      return Response.status(Response.Status.UNAUTHORIZED).build();
+    } else {
+      try {
+        crudService.delete(collectionName, id.get(), user.get().getId());
+        return Response.noContent().build();
+      } catch (InvalidCollectionException e) {
+        return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
+      } catch (NotFoundException e) {
+        return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn("not found"))).build();
       }
     }
   }

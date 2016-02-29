@@ -21,6 +21,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -182,6 +183,11 @@ public class TinkerpopJsonCrudService {
       //Force side effects to happen
     });
     Vertex entity = entityT.asAdmin().clone().next();
+
+    String entityTypesStr = getProp(entity, "types", String.class).orElse("[]");
+    if (!entityTypesStr.contains("\"" + collection.getEntityTypeName() + "\"")) {
+      throw new NotFoundException();
+    }
 
     Tuple<ObjectNode, Long> relations = getRelations(entity, traversalSource, collection);
     result.set("@relationCount", nodeFactory.numberNode(relations.getRight()));
@@ -371,7 +377,7 @@ public class TinkerpopJsonCrudService {
   }
 
   /* returns the entitytype for the current collection's vre or else the type of the current collection */
-  private String getEntityType(Collection collection, Vertex vertex) throws IOException {
+  private String getEntityType(Collection collection, Element vertex) throws IOException {
     final Vre vre = collection.getVre();
     String encodedEntityTypes = getProp(vertex, "types", String.class)
       .orElse("[\"" + collection.getEntityTypeName() +  "\"]");
@@ -448,12 +454,14 @@ public class TinkerpopJsonCrudService {
       return source
         .V()
         .has("tim_id", id.toString())
+        .not(__.has("deleted", true))
         .has("isLatest", true);
     }
     return source
       .V()
       .has("tim_id", id.toString())
       .has("rev", rev)
+      .not(__.has("deleted", true))
       .has("isLatest", false);
   }
 
@@ -508,7 +516,7 @@ public class TinkerpopJsonCrudService {
         entityTypes.add(collection.getEntityTypeName());
         entity.property("types", entityTypes.toString());
       } catch (IOException e) {
-        LOG.error(Logmarkers.databaseInvariant, "property 'types' was not parseable");
+        LOG.error(Logmarkers.databaseInvariant, "property 'types' was not parseable: " + entityTypesStr);
       }
     }
 
@@ -612,5 +620,65 @@ public class TinkerpopJsonCrudService {
     }
 
     return resultNode;
+  }
+
+  public void delete(String collectionName, UUID id, String userId)
+    throws InvalidCollectionException, NotFoundException {
+
+    final Collection collection = mappings.get(collectionName);
+    if (collection == null) {
+      throw new InvalidCollectionException(collectionName);
+    }
+    final Graph graph = graphwrapper.getGraph();
+    final GraphTraversalSource traversalSource = graph.traversal();
+    GraphTraversal<Vertex, Vertex> entityTraversal = getEntity(traversalSource, id, null);
+
+    if (!entityTraversal.hasNext()) {
+      throw new NotFoundException();
+    }
+
+    Vertex entity = entityTraversal.next();
+    String entityTypesStr = getProp(entity, "types", String.class).orElse("[]");
+    if (entityTypesStr.contains("\"" + collection.getEntityTypeName() + "\"")) {
+      try {
+        ArrayNode entityTypes = arrayToEncodedArray.tinkerpopToJson(entityTypesStr);
+        if (entityTypes.size() == 1) {
+          entity.property("deleted", true);
+        } else {
+          for (int i = entityTypes.size() - 1; i >= 0; i--) {
+            JsonNode val = entityTypes.get(i);
+            if (val != null && val.asText("").equals(collection.getEntityTypeName())) {
+              entityTypes.remove(i);
+            }
+          }
+          entity.property("types", entityTypes.toString());
+        }
+      } catch (IOException e) {
+        LOG.error(Logmarkers.databaseInvariant, "property 'types' was not parseable: " + entityTypesStr);
+      }
+    } else {
+      throw new NotFoundException();
+    }
+    int newRev = getProp(entity, "rev", Integer.class).orElse(1) + 1;
+    entity.property("rev", newRev);
+
+    entity.edges(Direction.BOTH).forEachRemaining(edge -> {
+      try {
+        String entityType = getEntityType(collection, edge);
+        if (entityType != null) {
+          edge.property(entityType + "_accepted", false);
+        }
+      } catch (IOException e) {
+        LOG.error(Logmarkers.databaseInvariant, "property 'types' was not parseable");
+      }
+    });
+
+    setModified(entity, userId);
+    duplicateVertex(graph, entity);
+    handleAdder.add(new HandleAdderParameters(id, newRev, urlFor.apply(collectionName, id, newRev)));
+
+    //Make sure this is the last line of the method. We don't want to commit half our changes
+    //this also means checking each function that we call to see if they don't call commit()
+    graph.tx().commit();
   }
 }

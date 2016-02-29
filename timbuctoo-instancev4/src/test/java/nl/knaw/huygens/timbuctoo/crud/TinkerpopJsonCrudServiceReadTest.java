@@ -10,7 +10,6 @@ import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -112,6 +111,8 @@ public class TinkerpopJsonCrudServiceReadTest {
     Graph graph = newGraph()
       .withVertex(v -> v
         .withTimId(id.toString())
+        .withType("person")
+        .withVre("ww")
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
       )
@@ -135,6 +136,8 @@ public class TinkerpopJsonCrudServiceReadTest {
     Graph graph = newGraph()
       .withVertex(v -> v
         .withTimId(id.toString())
+        .withType("person")
+        .withVre("ww")
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
         .withProperty("wwperson_name", "the name")
@@ -161,6 +164,8 @@ public class TinkerpopJsonCrudServiceReadTest {
         .withTimId(id.toString())
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
+        .withType("person")
+        .withVre("ww")
         .withProperty("wwperson_name", 2) //should be a string, not an int
       )
       .build();
@@ -180,6 +185,8 @@ public class TinkerpopJsonCrudServiceReadTest {
     Graph graph = newGraph()
       .withVertex(v -> v
         .withTimId(uuid.toString())
+        .withType("person")
+        .withVre("ww")
         .withProperty("wwperson_name", "old")
         .withProperty("rev", 1)
         .withProperty("isLatest", false)
@@ -187,6 +194,8 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .withVertex("replacement", v -> v
         .withTimId(uuid.toString())
+        .withType("person")
+        .withVre("ww")
         .withProperty("wwperson_name", "new")
         .withProperty("rev", 2)
         .withProperty("isLatest", false)
@@ -194,6 +203,8 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .withVertex("dangling", v -> v
         .withTimId(uuid.toString())
+        .withType("person")
+        .withVre("ww")
         .withProperty("wwperson_name", "new")
         .withProperty("rev", 2)
         .withProperty("isLatest", true)
@@ -214,6 +225,8 @@ public class TinkerpopJsonCrudServiceReadTest {
     Graph graph = newGraph()
       .withVertex(v -> v
         .withTimId(id.toString())
+        .withType("person")
+        .withVre("ww")
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
       )
@@ -233,6 +246,8 @@ public class TinkerpopJsonCrudServiceReadTest {
     Graph graph = newGraph()
       .withVertex(v -> v
         .withTimId(uuid.toString())
+        .withType("person")
+        .withVre("ww")
         .withProperty("wwperson_name", "old")
         .withProperty("rev", 1)
         .withProperty("isLatest", false)
@@ -266,6 +281,8 @@ public class TinkerpopJsonCrudServiceReadTest {
     Graph graph = newGraph()
       .withVertex(v -> v
         .withTimId(id.toString())
+        .withType("person")
+        .withVre("ww")
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
       )
@@ -283,6 +300,8 @@ public class TinkerpopJsonCrudServiceReadTest {
     Graph graph = newGraph()
       .withVertex(v -> v
         .withTimId(id.toString())
+        .withType("person")
+        .withVre("ww")
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
         .withProperty("modified", "{\"timeStamp\":1427921175250, \"userId\":\"USER1\"}")
@@ -312,6 +331,8 @@ public class TinkerpopJsonCrudServiceReadTest {
       .withVertex(v -> v
         .withTimId(id.toString())
         .withProperty("isLatest", true)
+        .withType("person")
+        .withVre("ww")
         .withProperty("rev", 1)
         .withProperty("created", "{\"timeStamp\":1427921175250, \"userId\":\"USER1\"}")
       )
@@ -634,7 +655,7 @@ public class TinkerpopJsonCrudServiceReadTest {
       .withVertex("source", v -> v
         .withOutgoingRelation("isPseudonymOf", "pseudonym")
         .withVre("ww")
-        .withType("displayname")
+        .withType("person")
         .isLatest(true)
         .withTimId(id.toString())
       )
@@ -737,40 +758,33 @@ public class TinkerpopJsonCrudServiceReadTest {
   }
 
   @Test
-  public void showsOwnVariationRefWhenTypesPropertyIsNotSet() throws Exception {
+  public void throwsNotFoundWhenTypeIsNotPartOfTypes() throws Exception {
     UUID id = UUID.randomUUID();
     Graph graph = newGraph()
       .withVertex(v -> v
         .withTimId(id.toString())
+        .withType("person")
+        .withVre("ckcc")
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
       )
       .build();
 
-    Vertex vertex = graph.traversal().V().has("tim_id", id.toString()).next();
-    vertex.property("types").remove();
-    graph.tx().commit();
-
     TinkerpopJsonCrudService instance = basicInstance(graph);
 
-    String resultJson = instance.get("wwpersons", id).toString();
+    expectedException.expect(NotFoundException.class);
 
-    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
-      "@variationRefs", JsonBuilder.jsnA(
-        JsonBuilder.jsnO(
-          "id", jsn(id.toString()),
-          "type", jsn("wwperson")
-        )
-      )
-    ).toString()).allowingExtraUnexpectedFields());
+    instance.get("wwpersons", id).toString();
   }
 
   @Test
-  public void showsIfDeleted() throws Exception {
+  public void throwsNotFoundWhenDeleted() throws Exception {
     UUID id = UUID.randomUUID();
     Graph graph = newGraph()
       .withVertex(v -> v
         .withTimId(id.toString())
+        .withType("person")
+        .withVre("ww")
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
         .withProperty("deleted", true)
@@ -779,11 +793,9 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     TinkerpopJsonCrudService instance = basicInstance(graph);
 
-    String resultJson = instance.get("wwpersons", id).toString();
+    expectedException.expect(NotFoundException.class);
 
-    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
-      "^deleted", jsn(true)
-    ).toString()).allowingExtraUnexpectedFields());
+    instance.get("wwpersons", id).toString();
   }
 
   @Test
@@ -792,6 +804,8 @@ public class TinkerpopJsonCrudServiceReadTest {
     Graph graph = newGraph()
       .withVertex(v -> v
         .withTimId(id.toString())
+        .withType("person")
+        .withVre("ww")
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
       )
@@ -812,6 +826,8 @@ public class TinkerpopJsonCrudServiceReadTest {
     Graph graph = newGraph()
       .withVertex(v -> v
         .withTimId(id.toString())
+        .withType("person")
+        .withVre("ww")
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
         .withProperty("pid", "http://example.com/pid")
@@ -834,6 +850,8 @@ public class TinkerpopJsonCrudServiceReadTest {
       .withVertex(v -> v
         .withTimId(id.toString())
         .withProperty("isLatest", true)
+        .withType("person")
+        .withVre("ww")
         .withProperty("rev", 1)
         .withProperty("wwperson_name", "the name")
       )
