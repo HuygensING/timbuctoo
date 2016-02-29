@@ -34,6 +34,7 @@ import java.time.Clock;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -49,6 +50,7 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
+import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 
 public class TinkerpopJsonCrudService {
 
@@ -83,6 +85,66 @@ public class TinkerpopJsonCrudService {
     if (collection == null) {
       throw new InvalidCollectionException(collectionName);
     }
+    if (collection.isRelationCollection()) {
+      return createRelation(collection, input, userId);
+    } else {
+      return createEntity(collection, input, userId);
+    }
+  }
+
+  private UUID createRelation(Collection collection, ObjectNode input, String userId) throws IOException {
+    String entityTypeName = collection.getEntityTypeName();
+    String abstractName = collection.getAbstractType();
+
+    JsonNode accepted = input.get("accepted");
+    JsonNode source = input.get("^sourceId");
+    JsonNode target = input.get("^targetId");
+    JsonNode type = input.get("^typeId");
+
+    if (accepted == null || !accepted.isBoolean()) {
+      throw new IOException("Accepted must be a boolean");
+    }
+
+    UUID id = UUID.randomUUID();
+
+    Graph graph = graphwrapper.getGraph();
+    GraphTraversalSource traversal = graph.traversal();
+    try {
+      Vertex sourceV = getEntity(traversal, UUID.fromString(source.asText("")), null).next();
+      try {
+        Vertex targetV = getEntity(traversal, UUID.fromString(target.asText("")), null).next();
+        try {
+          Vertex typeV = getEntity(traversal, UUID.fromString(type.asText("")), null).next();
+          String label = getProp(typeV, "relationtype_regularName", String.class)
+            .orElseThrow(() -> new IOException("Requested relation has no regular name"));
+          try {
+            sourceV.addEdge(label, targetV,
+              "wwrelation_accepted", accepted.asBoolean(),
+              "types", jsnA(jsn(entityTypeName), jsn(abstractName)).toString(),
+              "typeId", type.asText(),
+              "tim_id", id.toString(),
+              "isLatest", true
+            );
+            //Make sure this is the last line of the method. We don't want to commit half our changes
+            //this also means checking each function that we call to see if they don't call commit()
+            graph.tx().commit();
+            return id;
+          } catch (IllegalArgumentException e) {
+            throw new RuntimeException("The relation could not be created");
+          }
+        } catch (IllegalArgumentException | NoSuchElementException e) {
+          throw new IOException("^typeId must contain a UUID pointing to an existing relationType");
+        }
+      } catch (IllegalArgumentException | NoSuchElementException e) {
+        throw new IOException("^targetId must contain a UUID pointing to an existing entity");
+      }
+    } catch (IllegalArgumentException | NoSuchElementException e) {
+      throw new IOException("^sourceId must contain a UUID pointing to an existing entity");
+    }
+  }
+
+  private UUID createEntity(Collection collection, ObjectNode input, String userId) throws IOException {
+    String collectionName = collection.getCollectionName();
     Map<String, TimbuctooProperty> mapping = collection.getProperties();
 
     UUID id = UUID.randomUUID();
@@ -224,7 +286,7 @@ public class TinkerpopJsonCrudService {
     Map<String, List<ObjectNode>> relations = concat(stream(realRelations), stream(derivedRelations))
       .filter(x->x != null)
       .peek(x -> relationCount[0]++)
-      .collect(groupingBy(jsn -> jsn.get("type").asText()));
+      .collect(groupingBy(jsn -> jsn.get("relationType").asText()));
 
     return new Tuple<>(mapper.valueToTree(relations), relationCount[0]);
   }
@@ -256,13 +318,14 @@ public class TinkerpopJsonCrudService {
             .orElse("<No displayname found>");
 
           return jsnO(
-            "id", jsn(uuid),
-            "path", jsn(urlFor.apply(targetCollection, UUID.fromString(uuid), null).toString()),
-            "type", jsn(relationType),
-            "accepted", jsn(true),
-            "relationId", jsn("derived"),
-            "rev", jsn(1),
-            "displayName", jsn(displayName)
+            tuple("id", jsn(uuid)),
+            tuple("path", jsn(urlFor.apply(targetCollection, UUID.fromString(uuid), null).toString())),
+            tuple("type", jsn(relationType)),
+            tuple("relationType", jsn(relationType)),
+            tuple("accepted", jsn(true)),
+            tuple("relationId", jsn("derived")),
+            tuple("rev", jsn(1)),
+            tuple("displayName", jsn(displayName))
           );
         } catch (Exception e) {
           LOG.error(Logmarkers.databaseInvariant, "Error while generating derived-relation data", e);
@@ -330,13 +393,14 @@ public class TinkerpopJsonCrudService {
             String uuid = getProp(vertex, "tim_id", String.class).orElse("");
 
             return jsnO(
-              "id", jsn(uuid),
-              "path", jsn(urlFor.apply(targetCollection, UUID.fromString(uuid), null).toString()),
-              "type", jsn(label),
-              "accepted", jsn(getProp(edge, "accepted", Boolean.class).orElse(true)),
-              "relationId", getProp(edge, "tim_id", String.class).map(x -> (JsonNode) jsn(x)).orElse(jsn()),
-              "rev", jsn(getProp(edge, "rev", Integer.class).orElse(1)),
-              "displayName", jsn(displayName)
+              tuple("id", jsn(uuid)),
+              tuple("path", jsn(urlFor.apply(targetCollection, UUID.fromString(uuid), null).toString())),
+              tuple("relationType", jsn(label)),
+              tuple("type", jsn(targetEntityType)),
+              tuple("accepted", jsn(getProp(edge, "accepted", Boolean.class).orElse(true))),
+              tuple("relationId", getProp(edge, "tim_id", String.class).map(x -> (JsonNode) jsn(x)).orElse(jsn())),
+              tuple("rev", jsn(getProp(edge, "rev", Integer.class).orElse(1))),
+              tuple("displayName", jsn(displayName))
             );
           } catch (Exception e) {
             LOG.error(databaseInvariant, "Something went wrong while formatting the entity", e);
@@ -489,6 +553,42 @@ public class TinkerpopJsonCrudService {
     if (collection == null) {
       throw new InvalidCollectionException(collectionName);
     }
+    if (collection.isRelationCollection()) {
+      replaceRelation(collection, id, data, userId);
+    } else {
+      replaceEntity(collection, id, data, userId);
+    }
+  }
+
+  private void replaceRelation(Collection collection, UUID id, ObjectNode data, String userId) throws IOException {
+    String acceptedPropName = collection.getEntityTypeName() + "_accepted";
+
+    JsonNode accepted = data.get("accepted");
+    if (accepted == null || !accepted.isBoolean()) {
+      throw new IOException("accepted must be a boolean");
+    }
+    JsonNode rev = data.get("^rev");
+    if (rev == null || !rev.isNumber()) {
+      throw new IOException("^rev must be a number");
+    }
+
+    Graph graph = graphwrapper.getGraph();
+    Edge edge = graph.traversal().E()
+      .has("tim_id", id.toString())
+      .has("isLatest", true)
+      .has("rev", rev.intValue())
+      .next();
+
+    edge.property(acceptedPropName, accepted.booleanValue());
+
+    //Make sure this is the last line of the method. We don't want to commit half our changes
+    //this also means checking each function that we call to see if they don't call commit()
+    graph.tx().commit();
+  }
+
+  private void replaceEntity(Collection collection, UUID id, ObjectNode data, String userId)
+    throws NotFoundException, IOException, AlreadyUpdatedException {
+
     final Graph graph = graphwrapper.getGraph();
     final GraphTraversalSource traversalSource = graph.traversal();
 
@@ -560,7 +660,7 @@ public class TinkerpopJsonCrudService {
 
     setModified(entity, userId);
     duplicateVertex(graph, entity);
-    handleAdder.add(new HandleAdderParameters(id, newRev, urlFor.apply(collectionName, id, newRev)));
+    handleAdder.add(new HandleAdderParameters(id, newRev, urlFor.apply(collection.getCollectionName(), id, newRev)));
 
     //Make sure this is the last line of the method. We don't want to commit half our changes
     //this also means checking each function that we call to see if they don't call commit()

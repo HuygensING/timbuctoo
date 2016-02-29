@@ -6,7 +6,7 @@
   <title>Timbuctoo v2.1 WWPerson API</title>
 </head>
 <body>
-<!--<section data-type="chapter">
+<section data-type="chapter">
   <p>
     This specification describes the workings of the v2.1 version of the Timbuctoo REST API for wwrelations
   </p>
@@ -67,7 +67,7 @@
   </p>
 
 </section>
-
+<!--
 <section data-type="chapter">
   <h2>Performing GET to the recently created wwrelation resource</h2>
   <aside class="example" h:http="#response">
@@ -89,7 +89,7 @@
   </aside>
 
 </section>
-
+-->
 
 <section >
   <h2>Check relations on wwdocument</h2>
@@ -111,7 +111,7 @@
             {
               "type": "wwperson",
               "id": "#personRecordId",
-              "path": "domain/wwpersons/#personRecordId",
+              "path": "/v2.1/domain/wwpersons/#personRecordId",
               "displayName": "/.*/",
               "relationId": "#recordId",
               "accepted": true,
@@ -145,7 +145,7 @@
             {
               "type": "wwdocument",
               "id": "#documentRecordId",
-              "path": "domain/wwdocuments/#documentRecordId",
+              "path": "/v2.1/domain/wwdocuments/#documentRecordId",
               "displayName": "/.*/",
               "relationId": "#recordId",
               "accepted": true,
@@ -160,7 +160,7 @@
 </section>
 
 
-<span c:execute="deleteEntities()"></span>-->
+<span c:execute="deleteEntities()"></span>
 
 </body>
 </html>
