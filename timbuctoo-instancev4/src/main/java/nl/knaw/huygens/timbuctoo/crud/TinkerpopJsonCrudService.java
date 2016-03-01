@@ -668,52 +668,103 @@ public class TinkerpopJsonCrudService {
     graph.tx().commit();
   }
 
-  public ArrayNode autoComplete(String collectionName, String token) throws InvalidCollectionException {
+  public ArrayNode autoComplete(String collectionName, Optional<String> tokenParam, Optional<String> type)
+    throws InvalidCollectionException {
+
+    LOG.info(collectionName + " " + tokenParam + " " + type);
     final Collection collection = mappings.get(collectionName);
     if (collection == null) {
       throw new InvalidCollectionException(collectionName);
     }
-    if (token.startsWith("*")) {
-      token = token.substring(1);
-    }
-    if (token.endsWith("*")) {
-      token = token.substring(0, token.length() - 1);
-    }
-    final String searchToken = token.toLowerCase();
-
     final Graph graph = graphwrapper.getGraph();
     final GraphTraversalSource traversalSource = graph.traversal();
-    List<ObjectNode> results = traversalSource.V()
-      .as("vertex")
-      .union(collection.getDisplayName().get().get())
-      .filter(x -> x.get().isSuccess())
-      .map(x -> x.get().get().asText())
-      .as("displayName")
-      .filter(x -> x.get().toLowerCase().contains(searchToken))
-      .select("vertex", "displayName")
-      .map(x -> {
-        Vertex vertex = (Vertex) x.get().get("vertex");
-        String dn = (String) x.get().get("displayName");
-        Optional<String> id = getProp(vertex, "tim_id", String.class);
-        Integer rev = getProp(vertex, "rev", Integer.class).orElse(1);
-        if (id.isPresent()) {
-          try {
-            UUID uuid = UUID.fromString(id.get());
-            return jsnO(
-              "key", jsn(dn),
-              "value", jsn(urlFor.apply(collection.getCollectionName(), uuid, rev).toString())
-            );
-          } catch (IllegalArgumentException e) {
-            LOG.error(Logmarkers.databaseInvariant, "Tim_id " + id + "is not a valid UUID");
+
+    GraphTraversal<Vertex, Vertex> typeFilter;
+    if (type.isPresent()) {
+      typeFilter = __.has("keyword_type", type.get());
+    } else {
+      typeFilter = __.identity();
+    }
+
+    List<ObjectNode> results;
+    if (tokenParam.isPresent()) {
+      String token = tokenParam.get();
+      if (token.startsWith("*")) {
+        token = token.substring(1);
+      }
+      if (token.endsWith("*")) {
+        token = token.substring(0, token.length() - 1);
+      }
+      final String searchToken = token.toLowerCase();
+
+      results = traversalSource.V()
+        .as("vertex")
+        .where(typeFilter)
+        .union(collection.getDisplayName().get().get())
+        .filter(x -> x.get().isSuccess())
+        .map(x -> x.get().get().asText())
+        .as("displayName")
+        .filter(x -> x.get().toLowerCase().contains(searchToken))
+        .select("vertex", "displayName")
+        .map(x -> {
+          Vertex vertex = (Vertex) x.get().get("vertex");
+          String dn = (String) x.get().get("displayName");
+          Optional<String> id = getProp(vertex, "tim_id", String.class);
+          Integer rev = getProp(vertex, "rev", Integer.class).orElse(1);
+          if (id.isPresent()) {
+            try {
+              UUID uuid = UUID.fromString(id.get());
+              return jsnO(
+                "key", jsn(dn),
+                "value", jsn(urlFor.apply(collection.getCollectionName(), uuid, rev).toString())
+              );
+            } catch (IllegalArgumentException e) {
+              LOG.error(Logmarkers.databaseInvariant, "Tim_id " + id + "is not a valid UUID");
+              return null;
+            }
+          } else {
+            LOG.error(Logmarkers.databaseInvariant, "No Tim_id found on vertex with id " + vertex.id());
             return null;
           }
-        } else {
-          LOG.error(Logmarkers.databaseInvariant, "No Tim_id found on vertex with id " + vertex.id());
-          return null;
-        }
-      })
-      .filter(x -> x != null)
-      .toList();
+        })
+        .filter(x -> x != null)
+        .limit(10L)
+        .toList();
+    } else {
+      results = traversalSource.V()
+        .as("vertex")
+        .where(typeFilter)
+        .union(collection.getDisplayName().get().get())
+        .filter(x -> x.get().isSuccess())
+        .map(x -> x.get().get().asText())
+        .as("displayName")
+        .select("vertex", "displayName")
+        .map(x -> {
+          Vertex vertex = (Vertex) x.get().get("vertex");
+          String dn = (String) x.get().get("displayName");
+          Optional<String> id = getProp(vertex, "tim_id", String.class);
+          Integer rev = getProp(vertex, "rev", Integer.class).orElse(1);
+          if (id.isPresent()) {
+            try {
+              UUID uuid = UUID.fromString(id.get());
+              return jsnO(
+                "key", jsn(dn),
+                "value", jsn(urlFor.apply(collection.getCollectionName(), uuid, rev).toString())
+              );
+            } catch (IllegalArgumentException e) {
+              LOG.error(Logmarkers.databaseInvariant, "Tim_id " + id + "is not a valid UUID");
+              return null;
+            }
+          } else {
+            LOG.error(Logmarkers.databaseInvariant, "No Tim_id found on vertex with id " + vertex.id());
+            return null;
+          }
+        })
+        .filter(x -> x != null)
+        .limit(1000L) //no query means you get a lot
+        .toList();
+    }
+
 
     ArrayNode resultNode = jsnA();
     for (ObjectNode n : results) {

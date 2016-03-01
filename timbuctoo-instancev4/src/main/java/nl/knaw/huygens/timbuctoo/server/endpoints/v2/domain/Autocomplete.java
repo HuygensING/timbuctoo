@@ -14,6 +14,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
+import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
@@ -29,12 +30,18 @@ public class Autocomplete {
       ));
   }
 
-  public static URI makeUrl(String collectionName, String token) {
-    return UriBuilder.fromResource(Autocomplete.class)
-      .queryParam("query", "*" + token + "*")
-      .buildFromMap(ImmutableMap.of(
-        "collection", collectionName
-      ));
+  public static URI makeUrl(String collectionName, Optional<String> token, Optional<String> type) {
+    URI uri = makeUrl(collectionName);
+
+    if (type.isPresent()) {
+      uri = UriBuilder.fromUri(uri)
+        .path(Autocomplete.class, "getWithPath")
+        .buildFromMap(ImmutableMap.of("type", type.get()));
+    }
+    if (token.isPresent()) {
+      uri = UriBuilder.fromUri(uri).queryParam("query", "*" + token.get() + "*").build();
+    }
+    return uri;
   }
 
   private final TinkerpopJsonCrudService crudService;
@@ -44,12 +51,27 @@ public class Autocomplete {
   }
 
   @GET
-  public Response get(@PathParam("collection") String collectionName, @QueryParam("query") String query) {
+  @Path("/")
+  public Response get(@PathParam("collection") String collectionName, @QueryParam("query") Optional<String> query,
+                      @QueryParam("type") Optional<String> type) {
     try {
-      JsonNode result = crudService.autoComplete(collectionName, query);
+      JsonNode result = crudService.autoComplete(collectionName, query, type);
       return Response.ok(result).build();
     } catch (InvalidCollectionException e) {
       return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
     }
   }
+
+  @GET
+  @Path("/{type}")
+  public Response getWithPath(@PathParam("collection") String collectionName,
+                              @QueryParam("query") Optional<String> query, @PathParam("type") Optional<String> type) {
+    try {
+      JsonNode result = crudService.autoComplete(collectionName, query, type);
+      return Response.ok(result).build();
+    } catch (InvalidCollectionException e) {
+      return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
+    }
+  }
+
 }

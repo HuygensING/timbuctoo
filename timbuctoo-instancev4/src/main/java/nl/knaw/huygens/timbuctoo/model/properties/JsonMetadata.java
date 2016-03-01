@@ -14,7 +14,10 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.slf4j.Logger;
 
+import java.net.URI;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
@@ -28,10 +31,12 @@ public class JsonMetadata {
 
   private final Vres metadata;
   private final GraphWrapper graph;
+  private final Map<String, Map<String, String>> keywordTypes;
 
-  public JsonMetadata(Vres metadata, GraphWrapper graph) {
+  public JsonMetadata(Vres metadata, GraphWrapper graph, Map<String, Map<String, String>> keywordTypes) {
     this.metadata = metadata;
     this.graph = graph;
+    this.keywordTypes = keywordTypes;
   }
 
   public ArrayNode getForCollection(Collection collection) {
@@ -51,6 +56,10 @@ public class JsonMetadata {
     //FIXME add check to vres that certifies that the defined derived relations exist in the database
     String abstractType = collection.getAbstractType();
     Vre vre = collection.getVre();
+    Map<String, String> keywordTypes = Optional
+      .ofNullable(this.keywordTypes.get(vre.getVreName()))
+      .orElse(new HashMap<>());
+
     String relationCollectionName = vre
       .getImplementerOf("relation")
       .map(Collection::getCollectionName)
@@ -63,16 +72,30 @@ public class JsonMetadata {
         String timId = getProp(v, "tim_id", String.class).orElse("<unknown>");
         Optional<String> regularName = getProp(v, "relationtype_regularName", String.class);
         Optional<String> inverseName = getProp(v, "relationtype_inverseName", String.class);
-        Optional<String> targetType = getProp(v, "relationtype_targetTypeName", String.class)
+        Optional<String> abstractTargetType = getProp(v, "relationtype_targetTypeName", String.class);
+        Optional<String> targetType = abstractTargetType
           .flatMap(typeName -> vre.getImplementerOf(typeName).map(Collection::getCollectionName));
+
         if (regularName.isPresent() && inverseName.isPresent() && targetType.isPresent()) {
+          //special support for keywords:
+          URI quickSearchUrl;
+          if (abstractTargetType.orElse("").equals("keyword")) {
+            quickSearchUrl = Autocomplete.makeUrl(
+              targetType.get(),
+              Optional.empty(),
+              Optional.ofNullable(keywordTypes.get(regularName.get()))
+            );
+          } else {
+            quickSearchUrl = Autocomplete.makeUrl(targetType.get());
+          }
+
           result.add(jsnO(
             "name", jsn(regularName.get()),
             "type", jsn("relation"),
-            "quicksearch", jsn(Autocomplete.makeUrl(targetType.get()).toString()),
+            "quicksearch", jsn(quickSearchUrl.toString()),
             "relation", jsnO(
               //for search
-              "direction", jsn("OUT"),
+              "direction", jsn("OUT"), //fixme when relationtype_symmetric true then direction BOTH
               "outName", jsn(regularName.get()),
               "inName", jsn(inverseName.get()),
               "targetCollection", jsn(targetType.get()),

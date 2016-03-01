@@ -1,9 +1,12 @@
 package nl.knaw.huygens.timbuctoo.server;
 
+import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.model.vre.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+
+import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.wwPersonNameOrTempName;
@@ -20,6 +23,20 @@ import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.s
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 
 public class HuygensIng {
+
+  //fixme move to database
+  public static Map<String, Map<String, String>> keywordTypes = ImmutableMap.of(
+    "WomenWriters",
+    ImmutableMap.<String, String>builder()
+      .put("hasEducation","education")
+      .put("hasFinancialSituation","financialSituation")
+      .put("hasGenre","genre")
+      .put("hasMaritalStatus","maritalStatus")
+      .put("hasProfession","profession")
+      .put("hasReligion","religion")
+      .put("hasSocialClass","socialClass")
+      .build()
+  );
 
   public static Vres mappings = new Vres.Builder()
     .withVre("WomenWriters", "ww", vre -> vre
@@ -41,6 +58,7 @@ public class HuygensIng {
         .withProperty("tempOrigin", localProperty("wwcollective_tempOrigin"))
         .withProperty("tempShortName", localProperty("wwcollective_tempShortName"))
         .withProperty("tempType", localProperty("wwcollective_tempType"))
+        .withProperty("tempOrigin", localProperty("wwcollective_tempOrigin"))
       )
       .withCollection("wwpersons", c -> c
         .withDisplayName(wwPersonNameOrTempName())
@@ -66,7 +84,6 @@ public class HuygensIng {
         .withProperty("nationality", localProperty("wwperson_nationality"))
         .withProperty("personalSituation", localProperty("wwperson_personalSituation"))
 
-        .withProperty("tempOrigin", localProperty("wwcollective_tempOrigin"))
         .withProperty("tempBirthPlace", localProperty("wwperson_tempBirthPlace"))
         .withProperty("tempChildren", localProperty("wwperson_tempChildren"))
         .withProperty("tempCollaborations", localProperty("wwperson_tempCollaborations"))

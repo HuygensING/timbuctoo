@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import java.net.URI;
 import java.time.Clock;
+import java.util.Optional;
 import java.util.UUID;
 
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
@@ -63,7 +64,7 @@ public class AutocompleteTest {
       .build();
     TinkerpopJsonCrudService instance = basicInstance(graph);
 
-    ArrayNode result = instance.autoComplete("wwpersons", "*author*");
+    ArrayNode result = instance.autoComplete("wwpersons", Optional.of("*author*"), Optional.empty());
 
     assertThat(result.toString(), sameJSONAs(jsnA(
       jsnO("key", jsn("An author"), "value", jsn("http://example.com/wwpersons/" + id + "?rev=2"))
