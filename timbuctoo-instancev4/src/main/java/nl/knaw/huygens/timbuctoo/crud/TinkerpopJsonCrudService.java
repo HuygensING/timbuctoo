@@ -500,6 +500,7 @@ public class TinkerpopJsonCrudService {
       });
   }
 
+  //copies: 1
   public <V> Optional<V> getProp(final Element vertex, final String key, Class<? extends V> clazz) {
     try {
       Iterator<? extends Property<Object>> revProp = vertex.properties(key);

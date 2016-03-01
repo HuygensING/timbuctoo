@@ -22,6 +22,13 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 @Produces(MediaType.APPLICATION_JSON)
 public class Autocomplete {
 
+  public static URI makeUrl(String collectionName) {
+    return UriBuilder.fromResource(Autocomplete.class)
+      .buildFromMap(ImmutableMap.of(
+        "collection", collectionName
+      ));
+  }
+
   public static URI makeUrl(String collectionName, String token) {
     return UriBuilder.fromResource(Autocomplete.class)
       .queryParam("query", "*" + token + "*")

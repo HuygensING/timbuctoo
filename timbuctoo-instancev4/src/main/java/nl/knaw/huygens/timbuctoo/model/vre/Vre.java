@@ -5,6 +5,8 @@ import com.google.common.collect.Sets;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 public class Vre {
@@ -25,6 +27,12 @@ public class Vre {
 
   public String getVreName() {
     return vreName;
+  }
+
+  public Optional<Collection> getImplementerOf(String abstractType) {
+    return this.collections.values().stream()
+      .filter(x-> Objects.equals(x.getAbstractType(), abstractType))
+      .findAny();
   }
 
   public String getOwnType(String... types) {

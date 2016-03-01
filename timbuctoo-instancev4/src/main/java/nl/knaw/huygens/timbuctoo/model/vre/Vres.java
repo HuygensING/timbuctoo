@@ -7,12 +7,15 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static nl.knaw.huygens.timbuctoo.model.vre.VreBuilder.vre;
 
 public class Vres {
   private final Map<String, Collection> collections = new HashMap<>();
+  private final Map<String, Vre> vres;
 
   public Vres(List<Vre> vres) {
+    this.vres = vres.stream().collect(toMap(Vre::getVreName, vre1 -> vre1));
     vres.stream()
       .flatMap(vre -> vre.getCollections().values().stream())
       .forEach(collection -> {
@@ -25,6 +28,10 @@ public class Vres {
 
   public Collection get(String collection) {
     return collections.get(collection);
+  }
+
+  public Vre getVre(String vre) {
+    return vres.get(vre);
   }
 
   public static class Builder {

@@ -1,0 +1,97 @@
+<html lang="en"
+      xmlns:c="http://www.concordion.org/2007/concordion"
+      xmlns:h="http://huygens.knaw.nl/concordion-http-verifier">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Timbuctoo v2.1 Metadata API</title>
+</head>
+<body>
+<section data-type="chapter">
+  <p>
+    The metadata API allows a client to introspect the data model that is configured for a specific VRE. This allows you
+    to build generic clients that work for any VRE without knowledge of the specific configuration at build time.
+  </p>
+</section>
+
+<section data-type="chapter">
+    <h2>Retrieving the configuration for a VRE</h2>
+
+    <aside class="example" h:http="">
+      <p>When a GET is performed to metadata/vre</p>
+
+      <div h:request="">
+        GET /v2.1/metadata/WomenWriters HTTP/1.1
+        Content-type: application/json
+      </div>
+      <p>The server will respond with a location header containing the URL of the created resource</p>
+
+      <div h:response="">
+        HTTP/1.1 200
+
+        {
+          "wwpersons": [
+            {
+              "name":"tempChildren",
+              "type":"text"
+            },
+            null, null, null, null,
+            {
+              "name":"gender",
+              "type":"select",
+              "options":[
+                "UNKNOWN",
+                "MALE",
+                "FEMALE",
+                "NOT_APPLICABLE"
+              ]
+            },
+            null, null,null,null,null,null,
+            {
+              "name":"deathDate",
+              "type":"datable"
+            },
+            {
+              "name":"links",
+              "type":"links"
+            },
+            {
+              "name":"types",
+              "type":"multiselect",
+              "options":[
+                "ARCHETYPE",
+                "AUTHOR",
+                "PSEUDONYM",
+                "READER"
+              ]
+            },null,null,null,null,null,null,null,null,
+            {
+              "name":"names",
+              "type":"names",
+              "options":[
+                "FORENAME",
+                "SURNAME",
+                "NAME_LINK",
+                "ROLE_NAME",
+                "GEN_NAME"
+              ]
+            },
+            null, null, null, null,
+            {
+              "name":"hasBirthPlace",
+              "type":"relation",
+              "quicksearch":"/v2.1/domain/wwlocations/autocomplete",
+              "relation":{
+                "direction":"OUT",
+                "outName":"hasBirthPlace",
+                "inName":"isBirthPlaceOf",
+                "collection":"wwrelations",
+                "typeId":"9c93ba01-e6af-4790-8eb8-8497be04b7ec"
+              }
+            }
+          ]
+        }
+      </div>
+    </aside>
+</section>
+</body>
+</html>
