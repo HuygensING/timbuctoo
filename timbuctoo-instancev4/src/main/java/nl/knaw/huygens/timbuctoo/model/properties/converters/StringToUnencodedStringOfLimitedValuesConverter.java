@@ -6,10 +6,11 @@ import com.google.common.collect.Lists;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 
-public class StringToUnencodedStringOfLimitedValuesConverter implements Converter {
+public class StringToUnencodedStringOfLimitedValuesConverter implements Converter, HasOptions {
   private final ArrayList<String> allowedValues;
 
   public StringToUnencodedStringOfLimitedValuesConverter(String[] values) {
@@ -33,4 +34,12 @@ public class StringToUnencodedStringOfLimitedValuesConverter implements Converte
     }
   }
 
+  public String getTypeIdentifier() {
+    return "select";
+  }
+
+  @Override
+  public Collection<String> getOptions() {
+    return this.allowedValues;
+  }
 }

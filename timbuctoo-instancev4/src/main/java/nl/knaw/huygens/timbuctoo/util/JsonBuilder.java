@@ -8,9 +8,8 @@ import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.NumericNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import nl.knaw.huygens.timbuctoo.util.Tuple;
 
-import java.util.Map;
+import java.util.stream.Stream;
 
 public class JsonBuilder {
   public static JsonNodeFactory factory = JsonNodeFactory.instance;
@@ -137,6 +136,12 @@ public class JsonBuilder {
     for (JsonNode item : contents1) {
       result.add(item);
     }
+    return result;
+  }
+
+  public static ArrayNode jsnA(Stream<? extends JsonNode> contents) {
+    ArrayNode result = factory.arrayNode();
+    contents.forEachOrdered(result::add);
     return result;
   }
 

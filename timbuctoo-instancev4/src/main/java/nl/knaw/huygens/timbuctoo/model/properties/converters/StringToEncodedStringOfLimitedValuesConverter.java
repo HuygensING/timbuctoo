@@ -6,9 +6,10 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.Lists;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 
-public class StringToEncodedStringOfLimitedValuesConverter implements Converter {
+public class StringToEncodedStringOfLimitedValuesConverter implements Converter, HasOptions {
 
   private final List<String> allowedValues;
   private final ObjectMapper objectMapper;
@@ -45,4 +46,14 @@ public class StringToEncodedStringOfLimitedValuesConverter implements Converter 
       throw new IOException("should be a string");
     }
   }
+
+  public String getTypeIdentifier() {
+    return "select";
+  }
+
+  @Override
+  public Collection<String> getOptions() {
+    return this.allowedValues;
+  }
+
 }

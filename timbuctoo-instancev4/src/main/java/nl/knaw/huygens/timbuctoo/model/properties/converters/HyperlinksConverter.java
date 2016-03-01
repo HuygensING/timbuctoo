@@ -45,4 +45,8 @@ public class HyperlinksConverter implements Converter {
       throw new IOException("should be a string");
     }
   }
+
+  public String getTypeIdentifier() {
+    return "links";
+  }
 }

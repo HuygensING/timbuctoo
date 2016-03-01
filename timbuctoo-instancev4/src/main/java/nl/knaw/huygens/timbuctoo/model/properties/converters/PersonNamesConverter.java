@@ -3,13 +3,15 @@ package nl.knaw.huygens.timbuctoo.model.properties.converters;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 
 import java.io.IOException;
+import java.util.Collection;
 
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
-public class PersonNamesConverter implements Converter {
+public class PersonNamesConverter implements Converter, HasOptions {
   @Override
   public Object jsonToTinkerpop(JsonNode json) throws IOException {
     //convert to personNames as verification
@@ -40,4 +42,14 @@ public class PersonNamesConverter implements Converter {
       throw new IOException("must be a json value serialised as String");
     }
   }
+
+  public String getTypeIdentifier() {
+    return "names";
+  }
+
+  @Override
+  public Collection<String> getOptions() {
+    return Lists.newArrayList("FORENAME", "SURNAME", "NAME_LINK", "ROLE_NAME", "GEN_NAME");
+  }
+
 }

@@ -27,4 +27,9 @@ public class DatableConverter implements Converter {
       throw new IOException("should be a string");
     }
   }
+
+  public String getTypeIdentifier() {
+    return "datable";
+  }
+
 }

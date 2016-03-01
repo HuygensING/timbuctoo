@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.model.properties.converters;
 public class Converters {
   public static final StringToStringConverter stringToString = new StringToStringConverter();
   public static final ArrayToEncodedArrayConverter arrayToEncodedArray = new ArrayToEncodedArrayConverter();
+
   public static final HyperlinksConverter hyperlinks = new HyperlinksConverter();
   public static final DatableConverter datable = new DatableConverter();
   public static final StringToEncodedStringOfLimitedValuesConverter gender = stringToEncodedStringOf(
@@ -20,6 +21,8 @@ public class Converters {
 
   //Converters that have a more specific usecase
   public static final DefaultLocationNameConverter defaultLocationNameConverter = new DefaultLocationNameConverter();
+  public static final DefaultFullPersonNameConverter defaultFullPersonNameConverter
+    = new DefaultFullPersonNameConverter();
 
 
   public static StringArrayToEncodedArrayOfLimitedValues stringArrayToEncodedArrayOf(String... values) {

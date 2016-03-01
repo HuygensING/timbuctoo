@@ -8,7 +8,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import java.io.IOException;
 import java.util.function.Supplier;
 
-public class TimbuctooProperty {
+public abstract class TimbuctooProperty {
   private final Supplier<GraphTraversal<?, Try<JsonNode>>> getter;
   private final LambdaExceptionUtil.Function_WithExceptions<JsonNode, GraphTraversal<?, ?>, IOException> setter;
 
@@ -26,4 +26,8 @@ public class TimbuctooProperty {
   public GraphTraversal<?, ?> set(JsonNode value) throws IOException {
     return setter.apply(value);
   }
+
+  public abstract String getGuiTypeId();
+
+  public abstract java.util.Collection<String> getOptions();
 }
