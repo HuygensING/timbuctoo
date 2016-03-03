@@ -40,4 +40,4 @@ logging:
   appenders:
     - type: console
       logFormat: "- %-5p  %m [%c{30}]%n"
-  level: "OFF"
+  level: "INFO" #disabled in the pom.xml so a maven build is nice'n'quiet, but a run from intellij is nice'n'informative
