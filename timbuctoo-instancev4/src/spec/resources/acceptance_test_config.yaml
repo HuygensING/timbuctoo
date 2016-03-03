@@ -2,7 +2,7 @@
 #refers to fixtures (database, json) needed for those tests
 
 #database files
-databasePath: "./src/spec/resources/database" #do not refer to a soft link
+databasePath: "./docker/database" #do not refer to a soft link
 # JSON files
 loginsFilePath: "./src/spec/resources/logins.json"
 usersFilePath: "./src/spec/resources/users.json"
@@ -31,8 +31,11 @@ persistenceManager:
 server:
   applicationConnectors:
     - type: http #Note! if you change this you might or might not also want to change the baseUri
-      port: 8080 #Note! if you change this you might or might not also want to change the baseUri
+      port: 8089 #Note! if you change this you might or might not also want to change the baseUri
       bindHost: 127.0.0.1 #Note! if you change this you might or might not also want to change the baseUri
+  adminConnectors:
+    - type: http
+      port: 8090
   requestLog:
     appenders: [] #All requests are already logged using logging.LoggingFilter so the seperate requestlog is not needed
 
