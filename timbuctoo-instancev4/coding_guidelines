@@ -1,7 +1,0 @@
-This file is used to summarize ideas for better code. We are trying to make our API's as explicit as possible.
-
-Optionals
- - Use them as the return value of a method when null is a valid value. This way the user of the API is forced to think about how to handle the null case.
-
-Database retrieval
- - Use Gremlin as much as possible to execute database queries.

@@ -1,0 +1,24 @@
+# Commit messages
+we try to adhere to http://chris.beams.io/posts/git-commit/
+
+ . Separate subject from body with a blank line
+ . Limit the subject line to 50 characters
+ . Capitalize the subject line
+ . Do not end the subject line with a period
+ . Use the imperative mood in the subject line
+ . Wrap the body at 72 characters
+ . Use the body to explain what and why vs. how
+
+We have added some conventions:
+
+ . When working on a jira issue we tend to start the message with a reference e.g. `[TIM-432] Add security layer`
+ . When a commit is a bugfix or refactoring we start with that. `Bugfix. Check if file exists before removing`
+ . When the fix/refactoring is small you don't have to add anything other then bugfix/refactoring
+
+# Coding guidelines
+
+Optionals
+ - Use them as the return value of a method when null is a valid value. This way the user of the API is forced to think about how to handle the null case.
+
+Database retrieval
+ - Use Gremlin as much as possible to execute database queries.
