@@ -23,14 +23,18 @@ public class HandleAdder {
 
   public void create(HandleAdderParameters params) {
     try {
+      LOG.info(String.format("Retrieving persistent url for '%s' '%s' '%s'",
+        params.getVertexId(), params.getRev(), params.getUrl()));
       String persistentUrl = manager.getPersistentURL(manager.persistURL(params.getUrl().toString()));
       wrapper.getGraph().traversal().V()
         .has("tim_id", params.getVertexId().toString())
         .has("rev", params.getRev())
         .forEachRemaining(vertex -> {
+          LOG.info("Setting pid for " + vertex.id() + " to " + persistentUrl);
           vertex.property("pid", persistentUrl);
         });
       wrapper.getGraph().tx().commit();
+      LOG.info("committed pid");
     } catch (PersistenceException e) {
       LOG.error(Logmarkers.serviceUnavailable, "Could not create handle", e);
       if (params.getRetries() < 5) {
@@ -40,6 +44,32 @@ public class HandleAdder {
   }
 
   public void add(HandleAdderParameters params) {
+    LOG.info(String.format("Adding %s%s job to the queue for '%s' '%s' '%s'",
+      params.getRetries() + 1, getOrdinalSuffix(params.getRetries() + 1),
+      params.getVertexId(),
+      params.getRev(),
+      params.getUrl())
+    );
     activeMqExecutor.add(params);
+  }
+
+  // gogo gadgetstackoverflow
+  private static String getOrdinalSuffix( int value ) {
+    int hunRem = value % 100;
+    int tenRem = value % 10;
+
+    if ( hunRem - tenRem == 10 ) {
+      return "th";
+    }
+    switch ( tenRem ) {
+      case 1:
+        return "st";
+      case 2:
+        return "nd";
+      case 3:
+        return "rd";
+      default:
+        return "th";
+    }
   }
 }

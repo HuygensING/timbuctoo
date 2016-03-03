@@ -191,10 +191,12 @@ public class TinkerpopJsonCrudService {
     setCreated(vertex, userId);
 
     duplicateVertex(graph, vertex);
-    handleAdder.add(new HandleAdderParameters(id, 1, urlFor.apply(collectionName, id, 1)));
     //Make sure this is the last line of the method. We don't want to commit if an exception happens halfway
     //the return statement below should return a variable directly without any additional logic
     graph.tx().commit();
+
+    //but out of process commands that require our changes need to come after a commit of course :)
+    handleAdder.add(new HandleAdderParameters(id, 1, urlFor.apply(collectionName, id, 1)));
     return id;
   }
 
@@ -663,11 +665,13 @@ public class TinkerpopJsonCrudService {
 
     setModified(entity, userId);
     duplicateVertex(graph, entity);
-    handleAdder.add(new HandleAdderParameters(id, newRev, urlFor.apply(collection.getCollectionName(), id, newRev)));
 
-    //Make sure this is the last line of the method. We don't want to commit half our changes
+    //Make sure this is at the last line of the method. We don't want to commit half our changes
     //this also means checking each function that we call to see if they don't call commit()
     graph.tx().commit();
+
+    //but out of process commands that require our changes need to come after a commit of course :)
+    handleAdder.add(new HandleAdderParameters(id, newRev, urlFor.apply(collection.getCollectionName(), id, newRev)));
   }
 
   public ArrayNode autoComplete(String collectionName, Optional<String> tokenParam, Optional<String> type)
