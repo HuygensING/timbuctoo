@@ -3,12 +3,12 @@
 
 
 #database files
-databasePath: "./src/spec/resources/database" #do not refer to a soft link
+databasePath: "./docker/database" #do not refer to a soft link
 # JSON files
 
 #These files contain 1 user with username="user" and password="password"
-loginsFilePath: "./src/spec/resources/logins.json"
-usersFilePath: "./src/spec/resources/users.json"
+loginsFilePath: "./docker/logins.json"
+usersFilePath: "./docker/users.json"
 
 # Timeouts
 # the 'duration' is a number
