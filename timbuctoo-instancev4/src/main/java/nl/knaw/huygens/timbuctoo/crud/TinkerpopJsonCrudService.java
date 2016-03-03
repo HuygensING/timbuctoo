@@ -61,17 +61,19 @@ public class TinkerpopJsonCrudService {
   private final Vres mappings;
   private final HandleAdder handleAdder;
   private final UrlGenerator urlFor;
+  private final UrlGenerator absoluteUrlFor;
   private final Clock clock;
   private final JsonNodeFactory nodeFactory;
   private final JsonBasedUserStore userStore;
 
   public TinkerpopJsonCrudService(GraphWrapper graphwrapper, Vres mappings,
                                   HandleAdder handleAdder, JsonBasedUserStore userStore, UrlGenerator urlFor,
-                                  Clock clock) {
+                                  UrlGenerator absoluteUrlFor, Clock clock) {
     this.graphwrapper = graphwrapper;
     this.mappings = mappings;
     this.handleAdder = handleAdder;
     this.urlFor = urlFor;
+    this.absoluteUrlFor = absoluteUrlFor;
     nodeFactory = JsonNodeFactory.instance;
     this.userStore = userStore;
 
@@ -715,8 +717,8 @@ public class TinkerpopJsonCrudService {
             try {
               UUID uuid = UUID.fromString(id.get());
               return jsnO(
-                "key", jsn(dn),
-                "value", jsn(urlFor.apply(collection.getCollectionName(), uuid, rev).toString())
+                "key", jsn(absoluteUrlFor.apply(collection.getCollectionName(), uuid, rev).toString()),
+                "value", jsn(dn)
               );
             } catch (IllegalArgumentException e) {
               LOG.error(Logmarkers.databaseInvariant, "Tim_id " + id + "is not a valid UUID");
@@ -748,8 +750,8 @@ public class TinkerpopJsonCrudService {
             try {
               UUID uuid = UUID.fromString(id.get());
               return jsnO(
-                "key", jsn(dn),
-                "value", jsn(urlFor.apply(collection.getCollectionName(), uuid, rev).toString())
+                "key", jsn(absoluteUrlFor.apply(collection.getCollectionName(), uuid, rev).toString()),
+                "value", jsn(dn)
               );
             } catch (IllegalArgumentException e) {
               LOG.error(Logmarkers.databaseInvariant, "Tim_id " + id + "is not a valid UUID");

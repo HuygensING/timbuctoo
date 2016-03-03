@@ -85,7 +85,7 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .build();
 
-    return new TinkerpopJsonCrudService(graphWrapper, testVres, handleAdder, userStore, gen, clock);
+    return new TinkerpopJsonCrudService(graphWrapper, testVres, handleAdder, userStore, gen, gen, clock);
   }
 
   @Rule

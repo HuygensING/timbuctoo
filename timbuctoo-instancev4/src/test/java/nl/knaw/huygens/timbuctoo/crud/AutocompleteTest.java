@@ -32,6 +32,8 @@ public class AutocompleteTest {
       )
       .build();
     UrlGenerator generator = (collection, id, rev) ->
+      URI.create("/" + collection + "/" + id + "?rev=" + rev);
+    UrlGenerator absoluteUrlGenerator = (collection, id, rev) ->
       URI.create("http://example.com/" + collection + "/" + id + "?rev=" + rev);
     Clock clock = Clock.systemDefaultZone();
     HandleAdder handleAdder = mock(HandleAdder.class);
@@ -39,7 +41,7 @@ public class AutocompleteTest {
     GraphWrapper graphWrapper = mock(GraphWrapper.class);
     when(graphWrapper.getGraph()).thenReturn(graph);
 
-    return new TinkerpopJsonCrudService(graphWrapper, map, handleAdder, null, generator, clock);
+    return new TinkerpopJsonCrudService(graphWrapper, map, handleAdder, null, generator, absoluteUrlGenerator, clock);
   }
 
   @Test
@@ -67,7 +69,7 @@ public class AutocompleteTest {
     ArrayNode result = instance.autoComplete("wwpersons", Optional.of("*author*"), Optional.empty());
 
     assertThat(result.toString(), sameJSONAs(jsnA(
-      jsnO("key", jsn("An author"), "value", jsn("http://example.com/wwpersons/" + id + "?rev=2"))
+      jsnO("value", jsn("An author"), "key", jsn("http://example.com/wwpersons/" + id + "?rev=2"))
     ).toString()));
   }
 }

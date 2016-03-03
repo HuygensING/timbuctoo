@@ -31,6 +31,7 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.Me;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
 
 import javax.management.ObjectName;
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Clock;
@@ -85,6 +86,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       handleAdder,
       userStore,
       SingleEntity::makeUrl,
+      (coll, id, rev) -> URI.create(configuration.getBaseUri() + SingleEntity.makeUrl(coll, id, rev).getPath()),
       Clock.systemDefaultZone());
 
     // lifecycle managers

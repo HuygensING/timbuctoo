@@ -80,7 +80,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
     GraphWrapper graphWrapper = mock(GraphWrapper.class);
     when(graphWrapper.getGraph()).thenReturn(graph);
 
-    return new TinkerpopJsonCrudService(graphWrapper, map, handleAdder, null, generator, clock);
+    return new TinkerpopJsonCrudService(graphWrapper, map, handleAdder, null, generator, generator, clock);
   }
 
 
