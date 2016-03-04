@@ -12,18 +12,18 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-public class LocalSimpleFullTextSearchDescriptionTest {
+public class FullTextSearchDescriptionTest {
 
   protected static final String PROPERTY_NAME = "propertyName";
   protected static final String NAME = "name";
-  private LocalSimpleFullTextSearchDescription instance;
+  private FullTextSearchDescription instance;
 
   @Before
   public void setUp() throws Exception {
-    instance = new LocalSimpleFullTextSearchDescription(NAME, PROPERTY_NAME);
+    instance = FullTextSearchDescription.createLocalSimpleFullTextSearchDescription(NAME, PROPERTY_NAME);
   }
 
-  protected LocalSimpleFullTextSearchDescription getInstance() {
+  protected FullTextSearchDescription getInstance() {
     return instance;
   }
 

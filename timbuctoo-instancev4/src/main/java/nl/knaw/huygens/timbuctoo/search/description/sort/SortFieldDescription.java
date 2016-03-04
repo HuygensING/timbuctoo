@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.search.description.sort;
 
+import nl.knaw.huygens.timbuctoo.search.description.Property;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 
