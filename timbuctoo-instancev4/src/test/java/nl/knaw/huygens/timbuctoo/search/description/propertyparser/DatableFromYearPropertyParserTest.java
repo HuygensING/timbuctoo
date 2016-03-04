@@ -5,7 +5,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
@@ -37,19 +36,19 @@ public class DatableFromYearPropertyParserTest extends AbstractPropertyParserTes
   }
 
   @Test
-  public void parseToRawReturnsAnIntegerValueTheFromYearOfTheDatable() {
+  public void parseForSortReturnsAnIntegerValueTheFromYearOfTheDatable() {
     String validDatableString = "\"2015-05-01\"";
 
-    Object result = instance.parseToRaw(validDatableString);
+    Object result = instance.parseForSort(validDatableString);
 
     assertThat(result, is(2015));
   }
 
   @Test
-  public void parseToRawReturnsNullIfTheDatableIsNotValid() {
+  public void parseForSortReturnsNullIfTheDatableIsNotValid() {
     String invalidDatableString = "hello world";
 
-    Object result = instance.parseToRaw(invalidDatableString);
+    Object result = instance.parseForSort(invalidDatableString);
 
     assertThat(result, is(nullValue()));
   }

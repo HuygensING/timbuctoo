@@ -18,7 +18,7 @@ class DatableFromYearPropertyParser implements PropertyParser {
   }
 
   @Override
-  public Comparable<?> parseToRaw(String value) {
+  public Comparable<?> parseForSort(String value) {
     if (value == null) {
       return null;
     }

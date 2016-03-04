@@ -40,19 +40,19 @@ public class ChangeDatePropertyParserTest extends AbstractPropertyParserTest {
   }
 
   @Test
-  public void parseToRawReturnsTheTimestamp() throws JsonProcessingException {
+  public void parseForSortReturnsTheTimestamp() throws JsonProcessingException {
     long timeStampOnJan20th2016 = 1453290593000L;
     Change change = new Change(timeStampOnJan20th2016, "user", "vre");
     String changeString = new ObjectMapper().writeValueAsString(change);
 
-    Object result = instance.parseToRaw(changeString);
+    Object result = instance.parseForSort(changeString);
 
     assertThat(result, is(timeStampOnJan20th2016));
   }
 
   @Test
-  public void parseToRawReturnsNullIfTheInputCannotBeParsed() {
-    Object output = instance.parseToRaw("notASerializedChange");
+  public void parseForSortReturnsNullIfTheInputCannotBeParsed() {
+    Object output = instance.parseForSort("notASerializedChange");
 
     assertThat(output, is(nullValue()));
   }

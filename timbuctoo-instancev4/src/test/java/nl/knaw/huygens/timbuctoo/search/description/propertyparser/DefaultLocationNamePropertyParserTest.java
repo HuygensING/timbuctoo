@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
@@ -38,20 +39,40 @@ public class DefaultLocationNamePropertyParserTest extends AbstractPropertyParse
   }
 
   @Test
-  public void parseToRawReturnsOutputOfPlaceNameGetDefaultName() throws JsonProcessingException {
+  public void parseForSortReturnsOutputOfPlaceNameGetDefaultName() throws JsonProcessingException {
     LocationNames locationNames = new LocationNames("defLang");
     locationNames.addCountryName("defLang", "Nederland");
 
-    Object value = instance.parseToRaw(new ObjectMapper().writeValueAsString(locationNames));
+    Object value = instance.parseForSort(new ObjectMapper().writeValueAsString(locationNames));
 
     assertThat(value, is(locationNames.getDefaultName()));
   }
 
   @Test
-  public void parseToRawReturnsNullIfTheInputStringCannotBeParsedToLocationNames() {
-    Object value = instance.parseToRaw("malformedLocationNames");
+  public void parseForSortReturnsNullIfTheInputStringCannotBeParsedToLocationNames() {
+    Object value = instance.parseForSort("malformedLocationNames");
 
     assertThat(value, is(nullValue()));
+  }
+
+  @Test
+  public void parseForSortRemovesTheTrailingWhitespaces() throws JsonProcessingException {
+    LocationNames locationNames = new LocationNames("defLang");
+    locationNames.addCountryName("defLang", "Nederland    ");
+
+    Object value = instance.parseForSort(new ObjectMapper().writeValueAsString(locationNames));
+
+    assertThat(value, is("Nederland"));
+  }
+
+  @Test
+  public void parseForSortRemovesTheLeadingWhitespaces() throws JsonProcessingException {
+    LocationNames locationNames = new LocationNames("defLang");
+    locationNames.addCountryName("defLang", "  Nederland");
+
+    Object value = instance.parseForSort(new ObjectMapper().writeValueAsString(locationNames));
+
+    assertThat(value, is("Nederland"));
   }
 
   @Override

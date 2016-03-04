@@ -65,7 +65,7 @@ public class PropertyTest {
     }
 
     @Override
-    public Comparable<?> parseToRaw(String value) {
+    public Comparable<?> parseForSort(String value) {
       return Integer.parseInt(value);
     }
 

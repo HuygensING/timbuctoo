@@ -8,8 +8,8 @@ import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
 import org.junit.Before;
 import org.junit.Test;
 
+import static junit.framework.TestCase.fail;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
@@ -43,7 +43,7 @@ public class PersonNamesDefaultNamePropertyParserTest extends AbstractPropertyPa
   }
 
   @Test
-  public void parseToRawReturnsAStringThatConsistsOfSortNameVariantOfTheDefaultName() throws JsonProcessingException {
+  public void parseForSortReturnsAStringThatConsistsOfSortNameVariantOfTheDefaultName() throws JsonProcessingException {
     PersonNames names = new PersonNames();
     PersonName name1 = PersonName.newInstance("forename", "surname");
     names.list.add(name1);
@@ -51,14 +51,14 @@ public class PersonNamesDefaultNamePropertyParserTest extends AbstractPropertyPa
     names.list.add(name2);
     String input = new ObjectMapper().writeValueAsString(names);
 
-    Object value = instance.parseToRaw(input);
+    Object value = instance.parseForSort(input);
 
     assertThat(value, is(names.defaultName().getSortName()));
   }
 
   @Test
-  public void parseToRawReturnsNullIfTheInputCannotBeParsed() throws JsonProcessingException {
-    Object value = instance.parseToRaw("invalid serialized names");
+  public void parseForSortReturnsNullIfTheInputCannotBeParsed() throws JsonProcessingException {
+    Object value = instance.parseForSort("invalid serialized names");
 
     assertThat(value, is(nullValue()));
   }
@@ -68,11 +68,10 @@ public class PersonNamesDefaultNamePropertyParserTest extends AbstractPropertyPa
     PersonNames names = new PersonNames();
     String input = new ObjectMapper().writeValueAsString(names);
 
-    Object value = instance.parseToRaw(input);
+    Object value = instance.parseForSort(input);
 
     assertThat(value, is(nullValue()));
   }
-
 
   @Override
   protected PropertyParser getInstance() {

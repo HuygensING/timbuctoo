@@ -14,7 +14,7 @@ public class DocumentTypePropertyParser implements PropertyParser {
   }
 
   @Override
-  public Comparable<?> parseToRaw(String value) {
+  public Comparable<?> parseForSort(String value) {
     return parse(value);
   }
 

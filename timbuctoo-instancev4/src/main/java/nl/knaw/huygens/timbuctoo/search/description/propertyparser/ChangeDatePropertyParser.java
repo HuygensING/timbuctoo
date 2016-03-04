@@ -43,7 +43,7 @@ class ChangeDatePropertyParser implements PropertyParser {
   }
 
   @Override
-  public Comparable<?> parseToRaw(String value) {
+  public Comparable<?> parseForSort(String value) {
     if (value != null) {
       try {
         long timeStamp = readTimeStamp(value);

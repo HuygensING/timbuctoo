@@ -29,11 +29,11 @@ public class GenderPropertyParserTest extends AbstractPropertyParserTest {
   }
 
   @Test
-  public void parseToRawReturnsUnquotedString() {
+  public void parseForSortReturnsUnquotedString() {
     String input = "\"FEMALE\"";
     String expected = "FEMALE";
 
-    Object output = instance.parseToRaw(input);
+    Object output = instance.parseForSort(input);
 
     assertThat(output, is(equalTo(expected)));
   }

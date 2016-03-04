@@ -28,8 +28,8 @@ public class DocumentTypePropertyParserTest extends AbstractPropertyParserTest {
   }
 
   @Test
-  public void parseToRawStripsTheExcessParenthesesFromTheValue() {
-    Object value = instance.parseToRaw("\"DIARY\"");
+  public void parseForSortStripsTheExcessParenthesesFromTheValue() {
+    Object value = instance.parseForSort("\"DIARY\"");
 
     assertThat(value, is("DIARY"));
   }

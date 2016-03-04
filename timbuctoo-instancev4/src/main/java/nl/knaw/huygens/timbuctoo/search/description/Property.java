@@ -23,7 +23,7 @@ public class Property {
     }
 
     return
-      __.has(name).values(name).map(x -> parser.parseToRaw("" + x.get()));
+      __.has(name).values(name).map(x -> parser.parseForSort("" + x.get()));
   }
 
   public interface PropertyNameBuilder {

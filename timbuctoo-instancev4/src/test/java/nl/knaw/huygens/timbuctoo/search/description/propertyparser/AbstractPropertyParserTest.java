@@ -17,11 +17,11 @@ public abstract class AbstractPropertyParserTest {
   }
 
   @Test
-  public void parseToRawReturnsTheDefaultValueIfTheInputValueIsNull() {
+  public void namesReturnsTheDefaultValueIfTheInputValueIsNull() {
     String nullString = null;
     PropertyParser instance = getInstance();
 
-    Object result = instance.parseToRaw(nullString);
+    Object result = instance.parseForSort(nullString);
 
     assertThat(result, is(nullValue()));
   }

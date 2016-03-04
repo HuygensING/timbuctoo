@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.search.description.propertyparser;
 
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
+import org.apache.commons.lang.StringUtils;
 
 class StringPropertyParser implements PropertyParser {
   @Override
@@ -9,8 +10,9 @@ class StringPropertyParser implements PropertyParser {
   }
 
   @Override
-  public Comparable<?> parseToRaw(String value) {
-    return parse(value);
+  public Comparable<?> parseForSort(String value) {
+    String parsedValue = parse(value);
+    return parsedValue == null ? null : StringUtils.stripToEmpty(parsedValue);
   }
 
 }
