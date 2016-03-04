@@ -9,23 +9,41 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Arrays;
+import java.util.function.BiPredicate;
 
 import static nl.knaw.huygens.timbuctoo.search.description.Property.localProperty;
 
 public class FullTextSearchDescription {
+  public static final ContainsStringPredicate
+    CONTAINS_STRING_PREDICATE = new ContainsStringPredicate();
   private final String name;
-  private final GraphTraversal<Object, Object> propertyTraversal;
+  private final Property prop1;
+  private Property prop2;
 
-  private FullTextSearchDescription(String name, Property property) {
+  private FullTextSearchDescription(String name, Property prop1, Property prop2) {
     this.name = name;
-    propertyTraversal = property.getTraversal();
+    this.prop1 = prop1;
+    this.prop2 = prop2;
   }
 
   public static FullTextSearchDescription createLocalSimpleFullTextSearchDescription(
     String name,
     String propertyName) {
 
-    return new FullTextSearchDescription(name, localProperty().withName(propertyName).build());
+    return new FullTextSearchDescription(name,
+      localProperty().withName(propertyName).build(), localProperty().withName("").build());
+  }
+
+  public static FullTextSearchDescription createLocalFullTextSearchDescriptionWithBackupProperty(
+    String name,
+    String propertyName,
+    String backUpPropertyName
+  ) {
+
+    Property prop1 = localProperty().withName(propertyName).build();
+    Property prop2 = localProperty().withName(backUpPropertyName).build();
+    
+    return new FullTextSearchDescription(name, prop1, prop2);
   }
 
   public String getName() {
@@ -34,7 +52,14 @@ public class FullTextSearchDescription {
 
   @SuppressWarnings("unchecked")
   public void filter(GraphTraversal<Vertex, Vertex> traversal, FullTextSearchParameter fullTextSearchParameter) {
-    traversal.where(__.where(propertyTraversal.is(P.test((o1, o2) -> {
+    String term = fullTextSearchParameter.getTerm();
+    traversal.where(__.coalesce(prop1.getTraversal(), prop2.getTraversal())
+                      .is(P.test(CONTAINS_STRING_PREDICATE, term)));
+  }
+
+  private static class ContainsStringPredicate implements BiPredicate {
+    @Override
+    public boolean test(Object o1, Object o2) {
       if (!(o1 instanceof String)) {
         return false;
       }
@@ -45,6 +70,6 @@ public class FullTextSearchDescription {
                                .toArray(String[]::new);
 
       return StringUtils.containsAny(propertyValue, matches);
-    }, fullTextSearchParameter.getTerm()))));
+    }
   }
 }

@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription
+  .createLocalFullTextSearchDescriptionWithBackupProperty;
+import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription
   .createLocalSimpleFullTextSearchDescription;
 import static nl.knaw.huygens.timbuctoo.search.description.Property.localProperty;
 import static nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription.newSortFieldDescription;
@@ -99,7 +101,7 @@ public class WwPersonSearchDescription extends AbstractSearchDescription {
     return Lists.newArrayList(
       createLocalSimpleFullTextSearchDescription("dynamic_t_tempspouse", "wwperson_tempSpouse"),
       createLocalSimpleFullTextSearchDescription("dynamic_t_notes", "wwperson_notes"),
-      createLocalSimpleFullTextSearchDescription("dynamic_t_name", "wwperson_names")
+      createLocalFullTextSearchDescriptionWithBackupProperty("dynamic_t_name", "wwperson_names", "wwperson_tempName")
     );
   }
 

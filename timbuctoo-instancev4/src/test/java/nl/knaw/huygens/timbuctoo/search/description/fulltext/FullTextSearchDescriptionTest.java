@@ -7,29 +7,31 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static nl.knaw.huygens.timbuctoo.search.VertexMatcher.likeVertex;
+import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription
+  .createLocalFullTextSearchDescriptionWithBackupProperty;
+import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription
+  .createLocalSimpleFullTextSearchDescription;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 public class FullTextSearchDescriptionTest {
 
-  protected static final String PROPERTY_NAME = "propertyName";
+  public static final String BACKUP_PROPERTY = "backupProperty";
+  protected static final String PROPERTY = "propertyName";
   protected static final String NAME = "name";
   private FullTextSearchDescription instance;
 
   @Before
   public void setUp() throws Exception {
-    instance = FullTextSearchDescription.createLocalSimpleFullTextSearchDescription(NAME, PROPERTY_NAME);
-  }
-
-  protected FullTextSearchDescription getInstance() {
-    return instance;
+    instance = createLocalSimpleFullTextSearchDescription(NAME, PROPERTY);
   }
 
   @Test
   public void getNameReturnsTheNameOfTheProperty() {
-    String name = getInstance().getName();
+    String name = instance.getName();
 
     assertThat(name, is(NAME));
   }
@@ -37,15 +39,15 @@ public class FullTextSearchDescriptionTest {
   @Test
   public void filterFiltersTheVerticesOnTheValueOfTheProperty() {
     GraphTraversal<Vertex, Vertex> traversal = newGraph()
-      .withVertex(vertex -> vertex.withTimId("v1").withProperty(PROPERTY_NAME, "value1"))
-      .withVertex(vertex -> vertex.withTimId("v2").withProperty(PROPERTY_NAME, "number2"))
-      .withVertex(vertex -> vertex.withTimId("v3").withProperty(PROPERTY_NAME, "value1"))
+      .withVertex(vertex -> vertex.withTimId("v1").withProperty(PROPERTY, "value1"))
+      .withVertex(vertex -> vertex.withTimId("v2").withProperty(PROPERTY, "number2"))
+      .withVertex(vertex -> vertex.withTimId("v3").withProperty(PROPERTY, "value1"))
       .build()
       .traversal()
       .V();
     FullTextSearchParameter searchParameter = new FullTextSearchParameter(NAME, "value1");
 
-    getInstance().filter(traversal, searchParameter);
+    instance.filter(traversal, searchParameter);
 
     assertThat(traversal.toList(), containsInAnyOrder(likeVertex().withTimId("v1"), likeVertex().withTimId("v3")));
   }
@@ -53,15 +55,15 @@ public class FullTextSearchDescriptionTest {
   @Test
   public void filterIncludesTheVerticesWhereTheSearchedValueIsPartOfThePropertyValueOfTheVertex() {
     GraphTraversal<Vertex, Vertex> traversal = newGraph()
-      .withVertex(vertex -> vertex.withTimId("v1").withProperty(PROPERTY_NAME, "value12344324"))
-      .withVertex(vertex -> vertex.withTimId("v2").withProperty(PROPERTY_NAME, "another value"))
-      .withVertex(vertex -> vertex.withTimId("v3").withProperty(PROPERTY_NAME, "value1"))
+      .withVertex(vertex -> vertex.withTimId("v1").withProperty(PROPERTY, "value12344324"))
+      .withVertex(vertex -> vertex.withTimId("v2").withProperty(PROPERTY, "another value"))
+      .withVertex(vertex -> vertex.withTimId("v3").withProperty(PROPERTY, "value1"))
       .build()
       .traversal()
       .V();
     FullTextSearchParameter fullTextSearchParameter = new FullTextSearchParameter(NAME, "value");
 
-    getInstance().filter(traversal, fullTextSearchParameter);
+    instance.filter(traversal, fullTextSearchParameter);
 
     assertThat(traversal.toList(), containsInAnyOrder(
       likeVertex().withTimId("v1"),
@@ -72,15 +74,15 @@ public class FullTextSearchDescriptionTest {
   @Test
   public void filterDiscardsTheVerticesThatContainThePropertyWithADifferentTypeOfValue() {
     GraphTraversal<Vertex, Vertex> traversal = newGraph()
-      .withVertex(vertex -> vertex.withTimId("v1").withProperty(PROPERTY_NAME, "value12344324"))
-      .withVertex(vertex -> vertex.withTimId("v2").withProperty(PROPERTY_NAME, 12334))
-      .withVertex(vertex -> vertex.withTimId("v3").withProperty(PROPERTY_NAME, "value1"))
+      .withVertex(vertex -> vertex.withTimId("v1").withProperty(PROPERTY, "value12344324"))
+      .withVertex(vertex -> vertex.withTimId("v2").withProperty(PROPERTY, 12334))
+      .withVertex(vertex -> vertex.withTimId("v3").withProperty(PROPERTY, "value1"))
       .build()
       .traversal()
       .V();
     FullTextSearchParameter fullTextSearchParameter = new FullTextSearchParameter(NAME, "value");
 
-    getInstance().filter(traversal, fullTextSearchParameter);
+    instance.filter(traversal, fullTextSearchParameter);
 
     assertThat(traversal.toList(), containsInAnyOrder(
       likeVertex().withTimId("v1"),
@@ -90,15 +92,15 @@ public class FullTextSearchDescriptionTest {
   @Test
   public void filterFiltersOnEachOfTheTermIndividuallyEachPropertyHasToContainOnlyOne() {
     GraphTraversal<Vertex, Vertex> traversal = newGraph()
-      .withVertex(vertex -> vertex.withTimId("v1").withProperty(PROPERTY_NAME, "value 12344324 value2"))
-      .withVertex(vertex -> vertex.withTimId("v2").withProperty(PROPERTY_NAME, "value value2"))
-      .withVertex(vertex -> vertex.withTimId("v3").withProperty(PROPERTY_NAME, "value1 value2"))
+      .withVertex(vertex -> vertex.withTimId("v1").withProperty(PROPERTY, "value 12344324 value2"))
+      .withVertex(vertex -> vertex.withTimId("v2").withProperty(PROPERTY, "value value2"))
+      .withVertex(vertex -> vertex.withTimId("v3").withProperty(PROPERTY, "value1 value2"))
       .build()
       .traversal()
       .V();
     FullTextSearchParameter fullTextSearchParameter = new FullTextSearchParameter(NAME, "value value2");
 
-    getInstance().filter(traversal, fullTextSearchParameter);
+    instance.filter(traversal, fullTextSearchParameter);
 
     assertThat(traversal.toList(), containsInAnyOrder(
       likeVertex().withTimId("v1"),
@@ -109,20 +111,62 @@ public class FullTextSearchDescriptionTest {
   @Test
   public void filterFiltersCaseIndependent() {
     GraphTraversal<Vertex, Vertex> traversal = newGraph()
-      .withVertex(vertex -> vertex.withTimId("v1").withProperty(PROPERTY_NAME, "Value"))
-      .withVertex(vertex -> vertex.withTimId("v2").withProperty(PROPERTY_NAME, "VALUE"))
-      .withVertex(vertex -> vertex.withTimId("v3").withProperty(PROPERTY_NAME, "vALUE"))
+      .withVertex(vertex -> vertex.withTimId("v1").withProperty(PROPERTY, "Value"))
+      .withVertex(vertex -> vertex.withTimId("v2").withProperty(PROPERTY, "VALUE"))
+      .withVertex(vertex -> vertex.withTimId("v3").withProperty(PROPERTY, "vALUE"))
       .build()
       .traversal()
       .V();
     FullTextSearchParameter fullTextSearchParameter = new FullTextSearchParameter(NAME, "value");
 
-    getInstance().filter(traversal, fullTextSearchParameter);
+    instance.filter(traversal, fullTextSearchParameter);
 
     assertThat(traversal.toList(), containsInAnyOrder(
       likeVertex().withTimId("v1"),
       likeVertex().withTimId("v2"),
       likeVertex().withTimId("v3")));
+  }
+
+  @Test
+  public void filterFiltersOnABackupFieldIfTheAVertexDoesNotContainThePropertyField() {
+    GraphTraversal<Vertex, Vertex> traversal = newGraph()
+      .withVertex(vertex -> vertex.withTimId("v1").withProperty(PROPERTY, "value1"))
+      .withVertex(vertex -> vertex.withTimId("v2").withProperty(PROPERTY, "value2"))
+      .withVertex(vertex -> vertex.withTimId("v3").withProperty(BACKUP_PROPERTY, "value1"))
+      .build()
+      .traversal()
+      .V();
+    FullTextSearchParameter fullTextSearchParameter = new FullTextSearchParameter(NAME, "value1");
+    FullTextSearchDescription instance =
+      createLocalFullTextSearchDescriptionWithBackupProperty(NAME, PROPERTY, BACKUP_PROPERTY);
+
+    instance.filter(traversal, fullTextSearchParameter);
+
+    assertThat(traversal.toList(), containsInAnyOrder(
+      likeVertex().withTimId("v1"),
+      likeVertex().withTimId("v3")));
+
+  }
+
+  @Test
+  public void filterFiltersOnlyOnThePropertyFieldIfTheVertexAlsoContainsTheBackupProperty() {
+    GraphTraversal<Vertex, Vertex> traversal = newGraph()
+      .withVertex(vertex -> vertex.withTimId("v1").withProperty(PROPERTY, "value1"))
+      .withVertex(vertex -> vertex.withTimId("v2").withProperty(PROPERTY, "value2"))
+      .withVertex(vertex -> vertex.withTimId("v3")
+                                  .withProperty(PROPERTY, "value")
+                                  .withProperty(BACKUP_PROPERTY, "value1"))
+      .build()
+      .traversal()
+      .V();
+    FullTextSearchParameter fullTextSearchParameter = new FullTextSearchParameter(NAME, "value1");
+    FullTextSearchDescription instance =
+      createLocalFullTextSearchDescriptionWithBackupProperty(NAME, PROPERTY, BACKUP_PROPERTY);
+
+    instance.filter(traversal, fullTextSearchParameter);
+
+    assertThat(traversal.toList(), contains(likeVertex().withTimId("v1")));
+
   }
 
 }
