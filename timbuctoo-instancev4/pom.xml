@@ -17,7 +17,6 @@
     <maven.javadoc.skip>true</maven.javadoc.skip>
 
 
-
     <!-- code dependencies -->
     <activemq.version>5.13.0</activemq.version>
     <concoridion.version>1.5.1</concoridion.version>
@@ -33,10 +32,11 @@
     <appassembler.version>1.10</appassembler.version>
     <build-helper-maven-plugin.version>1.10</build-helper-maven-plugin.version>
     <exec-maven-plugin.version>1.4.0</exec-maven-plugin.version>
+    <javaslang.version>2.0.0-RC4</javaslang.version>
     <maven-checkstyle-plugin.version>2.17</maven-checkstyle-plugin.version>
     <maven-failsafe-plugin.version>2.18.1</maven-failsafe-plugin.version>
-    <javaslang.version>2.0.0-RC4</javaslang.version>
     <metrics.version>3.1.2</metrics.version>
+    <rpm-maven-plugin.version>2.1.5</rpm-maven-plugin.version>
   </properties>
 
   <dependencies>
@@ -389,6 +389,37 @@
         </executions>
       </plugin>
       <plugin>
+        <!-- Create rpm during package phase for server releases, only works for systems of the Red Hat family -->
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>rpm-maven-plugin</artifactId>
+        <version>${rpm-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>generate-rpm</id>
+            <goals>
+              <goal>rpm</goal>
+            </goals>
+            <configuration>
+              <group>Repository</group>
+              <vendor>Huygens ING</vendor>
+              <mappings>
+                <mapping>
+                  <directory>/opt/timbuctoo</directory>
+                  <filemode>764</filemode> <!-- TODO resource filemode a bit more -->
+                  <username>datarepository</username>
+                  <groupname>datarepsitory</groupname>
+                  <sources>
+                    <source>
+                      <location>${project.build.directory}/appassembler</location>
+                    </source>
+                  </sources>
+                </mapping>
+              </mappings>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
           <execution>
@@ -399,13 +430,13 @@
             <configuration>
               <tasks>
                 <echo>
-======================================================================================================
-Done! now run
+                  ======================================================================================================
+                  Done! now run
 
-    ./target/appassembler/bin/timbuctoo server example_config.yaml
+                  ./target/appassembler/bin/timbuctoo server example_config.yaml
 
-to get a debug server up and running then go to http://localhost:8080
-======================================================================================================
+                  to get a debug server up and running then go to http://localhost:8080
+                  ======================================================================================================
                 </echo>
               </tasks>
             </configuration>
