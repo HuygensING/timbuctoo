@@ -390,63 +390,6 @@
         </executions>
       </plugin>
       <plugin>
-        <!-- Create rpm during package phase for server releases, only works for systems of the Red Hat family -->
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>rpm-maven-plugin</artifactId>
-        <version>${rpm-maven-plugin.version}</version>
-        <executions>
-          <execution>
-            <id>generate-rpm</id>
-            <goals>
-              <goal>rpm</goal>
-            </goals>
-            <configuration>
-              <group>Repository</group>
-              <description>Timbuctoo standalone app RPM package.</description>
-              <mappings>
-                <mapping>
-                  <directory>${rpm.app-home}/repo</directory>
-                  <filemode>774</filemode> <!-- TODO resource filemode a bit more -->
-                  <username>datarepository</username>
-                  <groupname>datarepsitory</groupname>
-                  <sources>
-                    <source>
-                      <location>${project.build.directory}/appassembler/repo</location>
-                    </source>
-                  </sources>
-                </mapping>
-                <mapping>
-                  <directory>${rpm.app-home}/bin</directory>
-                  <filemode>774</filemode> <!-- TODO resource filemode a bit more -->
-                  <username>datarepository</username>
-                  <groupname>datarepsitory</groupname>
-                  <sources>
-                    <source>
-                      <location>${project.build.directory}/appassembler/bin</location>
-                    </source>
-                  </sources>
-                </mapping>
-                <mapping>
-                  <directory>${rpm.app-home}/conf</directory>
-                  <filemode>774</filemode> <!-- TODO resource filemode a bit more -->
-                  <username>datarepository</username>
-                  <groupname>datarepsitory</groupname>
-                  <configuration>true</configuration>
-                  <sources>
-                    <source>
-                      <location>${project.basedir}/example_config.yaml</location>
-                    </source>
-                  </sources>
-                </mapping>
-                <mapping>
-                  <directory>${rpm.app-home}/logs</directory>
-                </mapping>
-              </mappings>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <artifactId>maven-antrun-plugin</artifactId>
         <executions>
           <execution>
@@ -472,4 +415,79 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>buildRpm</id>
+      <activation>
+        <property>
+          <name>buildRpm</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <!-- Create rpm during package phase for server releases, only works for systems of the Red Hat family -->
+            <!-- The plugin depends on the 'rpm-build' package. -->
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>rpm-maven-plugin</artifactId>
+            <version>${rpm-maven-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>generate-rpm</id>
+                <goals>
+                  <goal>rpm</goal>
+                </goals>
+                <configuration>
+                  <group>Repository</group>
+                  <description>Timbuctoo standalone app RPM package.</description>
+                  <mappings>
+                    <mapping>
+                      <directory>${rpm.app-home}/repo</directory>
+                      <filemode>774</filemode> <!-- TODO resource filemode a bit more -->
+                      <username>datarepository</username>
+                      <groupname>datarepsitory</groupname>
+                      <sources>
+                        <source>
+                          <location>${project.build.directory}/appassembler/repo</location>
+                        </source>
+                      </sources>
+                    </mapping>
+                    <mapping>
+                      <directory>${rpm.app-home}/bin</directory>
+                      <filemode>774</filemode> <!-- TODO resource filemode a bit more -->
+                      <username>datarepository</username>
+                      <groupname>datarepsitory</groupname>
+                      <sources>
+                        <source>
+                          <location>${project.build.directory}/appassembler/bin</location>
+                        </source>
+                      </sources>
+                    </mapping>
+                    <mapping>
+                      <directory>${rpm.app-home}/conf</directory>
+                      <filemode>774</filemode> <!-- TODO resource filemode a bit more -->
+                      <username>datarepository</username>
+                      <groupname>datarepsitory</groupname>
+                      <configuration>true</configuration>
+                      <sources>
+                        <source>
+                          <location>${project.basedir}/example_config.yaml</location>
+                        </source>
+                      </sources>
+                    </mapping>
+                    <mapping>
+                      <directory>${rpm.app-home}/logs</directory>
+                    </mapping>
+                  </mappings>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
 </project>
