@@ -37,6 +37,7 @@
     <maven-failsafe-plugin.version>2.18.1</maven-failsafe-plugin.version>
     <metrics.version>3.1.2</metrics.version>
     <rpm-maven-plugin.version>2.1.5</rpm-maven-plugin.version>
+    <rpm.app-home>/opt/timbuctoo</rpm.app-home>
   </properties>
 
   <dependencies>
@@ -401,18 +402,44 @@
             </goals>
             <configuration>
               <group>Repository</group>
-              <vendor>Huygens ING</vendor>
+              <description>Timbuctoo standalone app RPM package.</description>
               <mappings>
                 <mapping>
-                  <directory>/opt/timbuctoo</directory>
-                  <filemode>764</filemode> <!-- TODO resource filemode a bit more -->
+                  <directory>${rpm.app-home}/repo</directory>
+                  <filemode>774</filemode> <!-- TODO resource filemode a bit more -->
                   <username>datarepository</username>
                   <groupname>datarepsitory</groupname>
                   <sources>
                     <source>
-                      <location>${project.build.directory}/appassembler</location>
+                      <location>${project.build.directory}/appassembler/repo</location>
                     </source>
                   </sources>
+                </mapping>
+                <mapping>
+                  <directory>${rpm.app-home}/bin</directory>
+                  <filemode>774</filemode> <!-- TODO resource filemode a bit more -->
+                  <username>datarepository</username>
+                  <groupname>datarepsitory</groupname>
+                  <sources>
+                    <source>
+                      <location>${project.build.directory}/appassembler/bin</location>
+                    </source>
+                  </sources>
+                </mapping>
+                <mapping>
+                  <directory>${rpm.app-home}/conf</directory>
+                  <filemode>774</filemode> <!-- TODO resource filemode a bit more -->
+                  <username>datarepository</username>
+                  <groupname>datarepsitory</groupname>
+                  <configuration>true</configuration>
+                  <sources>
+                    <source>
+                      <location>${project.basedir}/example_config.yaml</location>
+                    </source>
+                  </sources>
+                </mapping>
+                <mapping>
+                  <directory>${rpm.app-home}/logs</directory>
                 </mapping>
               </mappings>
             </configuration>
