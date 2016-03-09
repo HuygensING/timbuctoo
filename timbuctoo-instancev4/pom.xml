@@ -443,6 +443,12 @@
                   <description>Timbuctoo standalone app RPM package.</description>
                   <mappings>
                     <mapping>
+                      <directory>${rpm.app-home}</directory>
+                      <filemode>774</filemode>
+                      <username>timbuctoo</username>
+                      <groupname>timbuctoo</groupname>
+                    </mapping>
+                    <mapping>
                       <directory>${rpm.app-home}/repo</directory>
                       <filemode>774</filemode>
                       <username>timbuctoo</username>
