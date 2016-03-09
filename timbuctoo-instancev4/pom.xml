@@ -480,9 +480,9 @@
                       <directory>${rpm.app-home}/logs</directory>
                     </mapping>
                   </mappings>
-                  <prepareScriptlet>
+                  <preinstallScriptlet>
                     <scriptFile>${project.build.scriptSourceDirectory}/rpm_scripts/create_user_and_group.sh</scriptFile>
-                  </prepareScriptlet>
+                  </preinstallScriptlet>
                   <postremoveScriptlet>
                     <scriptFile>${project.build.scriptSourceDirectory}/rpm_scripts/remove_user_and_group.sh</scriptFile>
                   </postremoveScriptlet>
