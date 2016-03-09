@@ -10,6 +10,6 @@ fi
 USER_STRING=`getent passwd datarepository`
 if [ ! "$USER_STRING" ]; then
   echo "create user \"datarepository\""
-  useradd -g datarepository datarepository
+  useradd --system -g datarepository datarepository
 
 fi
