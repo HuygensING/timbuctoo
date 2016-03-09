@@ -480,6 +480,12 @@
                       <directory>${rpm.app-home}/logs</directory>
                     </mapping>
                   </mappings>
+                  <preinstallScriptlet>
+                    <scriptFile>${project.build.scriptSourceDirectory}/rpm_scripts/create_user.sh</scriptFile>
+                  </preinstallScriptlet>
+                  <postremoveScriptlet>
+                    <scriptFile>${project.build.scriptSourceDirectory}/rpm_scripts/remove_user.sh</scriptFile>
+                  </postremoveScriptlet>
                 </configuration>
               </execution>
             </executions>
