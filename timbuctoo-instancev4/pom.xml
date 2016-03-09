@@ -445,8 +445,8 @@
                     <mapping>
                       <directory>${rpm.app-home}/repo</directory>
                       <filemode>774</filemode>
-                      <username>datarepository</username>
-                      <groupname>datarepository</groupname>
+                      <username>timbuctoo</username>
+                      <groupname>timbuctoo</groupname>
                       <sources>
                         <source>
                           <location>${project.build.directory}/appassembler/repo</location>
@@ -456,8 +456,8 @@
                     <mapping>
                       <directory>${rpm.app-home}/bin</directory>
                       <filemode>774</filemode>
-                      <username>datarepository</username>
-                      <groupname>datarepository</groupname>
+                      <username>timbuctoo</username>
+                      <groupname>timbuctoo</groupname>
                       <sources>
                         <source>
                           <location>${project.build.directory}/appassembler/bin</location>
@@ -467,8 +467,8 @@
                     <mapping>
                       <directory>${rpm.app-home}/conf</directory>
                       <filemode>774</filemode>
-                      <username>datarepository</username>
-                      <groupname>datarepository</groupname>
+                      <username>timbuctoo</username>
+                      <groupname>timbuctoo</groupname>
                       <configuration>true</configuration>
                       <sources>
                         <source>

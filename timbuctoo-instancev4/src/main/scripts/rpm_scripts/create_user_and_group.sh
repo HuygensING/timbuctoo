@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 
-GROUP_STRING=`getent group datarepository`
+GROUP_STRING=`getent group timbuctoo`
 if [ ! "$GROUP_STRING" ]; then
-  echo "create group \"datarepository\""
-  groupadd datarepository
+  echo "create group \"timbuctoo\""
+  groupadd timbuctoo
 
 fi
 
-USER_STRING=`getent passwd datarepository`
+USER_STRING=`getent passwd timbuctoo`
 if [ ! "$USER_STRING" ]; then
-  echo "create user \"datarepository\""
-  useradd --system -g datarepository datarepository -d /opt/timbuctoo
+  echo "create user \"timbuctoo\""
+  useradd --system -g timbuctoo timbuctoo -d /opt/timbuctoo
 
 fi
