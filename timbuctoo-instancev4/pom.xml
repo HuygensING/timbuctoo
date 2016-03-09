@@ -481,10 +481,10 @@
                     </mapping>
                   </mappings>
                   <preinstallScriptlet>
-                    <scriptFile>${project.build.scriptSourceDirectory}/rpm_scripts/create_user.sh</scriptFile>
+                    <scriptFile>${project.build.scriptSourceDirectory}/rpm_scripts/create_user_and_group.sh</scriptFile>
                   </preinstallScriptlet>
                   <postremoveScriptlet>
-                    <scriptFile>${project.build.scriptSourceDirectory}/rpm_scripts/remove_user.sh</scriptFile>
+                    <scriptFile>${project.build.scriptSourceDirectory}/rpm_scripts/remove_user_and_group.sh</scriptFile>
                   </postremoveScriptlet>
                 </configuration>
               </execution>
