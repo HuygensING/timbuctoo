@@ -422,7 +422,6 @@
       <activation>
         <property>
           <name>buildRpm</name>
-          <value>true</value>
         </property>
       </activation>
       <build>
@@ -445,7 +444,7 @@
                   <mappings>
                     <mapping>
                       <directory>${rpm.app-home}/repo</directory>
-                      <filemode>774</filemode> <!-- TODO resource filemode a bit more -->
+                      <filemode>774</filemode>
                       <username>datarepository</username>
                       <groupname>datarepsitory</groupname>
                       <sources>
@@ -456,7 +455,7 @@
                     </mapping>
                     <mapping>
                       <directory>${rpm.app-home}/bin</directory>
-                      <filemode>774</filemode> <!-- TODO resource filemode a bit more -->
+                      <filemode>664</filemode>
                       <username>datarepository</username>
                       <groupname>datarepsitory</groupname>
                       <sources>
@@ -467,7 +466,7 @@
                     </mapping>
                     <mapping>
                       <directory>${rpm.app-home}/conf</directory>
-                      <filemode>774</filemode> <!-- TODO resource filemode a bit more -->
+                      <filemode>664</filemode>
                       <username>datarepository</username>
                       <groupname>datarepsitory</groupname>
                       <configuration>true</configuration>
