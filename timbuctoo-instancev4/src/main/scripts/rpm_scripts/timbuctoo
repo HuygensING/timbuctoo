@@ -1,0 +1,50 @@
+#! /bin/bash
+
+do_start()
+{
+  echo "starting timbuctoo"
+  runuser -l datarepository -c '/opt/timbuctoo/bin/timbuctoo server /opt/timbuctoo/conf/config.yaml'
+}
+
+do_stop()
+{
+  echo "stop"
+}
+
+get_status()
+{
+  pid=`pgrep -fx timbuctoo`
+  
+  if [ "$pid" ]; then
+      echo "timbuctoo is running and has pid $pid"
+      return 0;
+  else
+      echo "timbuctoo is not running"
+      return 0;
+  fi
+}
+
+do_restart()
+{
+  do_stop
+  do_start
+}
+
+case "$1" in
+  start)
+    do_start
+    ;;
+  stop)
+    do_stop
+    ;;
+  status)
+    get_status
+    ;;
+  restart)
+    do_restart
+    ;;
+  *)
+    echo "Usage: timbuctoo {start|stop|status|restart}" >&2
+    exit 3
+    ;;
+esac
