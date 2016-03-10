@@ -13,7 +13,7 @@ do_stop()
 
 get_status()
 {
-  pid=`pgrep -fx timbuctoo`
+  pid=`pgrep -fx ".*java.*timbuctoo.*"`
   
   if [ "$pid" ]; then
       echo "timbuctoo is running and has pid $pid"
