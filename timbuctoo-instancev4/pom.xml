@@ -289,16 +289,40 @@
             <goals>
               <goal>assemble</goal>
             </goals>
+            <configuration>
+              <programs>
+                <program>
+                  <id>timbuctoo</id>
+                  <mainClass>nl.knaw.huygens.timbuctoo.server.TimbuctooV4</mainClass>
+                </program>
+              </programs>
+            </configuration>
+          </execution>
+          <execution>
+            <id>generate-jsw-scripts</id>
+            <phase>package</phase>
+            <goals>
+              <goal>generate-daemons</goal>
+            </goals>
+            <configuration>
+              <repositoryLayout>flat</repositoryLayout>
+              <daemons>
+                <daemon>
+                  <id>timbuctoo_daemon</id>
+                  <wrapperMainClass>org.tanukisoftware.wrapper.WrapperSimpleApp</wrapperMainClass>
+                  <mainClass>nl.knaw.huygens.timbuctoo.server.TimbuctooV4</mainClass>
+                  <commandLineArguments>
+                    <commandLineArgument>server</commandLineArgument>
+                    <commandLineArgument>../conf/config.yaml</commandLineArgument>
+                  </commandLineArguments>
+                  <platforms>
+                    <platform>jsw</platform>
+                  </platforms>
+                </daemon>
+              </daemons>
+            </configuration>
           </execution>
         </executions>
-        <configuration>
-          <programs>
-            <program>
-              <id>timbuctoo</id>
-              <mainClass>nl.knaw.huygens.timbuctoo.server.TimbuctooV4</mainClass>
-            </program>
-          </programs>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
