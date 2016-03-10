@@ -2,19 +2,34 @@
 
 do_start()
 {
-  echo "starting timbuctoo"
+  echo "starting Timbuctoo"
   runuser -l datarepository -c '/opt/timbuctoo/bin/timbuctoo server /opt/timbuctoo/conf/config.yaml'
+}
+
+get_pid()
+{
+  echo `pgrep -fx ".*java.*timbuctoo.*"`
 }
 
 do_stop()
 {
-  echo "stop"
+  echo "stopping Timbuctoo"
+  
+  pid=`get_pid`
+
+  if [ ! "$pid" ]; then
+    echo "Timbuctoo is not running"
+    return 1;
+  else  
+    `kill -2 $pid`
+    return 0
+  fi
 }
 
 get_status()
 {
-  pid=`pgrep -fx ".*java.*timbuctoo.*"`
-  
+   pid=`get_pid`
+
   if [ "$pid" ]; then
       echo "timbuctoo is running and has pid $pid"
       return 0;
