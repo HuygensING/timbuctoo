@@ -318,6 +318,20 @@
                   <platforms>
                     <platform>jsw</platform>
                   </platforms>
+                  <generatorConfigurations>
+                  <generatorConfiguration>
+                    <generator>jsw</generator>
+                    <includes>
+                      <include>linux-x86-64</include>
+                    </includes>
+                    <configuration>
+                      <property>
+                        <name>run.as.user.envvar</name>
+                        <value>timbuctoo</value>
+                      </property>
+                    </configuration>
+                  </generatorConfiguration>
+                </generatorConfigurations>
                 </daemon>
               </daemons>
             </configuration>
@@ -468,46 +482,49 @@
                   <mappings>
                     <mapping>
                       <directory>${rpm.app-home}</directory>
-                      <filemode>774</filemode>
+                      <filemode>775</filemode>
                       <username>timbuctoo</username>
                       <groupname>timbuctoo</groupname>
                     </mapping>
                     <mapping>
                       <directory>${rpm.app-home}/lib</directory>
-                      <filemode>774</filemode>
+                      <filemode>775</filemode>
                       <username>timbuctoo</username>
                       <groupname>timbuctoo</groupname>
                       <sources>
                         <source>
+                          <targetArchitecture>x86_64</targetArchitecture>
                           <location>${project.build.directory}/generated-resources/appassembler/jsw/timbuctoo_daemon/lib</location>
                         </source>
                       </sources>
                     </mapping>
                     <mapping>
                       <directory>${rpm.app-home}/etc</directory>
-                      <filemode>774</filemode>
+                      <filemode>775</filemode>
                       <username>timbuctoo</username>
                       <groupname>timbuctoo</groupname>
                       <sources>
                         <source>
+                          <targetArchitecture>x86_64</targetArchitecture>
                           <location>${project.build.directory}/generated-resources/appassembler/jsw/timbuctoo_daemon/etc</location>
                         </source>
                       </sources>
                     </mapping>
                     <mapping>
                       <directory>${rpm.app-home}/bin</directory>
-                      <filemode>774</filemode>
+                      <filemode>775</filemode>
                       <username>timbuctoo</username>
                       <groupname>timbuctoo</groupname>
                       <sources>
                         <source>
+                          <targetArchitecture>x86_64</targetArchitecture>
                           <location>${project.build.directory}/generated-resources/appassembler/jsw/timbuctoo_daemon/bin/</location>
                         </source>
                       </sources>
                     </mapping>
                     <mapping>
                       <directory>${rpm.app-home}/conf</directory>
-                      <filemode>774</filemode>
+                      <filemode>775</filemode>
                       <username>timbuctoo</username>
                       <groupname>timbuctoo</groupname>
                       <configuration>true</configuration>
