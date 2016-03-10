@@ -473,13 +473,24 @@
                       <groupname>timbuctoo</groupname>
                     </mapping>
                     <mapping>
-                      <directory>${rpm.app-home}/repo</directory>
+                      <directory>${rpm.app-home}/lib</directory>
                       <filemode>774</filemode>
                       <username>timbuctoo</username>
                       <groupname>timbuctoo</groupname>
                       <sources>
                         <source>
-                          <location>${project.build.directory}/appassembler/repo</location>
+                          <location>${project.build.directory}/generated-resources/appassembler/jsw/timbuctoo_daemon/lib</location>
+                        </source>
+                      </sources>
+                    </mapping>
+                    <mapping>
+                      <directory>${rpm.app-home}/etc</directory>
+                      <filemode>774</filemode>
+                      <username>timbuctoo</username>
+                      <groupname>timbuctoo</groupname>
+                      <sources>
+                        <source>
+                          <location>${project.build.directory}/generated-resources/appassembler/jsw/timbuctoo_daemon/etc</location>
                         </source>
                       </sources>
                     </mapping>
@@ -490,7 +501,7 @@
                       <groupname>timbuctoo</groupname>
                       <sources>
                         <source>
-                          <location>${project.build.directory}/appassembler/bin</location>
+                          <location>${project.build.directory}/generated-resources/appassembler/jsw/timbuctoo_daemon/bin/</location>
                         </source>
                       </sources>
                     </mapping>
