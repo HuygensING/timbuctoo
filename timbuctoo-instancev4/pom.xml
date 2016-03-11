@@ -298,44 +298,6 @@
               </programs>
             </configuration>
           </execution>
-          <execution>
-            <id>generate-jsw-scripts</id>
-            <phase>package</phase>
-            <goals>
-              <goal>generate-daemons</goal>
-            </goals>
-            <configuration>
-              <repositoryLayout>flat</repositoryLayout>
-              <daemons>
-                <daemon>
-                  <id>timbuctoo_daemon</id>
-                  <wrapperMainClass>org.tanukisoftware.wrapper.WrapperSimpleApp</wrapperMainClass>
-                  <mainClass>nl.knaw.huygens.timbuctoo.server.TimbuctooV4</mainClass>
-                  <commandLineArguments>
-                    <commandLineArgument>server</commandLineArgument>
-                    <commandLineArgument>${rpm.app-home}/conf/config.yaml</commandLineArgument>
-                  </commandLineArguments>
-                  <platforms>
-                    <platform>jsw</platform>
-                  </platforms>
-                  <generatorConfigurations>
-                  <generatorConfiguration>
-                    <generator>jsw</generator>
-                    <includes>
-                      <include>linux-x86-64</include>
-                    </includes>
-                    <configuration>
-                      <property>
-                        <name>run.as.user.envvar</name>
-                        <value>timbuctoo</value>
-                      </property>
-                    </configuration>
-                  </generatorConfiguration>
-                </generatorConfigurations>
-                </daemon>
-              </daemons>
-            </configuration>
-          </execution>
         </executions>
       </plugin>
       <plugin>
@@ -465,6 +427,51 @@
       <build>
         <plugins>
           <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>appassembler-maven-plugin</artifactId>
+            <version>${appassembler.version}</version>
+            <executions>
+              <execution>
+                <id>generate-jsw-scripts</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>generate-daemons</goal>
+                </goals>
+                <configuration>
+                  <repositoryLayout>flat</repositoryLayout>
+                  <daemons>
+                    <daemon>
+                      <id>timbuctoo_daemon</id>
+                      <wrapperMainClass>org.tanukisoftware.wrapper.WrapperSimpleApp</wrapperMainClass>
+                      <mainClass>nl.knaw.huygens.timbuctoo.server.TimbuctooV4</mainClass>
+                      <commandLineArguments>
+                        <commandLineArgument>server</commandLineArgument>
+                        <commandLineArgument>${rpm.app-home}/conf/config.yaml</commandLineArgument>
+                      </commandLineArguments>
+                      <platforms>
+                        <platform>jsw</platform>
+                      </platforms>
+                      <generatorConfigurations>
+                        <generatorConfiguration>
+                          <generator>jsw</generator>
+                          <includes>
+                            <include>linux-x86-64</include>
+                          </includes>
+                          <configuration>
+                            <property>
+                              <name>run.as.user.envvar</name>
+                              <value>timbuctoo</value>
+                            </property>
+                          </configuration>
+                        </generatorConfiguration>
+                      </generatorConfigurations>
+                    </daemon>
+                  </daemons>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
             <!-- Create rpm during package phase for server releases, only works for systems of the Red Hat family -->
             <!-- The plugin depends on the 'rpm-build' package. -->
             <groupId>org.codehaus.mojo</groupId>
@@ -495,7 +502,9 @@
                       <sources>
                         <source>
                           <targetArchitecture>x86_64</targetArchitecture>
-                          <location>${project.build.directory}/generated-resources/appassembler/jsw/timbuctoo_daemon/lib</location>
+                          <location>
+                            ${project.build.directory}/generated-resources/appassembler/jsw/timbuctoo_daemon/lib
+                          </location>
                         </source>
                       </sources>
                     </mapping>
@@ -507,7 +516,9 @@
                       <sources>
                         <source>
                           <targetArchitecture>x86_64</targetArchitecture>
-                          <location>${project.build.directory}/generated-resources/appassembler/jsw/timbuctoo_daemon/etc</location>
+                          <location>
+                            ${project.build.directory}/generated-resources/appassembler/jsw/timbuctoo_daemon/etc
+                          </location>
                         </source>
                       </sources>
                     </mapping>
@@ -519,7 +530,9 @@
                       <sources>
                         <source>
                           <targetArchitecture>x86_64</targetArchitecture>
-                          <location>${project.build.directory}/generated-resources/appassembler/jsw/timbuctoo_daemon/bin/</location>
+                          <location>
+                            ${project.build.directory}/generated-resources/appassembler/jsw/timbuctoo_daemon/bin/
+                          </location>
                         </source>
                       </sources>
                     </mapping>
