@@ -313,7 +313,7 @@
                   <mainClass>nl.knaw.huygens.timbuctoo.server.TimbuctooV4</mainClass>
                   <commandLineArguments>
                     <commandLineArgument>server</commandLineArgument>
-                    <commandLineArgument>../conf/config.yaml</commandLineArgument>
+                    <commandLineArgument>${rpm.app-home}/conf/config.yaml</commandLineArgument>
                   </commandLineArguments>
                   <platforms>
                     <platform>jsw</platform>
@@ -479,6 +479,7 @@
                 <configuration>
                   <group>Repository</group>
                   <description>Timbuctoo standalone app RPM package.</description>
+                  <needarch>true</needarch>
                   <mappings>
                     <mapping>
                       <directory>${rpm.app-home}</directory>
@@ -536,6 +537,9 @@
                     </mapping>
                     <mapping>
                       <directory>${rpm.app-home}/logs</directory>
+                      <filemode>775</filemode>
+                      <username>timbuctoo</username>
+                      <groupname>timbuctoo</groupname>
                     </mapping>
                   </mappings>
                   <preinstallScriptlet>
