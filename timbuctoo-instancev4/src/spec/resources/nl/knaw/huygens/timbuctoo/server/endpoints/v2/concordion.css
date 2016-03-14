@@ -89,3 +89,11 @@
   font-family: monospace;
   border-radius: 3px;
 }
+
+.superfluous {color: lightgray}
+.missing {color: darkred}
+.mismatch {color: darkred}
+.expected { color: lightgray }
+.matching > .expected {display: none}
+.superfluous > .expected {display: none}
+pre:hover .expected {display: initial}
