@@ -61,7 +61,7 @@ public class CompositeMatcher<T> extends TypeSafeDiagnosingMatcher<T> {
     boolean firstMismatch = true;
     for (TypeSafeMatcher<T> matcher : getMatchers()) {
       if (!matcher.matches(item)) {
-        if(!firstMismatch){
+        if (!firstMismatch) {
           mismatchDescription.appendText(", ");
         }
         firstMismatch = false;
