@@ -734,6 +734,20 @@
                       <username>timbuctoo</username>
                       <groupname>timbuctoo</groupname>
                     </mapping>
+                    <mapping>
+                      <directory>${rpm.app-home}/monit</directory>
+                      <filemode>775</filemode>
+                      <username>timbuctoo</username>
+                      <groupname>timbuctoo</groupname>
+                      <sources>
+                        <source>
+                          <targetArchitecture>x86_64</targetArchitecture>
+                          <location>
+                            ${project.basedir}/src/main/resources/service
+                          </location>
+                        </source>
+                      </sources>
+                    </mapping>
                   </mappings>
                   <preinstallScriptlet>
                     <scriptFile>${project.build.scriptSourceDirectory}/rpm_scripts/create_user_and_group.sh</scriptFile>
