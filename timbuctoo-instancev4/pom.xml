@@ -2,8 +2,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
 
+  <modelVersion>4.0.0</modelVersion>
   <groupId>nl.knaw.huygens</groupId>
   <artifactId>timbuctoo-instancev4</artifactId>
   <version>4.0.0-SNAPSHOT</version>
@@ -91,8 +91,12 @@
 
     <!-- don't generate javadoc -->
     <maven.javadoc.skip>true</maven.javadoc.skip>
+    <!-- test output -->
+    <concordion.output.dir>${basedir}/target/concordion</concordion.output.dir>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 
+    <!--version numbers-->
     <jdk.version>1.8</jdk.version>
     <maven-compiler.version>3.1</maven-compiler.version>
     <!-- code dependencies -->
@@ -103,16 +107,15 @@
     <httpcore.version>4.4.4</httpcore.version>
     <jsonassert.version>1.2.3</jsonassert.version>
     <tinkerpop3.version>3.1.0-incubating</tinkerpop3.version>
-    <!-- test output -->
-    <concordion.output.dir>${basedir}/target/concordion</concordion.output.dir>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <!-- plugins -->
     <hamcrest-library.version>1.3</hamcrest-library.version>
+    <javaslang.version>2.0.0-RC4</javaslang.version>
+    <metrics.version>3.1.2</metrics.version>
     <guava.version>19.0</guava.version>
     <huygens.persistence.version>2.1.0</huygens.persistence.version>
     <junit.version>4.12</junit.version>
     <timbuctoo-test-services.version>3.1.0-SNAPSHOT</timbuctoo-test-services.version>
     <mockito.version>1.9.0</mockito.version>
+    <!-- Maven plugins -->
     <appassembler.version>1.10</appassembler.version>
     <build-helper-maven-plugin.version>1.10</build-helper-maven-plugin.version>
     <exec-maven-plugin.version>1.4.0</exec-maven-plugin.version>
@@ -163,26 +166,28 @@
       <version>0.3-2.3.0</version>
     </dependency>
 
+    <!-- ### handle ids ## -->
     <!-- activeMQ for eventually executing commands on remote services -->
     <dependency>
       <groupId>com.kjetland.dropwizard</groupId>
       <artifactId>dropwizard-activemq</artifactId>
       <version>${dropwizard-activemq.version}</version>
     </dependency>
-    <!-- Activemq broker package contains the in memory version for easy quick run -->
     <dependency>
+      <!-- Activemq broker package contains the in memory version for easy quick run -->
       <groupId>org.apache.activemq</groupId>
       <artifactId>activemq-broker</artifactId>
       <version>${activemq.version}</version>
       <scope>runtime</scope>
     </dependency>
-    <!-- Activemq persistence db to make the in-memory broker somewhat production viable-->
     <dependency>
+      <!-- Activemq persistence db to make the in-memory broker somewhat production viable-->
       <groupId>org.apache.activemq</groupId>
       <artifactId>activemq-kahadb-store</artifactId>
       <version>${activemq.version}</version>
       <scope>runtime</scope>
     </dependency>
+
     <!-- SDK to create Handle persistent ids-->
     <dependency>
       <groupId>nl.knaw.huygens</groupId>
@@ -196,25 +201,14 @@
       </exclusions>
     </dependency>
 
-    <!-- Apache Commons -->
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>3.4</version>
-    </dependency>
-
-    <!--Try monad-->
-    <dependency>
-      <groupId>com.javaslang</groupId>
-      <artifactId>javaslang</artifactId>
-      <version>${javaslang.version}</version>
-    </dependency>
+    <!-- ### Logging and reporting ## -->
     <!--GELF logback handler for sending logs to a remote log server-->
     <dependency>
       <groupId>net.gini.dropwizard</groupId>
       <artifactId>dropwizard-gelf</artifactId>
       <version>0.9.2-1</version>
     </dependency>
+
     <!--log metrics to graphite-->
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
@@ -247,6 +241,12 @@
       <version>3.4</version>
     </dependency>
 
+    <!--Try monad-->
+    <dependency>
+      <groupId>com.javaslang</groupId>
+      <artifactId>javaslang</artifactId>
+      <version>${javaslang.version}</version>
+    </dependency>
     <!-- ## End of main dependencies ## -->
 
     <!-- ## Test dependencies ## -->
@@ -299,6 +299,7 @@
       <scope>test</scope>
     </dependency>
 
+    <!--explicitly include neo4j in the tests for integration tests-->
     <dependency>
       <groupId>org.neo4j</groupId>
       <artifactId>neo4j-kernel</artifactId>
@@ -321,6 +322,7 @@
       <version>${timbuctoo-test-services.version}</version>
       <scope>test</scope>
     </dependency>
+
     <!--hamcrest matcher for asserting json -->
     <dependency>
       <groupId>uk.co.datumedge</groupId>
@@ -349,6 +351,7 @@
     </dependency>
     <!-- ## End of test dependencies ## -->
   </dependencies>
+
   <repositories>
     <repository>
       <id>central</id>
@@ -387,6 +390,8 @@
       <url>https://raw.githubusercontent.com/mbknor/mbknor.github.com/master/m2repo/releases</url>
     </repository>
   </repositories>
+
+
   <build>
     <plugins>
       <plugin>
@@ -520,7 +525,7 @@
               <goal>check</goal>
             </goals>
             <configuration>
-              <configLocation>src/main/resources/checkstyle_config.xml</configLocation>
+              <configLocation>/src/main/resources/checkstyle_config.xml</configLocation>
               <includeTestSourceDirectory>true</includeTestSourceDirectory>
               <encoding>UTF-8</encoding>
               <consoleOutput>true</consoleOutput>
