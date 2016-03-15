@@ -629,6 +629,7 @@
                         <commandLineArgument>server</commandLineArgument>
                         <commandLineArgument>${rpm.app-home}/conf/config.yaml</commandLineArgument>
                       </commandLineArguments>
+                      <wrapperLogFile>${rpm.app-home}/logs/timbuctoo.log</wrapperLogFile>
                       <platforms>
                         <platform>jsw</platform>
                       </platforms>
