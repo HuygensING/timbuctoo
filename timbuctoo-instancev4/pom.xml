@@ -89,12 +89,13 @@
 
   <properties>
 
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
     <!-- don't generate javadoc -->
     <maven.javadoc.skip>true</maven.javadoc.skip>
     <!-- test output -->
     <concordion.output.dir>${basedir}/target/concordion</concordion.output.dir>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
 
     <!--version numbers-->
     <jdk.version>1.8</jdk.version>
