@@ -28,8 +28,8 @@
 
       </div>
     </aside>
-    <span c:assertTrue="hasContent(#authPost.headers.x_auth_token)">
-      You then get a X_AUTH_TOKEN header back (In this case <span c:echo="#authPost.headers.x_auth_token"></span>)
+    <span c:assertTrue="hasContent(#authPost.firstHeaders.x_auth_token)">
+      You then get a X_AUTH_TOKEN header back (In this case <span c:echo="#authPost.firstHeaders.x_auth_token"></span>)
       that you can use to get your own user information.
     </span>
     <aside class="note">
@@ -50,14 +50,14 @@
     <aside class="example" h:http="#userInfoGet">
       <div h:request="">
         GET /v2.1/system/users/me HTTP/1.1
-        Authorization: #authPost.headers.x_auth_token
+        Authorization: $(#authPost.firstHeaders.x_auth_token)
         VRE_ID: WomenWriters
       </div>
       <div h:response="">
         HTTP/1.1 200
 
         {
-          "displayName":"/.+/"
+          "displayName": "/*STRING*/"
         }
       </div>
     </aside>

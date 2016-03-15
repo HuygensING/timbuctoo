@@ -33,7 +33,7 @@
       Content-type: application/json
 
       {
-        "otherSearchId": "#personSearchId"
+        "otherSearchId": "$(#personSearchId)"
       }
     </div>
     <div h:response="">
@@ -42,424 +42,83 @@
     </div>
   </aside>
   <p>
-    You get a Location header back (In this case <small><span c:echo="#searchPost.headers.location"></span></small>)
-    that contains <span c:assertEquals="isFullyQualified(#searchPost.headers.location)">a fully qualified HTTP url</span>.
+    You get a Location header back (In this case <small><span c:echo="#searchPost.firstHeaders.location"></span></small>)
+    that contains <span c:assertEquals="isFullyQualified(#searchPost.firstHeaders.location)">a fully qualified HTTP url</span>.
     This url is valid during the next few hours. Once it starts returning 404's you are expected to retry the POST.
   </p>
   <aside class="example highlight" h:http="#searchGet">
     <div h:request="">
-      GET #searchPost.headers.location HTTP/1.1
+      GET $(#searchPost.firstHeaders.location) HTTP/1.1
     </div>
+
+
     <div h:response="">
       HTTP/1.1 200
 
       {
-        "fullTextSearchFields": [
-          "dynamic_t_author_name",
-          "dynamic_t_title",
-          "dynamic_t_notes"
-        ],
         "facets": [
           {
-            "name": "dynamic_s_author_marital_status",
+            "name": "/*STRING*/",
+            "options": [{
+              "name": "/*STRING*/",
+              "count": "/*NUMBER*/"
+            }],
             "type": "LIST"
           },
           {
-            "name": "dynamic_s_author_gender",
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_author_education",
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_author_birthplace",
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_author_social_class",
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_author_types",
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_author_residence",
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_author_children",
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_author_religion",
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_origin",
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_document_type",
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_genre",
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_i_author_deathDate",
+            "name": "/*STRING*/",
+            "options": {
+              "custom-matcher": "/*IS_SAME_ARRAY*/",
+              "array": [{
+                "lowerLimit": "/*NUMBER*/",
+                "upperLimit": "/*NUMBER*/"
+              }]
+            },
             "type": "RANGE"
-          },
-          {
-            "name": "dynamic_s_author_financials",
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_sources",
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_author_deathplace",
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_author_profession",
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_language",
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_creator",
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_author_collective",
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_b_is_source",
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_i_modified",
-            "type": "RANGE"
-          },
-          {
-            "name": "dynamic_s_author_relatedLocations",
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_i_date",
-            "type": "RANGE"
-          },
-          {
-            "name": "dynamic_i_author_birthDate",
-            "type": "RANGE"
-          },
-          {
-            "name": "dynamic_s_relation",
-            "type": "LIST"
           }
         ],
+        "fullTextSearchFields": {
+          "custom-matcher": "/*IS_SAME_ARRAY*/",
+          "array": [
+            "dynamic_t_author_name",
+            "dynamic_t_title",
+            "dynamic_t_notes"
+          ]
+        },
         "refs": [
           {
-              "id": "/.+/",
-              "path": "/.+/",
-              "relationName": "/.+/",
+              "id": "/*STRING*/",
+              "path": "/*RELATIVE_URL_WITHOUT_LEADING_SLASH*/",
+              "relationName": "/*STRING*/",
               "sourceData": {
-                  "_id": "/.+/",
-                  "birthDate": "/.+/",
-                  "deathDate": "/.+/",
-                  "gender": "/.+/",
-                  "modified_date": "/.+/",
-                  "name": "/.+/",
-                  "residenceLocation": "/.+/"
+                  "_id": "/*STRING*/",
+                  "birthDate": "/*STRING_OR_NULL*/",
+                  "deathDate": "/*STRING_OR_NULL*/",
+                  "gender": "/*STRING_OR_NULL*/",
+                  "modified_date": "/*NUMERIC_DATE_WITHOUT_DASHES*/",
+                  "name": "/*STRING_OR_NULL*/",
+                  "residenceLocation": "/*STRING_OR_NULL*/"
               },
-              "sourceName": "/.+/",
+              "sourceName": "/*STRING_OR_NULL*/",
               "targetData": {
-                  "_id": "/.+/",
-                  "authorGender": "/.+/",
-                  "authorName": "/.+/",
-                  "date": "/.+/",
-                  "documentType": "/.+/",
-                  "genre": "/.+/",
-                  "language": "/.+/",
-                  "modified_date": "/.+/",
-                  "publishLocation": "/.+/",
-                  "title": "/.+/"
+                  "_id": "/*STRING*/",
+                  "authorGender": "/*STRING_OR_NULL*/",
+                  "authorName": "/*STRING_OR_NULL*/",
+                  "date": "/*STRING_OR_NULL*/",
+                  "documentType": "/*STRING_OR_NULL*/",
+                  "genre": "/*STRING_OR_NULL*/",
+                  "language": "/*STRING_OR_NULL*/",
+                  "modified_date": "/*NUMERIC_DATE_WITHOUT_DASHES*/",
+                  "publishLocation": "/*STRING_OR_NULL*/",
+                  "title": "/*STRING_OR_NULL*/"
               },
-              "targetName": "/.+/",
-              "type": "/.+/"
-          },
-          {
-              "id": "/.+/",
-              "path": "/.+/",
-              "relationName": "/.+/",
-              "sourceData": {
-                  "_id": "/.+/",
-                  "birthDate": "/.+/",
-                  "deathDate": "/.+/",
-                  "gender": "/.+/",
-                  "modified_date": "/.+/",
-                  "name": "/.+/",
-                  "residenceLocation": "/.+/"
-              },
-              "sourceName": "/.+/",
-              "targetData": {
-                  "_id": "/.+/",
-                  "authorGender": "/.+/",
-                  "authorName": "/.+/",
-                  "date": "/.+/",
-                  "documentType": "/.+/",
-                  "genre": "/.+/",
-                  "language": "/.+/",
-                  "modified_date": "/.+/",
-                  "publishLocation": "/.+/",
-                  "title": "/.+/"
-              },
-              "targetName": "/.+/",
-              "type": "/.+/"
-          },
-          {
-              "id": "/.+/",
-              "path": "/.+/",
-              "relationName": "/.+/",
-              "sourceData": {
-                  "_id": "/.+/",
-                  "birthDate": "/.+/",
-                  "deathDate": "/.+/",
-                  "gender": "/.+/",
-                  "modified_date": "/.+/",
-                  "name": "/.+/",
-                  "residenceLocation": "/.+/"
-              },
-              "sourceName": "/.+/",
-              "targetData": {
-                  "_id": "/.+/",
-                  "authorGender": "/.+/",
-                  "authorName": "/.+/",
-                  "date": "/.+/",
-                  "documentType": "/.+/",
-                  "genre": "/.+/",
-                  "language": "/.+/",
-                  "modified_date": "/.+/",
-                  "publishLocation": "/.+/",
-                  "title": "/.+/"
-              },
-              "targetName": "/.+/",
-              "type": "/.+/"
-          },
-          {
-              "id": "/.+/",
-              "path": "/.+/",
-              "relationName": "/.+/",
-              "sourceData": {
-                  "_id": "/.+/",
-                  "birthDate": "/.+/",
-                  "deathDate": "/.+/",
-                  "gender": "/.+/",
-                  "modified_date": "/.+/",
-                  "name": "/.+/",
-                  "residenceLocation": "/.+/"
-              },
-              "sourceName": "/.+/",
-              "targetData": {
-                  "_id": "/.+/",
-                  "authorGender": "/.+/",
-                  "authorName": "/.+/",
-                  "date": "/.+/",
-                  "documentType": "/.+/",
-                  "genre": "/.+/",
-                  "language": "/.+/",
-                  "modified_date": "/.+/",
-                  "publishLocation": "/.+/",
-                  "title": "/.+/"
-              },
-              "targetName": "/.+/",
-              "type": "/.+/"
-          },
-          {
-              "id": "/.+/",
-              "path": "/.+/",
-              "relationName": "/.+/",
-              "sourceData": {
-                  "_id": "/.+/",
-                  "birthDate": "/.+/",
-                  "deathDate": "/.+/",
-                  "gender": "/.+/",
-                  "modified_date": "/.+/",
-                  "name": "/.+/",
-                  "residenceLocation": "/.+/"
-              },
-              "sourceName": "/.+/",
-              "targetData": {
-                  "_id": "/.+/",
-                  "authorGender": "/.+/",
-                  "authorName": "/.+/",
-                  "date": "/.+/",
-                  "documentType": "/.+/",
-                  "genre": "/.+/",
-                  "language": "/.+/",
-                  "modified_date": "/.+/",
-                  "publishLocation": "/.+/",
-                  "title": "/.+/"
-              },
-              "targetName": "/.+/",
-              "type": "/.+/"
-          },
-          {
-              "id": "/.+/",
-              "path": "/.+/",
-              "relationName": "/.+/",
-              "sourceData": {
-                  "_id": "/.+/",
-                  "birthDate": "/.+/",
-                  "deathDate": "/.+/",
-                  "gender": "/.+/",
-                  "modified_date": "/.+/",
-                  "name": "/.+/",
-                  "residenceLocation": "/.+/"
-              },
-              "sourceName": "/.+/",
-              "targetData": {
-                  "_id": "/.+/",
-                  "authorGender": "/.+/",
-                  "authorName": "/.+/",
-                  "date": "/.+/",
-                  "documentType": "/.+/",
-                  "genre": "/.+/",
-                  "language": "/.+/",
-                  "modified_date": "/.+/",
-                  "publishLocation": "/.+/",
-                  "title": "/.+/"
-              },
-              "targetName": "/.+/",
-              "type": "/.+/"
-          },
-          {
-              "id": "/.+/",
-              "path": "/.+/",
-              "relationName": "/.+/",
-              "sourceData": {
-                  "_id": "/.+/",
-                  "birthDate": "/.+/",
-                  "deathDate": "/.+/",
-                  "gender": "/.+/",
-                  "modified_date": "/.+/",
-                  "name": "/.+/",
-                  "residenceLocation": "/.+/"
-              },
-              "sourceName": "/.+/",
-              "targetData": {
-                  "_id": "/.+/",
-                  "authorGender": "/.+/",
-                  "authorName": "/.+/",
-                  "date": "/.+/",
-                  "documentType": "/.+/",
-                  "genre": "/.+/",
-                  "language": "/.+/",
-                  "modified_date": "/.+/",
-                  "publishLocation": "/.+/",
-                  "title": "/.+/"
-              },
-              "targetName": "/.+/",
-              "type": "/.+/"
-          },
-          {
-              "id": "/.+/",
-              "path": "/.+/",
-              "relationName": "/.+/",
-              "sourceData": {
-                  "_id": "/.+/",
-                  "birthDate": "/.+/",
-                  "deathDate": "/.+/",
-                  "gender": "/.+/",
-                  "modified_date": "/.+/",
-                  "name": "/.+/",
-                  "residenceLocation": "/.+/"
-              },
-              "sourceName": "/.+/",
-              "targetData": {
-                  "_id": "/.+/",
-                  "authorGender": "/.+/",
-                  "authorName": "/.+/",
-                  "date": "/.+/",
-                  "documentType": "/.+/",
-                  "genre": "/.+/",
-                  "language": "/.+/",
-                  "modified_date": "/.+/",
-                  "publishLocation": "/.+/",
-                  "title": "/.+/"
-              },
-              "targetName": "/.+/",
-              "type": "/.+/"
-          },
-          {
-              "id": "/.+/",
-              "path": "/.+/",
-              "relationName": "/.+/",
-              "sourceData": {
-                  "_id": "/.+/",
-                  "birthDate": "/.+/",
-                  "deathDate": "/.+/",
-                  "gender": "/.+/",
-                  "modified_date": "/.+/",
-                  "name": "/.+/",
-                  "residenceLocation": "/.+/"
-              },
-              "sourceName": "/.+/",
-              "targetData": {
-                  "_id": "/.+/",
-                  "authorGender": "/.+/",
-                  "authorName": "/.+/",
-                  "date": "/.+/",
-                  "documentType": "/.+/",
-                  "genre": "/.+/",
-                  "language": "/.+/",
-                  "modified_date": "/.+/",
-                  "publishLocation": "/.+/",
-                  "title": "/.+/"
-              },
-              "targetName": "/.+/",
-              "type": "/.+/"
-          },
-          {
-              "id": "/.+/",
-              "path": "/.+/",
-              "relationName": "/.+/",
-              "sourceData": {
-                  "_id": "/.+/",
-                  "birthDate": "/.+/",
-                  "deathDate": "/.+/",
-                  "gender": "/.+/",
-                  "modified_date": "/.+/",
-                  "name": "/.+/",
-                  "residenceLocation": "/.+/"
-              },
-              "sourceName": "/.+/",
-              "targetData": {
-                  "_id": "/.+/",
-                  "authorGender": "/.+/",
-                  "authorName": "/.+/",
-                  "date": "/.+/",
-                  "documentType": "/.+/",
-                  "genre": "/.+/",
-                  "language": "/.+/",
-                  "modified_date": "/.+/",
-                  "publishLocation": "/.+/",
-                  "title": "/.+/"
-              },
-              "targetName": "/.+/",
-              "type": "/.+/"
+              "targetName": "/*STRING_OR_NULL*/",
+              "type": "/*STRING*/"
           }
         ],
-        "start": "/[0-9]+/",
-        "rows": "/[0-9]+/",
-        "numFound": "/[0-9]+/",
+        "start": "/*NUMBER*/",
+        "rows": "/*NUMBER*/",
+        "numFound": "/*NUMBER*/",
         "sortableFields": []
       }
     </div>
@@ -476,7 +135,7 @@
       Content-type: application/json
 
       {
-        "otherSearchId": "#personSearchId",
+        "otherSearchId": "$(#personSearchId)",
         "facetValues":[
           {
             "name": "dynamic_s_relation",
@@ -502,24 +161,27 @@
     </div>
   </aside>
   <p>
-    You get a new Location header back (In this case <small><span c:echo="#searchPost2.headers.location"></span></small>)
+    You get a new Location header back (In this case <small><span c:echo="#searchPost2.firstHeaders.location"></span></small>)
   </p>
   <aside class="example highlight" h:http="#searchGet2">
     <div h:request="">
-      GET #searchPost2.headers.location HTTP/1.1
+      GET #searchPost2.firstHeaders.location HTTP/1.1
     </div>
     <div h:response="">
       HTTP/1.1 200
 
       {
-        "fullTextSearchFields": [
-          "dynamic_t_author_name",
-          "dynamic_t_title",
-          "dynamic_t_notes"
-        ],
-        "start": "/[0-9]+/",
-        "rows": "/[0-9]+/",
-        "numFound": "/[0-9]+/",
+        "fullTextSearchFields": {
+          "custom-matcher": "/*IS_SAME_ARRAY*/",
+          "array": [
+            "dynamic_t_author_name",
+            "dynamic_t_title",
+            "dynamic_t_notes"
+          ]
+        },
+        "start": "/*NUMBER*/",
+        "rows": "/*NUMBER*/",
+        "numFound": "/*NUMBER*/",
         "sortableFields": []
       }
     </div>

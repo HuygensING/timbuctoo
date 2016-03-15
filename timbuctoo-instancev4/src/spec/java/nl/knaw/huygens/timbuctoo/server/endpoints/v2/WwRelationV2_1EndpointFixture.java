@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 
 
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.concordion.extensions.ActualResult;
 import nl.knaw.huygens.concordion.extensions.HttpRequest;
 import org.concordion.integration.junit4.ConcordionRunner;
 import org.json.JSONArray;
@@ -9,9 +10,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.runner.RunWith;
 
-import javax.ws.rs.core.Response;
 import java.util.AbstractMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RunWith(ConcordionRunner.class)
 public class WwRelationV2_1EndpointFixture extends BaseDomainV2_1EndpointFixture {
@@ -31,37 +34,46 @@ public class WwRelationV2_1EndpointFixture extends BaseDomainV2_1EndpointFixture
   private String documentPath;
 
   public String makeDocumentRecord() throws JSONException {
-    List<AbstractMap.SimpleEntry<String, String>> headers = makeAuthHeaders();
+    HttpRequest postRequest = new HttpRequest("POST", "/v2.1/domain/wwdocuments", makeDocumentJson())
+      .withHeaders(makeAuthHeaders());
 
-    HttpRequest postRequest =
-        new HttpRequest("POST", "/v2.1/domain/wwdocuments", headers, makeDocumentJson(), null, Lists.newArrayList());
-
-    Response response = executeRequestUsingJaxRs(postRequest);
-    documentPath = response.getHeaderString("Location").replaceAll("http://[^/]+/", "");
+    ActualResult response = executeRequestUsingJaxRs(postRequest);
+    documentPath = response.getFirstHeader("Location")
+      .orElseThrow(() -> new RuntimeException("Location header not present"))
+      .replaceAll("http://[^/]+/", "");
     documentId = documentPath.replaceAll(".*\\/", "");
     retrievePid(documentPath);
     return documentId;
   }
 
   public String makePersonRecord() throws JSONException {
-    List<AbstractMap.SimpleEntry<String, String>> headers = makeAuthHeaders();
-    HttpRequest postRequest =
-        new HttpRequest("POST", "/v2.1/domain/wwpersons", headers, makePersonJson(), null, Lists.newArrayList());
+    HttpRequest postRequest = new HttpRequest("POST", "/v2.1/domain/wwpersons", makePersonJson())
+          .withHeaders(makeAuthHeaders());
 
-    Response response = executeRequestUsingJaxRs(postRequest);
-    personPath = response.getHeaderString("Location").replaceAll("http://[^/]+/", "");
+    ActualResult response = executeRequestUsingJaxRs(postRequest);
+    personPath = response.getFirstHeader("Location")
+      .orElseThrow(() -> new RuntimeException("Location header not present"))
+      .replaceAll("http://[^/]+/", "");
     personId = personPath.replaceAll(".*\\/", "");
     retrievePid(personPath);
     return personId;
   }
 
+  public String getRelationId() throws JSONException {
+    HttpRequest request = new HttpRequest("GET", "/v2.1/gremlin")
+      .withQueryParam("query", "g.V().has(\"relationtype_regularName\", \"isCreatedBy\")");
+
+    ActualResult response = executeRequestUsingJaxRs(request);
+    Pattern pattern = Pattern.compile(".*tim_id: ([^\n]*).*", Pattern.DOTALL);
+
+    Matcher matcher = pattern.matcher(response.getBody());
+    matcher.matches();
+    return matcher.group(1);
+  }
+
   public void deleteEntities() {
-    List<AbstractMap.SimpleEntry<String, String>> headers = makeAuthHeaders();
-    HttpRequest deletePersonRequest = new HttpRequest("DELETE", personPath, headers, null, null, Lists.newArrayList());
-    HttpRequest deleteDocumentRequest =
-        new HttpRequest("DELETE", documentPath, headers, null, null, Lists.newArrayList());
-    executeRequestUsingJaxRs(deletePersonRequest);
-    executeRequestUsingJaxRs(deleteDocumentRequest);
+    executeRequestUsingJaxRs(new HttpRequest("DELETE", personPath).withHeaders(makeAuthHeaders()));
+    executeRequestUsingJaxRs(new HttpRequest("DELETE", documentPath).withHeaders(makeAuthHeaders()));
   }
 
   private String makeDocumentJson() throws JSONException {
@@ -85,8 +97,8 @@ public class WwRelationV2_1EndpointFixture extends BaseDomainV2_1EndpointFixture
   }
 
 
-  private List<AbstractMap.SimpleEntry<String, String>> makeAuthHeaders() {
-    List<AbstractMap.SimpleEntry<String, String>> headers = Lists.newArrayList();
+  private List<Map.Entry<String, String>> makeAuthHeaders() {
+    List<Map.Entry<String, String>> headers = Lists.newArrayList();
     headers.add(new AbstractMap.SimpleEntry<>("Authorization",  getAuthenticationToken()));
     headers.add(new AbstractMap.SimpleEntry<>("Content-type",  "application/json"));
     headers.add(new AbstractMap.SimpleEntry<>("VRE_ID",  "WomenWriters"));

@@ -21,7 +21,7 @@
       <div h:request="">
         POST /v2.1/domain/wwpersons HTTP/1.1
         Content-type: application/json
-        Authorization: #token
+        Authorization: $(#token)
         VRE_ID: WomenWriters
 
         {
@@ -132,16 +132,16 @@
     <p> We try to get the wwperson we created with the POST.</p>
     <aside class="example" h:http="#response">
       <div h:request="">
-        GET #postResponse.headers.location HTTP/1.1
+        GET $(#postResponse.firstHeaders.location) HTTP/1.1
         Accept: application/json
       </div>
       <div h:response="">
         HTTP/1.1 200
 
         {
-          "_id": "#recordId",
+          "_id": "$(#recordId)",
           "^rev": 1,
-          "^pid": "/.*/",
+          "^pid": "/*STRING*/",
           "@type": "wwperson",
           "names": [
             {
@@ -231,8 +231,8 @@
       <h2>Delete the created person</h2>
       <aside class="example" h:http="#response">
         <div h:request="">
-          DELETE #postResponse.headers.location HTTP/1.1
-          Authorization: #token
+          DELETE $(#postResponse.firstHeaders.location) HTTP/1.1
+          Authorization: $(#token)
           VRE_ID: WomenWriters
         </div>
         <p>The response will look like this:</p>

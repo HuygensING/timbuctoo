@@ -41,13 +41,13 @@
       </span>
     </aside>
     <p>
-      You then get a Location header back (In this case <small><span c:echo="#searchPost.headers.location"></span></small>)
-      that contains <span c:assertEquals="isFullyQualified(#searchPost.headers.location)">a fully qualified HTTP url</span>.
+      You then get a Location header back (In this case <small><span c:echo="#searchPost.firstHeaders.location"></span></small>)
+      that contains <span c:assertEquals="isFullyQualified(#searchPost.firstHeaders.location)">a fully qualified HTTP url</span>.
       This url is valid during the next few hours. Once it starts returning 404's you are expected to retry the POST.
     </p>
     <aside id="emptyRetrieveResponse" class="example highlight" h:http="#searchGet">
       <div h:request="">
-        GET #searchPost.headers.location HTTP/1.1
+        GET $(#searchPost.firstHeaders.location) HTTP/1.1
       </div>
       <div h:response="">
         HTTP/1.1 200
@@ -55,245 +55,37 @@
         {
           "facets": [
             {
-              "name": "dynamic_s_deathplace",
+              "name": "/*STRING*/",
               "type": "LIST"
             },
             {
-              "name": "dynamic_s_relatedLocations",
-              "type": "LIST"
-            },
-            {
-              "name": "dynamic_i_deathDate",
+              "name": "/*STRING*/",
               "type": "RANGE"
-            },
-            {
-              "name": "dynamic_s_birthplace",
-              "type": "LIST"
-            },
-            {
-              "name": "dynamic_s_children",
-              "type": "LIST"
-            },
-            {
-              "name": "dynamic_s_religion",
-              "type": "LIST"
-            },
-            {
-              "name": "dynamic_s_residence",
-              "type": "LIST"
-            },
-            {
-              "name": "dynamic_s_language",
-              "type": "LIST"
-            },
-            {
-              "name": "dynamic_s_marital_status",
-              "type": "LIST"
-            },
-            {
-              "name": "dynamic_s_collective",
-              "type": "LIST"
-            },
-            {
-              "name": "dynamic_s_education",
-              "type": "LIST"
-            },
-            {
-              "name": "dynamic_i_modified",
-              "type": "RANGE"
-            },
-            {
-              "name": "dynamic_s_gender",
-              "type": "LIST"
-            },
-            {
-              "name": "dynamic_s_social_class",
-              "type": "LIST"
-            },
-            {
-              "name": "dynamic_s_financials",
-              "type": "LIST"
-            },
-            {
-              "name": "dynamic_i_birthDate",
-              "type": "RANGE"
-            },
-            {
-              "name": "dynamic_s_profession",
-              "type": "LIST"
-            },
-            {
-              "name": "dynamic_s_types",
-              "type": "LIST"
             }
           ],
-          "fullTextSearchFields": [
-            "dynamic_t_tempspouse",
-            "dynamic_t_notes",
-            "dynamic_t_name"
-          ],
+          "fullTextSearchFields": [ "/*STRING*/" ],
           "refs": [
             {
               "type": "wwperson",
-              "id": "/.+/",
-              "displayName": "/.*/",
-              "path": "/.+/",
+              "id": "/*STRING*/",
+              "displayName": "/*STRING_OR_NULL*/",
+              "path": "/*STRING*/",
               "data": {
-              	"_id": "/.+/",
-              	"name": "/.*/",
-                "birthDate": "/.*/",
-              	"deathDate": "/.*/",
-              	"gender": "/.*/",
-              	"modified_date": "/[0-9\-]+/",
-              	"residenceLocation": "/.*/"
-              }
-            },
-            {
-              "type": "wwperson",
-              "id": "/.+/",
-              "displayName": "/.*/",
-              "path": "/.+/",
-              "data": {
-              	"_id": "/.+/",
-              	"name": "/.*/",
-                "birthDate": "/.*/",
-              	"deathDate": "/.*/",
-              	"gender": "/.*/",
-              	"modified_date": "/[0-9\-]+/",
-              	"residenceLocation": "/.*/"
-              }
-            },
-            {
-              "type": "wwperson",
-              "id": "/.+/",
-              "displayName": "/.*/",
-              "path": "/.+/",
-              "data": {
-              	"_id": "/.+/",
-              	"name": "/.*/",
-                "birthDate": "/.*/",
-              	"deathDate": "/.*/",
-              	"gender": "/.*/",
-              	"modified_date": "/[0-9\-]+/",
-              	"residenceLocation": "/.*/"
-              }
-            },
-            {
-              "type": "wwperson",
-              "id": "/.+/",
-              "displayName": "/.*/",
-              "path": "/.+/",
-              "data": {
-              	"_id": "/.+/",
-              	"name": "/.*/",
-                "birthDate": "/.*/",
-              	"deathDate": "/.*/",
-              	"gender": "/.*/",
-              	"modified_date": "/[0-9\-]+/",
-              	"residenceLocation": "/.*/"
-              }
-            },
-            {
-              "type": "wwperson",
-              "id": "/.+/",
-              "displayName": "/.*/",
-              "path": "/.+/",
-              "data": {
-              	"_id": "/.+/",
-              	"name": "/.*/",
-                "birthDate": "/.*/",
-              	"deathDate": "/.*/",
-              	"gender": "/.*/",
-              	"modified_date": "/[0-9\-]+/",
-              	"residenceLocation": "/.*/"
-              }
-            },
-            {
-              "type": "wwperson",
-              "id": "/.+/",
-              "displayName": "/.*/",
-              "path": "/.+/",
-              "data": {
-              	"_id": "/.+/",
-              	"name": "/.*/",
-                "birthDate": "/.*/",
-              	"deathDate": "/.*/",
-              	"gender": "/.*/",
-              	"modified_date": "/[0-9\-]+/",
-              	"residenceLocation": "/.*/"
-              }
-            },
-            {
-              "type": "wwperson",
-              "id": "/.+/",
-              "displayName": "/.*/",
-              "path": "/.+/",
-              "data": {
-              	"_id": "/.+/",
-              	"name": "/.*/",
-                "birthDate": "/.*/",
-              	"deathDate": "/.*/",
-              	"gender": "/.*/",
-              	"modified_date": "/[0-9\-]+/",
-              	"residenceLocation": "/.*/"
-              }
-            },
-            {
-              "type": "wwperson",
-              "id": "/.+/",
-              "displayName": "/.*/",
-              "path": "/.+/",
-              "data": {
-              	"_id": "/.+/",
-              	"name": "/.*/",
-                "birthDate": "/.*/",
-              	"deathDate": "/.*/",
-              	"gender": "/.*/",
-              	"modified_date": "/[0-9\-]+/",
-              	"residenceLocation": "/.*/"
-              }
-            },
-            {
-              "type": "wwperson",
-              "id": "/.+/",
-              "displayName": "/.*/",
-              "path": "/.+/",
-              "data": {
-              	"_id": "/.+/",
-              	"name": "/.*/",
-                "birthDate": "/.*/",
-              	"deathDate": "/.*/",
-              	"gender": "/.*/",
-              	"modified_date": "/[0-9\-]+/",
-              	"residenceLocation": "/.*/"
-              }
-            },
-            {
-              "type": "wwperson",
-              "id": "/.+/",
-              "displayName": "/.*/",
-              "path": "/.+/",
-              "data": {
-              	"_id": "/.+/",
-              	"name": "/.*/",
-                "birthDate": "/.*/",
-              	"deathDate": "/.*/",
-              	"gender": "/.*/",
-              	"modified_date": "/[0-9\-]+/",
-              	"residenceLocation": "/.*/"
+              	"_id": "/*STRING*/",
+              	"name": "/*STRING_OR_NULL*/",
+                "birthDate": "/*STRING_OR_NULL*/",
+              	"deathDate": "/*STRING_OR_NULL*/",
+              	"gender": "/*STRING_OR_NULL*/",
+              	"modified_date": "/*DATE_STRING*/",
+              	"residenceLocation": "/*STRING_OR_NULL*/"
               }
             }
           ],
-          "sortableFields": [
-            "dynamic_k_modified",
-            "dynamic_k_birthDate",
-            "dynamic_sort_name",
-            "dynamic_k_deathDate"
-          ],
-          "start": "/[0-9]+/",
-          "rows": "/[0-9]+/",
-          "numFound": "/[0-9]+/",
-          "_next": "/.+/"
+          "sortableFields": [ "/*STRING*/" ],
+          "start": "/*NUMBER*/",
+          "rows": "/*NUMBER*/",
+          "numFound": "/*NUMBER*/",
+          "_next": "/*STRING*/"
         }
       </div>
     </aside>
@@ -445,7 +237,7 @@
     </aside>
     <aside class="example highlight" h:http="">
       <div h:request="">
-        GET #filteredPost.headers.location HTTP/1.1
+        GET $(#filteredPost.firstHeaders.location) HTTP/1.1
         Accept: application/json
       </div>
       <div h:response="">
@@ -453,289 +245,53 @@
 
       {
         "sortableFields": [
-          "dynamic_k_modified",
-          "dynamic_k_birthDate",
-          "dynamic_sort_name",
-          "dynamic_k_deathDate"
+          "/*STRING*/"
         ],
-        "numFound": 1,
+        "numFound": "/*NUMBER*/",
         "start": 0,
-        "rows": 1,
+        "rows": "/*NUMBER*/",
         "term": "*",
         "facets": [
           {
-            "name": "dynamic_s_gender",
+            "name": "/*STRING*/",
             "options": [
               {
-                "name": "FEMALE",
-                "count": 1
+                "name": "/*STRING*/",
+                "count": "/*NUMBER*/"
               }
             ],
             "type": "LIST"
           },
           {
-            "name": "dynamic_s_deathplace",
+            "name": "/*STRING*/",
             "options": [
               {
-                "name": "Padova (ITA)",
-                "count": 1
-              }
-            ],
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_relatedLocations",
-            "options": [
-              {
-                "name": "Austria",
-                "count": 1
-              },
-              {
-                "name": "France",
-                "count": 1
-              },
-              {
-                "name": "Italy",
-                "count": 1
-              },
-              {
-                "name": "London (ENG)",
-                "count": 1
-              },
-              {
-                "name": "Padova (ITA)",
-                "count": 1
-              },
-              {
-                "name": "Venezia (ITA)",
-                "count": 1
-              }
-            ],
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_i_deathDate",
-            "options": [
-              {
-                "lowerLimit": 17910101,
-                "upperLimit": 17911231
+                "lowerLimit": "/*NUMBER*/",
+                "upperLimit": "/*NUMBER*/"
               }
             ],
             "type": "RANGE"
-          },
-          {
-            "name": "dynamic_s_birthplace",
-            "options": [
-              {
-                "name": "Venezia (ITA)",
-                "count": 1
-              }
-            ],
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_children",
-            "options": [
-              {
-                "name": "YES",
-                "count": 1
-              }
-            ],
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_religion",
-            "options": [
-              {
-                "name": "Catholic",
-                "count": 1
-              }
-            ],
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_residence",
-            "options": [
-              {
-                "name": "Austria",
-                "count": 1
-              },
-              {
-                "name": "France",
-                "count": 1
-              },
-              {
-                "name": "Italy",
-                "count": 1
-              },
-              {
-                "name": "London (ENG)",
-                "count": 1
-              },
-              {
-                "name": "Padova (ITA)",
-                "count": 1
-              },
-              {
-                "name": "Venezia (ITA)",
-                "count": 1
-              }
-            ],
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_language",
-            "options": [
-              {
-                "name": "English",
-                "count": 1
-              },
-              {
-                "name": "French",
-                "count": 1
-              },
-              {
-                "name": "Italian",
-                "count": 1
-              }
-            ],
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_marital_status",
-            "options": [
-              {
-                "name": "Liaison with man",
-                "count": 1
-              },
-              {
-                "name": "Married",
-                "count": 1
-              },
-              {
-                "name": "Widowed",
-                "count": 1
-              }
-            ],
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_collective",
-            "options": [],
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_education",
-            "options": [
-              {
-                "name": "Educated at home",
-                "count": 1
-              }
-            ],
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_i_modified",
-            "options": [
-              {
-                "lowerLimit": 20150610,
-                "upperLimit": 20150610
-              }
-            ],
-            "type": "RANGE"
-          },
-          {
-            "name": "dynamic_s_social_class",
-            "options": [
-              {
-                "name": "Aristocracy by marriage",
-                "count": 1
-              },
-              {
-                "name": "Upper class",
-                "count": 1
-              }
-            ],
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_financials",
-            "options": [
-              {
-                "name": "Investing\/losing her own money",
-                "count": 1
-              },
-              {
-                "name": "Stipend\/allowance\/pension",
-                "count": 1
-              }
-            ],
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_i_birthDate",
-            "options": [
-              {
-                "lowerLimit": 17370101,
-                "upperLimit": 17371231
-              }
-            ],
-            "type": "RANGE"
-          },
-          {
-            "name": "dynamic_s_profession",
-            "options": [
-              {
-                "name": "Fiction writer\/novelist",
-                "count": 1
-              },
-              {
-                "name": "Poet",
-                "count": 1
-              },
-              {
-                "name": "Salonni\u00e8re",
-                "count": 1
-              },
-              {
-                "name": "Writer",
-                "count": 1
-              }
-            ],
-            "type": "LIST"
-          },
-          {
-            "name": "dynamic_s_types",
-            "options": [
-              {
-                "name": "AUTHOR",
-                "count": 1
-              }
-            ],
-            "type": "LIST"
           }
         ],
         "refs": [
           {
             "type": "wwperson",
-            "id": "/.*/",
-            "path": "/domain/wwpersons/.*/",
-            "displayName": "Giustiniana Wynne",
+            "id": "/*STRING*/",
+            "path": "/*RELATIVE_URL_WITHOUT_STARTING_SLASH*/",
+            "displayName": "/*STRING*/",
             "data": {
-              "_id": "/.*/",
-              "birthDate": "1737",
-              "deathDate": "1791",
-              "gender": "FEMALE",
-              "modified_date": "20150610",
-              "name": "Giustiniana Wynne",
-              "residenceLocation": "Austria;France;Italy;London (ENG);Padova (ITA);Venezia (ITA)"
+              "_id": "/*STRING*/",
+              "birthDate": "/*STRING_OR_NULL*/",
+              "deathDate": "/*STRING*/",
+              "gender": "/*STRING*/",
+              "modified_date": "/*NUMERIC_DATE_WITHOUT_DASHES*/",
+              "name": "/*STRING*/",
+              "residenceLocation": "/*STRING*/"
             }
           }
         ],
         "fullTextSearchFields": [
-          "dynamic_t_tempspouse",
-          "dynamic_t_notes",
-          "dynamic_t_name"
+          "/*STRING*/"
         ]
       }
       </div>

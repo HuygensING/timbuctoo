@@ -23,19 +23,19 @@
     </div>
   </aside>
   <p>
-    You then get a Location header back (In this case <small><span c:echo="#searchPostDocs.headers.location"></span></small>)
+    You then get a Location header back (In this case <small><span c:echo="#searchPostDocs.firstHeaders.location"></span></small>)
   </p>
   <aside class="example highlight" h:http="#searchGetDocs">
     <div h:request="">
-      GET #searchPostDocs.headers.location HTTP/1.1
+      GET $(#searchPostDocs.firstHeaders.location) HTTP/1.1
     </div>
     <div h:response="">
       HTTP/1.1 200
 
       {
-      	"start": "/[0-9]+/",
-      	"rows": "/[0-9]+/",
-      	"numFound": "/[0-9]+/",
+      	"start": "/*NUMBER*/",
+      	"rows": "/*NUMBER*/",
+      	"numFound": "/*NUMBER*/",
       	"sortableFields": [
       		"dynamic_sort_title",
       		"dynamic_k_modified",
@@ -46,177 +46,27 @@
       		"dynamic_t_title",
       		"dynamic_t_notes"
       	],
-      	refs: [{
-      		"type": "wwdocument",
-      		"id": "/.+/",
-      		"displayName": "/.*/",
-      		"path": "/.+/",
-      		"data": {
-      			"_id": "/.+/",
-      			"date": "/.*/",
-      			"title": "/.*/",
-      			"language": "/.*/",
-      			"genre": "/.*/",
-      			"documentType": "/.*/",
-      			"publishLocation": "/.*/",
-      			"modified_date": "/[0-9\-]+/",
-      			"authorGender": "/.*/",
-      			"authorName": "/.*/"
-      		}
-      	}, {
-      		"type": "wwdocument",
-      		"id": "/.+/",
-      		"displayName": "/.*/",
-      		"path": "/.+/",
-      		"data": {
-      			"_id": "/.+/",
-      			"date": "/.*/",
-      			"title": "/.*/",
-      			"language": "/.*/",
-      			"genre": "/.*/",
-      			"documentType": "/.*/",
-      			"publishLocation": "/.*/",
-      			"modified_date": "/[0-9\-]+/",
-      			"authorGender": "/.*/",
-      			"authorName": "/.*/"
-      		}
-      	}, {
-      		"type": "wwdocument",
-      		"id": "/.+/",
-      		"displayName": "/.*/",
-      		"path": "/.+/",
-      		"data": {
-      			"_id": "/.+/",
-      			"date": "/.*/",
-      			"title": "/.*/",
-      			"language": "/.*/",
-      			"genre": "/.*/",
-      			"documentType": "/.*/",
-      			"publishLocation": "/.*/",
-      			"modified_date": "/[0-9\-]+/",
-      			"authorGender": "/.*/",
-      			"authorName": "/.*/"
-      		}
-      	}, {
-      		"type": "wwdocument",
-      		"id": "/.+/",
-      		"displayName": "/.*/",
-      		"path": "/.+/",
-      		"data": {
-      			"_id": "/.+/",
-      			"date": "/.*/",
-      			"title": "/.*/",
-      			"language": "/.*/",
-      			"genre": "/.*/",
-      			"documentType": "/.*/",
-      			"publishLocation": "/.*/",
-      			"modified_date": "/[0-9\-]+/",
-      			"authorGender": "/.*/",
-      			"authorName": "/.*/"
-      		}
-      	}, {
-      		"type": "wwdocument",
-      		"id": "/.+/",
-      		"displayName": "/.*/",
-      		"path": "/.+/",
-      		"data": {
-      			"_id": "/.+/",
-      			"date": "/.*/",
-      			"title": "/.*/",
-      			"language": "/.*/",
-      			"genre": "/.*/",
-      			"documentType": "/.*/",
-      			"publishLocation": "/.*/",
-      			"modified_date": "/[0-9\-]+/",
-      			"authorGender": "/.*/",
-      			"authorName": "/.*/"
-      		}
-      	}, {
-      		"type": "wwdocument",
-      		"id": "/.+/",
-      		"displayName": "/.*/",
-      		"path": "/.+/",
-      		"data": {
-      			"_id": "/.+/",
-      			"date": "/.*/",
-      			"title": "/.*/",
-      			"language": "/.*/",
-      			"genre": "/.*/",
-      			"documentType": "/.*/",
-      			"publishLocation": "/.*/",
-      			"modified_date": "/[0-9\-]+/",
-      			"authorGender": "/.*/",
-      			"authorName": "/.*/"
-      		}
-      	}, {
-      		"type": "wwdocument",
-      		"id": "/.+/",
-      		"displayName": "/.*/",
-      		"path": "/.+/",
-      		"data": {
-      			"_id": "/.+/",
-      			"date": "/.*/",
-      			"title": "/.*/",
-      			"language": "/.*/",
-      			"genre": "/.*/",
-      			"documentType": "/.*/",
-      			"publishLocation": "/.*/",
-      			"modified_date": "/[0-9\-]+/",
-      			"authorGender": "/.*/",
-      			"authorName": "/.*/"
-      		}
-      	}, {
-      		"type": "wwdocument",
-      		"id": "/.+/",
-      		"displayName": "/.*/",
-      		"path": "/.+/",
-      		"data": {
-      			"_id": "/.+/",
-      			"date": "/.*/",
-      			"title": "/.*/",
-      			"language": "/.*/",
-      			"genre": "/.*/",
-      			"documentType": "/.*/",
-      			"publishLocation": "/.*/",
-      			"modified_date": "/[0-9\-]+/",
-      			"authorGender": "/.*/",
-      			"authorName": "/.*/"
-      		}
-      	}, {
-      		"type": "wwdocument",
-      		"id": "/.+/",
-      		"displayName": "/.*/",
-      		"path": "/.+/",
-      		"data": {
-      			"_id": "/.+/",
-      			"date": "/.*/",
-      			"title": "/.*/",
-      			"language": "/.*/",
-      			"genre": "/.*/",
-      			"documentType": "/.*/",
-      			"publishLocation": "/.*/",
-      			"modified_date": "/[0-9\-]+/",
-      			"authorGender": "/.*/",
-      			"authorName": "/.*/"
-      		}
-      	}, {
-      		"type": "wwdocument",
-      		"id": "/.+/",
-      		"displayName": "/.*/",
-      		"path": "/.+/",
-      		"data": {
-      			"_id": "/.+/",
-      			"date": "/.*/",
-      			"title": "/.*/",
-      			"language": "/.*/",
-      			"genre": "/.*/",
-      			"documentType": "/.*/",
-      			"publishLocation": "/.*/",
-      			"modified_date": "/[0-9\-]+/",
-      			"authorGender": "/.*/",
-      			"authorName": "/.*/"
-      		}
-      	}]
+      	"refs": {
+					"custom-matcher": "/*ALL_MATCH_ONE_OF*/",
+					"invariant": {
+						"type": "wwdocument",
+						"id": "/*STRING*/",
+						"displayName": "/*STRING_OR_NULL*/",
+						"path": "/*STRING*/",
+						"data": {
+							"_id": "/*STRING*/",
+							"date": "/*STRING_OR_NULL*/",
+							"title": "/*STRING_OR_NULL*/",
+							"language": "/*STRING_OR_NULL*/",
+							"genre": "/*STRING_OR_NULL*/",
+							"documentType": "/*STRING_OR_NULL*/",
+							"publishLocation": "/*STRING_OR_NULL*/",
+							"modified_date": "/*DATE_STRING*/",
+							"authorGender": "/*STRING_OR_NULL*/",
+							"authorName": "/*STRING_OR_NULL*/"
+						}
+					}
+				}
       }
     </div>
   </aside>

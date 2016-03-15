@@ -24,6 +24,9 @@
       this id: <b><span c:echo="#personRecordId"></span></b>.</span>
     <span c:execute="#personPath=getPersonPath()"></span>
   </p>
+  <p>
+    <span c:execute="#relationId=getRelationId()">And we will use the relation "isCreatedBy" which has the id: <b><span c:echo="#relationId"></span></b>.</span>
+  </p>
 </section>
 
 <section data-type="chapter">
@@ -34,17 +37,17 @@
 
       <div h:request="">
         POST /v2.1/domain/wwrelations HTTP/1.1
-        Authorization: #token
+        Authorization: $(#token)
         Content-type: application/json
         VRE_ID: WomenWriters
 
         {
           "accepted": true,
           "@type": "wwrelation",
-          "^typeId":"6dd9b78d-046d-477a-acbb-1c18b2a7c7e9",
-          "^sourceId":"#documentRecordId",
+          "^typeId":"$(#relationId)",
+          "^sourceId":"$(#documentRecordId)",
           "^sourceType":"document",
-          "^targetId":"#personRecordId",
+          "^targetId":"$(#personRecordId)",
           "^targetType":"person"
         }
       </div>
@@ -97,7 +100,7 @@
   <p>When we GET the wwdocument</p>
   <aside class="example" h:http="#response">
     <div h:request="">
-      GET #documentPath HTTP/1.1
+      GET $(#documentPath) HTTP/1.1
       Accept: application/json
     </div>
     <p>The wwperson should have a @relationCount of 1 and an isCreatedBy relation in @relations to the wwperson</p>
@@ -110,10 +113,10 @@
           "isCreatedBy": [
             {
               "type": "wwperson",
-              "id": "#personRecordId",
-              "path": "/v2.1/domain/wwpersons/#personRecordId",
-              "displayName": "/.*/",
-              "relationId": "#recordId",
+              "id": "$(#personRecordId)",
+              "path": "/v2.1/domain/wwpersons/$(#personRecordId)",
+              "displayName": "/*STRING*/",
+              "relationId": "$(#recordId)",
               "accepted": true,
               "rev": 1
             }
@@ -131,7 +134,7 @@
   <p>When we GET the wwperson</p>
   <aside class="example" h:http="#response">
     <div h:request="">
-      GET #personPath HTTP/1.1
+      GET $(#personPath) HTTP/1.1
       Accept: application/json
     </div>
     <p>The wwperson should have a @relationCount of 1 and an isCreatorOf relation in @relations to the wwdocument</p>
@@ -144,10 +147,10 @@
         "isCreatorOf": [
             {
               "type": "wwdocument",
-              "id": "#documentRecordId",
-              "path": "/v2.1/domain/wwdocuments/#documentRecordId",
-              "displayName": "/.*/",
-              "relationId": "#recordId",
+              "id": "$(#documentRecordId)",
+              "path": "/v2.1/domain/wwdocuments/$(#documentRecordId)",
+              "displayName": "/*STRING*/",
+              "relationId": "$(#recordId)",
               "accepted": true,
               "rev": 1
             }

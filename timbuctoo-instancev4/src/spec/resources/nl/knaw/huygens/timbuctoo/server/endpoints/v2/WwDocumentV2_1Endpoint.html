@@ -26,7 +26,7 @@
 
       <div h:request="">
         POST /v2.1/domain/wwdocuments HTTP/1.1
-        Authorization: #token
+        Authorization: $(#token)
         Content-type: application/json
         VRE_ID: WomenWriters
 
@@ -102,7 +102,7 @@
         <p>When a GET is performed to the wwdocument </p>
 
       <div h:request="">
-        GET #createResponse.headers.location HTTP/1.1
+        GET $(#createResponse.firstHeaders.location) HTTP/1.1
         Accept: application/json
       </div>
       <p>The server will respond with the created resource</p>
@@ -112,32 +112,32 @@
         Content-type: application/json
 
         {
-          "_id": "#recordId",
+          "_id": "$(#recordId)",
           "@type": "wwdocument",
           "@relations": {},
           "@relationCount": 0,
           "@variationRefs": [
             {
-              "id": "#recordId",
+              "id": "$(#recordId)",
               "type": "wwdocument"
             },
             {
-              "id": "#recordId",
+              "id": "$(#recordId)",
               "type": "document"
             }
           ],
-            "^created": {
-            "username": "/.*/",
-            "userId": "/.*/",
-            "timeStamp": "/^\\d+$/"
+          "^created": {
+            "username": "/*STRING*/",
+            "userId": "/*STRING*/",
+            "timeStamp": "/*NUMBER*/"
           },
           "^modified": {
-            "username": "/.*/",
-            "userId": "/.*/",
-            "timeStamp": "/^\\d+$/"
+            "username": "/*STRING*/",
+            "userId": "/*STRING*/",
+            "timeStamp": "/*NUMBER*/"
           },
           "^rev": 1,
-          "^pid": "/.*/",
+          "^pid": "/*STRING*/",
           "^deleted": false,
           "date": "1850",
           "title": "Title",
@@ -160,13 +160,13 @@
       <p>When a valid PUT is performed the wwdocument</p>
 
       <div h:request="">
-        PUT #createResponse.headers.location HTTP/1.1
-        Authorization: #token
+        PUT $(#createResponse.firstHeaders.location) HTTP/1.1
+        Authorization: $(#token)
         Content-type: application/json
         VRE_ID: WomenWriters
 
         {
-          "_id": "#recordId",
+          "_id": "$(#recordId)",
           "@type": "wwdocument",
           "documentType": "PERIODICAL",
           "englishTitle": "English title updated",
@@ -203,7 +203,7 @@
       <p>When a GET is performed to the wwdocument </p>
 
       <div h:request="">
-        GET #createResponse.headers.location HTTP/1.1
+        GET $(#createResponse.firstHeaders.location) HTTP/1.1
         Accept: application/json
       </div>
       <p>The server will respond with the updated resource</p>
@@ -213,7 +213,7 @@
         Content-type: application/json
 
         {
-          "_id": "#recordId",
+          "_id": "$(#recordId)",
           "@type": "wwdocument",
           "^rev": 2,
           "title": "Title updated",
@@ -228,8 +228,8 @@
       <aside class="example" h:http="#response">
         <p>When a DELETE is sent to an existing wwdocument resource</p>
         <div h:request="">
-          DELETE #createResponse.headers.location HTTP/1.1
-          Authorization: #token
+          DELETE $(#createResponse.firstHeaders.location) HTTP/1.1
+          Authorization: $(#token)
           VRE_ID: WomenWriters
         </div>
         <p>The server will respond with statusCode 204 no content</p>
@@ -244,7 +244,7 @@
       <aside class="example" h:http="#response">
         <p>When a GET is sent to the recently deleted wwdocument resource</p>
         <div h:request="">
-          GET #createResponse.headers.location HTTP/1.1
+          GET $(#createResponse.firstHeaders.location) HTTP/1.1
           Accept: application/json
         </div>
         <p>The server will respond with statusCode 404 not found</p>

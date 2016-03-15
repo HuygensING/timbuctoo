@@ -1,40 +1,40 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 
-import com.google.common.collect.Lists;
-import nl.knaw.huygens.concordion.extensions.HttpExpectation;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import nl.knaw.huygens.concordion.extensions.ActualResult;
 import nl.knaw.huygens.concordion.extensions.HttpRequest;
-import nl.knaw.huygens.concordion.extensions.HttpResult;
+import nl.knaw.huygens.contractdiff.diffresults.MissingPropertyDiffResult;
+import nl.knaw.huygens.contractdiff.jsondiff.ArrayDiffResult;
+import nl.knaw.huygens.contractdiff.jsondiff.JsonDiffer;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.matchers.NumericDateWithoutDashes;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.matchers.RelativeUrlWithoutLeadingSlash;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.concordion.api.FullOGNL;
 import org.concordion.integration.junit4.ConcordionRunner;
-import org.json.JSONException;
 import org.junit.runner.RunWith;
-import org.skyscreamer.jsonassert.JSONCompare;
-import org.skyscreamer.jsonassert.JSONCompareMode;
-import org.skyscreamer.jsonassert.JSONCompareResult;
 
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
-import java.util.AbstractMap;
-import java.util.List;
+
+import static nl.knaw.huygens.contractdiff.jsondiff.JsonDiffer.jsonDiffer;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
 @FullOGNL
 @RunWith(ConcordionRunner.class)
 public class RelationSearchV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
 
   public String getPersonSearchId() {
-    List<AbstractMap.SimpleEntry<String, String>> headers = Lists.newArrayList();
-    headers.add(new AbstractMap.SimpleEntry<>("Content-type",  "application/json"));
-    headers.add(new AbstractMap.SimpleEntry<>("VRE_ID",  "WomenWriters"));
+    HttpRequest postRequest = new HttpRequest("POST", "/v2.1/search/wwpersons", "{}")
+      .withHeader("Content-type",  "application/json")
+      .withHeader("VRE_ID",  "WomenWriters");
 
-    HttpRequest postRequest =
-        new HttpRequest("POST", "/v2.1/search/wwpersons", headers, "{}", null, Lists.newArrayList());
-
-    Response response = executeRequestUsingJaxRs(postRequest);
-    String searchPath = response.getHeaderString("Location").replaceAll("http://[^/]+/", "");
-    return searchPath.replaceAll(".*\\/", "");
+    ActualResult response = executeRequestUsingJaxRs(postRequest);
+    return response.getFirstHeader("Location")
+      .map(l -> l.replaceAll("http://[^/]+/", ""))
+      .map(l -> l.replaceAll(".*\\/", ""))
+      .orElse("");
   }
 
   public String isFullyQualified(String url) {
@@ -47,27 +47,52 @@ public class RelationSearchV2_1EndpointFixture extends AbstractV2_1EndpointFixtu
   }
 
   @Override
-  public String validate(HttpExpectation expectation, HttpResult reality) {
-    if (expectation.hasBody()) {
-      try {
-        JSONCompareResult result = JSONCompare.compareJSON(
-            expectation.body,
-            reality.getBody(),
-            new RegexJsonComparator(JSONCompareMode.LENIENT)
-        );
+  protected JsonDiffer makeJsonDiffer() {
+    return jsonDiffer()
+      .handleArraysWith(
+        "ALL_MATCH_ONE_OF",
+        expectationVal -> {
+          if (expectationVal.size() > 1) {
+            ObjectNode expectation = jsnO();
+            for (int i = 0; i < expectationVal.size(); i++) {
+              if (expectationVal.get(i).has("type")) {
+                expectation.set(expectationVal.get(i).get("type").asText(), expectationVal.get(i));
+              } else {
+                throw new RuntimeException("Expectation value has no property 'type': " + expectationVal);
+              }
+            }
+            return jsnO(
+              "possibilities", expectation,
+              "keyProp", jsn("type")
+            );
+          } else {
+            return jsnO(
+              "invariant", expectationVal.get(0)
+            );
+          }
+        })
+      .withCustomHandler("RELATIVE_URL_WITHOUT_LEADING_SLASH", new RelativeUrlWithoutLeadingSlash())
+      .withCustomHandler("NUMERIC_DATE_WITHOUT_DASHES", new NumericDateWithoutDashes())
+      .withCustomHandler("IS_SAME_ARRAY", (actual, config, recurser) -> {
+        ArrayDiffResult result = new ArrayDiffResult();
+        JsonNode expectation = config.get("array");
+        for (int i = 0; i < actual.size(); i++) {
+          result.add(i, recurser.recurser(actual.get(i), expectation.get(i)));
+        }
+        if (expectation.size() > actual.size()) {
+          for (int i = actual.size() - 1; i < expectation.size(); i++) {
+            result.add(i, new MissingPropertyDiffResult(expectation.get(i).toString()));
+          }
+        }
+        return result;
+      })
+      .build();
 
-        return result.getMessage();
-      } catch (JSONException e) {
-        return ExceptionUtils.getStackTrace(e);
-      }
-    } else {
-      return "";
-    }
   }
 
   @Override
   protected WebTarget returnUrlToMockedOrRealServer(String serverAddress) {
-    String address = serverAddress != null ? serverAddress : "http://test.repository.huygens.knaw.nl";
+    String address = serverAddress != null ? serverAddress : "http://acc.repository.huygens.knaw.nl";
     return ClientBuilder.newClient().target(address);
   }
 

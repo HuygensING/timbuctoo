@@ -23,7 +23,7 @@
         GET /v2.1/metadata/WomenWriters HTTP/1.1
         Content-type: application/json
       </div>
-      <p>The server will respond with a location header containing the URL of the created resource</p>
+      <p>The server will show a list of metadata about the data fields that can be used to generate an edit or search interface</p>
 
       <div h:response="">
         HTTP/1.1 200
@@ -31,61 +31,45 @@
         {
           "wwpersons": [
             {
-              "name":"tempChildren",
+              "name":"/*STRING*/",
               "type":"text"
             },
-            null, null, null, null,
             {
-              "name":"gender",
+              "name":"/*STRING*/",
               "type":"select",
-              "options":[
-                "UNKNOWN",
-                "MALE",
-                "FEMALE",
-                "NOT_APPLICABLE"
-              ]
+              "options":[ "/*STRING*/" ]
             },
-            null, null,null,null,null,null,
             {
-              "name":"deathDate",
+              "name":"/*STRING*/",
               "type":"datable"
             },
             {
-              "name":"links",
+              "name":"/*STRING*/",
               "type":"links"
             },
             {
-              "name":"types",
+              "name":"/*STRING*/",
               "type":"multiselect",
-              "options":[
-                "ARCHETYPE",
-                "AUTHOR",
-                "PSEUDONYM",
-                "READER"
-              ]
-            },null,null,null,null,null,null,null,null,
+              "options":[ "/*STRING*/" ]
+            },
             {
-              "name":"names",
-              "type":"names",
-              "options":[
-                "FORENAME",
-                "SURNAME",
-                "NAME_LINK",
-                "ROLE_NAME",
-                "GEN_NAME"
+              "name": "/*STRING*/",
+              "type": "names",
+              "options": [
+                "/*NAME_COMPONENT*/"
               ]
             },
-            null, null, null, null,
             {
-              "name":"hasBirthPlace",
-              "type":"relation",
-              "quicksearch":"/v2.1/domain/wwlocations/autocomplete",
+              "name": "/*STRING*/",
+              "type": "relation",
+              "quicksearch": "/*RELATIVE_URL*/",
               "relation":{
-                "direction":"OUT",
-                "outName":"hasBirthPlace",
-                "inName":"isBirthPlaceOf",
-                "collection":"wwrelations",
-                "typeId":"9c93ba01-e6af-4790-8eb8-8497be04b7ec"
+                "direction": "/*IN_OR_OUT*/",
+                "outName": "/*STRING*/",
+                "inName": "/*STRING*/",
+                "targetCollection": "/*STRING_STARTING_WITH_WW_ENDING_WITH_S*/",
+                "relationCollection": "/*STRING_STARTING_WITH_WW_ENDING_WITH_S*/",
+                "relationTypeId": "/*UUID*/"
               }
             }
           ]
