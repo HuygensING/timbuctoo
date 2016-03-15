@@ -17,15 +17,15 @@ import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
-import nl.knaw.huygens.timbuctoo.server.rest.AuthenticationV2_1EndPoint;
-import nl.knaw.huygens.timbuctoo.server.rest.DirectQueryEndpoint;
-import nl.knaw.huygens.timbuctoo.server.rest.DomainCrudAutocompleteV2_1EndPoint;
-import nl.knaw.huygens.timbuctoo.server.rest.DomainCrudCollectionV2_1EndPoint;
-import nl.knaw.huygens.timbuctoo.server.rest.DomainCrudEntityV2_1EndPoint;
-import nl.knaw.huygens.timbuctoo.server.rest.FacetedSearchV2_1Endpoint;
-import nl.knaw.huygens.timbuctoo.server.rest.RootEndpoint;
-import nl.knaw.huygens.timbuctoo.server.rest.UserV2_1Endpoint;
-import nl.knaw.huygens.timbuctoo.server.rest.search.FacetValueDeserializer;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Autocomplete;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.SingleEntity;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Search;
+import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.Me;
+import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
 
 import javax.management.ObjectName;
 import java.nio.file.Path;
@@ -80,7 +80,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       HuygensIng.mappings,
       handleAdder,
       userStore,
-      DomainCrudEntityV2_1EndPoint::makeUrl,
+      SingleEntity::makeUrl,
       Clock.systemDefaultZone());
 
     // lifecycle managers
@@ -88,13 +88,13 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     // register REST endpoints
     register(environment, new RootEndpoint());
-    register(environment, new AuthenticationV2_1EndPoint(loggedInUserStore));
-    register(environment, new UserV2_1Endpoint(loggedInUserStore));
-    register(environment, new FacetedSearchV2_1Endpoint(configuration, graphManager));
-    register(environment, new DomainCrudAutocompleteV2_1EndPoint(crudService));
-    register(environment, new DomainCrudCollectionV2_1EndPoint(crudService, loggedInUserStore));
-    register(environment, new DomainCrudEntityV2_1EndPoint(crudService, loggedInUserStore));
-    register(environment, new DirectQueryEndpoint(graphManager));
+    register(environment, new Authenticate(loggedInUserStore));
+    register(environment, new Me(loggedInUserStore));
+    register(environment, new Search(configuration, graphManager));
+    register(environment, new Autocomplete(crudService));
+    register(environment, new Index(crudService, loggedInUserStore));
+    register(environment, new SingleEntity(crudService, loggedInUserStore));
+    register(environment, new Gremlin(graphManager));
 
     // register health checks
     register(environment, "Encryption algorithm", new EncryptionAlgorithmHealthCheck(ENCRYPTION_ALGORITHM));

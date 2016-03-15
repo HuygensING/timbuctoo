@@ -1,8 +1,7 @@
 package nl.knaw.huygens.timbuctoo.search;
 
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import nl.knaw.huygens.timbuctoo.server.rest.search.SearchRequestV2_1;
-import org.apache.tinkerpop.gremlin.structure.Graph;
+import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.SearchRequestV2_1;
 
 import java.util.List;
 

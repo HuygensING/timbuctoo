@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.search.description.sort;
 
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.server.rest.search.SortParameter;
+import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.SortParameter;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
@@ -12,7 +12,7 @@ import java.util.List;
 import static nl.knaw.huygens.timbuctoo.search.VertexMatcher.likeVertex;
 import static nl.knaw.huygens.timbuctoo.search.description.Property.localProperty;
 import static nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription.newSortFieldDescription;
-import static nl.knaw.huygens.timbuctoo.server.rest.search.SortParameter.Direction.asc;
+import static nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.SortParameter.Direction.asc;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;

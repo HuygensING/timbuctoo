@@ -1,6 +1,6 @@
 Contents
 --------
-- nl/knaw/huygens/timbuctoo/server/rest contains the html files used by concordion.
+- nl/knaw/huygens/timbuctoo/server/endpoints/v2 contains the html files used by concordion.
 - schema contains the schema files needs to create an html book
     - http://oreillymedia.github.io/HTMLBook
     - https://github.com/oreillymedia/HTMLBook

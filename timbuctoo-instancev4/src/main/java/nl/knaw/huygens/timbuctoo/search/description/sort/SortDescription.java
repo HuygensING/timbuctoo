@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.search.description.sort;
 
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.server.rest.search.SortParameter;
+import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.SortParameter;
 import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;

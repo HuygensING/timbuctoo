@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.search.description.fulltext;
 
 import nl.knaw.huygens.timbuctoo.search.description.Property;
-import nl.knaw.huygens.timbuctoo.server.rest.search.FullTextSearchParameter;
+import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FullTextSearchParameter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;

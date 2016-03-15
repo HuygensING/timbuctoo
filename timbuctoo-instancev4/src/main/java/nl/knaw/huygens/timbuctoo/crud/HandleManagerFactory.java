@@ -6,11 +6,11 @@ import nl.knaw.huygens.persistence.DefaultPersistenceManager;
 import nl.knaw.huygens.persistence.HandleManager;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.persistence.PersistenceManagerCreationException;
-import nl.knaw.huygens.timbuctoo.server.rest.DirectQueryEndpoint;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
 import org.slf4j.Logger;
 
 public class HandleManagerFactory {
-  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(DirectQueryEndpoint.class);
+  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(Gremlin.class);
 
   @JsonProperty
   private Boolean useDummy;
