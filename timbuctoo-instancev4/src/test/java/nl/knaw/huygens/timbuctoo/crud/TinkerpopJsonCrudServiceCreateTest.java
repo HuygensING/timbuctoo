@@ -96,23 +96,25 @@ public class TinkerpopJsonCrudServiceCreateTest {
   }
 
   @Test
-  public void throwsOnUnknownMappings() throws IOException, InvalidCollectionException {
+  public void throwsOnUnknownMappings() throws Exception {
     Graph graph = newGraph().build();
     TinkerpopJsonCrudService instance = basicInstance(graph);
 
     expectedException.expect(InvalidCollectionException.class);
 
     instance.create("not_wwpersons", JsonBuilder.jsnO(), "");
+    graph.close();
   }
 
   @Test
-  public void setsTheTimIdPropertyAndReturnsIt() throws IOException, InvalidCollectionException {
+  public void setsTheTimIdPropertyAndReturnsIt() throws Exception {
     Graph graph = newGraph().build();
     TinkerpopJsonCrudService instance = basicInstance(graph);
 
     UUID id = instance.create("wwpersons", JsonBuilder.jsnO(), "");
 
     assertThat(graph.vertices().next().value("tim_id"), is(id.toString()));
+    graph.close();
   }
 
   @Test
