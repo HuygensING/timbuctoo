@@ -4,6 +4,7 @@
     <groupId>nl.knaw.huygens</groupId>
     <artifactId>timbuctoo</artifactId>
     <version>3.1.0-SNAPSHOT</version>
+    <relativePath>../timbuctoo-v3/pom.xml</relativePath>
   </parent>
   <artifactId>timbuctoo-test-services</artifactId>
   <name>Test services</name>

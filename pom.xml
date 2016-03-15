@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>nl.knaw.huygens</groupId>
+  <artifactId>timbuctoo</artifactId>
+  <version>4.0.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+  <name>Timbuctoo</name>
+  <description>Aggregate project for timbuctoo and related projects. This allows us to work in 1 git repo on multiple seperate projects and do a rebuild of all of them at the same time. The project you're looking for is in the timbuctoo folder</description>
+
+  <modules>
+    <module>timbuctoo-test-services</module>
+    <module>timbuctoo-instancev4</module>
+  </modules>
+</project>
