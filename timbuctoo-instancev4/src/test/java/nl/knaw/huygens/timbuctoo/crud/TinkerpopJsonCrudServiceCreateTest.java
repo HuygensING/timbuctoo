@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import nl.knaw.huygens.timbuctoo.util.TestGraphBuilder;
+import nl.knaw.huygens.timbuctoo.util.TestGraphRule;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -41,6 +42,9 @@ public class TinkerpopJsonCrudServiceCreateTest {
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
+
+  @Rule
+  public TestGraphRule testGraph = new TestGraphRule();
 
   public TinkerpopJsonCrudService basicInstance(Graph graph) {
     return customInstanceMaker(graph, null, null, null, null);
@@ -86,7 +90,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
 
   @Test
   public void addsVertexToTheGraph() throws IOException, InvalidCollectionException {
-    Graph graph = newGraph().build();
+    Graph graph = testGraph.newGraph().build();
 
     TinkerpopJsonCrudService instance = basicInstance(graph);
 
@@ -97,30 +101,28 @@ public class TinkerpopJsonCrudServiceCreateTest {
 
   @Test
   public void throwsOnUnknownMappings() throws Exception {
-    Graph graph = newGraph().build();
+    Graph graph = testGraph.newGraph().build();
     TinkerpopJsonCrudService instance = basicInstance(graph);
 
     expectedException.expect(InvalidCollectionException.class);
 
     instance.create("not_wwpersons", JsonBuilder.jsnO(), "");
-    graph.close();
   }
 
   @Test
   public void setsTheTimIdPropertyAndReturnsIt() throws Exception {
-    Graph graph = newGraph().build();
+    Graph graph = testGraph.newGraph().build();
     TinkerpopJsonCrudService instance = basicInstance(graph);
 
     UUID id = instance.create("wwpersons", JsonBuilder.jsnO(), "");
 
     assertThat(graph.vertices().next().value("tim_id"), is(id.toString()));
-    graph.close();
   }
 
   @Test
   public void setsRevisionToOne() throws IOException, InvalidCollectionException {
     //because a newly created item is always revision 1
-    Graph graph = newGraph().build();
+    Graph graph = testGraph.newGraph().build();
     TinkerpopJsonCrudService instance = basicInstance(graph);
 
     instance.create("wwpersons", JsonBuilder.jsnO(), "");
@@ -131,7 +133,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
   @Test
   public void setsTypeToCollectionAndBaseCollection() throws IOException, InvalidCollectionException {
     //a wwperson is also a person
-    Graph graph = newGraph().build();
+    Graph graph = testGraph.newGraph().build();
     TinkerpopJsonCrudService instance = basicInstance(graph);
 
     instance.create("wwpersons", JsonBuilder.jsnO(), "");
@@ -141,7 +143,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
 
   @Test
   public void setsCreated() throws IOException, InvalidCollectionException {
-    Graph graph = newGraph().build();
+    Graph graph = testGraph.newGraph().build();
     int oneSecondPast1970 = 1000;
     TinkerpopJsonCrudService instance = basicInstanceWithClock(
       graph,
@@ -158,7 +160,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
 
   @Test
   public void setsCreatedAndModifiedToTheSameValue() throws IOException, InvalidCollectionException {
-    Graph graph = newGraph().build();
+    Graph graph = testGraph.newGraph().build();
     TinkerpopJsonCrudService instance = basicInstance(graph);
 
     instance.create("wwpersons", JsonBuilder.jsnO(), "");
@@ -168,7 +170,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
 
   @Test
   public void throwsOnUnknownProperties() throws IOException, InvalidCollectionException {
-    Graph graph = newGraph().build();
+    Graph graph = testGraph.newGraph().build();
     TinkerpopJsonCrudService instance = basicInstanceWithMap(
       graph,
       new Vres.Builder()
@@ -188,7 +190,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
 
   @Test
   public void setsJsonPropertyMapForKnownProperties() throws IOException, InvalidCollectionException {
-    Graph graph = newGraph().build();
+    Graph graph = testGraph.newGraph().build();
     TinkerpopJsonCrudService instance = basicInstanceWithMap(
       graph,
       new Vres.Builder()
@@ -217,7 +219,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
     TimbuctooProperty throwingMap = mock(TimbuctooProperty.class);
     doThrow(new IOException("PARSE ERROR")).when(throwingMap).set(any());
 
-    Graph graph = newGraph().build();
+    Graph graph = testGraph.newGraph().build();
     TinkerpopJsonCrudService instance = basicInstanceWithMap(
       graph,
       new Vres.Builder()
@@ -246,7 +248,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
    */
   @Test
   public void ignoresAtTypeProperty() throws IOException, InvalidCollectionException {
-    Graph graph = newGraph().build();
+    Graph graph = testGraph.newGraph().build();
     TinkerpopJsonCrudService instance = basicInstance(graph);
 
     assertThat(graph.vertices().hasNext(), is(false));
@@ -262,7 +264,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
 
   @Test
   public void commitsChangesIfEverythingSucceeds() throws Exception {
-    TestGraphBuilder graphBuilder = newGraph();
+    TestGraphBuilder graphBuilder = testGraph.newGraph();
     Graph graph = graphBuilder.build();
     TinkerpopJsonCrudService instance = basicInstance(graph);
 
@@ -278,7 +280,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
 
   @Test
   public void preparesBackupCopyAfterMakingChanges() throws Exception {
-    TestGraphBuilder graphBuilder = newGraph();
+    TestGraphBuilder graphBuilder = testGraph.newGraph();
     Graph graph = graphBuilder.build();
     TinkerpopJsonCrudService instance = basicInstance(graph);
 
@@ -301,7 +303,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
 
   @Test
   public void addsPersistentId() throws Exception {
-    TestGraphBuilder graphBuilder = newGraph();
+    TestGraphBuilder graphBuilder = testGraph.newGraph();
     Graph graph = graphBuilder.build();
     HandleAdder handleAdder = mock(HandleAdder.class);
     TinkerpopJsonCrudService instance = basicInstanceWithUrlGenerator(
