@@ -1,5 +1,5 @@
 # file with the monit configuration for timbuctoo
-check process with pidfile /opt/timbuctoo/logs/timbuctoo_daemon.pid
+check process timbuctoo with pidfile /opt/timbuctoo/logs/timbuctoo_daemon.pid
 	start program = "/opt/timbuctoo/bin/timbuctoo_daemon start"
 	stop program = "/opt/timbuctoo/bin/timbuctoo_daemon stop"
 	if failed
