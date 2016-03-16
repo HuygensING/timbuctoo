@@ -44,7 +44,8 @@ public class Gremlin {
   @POST
   @Consumes("text/plain")
   public Response post(String query) {
-
+    bindings.put("g", wrapper.getGraph().traversal());
+    bindings.put("maria", wrapper.getGraph().traversal().V().has("tim_id", "077bf0b5-6b7d-45aa-89ff-6ecf2cfc549c"));
     try {
       return Response.ok(evaluateQuery(query)).build();
     } catch (ScriptException e) {
