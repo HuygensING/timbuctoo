@@ -661,9 +661,9 @@
             <version>${rpm-maven-plugin.version}</version>
             <executions>
               <execution>
-                <id>generate-rpm</id>
+                <id>attach-rpm</id>
                 <goals>
-                  <goal>rpm</goal>
+                  <goal>attached-rpm</goal> <!-- Makes rpm a secondary artifact -->
                 </goals>
                 <configuration>
                   <group>Repository</group>
