@@ -726,7 +726,8 @@
                       <configuration>true</configuration>
                       <sources>
                         <source>
-                          <location>${path-to-config}/config.yaml</location>
+                          <destination>config.yaml</destination>
+                          <location>${project.basedir}/example_config.yaml</location>
                         </source>
                       </sources>
                     </mapping>
