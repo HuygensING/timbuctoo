@@ -34,12 +34,16 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringJoiner;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.tinkerpop.gremlin.structure.Direction.IN;
 import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
@@ -101,53 +105,73 @@ public class Gremlin {
   }
 
   private JsonResult evaluateQueryJson(String query) throws ScriptException {
-    GraphTraversal traversalResult = (GraphTraversal) engine.eval(query, bindings);
-    Map<String, List<EntityRef>> results = new HashMap<>();
-    Map<String, Set<String>> resultIds = new HashMap<>();
-    Map<String, Long> resultCounts = new HashMap<>();
+    String baseQuery = query.replaceAll("\\.select\\(.+\\)$", "");
+    String[] selects = query.replaceAll(".+\\.select\\((.+)\\)$", "$1").split(",");
 
-    if (!traversalResult.hasNext()) {
-      return new JsonResult(resultCounts, results);
+    List<GraphTraversal> traversals = new ArrayList<>();
+
+    StringJoiner currentSelects = new StringJoiner(", ");
+    for (int selectIndex = 0; selectIndex < selects.length; selectIndex++) {
+      currentSelects.add(selects[selectIndex]);
+
+      if ((selectIndex + 1) % 2 == 0) {
+        LOG.info("Querying: .select(" + currentSelects.toString() + ")");
+        traversals.add((GraphTraversal)
+                engine.eval(baseQuery + ".select(" + currentSelects.toString() + ")", bindings));
+        currentSelects = new StringJoiner(", ");
+      }
+
     }
 
-    while (traversalResult.hasNext()) {
-      Object item = traversalResult.next();
-      if (item instanceof LinkedHashMap) {
-        LinkedHashMap lhm = (LinkedHashMap) item;
-        lhm.forEach((key, obj) -> {
-          if (obj instanceof Vertex) {
-            loadVertex(results, key, (Vertex) obj, resultIds);
-          }
-        });
-      } else if (item instanceof Vertex) {
-        loadVertex(results, "result", (Vertex) item, resultIds);
+    if (currentSelects.toString().length() > 0) {
+      LOG.info("Querying: .select(" + currentSelects.toString() + ")");
+      traversals.add((GraphTraversal)
+              engine.eval(baseQuery + ".select(" + currentSelects.toString() + ")", bindings));
+    }
+
+
+    Map<String, List<EntityRef>> results = new ConcurrentHashMap<>();
+    Map<String, Set<String>> resultIds = new ConcurrentHashMap<>();
+    Map<String, Long> resultCounts = new ConcurrentHashMap<>();
+
+    for (GraphTraversal traversalResult : traversals) {
+      while (traversalResult.hasNext()) {
+        Object item = traversalResult.next();
+        if (item instanceof LinkedHashMap) {
+          LinkedHashMap lhm = (LinkedHashMap) item;
+          lhm.forEach((key, obj) -> {
+            if (obj instanceof Vertex) {
+              loadVertex(results, key, (Vertex) obj, resultIds);
+            }
+          });
+        } else if (item instanceof Vertex) {
+          String key = currentSelects.toString().replace("\"", "");
+          loadVertex(results, key, (Vertex) item, resultIds);
+        }
       }
     }
-
     resultIds.forEach((key, obj) -> resultCounts.put(key, Long.valueOf(obj.size())));
     return new JsonResult(resultCounts, results);
   }
 
   private void loadVertex(Map<String, List<EntityRef>> results, Object key, Vertex obj,
                           Map<String, Set<String>> resultCounts) {
+
     if (!results.containsKey(key)) {
       results.put((String) key, new ArrayList<>());
       resultCounts.put((String) key, new HashSet<>());
     }
 
-    resultCounts.get(key).add((String) obj.property("tim_id").value());
+    String timId = (String) obj.property("tim_id").value();
 
     if (results.get(key).size() < 10) {
-      if (results.get(key).stream()
-              .filter((ref) -> ref.getId().equals((String) obj.property("tim_id").value()))
-              .toArray().length == 0) {
-        try {
-          results.get(key).add(mapVertex(obj));
-        } catch (IOException e) {
-          LOG.error(e.getMessage(), e);
-        }
+      try {
+        results.get(key).add(mapVertex(obj));
+      } catch (IOException e) {
+        LOG.error(e.getMessage(), e);
       }
     }
+    resultCounts.get(key).add(timId);
   }
 
 
