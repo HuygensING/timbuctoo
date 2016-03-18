@@ -35,9 +35,11 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.structure.Direction.IN;
 import static org.apache.tinkerpop.gremlin.structure.Direction.OUT;
@@ -101,7 +103,7 @@ public class Gremlin {
   private JsonResult evaluateQueryJson(String query) throws ScriptException {
     GraphTraversal traversalResult = (GraphTraversal) engine.eval(query, bindings);
     Map<String, List<EntityRef>> results = new HashMap<>();
-    Map<String, List<String>> resultIds = new HashMap<>();
+    Map<String, Set<String>> resultIds = new HashMap<>();
     Map<String, Long> resultCounts = new HashMap<>();
 
     if (!traversalResult.hasNext()) {
@@ -127,17 +129,13 @@ public class Gremlin {
   }
 
   private void loadVertex(Map<String, List<EntityRef>> results, Object key, Vertex obj,
-                          Map<String, List<String>> resultCounts) {
+                          Map<String, Set<String>> resultCounts) {
     if (!results.containsKey(key)) {
       results.put((String) key, new ArrayList<>());
-      resultCounts.put((String) key, new ArrayList<>());
+      resultCounts.put((String) key, new HashSet<>());
     }
 
-    if (resultCounts.get(key).stream()
-            .filter((id) -> id.equals((String) obj.property("tim_id").value()))
-            .toArray().length == 0) {
-      resultCounts.get(key).add((String) obj.property("tim_id").value());
-    }
+    resultCounts.get(key).add((String) obj.property("tim_id").value());
 
     if (results.get(key).size() < 10) {
       if (results.get(key).stream()
