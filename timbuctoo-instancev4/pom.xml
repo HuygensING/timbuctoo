@@ -727,7 +727,7 @@
                       <sources>
                         <source>
                           <destination>config.yaml</destination>
-                          <location>${project.basedir}/example_config.yaml</location>
+                          <location>${project.basedir}/src/main/resources/service/config.yaml</location>
                         </source>
                       </sources>
                     </mapping>
@@ -746,7 +746,7 @@
                         <source>
                           <targetArchitecture>x86_64</targetArchitecture>
                           <location>
-                            ${project.basedir}/src/main/resources/service
+                            ${project.basedir}/src/main/resources/service/timbuctoo.monit
                           </location>
                         </source>
                       </sources>
