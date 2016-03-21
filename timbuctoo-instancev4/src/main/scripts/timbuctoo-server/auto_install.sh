@@ -6,12 +6,6 @@ TIMBUCTOO_INSTALLER_DIR="/tmp/timbuctoo"
 VALID_STATUS=0
 INVALID_STATUS=1
 
-# Create the directory to download to installer to if it does not exist
-if [ ! -d "$TIMBUCTOO_INSTALLER_DIR" ]; then
-  echo "Create directory for Timbuctoo installers \"$TIMBUCTOO_INSTALLER_DIR\""
-  mkdir "$TIMBUCTOO_INSTALLER_DIR"
-fi
-
 check_timbuctoo_status(){
   TIMBUCTOO_STATUS=$(monit status timbuctoo | grep "  status")
   echo "Timboctoo status \"$TIMBUCTOO_STATUS\""
@@ -49,9 +43,28 @@ install_new_version(){
   monit start timbuctoo
 }
 
+clean_up(){
+  # clean up all the old versions
+  CURRENT_VERSION=$1 
+  VERSIONS=$(ls "$TIMBUCTOO_INSTALLER_DIR")
+  for VERSION in $VERSIONS 
+  do
+    if [ "$VERSION" != "$CURRENT_VERSION" ]; then
+      echo "Remove $VERSION"
+      rm -rf "$TIMBUCTOO_INSTALLER_DIR/$VERSION"
+    fi
+  done
+}
+
 rollback(){
   echo "No roll back yet"
 }
+
+# Create the directory to download to installer to if it does not exist
+if [ ! -d "$TIMBUCTOO_INSTALLER_DIR" ]; then
+  echo "Create directory for Timbuctoo installers \"$TIMBUCTOO_INSTALLER_DIR\""
+  mkdir "$TIMBUCTOO_INSTALLER_DIR"
+fi
 
 # Retrieve the number of the latest successful build
 echo "Retrieve the latest build number"
@@ -70,6 +83,7 @@ if [ ! -d "$LAST_SUCCESSFUL_BUILD_DIR" ]; then
 
     if [[ $STATUS_AFTER_INSTALL == $VALID_STATUS ]]; then
       echo "Installation successful"
+      clean_up $LAST_SUCCESSFUL_BUILD
       exit 0
     else
       rollback
