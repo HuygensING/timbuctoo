@@ -57,7 +57,27 @@ clean_up(){
 }
 
 rollback(){
-  echo "No roll back yet"
+  FAILED_INSTALLATION_BUILD=$1
+  VERSIONS=$(ls "$TIMBUCTOO_INSTALLER_DIR")
+  NUMBER_OF_VERSIONS=${#VERSION[@]}
+
+  if [ "$NUMBER_OF_VERSIONS" > 1]; then
+    PREV_VERSION=0
+    for VERSION in $VERSIONS
+    do
+      if [ [ $VERSION > $PREV_VERSION ] && [ $VERSION != $FAILED_INSTALLATION_BUILD ] ];then
+        $PREV_VERSION = $VERSION
+      fi
+    done
+    if [ $PREV_VERSION > 0 ]; then
+      echo "roll back to version $PREV_VERSION"
+      rpm -U --oldpackage "$TIMBUCTOO_INSTALLER_DIR/$PREV_VERSION/*.rpm"
+      echo "Remove package with version $FAILED_INSTALLATION_BUILD"
+      rm -rf "$TIMBUCTOO_INSTALLER_DIR/$FAILED_INSTALLATION_BUILD"
+    fi
+  else
+    echo "Do not rollback first installation."
+  fi
 }
 
 # Create the directory to download to installer to if it does not exist
@@ -86,7 +106,8 @@ if [ ! -d "$LAST_SUCCESSFUL_BUILD_DIR" ]; then
       clean_up $LAST_SUCCESSFUL_BUILD
       exit 0
     else
-      rollback
+      echo "Installation failed"
+      rollback $LAST_SUCCESSFUL_BUILD
       exit 1
     fi
   else
