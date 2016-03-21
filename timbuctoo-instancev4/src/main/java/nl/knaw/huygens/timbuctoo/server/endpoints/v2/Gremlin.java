@@ -117,7 +117,7 @@ public class Gremlin {
       if ((selectIndex + 1) % 2 == 0) {
         LOG.info("Querying: .select(" + currentSelects.toString() + ")");
         traversals.add((GraphTraversal)
-                engine.eval(baseQuery + ".select(" + currentSelects.toString() + ")", bindings));
+                engine.eval(baseQuery + ".select(" + currentSelects.toString() + ").dedup()", bindings));
         currentSelects = new StringJoiner(", ");
       }
 
@@ -126,7 +126,7 @@ public class Gremlin {
     if (currentSelects.toString().length() > 0) {
       LOG.info("Querying: .select(" + currentSelects.toString() + ")");
       traversals.add((GraphTraversal)
-              engine.eval(baseQuery + ".select(" + currentSelects.toString() + ")", bindings));
+              engine.eval(baseQuery + ".select(" + currentSelects.toString() + ").dedup()", bindings));
     }
 
 
@@ -164,7 +164,7 @@ public class Gremlin {
 
     String timId = (String) obj.property("tim_id").value();
 
-    if (results.get(key).size() < 10) {
+    if (results.get(key).size() < 10 && !resultCounts.get(key).contains(timId)) {
       try {
         results.get(key).add(mapVertex(obj));
       } catch (IOException e) {
