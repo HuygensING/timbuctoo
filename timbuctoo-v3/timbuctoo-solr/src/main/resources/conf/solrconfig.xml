@@ -408,7 +408,7 @@
 
     <!-- Filter Cache
 
-         Cache used by SolrIndexSearcher for filters (DocSets),
+         Cache used by SolrIndexSearcher for and (DocSets),
          unordered sets of *all* documents that match a query.  When a
          new searcher is opened, its caches may be prepopulated or
          "autowarmed" using data from caches in the old searcher.
