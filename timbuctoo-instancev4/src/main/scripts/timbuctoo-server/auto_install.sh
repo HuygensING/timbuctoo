@@ -2,6 +2,17 @@
 
 # This script checks if the the ci server contains an updated version of the development branch
 # TODO make build configurable
+if [ ! $1 ]; then
+  echo "Specify the url where the Timbuctoo binaries can be downloaded"
+  exit 1
+fi
+if [ ! $2 ]; then
+  echo "Specify the url where the Timbuctoo buildnumber can be retrieved"
+  exit 1
+fi
+
+TIMBUCTOO_BIN_URL="$1"
+TIMBUCTOO_BUILD_NO_URL="$2"
 TIMBUCTOO_INSTALLER_DIR="/tmp/timbuctoo"
 VALID_STATUS=0
 INVALID_STATUS=1
@@ -37,7 +48,7 @@ install_new_version(){
   # Download and install the latest development Timbuctoo
   mkdir "$LAST_SUCCESSFUL_BUILD_DIR"
   # Download new latest successful rpm
-  wget -r --no-parent -nd  "http://ci.huygens.knaw.nl/job/timbuctoo_develop/lastSuccessfulBuild/nl.knaw.huygens\$timbuctoo-instancev4/artifact/nl.knaw.huygens/timbuctoo-instancev4/" -P "$LAST_SUCCESSFUL_BUILD_DIR" -erobots=off -R "*index*" &> /dev/null
+  wget -r --no-parent -nd  "$TIMBUCTOO_BIN_URL" -P "$LAST_SUCCESSFUL_BUILD_DIR" -erobots=off -R "*index*" &> /dev/null
   monit stop timbuctoo
   rpm -U "$LAST_SUCCESSFUL_BUILD_DIR/*.rpm"
   monit start timbuctoo
@@ -88,7 +99,7 @@ fi
 
 # Retrieve the number of the latest successful build
 echo "Retrieve the latest build number"
-LAST_SUCCESSFUL_BUILD=$(curl "http://ci.huygens.knaw.nl/job/timbuctoo_develop/lastSuccessfulBuild/buildNumber")
+LAST_SUCCESSFUL_BUILD=$(curl "$TIMBUCTOO_BUILD_NO_URL")
 LAST_SUCCESSFUL_BUILD_DIR="$TIMBUCTOO_INSTALLER_DIR/$LAST_SUCCESSFUL_BUILD"
 
 if [ ! -d "$LAST_SUCCESSFUL_BUILD_DIR" ]; then
