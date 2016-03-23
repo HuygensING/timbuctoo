@@ -67,18 +67,20 @@ public class CollectionQuery implements QueryFilter, Resultable {
 
   @Override
   public GraphTraversal getTraversal() {
-    if (filters.size() == 0) {
-      return __.V().map(this::loadResult);
-    }
+
 
     GraphTraversal[] traversals = filters.stream()
             .map(f -> {
               f.setDomain(this.domain);
               return f;
             })
-            .map(QueryStep::getTraversal).toArray(GraphTraversal[]::new);
+            .map(QueryStep::getTraversal)
+            .toArray(GraphTraversal[]::new);
 
-    return __.and(traversals).map(this::loadResult);
+
+    return __.where(__.filter(x -> ((String) ((Vertex) x.get())
+                    .property("types").value()).contains("\"" + getDomain() + "\"")))
+                .and(traversals).map(this::loadResult);
   }
 
 

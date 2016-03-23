@@ -77,9 +77,6 @@ public class Gremlin {
     LOG.info(result.toString());
     while (result.hasNext()) {
       Object item = result.next();
-      if (item instanceof Vertex) {
-        LOG.info(mapVertex((Vertex) item).toString());
-      }
     }
     return Response.ok(rootQuery).build();
   }

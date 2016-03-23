@@ -52,16 +52,12 @@ public class RootQuery implements QueryStep, Resultable {
     GraphTraversal[] traversals = filters.stream()
             .map(CollectionQuery::getTraversal).toArray(GraphTraversal[]::new);
 
-    return __.filter(x -> ((String) ((Vertex) x.get())
-            .property("types").value()).contains("\"" + filters.get(0).getDomain() + "\""))
-        .or(traversals)
+    return __.or(traversals)
         .map(this::loadResult);
   }
 
   @Override
-  public void setDomain(String domain) {
-
-  }
+  public void setDomain(String domain) { }
 
   @Override
   public String toString() {
