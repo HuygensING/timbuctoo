@@ -63,12 +63,18 @@ public class QueryFilterTest {
     RelationFilter relationFilter = (RelationFilter) underTest.getOr().get(0).getAnd().get(0);
     CollectionQuery collectionQuery = (CollectionQuery) relationFilter.getOr().get(0);
     PropertyFilter propertyFilter = (PropertyFilter) underTest.getOr().get(0).getAnd().get(2);
-    PropertyValueFilter propertyValueFilter = propertyFilter.getOr().get(0);
+    PropertyBetweenFilter propertyBetweenFilter = (PropertyBetweenFilter) propertyFilter.getOr().get(0);
+
+    PropertyFilter propertyFilter2 = (PropertyFilter) underTest.getOr().get(0).getAnd().get(1);
+
+    PropertyEqualsFilter propertyEqualsFilter = (PropertyEqualsFilter) propertyFilter2.getOr().get(0);
+
 
     assertThat(underTest.getOr().get(0).getDomain()).isEqualTo("wwdocument");
     assertThat(relationFilter.getName()).isEqualTo("hasTranslation");
     assertThat(collectionQuery.getDomain()).isEqualTo("wwdocument");
     assertThat(propertyFilter.getType()).isEqualTo("property");
-    assertThat(propertyValueFilter.getType()).isEqualTo("between");
+    assertThat(propertyBetweenFilter.getType()).isEqualTo("between");
+    assertThat(propertyEqualsFilter.getType()).isEqualTo("value");
   }
 }

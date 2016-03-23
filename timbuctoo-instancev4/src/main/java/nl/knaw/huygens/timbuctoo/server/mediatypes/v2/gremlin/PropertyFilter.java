@@ -37,18 +37,16 @@ public class PropertyFilter implements QueryFilter {
       return __.V();
     }
 
-    GraphTraversal[] traversals =
-            name.equals("tim_id") ?
-            filters.stream().map(filter -> filter.getTraversal(name)).toArray(GraphTraversal[]::new)
-                    :
-            filters.stream().map(filter -> filter.getTraversal(domain + name)).toArray(GraphTraversal[]::new);
+    GraphTraversal[] traversals = filters.stream().map(filter ->
+            filter.setDomain(domain).setName(name).getTraversal()).toArray(GraphTraversal[]::new);
 
     return __.or(traversals);
   }
 
   @Override
-  public void setDomain(String domain) {
+  public QueryStep setDomain(String domain) {
     this.domain = domain + "_";
+    return this;
   }
 
   @Override

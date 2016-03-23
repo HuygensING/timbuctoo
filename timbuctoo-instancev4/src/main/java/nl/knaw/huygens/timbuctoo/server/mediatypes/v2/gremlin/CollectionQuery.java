@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.server.mediatypes.v2.gremlin;
 
 
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -33,8 +32,9 @@ public class CollectionQuery implements QueryFilter, Resultable {
     return domain;
   }
 
-  public void setDomain(String domain) {
+  public QueryStep setDomain(String domain) {
     this.domain = domain;
+    return this;
   }
 
   public String getType() {

@@ -6,7 +6,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class RelationFilter implements QueryFilter, Resultable {
@@ -75,8 +74,8 @@ public class RelationFilter implements QueryFilter, Resultable {
   }
 
   @Override
-  public void setDomain(String domain) {
-
+  public QueryStep setDomain(String domain) {
+    return this;
   }
 
   @Override

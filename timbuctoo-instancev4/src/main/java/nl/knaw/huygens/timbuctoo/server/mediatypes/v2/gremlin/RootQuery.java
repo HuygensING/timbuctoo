@@ -57,7 +57,9 @@ public class RootQuery implements QueryStep, Resultable {
   }
 
   @Override
-  public void setDomain(String domain) { }
+  public QueryStep setDomain(String domain) {
+    return this;
+  }
 
   @Override
   public String toString() {

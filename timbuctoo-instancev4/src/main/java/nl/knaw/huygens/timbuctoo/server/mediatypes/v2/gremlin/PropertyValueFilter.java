@@ -1,60 +1,15 @@
 package nl.knaw.huygens.timbuctoo.server.mediatypes.v2.gremlin;
 
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-public class PropertyValueFilter {
-  private String type;
-  private List<String> values;
-  private String label;
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonSubTypes({@JsonSubTypes.Type(name = "value", value = PropertyEqualsFilter.class),
+        @JsonSubTypes.Type(name = "between", value = PropertyBetweenFilter.class)})
+public interface PropertyValueFilter extends QueryStep {
 
-  public String getType() {
-    return type;
-  }
+  PropertyValueFilter setName(String name);
 
-  public void setType(String type) {
-    this.type = type;
-  }
-
-  public List<String> getValues() {
-    return values;
-  }
-
-  public void setValues(List<String> values) {
-    this.values = values;
-  }
-
-  public void setValue(String value) {
-    this.values = new ArrayList<>();
-    this.values.add(value);
-  }
-
-  public String getLabel() {
-    return label;
-  }
-
-  public void setLabel(String label) {
-    this.label = label;
-  }
-
-  public GraphTraversal getTraversal(String name) {
-    switch (type) {
-      case "value": return __.has(name).filter(it ->
-              ((String) ((Vertex) it.get()).property(name).value()).contains(values.get(0)) );
-      default: return __.V();
-    }
-  }
-
-  @Override
-  public String toString() {
-    return "PropertyValueFilter{" +
-            "type='" + type + '\'' +
-            ", values=" + values +
-            ", label='" + label + '\'' +
-            '}';
-  }
+  PropertyValueFilter setDomain(String name);
 }

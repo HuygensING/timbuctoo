@@ -7,5 +7,5 @@ public interface QueryStep {
   @JsonIgnore
   GraphTraversal getTraversal();
 
-  void setDomain(String domain);
+  QueryStep setDomain(String domain);
 }
