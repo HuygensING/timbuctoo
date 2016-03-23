@@ -124,7 +124,7 @@
     <maven-failsafe-plugin.version>2.18.1</maven-failsafe-plugin.version>
     <metrics.version>3.1.2</metrics.version>
     <rpm-maven-plugin.version>2.1.5</rpm-maven-plugin.version>
-    <rpm.app-home>/opt/timbuctoo</rpm.app-home>
+    <rpm.app-home>/data/datarepository/timbuctoo</rpm.app-home>
     <HttpCommand.version>1.0.0-SNAPSHOT</HttpCommand.version>
     <contract-diff.version>1.0.0-SNAPSHOT</contract-diff.version>
   </properties>
