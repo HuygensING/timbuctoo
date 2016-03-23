@@ -441,7 +441,7 @@
     <annotation>
       <documentation>The following presentation attributes apply to filter primitives</documentation>
     </annotation>
-    <attribute name="color-interpolation-filters" use="optional">
+    <attribute name="color-interpolation-and" use="optional">
       <simpleType>
         <restriction base="string">
           <enumeration value="auto"/>

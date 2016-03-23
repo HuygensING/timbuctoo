@@ -173,7 +173,7 @@
     <fieldType name="random" class="solr.RandomSortField" indexed="true" />
 
     <!-- solr.TextField allows the specification of custom text analyzers
-         specified as a tokenizer and a list of token filters. Different
+         specified as a tokenizer and a list of token and. Different
          analyzers may be specified for indexing and querying.
 
          The optional positionIncrementGap puts space between multiple fields of

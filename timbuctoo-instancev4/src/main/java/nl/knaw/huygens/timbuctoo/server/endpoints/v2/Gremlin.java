@@ -14,12 +14,15 @@ import nl.knaw.huygens.timbuctoo.search.description.PropertyDescriptor;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.gremlin.RootQuery;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.apache.tinkerpop.shaded.minlog.Log;
 import org.slf4j.Logger;
 
 import javax.script.Bindings;
@@ -34,8 +37,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -65,6 +66,19 @@ public class Gremlin {
     this.bindings = engine.createBindings();
     propertyParserFactory = new PropertyParserFactory();
     propertyDescriptorFactory = new PropertyDescriptorFactory(propertyParserFactory);
+  }
+
+
+  @POST
+  @Consumes("application/json")
+  @Produces("application/json")
+  public Response postJson2(RootQuery rootQuery) throws IOException {
+    GraphTraversal result = wrapper.getGraph().traversal().V().where(rootQuery.getTraversal());
+    LOG.info(result.toString());
+    while (result.hasNext()) {
+      Object item = result.next();
+    }
+    return Response.ok(rootQuery).build();
   }
 
   @POST
