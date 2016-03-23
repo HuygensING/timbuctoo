@@ -1,14 +1,14 @@
 # file with the monit configuration for timbuctoo
-check process timbuctoo with pidfile /opt/timbuctoo/logs/timbuctoo_daemon.pid
+check process timbuctoo with pidfile /data/datarepository/logs/timbuctoo_daemon.pid
 	start program = "/data/datarepository/timbuctoo/bin/timbuctoo_daemon start"
 	stop program = "/data/datarepository/timbuctoo/bin/timbuctoo_daemon stop"
 	if failed
-		port 8080
+		port 9080
 		protocol http
 	then restart
 
 	if failed
-		port 8081
+		port 9081
 		protocol http
 		request "/healthcheck?pretty=true"
 	then alert
