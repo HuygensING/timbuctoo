@@ -2,7 +2,7 @@
 #refers to fixtures (database, json) needed for those tests
 
 #database files
-databasePath: "./docker/database" #do not refer to a soft link
+databasePath: "./src/spec/resources/database" #do not refer to a soft link
 # JSON files
 loginsFilePath: "./src/spec/resources/logins.json"
 usersFilePath: "./src/spec/resources/users.json"
