@@ -4,11 +4,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 
-import java.util.List;
-
-public class PropertyBetweenFilter extends NumberPropertyValueFilter {
-  private static final String TYPE = "between";
-
+public class PropertyEqFilter extends NumberPropertyValueFilter {
+  private static final String TYPE = "eq";
 
   public String getType() {
     return TYPE;
@@ -16,9 +13,7 @@ public class PropertyBetweenFilter extends NumberPropertyValueFilter {
 
   @Override
   public GraphTraversal getTraversal() {
-    return __.has(getPropertyName()).where(prepareTraversal()
-            .is(P.between(Integer.parseInt(getValues().get(0)), Integer.parseInt(getValues().get(1)))));
-
+    return __.has(getPropertyName()).where(prepareTraversal().is(P.eq(Integer.parseInt(getValues().get(0)))));
   }
 
 }
