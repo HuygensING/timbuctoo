@@ -8,6 +8,9 @@ import nl.knaw.huygens.timbuctoo.model.PersonName;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
 import nl.knaw.huygens.timbuctoo.search.MockVertexBuilder;
+import nl.knaw.huygens.timbuctoo.search.description.facet.FacetDescriptionFactory;
+import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
+import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +29,10 @@ public class WwDocumentSearchDescriptionTest {
 
   @Before
   public void setUp() throws Exception {
-    instance = new WwDocumentSearchDescription();
+    PropertyParserFactory propertyParserFactory = new PropertyParserFactory();
+    FacetDescriptionFactory facetDescriptionFactory = new FacetDescriptionFactory(propertyParserFactory);
+    PropertyDescriptorFactory propertyDescriptorFactory = new PropertyDescriptorFactory(propertyParserFactory);
+    instance = new WwDocumentSearchDescription(propertyDescriptorFactory, facetDescriptionFactory);
   }
 
   @Test
@@ -177,7 +183,7 @@ public class WwDocumentSearchDescriptionTest {
   @Test
   public void createRefAddsTheDateToTheData() {
     Vertex vertex = vertexWithId("id")
-      .withProperty("date", "1850")
+      .withProperty("wwdocument_date", "1850")
       .build();
 
     EntityRef ref = instance.createRef(vertex);

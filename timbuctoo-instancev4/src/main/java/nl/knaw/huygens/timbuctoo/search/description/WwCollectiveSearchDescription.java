@@ -4,9 +4,9 @@ package nl.knaw.huygens.timbuctoo.search.description;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
+import nl.knaw.huygens.timbuctoo.search.description.facet.FacetDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
-import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -16,16 +16,15 @@ public class WwCollectiveSearchDescription extends AbstractSearchDescription imp
   private static final List<String> FULL_TEXT_SEARCH_FIELDS = Lists.newArrayList("dynamic_t_name");
   private final List<FacetDescription> facetDescriptions;
   private final String type = "wwcollective";
-  private final PropertyParserFactory propertyParserFactory;
   private final PropertyDescriptorFactory propertyDescriptorFactory;
   private final Map<String, PropertyDescriptor> dataDescriptors;
   private final PropertyDescriptor displayNameDescriptor;
   private final PropertyDescriptor idDescriptor;
 
-  public WwCollectiveSearchDescription() {
+  public WwCollectiveSearchDescription(PropertyDescriptorFactory propertyDescriptorFactory,
+                                       FacetDescriptionFactory facetDescriptionFactory) {
     facetDescriptions = Lists.newArrayList();
-    propertyParserFactory = new PropertyParserFactory();
-    propertyDescriptorFactory = new PropertyDescriptorFactory(propertyParserFactory);
+    this.propertyDescriptorFactory = propertyDescriptorFactory;
     dataDescriptors = createDataDescriptors();
     displayNameDescriptor = createDisplayNameDescriptor();
     idDescriptor = propertyDescriptorFactory.getLocal(ID_DB_PROP, String.class);

@@ -2,6 +2,9 @@ package nl.knaw.huygens.timbuctoo.search.description;
 
 
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
+import nl.knaw.huygens.timbuctoo.search.description.facet.FacetDescriptionFactory;
+import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
+import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +19,10 @@ public class WwCollectiveSearchDescriptionTest {
 
   @Before
   public void setUp() throws Exception {
-    instance = new WwCollectiveSearchDescription();
+    PropertyParserFactory propertyParserFactory = new PropertyParserFactory();
+    FacetDescriptionFactory facetDescriptionFactory = new FacetDescriptionFactory(propertyParserFactory);
+    PropertyDescriptorFactory propertyDescriptorFactory = new PropertyDescriptorFactory(propertyParserFactory);
+    instance = new WwCollectiveSearchDescription(propertyDescriptorFactory, facetDescriptionFactory);
   }
 
   @Test

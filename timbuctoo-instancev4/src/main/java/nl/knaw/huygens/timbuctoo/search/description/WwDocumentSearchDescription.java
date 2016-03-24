@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.model.Gender;
 import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
+import nl.knaw.huygens.timbuctoo.search.description.facet.FacetDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
@@ -37,16 +38,23 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
   private final PropertyDescriptor idDescriptor;
   private final PropertyDescriptor displayNameDescriptor;
 
-  public WwDocumentSearchDescription() {
+  public WwDocumentSearchDescription(PropertyDescriptorFactory propertyDescriptorFactory,
+                                     FacetDescriptionFactory facetDescriptionFactory) {
     propertyParserFactory = new PropertyParserFactory();
-    propertyDescriptorFactory = new PropertyDescriptorFactory(propertyParserFactory);
+    this.propertyDescriptorFactory = propertyDescriptorFactory;
 
     dataDescriptors = createDataDescriptors();
-    facetDescriptions = Lists.newArrayList();
+    facetDescriptions = createFacetDescriptions(facetDescriptionFactory);
 
     idDescriptor = propertyDescriptorFactory
       .getLocal(ID_DB_PROP, String.class);
     displayNameDescriptor = createDisplayNameDescriptor();
+  }
+
+  private List<FacetDescription> createFacetDescriptions(FacetDescriptionFactory facetDescriptionFactory) {
+    return Lists.newArrayList(
+      facetDescriptionFactory.createListFacetDescription(
+              "dynamic_s_document_type", DocumentType.class, "wwdocument_documentType"));
   }
 
   private Map<String, PropertyDescriptor> createDataDescriptors() {
@@ -54,7 +62,7 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
     dataDescriptors.put("_id", propertyDescriptorFactory.getLocal(ID_DB_PROP, String.class));
     dataDescriptors.put("authorName", createAuthorDescriptor());
     dataDescriptors.put("title", propertyDescriptorFactory.getLocal("wwdocument_title", String.class));
-    dataDescriptors.put("date", propertyDescriptorFactory.getLocal("date", Datable.class));
+    dataDescriptors.put("date", propertyDescriptorFactory.getLocal("wwdocument_date", Datable.class));
     dataDescriptors.put("authorGender", propertyDescriptorFactory.getDerived(
       "isCreatedBy",
       "wwperson_gender",

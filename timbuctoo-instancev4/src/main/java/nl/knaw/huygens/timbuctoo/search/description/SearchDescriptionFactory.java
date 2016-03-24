@@ -29,9 +29,9 @@ public class SearchDescriptionFactory {
     if (Objects.equals(entityName, "wwperson")) {
       return Optional.of(new WwPersonSearchDescription(propertyDescriptorFactory, facetDescriptionFactory));
     } else if (Objects.equals(entityName, "wwdocument")) {
-      return Optional.of(new WwDocumentSearchDescription());
+      return Optional.of(new WwDocumentSearchDescription(propertyDescriptorFactory, facetDescriptionFactory));
     } else if (Objects.equals(entityName, "wwcollective")) {
-      return Optional.of(new WwCollectiveSearchDescription());
+      return Optional.of(new WwCollectiveSearchDescription(propertyDescriptorFactory, facetDescriptionFactory));
     }
     return Optional.empty();
   }
