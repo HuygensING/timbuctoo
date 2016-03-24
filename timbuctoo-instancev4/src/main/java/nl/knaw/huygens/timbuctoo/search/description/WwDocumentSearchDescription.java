@@ -20,14 +20,14 @@ import java.util.Map;
 
 public class WwDocumentSearchDescription extends AbstractSearchDescription implements SearchDescription {
   private static final List<String> SORTABLE_FIELDS = Lists.newArrayList(
-    "dynamic_sort_title",
-    "dynamic_k_modified",
-    "dynamic_sort_creator");
+          "dynamic_sort_title",
+          "dynamic_k_modified",
+          "dynamic_sort_creator");
 
   private static final List<String> FULL_TEXT_SEARCH_FIELDS = Lists.newArrayList(
-    "dynamic_t_author_name",
-    "dynamic_t_title",
-    "dynamic_t_notes");
+          "dynamic_t_author_name",
+          "dynamic_t_title",
+          "dynamic_t_notes");
 
   private final PropertyParserFactory propertyParserFactory;
   private final PropertyDescriptorFactory propertyDescriptorFactory;
@@ -47,15 +47,18 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
     facetDescriptions = createFacetDescriptions(facetDescriptionFactory);
 
     idDescriptor = propertyDescriptorFactory
-      .getLocal(ID_DB_PROP, String.class);
+            .getLocal(ID_DB_PROP, String.class);
     displayNameDescriptor = createDisplayNameDescriptor();
   }
 
   private List<FacetDescription> createFacetDescriptions(FacetDescriptionFactory facetDescriptionFactory) {
     return Lists.newArrayList(
-      facetDescriptionFactory.createDatableRangeFacetDescription("dynamic_i_date", "wwdocument_date"),
-      facetDescriptionFactory.createListFacetDescription(
-              "dynamic_s_document_type", DocumentType.class, "wwdocument_documentType"));
+            facetDescriptionFactory.createDatableRangeFacetDescription("dynamic_i_date", "wwdocument_date"),
+            facetDescriptionFactory.createListFacetDescription(
+                    "dynamic_s_origin", LocationNames.class, "names", "hasPublishLocation"),
+
+            facetDescriptionFactory.createListFacetDescription(
+                    "dynamic_s_document_type", DocumentType.class, "wwdocument_documentType"));
   }
 
   private Map<String, PropertyDescriptor> createDataDescriptors() {
@@ -65,23 +68,23 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
     dataDescriptors.put("title", propertyDescriptorFactory.getLocal("wwdocument_title", String.class));
     dataDescriptors.put("date", propertyDescriptorFactory.getLocal("wwdocument_date", Datable.class));
     dataDescriptors.put("authorGender", propertyDescriptorFactory.getDerived(
-      "isCreatedBy",
-      "wwperson_gender",
-      Gender.class));
+            "isCreatedBy",
+            "wwperson_gender",
+            Gender.class));
     dataDescriptors.put("documentType", propertyDescriptorFactory
-      .getLocal("wwdocument_documentType", DocumentType.class));
+            .getLocal("wwdocument_documentType", DocumentType.class));
     dataDescriptors.put("modified_date", propertyDescriptorFactory
-      .getLocal("modified", propertyParserFactory.getParser(Change.class)));
+            .getLocal("modified", propertyParserFactory.getParser(Change.class)));
     dataDescriptors.put("genre", propertyDescriptorFactory
-      .getDerived("hasGenre", "wwkeyword_value", String.class));
+            .getDerived("hasGenre", "wwkeyword_value", String.class));
     dataDescriptors.put("publishLocation", propertyDescriptorFactory.getDerived(
-      "hasPublishLocation",
-      "names",
-      LocationNames.class));
+            "hasPublishLocation",
+            "names",
+            LocationNames.class));
     dataDescriptors.put("language", propertyDescriptorFactory.getDerived(
-      "hasWorkLanguage",
-      "wwlanguage_name",
-      String.class));
+            "hasWorkLanguage",
+            "wwlanguage_name",
+            String.class));
 
     return dataDescriptors;
   }
@@ -107,18 +110,18 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
 
   private PropertyDescriptor createAuthorDescriptor() {
     PropertyDescriptor authorNameDescriptor = propertyDescriptorFactory.getDerivedWithSeparator(
-      "isCreatedBy",
-      "wwperson_names",
-      propertyParserFactory.getParser(PersonNames.class),
-      "; ");
+            "isCreatedBy",
+            "wwperson_names",
+            propertyParserFactory.getParser(PersonNames.class),
+            "; ");
     PropertyDescriptor authorTempNameDescriptor = propertyDescriptorFactory.getDerivedWithSeparator(
-      "isCreatedBy",
-      "wwperson_tempName",
-      propertyParserFactory.getParser(String.class),
-      "; ");
+            "isCreatedBy",
+            "wwperson_tempName",
+            propertyParserFactory.getParser(String.class),
+            "; ");
 
     return propertyDescriptorFactory
-      .getComposite(authorNameDescriptor, authorTempNameDescriptor);
+            .getComposite(authorNameDescriptor, authorTempNameDescriptor);
   }
 
   @Override
