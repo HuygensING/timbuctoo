@@ -53,6 +53,7 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
 
   private List<FacetDescription> createFacetDescriptions(FacetDescriptionFactory facetDescriptionFactory) {
     return Lists.newArrayList(
+      facetDescriptionFactory.createDatableRangeFacetDescription("dynamic_i_date", "wwdocument_date"),
       facetDescriptionFactory.createListFacetDescription(
               "dynamic_s_document_type", DocumentType.class, "wwdocument_documentType"));
   }
