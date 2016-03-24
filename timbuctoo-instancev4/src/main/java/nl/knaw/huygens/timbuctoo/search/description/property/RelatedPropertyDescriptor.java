@@ -34,7 +34,10 @@ public class RelatedPropertyDescriptor implements PropertyDescriptor {
 
     vertex.vertices(Direction.OUT, relationName).forEachRemaining(vertex1 -> {
       if (vertex1.keys().contains(propertyName)) {
-        values.add(parser.parse(vertex1.value(propertyName)));
+        String value = parser.parse(vertex1.value(propertyName));
+        if (value != null) {
+          values.add(value);
+        }
       }
     });
 
