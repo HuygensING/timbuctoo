@@ -56,7 +56,8 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
             facetDescriptionFactory.createDatableRangeFacetDescription("dynamic_i_date", "wwdocument_date"),
             facetDescriptionFactory.createListFacetDescription(
                     "dynamic_s_origin", LocationNames.class, "names", "hasPublishLocation"),
-
+            facetDescriptionFactory.createListFacetDescription(
+                    "dynamic_s_language", String.class, "wwlanguage_name", "hasWorkLanguage"),
             facetDescriptionFactory.createListFacetDescription(
                     "dynamic_s_document_type", DocumentType.class, "wwdocument_documentType"));
   }
