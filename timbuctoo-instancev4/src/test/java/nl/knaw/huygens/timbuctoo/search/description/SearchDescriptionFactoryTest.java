@@ -40,6 +40,14 @@ public class SearchDescriptionFactoryTest {
   }
 
   @Test
+  public void createCreatesAWwCollectiveSearchDescriptionForTheStringWwDocument() {
+    Optional<SearchDescription> searchDescription = instance.create("wwcollective");
+
+    assertThat(searchDescription.get(), is(instanceOf(WwCollectiveSearchDescription.class)));
+  }
+
+
+  @Test
   public void createReturnsAnEmtptyOptionalForAnUnknownType() {
     Optional<SearchDescription> searchDescription = instance.create("unknownType");
 
