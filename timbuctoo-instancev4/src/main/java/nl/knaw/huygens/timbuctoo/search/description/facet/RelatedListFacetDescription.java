@@ -35,7 +35,7 @@ public class RelatedListFacetDescription implements FacetDescription {
 
   @Override
   public Facet getFacet(GraphTraversal<Vertex, Vertex> searchResult) {
-    Map<String, Long> counts = searchResult.as("source").outE(relations).inV().has(propertyName).as("target")
+    Map<String, Long> counts = searchResult.as("source").bothE(relations).otherV().has(propertyName).as("target")
                                            .dedup("source", "target").<String>groupCount().by(propertyName).next();
 
     List<Facet.Option> options = counts.entrySet().stream().map(
@@ -55,7 +55,7 @@ public class RelatedListFacetDescription implements FacetDescription {
       if (facetValue instanceof ListFacetValue) {
         List<String> values = ((ListFacetValue) facetValue).getValues();
         if (!values.isEmpty()) {
-          graphTraversal.where(__.outE(relations).inV().has(propertyName, P.test((o1, o2) -> {
+          graphTraversal.where(__.bothE(relations).otherV().has(propertyName, P.test((o1, o2) -> {
             List<String> possibleValues = (List<String>) o2;
             return possibleValues.contains(parser.parse("" + o1));
           }, values)))  ;
