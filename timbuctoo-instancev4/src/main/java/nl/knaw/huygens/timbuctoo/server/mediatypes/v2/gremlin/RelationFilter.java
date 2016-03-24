@@ -2,11 +2,21 @@ package nl.knaw.huygens.timbuctoo.server.mediatypes.v2.gremlin;
 
 
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
+import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static nl.knaw.huygens.timbuctoo.server.mediatypes.v2.gremlin.VertexMapper.mapVertex;
 
 public class RelationFilter implements QueryFilter, Resultable {
 
@@ -15,6 +25,8 @@ public class RelationFilter implements QueryFilter, Resultable {
   private String targetDomain;
   private Direction direction;
   private List<QueryFilter> filters;
+  private List<EntityRef> results = new ArrayList<>();
+  private Set<String> resultIds = new HashSet<>();
 
   public String getName() {
     return name;
@@ -56,6 +68,37 @@ public class RelationFilter implements QueryFilter, Resultable {
     this.filters = filters;
   }
 
+  private Traverser loadResult(Traverser traverser) {
+    Edge edge = (Edge) traverser.get();
+    StringBuilder idBuilder = new StringBuilder();
+    Vertex outVertex = edge.outVertex();
+    Vertex inVertex = edge.inVertex();
+    idBuilder.append((String) outVertex.property("tim_id").value())
+            .append("_")
+            .append((String) edge.inVertex().property("tim_id").value());
+
+    final String id = idBuilder.toString();
+
+    if (!resultIds.contains(id)) {
+      EntityRef outResult = mapVertex(outVertex);
+      EntityRef inResult = mapVertex(inVertex);
+      EntityRef result = new EntityRef(name, id);
+      String displayName = outResult.getDisplayName() +
+              " " +
+              name +
+              " " +
+              inResult.getDisplayName();
+
+      result.setDisplayName(displayName);
+      Map<String, Object> data = new HashMap<>();
+      data.put("out", outResult);
+      data.put("in", inResult);
+      result.setData(data);
+      results.add(result);
+    }
+    resultIds.add(id);
+    return traverser;
+  }
 
   @Override
   public GraphTraversal getTraversal() {
@@ -65,11 +108,11 @@ public class RelationFilter implements QueryFilter, Resultable {
 
     switch (direction) {
       case OUT:
-        return __.outE(name).otherV().or(traversals);
+        return __.outE(name).where(__.otherV().or(traversals)).map(this::loadResult);
       case IN:
-        return __.inE(name).otherV().or(traversals);
+        return __.inE(name).where(__.otherV().or(traversals)).map(this::loadResult);
       default:
-        return __.bothE(name).otherV().or(traversals);
+        return __.bothE(name).where(__.otherV().or(traversals)).map(this::loadResult);
     }
   }
 
@@ -80,12 +123,12 @@ public class RelationFilter implements QueryFilter, Resultable {
 
   @Override
   public Long getResultCount() {
-    return null;
+    return (long) resultIds.size();
   }
 
   @Override
   public List<EntityRef> getResults() {
-    return null;
+    return results;
   }
 
 }

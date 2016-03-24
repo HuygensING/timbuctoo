@@ -19,6 +19,8 @@ public class CollectionQuery implements QueryFilter, Resultable {
   private static final String TYPE = "entity";
   private String domain;
   private List<QueryFilter> filters;
+  private List<EntityRef> results = new ArrayList<>();
+  private Set<String> resultIds = new HashSet<>();
 
   public List<QueryFilter> getAnd() {
     return filters;
@@ -40,10 +42,6 @@ public class CollectionQuery implements QueryFilter, Resultable {
   public String getType() {
     return TYPE;
   }
-
-
-  private List<EntityRef> results = new ArrayList<>();
-  private Set<String> resultIds = new HashSet<>();
 
   @Override
   public Long getResultCount() {
