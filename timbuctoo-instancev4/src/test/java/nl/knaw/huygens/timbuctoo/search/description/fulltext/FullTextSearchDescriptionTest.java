@@ -12,6 +12,7 @@ import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSear
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -147,9 +148,9 @@ public class FullTextSearchDescriptionTest {
   }
 
   @Test
-  public void filterFiltersOnlyOnThePropertyFieldIfTheVertexAlsoContainsTheBackupProperty() {
+  public void filterFiltersOnlyOnTheBackupPropertyFieldIfTheVertexDoesNotContainTheProperty() {
     GraphTraversal<Vertex, Vertex> traversal = newGraph()
-      .withVertex(vertex -> vertex.withTimId("v1").withProperty(PROPERTY, "value1"))
+      .withVertex(vertex -> vertex.withTimId("v1").withProperty(BACKUP_PROPERTY, "value1"))
       .withVertex(vertex -> vertex.withTimId("v2").withProperty(PROPERTY, "value2"))
       .withVertex(vertex -> vertex.withTimId("v3")
                                   .withProperty(PROPERTY, "value")
@@ -164,6 +165,27 @@ public class FullTextSearchDescriptionTest {
     instance.filter(traversal, fullTextSearchParameter);
 
     assertThat(traversal.toList(), contains(likeVertex().withTimId("v1")));
+
+  }
+
+  @Test
+  public void filterFiltersAllTheVerticesFromTheTraversalWhenNoneMatch() {
+    GraphTraversal<Vertex, Vertex> traversal = newGraph()
+      .withVertex(vertex -> vertex.withTimId("v1").withProperty(PROPERTY, "value1"))
+      .withVertex(vertex -> vertex.withTimId("v2").withProperty(PROPERTY, "value2"))
+      .withVertex(vertex -> vertex.withTimId("v3")
+                                  .withProperty(PROPERTY, "value")
+                                  .withProperty(BACKUP_PROPERTY, "value1"))
+      .build()
+      .traversal()
+      .V();
+    FullTextSearchParameter fullTextSearchParameter = new FullTextSearchParameter(NAME, "Not matching");
+    FullTextSearchDescription instance =
+      createLocalFullTextSearchDescriptionWithBackupProperty(NAME, PROPERTY, BACKUP_PROPERTY);
+
+    instance.filter(traversal, fullTextSearchParameter);
+
+    assertThat(traversal.toList(), is(empty()));
 
   }
 
