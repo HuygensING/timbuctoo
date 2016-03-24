@@ -13,6 +13,7 @@ import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.SearchRequestV2_1;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.util.List;
 import java.util.Map;
@@ -68,15 +69,27 @@ public abstract class AbstractSearchDescription implements SearchDescription {
     // order / sort
     getSortDescription().sort(vertices, searchRequest.getSortParameters());
 
-    List<Vertex> vertexList = vertices.toList();
-    GraphTraversal<Vertex, Vertex> searchResult = graphWrapper.getGraph().traversal().V(vertexList);
+    GraphTraversal<Vertex, Vertex> searchResult = getSearchResult(graphWrapper, vertices.toList());
     // Clone to be able to reuse the search result.
-    GraphTraversal.Admin<Vertex, Vertex> refsClone = searchResult.asAdmin().clone();
+    GraphTraversal<Vertex, Vertex> refsClone = searchResult.asAdmin().clone();
     List<EntityRef> refs = refsClone.map(vertex -> createRef(vertex.get())).toList();
 
     List<Facet> facets = createFacets(searchResult.asAdmin().clone());
 
     return new SearchResult(refs, this, facets);
+  }
+
+  /**
+   * A method to create a new GraphTraversal, because cloning is to slow.
+   * It creates a new graph with a list created of the vertices.
+   * It creates an empty graph if vertices does not contain any vertices.
+   */
+  private GraphTraversal<Vertex, Vertex> getSearchResult(GraphWrapper graphWrapper, List<Vertex> vertexList) {
+    if (!vertexList.isEmpty()) {
+      return graphWrapper.getGraph().traversal().V(vertexList);
+    }
+
+    return EmptyGraph.instance().traversal().V();
   }
 
   protected GraphTraversal<Vertex, Vertex> filterByType(GraphTraversalSource traversalSource) {

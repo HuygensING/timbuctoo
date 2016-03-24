@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.search.VertexMatcher.likeVertex;
+import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription
+  .createLocalSimpleFullTextSearchDescription;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -110,6 +112,34 @@ public class AbstractSearchDescriptionTest {
   }
 
   @Test
+  public void executeCreatesAnEmptyListOfRefsIfNoVerticesMatchTheRequest() {
+    PropertyDescriptor idDescriptor = mock(PropertyDescriptor.class);
+    PropertyDescriptor displayNameDescriptor = mock(PropertyDescriptor.class);
+    PropertyDescriptor dataDescriptor1 = mock(PropertyDescriptor.class);
+    PropertyDescriptor dataDescriptor2 = mock(PropertyDescriptor.class);
+    String type = "type";
+    AbstractSearchDescription instance = searchDescription()
+      .withType(type)
+      .withIdDescriptor(idDescriptor)
+      .withDisplayNameDescriptor(displayNameDescriptor)
+      .withDataDescriptor("desc1", dataDescriptor1)
+      .withDataDescriptor("desc2", dataDescriptor2)
+      .withFullTextSearchDescription(createLocalSimpleFullTextSearchDescription("ftsd", "prop"))
+      .build();
+    Graph graph = newGraph()
+      .withVertex(vertex -> vertex.withTimId("id").withType(type))
+      .withVertex(vertex -> vertex.withTimId("id1").withType("otherType"))
+      .build();
+    GraphWrapper graphWrapper = createGraphWrapper(graph);
+
+    SearchRequestV2_1 searchRequest = new SearchRequestV2_1();
+    searchRequest.setFullTextSearchParameters(Lists.newArrayList(new FullTextSearchParameter("ftsd", "test")));
+    SearchResult searchResult = instance.execute(graphWrapper, searchRequest);
+
+    assertThat(searchResult.getRefs(), is(empty()));
+  }
+
+  @Test
   @SuppressWarnings("unchecked")
   public void executeLetsEachFacetDescriptionFillAListOfFacets() {
     FacetDescription facetDescription1 = mock(FacetDescription.class);
@@ -131,6 +161,7 @@ public class AbstractSearchDescriptionTest {
     assertThat(searchResult.getFacets(), is(Matchers.notNullValue()));
     ArgumentCaptor<GraphTraversal> captor = ArgumentCaptor.forClass(GraphTraversal.class);
     verify(facetDescription1, times(1)).getFacet(captor.capture());
+
     assertThat(((GraphTraversal<Vertex, Vertex>) captor.getValue()).toList(), contains(likeVertex().withType(type)));
     ArgumentCaptor<GraphTraversal> captor1 = ArgumentCaptor.forClass(GraphTraversal.class);
     verify(facetDescription2, times(1)).getFacet(captor1.capture());
