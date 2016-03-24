@@ -61,10 +61,4 @@ public class RootQuery implements QueryStep, Resultable {
     return this;
   }
 
-  @Override
-  public String toString() {
-    return "RootQuery{" +
-            "filters=" + filters +
-            '}';
-  }
 }

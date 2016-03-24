@@ -60,7 +60,7 @@ public class RelationFilter implements QueryFilter, Resultable {
   @Override
   public GraphTraversal getTraversal() {
     GraphTraversal[] traversals = filters.stream()
-            .map(QueryStep::getTraversal).toArray(GraphTraversal[]::new);
+            .map(QueryFilter::getTraversal).toArray(GraphTraversal[]::new);
 
 
     switch (direction) {
@@ -74,7 +74,7 @@ public class RelationFilter implements QueryFilter, Resultable {
   }
 
   @Override
-  public QueryStep setDomain(String domain) {
+  public QueryFilter setDomain(String domain) {
     return this;
   }
 
@@ -88,14 +88,4 @@ public class RelationFilter implements QueryFilter, Resultable {
     return null;
   }
 
-  @Override
-  public String toString() {
-    return "RelationFilter{" +
-            "name='" + name + '\'' +
-            ", type='" + type + '\'' +
-            ", targetDomain='" + targetDomain + '\'' +
-            ", direction=" + direction +
-            ", filters=" + filters +
-            '}';
-  }
 }

@@ -44,17 +44,9 @@ public class PropertyFilter implements QueryFilter {
   }
 
   @Override
-  public QueryStep setDomain(String domain) {
-    this.domain = domain + "_";
+  public QueryFilter setDomain(String domain) {
+    this.domain = domain;
     return this;
   }
 
-  @Override
-  public String toString() {
-    return "PropertyFilter{" +
-            "filters=" + filters +
-            ", name='" + name + '\'' +
-            ", type='" + getType() + '\'' +
-            '}';
-  }
 }

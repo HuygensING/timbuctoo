@@ -77,4 +77,31 @@ public class QueryFilterTest {
     assertThat(propertyBetweenFilter.getType()).isEqualTo("between");
     assertThat(propertyEqualsFilter.getType()).isEqualTo("value");
   }
+
+  @Test
+  public void shouldNotFail() throws IOException {
+    String json = "{\n" +
+            "  \"or\": [\n" +
+            "    {\n" +
+            "      \"type\": \"entity\",\n" +
+            "      \"domain\": \"wwperson\",\n" +
+            "      \"and\": [\n" +
+            "        {\n" +
+            "          \"type\": \"property\",\n" +
+            "          \"name\": \"children\",\n" +
+            "          \"or\": [\n" +
+            "            {\n" +
+            "              \"type\": \"value\",\n" +
+            "              \"value\": \"YES\"\n" +
+            "            }\n" +
+            "          ]\n" +
+            "        }\n" +
+            "      ]\n" +
+            "    }\n" +
+            "  ]\n" +
+            "}";
+    ObjectMapper mapper = new ObjectMapper();
+    RootQuery underTest = mapper.readValue(json, RootQuery.class);
+
+  }
 }

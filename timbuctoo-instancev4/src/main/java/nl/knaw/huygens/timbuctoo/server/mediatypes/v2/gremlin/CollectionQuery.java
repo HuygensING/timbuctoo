@@ -32,7 +32,7 @@ public class CollectionQuery implements QueryFilter, Resultable {
     return domain;
   }
 
-  public QueryStep setDomain(String domain) {
+  public QueryFilter setDomain(String domain) {
     this.domain = domain;
     return this;
   }
@@ -74,22 +74,12 @@ public class CollectionQuery implements QueryFilter, Resultable {
               f.setDomain(this.domain);
               return f;
             })
-            .map(QueryStep::getTraversal)
+            .map(QueryFilter::getTraversal)
             .toArray(GraphTraversal[]::new);
 
 
     return __.where(__.filter(x -> ((String) ((Vertex) x.get())
                     .property("types").value()).contains("\"" + getDomain() + "\"")))
                 .and(traversals).map(this::loadResult);
-  }
-
-
-  @Override
-  public String toString() {
-    return "CollectionQuery{" +
-            "domain='" + domain + '\'' +
-            ", type='" + getType() + '\'' +
-            ", filters=" + filters +
-            '}';
   }
 }

@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({@JsonSubTypes.Type(name = "value", value = PropertyEqualsFilter.class),
         @JsonSubTypes.Type(name = "between", value = PropertyBetweenFilter.class)})
-public interface PropertyValueFilter extends QueryStep {
+public interface PropertyValueFilter extends QueryFilter {
 
   PropertyValueFilter setName(String name);
 
