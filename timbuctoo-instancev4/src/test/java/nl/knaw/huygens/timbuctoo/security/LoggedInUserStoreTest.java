@@ -127,7 +127,7 @@ public class LoggedInUserStoreTest {
     LoggedInUserStore instance = this.userStoreWithUserA;
     String token = instance.userTokenFor("a", "b").get();
 
-    Thread.sleep(ONE_SECOND_TIMEOUT.toMilliseconds() + 1);
+    Thread.sleep(ONE_SECOND_TIMEOUT.toMilliseconds() + 100);
 
     Optional<User> user = instance.userFor(token);
 
