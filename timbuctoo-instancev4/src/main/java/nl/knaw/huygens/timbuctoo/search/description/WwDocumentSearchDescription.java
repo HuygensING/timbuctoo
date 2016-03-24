@@ -65,6 +65,8 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
             facetDescriptionFactory.createListFacetDescription(
                     "dynamic_s_sources", String.class, "wwdocument_title", "hasDocumentSource"),
 
+            facetDescriptionFactory.createChangeRangeFacetDescription("dynamic_i_modified", "modified"),
+
             facetDescriptionFactory.createListFacetDescription(
                     "dynamic_s_document_type", DocumentType.class, "wwdocument_documentType"));
   }
