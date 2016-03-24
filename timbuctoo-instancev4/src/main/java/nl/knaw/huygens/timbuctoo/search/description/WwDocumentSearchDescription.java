@@ -62,6 +62,8 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
             facetDescriptionFactory.createListFacetDescription(
                     "dynamic_s_genre", String.class, "wwkeyword_value", "hasGenre"),
 
+            facetDescriptionFactory.createListFacetDescription(
+                    "dynamic_s_sources", String.class, "wwdocument_title", "hasDocumentSource"),
 
             facetDescriptionFactory.createListFacetDescription(
                     "dynamic_s_document_type", DocumentType.class, "wwdocument_documentType"));
