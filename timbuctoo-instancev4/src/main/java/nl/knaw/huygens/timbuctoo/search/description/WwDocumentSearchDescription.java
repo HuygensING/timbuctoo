@@ -71,6 +71,9 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
             facetDescriptionFactory.createListFacetDescription(
                     "dynamic_s_author_children", String.class, "wwperson_children", "isCreatedBy"),
 
+            facetDescriptionFactory.createMultiValueListFacetDescription("dynamic_s_author_types", "wwperson_types",
+                    "isCreatedBy"),
+
             facetDescriptionFactory.createChangeRangeFacetDescription("dynamic_i_modified", "modified"),
 
             facetDescriptionFactory.createListFacetDescription(
