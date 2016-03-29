@@ -162,8 +162,7 @@ public class RelatedMultiValueListFacetDescriptionTest {
             new RelatedMultiValueListFacetDescription(FACET_NAME, PROPERTY, RELATION, RELATION_2);
     Graph graph = newGraph().withVertex("target1", v -> v.withTimId("id1").withProperty(PROPERTY, VALUE1))
             .withVertex("target2", v -> v.withTimId("id2").withProperty(PROPERTY, VALUE2))
-            .withVertex("source1", v -> v.withTimId("id3").withOutgoingRelation(RELATION, "target1")
-                    .withOutgoingRelation(RELATION_2, "target1"))
+            .withVertex("source1", v -> v.withTimId("id3").withOutgoingRelation(RELATION, "target1"))
             .withVertex("source2", v -> v.withTimId("id3").withOutgoingRelation(RELATION, "target1")
                     .withOutgoingRelation(RELATION_2, "target2"))
             .build();
@@ -174,6 +173,24 @@ public class RelatedMultiValueListFacetDescriptionTest {
             new Facet.DefaultOption(RESULT1, 2), // one connection with source1 and one with source2
             new Facet.DefaultOption(RESULT2, 1), // one connection with source2
             new Facet.DefaultOption(RESULT3, 1))); // one connection with source2
+  }
+
+  @Test
+  public void getFacetOnlyCountsUniqueSources() {
+    RelatedMultiValueListFacetDescription instance =
+            new RelatedMultiValueListFacetDescription(FACET_NAME, PROPERTY, RELATION);
+    Graph graph = newGraph()
+            .withVertex("target1", v -> v.withTimId("id1").withProperty(PROPERTY, VALUE1))
+            .withVertex("target2", v -> v.withTimId("id2").withProperty(PROPERTY, VALUE1))
+            .withVertex("source1", v -> v.withTimId("id3").withOutgoingRelation(RELATION, "target1"))
+            .withVertex("source2", v -> v.withTimId("id4").withOutgoingRelation(RELATION, "target1")
+                    .withOutgoingRelation(RELATION, "target2")) // source2 has this relation to two targets...
+            .build();
+
+    Facet facet = instance.getFacet(graph.traversal().V());
+
+    assertThat(facet.getOptions(), containsInAnyOrder(
+            new Facet.DefaultOption(RESULT1, 2))); // ...yet source2 should only be counted once
   }
 
   @Test

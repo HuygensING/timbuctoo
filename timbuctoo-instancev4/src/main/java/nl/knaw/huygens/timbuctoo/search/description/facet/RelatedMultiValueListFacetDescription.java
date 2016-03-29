@@ -14,10 +14,13 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * A facet description that creates a "LIST" facet with multi-valued properties from connected vertices.
@@ -41,21 +44,32 @@ public class RelatedMultiValueListFacetDescription implements FacetDescription {
 
   @Override
   public Facet getFacet(GraphTraversal<Vertex, Vertex> searchResult) {
-    Map<String, Long> counts = searchResult.as("a").bothE(relations).otherV().has(propertyName).as("b")
-            .dedup("a", "b").<String>groupCount().by(propertyName).next();
-
+    Map<String, Set<Vertex>> grouped = new HashMap<>();
     List<Facet.Option> options = new ArrayList<>();
 
-    counts.entrySet().stream().forEach(count -> {
+    searchResult.as("source").bothE(relations).otherV().has(propertyName).as("target").dedup("source", "target")
+            .select("source", "target").forEachRemaining(map -> {
+              Vertex source = (Vertex) map.get("source");
+              String targetValue = (String) ((Vertex) map.get("target")).property(propertyName).value();
+              if (!grouped.containsKey(targetValue)) {
+                grouped.put(targetValue, new HashSet<>());
+              }
+              grouped.get(targetValue).add(source);
+            });
+
+
+    grouped.entrySet().stream().forEach(group -> {
       List<?> facetKeys;
       try {
-        facetKeys = (List<?>) mapper.readValue(count.getKey(), List.class);
+        facetKeys = (List<?>) mapper.readValue(group.getKey(), List.class);
       } catch (IOException e) {
-        LOG.error("'{}' is not a valid multi valued field", count.getKey());
+        LOG.error("'{}' is not a valid multi valued field", group.getKey());
         facetKeys = Lists.newArrayList();
       }
-      facetKeys.stream().forEach(facetKey -> options.add(new Facet.DefaultOption((String) facetKey, count.getValue())));
+      facetKeys.stream().forEach(facetKey -> options.add(
+              new Facet.DefaultOption((String) facetKey, group.getValue().size())));
     });
+
 
     return new Facet(facetName, options, "LIST");
   }
