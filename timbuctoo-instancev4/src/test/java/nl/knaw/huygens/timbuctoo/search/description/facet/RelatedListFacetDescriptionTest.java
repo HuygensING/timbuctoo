@@ -196,6 +196,24 @@ public class RelatedListFacetDescriptionTest {
   }
 
   @Test
+  public void getFacetOnlyCountsUniqueSources() {
+    RelatedListFacetDescription instance =
+            new RelatedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION);
+    Graph graph = newGraph()
+            .withVertex("target1", v -> v.withTimId("id1").withProperty(PROPERTY, VALUE1))
+            .withVertex("target2", v -> v.withTimId("id2").withProperty(PROPERTY, VALUE1))
+            .withVertex("source1", v -> v.withTimId("id3").withOutgoingRelation(RELATION, "target1"))
+            .withVertex("source2", v -> v.withTimId("id4").withOutgoingRelation(RELATION, "target1")
+                    .withOutgoingRelation(RELATION, "target2")) // source2 has this relation to two targets...
+            .build();
+
+    Facet facet = instance.getFacet(graph.traversal().V());
+
+    assertThat(facet.getOptions(), containsInAnyOrder(
+            new Facet.DefaultOption(VALUE1, 2))); // ...yet source2 should only be counted once
+  }
+
+  @Test
   public void filterDoesNotAddFilterToTheGraphTraversalWhenTheFacetOfTheDescriptionIsNotPresent() {
     RelatedListFacetDescription instance =
       new RelatedListFacetDescription(FACET_NAME, PROPERTY, parser, RELATION);

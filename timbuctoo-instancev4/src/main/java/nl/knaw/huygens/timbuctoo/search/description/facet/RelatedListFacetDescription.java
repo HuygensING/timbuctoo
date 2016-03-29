@@ -9,10 +9,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
 
@@ -35,11 +38,21 @@ public class RelatedListFacetDescription implements FacetDescription {
 
   @Override
   public Facet getFacet(GraphTraversal<Vertex, Vertex> searchResult) {
-    Map<String, Long> counts = searchResult.as("source").bothE(relations).otherV().has(propertyName).as("target")
-                                           .dedup("source", "target").<String>groupCount().by(propertyName).next();
+    Map<String, Set<Vertex>> grouped = new HashMap<>();
 
-    List<Facet.Option> options = counts.entrySet().stream().map(
-      count -> new Facet.DefaultOption(parser.parse(count.getKey()), count.getValue())).collect(toList());
+    searchResult.as("source").bothE(relations).otherV().has(propertyName).as("target").dedup("source", "target")
+            .select("source", "target").forEachRemaining(map -> {
+              Vertex source = (Vertex) map.get("source");
+              String targetValue = (String) ((Vertex) map.get("target")).property(propertyName).value();
+              if (!grouped.containsKey(targetValue)) {
+                grouped.put(targetValue, new HashSet<>());
+              }
+              grouped.get(targetValue).add(source);
+            });
+
+    List<Facet.Option> options  = grouped.entrySet().stream().map(group ->
+            new Facet.DefaultOption(parser.parse(group.getKey()), group.getValue().size())
+        ).filter(facetOption -> facetOption.getName() != null).collect(toList());
 
     return new Facet(facetName, options, "LIST");
   }
