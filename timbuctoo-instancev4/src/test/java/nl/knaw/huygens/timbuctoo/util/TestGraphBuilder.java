@@ -13,7 +13,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import static nl.knaw.huygens.timbuctoo.util.Neo4jHelper.cleanDb;
+
 public class TestGraphBuilder {
+  private static GraphDatabaseService neo4jDb = new TestGraphDatabaseFactory().newImpermanentDatabase();
+
+  {
+    neo4jDb.beginTx();
+  }
 
   private final List<VertexBuilder> vertexBuilders = new ArrayList<>();
   private final Map<String, VertexBuilder> identifiableVertexBuilders = new HashMap<>();
@@ -26,8 +33,16 @@ public class TestGraphBuilder {
   }
 
   public Graph build() {
-    GraphDatabaseService graphDatabaseService = new TestGraphDatabaseFactory().newImpermanentDatabase();
-    Neo4jGraphAPIImpl neo4jGraphApi = new Neo4jGraphAPIImpl(graphDatabaseService);
+    //When creating a new database you have to close the previous one, because
+    //each database will create a new thread. This fills up the available
+    //threads when running thousands of tests.
+    //
+    //Closing the database is very slow however (testruns go from less then a
+    //second to 3 minutes on a machine with an SSD) so instead we now re-use
+    //the same neo4j database that we clear when the function to create a new
+    //one is called.
+    cleanDb(neo4jDb);
+    Neo4jGraphAPIImpl neo4jGraphApi = new Neo4jGraphAPIImpl(neo4jDb);
     Neo4jGraph neo4jGraph = Neo4jGraph.open(neo4jGraphApi);
     Map<String, Vertex> identifiableVertices = new HashMap<>();
     //Create all identifiable vertices
