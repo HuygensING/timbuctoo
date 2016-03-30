@@ -56,6 +56,7 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
             facetDescriptionFactory.createDatableRangeFacetDescription("dynamic_i_date", "wwdocument_date"),
             facetDescriptionFactory.createListFacetDescription(
                     "dynamic_s_origin", LocationNames.class, "names", "hasPublishLocation"),
+
             facetDescriptionFactory.createListFacetDescription(
                     "dynamic_s_language", String.class, "wwlanguage_name", "hasWorkLanguage"),
 
@@ -85,6 +86,12 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
 
             facetDescriptionFactory.createDerivedListFacetDescription(
                     "dynamic_s_author_collective", "isMemberOf", String.class, "wwcollective_name", "isCreatedBy"),
+
+            facetDescriptionFactory.createDerivedListFacetDescription(
+                    "dynamic_s_author_deathplace", "hasDeathPlace", LocationNames.class, "names", "isCreatedBy"),
+
+            facetDescriptionFactory.createDerivedListFacetDescription(
+                    "dynamic_s_author_birthplace", "hasBirthPlace", LocationNames.class, "names", "isCreatedBy"),
 
             facetDescriptionFactory.createListFacetDescription(
                   "dynamic_s_author_gender", Gender.class, "wwperson_gender", "isCreatedBy"),
