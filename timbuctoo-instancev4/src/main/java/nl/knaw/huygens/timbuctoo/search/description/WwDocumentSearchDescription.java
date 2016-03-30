@@ -14,9 +14,14 @@ import nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescr
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 import nl.knaw.huygens.timbuctoo.search.description.sort.SortDescription;
+import nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static nl.knaw.huygens.timbuctoo.search.description.Property.localProperty;
+import static nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription.newSortFieldDescription;
 
 public class WwDocumentSearchDescription extends AbstractSearchDescription implements SearchDescription {
   private static final List<String> SORTABLE_FIELDS = Lists.newArrayList(
@@ -37,6 +42,7 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
   private final List<FacetDescription> facetDescriptions;
   private final PropertyDescriptor idDescriptor;
   private final PropertyDescriptor displayNameDescriptor;
+  private final ArrayList<SortFieldDescription> sortFieldDescriptions;
 
   public WwDocumentSearchDescription(PropertyDescriptorFactory propertyDescriptorFactory,
                                      FacetDescriptionFactory facetDescriptionFactory) {
@@ -46,9 +52,22 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
     dataDescriptors = createDataDescriptors();
     facetDescriptions = createFacetDescriptions(facetDescriptionFactory);
 
-    idDescriptor = propertyDescriptorFactory
-            .getLocal(ID_DB_PROP, String.class);
+    idDescriptor = propertyDescriptorFactory.getLocal(ID_DB_PROP, String.class);
+
     displayNameDescriptor = createDisplayNameDescriptor();
+
+    sortFieldDescriptions = createSortFieldDescriptions();
+
+  }
+
+  protected ArrayList<SortFieldDescription> createSortFieldDescriptions() {
+    return Lists.newArrayList(newSortFieldDescription()
+            .withName("dynamic_k_modified")
+            .withDefaultValue(0L)
+            .withProperty(localProperty()
+                    .withName("modified")
+                    .withParser(propertyParserFactory.getParser(Change.class)))
+            .build());
   }
 
   private List<FacetDescription> createFacetDescriptions(FacetDescriptionFactory facetDescriptionFactory) {
@@ -217,4 +236,9 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
     return Lists.newArrayList();
   }
 
+  @Override
+  protected SortDescription getSortDescription() {
+
+    return new SortDescription(sortFieldDescriptions);
+  }
 }
