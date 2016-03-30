@@ -61,13 +61,21 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
   }
 
   protected ArrayList<SortFieldDescription> createSortFieldDescriptions() {
-    return Lists.newArrayList(newSortFieldDescription()
+    return Lists.newArrayList(
+        newSortFieldDescription()
             .withName("dynamic_k_modified")
             .withDefaultValue(0L)
             .withProperty(localProperty()
                     .withName("modified")
                     .withParser(propertyParserFactory.getParser(Change.class)))
-            .build());
+            .build(),
+        newSortFieldDescription()
+            .withName("dynamic_sort_title")
+            .withDefaultValue("")
+            .withProperty(localProperty()
+                    .withName("wwdocument_title"))
+            .build()
+    );
   }
 
   private List<FacetDescription> createFacetDescriptions(FacetDescriptionFactory facetDescriptionFactory) {
