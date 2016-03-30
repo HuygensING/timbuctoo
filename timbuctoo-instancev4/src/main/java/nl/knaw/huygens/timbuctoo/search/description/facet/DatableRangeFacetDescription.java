@@ -35,6 +35,11 @@ public class DatableRangeFacetDescription implements FacetDescription {
   }
 
   @Override
+  public String getName() {
+    return facetName;
+  }
+
+  @Override
   public Facet getFacet(GraphTraversal<Vertex, Vertex> searchResult) {
     List<Long> dates = Lists.newArrayList();
 
@@ -103,5 +108,10 @@ public class DatableRangeFacetDescription implements FacetDescription {
       LOG.error("Cannot parse date", e);
     }
 
+  }
+
+  @Override
+  public List<String> getValues(Vertex vertex) {
+    return null;
   }
 }

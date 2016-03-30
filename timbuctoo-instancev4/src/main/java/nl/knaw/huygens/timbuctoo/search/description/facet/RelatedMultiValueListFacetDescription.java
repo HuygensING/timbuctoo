@@ -43,6 +43,11 @@ public class RelatedMultiValueListFacetDescription implements FacetDescription {
   }
 
   @Override
+  public String getName() {
+    return facetName;
+  }
+
+  @Override
   public Facet getFacet(GraphTraversal<Vertex, Vertex> searchResult) {
     Map<String, Set<Vertex>> grouped = new HashMap<>();
     List<Facet.Option> options = new ArrayList<>();
@@ -92,5 +97,10 @@ public class RelatedMultiValueListFacetDescription implements FacetDescription {
         }
       }
     }
+  }
+
+  @Override
+  public List<String> getValues(Vertex vertex) {
+    return null;
   }
 }

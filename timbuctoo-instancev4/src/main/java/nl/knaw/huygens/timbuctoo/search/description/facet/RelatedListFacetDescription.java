@@ -7,8 +7,10 @@ import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,6 +36,11 @@ public class RelatedListFacetDescription implements FacetDescription {
     this.propertyName = propertyName;
     this.parser = parser;
     this.relations = relations;
+  }
+
+  @Override
+  public String getName() {
+    return facetName;
   }
 
   @Override
@@ -75,5 +82,14 @@ public class RelatedListFacetDescription implements FacetDescription {
         }
       }
     }
+  }
+
+  @Override
+  public List<String> getValues(Vertex vertex) {
+    List<String> result = new ArrayList<>();
+    vertex.vertices(Direction.BOTH, relations).forEachRemaining(targetVertex -> {
+      result.add((String) targetVertex.property(propertyName).value());
+    });
+    return result;
   }
 }

@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.search.description.facet;
 
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
@@ -25,6 +26,11 @@ public class ListFacetDescription implements FacetDescription {
     this.facetName = facetName;
     this.propertyName = propertyName;
     this.parser = parser;
+  }
+
+  @Override
+  public String getName() {
+    return facetName;
   }
 
   @Override
@@ -59,5 +65,14 @@ public class ListFacetDescription implements FacetDescription {
         }
       }
     }
+  }
+
+  @Override
+  public List<String> getValues(Vertex vertex) {
+    String value = parser.parse((String) vertex.property(propertyName).value());
+    if(value != null) {
+      return Lists.newArrayList(value);
+    }
+    return null;
   }
 }

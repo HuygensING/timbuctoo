@@ -24,6 +24,11 @@ class WwPersonLanguageFacetDescription implements FacetDescription {
   }
 
   @Override
+  public String getName() {
+    return facetName;
+  }
+
+  @Override
   public Facet getFacet(GraphTraversal<Vertex, Vertex> searchResult) {
     /*
      * Do not use "in()" instead of "inE().outV()" or "out()" instead of "outE().inV()",
@@ -64,5 +69,10 @@ class WwPersonLanguageFacetDescription implements FacetDescription {
                            .outE("hasWorkLanguage").inV()
                            .has("wwlanguage_name", within(values)));
 
+  }
+
+  @Override
+  public List<String> getValues(Vertex vertex) {
+    return null;
   }
 }

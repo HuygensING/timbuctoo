@@ -38,6 +38,11 @@ class ChangeRangeFacetDescription implements FacetDescription {
   }
 
   @Override
+  public String getName() {
+    return facetName;
+  }
+
+  @Override
   public Facet getFacet(GraphTraversal<Vertex, Vertex> searchResult) {
     List<Long> dateStamps = Lists.newArrayList();
     searchResult.has(propertyName).map(vertexTraverser -> vertexTraverser.get().<String>value(propertyName))
@@ -96,6 +101,11 @@ class ChangeRangeFacetDescription implements FacetDescription {
       return false;
     }, period)));
 
+  }
+
+  @Override
+  public List<String> getValues(Vertex vertex) {
+    return null;
   }
 
   private LocalDate getChangeLocalDate(Object changeObjectString) throws IOException {

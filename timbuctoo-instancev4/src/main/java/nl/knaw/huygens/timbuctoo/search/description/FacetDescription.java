@@ -8,6 +8,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.util.List;
 
 public interface FacetDescription {
+
+  String getName();
   /**
    * Generates the facet with it's options for the searchResult.
    */
@@ -17,4 +19,6 @@ public interface FacetDescription {
    * Adds a filter to the graphTraversal if the searchRequest contains a facet for the description.
    */
   void filter(GraphTraversal<Vertex, Vertex> graphTraversal, List<FacetValue> facets);
+
+  List<String> getValues(Vertex vertex);
 }

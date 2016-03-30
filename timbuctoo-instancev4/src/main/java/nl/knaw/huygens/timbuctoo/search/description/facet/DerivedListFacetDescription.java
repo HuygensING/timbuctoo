@@ -6,8 +6,10 @@ import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -41,6 +43,11 @@ public class DerivedListFacetDescription implements FacetDescription {
   public DerivedListFacetDescription(String facetName, String propertyName, List<String> relationNames,
                                      PropertyParser parser, String... relations) {
     this(facetName, propertyName, parser, relationNames.toArray(new String[relationNames.size()]), relations);
+  }
+
+  @Override
+  public String getName() {
+    return facetName;
   }
 
   @Override
@@ -81,5 +88,16 @@ public class DerivedListFacetDescription implements FacetDescription {
             .values(propertyName)
             .map(value -> parser.parse((String) value.get()))
             .is(within(values)));
+  }
+
+  @Override
+  public List<String> getValues(Vertex vertex) {
+    List<String> result = new ArrayList<>();
+    vertex.vertices(Direction.BOTH, relations).forEachRemaining(targetVertex -> {
+      targetVertex.vertices(Direction.BOTH, relationNames).forEachRemaining(finalVertex -> {
+        result.add((String) finalVertex.property(propertyName).value());
+      });
+    });
+    return result;
   }
 }

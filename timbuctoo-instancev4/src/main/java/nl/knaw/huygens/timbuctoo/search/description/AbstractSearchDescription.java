@@ -84,7 +84,7 @@ public abstract class AbstractSearchDescription implements SearchDescription {
    * It creates a new graph with a list created of the vertices.
    * It creates an empty graph if vertices does not contain any vertices.
    */
-  private GraphTraversal<Vertex, Vertex> getSearchResult(GraphWrapper graphWrapper, List<Vertex> vertexList) {
+  protected GraphTraversal<Vertex, Vertex> getSearchResult(GraphWrapper graphWrapper, List<Vertex> vertexList) {
     if (vertexList.isEmpty()) {
       return EmptyGraph.instance().traversal().V();
     }

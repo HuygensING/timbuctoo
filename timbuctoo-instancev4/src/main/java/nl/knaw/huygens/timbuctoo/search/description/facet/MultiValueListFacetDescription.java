@@ -37,6 +37,11 @@ class MultiValueListFacetDescription implements FacetDescription {
   }
 
   @Override
+  public String getName() {
+    return facetName;
+  }
+
+  @Override
   public Facet getFacet(GraphTraversal<Vertex, Vertex> searchResult) {
     List<List<?>> vertexValues = searchResult.has(propertyName).map(v -> {
       String value = v.get().value(propertyName);
@@ -87,5 +92,10 @@ class MultiValueListFacetDescription implements FacetDescription {
           ((List<?>) o2).stream().anyMatch(value -> ((String) o1).contains("\"" + value + "\""));
       }, values)));
 
+  }
+
+  @Override
+  public List<String> getValues(Vertex vertex) {
+    return null;
   }
 }
