@@ -93,6 +93,9 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
             facetDescriptionFactory.createDerivedListFacetDescription(
                     "dynamic_s_author_birthplace", "hasBirthPlace", LocationNames.class, "names", "isCreatedBy"),
 
+            facetDescriptionFactory.createDerivedListFacetDescription(
+                    "dynamic_s_author_residence", "hasResidenceLocation", LocationNames.class, "names", "isCreatedBy"),
+
             facetDescriptionFactory.createListFacetDescription(
                   "dynamic_s_author_gender", Gender.class, "wwperson_gender", "isCreatedBy"),
 
