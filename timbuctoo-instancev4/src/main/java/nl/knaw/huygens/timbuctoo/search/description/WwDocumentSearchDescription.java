@@ -68,6 +68,21 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
             facetDescriptionFactory.createDerivedKeywordDescription(
                     "dynamic_s_author_marital_status", "hasMaritalStatus", "ww", "isCreatedBy"),
 
+            facetDescriptionFactory.createDerivedKeywordDescription(
+                    "dynamic_s_author_education", "hasEducation", "ww", "isCreatedBy"),
+
+            facetDescriptionFactory.createDerivedKeywordDescription(
+                    "dynamic_s_author_social_class", "hasSocialClass", "ww", "isCreatedBy"),
+
+            facetDescriptionFactory.createDerivedKeywordDescription(
+                    "dynamic_s_author_religion", "hasReligion", "ww", "isCreatedBy"),
+
+            facetDescriptionFactory.createDerivedKeywordDescription(
+                    "dynamic_s_author_financials", "hasFinancialSituation", "ww", "isCreatedBy"),
+
+            facetDescriptionFactory.createDerivedKeywordDescription(
+                    "dynamic_s_author_profession", "hasProfession", "ww", "isCreatedBy"),
+
             facetDescriptionFactory.createListFacetDescription(
                 "dynamic_s_author_gender", Gender.class, "wwperson_gender", "isCreatedBy"),
 
