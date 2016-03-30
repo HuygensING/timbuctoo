@@ -22,6 +22,7 @@ import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.search.description.Property.derivedProperty;
 import static nl.knaw.huygens.timbuctoo.search.description.Property.localProperty;
+import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription.createLocalSimpleFullTextSearchDescription;
 import static nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription.newSortFieldDescription;
 
 public class WwDocumentSearchDescription extends AbstractSearchDescription implements SearchDescription {
@@ -44,6 +45,7 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
   private final PropertyDescriptor idDescriptor;
   private final PropertyDescriptor displayNameDescriptor;
   private final ArrayList<SortFieldDescription> sortFieldDescriptions;
+  private final ArrayList<FullTextSearchDescription> fullTextSearchDescriptions;
 
   public WwDocumentSearchDescription(PropertyDescriptorFactory propertyDescriptorFactory,
                                      FacetDescriptionFactory facetDescriptionFactory) {
@@ -56,9 +58,17 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
     idDescriptor = propertyDescriptorFactory.getLocal(ID_DB_PROP, String.class);
 
     displayNameDescriptor = createDisplayNameDescriptor();
+    fullTextSearchDescriptions = createFullTextSearchDescriptions();
 
     sortFieldDescriptions = createSortFieldDescriptions();
 
+  }
+
+  private ArrayList<FullTextSearchDescription> createFullTextSearchDescriptions() {
+    return Lists.newArrayList(
+        createLocalSimpleFullTextSearchDescription("dynamic_t_notes", "wwdocument_notes"),
+        createLocalSimpleFullTextSearchDescription("dynamic_t_title", "wwdocument_title")
+    );
   }
 
   protected ArrayList<SortFieldDescription> createSortFieldDescriptions() {
@@ -251,9 +261,10 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
     return type;
   }
 
+
   @Override
   public List<FullTextSearchDescription> getFullTextSearchDescriptions() {
-    return Lists.newArrayList();
+    return fullTextSearchDescriptions;
   }
 
   @Override
