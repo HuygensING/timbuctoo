@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -113,6 +114,31 @@ public class WwPersonLanguageFacetDescriptionTest {
     Facet facet = instance.getFacet(graph.traversal().V());
 
     assertThat(facet.getOptions(), contains(new Facet.DefaultOption("Language1", 2L)));
+  }
+
+  @Test
+  public void getFacetOnlyCountsUniqueSources() {
+
+    Graph graph = newGraph()
+            .withVertex("person1", v -> v.withTimId("id"))
+            .withVertex("person2", v -> v.withTimId("id2"))
+            .withVertex("language1", v -> v.withProperty("wwlanguage_name", "Language1"))
+            .withVertex("document1", v -> v.withOutgoingRelation("isCreatedBy", "person1")
+                    .withOutgoingRelation("hasWorkLanguage", "language1"))
+            .withVertex("document2", v -> {
+              v.withOutgoingRelation("isCreatedBy", "person2").withOutgoingRelation("hasWorkLanguage", "language1");
+              v.withOutgoingRelation("isCreatedBy", "person1").withOutgoingRelation("hasWorkLanguage", "language1");
+            })
+            .withVertex("document3", v -> {
+              v.withOutgoingRelation("isCreatedBy", "person2").withOutgoingRelation("hasWorkLanguage", "language1");
+              v.withOutgoingRelation("isCreatedBy", "person1").withOutgoingRelation("hasWorkLanguage", "language1");
+            })
+            .build();
+
+    Facet facet = instance.getFacet(graph.traversal().V());
+
+    assertThat(facet.getOptions(), contains(new Facet.DefaultOption("Language1", 2L)));
+
   }
 
   @Test

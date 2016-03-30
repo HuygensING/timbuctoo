@@ -112,10 +112,20 @@ public class FacetDescriptionFactoryTest {
   }
 
   @Test
-  public void createMultiValueFacetDescriptionCreatesAWithARelationCreatesADerivedMultiValueFacetDescription() {
+  public void createMultiValueFacetDescriptioWithARelationCreatesADerivedMultiValueFacetDescription() {
     FacetDescription description = instance.createMultiValueListFacetDescription(
             "facetName", "propertyName", "relationName");
 
     assertThat(description, is(instanceOf(RelatedMultiValueListFacetDescription.class)));
+  }
+
+  @Test
+  public void createDerivedKeywordDescriptionCreatesADerivedListFacetDescription() {
+    FacetDescription description = instance.createDerivedKeywordDescription(
+            "facetName", "relationName", "ww", "relations");
+
+    assertThat(description, is(instanceOf(DerivedListFacetDescription.class)));
+    verify(parserFactory).getParser(String.class);
+
   }
 }

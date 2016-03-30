@@ -65,6 +65,9 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
             facetDescriptionFactory.createListFacetDescription(
                     "dynamic_s_sources", String.class, "wwdocument_title", "hasDocumentSource"),
 
+            facetDescriptionFactory.createDerivedKeywordDescription(
+                    "dynamic_s_author_marital_status", "hasMaritalStatus", "ww", "isCreatedBy"),
+
             facetDescriptionFactory.createListFacetDescription(
                 "dynamic_s_author_gender", Gender.class, "wwperson_gender", "isCreatedBy"),
 

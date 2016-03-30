@@ -24,11 +24,17 @@ public class FacetDescriptionFactory {
     return new RelatedListFacetDescription(facetName, propertyName, parser, relations);
   }
 
+
   public FacetDescription createListFacetDescription(String facetName, Class<?> typeToParse, String propertyName,
                                                      String... relations) {
     return this.createListFacetDescription(facetName, parserFactory.getParser(typeToParse), propertyName, relations);
   }
 
+  private FacetDescription createDerivedListFacetDescription(String facetName, String relationName,
+                                                     Class<?> typeToParse, String propertyName, String... relations) {
+    return new DerivedListFacetDescription(facetName, propertyName, relationName,
+            parserFactory.getParser(typeToParse), relations);
+  }
   /**
    * A convenience method, for creating a {@code ListFacetDescription} for related keywords.
    */
@@ -36,6 +42,15 @@ public class FacetDescriptionFactory {
     String propertyName = String.format("%skeyword_value", projectPrefix);
     return this.createListFacetDescription(facetName, String.class, propertyName, relationName);
   }
+
+  public FacetDescription createDerivedKeywordDescription(String facetName, String relationName,
+                                                          final String projectPrefix, String... relations) {
+    String propertyName = String.format("%skeyword_value", projectPrefix);
+    return this.createDerivedListFacetDescription(facetName, relationName, String.class, propertyName, relations);
+  }
+
+
+
 
   public FacetDescription createDatableRangeFacetDescription(String facetName, String propertyName) {
     return new DatableRangeFacetDescription(facetName, propertyName);
@@ -58,4 +73,5 @@ public class FacetDescriptionFactory {
                                                                String... relations) {
     return new RelatedMultiValueListFacetDescription(facetName, propertyName, relations);
   }
+
 }
