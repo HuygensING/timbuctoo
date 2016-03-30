@@ -11,6 +11,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.util.Arrays;
 import java.util.function.BiPredicate;
 
+import static nl.knaw.huygens.timbuctoo.search.description.Property.derivedProperty;
 import static nl.knaw.huygens.timbuctoo.search.description.Property.localProperty;
 
 public class FullTextSearchDescription {
@@ -55,6 +56,14 @@ public class FullTextSearchDescription {
     String term = fullTextSearchParameter.getTerm();
     traversal.where(__.coalesce(prop1.getTraversal(), prop2.getTraversal())
                       .is(P.test(CONTAINS_STRING_PREDICATE, term)));
+  }
+
+  public static FullTextSearchDescription createDerivedFullTextSearchDescriptionWithBackupProperty(
+          String name, String propertyName, String backupPropertyName, String... relations) {
+    Property prop1 = derivedProperty(relations).withName(propertyName).build();
+    Property prop2 = derivedProperty(relations).withName(backupPropertyName).build();
+
+    return new FullTextSearchDescription(name, prop1, prop2);
   }
 
   private static class ContainsStringPredicate implements BiPredicate {
