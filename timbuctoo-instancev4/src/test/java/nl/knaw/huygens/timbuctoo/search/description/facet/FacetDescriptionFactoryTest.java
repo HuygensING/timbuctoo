@@ -112,12 +112,21 @@ public class FacetDescriptionFactoryTest {
   }
 
   @Test
-  public void createMultiValueFacetDescriptioWithARelationCreatesADerivedMultiValueFacetDescription() {
+  public void createMultiValueFacetDescriptionWithARelationCreatesADerivedMultiValueFacetDescription() {
     FacetDescription description = instance.createMultiValueListFacetDescription(
             "facetName", "propertyName", "relationName");
 
     assertThat(description, is(instanceOf(RelatedMultiValueListFacetDescription.class)));
   }
+
+  @Test
+  public void createDatableRangeFacetDescriptionWithARelationCreatesARelatedDatableRangeFacetDescription() {
+    FacetDescription description = instance.createDatableRangeFacetDescription(
+            "facetName", "propertyName", "relationName");
+
+    assertThat(description, is(instanceOf(RelatedDatableRangeFacetDescription.class)));
+  }
+
 
   @Test
   public void createDerivedKeywordDescriptionCreatesADerivedListFacetDescription() {

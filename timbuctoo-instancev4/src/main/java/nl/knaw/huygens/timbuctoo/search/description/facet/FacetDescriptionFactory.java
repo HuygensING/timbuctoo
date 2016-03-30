@@ -50,7 +50,10 @@ public class FacetDescriptionFactory {
   }
 
 
-
+  public FacetDescription createDatableRangeFacetDescription(String facetName, String propertyName,
+                                                             String... relations) {
+    return new RelatedDatableRangeFacetDescription(facetName, propertyName, relations);
+  }
 
   public FacetDescription createDatableRangeFacetDescription(String facetName, String propertyName) {
     return new DatableRangeFacetDescription(facetName, propertyName);

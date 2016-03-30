@@ -86,6 +86,12 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
             facetDescriptionFactory.createListFacetDescription(
                 "dynamic_s_author_gender", Gender.class, "wwperson_gender", "isCreatedBy"),
 
+            facetDescriptionFactory.createDatableRangeFacetDescription(
+                    "dynamic_i_author_deathDate", "wwperson_deathDate", "isCreatedBy"),
+
+            facetDescriptionFactory.createDatableRangeFacetDescription(
+                    "dynamic_i_author_birthDate", "wwperson_birthDate", "isCreatedBy"),
+
             facetDescriptionFactory.createListFacetDescription(
                     "dynamic_s_author_children", String.class, "wwperson_children", "isCreatedBy"),
 
