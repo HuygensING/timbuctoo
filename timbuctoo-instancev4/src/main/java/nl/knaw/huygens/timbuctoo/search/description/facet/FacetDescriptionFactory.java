@@ -30,8 +30,8 @@ public class FacetDescriptionFactory {
     return this.createListFacetDescription(facetName, parserFactory.getParser(typeToParse), propertyName, relations);
   }
 
-  private FacetDescription createDerivedListFacetDescription(String facetName, String relationName,
-                                                     Class<?> typeToParse, String propertyName, String... relations) {
+  public FacetDescription createDerivedListFacetDescription(String facetName, String relationName,
+                                                      Class<?> typeToParse, String propertyName, String... relations) {
     return new DerivedListFacetDescription(facetName, propertyName, relationName,
             parserFactory.getParser(typeToParse), relations);
   }
