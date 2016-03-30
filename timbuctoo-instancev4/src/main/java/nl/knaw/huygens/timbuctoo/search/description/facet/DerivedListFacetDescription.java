@@ -21,22 +21,32 @@ public class DerivedListFacetDescription implements FacetDescription {
   private final String propertyName;
   private final PropertyParser parser;
   private final String[] relations;
-  private final String relationName;
+  private final String[] relationNames;
 
+  private DerivedListFacetDescription(String facetName, String propertyName, PropertyParser parser,
+                                      String[] relationNames, String... relations) {
 
-  public DerivedListFacetDescription(String facetName, String propertyName, String relationName,
-                                     PropertyParser parser, String... relations) {
     this.facetName = facetName;
     this.propertyName = propertyName;
     this.parser = parser;
     this.relations = relations;
-    this.relationName = relationName;
+    this.relationNames = relationNames;
+  }
+
+  public DerivedListFacetDescription(String facetName, String propertyName, String relationName,
+                                     PropertyParser parser, String... relations) {
+    this(facetName, propertyName, parser, new String[]{relationName}, relations);
+  }
+
+  public DerivedListFacetDescription(String facetName, String propertyName, List<String> relationNames,
+                                     PropertyParser parser, String... relations) {
+    this(facetName, propertyName, parser, relationNames.toArray(new String[relationNames.size()]), relations);
   }
 
   @Override
   public Facet getFacet(GraphTraversal<Vertex, Vertex> searchResult) {
     Map<String, Long> counts =
-            searchResult.as("a").bothE(relations).otherV().bothE(relationName).inV().has(propertyName).as("b")
+            searchResult.as("a").bothE(relations).otherV().bothE(relationNames).inV().has(propertyName).as("b")
                     .dedup("a", "b").<String>groupCount().by(propertyName).next();
 
     List<Facet.Option> options = counts.entrySet().stream()
@@ -67,7 +77,7 @@ public class DerivedListFacetDescription implements FacetDescription {
     }
 
     graphTraversal.where(__.bothE(relations).otherV()
-            .bothE(relationName).otherV()
+            .bothE(relationNames).otherV()
             .values(propertyName)
             .map(value -> parser.parse((String) value.get()))
             .is(within(values)));
