@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static nl.knaw.huygens.timbuctoo.search.description.Property.derivedProperty;
 import static nl.knaw.huygens.timbuctoo.search.description.Property.localProperty;
 import static nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription.newSortFieldDescription;
 
@@ -74,9 +75,20 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
             .withDefaultValue("")
             .withProperty(localProperty()
                     .withName("wwdocument_title"))
+            .build(),
+        newSortFieldDescription()
+            .withName("dynamic_sort_creator")
+            .withDefaultValue("")
+            .withProperty(derivedProperty("isCreatedBy")
+                    .withName("wwperson_names")
+                    .withParser(propertyParserFactory.getParser(PersonNames.class)))
+            .withBackupProperty(derivedProperty("isCreatedBy")
+                    .withName("wwperson_tempName"))
             .build()
     );
   }
+
+
 
   private List<FacetDescription> createFacetDescriptions(FacetDescriptionFactory facetDescriptionFactory) {
     return Lists.newArrayList(
