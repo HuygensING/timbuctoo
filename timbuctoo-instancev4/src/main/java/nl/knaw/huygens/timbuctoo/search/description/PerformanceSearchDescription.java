@@ -66,7 +66,7 @@ public abstract class PerformanceSearchDescription extends AbstractSearchDescrip
 
       return vertexTraverser;
     }).forEachRemaining(vertexTraverser -> {
-      if(refs.size() < 50) { // FIXME: introduce limit and offset
+      if(refs.size() < 50) { // FIXME: move responsibility to GET response and introduce limit and offset there
         refs.add(createRef(vertexTraverser.get()));
       }
     });
