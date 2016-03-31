@@ -6,6 +6,7 @@ import com.google.common.collect.Range;
 import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
+import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.DatableRangeFacetGetter;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.LocalPropertyValueGetter;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.DateRangeFacetValue;
 import org.apache.commons.lang.StringUtils;
@@ -26,15 +27,16 @@ import java.util.Optional;
 import java.util.Set;
 
 public class DatableRangeFacetDescription implements FacetDescription {
-  public static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd");
   public static final SimpleDateFormat FILTER_FORMAT = new SimpleDateFormat("yyyy");
   public static final Logger LOG = LoggerFactory.getLogger(DatableRangeFacetDescription.class);
   private final String facetName;
   private final String propertyName;
+  private final DatableRangeFacetGetter datableRangeFacetGetter;
 
   public DatableRangeFacetDescription(String facetName, String propertyName) {
     this.facetName = facetName;
     this.propertyName = propertyName;
+    this.datableRangeFacetGetter = new DatableRangeFacetGetter();
   }
 
   @Override
@@ -44,24 +46,7 @@ public class DatableRangeFacetDescription implements FacetDescription {
 
   @Override
   public Facet getFacet(Map<String, Set<Vertex>> values) {
-    long lowerLimit = 0;
-    long upperLimit = 0;
-
-    for (String key : values.keySet()) {
-      Datable datable = getDatable(key);
-      if (datable.isValid()) {
-        long fromDate = Long.valueOf(FORMAT.format(datable.getFromDate()));
-        long toDate = Long.valueOf(FORMAT.format(datable.getFromDate()));
-        if (toDate > upperLimit) {
-          upperLimit = toDate;
-        }
-        if (lowerLimit == 0 || fromDate < lowerLimit) {
-          lowerLimit = fromDate;
-        }
-      }
-    }
-
-    return new Facet(facetName, Lists.newArrayList(new Facet.RangeOption(lowerLimit, upperLimit)), "RANGE");
+    return datableRangeFacetGetter.getFacet(facetName, values);
   }
 
   private Datable getDatable(String datableAsString) {
