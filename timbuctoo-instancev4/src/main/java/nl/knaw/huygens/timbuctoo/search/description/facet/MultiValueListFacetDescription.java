@@ -96,6 +96,15 @@ class MultiValueListFacetDescription implements FacetDescription {
 
   @Override
   public List<String> getValues(Vertex vertex) {
+    if(vertex.property(propertyName).isPresent()) {
+      final String value = (String) vertex.property(propertyName).value();
+      try {
+        return (List<String>) mapper.readValue(value, List.class);
+      } catch(IOException e) {
+        LOG.error("'{}' is not a valid multi valued field", value);
+        return null;
+      }
+    }
     return null;
   }
 }

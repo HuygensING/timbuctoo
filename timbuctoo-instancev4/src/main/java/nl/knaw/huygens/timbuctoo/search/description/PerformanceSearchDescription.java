@@ -44,11 +44,13 @@ public abstract class PerformanceSearchDescription extends AbstractSearchDescrip
 
     List<EntityRef> refs = new ArrayList<>();
     Map<String, Map<String, Set<Vertex>>> facetCounts = new HashMap<>();
+    Map<String, FacetDescription> facetDescriptionMap = new HashMap<>();
 
     searchResult.map(vertexTraverser -> {
       getFacetDescriptions().stream().forEach(facetDescription -> {
         if(!facetCounts.containsKey(facetDescription.getName())) {
           facetCounts.put(facetDescription.getName(), new HashMap<>());
+          facetDescriptionMap.put(facetDescription.getName(), facetDescription);
         }
         final List<String> facetValues = facetDescription.getValues(vertexTraverser.get());
         if(facetValues != null) {
@@ -61,18 +63,25 @@ public abstract class PerformanceSearchDescription extends AbstractSearchDescrip
             bag.add(vertexTraverser.get());
           });
         }
-
       });
-
       return vertexTraverser;
-    }).forEachRemaining(vertexTraverser -> {
+    }).toList();
+
+    facetCounts.forEach((key, values) -> {
+      System.out.println(key + ": " + facetDescriptionMap.get(key).getClass().getName());
+      values.forEach((valKey, bag) -> {
+        System.out.println("  " + valKey + ": " + bag.size());
+      });
+      System.out.println("===");
+    });
+    /*.forEachRemaining(vertexTraverser -> {
       if(refs.size() < 50) { // FIXME: move responsibility to GET response and introduce limit and offset there
         refs.add(createRef(vertexTraverser.get()));
       }
-    });
+    })*/;
 
 
-    System.out.println(facetCounts);
+//    System.out.println(facetCounts);
     // GraphTraversal<Vertex, Vertex> refsClone = searchResult.asAdmin().clone();
     // List<EntityRef> refs = refsClone.map(vertex -> createRef(vertex.get())).toList();
 

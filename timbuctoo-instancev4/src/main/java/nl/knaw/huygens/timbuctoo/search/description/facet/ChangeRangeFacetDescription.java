@@ -105,6 +105,9 @@ class ChangeRangeFacetDescription implements FacetDescription {
 
   @Override
   public List<String> getValues(Vertex vertex) {
+    if(vertex.property(propertyName).isPresent()) {
+      return Lists.newArrayList((String) vertex.property(propertyName).value());
+    }
     return null;
   }
 

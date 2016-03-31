@@ -88,7 +88,9 @@ public class RelatedListFacetDescription implements FacetDescription {
   public List<String> getValues(Vertex vertex) {
     List<String> result = new ArrayList<>();
     vertex.vertices(Direction.BOTH, relations).forEachRemaining(targetVertex -> {
-      result.add((String) targetVertex.property(propertyName).value());
+      if(targetVertex.property(propertyName).isPresent()) {
+        result.add((String) targetVertex.property(propertyName).value());
+      }
     });
     return result;
   }

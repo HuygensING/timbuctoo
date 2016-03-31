@@ -69,9 +69,8 @@ public class ListFacetDescription implements FacetDescription {
 
   @Override
   public List<String> getValues(Vertex vertex) {
-    String value = parser.parse((String) vertex.property(propertyName).value());
-    if(value != null) {
-      return Lists.newArrayList(value);
+    if(vertex.property(propertyName).isPresent()) {
+      return Lists.newArrayList((String) vertex.property(propertyName).value());
     }
     return null;
   }

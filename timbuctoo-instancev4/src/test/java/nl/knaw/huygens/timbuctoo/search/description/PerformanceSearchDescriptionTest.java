@@ -69,7 +69,7 @@ public class PerformanceSearchDescriptionTest {
 
   @Test
   public void testOriginal() {
-    WwPersonSearchDescription instance = new WwPersonSearchDescription(propertyDescriptorFactory, facetDescriptionFactory);
+    WwDocumentSearchDescription instance = new WwDocumentSearchDescription(propertyDescriptorFactory, facetDescriptionFactory);
     long before = System.currentTimeMillis();
     instance.execute(wrapper, new SearchRequestV2_1());
     long timed = System.currentTimeMillis() - before;
@@ -79,12 +79,19 @@ public class PerformanceSearchDescriptionTest {
 
   @Test
   public void testPerformance() {
-    PerformanceWwPersonSearchDescription instance = new PerformanceWwPersonSearchDescription(
+    PerformanceWwDocumentSearchDescription instance = new PerformanceWwDocumentSearchDescription(
             propertyDescriptorFactory, facetDescriptionFactory);
+    PerformanceWwPersonSearchDescription instance2 = new PerformanceWwPersonSearchDescription(
+            propertyDescriptorFactory, facetDescriptionFactory
+    );
+
     long before = System.currentTimeMillis();
     instance.execute(wrapper, new SearchRequestV2_1());
     long timed = System.currentTimeMillis() - before;
-    assertThat(timed).isGreaterThan(0);
-    System.out.println(timed);
+    System.out.println("DOCUMENT TIME: " + timed);
+/*    before = System.currentTimeMillis();
+    instance2.execute(wrapper, new SearchRequestV2_1());
+    timed = System.currentTimeMillis() - before;
+    System.out.println("PERSON TIME: " + timed);*/
   }
 }

@@ -95,7 +95,9 @@ public class DerivedListFacetDescription implements FacetDescription {
     List<String> result = new ArrayList<>();
     vertex.vertices(Direction.BOTH, relations).forEachRemaining(targetVertex -> {
       targetVertex.vertices(Direction.BOTH, relationNames).forEachRemaining(finalVertex -> {
-        result.add((String) finalVertex.property(propertyName).value());
+        if(finalVertex.property(propertyName).isPresent()) {
+          result.add((String) finalVertex.property(propertyName).value());
+        }
       });
     });
     return result;

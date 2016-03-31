@@ -73,6 +73,7 @@ class WwPersonLanguageFacetDescription implements FacetDescription {
 
   @Override
   public List<String> getValues(Vertex vertex) {
+
     return null;
   }
 }

@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,6 +102,18 @@ public class RelatedMultiValueListFacetDescription implements FacetDescription {
 
   @Override
   public List<String> getValues(Vertex vertex) {
-    return null;
+    List<String> result = new ArrayList<>();
+    vertex.vertices(Direction.BOTH, relations).forEachRemaining(targetVertex -> {
+      if(targetVertex.property(propertyName).isPresent()) {
+        final String value = (String) targetVertex.property(propertyName).value();
+        try {
+          List<String> values = (List<String>) mapper.readValue(value, List.class);
+          values.forEach(result::add);
+        } catch (IOException e) {
+          LOG.error("'{}' is not a valid multi valued field", value);
+        }
+      }
+    });
+    return result;
   }
 }

@@ -112,6 +112,8 @@ public class DatableRangeFacetDescription implements FacetDescription {
 
   @Override
   public List<String> getValues(Vertex vertex) {
-    return null;
-  }
+    if(vertex.property(propertyName).isPresent()) {
+      return Lists.newArrayList((String) vertex.property(propertyName).value());
+    }
+    return null;  }
 }

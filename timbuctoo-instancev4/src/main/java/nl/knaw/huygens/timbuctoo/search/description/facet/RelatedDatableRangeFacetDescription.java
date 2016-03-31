@@ -11,12 +11,14 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -116,6 +118,12 @@ public class RelatedDatableRangeFacetDescription implements FacetDescription {
 
   @Override
   public List<String> getValues(Vertex vertex) {
-    return null;
+    List<String> result = new ArrayList<>();
+    vertex.vertices(Direction.BOTH, relations).forEachRemaining(targetVertex -> {
+      if(targetVertex.property(propertyName).isPresent()) {
+        result.add((String) targetVertex.property(propertyName).value());
+      }
+    });
+    return result;
   }
 }
