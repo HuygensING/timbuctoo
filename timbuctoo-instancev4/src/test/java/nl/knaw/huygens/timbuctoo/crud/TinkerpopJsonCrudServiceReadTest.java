@@ -598,7 +598,7 @@ public class TinkerpopJsonCrudServiceReadTest {
     String resultJson = instance.get("wwpersons", id).toString();
 
     JsonDiffer differ = jsonDiffer()
-      .handleArraysWith("ALL_MATCH_ONE_OF", (jsonNode) -> jsnO("possibilities", jsonNode, "keyProp", jsn("rev")))
+      .handleArraysWith("ALL_MATCH_ONE_OF", j -> jsnO("possibilities", j, "keyProp", jsn("rev")))
       .build();
 
     DiffResult diffResult = differ.diff(resultJson, jsnO(
