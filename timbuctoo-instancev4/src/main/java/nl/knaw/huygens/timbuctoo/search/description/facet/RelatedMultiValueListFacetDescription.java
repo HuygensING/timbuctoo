@@ -45,16 +45,6 @@ public class RelatedMultiValueListFacetDescription implements FacetDescription {
   }
 
   @Override
-  public String getName() {
-    return facetName;
-  }
-
-  @Override
-  public Facet getFacet(Map<String, Set<Vertex>> values) {
-    return listFacetGetter.getFacet(facetName, values);
-  }
-
-  @Override
   public void filter(GraphTraversal<Vertex, Vertex> graphTraversal, List<FacetValue> facets) {
     Optional<FacetValue> value = facets.stream()
             .filter(facetValue -> Objects.equals(facetValue.getName(), facetName))
@@ -72,6 +62,16 @@ public class RelatedMultiValueListFacetDescription implements FacetDescription {
         }
       }
     }
+  }
+
+  @Override
+  public String getName() {
+    return facetName;
+  }
+
+  @Override
+  public Facet getFacet(Map<String, Set<Vertex>> values) {
+    return listFacetGetter.getFacet(facetName, values);
   }
 
   @Override

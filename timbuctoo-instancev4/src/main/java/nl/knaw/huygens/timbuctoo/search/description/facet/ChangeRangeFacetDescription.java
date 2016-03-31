@@ -40,40 +40,16 @@ class ChangeRangeFacetDescription implements FacetDescription {
     objectMapper = new ObjectMapper();
   }
 
-  @Override
-  public String getName() {
-    return facetName;
-  }
-
-  @Override
-  public Facet getFacet(Map<String, Set<Vertex>> values) {
-
-    long lowerLimit = 0;
-    long upperLimit = 0;
-
-    for (String key : values.keySet()) {
-      try {
-        LocalDate localDate = getChangeLocalDate(key);
-        long dateStamp = Long.valueOf(FORMATTER.format(localDate));
-        if (dateStamp > upperLimit) {
-          upperLimit = dateStamp;
-        }
-        if (lowerLimit == 0 || dateStamp < lowerLimit) {
-          lowerLimit = dateStamp;
-        }
-      } catch (IOException e) {
-        LOG.error("'{}' is not a valid change.", key);
-      }
-    }
-
-    return new Facet(facetName, Lists.newArrayList(new Facet.RangeOption(lowerLimit, upperLimit)), "RANGE");
+  private LocalDate getChangeLocalDate(Object changeObjectString) throws IOException {
+    Change change = objectMapper.readValue("" + changeObjectString, Change.class);
+    return Instant.ofEpochMilli(change.getTimeStamp()).atZone(ZoneId.systemDefault()).toLocalDate();
   }
 
   @Override
   @SuppressWarnings("unchecked")
   public void filter(GraphTraversal<Vertex, Vertex> graphTraversal, List<FacetValue> facets) {
     Optional<FacetValue> first =
-      facets.stream().filter(facetValue -> Objects.equals(facetValue.getName(), facetName)).findFirst();
+            facets.stream().filter(facetValue -> Objects.equals(facetValue.getName(), facetName)).findFirst();
 
     if (!first.isPresent()) {
       return;
@@ -105,12 +81,36 @@ class ChangeRangeFacetDescription implements FacetDescription {
   }
 
   @Override
-  public List<String> getValues(Vertex vertex) {
-    return LocalPropertyValueGetter.getValues(vertex, propertyName);
+  public String getName() {
+    return facetName;
   }
 
-  private LocalDate getChangeLocalDate(Object changeObjectString) throws IOException {
-    Change change = objectMapper.readValue("" + changeObjectString, Change.class);
-    return Instant.ofEpochMilli(change.getTimeStamp()).atZone(ZoneId.systemDefault()).toLocalDate();
+  @Override
+  public Facet getFacet(Map<String, Set<Vertex>> values) {
+
+    long lowerLimit = 0;
+    long upperLimit = 0;
+
+    for (String key : values.keySet()) {
+      try {
+        LocalDate localDate = getChangeLocalDate(key);
+        long dateStamp = Long.valueOf(FORMATTER.format(localDate));
+        if (dateStamp > upperLimit) {
+          upperLimit = dateStamp;
+        }
+        if (lowerLimit == 0 || dateStamp < lowerLimit) {
+          lowerLimit = dateStamp;
+        }
+      } catch (IOException e) {
+        LOG.error("'{}' is not a valid change.", key);
+      }
+    }
+
+    return new Facet(facetName, Lists.newArrayList(new Facet.RangeOption(lowerLimit, upperLimit)), "RANGE");
+  }
+
+  @Override
+  public List<String> getValues(Vertex vertex) {
+    return LocalPropertyValueGetter.getValues(vertex, propertyName);
   }
 }

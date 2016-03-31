@@ -50,16 +50,6 @@ public class DerivedListFacetDescription implements FacetDescription {
   }
 
   @Override
-  public String getName() {
-    return facetName;
-  }
-
-  @Override
-  public Facet getFacet(Map<String, Set<Vertex>> values) {
-    return listFacetGetter.getFacet(facetName, values);
-  }
-
-  @Override
   public void filter(GraphTraversal<Vertex, Vertex> graphTraversal, List<FacetValue> facets) {
     Optional<FacetValue> first = facets.stream()
             .filter(facetValue -> Objects.equals(facetValue.getName(), facetName))
@@ -84,6 +74,16 @@ public class DerivedListFacetDescription implements FacetDescription {
             .values(propertyName)
             .map(value -> parser.parse((String) value.get()))
             .is(within(values)));
+  }
+
+  @Override
+  public String getName() {
+    return facetName;
+  }
+
+  @Override
+  public Facet getFacet(Map<String, Set<Vertex>> values) {
+    return listFacetGetter.getFacet(facetName, values);
   }
 
   @Override

@@ -40,20 +40,10 @@ class MultiValueListFacetDescription implements FacetDescription {
   }
 
   @Override
-  public String getName() {
-    return facetName;
-  }
-
-  @Override
-  public Facet getFacet(Map<String, Set<Vertex>> values) {
-    return listFacetGetter.getFacet(facetName, values);
-  }
-
-  @Override
   public void filter(GraphTraversal<Vertex, Vertex> graphTraversal, List<FacetValue> facetValues) {
     Optional<FacetValue> first = facetValues.stream()
-                                            .filter(facetValue -> Objects.equals(facetValue.getName(), facetName))
-                                            .findFirst();
+            .filter(facetValue -> Objects.equals(facetValue.getName(), facetName))
+            .findFirst();
 
     if (!first.isPresent()) {
       return;
@@ -70,11 +60,21 @@ class MultiValueListFacetDescription implements FacetDescription {
     }
 
     graphTraversal
-      .where(__.<String>has(propertyName, P.test((o1, o2) -> {
-        return o1 instanceof String && o2 instanceof List &&
-          ((List<?>) o2).stream().anyMatch(value -> ((String) o1).contains("\"" + value + "\""));
-      }, values)));
+            .where(__.<String>has(propertyName, P.test((o1, o2) -> {
+              return o1 instanceof String && o2 instanceof List &&
+                      ((List<?>) o2).stream().anyMatch(value -> ((String) o1).contains("\"" + value + "\""));
+            }, values)));
 
+  }
+
+  @Override
+  public String getName() {
+    return facetName;
+  }
+
+  @Override
+  public Facet getFacet(Map<String, Set<Vertex>> values) {
+    return listFacetGetter.getFacet(facetName, values);
   }
 
   @Override

@@ -52,16 +52,6 @@ public class RelatedDatableRangeFacetDescription implements FacetDescription {
   }
 
   @Override
-  public String getName() {
-    return facetName;
-  }
-
-  @Override
-  public Facet getFacet(Map<String, Set<Vertex>> values) {
-    return datableRangeFacetGetter.getFacet(facetName, values);
-  }
-
-  @Override
   @SuppressWarnings("unchecked")
   public void filter(GraphTraversal<Vertex, Vertex> graphTraversal, List<FacetValue> facets) {
     Optional<FacetValue> first = facets.stream()
@@ -99,6 +89,16 @@ public class RelatedDatableRangeFacetDescription implements FacetDescription {
       LOG.error("Cannot parse date", e);
     }
 
+  }
+
+  @Override
+  public String getName() {
+    return facetName;
+  }
+
+  @Override
+  public Facet getFacet(Map<String, Set<Vertex>> values) {
+    return datableRangeFacetGetter.getFacet(facetName, values);
   }
 
   @Override

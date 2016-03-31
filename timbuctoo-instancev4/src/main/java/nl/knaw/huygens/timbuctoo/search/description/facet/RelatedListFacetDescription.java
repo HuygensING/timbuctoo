@@ -43,20 +43,10 @@ public class RelatedListFacetDescription implements FacetDescription {
   }
 
   @Override
-  public String getName() {
-    return facetName;
-  }
-
-  @Override
-  public Facet getFacet(Map<String, Set<Vertex>> values) {
-    return listFacetGetter.getFacet(facetName, values);
-  }
-
-  @Override
   public void filter(GraphTraversal<Vertex, Vertex> graphTraversal, List<FacetValue> facets) {
     Optional<FacetValue> value = facets.stream()
-                                       .filter(facetValue -> Objects.equals(facetValue.getName(), facetName))
-                                       .findFirst();
+            .filter(facetValue -> Objects.equals(facetValue.getName(), facetName))
+            .findFirst();
 
     if (value.isPresent()) {
       FacetValue facetValue = value.get();
@@ -66,10 +56,20 @@ public class RelatedListFacetDescription implements FacetDescription {
           graphTraversal.where(__.bothE(relations).otherV().has(propertyName, P.test((o1, o2) -> {
             List<String> possibleValues = (List<String>) o2;
             return possibleValues.contains(parser.parse("" + o1));
-          }, values)))  ;
+          }, values)));
         }
       }
     }
+  }
+
+  @Override
+  public String getName() {
+    return facetName;
+  }
+
+  @Override
+  public Facet getFacet(Map<String, Set<Vertex>> values) {
+    return listFacetGetter.getFacet(facetName, values);
   }
 
   @Override
