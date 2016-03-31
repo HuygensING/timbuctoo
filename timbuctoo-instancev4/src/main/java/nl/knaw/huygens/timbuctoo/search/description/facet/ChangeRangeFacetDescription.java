@@ -72,7 +72,26 @@ class ChangeRangeFacetDescription implements FacetDescription {
 
   @Override
   public Facet getFacet(Map<String, Set<Vertex>> values) {
-    return null;
+
+    long lowerLimit = 0;
+    long upperLimit = 0;
+
+    for (String key : values.keySet()) {
+      try {
+        LocalDate localDate = getChangeLocalDate(key);
+        long dateStamp = Long.valueOf(FORMATTER.format(localDate));
+        if (dateStamp > upperLimit) {
+          upperLimit = dateStamp;
+        }
+        if (lowerLimit == 0 || dateStamp < lowerLimit) {
+          lowerLimit = dateStamp;
+        }
+      } catch (IOException e) {
+        LOG.error("'{}' is not a valid change.", key);
+      }
+    }
+
+    return new Facet(facetName, Lists.newArrayList(new Facet.RangeOption(lowerLimit, upperLimit)), "RANGE");
   }
 
   @Override

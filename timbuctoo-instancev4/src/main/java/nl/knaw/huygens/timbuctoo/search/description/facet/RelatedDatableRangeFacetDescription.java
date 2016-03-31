@@ -81,7 +81,24 @@ public class RelatedDatableRangeFacetDescription implements FacetDescription {
 
   @Override
   public Facet getFacet(Map<String, Set<Vertex>> values) {
-    return null;
+    long lowerLimit = 0;
+    long upperLimit = 0;
+
+    for (String key : values.keySet()) {
+      Datable datable = getDatable(key);
+      if (datable.isValid()) {
+        long fromDate = Long.valueOf(FORMAT.format(datable.getFromDate()));
+        long toDate = Long.valueOf(FORMAT.format(datable.getFromDate()));
+        if (toDate > upperLimit) {
+          upperLimit = toDate;
+        }
+        if (lowerLimit == 0 || fromDate < lowerLimit) {
+          lowerLimit = fromDate;
+        }
+      }
+    }
+
+    return new Facet(facetName, Lists.newArrayList(new Facet.RangeOption(lowerLimit, upperLimit)), "RANGE");
   }
 
   @Override

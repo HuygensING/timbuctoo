@@ -19,6 +19,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import static java.util.stream.Collectors.toList;
+
 public abstract class PerformanceSearchDescription extends AbstractSearchDescription {
 
   @Override
@@ -68,22 +70,10 @@ public abstract class PerformanceSearchDescription extends AbstractSearchDescrip
     }).toList();
 
 
-    List<Facet> facets = new ArrayList<>();
-    facetCounts.forEach((key, values) -> {
-      Facet facet = facetDescriptionMap.get(key).getFacet(values);
-      facets.add(facet);
+    List<Facet> facets = facetCounts.entrySet().stream()
+            .map((entry) -> facetDescriptionMap.get(entry.getKey()).getFacet(entry.getValue()))
+            .collect(toList());
 
-      System.out.println(key);
-      if (facet == null) {
-        values.forEach((valKey, bag) -> {
-          System.out.println("  " + valKey + ": " + bag.size());
-        });
-      } else {
-        facet.getOptions().forEach(System.out::println);
-      }
-      System.out.println("===");
-    });
-
-    return new SearchResult(refs, this, new ArrayList<>());
+    return new SearchResult(refs, this, facets);
   }
 }
