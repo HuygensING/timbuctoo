@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
 import nl.knaw.huygens.timbuctoo.search.description.facet.Facet.DefaultOption;
 import nl.knaw.huygens.timbuctoo.search.description.facet.Facet.Option;
+import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.ListFacetGetter;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.MultiValuePropertyGetter;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -30,10 +31,12 @@ import static java.util.stream.Collectors.toList;
 class MultiValueListFacetDescription implements FacetDescription {
   private final String facetName;
   private final String propertyName;
+  private final ListFacetGetter listFacetGetter;
 
   public MultiValueListFacetDescription(String facetName, String propertyName) {
     this.facetName = facetName;
     this.propertyName = propertyName;
+    this.listFacetGetter = new ListFacetGetter();
   }
 
   @Override
@@ -43,11 +46,7 @@ class MultiValueListFacetDescription implements FacetDescription {
 
   @Override
   public Facet getFacet(Map<String, Set<Vertex>> values) {
-    List<Facet.Option> options = values.entrySet().stream()
-            .map(entry -> new Facet.DefaultOption(entry.getKey(), entry.getValue().size()))
-            .collect(toList());
-
-    return new Facet(facetName, options, "LIST");
+    return listFacetGetter.getFacet(facetName, values);
   }
 
   @Override

@@ -597,10 +597,10 @@ public class TinkerpopJsonCrudServiceReadTest {
       "@relations", JsonBuilder.jsnO(
         "isPseudonymOf", JsonBuilder.jsnA(
           JsonBuilder.jsnO(
-            "rev", jsn(2)
+            "rev", jsn(1)
           ),
           JsonBuilder.jsnO(
-            "rev", jsn(1)
+            "rev", jsn(2)
           )
         )
       )

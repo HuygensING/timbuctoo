@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.search.description.facet;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
+import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.ListFacetGetter;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.RelatedPropertyValueGetter;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -30,6 +31,7 @@ public class RelatedListFacetDescription implements FacetDescription {
   private final String propertyName;
   private final PropertyParser parser;
   private final String[] relations;
+  private final ListFacetGetter listFacetGetter;
 
   public RelatedListFacetDescription(String facetName, String propertyName, PropertyParser parser,
                                      String... relations) {
@@ -37,6 +39,7 @@ public class RelatedListFacetDescription implements FacetDescription {
     this.propertyName = propertyName;
     this.parser = parser;
     this.relations = relations;
+    this.listFacetGetter = new ListFacetGetter(parser);
   }
 
   @Override
@@ -46,11 +49,7 @@ public class RelatedListFacetDescription implements FacetDescription {
 
   @Override
   public Facet getFacet(Map<String, Set<Vertex>> values) {
-    List<Facet.Option> options = values.entrySet().stream()
-            .map(entry -> new Facet.DefaultOption(parser.parse(entry.getKey()), entry.getValue().size()))
-            .collect(toList());
-
-    return new Facet(facetName, options, "LIST");
+    return listFacetGetter.getFacet(facetName, values);
   }
 
   @Override

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
+import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.ListFacetGetter;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.MultiValuePropertyGetter;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -34,12 +35,13 @@ public class RelatedMultiValueListFacetDescription implements FacetDescription {
   private final String facetName;
   private final String propertyName;
   private final String[] relations;
-
+  private final ListFacetGetter listFacetGetter;
 
   public RelatedMultiValueListFacetDescription(String facetName, String propertyName, String... relations) {
     this.facetName = facetName;
     this.propertyName = propertyName;
     this.relations = relations;
+    this.listFacetGetter = new ListFacetGetter();
   }
 
   @Override
@@ -49,11 +51,7 @@ public class RelatedMultiValueListFacetDescription implements FacetDescription {
 
   @Override
   public Facet getFacet(Map<String, Set<Vertex>> values) {
-    List<Facet.Option> options = values.entrySet().stream()
-            .map(entry -> new Facet.DefaultOption(entry.getKey(), entry.getValue().size()))
-            .collect(toList());
-
-    return new Facet(facetName, options, "LIST");
+    return listFacetGetter.getFacet(facetName, values);
   }
 
   @Override
