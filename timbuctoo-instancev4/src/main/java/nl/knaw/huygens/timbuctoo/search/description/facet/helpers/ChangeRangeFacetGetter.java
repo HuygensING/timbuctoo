@@ -46,5 +46,6 @@ public class ChangeRangeFacetGetter implements FacetGetter {
       }
     }
 
-    return new Facet(facetName, Lists.newArrayList(new Facet.RangeOption(lowerLimit, upperLimit)), "RANGE");  }
+    return new Facet(facetName, Lists.newArrayList(new Facet.RangeOption(lowerLimit, upperLimit)), "RANGE");
+  }
 }
