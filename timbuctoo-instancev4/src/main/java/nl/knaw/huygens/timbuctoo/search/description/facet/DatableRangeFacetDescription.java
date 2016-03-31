@@ -1,12 +1,12 @@
 package nl.knaw.huygens.timbuctoo.search.description.facet;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.DatableRangeFacetGetter;
+import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.FacetGetter;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.LocalPropertyValueGetter;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.DateRangeFacetValue;
 import org.apache.commons.lang.StringUtils;
@@ -31,12 +31,12 @@ public class DatableRangeFacetDescription implements FacetDescription {
   public static final Logger LOG = LoggerFactory.getLogger(DatableRangeFacetDescription.class);
   private final String facetName;
   private final String propertyName;
-  private final DatableRangeFacetGetter datableRangeFacetGetter;
+  private final FacetGetter facetGetter;
 
   public DatableRangeFacetDescription(String facetName, String propertyName) {
     this.facetName = facetName;
     this.propertyName = propertyName;
-    this.datableRangeFacetGetter = new DatableRangeFacetGetter();
+    this.facetGetter = new DatableRangeFacetGetter();
   }
 
   private Datable getDatable(String datableAsString) {
@@ -90,7 +90,7 @@ public class DatableRangeFacetDescription implements FacetDescription {
 
   @Override
   public Facet getFacet(Map<String, Set<Vertex>> values) {
-    return datableRangeFacetGetter.getFacet(facetName, values);
+    return facetGetter.getFacet(facetName, values);
   }
 
   @Override

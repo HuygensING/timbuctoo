@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.search.description.facet;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
+import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.FacetGetter;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.ListFacetGetter;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.LocalPropertyValueGetter;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
@@ -17,20 +18,18 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import static java.util.stream.Collectors.toList;
-
 public class ListFacetDescription implements FacetDescription {
 
   private final String facetName;
   private final String propertyName;
   private final PropertyParser parser;
-  private final ListFacetGetter listFacetGetter;
+  private final FacetGetter facetGetter;
 
   public ListFacetDescription(String facetName, String propertyName, PropertyParser parser) {
     this.facetName = facetName;
     this.propertyName = propertyName;
     this.parser = parser;
-    this.listFacetGetter = new ListFacetGetter(parser);
+    this.facetGetter = new ListFacetGetter(parser);
   }
 
   @Override
@@ -61,7 +60,7 @@ public class ListFacetDescription implements FacetDescription {
 
   @Override
   public Facet getFacet(Map<String, Set<Vertex>> values) {
-    return listFacetGetter.getFacet(facetName, values);
+    return facetGetter.getFacet(facetName, values);
   }
 
   @Override

@@ -1,9 +1,8 @@
 package nl.knaw.huygens.timbuctoo.search.description.facet;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
+import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.FacetGetter;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.ListFacetGetter;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.MultiValuePropertyGetter;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
@@ -12,20 +11,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * A facet description that creates a "LIST" facet with multi-valued properties from connected vertices.
@@ -35,13 +27,13 @@ public class RelatedMultiValueListFacetDescription implements FacetDescription {
   private final String facetName;
   private final String propertyName;
   private final String[] relations;
-  private final ListFacetGetter listFacetGetter;
+  private final FacetGetter facetGetter;
 
   public RelatedMultiValueListFacetDescription(String facetName, String propertyName, String... relations) {
     this.facetName = facetName;
     this.propertyName = propertyName;
     this.relations = relations;
-    this.listFacetGetter = new ListFacetGetter();
+    this.facetGetter = new ListFacetGetter();
   }
 
   @Override
@@ -71,7 +63,7 @@ public class RelatedMultiValueListFacetDescription implements FacetDescription {
 
   @Override
   public Facet getFacet(Map<String, Set<Vertex>> values) {
-    return listFacetGetter.getFacet(facetName, values);
+    return facetGetter.getFacet(facetName, values);
   }
 
   @Override

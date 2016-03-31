@@ -1,11 +1,8 @@
 package nl.knaw.huygens.timbuctoo.search.description.facet;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
-import nl.knaw.huygens.timbuctoo.search.description.facet.Facet.DefaultOption;
-import nl.knaw.huygens.timbuctoo.search.description.facet.Facet.Option;
+import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.FacetGetter;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.ListFacetGetter;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.MultiValuePropertyGetter;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
@@ -13,30 +10,22 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.counting;
-import static java.util.stream.Collectors.toList;
 
 class MultiValueListFacetDescription implements FacetDescription {
   private final String facetName;
   private final String propertyName;
-  private final ListFacetGetter listFacetGetter;
+  private final FacetGetter facetGetter;
 
   public MultiValueListFacetDescription(String facetName, String propertyName) {
     this.facetName = facetName;
     this.propertyName = propertyName;
-    this.listFacetGetter = new ListFacetGetter();
+    this.facetGetter = new ListFacetGetter();
   }
 
   @Override
@@ -74,7 +63,7 @@ class MultiValueListFacetDescription implements FacetDescription {
 
   @Override
   public Facet getFacet(Map<String, Set<Vertex>> values) {
-    return listFacetGetter.getFacet(facetName, values);
+    return facetGetter.getFacet(facetName, values);
   }
 
   @Override

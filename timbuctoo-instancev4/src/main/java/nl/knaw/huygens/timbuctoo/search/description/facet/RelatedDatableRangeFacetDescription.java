@@ -1,26 +1,24 @@
 package nl.knaw.huygens.timbuctoo.search.description.facet;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.DatableRangeFacetGetter;
+import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.FacetGetter;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.RelatedPropertyValueGetter;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.DateRangeFacetValue;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -36,13 +34,13 @@ public class RelatedDatableRangeFacetDescription implements FacetDescription {
   private final String facetName;
   private final String propertyName;
   private final String[] relations;
-  private final DatableRangeFacetGetter datableRangeFacetGetter;
+  private final FacetGetter facetGetter;
 
   public RelatedDatableRangeFacetDescription(String facetName, String propertyName, String... relations) {
     this.facetName = facetName;
     this.propertyName = propertyName;
     this.relations = relations;
-    this.datableRangeFacetGetter = new DatableRangeFacetGetter();
+    this.facetGetter = new DatableRangeFacetGetter();
   }
 
   private Datable getDatable(String datableAsString) {
@@ -98,7 +96,7 @@ public class RelatedDatableRangeFacetDescription implements FacetDescription {
 
   @Override
   public Facet getFacet(Map<String, Set<Vertex>> values) {
-    return datableRangeFacetGetter.getFacet(facetName, values);
+    return facetGetter.getFacet(facetName, values);
   }
 
   @Override

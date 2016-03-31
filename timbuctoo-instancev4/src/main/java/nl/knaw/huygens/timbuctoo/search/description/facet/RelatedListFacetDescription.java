@@ -3,25 +3,20 @@ package nl.knaw.huygens.timbuctoo.search.description.facet;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
+import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.FacetGetter;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.ListFacetGetter;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.RelatedPropertyValueGetter;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * A facet description that creates a "LIST" facet with properties from connected vertices.
@@ -31,7 +26,7 @@ public class RelatedListFacetDescription implements FacetDescription {
   private final String propertyName;
   private final PropertyParser parser;
   private final String[] relations;
-  private final ListFacetGetter listFacetGetter;
+  private final FacetGetter facetGetter;
 
   public RelatedListFacetDescription(String facetName, String propertyName, PropertyParser parser,
                                      String... relations) {
@@ -39,7 +34,7 @@ public class RelatedListFacetDescription implements FacetDescription {
     this.propertyName = propertyName;
     this.parser = parser;
     this.relations = relations;
-    this.listFacetGetter = new ListFacetGetter(parser);
+    this.facetGetter = new ListFacetGetter(parser);
   }
 
   @Override
@@ -69,7 +64,7 @@ public class RelatedListFacetDescription implements FacetDescription {
 
   @Override
   public Facet getFacet(Map<String, Set<Vertex>> values) {
-    return listFacetGetter.getFacet(facetName, values);
+    return facetGetter.getFacet(facetName, values);
   }
 
   @Override

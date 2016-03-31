@@ -10,9 +10,10 @@ import java.text.SimpleDateFormat;
 import java.util.Map;
 import java.util.Set;
 
-public class DatableRangeFacetGetter {
+public class DatableRangeFacetGetter implements FacetGetter {
   private static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd");
 
+  @Override
   public Facet getFacet(String facetName, Map<String, Set<Vertex>> values) {
     long lowerLimit = 0;
     long upperLimit = 0;

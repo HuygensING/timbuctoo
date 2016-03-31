@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.search.description.facet;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
+import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.FacetGetter;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.ListFacetGetter;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -17,7 +18,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import static java.util.stream.Collectors.toList;
 import static org.apache.tinkerpop.gremlin.process.traversal.P.within;
 
 public class DerivedListFacetDescription implements FacetDescription {
@@ -26,7 +26,7 @@ public class DerivedListFacetDescription implements FacetDescription {
   private final PropertyParser parser;
   private final String[] relations;
   private final String[] relationNames;
-  private final ListFacetGetter listFacetGetter;
+  private final FacetGetter facetGetter;
 
   private DerivedListFacetDescription(String facetName, String propertyName, PropertyParser parser,
                                       String[] relationNames, String... relations) {
@@ -36,7 +36,7 @@ public class DerivedListFacetDescription implements FacetDescription {
     this.parser = parser;
     this.relations = relations;
     this.relationNames = relationNames;
-    this.listFacetGetter = new ListFacetGetter(parser);
+    this.facetGetter = new ListFacetGetter(parser);
   }
 
   public DerivedListFacetDescription(String facetName, String propertyName, String relationName,
@@ -83,7 +83,7 @@ public class DerivedListFacetDescription implements FacetDescription {
 
   @Override
   public Facet getFacet(Map<String, Set<Vertex>> values) {
-    return listFacetGetter.getFacet(facetName, values);
+    return facetGetter.getFacet(facetName, values);
   }
 
   @Override

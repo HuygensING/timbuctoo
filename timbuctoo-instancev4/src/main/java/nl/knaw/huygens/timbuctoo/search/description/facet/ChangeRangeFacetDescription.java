@@ -5,6 +5,8 @@ import com.google.common.collect.Range;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
+import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.ChangeRangeFacetGetter;
+import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.FacetGetter;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.LocalPropertyValueGetter;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.DateRangeFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -33,11 +35,13 @@ class ChangeRangeFacetDescription implements FacetDescription {
   private final String facetName;
   private final String propertyName;
   private final ObjectMapper objectMapper;
+  private final FacetGetter facetGetter;
 
   public ChangeRangeFacetDescription(String facetName, String propertyName) {
     this.facetName = facetName;
     this.propertyName = propertyName;
     objectMapper = new ObjectMapper();
+    this.facetGetter = new ChangeRangeFacetGetter();
   }
 
   private LocalDate getChangeLocalDate(Object changeObjectString) throws IOException {
@@ -87,26 +91,7 @@ class ChangeRangeFacetDescription implements FacetDescription {
 
   @Override
   public Facet getFacet(Map<String, Set<Vertex>> values) {
-
-    long lowerLimit = 0;
-    long upperLimit = 0;
-
-    for (String key : values.keySet()) {
-      try {
-        LocalDate localDate = getChangeLocalDate(key);
-        long dateStamp = Long.valueOf(FORMATTER.format(localDate));
-        if (dateStamp > upperLimit) {
-          upperLimit = dateStamp;
-        }
-        if (lowerLimit == 0 || dateStamp < lowerLimit) {
-          lowerLimit = dateStamp;
-        }
-      } catch (IOException e) {
-        LOG.error("'{}' is not a valid change.", key);
-      }
-    }
-
-    return new Facet(facetName, Lists.newArrayList(new Facet.RangeOption(lowerLimit, upperLimit)), "RANGE");
+    return facetGetter.getFacet(facetName, values);
   }
 
   @Override

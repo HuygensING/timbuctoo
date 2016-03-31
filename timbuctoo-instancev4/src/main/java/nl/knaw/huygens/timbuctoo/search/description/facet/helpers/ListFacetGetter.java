@@ -11,7 +11,7 @@ import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
 
-public class ListFacetGetter {
+public class ListFacetGetter implements FacetGetter {
 
   private final PropertyParser parser;
 
@@ -27,6 +27,7 @@ public class ListFacetGetter {
     return parser == null ? rawValue : parser.parse(rawValue);
   }
 
+  @Override
   public Facet getFacet(String facetName, Map<String, Set<Vertex>> values) {
     List<Facet.Option> options = values.entrySet().stream()
             .map(entry -> new Facet.DefaultOption(parseValue(entry.getKey()), entry.getValue().size()))
