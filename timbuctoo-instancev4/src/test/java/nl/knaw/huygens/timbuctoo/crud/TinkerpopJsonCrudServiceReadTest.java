@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import nl.knaw.huygens.contractdiff.diffresults.DiffResult;
+import nl.knaw.huygens.contractdiff.jsondiff.JsonDiffer;
 import nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
@@ -20,8 +22,11 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static nl.knaw.huygens.contractdiff.jsondiff.JsonDiffer.jsonDiffer;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
@@ -122,7 +127,7 @@ public class TinkerpopJsonCrudServiceReadTest {
     assertThat(
       instance.get("wwpersons", id).toString(),
       sameJSONAs(
-        JsonBuilder.jsnO(
+        jsnO(
           "@type", jsn("wwperson"),
           "_id", jsn(id.toString())
         ).toString()
@@ -315,8 +320,8 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
-      "^modified", JsonBuilder.jsnO(
+    assertThat(resultJson, sameJSONAs(jsnO(
+      "^modified", jsnO(
         "timeStamp", jsn(1427921175250L),
         "userId", jsn("USER1"),
         "username", jsn("Username for USER1")
@@ -345,8 +350,8 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
-      "^created", JsonBuilder.jsnO(
+    assertThat(resultJson, sameJSONAs(jsnO(
+      "^created", jsnO(
         "timeStamp", jsn(1427921175250L),
         "userId", jsn("USER1"),
         "username", jsn("Username for USER1")
@@ -379,11 +384,11 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
+    assertThat(resultJson, sameJSONAs(jsnO(
       "@relationCount", jsn(1),
-      "@relations", JsonBuilder.jsnO(
-        "isPseudonymOf", JsonBuilder.jsnA(
-          JsonBuilder.jsnO(
+      "@relations", jsnO(
+        "isPseudonymOf", jsnA(
+          jsnO(
             "id", jsn(pseudonymId.toString())
           )
         )
@@ -420,11 +425,11 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
+    assertThat(resultJson, sameJSONAs(jsnO(
       "@relationCount", jsn(1),
-      "@relations", JsonBuilder.jsnO(
-        "isCreatorOf", JsonBuilder.jsnA(
-          JsonBuilder.jsnO(
+      "@relations", jsnO(
+        "isCreatorOf", jsnA(
+          jsnO(
             "id", jsn(workId.toString())
           )
         )
@@ -459,11 +464,11 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
+    assertThat(resultJson, sameJSONAs(jsnO(
       "@relationCount", jsn(1),
-      "@relations", JsonBuilder.jsnO(
-        "isPseudonymOf", JsonBuilder.jsnA(
-          JsonBuilder.jsnO(
+      "@relations", jsnO(
+        "isPseudonymOf", jsnA(
+          jsnO(
             "id", jsn("f005ba11-0000-0000-0000-000000000000"),
             "path", jsn("/wwpersons/f005ba11-0000-0000-0000-000000000000/null")
           )
@@ -504,11 +509,11 @@ public class TinkerpopJsonCrudServiceReadTest {
     TinkerpopJsonCrudService instance = basicInstance(graph);
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
+    assertThat(resultJson, sameJSONAs(jsnO(
       "@relationCount", jsn(1),
-      "@relations", JsonBuilder.jsnO(
-        "isPseudonymOf", JsonBuilder.jsnA(
-          JsonBuilder.jsnO(
+      "@relations", jsnO(
+        "isPseudonymOf", jsnA(
+          jsnO(
             "rev", jsn(2)
           )
         )
@@ -546,11 +551,11 @@ public class TinkerpopJsonCrudServiceReadTest {
     TinkerpopJsonCrudService instance = basicInstance(graph);
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
+    assertThat(resultJson, sameJSONAs(jsnO(
       "@relationCount", jsn(1),
-      "@relations", JsonBuilder.jsnO(
-        "isPseudonymOf", JsonBuilder.jsnA(
-          JsonBuilder.jsnO(
+      "@relations", jsnO(
+        "isPseudonymOf", jsnA(
+          jsnO(
             "rev", jsn(2)
           )
         )
@@ -592,19 +597,32 @@ public class TinkerpopJsonCrudServiceReadTest {
     TinkerpopJsonCrudService instance = basicInstance(graph);
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
+    JsonDiffer differ = jsonDiffer()
+      .handleArraysWith("ALL_MATCH_ONE_OF", (j) -> jsnO("possibilities", j, "keyProp", jsn("rev")))
+      .build();
+
+    DiffResult diffResult = differ.diff(resultJson, jsnO(
       "@relationCount", jsn(2),
-      "@relations", JsonBuilder.jsnO(
-        "isPseudonymOf", JsonBuilder.jsnA(
-          JsonBuilder.jsnO(
-            "rev", jsn(1)
-          ),
-          JsonBuilder.jsnO(
-            "rev", jsn(2)
+      "@relations", jsnO(
+        "isPseudonymOf", JsonBuilder.jsnO(
+          "custom-matcher", jsn("/*ALL_MATCH_ONE_OF*/"),
+          "keyProp", jsn("rev"),
+          "possibilities", jsnO(
+            "2", jsnO(
+              "rev", jsn(2)
+            ),
+            "1", jsnO(
+              "rev", jsn(1)
+            )
           )
         )
       )
-    ).toString()).allowingExtraUnexpectedFields());
+    ));
+
+    if (!diffResult.wasSuccess()) {
+      System.out.println(diffResult.asConsole());
+    }
+    assertThat(diffResult.wasSuccess(), is(true));
   }
 
   @Test
@@ -634,11 +652,11 @@ public class TinkerpopJsonCrudServiceReadTest {
     TinkerpopJsonCrudService instance = basicInstance(graph);
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
+    assertThat(resultJson, sameJSONAs(jsnO(
       "@relationCount", jsn(1),
-      "@relations", JsonBuilder.jsnO(
-        "isPseudonymOf", JsonBuilder.jsnA(
-          JsonBuilder.jsnO(
+      "@relations", jsnO(
+        "isPseudonymOf", jsnA(
+          jsnO(
             "relationId", jsn("deadbeaf-0000-0000-0000-000000000000"),
             "accepted", jsn(true),
             "rev", jsn(5)
@@ -670,10 +688,10 @@ public class TinkerpopJsonCrudServiceReadTest {
     TinkerpopJsonCrudService instance = basicInstance(graph);
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
-      "@relations", JsonBuilder.jsnO(
-        "isPseudonymOf", JsonBuilder.jsnA(
-          JsonBuilder.jsnO(
+    assertThat(resultJson, sameJSONAs(jsnO(
+      "@relations", jsnO(
+        "isPseudonymOf", jsnA(
+          jsnO(
             "displayName", jsn("Pieter van Reigersberch")
           )
         )
@@ -716,10 +734,10 @@ public class TinkerpopJsonCrudServiceReadTest {
     TinkerpopJsonCrudService instance = basicInstance(graph);
     String resultJson = instance.get("wwderivedrelations", id).toString();
 
-    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
-      "@relations", JsonBuilder.jsnO(
-        "hasPersonLanguage", JsonBuilder.jsnA(
-          JsonBuilder.jsnO(
+    assertThat(resultJson, sameJSONAs(jsnO(
+      "@relations", jsnO(
+        "hasPersonLanguage", jsnA(
+          jsnO(
             "displayName", jsn("Dutch")
           )
         )
@@ -743,13 +761,13 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
-      "@variationRefs", JsonBuilder.jsnA(
-        JsonBuilder.jsnO(
+    assertThat(resultJson, sameJSONAs(jsnO(
+      "@variationRefs", jsnA(
+        jsnO(
           "id", jsn(id.toString()),
           "type", jsn("wwperson")
         ),
-        JsonBuilder.jsnO(
+        jsnO(
           "id", jsn(id.toString()),
           "type", jsn("person")
         )
@@ -815,7 +833,7 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
+    assertThat(resultJson, sameJSONAs(jsnO(
       "^deleted", jsn(false)
     ).toString()).allowingExtraUnexpectedFields());
   }
@@ -838,7 +856,7 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
+    assertThat(resultJson, sameJSONAs(jsnO(
       "^pid", jsn("http://example.com/pid")
     ).toString()).allowingExtraUnexpectedFields());
   }
@@ -896,11 +914,11 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
+    assertThat(resultJson, sameJSONAs(jsnO(
       "@relationCount", jsn(1),
-      "@relations", JsonBuilder.jsnO(
-        "isCreatorOf", JsonBuilder.jsnA(
-          JsonBuilder.jsnO(
+      "@relations", jsnO(
+        "isCreatorOf", jsnA(
+          jsnO(
             "id", jsn(workId.toString())
           )
         )
@@ -939,11 +957,11 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     String resultJson = instance.get("wwpersons", id).toString();
 
-    assertThat(resultJson, sameJSONAs(JsonBuilder.jsnO(
+    assertThat(resultJson, sameJSONAs(jsnO(
       "@relationCount", jsn(1),
-      "@relations", JsonBuilder.jsnO(
-        "isCreatorOf", JsonBuilder.jsnA(
-          JsonBuilder.jsnO(
+      "@relations", jsnO(
+        "isCreatorOf", jsnA(
+          jsnO(
             "id", jsn(workId.toString())
           )
         )
