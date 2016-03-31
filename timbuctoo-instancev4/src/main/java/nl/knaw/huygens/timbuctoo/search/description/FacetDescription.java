@@ -17,6 +17,8 @@ public interface FacetDescription {
    */
   Facet getFacet(GraphTraversal<Vertex, Vertex> searchResult);
 
+  Facet getFacet(Map<String, Set<Vertex>> values);
+
   /**
    * Adds a filter to the graphTraversal if the searchRequest contains a facet for the description.
    */
@@ -24,5 +26,4 @@ public interface FacetDescription {
 
   List<String> getValues(Vertex vertex);
 
-  Facet getFacet(Map<String, Set<Vertex>> values);
 }

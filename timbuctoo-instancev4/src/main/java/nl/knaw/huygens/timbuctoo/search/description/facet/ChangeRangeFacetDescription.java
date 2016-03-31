@@ -71,6 +71,11 @@ class ChangeRangeFacetDescription implements FacetDescription {
   }
 
   @Override
+  public Facet getFacet(Map<String, Set<Vertex>> values) {
+    return null;
+  }
+
+  @Override
   @SuppressWarnings("unchecked")
   public void filter(GraphTraversal<Vertex, Vertex> graphTraversal, List<FacetValue> facets) {
     Optional<FacetValue> first =
@@ -107,14 +112,9 @@ class ChangeRangeFacetDescription implements FacetDescription {
 
   @Override
   public List<String> getValues(Vertex vertex) {
-    if(vertex.property(propertyName).isPresent()) {
+    if (vertex.property(propertyName).isPresent()) {
       return Lists.newArrayList((String) vertex.property(propertyName).value());
     }
-    return null;
-  }
-
-  @Override
-  public Facet getFacet(Map<String, Set<Vertex>> values) {
     return null;
   }
 

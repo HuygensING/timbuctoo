@@ -98,9 +98,9 @@ public class PerformanceWwPersonSearchDescription extends PerformanceSearchDescr
 
   private ArrayList<FullTextSearchDescription> createFullTextSearchDescriptions() {
     return Lists.newArrayList(
-            createLocalSimpleFullTextSearchDescription("dynamic_t_tempspouse", "wwperson_tempSpouse"),
-            createLocalSimpleFullTextSearchDescription("dynamic_t_notes", "wwperson_notes"),
-            createLocalFullTextSearchDescriptionWithBackupProperty("dynamic_t_name", "wwperson_names", "wwperson_tempName")
+        createLocalSimpleFullTextSearchDescription("dynamic_t_tempspouse", "wwperson_tempSpouse"),
+        createLocalSimpleFullTextSearchDescription("dynamic_t_notes", "wwperson_notes"),
+        createLocalFullTextSearchDescriptionWithBackupProperty("dynamic_t_name", "wwperson_names", "wwperson_tempName")
     );
   }
 
@@ -125,7 +125,7 @@ public class PerformanceWwPersonSearchDescription extends PerformanceSearchDescr
                     "dynamic_s_language", "hasWorkLanguage", String.class, "wwlanguage_name", "isCreatedBy"),
             facetDescriptionFactory.createKeywordDescription("dynamic_s_marital_status", "hasMaritalStatus", "ww"),
             facetDescriptionFactory
-                    .createListFacetDescription("dynamic_s_collective", String.class, "wwcollective_name", "isMemberOf"),
+                  .createListFacetDescription("dynamic_s_collective", String.class, "wwcollective_name", "isMemberOf"),
             facetDescriptionFactory.createKeywordDescription("dynamic_s_education", "hasEducation", "ww"),
             facetDescriptionFactory.createKeywordDescription("dynamic_s_social_class", "hasSocialClass", "ww"),
             facetDescriptionFactory.createKeywordDescription("dynamic_s_financials", "hasFinancialSituation", "ww"),

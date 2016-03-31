@@ -48,15 +48,15 @@ public abstract class PerformanceSearchDescription extends AbstractSearchDescrip
 
     searchResult.map(vertexTraverser -> {
       getFacetDescriptions().stream().forEach(facetDescription -> {
-        if(!facetCounts.containsKey(facetDescription.getName())) {
+        if (!facetCounts.containsKey(facetDescription.getName())) {
           facetCounts.put(facetDescription.getName(), new HashMap<>());
           facetDescriptionMap.put(facetDescription.getName(), facetDescription);
         }
         final List<String> facetValues = facetDescription.getValues(vertexTraverser.get());
-        if(facetValues != null) {
+        if (facetValues != null) {
           Map<String, Set<Vertex>> counts = facetCounts.get(facetDescription.getName());
           facetValues.stream().forEach(facetValue -> {
-            if(!counts.containsKey(facetValue)) {
+            if (!counts.containsKey(facetValue)) {
               counts.put(facetValue, new HashSet<>());
             }
             Set<Vertex> bag = counts.get(facetValue);
@@ -74,29 +74,15 @@ public abstract class PerformanceSearchDescription extends AbstractSearchDescrip
       facets.add(facet);
 
       System.out.println(key);
-      if(facet == null) {
-/*
+      if (facet == null) {
         values.forEach((valKey, bag) -> {
           System.out.println("  " + valKey + ": " + bag.size());
-        });*/
+        });
       } else {
         facet.getOptions().forEach(System.out::println);
       }
       System.out.println("===");
     });
-    /*.forEachRemaining(vertexTraverser -> {
-      if(refs.size() < 50) { // FIXME: move responsibility to GET response and introduce limit and offset there
-        refs.add(createRef(vertexTraverser.get()));
-      }
-    })*/;
-
-
-//    System.out.println(facetCounts);
-    // GraphTraversal<Vertex, Vertex> refsClone = searchResult.asAdmin().clone();
-    // List<EntityRef> refs = refsClone.map(vertex -> createRef(vertex.get())).toList();
-
-    // List<Facet> facets = createFacets(searchResult.asAdmin().clone());
-
 
     return new SearchResult(refs, this, new ArrayList<>());
   }

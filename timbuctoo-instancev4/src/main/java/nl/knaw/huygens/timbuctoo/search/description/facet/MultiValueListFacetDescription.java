@@ -69,6 +69,15 @@ class MultiValueListFacetDescription implements FacetDescription {
   }
 
   @Override
+  public Facet getFacet(Map<String, Set<Vertex>> values) {
+    List<Facet.Option> options = values.entrySet().stream()
+            .map(entry -> new Facet.DefaultOption(entry.getKey(), entry.getValue().size()))
+            .collect(toList());
+
+    return new Facet(facetName, options, "LIST");
+  }
+
+  @Override
   public void filter(GraphTraversal<Vertex, Vertex> graphTraversal, List<FacetValue> facetValues) {
     Optional<FacetValue> first = facetValues.stream()
                                             .filter(facetValue -> Objects.equals(facetValue.getName(), facetName))
@@ -98,24 +107,15 @@ class MultiValueListFacetDescription implements FacetDescription {
 
   @Override
   public List<String> getValues(Vertex vertex) {
-    if(vertex.property(propertyName).isPresent()) {
+    if (vertex.property(propertyName).isPresent()) {
       final String value = (String) vertex.property(propertyName).value();
       try {
         return (List<String>) mapper.readValue(value, List.class);
-      } catch(IOException e) {
+      } catch (IOException e) {
         LOG.error("'{}' is not a valid multi valued field", value);
         return null;
       }
     }
     return null;
-  }
-
-  @Override
-  public Facet getFacet(Map<String, Set<Vertex>> values) {
-    List<Facet.Option> options = values.entrySet().stream()
-            .map(entry -> new Facet.DefaultOption(entry.getKey(), entry.getValue().size()))
-            .collect(toList());
-
-    return new Facet(facetName, options, "LIST");
   }
 }

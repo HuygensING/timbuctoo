@@ -48,6 +48,15 @@ public class ListFacetDescription implements FacetDescription {
   }
 
   @Override
+  public Facet getFacet(Map<String, Set<Vertex>> values) {
+    List<Facet.Option> options = values.entrySet().stream()
+            .map(entry -> new Facet.DefaultOption(parser.parse(entry.getKey()), entry.getValue().size()))
+            .collect(toList());
+
+    return new Facet(facetName, options, "LIST");
+  }
+
+  @Override
   @SuppressWarnings("unchecked")
   public void filter(GraphTraversal<Vertex, Vertex> graphTraversal, List<FacetValue> facets) {
     Optional<FacetValue> facetValue =
@@ -70,18 +79,9 @@ public class ListFacetDescription implements FacetDescription {
 
   @Override
   public List<String> getValues(Vertex vertex) {
-    if(vertex.property(propertyName).isPresent()) {
+    if (vertex.property(propertyName).isPresent()) {
       return Lists.newArrayList((String) vertex.property(propertyName).value());
     }
     return null;
-  }
-
-  @Override
-  public Facet getFacet(Map<String, Set<Vertex>> values) {
-    List<Facet.Option> options = values.entrySet().stream()
-            .map(entry -> new Facet.DefaultOption(parser.parse(entry.getKey()), entry.getValue().size()))
-            .collect(toList());
-
-    return new Facet(facetName, options, "LIST");
   }
 }

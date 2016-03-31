@@ -80,6 +80,11 @@ public class RelatedDatableRangeFacetDescription implements FacetDescription {
   }
 
   @Override
+  public Facet getFacet(Map<String, Set<Vertex>> values) {
+    return null;
+  }
+
+  @Override
   public void filter(GraphTraversal<Vertex, Vertex> graphTraversal, List<FacetValue> facets) {
     Optional<FacetValue> first = facets.stream()
             .filter(facetValue -> Objects.equals(facetValue.getName(), facetName))
@@ -122,15 +127,10 @@ public class RelatedDatableRangeFacetDescription implements FacetDescription {
   public List<String> getValues(Vertex vertex) {
     List<String> result = new ArrayList<>();
     vertex.vertices(Direction.BOTH, relations).forEachRemaining(targetVertex -> {
-      if(targetVertex.property(propertyName).isPresent()) {
+      if (targetVertex.property(propertyName).isPresent()) {
         result.add((String) targetVertex.property(propertyName).value());
       }
     });
     return result;
-  }
-
-  @Override
-  public Facet getFacet(Map<String, Set<Vertex>> values) {
-    return null;
   }
 }

@@ -63,13 +63,14 @@ public class PerformanceSearchDescriptionTest {
   }
 
   @After
-  public void finalize() throws Exception {
+  public void after() throws Exception {
     graph.close();
   }
 
   @Test
   public void testOriginal() {
-    WwDocumentSearchDescription instance = new WwDocumentSearchDescription(propertyDescriptorFactory, facetDescriptionFactory);
+    WwDocumentSearchDescription instance = new WwDocumentSearchDescription(
+            propertyDescriptorFactory, facetDescriptionFactory);
     long before = System.currentTimeMillis();
     instance.execute(wrapper, new SearchRequestV2_1());
     long timed = System.currentTimeMillis() - before;
@@ -85,12 +86,10 @@ public class PerformanceSearchDescriptionTest {
             propertyDescriptorFactory, facetDescriptionFactory
     );
 
-/*
     long before = System.currentTimeMillis();
     instance.execute(wrapper, new SearchRequestV2_1());
     long timed = System.currentTimeMillis() - before;
     System.out.println("DOCUMENT TIME: " + timed);
-*/
 
     long before2 = System.currentTimeMillis();
     instance2.execute(wrapper, new SearchRequestV2_1());

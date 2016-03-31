@@ -83,6 +83,15 @@ public class RelatedMultiValueListFacetDescription implements FacetDescription {
   }
 
   @Override
+  public Facet getFacet(Map<String, Set<Vertex>> values) {
+    List<Facet.Option> options = values.entrySet().stream()
+            .map(entry -> new Facet.DefaultOption(entry.getKey(), entry.getValue().size()))
+            .collect(toList());
+
+    return new Facet(facetName, options, "LIST");
+  }
+
+  @Override
   public void filter(GraphTraversal<Vertex, Vertex> graphTraversal, List<FacetValue> facets) {
     Optional<FacetValue> value = facets.stream()
             .filter(facetValue -> Objects.equals(facetValue.getName(), facetName))
@@ -106,9 +115,10 @@ public class RelatedMultiValueListFacetDescription implements FacetDescription {
   public List<String> getValues(Vertex vertex) {
     List<String> result = new ArrayList<>();
     vertex.vertices(Direction.BOTH, relations).forEachRemaining(targetVertex -> {
-      if(targetVertex.property(propertyName).isPresent()) {
+      if (targetVertex.property(propertyName).isPresent()) {
         final String value = (String) targetVertex.property(propertyName).value();
         try {
+
           List<String> values = (List<String>) mapper.readValue(value, List.class);
           values.forEach(result::add);
         } catch (IOException e) {
@@ -118,12 +128,4 @@ public class RelatedMultiValueListFacetDescription implements FacetDescription {
     });
     return result;
   }
-
-  @Override
-  public Facet getFacet(Map<String, Set<Vertex>> values) {
-    List<Facet.Option> options = values.entrySet().stream()
-            .map(entry -> new Facet.DefaultOption(entry.getKey(), entry.getValue().size()))
-            .collect(toList());
-
-    return new Facet(facetName, options, "LIST");  }
 }

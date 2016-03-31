@@ -67,6 +67,11 @@ public class DatableRangeFacetDescription implements FacetDescription {
     return new Facet(facetName, Lists.newArrayList(new Facet.RangeOption(lowerLimit, upperLimit)), "RANGE");
   }
 
+  @Override
+  public Facet getFacet(Map<String, Set<Vertex>> values) {
+    return null;
+  }
+
   private Datable getDatable(String datableAsString) {
     String value = StringUtils.strip(datableAsString, "\"");
 
@@ -114,13 +119,9 @@ public class DatableRangeFacetDescription implements FacetDescription {
 
   @Override
   public List<String> getValues(Vertex vertex) {
-    if(vertex.property(propertyName).isPresent()) {
+    if (vertex.property(propertyName).isPresent()) {
       return Lists.newArrayList((String) vertex.property(propertyName).value());
     }
-    return null;  }
-
-  @Override
-  public Facet getFacet(Map<String, Set<Vertex>> values) {
     return null;
   }
 }

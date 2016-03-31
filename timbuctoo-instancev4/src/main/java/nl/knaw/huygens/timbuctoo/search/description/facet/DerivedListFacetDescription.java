@@ -65,6 +65,15 @@ public class DerivedListFacetDescription implements FacetDescription {
   }
 
   @Override
+  public Facet getFacet(Map<String, Set<Vertex>> values) {
+    List<Facet.Option> options = values.entrySet().stream()
+            .map(entry -> new Facet.DefaultOption(parser.parse(entry.getKey()), entry.getValue().size()))
+            .collect(toList());
+
+    return new Facet(facetName, options, "LIST");
+  }
+
+  @Override
   public void filter(GraphTraversal<Vertex, Vertex> graphTraversal, List<FacetValue> facets) {
     Optional<FacetValue> first = facets.stream()
             .filter(facetValue -> Objects.equals(facetValue.getName(), facetName))
@@ -96,19 +105,11 @@ public class DerivedListFacetDescription implements FacetDescription {
     List<String> result = new ArrayList<>();
     vertex.vertices(Direction.BOTH, relations).forEachRemaining(targetVertex -> {
       targetVertex.vertices(Direction.BOTH, relationNames).forEachRemaining(finalVertex -> {
-        if(finalVertex.property(propertyName).isPresent()) {
+        if (finalVertex.property(propertyName).isPresent()) {
           result.add((String) finalVertex.property(propertyName).value());
         }
       });
     });
     return result;
   }
-
-  @Override
-  public Facet getFacet(Map<String, Set<Vertex>> values) {
-    List<Facet.Option> options = values.entrySet().stream()
-            .map(entry -> new Facet.DefaultOption(parser.parse(entry.getKey()), entry.getValue().size()))
-            .collect(toList());
-
-    return new Facet(facetName, options, "LIST");  }
 }
