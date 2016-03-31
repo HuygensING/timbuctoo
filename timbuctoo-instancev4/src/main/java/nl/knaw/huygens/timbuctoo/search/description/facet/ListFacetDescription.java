@@ -1,9 +1,9 @@
 package nl.knaw.huygens.timbuctoo.search.description.facet;
 
-import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
+import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.LocalPropertyValueGetter;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -19,6 +19,7 @@ import java.util.Set;
 import static java.util.stream.Collectors.toList;
 
 public class ListFacetDescription implements FacetDescription {
+
   private final String facetName;
   private final String propertyName;
   private final PropertyParser parser;
@@ -66,9 +67,6 @@ public class ListFacetDescription implements FacetDescription {
 
   @Override
   public List<String> getValues(Vertex vertex) {
-    if (vertex.property(propertyName).isPresent()) {
-      return Lists.newArrayList((String) vertex.property(propertyName).value());
-    }
-    return null;
+    return LocalPropertyValueGetter.getValues(vertex, propertyName);
   }
 }

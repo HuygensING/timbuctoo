@@ -5,6 +5,7 @@ import com.google.common.collect.Range;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
+import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.LocalPropertyValueGetter;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.DateRangeFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -26,8 +27,8 @@ import java.util.Optional;
 import java.util.Set;
 
 class ChangeRangeFacetDescription implements FacetDescription {
-
   public static final DateTimeFormatter FORMATTER = DateTimeFormatter.BASIC_ISO_DATE;
+
   public static final Logger LOG = LoggerFactory.getLogger(ChangeRangeFacetDescription.class);
   private final String facetName;
   private final String propertyName;
@@ -105,10 +106,7 @@ class ChangeRangeFacetDescription implements FacetDescription {
 
   @Override
   public List<String> getValues(Vertex vertex) {
-    if (vertex.property(propertyName).isPresent()) {
-      return Lists.newArrayList((String) vertex.property(propertyName).value());
-    }
-    return null;
+    return LocalPropertyValueGetter.getValues(vertex, propertyName);
   }
 
   private LocalDate getChangeLocalDate(Object changeObjectString) throws IOException {

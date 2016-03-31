@@ -6,6 +6,7 @@ import com.google.common.collect.Range;
 import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
+import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.LocalPropertyValueGetter;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.DateRangeFacetValue;
 import org.apache.commons.lang.StringUtils;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -110,9 +111,6 @@ public class DatableRangeFacetDescription implements FacetDescription {
 
   @Override
   public List<String> getValues(Vertex vertex) {
-    if (vertex.property(propertyName).isPresent()) {
-      return Lists.newArrayList((String) vertex.property(propertyName).value());
-    }
-    return null;
+    return LocalPropertyValueGetter.getValues(vertex, propertyName);
   }
 }

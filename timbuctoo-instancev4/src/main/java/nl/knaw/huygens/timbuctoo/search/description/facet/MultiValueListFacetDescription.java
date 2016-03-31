@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
 import nl.knaw.huygens.timbuctoo.search.description.facet.Facet.DefaultOption;
 import nl.knaw.huygens.timbuctoo.search.description.facet.Facet.Option;
+import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.MultiValuePropertyGetter;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -27,15 +28,12 @@ import static java.util.stream.Collectors.counting;
 import static java.util.stream.Collectors.toList;
 
 class MultiValueListFacetDescription implements FacetDescription {
-  public static final Logger LOG = LoggerFactory.getLogger(MultiValueListFacetDescription.class);
   private final String facetName;
   private final String propertyName;
-  private final ObjectMapper mapper;
 
   public MultiValueListFacetDescription(String facetName, String propertyName) {
     this.facetName = facetName;
     this.propertyName = propertyName;
-    mapper = new ObjectMapper();
   }
 
   @Override
@@ -82,15 +80,6 @@ class MultiValueListFacetDescription implements FacetDescription {
 
   @Override
   public List<String> getValues(Vertex vertex) {
-    if (vertex.property(propertyName).isPresent()) {
-      final String value = (String) vertex.property(propertyName).value();
-      try {
-        return (List<String>) mapper.readValue(value, List.class);
-      } catch (IOException e) {
-        LOG.error("'{}' is not a valid multi valued field", value);
-        return null;
-      }
-    }
-    return null;
+    return MultiValuePropertyGetter.getValues(vertex, propertyName);
   }
 }

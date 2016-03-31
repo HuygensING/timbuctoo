@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
+import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.MultiValuePropertyGetter;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -29,20 +30,16 @@ import static java.util.stream.Collectors.toList;
  * A facet description that creates a "LIST" facet with multi-valued properties from connected vertices.
  */
 public class RelatedMultiValueListFacetDescription implements FacetDescription {
-  public static final Logger LOG = LoggerFactory.getLogger(MultiValueListFacetDescription.class);
 
   private final String facetName;
   private final String propertyName;
   private final String[] relations;
-  private final ObjectMapper mapper;
 
 
   public RelatedMultiValueListFacetDescription(String facetName, String propertyName, String... relations) {
     this.facetName = facetName;
     this.propertyName = propertyName;
     this.relations = relations;
-    mapper = new ObjectMapper();
-
   }
 
   @Override
@@ -83,16 +80,8 @@ public class RelatedMultiValueListFacetDescription implements FacetDescription {
   public List<String> getValues(Vertex vertex) {
     List<String> result = new ArrayList<>();
     vertex.vertices(Direction.BOTH, relations).forEachRemaining(targetVertex -> {
-      if (targetVertex.property(propertyName).isPresent()) {
-        final String value = (String) targetVertex.property(propertyName).value();
-        try {
-
-          List<String> values = (List<String>) mapper.readValue(value, List.class);
-          values.forEach(result::add);
-        } catch (IOException e) {
-          LOG.error("'{}' is not a valid multi valued field", value);
-        }
-      }
+      List<String> values = MultiValuePropertyGetter.getValues(targetVertex, propertyName);
+      values.forEach(result::add);
     });
     return result;
   }
