@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.search.description.facet;
 
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
-import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.ListFacetGetter;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.LocalPropertyValueGetter;
@@ -12,25 +11,16 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
-public class ListFacetDescription implements FacetDescription {
+public class ListFacetDescription extends AbstractFacetDescription {
 
-  private final String facetName;
-  private final String propertyName;
   private final PropertyParser parser;
-  private final FacetGetter facetGetter;
-  private final PropertyValueGetter propertyValueGetter;
 
   public ListFacetDescription(String facetName, String propertyName, PropertyParser parser) {
-    this.facetName = facetName;
-    this.propertyName = propertyName;
+    super(facetName, propertyName, new ListFacetGetter(parser), new LocalPropertyValueGetter());
     this.parser = parser;
-    this.facetGetter = new ListFacetGetter(parser);
-    this.propertyValueGetter = new LocalPropertyValueGetter();
   }
 
   @Override
@@ -52,20 +42,5 @@ public class ListFacetDescription implements FacetDescription {
         }
       }
     }
-  }
-
-  @Override
-  public String getName() {
-    return facetName;
-  }
-
-  @Override
-  public Facet getFacet(Map<String, Set<Vertex>> values) {
-    return facetGetter.getFacet(facetName, values);
-  }
-
-  @Override
-  public List<String> getValues(Vertex vertex) {
-    return propertyValueGetter.getValues(vertex, propertyName);
   }
 }

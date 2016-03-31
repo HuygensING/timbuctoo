@@ -20,22 +20,15 @@ import java.util.Set;
 /**
  * A facet description that creates a "LIST" facet with properties from connected vertices.
  */
-public class RelatedListFacetDescription implements FacetDescription {
-  private final String facetName;
-  private final String propertyName;
+public class RelatedListFacetDescription extends AbstractFacetDescription {
   private final PropertyParser parser;
   private final String[] relations;
-  private final FacetGetter facetGetter;
-  private final PropertyValueGetter propertyValueGetter;
 
   public RelatedListFacetDescription(String facetName, String propertyName, PropertyParser parser,
                                      String... relations) {
-    this.facetName = facetName;
-    this.propertyName = propertyName;
+    super(facetName, propertyName, new ListFacetGetter(parser), new RelatedPropertyValueGetter(relations));
     this.parser = parser;
     this.relations = relations;
-    this.facetGetter = new ListFacetGetter(parser);
-    this.propertyValueGetter = new RelatedPropertyValueGetter(relations);
   }
 
   @Override
@@ -56,20 +49,5 @@ public class RelatedListFacetDescription implements FacetDescription {
         }
       }
     }
-  }
-
-  @Override
-  public String getName() {
-    return facetName;
-  }
-
-  @Override
-  public Facet getFacet(Map<String, Set<Vertex>> values) {
-    return facetGetter.getFacet(facetName, values);
-  }
-
-  @Override
-  public List<String> getValues(Vertex vertex) {
-    return propertyValueGetter.getValues(vertex, propertyName);
   }
 }

@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.search.description.facet;
 import com.google.common.collect.Range;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
-import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.ChangeRangeFacetGetter;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.LocalPropertyValueGetter;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.DateRangeFacetValue;
@@ -21,27 +20,17 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
-class ChangeRangeFacetDescription implements FacetDescription {
+class ChangeRangeFacetDescription extends AbstractFacetDescription {
   public static final DateTimeFormatter FORMATTER = DateTimeFormatter.BASIC_ISO_DATE;
 
   public static final Logger LOG = LoggerFactory.getLogger(ChangeRangeFacetDescription.class);
-  private final String facetName;
-  private final String propertyName;
   private final ObjectMapper objectMapper;
-  private final FacetGetter facetGetter;
-  private final PropertyValueGetter propertyValueGetter;
 
   public ChangeRangeFacetDescription(String facetName, String propertyName) {
-    this.facetName = facetName;
-    this.propertyName = propertyName;
-    this.facetGetter = new ChangeRangeFacetGetter();
-    this.propertyValueGetter = new LocalPropertyValueGetter();
-
+    super(facetName, propertyName, new ChangeRangeFacetGetter(), new LocalPropertyValueGetter());
     objectMapper = new ObjectMapper();
   }
 
@@ -83,20 +72,5 @@ class ChangeRangeFacetDescription implements FacetDescription {
       return false;
     }, period)));
 
-  }
-
-  @Override
-  public String getName() {
-    return facetName;
-  }
-
-  @Override
-  public Facet getFacet(Map<String, Set<Vertex>> values) {
-    return facetGetter.getFacet(facetName, values);
-  }
-
-  @Override
-  public List<String> getValues(Vertex vertex) {
-    return propertyValueGetter.getValues(vertex, propertyName);
   }
 }

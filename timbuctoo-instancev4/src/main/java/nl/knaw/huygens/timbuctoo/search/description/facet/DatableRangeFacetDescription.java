@@ -4,7 +4,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Range;
 import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
-import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.DatableRangeFacetGetter;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.LocalPropertyValueGetter;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.DateRangeFacetValue;
@@ -20,24 +19,15 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
-public class DatableRangeFacetDescription implements FacetDescription {
+public class DatableRangeFacetDescription extends AbstractFacetDescription {
   public static final SimpleDateFormat FILTER_FORMAT = new SimpleDateFormat("yyyy");
   public static final Logger LOG = LoggerFactory.getLogger(DatableRangeFacetDescription.class);
-  private final String facetName;
-  private final String propertyName;
-  private final FacetGetter facetGetter;
-  private final PropertyValueGetter propertyValueGetter;
 
   public DatableRangeFacetDescription(String facetName, String propertyName) {
-    this.facetName = facetName;
-    this.propertyName = propertyName;
-    this.facetGetter = new DatableRangeFacetGetter();
-    this.propertyValueGetter = new LocalPropertyValueGetter();
+    super(facetName, propertyName,new DatableRangeFacetGetter(), new LocalPropertyValueGetter());
   }
 
   private Datable getDatable(String datableAsString) {
@@ -82,20 +72,5 @@ public class DatableRangeFacetDescription implements FacetDescription {
       LOG.error("Cannot parse date", e);
     }
 
-  }
-
-  @Override
-  public String getName() {
-    return facetName;
-  }
-
-  @Override
-  public Facet getFacet(Map<String, Set<Vertex>> values) {
-    return facetGetter.getFacet(facetName, values);
-  }
-
-  @Override
-  public List<String> getValues(Vertex vertex) {
-    return propertyValueGetter.getValues(vertex, propertyName);
   }
 }
