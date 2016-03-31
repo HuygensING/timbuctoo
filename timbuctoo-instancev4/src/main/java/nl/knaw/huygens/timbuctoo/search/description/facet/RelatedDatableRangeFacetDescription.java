@@ -53,33 +53,6 @@ public class RelatedDatableRangeFacetDescription implements FacetDescription {
   }
 
   @Override
-  public Facet getFacet(GraphTraversal<Vertex, Vertex> searchResult) {
-    List<Long> dates = Lists.newArrayList();
-
-    searchResult.as("source").bothE(relations).otherV().has(propertyName).as("target").dedup("source", "target")
-            .forEachRemaining(vertex -> {
-              Datable datable = getDatable(vertex.value(propertyName));
-
-              if (datable.isValid()) {
-                dates.add(Long.valueOf(FORMAT.format(datable.getFromDate())));
-                dates.add(Long.valueOf(FORMAT.format(datable.getToDate())));
-              }
-            });
-
-    dates.sort(Long::compareTo);
-
-    // set default values
-    Long lowerLimit = 0L;
-    Long upperLimit = 0L;
-    if (!dates.isEmpty()) {
-      lowerLimit = dates.get(0);
-      upperLimit = dates.get(dates.size() - 1);
-    }
-
-    return new Facet(facetName, Lists.newArrayList(new Facet.RangeOption(lowerLimit, upperLimit)), "RANGE");
-  }
-
-  @Override
   public Facet getFacet(Map<String, Set<Vertex>> values) {
     long lowerLimit = 0;
     long upperLimit = 0;

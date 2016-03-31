@@ -32,65 +32,6 @@ public class DatableRangeFacetDescriptionTest {
   }
 
   @Test
-  public void getFacetReturnsAFacetWithItsNameAndTypeRange() {
-    Graph graph = newGraph()
-      .withVertex(v -> v.withTimId("id"))
-      .build();
-
-    Facet facet = instance.getFacet(graph.traversal().V());
-
-    assertThat(facet, allOf(
-      hasProperty("name", equalTo(FACET_NAME)),
-      hasProperty("type", equalTo("RANGE"))));
-  }
-
-  @Test
-  public void getFacetReturnsFacetWithOneOptionWithDefaultValuesWhenTheVerticesDoNotContainTheProperty() {
-    Graph graph = newGraph()
-      .withVertex(v -> v.withTimId("id"))
-      .build();
-
-    Facet facet = instance.getFacet(graph.traversal().V());
-
-    assertThat(facet.getOptions(), containsInAnyOrder(new Facet.RangeOption(0, 0)));
-  }
-
-  @Test
-  public void getFacetReturnsRangeOptionWithDefaultValuesWhenTheStoredDatabaseIsNotValid() {
-    Graph graph = newGraph()
-      .withVertex(v -> v.withTimId("id").withProperty(PROPERTY_NAME, "invalidDatable"))
-      .build();
-
-    Facet facet = instance.getFacet(graph.traversal().V());
-
-    assertThat(facet.getOptions(), containsInAnyOrder(new Facet.RangeOption(0, 0)));
-  }
-
-  @Test
-  public void getFacetReturnsTheUpperAndLowerLimitInYearMonthDayFormat() {
-    Graph graph = newGraph().withVertex(v -> v.withProperty(PROPERTY_NAME, asSerializedDatable(
-      "2015-01")))
-                            .build();
-
-    Facet facet = instance.getFacet(graph.traversal().V());
-
-    assertThat(facet.getOptions(), contains(new Facet.RangeOption(20150101, 20150131)));
-  }
-
-  @Test
-  public void getFacetReturnsLowestLowerLimitAndTheHighestUpperLimit() {
-    Graph graph = newGraph()
-      .withVertex(v -> v.withProperty(PROPERTY_NAME, asSerializedDatable("2015-01")))
-      .withVertex(v -> v.withProperty(PROPERTY_NAME, asSerializedDatable("0015-01")))
-      .withVertex(v -> v.withProperty(PROPERTY_NAME, asSerializedDatable("0190-01")))
-      .build();
-
-    Facet facet = instance.getFacet(graph.traversal().V());
-
-    assertThat(facet.getOptions(), contains(new Facet.RangeOption(150101, 20150131)));
-  }
-
-  @Test
   public void filterAddsNoFilterWhenTheFacetIsNotPresent() {
     GraphTraversal<Vertex, Vertex> traversal = newGraph()
       .withVertex(v -> v.withTimId("id1").withProperty(PROPERTY_NAME, asSerializedDatable("2015-01")))

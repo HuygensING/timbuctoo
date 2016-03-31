@@ -44,27 +44,6 @@ public class RelatedListFacetDescription implements FacetDescription {
   }
 
   @Override
-  public Facet getFacet(GraphTraversal<Vertex, Vertex> searchResult) {
-    Map<String, Set<Vertex>> grouped = new HashMap<>();
-
-    searchResult.as("source").bothE(relations).otherV().has(propertyName).as("target").dedup("source", "target")
-            .select("source", "target").forEachRemaining(map -> {
-              Vertex source = (Vertex) map.get("source");
-              String targetValue = (String) ((Vertex) map.get("target")).property(propertyName).value();
-              if (!grouped.containsKey(targetValue)) {
-                grouped.put(targetValue, new HashSet<>());
-              }
-              grouped.get(targetValue).add(source);
-            });
-
-    List<Facet.Option> options  = grouped.entrySet().stream().map(group ->
-            new Facet.DefaultOption(parser.parse(group.getKey()), group.getValue().size())
-        ).filter(facetOption -> facetOption.getName() != null).collect(toList());
-
-    return new Facet(facetName, options, "LIST");
-  }
-
-  @Override
   public Facet getFacet(Map<String, Set<Vertex>> values) {
     List<Facet.Option> options = values.entrySet().stream()
             .map(entry -> new Facet.DefaultOption(parser.parse(entry.getKey()), entry.getValue().size()))

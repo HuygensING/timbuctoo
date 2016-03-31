@@ -40,59 +40,6 @@ public class MultiValueListFacetDescriptionTest {
   }
 
   @Test
-  public void getFacetReturnsAFacetWithItsNameAndTypeRange() {
-    Graph graph = newGraph()
-      .withVertex(v -> v.withTimId("id"))
-      .build();
-
-    Facet facet = instance.getFacet(graph.traversal().V());
-
-    assertThat(facet, allOf(
-      hasProperty("name", equalTo(FACET_NAME)),
-      hasProperty("type", equalTo("LIST"))));
-  }
-
-  @Test
-  public void getFacetReturnsAnOptionForEachValueTheVertexPropertyContains() {
-    Graph graph = newGraph()
-      .withVertex(v -> v.withProperty(PROPERTY_NAME, serializedListOf("value1", "value2")))
-      .build();
-
-    Facet facet = instance.getFacet(graph.traversal().V());
-
-    assertThat(facet, hasProperty("options", containsInAnyOrder(likeDefaultFacetOption().withName("value1"),
-      likeDefaultFacetOption().withName("value2"))));
-  }
-
-  @Test
-  public void getFacetReturnsAnOptionWithACountOfTheOccurrencesOfAValue() {
-    Graph graph = newGraph()
-      .withVertex(v -> v.withProperty(PROPERTY_NAME, serializedListOf("value1", "value2")))
-      .withVertex(v -> v.withProperty(PROPERTY_NAME, serializedListOf("value2", "value3")))
-      .withVertex(v -> v.withProperty(PROPERTY_NAME, serializedListOf("value1", "value3", "value4")))
-      .build();
-
-    Facet facet = instance.getFacet(graph.traversal().V());
-
-    assertThat(facet, hasProperty("options", containsInAnyOrder(
-      new DefaultOption("value1", 2),
-      new DefaultOption("value2", 2),
-      new DefaultOption("value3", 2),
-      new DefaultOption("value4", 1))));
-  }
-
-  @Test
-  public void getFacetIgnoresNullValues() {
-    Graph graph = newGraph()
-      .withVertex(v -> v.withProperty(PROPERTY_NAME, serializedListOf("value1", null)))
-      .build();
-
-    Facet facet = instance.getFacet(graph.traversal().V());
-
-    assertThat(facet, hasProperty("options", not(contains(likeDefaultFacetOption().withName(null)))));
-  }
-
-  @Test
   public void filterDoesNotFilterWhenFacetValuesDoesNotContainTheFacet() {
     GraphTraversal<Vertex, Vertex> traversal = newGraph()
       .withVertex(v -> v.withTimId("id1").withProperty(PROPERTY_NAME, serializedListOf("value1", "value2")))

@@ -51,38 +51,6 @@ public class RelatedMultiValueListFacetDescription implements FacetDescription {
   }
 
   @Override
-  public Facet getFacet(GraphTraversal<Vertex, Vertex> searchResult) {
-    Map<String, Set<Vertex>> grouped = new HashMap<>();
-    List<Facet.Option> options = new ArrayList<>();
-
-    searchResult.as("source").bothE(relations).otherV().has(propertyName).as("target").dedup("source", "target")
-            .select("source", "target").forEachRemaining(map -> {
-              Vertex source = (Vertex) map.get("source");
-              String targetValue = (String) ((Vertex) map.get("target")).property(propertyName).value();
-              if (!grouped.containsKey(targetValue)) {
-                grouped.put(targetValue, new HashSet<>());
-              }
-              grouped.get(targetValue).add(source);
-            });
-
-
-    grouped.entrySet().stream().forEach(group -> {
-      List<?> facetKeys;
-      try {
-        facetKeys = (List<?>) mapper.readValue(group.getKey(), List.class);
-      } catch (IOException e) {
-        LOG.error("'{}' is not a valid multi valued field", group.getKey());
-        facetKeys = Lists.newArrayList();
-      }
-      facetKeys.stream().forEach(facetKey -> options.add(
-              new Facet.DefaultOption((String) facetKey, group.getValue().size())));
-    });
-
-
-    return new Facet(facetName, options, "LIST");
-  }
-
-  @Override
   public Facet getFacet(Map<String, Set<Vertex>> values) {
     List<Facet.Option> options = values.entrySet().stream()
             .map(entry -> new Facet.DefaultOption(entry.getKey(), entry.getValue().size()))

@@ -12,10 +12,6 @@ import java.util.Set;
 public interface FacetDescription {
 
   String getName();
-  /**
-   * Generates the facet with it's options for the searchResult.
-   */
-  Facet getFacet(GraphTraversal<Vertex, Vertex> searchResult);
 
   Facet getFacet(Map<String, Set<Vertex>> values);
 

@@ -40,38 +40,6 @@ public class ChangeRangeFacetDescriptionTest {
   }
 
   @Test
-  public void getFacetReturnsTheFacetWithTheNameAndTheTypeRange() {
-    Graph graph = newGraph().build();
-
-    Facet facet = instance.getFacet(graph.traversal().V());
-
-    assertThat(facet, allOf(hasProperty("name", equalTo(FACET_NAME)), hasProperty("type", equalTo("RANGE"))));
-  }
-
-  @Test
-  public void getFacetReturnsARangeOptionWithDefaultValuesWhenTheStoredDatabaseIsNotValid() {
-    Graph graph = newGraph().withVertex(
-      v -> v.withTimId("id").withProperty(PROPERTY_NAME, "invalidChange")
-    ).build();
-
-    Facet facet = instance.getFacet(graph.traversal().V());
-
-    assertThat(facet, hasProperty("options", contains(new Facet.RangeOption(0, 0))));
-  }
-
-  @Test
-  public void getFacetReturnsARangeOptionWithTheLowestAndTheHighestValues() {
-    Graph graph = newGraph().withVertex(v -> v.withProperty(PROPERTY_NAME, serializedChangeWithDate("20150101")))
-                            .withVertex(v -> v.withProperty(PROPERTY_NAME, serializedChangeWithDate("10000302")))
-                            .withVertex(v -> v.withProperty(PROPERTY_NAME, serializedChangeWithDate("21000302")))
-                            .build();
-
-    Facet facet = instance.getFacet(graph.traversal().V());
-
-    assertThat(facet, hasProperty("options", contains(new Facet.RangeOption(10000302, 21000302))));
-  }
-
-  @Test
   public void filterAddsNoFilterWhenTheFacetIsNotPresent() {
     GraphTraversal<Vertex, Vertex> traversal = newGraph()
       .withVertex(v -> v.withTimId("id1").withProperty(PROPERTY_NAME, serializedChangeWithDate("20150101")))

@@ -44,31 +44,6 @@ class MultiValueListFacetDescription implements FacetDescription {
   }
 
   @Override
-  public Facet getFacet(GraphTraversal<Vertex, Vertex> searchResult) {
-    List<List<?>> vertexValues = searchResult.has(propertyName).map(v -> {
-      String value = v.get().value(propertyName);
-
-      try {
-        return (List<?>) mapper.readValue(value, List.class);
-      } catch (IOException e) {
-        LOG.error("'{}' is not a valid multi valued field", value);
-      }
-      return Lists.newArrayList();
-    }).toList();
-
-    List<Option> options =
-      // Some multivalued fields contain null values, that are not part of the design.
-      // We ignore them because they do not have any significant meaning.
-      vertexValues.stream().flatMap(Collection::stream).filter(value -> value != null)
-                  .collect(Collectors.groupingBy(v -> v, counting()))
-                  .entrySet().stream()
-                  .map(entry -> new DefaultOption(entry.getKey().toString(), entry.getValue()))
-                  .collect(toList());
-
-    return new Facet(facetName, options, "LIST");
-  }
-
-  @Override
   public Facet getFacet(Map<String, Set<Vertex>> values) {
     List<Facet.Option> options = values.entrySet().stream()
             .map(entry -> new Facet.DefaultOption(entry.getKey(), entry.getValue().size()))

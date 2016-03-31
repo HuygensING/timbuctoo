@@ -45,32 +45,6 @@ class ChangeRangeFacetDescription implements FacetDescription {
   }
 
   @Override
-  public Facet getFacet(GraphTraversal<Vertex, Vertex> searchResult) {
-    List<Long> dateStamps = Lists.newArrayList();
-    searchResult.has(propertyName).map(vertexTraverser -> vertexTraverser.get().<String>value(propertyName))
-      .<String>forEachRemaining(prop -> {
-        try {
-          LocalDate localDate = getChangeLocalDate(prop);
-
-          dateStamps.add(Long.valueOf(FORMATTER.format(localDate)));
-        } catch (IOException e) {
-          LOG.error("'{}' is not a valid change.", prop);
-        }
-      });
-
-    dateStamps.sort(Long::compareTo);
-
-    long lowerLimit = 0;
-    long upperLimit = 0;
-    if (!dateStamps.isEmpty()) {
-      lowerLimit = dateStamps.get(0);
-      upperLimit = dateStamps.get(dateStamps.size() - 1);
-    }
-
-    return new Facet(facetName, Lists.newArrayList(new Facet.RangeOption(lowerLimit, upperLimit)), "RANGE");
-  }
-
-  @Override
   public Facet getFacet(Map<String, Set<Vertex>> values) {
 
     long lowerLimit = 0;

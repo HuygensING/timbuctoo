@@ -35,19 +35,6 @@ public class ListFacetDescription implements FacetDescription {
   }
 
   @Override
-  public Facet getFacet(GraphTraversal<Vertex, Vertex> searchResult) {
-
-    Map<String, Long> counts =
-      searchResult.has(propertyName).<String>groupCount().by(propertyName).next();
-
-    List<Facet.Option> options =
-      counts.entrySet().stream().map(entry -> new Facet.DefaultOption(parser.parse(entry.getKey()), entry.getValue()))
-            .collect(toList());
-
-    return new Facet(facetName, options, "LIST");
-  }
-
-  @Override
   public Facet getFacet(Map<String, Set<Vertex>> values) {
     List<Facet.Option> options = values.entrySet().stream()
             .map(entry -> new Facet.DefaultOption(parser.parse(entry.getKey()), entry.getValue().size()))
