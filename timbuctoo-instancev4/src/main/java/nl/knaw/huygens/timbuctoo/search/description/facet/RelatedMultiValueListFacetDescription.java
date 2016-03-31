@@ -4,6 +4,8 @@ import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.ListFacetGetter;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.MultiValuePropertyGetter;
+import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.RelatedMultiValuePropertyGetter;
+import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.RelatedPropertyValueGetter;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -27,12 +29,14 @@ public class RelatedMultiValueListFacetDescription implements FacetDescription {
   private final String propertyName;
   private final String[] relations;
   private final FacetGetter facetGetter;
+  private final PropertyValueGetter propertyValueGetter;
 
   public RelatedMultiValueListFacetDescription(String facetName, String propertyName, String... relations) {
     this.facetName = facetName;
     this.propertyName = propertyName;
     this.relations = relations;
     this.facetGetter = new ListFacetGetter();
+    this.propertyValueGetter = new RelatedMultiValuePropertyGetter(relations);
   }
 
   @Override
@@ -67,11 +71,6 @@ public class RelatedMultiValueListFacetDescription implements FacetDescription {
 
   @Override
   public List<String> getValues(Vertex vertex) {
-    List<String> result = new ArrayList<>();
-    vertex.vertices(Direction.BOTH, relations).forEachRemaining(targetVertex -> {
-      List<String> values = MultiValuePropertyGetter.getValues(targetVertex, propertyName);
-      values.forEach(result::add);
-    });
-    return result;
+    return propertyValueGetter.getValues(vertex, propertyName);
   }
 }

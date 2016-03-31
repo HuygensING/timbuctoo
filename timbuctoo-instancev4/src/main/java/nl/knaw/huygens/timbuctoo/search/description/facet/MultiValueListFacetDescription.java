@@ -20,11 +20,13 @@ class MultiValueListFacetDescription implements FacetDescription {
   private final String facetName;
   private final String propertyName;
   private final FacetGetter facetGetter;
+  private final PropertyValueGetter propertyValueGetter;
 
   public MultiValueListFacetDescription(String facetName, String propertyName) {
     this.facetName = facetName;
     this.propertyName = propertyName;
     this.facetGetter = new ListFacetGetter();
+    this.propertyValueGetter = new MultiValuePropertyGetter();
   }
 
   @Override
@@ -67,6 +69,6 @@ class MultiValueListFacetDescription implements FacetDescription {
 
   @Override
   public List<String> getValues(Vertex vertex) {
-    return MultiValuePropertyGetter.getValues(vertex, propertyName);
+    return propertyValueGetter.getValues(vertex, propertyName);
   }
 }

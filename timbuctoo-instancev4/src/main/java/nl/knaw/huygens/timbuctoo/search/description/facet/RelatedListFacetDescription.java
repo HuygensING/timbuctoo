@@ -26,6 +26,7 @@ public class RelatedListFacetDescription implements FacetDescription {
   private final PropertyParser parser;
   private final String[] relations;
   private final FacetGetter facetGetter;
+  private final PropertyValueGetter propertyValueGetter;
 
   public RelatedListFacetDescription(String facetName, String propertyName, PropertyParser parser,
                                      String... relations) {
@@ -34,6 +35,7 @@ public class RelatedListFacetDescription implements FacetDescription {
     this.parser = parser;
     this.relations = relations;
     this.facetGetter = new ListFacetGetter(parser);
+    this.propertyValueGetter = new RelatedPropertyValueGetter(relations);
   }
 
   @Override
@@ -68,6 +70,6 @@ public class RelatedListFacetDescription implements FacetDescription {
 
   @Override
   public List<String> getValues(Vertex vertex) {
-    return RelatedPropertyValueGetter.getValues(vertex, propertyName, relations);
+    return propertyValueGetter.getValues(vertex, propertyName);
   }
 }

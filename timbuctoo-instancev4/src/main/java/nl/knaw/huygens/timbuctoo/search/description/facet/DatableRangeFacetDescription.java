@@ -31,11 +31,13 @@ public class DatableRangeFacetDescription implements FacetDescription {
   private final String facetName;
   private final String propertyName;
   private final FacetGetter facetGetter;
+  private final PropertyValueGetter propertyValueGetter;
 
   public DatableRangeFacetDescription(String facetName, String propertyName) {
     this.facetName = facetName;
     this.propertyName = propertyName;
     this.facetGetter = new DatableRangeFacetGetter();
+    this.propertyValueGetter = new LocalPropertyValueGetter();
   }
 
   private Datable getDatable(String datableAsString) {
@@ -94,6 +96,6 @@ public class DatableRangeFacetDescription implements FacetDescription {
 
   @Override
   public List<String> getValues(Vertex vertex) {
-    return LocalPropertyValueGetter.getValues(vertex, propertyName);
+    return propertyValueGetter.getValues(vertex, propertyName);
   }
 }

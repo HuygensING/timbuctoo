@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.search.description.facet;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
+import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.DerivedPropertyValueGetter;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.ListFacetGetter;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -26,6 +27,7 @@ public class DerivedListFacetDescription implements FacetDescription {
   private final String[] relations;
   private final String[] relationNames;
   private final FacetGetter facetGetter;
+  private final PropertyValueGetter propertyValueGetter;
 
   private DerivedListFacetDescription(String facetName, String propertyName, PropertyParser parser,
                                       String[] relationNames, String... relations) {
@@ -36,6 +38,7 @@ public class DerivedListFacetDescription implements FacetDescription {
     this.relations = relations;
     this.relationNames = relationNames;
     this.facetGetter = new ListFacetGetter(parser);
+    this.propertyValueGetter = new DerivedPropertyValueGetter(relationNames, relations);
   }
 
   public DerivedListFacetDescription(String facetName, String propertyName, String relationName,
@@ -87,14 +90,6 @@ public class DerivedListFacetDescription implements FacetDescription {
 
   @Override
   public List<String> getValues(Vertex vertex) {
-    List<String> result = new ArrayList<>();
-    vertex.vertices(Direction.BOTH, relations).forEachRemaining(targetVertex -> {
-      targetVertex.vertices(Direction.BOTH, relationNames).forEachRemaining(finalVertex -> {
-        if (finalVertex.property(propertyName).isPresent()) {
-          result.add((String) finalVertex.property(propertyName).value());
-        }
-      });
-    });
-    return result;
+    return propertyValueGetter.getValues(vertex, propertyName);
   }
 }

@@ -23,12 +23,14 @@ public class ListFacetDescription implements FacetDescription {
   private final String propertyName;
   private final PropertyParser parser;
   private final FacetGetter facetGetter;
+  private final PropertyValueGetter propertyValueGetter;
 
   public ListFacetDescription(String facetName, String propertyName, PropertyParser parser) {
     this.facetName = facetName;
     this.propertyName = propertyName;
     this.parser = parser;
     this.facetGetter = new ListFacetGetter(parser);
+    this.propertyValueGetter = new LocalPropertyValueGetter();
   }
 
   @Override
@@ -64,6 +66,6 @@ public class ListFacetDescription implements FacetDescription {
 
   @Override
   public List<String> getValues(Vertex vertex) {
-    return LocalPropertyValueGetter.getValues(vertex, propertyName);
+    return propertyValueGetter.getValues(vertex, propertyName);
   }
 }

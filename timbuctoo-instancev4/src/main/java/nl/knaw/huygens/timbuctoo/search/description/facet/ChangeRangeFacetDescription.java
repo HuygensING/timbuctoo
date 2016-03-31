@@ -34,12 +34,15 @@ class ChangeRangeFacetDescription implements FacetDescription {
   private final String propertyName;
   private final ObjectMapper objectMapper;
   private final FacetGetter facetGetter;
+  private final PropertyValueGetter propertyValueGetter;
 
   public ChangeRangeFacetDescription(String facetName, String propertyName) {
     this.facetName = facetName;
     this.propertyName = propertyName;
-    objectMapper = new ObjectMapper();
     this.facetGetter = new ChangeRangeFacetGetter();
+    this.propertyValueGetter = new LocalPropertyValueGetter();
+
+    objectMapper = new ObjectMapper();
   }
 
   private LocalDate getChangeLocalDate(Object changeObjectString) throws IOException {
@@ -94,6 +97,6 @@ class ChangeRangeFacetDescription implements FacetDescription {
 
   @Override
   public List<String> getValues(Vertex vertex) {
-    return LocalPropertyValueGetter.getValues(vertex, propertyName);
+    return propertyValueGetter.getValues(vertex, propertyName);
   }
 }
