@@ -68,21 +68,10 @@ public class PerformanceSearchDescriptionTest {
   }
 
   @Test
-  public void testOriginal() {
+  public void testPerformance() {
     WwDocumentSearchDescription instance = new WwDocumentSearchDescription(
             propertyDescriptorFactory, facetDescriptionFactory);
-    long before = System.currentTimeMillis();
-    instance.execute(wrapper, new SearchRequestV2_1());
-    long timed = System.currentTimeMillis() - before;
-    assertThat(timed).isGreaterThan(0);
-    System.out.println(timed);
-  }
-
-  @Test
-  public void testPerformance() {
-    PerformanceWwDocumentSearchDescription instance = new PerformanceWwDocumentSearchDescription(
-            propertyDescriptorFactory, facetDescriptionFactory);
-    PerformanceWwPersonSearchDescription instance2 = new PerformanceWwPersonSearchDescription(
+    WwPersonSearchDescription instance2 = new WwPersonSearchDescription(
             propertyDescriptorFactory, facetDescriptionFactory
     );
 

@@ -1,44 +1,51 @@
 package nl.knaw.huygens.timbuctoo.search;
 
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.search.description.facet.Facet;
+import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 public class SearchResult {
 
   // TODO add id used to store the result
 
-  private List<EntityRef> refs;
-  private List<String> fullTextSearchFields;
-  private List<String> sortableFields;
+  private List<Vertex> searchResults;
+  private SearchDescription searchDescription;
   private List<Facet> facets;
   private UUID id;
 
-  public SearchResult(List<EntityRef> refs,
-                      List<String> fullTextSearchFields,
-                      List<String> sortableFields,
+  public SearchResult(List<Vertex> searchResults,
+                      SearchDescription description,
                       List<Facet> facets) {
-    this.refs = refs;
-    this.fullTextSearchFields = fullTextSearchFields;
-    this.sortableFields = sortableFields;
+
+    this.searchResults = searchResults;
+    this.searchDescription = description;
     this.facets = facets;
   }
 
-  public SearchResult(List<EntityRef> refs, SearchDescription description, List<Facet> facets) {
-    this(refs, description.getFullTextSearchFields(), description.getSortableFields(), facets);
+  public List<EntityRef> getRefs() {
+    return getRefs(0, 50);
   }
 
-  public List<EntityRef> getRefs() {
-    return refs;
+  public List<EntityRef> getRefs(long offset, int limit) {
+    return searchResults.stream()
+            .skip(offset).limit(limit)
+            .map(result -> searchDescription.createRef(result))
+            .collect(toList());
   }
 
   public List<String> getFullTextSearchFields() {
-    return fullTextSearchFields;
+    return searchDescription.getFullTextSearchFields();
   }
 
   public List<String> getSortableFields() {
-    return sortableFields;
+    return searchDescription.getSortableFields();
   }
 
   public List<Facet> getFacets() {
@@ -51,5 +58,9 @@ public class SearchResult {
 
   public void setId(UUID id) {
     this.id = id;
+  }
+
+  public int getCount() {
+    return searchResults.size();
   }
 }

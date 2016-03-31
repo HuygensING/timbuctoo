@@ -15,10 +15,13 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
 
@@ -26,14 +29,7 @@ public abstract class AbstractSearchDescription implements SearchDescription {
 
   public static final SortDescription NO_OP_SORT_DESCRIPTION = new SortDescription(Lists.newArrayList());
 
-  protected List<Facet> createFacets(GraphTraversal<Vertex, Vertex> vertices) {
-
-    return getFacetDescriptions().stream()
-                                 .map(facetDescription -> facetDescription.getFacet(vertices.asAdmin().clone()))
-                                 .collect(toList());
-  }
-
-  protected EntityRef createRef(Vertex vertex) {
+  public EntityRef createRef(Vertex vertex) {
     String id = getIdDescriptor().get(vertex);
 
     EntityRef ref = new EntityRef(getType(), id);
@@ -59,9 +55,9 @@ public abstract class AbstractSearchDescription implements SearchDescription {
     // filter by full text search
     searchRequest.getFullTextSearchParameters().forEach(param -> {
       Optional<FullTextSearchDescription> first = getFullTextSearchDescriptions()
-        .stream()
-        .filter(desc -> Objects.equals(param.getName(), desc.getName()))
-        .findFirst();
+              .stream()
+              .filter(desc -> Objects.equals(param.getName(), desc.getName()))
+              .findFirst();
       if (first.isPresent()) {
         first.get().filter(vertices, param);
       }
@@ -70,13 +66,38 @@ public abstract class AbstractSearchDescription implements SearchDescription {
     getSortDescription().sort(vertices, searchRequest.getSortParameters());
 
     GraphTraversal<Vertex, Vertex> searchResult = getSearchResult(graphWrapper, vertices.toList());
-    // Clone to be able to reuse the search result.
-    GraphTraversal<Vertex, Vertex> refsClone = searchResult.asAdmin().clone();
-    List<EntityRef> refs = refsClone.map(vertex -> createRef(vertex.get())).toList();
+    List<Vertex> clonedResults = searchResult.asAdmin().clone().toList();
 
-    List<Facet> facets = createFacets(searchResult.asAdmin().clone());
+    Map<String, Map<String, Set<Vertex>>> facetCounts = new HashMap<>();
+    Map<String, FacetDescription> facetDescriptionMap = new HashMap<>();
 
-    return new SearchResult(refs, this, facets);
+    searchResult.map(vertexTraverser -> {
+      getFacetDescriptions().stream().forEach(facetDescription -> {
+        if (!facetCounts.containsKey(facetDescription.getName())) {
+          facetCounts.put(facetDescription.getName(), new HashMap<>());
+          facetDescriptionMap.put(facetDescription.getName(), facetDescription);
+        }
+        final List<String> facetValues = facetDescription.getValues(vertexTraverser.get());
+        if (facetValues != null) {
+          Map<String, Set<Vertex>> counts = facetCounts.get(facetDescription.getName());
+          facetValues.stream().forEach(facetValue -> {
+            if (!counts.containsKey(facetValue)) {
+              counts.put(facetValue, new HashSet<>());
+            }
+            Set<Vertex> bag = counts.get(facetValue);
+            bag.add(vertexTraverser.get());
+          });
+        }
+      });
+      return vertexTraverser;
+    }).forEachRemaining(v -> { });
+
+
+    List<Facet> facets = facetCounts.entrySet().stream()
+            .map((entry) -> facetDescriptionMap.get(entry.getKey()).getFacet(entry.getValue()))
+            .collect(toList());
+
+    return new SearchResult(clonedResults, this, facets);
   }
 
   /**

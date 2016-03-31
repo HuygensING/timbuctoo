@@ -43,13 +43,12 @@ public class SearchResponseV2_1Factory {
     searchResponse.setStart(start);
     searchResponse.setFacets(searchResult.getFacets());
 
-    List<EntityRef> refs = searchResult.getRefs();
-    int numFound = refs.size();
+    int numFound = searchResult.getCount();
     searchResponse.setNumFound(numFound);
     int normalizedStart = mapToRange(start, 0, numFound);
     int normalizedRows = mapToRange(rows, 0, numFound - normalizedStart);
-    int end = normalizedStart + normalizedRows;
-    refs.subList(normalizedStart, end).forEach(ref -> refCreator.addRef(searchResponse, ref));
+    List<EntityRef> refs = searchResult.getRefs(normalizedStart, normalizedRows);
+    refs.forEach(ref -> refCreator.addRef(searchResponse, ref));
     navigationCreator.next(searchResponse, rows, start, numFound, searchResult.getId());
     navigationCreator.prev(searchResponse, rows, start, numFound, searchResult.getId());
 

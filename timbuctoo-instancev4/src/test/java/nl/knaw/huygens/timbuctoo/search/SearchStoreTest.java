@@ -18,7 +18,7 @@ import static org.hamcrest.core.IsNull.notNullValue;
 
 public class SearchStoreTest {
 
-  public static final SearchResult OTHER_SEARCH_RESULT1 = new SearchResult(null, null, null, null);
+  public static final SearchResult OTHER_SEARCH_RESULT1 = new SearchResult(null, null, null);
   private static final Timeout ONE_SECOND_TIMEOUT = new Timeout(1, TimeUnit.SECONDS);
   public SearchResult searchResult;
   private SearchStore instance;
@@ -26,7 +26,7 @@ public class SearchStoreTest {
   @Before
   public void setUp() throws Exception {
     instance = new SearchStore(ONE_SECOND_TIMEOUT);
-    searchResult = new SearchResult(null, null, null, null);
+    searchResult = new SearchResult(null, null, null);
   }
 
   @Test
