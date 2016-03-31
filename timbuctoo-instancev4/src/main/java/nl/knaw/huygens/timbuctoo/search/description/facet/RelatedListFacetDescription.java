@@ -94,4 +94,13 @@ public class RelatedListFacetDescription implements FacetDescription {
     });
     return result;
   }
+
+  @Override
+  public Facet getFacet(Map<String, Set<Vertex>> values) {
+    List<Facet.Option> options = values.entrySet().stream()
+            .map(entry -> new Facet.DefaultOption(parser.parse(entry.getKey()), entry.getValue().size()))
+            .collect(toList());
+
+    return new Facet(facetName, options, "LIST");
+  }
 }

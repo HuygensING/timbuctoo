@@ -97,12 +97,6 @@ public class FacetDescriptionFactoryTest {
     assertThat(facetDescription, is(instanceOf(ChangeRangeFacetDescription.class)));
   }
 
-  @Test
-  public void createWwPersonLanguageFacetDescriptionCreatesAWwPersonLanguageFacetDescription() {
-    FacetDescription description = instance.createWwPersonLanguageFacetDescription("name");
-
-    assertThat(description, is(instanceOf(WwPersonLanguageFacetDescription.class)));
-  }
 
   @Test
   public void createMultiValueFacetDescriptionCreatesAMultiValueFacetDescription() {

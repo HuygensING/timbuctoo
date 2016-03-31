@@ -23,6 +23,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import static java.util.stream.Collectors.toList;
+
 /**
  * A facet description that creates a "LIST" facet with multi-valued properties from connected vertices.
  */
@@ -116,4 +118,12 @@ public class RelatedMultiValueListFacetDescription implements FacetDescription {
     });
     return result;
   }
+
+  @Override
+  public Facet getFacet(Map<String, Set<Vertex>> values) {
+    List<Facet.Option> options = values.entrySet().stream()
+            .map(entry -> new Facet.DefaultOption(entry.getKey(), entry.getValue().size()))
+            .collect(toList());
+
+    return new Facet(facetName, options, "LIST");  }
 }

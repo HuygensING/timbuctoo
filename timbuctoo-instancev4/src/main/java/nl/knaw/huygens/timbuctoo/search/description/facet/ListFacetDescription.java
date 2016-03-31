@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
 
@@ -73,5 +74,14 @@ public class ListFacetDescription implements FacetDescription {
       return Lists.newArrayList((String) vertex.property(propertyName).value());
     }
     return null;
+  }
+
+  @Override
+  public Facet getFacet(Map<String, Set<Vertex>> values) {
+    List<Facet.Option> options = values.entrySet().stream()
+            .map(entry -> new Facet.DefaultOption(parser.parse(entry.getKey()), entry.getValue().size()))
+            .collect(toList());
+
+    return new Facet(facetName, options, "LIST");
   }
 }

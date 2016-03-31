@@ -122,7 +122,8 @@ public class WwPersonSearchDescription extends AbstractSearchDescription {
       facetDescriptionFactory.createKeywordDescription("dynamic_s_religion", "hasReligion", "ww"),
       facetDescriptionFactory.createListFacetDescription("dynamic_s_residence", LocationNames.class, "names",
         "hasResidenceLocation"),
-      facetDescriptionFactory.createWwPersonLanguageFacetDescription("dynamic_s_language"),
+      facetDescriptionFactory.createDerivedListFacetDescription(
+                    "dynamic_s_language", "hasWorkLanguage", String.class, "wwlanguage_name", "isCreatedBy"),
       facetDescriptionFactory.createKeywordDescription("dynamic_s_marital_status", "hasMaritalStatus", "ww"),
       facetDescriptionFactory
         .createListFacetDescription("dynamic_s_collective", String.class, "wwcollective_name", "isMemberOf"),

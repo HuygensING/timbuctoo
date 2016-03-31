@@ -21,8 +21,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 
 public class RelatedDatableRangeFacetDescription implements FacetDescription {
@@ -125,5 +127,10 @@ public class RelatedDatableRangeFacetDescription implements FacetDescription {
       }
     });
     return result;
+  }
+
+  @Override
+  public Facet getFacet(Map<String, Set<Vertex>> values) {
+    return null;
   }
 }

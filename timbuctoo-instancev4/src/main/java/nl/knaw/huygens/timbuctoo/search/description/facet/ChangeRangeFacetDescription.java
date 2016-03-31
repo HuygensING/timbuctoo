@@ -20,8 +20,10 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 class ChangeRangeFacetDescription implements FacetDescription {
 
@@ -108,6 +110,11 @@ class ChangeRangeFacetDescription implements FacetDescription {
     if(vertex.property(propertyName).isPresent()) {
       return Lists.newArrayList((String) vertex.property(propertyName).value());
     }
+    return null;
+  }
+
+  @Override
+  public Facet getFacet(Map<String, Set<Vertex>> values) {
     return null;
   }
 

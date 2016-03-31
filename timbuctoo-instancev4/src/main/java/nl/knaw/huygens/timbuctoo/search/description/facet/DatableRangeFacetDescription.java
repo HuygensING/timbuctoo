@@ -19,8 +19,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 public class DatableRangeFacetDescription implements FacetDescription {
   public static final SimpleDateFormat FORMAT = new SimpleDateFormat("yyyyMMdd");
@@ -116,4 +118,9 @@ public class DatableRangeFacetDescription implements FacetDescription {
       return Lists.newArrayList((String) vertex.property(propertyName).value());
     }
     return null;  }
+
+  @Override
+  public Facet getFacet(Map<String, Set<Vertex>> values) {
+    return null;
+  }
 }

@@ -67,11 +67,21 @@ public abstract class PerformanceSearchDescription extends AbstractSearchDescrip
       return vertexTraverser;
     }).toList();
 
+
+    List<Facet> facets = new ArrayList<>();
     facetCounts.forEach((key, values) -> {
-      System.out.println(key + ": " + facetDescriptionMap.get(key).getClass().getName());
-      values.forEach((valKey, bag) -> {
-        System.out.println("  " + valKey + ": " + bag.size());
-      });
+      Facet facet = facetDescriptionMap.get(key).getFacet(values);
+      facets.add(facet);
+
+      System.out.println(key);
+      if(facet == null) {
+/*
+        values.forEach((valKey, bag) -> {
+          System.out.println("  " + valKey + ": " + bag.size());
+        });*/
+      } else {
+        facet.getOptions().forEach(System.out::println);
+      }
       System.out.println("===");
     });
     /*.forEachRemaining(vertexTraverser -> {

@@ -6,6 +6,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public interface FacetDescription {
 
@@ -21,4 +23,6 @@ public interface FacetDescription {
   void filter(GraphTraversal<Vertex, Vertex> graphTraversal, List<FacetValue> facets);
 
   List<String> getValues(Vertex vertex);
+
+  Facet getFacet(Map<String, Set<Vertex>> values);
 }

@@ -75,10 +75,6 @@ public class FacetDescriptionFactory {
     return new ChangeRangeFacetDescription(facetName, propertyName);
   }
 
-  public FacetDescription createWwPersonLanguageFacetDescription(String facetName) {
-    return new WwPersonLanguageFacetDescription(facetName);
-  }
-
 
   public FacetDescription createMultiValueListFacetDescription(String facetName, String propertyName) {
     return new MultiValueListFacetDescription(facetName, propertyName);

@@ -85,13 +85,16 @@ public class PerformanceSearchDescriptionTest {
             propertyDescriptorFactory, facetDescriptionFactory
     );
 
+/*
     long before = System.currentTimeMillis();
     instance.execute(wrapper, new SearchRequestV2_1());
     long timed = System.currentTimeMillis() - before;
     System.out.println("DOCUMENT TIME: " + timed);
-/*    before = System.currentTimeMillis();
+*/
+
+    long before2 = System.currentTimeMillis();
     instance2.execute(wrapper, new SearchRequestV2_1());
-    timed = System.currentTimeMillis() - before;
-    System.out.println("PERSON TIME: " + timed);*/
+    long timed2 = System.currentTimeMillis() - before2;
+    System.out.println("PERSON TIME: " + timed2);
   }
 }
