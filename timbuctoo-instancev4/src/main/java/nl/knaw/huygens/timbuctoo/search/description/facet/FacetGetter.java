@@ -1,6 +1,5 @@
-package nl.knaw.huygens.timbuctoo.search.description.facet.helpers;
+package nl.knaw.huygens.timbuctoo.search.description.facet;
 
-import nl.knaw.huygens.timbuctoo.search.description.facet.Facet;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Map;

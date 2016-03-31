@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.search.description.facet.helpers;
 
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
 import nl.knaw.huygens.timbuctoo.search.description.facet.Facet;
+import nl.knaw.huygens.timbuctoo.search.description.facet.FacetGetter;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.List;
