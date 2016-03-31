@@ -10,6 +10,6 @@ fi
 USER_STRING=`getent passwd timbuctoo`
 if [ ! "$USER_STRING" ]; then
   echo "create user \"timbuctoo\""
-  useradd --system -g timbuctoo timbuctoo -d /data/datarepository/timbuctoo
+  useradd --system -g timbuctoo timbuctoo -d /data/timbuctoo
 
 fi

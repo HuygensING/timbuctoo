@@ -1,7 +1,7 @@
 # file with the monit configuration for timbuctoo
-check process timbuctoo with pidfile /data/datarepository/logs/timbuctoo_daemon.pid
-	start program = "/data/datarepository/timbuctoo/bin/timbuctoo_daemon start"
-	stop program = "/data/datarepository/timbuctoo/bin/timbuctoo_daemon stop"
+check process timbuctoo with pidfile /data/timbuctoo/app/logs/timbuctoo_daemon.pid
+	start program = "/data/timbuctoo/app/bin/timbuctoo_daemon start"
+	stop program = "/data/timbuctoo/app/bin/timbuctoo_daemon stop"
 	if failed
 		port 9080
 		protocol http
