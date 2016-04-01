@@ -3,7 +3,7 @@
 do_start()
 {
   echo "starting Timbuctoo"
-  runuser -l datarepository -c '/opt/timbuctoo/bin/timbuctoo server /opt/timbuctoo/conf/config.yaml'
+  runuser -l timbuctoo -c '/data/timbuctoo/app/bin/timbuctoo server /data/timbuctoo/app/conf/config.yaml'
 }
 
 get_pid()

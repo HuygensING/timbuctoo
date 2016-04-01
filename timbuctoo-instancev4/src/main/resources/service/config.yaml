@@ -3,11 +3,11 @@
 
 
 #database files
-databasePath: "/data/daterepository/database" #do not refer to a soft link
+databasePath: "/data/timbuctoo/database" #do not refer to a soft link
 # JSON files
 
-loginsFilePath: "/data/daterepository/data/logins.json"
-usersFilePath: "/data/daterepository/data/users.json"
+loginsFilePath: "/data/timbuctoo/data/logins.json"
+usersFilePath: "/data/timbuctoo/data/users.json"
 
 # Timeouts
 # the 'duration' is a number
@@ -40,7 +40,6 @@ server:
   applicationConnectors:
     - type: http #Note! if you change this you might or might not also want to change the baseUri
       port: 9080 # should be equal with the port configured in timbuctoo.monit
-      bindHost: 127.0.0.1 #Note! if you change this you might or might not also want to change the baseUri
   adminConnectors:
     - type: http
       port: 9081 # should be equal with the port configured in timbuctoo.monit
