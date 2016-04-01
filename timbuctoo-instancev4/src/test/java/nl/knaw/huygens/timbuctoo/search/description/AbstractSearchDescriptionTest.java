@@ -104,14 +104,13 @@ public class AbstractSearchDescriptionTest {
     GraphWrapper graphWrapper = createGraphWrapper(graph);
 
     SearchResult searchResult = instance.execute(graphWrapper, new SearchRequestV2_1());
-    System.out.println(searchResult.getRefs());
 
     assertThat(searchResult.getRefs(), is(not(empty())));
 
-    // verify(idDescriptor, times(1)).get(argThat(likeVertex().withType(type)));
-    // verify(displayNameDescriptor, times(1)).get(argThat(likeVertex().withType(type)));
-    // verify(dataDescriptor1, times(1)).get(argThat(likeVertex().withType(type)));
-    // verify(dataDescriptor2, times(1)).get(argThat(likeVertex().withType(type)));
+    verify(idDescriptor, times(1)).get(argThat(likeVertex().withType(type)));
+    verify(displayNameDescriptor, times(1)).get(argThat(likeVertex().withType(type)));
+    verify(dataDescriptor1, times(1)).get(argThat(likeVertex().withType(type)));
+    verify(dataDescriptor2, times(1)).get(argThat(likeVertex().withType(type)));
   }
 
   @Test
@@ -147,6 +146,10 @@ public class AbstractSearchDescriptionTest {
   public void executeLetsEachFacetDescriptionFillAListOfFacets() {
     FacetDescription facetDescription1 = mock(FacetDescription.class);
     FacetDescription facetDescription2 = mock(FacetDescription.class);
+
+    given(facetDescription1.getName()).willReturn("facet_1");
+    given(facetDescription1.getName()).willReturn("facet_2");
+
     String type = "type";
     AbstractSearchDescription instance = searchDescription()
       .withType(type)
@@ -162,11 +165,11 @@ public class AbstractSearchDescriptionTest {
     SearchResult searchResult = instance.execute(graphWrapper, new SearchRequestV2_1());
 
     assertThat(searchResult.getFacets(), is(Matchers.notNullValue()));
-    // ArgumentCaptor<HashMap> captor = ArgumentCaptor.forClass(HashMap.class);
-    // verify(facetDescription1, times(1)).getFacet(captor.capture());
+    ArgumentCaptor<HashMap> captor = ArgumentCaptor.forClass(HashMap.class);
+    verify(facetDescription1, times(1)).getFacet(captor.capture());
 
-    // ArgumentCaptor<HashMap> captor1 = ArgumentCaptor.forClass(HashMap.class);
-    // verify(facetDescription2, times(1)).getFacet(captor1.capture());
+    ArgumentCaptor<HashMap> captor1 = ArgumentCaptor.forClass(HashMap.class);
+    verify(facetDescription2, times(1)).getFacet(captor1.capture());
   }
 
   @Test
@@ -186,7 +189,6 @@ public class AbstractSearchDescriptionTest {
     verify(facetDescription1).filter(any(/*GraphTraversal*/), argThat(is(searchRequest.getFacetValues())));
     verify(facetDescription2).filter(any(/*GraphTraversal*/), argThat(is(searchRequest.getFacetValues())));
   }
-  // TODO add tests to make sure the filtering happens before the creation of the facets and the results.
 
   @Test
   public void executeLetsEachFullTextDescriptionFilterTheSearchResult() {
