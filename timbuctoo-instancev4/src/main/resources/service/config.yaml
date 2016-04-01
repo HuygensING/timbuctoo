@@ -20,7 +20,7 @@ searchResultAvailabilityTimeout:
   timeUnit: HOURS
 
 #Public timbuctoo url
-baseUri: http://localhost:8080 # used to generate next and previous links of a search result
+baseUri: http://test.repository.huygens.knaw.nl # used to generate next and previous links of a search result
 
 activeMq:
   #persistent=false means that the broker does not try to store the queue. This is not needed in a debugrun.
@@ -48,8 +48,15 @@ server:
 
 logging:
   appenders:
-    - type: console
-      logFormat: "- %-5p  %m [%c{60}]%n"
+    - type: file
+      currentLogFilename: /data/timbuctoo/logs/timbuctoo.log
+      threshold: ALL
+      archive: true
+      archivedLogFilenamePattern: /data/timbuctoo/logs/timbuctoo.log.%d
+      archivedFileCount: 10
+      timeZone: UTC
+      logFormat: "- %d %-5p  %m [%c{60}] %marker %mdc %ex%n"
+
 #enable this to send the logs to an external log server
 #    - type: gelf
 #      host: 192.168.99.100
