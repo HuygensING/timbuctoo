@@ -64,19 +64,21 @@ public abstract class AbstractSearchDescription implements SearchDescription {
     });
     // order / sort
     getSortDescription().sort(vertices, searchRequest.getSortParameters());
-
-    GraphTraversal<Vertex, Vertex> searchResult = getSearchResult(graphWrapper, vertices.toList());
-    List<Vertex> clonedResults = searchResult.asAdmin().clone().toList();
-
     Map<String, Map<String, Set<Vertex>>> facetCounts = new HashMap<>();
     Map<String, FacetDescription> facetDescriptionMap = new HashMap<>();
 
-    searchResult.map(vertexTraverser -> {
+    List<Vertex> searchResult = vertices.map(vertexTraverser -> {
       getFacetDescriptions().stream().forEach(facetDescription -> {
+        // These facets are only used for filtering
+        if (getOnlyFilterFacetList().contains(facetDescription.getName())) {
+          return;
+        }
+
         if (!facetCounts.containsKey(facetDescription.getName())) {
           facetCounts.put(facetDescription.getName(), new HashMap<>());
           facetDescriptionMap.put(facetDescription.getName(), facetDescription);
         }
+
         final List<String> facetValues = facetDescription.getValues(vertexTraverser.get());
         if (facetValues != null) {
           Map<String, Set<Vertex>> counts = facetCounts.get(facetDescription.getName());
@@ -89,15 +91,14 @@ public abstract class AbstractSearchDescription implements SearchDescription {
           });
         }
       });
-      return vertexTraverser;
-    }).forEachRemaining(v -> { });
-
+      return vertexTraverser.get();
+    }).toList();
 
     List<Facet> facets = facetCounts.entrySet().stream()
             .map((entry) -> facetDescriptionMap.get(entry.getKey()).getFacet(entry.getValue()))
             .collect(toList());
 
-    return new SearchResult(clonedResults, this, facets);
+    return new SearchResult(searchResult, this, facets);
   }
 
   /**
@@ -117,6 +118,10 @@ public abstract class AbstractSearchDescription implements SearchDescription {
     return traversalSource.V().filter(
       x -> ((String) x.get().property("types").value()).contains("\"" + getType() + "\"")
     );
+  }
+
+  protected List<String> getOnlyFilterFacetList() {
+    return Lists.newArrayList();
   }
 
   // Hooks

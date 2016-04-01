@@ -38,6 +38,42 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
           "dynamic_t_title",
           "dynamic_t_notes");
 
+  private static final String DYNAMIC_S_AUTHOR_MARITAL_STATUS = "dynamic_s_author_marital_status";
+  private static final String DYNAMIC_S_AUTHOR_EDUCATION = "dynamic_s_author_education";
+  private static final String DYNAMIC_S_AUTHOR_SOCIAL_CLASS = "dynamic_s_author_social_class";
+  private static final String DYNAMIC_S_AUTHOR_RELIGION = "dynamic_s_author_religion";
+  private static final String DYNAMIC_S_AUTHOR_FINANCIALS = "dynamic_s_author_financials";
+  private static final String DYNAMIC_S_AUTHOR_PROFESSION = "dynamic_s_author_profession";
+  private static final String DYNAMIC_S_AUTHOR_COLLECTIVE = "dynamic_s_author_collective";
+  private static final String DYNAMIC_S_AUTHOR_DEATHPLACE = "dynamic_s_author_deathplace";
+  private static final String DYNAMIC_S_AUTHOR_BIRTHPLACE = "dynamic_s_author_birthplace";
+  private static final String DYNAMIC_S_AUTHOR_RESIDENCE = "dynamic_s_author_residence";
+  private static final String DYNAMIC_S_AUTHOR_RELATED_LOCATIONS = "dynamic_s_author_relatedLocations";
+  private static final String DYNAMIC_S_AUTHOR_GENDER = "dynamic_s_author_gender";
+  private static final String DYNAMIC_I_AUTHOR_DEATH_DATE = "dynamic_i_author_deathDate";
+  private static final String DYNAMIC_I_AUTHOR_BIRTH_DATE = "dynamic_i_author_birthDate";
+  private static final String DYNAMIC_S_AUTHOR_CHILDREN = "dynamic_s_author_children";
+  private static final String DYNAMIC_S_AUTHOR_TYPES = "dynamic_s_author_types";
+
+  private static final List<String> ONLY_FILTER_FACET_LIST = Lists.newArrayList(
+    DYNAMIC_S_AUTHOR_MARITAL_STATUS ,
+    DYNAMIC_S_AUTHOR_EDUCATION ,
+    DYNAMIC_S_AUTHOR_SOCIAL_CLASS ,
+    DYNAMIC_S_AUTHOR_RELIGION ,
+    DYNAMIC_S_AUTHOR_FINANCIALS ,
+    DYNAMIC_S_AUTHOR_PROFESSION ,
+    DYNAMIC_S_AUTHOR_COLLECTIVE ,
+    DYNAMIC_S_AUTHOR_DEATHPLACE ,
+    DYNAMIC_S_AUTHOR_BIRTHPLACE ,
+    DYNAMIC_S_AUTHOR_RESIDENCE ,
+    DYNAMIC_S_AUTHOR_RELATED_LOCATIONS ,
+    DYNAMIC_S_AUTHOR_GENDER ,
+    DYNAMIC_I_AUTHOR_DEATH_DATE ,
+    DYNAMIC_I_AUTHOR_BIRTH_DATE ,
+    DYNAMIC_S_AUTHOR_CHILDREN ,
+    DYNAMIC_S_AUTHOR_TYPES
+  );
+
   private final PropertyParserFactory propertyParserFactory;
   private final PropertyDescriptorFactory propertyDescriptorFactory;
 
@@ -102,7 +138,10 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
     );
   }
 
-
+  @Override
+  protected List<String> getOnlyFilterFacetList() {
+    return ONLY_FILTER_FACET_LIST;
+  }
 
   private List<FacetDescription> createFacetDescriptions(FacetDescriptionFactory facetDescriptionFactory) {
     return Lists.newArrayList(
@@ -119,62 +158,63 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
             facetDescriptionFactory.createListFacetDescription(
                     "dynamic_s_sources", String.class, "wwdocument_title", "hasDocumentSource"),
 
-            facetDescriptionFactory.createDerivedKeywordDescription(
-                    "dynamic_s_author_marital_status", "hasMaritalStatus", "ww", "isCreatedBy"),
+            facetDescriptionFactory.createChangeRangeFacetDescription("dynamic_i_modified", "modified"),
+
+            facetDescriptionFactory.createListFacetDescription(
+                    "dynamic_s_document_type", DocumentType.class, "wwdocument_documentType"),
 
             facetDescriptionFactory.createDerivedKeywordDescription(
-                    "dynamic_s_author_education", "hasEducation", "ww", "isCreatedBy"),
+                    DYNAMIC_S_AUTHOR_MARITAL_STATUS, "hasMaritalStatus", "ww", "isCreatedBy"),
 
             facetDescriptionFactory.createDerivedKeywordDescription(
-                    "dynamic_s_author_social_class", "hasSocialClass", "ww", "isCreatedBy"),
+                    DYNAMIC_S_AUTHOR_EDUCATION, "hasEducation", "ww", "isCreatedBy"),
 
             facetDescriptionFactory.createDerivedKeywordDescription(
-                    "dynamic_s_author_religion", "hasReligion", "ww", "isCreatedBy"),
+                    DYNAMIC_S_AUTHOR_SOCIAL_CLASS, "hasSocialClass", "ww", "isCreatedBy"),
 
             facetDescriptionFactory.createDerivedKeywordDescription(
-                    "dynamic_s_author_financials", "hasFinancialSituation", "ww", "isCreatedBy"),
+                    DYNAMIC_S_AUTHOR_RELIGION, "hasReligion", "ww", "isCreatedBy"),
 
             facetDescriptionFactory.createDerivedKeywordDescription(
-                    "dynamic_s_author_profession", "hasProfession", "ww", "isCreatedBy"),
+                    DYNAMIC_S_AUTHOR_FINANCIALS, "hasFinancialSituation", "ww", "isCreatedBy"),
+
+            facetDescriptionFactory.createDerivedKeywordDescription(
+                    DYNAMIC_S_AUTHOR_PROFESSION, "hasProfession", "ww", "isCreatedBy"),
 
             facetDescriptionFactory.createDerivedListFacetDescription(
-                    "dynamic_s_author_collective", "isMemberOf", String.class, "wwcollective_name", "isCreatedBy"),
+                    DYNAMIC_S_AUTHOR_COLLECTIVE, "isMemberOf", String.class, "wwcollective_name", "isCreatedBy"),
 
             facetDescriptionFactory.createDerivedListFacetDescription(
-                    "dynamic_s_author_deathplace", "hasDeathPlace", LocationNames.class, "names", "isCreatedBy"),
+                    DYNAMIC_S_AUTHOR_DEATHPLACE, "hasDeathPlace", LocationNames.class, "names", "isCreatedBy"),
 
             facetDescriptionFactory.createDerivedListFacetDescription(
-                    "dynamic_s_author_birthplace", "hasBirthPlace", LocationNames.class, "names", "isCreatedBy"),
+                    DYNAMIC_S_AUTHOR_BIRTHPLACE, "hasBirthPlace", LocationNames.class, "names", "isCreatedBy"),
 
             facetDescriptionFactory.createDerivedListFacetDescription(
-                    "dynamic_s_author_residence", "hasResidenceLocation", LocationNames.class, "names", "isCreatedBy"),
+                    DYNAMIC_S_AUTHOR_RESIDENCE, "hasResidenceLocation", LocationNames.class, "names", "isCreatedBy"),
 
             facetDescriptionFactory.createDerivedListFacetDescription(
-                    "dynamic_s_author_relatedLocations",
+                    DYNAMIC_S_AUTHOR_RELATED_LOCATIONS,
                     Lists.newArrayList("hasBirthPlace", "hasDeathPlace", "hasResidenceLocation"),
                     LocationNames.class,
                     "names",
                     "isCreatedBy"),
 
             facetDescriptionFactory.createListFacetDescription(
-                  "dynamic_s_author_gender", Gender.class, "wwperson_gender", "isCreatedBy"),
+                    DYNAMIC_S_AUTHOR_GENDER, Gender.class, "wwperson_gender", "isCreatedBy"),
 
             facetDescriptionFactory.createDatableRangeFacetDescription(
-                    "dynamic_i_author_deathDate", "wwperson_deathDate", "isCreatedBy"),
+                    DYNAMIC_I_AUTHOR_DEATH_DATE, "wwperson_deathDate", "isCreatedBy"),
 
             facetDescriptionFactory.createDatableRangeFacetDescription(
-                    "dynamic_i_author_birthDate", "wwperson_birthDate", "isCreatedBy"),
+                    DYNAMIC_I_AUTHOR_BIRTH_DATE, "wwperson_birthDate", "isCreatedBy"),
 
             facetDescriptionFactory.createListFacetDescription(
-                    "dynamic_s_author_children", String.class, "wwperson_children", "isCreatedBy"),
+                    DYNAMIC_S_AUTHOR_CHILDREN, String.class, "wwperson_children", "isCreatedBy"),
 
-            facetDescriptionFactory.createMultiValueListFacetDescription("dynamic_s_author_types", "wwperson_types",
-                    "isCreatedBy"),
-
-            facetDescriptionFactory.createChangeRangeFacetDescription("dynamic_i_modified", "modified"),
-
-            facetDescriptionFactory.createListFacetDescription(
-                    "dynamic_s_document_type", DocumentType.class, "wwdocument_documentType"));
+            facetDescriptionFactory.createMultiValueListFacetDescription(
+                    DYNAMIC_S_AUTHOR_TYPES, "wwperson_types", "isCreatedBy")
+    );
   }
 
   private Map<String, PropertyDescriptor> createDataDescriptors() {
