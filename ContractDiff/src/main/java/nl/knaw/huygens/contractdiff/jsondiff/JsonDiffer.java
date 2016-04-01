@@ -170,9 +170,12 @@ public class JsonDiffer {
         for (int i = 0; i < actual.size(); i++) {
           result.add(i, recurser.recurser(actual.get(i), expectation.get(i)));
         }
+        int startIndex =  actual.size() -1;
+        if(startIndex<0)
+        	startIndex = 0;
         if (expectation.size() > actual.size()) {
-          for (int i = actual.size() - 1; i < expectation.size(); i++) {
-            result.add(i, new MissingPropertyDiffResult(expectation.get(i).toString()));
+          for (int i = startIndex; i < expectation.size(); i++) {
+            result.add(i, new MissingPropertyDiffResult(""+expectation.get(i)));
           }
         }
         return result;
