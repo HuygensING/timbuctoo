@@ -1,8 +1,12 @@
 package nl.knaw.huygens.timbuctoo.search.description.facet;
 
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.ListFacetGetter;
+import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -26,7 +30,18 @@ public class EdgeListFacetDescription extends AbstractFacetDescription {
   public void filter(GraphTraversal<Vertex, Vertex> graphTraversal, List<FacetValue> facets) {
     Optional<FacetValue> facetValue =
             facets.stream().filter(facet -> Objects.equals(facet.getName(), facetName)).findFirst();
-    // FIXME
+
+    if (facetValue.isPresent()) {
+      FacetValue value = facetValue.get();
+      if (value instanceof ListFacetValue) {
+
+        List<String> values = ((ListFacetValue) value).getValues();
+
+        if (!values.isEmpty()) {
+          graphTraversal.where(__.inE(values.toArray(new String[values.size()])));
+        }
+      }
+    }
   }
 
   public List<String> getValues(Vertex vertex) {
