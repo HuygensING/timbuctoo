@@ -19,6 +19,7 @@ import java.util.List;
 public class ReceptionSearchDescription extends WwDocumentSearchDescription {
   private final SearchResult otherSearch;
 
+
   private static final String[] DOCUMENT_RELATIONS = {
     "hasEdition",
     "hasSequel",
