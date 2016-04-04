@@ -61,6 +61,9 @@ public class ReceptionSearchDescription extends WwDocumentSearchDescription {
                                     FacetDescriptionFactory facetDescriptionFactory, SearchResult otherSearch) {
     super(propertyDescriptorFactory, facetDescriptionFactory);
     this.otherSearch = otherSearch;
+    getFacetDescriptions().add(
+            facetDescriptionFactory.createEdgeFacetDescription("dynamic_s_relation", getRelationNames())
+    );
   }
 
   private String[] getRelationNames() {
