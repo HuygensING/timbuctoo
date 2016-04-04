@@ -8,7 +8,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Collection;
 
-public class LocalProperty extends TimbuctooProperty {
+public class LocalProperty extends ReadWriteProperty {
   private final String guiTypeId;
   private final Collection<String> options;
 

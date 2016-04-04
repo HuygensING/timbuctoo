@@ -7,23 +7,22 @@ import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.d
 
 public class PropertyTypes {
 
-  public static TimbuctooProperty localProperty(String propName) {
+  public static ReadWriteProperty localProperty(String propName) {
     return localProperty(propName, Converters.stringToString);
   }
 
-  public static TimbuctooProperty localProperty(String propName, Converter converter) {
+  public static ReadWriteProperty localProperty(String propName, Converter converter) {
     return new LocalProperty(propName, converter);
   }
 
-  public static TimbuctooProperty wwPersonNameOrTempName() {
+  public static ReadOnlyProperty wwPersonNameOrTempName() {
     return new PropertyOrDefault(
       localProperty("wwperson_names", defaultFullPersonNameConverter),
-      localProperty("wwperson_tempName"),
-      "Displayname cannot be set, set the 'names' property instead."
+      localProperty("wwperson_tempName")
     );
   }
 
-  public static TimbuctooProperty wwdocumentDisplayNameProperty() {
+  public static ReadOnlyProperty wwdocumentDisplayNameProperty() {
     return new WwDocumentDisplayName();
   }
 }

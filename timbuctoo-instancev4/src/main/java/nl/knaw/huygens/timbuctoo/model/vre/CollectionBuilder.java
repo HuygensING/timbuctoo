@@ -1,7 +1,8 @@
 package nl.knaw.huygens.timbuctoo.model.vre;
 
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.model.properties.TimbuctooProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.ReadOnlyProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.ReadWriteProperty;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -13,9 +14,8 @@ public class CollectionBuilder {
   private String abstractType;
   private String collectionName;
   private final String defaultPrefix;
-  private TimbuctooProperty displayName;
-  private Map<String, TimbuctooProperty> properties = Maps.newHashMap();
-  private Map<String, TimbuctooProperty> searchResultData;
+  private ReadOnlyProperty displayName;
+  private Map<String, ReadWriteProperty> properties = Maps.newHashMap();
   private final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations = Maps.newHashMap();
   private boolean isRelationCollection = false;
 
@@ -38,18 +38,13 @@ public class CollectionBuilder {
     return this;
   }
 
-  public CollectionBuilder withDisplayName(TimbuctooProperty displayName) {
+  public CollectionBuilder withDisplayName(ReadOnlyProperty displayName) {
     this.displayName = displayName;
     return this;
   }
 
-  public CollectionBuilder withProperty(String name, TimbuctooProperty property) {
+  public CollectionBuilder withProperty(String name, ReadWriteProperty property) {
     this.properties.put(name, property);
-    return this;
-  }
-
-  public CollectionBuilder withSearchResultData(Map<String, TimbuctooProperty> searchResultData) {
-    this.searchResultData = searchResultData;
     return this;
   }
 
@@ -86,7 +81,6 @@ public class CollectionBuilder {
       abstractType,
       displayName,
       properties,
-      searchResultData,
       collectionName,
       vre,
       derivedRelations,

@@ -7,7 +7,8 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
-import nl.knaw.huygens.timbuctoo.model.properties.TimbuctooProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.ReadOnlyProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.ReadWriteProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -147,7 +148,7 @@ public class TinkerpopJsonCrudService {
 
   private UUID createEntity(Collection collection, ObjectNode input, String userId) throws IOException {
     String collectionName = collection.getCollectionName();
-    Map<String, TimbuctooProperty> mapping = collection.getProperties();
+    Map<String, ReadWriteProperty> mapping = collection.getProperties();
 
     UUID id = UUID.randomUUID();
 
@@ -211,7 +212,7 @@ public class TinkerpopJsonCrudService {
     if (collection == null) {
       throw new InvalidCollectionException(collectionName);
     }
-    final Map<String, TimbuctooProperty> mapping = collection.getProperties();
+    final Map<String, ReadWriteProperty> mapping = collection.getProperties();
     final String entityTypeName = collection.getEntityTypeName();
     final GraphTraversalSource traversalSource = graphwrapper.getGraph().traversal();
 
@@ -227,8 +228,8 @@ public class TinkerpopJsonCrudService {
 
     GraphTraversal[] propertyGetters = mapping
       .entrySet().stream()
-      //append error handling and result handling to the traversal
-      .map(prop -> prop.getValue().get().get().sideEffect(x ->
+      //append error handling and resuling to the traversal
+      .map(prop -> prop.getValue().get().sideEffect(x ->
         x.get()
           .onSuccess( node -> result.set(prop.getKey(), node))
           .onFailure( e -> {
@@ -415,10 +416,10 @@ public class TinkerpopJsonCrudService {
 
   private Optional<String> getDisplayname(GraphTraversalSource traversalSource, Vertex vertex,
                                           Collection targetCollection) {
-    TimbuctooProperty displayNameProperty = targetCollection.getDisplayName();
+    ReadOnlyProperty displayNameProperty = targetCollection.getDisplayName();
     if (displayNameProperty != null) {
       GraphTraversal<Vertex, Try<JsonNode>> displayNameGetter = traversalSource.V(vertex.id()).union(
-        targetCollection.getDisplayName().get().get()
+        targetCollection.getDisplayName().get()
       );
       if (displayNameGetter.hasNext()) {
         Try<JsonNode> traversalResult = displayNameGetter.next();
@@ -625,7 +626,7 @@ public class TinkerpopJsonCrudService {
       }
     }
 
-    final Map<String, TimbuctooProperty> collectionProperties = collection.getProperties();
+    final Map<String, ReadWriteProperty> collectionProperties = collection.getProperties();
     final GraphTraversal[] setters = new GraphTraversal[collectionProperties.size()];
 
     final List<String> dataFields = stream(data.fieldNames())
@@ -706,7 +707,7 @@ public class TinkerpopJsonCrudService {
       results = traversalSource.V()
         .as("vertex")
         .where(typeFilter)
-        .union(collection.getDisplayName().get().get())
+        .union(collection.getDisplayName().get())
         .filter(x -> x.get().isSuccess())
         .map(x -> x.get().get().asText())
         .as("displayName")
@@ -740,7 +741,7 @@ public class TinkerpopJsonCrudService {
       results = traversalSource.V()
         .as("vertex")
         .where(typeFilter)
-        .union(collection.getDisplayName().get().get())
+        .union(collection.getDisplayName().get())
         .filter(x -> x.get().isSuccess())
         .map(x -> x.get().get().asText())
         .as("displayName")

@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.model.vre;
 
-import nl.knaw.huygens.timbuctoo.model.properties.TimbuctooProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.ReadOnlyProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.ReadWriteProperty;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -13,22 +14,20 @@ public class Collection {
   private final String collectionName;
   private final Vre vre;
   private final String abstractType;
-  private final TimbuctooProperty displayName;
-  private final Map<String, TimbuctooProperty> properties;
-  private final Map<String, TimbuctooProperty> searchResultData;
+  private final ReadOnlyProperty displayName;
+  private final Map<String, ReadWriteProperty> properties;
   private final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations;
   private final boolean isRelationCollection;
 
   Collection(@NotNull String entityTypeName, @NotNull String abstractType,
-             @NotNull TimbuctooProperty displayName, @NotNull Map<String, TimbuctooProperty> properties,
-             @NotNull Map<String, TimbuctooProperty> searchResultData, @NotNull String collectionName,
-             @NotNull Vre vre, @NotNull Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations,
+             @NotNull ReadOnlyProperty displayName, @NotNull Map<String, ReadWriteProperty> properties,
+             @NotNull String collectionName, @NotNull Vre vre,
+             @NotNull Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations,
              boolean isRelationCollection) {
     this.entityTypeName = entityTypeName;
     this.abstractType = abstractType;
     this.displayName = displayName;
     this.properties = properties;
-    this.searchResultData = searchResultData;
     this.collectionName = collectionName;
     this.vre = vre;
     this.derivedRelations = derivedRelations;
@@ -43,16 +42,12 @@ public class Collection {
     return abstractType;
   }
 
-  public TimbuctooProperty getDisplayName() {
+  public ReadOnlyProperty getDisplayName() {
     return displayName;
   }
 
-  public Map<String, TimbuctooProperty> getProperties() {
+  public Map<String, ReadWriteProperty> getProperties() {
     return properties;
-  }
-
-  public Map<String, TimbuctooProperty> getSearchResultData() {
-    return searchResultData;
   }
 
   public String getCollectionName() {
