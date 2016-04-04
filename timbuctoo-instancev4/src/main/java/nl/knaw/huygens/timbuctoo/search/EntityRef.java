@@ -11,6 +11,11 @@ public class EntityRef {
   private String type;
   private String displayName;
   private Map<String, Object> data;
+  private Map<String, Object> targetData;
+  private String targetName;
+  private Map<String, Object> sourceData;
+  private String sourceName;
+  private String relationName;
 
   public EntityRef(String type, String id) {
     this.id = id;
@@ -54,5 +59,45 @@ public class EntityRef {
 
   public void setData(Map<String, Object> data) {
     this.data = data;
+  }
+
+  public void setTargetData(Map<String, Object> targetData) {
+    this.targetData = targetData;
+  }
+
+  public void setTargetName(String targetName) {
+    this.targetName = targetName;
+  }
+
+  public void setSourceData(Map<String, Object> sourceData) {
+    this.sourceData = sourceData;
+  }
+
+  public void setSourceName(String sourceName) {
+    this.sourceName = sourceName;
+  }
+
+  public Map<String, Object> getTargetData() {
+    return targetData;
+  }
+
+  public String getTargetName() {
+    return targetName;
+  }
+
+  public Map<String, Object> getSourceData() {
+    return sourceData;
+  }
+
+  public String getSourceName() {
+    return sourceName;
+  }
+
+  public void setRelationName(String relationName) {
+    this.relationName = relationName;
+  }
+
+  public String getRelationName() {
+    return relationName;
   }
 }

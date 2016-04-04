@@ -10,6 +10,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.slf4j.Logger;
@@ -88,4 +90,25 @@ public class ReceptionSearchDescription extends WwDocumentSearchDescription {
 
     return vertices.where(__.inE(getRelationNames()).otherV().is(P.within(otherResults)));
   }
+
+  @Override
+  public EntityRef createRef(Vertex vertex) {
+    Edge inEdge = vertex.edges(Direction.IN, getRelationNames()).next();
+    Vertex otherVertex = inEdge.outVertex();
+
+    EntityRef targetRef = super.createRef(vertex);
+
+    EntityRef sourceRef = otherSearch.getSearchDescription().createRef(otherVertex);
+
+    EntityRef ref = new EntityRef("wwrelation", (String) inEdge.property("tim_id").value());
+
+    ref.setRelationName(inEdge.label());
+    ref.setTargetData(targetRef.getData());
+    ref.setTargetName(targetRef.getDisplayName());
+    ref.setSourceData(sourceRef.getData());
+    ref.setSourceName(sourceRef.getDisplayName());
+
+    return ref;
+  }
+
 }
