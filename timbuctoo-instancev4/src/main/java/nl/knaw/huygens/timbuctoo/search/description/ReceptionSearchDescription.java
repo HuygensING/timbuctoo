@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.search.description;
 
-import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
 import nl.knaw.huygens.timbuctoo.search.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.description.facet.FacetDescriptionFactory;
@@ -14,15 +13,11 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Map;
 
 public class ReceptionSearchDescription extends WwDocumentSearchDescription {
   private final SearchResult otherSearch;
-  public static final Logger LOG = LoggerFactory.getLogger(ReceptionSearchDescription.class);
 
   private static final String[] DOCUMENT_RELATIONS = {
     "hasEdition",
@@ -73,14 +68,12 @@ public class ReceptionSearchDescription extends WwDocumentSearchDescription {
     } else {
       return DOCUMENT_RELATIONS;
     }
-
   }
 
   @Override
   protected GraphTraversal<Vertex, Vertex> initializeVertices(GraphWrapper graphWrapper) {
     List<Vertex> otherResults = otherSearch.getSearchResult();
 
-    LOG.info("Other search has type: {}", otherSearch.getSearchDescription().getType());
     if (otherResults == null) {
       return EmptyGraph.instance().traversal().V();
     }
