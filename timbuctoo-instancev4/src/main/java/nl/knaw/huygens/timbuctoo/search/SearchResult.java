@@ -1,13 +1,10 @@
 package nl.knaw.huygens.timbuctoo.search;
 
-import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.search.description.facet.Facet;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
@@ -62,5 +59,13 @@ public class SearchResult {
 
   public int getCount() {
     return searchResults.size();
+  }
+
+  public SearchDescription getSearchDescription() {
+    return searchDescription;
+  }
+
+  public List<Vertex> getSearchResult() {
+    return searchResults;
   }
 }

@@ -13,7 +13,6 @@ import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.SearchRequestV2_1;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,10 +45,14 @@ public abstract class AbstractSearchDescription implements SearchDescription {
     return ref;
   }
 
+  protected GraphTraversal<Vertex, Vertex> initializeVertices(GraphWrapper graphWrapper) {
+    GraphTraversalSource latestStage = graphWrapper.getLatestState();
+    return filterByType(latestStage);
+  }
+
   @Override
   public SearchResult execute(GraphWrapper graphWrapper, SearchRequestV2_1 searchRequest) {
-    GraphTraversalSource latestStage = graphWrapper.getLatestState();
-    GraphTraversal<Vertex, Vertex> vertices = filterByType(latestStage);
+    GraphTraversal<Vertex, Vertex> vertices = initializeVertices(graphWrapper);
     // filter by facets
     getFacetDescriptions().forEach(desc -> desc.filter(vertices, searchRequest.getFacetValues()));
     // filter by full text search
@@ -101,19 +104,6 @@ public abstract class AbstractSearchDescription implements SearchDescription {
     return new SearchResult(searchResult, this, facets);
   }
 
-  /**
-   * A method to create a new GraphTraversal, because cloning is to slow.
-   * It creates a new graph with a list created of the vertices.
-   * It creates an empty graph if vertices does not contain any vertices.
-   */
-  protected GraphTraversal<Vertex, Vertex> getSearchResult(GraphWrapper graphWrapper, List<Vertex> vertexList) {
-    if (vertexList.isEmpty()) {
-      return EmptyGraph.instance().traversal().V();
-    }
-    return graphWrapper.getGraph().traversal().V(vertexList);
-
-  }
-
   protected GraphTraversal<Vertex, Vertex> filterByType(GraphTraversalSource traversalSource) {
     return traversalSource.V().filter(
       x -> ((String) x.get().property("types").value()).contains("\"" + getType() + "\"")
@@ -134,7 +124,7 @@ public abstract class AbstractSearchDescription implements SearchDescription {
 
   protected abstract PropertyDescriptor getIdDescriptor();
 
-  protected abstract String getType();
+  public abstract String getType();
 
   protected abstract List<FullTextSearchDescription> getFullTextSearchDescriptions();
 

@@ -11,6 +11,7 @@ public class SearchRequestV2_1 {
   private List<SortParameter> sortParameters;
   private String term;
   private List<FullTextSearchParameter> fullTextSearchParameters;
+  private String otherSearchId;
 
   public SearchRequestV2_1() {
     // set default value, so the users do not have to handle a null value.
@@ -42,6 +43,14 @@ public class SearchRequestV2_1 {
 
   public void setTerm(String term) {
     this.term = term;
+  }
+
+  public String getOtherSearchId() {
+    return otherSearchId;
+  }
+
+  public void setOtherSearchId(String otherSearchId) {
+    this.otherSearchId = otherSearchId;
   }
 
   public void setFullTextSearchParameters(List<FullTextSearchParameter> fullTextSearchParameters) {

@@ -63,7 +63,7 @@ public class WwCollectiveSearchDescription extends AbstractSearchDescription imp
   }
 
   @Override
-  protected String getType() {
+  public String getType() {
     return type;
   }
 

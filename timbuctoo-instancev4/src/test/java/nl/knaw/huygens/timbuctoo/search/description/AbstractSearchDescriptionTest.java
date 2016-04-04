@@ -334,7 +334,7 @@ public class AbstractSearchDescriptionTest {
     }
 
     @Override
-    protected String getType() {
+    public String getType() {
       return type;
     }
 
