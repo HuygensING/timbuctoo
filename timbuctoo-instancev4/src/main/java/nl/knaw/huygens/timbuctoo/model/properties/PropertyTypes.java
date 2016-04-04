@@ -15,14 +15,14 @@ public class PropertyTypes {
     return new LocalProperty(propName, converter);
   }
 
-  public static ReadOnlyProperty wwPersonNameOrTempName() {
+  public static ReadableProperty wwPersonNameOrTempName() {
     return new PropertyOrDefault(
       localProperty("wwperson_names", defaultFullPersonNameConverter),
       localProperty("wwperson_tempName")
     );
   }
 
-  public static ReadOnlyProperty wwdocumentDisplayNameProperty() {
+  public static ReadableProperty wwdocumentDisplayNameProperty() {
     return new WwDocumentDisplayName();
   }
 }

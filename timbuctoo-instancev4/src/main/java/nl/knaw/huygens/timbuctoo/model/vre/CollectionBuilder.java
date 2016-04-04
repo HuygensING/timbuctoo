@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.model.vre;
 
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.model.properties.ReadOnlyProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadWriteProperty;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -14,8 +14,8 @@ public class CollectionBuilder {
   private String abstractType;
   private String collectionName;
   private final String defaultPrefix;
-  private ReadOnlyProperty displayName;
-  private Map<String, ReadWriteProperty> properties = Maps.newHashMap();
+  private ReadableProperty displayName;
+  private Map<String, ReadableProperty> properties = Maps.newHashMap();
   private final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations = Maps.newHashMap();
   private boolean isRelationCollection = false;
 
@@ -38,7 +38,7 @@ public class CollectionBuilder {
     return this;
   }
 
-  public CollectionBuilder withDisplayName(ReadOnlyProperty displayName) {
+  public CollectionBuilder withDisplayName(ReadableProperty displayName) {
     this.displayName = displayName;
     return this;
   }

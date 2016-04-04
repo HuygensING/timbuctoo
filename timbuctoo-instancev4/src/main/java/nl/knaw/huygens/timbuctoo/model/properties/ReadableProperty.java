@@ -6,10 +6,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 
 import java.util.function.Supplier;
 
-public abstract class ReadOnlyProperty {
+public abstract class ReadableProperty {
   private final Supplier<GraphTraversal<?, Try<JsonNode>>> getter;
 
-  public ReadOnlyProperty(Supplier<GraphTraversal<?, Try<JsonNode>>> getter) {
+  public ReadableProperty(Supplier<GraphTraversal<?, Try<JsonNode>>> getter) {
     this.getter = getter;
   }
 

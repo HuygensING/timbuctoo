@@ -8,7 +8,7 @@ import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProp
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.datable;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 
-public class WwDocumentDisplayName extends ReadOnlyProperty {
+public class WwDocumentDisplayName extends ReadableProperty {
   public WwDocumentDisplayName() {
     super(() ->
       __.as("doc").union(

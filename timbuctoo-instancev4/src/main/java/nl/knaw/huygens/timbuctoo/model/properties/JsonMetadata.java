@@ -41,15 +41,14 @@ public class JsonMetadata {
 
   public ArrayNode getForCollection(Collection collection) {
     ArrayNode result = jsnA();
-    collection.getProperties().forEach((name, prop) -> {
+    collection.getWriteableProperties().forEach((name, prop) -> {
       ObjectNode desc = jsnO(
         "name", jsn(name),
         "type", jsn(prop.getGuiTypeId())
       );
-      java.util.Collection<String> options = prop.getOptions();
-      if (options != null) {
-        desc.set("options", jsnA(options.stream().map(JsonBuilder::jsn)));
-      }
+      prop.getOptions().ifPresent(options ->
+        desc.set("options", jsnA(options.stream().map(JsonBuilder::jsn)))
+      );
       result.add(desc);
     });
 

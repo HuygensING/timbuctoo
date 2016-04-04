@@ -6,9 +6,9 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 
 
 
-public class PropertyOrDefault extends ReadOnlyProperty {
+public class PropertyOrDefault extends ReadableProperty {
 
-  public PropertyOrDefault(ReadOnlyProperty prop, JsonNode orElse) {
+  public PropertyOrDefault(ReadableProperty prop, JsonNode orElse) {
     super(() ->
       __.<Object, Try<JsonNode>>coalesce(
         prop.get(),
@@ -17,7 +17,7 @@ public class PropertyOrDefault extends ReadOnlyProperty {
     );
   }
 
-  public PropertyOrDefault(ReadOnlyProperty prop, ReadOnlyProperty orElse) {
+  public PropertyOrDefault(ReadableProperty prop, ReadableProperty orElse) {
     super(() ->
       __.<Object, Try<JsonNode>>coalesce(
         prop.get(),
