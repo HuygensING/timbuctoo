@@ -12,6 +12,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -53,6 +54,9 @@ public class ReceptionSearchDescriptionTest {
             .withVertex("v2", v -> v.withTimId("id2").withOutgoingRelation("isWorkCommentedOnIn", "v1"))
             .build().traversal().V().toList();
 
+    Collections.sort(vertices, (a, b) ->
+            ((String) a.property("tim_id").value()).compareTo((String) b.property("tim_id").value()));
+
     given(searchDescription.createRef(vertices.get(1))).willReturn(otherRef);
 
 
@@ -83,6 +87,9 @@ public class ReceptionSearchDescriptionTest {
             .withVertex("v1", v -> v.withTimId("id1").withProperty("wwdocument_title", "title"))
             .withVertex("v2", v -> v.withTimId("id2").withOutgoingRelation("isPersonCommentedOnIn", "v1"))
             .build().traversal().V().toList();
+
+    Collections.sort(vertices, (a, b) ->
+            ((String) a.property("tim_id").value()).compareTo((String) b.property("tim_id").value()));
 
     given(searchDescription.createRef(vertices.get(1))).willReturn(otherRef);
 
