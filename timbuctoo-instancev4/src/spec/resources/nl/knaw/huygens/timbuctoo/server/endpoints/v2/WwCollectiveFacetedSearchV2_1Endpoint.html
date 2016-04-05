@@ -38,6 +38,12 @@
       	"numFound": "/*NUMBER*/",
       	"sortableFields": [
       	],
+        "facets": [
+          {
+            "name": "dynamic_s_type",
+            "type": "LIST"
+          }
+        ],
       	"fullTextSearchFields": [
       		"dynamic_t_name"
       	],
@@ -55,6 +61,55 @@
       }
     </div>
   </aside>
+    <aside class="example highlight" h:http="#filteredPost">
+      <div h:request="">
+        POST /v2.1/search/wwcollectives HTTP/1.1
+        VRE_ID: WomenWriters
+        Content-type: application/json
+
+        {
+          "facetValues":[
+          {"name": "dynamic_s_type","values":["UNKNOWN"]}
+          ],
+          "term":"norwegian"
+        }
+      </div>
+      <div h:response="">
+        HTTP/1.1 201
+        Location:
+      </div>
+    </aside>
+    <aside class="example highlight" h:http="">
+      <div h:request="">
+        GET $(#filteredPost.firstHeaders.location) HTTP/1.1
+        Accept: application/json
+      </div>
+      <div h:response="">
+      HTTP/1.1 200
+
+      {
+        "numFound": "/*NUMBER*/",
+        "start": 0,
+        "rows": "/*NUMBER*/",
+        "term": "norwegian",
+        "facets": [
+        	{"name":"dynamic_s_type","title":"","options":[{"name":"UNKNOWN","count":1}],"type":"LIST"}
+        ],
+        "refs": [
+          {
+            "type": "wwcollective",
+            "id": "/*STRING*/",
+            "path": "/*STRING*/",
+            "displayName": "/*STRING*/",
+            "data": { }
+          }
+        ],
+        "fullTextSearchFields": [
+          "/*STRING*/"
+        ]
+      }
+      </div>
+    </aside>
 </section>
 
 
