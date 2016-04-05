@@ -10,12 +10,14 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.List;
 
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
 
 public class EdgeListFacetDescriptionTest {
 
@@ -78,5 +80,22 @@ public class EdgeListFacetDescriptionTest {
 
     assertThat(traversal.toList(),
             containsInAnyOrder(VertexMatcher.likeVertex().withTimId("1"), VertexMatcher.likeVertex().withTimId("2")));
+  }
+
+  @Test
+  public void getValuesAddsTheRelationNamesBelongingToTheVertext() {
+    List<Vertex> vertices = newGraph()
+            .withVertex("v1", v -> v.withTimId("1"))
+            .withVertex("v2", v -> v.withTimId("2").withOutgoingRelation(RELATION_NAME, "v1"))
+            .build().traversal().V().toList();
+
+    Collections.sort(vertices, (vertexA, vertexB) ->
+            ((String) vertexA.property("tim_id").value()).compareTo((String) vertexB.property("tim_id").value()));
+
+    List<String> values = instance.getValues(vertices.get(0));
+    List<String> values2 = instance.getValues(vertices.get(1));
+
+    assertThat(values, contains(RELATION_NAME));
+    assertThat(values2, equalTo(Lists.newArrayList()));
   }
 }
