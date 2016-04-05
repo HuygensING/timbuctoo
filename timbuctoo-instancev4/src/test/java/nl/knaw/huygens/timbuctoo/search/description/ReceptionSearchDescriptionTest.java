@@ -33,7 +33,7 @@ public class ReceptionSearchDescriptionTest {
   }
 
   @Test
-  public void testCreateRef() {
+  public void testCreateRefForDocumentRelation() {
     SearchResult searchResult = mock(SearchResult.class);
     SearchDescription searchDescription = mock(SearchDescription.class);
     EntityRef otherRef = new EntityRef("wwdocument", "id");
@@ -51,6 +51,37 @@ public class ReceptionSearchDescriptionTest {
     List<Vertex> vertices = newGraph()
             .withVertex("v1", v -> v.withTimId("id1").withProperty("wwdocument_title", "title"))
             .withVertex("v2", v -> v.withTimId("id2").withOutgoingRelation("isWorkCommentedOnIn", "v1"))
+            .build().traversal().V().toList();
+
+    given(searchDescription.createRef(vertices.get(1))).willReturn(otherRef);
+
+
+    EntityRef ref = instance.createRef(vertices.get(0));
+
+    assertThat(ref.getSourceData(), equalTo(otherRef.getData()));
+    assertThat(ref.getTargetData().get("_id"), equalTo("id1"));
+    assertThat(ref.getTargetData().get("title"), equalTo("title"));
+  }
+
+  @Test
+  public void testCreateRefForPersonRelation() {
+    SearchResult searchResult = mock(SearchResult.class);
+    SearchDescription searchDescription = mock(SearchDescription.class);
+    EntityRef otherRef = new EntityRef("wwperson", "id");
+
+    Map<String, Object> otherData = Maps.newHashMap();
+    otherData.put("prop", "val");
+    otherRef.setData(otherData);
+
+    given(searchResult.getSearchDescription()).willReturn(searchDescription);
+    given(searchDescription.getType()).willReturn("wwperson");
+
+    ReceptionSearchDescription instance = new ReceptionSearchDescription(propertyDescriptorFactory,
+            facetDescriptionFactory, searchResult);
+
+    List<Vertex> vertices = newGraph()
+            .withVertex("v1", v -> v.withTimId("id1").withProperty("wwdocument_title", "title"))
+            .withVertex("v2", v -> v.withTimId("id2").withOutgoingRelation("isPersonCommentedOnIn", "v1"))
             .build().traversal().V().toList();
 
     given(searchDescription.createRef(vertices.get(1))).willReturn(otherRef);
