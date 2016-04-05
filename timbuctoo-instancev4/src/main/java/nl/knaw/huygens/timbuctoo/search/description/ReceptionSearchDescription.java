@@ -7,7 +7,6 @@ import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorF
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -82,8 +81,7 @@ public class ReceptionSearchDescription extends WwDocumentSearchDescription {
       return EmptyGraph.instance().traversal().V();
     }
 
-    GraphTraversalSource latestStage = graphWrapper.getLatestState();
-    GraphTraversal<Vertex, Vertex> vertices = filterByType(latestStage);
+    GraphTraversal<Vertex, Vertex> vertices = graphWrapper.getCurrentEntitiesFor(getType());
 
     return vertices.where(__.inE(getRelationNames()).otherV().is(P.within(otherResults)));
   }
