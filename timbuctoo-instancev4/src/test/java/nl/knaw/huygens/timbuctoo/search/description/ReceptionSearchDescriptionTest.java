@@ -54,8 +54,8 @@ public class ReceptionSearchDescriptionTest {
             .withVertex("v2", v -> v.withTimId("id2").withOutgoingRelation("isWorkCommentedOnIn", "v1"))
             .build().traversal().V().toList();
 
-    Collections.sort(vertices, (a, b) ->
-            ((String) a.property("tim_id").value()).compareTo((String) b.property("tim_id").value()));
+    Collections.sort(vertices, (vertexA, vertexB) ->
+            ((String) vertexA.property("tim_id").value()).compareTo((String) vertexB.property("tim_id").value()));
 
     given(searchDescription.createRef(vertices.get(1))).willReturn(otherRef);
 
@@ -88,8 +88,8 @@ public class ReceptionSearchDescriptionTest {
             .withVertex("v2", v -> v.withTimId("id2").withOutgoingRelation("isPersonCommentedOnIn", "v1"))
             .build().traversal().V().toList();
 
-    Collections.sort(vertices, (a, b) ->
-            ((String) a.property("tim_id").value()).compareTo((String) b.property("tim_id").value()));
+    Collections.sort(vertices, (vertexA, vertexB) ->
+            ((String) vertexA.property("tim_id").value()).compareTo((String) vertexB.property("tim_id").value()));
 
     given(searchDescription.createRef(vertices.get(1))).willReturn(otherRef);
 
