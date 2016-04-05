@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -11,7 +12,7 @@ import java.util.Set;
 
 public class Vre {
   private final String vreName;
-  private final Map<String, Collection> collections = Maps.newHashMap();
+  private final LinkedHashMap<String, Collection> collections = Maps.newLinkedHashMap();
 
   Vre(String vreName) {
     this.vreName = vreName;

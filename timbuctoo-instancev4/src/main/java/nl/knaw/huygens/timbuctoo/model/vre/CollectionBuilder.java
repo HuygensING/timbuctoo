@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.model.properties.ReadWriteProperty;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -15,7 +16,7 @@ public class CollectionBuilder {
   private String collectionName;
   private final String defaultPrefix;
   private ReadableProperty displayName;
-  private Map<String, ReadableProperty> properties = Maps.newHashMap();
+  private LinkedHashMap<String, ReadableProperty> properties = Maps.newLinkedHashMap();
   private final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations = Maps.newHashMap();
   private boolean isRelationCollection = false;
 
