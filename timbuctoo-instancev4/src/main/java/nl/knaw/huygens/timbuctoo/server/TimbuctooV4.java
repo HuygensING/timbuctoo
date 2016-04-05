@@ -7,6 +7,7 @@ import com.kjetland.dropwizard.activemq.ActiveMQBundle;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
+import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.java8.Java8Bundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -21,6 +22,7 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.BulkUpload;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Metadata;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Search;
@@ -54,6 +56,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     activeMqBundle = new ActiveMQBundle();
     bootstrap.addBundle(activeMqBundle);
     bootstrap.addBundle(new Java8Bundle());
+    bootstrap.addBundle(new MultiPartBundle());
     /*
      * Make it possible to use environment variables in the config.
      * see: http://www.dropwizard.io/0.9.1/docs/manual/core.html#environment-variables
@@ -88,6 +91,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       SingleEntity::makeUrl,
       (coll, id, rev) -> URI.create(configuration.getBaseUri() + SingleEntity.makeUrl(coll, id, rev).getPath()),
       Clock.systemDefaultZone());
+    final JsonMetadata jsonMetadata = new JsonMetadata(HuygensIng.mappings, graphManager, HuygensIng.keywordTypes);
 
     // lifecycle managers
     environment.lifecycle().manage(graphManager);
@@ -101,7 +105,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Index(crudService, loggedInUserStore));
     register(environment, new SingleEntity(crudService, loggedInUserStore));
     register(environment, new Gremlin(graphManager));
-    register(environment, new Metadata(new JsonMetadata(HuygensIng.mappings, graphManager, HuygensIng.keywordTypes)));
+    register(environment, new BulkUpload(HuygensIng.mappings, graphManager));
+    register(environment, new Metadata(jsonMetadata));
 
     // register health checks
     register(environment, "Encryption algorithm", new EncryptionAlgorithmHealthCheck(ENCRYPTION_ALGORITHM));
