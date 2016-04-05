@@ -31,7 +31,6 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.Me;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
 
 import javax.management.ObjectName;
-import javax.ws.rs.container.ContainerResponseFilter;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -112,14 +111,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     //Log all http requests
     register(environment, new LoggingFilter(1024));
-    register(environment, (ContainerResponseFilter) (containerRequestContext, response) -> {
-      response.getHeaders().add("Access-Control-Allow-Origin", "*");
-      response.getHeaders().add("Access-Control-Allow-Headers", "origin, content-type, accept, authorization, vre_id");
-      response.getHeaders().add("Access-Control-Allow-Credentials", "true");
-      response.getHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
-      response.getHeaders().add("Access-Control-Expose-Headers", "Location, Link, X_AUTH_TOKEN");
-
-    });
+    //Allow all CORS requests
+    register(environment, new PromiscuousCorsFilter());
 
     //Add embedded AMQ (if any) to the metrics
     configuration.getLocalAmqJmxPath(HANDLE_QUEUE).ifPresent(rethrowConsumer(jmxPath -> {
