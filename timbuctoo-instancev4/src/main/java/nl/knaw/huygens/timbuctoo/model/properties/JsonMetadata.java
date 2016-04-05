@@ -46,8 +46,12 @@ public class JsonMetadata {
         "name", jsn(name),
         "type", jsn(prop.getGuiTypeId())
       );
+
       prop.getOptions().ifPresent(options ->
         desc.set("options", jsnA(options.stream().map(JsonBuilder::jsn)))
+      );
+      prop.getParts().ifPresent(parts ->
+        desc.set("options", jsnA(parts.stream().map(JsonBuilder::jsn)))
       );
       result.add(desc);
     });

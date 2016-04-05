@@ -13,7 +13,9 @@ import java.util.function.Supplier;
 public abstract class ReadWriteProperty extends ReadableProperty {
   private final LambdaExceptionUtil.Function_WithExceptions<JsonNode, GraphTraversal<?, ?>, IOException> setter;
 
-  public ReadWriteProperty(Supplier<GraphTraversal<?, Try<JsonNode>>> getter, LambdaExceptionUtil.Function_WithExceptions<JsonNode, GraphTraversal<?, ?>, IOException> setter) {
+  public ReadWriteProperty(Supplier<GraphTraversal<?, Try<JsonNode>>> getter,
+                           LambdaExceptionUtil.Function_WithExceptions<JsonNode, GraphTraversal<?, ?>, IOException>
+                             setter) {
     super(getter);
     this.setter = setter;
   }
@@ -25,5 +27,7 @@ public abstract class ReadWriteProperty extends ReadableProperty {
   public abstract String getGuiTypeId();
 
   public abstract Optional<Collection<String>> getOptions();
+
+  public abstract Optional<Collection<String>> getParts();
 
 }
