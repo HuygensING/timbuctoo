@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.model.Gender;
 import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
+import nl.knaw.huygens.timbuctoo.model.TempName;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.facet.FacetDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription;
@@ -19,11 +20,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription
-  .createLocalFullTextSearchDescriptionWithBackupProperty;
-import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription
-  .createLocalSimpleFullTextSearchDescription;
 import static nl.knaw.huygens.timbuctoo.search.description.Property.localProperty;
+import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription.createLocalFullTextSearchDescriptionWithBackupProperty;
+import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription.createLocalSimpleFullTextSearchDescription;
 import static nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription.newSortFieldDescription;
 
 public class WwPersonSearchDescription extends AbstractSearchDescription {
@@ -51,7 +50,7 @@ public class WwPersonSearchDescription extends AbstractSearchDescription {
 
     displayNameDescriptor = propertyDescriptorFactory.getComposite(
       propertyDescriptorFactory.getLocal("wwperson_names", PersonNames.class),
-      propertyDescriptorFactory.getLocal("wwperson_tempName", String.class));
+      propertyDescriptorFactory.getLocal("wwperson_tempName", TempName.class));
     idDescriptor = propertyDescriptorFactory
       .getLocal(SearchDescription.ID_DB_PROP, String.class);
 
@@ -149,7 +148,7 @@ public class WwPersonSearchDescription extends AbstractSearchDescription {
       LocationNames.class));
     dataPropertyDescriptors.put("name", propertyDescriptorFactory.getComposite(
       propertyDescriptorFactory.getLocal("wwperson_names", PersonNames.class),
-      propertyDescriptorFactory.getLocal("wwperson_tempName", String.class)));
+      propertyDescriptorFactory.getLocal("wwperson_tempName", TempName.class)));
     dataPropertyDescriptors
       .put("_id", propertyDescriptorFactory.getLocal("tim_id", String.class));
     return dataPropertyDescriptors;
@@ -176,7 +175,7 @@ public class WwPersonSearchDescription extends AbstractSearchDescription {
   }
 
   @Override
-  protected String getType() {
+  public String getType() {
     return "wwperson";
   }
 

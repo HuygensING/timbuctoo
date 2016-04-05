@@ -46,6 +46,27 @@ public class Search {
     searchDescriptionFactory = new SearchDescriptionFactory();
   }
 
+  @POST
+  @Path("wwrelations/wwdocuments")
+  public Response receptionSearch(SearchRequestV2_1 searchRequest) {
+    Optional<SearchResult> otherSearch = searchStore.getSearchResult(
+            UUID.fromString(searchRequest.getOtherSearchId()));
+
+    LOG.info("Using other search ID: {}", searchRequest.getOtherSearchId());
+
+    if (otherSearch.isPresent()) {
+      LOG.info("other search is present");
+      UUID uuid = searchStore.add(getDescription("wwrelations", otherSearch.get())
+              .get().execute(graphWrapper, searchRequest));
+      URI uri = createUri(uuid);
+
+      return Response.created(uri).build();
+    }
+
+    return Response.status(Response.Status.BAD_REQUEST)
+            .entity(new NotFoundMessage(new UUIDParam(searchRequest.getOtherSearchId()))).build();
+  }
+
   @Timed
   @POST
   @Path("{entityName: [a-z]+}s")
@@ -97,7 +118,11 @@ public class Search {
   }
 
   private Optional<SearchDescription> getDescription(String entityName) {
-    return searchDescriptionFactory.create(entityName);
+    return getDescription(entityName, null);
+  }
+
+  private Optional<SearchDescription> getDescription(String entityName, SearchResult otherSearch) {
+    return searchDescriptionFactory.create(entityName, otherSearch);
   }
 
   private class NotFoundMessage {

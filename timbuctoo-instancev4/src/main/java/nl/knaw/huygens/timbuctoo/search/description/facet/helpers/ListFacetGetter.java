@@ -32,6 +32,7 @@ public class ListFacetGetter implements FacetGetter {
   public Facet getFacet(String facetName, Map<String, Set<Vertex>> values) {
     List<Facet.Option> options = values.entrySet().stream()
             .map(entry -> new Facet.DefaultOption(parseValue(entry.getKey()), entry.getValue().size()))
+            .filter(facetOption -> facetOption.getName() != null)
             .collect(toList());
 
     return new Facet(facetName, options, "LIST");

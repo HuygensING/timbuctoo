@@ -1,11 +1,9 @@
 package nl.knaw.huygens.timbuctoo.search.description.facet;
 
-import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class FacetDescriptionFactory {
@@ -86,4 +84,8 @@ public class FacetDescriptionFactory {
   }
 
 
+  public FacetDescription createEdgeFacetDescription(String facetName, String... relationNames) {
+
+    return new EdgeListFacetDescription(facetName, relationNames);
+  }
 }

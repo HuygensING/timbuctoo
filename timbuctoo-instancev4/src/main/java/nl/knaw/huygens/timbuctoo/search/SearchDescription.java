@@ -17,4 +17,5 @@ public interface SearchDescription {
 
   SearchResult execute(GraphWrapper graphWrapper, SearchRequestV2_1 searchRequest);
 
+  String getType();
 }
