@@ -69,7 +69,7 @@ public class WwPersonSearchDescriptionTest {
 
     EntityRef ref = instance.createRef(vertex);
 
-    assertThat(ref.getDisplayName(), is(tempName));
+    assertThat(ref.getDisplayName(), is("[TEMP] " + tempName));
   }
 
   @Test

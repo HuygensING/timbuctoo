@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.model.DocumentType;
 import nl.knaw.huygens.timbuctoo.model.Gender;
 import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
+import nl.knaw.huygens.timbuctoo.model.TempName;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
 
 public class PropertyParserFactory {
@@ -25,6 +26,8 @@ public class PropertyParserFactory {
       return new DefaultLocationNamePropertyParser();
     } else if (DocumentType.class.isAssignableFrom(type)) {
       return new DocumentTypePropertyParser();
+    } else if (TempName.class.isAssignableFrom(type)) {
+      return new TempNamePropertyParser();
     }
 
     throw new UnparsableTypeException("Type " + type + " is not supported");
