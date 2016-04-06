@@ -23,6 +23,7 @@ import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.BulkUpload;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Graph;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Metadata;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Search;
@@ -105,6 +106,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Index(crudService, loggedInUserStore));
     register(environment, new SingleEntity(crudService, loggedInUserStore));
     register(environment, new Gremlin(graphManager));
+    register(environment, new Graph(graphManager));
     register(environment, new BulkUpload(HuygensIng.mappings, graphManager));
     register(environment, new Metadata(jsonMetadata));
 

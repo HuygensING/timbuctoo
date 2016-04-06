@@ -1,11 +1,16 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.dropwizard.testing.ResourceHelpers;
+import io.dropwizard.testing.junit.DropwizardAppRule;
 import nl.knaw.huygens.contractdiff.jsondiff.JsonDiffer;
+import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
+import nl.knaw.huygens.timbuctoo.server.TimbuctooV4;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.matchers.NumericDateWithoutDashes;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.matchers.RelativeUrlWithoutLeadingSlash;
 import org.concordion.api.FullOGNL;
 import org.concordion.integration.junit4.ConcordionRunner;
+import org.junit.ClassRule;
 import org.junit.runner.RunWith;
 
 import javax.ws.rs.client.ClientBuilder;
@@ -18,6 +23,13 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 @FullOGNL
 @RunWith(ConcordionRunner.class)
 public class D3GraphV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
+  @ClassRule
+  public static final DropwizardAppRule<TimbuctooConfiguration> APPLICATION;
+
+  static {
+    APPLICATION = new DropwizardAppRule<>(TimbuctooV4.class,
+            ResourceHelpers.resourceFilePath("acceptance_test_config.yaml"));
+  }
 
   @Override
   protected JsonDiffer makeJsonDiffer() {
@@ -49,7 +61,7 @@ public class D3GraphV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
 
   @Override
   protected WebTarget returnUrlToMockedOrRealServer(String serverAddress) {
-    String defaultAddress = "http://acc.repository.huygens.knaw.nl";
+    String defaultAddress = String.format("http://localhost:%d", APPLICATION.getLocalPort());
     String address = serverAddress != null ? serverAddress : defaultAddress;
 
     return ClientBuilder.newClient().target(address);
