@@ -32,6 +32,7 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.SingleEntity;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.Me;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
+import org.slf4j.LoggerFactory;
 
 import javax.management.ObjectName;
 import java.net.URI;
@@ -71,6 +72,13 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
   @Override
   public void run(TimbuctooConfiguration configuration, Environment environment) throws Exception {
+    //Make sure we know what version is running
+    Properties properties = new Properties();
+    properties.load(getClass().getClassLoader().getResourceAsStream("git.properties"));
+    String currentVersion = properties.getProperty("git.commit.id");
+
+    LoggerFactory.getLogger(this.getClass()).info("Now launching timbuctoo version: " + currentVersion);
+
     // Support services
     final Path loginsPath = Paths.get(configuration.getLoginsFilePath());
     final Path usersPath = Paths.get(configuration.getUsersFilePath());
@@ -119,9 +127,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, "Neo4j database connection", graphManager);
 
     //Log all http requests
-    Properties properties = new Properties();
-    properties.load(getClass().getClassLoader().getResourceAsStream("git.properties"));
-    register(environment, new LoggingFilter(1024, properties.getProperty("git.commit.id")));
+    register(environment, new LoggingFilter(1024, currentVersion));
     //Allow all CORS requests
     register(environment, new PromiscuousCorsFilter());
 
