@@ -42,7 +42,9 @@ public class Link {
 
     Link otherLink = (Link) other;
 
-    return otherLink.getSource() == source && otherLink.getTarget() == target && otherLink.getType().equals(type);
+    return otherLink.getType().equals(type) && (
+        (otherLink.getSource() == source && otherLink.getTarget() == target) ||
+        (otherLink.getSource() == target && otherLink.getTarget() == source));
   }
 
   @Override
