@@ -38,6 +38,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Clock;
+import java.util.Properties;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static nl.knaw.huygens.timbuctoo.util.LambdaExceptionUtil.rethrowConsumer;
@@ -117,7 +118,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, "Neo4j database connection", graphManager);
 
     //Log all http requests
-    register(environment, new LoggingFilter(1024));
+    Properties properties = new Properties();
+    properties.load(getClass().getClassLoader().getResourceAsStream("git.properties"));
+    register(environment, new LoggingFilter(1024, properties.getProperty("git.commit.id")));
     //Allow all CORS requests
     register(environment, new PromiscuousCorsFilter());
 

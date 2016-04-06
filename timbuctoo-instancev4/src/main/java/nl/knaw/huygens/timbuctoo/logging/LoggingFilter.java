@@ -43,9 +43,11 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
     (o1, o2) -> o1.getKey().compareToIgnoreCase(o2.getKey());
 
   private final int entityLogSize;
+  private final String releaseHash;
 
-  public LoggingFilter(final int entityLogSize) {
+  public LoggingFilter(final int entityLogSize, String releaseHash) {
     this.entityLogSize = entityLogSize;
+    this.releaseHash = releaseHash;
   }
 
   private String formatHeaders(final MultivaluedMap<String, String> headers) {
@@ -100,6 +102,7 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
     final UUID id = UUID.randomUUID();
     MDC.put(MDC_ID, id.toString());
     MDC.put("PRE_LOG", "yes");
+    MDC.put("RELEASE_HASH", releaseHash);
 
     //Log a very minimal message. Mostly to make sure that we notice requests that never log in the response filter
     LOGGER.info(">     " + context.getMethod() + " " + context.getUriInfo().getRequestUri().toASCIIString());
