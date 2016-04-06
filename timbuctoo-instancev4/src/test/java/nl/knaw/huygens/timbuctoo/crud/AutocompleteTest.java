@@ -31,7 +31,7 @@ public class AutocompleteTest {
         )
       )
       .build();
-    UrlGenerator generator = (collection, id, rev) ->
+    UrlGenerator gen = (collection, id, rev) ->
       URI.create("/" + collection + "/" + id + "?rev=" + rev);
     UrlGenerator absoluteUrlGenerator = (collection, id, rev) ->
       URI.create("http://example.com/" + collection + "/" + id + "?rev=" + rev);
@@ -41,7 +41,7 @@ public class AutocompleteTest {
     GraphWrapper graphWrapper = mock(GraphWrapper.class);
     when(graphWrapper.getGraph()).thenReturn(graph);
 
-    return new TinkerpopJsonCrudService(graphWrapper, map, handleAdder, null, generator, absoluteUrlGenerator, clock);
+    return new TinkerpopJsonCrudService(graphWrapper, map, handleAdder, null, gen, absoluteUrlGenerator, gen, clock);
   }
 
   @Test

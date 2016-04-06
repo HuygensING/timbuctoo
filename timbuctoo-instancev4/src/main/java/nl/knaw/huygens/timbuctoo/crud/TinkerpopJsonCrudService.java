@@ -31,6 +31,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 
 import java.io.IOException;
+import java.net.URI;
 import java.time.Clock;
 import java.util.Iterator;
 import java.util.List;
@@ -63,18 +64,20 @@ public class TinkerpopJsonCrudService {
   private final HandleAdder handleAdder;
   private final UrlGenerator urlFor;
   private final UrlGenerator absoluteUrlFor;
+  private final UrlGenerator versionAndSlashlessUrlFor;
   private final Clock clock;
   private final JsonNodeFactory nodeFactory;
   private final JsonBasedUserStore userStore;
 
   public TinkerpopJsonCrudService(GraphWrapper graphwrapper, Vres mappings,
                                   HandleAdder handleAdder, JsonBasedUserStore userStore, UrlGenerator urlFor,
-                                  UrlGenerator absoluteUrlFor, Clock clock) {
+                                  UrlGenerator absoluteUrlFor, UrlGenerator versionAndSlashlessUrlFor, Clock clock) {
     this.graphwrapper = graphwrapper;
     this.mappings = mappings;
     this.handleAdder = handleAdder;
     this.urlFor = urlFor;
     this.absoluteUrlFor = absoluteUrlFor;
+    this.versionAndSlashlessUrlFor = versionAndSlashlessUrlFor;
     nodeFactory = JsonNodeFactory.instance;
     this.userStore = userStore;
 
@@ -322,9 +325,10 @@ public class TinkerpopJsonCrudService {
           String displayName = getDisplayname(traversalSource, vertex, collection.getVre().getCollection(targetType))
             .orElse("<No displayname found>");
 
+          URI relatedEntityUri = versionAndSlashlessUrlFor.apply(targetCollection, UUID.fromString(uuid), null);
           return jsnO(
             tuple("id", jsn(uuid)),
-            tuple("path", jsn(urlFor.apply(targetCollection, UUID.fromString(uuid), null).toString())),
+            tuple("path", jsn(relatedEntityUri.toString())),
             tuple("type", jsn(relationType)),
             tuple("relationType", jsn(relationType)),
             tuple("accepted", jsn(true)),
@@ -397,9 +401,10 @@ public class TinkerpopJsonCrudService {
             String targetCollection = targetEntityType + "s";
             String uuid = getProp(vertex, "tim_id", String.class).orElse("");
 
+            URI relatedEntityUri = versionAndSlashlessUrlFor.apply(targetCollection, UUID.fromString(uuid), null);
             return jsnO(
               tuple("id", jsn(uuid)),
-              tuple("path", jsn(urlFor.apply(targetCollection, UUID.fromString(uuid), null).toString())),
+              tuple("path", jsn(relatedEntityUri.toString())),
               tuple("relationType", jsn(label)),
               tuple("type", jsn(targetEntityType)),
               tuple("accepted", jsn(getProp(edge, "accepted", Boolean.class).orElse(true))),
