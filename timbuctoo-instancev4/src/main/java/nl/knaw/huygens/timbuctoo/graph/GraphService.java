@@ -7,14 +7,11 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.UUID;
 
 public class GraphService {
-  public static final Logger LOG = LoggerFactory.getLogger(GraphService.class);
   private final GraphWrapper graphWrapper;
 
   public GraphService(GraphWrapper wrapper) {
@@ -22,8 +19,6 @@ public class GraphService {
   }
 
   public D3Graph get(String type, UUID uuid, List<String> relationNames, int depth) throws NotFoundException {
-    LOG.info("UUID? {}", uuid.toString());
-
     GraphTraversal<Vertex, Vertex> result = graphWrapper.getGraph().traversal().V()
             .has("tim_id", uuid.toString()).filter(
               x -> ((String) x.get().property("types").value()).contains("\"" + type + "\"")
