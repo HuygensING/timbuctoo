@@ -20,7 +20,7 @@ public class LinkTest {
     edgeMock = mock(Edge.class);
     given(edgeMock.label()).willReturn(RELATION_NAME);
     compareEdgeMockDifferentType = mock(Edge.class);
-    given(compareEdgeMockDifferentType.label()).willReturn("somethinElse");
+    given(compareEdgeMockDifferentType.label()).willReturn("somethingElse");
   }
 
   @Test
