@@ -6,21 +6,18 @@ import nl.knaw.huygens.timbuctoo.util.LambdaExceptionUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Optional;
 import java.util.function.Supplier;
 
-public abstract class TimbuctooProperty {
-  private final Supplier<GraphTraversal<?, Try<JsonNode>>> getter;
+public abstract class ReadWriteProperty extends ReadableProperty {
   private final LambdaExceptionUtil.Function_WithExceptions<JsonNode, GraphTraversal<?, ?>, IOException> setter;
 
-  public TimbuctooProperty(Supplier<GraphTraversal<?, Try<JsonNode>>> getter,
-                           LambdaExceptionUtil.Function_WithExceptions<
-                             JsonNode, GraphTraversal<?, ?>, IOException> setter) {
-    this.getter = getter;
+  public ReadWriteProperty(Supplier<GraphTraversal<?, Try<JsonNode>>> getter,
+                           LambdaExceptionUtil.Function_WithExceptions<JsonNode, GraphTraversal<?, ?>, IOException>
+                             setter) {
+    super(getter);
     this.setter = setter;
-  }
-
-  public Supplier<GraphTraversal<?, Try<JsonNode>>> get() {
-    return getter;
   }
 
   public GraphTraversal<?, ?> set(JsonNode value) throws IOException {
@@ -29,5 +26,8 @@ public abstract class TimbuctooProperty {
 
   public abstract String getGuiTypeId();
 
-  public abstract java.util.Collection<String> getOptions();
+  public abstract Optional<Collection<String>> getOptions();
+
+  public abstract Optional<Collection<String>> getParts();
+
 }

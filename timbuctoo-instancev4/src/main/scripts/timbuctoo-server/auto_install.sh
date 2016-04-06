@@ -1,45 +1,69 @@
 #!/usr/bin/env bash
 
 # This script checks if the the ci server contains an updated version of the development branch
-# TODO make build configurable
-if [ ! $1 ]; then
-  echo "Specify the url where the Timbuctoo binaries can be downloaded"
-  exit 1
-fi
-if [ ! $2 ]; then
-  echo "Specify the url where the Timbuctoo buildnumber can be retrieved"
-  exit 1
-fi
-
-TIMBUCTOO_BIN_URL="$1"
-TIMBUCTOO_BUILD_NO_URL="$2"
-TIMBUCTOO_INSTALLER_DIR="/tmp/timbuctoo"
+# it is specific to our build servers
+TIMBUCTOO_BIN_URL='http://ci.huygens.knaw.nl/job/timbuctoo_develop/lastSuccessfulBuild/nl.knaw.huygens$timbuctoo-instancev4/artifact/nl.knaw.huygens/timbuctoo-instancev4/'
+TIMBUCTOO_BUILD_NO_URL='http://ci.huygens.knaw.nl/job/timbuctoo_develop/lastSuccessfulBuild/buildNumber/'
+TIMBUCTOO_INSTALLER_DIR="/data/timbuctoo/tmp"
 VALID_STATUS=0
 INVALID_STATUS=1
 
-check_timbuctoo_status(){
-  TIMBUCTOO_STATUS=$(monit status timbuctoo | grep "  status")
-  echo "Timboctoo status \"$TIMBUCTOO_STATUS\""
-  if [[ $TIMBUCTOO_STATUS =~ "Initializing" ]]; then
-    sleep 5s
-    check_timbuctoo_config
-    return $?
-  elif [[ $TIMBUCTOO_STATUS =~ "failed" ]]; then
-    return $INVALID_STATUS
+mkdir -p $TIMBUCTOO_INSTALLER_DIR
+
+normalize_status() {
+  status="$1"
+  if [[ "$status" =~ pending ]]; then
+    echo "busy"
+  elif [[ "$status" =~ Initializing ]]; then
+    echo "busy"
+  elif [[ "$status" =~ Running ]]; then
+    echo "up"
   else
-    return $VALID_STATUS
+    echo "down"
   fi
 }
 
-check_timbuctoo_config(){
-  check_timbuctoo_status
-  STATUS=$?
-  if [[ $STATUS == $VALID_STATUS ]]; then
-    $(monit restart timbuctoo)
-    check_timbuctoo_status
-    return $?
+monit_status() {
+  monit_log=$(monit summary "$1")
+  status=$(echo "$monit_log" | grep '^Process' | sed "s/^Process '[^']*' *//")
+  status_length=$(echo "$status" | wc -l)
+  if [ "$status_length" -gt 1 ]; then
+    exit 1
+  fi
+  normalize_status "$status"
+}
+
+wait_for_monit() {
+  target="$1"
+  sleep_time="${2:-5}"
+  max_sleeps="${3:-60}"
+  sleeps=0
+
+  status=$(monit_status "$1" || echo 'FAILURE')
+
+  while [ "$status" = "busy" ]; do
+    if [ "$sleeps" -gt "$max_sleeps" ]; then
+      echo "timout for launching exceeded"
+      exit 1
+    fi
+    sleep "$sleep_time"
+    status=$(monit_status "$1")
+  done
+  if [ "$status" = "FAILURE" ]; then
+    exit 1
   else
-    return $STATUS
+    echo "$1 is currently $status"
+  fi
+}
+
+is_restartable(){
+  wait_for_monit timbuctoo
+  monit restart timbuctoo
+  status=$(wait_for_monit timbuctoo)
+  if [[ status = 'up' ]]; then
+    return 0
+  else
+    return 1
   fi
 }
 
@@ -52,6 +76,12 @@ install_new_version(){
   monit stop timbuctoo
   rpm -U "$LAST_SUCCESSFUL_BUILD_DIR/*.rpm"
   monit start timbuctoo
+  STATUS_AFTER_INSTALL=$(wait_for_monit timbuctoo)
+  if [[ status = 'up' ]]; then
+    return 0
+  else
+    return 1
+  fi
 }
 
 clean_up(){
@@ -91,41 +121,26 @@ rollback(){
   fi
 }
 
-# Create the directory to download to installer to if it does not exist
-if [ ! -d "$TIMBUCTOO_INSTALLER_DIR" ]; then
-  echo "Create directory for Timbuctoo installers \"$TIMBUCTOO_INSTALLER_DIR\""
-  mkdir "$TIMBUCTOO_INSTALLER_DIR"
-fi
-
 # Retrieve the number of the latest successful build
-echo "Retrieve the latest build number"
 LAST_SUCCESSFUL_BUILD=$(curl "$TIMBUCTOO_BUILD_NO_URL")
 LAST_SUCCESSFUL_BUILD_DIR="$TIMBUCTOO_INSTALLER_DIR/$LAST_SUCCESSFUL_BUILD"
 
-if [ ! -d "$LAST_SUCCESSFUL_BUILD_DIR" ]; then
-  check_timbuctoo_config
-  STATUS=$?
-
-  if [[ $STATUS == $VALID_STATUS ]]; then
-    install_new_version
-
-    check_timbuctoo_status
-    STATUS_AFTER_INSTALL=$?
-
-    if [[ $STATUS_AFTER_INSTALL == $VALID_STATUS ]]; then
+if [ -d "$LAST_SUCCESSFUL_BUILD_DIR" ]; then
+  echo "build $LAST_SUCCESSFUL_BUILD is already installed on this server."
+else
+  if is_restartable; then
+    if install_new_version; then
       echo "Installation successful"
       clean_up $LAST_SUCCESSFUL_BUILD
       exit 0
     else
       echo "Installation failed"
-      rollback $LAST_SUCCESSFUL_BUILD
+      rollback
       exit 1
     fi
   else
-    echo "Timbuctoo config is invalid"
+    echo "Current timbuctoo can't be relaunched"
     exit 1
   fi
-else
-  echo "Latest build of Timbuctoo is already installed on this server."
 fi
 

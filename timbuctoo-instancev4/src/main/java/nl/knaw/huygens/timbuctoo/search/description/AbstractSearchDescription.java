@@ -11,7 +11,6 @@ import nl.knaw.huygens.timbuctoo.search.description.sort.SortDescription;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.SearchRequestV2_1;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.HashMap;
@@ -46,8 +45,7 @@ public abstract class AbstractSearchDescription implements SearchDescription {
   }
 
   protected GraphTraversal<Vertex, Vertex> initializeVertices(GraphWrapper graphWrapper) {
-    GraphTraversalSource latestStage = graphWrapper.getLatestState();
-    return filterByType(latestStage);
+    return graphWrapper.getCurrentEntitiesFor(getType());
   }
 
   @Override
@@ -103,13 +101,7 @@ public abstract class AbstractSearchDescription implements SearchDescription {
 
     return new SearchResult(searchResult, this, facets);
   }
-
-  protected GraphTraversal<Vertex, Vertex> filterByType(GraphTraversalSource traversalSource) {
-    return traversalSource.V().filter(
-      x -> ((String) x.get().property("types").value()).contains("\"" + getType() + "\"")
-    );
-  }
-
+  
   protected List<String> getOnlyFilterFacetList() {
     return Lists.newArrayList();
   }

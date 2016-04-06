@@ -139,12 +139,15 @@ public class HuygensIng {
       )
       .withCollection("wwkeywords", c-> c
         .withDisplayName(localProperty("wwkeyword_value"))
+        .withProperty("value", localProperty("wwkeyword_value"))
       )
       .withCollection("wwlanguages", c-> c
         .withDisplayName(localProperty("wwlanguage_name"))
+        .withProperty("name", localProperty("wwlanguage_name"))
       )
       .withCollection("wwlocations", c-> c
         .withDisplayName(localProperty("wwlocation_names", defaultLocationNameConverter))
+        .withProperty("locationName", localProperty("wwlocation_names"))
       )
       .withCollection("wwrelations", CollectionBuilder::isRelationCollection)
     )

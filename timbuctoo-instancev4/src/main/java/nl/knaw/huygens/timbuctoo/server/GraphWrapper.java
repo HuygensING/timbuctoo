@@ -1,7 +1,9 @@
 package nl.knaw.huygens.timbuctoo.server;
 
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 public interface GraphWrapper {
   Graph getGraph();
@@ -11,4 +13,6 @@ public interface GraphWrapper {
    * @return the filtered graph as GraphTraversalSource
    */
   GraphTraversalSource getLatestState();
+
+  GraphTraversal<Vertex, Vertex> getCurrentEntitiesFor(String... entityTypeNames);
 }

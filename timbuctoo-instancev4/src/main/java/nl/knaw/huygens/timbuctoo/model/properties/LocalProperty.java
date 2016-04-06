@@ -7,10 +7,10 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Collection;
+import java.util.Optional;
 
-public class LocalProperty extends TimbuctooProperty {
-  private final String guiTypeId;
-  private final Collection<String> options;
+public class LocalProperty extends ReadWriteProperty {
+  private final Converter converter;
 
   public LocalProperty(String propName, Converter converter) {
     super(() -> __.<Object, String>values(propName).map(prop -> Try.of(() -> converter.tinkerpopToJson(prop.get()))),
@@ -22,21 +22,29 @@ public class LocalProperty extends TimbuctooProperty {
         }
       }
     );
-    guiTypeId = converter.getTypeIdentifier();
-    if (converter instanceof HasOptions) {
-      options = ((HasOptions) converter).getOptions();
-    } else {
-      options = null;
-    }
+    this.converter = converter;
   }
 
   @Override
   public String getGuiTypeId() {
-    return guiTypeId;
+    return converter.getTypeIdentifier();
   }
 
   @Override
-  public Collection<String> getOptions() {
-    return options;
+  public Optional<Collection<String>> getOptions() {
+    if (converter instanceof HasOptions) {
+      return Optional.of(((HasOptions) converter).getOptions());
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  @Override
+  public Optional<Collection<String>> getParts() {
+    if (converter instanceof HasParts) {
+      return Optional.of(((HasParts) converter).getParts());
+    } else {
+      return Optional.empty();
+    }
   }
 }

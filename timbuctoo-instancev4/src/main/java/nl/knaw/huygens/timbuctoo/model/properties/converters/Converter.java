@@ -12,4 +12,5 @@ public interface Converter {
   default String getTypeIdentifier() {
     return null; //null indicates that the type is not available for inclusion in the metadata
   }
+
 }

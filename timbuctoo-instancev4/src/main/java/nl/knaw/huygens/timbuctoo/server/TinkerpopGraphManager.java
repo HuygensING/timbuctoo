@@ -3,9 +3,11 @@ package nl.knaw.huygens.timbuctoo.server;
 import com.codahale.metrics.health.HealthCheck;
 import io.dropwizard.lifecycle.Managed;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.GraphDatabaseSettings;
@@ -73,4 +75,25 @@ public class TinkerpopGraphManager extends HealthCheck implements Managed, Graph
     return GraphTraversalSource.build().with(LATEST_ELEMENTS).create(graph);
   }
 
+  @Override
+  public GraphTraversal<Vertex, Vertex> getCurrentEntitiesFor(String... entityTypeNames) {
+    if (entityTypeNames.length == 1) {
+      String type = entityTypeNames[0];
+      return getLatestState().V().filter(
+        x -> ((String) x.get().property("types").value()).contains("\"" + type + "\"")
+      );
+    } else {
+      return getLatestState().V().filter(
+        x -> {
+          String typeString = (String) x.get().property("types").value();
+          for (String type : entityTypeNames) {
+            if (typeString.contains("\"" + type + "\"")) {
+              return true;
+            }
+          }
+          return false;
+        }
+      );
+    }
+  }
 }

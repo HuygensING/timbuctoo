@@ -1,38 +1,49 @@
 package nl.knaw.huygens.timbuctoo.model.vre;
 
-import nl.knaw.huygens.timbuctoo.model.properties.TimbuctooProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.ReadWriteProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import javax.validation.constraints.NotNull;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Supplier;
+
+import static java.util.stream.Collectors.toMap;
 
 public class Collection {
   private final String entityTypeName;
   private final String collectionName;
   private final Vre vre;
   private final String abstractType;
-  private final TimbuctooProperty displayName;
-  private final Map<String, TimbuctooProperty> properties;
-  private final Map<String, TimbuctooProperty> searchResultData;
+  private final ReadableProperty displayName;
+  private final LinkedHashMap<String, ReadableProperty> properties;
+  private final LinkedHashMap<String, ReadWriteProperty> writeableProperties;
   private final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations;
   private final boolean isRelationCollection;
 
   Collection(@NotNull String entityTypeName, @NotNull String abstractType,
-             @NotNull TimbuctooProperty displayName, @NotNull Map<String, TimbuctooProperty> properties,
-             @NotNull Map<String, TimbuctooProperty> searchResultData, @NotNull String collectionName,
-             @NotNull Vre vre, @NotNull Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations,
+             @NotNull ReadableProperty displayName, @NotNull LinkedHashMap<String, ReadableProperty> properties,
+             @NotNull String collectionName, @NotNull Vre vre,
+             @NotNull Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations,
              boolean isRelationCollection) {
     this.entityTypeName = entityTypeName;
     this.abstractType = abstractType;
     this.displayName = displayName;
     this.properties = properties;
-    this.searchResultData = searchResultData;
     this.collectionName = collectionName;
     this.vre = vre;
     this.derivedRelations = derivedRelations;
     this.isRelationCollection = isRelationCollection;
+    writeableProperties = properties.entrySet().stream()
+      .filter(e -> e.getValue() instanceof ReadWriteProperty)
+      .collect(toMap(
+        Map.Entry::getKey,
+        e -> (ReadWriteProperty) e.getValue(),
+        (v1, v2) -> { throw new IllegalStateException("Duplicate key"); },
+        LinkedHashMap::new
+      ));
   }
 
   public String getEntityTypeName() {
@@ -43,16 +54,16 @@ public class Collection {
     return abstractType;
   }
 
-  public TimbuctooProperty getDisplayName() {
+  public ReadableProperty getDisplayName() {
     return displayName;
   }
 
-  public Map<String, TimbuctooProperty> getProperties() {
-    return properties;
+  public Map<String, ReadWriteProperty> getWriteableProperties() {
+    return writeableProperties;
   }
 
-  public Map<String, TimbuctooProperty> getSearchResultData() {
-    return searchResultData;
+  public Map<String, ReadableProperty> getReadableProperties() {
+    return properties;
   }
 
   public String getCollectionName() {

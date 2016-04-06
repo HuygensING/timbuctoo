@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FullTextSearchParam
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.SearchRequestV2_1;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.SortParameter;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.hamcrest.Matchers;
@@ -21,14 +22,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static nl.knaw.huygens.timbuctoo.search.VertexMatcher.likeVertex;
-import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription
-  .createLocalSimpleFullTextSearchDescription;
+import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription.createLocalSimpleFullTextSearchDescription;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
@@ -57,10 +55,22 @@ public class AbstractSearchDescriptionTest {
   }
 
   private GraphWrapper createGraphWrapper(Graph graph) {
-    GraphWrapper graphWrapper = mock(GraphWrapper.class);
-    given(graphWrapper.getGraph()).willReturn(graph);
-    given(graphWrapper.getLatestState()).willReturn(graph.traversal());
-    return graphWrapper;
+    return new GraphWrapper() {
+      @Override
+      public Graph getGraph() {
+        return graph;
+      }
+
+      @Override
+      public GraphTraversalSource getLatestState() {
+        return graph.traversal();
+      }
+
+      @Override
+      public GraphTraversal<Vertex, Vertex> getCurrentEntitiesFor(String... entityTypeNames) {
+        return graph.traversal().V();
+      }
+    };
   }
 
   @Test

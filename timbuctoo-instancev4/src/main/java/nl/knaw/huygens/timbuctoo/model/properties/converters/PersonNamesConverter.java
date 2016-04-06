@@ -5,13 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
+import nl.knaw.huygens.timbuctoo.model.properties.HasParts;
 
 import java.io.IOException;
 import java.util.Collection;
 
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
-public class PersonNamesConverter implements Converter, HasOptions {
+public class PersonNamesConverter implements Converter, HasParts {
   @Override
   public Object jsonToTinkerpop(JsonNode json) throws IOException {
     //convert to personNames as verification
@@ -48,7 +49,7 @@ public class PersonNamesConverter implements Converter, HasOptions {
   }
 
   @Override
-  public Collection<String> getOptions() {
+  public Collection<String> getParts() {
     return Lists.newArrayList("FORENAME", "SURNAME", "NAME_LINK", "ROLE_NAME", "GEN_NAME");
   }
 
