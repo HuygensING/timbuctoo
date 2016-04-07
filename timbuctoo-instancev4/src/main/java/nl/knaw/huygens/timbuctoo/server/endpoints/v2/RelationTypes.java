@@ -13,7 +13,7 @@ import java.util.List;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 
-@Path("/v2.1/system/relationTypes")
+@Path("/v2.1/system/relationtypes")
 @Produces(APPLICATION_JSON)
 public class RelationTypes {
 
