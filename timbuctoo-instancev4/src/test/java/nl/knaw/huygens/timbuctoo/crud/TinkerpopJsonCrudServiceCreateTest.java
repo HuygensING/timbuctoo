@@ -216,7 +216,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
   @Test
   public void throwsWhenPropertyMapperThrowsProperties() throws IOException, InvalidCollectionException {
     ReadWriteProperty throwingMap = mock(ReadWriteProperty.class);
-    doThrow(new IOException("PARSE ERROR")).when(throwingMap).set(any());
+    doThrow(new IOException("PARSE ERROR")).when(throwingMap).setJson(any(), any());
 
     Graph graph = testGraph.newGraph().build();
     TinkerpopJsonCrudService instance = basicInstanceWithMap(

@@ -357,7 +357,7 @@ public class TinkerpopJsonCrudServiceReplaceTest {
   @Test
   public void throwsWhenPropertyMapperThrowsProperties() throws Exception {
     ReadWriteProperty throwingMap = mock(ReadWriteProperty.class);
-    doThrow(new IOException("MOCKED PARSE ERROR")).when(throwingMap).set(any());
+    doThrow(new IOException("MOCKED PARSE ERROR")).when(throwingMap).setJson(any(), any());
 
     String id = UUID.randomUUID().toString();
     Graph graph = newGraph()

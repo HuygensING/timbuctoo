@@ -2,32 +2,50 @@ package nl.knaw.huygens.timbuctoo.model.properties;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import javaslang.control.Try;
-import nl.knaw.huygens.timbuctoo.util.LambdaExceptionUtil;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import nl.knaw.huygens.timbuctoo.model.properties.converters.Converter;
+import nl.knaw.huygens.timbuctoo.model.properties.converters.HasOptions;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.function.Supplier;
 
-public abstract class ReadWriteProperty extends ReadableProperty {
-  private final LambdaExceptionUtil.Function_WithExceptions<JsonNode, GraphTraversal<?, ?>, IOException> setter;
+public class ReadWriteProperty extends ReadableProperty {
+  private final String propName;
+  private final Converter converter;
 
-  public ReadWriteProperty(Supplier<GraphTraversal<?, Try<JsonNode>>> getter,
-                           LambdaExceptionUtil.Function_WithExceptions<JsonNode, GraphTraversal<?, ?>, IOException>
-                             setter) {
-    super(getter);
-    this.setter = setter;
+  public ReadWriteProperty(String propName, Converter converter) {
+    super(() -> __.<Object, String>values(propName).map(prop -> Try.of(() -> converter.tinkerpopToJson(prop.get()))));
+    this.propName = propName;
+    this.converter = converter;
   }
 
-  public GraphTraversal<?, ?> set(JsonNode value) throws IOException {
-    return setter.apply(value);
+  public String getGuiTypeId() {
+    return converter.getTypeIdentifier();
   }
 
-  public abstract String getGuiTypeId();
+  public Optional<Collection<String>> getOptions() {
+    if (converter instanceof HasOptions) {
+      return Optional.of(((HasOptions) converter).getOptions());
+    } else {
+      return Optional.empty();
+    }
+  }
 
-  public abstract Optional<Collection<String>> getOptions();
+  public Optional<Collection<String>> getParts() {
+    if (converter instanceof HasParts) {
+      return Optional.of(((HasParts) converter).getParts());
+    } else {
+      return Optional.empty();
+    }
+  }
 
-  public abstract Optional<Collection<String>> getParts();
-
+  public void setJson(Vertex vertex, JsonNode value) throws IOException {
+    if (value == null) {
+      vertex.property(propName).remove();
+    } else {
+      vertex.property(propName, converter.jsonToTinkerpop(value));
+    }
+  }
 }

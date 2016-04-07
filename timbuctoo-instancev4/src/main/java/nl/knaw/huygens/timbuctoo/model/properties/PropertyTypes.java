@@ -12,7 +12,7 @@ public class PropertyTypes {
   }
 
   public static ReadWriteProperty localProperty(String propName, Converter converter) {
-    return new LocalProperty(propName, converter);
+    return new ReadWriteProperty(propName, converter);
   }
 
   public static ReadableProperty wwPersonNameOrTempName() {

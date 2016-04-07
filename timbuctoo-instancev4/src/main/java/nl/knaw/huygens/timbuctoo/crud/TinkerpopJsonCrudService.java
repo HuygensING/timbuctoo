@@ -5,10 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Sets;
 import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
-import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadWriteProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -39,11 +40,12 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
 import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
 import static nl.knaw.huygens.timbuctoo.crud.VertexDuplicator.duplicateVertex;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
@@ -159,31 +161,25 @@ public class TinkerpopJsonCrudService {
     GraphTraversalSource traversalSource = graph.traversal();
     GraphTraversal<Vertex, Vertex> traversalWithVertex = traversalSource.addV();
 
-    try {
-      stream(input.fieldNames())
-        .filter(fieldName -> !Objects.equals(fieldName, "@type"))
-        .map(fieldName -> Try.of((Try.CheckedSupplier<GraphTraversal<?, ?>>) () -> {
-          if (mapping.containsKey(fieldName)) {
-            try {
-              return mapping.get(fieldName).set(input.get(fieldName));
-            } catch (IOException e) {
-              throw new IOException(fieldName + " could not be saved. " + e.getMessage(), e);
-            }
-          } else {
-            throw new IOException(String.format("Items of %s have no property %s", collectionName, fieldName));
-          }
-        }))
-        .forEach(x -> x
-          .onSuccess(v->traversalWithVertex.union(v))
-          .onFailure(e -> {
-            throw new RuntimeException(e);
-          })
-        );
-    } catch (RuntimeException e) {
-      throw new IOException(e.getCause());
-    }
-
     Vertex vertex = traversalWithVertex.next();
+
+
+    Iterator<String> fieldNames = input.fieldNames();
+    while (fieldNames.hasNext()) {
+      String fieldName = fieldNames.next();
+      if (!Objects.equals(fieldName, "@type")) {
+        if (mapping.containsKey(fieldName)) {
+          try {
+            mapping.get(fieldName).setJson(vertex, input.get(fieldName));
+          } catch (IOException e) {
+            throw new IOException(fieldName + " could not be saved. " + e.getMessage(), e);
+          }
+        } else {
+          graph.tx().rollback();
+          throw new IOException(String.format("Items of %s have no property %s", collectionName, fieldName));
+        }
+      }
+    }
 
     vertex.property("tim_id", id.toString());
     vertex.property("rev", 1);
@@ -632,42 +628,29 @@ public class TinkerpopJsonCrudService {
     }
 
     final Map<String, ReadWriteProperty> collectionProperties = collection.getWriteableProperties();
-    final GraphTraversal[] setters = new GraphTraversal[collectionProperties.size()];
 
-    final List<String> dataFields = stream(data.fieldNames())
+    final Set<String> dataFields = stream(data.fieldNames())
       .filter(x -> !Objects.equals(x, "@type"))
       .filter(x -> !Objects.equals(x, "_id"))
       .filter(x -> !Objects.equals(x, "^rev"))
-      .collect(toList());
+      .collect(toSet());
 
-    final List<String> omittedProperties = collectionProperties
-      .keySet().stream()
-      .filter(key -> !dataFields.contains(key))
-      .collect(toList());
-
-    for (int i = 0; i < dataFields.size(); i++) {
-      String name = dataFields.get(i);
+    for (String name : dataFields) {
       if (!collectionProperties.containsKey(name)) {
+        graph.tx().rollback();
         throw new IOException(name + " is not a valid property");
       }
       try {
-        setters[i] = collectionProperties.get(name).set(data.get(name));
+        collectionProperties.get(name).setJson(entity, data.get(name));
       } catch (IOException e) {
+        graph.tx().rollback();
         throw new IOException(name + " could not be saved. " + e.getMessage(), e);
       }
     }
 
-    for (int i = 0; i < omittedProperties.size(); i++) {
-      String name = omittedProperties.get(i);
-      setters[dataFields.size() + i] = collectionProperties.get(name).set(null);
+    for (String name : Sets.difference(collectionProperties.keySet(), dataFields)) {
+      collectionProperties.get(name).setJson(entity, null);
     }
-
-    traversalSource
-      .V(entity.id())
-      .union(setters)
-      .forEachRemaining(x-> {
-        //trigger side effects
-      });
 
     setModified(entity, userId);
     duplicateVertex(graph, entity);
