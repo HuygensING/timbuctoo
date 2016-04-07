@@ -16,6 +16,7 @@ import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
+import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
@@ -56,6 +57,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
   @Override
   public void initialize(Bootstrap<TimbuctooConfiguration> bootstrap) {
+    //bundles
     activeMqBundle = new ActiveMQBundle();
     bootstrap.addBundle(activeMqBundle);
     bootstrap.addBundle(new Java8Bundle());
@@ -93,16 +95,17 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
     final HandleAdder handleAdder = new HandleAdder(activeMqBundle, HANDLE_QUEUE, graphManager, persistenceManager);
+    final Vres vres = HuygensIng.mappings;
     final TinkerpopJsonCrudService crudService = new TinkerpopJsonCrudService(
       graphManager,
-      HuygensIng.mappings,
+      vres,
       handleAdder,
       userStore,
       SingleEntity::makeUrl,
       (coll, id, rev) -> URI.create(configuration.getBaseUri() + SingleEntity.makeUrl(coll, id, rev).getPath()),
       (coll, id, rev) -> URI.create(SingleEntity.makeUrl(coll, id, rev).getPath().replaceFirst("^/v2.1/", "")),
       Clock.systemDefaultZone());
-    final JsonMetadata jsonMetadata = new JsonMetadata(HuygensIng.mappings, graphManager, HuygensIng.keywordTypes);
+    final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager, HuygensIng.keywordTypes);
 
     // lifecycle managers
     environment.lifecycle().manage(graphManager);
@@ -117,7 +120,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new SingleEntity(crudService, loggedInUserStore));
     register(environment, new Gremlin(graphManager));
     register(environment, new Graph(graphManager));
-    register(environment, new BulkUpload(HuygensIng.mappings, graphManager));
+    register(environment, new BulkUpload(vres, graphManager));
     register(environment, new Metadata(jsonMetadata));
 
     // register health checks
@@ -125,6 +128,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, "Local logins file", new FileHealthCheck(loginsPath));
     register(environment, "Users file", new FileHealthCheck(usersPath));
     register(environment, "Neo4j database connection", graphManager);
+    //Disabled for now because I can't fix the database until Martijn is back
+    //register(environment, "Database invariants", new DatabaseInvariantsHealthCheck(graphManager, 1, vres));
 
     //Log all http requests
     register(environment, new LoggingFilter(1024, currentVersion));
@@ -145,7 +150,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         new JmxAttributeGauge(jmxMetricName, "DequeueCount")
       );
     }));
-
 
     setupObjectMapping(environment);
   }

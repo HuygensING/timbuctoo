@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -30,6 +31,9 @@ public class Vres {
   public Optional<Collection> getCollection(String collection) {
     return Optional.ofNullable(collections.get(collection));
   }
+
+  public Optional<Collection> getCollectionForType(String type) {
+    return collections.values().stream().filter(coll -> Objects.equals(coll.getEntityTypeName(), type)).findAny();
   }
 
   public Vre getVre(String vre) {
