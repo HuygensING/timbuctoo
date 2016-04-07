@@ -90,10 +90,8 @@ public class TinkerpopJsonCrudService {
   public UUID create(String collectionName, ObjectNode input, String userId)
     throws InvalidCollectionException, IOException {
 
-    Collection collection = mappings.get(collectionName);
-    if (collection == null) {
-      throw new InvalidCollectionException(collectionName);
-    }
+    final Collection collection = mappings.getCollection(collectionName)
+      .orElseThrow(() -> new InvalidCollectionException(collectionName));
     if (collection.isRelationCollection()) {
       return createRelation(collection, input, userId);
     } else {
@@ -208,10 +206,8 @@ public class TinkerpopJsonCrudService {
   public JsonNode get(String collectionName, UUID id, Integer rev)
     throws InvalidCollectionException, NotFoundException {
 
-    final Collection collection = mappings.get(collectionName);
-    if (collection == null) {
-      throw new InvalidCollectionException(collectionName);
-    }
+    final Collection collection = mappings.getCollection(collectionName)
+      .orElseThrow(() -> new InvalidCollectionException(collectionName));
     final Map<String, ReadableProperty> mapping = collection.getReadableProperties();
     final String entityTypeName = collection.getEntityTypeName();
     final GraphTraversalSource traversalSource = graphwrapper.getGraph().traversal();
@@ -543,10 +539,8 @@ public class TinkerpopJsonCrudService {
   public void replace(String collectionName, UUID id, ObjectNode data, String userId)
     throws InvalidCollectionException, IOException, NotFoundException, AlreadyUpdatedException {
 
-    final Collection collection = mappings.get(collectionName);
-    if (collection == null) {
-      throw new InvalidCollectionException(collectionName);
-    }
+    final Collection collection = mappings.getCollection(collectionName)
+      .orElseThrow(() -> new InvalidCollectionException(collectionName));
     if (collection.isRelationCollection()) {
       replaceRelation(collection, id, data, userId);
     } else {
@@ -654,10 +648,8 @@ public class TinkerpopJsonCrudService {
     throws InvalidCollectionException {
 
     LOG.info(collectionName + " " + tokenParam + " " + type);
-    final Collection collection = mappings.get(collectionName);
-    if (collection == null) {
-      throw new InvalidCollectionException(collectionName);
-    }
+    final Collection collection = mappings.getCollection(collectionName)
+      .orElseThrow(() -> new InvalidCollectionException(collectionName));
     final Graph graph = graphwrapper.getGraph();
     final GraphTraversalSource traversalSource = graph.traversal();
 
@@ -759,10 +751,8 @@ public class TinkerpopJsonCrudService {
   public void delete(String collectionName, UUID id, String userId)
     throws InvalidCollectionException, NotFoundException {
 
-    final Collection collection = mappings.get(collectionName);
-    if (collection == null) {
-      throw new InvalidCollectionException(collectionName);
-    }
+    final Collection collection = mappings.getCollection(collectionName)
+      .orElseThrow(() -> new InvalidCollectionException(collectionName));
     final Graph graph = graphwrapper.getGraph();
     final GraphTraversalSource traversalSource = graph.traversal();
     GraphTraversal<Vertex, Vertex> entityTraversal = getEntity(traversalSource, id, null);
