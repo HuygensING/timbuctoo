@@ -27,7 +27,6 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 
@@ -49,6 +48,8 @@ import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
 import static nl.knaw.huygens.timbuctoo.crud.VertexDuplicator.duplicateVertex;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
+import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypes;
+import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
@@ -309,7 +310,7 @@ public class TinkerpopJsonCrudService {
         try {
           Vertex vertex = (Vertex) r.get().get("targetVertex");
           String relationType = (String) r.get().get("sack");
-          String targetType = getEntityType(collection, vertex);
+          String targetType = getOwnEntityType(collection, vertex);
           if (targetType == null) {
             //this means that the vertex is of another VRE
             throw new IOException(
@@ -384,7 +385,7 @@ public class TinkerpopJsonCrudService {
             Vertex vertex = (Vertex) val.get("vertex");
             String label = (String) val.get("label");
 
-            String targetEntityType = getEntityType(collection, vertex);
+            String targetEntityType = getOwnEntityType(collection, vertex);
             if (targetEntityType == null) {
               //this means that the edge is of this VRE, but the Vertex it points to is of another VRE
               throw new IOException(
@@ -447,12 +448,12 @@ public class TinkerpopJsonCrudService {
   }
 
   /* returns the entitytype for the current collection's vre or else the type of the current collection */
-  private String getEntityType(Collection collection, Element vertex) throws IOException {
+  private String getOwnEntityType(Collection collection, Element vertex) throws IOException {
     final Vre vre = collection.getVre();
-    String encodedEntityTypes = getProp(vertex, "types", String.class)
-      .orElse("[\"" + collection.getEntityTypeName() +  "\"]");
-    String[] entityTypes = arrayToEncodedArray.tinkerpopToJava(encodedEntityTypes, String[].class);
-    return vre.getOwnType(entityTypes);
+    return getEntityTypes(vertex)
+      .map(x -> x.map(vre::getOwnType))
+      .orElse(Try.success(collection.getEntityTypeName()))
+      .get(); //throws IOException on failure
   }
 
   private ArrayNode getVariationRefs(Vertex entity, UUID id, String entityTypeName) {
@@ -504,20 +505,6 @@ public class TinkerpopJsonCrudService {
         }
         return modifiedObj;
       });
-  }
-
-  //copies: 1
-  public <V> Optional<V> getProp(final Element vertex, final String key, Class<? extends V> clazz) {
-    try {
-      Iterator<? extends Property<Object>> revProp = vertex.properties(key);
-      if (revProp.hasNext()) {
-        return Optional.of(clazz.cast(revProp.next().value()));
-      } else {
-        return Optional.empty();
-      }
-    } catch (RuntimeException e) {
-      return Optional.empty();
-    }
   }
 
   private GraphTraversal<Vertex, Vertex> getEntity(GraphTraversalSource source, UUID id, Integer rev) {
@@ -811,7 +798,7 @@ public class TinkerpopJsonCrudService {
 
     entity.edges(Direction.BOTH).forEachRemaining(edge -> {
       try {
-        String entityType = getEntityType(collection, edge);
+        String entityType = getOwnEntityType(collection, edge);
         if (entityType != null) {
           edge.property(entityType + "_accepted", false);
         }

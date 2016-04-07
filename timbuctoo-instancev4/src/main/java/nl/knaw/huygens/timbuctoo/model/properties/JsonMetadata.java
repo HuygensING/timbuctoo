@@ -10,16 +10,14 @@ import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Autocomplete;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Property;
 import org.slf4j.Logger;
 
 import java.net.URI;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
@@ -169,21 +167,6 @@ public class JsonMetadata {
 
     return result;
   }
-
-  //copied from TinkerpopJsonCrudService
-  public <V> Optional<V> getProp(final Element vertex, final String key, Class<? extends V> clazz) {
-    try {
-      Iterator<? extends Property<Object>> revProp = vertex.properties(key);
-      if (revProp.hasNext()) {
-        return Optional.of(clazz.cast(revProp.next().value()));
-      } else {
-        return Optional.empty();
-      }
-    } catch (RuntimeException e) {
-      return Optional.empty();
-    }
-  }
-
 
   public ObjectNode getForVre(String vreName) {
     ObjectNode result = jsnO();
