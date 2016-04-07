@@ -17,9 +17,11 @@ import org.junit.runner.RunWith;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 
+import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.contractdiff.jsondiff.JsonDiffer.jsonDiffer;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
+import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 
 @RunWith(ConcordionRunner.class)
 public class RelationTypesV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
@@ -56,6 +58,14 @@ public class RelationTypesV2_1EndpointFixture extends AbstractV2_1EndpointFixtur
                         );
                       }
                     })
+            .withCustomHandler("SOURCE_TYPE_OR_TARGET_TYPE_MUST_BE_PERSON", (actual) -> {
+              if (actual.get("sourceTypeName").equals(jsn("person")) ||
+                      actual.get("targetTypeName").equals(jsn("person"))) {
+                return new MatchingDiffResult("either sourceTypeName or targetTypeName is person", actual.toString());
+              } else {
+                return new MisMatchDiffResult("either sourceTypeName or targetTypeName is person", actual.toString());
+              }
+            })
             .withCustomHandler("BOOLEAN", (actual) -> {
               if (actual.getNodeType().equals(JsonNodeType.BOOLEAN)) {
                 return new MatchingDiffResult("a boolean", actual.toString());
@@ -63,8 +73,10 @@ public class RelationTypesV2_1EndpointFixture extends AbstractV2_1EndpointFixtur
                 return new MisMatchDiffResult("a boolean", actual.toString());
               }
             })
+
             .build();
   }
+
 
   @Override
   protected WebTarget returnUrlToMockedOrRealServer(String serverAddress) {
