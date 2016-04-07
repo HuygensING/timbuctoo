@@ -43,7 +43,7 @@ public class WwCollectiveSearchDescription extends AbstractSearchDescription imp
 
   private Map<String, PropertyDescriptor> createDataDescriptors() {
     Map<String, PropertyDescriptor> dataDescriptors = Maps.newHashMap();
-//    dataDescriptors.put("_id", propertyDescriptorFactory.getLocal(ID_DB_PROP, String.class));
+    // dataDescriptors.put("_id", propertyDescriptorFactory.getLocal(ID_DB_PROP, String.class));
 
     return dataDescriptors;
   }
@@ -87,27 +87,12 @@ public class WwCollectiveSearchDescription extends AbstractSearchDescription imp
   public List<String> getFullTextSearchFields() {
     return FULL_TEXT_SEARCH_FIELDS;
   }
-  
-  private List<FacetDescription> createFacetDescriptions(FacetDescriptionFactory facetDescriptionFactory) {
-	    return Lists.newArrayList(
-//	            facetDescriptionFactory.createDatableRangeFacetDescription("dynamic_i_date", "wwdocument_date"),
-//	            facetDescriptionFactory.createListFacetDescription(
-//	                    "dynamic_s_origin", LocationNames.class, "names", "hasPublishLocation"),
-//
-//	            facetDescriptionFactory.createListFacetDescription(
-//	                    "dynamic_s_language", String.class, "wwlanguage_name", "hasWorkLanguage"),
-//
-//	            facetDescriptionFactory.createListFacetDescription(
-//	                    "dynamic_s_genre", String.class, "wwkeyword_value", "hasGenre"),
-//
-//	            facetDescriptionFactory.createListFacetDescription(
-//	                    "dynamic_s_sources", String.class, "wwdocument_title", "hasDocumentSource"),
-//
-//	            facetDescriptionFactory.createChangeRangeFacetDescription("dynamic_i_modified", "modified"),
 
-	            facetDescriptionFactory.createListFacetDescription(
-	                    "dynamic_s_type", CollectiveType.class, "wwcollective_type")
-	    );
-	  }
+  private List<FacetDescription> createFacetDescriptions(FacetDescriptionFactory facetDescriptionFactory) {
+    return Lists.newArrayList(
+            facetDescriptionFactory.createListFacetDescription(
+                    "dynamic_s_type", CollectiveType.class, "wwcollective_type")
+    );
+  }
 
 }

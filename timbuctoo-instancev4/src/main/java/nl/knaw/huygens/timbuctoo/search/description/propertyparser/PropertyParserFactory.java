@@ -26,9 +26,9 @@ public class PropertyParserFactory {
     } else if (LocationNames.class.isAssignableFrom(type)) {
       return new DefaultLocationNamePropertyParser();
     } else if (CollectiveType.class.isAssignableFrom(type)) {
-        return new CollectiveTypePropertyParser();
+      return new CollectiveTypePropertyParser();
     } else if (DocumentType.class.isAssignableFrom(type)) {
-        return new DocumentTypePropertyParser();
+      return new DocumentTypePropertyParser();
     } else if (TempName.class.isAssignableFrom(type)) {
       return new TempNamePropertyParser();
     }
