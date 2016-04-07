@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.search.description.propertyparser;
 
 import nl.knaw.huygens.timbuctoo.model.Change;
+import nl.knaw.huygens.timbuctoo.model.CollectiveType;
 import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.model.DocumentType;
 import nl.knaw.huygens.timbuctoo.model.Gender;
@@ -24,8 +25,10 @@ public class PropertyParserFactory {
       return new PersonNamesDefaultNamePropertyParser();
     } else if (LocationNames.class.isAssignableFrom(type)) {
       return new DefaultLocationNamePropertyParser();
+    } else if (CollectiveType.class.isAssignableFrom(type)) {
+        return new CollectiveTypePropertyParser();
     } else if (DocumentType.class.isAssignableFrom(type)) {
-      return new DocumentTypePropertyParser();
+        return new DocumentTypePropertyParser();
     } else if (TempName.class.isAssignableFrom(type)) {
       return new TempNamePropertyParser();
     }

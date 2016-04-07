@@ -3,6 +3,11 @@ package nl.knaw.huygens.timbuctoo.search.description;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+
+import nl.knaw.huygens.timbuctoo.model.CollectiveType;
+import nl.knaw.huygens.timbuctoo.model.DocumentType;
+import nl.knaw.huygens.timbuctoo.model.Gender;
+import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.facet.FacetDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription;
@@ -23,7 +28,8 @@ public class WwCollectiveSearchDescription extends AbstractSearchDescription imp
 
   public WwCollectiveSearchDescription(PropertyDescriptorFactory propertyDescriptorFactory,
                                        FacetDescriptionFactory facetDescriptionFactory) {
-    facetDescriptions = Lists.newArrayList();
+    facetDescriptions = createFacetDescriptions(facetDescriptionFactory);
+
     this.propertyDescriptorFactory = propertyDescriptorFactory;
     dataDescriptors = createDataDescriptors();
     displayNameDescriptor = createDisplayNameDescriptor();
@@ -81,4 +87,27 @@ public class WwCollectiveSearchDescription extends AbstractSearchDescription imp
   public List<String> getFullTextSearchFields() {
     return FULL_TEXT_SEARCH_FIELDS;
   }
+  
+  private List<FacetDescription> createFacetDescriptions(FacetDescriptionFactory facetDescriptionFactory) {
+	    return Lists.newArrayList(
+//	            facetDescriptionFactory.createDatableRangeFacetDescription("dynamic_i_date", "wwdocument_date"),
+//	            facetDescriptionFactory.createListFacetDescription(
+//	                    "dynamic_s_origin", LocationNames.class, "names", "hasPublishLocation"),
+//
+//	            facetDescriptionFactory.createListFacetDescription(
+//	                    "dynamic_s_language", String.class, "wwlanguage_name", "hasWorkLanguage"),
+//
+//	            facetDescriptionFactory.createListFacetDescription(
+//	                    "dynamic_s_genre", String.class, "wwkeyword_value", "hasGenre"),
+//
+//	            facetDescriptionFactory.createListFacetDescription(
+//	                    "dynamic_s_sources", String.class, "wwdocument_title", "hasDocumentSource"),
+//
+//	            facetDescriptionFactory.createChangeRangeFacetDescription("dynamic_i_modified", "modified"),
+
+	            facetDescriptionFactory.createListFacetDescription(
+	                    "dynamic_s_type", CollectiveType.class, "wwcollective_type")
+	    );
+	  }
+
 }
