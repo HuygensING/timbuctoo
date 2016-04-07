@@ -17,11 +17,9 @@ import org.junit.runner.RunWith;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 
-import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.contractdiff.jsondiff.JsonDiffer.jsonDiffer;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
-import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 
 @RunWith(ConcordionRunner.class)
 public class RelationTypesV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
