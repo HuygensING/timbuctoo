@@ -43,7 +43,7 @@ public class WwCollectiveSearchDescription extends AbstractSearchDescription imp
 
   private Map<String, PropertyDescriptor> createDataDescriptors() {
     Map<String, PropertyDescriptor> dataDescriptors = Maps.newHashMap();
-    dataDescriptors.put("_id", propertyDescriptorFactory.getLocal(ID_DB_PROP, String.class));
+//    dataDescriptors.put("_id", propertyDescriptorFactory.getLocal(ID_DB_PROP, String.class));
 
     return dataDescriptors;
   }
