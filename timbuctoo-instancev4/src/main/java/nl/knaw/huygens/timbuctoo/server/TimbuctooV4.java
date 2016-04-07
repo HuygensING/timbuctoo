@@ -27,6 +27,7 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.BulkUpload;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Graph;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Metadata;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.RelationTypes;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Search;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Autocomplete;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
@@ -121,6 +122,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Gremlin(graphManager));
     register(environment, new Graph(graphManager));
     register(environment, new BulkUpload(vres, graphManager));
+    register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
 
     // register health checks
