@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.bulkupload.parsedworkbook;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import nl.knaw.huygens.timbuctoo.model.properties.ReadWriteProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -23,10 +23,10 @@ public class PropertyColumns {
   public final List<LinkedHashMap<String, Object>> cellsPerRow = new ArrayList<>();
   private final SortedSet<String> initialSubColumns;
   private final String[] allowedValues;
-  private final ReadWriteProperty property;
+  private final LocalProperty property;
   private List<Vertex> vertices;
 
-  public PropertyColumns(ReadWriteProperty property) {
+  public PropertyColumns(LocalProperty property) {
     this.property = property;
     if (property.getParts().isPresent()) {
       this.initialSubColumns = Sets.newTreeSet(property.getParts().get());

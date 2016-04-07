@@ -13,7 +13,7 @@ public abstract class ReadableProperty {
     this.getter = getter;
   }
 
-  public GraphTraversal<?, Try<JsonNode>> get() {
+  public GraphTraversal<?, Try<JsonNode>> traversal() {
     return getter.get();
   }
 

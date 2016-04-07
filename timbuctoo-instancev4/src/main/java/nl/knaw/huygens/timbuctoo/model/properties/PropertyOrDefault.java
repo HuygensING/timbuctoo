@@ -11,7 +11,7 @@ public class PropertyOrDefault extends ReadableProperty {
   public PropertyOrDefault(ReadableProperty prop, JsonNode orElse) {
     super(() ->
       __.<Object, Try<JsonNode>>coalesce(
-        prop.get(),
+        prop.traversal(),
         __.map(x -> Try.success(orElse))
       )
     );
@@ -20,8 +20,8 @@ public class PropertyOrDefault extends ReadableProperty {
   public PropertyOrDefault(ReadableProperty prop, ReadableProperty orElse) {
     super(() ->
       __.<Object, Try<JsonNode>>coalesce(
-        prop.get(),
-        orElse.get()
+        prop.traversal(),
+        orElse.traversal()
       )
     );
   }

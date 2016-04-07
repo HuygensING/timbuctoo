@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.model.vre;
 
-import nl.knaw.huygens.timbuctoo.model.properties.ReadWriteProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -19,7 +19,7 @@ public class Collection {
   private final String abstractType;
   private final ReadableProperty displayName;
   private final LinkedHashMap<String, ReadableProperty> properties;
-  private final LinkedHashMap<String, ReadWriteProperty> writeableProperties;
+  private final LinkedHashMap<String, LocalProperty> writeableProperties;
   private final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations;
   private final boolean isRelationCollection;
 
@@ -37,10 +37,10 @@ public class Collection {
     this.derivedRelations = derivedRelations;
     this.isRelationCollection = isRelationCollection;
     writeableProperties = properties.entrySet().stream()
-      .filter(e -> e.getValue() instanceof ReadWriteProperty)
+      .filter(e -> e.getValue() instanceof LocalProperty)
       .collect(toMap(
         Map.Entry::getKey,
-        e -> (ReadWriteProperty) e.getValue(),
+        e -> (LocalProperty) e.getValue(),
         (v1, v2) -> { throw new IllegalStateException("Duplicate key"); },
         LinkedHashMap::new
       ));
@@ -58,7 +58,7 @@ public class Collection {
     return displayName;
   }
 
-  public Map<String, ReadWriteProperty> getWriteableProperties() {
+  public Map<String, LocalProperty> getWriteableProperties() {
     return writeableProperties;
   }
 

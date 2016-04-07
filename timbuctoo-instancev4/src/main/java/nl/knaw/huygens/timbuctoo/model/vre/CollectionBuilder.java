@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.model.vre;
 
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
-import nl.knaw.huygens.timbuctoo.model.properties.ReadWriteProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -44,7 +44,7 @@ public class CollectionBuilder {
     return this;
   }
 
-  public CollectionBuilder withProperty(String name, ReadWriteProperty property) {
+  public CollectionBuilder withProperty(String name, LocalProperty property) {
     this.properties.put(name, property);
     return this;
   }

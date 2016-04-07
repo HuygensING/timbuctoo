@@ -11,11 +11,11 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Optional;
 
-public class ReadWriteProperty extends ReadableProperty {
+public class LocalProperty extends ReadableProperty {
   private final String propName;
   private final Converter converter;
 
-  public ReadWriteProperty(String propName, Converter converter) {
+  public LocalProperty(String propName, Converter converter) {
     super(() -> __.<Object, String>values(propName).map(prop -> Try.of(() -> converter.tinkerpopToJson(prop.get()))));
     this.propName = propName;
     this.converter = converter;

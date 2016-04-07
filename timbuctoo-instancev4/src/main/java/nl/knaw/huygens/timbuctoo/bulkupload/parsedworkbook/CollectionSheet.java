@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.bulkupload.parsedworkbook;
 
-import nl.knaw.huygens.timbuctoo.model.properties.ReadWriteProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
@@ -8,7 +8,6 @@ import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
 import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -43,7 +42,7 @@ public class CollectionSheet {
   }
 
 
-  public PropertyColumns withProperty(String key, ReadWriteProperty property) {
+  public PropertyColumns withProperty(String key, LocalProperty property) {
     if (properties.containsKey(key)) {
       throw new IllegalArgumentException("Same key passed twice " + key);
     }

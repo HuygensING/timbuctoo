@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
-import nl.knaw.huygens.timbuctoo.model.properties.ReadWriteProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
@@ -356,7 +356,7 @@ public class TinkerpopJsonCrudServiceReplaceTest {
 
   @Test
   public void throwsWhenPropertyMapperThrowsProperties() throws Exception {
-    ReadWriteProperty throwingMap = mock(ReadWriteProperty.class);
+    LocalProperty throwingMap = mock(LocalProperty.class);
     doThrow(new IOException("MOCKED PARSE ERROR")).when(throwingMap).setJson(any(), any());
 
     String id = UUID.randomUUID().toString();

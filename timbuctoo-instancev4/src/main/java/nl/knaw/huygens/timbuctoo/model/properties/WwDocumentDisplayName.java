@@ -12,10 +12,10 @@ public class WwDocumentDisplayName extends ReadableProperty {
   public WwDocumentDisplayName() {
     super(() ->
       __.as("doc").union(
-        new PropertyOrDefault(localProperty("wwdocument_date", datable), jsn("")).get()
+        new PropertyOrDefault(localProperty("wwdocument_date", datable), jsn("")).traversal()
       ).as("date")
       .select("doc").union(
-        new PropertyOrDefault(localProperty("wwdocument_title"), jsn("")).get()
+        new PropertyOrDefault(localProperty("wwdocument_title"), jsn("")).traversal()
       ).as("title")
       .select("title", "date")
       .map(x -> {

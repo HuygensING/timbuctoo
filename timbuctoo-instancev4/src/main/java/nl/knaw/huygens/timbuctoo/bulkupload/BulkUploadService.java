@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.bulkupload;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsedworkbook.CollectionSheet;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsedworkbook.ParsedWorkbook;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsedworkbook.PropertyColumns;
-import nl.knaw.huygens.timbuctoo.model.properties.ReadWriteProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -61,8 +61,8 @@ public class BulkUploadService {
         collectionTraversal = graphwrapper.getGraph().traversal().V(vertices);
       }
 
-      for (Map.Entry<String, ReadWriteProperty> entry : coll.getWriteableProperties().entrySet()) {
-        ReadWriteProperty prop = entry.getValue();
+      for (Map.Entry<String, LocalProperty> entry : coll.getWriteableProperties().entrySet()) {
+        LocalProperty prop = entry.getValue();
         PropertyColumns propertyColumns = sheet.withProperty(entry.getKey(), prop);
         if (collectionTraversal != null) {
           propertyColumns.addData(collectionTraversal);

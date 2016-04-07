@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Sets;
 import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
-import nl.knaw.huygens.timbuctoo.model.properties.ReadWriteProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
@@ -153,7 +153,7 @@ public class TinkerpopJsonCrudService {
 
   private UUID createEntity(Collection collection, ObjectNode input, String userId) throws IOException {
     String collectionName = collection.getCollectionName();
-    Map<String, ReadWriteProperty> mapping = collection.getWriteableProperties();
+    Map<String, LocalProperty> mapping = collection.getWriteableProperties();
 
     UUID id = UUID.randomUUID();
 
@@ -228,7 +228,7 @@ public class TinkerpopJsonCrudService {
     GraphTraversal[] propertyGetters = mapping
       .entrySet().stream()
       //append error handling and resuling to the traversal
-      .map(prop -> prop.getValue().get().sideEffect(x ->
+      .map(prop -> prop.getValue().traversal().sideEffect(x ->
         x.get()
           .onSuccess( node -> result.set(prop.getKey(), node))
           .onFailure( e -> {
@@ -420,7 +420,7 @@ public class TinkerpopJsonCrudService {
     ReadableProperty displayNameProperty = targetCollection.getDisplayName();
     if (displayNameProperty != null) {
       GraphTraversal<Vertex, Try<JsonNode>> displayNameGetter = traversalSource.V(vertex.id()).union(
-        targetCollection.getDisplayName().get()
+        targetCollection.getDisplayName().traversal()
       );
       if (displayNameGetter.hasNext()) {
         Try<JsonNode> traversalResult = displayNameGetter.next();
@@ -627,7 +627,7 @@ public class TinkerpopJsonCrudService {
       }
     }
 
-    final Map<String, ReadWriteProperty> collectionProperties = collection.getWriteableProperties();
+    final Map<String, LocalProperty> collectionProperties = collection.getWriteableProperties();
 
     final Set<String> dataFields = stream(data.fieldNames())
       .filter(x -> !Objects.equals(x, "@type"))
@@ -695,7 +695,7 @@ public class TinkerpopJsonCrudService {
       results = traversalSource.V()
         .as("vertex")
         .where(typeFilter)
-        .union(collection.getDisplayName().get())
+        .union(collection.getDisplayName().traversal())
         .filter(x -> x.get().isSuccess())
         .map(x -> x.get().get().asText())
         .as("displayName")
@@ -729,7 +729,7 @@ public class TinkerpopJsonCrudService {
       results = traversalSource.V()
         .as("vertex")
         .where(typeFilter)
-        .union(collection.getDisplayName().get())
+        .union(collection.getDisplayName().traversal())
         .filter(x -> x.get().isSuccess())
         .map(x -> x.get().get().asText())
         .as("displayName")

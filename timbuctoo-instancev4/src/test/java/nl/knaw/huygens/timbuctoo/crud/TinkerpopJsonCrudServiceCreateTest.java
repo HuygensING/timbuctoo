@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
 import com.google.common.collect.Iterators;
-import nl.knaw.huygens.timbuctoo.model.properties.ReadWriteProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
@@ -215,7 +215,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
 
   @Test
   public void throwsWhenPropertyMapperThrowsProperties() throws IOException, InvalidCollectionException {
-    ReadWriteProperty throwingMap = mock(ReadWriteProperty.class);
+    LocalProperty throwingMap = mock(LocalProperty.class);
     doThrow(new IOException("PARSE ERROR")).when(throwingMap).setJson(any(), any());
 
     Graph graph = testGraph.newGraph().build();

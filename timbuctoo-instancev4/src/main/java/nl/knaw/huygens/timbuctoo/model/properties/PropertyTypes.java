@@ -7,12 +7,12 @@ import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.d
 
 public class PropertyTypes {
 
-  public static ReadWriteProperty localProperty(String propName) {
+  public static LocalProperty localProperty(String propName) {
     return localProperty(propName, Converters.stringToString);
   }
 
-  public static ReadWriteProperty localProperty(String propName, Converter converter) {
-    return new ReadWriteProperty(propName, converter);
+  public static LocalProperty localProperty(String propName, Converter converter) {
+    return new LocalProperty(propName, converter);
   }
 
   public static ReadableProperty wwPersonNameOrTempName() {
