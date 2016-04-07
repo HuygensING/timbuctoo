@@ -35,6 +35,8 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   private TimeoutFactory searchResultAvailabilityTimeout;
   @NotNull
   private String baseUri;
+  @NotEmpty
+  private String executedMigrationsFilePath;
 
   @JsonProperty
   @NotNull
@@ -62,6 +64,10 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
 
   public String getDatabasePath() {
     return databasePath;
+  }
+
+  public String getExecutedMigrationsFilePath() {
+    return executedMigrationsFilePath;
   }
 
   // ActiveMQConfigHolder implementation

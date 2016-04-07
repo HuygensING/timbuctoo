@@ -4,6 +4,7 @@ databasePath: "/root/database"
 #The defaults contain 1 user with username=username and pw=password
 loginsFilePath: "/root/resources/logins.json"
 usersFilePath: "/root/resources/users.json"
+executedMigrationsFilePath: "/root/resources/executed-migrations.json"
 
 #MUST BE PROVIDED AS -e BASE_URI to the container
 #baseUri: http://localhost

@@ -9,6 +9,8 @@ import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.java8.Java8Bundle;
+import io.dropwizard.lifecycle.ServerLifecycleListener;
+import io.dropwizard.lifecycle.setup.ExecutorServiceBuilder;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.persistence.PersistenceManager;
@@ -21,6 +23,9 @@ import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.LabelDatabaseMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.MigrateDatabase;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.BulkUpload;
@@ -34,6 +39,8 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.SingleEntity;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.Me;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.util.component.LifeCycle;
 import org.slf4j.LoggerFactory;
 
 import javax.management.ObjectName;
@@ -42,6 +49,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Clock;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static nl.knaw.huygens.timbuctoo.util.LambdaExceptionUtil.rethrowConsumer;
@@ -63,6 +71,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     bootstrap.addBundle(activeMqBundle);
     bootstrap.addBundle(new Java8Bundle());
     bootstrap.addBundle(new MultiPartBundle());
+
     /*
      * Make it possible to use environment variables in the config.
      * see: http://www.dropwizard.io/0.9.1/docs/manual/core.html#environment-variables
@@ -111,6 +120,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     // lifecycle managers
     environment.lifecycle().manage(graphManager);
 
+    // MigrateDatabase
+    migrateDatabase(environment, graphManager, configuration);
+
     // register REST endpoints
     register(environment, new RootEndpoint());
     register(environment, new Authenticate(loggedInUserStore));
@@ -129,6 +141,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, "Encryption algorithm", new EncryptionAlgorithmHealthCheck(ENCRYPTION_ALGORITHM));
     register(environment, "Local logins file", new FileHealthCheck(loginsPath));
     register(environment, "Users file", new FileHealthCheck(usersPath));
+    register(environment, "Labels added for types property", new LabelsAddedToDatabaseHealthCheck(graphManager));
+
     register(environment, "Neo4j database connection", graphManager);
     //Disabled for now because I can't fix the database until Martijn is back
     //register(environment, "Database invariants", new DatabaseInvariantsHealthCheck(graphManager, 1, vres));
@@ -154,6 +168,19 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     }));
 
     setupObjectMapping(environment);
+  }
+
+  private void migrateDatabase(Environment environment, final TinkerpopGraphManager graphManager,
+                               final TimbuctooConfiguration configuration) {
+    ExecutorServiceBuilder executorServiceBuilder = environment.lifecycle().executorService("database migration");
+    final ExecutorService service = executorServiceBuilder.build();
+    final List<DatabaseMigration> migrations = Lists.newArrayList(
+    );
+
+    environment.lifecycle().addServerLifecycleListener(
+      server -> service.execute(new MigrateDatabase(configuration, graphManager, migrations))
+    );
+
   }
 
   private void setupObjectMapping(Environment environment) {
