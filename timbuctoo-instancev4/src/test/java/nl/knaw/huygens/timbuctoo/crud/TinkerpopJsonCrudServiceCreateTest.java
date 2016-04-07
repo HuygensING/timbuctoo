@@ -7,8 +7,11 @@ import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import nl.knaw.huygens.timbuctoo.util.TestGraphBuilder;
 import nl.knaw.huygens.timbuctoo.util.TestGraphRule;
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Rule;
 import org.junit.Test;
@@ -138,6 +141,17 @@ public class TinkerpopJsonCrudServiceCreateTest {
     instance.create("wwpersons", JsonBuilder.jsnO(), "");
 
     assertThat(graph.vertices().next().value("types"), is("[\"wwperson\", \"person\"]"));
+  }
+
+  @Test
+  public void addsTypesAsNeo4jLabel() throws IOException, InvalidCollectionException {
+    Graph graph = testGraph.newGraph().build();
+    TinkerpopJsonCrudService instance = basicInstance(graph);
+
+    instance.create("wwpersons", JsonBuilder.jsnO(), "");
+
+    assertThat(graph.traversal().V().has("isLatest", true)
+            .has(T.label, LabelP.of("wwperson").and(LabelP.of("person"))).toList().size(), is(1));
   }
 
   @Test

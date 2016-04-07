@@ -4,8 +4,12 @@ import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.hamcrest.MatcherAssert;
 import org.junit.Rule;
@@ -154,6 +158,13 @@ public class TinkerpopJsonCrudServiceReplaceTest {
       .next();
 
     assertThat(types, containsString("\"wwperson\""));
+
+    // Types should also be added as a Neo4j label
+    assertThat(graph.traversal().V()
+            .has("tim_id", id)
+            .has("isLatest", true)
+            .has(T.label,
+            LabelP.of("wwperson")).toList().size(), is(1));
   }
 
   @Test

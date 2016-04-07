@@ -18,6 +18,7 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -187,8 +188,10 @@ public class TinkerpopJsonCrudService {
       collection.getEntityTypeName(),
       collection.getAbstractType()
     ));
-    setCreated(vertex, userId);
+    ((Neo4jVertex) vertex).addLabel(collection.getEntityTypeName());
+    ((Neo4jVertex) vertex).addLabel(collection.getAbstractType());
 
+    setCreated(vertex, userId);
     duplicateVertex(graph, vertex);
     //Make sure this is the last line of the method. We don't want to commit if an exception happens halfway
     //the return statement below should return a variable directly without any additional logic
@@ -602,6 +605,10 @@ public class TinkerpopJsonCrudService {
       try {
         ArrayNode entityTypes = arrayToEncodedArray.tinkerpopToJson(entityTypesStr);
         entityTypes.add(collection.getEntityTypeName());
+        for (int i = 0; i < entityTypes.size(); i++) {
+          ((Neo4jVertex) entity).addLabel(entityTypes.get(i).asText());
+        }
+
         entity.property("types", entityTypes.toString());
       } catch (IOException e) {
         LOG.error(Logmarkers.databaseInvariant, "property 'types' was not parseable: " + entityTypesStr);
@@ -775,6 +782,7 @@ public class TinkerpopJsonCrudService {
               entityTypes.remove(i);
             }
           }
+          ((Neo4jVertex) entity).removeLabel(collection.getEntityTypeName());
           entity.property("types", entityTypes.toString());
         }
       } catch (IOException e) {

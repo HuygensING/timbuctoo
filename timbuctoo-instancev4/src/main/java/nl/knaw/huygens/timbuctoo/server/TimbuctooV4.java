@@ -175,6 +175,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     ExecutorServiceBuilder executorServiceBuilder = environment.lifecycle().executorService("database migration");
     final ExecutorService service = executorServiceBuilder.build();
     final List<DatabaseMigration> migrations = Lists.newArrayList(
+      new LabelDatabaseMigration()
     );
 
     environment.lifecycle().addServerLifecycleListener(
