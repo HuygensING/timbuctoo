@@ -39,24 +39,20 @@ public class GraphService {
   }
 
   private void generateD3Graph(D3Graph d3Graph, Vertex vertex, List<String> relationNames,
-                                   int depth, int currentDepth) {
+                               int depth, int currentDepth) {
+
     d3Graph.addNode(vertex);
+    vertex.edges(Direction.BOTH, relationNames.toArray(new String[relationNames.size()])).forEachRemaining(edge -> {
+      loadLinks(d3Graph, relationNames, depth, currentDepth, edge);
 
-    vertex.edges(Direction.IN, relationNames.toArray(new String[relationNames.size()])).forEachRemaining(edge -> {
-      loadLinks(d3Graph, relationNames, depth, currentDepth, edge, Direction.IN);
-
-    });
-
-    vertex.edges(Direction.OUT, relationNames.toArray(new String[relationNames.size()])).forEachRemaining(edge -> {
-      loadLinks(d3Graph, relationNames, depth, currentDepth, edge, Direction.OUT);
     });
   }
 
   private void loadLinks(D3Graph d3Graph, List<String> relationNames,
-                         int depth, int currentDepth, Edge edge, Direction direction) {
+                         int depth, int currentDepth, Edge edge) {
 
-    Vertex source = direction == Direction.IN ? edge.inVertex() : edge.outVertex();
-    Vertex target = direction == Direction.IN ? edge.outVertex() : edge.inVertex();
+    Vertex source = edge.inVertex();
+    Vertex target = edge.outVertex();
     d3Graph.addNode(source);
     d3Graph.addNode(target);
     d3Graph.addLink(edge, source, target);
