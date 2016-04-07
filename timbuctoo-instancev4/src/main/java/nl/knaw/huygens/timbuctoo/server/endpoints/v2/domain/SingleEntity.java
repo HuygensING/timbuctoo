@@ -84,7 +84,8 @@ public class SingleEntity {
     } else {
       try {
         crudService.replace(collectionName, id.get(), body, user.get().getId());
-        return Response.ok().build();
+        JsonNode jsonNode = crudService.get(collectionName, id.get());
+        return Response.ok(jsonNode).build();
       } catch (InvalidCollectionException e) {
         return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
       } catch (NotFoundException e) {

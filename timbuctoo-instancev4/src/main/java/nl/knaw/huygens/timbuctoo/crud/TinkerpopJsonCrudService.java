@@ -611,9 +611,9 @@ public class TinkerpopJsonCrudService {
     final Map<String, LocalProperty> collectionProperties = collection.getWriteableProperties();
 
     final Set<String> dataFields = stream(data.fieldNames())
-      .filter(x -> !Objects.equals(x, "@type"))
+      .filter(x -> !x.startsWith("@"))
+      .filter(x -> !x.startsWith("^"))
       .filter(x -> !Objects.equals(x, "_id"))
-      .filter(x -> !Objects.equals(x, "^rev"))
       .collect(toSet());
 
     for (String name : dataFields) {
