@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.security;
 
+import nl.knaw.huygens.security.client.MockAuthenticationHandler;
+import nl.knaw.huygens.security.client.UnauthorizedException;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import org.junit.Before;
 import org.junit.Rule;
@@ -30,7 +32,14 @@ public class LoggedInUserStoreTest {
     JsonBasedAuthenticator authenticator = AuthenticatorMockBuilder.authenticator().withPidFor("a", "b", "pid").build();
     JsonBasedUserStore userStore = userStore().withUserFor("pid").build();
 
-    userStoreWithUserA = new LoggedInUserStore(authenticator, userStore, ONE_SECOND_TIMEOUT);
+    MockAuthenticationHandler authHandler = new MockAuthenticationHandler();
+
+    userStoreWithUserA = new LoggedInUserStore(
+      authenticator,
+      userStore,
+      ONE_SECOND_TIMEOUT,
+      x-> { throw new UnauthorizedException(); }
+    );
 
     JsonBasedAuthenticator authenticator1 = AuthenticatorMockBuilder.authenticator()
                                                                     .withPidFor("a", "b", "pid")
@@ -38,7 +47,12 @@ public class LoggedInUserStoreTest {
                                                                     .build();
     JsonBasedUserStore userStore1 = userStore().withUserFor("pid").withUserFor("otherPid").build();
 
-    userStoreWithUserAAndB = new LoggedInUserStore(authenticator1, userStore1, ONE_SECOND_TIMEOUT);
+    userStoreWithUserAAndB = new LoggedInUserStore(
+      authenticator1,
+      userStore1,
+      ONE_SECOND_TIMEOUT,
+      x-> { throw new UnauthorizedException(); }
+    );
 
   }
 
@@ -155,7 +169,7 @@ public class LoggedInUserStoreTest {
     throws LocalLoginUnavailableException, AuthenticationUnavailableException {
     JsonBasedAuthenticator authenticator = mock(JsonBasedAuthenticator.class);
     given(authenticator.authenticate(anyString(), anyString())).willThrow(new LocalLoginUnavailableException(""));
-    LoggedInUserStore instance = new LoggedInUserStore(authenticator, null, ONE_SECOND_TIMEOUT);
+    LoggedInUserStore instance = new LoggedInUserStore(authenticator, null, ONE_SECOND_TIMEOUT, null);
 
     expectedException.expect(LocalLoginUnavailableException.class);
 
@@ -168,7 +182,7 @@ public class LoggedInUserStoreTest {
     JsonBasedUserStore userStore = mock(JsonBasedUserStore.class);
     given(userStore.userFor(anyString())).willThrow(new AuthenticationUnavailableException(""));
     JsonBasedAuthenticator authenticator = AuthenticatorMockBuilder.authenticator().withPidFor("a", "b", "pid").build();
-    LoggedInUserStore instance = new LoggedInUserStore(authenticator, userStore, ONE_SECOND_TIMEOUT);
+    LoggedInUserStore instance = new LoggedInUserStore(authenticator, userStore, ONE_SECOND_TIMEOUT, null);
 
     expectedException.expect(AuthenticationUnavailableException.class);
 

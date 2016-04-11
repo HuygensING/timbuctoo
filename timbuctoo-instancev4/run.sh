@@ -55,7 +55,7 @@ fi
 export JAVA_OPTS
 CMD="./target/appassembler/bin/timbuctoo $COMMAND $YAML"
 
-"Changed directory to: $PWD"
+echo "Changed directory to: $PWD"
 echo "JAVA_OPTS=\"$JAVA_OPTS\""
 echo running "$CMD"
 echo ""

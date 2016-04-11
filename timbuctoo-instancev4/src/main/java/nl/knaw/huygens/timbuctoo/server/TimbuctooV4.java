@@ -12,6 +12,7 @@ import io.dropwizard.java8.Java8Bundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.persistence.PersistenceManager;
+import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
@@ -83,6 +84,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     LoggerFactory.getLogger(this.getClass()).info("Now launching timbuctoo version: " + currentVersion);
 
     // Support services
+    final AuthenticationHandler authHandler = configuration.getFederatedAuthentication().makeHandler(environment);
     final Path loginsPath = Paths.get(configuration.getLoginsFilePath());
     final Path usersPath = Paths.get(configuration.getUsersFilePath());
 
@@ -90,7 +92,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final LoggedInUserStore loggedInUserStore = new LoggedInUserStore(
       new JsonBasedAuthenticator(loginsPath, ENCRYPTION_ALGORITHM),
       userStore,
-      configuration.getAutoLogoutTimeout()
+      configuration.getAutoLogoutTimeout(),
+      authHandler
     );
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration);
@@ -107,6 +110,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       (coll, id, rev) -> URI.create(SingleEntity.makeUrl(coll, id, rev).getPath().replaceFirst("^/v2.1/", "")),
       Clock.systemDefaultZone());
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager, HuygensIng.keywordTypes);
+
 
     // lifecycle managers
     environment.lifecycle().manage(graphManager);

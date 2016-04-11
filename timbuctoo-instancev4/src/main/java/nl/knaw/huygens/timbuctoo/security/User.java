@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 
+import java.util.UUID;
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
 // FIXME Find a better way for deserialization
 @JsonTypeIdResolver(UserTypeIdResolver.class) // be able to map the login java type and the serialized version
@@ -16,10 +18,12 @@ public class User {
   private String id;
 
   public User() {
+    this.id = UUID.randomUUID().toString();
   }
 
   public User(String displayName) {
     this.displayName = displayName;
+    this.id = UUID.randomUUID().toString();
   }
 
   public String getDisplayName() {
@@ -41,4 +45,5 @@ public class User {
   public String getId() {
     return id;
   }
+
 }

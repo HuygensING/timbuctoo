@@ -100,7 +100,7 @@
 
     <!--version numbers-->
     <jdk.version>1.8</jdk.version>
-    <maven-compiler.version>3.1</maven-compiler.version>
+    <maven-compiler.version>3.3</maven-compiler.version>
     <!-- code dependencies -->
     <activemq.version>5.13.0</activemq.version>
     <concoridion.version>1.5.1</concoridion.version>
@@ -116,6 +116,7 @@
     <junit.version>4.12</junit.version>
     <timbuctoo-test-services.version>3.1.0-SNAPSHOT</timbuctoo-test-services.version>
     <mockito.version>1.9.0</mockito.version>
+    <huygens.security.version>1.0.0-SNAPSHOT</huygens.security.version>
     <!-- Maven plugins -->
     <appassembler.version>1.10</appassembler.version>
     <build-helper-maven-plugin.version>1.10</build-helper-maven-plugin.version>
@@ -147,6 +148,12 @@
     <dependency>
       <groupId>io.dropwizard</groupId>
       <artifactId>dropwizard-forms</artifactId>
+      <version>${dropwizard.version}</version>
+    </dependency>
+    <!--make requests to other webservices-->
+    <dependency>
+      <groupId>io.dropwizard</groupId>
+      <artifactId>dropwizard-client</artifactId>
       <version>${dropwizard.version}</version>
     </dependency>
 
@@ -239,6 +246,14 @@
       <groupId>io.dropwizard</groupId>
       <artifactId>dropwizard-metrics-graphite</artifactId>
       <version>${dropwizard.version}</version>
+    </dependency>
+
+    <!--federated auth support -->
+
+    <dependency>
+      <groupId>nl.knaw.huygens</groupId>
+      <artifactId>security-client-agnostic</artifactId>
+      <version>${huygens.security.version}</version>
     </dependency>
 
     <!-- ### Std lib additions ## -->

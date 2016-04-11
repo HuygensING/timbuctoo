@@ -102,6 +102,20 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
     return searchResultAvailabilityTimeout.createTimeout();
   }
 
+  @Valid
+  @NotNull
+  private FederatedAuthConfiguration federatedAuthentication = new FederatedAuthConfiguration();
+
+  @JsonProperty("federatedAuthentication")
+  public FederatedAuthConfiguration getFederatedAuthentication() {
+    return federatedAuthentication;
+  }
+
+  @JsonProperty("federatedAuthentication")
+  public void setFederatedAuthentication(FederatedAuthConfiguration federatedAuthentication) {
+    this.federatedAuthentication = federatedAuthentication;
+  }
+
   // A class to configure timeouts without compromising the Timeout class.
   private class TimeoutFactory {
     private long duration;
