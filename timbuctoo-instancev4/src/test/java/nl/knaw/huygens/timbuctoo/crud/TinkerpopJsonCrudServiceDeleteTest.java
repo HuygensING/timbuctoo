@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.crud;
 
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import nl.knaw.huygens.timbuctoo.util.TestGraphRule;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -18,6 +17,7 @@ import java.time.ZoneId;
 import java.util.UUID;
 
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
+import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertThat;
@@ -31,9 +31,6 @@ public class TinkerpopJsonCrudServiceDeleteTest {
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
-
-  @Rule
-  public TestGraphRule testGraph = new TestGraphRule();
 
   public TinkerpopJsonCrudService basicInstance(Graph graph) {
     return customInstanceMaker(graph, null, null, null, null);
@@ -75,7 +72,7 @@ public class TinkerpopJsonCrudServiceDeleteTest {
 
   @Test
   public void throwsOnUnknownMappings() throws Exception {
-    Graph graph = testGraph.newGraph().build();
+    Graph graph = newGraph().build();
     TinkerpopJsonCrudService instance = basicInstance(graph);
 
     expectedException.expect(InvalidCollectionException.class);
@@ -86,7 +83,7 @@ public class TinkerpopJsonCrudServiceDeleteTest {
   @Test
   public void increasesRevisionByOne() throws Exception {
     String id = UUID.randomUUID().toString();
-    Graph graph = testGraph.newGraph()
+    Graph graph = newGraph()
       .withVertex(v -> v
         .withTimId(id)
         .withProperty("isLatest", true)
@@ -115,7 +112,7 @@ public class TinkerpopJsonCrudServiceDeleteTest {
   @Test
   public void removesTypeWhenOtherTypesExist() throws Exception {
     String id = UUID.randomUUID().toString();
-    Graph graph = testGraph.newGraph()
+    Graph graph = newGraph()
       .withVertex(v -> v
         .withTimId(id)
         .withVre("ckcc")
@@ -141,7 +138,7 @@ public class TinkerpopJsonCrudServiceDeleteTest {
   @Test
   public void setsDeletedToTrueWhenLastTypeIsRemoved() throws Exception {
     String id = UUID.randomUUID().toString();
-    Graph graph = testGraph.newGraph()
+    Graph graph = newGraph()
       .withVertex(v -> v
         .withTimId(id)
         .withVre("ww")
@@ -174,7 +171,7 @@ public class TinkerpopJsonCrudServiceDeleteTest {
   @Test
   public void setsModified() throws Exception {
     String id = UUID.randomUUID().toString();
-    Graph graph = testGraph.newGraph()
+    Graph graph = newGraph()
       .withVertex(v -> v
         .withTimId(id)
         .withVre("ww")
@@ -207,7 +204,7 @@ public class TinkerpopJsonCrudServiceDeleteTest {
   @Test
   public void preparesBackupCopyAfterMakingChanges() throws Exception {
     String id = UUID.randomUUID().toString();
-    Graph graph = testGraph.newGraph()
+    Graph graph = newGraph()
       .withVertex(v -> v
         .withTimId(id)
         .withVre("ww")
@@ -246,7 +243,7 @@ public class TinkerpopJsonCrudServiceDeleteTest {
   @Test
   public void commitsChangesIfEverythingSucceeds() throws Exception {
     String id = UUID.randomUUID().toString();
-    Graph graph = testGraph.newGraph()
+    Graph graph = newGraph()
       .withVertex(v -> v
         .withTimId(id)
         .withVre("ww")
@@ -268,7 +265,7 @@ public class TinkerpopJsonCrudServiceDeleteTest {
   public void addsPersistentId() throws Exception {
     String uuid = UUID.randomUUID().toString();
     int oldRev = 3;
-    Graph graph = testGraph.newGraph()
+    Graph graph = newGraph()
       .withVertex(v -> v
         .withTimId(uuid)
         .withVre("ww")
@@ -299,7 +296,7 @@ public class TinkerpopJsonCrudServiceDeleteTest {
   @Test
   public void movesRelationsToNewestVertex() throws Exception {
     String id = UUID.randomUUID().toString();
-    Graph graph = testGraph.newGraph()
+    Graph graph = newGraph()
       .withVertex(v -> v
         .withTimId(id)
         .withVre("ww")
@@ -340,7 +337,7 @@ public class TinkerpopJsonCrudServiceDeleteTest {
     final String wwOnlyId = "10000000-0000-0000-0000-000000000000";
     final String ckccOnlyId = "20000000-0000-0000-0000-000000000000";
     final String inBothId = "30000000-0000-0000-0000-000000000000";
-    Graph graph = testGraph.newGraph()
+    Graph graph = newGraph()
       .withVertex(v -> v
         .withTimId(id)
         .withVre("ww")
@@ -410,7 +407,7 @@ public class TinkerpopJsonCrudServiceDeleteTest {
   @Test
   public void throwsNotFoundWhenTheEntityIsNotOfThisVre() throws Exception {
     String id = UUID.randomUUID().toString();
-    Graph graph = testGraph.newGraph()
+    Graph graph = newGraph()
       .withVertex(v -> v
         .withTimId(id)
         .withVre("ckcc")
@@ -431,7 +428,7 @@ public class TinkerpopJsonCrudServiceDeleteTest {
   public void throwsNotFoundWhenTheIdIsNotInTheDatabase() throws Exception {
     String id = UUID.randomUUID().toString();
     String otherId = UUID.randomUUID().toString();
-    Graph graph = testGraph.newGraph()
+    Graph graph = newGraph()
       .withVertex(v -> v
         .withTimId(id)
         .withProperty("isLatest", true)
