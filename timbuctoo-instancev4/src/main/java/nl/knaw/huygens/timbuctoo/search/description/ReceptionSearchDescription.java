@@ -75,14 +75,17 @@ public class ReceptionSearchDescription extends WwDocumentSearchDescription {
 
   @Override
   protected GraphTraversal<Vertex, Vertex> initializeVertices(GraphWrapper graphWrapper) {
+    // Get the stored search results
     List<Vertex> otherResults = otherSearch.getSearchResult();
 
     if (otherResults == null) {
       return EmptyGraph.instance().traversal().V();
     }
-
+    // Filter by type as normal
     GraphTraversal<Vertex, Vertex> vertices = graphWrapper.getCurrentEntitiesFor(getType());
 
+    // Return all the vertices which have a reception relation to the store results (other results):
+    // The fact that all reception relations are inbound is a pure historical coincidence.
     return vertices.where(__.inE(getRelationNames()).otherV().is(P.within(otherResults)));
   }
 
