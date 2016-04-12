@@ -30,6 +30,7 @@ import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.Archive;
 import nl.knaw.huygens.timbuctoo.model.RelationRef;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
 import java.util.List;
 import java.util.Map;
@@ -286,9 +287,9 @@ public class DCARArchive extends Archive {
   @IndexAnnotations({
     @IndexAnnotation(fieldName = "dynamic_k_period", canBeEmpty = true, isFaceted = false, facetType = FacetType
       .PERIOD, isSortable = true),
-    @IndexAnnotation(fieldName = "dynamic_s_period", canBeEmpty = true, isFaceted = true, facetType = FacetType
-      .PERIOD, isSortable = false)})
-  public String getActivePeriod() {
+    @IndexAnnotation(fieldName = "dynamic_i_period", canBeEmpty = true, isFaceted = true, facetType = FacetType
+      .RANGE, isSortable = false)})
+  public Datable getActivePeriod() {
     return PeriodHelper.createPeriod(beginDate, endDate);
   }
 
