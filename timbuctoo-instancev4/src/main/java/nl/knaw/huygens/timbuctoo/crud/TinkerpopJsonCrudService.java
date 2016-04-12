@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
@@ -83,7 +84,6 @@ public class TinkerpopJsonCrudService {
     this.versionAndSlashlessUrlFor = versionAndSlashlessUrlFor;
     nodeFactory = JsonNodeFactory.instance;
     this.userStore = userStore;
-
     this.clock = clock;
   }
 

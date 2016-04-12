@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -17,6 +18,7 @@ public class JsonCrudServiceBuilder {
   private HandleAdder handleAdder;
   private UrlGenerator generator;
   private JsonBasedUserStore userStore;
+  private Authorizer authorizer;
 
   private JsonCrudServiceBuilder() {
 
@@ -48,7 +50,7 @@ public class JsonCrudServiceBuilder {
     when(graphWrapper.getGraph()).thenReturn(graph);
 
     return new TinkerpopJsonCrudService(graphWrapper, vres, handleAdder, userStore, generator, generator,
-      generator, clock);
+      generator, clock);//, authorizer);
   }
 
   public JsonCrudServiceBuilder withClock(Clock clock) {
@@ -68,6 +70,11 @@ public class JsonCrudServiceBuilder {
 
   public JsonCrudServiceBuilder withHandleAdder(HandleAdder handleAdder) {
     this.handleAdder = handleAdder;
+    return this;
+  }
+
+  public JsonCrudServiceBuilder withAuthorizer(Authorizer authorizer) {
+    this.authorizer = authorizer;
     return this;
   }
 }

@@ -3,10 +3,13 @@ package nl.knaw.huygens.timbuctoo.crud;
 import com.google.common.collect.Iterators;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
+import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -28,6 +31,8 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.fail;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -254,6 +259,28 @@ public class TinkerpopJsonCrudServiceCreateTest {
     verify(handleAdder, times(1)).add(
       new HandleAdderParameters(uuid, 1, URI.create("http://example.com?id=" + uuid + "&rev=1"))
     );
+  }
+
+  // Security tests
+  @Test
+  public void throwsAnAuthorizationExceptionWhenTheUserIsNotAllowedToAlterTheCollection() throws Exception {
+    Graph graph = newGraph().build();
+    Authorizer authorizer = mock(Authorizer.class);
+    Authorization authorization = mock(Authorization.class);
+    String collectionName = "wwpersons";
+    String userId = "userId";
+    given(authorizer.authorizationFor(collectionName, userId)).willReturn(authorization);
+    given(authorization.isAllowedToWrite()).willReturn(false);
+    TinkerpopJsonCrudService instance = newJsonCrudService().withAuthorizer(authorizer).forGraph(graph);
+
+    expectedException.expect(AuthorizationException.class);
+
+    instance.create(collectionName, JsonBuilder.jsnO(), userId);
+  }
+
+  @Test
+  public void doesNotUpdateTheFieldsThatMayNotBeAlteredByTheUser() {
+    fail("Yet to be implemented");
   }
 
 }
