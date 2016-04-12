@@ -30,6 +30,8 @@ import nl.knaw.huygens.timbuctoo.facet.IndexAnnotation;
 import nl.knaw.huygens.timbuctoo.facet.IndexAnnotations;
 import nl.knaw.huygens.timbuctoo.model.Legislation;
 import nl.knaw.huygens.timbuctoo.model.RelationRef;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
+import org.neo4j.helpers.Strings;
 
 import java.util.List;
 import java.util.Map;
@@ -191,8 +193,16 @@ public class DCARLegislation extends Legislation {
   @IndexAnnotations({
     @IndexAnnotation(fieldName = "dynamic_k_date", canBeEmpty = true, isFaceted = false, facetType = FacetType.DATE,
       isSortable = true),
-    @IndexAnnotation(fieldName = "dynamic_s_date", canBeEmpty = true, isFaceted = true, facetType = FacetType.DATE,
+    @IndexAnnotation(fieldName = "dynamic_i_date", canBeEmpty = true, isFaceted = true, facetType = FacetType.RANGE,
       isSortable = false)})
+  @JsonIgnore
+  public Datable getIndexedDate() {
+    if (!Strings.isBlank(date1)) {
+      return new Datable(date1);
+    }
+    return null;
+  }
+
   public String getDate1() {
     return date1;
   }
