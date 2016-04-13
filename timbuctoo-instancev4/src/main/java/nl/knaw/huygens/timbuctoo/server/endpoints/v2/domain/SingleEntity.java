@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
+import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
 
@@ -117,6 +118,8 @@ public class SingleEntity {
         return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
       } catch (NotFoundException e) {
         return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn("not found"))).build();
+      } catch (AuthorizationException e) {
+        return Response.status(Response.Status.FORBIDDEN).entity(jsnO("message", jsn(e.getMessage()))).build();
       }
     }
   }

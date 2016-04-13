@@ -774,7 +774,13 @@ public class TinkerpopJsonCrudService {
   }
 
   public void delete(String collectionName, UUID id, String userId)
-    throws InvalidCollectionException, NotFoundException {
+    throws InvalidCollectionException, NotFoundException, AuthorizationException {
+
+    final Authorization authorization = authorizer.authorizationFor(collectionName, userId);
+
+    if (!authorization.isAllowedToWrite()) {
+      throw AuthorizationException.notAllowedToDelete(collectionName, id);
+    }
 
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
