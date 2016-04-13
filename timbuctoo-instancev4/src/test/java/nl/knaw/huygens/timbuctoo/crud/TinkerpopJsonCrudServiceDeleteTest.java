@@ -1,11 +1,13 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.hamcrest.MatcherAssert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -31,6 +33,12 @@ public class TinkerpopJsonCrudServiceDeleteTest {
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
+  private Authorizer authorizer;
+
+  @Before
+  public void setupAuthorizer() {
+    authorizer = mock(Authorizer.class);
+  }
 
   public TinkerpopJsonCrudService basicInstance(Graph graph) {
     return customInstanceMaker(graph, null, null, null, null);
@@ -67,7 +75,8 @@ public class TinkerpopJsonCrudServiceDeleteTest {
     GraphWrapper graphWrapper = mock(GraphWrapper.class);
     when(graphWrapper.getGraph()).thenReturn(graph);
 
-    return new TinkerpopJsonCrudService(graphWrapper, map, handleAdder, null, generator, generator, generator, clock);
+    return new TinkerpopJsonCrudService(graphWrapper, map, handleAdder, null, generator, generator, generator, clock,
+      authorizer);
   }
 
   @Test
@@ -127,10 +136,10 @@ public class TinkerpopJsonCrudServiceDeleteTest {
     instance.delete("wwpersons", UUID.fromString(id), "");
 
     String types = (String) graph.traversal().V()
-      .has("tim_id", id)
-      .has("isLatest", true)
-      .properties("types").value()
-      .next();
+                                 .has("tim_id", id)
+                                 .has("isLatest", true)
+                                 .properties("types").value()
+                                 .next();
 
     assertThat(types, is("[\"ckccperson\"]"));
   }
@@ -153,18 +162,17 @@ public class TinkerpopJsonCrudServiceDeleteTest {
     instance.delete("wwpersons", UUID.fromString(id), "");
 
     String types = (String) graph.traversal().V()
-      .has("tim_id", id)
-      .has("isLatest", true)
-      .properties("types").value()
-      .next();
+                                 .has("tim_id", id)
+                                 .has("isLatest", true)
+                                 .properties("types").value()
+                                 .next();
     assertThat(types, is("[\"wwperson\"]"));
 
-
     boolean deleted = (boolean) graph.traversal().V()
-      .has("tim_id", id)
-      .has("isLatest", true)
-      .properties("deleted").value()
-      .next();
+                                     .has("tim_id", id)
+                                     .has("isLatest", true)
+                                     .properties("deleted").value()
+                                     .next();
     assertThat(deleted, is(true));
   }
 
@@ -189,10 +197,10 @@ public class TinkerpopJsonCrudServiceDeleteTest {
 
     instance.delete("wwpersons", UUID.fromString(id), "despicable_me");
     String modified = (String) graph.traversal().V()
-      .has("tim_id", id)
-      .has("isLatest", true)
-      .properties("modified").value()
-      .next();
+                                    .has("tim_id", id)
+                                    .has("isLatest", true)
+                                    .properties("modified").value()
+                                    .next();
 
     MatcherAssert.assertThat(
       modified,
@@ -224,16 +232,16 @@ public class TinkerpopJsonCrudServiceDeleteTest {
     TinkerpopJsonCrudService instance = basicInstance(graph);
 
     Vertex beforeUpdate = graph.traversal().V()
-      .has("tim_id", id)
-      .has("isLatest", true)
-      .next();
+                               .has("tim_id", id)
+                               .has("isLatest", true)
+                               .next();
 
     instance.delete("wwpersons", UUID.fromString(id), "");
 
     Vertex afterUpdate = graph.traversal().V()
-      .has("tim_id", id)
-      .has("isLatest", true)
-      .next();
+                              .has("tim_id", id)
+                              .has("isLatest", true)
+                              .next();
 
     assertThat(afterUpdate.id(), is(not(beforeUpdate.id())));
     //single edge, containing the VERSION_OF pointer
@@ -344,12 +352,12 @@ public class TinkerpopJsonCrudServiceDeleteTest {
         .withType("person")
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
-        .withOutgoingRelation("hasWritten", "document", rel->rel
+        .withOutgoingRelation("hasWritten", "document", rel -> rel
           .withTim_id(UUID.fromString(wwOnlyId))
           .removeType("ckcc")
           .withAccepted("wwrelation", true)
         )
-        .withIncomingRelation("isFriendOf", "friend", rel->rel
+        .withIncomingRelation("isFriendOf", "friend", rel -> rel
           .withTim_id(UUID.fromString(inBothId))
           .withAccepted("wwrelation", true)
           .withAccepted("ckccrelation", true)
@@ -381,7 +389,7 @@ public class TinkerpopJsonCrudServiceDeleteTest {
     Vertex replacement = graph.traversal().V().has("tim_id", id).has("isLatest", true).next();
 
     assertThat(stream(replacement.edges(Direction.BOTH, "hasWritten", "isFriendOf")).count(), is(3L));
-    replacement.edges(Direction.BOTH, "hasWritten", "isFriendOf").forEachRemaining( edge -> {
+    replacement.edges(Direction.BOTH, "hasWritten", "isFriendOf").forEachRemaining(edge -> {
       //System.out.println(edge.id());
       //edge.properties().forEachRemaining(p -> System.out.println("  " + p.key() + ": " + p.value()));
 

@@ -5,6 +5,7 @@ import nl.knaw.huygens.contractdiff.diffresults.DiffResult;
 import nl.knaw.huygens.contractdiff.jsondiff.JsonDiffer;
 import nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
@@ -12,6 +13,7 @@ import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -38,6 +40,15 @@ import static org.mockito.Mockito.when;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 public class TinkerpopJsonCrudServiceReadTest {
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
+  private Authorizer authorizer;
+
+  @Before
+  public void setupAuthorizer() {
+    authorizer = mock(Authorizer.class);
+  }
+
   public TinkerpopJsonCrudService basicInstance(Graph graph) {
     return customInstance(graph, null, null);
   }
@@ -51,7 +62,6 @@ public class TinkerpopJsonCrudServiceReadTest {
   }
 
   public TinkerpopJsonCrudService customInstance(Graph graph, JsonBasedUserStore userStore, UrlGenerator gen) {
-
 
     if (gen == null) {
       gen = (collection, id, rev) -> URI.create("http://example.com/");
@@ -90,11 +100,9 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .build();
 
-    return new TinkerpopJsonCrudService(graphWrapper, testVres, handleAdder, userStore, gen, gen, gen, clock);
+    return new TinkerpopJsonCrudService(graphWrapper, testVres, handleAdder, userStore, gen, gen, gen, clock,
+      authorizer);
   }
-
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
 
   @Test
   public void throwsOnUnknownMappings() throws Exception {
@@ -151,7 +159,6 @@ public class TinkerpopJsonCrudServiceReadTest {
       .build();
     TinkerpopJsonCrudService instance = basicInstance(graph);
 
-
     JsonNode entity = instance.get("wwpersons", id);
     Long normalFieldCount = stream(entity.fields())
       .filter(x -> x.getKey().matches("^[a-zA-Z].*"))
@@ -175,7 +182,6 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .build();
     TinkerpopJsonCrudService instance = basicInstance(graph);
-
 
     JsonNode entity = instance.get("wwpersons", id);
 
@@ -926,7 +932,6 @@ public class TinkerpopJsonCrudServiceReadTest {
     ).toString()).allowingExtraUnexpectedFields());
   }
 
-
   @Test
   public void bugFix_handlesDeletedCorrectly() throws Exception {
     UUID id = UUID.randomUUID();
@@ -968,6 +973,5 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
     ).toString()).allowingExtraUnexpectedFields());
   }
-
 
 }

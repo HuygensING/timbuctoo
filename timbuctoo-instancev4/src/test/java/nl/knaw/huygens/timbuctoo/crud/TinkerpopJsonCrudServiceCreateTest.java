@@ -9,7 +9,6 @@ import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -31,7 +30,6 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.fail;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
@@ -46,7 +44,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
   public ExpectedException expectedException = ExpectedException.none();
 
   @Test
-  public void addsVertexToTheGraph() throws IOException, InvalidCollectionException {
+  public void addsVertexToTheGraph() throws Exception {
     Graph graph = newGraph().build();
 
     TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
@@ -77,7 +75,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
   }
 
   @Test
-  public void setsRevisionToOne() throws IOException, InvalidCollectionException {
+  public void setsRevisionToOne() throws Exception {
     //because a newly created item is always revision 1
     Graph graph = newGraph().build();
     TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
@@ -88,7 +86,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
   }
 
   @Test
-  public void setsTypeToCollectionAndBaseCollection() throws IOException, InvalidCollectionException {
+  public void setsTypeToCollectionAndBaseCollection() throws Exception {
     //a wwperson is also a person
     Graph graph = newGraph().build();
     TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
@@ -99,7 +97,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
   }
 
   @Test
-  public void setsCreated() throws IOException, InvalidCollectionException {
+  public void setsCreated() throws Exception {
     Graph graph = newGraph().build();
     int oneSecondPast1970 = 1000;
     TinkerpopJsonCrudService instance =
@@ -115,7 +113,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
   }
 
   @Test
-  public void setsCreatedAndModifiedToTheSameValue() throws IOException, InvalidCollectionException {
+  public void setsCreatedAndModifiedToTheSameValue() throws Exception {
     Graph graph = newGraph().build();
     TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
@@ -125,7 +123,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
   }
 
   @Test
-  public void throwsOnUnknownProperties() throws IOException, InvalidCollectionException {
+  public void throwsOnUnknownProperties() throws Exception {
     Graph graph = newGraph().build();
     TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new Vres.Builder()
       .withVre("WomenWriters", "ww", vre -> vre
@@ -142,7 +140,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
   }
 
   @Test
-  public void setsJsonPropertyMapForKnownProperties() throws IOException, InvalidCollectionException {
+  public void setsJsonPropertyMapForKnownProperties() throws Exception {
     Graph graph = newGraph().build();
     TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new Vres.Builder()
       .withVre("WomenWriters", "ww", vre -> vre
@@ -165,7 +163,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
   }
 
   @Test
-  public void throwsWhenPropertyMapperThrowsProperties() throws IOException, InvalidCollectionException {
+  public void throwsWhenPropertyMapperThrowsProperties() throws Exception {
     LocalProperty throwingMap = mock(LocalProperty.class);
     doThrow(new IOException("PARSE ERROR")).when(throwingMap).setJson(any(), any());
 
@@ -194,7 +192,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
    * We've chosen to not throw a 400 when the collection and the type mismatch
    */
   @Test
-  public void ignoresAtTypeProperty() throws IOException, InvalidCollectionException {
+  public void ignoresAtTypeProperty() throws Exception {
     Graph graph = newGraph().build();
     TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
@@ -277,10 +275,4 @@ public class TinkerpopJsonCrudServiceCreateTest {
 
     instance.create(collectionName, JsonBuilder.jsnO(), userId);
   }
-
-  @Test
-  public void doesNotUpdateTheFieldsThatMayNotBeAlteredByTheUser() {
-    fail("Yet to be implemented");
-  }
-
 }

@@ -2,12 +2,14 @@ package nl.knaw.huygens.timbuctoo.crud;
 
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.hamcrest.MatcherAssert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -43,6 +45,12 @@ public class TinkerpopJsonCrudServiceReplaceTest {
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
+  private Authorizer authorizer;
+
+  @Before
+  public void setupAuthorizer() {
+    authorizer = mock(Authorizer.class);
+  }
 
   public TinkerpopJsonCrudService basicInstance(Graph graph) {
     return customInstanceMaker(graph, null, null, null, null);
@@ -82,9 +90,9 @@ public class TinkerpopJsonCrudServiceReplaceTest {
     GraphWrapper graphWrapper = mock(GraphWrapper.class);
     when(graphWrapper.getGraph()).thenReturn(graph);
 
-    return new TinkerpopJsonCrudService(graphWrapper, map, handleAdder, null, generator, generator, generator, clock);
+    return new TinkerpopJsonCrudService(graphWrapper, map, handleAdder, null, generator, generator, generator, clock,
+      authorizer);
   }
-
 
   @Test
   public void throwsOnUnknownMappings() throws Exception {
@@ -148,10 +156,10 @@ public class TinkerpopJsonCrudServiceReplaceTest {
     instance.replace("wwpersons", UUID.fromString(id), jsnO("^rev", jsn(1)), "");
 
     String types = (String) graph.traversal().V()
-      .has("tim_id", id)
-      .has("isLatest", true)
-      .properties("types").value()
-      .next();
+                                 .has("tim_id", id)
+                                 .has("isLatest", true)
+                                 .properties("types").value()
+                                 .next();
 
     assertThat(types, containsString("\"wwperson\""));
   }
@@ -177,10 +185,10 @@ public class TinkerpopJsonCrudServiceReplaceTest {
 
     instance.replace("wwpersons", UUID.fromString(id), jsnO("^rev", jsn(1)), "despicable_me");
     String modified = (String) graph.traversal().V()
-      .has("tim_id", id)
-      .has("isLatest", true)
-      .properties("modified").value()
-      .next();
+                                    .has("tim_id", id)
+                                    .has("isLatest", true)
+                                    .properties("modified").value()
+                                    .next();
 
     MatcherAssert.assertThat(
       modified,
@@ -245,13 +253,13 @@ public class TinkerpopJsonCrudServiceReplaceTest {
     ), "");
 
     Map<String, Object> result = graph.traversal().V()
-      .has("tim_id", id)
-      .has("isLatest", true)
-      .as("vertex")
-      .properties("wwperson_name").value().as("name").select("vertex")
-      .properties("wwperson_age").value().as("age").select("vertex")
-      .select("name", "age")
-      .next();
+                                      .has("tim_id", id)
+                                      .has("isLatest", true)
+                                      .as("vertex")
+                                      .properties("wwperson_name").value().as("name").select("vertex")
+                                      .properties("wwperson_age").value().as("age").select("vertex")
+                                      .select("name", "age")
+                                      .next();
 
     assertThat(result.get("name"), is("newName"));
     assertThat(result.get("age"), is("42"));
@@ -290,9 +298,9 @@ public class TinkerpopJsonCrudServiceReplaceTest {
     ), "");
 
     Vertex result = graph.traversal().V()
-      .has("tim_id", id)
-      .has("isLatest", true)
-      .next();
+                         .has("tim_id", id)
+                         .has("isLatest", true)
+                         .next();
 
     assertThat(result.property("wwperson_name").isPresent(), is(false));
   }
@@ -316,22 +324,21 @@ public class TinkerpopJsonCrudServiceReplaceTest {
     TinkerpopJsonCrudService instance = basicInstance(graph);
 
     Vertex beforeUpdate = graph.traversal().V()
-      .has("tim_id", id)
-      .has("isLatest", true)
-      .next();
+                               .has("tim_id", id)
+                               .has("isLatest", true)
+                               .next();
 
     instance.replace("wwpersons", UUID.fromString(id), jsnO("^rev", jsn(1)), "");
 
     Vertex afterUpdate = graph.traversal().V()
-      .has("tim_id", id)
-      .has("isLatest", true)
-      .next();
+                              .has("tim_id", id)
+                              .has("isLatest", true)
+                              .next();
 
     assertThat(afterUpdate.id(), is(not(beforeUpdate.id())));
     //single edge, containing the VERSION_OF pointer
     assertThat(afterUpdate.edges(Direction.IN).next().outVertex().id(), is(beforeUpdate.id()));
   }
-
 
   @Test
   public void commitsChangesIfEverythingSucceeds() throws Exception {

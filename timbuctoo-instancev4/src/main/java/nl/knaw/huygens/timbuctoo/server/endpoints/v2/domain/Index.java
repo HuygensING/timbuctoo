@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
+import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
 
@@ -62,6 +63,8 @@ public class Index {
         return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
       } catch (IOException e) {
         return Response.status(Response.Status.BAD_REQUEST).entity(jsnO("message", jsn(e.getMessage()))).build();
+      } catch (AuthorizationException e) {
+        return Response.status(Response.Status.UNAUTHORIZED).entity(jsnO("message", jsn(e.getMessage()))).build();
       }
     }
   }

@@ -3,8 +3,10 @@ package nl.knaw.huygens.timbuctoo.crud;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.net.URI;
@@ -22,6 +24,13 @@ import static org.mockito.Mockito.when;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 public class AutocompleteTest {
+
+  private Authorizer authorizer;
+
+  @Before
+  public void setupAuthorizer() {
+    authorizer = mock(Authorizer.class);
+  }
 
   public TinkerpopJsonCrudService basicInstance(Graph graph) {
     Vres map = new Vres.Builder()
@@ -41,7 +50,8 @@ public class AutocompleteTest {
     GraphWrapper graphWrapper = mock(GraphWrapper.class);
     when(graphWrapper.getGraph()).thenReturn(graph);
 
-    return new TinkerpopJsonCrudService(graphWrapper, map, handleAdder, null, gen, absoluteUrlGenerator, gen, clock);
+    return new TinkerpopJsonCrudService(graphWrapper, map, handleAdder, null, gen, absoluteUrlGenerator, gen, clock,
+      authorizer);
   }
 
   @Test

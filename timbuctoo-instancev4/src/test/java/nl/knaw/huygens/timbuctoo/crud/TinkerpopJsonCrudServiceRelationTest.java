@@ -3,15 +3,16 @@ package nl.knaw.huygens.timbuctoo.crud;
 import com.fasterxml.jackson.databind.JsonNode;
 import nl.knaw.huygens.timbuctoo.model.vre.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.io.IOException;
 import java.net.URI;
 import java.time.Clock;
 import java.util.UUID;
@@ -27,6 +28,12 @@ public class TinkerpopJsonCrudServiceRelationTest {
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
+  private Authorizer authorizer;
+
+  @Before
+  public void setupAuthorizer() {
+    authorizer = mock(Authorizer.class);
+  }
 
   public TinkerpopJsonCrudService basicInstance(Graph graph) {
     return customInstanceMaker(graph, null, null, null, null);
@@ -51,7 +58,7 @@ public class TinkerpopJsonCrudServiceRelationTest {
         .withVre("WomenWriters", "ww", vre -> vre
           .withCollection("wwpersons")
           .withCollection("wwrelations", CollectionBuilder::isRelationCollection)
-          )
+        )
         .build();
     }
     if (generator == null) {
@@ -67,11 +74,12 @@ public class TinkerpopJsonCrudServiceRelationTest {
     GraphWrapper graphWrapper = mock(GraphWrapper.class);
     when(graphWrapper.getGraph()).thenReturn(graph);
 
-    return new TinkerpopJsonCrudService(graphWrapper, map, handleAdder, null, generator, generator, generator, clock);
+    return new TinkerpopJsonCrudService(graphWrapper, map, handleAdder, null, generator, generator, generator, clock,
+      authorizer);
   }
 
   @Test
-  public void canPostRelation() throws IOException, InvalidCollectionException {
+  public void canPostRelation() throws Exception {
     String typeId = "10000000-046d-477a-acbb-1c18b2a7c7e9";
     String sourceId = "20000000-742e-4351-9154-b33c10dbf5b2";
     String targetId = "30000000-bc09-4959-a8b9-1cafad9a60f6";

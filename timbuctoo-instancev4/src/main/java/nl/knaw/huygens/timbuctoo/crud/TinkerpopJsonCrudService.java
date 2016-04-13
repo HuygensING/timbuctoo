@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
@@ -62,7 +63,6 @@ public class TinkerpopJsonCrudService {
 
   private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(TinkerpopJsonCrudService.class);
 
-
   private final GraphWrapper graphwrapper;
   private final Vres mappings;
   private final HandleAdder handleAdder;
@@ -72,29 +72,39 @@ public class TinkerpopJsonCrudService {
   private final Clock clock;
   private final JsonNodeFactory nodeFactory;
   private final JsonBasedUserStore userStore;
+  private Authorizer authorizer;
 
   public TinkerpopJsonCrudService(GraphWrapper graphwrapper, Vres mappings,
                                   HandleAdder handleAdder, JsonBasedUserStore userStore, UrlGenerator urlFor,
-                                  UrlGenerator absoluteUrlFor, UrlGenerator versionAndSlashlessUrlFor, Clock clock) {
+                                  UrlGenerator absoluteUrlFor, UrlGenerator versionAndSlashlessUrlFor, Clock clock,
+                                  Authorizer authorizer) {
     this.graphwrapper = graphwrapper;
     this.mappings = mappings;
     this.handleAdder = handleAdder;
     this.urlFor = urlFor;
     this.absoluteUrlFor = absoluteUrlFor;
     this.versionAndSlashlessUrlFor = versionAndSlashlessUrlFor;
-    nodeFactory = JsonNodeFactory.instance;
     this.userStore = userStore;
     this.clock = clock;
+    this.authorizer = authorizer;
+    nodeFactory = JsonNodeFactory.instance;
   }
 
   public UUID create(String collectionName, ObjectNode input, String userId)
-    throws InvalidCollectionException, IOException {
+    throws InvalidCollectionException, IOException, AuthorizationException {
 
     final Collection collection = mappings.getCollection(collectionName)
-      .orElseThrow(() -> new InvalidCollectionException(collectionName));
+                                          .orElseThrow(() -> new InvalidCollectionException(collectionName));
     if (collection.isRelationCollection()) {
       return createRelation(collection, input, userId);
     } else {
+      Authorization authorization = authorizer.authorizationFor(collectionName, userId);
+
+      if (!authorization.isAllowedToWrite()) {
+        throw new AuthorizationException(
+          String.format("You are not authorized to edit collection %s.", collectionName));
+      }
+
       return createEntity(collection, input, userId);
     }
   }
@@ -150,8 +160,10 @@ public class TinkerpopJsonCrudService {
     }
   }
 
-  private UUID createEntity(Collection collection, ObjectNode input, String userId) throws IOException {
+  private UUID createEntity(Collection collection, ObjectNode input, String userId)
+    throws IOException, AuthorizationException {
     String collectionName = collection.getCollectionName();
+
     Map<String, LocalProperty> mapping = collection.getWriteableProperties();
 
     UUID id = UUID.randomUUID();
@@ -161,7 +173,6 @@ public class TinkerpopJsonCrudService {
     GraphTraversal<Vertex, Vertex> traversalWithVertex = traversalSource.addV();
 
     Vertex vertex = traversalWithVertex.next();
-
 
     Iterator<String> fieldNames = input.fieldNames();
     while (fieldNames.hasNext()) {
@@ -207,7 +218,7 @@ public class TinkerpopJsonCrudService {
     throws InvalidCollectionException, NotFoundException {
 
     final Collection collection = mappings.getCollection(collectionName)
-      .orElseThrow(() -> new InvalidCollectionException(collectionName));
+                                          .orElseThrow(() -> new InvalidCollectionException(collectionName));
     final Map<String, ReadableProperty> mapping = collection.getReadableProperties();
     final String entityTypeName = collection.getEntityTypeName();
     final GraphTraversalSource traversalSource = graphwrapper.getGraph().traversal();
@@ -227,18 +238,18 @@ public class TinkerpopJsonCrudService {
       //append error handling and resuling to the traversal
       .map(prop -> prop.getValue().traversal().sideEffect(x ->
         x.get()
-          .onSuccess( node -> result.set(prop.getKey(), node))
-          .onFailure( e -> {
-            if (e.getCause() instanceof IOException) {
-              LOG.error(
-                databaseInvariant,
-                "Property '" + prop.getKey() + "' is not encoded correctly",
-                e.getCause()
-              );
-            } else {
-              LOG.error("Something went wrong while reading the property '" + prop.getKey() + "'.", e.getCause());
-            }
-          })
+         .onSuccess(node -> result.set(prop.getKey(), node))
+         .onFailure(e -> {
+           if (e.getCause() instanceof IOException) {
+             LOG.error(
+               databaseInvariant,
+               "Property '" + prop.getKey() + "' is not encoded correctly",
+               e.getCause()
+             );
+           } else {
+             LOG.error("Something went wrong while reading the property '" + prop.getKey() + "'.", e.getCause());
+           }
+         })
       ))
       .toArray(GraphTraversal[]::new);
 
@@ -285,7 +296,7 @@ public class TinkerpopJsonCrudService {
     GraphTraversal<Vertex, ObjectNode> derivedRelations = getDerivedRelations(entity, traversalSource, collection);
 
     Map<String, List<ObjectNode>> relations = concat(stream(realRelations), stream(derivedRelations))
-      .filter(x->x != null)
+      .filter(x -> x != null)
       .peek(x -> relationCount[0]++)
       .collect(groupingBy(jsn -> jsn.get("relationType").asText()));
 
@@ -295,45 +306,50 @@ public class TinkerpopJsonCrudService {
   private GraphTraversal<Vertex, ObjectNode> getDerivedRelations(Vertex entity, GraphTraversalSource traversalSource,
                                                                  Collection collection) {
     return traversalSource.withSack("").V(entity.id())
-      .union(
-        collection.getDerivedRelations().entrySet().stream().map(entry -> {
-          return __.sack((left,right) -> entry.getKey()).union(entry.getValue().get()).as("targetVertex");
-        }).toArray(GraphTraversal[]::new)
-      )
-      .sack().as("sack")
-      .select("targetVertex", "sack")
-      .map((Function<Traverser<Map<String, Object>>, ObjectNode>) r -> {
-        try {
-          Vertex vertex = (Vertex) r.get().get("targetVertex");
-          String relationType = (String) r.get().get("sack");
-          String targetType = getOwnEntityType(collection, vertex);
-          if (targetType == null) {
-            //this means that the vertex is of another VRE
-            throw new IOException(
-              "The derived relation " + relationType + " points to vertex " + vertex + " which is not part of this vre"
-            );
-          }
-          String targetCollection = targetType + "s";
-          String uuid = getProp(vertex, "tim_id", String.class).orElse("");
-          String displayName = getDisplayname(traversalSource, vertex, collection.getVre().getCollection(targetType))
-            .orElse("<No displayname found>");
+                          .union(
+                            collection.getDerivedRelations().entrySet().stream().map(entry -> {
+                              return __.sack((left, right) -> entry.getKey()).union(entry.getValue().get())
+                                       .as("targetVertex");
+                            }).toArray(GraphTraversal[]::new)
+                          )
+                          .sack().as("sack")
+                          .select("targetVertex", "sack")
+                          .map((Function<Traverser<Map<String, Object>>, ObjectNode>) r -> {
+                            try {
+                              Vertex vertex = (Vertex) r.get().get("targetVertex");
+                              String relationType = (String) r.get().get("sack");
+                              String targetType = getOwnEntityType(collection, vertex);
+                              if (targetType == null) {
+                                //this means that the vertex is of another VRE
+                                throw new IOException(
+                                  "The derived relation " + relationType + " points to vertex " + vertex +
+                                    " which is not part of this vre"
+                                );
+                              }
+                              String targetCollection = targetType + "s";
+                              String uuid = getProp(vertex, "tim_id", String.class).orElse("");
+                              String displayName =
+                                getDisplayname(traversalSource, vertex, collection.getVre().getCollection(targetType))
+                                  .orElse("<No displayname found>");
 
-          URI relatedEntityUri = versionAndSlashlessUrlFor.apply(targetCollection, UUID.fromString(uuid), null);
-          return jsnO(
-            tuple("id", jsn(uuid)),
-            tuple("path", jsn(relatedEntityUri.toString())),
-            tuple("type", jsn(relationType)),
-            tuple("relationType", jsn(relationType)),
-            tuple("accepted", jsn(true)),
-            tuple("relationId", jsn("derived")),
-            tuple("rev", jsn(1)),
-            tuple("displayName", jsn(displayName))
-          );
-        } catch (Exception e) {
-          LOG.error(Logmarkers.databaseInvariant, "Error while generating derived-relation data", e);
-          return null;
-        }
-      });
+                              URI relatedEntityUri =
+                                versionAndSlashlessUrlFor.apply(targetCollection, UUID.fromString(uuid), null);
+                              return jsnO(
+                                tuple("id", jsn(uuid)),
+                                tuple("path", jsn(relatedEntityUri.toString())),
+                                tuple("type", jsn(relationType)),
+                                tuple("relationType", jsn(relationType)),
+                                tuple("accepted", jsn(true)),
+                                tuple("relationId", jsn("derived")),
+                                tuple("rev", jsn(1)),
+                                tuple("displayName", jsn(displayName))
+                              );
+                            } catch (Exception e) {
+                              LOG
+                                .error(Logmarkers.databaseInvariant, "Error while generating derived-relation data", e);
+                              return null;
+                            }
+                          });
   }
 
   private GraphTraversal<Vertex, ObjectNode> getRealRelations(Vertex entity, GraphTraversalSource traversalSource,
@@ -343,73 +359,79 @@ public class TinkerpopJsonCrudService {
     Object[] relationTypes = traversalSource.V().has("relationtype_regularName").id().toList().toArray();
 
     return traversalSource.V(entity.id())
-        .union(
-          __.outE().as("edge")
-            .label().as("label")
-            .select("edge"),
-          __.inE()
-            .as("edge")
-            .label().as("edgeLabel")
-            .V(relationTypes)
-            .has("relationtype_regularName", __.where(P.eq("edgeLabel")))
-            .properties("relationtype_inverseName").value()
-            .as("label")
-            .select("edge")
-        )
-        .where(
-          //FIXME move to strategy
-          __.has("isLatest", true)
-            .not(__.has("deleted", true))
-            .not(__.hasLabel("VERSION_OF"))
-            .has("types", new P<>(
-              (val, def) -> {
-                return Try.of(() -> arrayToEncodedArray.tinkerpopToJava(val, String[].class))
-                  .map(vre::getOwnType)
-                  .map(ownType -> ownType != null)
-                  .onFailure(e -> LOG.error(databaseInvariant, "Error reading 'types' of edge", e))
-                  .getOrElse(false);
-              }, //if the types array is a failure then pretend the relation does not exist
-              "")
-            )
-        )
-        .otherV().as("vertex")
-        .select("edge", "vertex", "label")
-        .map(r -> {
-          try {
-            Map<String, Object> val = r.get();
-            Edge edge = (Edge) val.get("edge");
-            Vertex vertex = (Vertex) val.get("vertex");
-            String label = (String) val.get("label");
+                          .union(
+                            __.outE().as("edge")
+                              .label().as("label")
+                              .select("edge"),
+                            __.inE()
+                              .as("edge")
+                              .label().as("edgeLabel")
+                              .V(relationTypes)
+                              .has("relationtype_regularName", __.where(P.eq("edgeLabel")))
+                              .properties("relationtype_inverseName").value()
+                              .as("label")
+                              .select("edge")
+                          )
+                          .where(
+                            //FIXME move to strategy
+                            __.has("isLatest", true)
+                              .not(__.has("deleted", true))
+                              .not(__.hasLabel("VERSION_OF"))
+                              .has("types", new P<>(
+                                (val, def) -> {
+                                  return Try.of(() -> arrayToEncodedArray.tinkerpopToJava(val, String[].class))
+                                            .map(vre::getOwnType)
+                                            .map(ownType -> ownType != null)
+                                            .onFailure(
+                                              e -> LOG.error(databaseInvariant, "Error reading 'types' of edge", e))
+                                            .getOrElse(false);
+                                }, //if the types array is a failure then pretend the relation does not exist
+                                "")
+                              )
+                          )
+                          .otherV().as("vertex")
+                          .select("edge", "vertex", "label")
+                          .map(r -> {
+                            try {
+                              Map<String, Object> val = r.get();
+                              Edge edge = (Edge) val.get("edge");
+                              Vertex vertex = (Vertex) val.get("vertex");
+                              String label = (String) val.get("label");
 
-            String targetEntityType = getOwnEntityType(collection, vertex);
-            if (targetEntityType == null) {
-              //this means that the edge is of this VRE, but the Vertex it points to is of another VRE
-              throw new IOException(
-                String.format("Edge %s that is of this vre points to vertex %s that is not of this vre", edge, vertex)
-              );
-            }
+                              String targetEntityType = getOwnEntityType(collection, vertex);
+                              if (targetEntityType == null) {
+                                //this means that the edge is of this VRE, but the Vertex it points to is of another VRE
+                                throw new IOException(
+                                  String
+                                    .format("Edge %s that is of this vre points to vertex %s that is not of this vre",
+                                      edge, vertex)
+                                );
+                              }
 
-            String displayName = getDisplayname(traversalSource, vertex, vre.getCollection(targetEntityType))
-              .orElse("<No displayname found>");
-            String targetCollection = targetEntityType + "s";
-            String uuid = getProp(vertex, "tim_id", String.class).orElse("");
+                              String displayName =
+                                getDisplayname(traversalSource, vertex, vre.getCollection(targetEntityType))
+                                  .orElse("<No displayname found>");
+                              String targetCollection = targetEntityType + "s";
+                              String uuid = getProp(vertex, "tim_id", String.class).orElse("");
 
-            URI relatedEntityUri = versionAndSlashlessUrlFor.apply(targetCollection, UUID.fromString(uuid), null);
-            return jsnO(
-              tuple("id", jsn(uuid)),
-              tuple("path", jsn(relatedEntityUri.toString())),
-              tuple("relationType", jsn(label)),
-              tuple("type", jsn(targetEntityType)),
-              tuple("accepted", jsn(getProp(edge, "accepted", Boolean.class).orElse(true))),
-              tuple("relationId", getProp(edge, "tim_id", String.class).map(x -> (JsonNode) jsn(x)).orElse(jsn())),
-              tuple("rev", jsn(getProp(edge, "rev", Integer.class).orElse(1))),
-              tuple("displayName", jsn(displayName))
-            );
-          } catch (Exception e) {
-            LOG.error(databaseInvariant, "Something went wrong while formatting the entity", e);
-            return null;
-          }
-        });
+                              URI relatedEntityUri =
+                                versionAndSlashlessUrlFor.apply(targetCollection, UUID.fromString(uuid), null);
+                              return jsnO(
+                                tuple("id", jsn(uuid)),
+                                tuple("path", jsn(relatedEntityUri.toString())),
+                                tuple("relationType", jsn(label)),
+                                tuple("type", jsn(targetEntityType)),
+                                tuple("accepted", jsn(getProp(edge, "accepted", Boolean.class).orElse(true))),
+                                tuple("relationId",
+                                  getProp(edge, "tim_id", String.class).map(x -> (JsonNode) jsn(x)).orElse(jsn())),
+                                tuple("rev", jsn(getProp(edge, "rev", Integer.class).orElse(1))),
+                                tuple("displayName", jsn(displayName))
+                              );
+                            } catch (Exception e) {
+                              LOG.error(databaseInvariant, "Something went wrong while formatting the entity", e);
+                              return null;
+                            }
+                          });
   }
 
   private Optional<String> getDisplayname(GraphTraversalSource traversalSource, Vertex vertex,
@@ -540,7 +562,7 @@ public class TinkerpopJsonCrudService {
     throws InvalidCollectionException, IOException, NotFoundException, AlreadyUpdatedException {
 
     final Collection collection = mappings.getCollection(collectionName)
-      .orElseThrow(() -> new InvalidCollectionException(collectionName));
+                                          .orElseThrow(() -> new InvalidCollectionException(collectionName));
     if (collection.isRelationCollection()) {
       replaceRelation(collection, id, data, userId);
     } else {
@@ -562,10 +584,10 @@ public class TinkerpopJsonCrudService {
 
     Graph graph = graphwrapper.getGraph();
     Edge edge = graph.traversal().E()
-      .has("tim_id", id.toString())
-      .has("isLatest", true)
-      .has("rev", rev.intValue())
-      .next();
+                     .has("tim_id", id.toString())
+                     .has("isLatest", true)
+                     .has("rev", rev.intValue())
+                     .next();
 
     edge.property(acceptedPropName, accepted.booleanValue());
 
@@ -649,7 +671,7 @@ public class TinkerpopJsonCrudService {
 
     LOG.info(collectionName + " " + tokenParam + " " + type);
     final Collection collection = mappings.getCollection(collectionName)
-      .orElseThrow(() -> new InvalidCollectionException(collectionName));
+                                          .orElseThrow(() -> new InvalidCollectionException(collectionName));
     final Graph graph = graphwrapper.getGraph();
     final GraphTraversalSource traversalSource = graph.traversal();
 
@@ -672,73 +694,76 @@ public class TinkerpopJsonCrudService {
       final String searchToken = token.toLowerCase();
 
       results = traversalSource.V()
-        .as("vertex")
-        .where(typeFilter)
-        .union(collection.getDisplayName().traversal())
-        .filter(x -> x.get().isSuccess())
-        .map(x -> x.get().get().asText())
-        .as("displayName")
-        .filter(x -> x.get().toLowerCase().contains(searchToken))
-        .select("vertex", "displayName")
-        .map(x -> {
-          Vertex vertex = (Vertex) x.get().get("vertex");
-          String dn = (String) x.get().get("displayName");
-          Optional<String> id = getProp(vertex, "tim_id", String.class);
-          Integer rev = getProp(vertex, "rev", Integer.class).orElse(1);
-          if (id.isPresent()) {
-            try {
-              UUID uuid = UUID.fromString(id.get());
-              return jsnO(
-                "key", jsn(absoluteUrlFor.apply(collection.getCollectionName(), uuid, rev).toString()),
-                "value", jsn(dn)
-              );
-            } catch (IllegalArgumentException e) {
-              LOG.error(Logmarkers.databaseInvariant, "Tim_id " + id + "is not a valid UUID");
-              return null;
-            }
-          } else {
-            LOG.error(Logmarkers.databaseInvariant, "No Tim_id found on vertex with id " + vertex.id());
-            return null;
-          }
-        })
-        .filter(x -> x != null)
-        .limit(10L)
-        .toList();
+                               .as("vertex")
+                               .where(typeFilter)
+                               .union(collection.getDisplayName().traversal())
+                               .filter(x -> x.get().isSuccess())
+                               .map(x -> x.get().get().asText())
+                               .as("displayName")
+                               .filter(x -> x.get().toLowerCase().contains(searchToken))
+                               .select("vertex", "displayName")
+                               .map(x -> {
+                                 Vertex vertex = (Vertex) x.get().get("vertex");
+                                 String dn = (String) x.get().get("displayName");
+                                 Optional<String> id = getProp(vertex, "tim_id", String.class);
+                                 Integer rev = getProp(vertex, "rev", Integer.class).orElse(1);
+                                 if (id.isPresent()) {
+                                   try {
+                                     UUID uuid = UUID.fromString(id.get());
+                                     return jsnO(
+                                       "key",
+                                       jsn(absoluteUrlFor.apply(collection.getCollectionName(), uuid, rev).toString()),
+                                       "value", jsn(dn)
+                                     );
+                                   } catch (IllegalArgumentException e) {
+                                     LOG.error(Logmarkers.databaseInvariant, "Tim_id " + id + "is not a valid UUID");
+                                     return null;
+                                   }
+                                 } else {
+                                   LOG.error(Logmarkers.databaseInvariant,
+                                     "No Tim_id found on vertex with id " + vertex.id());
+                                   return null;
+                                 }
+                               })
+                               .filter(x -> x != null)
+                               .limit(10L)
+                               .toList();
     } else {
       results = traversalSource.V()
-        .as("vertex")
-        .where(typeFilter)
-        .union(collection.getDisplayName().traversal())
-        .filter(x -> x.get().isSuccess())
-        .map(x -> x.get().get().asText())
-        .as("displayName")
-        .select("vertex", "displayName")
-        .map(x -> {
-          Vertex vertex = (Vertex) x.get().get("vertex");
-          String dn = (String) x.get().get("displayName");
-          Optional<String> id = getProp(vertex, "tim_id", String.class);
-          Integer rev = getProp(vertex, "rev", Integer.class).orElse(1);
-          if (id.isPresent()) {
-            try {
-              UUID uuid = UUID.fromString(id.get());
-              return jsnO(
-                "key", jsn(absoluteUrlFor.apply(collection.getCollectionName(), uuid, rev).toString()),
-                "value", jsn(dn)
-              );
-            } catch (IllegalArgumentException e) {
-              LOG.error(Logmarkers.databaseInvariant, "Tim_id " + id + "is not a valid UUID");
-              return null;
-            }
-          } else {
-            LOG.error(Logmarkers.databaseInvariant, "No Tim_id found on vertex with id " + vertex.id());
-            return null;
-          }
-        })
-        .filter(x -> x != null)
-        .limit(1000L) //no query means you get a lot
-        .toList();
+                               .as("vertex")
+                               .where(typeFilter)
+                               .union(collection.getDisplayName().traversal())
+                               .filter(x -> x.get().isSuccess())
+                               .map(x -> x.get().get().asText())
+                               .as("displayName")
+                               .select("vertex", "displayName")
+                               .map(x -> {
+                                 Vertex vertex = (Vertex) x.get().get("vertex");
+                                 String dn = (String) x.get().get("displayName");
+                                 Optional<String> id = getProp(vertex, "tim_id", String.class);
+                                 Integer rev = getProp(vertex, "rev", Integer.class).orElse(1);
+                                 if (id.isPresent()) {
+                                   try {
+                                     UUID uuid = UUID.fromString(id.get());
+                                     return jsnO(
+                                       "key",
+                                       jsn(absoluteUrlFor.apply(collection.getCollectionName(), uuid, rev).toString()),
+                                       "value", jsn(dn)
+                                     );
+                                   } catch (IllegalArgumentException e) {
+                                     LOG.error(Logmarkers.databaseInvariant, "Tim_id " + id + "is not a valid UUID");
+                                     return null;
+                                   }
+                                 } else {
+                                   LOG.error(Logmarkers.databaseInvariant,
+                                     "No Tim_id found on vertex with id " + vertex.id());
+                                   return null;
+                                 }
+                               })
+                               .filter(x -> x != null)
+                               .limit(1000L) //no query means you get a lot
+                               .toList();
     }
-
 
     ArrayNode resultNode = jsnA();
     for (ObjectNode n : results) {
@@ -752,7 +777,7 @@ public class TinkerpopJsonCrudService {
     throws InvalidCollectionException, NotFoundException {
 
     final Collection collection = mappings.getCollection(collectionName)
-      .orElseThrow(() -> new InvalidCollectionException(collectionName));
+                                          .orElseThrow(() -> new InvalidCollectionException(collectionName));
     final Graph graph = graphwrapper.getGraph();
     final GraphTraversalSource traversalSource = graph.traversal();
     GraphTraversal<Vertex, Vertex> entityTraversal = getEntity(traversalSource, id, null);

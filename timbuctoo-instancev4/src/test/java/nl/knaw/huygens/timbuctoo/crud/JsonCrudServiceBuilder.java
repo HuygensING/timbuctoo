@@ -9,6 +9,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import java.net.URI;
 import java.time.Clock;
 
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -45,12 +46,23 @@ public class JsonCrudServiceBuilder {
     if (handleAdder == null) {
       handleAdder = mock(HandleAdder.class);
     }
+    if (authorizer == null) {
+      authorizer = createAllowAllAuthorizer();
+    }
 
     GraphWrapper graphWrapper = mock(GraphWrapper.class);
     when(graphWrapper.getGraph()).thenReturn(graph);
 
     return new TinkerpopJsonCrudService(graphWrapper, vres, handleAdder, userStore, generator, generator,
-      generator, clock);//, authorizer);
+      generator, clock, authorizer);
+  }
+
+  private Authorizer createAllowAllAuthorizer() {
+    Authorizer allowAllAuthorizer = mock(Authorizer.class);
+    Authorization authorization = mock(Authorization.class);
+    when(authorization.isAllowedToWrite()).thenReturn(true);
+    when(allowAllAuthorizer.authorizationFor(anyString(), anyString())).thenReturn(authorization);
+    return allowAllAuthorizer;
   }
 
   public JsonCrudServiceBuilder withClock(Clock clock) {
