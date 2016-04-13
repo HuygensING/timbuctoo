@@ -22,41 +22,55 @@ package nl.knaw.huygens.timbuctoo.model.dcar;
  * #L%
  */
 
-import static nl.knaw.huygens.timbuctoo.model.dcar.PeriodHelper.createPeriod;
+import org.junit.Test;
 
+import static nl.knaw.huygens.timbuctoo.model.dcar.PeriodHelper.createPeriod;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-
-import org.junit.Test;
 
 public class PeriodHelperTest {
 
   @Test
-  public void createPeriodTwoYears() {
-    String expected = "2001 - 3001";
-    assertThat(createPeriod("2001", "3001"), is(equalTo(expected)));
+  public void createPeriodCreatesADatableWithTheBeginYearEqualToTheFirstArgument() {
+    int fromYear = 2001;
+    String fromYearString = "" + fromYear;
+
+    assertThat(createPeriod(fromYearString, "3001"), hasProperty("fromYear", equalTo(fromYear)));
   }
 
   @Test
-  public void createPeriodNoBegin() {
-    String expected = "3001 - 3001";
-    assertThat(createPeriod(null, "3001"), is(equalTo(expected)));
-    assertThat(createPeriod("", "3001"), is(equalTo(expected)));
-    assertThat(createPeriod(" ", "3001"), is(equalTo(expected)));
+  public void createPeriodCreatesADatableWithTheEndYearEqualToTheSecondArgument() {
+    int toYear = 3001;
+    String toYearString = "" + toYear;
+
+    assertThat(createPeriod("2001", toYearString), hasProperty("toYear", equalTo(toYear)));
   }
 
   @Test
-  public void createPeriodNoEnd() {
-    String expected = "2001 - 2001";
-    assertThat(createPeriod("2001", null), is(equalTo(expected)));
-    assertThat(createPeriod("2001", ""), is(equalTo(expected)));
-    assertThat(createPeriod("2001", " "), is(equalTo(expected)));
+  public void createPeriodWithNoBeginYearReturnsADatableWithABeginYearEqualToTheEndYear() {
+    int toYear = 3001;
+    String toYearString = "" + toYear;
+
+    assertThat(createPeriod(null, toYearString), hasProperty("fromYear", equalTo(toYear)));
+    assertThat(createPeriod("", toYearString), hasProperty("fromYear", equalTo(toYear)));
+    assertThat(createPeriod(" ", toYearString), hasProperty("fromYear", equalTo(toYear)));
   }
 
   @Test
-  public void createPeriodNoBeginNoEnd() {
+  public void createPeriodWithNoEndADatableWithAEndYearEqualToTheBeginYear() {
+    int fromYear = 2001;
+    String fromYearString = "" + fromYear;
+
+    assertThat(createPeriod(fromYearString, null), hasProperty("toYear", equalTo(fromYear)));
+    assertThat(createPeriod(fromYearString, ""), hasProperty("toYear", equalTo(fromYear)));
+    assertThat(createPeriod(fromYearString, " "), hasProperty("toYear", equalTo(fromYear)));
+  }
+
+  @Test
+  public void createPeriodNoBeginNoEndReturnsNull() {
     assertThat(createPeriod(null, null), is(nullValue()));
     assertThat(createPeriod("", ""), is(nullValue()));
     assertThat(createPeriod(" ", " "), is(nullValue()));

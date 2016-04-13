@@ -22,6 +22,7 @@ package nl.knaw.huygens.timbuctoo.model.dcar;
  * #L%
  */
 
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -34,12 +35,12 @@ class PeriodHelper {
    * @param beginDate should be a year
    * @param endDate should be a year
    */
-  public static String createPeriod(String beginDate, String endDate) {
+  public static Datable createPeriod(String beginDate, String endDate) {
     beginDate = StringUtils.isBlank(beginDate) ? endDate : beginDate;
     endDate = StringUtils.isBlank(endDate) ? beginDate : endDate;
 
     if (StringUtils.isNotBlank(beginDate) && StringUtils.isNotBlank(endDate)) {
-      return String.format("%s - %s", beginDate, endDate);
+      return new Datable(String.format("%s/%s", beginDate, endDate));
     }
 
     return null;

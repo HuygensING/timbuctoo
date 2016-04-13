@@ -40,6 +40,7 @@ import nl.knaw.huygens.timbuctoo.model.RelationRef;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.model.util.Datable;
 
 public class DCARArchiver extends Archiver {
 
@@ -148,8 +149,8 @@ public class DCARArchiver extends Archiver {
 
   @JsonIgnore
   @IndexAnnotations({ @IndexAnnotation(fieldName = "dynamic_k_period", canBeEmpty = true, isFaceted = false, facetType = FacetType.PERIOD, isSortable = true),
-      @IndexAnnotation(fieldName = "dynamic_s_period", canBeEmpty = true, isFaceted = true, facetType = FacetType.PERIOD, isSortable = false) })
-  public String getActivePeriod() {
+      @IndexAnnotation(fieldName = "dynamic_i_period", canBeEmpty = true, isFaceted = true, facetType = FacetType.RANGE, isSortable = false) })
+  public Datable getActivePeriod() {
     return PeriodHelper.createPeriod(beginDate, endDate);
   }
 
