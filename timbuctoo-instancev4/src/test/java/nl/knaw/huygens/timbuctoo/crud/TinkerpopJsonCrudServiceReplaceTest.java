@@ -2,14 +2,11 @@ package nl.knaw.huygens.timbuctoo.crud;
 
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.security.Authorizer;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.hamcrest.MatcherAssert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -24,6 +21,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import static nl.knaw.huygens.timbuctoo.crud.JsonCrudServiceBuilder.newJsonCrudService;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
@@ -38,66 +36,17 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 public class TinkerpopJsonCrudServiceReplaceTest {
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
-  private Authorizer authorizer;
-
-  @Before
-  public void setupAuthorizer() {
-    authorizer = mock(Authorizer.class);
-  }
-
-  public TinkerpopJsonCrudService basicInstance(Graph graph) {
-    return customInstanceMaker(graph, null, null, null, null);
-  }
-
-  public TinkerpopJsonCrudService basicInstanceWithClock(Graph graph, Clock clock) {
-    return customInstanceMaker(graph, null, null, clock, null);
-  }
-
-  public TinkerpopJsonCrudService basicInstanceWithVre(Graph graph, Vres vre) {
-    return customInstanceMaker(graph, vre, null, null, null);
-  }
-
-  private TinkerpopJsonCrudService basicInstanceWithUrlGenerator(Graph graph, UrlGenerator urlGen, HandleAdder adder) {
-    return customInstanceMaker(graph, null, urlGen, null, adder);
-  }
-
-  private TinkerpopJsonCrudService customInstanceMaker(Graph graph, Vres map,
-                                                       UrlGenerator generator, Clock clock, HandleAdder handleAdder) {
-    if (map == null) {
-      map = new Vres.Builder()
-        .withVre("WomenWriters", "ww", vre -> vre
-          .withCollection("wwpersons")
-        )
-        .build();
-    }
-    if (generator == null) {
-      generator = (collection, id, rev) -> URI.create("http://example.com/");
-    }
-    if (clock == null) {
-      clock = Clock.systemDefaultZone();
-    }
-    if (handleAdder == null) {
-      handleAdder = mock(HandleAdder.class);
-    }
-
-    GraphWrapper graphWrapper = mock(GraphWrapper.class);
-    when(graphWrapper.getGraph()).thenReturn(graph);
-
-    return new TinkerpopJsonCrudService(graphWrapper, map, handleAdder, null, generator, generator, generator, clock,
-      authorizer);
-  }
-
+  
   @Test
   public void throwsOnUnknownMappings() throws Exception {
     Graph graph = newGraph().build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     expectedException.expect(InvalidCollectionException.class);
 
@@ -120,7 +69,7 @@ public class TinkerpopJsonCrudServiceReplaceTest {
         .withProperty("rev", 1)
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     instance.replace("wwpersons", UUID.fromString(id), jsnO("^rev", jsn(1)), "");
 
@@ -151,7 +100,7 @@ public class TinkerpopJsonCrudServiceReplaceTest {
         .withProperty("ckccperson_name", "the name")
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     instance.replace("wwpersons", UUID.fromString(id), jsnO("^rev", jsn(1)), "");
 
@@ -178,10 +127,9 @@ public class TinkerpopJsonCrudServiceReplaceTest {
       .build();
 
     int oneSecondPast1970 = 1000;
-    TinkerpopJsonCrudService instance = basicInstanceWithClock(
-      graph,
-      Clock.fixed(Instant.ofEpochMilli(oneSecondPast1970), ZoneId.systemDefault())
-    );
+    TinkerpopJsonCrudService instance =
+      newJsonCrudService().withClock(Clock.fixed(Instant.ofEpochMilli(oneSecondPast1970), ZoneId.systemDefault()))
+                          .forGraph(graph);
 
     instance.replace("wwpersons", UUID.fromString(id), jsnO("^rev", jsn(1)), "despicable_me");
     String modified = (String) graph.traversal().V()
@@ -210,7 +158,7 @@ public class TinkerpopJsonCrudServiceReplaceTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     expectedException.expect(IOException.class);
     //message should contain the property that is unrecognized
@@ -234,17 +182,14 @@ public class TinkerpopJsonCrudServiceReplaceTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstanceWithVre(
-      graph,
-      new Vres.Builder()
-        .withVre("womenwriters", "ww", vre -> vre
-          .withCollection("wwpersons", c -> c
-            .withProperty("name", localProperty("wwperson_name"))
-            .withProperty("age", localProperty("wwperson_age"))
-          )
+    TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new Vres.Builder()
+      .withVre("womenwriters", "ww", vre1 -> vre1
+        .withCollection("wwpersons", c -> c
+          .withProperty("name", localProperty("wwperson_name"))
+          .withProperty("age", localProperty("wwperson_age"))
         )
-        .build()
-    );
+      )
+      .build()).forGraph(graph);
 
     instance.replace("wwpersons", UUID.fromString(id), jsnO(
       "name", jsn("newName"),
@@ -280,17 +225,14 @@ public class TinkerpopJsonCrudServiceReplaceTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstanceWithVre(
-      graph,
-      new Vres.Builder()
-        .withVre("womenwriters", "ww", vre -> vre
-          .withCollection("wwpersons", c -> c
-            .withProperty("name", localProperty("wwperson_name"))
-            .withProperty("age", localProperty("wwperson_age"))
-          )
+    TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new Vres.Builder()
+      .withVre("womenwriters", "ww", vre1 -> vre1
+        .withCollection("wwpersons", c -> c
+          .withProperty("name", localProperty("wwperson_name"))
+          .withProperty("age", localProperty("wwperson_age"))
         )
-        .build()
-    );
+      )
+      .build()).forGraph(graph);
 
     instance.replace("wwpersons", UUID.fromString(id), jsnO(
       "age", jsn("42"),
@@ -321,7 +263,7 @@ public class TinkerpopJsonCrudServiceReplaceTest {
         .withProperty("rev", 1)
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     Vertex beforeUpdate = graph.traversal().V()
                                .has("tim_id", id)
@@ -353,7 +295,7 @@ public class TinkerpopJsonCrudServiceReplaceTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
     instance.replace("wwpersons", UUID.fromString(id), jsnO("^rev", jsn(1)), "");
 
     graph.tx().close();
@@ -376,15 +318,12 @@ public class TinkerpopJsonCrudServiceReplaceTest {
         .withProperty("rev", 1)
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstanceWithVre(
-      graph,
-      new Vres.Builder()
-        .withVre("WomenWriters", "ww", vre -> vre
-          .withCollection("wwpersons", c -> c
-            .withProperty("name", throwingMap)
-          )
-        ).build()
-    );
+    TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new Vres.Builder()
+      .withVre("WomenWriters", "ww", vre1 -> vre1
+        .withCollection("wwpersons", c -> c
+          .withProperty("name", throwingMap)
+        )
+      ).build()).forGraph(graph);
     expectedException.expect(IOException.class);
     //message should contain the property that is unrecognized
     expectedException.expectMessage(new RegexMatcher(Pattern.compile(".*name.*")));
@@ -407,11 +346,9 @@ public class TinkerpopJsonCrudServiceReplaceTest {
       .build();
 
     HandleAdder handleAdder = mock(HandleAdder.class);
-    TinkerpopJsonCrudService instance = basicInstanceWithUrlGenerator(
-      graph,
-      (collectionName, id, rev) -> URI.create("http://example.com/" + id + "?r=" + rev),
-      handleAdder
-    );
+    UrlGenerator urlGen = (collectionName, id, rev) -> URI.create("http://example.com/" + id + "?r=" + rev);
+    TinkerpopJsonCrudService instance =
+      newJsonCrudService().withUrlGenerator(urlGen).withHandleAdder(handleAdder).forGraph(graph);
 
     instance.replace("wwpersons", UUID.fromString(uuid), JsonBuilder.jsnO("^rev", jsn(oldRev)), "");
 
@@ -434,7 +371,7 @@ public class TinkerpopJsonCrudServiceReplaceTest {
         .withProperty("rev", 1)
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     instance.replace("wwpersons", UUID.fromString(id), jsnO("@type", jsn(), "_id", jsn(), "^rev", jsn(1)), "");
 
@@ -471,7 +408,7 @@ public class TinkerpopJsonCrudServiceReplaceTest {
         .withProperty("rev", 1)
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     Vertex orig = graph.traversal().V().has("tim_id", id).has("isLatest", true).next();
     assertThat(stream(orig.edges(Direction.BOTH, "hasWritten", "isFriendOf")).count(), is(2L));
@@ -494,7 +431,7 @@ public class TinkerpopJsonCrudServiceReplaceTest {
         .withProperty("rev", 1)
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     expectedException.expect(NotFoundException.class);
     instance.replace("wwpersons", UUID.fromString(otherId), jsnO("^rev", jsn(1)), "");
@@ -510,7 +447,7 @@ public class TinkerpopJsonCrudServiceReplaceTest {
         .withProperty("rev", 2)
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     expectedException.expect(AlreadyUpdatedException.class);
     instance.replace("wwpersons", UUID.fromString(id), jsnO(

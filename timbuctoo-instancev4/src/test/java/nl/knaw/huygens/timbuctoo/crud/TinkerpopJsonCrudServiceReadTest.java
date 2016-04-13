@@ -3,35 +3,26 @@ package nl.knaw.huygens.timbuctoo.crud;
 import com.fasterxml.jackson.databind.JsonNode;
 import nl.knaw.huygens.contractdiff.diffresults.DiffResult;
 import nl.knaw.huygens.contractdiff.jsondiff.JsonDiffer;
-import nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes;
-import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.net.URI;
-import java.time.Clock;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.contractdiff.jsondiff.JsonDiffer.jsonDiffer;
-import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
+import static nl.knaw.huygens.timbuctoo.crud.JsonCrudServiceBuilder.newJsonCrudService;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
@@ -42,72 +33,11 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 public class TinkerpopJsonCrudServiceReadTest {
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
-  private Authorizer authorizer;
-
-  @Before
-  public void setupAuthorizer() {
-    authorizer = mock(Authorizer.class);
-  }
-
-  public TinkerpopJsonCrudService basicInstance(Graph graph) {
-    return customInstance(graph, null, null);
-  }
-
-  public TinkerpopJsonCrudService basicInstanceWithUserStore(Graph graph, JsonBasedUserStore userStore) {
-    return customInstance(graph, userStore, null);
-  }
-
-  public TinkerpopJsonCrudService basicInstanceWithGenerator(Graph graph, UrlGenerator gen) {
-    return customInstance(graph, null, gen);
-  }
-
-  public TinkerpopJsonCrudService customInstance(Graph graph, JsonBasedUserStore userStore, UrlGenerator gen) {
-
-    if (gen == null) {
-      gen = (collection, id, rev) -> URI.create("http://example.com/");
-    }
-    if (userStore == null) {
-      userStore = mock(JsonBasedUserStore.class);
-    }
-    GraphWrapper graphWrapper = mock(GraphWrapper.class);
-    when(graphWrapper.getGraph()).thenReturn(graph);
-
-    HandleAdder handleAdder = mock(HandleAdder.class);
-
-    Clock clock = Clock.systemDefaultZone();
-
-    Vres testVres = new Vres.Builder()
-      .withVre("WomenWriters", "ww", vre -> vre
-        .withCollection("wwdocuments")
-        .withCollection("wwrelations")
-        .withCollection("wwlanguages", c -> c
-          .withDisplayName(localProperty("wwlanguage_name"))
-        )
-        .withCollection("wwderivedrelations", c -> c
-          .withDerivedRelation("hasPersonLanguage", () -> {
-            P<String> isWw = new P<>((types, extra) -> types.contains("\"wwrelation\""), "");
-            return __
-              .outE("isCreatorOf").has("isLatest", true).not(has("isDeleted", true)).has("types", isWw).inV()
-              .outE("hasWorkLanguage").has("isLatest", true).not(has("isDeleted", true)).has("types", isWw).inV();
-          })
-        )
-        .withCollection("wwdisplaynames", c -> c
-          .withDisplayName(PropertyTypes.localProperty("wwperson_displayName"))
-        )
-        .withCollection("wwpersons", c -> c
-          .withProperty("name", localProperty("wwperson_name"))
-        )
-      )
-      .build();
-
-    return new TinkerpopJsonCrudService(graphWrapper, testVres, handleAdder, userStore, gen, gen, gen, clock,
-      authorizer);
-  }
 
   @Test
   public void throwsOnUnknownMappings() throws Exception {
     Graph graph = newGraph().build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     expectedException.expect(InvalidCollectionException.class);
 
@@ -130,7 +60,7 @@ public class TinkerpopJsonCrudServiceReadTest {
         .withProperty("rev", 1)
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     assertThat(
       instance.get("wwpersons", id).toString(),
@@ -157,7 +87,7 @@ public class TinkerpopJsonCrudServiceReadTest {
         .withProperty("wwperson_UnmappedProperty", "shouldn't be returned")
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     JsonNode entity = instance.get("wwpersons", id);
     Long normalFieldCount = stream(entity.fields())
@@ -181,7 +111,7 @@ public class TinkerpopJsonCrudServiceReadTest {
         .withProperty("wwperson_name", 2) //should be a string, not an int
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     JsonNode entity = instance.get("wwpersons", id);
 
@@ -221,7 +151,7 @@ public class TinkerpopJsonCrudServiceReadTest {
         .withProperty("isLatest", true)
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     JsonNode entity = instance.get("wwpersons", uuid);
 
@@ -242,7 +172,7 @@ public class TinkerpopJsonCrudServiceReadTest {
         .withProperty("rev", 1)
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     expectedException.expect(NotFoundException.class);
 
@@ -278,7 +208,7 @@ public class TinkerpopJsonCrudServiceReadTest {
         .withProperty("isLatest", true)
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     JsonNode entity = instance.get("wwpersons", uuid, 1);
 
@@ -298,7 +228,7 @@ public class TinkerpopJsonCrudServiceReadTest {
         .withProperty("rev", 1)
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     expectedException.expect(NotFoundException.class);
 
@@ -322,7 +252,7 @@ public class TinkerpopJsonCrudServiceReadTest {
     JsonBasedUserStore userStore = mock(JsonBasedUserStore.class);
     when(userStore.userForId("USER1")).thenReturn(Optional.of(new User("Username for USER1")));
 
-    TinkerpopJsonCrudService instance = basicInstanceWithUserStore(graph, userStore);
+    TinkerpopJsonCrudService instance = newJsonCrudService().withUserStore(userStore).forGraph(graph);
 
     String resultJson = instance.get("wwpersons", id).toString();
 
@@ -352,7 +282,7 @@ public class TinkerpopJsonCrudServiceReadTest {
     JsonBasedUserStore userStore = mock(JsonBasedUserStore.class);
     when(userStore.userForId("USER1")).thenReturn(Optional.of(new User("Username for USER1")));
 
-    TinkerpopJsonCrudService instance = basicInstanceWithUserStore(graph, userStore);
+    TinkerpopJsonCrudService instance = newJsonCrudService().withUserStore(userStore).forGraph(graph);
 
     String resultJson = instance.get("wwpersons", id).toString();
 
@@ -386,7 +316,7 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     String resultJson = instance.get("wwpersons", id).toString();
 
@@ -427,7 +357,7 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     String resultJson = instance.get("wwpersons", id).toString();
 
@@ -463,10 +393,9 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstanceWithGenerator(
-      graph,
-      (collection, uuid, rev) -> URI.create(String.format("/%s/%s/%s", collection, uuid, rev))
-    );
+    UrlGenerator gen = (collection, uuid, rev) -> URI.create(String.format("/%s/%s/%s", collection, uuid, rev));
+    //    return customInstance(graph, null, gen);
+    TinkerpopJsonCrudService instance = newJsonCrudService().withUrlGenerator(gen).forGraph(graph);
 
     String resultJson = instance.get("wwpersons", id).toString();
 
@@ -512,7 +441,7 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
     String resultJson = instance.get("wwpersons", id).toString();
 
     assertThat(resultJson, sameJSONAs(jsnO(
@@ -554,7 +483,7 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
     String resultJson = instance.get("wwpersons", id).toString();
 
     assertThat(resultJson, sameJSONAs(jsnO(
@@ -600,7 +529,7 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
     String resultJson = instance.get("wwpersons", id).toString();
 
     JsonDiffer differ = jsonDiffer()
@@ -655,7 +584,7 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
     String resultJson = instance.get("wwpersons", id).toString();
 
     assertThat(resultJson, sameJSONAs(jsnO(
@@ -691,7 +620,7 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
     String resultJson = instance.get("wwpersons", id).toString();
 
     assertThat(resultJson, sameJSONAs(jsnO(
@@ -737,7 +666,7 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
     String resultJson = instance.get("wwderivedrelations", id).toString();
 
     assertThat(resultJson, sameJSONAs(jsnO(
@@ -763,7 +692,7 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     String resultJson = instance.get("wwpersons", id).toString();
 
@@ -794,7 +723,7 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     expectedException.expect(NotFoundException.class);
 
@@ -815,7 +744,7 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     expectedException.expect(NotFoundException.class);
 
@@ -835,7 +764,7 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     String resultJson = instance.get("wwpersons", id).toString();
 
@@ -858,7 +787,7 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     String resultJson = instance.get("wwpersons", id).toString();
 
@@ -880,7 +809,7 @@ public class TinkerpopJsonCrudServiceReadTest {
         .withProperty("wwperson_name", "the name")
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     instance.get("wwpersons", id);
     JsonNode entity = instance.get("wwpersons", id);
@@ -916,7 +845,7 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     String resultJson = instance.get("wwpersons", id).toString();
 
@@ -958,7 +887,7 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     String resultJson = instance.get("wwpersons", id).toString();
 

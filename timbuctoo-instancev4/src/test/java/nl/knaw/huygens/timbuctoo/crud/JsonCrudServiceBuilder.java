@@ -1,14 +1,20 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
+import nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes;
+import nl.knaw.huygens.timbuctoo.model.vre.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.net.URI;
 import java.time.Clock;
 
+import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -33,7 +39,25 @@ public class JsonCrudServiceBuilder {
     if (vres == null) {
       vres = new Vres.Builder()
         .withVre("WomenWriters", "ww", vre -> vre
-          .withCollection("wwpersons")
+          .withCollection("wwdocuments")
+          .withCollection("wwrelations", CollectionBuilder::isRelationCollection)
+          .withCollection("wwlanguages", c -> c
+            .withDisplayName(localProperty("wwlanguage_name"))
+          )
+          .withCollection("wwderivedrelations", c -> c
+            .withDerivedRelation("hasPersonLanguage", () -> {
+              P<String> isWw = new P<>((types, extra) -> types.contains("\"wwrelation\""), "");
+              return __
+                .outE("isCreatorOf").has("isLatest", true).not(has("isDeleted", true)).has("types", isWw).inV()
+                .outE("hasWorkLanguage").has("isLatest", true).not(has("isDeleted", true)).has("types", isWw).inV();
+            })
+          )
+          .withCollection("wwdisplaynames", c -> c
+            .withDisplayName(PropertyTypes.localProperty("wwperson_displayName"))
+          )
+          .withCollection("wwpersons", c -> c
+            .withProperty("name", localProperty("wwperson_name"))
+          )
         )
         .build();
     }
@@ -87,6 +111,11 @@ public class JsonCrudServiceBuilder {
 
   public JsonCrudServiceBuilder withAuthorizer(Authorizer authorizer) {
     this.authorizer = authorizer;
+    return this;
+  }
+
+  public JsonCrudServiceBuilder withUserStore(JsonBasedUserStore userStore) {
+    this.userStore = userStore;
     return this;
   }
 }

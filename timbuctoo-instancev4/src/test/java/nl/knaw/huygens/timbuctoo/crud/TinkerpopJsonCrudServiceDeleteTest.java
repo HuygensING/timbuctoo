@@ -1,13 +1,9 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
-import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.security.Authorizer;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.hamcrest.MatcherAssert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -18,6 +14,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.UUID;
 
+import static nl.knaw.huygens.timbuctoo.crud.JsonCrudServiceBuilder.newJsonCrudService;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.core.Is.is;
@@ -26,63 +23,17 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 public class TinkerpopJsonCrudServiceDeleteTest {
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
-  private Authorizer authorizer;
-
-  @Before
-  public void setupAuthorizer() {
-    authorizer = mock(Authorizer.class);
-  }
-
-  public TinkerpopJsonCrudService basicInstance(Graph graph) {
-    return customInstanceMaker(graph, null, null, null, null);
-  }
-
-  public TinkerpopJsonCrudService basicInstanceWithClock(Graph graph, Clock clock) {
-    return customInstanceMaker(graph, null, null, clock, null);
-  }
-
-  private TinkerpopJsonCrudService basicInstanceWithUrlGenerator(Graph graph, UrlGenerator urlGen, HandleAdder adder) {
-    return customInstanceMaker(graph, null, urlGen, null, adder);
-  }
-
-  private TinkerpopJsonCrudService customInstanceMaker(Graph graph, Vres map,
-                                                       UrlGenerator generator, Clock clock, HandleAdder handleAdder) {
-    if (map == null) {
-      map = new Vres.Builder()
-        .withVre("WomenWriters", "ww", vre -> vre
-          .withCollection("wwpersons")
-          .withCollection("wwrelations")
-        )
-        .build();
-    }
-    if (generator == null) {
-      generator = (collection, id, rev) -> URI.create("http://example.com/");
-    }
-    if (clock == null) {
-      clock = Clock.systemDefaultZone();
-    }
-    if (handleAdder == null) {
-      handleAdder = mock(HandleAdder.class);
-    }
-
-    GraphWrapper graphWrapper = mock(GraphWrapper.class);
-    when(graphWrapper.getGraph()).thenReturn(graph);
-
-    return new TinkerpopJsonCrudService(graphWrapper, map, handleAdder, null, generator, generator, generator, clock,
-      authorizer);
-  }
 
   @Test
   public void throwsOnUnknownMappings() throws Exception {
     Graph graph = newGraph().build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     expectedException.expect(InvalidCollectionException.class);
 
@@ -109,7 +60,7 @@ public class TinkerpopJsonCrudServiceDeleteTest {
         .withProperty("rev", 1)
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     instance.delete("wwpersons", UUID.fromString(id), "");
 
@@ -131,7 +82,7 @@ public class TinkerpopJsonCrudServiceDeleteTest {
         .withProperty("rev", 1)
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     instance.delete("wwpersons", UUID.fromString(id), "");
 
@@ -157,7 +108,7 @@ public class TinkerpopJsonCrudServiceDeleteTest {
         .withProperty("deleted", false)
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     instance.delete("wwpersons", UUID.fromString(id), "");
 
@@ -190,10 +141,9 @@ public class TinkerpopJsonCrudServiceDeleteTest {
       .build();
 
     int oneSecondPast1970 = 1000;
-    TinkerpopJsonCrudService instance = basicInstanceWithClock(
-      graph,
-      Clock.fixed(Instant.ofEpochMilli(oneSecondPast1970), ZoneId.systemDefault())
-    );
+    TinkerpopJsonCrudService instance =
+      newJsonCrudService().withClock(Clock.fixed(Instant.ofEpochMilli(oneSecondPast1970), ZoneId.systemDefault()))
+                          .forGraph(graph);
 
     instance.delete("wwpersons", UUID.fromString(id), "despicable_me");
     String modified = (String) graph.traversal().V()
@@ -229,7 +179,7 @@ public class TinkerpopJsonCrudServiceDeleteTest {
         .withProperty("rev", 1)
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     Vertex beforeUpdate = graph.traversal().V()
                                .has("tim_id", id)
@@ -261,7 +211,7 @@ public class TinkerpopJsonCrudServiceDeleteTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
     instance.delete("wwpersons", UUID.fromString(id), "");
 
     graph.tx().close();
@@ -284,11 +234,9 @@ public class TinkerpopJsonCrudServiceDeleteTest {
       .build();
 
     HandleAdder handleAdder = mock(HandleAdder.class);
-    TinkerpopJsonCrudService instance = basicInstanceWithUrlGenerator(
-      graph,
-      (collectionName, id, rev) -> URI.create("http://example.com/" + id + "?r=" + rev),
-      handleAdder
-    );
+    UrlGenerator urlGen = (collectionName, id, rev) -> URI.create("http://example.com/" + id + "?r=" + rev);
+    TinkerpopJsonCrudService instance =
+      newJsonCrudService().withUrlGenerator(urlGen).withHandleAdder(handleAdder).forGraph(graph);
 
     instance.delete("wwpersons", UUID.fromString(uuid), "");
 
@@ -327,7 +275,7 @@ public class TinkerpopJsonCrudServiceDeleteTest {
         .withProperty("rev", 1)
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     Vertex orig = graph.traversal().V().has("tim_id", id).has("isLatest", true).next();
     assertThat(stream(orig.edges(Direction.BOTH, "hasWritten", "isFriendOf")).count(), is(2L));
@@ -382,7 +330,7 @@ public class TinkerpopJsonCrudServiceDeleteTest {
         .withProperty("rev", 1)
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     instance.delete("wwpersons", UUID.fromString(id), "");
 
@@ -425,7 +373,7 @@ public class TinkerpopJsonCrudServiceDeleteTest {
         .withProperty("deleted", false)
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     expectedException.expect(NotFoundException.class);
 
@@ -443,7 +391,7 @@ public class TinkerpopJsonCrudServiceDeleteTest {
         .withProperty("rev", 1)
       )
       .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     expectedException.expect(NotFoundException.class);
     instance.delete("wwpersons", UUID.fromString(otherId), "");
