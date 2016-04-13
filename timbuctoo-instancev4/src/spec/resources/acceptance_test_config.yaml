@@ -28,6 +28,9 @@ activeMq:
 persistenceManager:
   useDummy: yes
 
+federatedAuthentication:
+  enabled: false
+
 server:
   applicationConnectors:
     - type: http #Note! if you change this you might or might not also want to change the baseUri
