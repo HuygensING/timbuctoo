@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import static nl.knaw.huygens.timbuctoo.crud.AuthorizerHelper.userIsNotAllowedToWriteTheCollection;
 import static nl.knaw.huygens.timbuctoo.crud.JsonCrudServiceBuilder.newJsonCrudService;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
@@ -472,10 +473,7 @@ public class TinkerpopJsonCrudServiceReplaceTest {
       ).build();
     String collectionName = "wwpersons";
     String userId = "userId";
-    Authorizer authorizer = mock(Authorizer.class);
-    Authorization authorization = mock(Authorization.class);
-    given(authorizer.authorizationFor(collectionName, userId)).willReturn(authorization);
-    given(authorization.isAllowedToWrite()).willReturn(false);
+    Authorizer authorizer = userIsNotAllowedToWriteTheCollection(collectionName, userId);
     TinkerpopJsonCrudService instance = newJsonCrudService().withAuthorizer(authorizer).forGraph(graph);
 
     expectedException.expect(AuthorizationException.class);

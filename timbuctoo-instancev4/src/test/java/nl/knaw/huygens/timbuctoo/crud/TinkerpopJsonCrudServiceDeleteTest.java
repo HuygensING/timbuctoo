@@ -17,6 +17,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.UUID;
 
+import static nl.knaw.huygens.timbuctoo.crud.AuthorizerHelper.userIsNotAllowedToWriteTheCollection;
 import static nl.knaw.huygens.timbuctoo.crud.JsonCrudServiceBuilder.newJsonCrudService;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
@@ -414,12 +415,9 @@ public class TinkerpopJsonCrudServiceDeleteTest {
         .withProperty("rev", 1)
       )
       .build();
-    Authorizer authorizer = mock(Authorizer.class);
-    Authorization authorization = mock(Authorization.class);
     String collectionName = "wwpersons";
     String userId = "userId";
-    given(authorizer.authorizationFor(collectionName, userId)).willReturn(authorization);
-    given(authorization.isAllowedToWrite()).willReturn(false);
+    Authorizer authorizer = userIsNotAllowedToWriteTheCollection(collectionName, userId);
     TinkerpopJsonCrudService instance = newJsonCrudService().withAuthorizer(authorizer).forGraph(graph);
 
     expectedException.expect(AuthorizationException.class);

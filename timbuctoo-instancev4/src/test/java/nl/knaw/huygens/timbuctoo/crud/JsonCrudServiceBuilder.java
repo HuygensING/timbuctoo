@@ -13,9 +13,9 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import java.net.URI;
 import java.time.Clock;
 
+import static nl.knaw.huygens.timbuctoo.crud.AuthorizerHelper.anyUserIsAllowedToWriteAnyCollectionAuthorizer;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -71,7 +71,7 @@ public class JsonCrudServiceBuilder {
       handleAdder = mock(HandleAdder.class);
     }
     if (authorizer == null) {
-      authorizer = createAllowAllAuthorizer();
+      authorizer = anyUserIsAllowedToWriteAnyCollectionAuthorizer();
     }
 
     GraphWrapper graphWrapper = mock(GraphWrapper.class);
@@ -79,14 +79,6 @@ public class JsonCrudServiceBuilder {
 
     return new TinkerpopJsonCrudService(graphWrapper, vres, handleAdder, userStore, generator, generator,
       generator, clock, authorizer);
-  }
-
-  private Authorizer createAllowAllAuthorizer() {
-    Authorizer allowAllAuthorizer = mock(Authorizer.class);
-    Authorization authorization = mock(Authorization.class);
-    when(authorization.isAllowedToWrite()).thenReturn(true);
-    when(allowAllAuthorizer.authorizationFor(anyString(), anyString())).thenReturn(authorization);
-    return allowAllAuthorizer;
   }
 
   public JsonCrudServiceBuilder withClock(Clock clock) {
