@@ -101,8 +101,7 @@ public class TinkerpopJsonCrudService {
       Authorization authorization = authorizer.authorizationFor(collectionName, userId);
 
       if (!authorization.isAllowedToWrite()) {
-        throw new AuthorizationException(
-          String.format("You are not authorized to edit collection %s.", collectionName));
+        throw AuthorizationException.notAllowedToCreate(collectionName);
       }
 
       return createEntity(collection, input, userId);
@@ -559,7 +558,11 @@ public class TinkerpopJsonCrudService {
   }
 
   public void replace(String collectionName, UUID id, ObjectNode data, String userId)
-    throws InvalidCollectionException, IOException, NotFoundException, AlreadyUpdatedException {
+    throws InvalidCollectionException, IOException, NotFoundException, AlreadyUpdatedException, AuthorizationException {
+    Authorization authorization = authorizer.authorizationFor(collectionName, userId);
+    if (!authorization.isAllowedToWrite()) {
+      throw AuthorizationException.notAllowedToEdit(collectionName, id);
+    }
 
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));

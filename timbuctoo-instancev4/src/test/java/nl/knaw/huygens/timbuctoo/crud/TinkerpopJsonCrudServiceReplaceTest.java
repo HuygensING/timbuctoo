@@ -2,6 +2,8 @@ package nl.knaw.huygens.timbuctoo.crud;
 
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
+import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -31,6 +33,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertThat;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -42,7 +45,7 @@ public class TinkerpopJsonCrudServiceReplaceTest {
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
-  
+
   @Test
   public void throwsOnUnknownMappings() throws Exception {
     Graph graph = newGraph().build();
@@ -453,6 +456,31 @@ public class TinkerpopJsonCrudServiceReplaceTest {
     instance.replace("wwpersons", UUID.fromString(id), jsnO(
       "^rev", jsn(1)
     ), "");
+  }
+
+  // Security tests
+  @Test
+  public void throwsAnAuthorizationExceptionWhenTheUserIsNotAllowedToAlterTheCollection() throws Exception {
+    UUID id = UUID.randomUUID();
+    Graph graph = newGraph()
+      .withVertex(v -> v
+        .withTimId(id.toString())
+        .withVre("ww")
+        .withType("person")
+        .withProperty("isLatest", true)
+        .withProperty("rev", 1)
+      ).build();
+    String collectionName = "wwpersons";
+    String userId = "userId";
+    Authorizer authorizer = mock(Authorizer.class);
+    Authorization authorization = mock(Authorization.class);
+    given(authorizer.authorizationFor(collectionName, userId)).willReturn(authorization);
+    given(authorization.isAllowedToWrite()).willReturn(false);
+    TinkerpopJsonCrudService instance = newJsonCrudService().withAuthorizer(authorizer).forGraph(graph);
+
+    expectedException.expect(AuthorizationException.class);
+
+    instance.replace(collectionName, id, jsnO("^rev", jsn(1)), userId);
   }
 
 }

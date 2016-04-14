@@ -98,6 +98,8 @@ public class SingleEntity {
           .status(Response.Status.EXPECTATION_FAILED)
           .entity(jsnO("message", jsn("Entry was already updated")))
           .build();
+      } catch (AuthorizationException e) {
+        return Response.status(Response.Status.FORBIDDEN).entity(jsnO("message", jsn(e.getMessage()))).build();
       }
     }
   }
