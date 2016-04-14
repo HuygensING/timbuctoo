@@ -193,4 +193,42 @@ public class TinkerpopJsonCrudServiceRelationTest {
     ), userId);
 
   }
+
+  @Test
+  public void replaceThrowsAnAuthorizationExceptionWhenTheUsersIsNotAllowedToChangeTheCollection() throws Exception {
+    UUID edgeId = UUID.randomUUID();
+    Graph graph = newGraph()
+      .withVertex(v -> v
+        .withVre("")
+        .withVre("ww")
+        .withProperty("rev", 1)
+        .withProperty("isLatest", true)
+        .withOutgoingRelation("someName", "target", r -> r
+          .withTim_id(edgeId)
+          .withAccepted("relation", true)
+          .withAccepted("wwrelation", true)
+          .withIsLatest(true)
+          .withRev(1)
+        )
+      )
+      .withVertex("target", v -> v
+        .withProperty("rev", 1)
+        .withProperty("isLatest", true)
+        .withVre("")
+        .withVre("ww")
+      )
+      .build();
+    String wwrelations = "wwrelations";
+    String userId = "userId";
+    Authorizer authorizer = AuthorizerHelper.userIsNotAllowedToWriteTheCollection(wwrelations, userId);
+    TinkerpopJsonCrudService instance = newJsonCrudService().withAuthorizer(authorizer).forGraph(graph);
+
+    expectedException.expect(AuthorizationException.class);
+
+    instance.replace(wwrelations, edgeId, JsonBuilder.jsnO(
+      "accepted", jsn(false),
+      "^rev", jsn(1)
+    ), userId);
+
+  }
 }
