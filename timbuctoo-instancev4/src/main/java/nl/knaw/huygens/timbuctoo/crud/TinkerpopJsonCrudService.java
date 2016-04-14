@@ -96,6 +96,10 @@ public class TinkerpopJsonCrudService {
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
     if (collection.isRelationCollection()) {
+      Authorization authorization = authorizer.authorizationFor(collectionName, userId);
+      if (!authorization.isAllowedToWrite()) {
+        throw AuthorizationException.notAllowedToCreate(collectionName);
+      }
       return createRelation(collection, input, userId);
     } else {
       Authorization authorization = authorizer.authorizationFor(collectionName, userId);

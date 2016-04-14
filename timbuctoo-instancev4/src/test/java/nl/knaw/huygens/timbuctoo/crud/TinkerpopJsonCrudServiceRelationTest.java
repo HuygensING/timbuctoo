@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
+import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -20,10 +22,6 @@ public class TinkerpopJsonCrudServiceRelationTest {
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
-
-  public TinkerpopJsonCrudService basicInstance(Graph graph) {
-    return newJsonCrudService().forGraph(graph);
-  }
 
   @Test
   public void canPostRelation() throws Exception {
@@ -49,7 +47,7 @@ public class TinkerpopJsonCrudServiceRelationTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     instance.create("wwrelations", JsonBuilder.jsnO(
       "accepted", jsn(true),
@@ -92,7 +90,7 @@ public class TinkerpopJsonCrudServiceRelationTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     instance.replace("wwrelations", edgeId, JsonBuilder.jsnO(
       "accepted", jsn(false),
@@ -132,7 +130,7 @@ public class TinkerpopJsonCrudServiceRelationTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = basicInstance(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     instance.create("wwrelations", JsonBuilder.jsnO(
       "accepted", jsn(true),
@@ -151,4 +149,48 @@ public class TinkerpopJsonCrudServiceRelationTest {
   //FIXME:add pid
   //FIXME:check if allowed for source and target to be connected using this relation
   //FIXME:source and target must be of this VRE
+
+  // security tests
+  @Test
+  public void createThrowsAAuthorizationExceptionWhenTheUserIsNotAllowedToAddANewRelation() throws Exception {
+    String typeId = "10000000-046d-477a-acbb-1c18b2a7c7e9";
+    String sourceId = "20000000-742e-4351-9154-b33c10dbf5b2";
+    String targetId = "30000000-bc09-4959-a8b9-1cafad9a60f6";
+    Graph graph = newGraph()
+      .withVertex(v -> v
+        .withTimId(typeId)
+        .withProperty("relationtype_regularName", "regularName")
+        .withProperty("rev", 1)
+        .withProperty("isLatest", true)
+      )
+      .withVertex(v -> v
+        .withTimId(sourceId)
+        .withType("person")
+        .withVre("ww")
+        .withProperty("rev", 1)
+        .withProperty("isLatest", true)
+      )
+      .withVertex(v -> v
+        .withTimId(targetId)
+        .withProperty("rev", 1)
+        .withType("person")
+        .withVre("ww")
+        .withProperty("isLatest", true)
+      )
+      .build();
+    String collectionName = "wwrelations";
+    String userId = "userId";
+    Authorizer authorizer = AuthorizerHelper.userIsNotAllowedToWriteTheCollection(collectionName, userId);
+    TinkerpopJsonCrudService instance = newJsonCrudService().withAuthorizer(authorizer).forGraph(graph);
+
+    expectedException.expect(AuthorizationException.class);
+
+    instance.create(collectionName, JsonBuilder.jsnO(
+      "accepted", jsn(true),
+      "^typeId", jsn(typeId),
+      "^sourceId", jsn(sourceId),
+      "^targetId", jsn(targetId)
+    ), userId);
+
+  }
 }
