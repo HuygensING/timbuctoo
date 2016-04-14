@@ -75,7 +75,6 @@ public class SingleEntity {
     }
   }
 
-  //FIXME disallow edits from users of a different VRE
   @PUT
   public Response put(@PathParam("collection") String collectionName, @HeaderParam("Authorization") String authHeader,
                       @PathParam("id") UUIDParam id, ObjectNode body) {
@@ -104,7 +103,6 @@ public class SingleEntity {
     }
   }
 
-  //FIXME disallow deletes from users of a different VRE
   @DELETE
   public Response delete(@PathParam("collection") String collectionName,
                          @HeaderParam("Authorization") String authHeader,
