@@ -22,7 +22,7 @@ import java.time.ZoneId;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import static nl.knaw.huygens.timbuctoo.crud.AuthorizerHelper.userIsNotAllowedToWriteTheCollection;
+import static nl.knaw.huygens.timbuctoo.util.AuthorizerHelper.userIsNotAllowedToWriteTheCollection;
 import static nl.knaw.huygens.timbuctoo.crud.JsonCrudServiceBuilder.newJsonCrudService;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;

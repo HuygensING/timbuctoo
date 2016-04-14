@@ -93,13 +93,14 @@ public class TinkerpopJsonCrudService {
   public UUID create(String collectionName, ObjectNode input, String userId)
     throws InvalidCollectionException, IOException, AuthorizationException {
 
-    Authorization authorization = authorizer.authorizationFor(collectionName, userId);
+    final Collection collection = mappings.getCollection(collectionName)
+                                          .orElseThrow(() -> new InvalidCollectionException(collectionName));
+
+    Authorization authorization = authorizer.authorizationFor(collection, userId);
     if (!authorization.isAllowedToWrite()) {
       throw AuthorizationException.notAllowedToCreate(collectionName);
     }
 
-    final Collection collection = mappings.getCollection(collectionName)
-                                          .orElseThrow(() -> new InvalidCollectionException(collectionName));
     if (collection.isRelationCollection()) {
       return createRelation(collection, input, userId);
     } else {
@@ -558,13 +559,15 @@ public class TinkerpopJsonCrudService {
 
   public void replace(String collectionName, UUID id, ObjectNode data, String userId)
     throws InvalidCollectionException, IOException, NotFoundException, AlreadyUpdatedException, AuthorizationException {
-    Authorization authorization = authorizer.authorizationFor(collectionName, userId);
+
+    final Collection collection = mappings.getCollection(collectionName)
+                                          .orElseThrow(() -> new InvalidCollectionException(collectionName));
+
+    Authorization authorization = authorizer.authorizationFor(collection, userId);
     if (!authorization.isAllowedToWrite()) {
       throw AuthorizationException.notAllowedToEdit(collectionName, id);
     }
 
-    final Collection collection = mappings.getCollection(collectionName)
-                                          .orElseThrow(() -> new InvalidCollectionException(collectionName));
     if (collection.isRelationCollection()) {
       replaceRelation(collection, id, data, userId);
     } else {
@@ -778,14 +781,16 @@ public class TinkerpopJsonCrudService {
   public void delete(String collectionName, UUID id, String userId)
     throws InvalidCollectionException, NotFoundException, AuthorizationException {
 
-    final Authorization authorization = authorizer.authorizationFor(collectionName, userId);
 
+
+    final Collection collection = mappings.getCollection(collectionName)
+                                          .orElseThrow(() -> new InvalidCollectionException(collectionName));
+
+    final Authorization authorization = authorizer.authorizationFor(collection, userId);
     if (!authorization.isAllowedToWrite()) {
       throw AuthorizationException.notAllowedToDelete(collectionName, id);
     }
 
-    final Collection collection = mappings.getCollection(collectionName)
-                                          .orElseThrow(() -> new InvalidCollectionException(collectionName));
     final Graph graph = graphwrapper.getGraph();
     final GraphTraversalSource traversalSource = graph.traversal();
     GraphTraversal<Vertex, Vertex> entityTraversal = getEntity(traversalSource, id, null);

@@ -13,7 +13,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import java.net.URI;
 import java.time.Clock;
 
-import static nl.knaw.huygens.timbuctoo.crud.AuthorizerHelper.anyUserIsAllowedToWriteAnyCollectionAuthorizer;
+import static nl.knaw.huygens.timbuctoo.util.AuthorizerHelper.anyUserIsAllowedToWriteAnyCollectionAuthorizer;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.mockito.Mockito.mock;
