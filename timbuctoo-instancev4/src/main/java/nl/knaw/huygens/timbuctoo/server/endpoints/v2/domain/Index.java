@@ -64,7 +64,7 @@ public class Index {
       } catch (IOException e) {
         return Response.status(Response.Status.BAD_REQUEST).entity(jsnO("message", jsn(e.getMessage()))).build();
       } catch (AuthorizationException e) {
-        return Response.status(Response.Status.UNAUTHORIZED).entity(jsnO("message", jsn(e.getMessage()))).build();
+        return Response.status(Response.Status.FORBIDDEN).entity(jsnO("message", jsn(e.getMessage()))).build();
       }
     }
   }
