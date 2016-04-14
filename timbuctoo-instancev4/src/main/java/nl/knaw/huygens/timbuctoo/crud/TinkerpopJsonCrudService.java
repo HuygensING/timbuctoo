@@ -93,21 +93,16 @@ public class TinkerpopJsonCrudService {
   public UUID create(String collectionName, ObjectNode input, String userId)
     throws InvalidCollectionException, IOException, AuthorizationException {
 
+    Authorization authorization = authorizer.authorizationFor(collectionName, userId);
+    if (!authorization.isAllowedToWrite()) {
+      throw AuthorizationException.notAllowedToCreate(collectionName);
+    }
+
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
     if (collection.isRelationCollection()) {
-      Authorization authorization = authorizer.authorizationFor(collectionName, userId);
-      if (!authorization.isAllowedToWrite()) {
-        throw AuthorizationException.notAllowedToCreate(collectionName);
-      }
       return createRelation(collection, input, userId);
     } else {
-      Authorization authorization = authorizer.authorizationFor(collectionName, userId);
-
-      if (!authorization.isAllowedToWrite()) {
-        throw AuthorizationException.notAllowedToCreate(collectionName);
-      }
-
       return createEntity(collection, input, userId);
     }
   }
