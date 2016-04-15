@@ -8,6 +8,28 @@
     <groupId>nl.knaw.huygens</groupId>
     <version>1.0.0-SNAPSHOT</version>
 
+    <repositories>
+      <repository>
+        <id>central</id>
+        <name>Central repository</name>
+        <url>http://repo1.maven.org/maven2/</url>
+      </repository>
+      <repository>
+        <id>Huygens</id>
+        <url>http://maven.huygens.knaw.nl/repository/</url>
+        <releases>
+          <enabled>true</enabled>
+          <updatePolicy>always</updatePolicy>
+          <checksumPolicy>warn</checksumPolicy>
+        </releases>
+        <snapshots>
+          <enabled>true</enabled>
+          <updatePolicy>always</updatePolicy>
+          <checksumPolicy>fail</checksumPolicy>
+        </snapshots>
+      </repository>
+    </repositories>
+
     <dependencies>
 
         <dependency>
