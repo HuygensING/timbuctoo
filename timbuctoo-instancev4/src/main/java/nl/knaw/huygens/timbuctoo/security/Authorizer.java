@@ -5,5 +5,5 @@ import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 
 public interface Authorizer {
 
-  public Authorization authorizationFor(Collection collection, String userId);
+  Authorization authorizationFor(Collection collection, String userId) throws AuthorizationUnavailableException;
 }

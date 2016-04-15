@@ -120,6 +120,8 @@ public class SingleEntity {
         return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn("not found"))).build();
       } catch (AuthorizationException e) {
         return Response.status(Response.Status.FORBIDDEN).entity(jsnO("message", jsn(e.getMessage()))).build();
+      } catch (IOException e) {
+        return Response.status(Response.Status.BAD_REQUEST).entity(jsnO("message", jsn(e.getMessage()))).build();
       }
     }
   }

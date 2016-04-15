@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.crud;
 import com.fasterxml.jackson.databind.JsonNode;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
-import nl.knaw.huygens.timbuctoo.util.AuthorizerHelper;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -11,9 +10,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.io.IOException;
 import java.util.UUID;
 
 import static nl.knaw.huygens.timbuctoo.crud.JsonCrudServiceBuilder.newJsonCrudService;
+import static nl.knaw.huygens.timbuctoo.util.AuthorizerHelper.authorizerThrowsAuthorizationUnavailableException;
+import static nl.knaw.huygens.timbuctoo.util.AuthorizerHelper.userIsNotAllowedToWriteTheCollection;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -181,7 +183,7 @@ public class TinkerpopJsonCrudServiceRelationTest {
       .build();
     String collectionName = "wwrelations";
     String userId = "userId";
-    Authorizer authorizer = AuthorizerHelper.userIsNotAllowedToWriteTheCollection(collectionName, userId);
+    Authorizer authorizer = userIsNotAllowedToWriteTheCollection(collectionName, userId);
     TinkerpopJsonCrudService instance = newJsonCrudService().withAuthorizer(authorizer).forGraph(graph);
 
     expectedException.expect(AuthorizationException.class);
@@ -221,7 +223,7 @@ public class TinkerpopJsonCrudServiceRelationTest {
       .build();
     String wwrelations = "wwrelations";
     String userId = "userId";
-    Authorizer authorizer = AuthorizerHelper.userIsNotAllowedToWriteTheCollection(wwrelations, userId);
+    Authorizer authorizer = userIsNotAllowedToWriteTheCollection(wwrelations, userId);
     TinkerpopJsonCrudService instance = newJsonCrudService().withAuthorizer(authorizer).forGraph(graph);
 
     expectedException.expect(AuthorizationException.class);
@@ -231,5 +233,84 @@ public class TinkerpopJsonCrudServiceRelationTest {
       "^rev", jsn(1)
     ), userId);
 
+  }
+
+  @Test
+  public void createThrowsAnIoExceptionWhenTheAuthorizerThrowsAnAuthorizationUnavailableException() throws Exception {
+    String typeId = "10000000-046d-477a-acbb-1c18b2a7c7e9";
+    String sourceId = "20000000-742e-4351-9154-b33c10dbf5b2";
+    String targetId = "30000000-bc09-4959-a8b9-1cafad9a60f6";
+    Graph graph = newGraph()
+      .withVertex(v -> v
+        .withTimId(typeId)
+        .withProperty("relationtype_regularName", "regularName")
+        .withProperty("rev", 1)
+        .withProperty("isLatest", true)
+      )
+      .withVertex(v -> v
+        .withTimId(sourceId)
+        .withType("person")
+        .withVre("ww")
+        .withProperty("rev", 1)
+        .withProperty("isLatest", true)
+      )
+      .withVertex(v -> v
+        .withTimId(targetId)
+        .withProperty("rev", 1)
+        .withType("person")
+        .withVre("ww")
+        .withProperty("isLatest", true)
+      )
+      .build();
+    String collectionName = "wwrelations";
+    String userId = "userId";
+    Authorizer authorizer = authorizerThrowsAuthorizationUnavailableException();
+    TinkerpopJsonCrudService instance = newJsonCrudService().withAuthorizer(authorizer).forGraph(graph);
+
+    expectedException.expect(IOException.class);
+
+    instance.create(collectionName, JsonBuilder.jsnO(
+      "accepted", jsn(true),
+      "^typeId", jsn(typeId),
+      "^sourceId", jsn(sourceId),
+      "^targetId", jsn(targetId)
+    ), userId);
+  }
+
+  @Test
+  public void replaceThrowsAnIoExceptionWhenTheAuthorizerThrowsAnAuthorizationUnavailableException() throws Exception {
+    UUID edgeId = UUID.randomUUID();
+    Graph graph = newGraph()
+      .withVertex(v -> v
+        .withVre("")
+        .withVre("ww")
+        .withProperty("rev", 1)
+        .withProperty("isLatest", true)
+        .withOutgoingRelation("someName", "target", r -> r
+          .withTim_id(edgeId)
+          .withAccepted("relation", true)
+          .withAccepted("wwrelation", true)
+          .withIsLatest(true)
+          .withRev(1)
+        )
+      )
+      .withVertex("target", v -> v
+        .withProperty("rev", 1)
+        .withProperty("isLatest", true)
+        .withVre("")
+        .withVre("ww")
+      )
+      .build();
+    String wwrelations = "wwrelations";
+    String userId = "userId";
+    Authorizer authorizer = authorizerThrowsAuthorizationUnavailableException();
+    TinkerpopJsonCrudService instance = newJsonCrudService().withAuthorizer(authorizer).forGraph(graph);
+
+    expectedException.expect(IOException.class);
+
+    instance.replace(wwrelations, edgeId, JsonBuilder.jsnO(
+      "accepted", jsn(false),
+      "^rev", jsn(1)
+    ), userId);
   }
 }

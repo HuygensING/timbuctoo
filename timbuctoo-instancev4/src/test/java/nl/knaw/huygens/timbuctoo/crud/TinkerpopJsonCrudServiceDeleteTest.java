@@ -10,14 +10,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.io.IOException;
 import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.UUID;
 
-import static nl.knaw.huygens.timbuctoo.util.AuthorizerHelper.userIsNotAllowedToWriteTheCollection;
 import static nl.knaw.huygens.timbuctoo.crud.JsonCrudServiceBuilder.newJsonCrudService;
+import static nl.knaw.huygens.timbuctoo.util.AuthorizerHelper.authorizerThrowsAuthorizationUnavailableException;
+import static nl.knaw.huygens.timbuctoo.util.AuthorizerHelper.userIsNotAllowedToWriteTheCollection;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.core.Is.is;
@@ -419,6 +421,28 @@ public class TinkerpopJsonCrudServiceDeleteTest {
     TinkerpopJsonCrudService instance = newJsonCrudService().withAuthorizer(authorizer).forGraph(graph);
 
     expectedException.expect(AuthorizationException.class);
+
+    instance.delete(collectionName, id, userId);
+  }
+
+  @Test
+  public void throwsAnIoExceptionWhenTheAuthorizerThrowsAnAuthorizationUnavailableException() throws Exception {
+    UUID id = UUID.randomUUID();
+    Graph graph = newGraph()
+      .withVertex(v -> v
+        .withTimId(id.toString())
+        .withVre("ww")
+        .withType("person")
+        .withProperty("isLatest", true)
+        .withProperty("rev", 1)
+      )
+      .build();
+    String collectionName = "wwpersons";
+    String userId = "userId";
+    Authorizer authorizer = authorizerThrowsAuthorizationUnavailableException();
+    TinkerpopJsonCrudService instance = newJsonCrudService().withAuthorizer(authorizer).forGraph(graph);
+
+    expectedException.expect(IOException.class);
 
     instance.delete(collectionName, id, userId);
   }

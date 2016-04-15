@@ -2,6 +2,8 @@ package nl.knaw.huygens.timbuctoo.util;
 
 import nl.knaw.huygens.timbuctoo.crud.Authorization;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 
 import static nl.knaw.huygens.timbuctoo.util.CollectionMatcher.likeCollection;
@@ -18,9 +20,13 @@ public class AuthorizerHelper {
     Authorizer authorizer = mock(Authorizer.class);
     Authorization authorization = mock(Authorization.class);
 
-    given(
-      authorizer.authorizationFor(argThat(likeCollection().withCollectionName(collectionName)), argThat(is(userId))))
-      .willReturn(authorization);
+    try {
+      given(
+        authorizer.authorizationFor(argThat(likeCollection().withCollectionName(collectionName)), argThat(is(userId))))
+        .willReturn(authorization);
+    } catch (AuthorizationUnavailableException e) {
+      e.printStackTrace();
+    }
     given(authorization.isAllowedToWrite()).willReturn(false);
     return authorizer;
   }
@@ -29,7 +35,19 @@ public class AuthorizerHelper {
     Authorizer allowAllAuthorizer = mock(Authorizer.class);
     Authorization authorization = mock(Authorization.class);
     when(authorization.isAllowedToWrite()).thenReturn(true);
-    when(allowAllAuthorizer.authorizationFor(any(Collection.class), anyString())).thenReturn(authorization);
+    try {
+      when(allowAllAuthorizer.authorizationFor(any(Collection.class), anyString())).thenReturn(authorization);
+    } catch (AuthorizationUnavailableException e) {
+      e.printStackTrace();
+    }
     return allowAllAuthorizer;
+  }
+
+  public static Authorizer authorizerThrowsAuthorizationUnavailableException()
+    throws AuthorizationUnavailableException {
+    Authorizer authorizer = mock(Authorizer.class);
+    when(authorizer.authorizationFor(any(Collection.class), anyString()))
+      .thenThrow(new AuthorizationUnavailableException());
+    return authorizer;
   }
 }

@@ -15,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
+import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
@@ -96,7 +97,12 @@ public class TinkerpopJsonCrudService {
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
 
-    Authorization authorization = authorizer.authorizationFor(collection, userId);
+    Authorization authorization = null;
+    try {
+      authorization = authorizer.authorizationFor(collection, userId);
+    } catch (AuthorizationUnavailableException e) {
+      throw new IOException(e.getMessage());
+    }
     if (!authorization.isAllowedToWrite()) {
       throw AuthorizationException.notAllowedToCreate(collectionName);
     }
@@ -563,7 +569,12 @@ public class TinkerpopJsonCrudService {
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
 
-    Authorization authorization = authorizer.authorizationFor(collection, userId);
+    Authorization authorization = null;
+    try {
+      authorization = authorizer.authorizationFor(collection, userId);
+    } catch (AuthorizationUnavailableException e) {
+      throw new IOException(e.getMessage());
+    }
     if (!authorization.isAllowedToWrite()) {
       throw AuthorizationException.notAllowedToEdit(collectionName, id);
     }
@@ -779,16 +790,19 @@ public class TinkerpopJsonCrudService {
   }
 
   public void delete(String collectionName, UUID id, String userId)
-    throws InvalidCollectionException, NotFoundException, AuthorizationException {
-
-
+    throws InvalidCollectionException, NotFoundException, AuthorizationException, IOException {
 
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
 
-    final Authorization authorization = authorizer.authorizationFor(collection, userId);
-    if (!authorization.isAllowedToWrite()) {
-      throw AuthorizationException.notAllowedToDelete(collectionName, id);
+    final Authorization authorization;
+    try {
+      authorization = authorizer.authorizationFor(collection, userId);
+      if (!authorization.isAllowedToWrite()) {
+        throw AuthorizationException.notAllowedToDelete(collectionName, id);
+      }
+    } catch (AuthorizationUnavailableException e) {
+      throw new IOException(e.getMessage());
     }
 
     final Graph graph = graphwrapper.getGraph();

@@ -22,9 +22,10 @@ import java.time.ZoneId;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import static nl.knaw.huygens.timbuctoo.util.AuthorizerHelper.userIsNotAllowedToWriteTheCollection;
 import static nl.knaw.huygens.timbuctoo.crud.JsonCrudServiceBuilder.newJsonCrudService;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
+import static nl.knaw.huygens.timbuctoo.util.AuthorizerHelper.authorizerThrowsAuthorizationUnavailableException;
+import static nl.knaw.huygens.timbuctoo.util.AuthorizerHelper.userIsNotAllowedToWriteTheCollection;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.CoreMatchers.not;
@@ -269,6 +270,19 @@ public class TinkerpopJsonCrudServiceCreateTest {
     TinkerpopJsonCrudService instance = newJsonCrudService().withAuthorizer(authorizer).forGraph(graph);
 
     expectedException.expect(AuthorizationException.class);
+
+    instance.create(collectionName, JsonBuilder.jsnO(), userId);
+  }
+
+  @Test
+  public void throwsAnIoExceptionWhenTheAuthorizerThrowsAnAuthorizationUnavailableException() throws Exception {
+    Graph graph = newGraph().build();
+    String collectionName = "wwpersons";
+    String userId = "userId";
+    Authorizer authorizer = authorizerThrowsAuthorizationUnavailableException();
+    TinkerpopJsonCrudService instance = newJsonCrudService().withAuthorizer(authorizer).forGraph(graph);
+
+    expectedException.expect(IOException.class);
 
     instance.create(collectionName, JsonBuilder.jsnO(), userId);
   }
