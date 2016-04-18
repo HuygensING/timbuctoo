@@ -123,6 +123,10 @@
               <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.dcar.DutchCaribbeanImporter</mainClass>
             </program>
             <program>
+              <name>dcarMigrate</name>
+              <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.dcar.DutchCaribbeanUpdate2016</mainClass>
+            </program>
+            <program>
               <name>newwImport</name>
               <mainClass>nl.knaw.huygens.timbuctoo.tools.importer.neww.WomenWritersImporter</mainClass>
               <jvmSettings>
