@@ -5,7 +5,7 @@
 #database files
 databasePath: "/data/timbuctoo/database" #do not refer to a soft link
 # JSON files
-
+authorizationsPath: "/data/timbuctoo/data"
 loginsFilePath: "/data/timbuctoo/data/logins.json"
 usersFilePath: "/data/timbuctoo/data/users.json"
 
@@ -18,6 +18,7 @@ autoLogoutTimeout:
 searchResultAvailabilityTimeout:
   duration: 8
   timeUnit: HOURS
+
 
 #Public timbuctoo url
 baseUri: http://test.repository.huygens.knaw.nl # used to generate next and previous links of a search result

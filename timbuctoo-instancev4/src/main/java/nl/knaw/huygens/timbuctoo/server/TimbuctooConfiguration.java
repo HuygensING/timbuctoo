@@ -10,6 +10,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -43,6 +44,8 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @JsonProperty
   @NotNull
   private HandleManagerFactory persistenceManager;
+  @NotNull
+  private Path authorizationsPath;
 
   public HandleManagerFactory getPersistenceManagerFactory() {
     return persistenceManager;
@@ -114,6 +117,10 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @JsonProperty("federatedAuthentication")
   public void setFederatedAuthentication(FederatedAuthConfiguration federatedAuthentication) {
     this.federatedAuthentication = federatedAuthentication;
+  }
+
+  public Path getAuthorizationsPath() {
+    return authorizationsPath;
   }
 
   // A class to configure timeouts without compromising the Timeout class.

@@ -3,11 +3,16 @@ package nl.knaw.huygens.timbuctoo.security;
 import nl.knaw.huygens.timbuctoo.crud.Authorization;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 
+import java.nio.file.Path;
 import java.util.Optional;
 
 public class JsonBasedAuthorizer implements Authorizer {
 
   private VreAuthorizationCollection authorizationCollection;
+
+  public JsonBasedAuthorizer(Path pathToAuthorizations) {
+    this.authorizationCollection = new VreAuthorizationCollection(pathToAuthorizations);
+  }
 
   public JsonBasedAuthorizer(VreAuthorizationCollection authorizationCollection) {
     this.authorizationCollection = authorizationCollection;
