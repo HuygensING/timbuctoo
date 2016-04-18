@@ -22,6 +22,8 @@ package nl.knaw.huygens.timbuctoo.security;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
@@ -29,6 +31,7 @@ import nl.knaw.huygens.timbuctoo.crud.Authorization;
 
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class VreAuthorization implements Authorization {
 
   private String vreId;
@@ -92,6 +95,7 @@ public class VreAuthorization implements Authorization {
     return Objects.hashCode(vreId, userId);
   }
 
+  @JsonIgnore
   @Override
   public boolean isAllowedToWrite() {
     throw new UnsupportedOperationException("Not implemented yet");
