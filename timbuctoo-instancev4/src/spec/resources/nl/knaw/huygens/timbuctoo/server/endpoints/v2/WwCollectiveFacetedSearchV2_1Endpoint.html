@@ -110,6 +110,57 @@
       }
       </div>
     </aside>
+
+    <aside class="example highlight" h:http="#filteredPost">
+      <div h:request="">
+        POST /v2.1/search/wwcollectives HTTP/1.1
+        VRE_ID: WomenWriters
+        Content-type: application/json
+
+        {
+          "facetValues":[
+          {"name": "dynamic_s_type","values":["LIBRARY"]}
+          ],
+          "fullTextSearchParameters":[{"name":"dynamic_t_name","term":"norwegian"}]}
+        }
+      </div>
+      <div h:response="">
+        HTTP/1.1 201
+        Location:
+      </div>
+    </aside>
+    
+    <aside class="example highlight" h:http="">
+      <div h:request="">
+        GET $(#filteredPost.firstHeaders.location) HTTP/1.1
+        Accept: application/json
+      </div>
+      <div h:response="">
+      HTTP/1.1 200
+
+      {
+        "numFound": "/*NUMBER*/",
+        "start": 0,
+        "rows": "/*NUMBER*/",
+        "facets": [
+        	{"name":"dynamic_s_type","options":[{"name":"LIBRARY","count":2}],"type":"LIST"}
+        ],
+        "refs": {
+          "custom-matcher": "/*ALL_MATCH_ONE_OF*/",
+          "invariant": {
+            "type": "wwcollective",
+            "id": "/*STRING*/",
+            "path": "/*STRING*/",
+            "displayName": "/*STRING*/",
+            "data": { }
+          }
+        },
+        "fullTextSearchFields": [
+          "/*STRING*/"
+        ]
+      }
+      </div>
+    </aside>
 </section>
 
 
