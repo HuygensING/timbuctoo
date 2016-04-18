@@ -98,6 +98,6 @@ public class VreAuthorization implements Authorization {
   @JsonIgnore
   @Override
   public boolean isAllowedToWrite() {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return UserRoles.getVerified().stream().anyMatch(roles::contains);
   }
 }
