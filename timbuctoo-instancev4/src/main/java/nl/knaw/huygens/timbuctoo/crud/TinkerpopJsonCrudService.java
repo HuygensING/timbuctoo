@@ -233,7 +233,14 @@ public class TinkerpopJsonCrudService {
     result.set("@type", nodeFactory.textNode(entityTypeName));
     result.set("_id", nodeFactory.textNode(id.toString()));
 
-    GraphTraversal<Vertex, Vertex> entityT = getEntity(traversalSource, id, rev);
+    Vertex entityTs = null;
+    try {
+      entityTs = getEntity(traversalSource, id, rev).next();
+    } catch (NoSuchElementException e) {
+      throw new NotFoundException();
+    }
+    GraphTraversal<Vertex, Vertex> entityT = traversalSource.V(entityTs.id());
+
     if (!entityT.asAdmin().clone().hasNext()) {
       throw new NotFoundException();
     }
