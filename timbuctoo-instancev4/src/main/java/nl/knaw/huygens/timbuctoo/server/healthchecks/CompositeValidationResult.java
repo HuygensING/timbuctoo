@@ -16,6 +16,10 @@ public class CompositeValidationResult implements ValidationResult {
 
   @Override
   public String getMessage() {
-    throw new UnsupportedOperationException("Not implemented yet");
+    StringBuilder sb = new StringBuilder();
+    validationResults.stream().filter(validationResult -> !validationResult.isValid())
+                     .map(validationResult -> validationResult.getMessage())
+                     .forEach(message -> sb.append(String.format("%s\n", message)));
+    return sb.toString();
   }
 }

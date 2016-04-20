@@ -27,6 +27,7 @@ import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.LabelDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.MigrateDatabase;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
+import nl.knaw.huygens.timbuctoo.server.endpoints.admin.DatabaseValidationServlet;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.BulkUpload;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Graph;
@@ -40,6 +41,7 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.SingleEntity;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.Me;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseHealthCheck;
+import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseValidator;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.EncryptionAlgorithmHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.FileHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.LabelsAddedToVertexDatabaseCheck;
@@ -140,6 +142,12 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new BulkUpload(vres, graphManager));
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
+    // admin endpoints
+    // database validator
+    DatabaseValidator databaseValidator = createDatabaseValidator(graphManager);
+    environment.admin()
+               .addServlet("databasevalidation", new DatabaseValidationServlet(databaseValidator))
+               .addMapping("/databasevalidation");
 
     // register health checks
     register(environment, "Encryption algorithm", new EncryptionAlgorithmHealthCheck(ENCRYPTION_ALGORITHM));
@@ -147,9 +155,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, "Users file", new FileHealthCheck(usersPath));
 
     register(environment, "Neo4j database connection", graphManager);
-    List<DatabaseCheck> databaseChecks = Lists.newArrayList();
-    databaseChecks.add(new LabelsAddedToVertexDatabaseCheck());
-    register(environment, "Database", new DatabaseHealthCheck(graphManager, 1, databaseChecks));
+    register(environment, "Database", new DatabaseHealthCheck(databaseValidator));
 
     //Log all http requests
     register(environment, new LoggingFilter(1024, currentVersion));
@@ -172,6 +178,12 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     }));
 
     setupObjectMapping(environment);
+  }
+
+  public DatabaseValidator createDatabaseValidator(TinkerpopGraphManager graphManager) {
+    List<DatabaseCheck> databaseChecks = Lists.newArrayList();
+    databaseChecks.add(new LabelsAddedToVertexDatabaseCheck());
+    return new DatabaseValidator(graphManager, 1, Clock.systemUTC(), databaseChecks);
   }
 
   private void migrateDatabase(Environment environment, final TinkerpopGraphManager graphManager,
