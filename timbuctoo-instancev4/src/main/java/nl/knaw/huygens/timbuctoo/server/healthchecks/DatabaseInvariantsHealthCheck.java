@@ -1,8 +1,9 @@
-package nl.knaw.huygens.timbuctoo.server;
+package nl.knaw.huygens.timbuctoo.server.healthchecks;
 
 import com.codahale.metrics.health.HealthCheck;
 import nl.knaw.huygens.timbuctoo.model.DatabaseInvariantValidator;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 
 import java.time.Clock;
 
