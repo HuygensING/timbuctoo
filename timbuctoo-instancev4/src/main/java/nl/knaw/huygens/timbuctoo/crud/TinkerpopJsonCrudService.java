@@ -687,7 +687,11 @@ public class TinkerpopJsonCrudService {
     graph.tx().commit();
 
     //but out of process commands that require our changes need to come after a commit of course :)
-    handleAdder.add(new HandleAdderParameters(id, newRev, handleUrlFor.apply(collection.getCollectionName(), id, newRev)));
+    handleAdder.add(new HandleAdderParameters(
+      id,
+      newRev,
+      handleUrlFor.apply(collection.getCollectionName(), id, newRev)
+    ));
   }
 
   public ArrayNode autoComplete(String collectionName, Optional<String> tokenParam, Optional<String> type)
@@ -733,8 +737,9 @@ public class TinkerpopJsonCrudService {
                                  if (id.isPresent()) {
                                    try {
                                      UUID uuid = UUID.fromString(id.get());
+                                     URI uri = autoCompleteUrlFor.apply(collection.getCollectionName(), uuid, rev);
                                      return jsnO(
-                                       "key", jsn(autoCompleteUrlFor.apply(collection.getCollectionName(), uuid, rev).toString()),
+                                       "key", jsn(uri.toString()),
                                        "value", jsn(dn)
                                      );
                                    } catch (IllegalArgumentException e) {
@@ -766,8 +771,9 @@ public class TinkerpopJsonCrudService {
                                  if (id.isPresent()) {
                                    try {
                                      UUID uuid = UUID.fromString(id.get());
+                                     URI uri = autoCompleteUrlFor.apply(collection.getCollectionName(), uuid, rev);
                                      return jsnO(
-                                       "key", jsn(autoCompleteUrlFor.apply(collection.getCollectionName(), uuid, rev).toString()),
+                                       "key", jsn(uri.toString()),
                                        "value", jsn(dn)
                                      );
                                    } catch (IllegalArgumentException e) {
