@@ -15,7 +15,7 @@ import static nl.knaw.huygens.timbuctoo.security.UserRoles.UNVERIFIED_USER_ROLE;
 
 public class VreAuthorizationCollection {
   private final ObjectMapper objectMapper;
-  private Path authorizationsFolder;
+  private final Path authorizationsFolder;
 
   public VreAuthorizationCollection(Path authorizationsFolder) {
     objectMapper = new ObjectMapper();
@@ -27,16 +27,18 @@ public class VreAuthorizationCollection {
     VreAuthorization vreAuthorization = new VreAuthorization(vreId, userId, UNVERIFIED_USER_ROLE);
 
     try {
-      List<VreAuthorization> authorizations = Lists.newArrayList();
-      if (file.exists()) {
-        authorizations =
-          objectMapper.readValue(file, new TypeReference<List<VreAuthorization>>() {
-          });
+      synchronized (authorizationsFolder) {
+        List<VreAuthorization> authorizations = Lists.newArrayList();
+        if (file.exists()) {
+          authorizations =
+            objectMapper.readValue(file, new TypeReference<List<VreAuthorization>>() {
+            });
+        }
+
+        authorizations.add(vreAuthorization);
+
+        objectMapper.writeValue(file, authorizations.toArray(new VreAuthorization[authorizations.size()]));
       }
-
-      authorizations.add(vreAuthorization);
-
-      objectMapper.writeValue(file, authorizations.toArray(new VreAuthorization[authorizations.size()]));
     } catch (IOException e) {
       throw new AuthorizationUnavailableException(e.getMessage());
     }
@@ -54,10 +56,12 @@ public class VreAuthorizationCollection {
     }
 
     try {
-      List<VreAuthorization> authorizations =
-        objectMapper.readValue(file, new TypeReference<List<VreAuthorization>>() {
-        });
-
+      List<VreAuthorization> authorizations;
+      synchronized (authorizationsFolder) {
+        authorizations =
+          objectMapper.readValue(file, new TypeReference<List<VreAuthorization>>() {
+          });
+      }
       return authorizations.stream()
                            .filter(authorization -> Objects.equals(authorization.getUserId(), userId))
                            .findAny();
