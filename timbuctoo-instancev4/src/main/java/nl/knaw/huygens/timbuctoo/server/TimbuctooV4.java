@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.server;
 import com.codahale.metrics.JmxAttributeGauge;
 import com.codahale.metrics.health.HealthCheck;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.google.common.collect.Lists;
 import com.kjetland.dropwizard.activemq.ActiveMQBundle;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
@@ -37,9 +38,11 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Autocomplete;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.SingleEntity;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.Me;
+import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseCheck;
+import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.EncryptionAlgorithmHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.FileHealthCheck;
-import nl.knaw.huygens.timbuctoo.server.healthchecks.LabelsAddedToDatabaseHealthCheck;
+import nl.knaw.huygens.timbuctoo.server.healthchecks.LabelsAddedToVertexDatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +51,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Clock;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 
@@ -141,11 +145,11 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, "Encryption algorithm", new EncryptionAlgorithmHealthCheck(ENCRYPTION_ALGORITHM));
     register(environment, "Local logins file", new FileHealthCheck(loginsPath));
     register(environment, "Users file", new FileHealthCheck(usersPath));
-    register(environment, "Labels added for types property", new LabelsAddedToDatabaseHealthCheck(graphManager));
 
     register(environment, "Neo4j database connection", graphManager);
-    //Disabled for now because I can't fix the database until Martijn is back
-    //register(environment, "Database invariants", new DatabaseInvariantsHealthCheck(graphManager, 1, vres));
+    List<DatabaseCheck> databaseChecks = Lists.newArrayList();
+    databaseChecks.add(new LabelsAddedToVertexDatabaseCheck());
+    register(environment, "Database", new DatabaseHealthCheck(graphManager, 1, databaseChecks));
 
     //Log all http requests
     register(environment, new LoggingFilter(1024, currentVersion));

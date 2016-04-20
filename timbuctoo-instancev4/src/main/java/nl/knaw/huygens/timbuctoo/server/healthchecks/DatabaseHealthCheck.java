@@ -12,10 +12,8 @@ import java.util.List;
 public class DatabaseHealthCheck extends HealthCheck {
 
   private final DatabaseValidator validator;
-  private final List<DatabaseCheck> databaseChecks;
 
-  public DatabaseHealthCheck(GraphWrapper graphWrapper, int timeoutInHours, Vres vres) {
-    databaseChecks = Lists.newArrayList();
+  public DatabaseHealthCheck(GraphWrapper graphWrapper, int timeoutInHours, List<DatabaseCheck> databaseChecks) {
     validator = new DatabaseValidator(graphWrapper, timeoutInHours, Clock.systemUTC(), databaseChecks);
   }
 
