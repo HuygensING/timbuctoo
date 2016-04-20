@@ -251,7 +251,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
     HandleAdder handleAdder = mock(HandleAdder.class);
     UrlGenerator urlGen = (collectionName, id, rev) -> URI.create("http://example.com?id=" + id + "&rev=" + rev);
     TinkerpopJsonCrudService instance =
-      newJsonCrudService().withUrlGenerator(urlGen).withHandleAdder(handleAdder).forGraph(graph);
+      newJsonCrudService().withHandleAdder(urlGen, handleAdder).forGraph(graph);
 
     UUID uuid = instance.create("wwpersons", JsonBuilder.jsnO(), "");
 

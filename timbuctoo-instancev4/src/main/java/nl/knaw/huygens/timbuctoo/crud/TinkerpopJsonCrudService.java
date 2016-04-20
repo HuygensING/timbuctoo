@@ -67,24 +67,24 @@ public class TinkerpopJsonCrudService {
   private final GraphWrapper graphwrapper;
   private final Vres mappings;
   private final HandleAdder handleAdder;
-  private final UrlGenerator urlFor;
-  private final UrlGenerator absoluteUrlFor;
-  private final UrlGenerator versionAndSlashlessUrlFor;
+  private final UrlGenerator handleUrlFor;
+  private final UrlGenerator autoCompleteUrlFor;
+  private final UrlGenerator relationUrlFor;
   private final Clock clock;
   private final JsonNodeFactory nodeFactory;
   private final JsonBasedUserStore userStore;
   private Authorizer authorizer;
 
   public TinkerpopJsonCrudService(GraphWrapper graphwrapper, Vres mappings,
-                                  HandleAdder handleAdder, JsonBasedUserStore userStore, UrlGenerator urlFor,
-                                  UrlGenerator absoluteUrlFor, UrlGenerator versionAndSlashlessUrlFor, Clock clock,
+                                  HandleAdder handleAdder, JsonBasedUserStore userStore, UrlGenerator handleUrlFor,
+                                  UrlGenerator autoCompleteUrlFor, UrlGenerator relationUrlFor, Clock clock,
                                   Authorizer authorizer) {
     this.graphwrapper = graphwrapper;
     this.mappings = mappings;
     this.handleAdder = handleAdder;
-    this.urlFor = urlFor;
-    this.absoluteUrlFor = absoluteUrlFor;
-    this.versionAndSlashlessUrlFor = versionAndSlashlessUrlFor;
+    this.handleUrlFor = handleUrlFor;
+    this.autoCompleteUrlFor = autoCompleteUrlFor;
+    this.relationUrlFor = relationUrlFor;
     this.userStore = userStore;
     this.clock = clock;
     this.authorizer = authorizer;
@@ -211,7 +211,7 @@ public class TinkerpopJsonCrudService {
     graph.tx().commit();
 
     //but out of process commands that require our changes need to come after a commit of course :)
-    handleAdder.add(new HandleAdderParameters(id, 1, urlFor.apply(collectionName, id, 1)));
+    handleAdder.add(new HandleAdderParameters(id, 1, handleUrlFor.apply(collectionName, id, 1)));
     return id;
   }
 
@@ -345,7 +345,7 @@ public class TinkerpopJsonCrudService {
                                   .orElse("<No displayname found>");
 
                               URI relatedEntityUri =
-                                versionAndSlashlessUrlFor.apply(targetCollection, UUID.fromString(uuid), null);
+                                relationUrlFor.apply(targetCollection, UUID.fromString(uuid), null);
                               return jsnO(
                                 tuple("id", jsn(uuid)),
                                 tuple("path", jsn(relatedEntityUri.toString())),
@@ -427,7 +427,7 @@ public class TinkerpopJsonCrudService {
                               String uuid = getProp(vertex, "tim_id", String.class).orElse("");
 
                               URI relatedEntityUri =
-                                versionAndSlashlessUrlFor.apply(targetCollection, UUID.fromString(uuid), null);
+                                relationUrlFor.apply(targetCollection, UUID.fromString(uuid), null);
                               return jsnO(
                                 tuple("id", jsn(uuid)),
                                 tuple("path", jsn(relatedEntityUri.toString())),
@@ -686,7 +686,7 @@ public class TinkerpopJsonCrudService {
     graph.tx().commit();
 
     //but out of process commands that require our changes need to come after a commit of course :)
-    handleAdder.add(new HandleAdderParameters(id, newRev, urlFor.apply(collection.getCollectionName(), id, newRev)));
+    handleAdder.add(new HandleAdderParameters(id, newRev, handleUrlFor.apply(collection.getCollectionName(), id, newRev)));
   }
 
   public ArrayNode autoComplete(String collectionName, Optional<String> tokenParam, Optional<String> type)
@@ -734,8 +734,7 @@ public class TinkerpopJsonCrudService {
                                    try {
                                      UUID uuid = UUID.fromString(id.get());
                                      return jsnO(
-                                       "key",
-                                       jsn(absoluteUrlFor.apply(collection.getCollectionName(), uuid, rev).toString()),
+                                       "key", jsn(autoCompleteUrlFor.apply(collection.getCollectionName(), uuid, rev).toString()),
                                        "value", jsn(dn)
                                      );
                                    } catch (IllegalArgumentException e) {
@@ -769,8 +768,7 @@ public class TinkerpopJsonCrudService {
                                    try {
                                      UUID uuid = UUID.fromString(id.get());
                                      return jsnO(
-                                       "key",
-                                       jsn(absoluteUrlFor.apply(collection.getCollectionName(), uuid, rev).toString()),
+                                       "key", jsn(autoCompleteUrlFor.apply(collection.getCollectionName(), uuid, rev).toString()),
                                        "value", jsn(dn)
                                      );
                                    } catch (IllegalArgumentException e) {
@@ -858,7 +856,7 @@ public class TinkerpopJsonCrudService {
 
     setModified(entity, userId);
     duplicateVertex(graph, entity);
-    handleAdder.add(new HandleAdderParameters(id, newRev, urlFor.apply(collectionName, id, newRev)));
+    handleAdder.add(new HandleAdderParameters(id, newRev, handleUrlFor.apply(collectionName, id, newRev)));
 
     //Make sure this is the last line of the method. We don't want to commit half our changes
     //this also means checking each function that we call to see if they don't call commit()

@@ -91,12 +91,18 @@ public class JsonCrudServiceBuilder {
     return this;
   }
 
-  public JsonCrudServiceBuilder withUrlGenerator(UrlGenerator generator) {
-    this.generator = generator;
+  public JsonCrudServiceBuilder withRelationUrlGenerator(UrlGenerator generator) {
+    this.relationUrlGenerator = generator;
     return this;
   }
 
-  public JsonCrudServiceBuilder withHandleAdder(HandleAdder handleAdder) {
+  public JsonCrudServiceBuilder withAutocompletenUrlGenerator(UrlGenerator generator) {
+    this.autoCompleteUrlGenerator = generator;
+    return this;
+  }
+
+  public JsonCrudServiceBuilder withHandleAdder(UrlGenerator handleUrlGenerator, HandleAdder handleAdder) {
+    this.handleUrlGenerator = handleUrlGenerator;
     this.handleAdder = handleAdder;
     return this;
   }

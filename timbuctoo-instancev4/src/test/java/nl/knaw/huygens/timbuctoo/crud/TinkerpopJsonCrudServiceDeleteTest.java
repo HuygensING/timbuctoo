@@ -241,7 +241,7 @@ public class TinkerpopJsonCrudServiceDeleteTest {
     HandleAdder handleAdder = mock(HandleAdder.class);
     UrlGenerator urlGen = (collectionName, id, rev) -> URI.create("http://example.com/" + id + "?r=" + rev);
     TinkerpopJsonCrudService instance =
-      newJsonCrudService().withUrlGenerator(urlGen).withHandleAdder(handleAdder).forGraph(graph);
+      newJsonCrudService().withHandleAdder(urlGen, handleAdder).forGraph(graph);
 
     instance.delete("wwpersons", UUID.fromString(uuid), "");
 

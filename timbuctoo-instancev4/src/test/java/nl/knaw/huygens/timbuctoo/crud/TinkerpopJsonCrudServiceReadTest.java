@@ -395,7 +395,7 @@ public class TinkerpopJsonCrudServiceReadTest {
 
     UrlGenerator gen = (collection, uuid, rev) -> URI.create(String.format("/%s/%s/%s", collection, uuid, rev));
     //    return customInstance(graph, null, gen);
-    TinkerpopJsonCrudService instance = newJsonCrudService().withUrlGenerator(gen).forGraph(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService().withRelationUrlGenerator(gen).forGraph(graph);
 
     String resultJson = instance.get("wwpersons", id).toString();
 
