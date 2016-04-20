@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Clock;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -695,8 +696,8 @@ public class TinkerpopJsonCrudService {
     LOG.info(collectionName + " " + tokenParam + " " + type);
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
-    final Graph graph = graphwrapper.getGraph();
-    final GraphTraversalSource traversalSource = graph.traversal();
+    String entityTypeName = collection.getEntityTypeName();
+    final GraphTraversal<Vertex, Vertex> traversalSource = graphwrapper.getCurrentEntitiesFor(entityTypeName);
 
     GraphTraversal<Vertex, Vertex> typeFilter;
     if (type.isPresent()) {
@@ -716,8 +717,7 @@ public class TinkerpopJsonCrudService {
       }
       final String searchToken = token.toLowerCase();
 
-      results = traversalSource.V()
-                               .as("vertex")
+      results = traversalSource.as("vertex")
                                .where(typeFilter)
                                .union(collection.getDisplayName().traversal())
                                .filter(x -> x.get().isSuccess())
@@ -748,11 +748,10 @@ public class TinkerpopJsonCrudService {
                                  }
                                })
                                .filter(x -> x != null)
-                               .limit(10L)
+                               .limit(50L)
                                .toList();
     } else {
-      results = traversalSource.V()
-                               .as("vertex")
+      results = traversalSource.as("vertex")
                                .where(typeFilter)
                                .union(collection.getDisplayName().traversal())
                                .filter(x -> x.get().isSuccess())
@@ -782,16 +781,12 @@ public class TinkerpopJsonCrudService {
                                  }
                                })
                                .filter(x -> x != null)
-                               .limit(1000L) //no query means you get a lot
+                               .limit(1000L) //no query means you get a lot of results
                                .toList();
     }
+    results.sort(Comparator.comparing(node -> node.get("value").asText()));
 
-    ArrayNode resultNode = jsnA();
-    for (ObjectNode n : results) {
-      resultNode.add(n);
-    }
-
-    return resultNode;
+    return jsnA(results.stream());
   }
 
   public void delete(String collectionName, UUID id, String userId)
