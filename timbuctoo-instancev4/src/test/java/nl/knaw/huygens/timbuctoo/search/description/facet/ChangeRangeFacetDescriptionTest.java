@@ -17,7 +17,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import static nl.knaw.huygens.timbuctoo.search.VertexMatcher.likeVertex;
+import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;

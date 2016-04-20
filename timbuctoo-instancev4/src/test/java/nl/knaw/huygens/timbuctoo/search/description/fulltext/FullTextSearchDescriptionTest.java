@@ -6,7 +6,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 
-import static nl.knaw.huygens.timbuctoo.search.VertexMatcher.likeVertex;
+import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription.createLocalFullTextSearchDescriptionWithBackupProperty;
 import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription.createLocalSimpleFullTextSearchDescription;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;

@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.search;
+package nl.knaw.huygens.timbuctoo.util;
 
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
