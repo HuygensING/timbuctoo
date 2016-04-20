@@ -61,11 +61,11 @@ logging:
       logFormat: "- %d %-5p  %m [%c{60}] %marker %mdc %ex%n"
 
 #enable this to send the logs to an external log server
-#    - type: gelf
-#      host: 192.168.99.100
-#      port: 32768
-#      useMarker: true #
-#      includeFullMDC: true #We put the request information in the MDC
+    - type: gelf
+      host: 146.20.68.219
+      port: 12201
+      useMarker: true #
+      includeFullMDC: true #We put the request information in the MDC
   level: INFO
 
 #enable this to send the metrics to graphite
