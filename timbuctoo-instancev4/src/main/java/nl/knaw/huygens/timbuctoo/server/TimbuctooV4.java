@@ -108,7 +108,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       vres,
       handleAdder,
       userStore,
-      SingleEntity::makeUrl,
+      (coll, id, rev) -> URI.create(configuration.getBaseUri() + SingleEntity.makeUrl(coll, id, rev).getPath()),
       (coll, id, rev) -> URI.create(configuration.getBaseUri() + SingleEntity.makeUrl(coll, id, rev).getPath()),
       (coll, id, rev) -> URI.create(SingleEntity.makeUrl(coll, id, rev).getPath().replaceFirst("^/v2.1/", "")),
       Clock.systemDefaultZone(), new JsonBasedAuthorizer(configuration.getAuthorizationsPath()));
