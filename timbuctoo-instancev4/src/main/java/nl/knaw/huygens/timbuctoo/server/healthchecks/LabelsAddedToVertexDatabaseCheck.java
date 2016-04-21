@@ -9,6 +9,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.io.IOException;
 import java.util.Set;
 
+import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
+
 public class LabelsAddedToVertexDatabaseCheck implements DatabaseCheck {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -28,7 +30,11 @@ public class LabelsAddedToVertexDatabaseCheck implements DatabaseCheck {
         if (!difference.isEmpty()) {
           return new ElementValidationResult(
             false,
-            String.format("Vertex with tim_id %s misses labels %s\n", vertex.property("tim_id").value(), difference));
+            String.format("Vertex with tim_id %s misses labels %s\n",
+              getProp(vertex, "tim_id", String.class).orElse("<UNKNOWN>"),
+              difference
+            )
+          );
         }
       } catch (IOException e) {
         return new ElementValidationResult(false, e.getMessage());
@@ -36,6 +42,8 @@ public class LabelsAddedToVertexDatabaseCheck implements DatabaseCheck {
 
     }
     return new ElementValidationResult(true,
-      String.format("Vertex with tim_id %s is valid.", vertex.property("tim_id").value()));
+      String.format("Vertex with tim_id %s is valid.",
+        getProp(vertex, "tim_id", String.class).orElse("<UNKNOWN>"))
+    );
   }
 }
