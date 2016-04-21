@@ -6,7 +6,6 @@ databasePath: "./src/spec/resources/database" #do not refer to a soft link
 # JSON files
 loginsFilePath: "./src/spec/resources/logins.json"
 usersFilePath: "./src/spec/resources/users.json"
-executedMigrationsFilePath: "./src/spec/resources/executed-migrations.json"
 
 # Timeouts
 # the 'duration' is a number

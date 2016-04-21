@@ -8,7 +8,6 @@ databasePath: "/data/timbuctoo/database" #do not refer to a soft link
 
 loginsFilePath: "/data/timbuctoo/data/logins.json"
 usersFilePath: "/data/timbuctoo/data/users.json"
-executedMigrationsFilePath: "/data/timbuctoo/data/executed-migrations.json"
 
 # Timeouts
 # the 'duration' is a number

@@ -9,7 +9,6 @@ databasePath: "./docker/database" #do not refer to a soft link
 #These files contain 1 user with username="user" and password="password"
 loginsFilePath: "./docker/logins.json"
 usersFilePath: "./docker/users.json"
-executedMigrationsFilePath: "./executed-migrations.json"
 
 # Timeouts
 # the 'duration' is a number
