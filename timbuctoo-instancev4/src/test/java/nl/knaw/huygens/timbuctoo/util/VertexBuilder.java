@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -24,12 +25,14 @@ public class VertexBuilder {
   private final ObjectMapper objectMapper;
   private boolean isLatest;
   private final HashMap<String, List<RelationData>> incomingRelationMap;
+  private List<String> labels;
 
   VertexBuilder() {
     objectMapper = new ObjectMapper();
     properties = Maps.newHashMap();
     outGoingRelationMap = Maps.newHashMap();
     incomingRelationMap = Maps.newHashMap();
+    labels = Lists.newArrayList();
   }
 
   public Vertex build(Vertex vertex) {
@@ -50,6 +53,10 @@ public class VertexBuilder {
 
       for (Map.Entry<String, Object> entry : properties.entrySet()) {
         vertex.property(entry.getKey(), entry.getValue());
+      }
+
+      for (String label : labels) {
+        ((Neo4jVertex) vertex).addLabel(label);
       }
 
       return vertex;
@@ -249,4 +256,9 @@ public class VertexBuilder {
     return this;
   }
 
+  public VertexBuilder withLabel(String label) {
+    labels.add(label);
+
+    return this;
+  }
 }

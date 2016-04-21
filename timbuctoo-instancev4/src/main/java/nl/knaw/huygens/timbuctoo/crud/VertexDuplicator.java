@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
 
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -17,6 +18,10 @@ public class VertexDuplicator {
     for (Iterator<VertexProperty<Object>> properties = vertex.properties(); properties.hasNext(); ) {
       VertexProperty<Object> property = properties.next();
       duplicate.property(property.key(), property.value());
+    }
+
+    for (String label : ((Neo4jVertex) vertex).labels()) {
+      ((Neo4jVertex) duplicate).addLabel(label);
     }
 
     moveIncomingEdges(vertex, duplicate);

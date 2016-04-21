@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.search.description.facet;
 
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
-import nl.knaw.huygens.timbuctoo.search.VertexMatcher;
+import nl.knaw.huygens.timbuctoo.util.VertexMatcher;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.SearchRequestV2_1;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;

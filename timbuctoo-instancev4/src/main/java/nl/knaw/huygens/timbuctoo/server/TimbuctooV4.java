@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.server;
 import com.codahale.metrics.JmxAttributeGauge;
 import com.codahale.metrics.health.HealthCheck;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.google.common.collect.Lists;
 import com.kjetland.dropwizard.activemq.ActiveMQBundle;
 import io.dropwizard.Application;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
@@ -23,7 +24,10 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.LabelDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
+import nl.knaw.huygens.timbuctoo.server.endpoints.admin.DatabaseValidationServlet;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.BulkUpload;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Graph;
@@ -35,6 +39,12 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Autocomplete;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.SingleEntity;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.Me;
+import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseCheck;
+import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseHealthCheck;
+import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseValidator;
+import nl.knaw.huygens.timbuctoo.server.healthchecks.EncryptionAlgorithmHealthCheck;
+import nl.knaw.huygens.timbuctoo.server.healthchecks.FileHealthCheck;
+import nl.knaw.huygens.timbuctoo.server.healthchecks.LabelsAddedToVertexDatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +53,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Clock;
+import java.util.List;
 import java.util.Properties;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -65,6 +76,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     bootstrap.addBundle(activeMqBundle);
     bootstrap.addBundle(new Java8Bundle());
     bootstrap.addBundle(new MultiPartBundle());
+
     /*
      * Make it possible to use environment variables in the config.
      * see: http://www.dropwizard.io/0.9.1/docs/manual/core.html#environment-variables
@@ -97,7 +109,12 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       authHandler
     );
 
-    final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration);
+    // Database migrations
+    final List<DatabaseMigration> databaseMigrations = Lists.newArrayList(
+      new LabelDatabaseMigration()
+    );
+
+    final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, databaseMigrations);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
     final HandleAdder handleAdder = new HandleAdder(activeMqBundle, HANDLE_QUEUE, graphManager, persistenceManager);
     final Vres vres = HuygensIng.mappings;
@@ -116,6 +133,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     // lifecycle managers
     environment.lifecycle().manage(graphManager);
 
+
     // register REST endpoints
     register(environment, new RootEndpoint());
     register(environment, new Authenticate(loggedInUserStore));
@@ -129,14 +147,20 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new BulkUpload(vres, graphManager));
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
+    // admin endpoints
+    // database validator
+    DatabaseValidator databaseValidator = createDatabaseValidator(graphManager);
+    environment.admin()
+               .addServlet("databasevalidation", new DatabaseValidationServlet(databaseValidator))
+               .addMapping("/databasevalidation");
 
     // register health checks
     register(environment, "Encryption algorithm", new EncryptionAlgorithmHealthCheck(ENCRYPTION_ALGORITHM));
     register(environment, "Local logins file", new FileHealthCheck(loginsPath));
     register(environment, "Users file", new FileHealthCheck(usersPath));
+
     register(environment, "Neo4j database connection", graphManager);
-    //Disabled for now because I can't fix the database until Martijn is back
-    //register(environment, "Database invariants", new DatabaseInvariantsHealthCheck(graphManager, 1, vres));
+    register(environment, "Database", new DatabaseHealthCheck(databaseValidator));
 
     //Log all http requests
     register(environment, new LoggingFilter(1024, currentVersion));
@@ -160,6 +184,13 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     setupObjectMapping(environment);
   }
+
+  public DatabaseValidator createDatabaseValidator(TinkerpopGraphManager graphManager) {
+    List<DatabaseCheck> databaseChecks = Lists.newArrayList();
+    databaseChecks.add(new LabelsAddedToVertexDatabaseCheck());
+    return new DatabaseValidator(graphManager, 1, Clock.systemUTC(), databaseChecks);
+  }
+
 
   private void setupObjectMapping(Environment environment) {
     // object mapping

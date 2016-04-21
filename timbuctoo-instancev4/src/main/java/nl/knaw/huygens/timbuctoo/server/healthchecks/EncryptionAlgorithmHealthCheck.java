@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.server;
+package nl.knaw.huygens.timbuctoo.server.healthchecks;
 
 import com.codahale.metrics.health.HealthCheck;
 

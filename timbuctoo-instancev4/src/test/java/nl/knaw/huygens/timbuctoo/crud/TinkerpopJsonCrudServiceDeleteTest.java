@@ -2,8 +2,10 @@ package nl.knaw.huygens.timbuctoo.crud;
 
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.hamcrest.MatcherAssert;
 import org.junit.Rule;
@@ -85,6 +87,8 @@ public class TinkerpopJsonCrudServiceDeleteTest {
         .withType("person")
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
+        .withLabel("wwperson")
+        .withLabel("ckccperson")
       )
       .build();
     TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
@@ -98,6 +102,18 @@ public class TinkerpopJsonCrudServiceDeleteTest {
                                  .next();
 
     assertThat(types, is("[\"ckccperson\"]"));
+
+    // Type should also be removed from the Neo4j labels
+    assertThat(graph.traversal().V()
+            .has("tim_id", id)
+            .has("isLatest", true)
+            .has(T.label, LabelP.of("wwperson")).hasNext(), is(false));
+
+    // Other type should not be removed from the Neo4j labels
+    assertThat(graph.traversal().V()
+            .has("tim_id", id)
+            .has("isLatest", true)
+            .has(T.label, LabelP.of("ckccperson")).hasNext(), is(true));
   }
 
   @Test

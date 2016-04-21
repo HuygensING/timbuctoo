@@ -6,8 +6,10 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Rule;
 import org.junit.Test;
@@ -95,6 +97,17 @@ public class TinkerpopJsonCrudServiceCreateTest {
     instance.create("wwpersons", JsonBuilder.jsnO(), "");
 
     assertThat(graph.vertices().next().value("types"), is("[\"wwperson\", \"person\"]"));
+  }
+
+  @Test
+  public void addsTypesAsNeo4jLabel() throws Exception {
+    Graph graph = newGraph().build();
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
+
+    instance.create("wwpersons", JsonBuilder.jsnO(), "");
+
+    assertThat(graph.traversal().V().has("isLatest", true)
+            .has(T.label, LabelP.of("wwperson").and(LabelP.of("person"))).toList().size(), is(1));
   }
 
   @Test
