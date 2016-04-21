@@ -1,15 +1,14 @@
 package nl.knaw.huygens.timbuctoo.server;
 
 import com.codahale.metrics.health.HealthCheck;
-import com.google.common.collect.Lists;
 import io.dropwizard.lifecycle.Managed;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.MigrateDatabase;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -20,11 +19,9 @@ import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 import org.neo4j.tinkerpop.api.impl.Neo4jGraphAPIImpl;
 
 import java.io.File;
-import java.util.Arrays;
+import java.util.List;
 
-import static java.util.stream.Collectors.toList;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.label;
 
 public class TinkerpopGraphManager extends HealthCheck implements Managed, GraphWrapper {
   private static final SubgraphStrategy LATEST_ELEMENTS =
@@ -34,9 +31,11 @@ public class TinkerpopGraphManager extends HealthCheck implements Managed, Graph
   private Neo4jGraph graph;
   private File databasePath;
   private GraphDatabaseService graphDatabase;
+  private final List<DatabaseMigration> databaseMigrations;
 
-  public TinkerpopGraphManager(TimbuctooConfiguration configuration) {
+  public TinkerpopGraphManager(TimbuctooConfiguration configuration, List<DatabaseMigration> databaseMigrations) {
     this.configuration = configuration;
+    this.databaseMigrations = databaseMigrations;
   }
 
   @Override
@@ -48,6 +47,8 @@ public class TinkerpopGraphManager extends HealthCheck implements Managed, Graph
             .newGraphDatabase();
 
     this.graph = Neo4jGraph.open(new Neo4jGraphAPIImpl(graphDatabase));
+
+    new MigrateDatabase(this, databaseMigrations).run();
   }
 
   @Override

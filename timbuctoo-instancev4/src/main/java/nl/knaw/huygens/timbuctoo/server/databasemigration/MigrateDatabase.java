@@ -1,58 +1,87 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 public class MigrateDatabase implements Runnable {
   public static final Logger LOG = LoggerFactory.getLogger(MigrateDatabase.class);
-  private static final ObjectMapper MAPPER = new ObjectMapper();
+  public static final String EXECUTED_MIGRATIONS_TYPE = "executed-migrations";
   private final List<DatabaseMigration> migrations;
   private final GraphWrapper graphWrapper;
-  private TimbuctooConfiguration configuration;
 
-  public MigrateDatabase(TimbuctooConfiguration configuration, GraphWrapper graphWrapper,
-                         List<DatabaseMigration> migrations) {
-    this.configuration = configuration;
+  public MigrateDatabase(GraphWrapper graphWrapper, List<DatabaseMigration> migrations) {
     this.graphWrapper = graphWrapper;
     this.migrations = migrations;
   }
 
   @Override
   public void run() {
-    try {
-      List<String> executedMigrations = Lists.newArrayList();
+    Graph graph = graphWrapper.getGraph();
 
-      File executedMigrationsFile = new File(configuration.getExecutedMigrationsFilePath());
-      if (executedMigrationsFile.exists()) {
-        executedMigrations = MAPPER.readValue(executedMigrationsFile, new TypeReference<List<String>>() {
-        });
-      }
+    try (Transaction transaction = graph.tx()) {
+      List<String> executedMigrations = graph.traversal().V()
+              .has("type", EXECUTED_MIGRATIONS_TYPE)
+              .map(vertexTraverser -> (String) vertexTraverser.get().property("name").value())
+              .toList();
+
 
       for (DatabaseMigration migration : migrations) {
         final String name = migration.getName();
         if (!executedMigrations.contains(name)) {
           LOG.info("Executing \"{}\"", name);
-          migration.execute(configuration, graphWrapper);
-          executedMigrations.add(name);
+          executeMigration(migration, transaction, graphWrapper.getGraph());
+
+          saveExecution(graph, transaction, name);
           LOG.info("Finished executing \"{}\"", name);
         } else {
           LOG.info("Ignoring \"{}\" - already executed", name);
         }
 
       }
-
-      MAPPER.writeValue(executedMigrationsFile, executedMigrations.toArray(new String[executedMigrations.size()]));
     } catch (IOException e) {
       LOG.error("Migration failed", e);
     }
+  }
+
+  public void saveExecution(Graph graph, Transaction transaction, String name) {
+    if (!transaction.isOpen()) {
+      transaction.open();
+    }
+    Vertex migrationVertex = graph.addVertex();
+    migrationVertex.property("type", EXECUTED_MIGRATIONS_TYPE);
+    migrationVertex.property("name", name);
+    migrationVertex.property("tim_id", UUID.randomUUID().toString());
+    transaction.commit();
+  }
+
+  public void executeMigration(DatabaseMigration migration, Transaction transaction, Graph graph) throws IOException {
+    if (!transaction.isOpen()) {
+      transaction.open();
+    }
+
+    GraphTraversal<Vertex, Vertex> traversal = graph.traversal().V();
+    int amount = 0;
+    while (traversal.hasNext()) {
+      migration.applyToVertex(traversal.next());
+      if (++amount > 100) {
+        transaction.commit();
+        transaction.close();
+        transaction.open();
+        amount = 0;
+        System.out.print(".");
+        System.out.flush();
+      }
+    }
+    transaction.commit();
+    System.out.println();
   }
 }

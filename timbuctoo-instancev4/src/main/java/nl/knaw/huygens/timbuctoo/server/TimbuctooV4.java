@@ -10,7 +10,6 @@ import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.java8.Java8Bundle;
-import io.dropwizard.lifecycle.setup.ExecutorServiceBuilder;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.persistence.PersistenceManager;
@@ -25,7 +24,6 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.LabelDatabaseMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.MigrateDatabase;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
 import nl.knaw.huygens.timbuctoo.server.endpoints.admin.DatabaseValidationServlet;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
@@ -55,7 +53,6 @@ import java.nio.file.Paths;
 import java.time.Clock;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static nl.knaw.huygens.timbuctoo.util.LambdaExceptionUtil.rethrowConsumer;
@@ -108,7 +105,12 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       configuration.getAutoLogoutTimeout()
     );
 
-    final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration);
+    // Database migrations
+    final List<DatabaseMigration> databaseMigrations = Lists.newArrayList(
+      new LabelDatabaseMigration()
+    );
+
+    final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, databaseMigrations);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
     final HandleAdder handleAdder = new HandleAdder(activeMqBundle, HANDLE_QUEUE, graphManager, persistenceManager);
     final Vres vres = HuygensIng.mappings;
@@ -126,8 +128,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     // lifecycle managers
     environment.lifecycle().manage(graphManager);
 
-    // MigrateDatabase
-    migrateDatabase(environment, graphManager, configuration);
 
     // register REST endpoints
     register(environment, new RootEndpoint());
@@ -186,19 +186,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     return new DatabaseValidator(graphManager, 1, Clock.systemUTC(), databaseChecks);
   }
 
-  private void migrateDatabase(Environment environment, final TinkerpopGraphManager graphManager,
-                               final TimbuctooConfiguration configuration) {
-    ExecutorServiceBuilder executorServiceBuilder = environment.lifecycle().executorService("database migration");
-    final ExecutorService service = executorServiceBuilder.build();
-    final List<DatabaseMigration> migrations = Lists.newArrayList(
-      new LabelDatabaseMigration()
-    );
-
-    environment.lifecycle().addServerLifecycleListener(
-      server -> service.execute(new MigrateDatabase(configuration, graphManager, migrations))
-    );
-
-  }
 
   private void setupObjectMapping(Environment environment) {
     // object mapping
