@@ -3,12 +3,11 @@ package nl.knaw.huygens.timbuctoo.crud;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
+import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.util.AuthorizerHelper;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
-import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -493,7 +492,8 @@ public class TinkerpopJsonCrudServiceReplaceTest {
   }
 
   @Test
-  public void throwsAnIoExceptionWhenTheAuthorizerThrowsAnAuthorizationUnavailableException() throws Exception {
+  public void throwsAnUnavailableExceptionWhenTheAuthorizerThrowsAnAuthorizationUnavailableException()
+    throws Exception {
     UUID id = UUID.randomUUID();
     Graph graph = newGraph()
       .withVertex(v -> v
@@ -508,7 +508,7 @@ public class TinkerpopJsonCrudServiceReplaceTest {
     Authorizer authorizer = AuthorizerHelper.authorizerThrowsAuthorizationUnavailableException();
     TinkerpopJsonCrudService instance = newJsonCrudService().withAuthorizer(authorizer).forGraph(graph);
 
-    expectedException.expect(IOException.class);
+    expectedException.expect(AuthorizationUnavailableException.class);
 
     instance.replace(collectionName, id, jsnO("^rev", jsn(1)), userId);
   }

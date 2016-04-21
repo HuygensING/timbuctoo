@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
+import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
 
@@ -99,6 +100,11 @@ public class SingleEntity {
           .build();
       } catch (AuthorizationException e) {
         return Response.status(Response.Status.FORBIDDEN).entity(jsnO("message", jsn(e.getMessage()))).build();
+      } catch (AuthorizationUnavailableException e) {
+        return Response
+          .status(Response.Status.INTERNAL_SERVER_ERROR)
+          .entity(jsnO("message", jsn(e.getMessage())))
+          .build();
       }
     }
   }

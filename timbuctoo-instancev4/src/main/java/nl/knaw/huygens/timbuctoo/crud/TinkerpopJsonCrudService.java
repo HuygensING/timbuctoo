@@ -51,6 +51,7 @@ import java.util.function.Function;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
+import static nl.knaw.huygens.timbuctoo.crud.EdgeManipulator.duplicateEdge;
 import static nl.knaw.huygens.timbuctoo.crud.VertexDuplicator.duplicateVertex;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypes;
@@ -139,16 +140,23 @@ public class TinkerpopJsonCrudService {
         Vertex targetV = getEntity(traversal, UUID.fromString(target.asText("")), null).next();
         try {
           Vertex typeV = getEntity(traversal, UUID.fromString(type.asText("")), null).next();
+
+          Collection sourceType = getCollection(collection.getVre(), sourceV);
+          Collection targetType = getCollection(collection.getVre(), targetV);
+          verifyTypes(sourceType, typeV, targetType);
+
           String label = getProp(typeV, "relationtype_regularName", String.class)
             .orElseThrow(() -> new IOException("Requested relation has no regular name"));
           try {
-            sourceV.addEdge(label, targetV,
+            Edge edge = sourceV.addEdge(label, targetV,
               "wwrelation_accepted", accepted.asBoolean(),
               "types", jsnA(jsn(entityTypeName), jsn(abstractName)).toString(),
               "typeId", type.asText(),
               "tim_id", id.toString(),
               "isLatest", true
             );
+            setCreated(edge, userId);
+
             //Make sure this is the last line of the method. We don't want to commit half our changes
             //this also means checking each function that we call to see if they don't call commit()
             graph.tx().commit();
@@ -165,6 +173,35 @@ public class TinkerpopJsonCrudService {
     } catch (IllegalArgumentException | NoSuchElementException e) {
       throw new IOException("^sourceId must contain a UUID pointing to an existing entity");
     }
+  }
+
+  private void verifyTypes(Collection sourceV, Vertex typeV, Collection targetV) throws IOException {
+    Optional<String> sourceType = getProp(typeV, "relationtype_sourceTypeName", String.class);
+
+    if (sourceType.isPresent() && !sourceV.getAbstractType().equals(sourceType.get())) {
+      throw new IOException("Source is a " + sourceV.getAbstractType() + " instead of " + sourceType.get());
+    }
+
+    Optional<String> targetType = getProp(typeV, "relationtype_targetTypeName", String.class);
+
+    if (targetType.isPresent() && !targetV.getAbstractType().equals(targetType.get())) {
+      throw new IOException("Source is a " + targetType.get() + " instead of " + targetV.getAbstractType());
+    }
+  }
+
+  private Collection getCollection(Vre vre, Element sourceV) throws IOException {
+    String[] types = getEntityTypes(sourceV).orElseGet(() -> {
+      LOG.error(databaseInvariant, "Entitytypes not presen on vertex with ID " + sourceV.id());
+      return Try.success(new String[0]);
+    }).getOrElse(() -> {
+      LOG.error(databaseInvariant, "Could not parse entitytypes property on vertex with ID " + sourceV.id());
+      return new String[0];
+    });
+    String ownType = vre.getOwnType(types);
+    if (ownType == null) {
+      throw new IOException("Element with id() " + sourceV.id() + " is not of the vre of the relation");
+    }
+    return vre.getCollection(ownType);
   }
 
   private UUID createEntity(Collection collection, ObjectNode input, String userId)
@@ -557,7 +594,7 @@ public class TinkerpopJsonCrudService {
       .has("isLatest", false);
   }
 
-  private void setCreated(Vertex vertex, String userId) {
+  private void setCreated(Element vertex, String userId) {
     String value = String.format("{\"timeStamp\":%s,\"userId\":%s}",
       clock.millis(),
       nodeFactory.textNode(userId)
@@ -566,7 +603,7 @@ public class TinkerpopJsonCrudService {
     vertex.property("modified", value);
   }
 
-  private void setModified(Vertex vertex, String userId) {
+  private void setModified(Element vertex, String userId) {
     String value = String.format("{\"timeStamp\":%s,\"userId\":%s}",
       clock.millis(),
       nodeFactory.textNode(userId)
@@ -575,17 +612,13 @@ public class TinkerpopJsonCrudService {
   }
 
   public void replace(String collectionName, UUID id, ObjectNode data, String userId)
-    throws InvalidCollectionException, IOException, NotFoundException, AlreadyUpdatedException, AuthorizationException {
+    throws InvalidCollectionException, IOException, NotFoundException, AlreadyUpdatedException, AuthorizationException,
+    AuthorizationUnavailableException {
 
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
 
-    Authorization authorization = null;
-    try {
-      authorization = authorizer.authorizationFor(collection, userId);
-    } catch (AuthorizationUnavailableException e) {
-      throw new IOException(e.getMessage());
-    }
+    Authorization authorization = authorizer.authorizationFor(collection, userId);
     if (!authorization.isAllowedToWrite()) {
       throw AuthorizationException.notAllowedToEdit(collectionName, id);
     }
@@ -598,25 +631,34 @@ public class TinkerpopJsonCrudService {
   }
 
   private void replaceRelation(Collection collection, UUID id, ObjectNode data, String userId) throws IOException {
-    String acceptedPropName = collection.getEntityTypeName() + "_accepted";
+    final String acceptedPropName = collection.getEntityTypeName() + "_accepted";
 
     JsonNode accepted = data.get("accepted");
     if (accepted == null || !accepted.isBoolean()) {
-      throw new IOException("accepted must be a boolean");
+      throw new IOException("Only the property accepted can be updated. It must be a boolean");
     }
     JsonNode rev = data.get("^rev");
     if (rev == null || !rev.isNumber()) {
       throw new IOException("^rev must be a number");
     }
+    for (Iterator<String> fieldNames = data.fieldNames(); fieldNames.hasNext();) {
+      String name = fieldNames.next();
+      if (!name.equals("^rev") && !name.equals("accepted")) {
+        throw new IOException("Only 'accepted' and '^rev' are accepted properties");
+      }
+    }
 
     Graph graph = graphwrapper.getGraph();
-    Edge edge = graph.traversal().E()
+    Edge origEdge = graph.traversal().E()
                      .has("tim_id", id.toString())
                      .has("isLatest", true)
                      .has("rev", rev.intValue())
                      .next();
 
+    Edge edge = duplicateEdge(origEdge);
     edge.property(acceptedPropName, accepted.booleanValue());
+    edge.property("rev", getProp(origEdge, "rev", Integer.class).orElse(1) + 1);
+    setModified(edge, userId);
 
     //Make sure this is the last line of the method. We don't want to commit half our changes
     //this also means checking each function that we call to see if they don't call commit()
