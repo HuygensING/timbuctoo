@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks;
 
 import com.google.common.collect.Lists;
 import javaslang.control.Try;
+import nl.knaw.huygens.timbuctoo.search.description.indexes.PersonIndexDescription;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ElementValidationResult;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ValidationResult;
@@ -22,21 +23,13 @@ public class PersonSortIndexesDatabaseCheck implements DatabaseCheck {
             .getOrElse(() -> new String[0]));
 
     if (types.contains("person")) {
-      for (String type : types) {
-        List<String> expectedSortFields = Lists.newArrayList(
-                String.format("%s_names_sort", type),
-                String.format("%s_deathDate_sort", type),
-                String.format("%s_birthDate_sort", type),
-                String.format("%s_modified_sort", type)
-        );
+      List<String> expectedSortFields = new PersonIndexDescription().getSortIndexes(types);
+      for (String expectedSortField : expectedSortFields) {
+        if (!vertex.property(expectedSortField).isPresent() || vertex.property(expectedSortField).value() == null) {
+          String message = String.format("Vertex with tim_id %s misses field %s. Expected fields: %s",
+                  getProp(vertex, "tim_id", String.class).orElse("<UNKNOWN>"), expectedSortField, expectedSortFields);
 
-        for (String expectedSortField : expectedSortFields) {
-          if (!vertex.property(expectedSortField).isPresent() || vertex.property(expectedSortField).value() == null) {
-            String message = String.format("Vertex with tim_id %s misses field %s. Expected fields: %s",
-                    getProp(vertex, "tim_id", String.class).orElse("<UNKNOWN>"), expectedSortField, expectedSortFields);
-
-            return new ElementValidationResult(false, message);
-          }
+          return new ElementValidationResult(false, message);
         }
       }
     }
