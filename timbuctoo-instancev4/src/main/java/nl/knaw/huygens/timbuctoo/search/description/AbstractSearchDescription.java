@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.search.description;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.SearchResult;
@@ -13,8 +14,6 @@ import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.SearchRequestV2_1;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -56,52 +55,39 @@ public abstract class AbstractSearchDescription implements SearchDescription {
     // filter by full text search
     searchRequest.getFullTextSearchParameters().forEach(param -> {
       Optional<FullTextSearchDescription> first = getFullTextSearchDescriptions()
-              .stream()
-              .filter(desc -> Objects.equals(param.getName(), desc.getName()))
-              .findFirst();
+        .stream()
+        .filter(desc -> Objects.equals(param.getName(), desc.getName()))
+        .findFirst();
       if (first.isPresent()) {
         first.get().filter(vertices, param);
       }
     });
     // order / sort
     getSortDescription().sort(vertices, searchRequest.getSortParameters());
-    Map<String, Map<String, Set<Vertex>>> facetCounts = new HashMap<>();
-    Map<String, FacetDescription> facetDescriptionMap = new HashMap<>();
+    List<FacetCounter> facetCounters = getFacetDescriptions()
+      .stream()
+      .filter(desc -> !getOnlyFilterFacetList().contains(desc.getName()))
+      .map(FacetCounter::new)
+      .collect(toList());
 
     List<Vertex> searchResult = vertices.map(vertexTraverser -> {
-      getFacetDescriptions().stream().forEach(facetDescription -> {
-        // These facets are only used for filtering
-        if (getOnlyFilterFacetList().contains(facetDescription.getName())) {
-          return;
-        }
+      facetCounters.forEach(counter -> {
 
-        if (!facetCounts.containsKey(facetDescription.getName())) {
-          facetCounts.put(facetDescription.getName(), new HashMap<>());
-          facetDescriptionMap.put(facetDescription.getName(), facetDescription);
-        }
-
-        final List<String> facetValues = facetDescription.getValues(vertexTraverser.get());
+        final List<String> facetValues = counter.getFacetOptions(vertexTraverser.get());
         if (facetValues != null) {
-          Map<String, Set<Vertex>> counts = facetCounts.get(facetDescription.getName());
           facetValues.stream().forEach(facetValue -> {
-            if (!counts.containsKey(facetValue)) {
-              counts.put(facetValue, new HashSet<>());
-            }
-            Set<Vertex> bag = counts.get(facetValue);
-            bag.add(vertexTraverser.get());
+            counter.addSearchHitForValue(facetValue, vertexTraverser.get());
           });
         }
       });
       return vertexTraverser.get();
     }).toList();
 
-    List<Facet> facets = facetCounts.entrySet().stream()
-            .map((entry) -> facetDescriptionMap.get(entry.getKey()).getFacet(entry.getValue()))
-            .collect(toList());
+    List<Facet> facets = facetCounters.stream().map(FacetCounter::createFacet).collect(toList());
 
     return new SearchResult(searchResult, this, facets);
   }
-  
+
   protected List<String> getOnlyFilterFacetList() {
     return Lists.newArrayList();
   }
@@ -122,6 +108,35 @@ public abstract class AbstractSearchDescription implements SearchDescription {
 
   protected SortDescription getSortDescription() {
     return NO_OP_SORT_DESCRIPTION;
+  }
+
+  private static class FacetCounter {
+    private FacetDescription facetDescription;
+    private Map<String, Set<Vertex>> counts;
+
+    public FacetCounter(FacetDescription facetDescription) {
+      this.facetDescription = facetDescription;
+      counts = Maps.newHashMap();
+    }
+
+    public String getName() {
+      return facetDescription.getName();
+    }
+
+    public void addSearchHitForValue(String value, Vertex vertex) {
+      if (!counts.containsKey(value)) {
+        counts.put(value, Sets.newHashSet());
+      }
+      counts.get(value).add(vertex);
+    }
+
+    public Facet createFacet() {
+      return facetDescription.getFacet(counts);
+    }
+
+    public List<String> getFacetOptions(Vertex vertex) {
+      return facetDescription.getValues(vertex);
+    }
   }
 }
 

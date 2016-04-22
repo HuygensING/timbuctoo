@@ -158,7 +158,7 @@ public class AbstractSearchDescriptionTest {
     FacetDescription facetDescription2 = mock(FacetDescription.class);
 
     given(facetDescription1.getName()).willReturn("facet_1");
-    given(facetDescription1.getName()).willReturn("facet_2");
+    given(facetDescription2.getName()).willReturn("facet_2");
 
     String type = "type";
     AbstractSearchDescription instance = searchDescription()
