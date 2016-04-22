@@ -106,8 +106,9 @@ public class HuygensIng {
             .outE("hasWorkLanguage").has("isLatest", true).not(has("isDeleted", true)).has("types", isWw).inV();
         })
       )
-      .withCollection("wwdocuments", c-> c
+      .withCollection("wwdocuments", c -> c
         .withDisplayName(wwdocumentDisplayNameProperty())
+
         .withProperty("title", localProperty("wwdocument_title"))
         .withProperty("englishTitle", localProperty("wwdocument_englishTitle"))
         .withProperty("documentType", localProperty("wwdocument_documentType", stringToEncodedStringOf(
@@ -137,22 +138,60 @@ public class HuygensIng {
         .withProperty("tempOldId", localProperty("wwdocument_tempOldId"))
         .withProperty("tempOrigin", localProperty("wwdocument_tempOrigin"))
       )
-      .withCollection("wwkeywords", c-> c
+      .withCollection("wwkeywords", c -> c
         .withDisplayName(localProperty("wwkeyword_value"))
         .withProperty("value", localProperty("wwkeyword_value"))
       )
-      .withCollection("wwlanguages", c-> c
+      .withCollection("wwlanguages", c -> c
         .withDisplayName(localProperty("wwlanguage_name"))
         .withProperty("name", localProperty("wwlanguage_name"))
       )
-      .withCollection("wwlocations", c-> c
+      .withCollection("wwlocations", c -> c
         .withDisplayName(localProperty("wwlocation_names", defaultLocationNameConverter))
         .withProperty("locationName", localProperty("wwlocation_names"))
       )
       .withCollection("wwrelations", CollectionBuilder::isRelationCollection)
     )
+    .withVre("cwno", "cwno", vre -> vre
+      .withCollection("cwnopersons", c -> c
+        .withDisplayName(localProperty("cwnoperson_name"))
+        .withProperty("names", localProperty("cwnoperson_names", personNames))
+        .withProperty("types", localProperty("cwnoperson_types", stringArrayToEncodedArrayOf(
+          "AUTHOR",
+          "PSEUDONYM"
+        )))
+        .withProperty("gender", localProperty("cwnoperson_gender", gender))
+        .withProperty("birthDate", localProperty("cwnoperson_birthDate", datable))
+        .withProperty("deathDate", localProperty("cwnoperson_deathDate", datable))
+        .withProperty("notes", localProperty("cwnoperson_notes"))
+        .withProperty("links", localProperty("cwnoperson_links", hyperlinks))
+        .withProperty("nationalities", localProperty("cwnoperson_nationalities")))
+      .withCollection("cwnodocuments", c -> c
+        .withDisplayName(localProperty("cwnodocument_title"))
+        .withProperty("title", localProperty("cwnodocument_title"))
+        .withProperty("englishTitle", localProperty("cwnodocument_englishTitle"))
+        .withProperty("documentType", localProperty("cwno_document_documentType", stringToEncodedStringOf(
+          "UNKNOWN",
+          "ANTHOLOGY",
+          "ARTICLE",
+          "AWARD",
+          "CATALOGUE",
+          "COMPILATION",
+          "DIARY",
+          "LETTER",
+          "LIST",
+          "MONOGRAPH",
+          "PERIODICAL",
+          "PICTURE",
+          "PUBLICITY",
+          "SHEETMUSIC",
+          "THEATERSCRIPT",
+          "WORK"
+        )))
+        .withProperty("date", localProperty("cwnodocument_date", datable))
+        .withProperty("notes", localProperty("cwnodocument_notes"))
+        .withProperty("links", localProperty("wwdocument_links", hyperlinks)))
+      .withCollection("cwnorelations", CollectionBuilder::isRelationCollection))
     .build();
 
 }
-
-
