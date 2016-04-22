@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.description.IndexDescription;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
+import nl.knaw.huygens.timbuctoo.search.description.propertyparser.TempNamePropertyParser;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.HashMap;
@@ -59,8 +60,15 @@ class PersonIndexDescription implements IndexDescription {
                 parsers.get(field).parseForSort((String) vertex.property(getPropertyName(type, field)).value()) :
                 parsers.get(field).parseForSort(null);
 
+
         if (parsed == null) {
-          vertex.property(getSortPropertyName(type, field), "");
+          if (field.equals("names") && type.equals("wwperson") &&  vertex.property("wwperson_tempName").isPresent()) {
+            Comparable<?> tempName = new TempNamePropertyParser().parseForSort(
+                    (String) vertex.property("wwperson_tempName").value());
+            vertex.property(getSortPropertyName(type, field), tempName);
+          } else {
+            vertex.property(getSortPropertyName(type, field), "");
+          }
         } else {
           vertex.property(getSortPropertyName(type, field), parsed);
         }
