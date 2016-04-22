@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.healthchecks;
 
-class ElementValidationResult implements ValidationResult {
+public class ElementValidationResult implements ValidationResult {
   private final boolean valid;
   private final String message;
 
