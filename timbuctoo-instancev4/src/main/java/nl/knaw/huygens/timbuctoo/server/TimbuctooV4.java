@@ -26,6 +26,7 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.LabelDatabaseMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.PersonSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
 import nl.knaw.huygens.timbuctoo.server.endpoints.admin.DatabaseValidationServlet;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
@@ -112,7 +113,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     // Database migrations
     final List<DatabaseMigration> databaseMigrations = Lists.newArrayList(
-      new LabelDatabaseMigration()
+      new LabelDatabaseMigration(),
+      new PersonSortIndexesDatabaseMigration()
     );
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, databaseMigrations);

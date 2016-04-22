@@ -9,5 +9,5 @@ public interface IndexDescription {
 
   Set<String> getSortIndexPropertyNames();
 
-  void addIndexes(Vertex vertex);
+  void addIndexedSortProperties(Vertex vertex);
 }

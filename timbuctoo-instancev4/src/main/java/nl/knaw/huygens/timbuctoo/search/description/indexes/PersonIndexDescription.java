@@ -52,13 +52,12 @@ class PersonIndexDescription implements IndexDescription {
   }
 
   @Override
-  public void addIndexes(Vertex vertex) {
+  public void addIndexedSortProperties(Vertex vertex) {
     for (String type : types) {
       for (String field : SORT_FIELDS) {
-        String value = vertex.property(getPropertyName(type, field)).isPresent() ?
-                (String) vertex.property(getPropertyName(type, field)).value() : null;
-
-        Comparable<?> parsed = value != null ? parsers.get(field).parseForSort(value) : null;
+        Comparable<?> parsed = vertex.property(getPropertyName(type, field)).isPresent() ?
+                parsers.get(field).parseForSort((String) vertex.property(getPropertyName(type, field)).value()) :
+                parsers.get(field).parseForSort(null);
 
         if (parsed == null) {
           vertex.property(getSortPropertyName(type, field), "");

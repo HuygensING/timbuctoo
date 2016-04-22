@@ -28,9 +28,6 @@ public class PersonIndexDescriptionTest {
 
     Set<String> results = instance.getSortIndexPropertyNames();
 
-    System.out.println(results);
-
-
     assertThat(results, containsInAnyOrder(
             "wwperson_names_sort",
             "wwperson_deathDate_sort",
@@ -46,7 +43,7 @@ public class PersonIndexDescriptionTest {
   }
 
   @Test
-  public void addIndexesSetsTheSortIndexProperties() throws JsonProcessingException {
+  public void addIndexedSortPropertiesSetsTheSortIndexProperties() throws JsonProcessingException {
     List<String> types = Lists.newArrayList("wwperson", "person");
     long timeStampOnJan20th2016 = 1453290593000L;
     Graph graph = newGraph()
@@ -65,7 +62,7 @@ public class PersonIndexDescriptionTest {
     PersonIndexDescription instance = new PersonIndexDescription(types);
     Vertex vertex = graph.traversal().V().toList().get(0);
 
-    instance.addIndexes(vertex);
+    instance.addIndexedSortProperties(vertex);
 
     assertThat(vertex.property("wwperson_names_sort").value(), equalTo("testsur2, testfore"));
     assertThat(vertex.property("person_names_sort").value(), equalTo("testsur, testfore"));
@@ -78,7 +75,7 @@ public class PersonIndexDescriptionTest {
   }
 
   @Test
-  public void addIndexesSetsTheSortIndexPropertyToEmptyStringWhenPropertyIsMissing() {
+  public void addIndexedSortPropertiesSetsTheSortIndexPropertyToEmptyStringWhenPropertyIsMissing() {
     List<String> types = Lists.newArrayList("wwperson", "person");
     Graph graph = newGraph()
             .withVertex(v -> v
@@ -88,7 +85,7 @@ public class PersonIndexDescriptionTest {
     PersonIndexDescription instance = new PersonIndexDescription(types);
     Vertex vertex = graph.traversal().V().toList().get(0);
 
-    instance.addIndexes(vertex);
+    instance.addIndexedSortProperties(vertex);
 
     assertThat(vertex.property("wwperson_names_sort").value(), equalTo(""));
     assertThat(vertex.property("person_names_sort").value(), equalTo(""));
