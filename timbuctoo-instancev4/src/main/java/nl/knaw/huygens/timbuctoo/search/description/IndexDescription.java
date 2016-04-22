@@ -1,9 +1,13 @@
 package nl.knaw.huygens.timbuctoo.search.description;
 
 
-import java.util.List;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+
+import java.util.Set;
 
 public interface IndexDescription {
 
-  List<String> getSortIndexPropertyNames(List<String> vertexTypes);
+  Set<String> getSortIndexPropertyNames();
+
+  void addIndexes(Vertex vertex);
 }

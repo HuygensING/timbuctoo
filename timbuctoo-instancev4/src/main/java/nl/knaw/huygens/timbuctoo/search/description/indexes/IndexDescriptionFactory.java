@@ -9,7 +9,7 @@ public class IndexDescriptionFactory {
 
   public Optional<IndexDescription> create(List<String> types) {
     if (types.contains("person")) {
-      return Optional.of(new PersonIndexDescription());
+      return Optional.of(new PersonIndexDescription(types));
     }
     return Optional.empty();
   }

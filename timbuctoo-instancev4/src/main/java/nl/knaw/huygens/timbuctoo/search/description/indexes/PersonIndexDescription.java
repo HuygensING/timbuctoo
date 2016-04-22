@@ -1,10 +1,19 @@
 package nl.knaw.huygens.timbuctoo.search.description.indexes;
 
 
+import com.google.common.collect.Maps;
+import nl.knaw.huygens.timbuctoo.model.Change;
+import nl.knaw.huygens.timbuctoo.model.Datable;
+import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.description.IndexDescription;
+import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
+import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 class PersonIndexDescription implements IndexDescription {
 
@@ -17,14 +26,60 @@ class PersonIndexDescription implements IndexDescription {
     "modified"
   };
 
+  private final List<String> types;
+  private final PropertyParserFactory propertyParserFactory;
+  private final HashMap<String, PropertyParser> parsers;
+
+  public PersonIndexDescription(List<String> types) {
+    this.types = types;
+    this.propertyParserFactory = new PropertyParserFactory();
+    this.parsers = Maps.newHashMap();
+    parsers.put("names", propertyParserFactory.getParser(PersonNames.class));
+    parsers.put("deathDate", propertyParserFactory.getParser(Datable.class));
+    parsers.put("birthDate", propertyParserFactory.getParser(Datable.class));
+    parsers.put("modified", propertyParserFactory.getParser(Change.class));
+  }
+
   @Override
-  public List<String> getSortIndexPropertyNames(List<String> vertexTypes) {
-    List<String> fieldList = new ArrayList<>();
-    for (String type : vertexTypes) {
+  public Set<String> getSortIndexPropertyNames() {
+    Set<String> fieldList = new HashSet<>();
+    for (String type : types) {
       for (String field : SORT_FIELDS) {
-        fieldList.add(String.format("%s_%s_%s", type, field, SORT_POSTFIX));
+        fieldList.add(getSortPropertyName(type, field));
       }
     }
     return fieldList;
+  }
+
+  @Override
+  public void addIndexes(Vertex vertex) {
+    for (String type : types) {
+      for (String field : SORT_FIELDS) {
+        String value = vertex.property(getPropertyName(type, field)).isPresent() ?
+                (String) vertex.property(getPropertyName(type, field)).value() : null;
+
+        Comparable<?> parsed = value != null ? parsers.get(field).parseForSort(value) : null;
+
+        if (parsed == null) {
+          vertex.property(getSortPropertyName(type, field), "");
+        } else {
+          vertex.property(getSortPropertyName(type, field), parsed);
+        }
+      }
+    }
+  }
+
+  private String getPropertyName(String type, String field) {
+    if (field.equals("modified")) {
+      return field;
+    }
+    return String.format("%s_%s", type, field);
+  }
+
+  private String getSortPropertyName(String type, String field) {
+    if (field.equals("modified")) {
+      return String.format("modified_%s", SORT_POSTFIX);
+    }
+    return String.format("%s_%s_%s", type, field, SORT_POSTFIX);
   }
 }

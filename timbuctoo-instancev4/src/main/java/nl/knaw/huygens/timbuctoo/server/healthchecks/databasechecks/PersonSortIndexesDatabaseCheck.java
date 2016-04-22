@@ -9,6 +9,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypes;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
@@ -22,8 +23,7 @@ public class PersonSortIndexesDatabaseCheck implements DatabaseCheck {
             .getOrElse(() -> new String[0]));
 
     if (types.contains("person")) {
-      List<String> expectedSortFields = new IndexDescriptionFactory().create(types).get()
-              .getSortIndexPropertyNames(types);
+      Set<String> expectedSortFields = new IndexDescriptionFactory().create(types).get().getSortIndexPropertyNames();
 
       for (String expectedSortField : expectedSortFields) {
         if (!vertex.property(expectedSortField).isPresent() || vertex.property(expectedSortField).value() == null) {
