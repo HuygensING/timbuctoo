@@ -89,13 +89,14 @@ public class PersonIndexDescriptionTest {
 
     assertThat(vertex.property("wwperson_names_sort").value(), equalTo(""));
     assertThat(vertex.property("person_names_sort").value(), equalTo(""));
-    assertThat(vertex.property("wwperson_birthDate_sort").value(), equalTo(""));
-    assertThat(vertex.property("person_birthDate_sort").value(), equalTo(""));
-    assertThat(vertex.property("wwperson_deathDate_sort").value(), equalTo(""));
-    assertThat(vertex.property("person_deathDate_sort").value(), equalTo(""));
-    assertThat(vertex.property("modified_sort").value(), equalTo(""));
+    assertThat(vertex.property("wwperson_birthDate_sort").value(), equalTo(0));
+    assertThat(vertex.property("person_birthDate_sort").value(), equalTo(0));
+    assertThat(vertex.property("wwperson_deathDate_sort").value(), equalTo(0));
+    assertThat(vertex.property("person_deathDate_sort").value(), equalTo(0));
+    assertThat(vertex.property("modified_sort").value(), equalTo(0L));
 
   }
+
 
   private String getPersonName(String foreName, String surName) {
     PersonName name = new PersonName();
@@ -110,6 +111,7 @@ public class PersonIndexDescriptionTest {
 
     return "{\"list\": [" + nameProp + "]}";
   }
+
 
   private String getChange(long timeStamp) {
     Change change = new Change(timeStamp, "user", "vre");

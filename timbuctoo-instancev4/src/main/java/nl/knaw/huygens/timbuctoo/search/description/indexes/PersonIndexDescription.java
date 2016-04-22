@@ -14,6 +14,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 class PersonIndexDescription implements IndexDescription {
@@ -27,6 +28,7 @@ class PersonIndexDescription implements IndexDescription {
     "modified"
   };
 
+  private static final Map<String, Object> DEFAULT_VALUES = Maps.newHashMap();
   private final List<String> types;
   private final PropertyParserFactory propertyParserFactory;
   private final HashMap<String, PropertyParser> parsers;
@@ -39,6 +41,10 @@ class PersonIndexDescription implements IndexDescription {
     parsers.put("deathDate", propertyParserFactory.getParser(Datable.class));
     parsers.put("birthDate", propertyParserFactory.getParser(Datable.class));
     parsers.put("modified", propertyParserFactory.getParser(Change.class));
+    DEFAULT_VALUES.put("names", "");
+    DEFAULT_VALUES.put("deathDate", 0);
+    DEFAULT_VALUES.put("birthDate", 0);
+    DEFAULT_VALUES.put("modified", 0L);
   }
 
   @Override
@@ -61,16 +67,17 @@ class PersonIndexDescription implements IndexDescription {
                 parsers.get(field).parseForSort(null);
 
 
+        String sortPropertyName = getSortPropertyName(type, field);
         if (parsed == null) {
           if (field.equals("names") && type.equals("wwperson") &&  vertex.property("wwperson_tempName").isPresent()) {
             Comparable<?> tempName = new TempNamePropertyParser().parseForSort(
                     (String) vertex.property("wwperson_tempName").value());
-            vertex.property(getSortPropertyName(type, field), tempName);
+            vertex.property(sortPropertyName, tempName);
           } else {
-            vertex.property(getSortPropertyName(type, field), "");
+            vertex.property(sortPropertyName, DEFAULT_VALUES.get(field));
           }
         } else {
-          vertex.property(getSortPropertyName(type, field), parsed);
+          vertex.property(sortPropertyName, parsed);
         }
       }
     }
