@@ -5,5 +5,5 @@ import java.util.List;
 
 public interface IndexDescription {
 
-  List<String> getSortIndexes(List<String> vertexTypes);
+  List<String> getSortIndexPropertyNames(List<String> vertexTypes);
 }

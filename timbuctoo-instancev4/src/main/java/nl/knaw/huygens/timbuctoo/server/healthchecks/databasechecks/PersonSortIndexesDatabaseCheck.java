@@ -1,8 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks;
 
-import com.google.common.collect.Lists;
 import javaslang.control.Try;
-import nl.knaw.huygens.timbuctoo.search.description.indexes.PersonIndexDescription;
+import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ElementValidationResult;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ValidationResult;
@@ -23,7 +22,9 @@ public class PersonSortIndexesDatabaseCheck implements DatabaseCheck {
             .getOrElse(() -> new String[0]));
 
     if (types.contains("person")) {
-      List<String> expectedSortFields = new PersonIndexDescription().getSortIndexes(types);
+      List<String> expectedSortFields = new IndexDescriptionFactory().create(types).get()
+              .getSortIndexPropertyNames(types);
+
       for (String expectedSortField : expectedSortFields) {
         if (!vertex.property(expectedSortField).isPresent() || vertex.property(expectedSortField).value() == null) {
           String message = String.format("Vertex with tim_id %s misses field %s. Expected fields: %s",
