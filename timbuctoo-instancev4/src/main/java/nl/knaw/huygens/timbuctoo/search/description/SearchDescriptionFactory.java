@@ -35,6 +35,8 @@ public class SearchDescriptionFactory {
       case "wwrelations":
         return Optional.of(new ReceptionSearchDescription(
           propertyDescriptorFactory, facetDescriptionFactory, otherSearch));
+      case "dcararchive":
+        return Optional.of(new DcarArchiveSearchDescription(propertyDescriptorFactory, facetDescriptionFactory));
       default:
         return Optional.empty();
     }
