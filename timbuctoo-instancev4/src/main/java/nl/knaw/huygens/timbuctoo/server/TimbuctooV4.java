@@ -45,6 +45,7 @@ import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseValidator;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.EncryptionAlgorithmHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.FileHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.LabelsAddedToVertexDatabaseCheck;
+import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.PersonSortIndexesDatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
 import org.slf4j.LoggerFactory;
 
@@ -187,7 +188,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
   public DatabaseValidator createDatabaseValidator(TinkerpopGraphManager graphManager) {
     List<DatabaseCheck> databaseChecks = Lists.newArrayList(
-            new LabelsAddedToVertexDatabaseCheck()
+            new LabelsAddedToVertexDatabaseCheck(),
+            new PersonSortIndexesDatabaseCheck()
     );
     return new DatabaseValidator(graphManager, 1, Clock.systemUTC(), databaseChecks);
   }
