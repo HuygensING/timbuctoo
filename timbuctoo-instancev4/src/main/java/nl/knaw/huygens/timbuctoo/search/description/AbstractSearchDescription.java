@@ -71,15 +71,7 @@ public abstract class AbstractSearchDescription implements SearchDescription {
       .collect(toList());
 
     List<Vertex> searchResult = vertices.map(vertexTraverser -> {
-      facetCounters.forEach(counter -> {
-
-        final List<String> facetValues = counter.getFacetOptions(vertexTraverser.get());
-        if (facetValues != null) {
-          facetValues.stream().forEach(facetValue -> {
-            counter.addSearchHitForValue(facetValue, vertexTraverser.get());
-          });
-        }
-      });
+      facetCounters.forEach(counter -> counter.addSearchHits(vertexTraverser.get()));
       return vertexTraverser.get();
     }).toList();
 
@@ -134,8 +126,13 @@ public abstract class AbstractSearchDescription implements SearchDescription {
       return facetDescription.getFacet(counts);
     }
 
-    public List<String> getFacetOptions(Vertex vertex) {
-      return facetDescription.getValues(vertex);
+    public void addSearchHits(Vertex vertex) {
+      final List<String> facetValues = facetDescription.getValues(vertex);
+      if (facetValues != null) {
+        facetValues.stream().forEach(facetValue -> {
+          this.addSearchHitForValue(facetValue, vertex);
+        });
+      }
     }
   }
 }
