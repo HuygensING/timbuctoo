@@ -30,6 +30,7 @@ import static nl.knaw.huygens.timbuctoo.util.AuthorizerHelper.authorizerThrowsAu
 import static nl.knaw.huygens.timbuctoo.util.AuthorizerHelper.userIsNotAllowedToWriteTheCollection;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -138,7 +139,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
   }
 
   @Test
-  public void invokesIndexDescriptionAddIndexedSortPropertiesForPersons() throws Exception {
+  public void invokesIndexDescriptionAddIndexedSortPropertiesForWwPersons() throws Exception {
     Graph graph = newGraph().build();
 
     TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
@@ -150,7 +151,23 @@ public class TinkerpopJsonCrudServiceCreateTest {
     assertThat(vertex.property("wwperson_names_sort").value(), equalTo(""));
     assertThat(vertex.property("wwperson_birthDate_sort").value(), equalTo(0));
     assertThat(vertex.property("wwperson_deathDate_sort").value(), equalTo(0));
+    assertThat(vertex.property("modified_sort").value(), instanceOf(Long.class));
   }
+
+  @Test
+  public void invokesIndexDescriptionAddIndexedSortPropertiesForWwDocumentss() throws Exception {
+    Graph graph = newGraph().build();
+
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
+
+    instance.create("wwdocuments", JsonBuilder.jsnO(), "");
+
+    Vertex vertex = graph.vertices().next();
+
+    assertThat(vertex.property("wwdocument_creator_sort").value(), equalTo(""));
+    assertThat(vertex.property("modified_sort").value(), instanceOf(Long.class));
+  }
+
 
   @Test
   public void throwsOnUnknownProperties() throws Exception {

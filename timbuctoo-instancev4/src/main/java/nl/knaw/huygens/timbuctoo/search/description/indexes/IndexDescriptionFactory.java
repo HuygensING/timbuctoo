@@ -11,6 +11,8 @@ public class IndexDescriptionFactory {
   public IndexDescription create(String type) {
     if (type.equals("wwperson")) {
       return new WwPersonIndexDescription();
+    } else if (type.equals("wwdocument")) {
+      return new WwDocumentIndexDescription();
     }
     return null;
   }

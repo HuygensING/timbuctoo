@@ -12,17 +12,17 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypes;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 
-public class WwPersonSortIndexesDatabaseCheck extends SortIndexesDatabaseCheck {
+public class WwDocumentSortIndexesDatabaseCheck extends SortIndexesDatabaseCheck {
+
 
   @Override
   public ValidationResult check(Vertex vertex) {
-    return getValidationResultForType(vertex, "wwperson");
+
+    return getValidationResultForType(vertex, "wwdocument");
   }
 }

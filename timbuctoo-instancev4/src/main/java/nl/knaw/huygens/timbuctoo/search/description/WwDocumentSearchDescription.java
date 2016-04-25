@@ -115,8 +115,7 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
             .withName("dynamic_k_modified")
             .withDefaultValue(0L)
             .withProperty(localProperty()
-                    .withName("modified")
-                    .withParser(propertyParserFactory.getParser(Change.class)))
+                    .withName("modified_sort"))
             .build(),
         newSortFieldDescription()
             .withName("dynamic_sort_title")
@@ -126,12 +125,9 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
             .build(),
         newSortFieldDescription()
             .withName("dynamic_sort_creator")
-            .withDefaultValue("")
-            .withProperty(derivedProperty("isCreatedBy")
-                    .withName("wwperson_names")
-                    .withParser(propertyParserFactory.getParser(PersonNames.class)))
-            .withBackupProperty(derivedProperty("isCreatedBy")
-                    .withName("wwperson_tempName"))
+                .withDefaultValue("")
+                .withProperty(localProperty()
+                    .withName("wwdocument_creator_sort"))
             .build()
     );
   }
