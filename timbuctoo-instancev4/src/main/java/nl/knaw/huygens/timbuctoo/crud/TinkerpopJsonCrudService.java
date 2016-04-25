@@ -80,12 +80,13 @@ public class TinkerpopJsonCrudService {
   private final Clock clock;
   private final JsonNodeFactory nodeFactory;
   private final JsonBasedUserStore userStore;
+  private final IndexDescriptionFactory indexDescriptionFactory;
   private Authorizer authorizer;
 
   public TinkerpopJsonCrudService(GraphWrapper graphwrapper, Vres mappings,
                                   HandleAdder handleAdder, JsonBasedUserStore userStore, UrlGenerator handleUrlFor,
                                   UrlGenerator autoCompleteUrlFor, UrlGenerator relationUrlFor, Clock clock,
-                                  Authorizer authorizer) {
+                                  IndexDescriptionFactory indexDescriptionFactory, Authorizer authorizer) {
     this.graphwrapper = graphwrapper;
     this.mappings = mappings;
     this.handleAdder = handleAdder;
@@ -94,6 +95,7 @@ public class TinkerpopJsonCrudService {
     this.relationUrlFor = relationUrlFor;
     this.userStore = userStore;
     this.clock = clock;
+    this.indexDescriptionFactory = indexDescriptionFactory;
     this.authorizer = authorizer;
     nodeFactory = JsonNodeFactory.instance;
   }
@@ -252,7 +254,7 @@ public class TinkerpopJsonCrudService {
     setCreated(vertex, userId);
 
     List<String> types = Lists.newArrayList(collection.getAbstractType(), collection.getEntityTypeName());
-    List<IndexDescription> indexers = new IndexDescriptionFactory().getIndexersForTypes(types);
+    List<IndexDescription> indexers = indexDescriptionFactory.getIndexersForTypes(types);
     for ( IndexDescription indexer : indexers) {
       indexer.addIndexedSortProperties(vertex);
     }
@@ -746,7 +748,7 @@ public class TinkerpopJsonCrudService {
     List<String> types = Arrays.asList(getEntityTypes(entity)
             .orElseGet(() -> Try.success(new String[0])).getOrElse(new String[0]));
 
-    List<IndexDescription> indexers = new IndexDescriptionFactory()
+    List<IndexDescription> indexers = indexDescriptionFactory
             .getIndexersForTypes(Lists.newArrayList(collection.getEntityTypeName()));
 
     for (IndexDescription indexer : indexers) {

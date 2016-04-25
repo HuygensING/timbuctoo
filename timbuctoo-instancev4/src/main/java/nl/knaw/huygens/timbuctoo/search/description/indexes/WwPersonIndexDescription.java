@@ -12,8 +12,6 @@ import nl.knaw.huygens.timbuctoo.search.description.propertyparser.TempNamePrope
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 class WwPersonIndexDescription implements IndexDescription {
 
