@@ -53,6 +53,7 @@ public class DcarArchiveSearchDescription extends AbstractSearchDescription {
         .withParser(propertyParserFactory.getParser(String.class))
       )
       .build();
+    // TODO add date range sortfield build from startDate and endDate.
     return new SortDescription(Lists.newArrayList());
   }
 
