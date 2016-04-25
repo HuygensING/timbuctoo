@@ -20,8 +20,16 @@
   <module name="FileTabCharacter">
     <property name="eachLine" value="true"/>
   </module>
-  <module name="NewlineAtEndOfFile"/>
-  
+  <module name="NewlineAtEndOfFile">
+    <property name="lineSeparator" value="lf"/>
+  </module>
+  <module name="RegexpMultiline">
+    <property name="format" value="\r\n"/>
+  </module>
+  <module name="RegexpMultiline">
+    <property name="format" value="\r([^\n]|$)"/>
+  </module>
+
   <module name="TreeWalker">
     <module name="OuterTypeFilename"/>
     <module name="IllegalTokenText">
