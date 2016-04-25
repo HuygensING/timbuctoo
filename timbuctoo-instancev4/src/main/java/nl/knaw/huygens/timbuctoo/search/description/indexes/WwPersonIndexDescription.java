@@ -23,11 +23,13 @@ class WwPersonIndexDescription implements IndexDescription {
     private PropertyParser parser;
     private Comparable<?> defaultValue;
     private String name;
+    private Class<?> propertyType;
 
-    public WwPersonSortFieldDescription(String name, Comparable<?> defaultValue, PropertyParser parser) {
+    public WwPersonSortFieldDescription(String name, Comparable<?> defaultValue, PropertyParser parser, Class<?> type) {
       this.parser = parser;
       this.defaultValue = defaultValue;
       this.name = name;
+      this.propertyType = type;
     }
 
     @Override
@@ -57,6 +59,11 @@ class WwPersonIndexDescription implements IndexDescription {
     public Comparable<?> getDefaultValue() {
       return defaultValue;
     }
+
+    @Override
+    public Class<?> getType() {
+      return this.propertyType;
+    }
   }
 
   private final List<IndexerSortFieldDescription> sortFieldDescriptions;
@@ -66,10 +73,15 @@ class WwPersonIndexDescription implements IndexDescription {
     final PropertyParserFactory propertyParserFactory = new PropertyParserFactory();
 
     sortFieldDescriptions = Lists.newArrayList(
-            new WwPersonSortFieldDescription("names", "", propertyParserFactory.getParser(PersonNames.class)),
-            new WwPersonSortFieldDescription("deathDate", 0, propertyParserFactory.getParser(Datable.class)),
-            new WwPersonSortFieldDescription("birthDate", 0, propertyParserFactory.getParser(Datable.class)),
-            new WwPersonSortFieldDescription("modified", 0L, propertyParserFactory.getParser(Change.class)));
+            new WwPersonSortFieldDescription(
+                    "names", "", propertyParserFactory.getParser(PersonNames.class), String.class),
+            new WwPersonSortFieldDescription(
+                    "deathDate", 0, propertyParserFactory.getParser(Datable.class), Integer.class),
+            new WwPersonSortFieldDescription(
+                    "birthDate", 0, propertyParserFactory.getParser(Datable.class), Integer.class),
+            new WwPersonSortFieldDescription(
+                    "modified", 0L, propertyParserFactory.getParser(Change.class), Long.class)
+    );
   }
 
 

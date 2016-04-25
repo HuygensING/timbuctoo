@@ -10,4 +10,6 @@ public interface IndexerSortFieldDescription {
   PropertyParser getParser();
 
   Comparable<?> getDefaultValue();
+
+  Class<?> getType();
 }
