@@ -607,21 +607,21 @@ public class TinkerpopJsonCrudService {
       .has("isLatest", false);
   }
 
-  private void setCreated(Element vertex, String userId) {
+  private void setCreated(Element element, String userId) {
     String value = String.format("{\"timeStamp\":%s,\"userId\":%s}",
       clock.millis(),
       nodeFactory.textNode(userId)
     );
-    vertex.property("created", value);
-    vertex.property("modified", value);
+    element.property("created", value);
+    element.property("modified", value);
   }
 
-  private void setModified(Element vertex, String userId) {
+  private void setModified(Element element, String userId) {
     String value = String.format("{\"timeStamp\":%s,\"userId\":%s}",
       clock.millis(),
       nodeFactory.textNode(userId)
     );
-    vertex.property("modified", value);
+    element.property("modified", value);
   }
 
   public void replace(String collectionName, UUID id, ObjectNode data, String userId)
