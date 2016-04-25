@@ -1,0 +1,10 @@
+[{
+  "@type": "vreauthorization",
+  "vreId": "WomenWriters",
+  "userId": "USER000000000001",
+  "roles": ["USER"],
+  "_id": "VREA000000000001",
+  "^rev": 0,
+  "^created": null,
+  "^modified": null
+}]

@@ -6,7 +6,7 @@
 databasePath: "./docker/database" #do not refer to a soft link
 # JSON files
 # This directory Timbuctoo reads and writes the authorizations a file for each vre.
-authorizationsPath: "/path/to/directory/with/theauthorizations"
+authorizationsPath: "./docker/authorizations"
 #These files contain 1 user with username="user" and password="password"
 loginsFilePath: "./docker/logins.json"
 usersFilePath: "./docker/users.json"
