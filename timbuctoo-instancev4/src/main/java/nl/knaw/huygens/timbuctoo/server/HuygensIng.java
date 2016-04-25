@@ -173,12 +173,12 @@ public class HuygensIng {
         .withDisplayName(localProperty("cwnodocument_title"))
         .withProperty("title", localProperty("cwnodocument_title"))
         .withProperty("englishTitle", localProperty("cwnodocument_englishTitle"))
-        .withProperty("documentType", localProperty("cwno_document_documentType", stringToEncodedStringOf(//FIXME: is de _ terecht?
+        .withProperty("documentType", localProperty("cwnodocument_documentType", stringToEncodedStringOf(
           WW_DOCUMENT_TYPES
         )))
         .withProperty("date", localProperty("cwnodocument_date", datable))
         .withProperty("notes", localProperty("cwnodocument_notes"))
-        .withProperty("links", localProperty("wwdocument_links", hyperlinks))) //FIXME: dit moet cwnodocument_links zijn
+        .withProperty("links", localProperty("cwnodocument_links", hyperlinks)))
       .withCollection("cwnorelations", CollectionBuilder::isRelationCollection))
     .withVre("cwrs", "cwrs", vre -> vre
       .withCollection("cwrscollectives", c -> c
