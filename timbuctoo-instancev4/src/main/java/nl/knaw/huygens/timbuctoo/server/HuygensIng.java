@@ -38,6 +38,24 @@ public class HuygensIng {
       .build()
   );
 
+  private static final String[] WW_DOCUMENT_TYPES = new String[]{
+    "UNKNOWN",
+    "ANTHOLOGY",
+    "ARTICLE",
+    "AWARD",
+    "CATALOGUE",
+    "COMPILATION",
+    "DIARY",
+    "LETTER",
+    "LIST",
+    "MONOGRAPH",
+    "PERIODICAL",
+    "PICTURE",
+    "PUBLICITY",
+    "SHEETMUSIC",
+    "THEATERSCRIPT",
+    "WORK"
+  };
   public static Vres mappings = new Vres.Builder()
     .withVre("WomenWriters", "ww", vre -> vre
       .withCollection("wwcollectives", c -> c
@@ -112,22 +130,7 @@ public class HuygensIng {
         .withProperty("title", localProperty("wwdocument_title"))
         .withProperty("englishTitle", localProperty("wwdocument_englishTitle"))
         .withProperty("documentType", localProperty("wwdocument_documentType", stringToEncodedStringOf(
-          "UNKNOWN",
-          "ANTHOLOGY",
-          "ARTICLE",
-          "AWARD",
-          "CATALOGUE",
-          "COMPILATION",
-          "DIARY",
-          "LETTER",
-          "LIST",
-          "MONOGRAPH",
-          "PERIODICAL",
-          "PICTURE",
-          "PUBLICITY",
-          "SHEETMUSIC",
-          "THEATERSCRIPT",
-          "WORK"
+          WW_DOCUMENT_TYPES
         )))
         .withProperty("date", localProperty("wwdocument_date", datable))
         .withProperty("reference", localProperty("wwdocument_reference"))
@@ -170,28 +173,60 @@ public class HuygensIng {
         .withDisplayName(localProperty("cwnodocument_title"))
         .withProperty("title", localProperty("cwnodocument_title"))
         .withProperty("englishTitle", localProperty("cwnodocument_englishTitle"))
-        .withProperty("documentType", localProperty("cwno_document_documentType", stringToEncodedStringOf(
-          "UNKNOWN",
-          "ANTHOLOGY",
-          "ARTICLE",
-          "AWARD",
-          "CATALOGUE",
-          "COMPILATION",
-          "DIARY",
-          "LETTER",
-          "LIST",
-          "MONOGRAPH",
-          "PERIODICAL",
-          "PICTURE",
-          "PUBLICITY",
-          "SHEETMUSIC",
-          "THEATERSCRIPT",
-          "WORK"
+        .withProperty("documentType", localProperty("cwno_document_documentType", stringToEncodedStringOf(//FIXME: is de _ terecht?
+          WW_DOCUMENT_TYPES
         )))
         .withProperty("date", localProperty("cwnodocument_date", datable))
         .withProperty("notes", localProperty("cwnodocument_notes"))
-        .withProperty("links", localProperty("wwdocument_links", hyperlinks)))
+        .withProperty("links", localProperty("wwdocument_links", hyperlinks))) //FIXME: dit moet cwnodocument_links zijn
       .withCollection("cwnorelations", CollectionBuilder::isRelationCollection))
+    .withVre("cwrs", "cwrs", vre -> vre
+      .withCollection("cwrscollectives", c -> c
+        .withDisplayName(localProperty("cwrscollective_name"))
+
+        .withProperty("name", localProperty("cwrscollective_name"))
+        .withProperty("type", localProperty("cwrscollective_type", stringToUnencodedStringOf(
+          "LIBRARY",
+          "PUBLISHER"
+        )))
+        .withProperty("links", localProperty("cwrscollective_links", hyperlinks))
+
+        .withProperty("tempLocation", localProperty("cwrscollective_tempLocation"))
+        .withProperty("tempName", localProperty("cwrscollective_tempName"))
+      )
+      .withCollection("cwrspersons", c -> c
+        .withDisplayName(localProperty("cwrsperson_name"))
+
+        .withProperty("names", localProperty("cwrsperson_names", personNames))
+        .withProperty("types", localProperty("cwrsperson_types", stringArrayToEncodedArrayOf(
+          "AUTHOR",
+          "PSEUDONYM"
+        )))
+        .withProperty("gender", localProperty("cwrsperson_gender", gender))
+        .withProperty("birthDate", localProperty("cwrsperson_birthDate", datable))
+        .withProperty("deathDate", localProperty("cwrsperson_deathDate", datable))
+        .withProperty("links", localProperty("cwrsperson_links", hyperlinks))
+
+        .withProperty("tempBirthPlace", localProperty("cwrsperson_tempBirthPlace"))
+        .withProperty("tempDeathPlace", localProperty("cwrsperson_tempDeathPlace"))
+        .withProperty("tempLanguage", localProperty("cwrsperson_tempLanguage"))
+      )
+      .withCollection("cwrsdocuments", c -> c
+        .withDisplayName(localProperty("cwrsdocument_title"))
+
+        .withProperty("title", localProperty("cwrsdocument_title"))
+        .withProperty("documentType", localProperty("cwrsdocument_documentType", stringToEncodedStringOf(
+          WW_DOCUMENT_TYPES
+        )))
+        .withProperty("documentResourceType",
+          localProperty("cwrsdocument_documentResourceType", stringToEncodedStringOf(
+            "TEXT"
+          ))
+        )
+        .withProperty("date", localProperty("cwrsdocument_date", datable))
+        .withProperty("description", localProperty("cwrsdocument_description"))
+        .withProperty("links", localProperty("cwrsdocument_links", hyperlinks))
+        .withProperty("tempLanguage", localProperty("cwrsdocument_tempLanguage"))))
     .build();
 
 }
