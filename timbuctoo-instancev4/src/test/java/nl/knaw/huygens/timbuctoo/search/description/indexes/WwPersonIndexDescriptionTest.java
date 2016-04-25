@@ -13,86 +13,71 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 
-public class PersonIndexDescriptionTest {
+public class WwPersonIndexDescriptionTest {
 
   @Test
   public void getSortIndexPropertyNamesReturnsPropertyNamesForAllTypesAndFields() {
-    List<String> types = Lists.newArrayList("wwperson", "person", "custom");
-    PersonIndexDescription instance = new PersonIndexDescription(types);
+    WwPersonIndexDescription instance = new WwPersonIndexDescription();
 
-    Set<String> results = instance.getSortIndexPropertyNames();
+    Set<String> results = instance.getSortFieldDescriptions().stream()
+            .map(IndexerSortFieldDescription::getSortPropertyName)
+            .collect(Collectors.toSet());
 
     assertThat(results, containsInAnyOrder(
             "wwperson_names_sort",
             "wwperson_deathDate_sort",
             "wwperson_birthDate_sort",
-            "person_names_sort",
-            "person_deathDate_sort",
-            "person_birthDate_sort",
-            "custom_names_sort",
-            "custom_deathDate_sort",
-            "custom_birthDate_sort",
             "modified_sort"
     ));
   }
 
   @Test
   public void addIndexedSortPropertiesSetsTheSortIndexProperties() throws JsonProcessingException {
-    List<String> types = Lists.newArrayList("wwperson", "person");
     long timeStampOnJan20th2016 = 1453290593000L;
     Graph graph = newGraph()
             .withVertex(v -> v
                     .withVre("ww")
                     .withType("person")
-                    .withProperty("person_names", getPersonName("testfore", "testsur"))
                     .withProperty("wwperson_names", getPersonName("testfore", "testsur2"))
-                    .withProperty("person_deathDate", "\"2015-05-01\"")
                     .withProperty("wwperson_deathDate", "\"2015-05-01\"")
-                    .withProperty("person_birthDate", "\"2010-05-01\"")
                     .withProperty("wwperson_birthDate", "\"2010-05-01\"")
                     .withProperty("modified", getChange(timeStampOnJan20th2016))
             )
             .build();
-    PersonIndexDescription instance = new PersonIndexDescription(types);
+    WwPersonIndexDescription instance = new WwPersonIndexDescription();
     Vertex vertex = graph.traversal().V().toList().get(0);
 
     instance.addIndexedSortProperties(vertex);
 
     assertThat(vertex.property("wwperson_names_sort").value(), equalTo("testsur2, testfore"));
-    assertThat(vertex.property("person_names_sort").value(), equalTo("testsur, testfore"));
     assertThat(vertex.property("wwperson_birthDate_sort").value(), equalTo(2010));
-    assertThat(vertex.property("person_birthDate_sort").value(), equalTo(2010));
     assertThat(vertex.property("wwperson_deathDate_sort").value(), equalTo(2015));
-    assertThat(vertex.property("person_deathDate_sort").value(), equalTo(2015));
     assertThat(vertex.property("modified_sort").value(), equalTo(timeStampOnJan20th2016));
 
   }
 
   @Test
   public void addIndexedSortPropertiesSetsTheSortIndexPropertyToEmptyStringWhenPropertyIsMissing() {
-    List<String> types = Lists.newArrayList("wwperson", "person");
     Graph graph = newGraph()
             .withVertex(v -> v
                     .withVre("ww")
                     .withType("person"))
             .build();
-    PersonIndexDescription instance = new PersonIndexDescription(types);
+    WwPersonIndexDescription instance = new WwPersonIndexDescription();
     Vertex vertex = graph.traversal().V().toList().get(0);
 
     instance.addIndexedSortProperties(vertex);
 
     assertThat(vertex.property("wwperson_names_sort").value(), equalTo(""));
-    assertThat(vertex.property("person_names_sort").value(), equalTo(""));
     assertThat(vertex.property("wwperson_birthDate_sort").value(), equalTo(0));
-    assertThat(vertex.property("person_birthDate_sort").value(), equalTo(0));
     assertThat(vertex.property("wwperson_deathDate_sort").value(), equalTo(0));
-    assertThat(vertex.property("person_deathDate_sort").value(), equalTo(0));
     assertThat(vertex.property("modified_sort").value(), equalTo(0L));
 
   }

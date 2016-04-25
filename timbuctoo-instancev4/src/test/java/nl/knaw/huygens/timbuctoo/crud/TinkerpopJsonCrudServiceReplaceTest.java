@@ -153,11 +153,8 @@ public class TinkerpopJsonCrudServiceReplaceTest {
     Vertex vertex = graph.traversal().V().has("tim_id", id).has("isLatest", true).next();
 
     MatcherAssert.assertThat(vertex.property("wwperson_names_sort").value(), equalTo(""));
-    MatcherAssert.assertThat(vertex.property("person_names_sort").value(), equalTo(""));
     MatcherAssert.assertThat(vertex.property("wwperson_birthDate_sort").value(), equalTo(0));
-    MatcherAssert.assertThat(vertex.property("person_birthDate_sort").value(), equalTo(0));
     MatcherAssert.assertThat(vertex.property("wwperson_deathDate_sort").value(), equalTo(0));
-    MatcherAssert.assertThat(vertex.property("person_deathDate_sort").value(), equalTo(0));
   }
 
   @Test

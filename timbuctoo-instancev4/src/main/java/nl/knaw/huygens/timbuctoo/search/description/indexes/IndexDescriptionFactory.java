@@ -5,12 +5,19 @@ import nl.knaw.huygens.timbuctoo.search.description.IndexDescription;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.stream.Collectors.toList;
+
 public class IndexDescriptionFactory {
 
-  public Optional<IndexDescription> create(List<String> types) {
-    if (types.contains("person")) {
-      return Optional.of(new PersonIndexDescription(types));
+  public IndexDescription create(String type) {
+    if (type.equals("wwperson")) {
+      return new WwPersonIndexDescription();
     }
-    return Optional.empty();
+    return null;
+  }
+
+  public List<IndexDescription> getIndexersForTypes(List<String> types) {
+    return types.stream().map(this::create).filter(type -> type != null).collect(toList());
+
   }
 }

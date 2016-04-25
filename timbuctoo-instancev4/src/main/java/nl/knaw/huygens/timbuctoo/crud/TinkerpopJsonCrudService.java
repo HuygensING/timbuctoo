@@ -252,9 +252,9 @@ public class TinkerpopJsonCrudService {
     setCreated(vertex, userId);
 
     List<String> types = Lists.newArrayList(collection.getAbstractType(), collection.getEntityTypeName());
-    Optional<IndexDescription> indexer = new IndexDescriptionFactory().create(types);
-    if (indexer.isPresent()) {
-      indexer.get().addIndexedSortProperties(vertex);
+    List<IndexDescription> indexers = new IndexDescriptionFactory().getIndexersForTypes(types);
+    for ( IndexDescription indexer : indexers) {
+      indexer.addIndexedSortProperties(vertex);
     }
 
 
@@ -746,9 +746,11 @@ public class TinkerpopJsonCrudService {
     List<String> types = Arrays.asList(getEntityTypes(entity)
             .orElseGet(() -> Try.success(new String[0])).getOrElse(new String[0]));
 
-    Optional<IndexDescription> indexer = new IndexDescriptionFactory().create(Lists.newArrayList(types));
-    if (indexer.isPresent()) {
-      indexer.get().addIndexedSortProperties(entity);
+    List<IndexDescription> indexers = new IndexDescriptionFactory()
+            .getIndexersForTypes(Lists.newArrayList(collection.getEntityTypeName()));
+
+    for (IndexDescription indexer : indexers) {
+      indexer.addIndexedSortProperties(entity);
     }
 
 

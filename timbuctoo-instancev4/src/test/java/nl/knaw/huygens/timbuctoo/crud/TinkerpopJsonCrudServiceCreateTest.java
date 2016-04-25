@@ -148,11 +148,8 @@ public class TinkerpopJsonCrudServiceCreateTest {
     Vertex vertex = graph.vertices().next();
 
     assertThat(vertex.property("wwperson_names_sort").value(), equalTo(""));
-    assertThat(vertex.property("person_names_sort").value(), equalTo(""));
     assertThat(vertex.property("wwperson_birthDate_sort").value(), equalTo(0));
-    assertThat(vertex.property("person_birthDate_sort").value(), equalTo(0));
     assertThat(vertex.property("wwperson_deathDate_sort").value(), equalTo(0));
-    assertThat(vertex.property("person_deathDate_sort").value(), equalTo(0));
   }
 
   @Test
