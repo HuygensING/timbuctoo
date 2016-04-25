@@ -198,34 +198,6 @@ public class AutocompleteTest {
   }
 
   @Test
-  public void givesSortedResults() throws Exception {
-    Graph graph = newGraph()
-      .withVertex(v -> v
-        .withTimId(UUID.randomUUID().toString())
-        .withVre("ww")
-        .withType("person")
-        .withProperty("isLatest", true)
-        .withProperty("rev", 2)
-        .withProperty("displayName", "A author")
-      )
-      .withVertex(v -> v
-        .withTimId(UUID.randomUUID().toString())
-        .withVre("ww")
-        .withType("person")
-        .withProperty("isLatest", true)
-        .withProperty("rev", 2)
-        .withProperty("displayName", "Z author")
-      )
-      .build();
-    TinkerpopJsonCrudService instance = basicInstance(graph)
-      .build();
-
-    ArrayNode jsonNodes = instance.autoComplete("wwpersons", Optional.of("author"), Optional.empty());
-    assertThat(jsonNodes.get(0).get("value").asText(), is("A author"));
-    assertThat(jsonNodes.get(1).get("value").asText(), is("Z author"));
-  }
-
-  @Test
   public void filtersOnKeywords() throws Exception {
     Graph graph = newGraph()
       .withVertex(v -> v

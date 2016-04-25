@@ -37,7 +37,6 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Clock;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -839,7 +838,6 @@ public class TinkerpopJsonCrudService {
                                .limit(1000L) //no query means you get a lot of results
                                .toList();
     }
-    results.sort(Comparator.comparing(node -> node.get("value").asText()));
 
     return jsnA(results.stream());
   }
