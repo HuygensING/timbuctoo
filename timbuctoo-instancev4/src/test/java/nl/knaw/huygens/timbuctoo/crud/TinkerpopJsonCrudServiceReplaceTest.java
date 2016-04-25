@@ -35,6 +35,7 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertThat;
@@ -125,6 +126,35 @@ public class TinkerpopJsonCrudServiceReplaceTest {
             .has("isLatest", true)
             .has(T.label,
             LabelP.of("wwperson")).toList().size(), is(1));
+  }
+
+  @Test
+  public void invokesIndexDescriptionAddIndexedSortPropertiesForPersons() throws Exception {
+    String id = UUID.randomUUID().toString();
+    Graph graph = newGraph()
+            .withVertex(v -> v
+                    .withTimId(id)
+                    .withProperty("types", "[\"person\", \"wwperson\"]")
+                    .withProperty("isLatest", true)
+                    .withProperty("rev", 1)
+                    .withIncomingRelation("VERSION_OF", "orig")
+            )
+            .withVertex("orig", v -> v
+                    .withTimId(id)
+                    .withProperty("isLatest", false)
+                    .withProperty("rev", 1)
+            )
+            .build();
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
+
+    instance.replace("wwpersons", UUID.fromString(id), jsnO("^rev", jsn(1)), "");
+
+
+    Vertex vertex = graph.traversal().V().has("tim_id", id).has("isLatest", true).next();
+
+    MatcherAssert.assertThat(vertex.property("wwperson_names_sort").value(), equalTo(""));
+    MatcherAssert.assertThat(vertex.property("wwperson_birthDate_sort").value(), equalTo(0));
+    MatcherAssert.assertThat(vertex.property("wwperson_deathDate_sort").value(), equalTo(0));
   }
 
   @Test

@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.crud;
 import nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes;
 import nl.knaw.huygens.timbuctoo.model.vre.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
@@ -29,6 +30,7 @@ public class JsonCrudServiceBuilder {
   private Authorizer authorizer;
   private GraphWrapper graphWrapper = null;
   private UrlGenerator handleUrlGenerator;
+  private IndexDescriptionFactory indexDescriptionFactory = new IndexDescriptionFactory();
 
   private JsonCrudServiceBuilder() {
     vres = new Vres.Builder()
@@ -74,7 +76,7 @@ public class JsonCrudServiceBuilder {
 
   public TinkerpopJsonCrudService build() {
     return new TinkerpopJsonCrudService(graphWrapper, vres, handleAdder, userStore, handleUrlGenerator,
-      autoCompleteUrlGenerator, relationUrlGenerator, clock, authorizer);
+      autoCompleteUrlGenerator, relationUrlGenerator, clock, indexDescriptionFactory, authorizer);
   }
 
   public TinkerpopJsonCrudService forGraph(Graph graph) {

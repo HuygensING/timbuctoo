@@ -20,12 +20,14 @@ import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
+import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.LabelDatabaseMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.WwPersonSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
 import nl.knaw.huygens.timbuctoo.server.endpoints.admin.DatabaseValidationServlet;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
@@ -45,6 +47,7 @@ import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseValidator;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.EncryptionAlgorithmHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.FileHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.LabelsAddedToVertexDatabaseCheck;
+import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.WwPersonSortIndexesDatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
 import org.slf4j.LoggerFactory;
 
@@ -111,7 +114,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     // Database migrations
     final List<DatabaseMigration> databaseMigrations = Lists.newArrayList(
-      new LabelDatabaseMigration()
+      new LabelDatabaseMigration(),
+      new WwPersonSortIndexesDatabaseMigration()
     );
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, databaseMigrations);
@@ -126,7 +130,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       (coll, id, rev) -> URI.create(configuration.getBaseUri() + SingleEntity.makeUrl(coll, id, rev).getPath()),
       (coll, id, rev) -> URI.create(configuration.getBaseUri() + SingleEntity.makeUrl(coll, id, rev).getPath()),
       (coll, id, rev) -> URI.create(SingleEntity.makeUrl(coll, id, rev).getPath().replaceFirst("^/v2.1/", "")),
-      Clock.systemDefaultZone(), new JsonBasedAuthorizer(configuration.getAuthorizationsPath()));
+      Clock.systemDefaultZone(),
+      new IndexDescriptionFactory(),
+      new JsonBasedAuthorizer(configuration.getAuthorizationsPath()));
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager, HuygensIng.keywordTypes);
 
 
@@ -187,7 +193,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
   public DatabaseValidator createDatabaseValidator(TinkerpopGraphManager graphManager) {
     List<DatabaseCheck> databaseChecks = Lists.newArrayList(
-            new LabelsAddedToVertexDatabaseCheck()
+            new LabelsAddedToVertexDatabaseCheck(),
+            new WwPersonSortIndexesDatabaseCheck()
     );
     return new DatabaseValidator(graphManager, 1, Clock.systemUTC(), databaseChecks);
   }
