@@ -190,7 +190,7 @@ public class TinkerpopJsonCrudService {
     Optional<String> targetType = getProp(typeV, "relationtype_targetTypeName", String.class);
 
     if (targetType.isPresent() && !targetV.getAbstractType().equals(targetType.get())) {
-      throw new IOException("Source is a " + targetType.get() + " instead of " + targetV.getAbstractType());
+      throw new IOException("Target is a " + targetType.get() + " instead of " + targetV.getAbstractType());
     }
   }
 
