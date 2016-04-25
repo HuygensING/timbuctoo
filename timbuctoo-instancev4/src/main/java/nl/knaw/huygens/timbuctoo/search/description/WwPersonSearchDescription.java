@@ -62,37 +62,30 @@ public class WwPersonSearchDescription extends AbstractSearchDescription {
   }
 
   protected ArrayList<SortFieldDescription> createSortFieldDescriptions() {
-    PropertyParserFactory propertyParserFactory = new PropertyParserFactory();
     return Lists.newArrayList(
       newSortFieldDescription()
         .withName("dynamic_k_modified")
         .withDefaultValue(0L)
         .withProperty(localProperty()
-          .withName("modified")
-          .withParser(propertyParserFactory.getParser(Change.class)))
+          .withName("modified_sort"))
         .build(),
       newSortFieldDescription()
         .withName("dynamic_k_birthDate")
         .withDefaultValue(0)
         .withProperty(localProperty()
-          .withName("wwperson_birthDate")
-          .withParser(propertyParserFactory.getParser(Datable.class)))
+          .withName("wwperson_birthDate_sort"))
         .build(),
       newSortFieldDescription()
         .withName("dynamic_sort_name")
         .withDefaultValue("")
         .withProperty(localProperty()
-          .withName("wwperson_names")
-          .withParser(propertyParserFactory.getParser(PersonNames.class)))
-        .withBackupProperty(localProperty()
-          .withName("wwperson_tempName"))
+          .withName("wwperson_names_sort"))
         .build(),
       newSortFieldDescription()
         .withName("dynamic_k_deathDate")
         .withDefaultValue(0)
         .withProperty(localProperty()
-          .withName("wwperson_deathDate")
-          .withParser(propertyParserFactory.getParser(Datable.class)))
+          .withName("wwperson_deathDate_sort"))
         .build());
   }
 

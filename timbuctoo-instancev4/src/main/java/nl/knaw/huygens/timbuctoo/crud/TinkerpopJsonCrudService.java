@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
@@ -13,6 +14,8 @@ import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.search.description.IndexDescription;
+import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
@@ -37,6 +40,7 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Clock;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -246,6 +250,14 @@ public class TinkerpopJsonCrudService {
     ((Neo4jVertex) vertex).addLabel(collection.getAbstractType());
 
     setCreated(vertex, userId);
+
+    List<String> types = Lists.newArrayList(collection.getAbstractType(), collection.getEntityTypeName());
+    Optional<IndexDescription> indexer = new IndexDescriptionFactory().create(types);
+    if (indexer.isPresent()) {
+      indexer.get().addIndexedSortProperties(vertex);
+    }
+
+
     duplicateVertex(graph, vertex);
     //Make sure this is the last line of the method. We don't want to commit if an exception happens halfway
     //the return statement below should return a variable directly without any additional logic
@@ -729,6 +741,17 @@ public class TinkerpopJsonCrudService {
     }
 
     setModified(entity, userId);
+
+
+    List<String> types = Arrays.asList(getEntityTypes(entity)
+            .orElseGet(() -> Try.success(new String[0])).getOrElse(new String[0]));
+
+    Optional<IndexDescription> indexer = new IndexDescriptionFactory().create(Lists.newArrayList(types));
+    if (indexer.isPresent()) {
+      indexer.get().addIndexedSortProperties(entity);
+    }
+
+
     duplicateVertex(graph, entity);
 
     //Make sure this is at the last line of the method. We don't want to commit half our changes

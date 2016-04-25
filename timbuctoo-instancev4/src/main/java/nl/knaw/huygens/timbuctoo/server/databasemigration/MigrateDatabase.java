@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -83,5 +84,9 @@ public class MigrateDatabase implements Runnable {
     }
     transaction.commit();
     System.out.println();
+
+    transaction.close();
+    migration.generateIndexes((Neo4jGraph) graph, transaction);
+
   }
 }
