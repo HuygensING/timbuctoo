@@ -37,6 +37,8 @@ public class SearchDescriptionFactory {
           propertyDescriptorFactory, facetDescriptionFactory, otherSearch));
       case "dcararchive":
         return Optional.of(new DcarArchiveSearchDescription(propertyDescriptorFactory, facetDescriptionFactory));
+      case "dcararchiver":
+        return Optional.of(new DcarArchiverSearchDescription(propertyDescriptorFactory, facetDescriptionFactory));
       default:
         return Optional.empty();
     }

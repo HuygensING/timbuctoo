@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorF
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 import nl.knaw.huygens.timbuctoo.search.description.sort.SortDescription;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +21,7 @@ import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSear
   .createLocalSimpleFullTextSearchDescription;
 import static nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription.newSortFieldDescription;
 
-public class DcarArchiveSearchDescription extends AbstractSearchDescription {
+public class DcarArchiverSearchDescription extends AbstractSearchDescription {
   private final PropertyDescriptor displayNameDescriptor;
   private final PropertyDescriptor idDescriptor;
   private final List<FacetDescription> facetDescriptions;
@@ -30,13 +31,14 @@ public class DcarArchiveSearchDescription extends AbstractSearchDescription {
   private final List<FullTextSearchDescription> fullTextSearchDescriptions;
   private final SortDescription sortDescription;
 
-  public DcarArchiveSearchDescription(PropertyDescriptorFactory propertyDescriptorFactory,
-                                      FacetDescriptionFactory facetDescriptionFactory) {
+  public DcarArchiverSearchDescription(PropertyDescriptorFactory propertyDescriptorFactory,
+                                       FacetDescriptionFactory facetDescriptionFactory) {
     displayNameDescriptor = propertyDescriptorFactory.getLocal("dcararchive_titleEng", String.class);
     idDescriptor = propertyDescriptorFactory.getLocal(SearchDescription.ID_DB_PROP, String.class);
     facetDescriptions = createFacetDescriptions(facetDescriptionFactory);
     sortableFields = Lists.newArrayList("dynamic_sort_title", "dynamic_k_period");
-    fullTextSearchFields = Lists.newArrayList("dynamic_t_titleNLD", "dynamic_t_notes", "dynamic_t_titleEng");
+    fullTextSearchFields =
+      Lists.newArrayList("dynamic_t_history", "dynamic_t_nameEng", "dynamic_t_nameNLD", "dynamic_t_notes");
 
     dataPropertyDescriptors = createDataPropertyDescriptors(propertyDescriptorFactory);
     fullTextSearchDescriptions = createFullTextSearchDescriptions();
@@ -58,35 +60,32 @@ public class DcarArchiveSearchDescription extends AbstractSearchDescription {
   }
 
   private ArrayList<FullTextSearchDescription> createFullTextSearchDescriptions() {
+
     return Lists.newArrayList(
-      createLocalSimpleFullTextSearchDescription("dynamic_t_titleNLD", "dcararchive_titleNLD"),
-      createLocalSimpleFullTextSearchDescription("dynamic_t_notes", "dcararchive_notes"),
-      createLocalSimpleFullTextSearchDescription("dynamic_t_titleEng", "dcararchive_titleEng"));
+      createLocalSimpleFullTextSearchDescription("dynamic_t_history", "dcararchiver_history"),
+      createLocalSimpleFullTextSearchDescription("dynamic_t_nameEng", "dcararchiver_nameEng"),
+      createLocalSimpleFullTextSearchDescription("dynamic_t_nameNLD", "dcararchiver_nameNld"),
+      createLocalSimpleFullTextSearchDescription("dynamic_t_notes", "dcararchiver_notes"));
   }
 
   private Map<String, PropertyDescriptor> createDataPropertyDescriptors(PropertyDescriptorFactory pdf) {
     Map<String, PropertyDescriptor> propertyDescriptors = Maps.newHashMap();
 
     propertyDescriptors.put("_id", pdf.getLocal("tim_id", String.class));
-    propertyDescriptors.put("beginDate", pdf.getLocal("dcararchive_beginDate", String.class));
-    propertyDescriptors.put("countries", pdf.getLocal("dcararchive_countries", String.class));
-    propertyDescriptors.put("endDate", pdf.getLocal("dcararchive_endDate", String.class));
-    propertyDescriptors.put("itemNo", pdf.getLocal("dcararchive_itemNo", String.class));
-    propertyDescriptors.put("refCode", pdf.getLocal("dcararchive_refCode", String.class));
-    propertyDescriptors.put("refCodeArchive", pdf.getLocal("dcararchive_refArchiveCode", String.class));
-    propertyDescriptors.put("series", pdf.getLocal("dcararchive_series", String.class));
-    propertyDescriptors.put("subCode", pdf.getLocal("dcararchive_subCode", String.class));
-    propertyDescriptors.put("titleEng", pdf.getLocal("dcararchive_titleEng", String.class));
+    propertyDescriptors.put("beginDate", pdf.getLocal("dcararchiver_beginDate", String.class));
+    propertyDescriptors.put("endDate", pdf.getLocal("dcararchiver_endDate", String.class));
+    propertyDescriptors.put("titleEng", pdf.getLocal("dcararchiver_nameEng", String.class));
+    propertyDescriptors.put("types", pdf.getLocal("dcararchiver_types", List.class));
 
     return propertyDescriptors;
   }
 
   private List<FacetDescription> createFacetDescriptions(FacetDescriptionFactory fdf) {
     return Lists.newArrayList(
-      fdf.createListFacetDescription("dynamic_s_subject", String.class, "dcarkeyword_value", "has_archive_keyword"),
-      fdf.createListFacetDescription("dynamic_s_place", String.class, "dcarkeyword_value", "has_archive_place"),
-      fdf.createListFacetDescription("dynamic_s_person", PersonNames.class, "person_names", "has_archive_person"),
-      fdf.createListFacetDescription("dynamic_s_refcode", String.class, "dcararchive_refCodeArchive")
+      fdf.createMultiValueListFacetDescription("dynamic_s_type", "dcararchiver_value"),
+      fdf.createListFacetDescription("dynamic_s_place", String.class, "dcarkeyword_value", "has_archiver_place"),
+      fdf.createListFacetDescription("dynamic_s_person", PersonNames.class, "person_names", "has_archiver_person"),
+      fdf.createListFacetDescription("dynamic_s_subject", String.class, "dcarkeyword_value", "has_archiver_keyword")
     );
     // TODO add date range facet build from startDate and endDate.
   }
@@ -123,7 +122,7 @@ public class DcarArchiveSearchDescription extends AbstractSearchDescription {
 
   @Override
   public String getType() {
-    return "dcararchive";
+    return "dcararchiver";
   }
 
   @Override

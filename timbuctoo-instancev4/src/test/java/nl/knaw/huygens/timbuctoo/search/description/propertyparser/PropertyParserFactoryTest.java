@@ -9,6 +9,8 @@ import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
@@ -65,6 +67,13 @@ public class PropertyParserFactoryTest {
     PropertyParser parser = instance.getParser(PersonNames.class);
 
     assertThat(parser, is(instanceOf(PersonNamesDefaultNamePropertyParser.class)));
+  }
+
+  @Test
+  public void getParserReturnsAStringListParserForList() {
+    PropertyParser parser = instance.getParser(List.class);
+
+    assertThat(parser, is(instanceOf(StringListParser.class)));
   }
 
   @Test
