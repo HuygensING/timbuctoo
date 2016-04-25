@@ -226,7 +226,7 @@ public class TinkerpopJsonCrudService {
     Iterator<String> fieldNames = input.fieldNames();
     while (fieldNames.hasNext()) {
       String fieldName = fieldNames.next();
-      if (!Objects.equals(fieldName, "@type")) {
+      if (!fieldName.startsWith("@") && !fieldName.startsWith("^") && !fieldName.equals("_id")) {
         if (mapping.containsKey(fieldName)) {
           try {
             mapping.get(fieldName).setJson(vertex, input.get(fieldName));
