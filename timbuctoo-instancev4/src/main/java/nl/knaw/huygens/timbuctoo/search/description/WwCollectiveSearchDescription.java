@@ -2,18 +2,17 @@ package nl.knaw.huygens.timbuctoo.search.description;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-
 import nl.knaw.huygens.timbuctoo.model.CollectiveType;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.facet.FacetDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
 
-import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription.createLocalSimpleFullTextSearchDescription;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription.createLocalSimpleFullTextSearchDescription;
 
 public class WwCollectiveSearchDescription extends AbstractSearchDescription implements SearchDescription {
   private static final List<String> SORTABLE_FIELDS = Lists.newArrayList();
