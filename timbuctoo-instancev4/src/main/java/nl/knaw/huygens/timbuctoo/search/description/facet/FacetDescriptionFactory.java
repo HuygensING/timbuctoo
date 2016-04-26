@@ -88,4 +88,8 @@ public class FacetDescriptionFactory {
 
     return new EdgeListFacetDescription(facetName, relationNames);
   }
+
+  public FacetDescription createPeriodFacetDescription(String facetName, String startYear, String endYear) {
+    return new PeriodFacetDescription(facetName, startYear, endYear);
+  }
 }

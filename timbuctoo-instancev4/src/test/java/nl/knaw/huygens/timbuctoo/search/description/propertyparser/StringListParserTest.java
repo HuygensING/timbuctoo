@@ -1,0 +1,34 @@
+package nl.knaw.huygens.timbuctoo.search.description.propertyparser;
+
+import com.google.common.collect.Lists;
+import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
+public class StringListParserTest {
+
+  @Test
+  public void parseConcatenatesTheValuesOfTheListWithASemiColon() {
+    String input = "[\"value1\", \"value2\"]";
+    String expectedValue = "value1;value2";
+    StringListParser instance = new StringListParser();
+
+    String value = instance.parse(input);
+
+    assertThat(value, is(equalTo(expectedValue)));
+  }
+
+  @Test
+  public void parseReturnsNullIfTheInputIsNull() {
+    String input = null;
+    StringListParser instance = new StringListParser();
+
+    String value = instance.parse(input);
+
+    assertThat(value, is(nullValue()));
+  }
+
+}
