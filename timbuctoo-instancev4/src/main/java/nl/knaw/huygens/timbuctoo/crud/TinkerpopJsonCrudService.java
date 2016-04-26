@@ -656,8 +656,8 @@ public class TinkerpopJsonCrudService {
     }
     for (Iterator<String> fieldNames = data.fieldNames(); fieldNames.hasNext();) {
       String name = fieldNames.next();
-      if (!name.equals("^rev") && !name.equals("accepted")) {
-        throw new IOException("Only 'accepted' and '^rev' are accepted properties");
+      if (!name.startsWith("^") && !name.startsWith("@") && !name.equals("_id") && !name.equals("accepted")) {
+        throw new IOException("Only 'accepted' is a changeable property");
       }
     }
 
