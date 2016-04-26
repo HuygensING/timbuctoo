@@ -10,5 +10,6 @@ check process timbuctoo with pidfile /data/timbuctoo/app/logs/timbuctoo_daemon.p
 	if failed
 		port 9081
 		protocol http
+		with timeout 15 seconds
 		request "/healthcheck?pretty=true"
 	then alert
