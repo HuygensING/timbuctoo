@@ -70,7 +70,7 @@ class DcarLegislationSearchDescription extends AbstractSearchDescription{
     Map<String, PropertyDescriptor> propertyDescriptors = Maps.newHashMap();
 
     propertyDescriptors.put("_id", pdf.getLocal(ID_DB_PROP, String.class));
-    propertyDescriptors.put("title_eng", pdf.getLocal("dcarlegislation_titleEng", String.class));
+    propertyDescriptors.put("titleEng", pdf.getLocal("dcarlegislation_titleEng", String.class));
     propertyDescriptors.put("date1", pdf.getLocal("dcarlegislation_date1", String.class));
 
     return propertyDescriptors;
@@ -78,9 +78,9 @@ class DcarLegislationSearchDescription extends AbstractSearchDescription{
 
   private List<FacetDescription> createFacetDescriptions(FacetDescriptionFactory fdf) {
     return Lists.newArrayList(
-      fdf.createListFacetDescription("dynamic_s_place", String.class, "dcarkeyword_value", "has_archiver_place"),
-      fdf.createListFacetDescription("dynamic_s_person", PersonNames.class, "person_names", "has_archiver_person"),
-      fdf.createListFacetDescription("dynamic_s_subject", String.class, "dcarkeyword_value", "has_archiver_keyword")
+      fdf.createListFacetDescription("dynamic_s_place", String.class, "dcarkeyword_value", "has_legislation_place"),
+      fdf.createListFacetDescription("dynamic_s_person", PersonNames.class, "person_names", "has_legislation_person"),
+      fdf.createListFacetDescription("dynamic_s_subject", String.class, "dcarkeyword_value", "has_legislation_keyword")
     );
     // TODO add date range facet build from date1.
   }
