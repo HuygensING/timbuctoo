@@ -18,17 +18,17 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 
-public class PeriodFacetDescriptionTest {
+public class DutchCaribbeanArchiveAndArchiverPeriodFacetDescriptionTest {
 
 
   public static final String FACET_NAME = "facetName";
   public static final String BEGIN_YEAR = "beginYear";
   public static final String END_YEAR = "endYear";
-  private PeriodFacetDescription instance;
+  private DutchCaribbeanArchiveAndArchiverPeriodFacetDescription instance;
 
   @Before
   public void setUp() throws Exception {
-    instance = new PeriodFacetDescription(FACET_NAME, BEGIN_YEAR, END_YEAR);
+    instance = new DutchCaribbeanArchiveAndArchiverPeriodFacetDescription(FACET_NAME, BEGIN_YEAR, END_YEAR);
   }
 
   private GraphTraversal<Vertex, Vertex> makeGraph(YearSpan... years) {

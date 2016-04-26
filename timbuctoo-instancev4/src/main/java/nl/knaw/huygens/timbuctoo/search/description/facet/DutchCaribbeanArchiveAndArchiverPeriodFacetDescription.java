@@ -13,12 +13,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
-public class PeriodFacetDescription implements FacetDescription {
+public class DutchCaribbeanArchiveAndArchiverPeriodFacetDescription implements FacetDescription {
   private final String facetName;
   private final String beginYear;
   private final String endYear;
 
-  public PeriodFacetDescription(String facetName, String beginYear, String endYear) {
+  public DutchCaribbeanArchiveAndArchiverPeriodFacetDescription(String facetName, String beginYear, String endYear) {
     this.facetName = facetName;
     this.beginYear = beginYear;
     this.endYear = endYear;
