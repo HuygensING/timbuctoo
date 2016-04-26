@@ -114,20 +114,17 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
         newSortFieldDescription()
             .withName("dynamic_k_modified")
             .withDefaultValue(0L)
-            .withProperty(localProperty()
-                    .withName("modified_sort"))
+            .withProperty(localProperty().withName("modified_sort"))
             .build(),
         newSortFieldDescription()
             .withName("dynamic_sort_title")
             .withDefaultValue("")
-            .withProperty(localProperty()
-                    .withName("wwdocument_title"))
+            .withProperty(localProperty().withName("wwdocument_title"))
             .build(),
         newSortFieldDescription()
             .withName("dynamic_sort_creator")
-                .withDefaultValue("")
-                .withProperty(localProperty()
-                    .withName("wwdocument_creator_sort"))
+            .withDefaultValue("")
+            .withProperty(localProperty().withName("wwdocument_creator_sort"))
             .build()
     );
   }
