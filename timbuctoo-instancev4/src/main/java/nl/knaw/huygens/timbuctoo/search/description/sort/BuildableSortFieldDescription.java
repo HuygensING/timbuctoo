@@ -4,6 +4,9 @@ import nl.knaw.huygens.timbuctoo.search.description.Property;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class BuildableSortFieldDescription implements SortFieldDescription {
   private final String name;
   private final GraphTraversal<Object, Object> traversal;
@@ -31,11 +34,14 @@ public class BuildableSortFieldDescription implements SortFieldDescription {
 
   @Override
   @SuppressWarnings("unchecked")
-  public GraphTraversal<Object, Object> getTraversal() {
+  public List<GraphTraversal<Object, Object>> getTraversal() {
+    List<GraphTraversal<Object, Object>> result = new ArrayList<>(1);
     if (backUpTraversal == null) {
-      return __.coalesce(traversal, __.map(x -> defaultValue));
+      result.add(__.coalesce(traversal, __.map(x -> defaultValue)));
+    } else {
+      result.add(__.coalesce(traversal, backUpTraversal, __.map(x -> defaultValue)));
     }
-    return __.coalesce(traversal, backUpTraversal, __.map(x -> defaultValue));
+    return result;
   }
 
   public interface SortFieldDescriptionNameBuilder {

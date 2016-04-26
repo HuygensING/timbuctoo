@@ -33,7 +33,7 @@ public class SortFieldDescriptionTest {
       .withProperty(localProperty().withName(PROPERTY))
       .build();
 
-    GraphTraversal<?, ?> orderTraversal = instance.getTraversal();
+    GraphTraversal<?, ?> orderTraversal = instance.getTraversal().get(0);
 
     List<Vertex> vertices = traversal.order().by(orderTraversal, Order.incr).toList();
     assertThat(vertices, contains(
@@ -57,7 +57,7 @@ public class SortFieldDescriptionTest {
       .withProperty(localProperty().withName(PROPERTY))
       .build();
 
-    GraphTraversal<?, ?> orderTraversal = instance.getTraversal();
+    GraphTraversal<?, ?> orderTraversal = instance.getTraversal().get(0);
 
     List<Vertex> vertices = traversal.order().by(orderTraversal, Order.incr).toList();
     assertThat(vertices, contains(
@@ -83,7 +83,7 @@ public class SortFieldDescriptionTest {
       .withBackupProperty(localProperty().withName(PROPERTY_2))
       .build();
 
-    GraphTraversal<?, ?> orderTraversal = instance.getTraversal();
+    GraphTraversal<?, ?> orderTraversal = instance.getTraversal().get(0);
 
     List<Vertex> vertices = traversal.order().by(orderTraversal, Order.incr).toList();
     assertThat(vertices, contains(
