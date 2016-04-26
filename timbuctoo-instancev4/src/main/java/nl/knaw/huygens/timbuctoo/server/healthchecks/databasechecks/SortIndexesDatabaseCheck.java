@@ -17,46 +17,59 @@ import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypes;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 
-public abstract class SortIndexesDatabaseCheck implements DatabaseCheck {
+public class SortIndexesDatabaseCheck implements DatabaseCheck {
 
   protected ValidationResult getValidationResultForType(Vertex vertex, String type) {
+    IndexDescription indexDescription = new IndexDescriptionFactory().create(type);
+    List<IndexerSortFieldDescription> sortFieldDescriptions = indexDescription.getSortFieldDescriptions();
+
+
+    List<String> expectedSortFields = sortFieldDescriptions.stream()
+            .map(IndexerSortFieldDescription::getSortPropertyName)
+            .collect(toList());
+
+
+    for (IndexerSortFieldDescription expectedSortField : sortFieldDescriptions) {
+      final String expectedSortProperty = expectedSortField.getSortPropertyName();
+
+      VertexProperty<Object> vertexProperty = vertex.property(expectedSortProperty);
+      if (!vertexProperty.isPresent() ||
+              vertexProperty.value() == null) {
+
+        String message = String.format("Vertex with tim_id %s misses field %s. Expected fields: %s",
+                getProp(vertex, "tim_id", String.class).orElse("<UNKNOWN>"),
+                expectedSortProperty, expectedSortFields);
+
+        return new ElementValidationResult(false, message);
+      } else if (!vertexProperty.value().getClass().isAssignableFrom(expectedSortField.getType()) ) {
+        String message = String.format("Vertex with tim_id %s has incorrect data type for property %s\n" +
+                        "Expected: %s, got: %s",
+                getProp(vertex, "tim_id", String.class).orElse("<UNKNOWN>"),
+                expectedSortProperty,
+                expectedSortField.getType(),
+                vertexProperty.value().getClass().getName());
+
+        return new ElementValidationResult(false, message);
+      }
+    }
+
+
+    return new ElementValidationResult(true,
+            String.format("Vertex with tim_id %s is valid.",
+                    getProp(vertex, "tim_id", String.class).orElse("<UNKNOWN>"))
+    );
+  }
+
+  @Override
+  public ValidationResult check(Vertex vertex) {
     List<String> types = Arrays.asList(getEntityTypes(vertex)
             .orElseGet(() -> Try.success(new String[0]))
             .getOrElse(() -> new String[0]));
 
-    if (types.contains(type)) {
-      IndexDescription indexDescription = new IndexDescriptionFactory().create(type);
-      List<IndexerSortFieldDescription> sortFieldDescriptions = indexDescription.getSortFieldDescriptions();
-
-
-      List<String> expectedSortFields = sortFieldDescriptions.stream()
-              .map(IndexerSortFieldDescription::getSortPropertyName)
-              .collect(toList());
-
-
-      for (IndexerSortFieldDescription expectedSortField : sortFieldDescriptions) {
-        final String expectedSortProperty = expectedSortField.getSortPropertyName();
-
-        VertexProperty<Object> vertexProperty = vertex.property(expectedSortProperty);
-        if (!vertexProperty.isPresent() ||
-                vertexProperty.value() == null) {
-
-          String message = String.format("Vertex with tim_id %s misses field %s. Expected fields: %s",
-                  getProp(vertex, "tim_id", String.class).orElse("<UNKNOWN>"),
-                  expectedSortProperty, expectedSortFields);
-
-          return new ElementValidationResult(false, message);
-        } else if (!vertexProperty.value().getClass().isAssignableFrom(expectedSortField.getType()) ) {
-          String message = String.format("Vertex with tim_id %s has incorrect data type for property %s\n" +
-                          "Expected: %s, got: %s",
-                  getProp(vertex, "tim_id", String.class).orElse("<UNKNOWN>"),
-                  expectedSortProperty,
-                  expectedSortField.getType(),
-                  vertexProperty.value().getClass().getName());
-
-          return new ElementValidationResult(false, message);
-        }
-      }
+    if (types.contains("wwdocument")) {
+      return getValidationResultForType(vertex, "wwdocument");
+    } else if (types.contains("wwperson")) {
+      return getValidationResultForType(vertex, "wwperson");
     }
 
     return new ElementValidationResult(true,
