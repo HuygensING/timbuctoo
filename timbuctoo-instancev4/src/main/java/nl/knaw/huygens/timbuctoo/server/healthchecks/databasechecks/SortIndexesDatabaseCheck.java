@@ -4,6 +4,7 @@ import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.search.description.IndexDescription;
 import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexerSortFieldDescription;
+import nl.knaw.huygens.timbuctoo.server.healthchecks.CompositeValidationResult;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ElementValidationResult;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ValidationResult;
@@ -12,6 +13,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypes;
@@ -19,8 +21,7 @@ import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 
 public class SortIndexesDatabaseCheck implements DatabaseCheck {
 
-  protected ValidationResult getValidationResultForType(Vertex vertex, String type) {
-    IndexDescription indexDescription = new IndexDescriptionFactory().create(type);
+  protected ValidationResult getValidationResultForType(Vertex vertex, IndexDescription indexDescription) {
     List<IndexerSortFieldDescription> sortFieldDescriptions = indexDescription.getSortFieldDescriptions();
 
 
@@ -66,15 +67,12 @@ public class SortIndexesDatabaseCheck implements DatabaseCheck {
             .orElseGet(() -> Try.success(new String[0]))
             .getOrElse(() -> new String[0]));
 
-    if (types.contains("wwdocument")) {
-      return getValidationResultForType(vertex, "wwdocument");
-    } else if (types.contains("wwperson")) {
-      return getValidationResultForType(vertex, "wwperson");
-    }
+    List<IndexDescription> indexDescriptions = new IndexDescriptionFactory().getIndexersForTypes(types);
 
-    return new ElementValidationResult(true,
-            String.format("Vertex with tim_id %s is valid.",
-                    getProp(vertex, "tim_id", String.class).orElse("<UNKNOWN>"))
-    );
+    List<ValidationResult> results = indexDescriptions.stream()
+            .map(indexDescription -> getValidationResultForType(vertex, indexDescription))
+            .collect(Collectors.toList());
+
+    return new CompositeValidationResult(results);
   }
 }
