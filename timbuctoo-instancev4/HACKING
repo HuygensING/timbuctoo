@@ -22,3 +22,6 @@ Optionals
 
 Database retrieval
  - Use Gremlin as much as possible to execute database queries.
+
+ Not implemted methods
+ - Let every method that is not implemented (because you do not use the method) throw an UnsupportedOperationException. This makes it easier to determine why some calls fail.
