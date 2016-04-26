@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.search.description.facet;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.Range;
 import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
@@ -19,7 +18,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 public class DatableRangeFacetDescription extends AbstractFacetDescription {
@@ -38,23 +36,13 @@ public class DatableRangeFacetDescription extends AbstractFacetDescription {
   @Override
   @SuppressWarnings("unchecked")
   public void filter(GraphTraversal<Vertex, Vertex> graphTraversal, List<FacetValue> facets) {
-    Optional<FacetValue> first = facets.stream()
-            .filter(facetValue -> Objects.equals(facetValue.getName(), facetName))
-            .findFirst();
-    if (!first.isPresent()) {
-      return;
-    }
-    FacetValue facetValue = first.get();
-
-    if (!(facetValue instanceof DateRangeFacetValue)) {
+    final Optional<DateRangeFacetValue> facet = FacetParsingHelp.getValue(facetName, facets);
+    if (!facet.isPresent()) {
       return;
     }
 
-    // pad the strings to make them parsable
-    String lowerLimitString =
-            Strings.padStart("" + ((DateRangeFacetValue) facetValue).getLowerLimit(), 8, '0').substring(0, 4);
-    String upperLimitString =
-            Strings.padStart("" + ((DateRangeFacetValue) facetValue).getUpperLimit(), 8, '0').substring(0, 4);
+    String lowerLimitString = facet.get().getLowerLimit() + "";
+    String upperLimitString = facet.get().getUpperLimit() + "";
 
     try {
       Range<Date> range = Range.closed(FILTER_FORMAT.parse(lowerLimitString), FILTER_FORMAT.parse(upperLimitString));
