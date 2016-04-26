@@ -15,15 +15,13 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypes;
 
-public class WwPersonSortIndexesDatabaseMigration implements DatabaseMigration {
+public class WwDocumentSortIndexesDatabaseMigration implements DatabaseMigration {
   public static final Logger LOG = LoggerFactory.getLogger(WwPersonSortIndexesDatabaseMigration.class);
 
-  Set<String> propertyFieldNames = Sets.newHashSet();
 
   @Override
   public String getName() {
@@ -31,13 +29,12 @@ public class WwPersonSortIndexesDatabaseMigration implements DatabaseMigration {
   }
 
 
-
   @Override
   public void generateIndexes(Neo4jGraph neo4jGraph, Transaction transaction) {
-    executeCypher(neo4jGraph, "wwperson", "wwperson_birthDate_sort", transaction);
-    executeCypher(neo4jGraph, "wwperson", "wwperson_names_sort", transaction);
-    executeCypher(neo4jGraph, "wwperson", "wwperson_deathDate_sort", transaction);
-    executeCypher(neo4jGraph, "wwperson", "modified_sort", transaction);
+    // FIXME: at this time indexing seems to add no speed benefit to querying
+    executeCypher(neo4jGraph, "wwdocument", "modified_sort", transaction);
+    executeCypher(neo4jGraph, "wwdocument", "wwdocument_title", transaction);
+    executeCypher(neo4jGraph, "wwdocument", "wwdocument_creator_sort", transaction);
   }
 
   private void executeCypher(Neo4jGraph neo4jGraph, String label, String propertyName,Transaction transaction) {
@@ -55,13 +52,12 @@ public class WwPersonSortIndexesDatabaseMigration implements DatabaseMigration {
             .orElseGet(() -> Try.success(new String[0]))
             .getOrElse(() -> new String[0]));
 
-    if (types.contains("wwperson")) {
-      IndexDescription indexDescription = new IndexDescriptionFactory().create("wwperson");
+    if (types.contains("wwdocument")) {
+      IndexDescription indexDescription = new IndexDescriptionFactory().create("wwdocument");
       indexDescription.addIndexedSortProperties(vertex);
       List<String> sortPropertyNames = indexDescription.getSortFieldDescriptions().stream()
               .map(IndexerSortFieldDescription::getSortPropertyName)
               .collect(toList());
-      propertyFieldNames.addAll(sortPropertyNames);
     }
   }
 }

@@ -32,7 +32,6 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Matchers.any;
@@ -135,21 +134,6 @@ public class TinkerpopJsonCrudServiceCreateTest {
     instance.create("wwpersons", JsonBuilder.jsnO(), "");
 
     assertThat(graph.vertices().next().value("created"), is(graph.vertices().next().value("modified").toString()));
-  }
-
-  @Test
-  public void invokesIndexDescriptionAddIndexedSortPropertiesForPersons() throws Exception {
-    Graph graph = newGraph().build();
-
-    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
-
-    instance.create("wwpersons", JsonBuilder.jsnO(), "");
-
-    Vertex vertex = graph.vertices().next();
-
-    assertThat(vertex.property("wwperson_names_sort").value(), equalTo(""));
-    assertThat(vertex.property("wwperson_birthDate_sort").value(), equalTo(0));
-    assertThat(vertex.property("wwperson_deathDate_sort").value(), equalTo(0));
   }
 
   @Test
