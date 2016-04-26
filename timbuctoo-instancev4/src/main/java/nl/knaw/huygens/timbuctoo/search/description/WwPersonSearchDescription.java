@@ -12,7 +12,6 @@ import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.facet.FacetDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
-import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 import nl.knaw.huygens.timbuctoo.search.description.sort.SortDescription;
 import nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription;
 
@@ -23,7 +22,7 @@ import java.util.Map;
 import static nl.knaw.huygens.timbuctoo.search.description.Property.localProperty;
 import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription.createLocalFullTextSearchDescriptionWithBackupProperty;
 import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription.createLocalSimpleFullTextSearchDescription;
-import static nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription.newSortFieldDescription;
+import static nl.knaw.huygens.timbuctoo.search.description.sort.BuildableSortFieldDescription.newSortFieldDescription;
 
 public class WwPersonSearchDescription extends AbstractSearchDescription {
 

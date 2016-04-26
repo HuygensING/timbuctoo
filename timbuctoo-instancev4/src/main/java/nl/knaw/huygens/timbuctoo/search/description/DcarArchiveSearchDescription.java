@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.search.description;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.facet.FacetDescriptionFactory;
@@ -16,9 +15,8 @@ import java.util.List;
 import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.search.description.Property.localProperty;
-import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription
-  .createLocalSimpleFullTextSearchDescription;
-import static nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription.newSortFieldDescription;
+import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription.createLocalSimpleFullTextSearchDescription;
+import static nl.knaw.huygens.timbuctoo.search.description.sort.BuildableSortFieldDescription.newSortFieldDescription;
 
 class DcarArchiveSearchDescription extends AbstractSearchDescription {
   private final PropertyDescriptor displayNameDescriptor;
