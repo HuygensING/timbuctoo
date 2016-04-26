@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.search.description;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.facet.FacetDescriptionFactory;
@@ -20,7 +19,7 @@ import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSear
   .createLocalSimpleFullTextSearchDescription;
 import static nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription.newSortFieldDescription;
 
-class DcarArchiveSearchDescription extends AbstractSearchDescription {
+class DcarLegislationSearchDescription extends AbstractSearchDescription{
   private final PropertyDescriptor displayNameDescriptor;
   private final PropertyDescriptor idDescriptor;
   private final List<FacetDescription> facetDescriptions;
@@ -30,13 +29,14 @@ class DcarArchiveSearchDescription extends AbstractSearchDescription {
   private final List<FullTextSearchDescription> fullTextSearchDescriptions;
   private final SortDescription sortDescription;
 
-  public DcarArchiveSearchDescription(PropertyDescriptorFactory propertyDescriptorFactory,
-                                      FacetDescriptionFactory facetDescriptionFactory) {
-    displayNameDescriptor = propertyDescriptorFactory.getLocal("dcararchive_titleEng", String.class);
+  public DcarLegislationSearchDescription(PropertyDescriptorFactory propertyDescriptorFactory,
+                                       FacetDescriptionFactory facetDescriptionFactory) {
+    displayNameDescriptor = propertyDescriptorFactory.getLocal("dcarlegislation_titleEng", String.class);
     idDescriptor = propertyDescriptorFactory.getLocal(SearchDescription.ID_DB_PROP, String.class);
     facetDescriptions = createFacetDescriptions(facetDescriptionFactory);
     sortableFields = Lists.newArrayList("dynamic_sort_title", "dynamic_k_period");
-    fullTextSearchFields = Lists.newArrayList("dynamic_t_titleNLD", "dynamic_t_notes", "dynamic_t_titleEng");
+    fullTextSearchFields =
+      Lists.newArrayList("dynamic_t_title", "dynamic_t_text", "dynamic_t_titleNLD", "dynamic_t_contents");
 
     dataPropertyDescriptors = createDataPropertyDescriptors(propertyDescriptorFactory);
     fullTextSearchDescriptions = createFullTextSearchDescriptions();
@@ -53,42 +53,36 @@ class DcarArchiveSearchDescription extends AbstractSearchDescription {
         .withParser(propertyParserFactory.getParser(String.class))
       )
       .build();
-    // TODO add date range sortfield build from startDate and endDate.
+    // TODO add date range sortfield build from date1.
     return new SortDescription(Lists.newArrayList());
   }
 
   private ArrayList<FullTextSearchDescription> createFullTextSearchDescriptions() {
+
     return Lists.newArrayList(
-      createLocalSimpleFullTextSearchDescription("dynamic_t_titleNLD", "dcararchive_titleNLD"),
-      createLocalSimpleFullTextSearchDescription("dynamic_t_notes", "dcararchive_notes"),
-      createLocalSimpleFullTextSearchDescription("dynamic_t_titleEng", "dcararchive_titleEng"));
+      createLocalSimpleFullTextSearchDescription("dynamic_t_title", "dcarlegislation_titleEng"),
+      createLocalSimpleFullTextSearchDescription("dynamic_t_text", "dcarlegislation_reference"),
+      createLocalSimpleFullTextSearchDescription("dynamic_t_titleNLD", "dcarlegislation_titleNld"),
+      createLocalSimpleFullTextSearchDescription("dynamic_t_contents", "dcarlegislation_contents"));
   }
 
   private Map<String, PropertyDescriptor> createDataPropertyDescriptors(PropertyDescriptorFactory pdf) {
     Map<String, PropertyDescriptor> propertyDescriptors = Maps.newHashMap();
 
-    propertyDescriptors.put("_id", pdf.getLocal("tim_id", String.class));
-    propertyDescriptors.put("beginDate", pdf.getLocal("dcararchive_beginDate", String.class));
-    propertyDescriptors.put("countries", pdf.getLocal("dcararchive_countries", String.class));
-    propertyDescriptors.put("endDate", pdf.getLocal("dcararchive_endDate", String.class));
-    propertyDescriptors.put("itemNo", pdf.getLocal("dcararchive_itemNo", String.class));
-    propertyDescriptors.put("refCode", pdf.getLocal("dcararchive_refCode", String.class));
-    propertyDescriptors.put("refCodeArchive", pdf.getLocal("dcararchive_refArchiveCode", String.class));
-    propertyDescriptors.put("series", pdf.getLocal("dcararchive_series", String.class));
-    propertyDescriptors.put("subCode", pdf.getLocal("dcararchive_subCode", String.class));
-    propertyDescriptors.put("titleEng", pdf.getLocal("dcararchive_titleEng", String.class));
+    propertyDescriptors.put("_id", pdf.getLocal(ID_DB_PROP, String.class));
+    propertyDescriptors.put("title_eng", pdf.getLocal("dcarlegislation_titleEng", String.class));
+    propertyDescriptors.put("date1", pdf.getLocal("dcarlegislation_date1", String.class));
 
     return propertyDescriptors;
   }
 
   private List<FacetDescription> createFacetDescriptions(FacetDescriptionFactory fdf) {
     return Lists.newArrayList(
-      fdf.createListFacetDescription("dynamic_s_subject", String.class, "dcarkeyword_value", "has_archive_keyword"),
-      fdf.createListFacetDescription("dynamic_s_place", String.class, "dcarkeyword_value", "has_archive_place"),
-      fdf.createListFacetDescription("dynamic_s_person", PersonNames.class, "person_names", "has_archive_person"),
-      fdf.createListFacetDescription("dynamic_s_refcode", String.class, "dcararchive_refCodeArchive")
+      fdf.createListFacetDescription("dynamic_s_place", String.class, "dcarkeyword_value", "has_archiver_place"),
+      fdf.createListFacetDescription("dynamic_s_person", PersonNames.class, "person_names", "has_archiver_person"),
+      fdf.createListFacetDescription("dynamic_s_subject", String.class, "dcarkeyword_value", "has_archiver_keyword")
     );
-    // TODO add date range facet build from startDate and endDate.
+    // TODO add date range facet build from date1.
   }
 
   @Override
@@ -123,7 +117,7 @@ class DcarArchiveSearchDescription extends AbstractSearchDescription {
 
   @Override
   public String getType() {
-    return "dcararchive";
+    return "dcarlegislation";
   }
 
   @Override
@@ -135,4 +129,5 @@ class DcarArchiveSearchDescription extends AbstractSearchDescription {
   protected SortDescription getSortDescription() {
     return sortDescription;
   }
+
 }

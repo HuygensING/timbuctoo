@@ -21,7 +21,7 @@ import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSear
   .createLocalSimpleFullTextSearchDescription;
 import static nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription.newSortFieldDescription;
 
-public class DcarArchiverSearchDescription extends AbstractSearchDescription {
+class DcarArchiverSearchDescription extends AbstractSearchDescription {
   private final PropertyDescriptor displayNameDescriptor;
   private final PropertyDescriptor idDescriptor;
   private final List<FacetDescription> facetDescriptions;
@@ -33,7 +33,7 @@ public class DcarArchiverSearchDescription extends AbstractSearchDescription {
 
   public DcarArchiverSearchDescription(PropertyDescriptorFactory propertyDescriptorFactory,
                                        FacetDescriptionFactory facetDescriptionFactory) {
-    displayNameDescriptor = propertyDescriptorFactory.getLocal("dcararchive_titleEng", String.class);
+    displayNameDescriptor = propertyDescriptorFactory.getLocal("dcararchiver_nameEng", String.class);
     idDescriptor = propertyDescriptorFactory.getLocal(SearchDescription.ID_DB_PROP, String.class);
     facetDescriptions = createFacetDescriptions(facetDescriptionFactory);
     sortableFields = Lists.newArrayList("dynamic_sort_title", "dynamic_k_period");
@@ -74,7 +74,7 @@ public class DcarArchiverSearchDescription extends AbstractSearchDescription {
     propertyDescriptors.put("_id", pdf.getLocal("tim_id", String.class));
     propertyDescriptors.put("beginDate", pdf.getLocal("dcararchiver_beginDate", String.class));
     propertyDescriptors.put("endDate", pdf.getLocal("dcararchiver_endDate", String.class));
-    propertyDescriptors.put("titleEng", pdf.getLocal("dcararchiver_nameEng", String.class));
+    propertyDescriptors.put("nameEng", pdf.getLocal("dcararchiver_nameEng", String.class));
     propertyDescriptors.put("types", pdf.getLocal("dcararchiver_types", List.class));
 
     return propertyDescriptors;
