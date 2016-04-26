@@ -49,7 +49,7 @@ public class PeriodFacetDescriptionTest {
 
   private void shouldContainJustRight(GraphTraversal<Vertex, Vertex> traversal, long startYear, long endYear) {
     List<FacetValue> facetValues = Lists.newArrayList(
-      new DateRangeFacetValue(FACET_NAME, startYear*10_000, endYear*10_000)
+      new DateRangeFacetValue(FACET_NAME, startYear * 10_000, endYear * 10_000)
     );
 
     instance.filter(traversal, facetValues);
@@ -58,9 +58,10 @@ public class PeriodFacetDescriptionTest {
       likeVertex().withTimId("just_right")
     ));
   }
+
   private void shouldContainNothing(GraphTraversal<Vertex, Vertex> traversal, long startYear, long endYear) {
     List<FacetValue> facetValues = Lists.newArrayList(
-      new DateRangeFacetValue(FACET_NAME, startYear*10_000, endYear*10_000)
+      new DateRangeFacetValue(FACET_NAME, startYear * 10_000, endYear * 10_000)
     );
 
     instance.filter(traversal, facetValues);
@@ -170,8 +171,8 @@ public class PeriodFacetDescriptionTest {
 
   @Test
   public void doesNotWorkWithYearsBeforeChrist() {
-    shouldContainJustRight(makeGraph(
-      new YearSpan("just_right", -4000, -3050)
+    shouldContainNothing(makeGraph(
+      new YearSpan("not_found", -4000, -3050)
     ), -3060, -3020);
   }
 
