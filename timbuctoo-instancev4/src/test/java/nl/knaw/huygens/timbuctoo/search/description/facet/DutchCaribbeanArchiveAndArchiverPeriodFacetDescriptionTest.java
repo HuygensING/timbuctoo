@@ -1,17 +1,18 @@
 package nl.knaw.huygens.timbuctoo.search.description.facet;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.DateRangeFacetValue;
 import nl.knaw.huygens.timbuctoo.util.TestGraphBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import static nl.knaw.huygens.timbuctoo.search.MockVertexBuilder.vertex;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
@@ -21,7 +22,10 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.fail;
+import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class DutchCaribbeanArchiveAndArchiverPeriodFacetDescriptionTest {
 
@@ -230,6 +234,21 @@ public class DutchCaribbeanArchiveAndArchiverPeriodFacetDescriptionTest {
     List<String> values = instance.getValues(vertex);
 
     assertThat(values, is(empty()));
+  }
+
+  @Test
+  public void getFacetDelegatesToTheFacetGetter() {
+    FacetGetter facetGetter = mock(FacetGetter.class);
+    HashMap<String, Set<Vertex>> values = Maps.newHashMap();
+    Facet facet = mock(Facet.class);
+    given(facetGetter.getFacet(FACET_NAME, values)).willReturn(facet);
+    DutchCaribbeanArchiveAndArchiverPeriodFacetDescription instance =
+      new DutchCaribbeanArchiveAndArchiverPeriodFacetDescription(FACET_NAME, BEGIN_YEAR, END_YEAR, facetGetter);
+
+    Facet actualFacet = instance.getFacet(values);
+
+    assertThat(actualFacet, is(sameInstance(facet)));
+    verify(facetGetter).getFacet(FACET_NAME, values);
   }
 
   private class YearSpan {

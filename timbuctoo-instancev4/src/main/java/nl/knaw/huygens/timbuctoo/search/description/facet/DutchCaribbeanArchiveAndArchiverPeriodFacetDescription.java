@@ -3,26 +3,37 @@ package nl.knaw.huygens.timbuctoo.search.description.facet;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
+import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.DatableRangeFacetGetter;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.DateRangeFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
-public class DutchCaribbeanArchiveAndArchiverPeriodFacetDescription implements FacetDescription {
+import static java.util.stream.Collectors.toList;
+
+class DutchCaribbeanArchiveAndArchiverPeriodFacetDescription implements FacetDescription {
   private final String facetName;
   private final String beginYear;
   private final String endYear;
+  private FacetGetter facetGetter;
 
   public DutchCaribbeanArchiveAndArchiverPeriodFacetDescription(String facetName, String beginYear, String endYear) {
+    this(facetName, beginYear, endYear, new DatableRangeFacetGetter());
+  }
+
+  DutchCaribbeanArchiveAndArchiverPeriodFacetDescription(String facetName, String beginYear, String endYear,
+                                                         FacetGetter facetGetter) {
     this.facetName = facetName;
     this.beginYear = beginYear;
     this.endYear = endYear;
+    this.facetGetter = facetGetter;
   }
 
   @Override
@@ -32,7 +43,7 @@ public class DutchCaribbeanArchiveAndArchiverPeriodFacetDescription implements F
 
   @Override
   public Facet getFacet(Map<String, Set<Vertex>> values) {
-    return null;
+    return facetGetter.getFacet(facetName, values);
   }
 
   @Override
