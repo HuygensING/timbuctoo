@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.search.description.facet.FacetDescriptionFactor
 import nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
+import nl.knaw.huygens.timbuctoo.search.description.sort.DutchCaribbeanArchiverAndArchivePeriodSortFieldDescription;
 import nl.knaw.huygens.timbuctoo.search.description.sort.SortDescription;
 
 import java.util.ArrayList;
@@ -33,27 +34,34 @@ class DcarArchiverSearchDescription extends AbstractSearchDescription {
     displayNameDescriptor = propertyDescriptorFactory.getLocal("dcararchiver_nameEng", String.class);
     idDescriptor = propertyDescriptorFactory.getLocal(SearchDescription.ID_DB_PROP, String.class);
     facetDescriptions = createFacetDescriptions(facetDescriptionFactory);
-    sortableFields = Lists.newArrayList("dynamic_sort_title", "dynamic_k_period");
     fullTextSearchFields =
       Lists.newArrayList("dynamic_t_history", "dynamic_t_nameEng", "dynamic_t_nameNLD", "dynamic_t_notes");
 
     dataPropertyDescriptors = createDataPropertyDescriptors(propertyDescriptorFactory);
     fullTextSearchDescriptions = createFullTextSearchDescriptions();
+
     sortDescription = createSortDescription();
+    sortableFields = Lists.newArrayList("dynamic_sort_title", "dynamic_k_period");
   }
 
   private SortDescription createSortDescription() {
     PropertyParserFactory propertyParserFactory = new PropertyParserFactory();
-    newSortFieldDescription()
-      .withName("dynamic_sort_title")
-      .withDefaultValue("")
-      .withProperty(localProperty()
-        .withName("titleEng")
-        .withParser(propertyParserFactory.getParser(String.class))
+
+    return new SortDescription(Lists.newArrayList(
+      newSortFieldDescription()
+        .withName("dynamic_sort_title")
+        .withDefaultValue("")
+        .withProperty(localProperty()
+          .withName("titleEng")
+          .withParser(propertyParserFactory.getParser(String.class))
+        )
+        .build(),
+      new DutchCaribbeanArchiverAndArchivePeriodSortFieldDescription(
+        "dynamic_k_period",
+        "dcararchiver_beginDate",
+        "dcararchiver_endDate"
       )
-      .build();
-    // TODO add date range sortfield build from startDate and endDate.
-    return new SortDescription(Lists.newArrayList());
+    ));
   }
 
   private ArrayList<FullTextSearchDescription> createFullTextSearchDescriptions() {
