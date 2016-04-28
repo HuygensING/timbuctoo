@@ -30,6 +30,7 @@ activeMq:
   #using a vm:// url will also add two amq metrics to the dropwizard metrics. Using a remote url means you have
   #to export the metrics from the remote VM's jmx yourself. See http://activemq.apache.org/jmx.html for more info
   brokerUrl: vm://timbuctoo?broker.persistent=false&broker.useShutdownHook=false
+  shutdownWaitInSeconds: 1 #use for debug runs only!
 
 persistenceManager:
   useDummy: yes #set to "no" to connect to a real handle server
