@@ -227,6 +227,13 @@ public class HuygensIng {
         .withProperty("description", localProperty("cwrsdocument_description"))
         .withProperty("links", localProperty("cwrsdocument_links", hyperlinks))
         .withProperty("tempLanguage", localProperty("cwrsdocument_tempLanguage"))))
+    .withVre("dcar", "dcar", vre -> vre
+    .withCollection("dcarpersons",
+      c -> c
+        .withDisplayName(localProperty("dcarperson_label"))
+        .withProperty("gender", localProperty("dcarperson_gender", gender))
+        .withProperty("names", localProperty("cwrsperson_names", personNames))
+        .withProperty("links", localProperty("cwrsperson_links", hyperlinks))))
     .build();
 
 }
