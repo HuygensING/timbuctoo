@@ -36,7 +36,7 @@ class DcarLegislationSearchDescription extends AbstractSearchDescription {
     displayNameDescriptor = propertyDescriptorFactory.getLocal("dcarlegislation_titleEng", String.class);
     idDescriptor = propertyDescriptorFactory.getLocal(SearchDescription.ID_DB_PROP, String.class);
     facetDescriptions = createFacetDescriptions(facetDescriptionFactory);
-    sortableFields = Lists.newArrayList("dynamic_sort_title", "dynamic_k_period");
+    sortableFields = Lists.newArrayList("dynamic_sort_title", "dynamic_k_date");
     fullTextSearchFields =
       Lists.newArrayList("dynamic_t_title", "dynamic_t_text", "dynamic_t_titleNLD", "dynamic_t_contents");
 
@@ -47,16 +47,24 @@ class DcarLegislationSearchDescription extends AbstractSearchDescription {
 
   private SortDescription createSortDescription() {
     PropertyParserFactory propertyParserFactory = new PropertyParserFactory();
-    newSortFieldDescription()
-      .withName("dynamic_sort_title")
-      .withDefaultValue("")
-      .withProperty(localProperty()
-        .withName("titleEng")
-        .withParser(propertyParserFactory.getParser(String.class))
-      )
-      .build();
-    // TODO add date range sortfield build from date1.
-    return new SortDescription(Lists.newArrayList());
+    List<SortFieldDescription> sortFieldDescriptions = Lists.newArrayList(
+      newSortFieldDescription()
+        .withName("dynamic_sort_title")
+        .withDefaultValue("")
+        .withProperty(localProperty()
+          .withName("dcarlegislation_titleEng")
+          .withParser(propertyParserFactory.getParser(String.class)))
+        .build(),
+      newSortFieldDescription()
+        .withName("dynamic_k_date")
+        .withDefaultValue(0)
+        .withProperty(localProperty()
+          .withName("dcarlegislation_date1")
+          .withParser(propertyParserFactory.getParser(Datable.class)))
+        .build()
+    );
+
+    return new SortDescription(sortFieldDescriptions);
   }
 
   private ArrayList<FullTextSearchDescription> createFullTextSearchDescriptions() {
