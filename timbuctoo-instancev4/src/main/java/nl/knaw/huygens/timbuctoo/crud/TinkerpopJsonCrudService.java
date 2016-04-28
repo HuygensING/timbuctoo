@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -424,80 +425,78 @@ public class TinkerpopJsonCrudService {
 
     Object[] relationTypes = traversalSource.V().has("relationtype_regularName").id().toList().toArray();
 
-    return traversalSource.V(entity.id())
-                          .union(
-                            __.outE().as("edge")
-                              .label().as("label")
-                              .select("edge"),
-                            __.inE()
-                              .as("edge")
-                              .label().as("edgeLabel")
-                              .V(relationTypes)
-                              .has("relationtype_regularName", __.where(P.eq("edgeLabel")))
-                              .properties("relationtype_inverseName").value()
-                              .as("label")
-                              .select("edge")
-                          )
-                          .where(
-                            //FIXME move to strategy
-                            __.has("isLatest", true)
-                              .not(__.has("deleted", true))
-                              .not(__.hasLabel("VERSION_OF"))
-                              .has("types", new P<>(
-                                (val, def) -> {
-                                  return Try.of(() -> arrayToEncodedArray.tinkerpopToJava(val, String[].class))
-                                            .map(vre::getOwnType)
-                                            .map(ownType -> ownType != null)
-                                            .onFailure(
-                                              e -> LOG.error(databaseInvariant, "Error reading 'types' of edge", e))
-                                            .getOrElse(false);
-                                }, //if the types array is a failure then pretend the relation does not exist
-                                "")
-                              )
-                          )
-                          .otherV().as("vertex")
-                          .select("edge", "vertex", "label")
-                          .map(r -> {
-                            try {
-                              Map<String, Object> val = r.get();
-                              Edge edge = (Edge) val.get("edge");
-                              Vertex vertex = (Vertex) val.get("vertex");
-                              String label = (String) val.get("label");
+    return collection.getVre().getCollections().values().stream()
+      .filter(Collection::isRelationCollection)
+      .findAny()
+      .map(Collection::getEntityTypeName)
+      .map(ownRelationType -> traversalSource.V(entity.id())
+        .union(
+          __.outE()
+            .as("edge")
+            .label().as("label")
+            .select("edge"),
+          __.inE()
+            .as("edge")
+            .label().as("edgeLabel")
+            .V(relationTypes)
+            .has("relationtype_regularName", __.where(P.eq("edgeLabel")))
+            .properties("relationtype_inverseName").value()
+            .as("label")
+            .select("edge")
+        )
+        .where(
+          //FIXME move to strategy
+          __.has("isLatest", true)
+            .not(__.has("deleted", true))
+            .not(__.hasLabel("VERSION_OF"))
+            .has("types", new P<>((val, def) -> val.contains("\"" + ownRelationType + "\""), ""))
+            .not(__.has(ownRelationType + "_accepted", false))
+        )
+        .otherV().as("vertex")
+        .select("edge", "vertex", "label")
+        .map(r -> {
+          try {
+            Map<String, Object> val = r.get();
+            Edge edge = (Edge) val.get("edge");
+            Vertex vertex = (Vertex) val.get("vertex");
+            String label = (String) val.get("label");
 
-                              String targetEntityType = getOwnEntityType(collection, vertex);
-                              if (targetEntityType == null) {
-                                //this means that the edge is of this VRE, but the Vertex it points to is of another VRE
-                                throw new IOException(
-                                  String
-                                    .format("Edge %s that is of this vre points to vertex %s that is not of this vre",
-                                      edge, vertex)
-                                );
-                              }
+            String targetEntityType = getOwnEntityType(collection, vertex);
+            if (targetEntityType == null) {
+              //this means that the edge is of this VRE, but the Vertex it points to is of another VRE
+              throw new IOException(
+                String
+                  .format("Edge %s that is of this vre points to vertex %s that is not of this vre",
+                    edge, vertex)
+              );
+            }
 
-                              String displayName =
-                                getDisplayname(traversalSource, vertex, vre.getCollection(targetEntityType))
-                                  .orElse("<No displayname found>");
-                              String targetCollection = targetEntityType + "s";
-                              String uuid = getProp(vertex, "tim_id", String.class).orElse("");
+            String displayName =
+              getDisplayname(traversalSource, vertex, vre.getCollection(targetEntityType))
+                .orElse("<No displayname found>");
+            String targetCollection = targetEntityType + "s";
+            String uuid = getProp(vertex, "tim_id", String.class).orElse("");
 
-                              URI relatedEntityUri =
-                                relationUrlFor.apply(targetCollection, UUID.fromString(uuid), null);
-                              return jsnO(
-                                tuple("id", jsn(uuid)),
-                                tuple("path", jsn(relatedEntityUri.toString())),
-                                tuple("relationType", jsn(label)),
-                                tuple("type", jsn(targetEntityType)),
-                                tuple("accepted", jsn(getProp(edge, "accepted", Boolean.class).orElse(true))),
-                                tuple("relationId",
-                                  getProp(edge, "tim_id", String.class).map(x -> (JsonNode) jsn(x)).orElse(jsn())),
-                                tuple("rev", jsn(getProp(edge, "rev", Integer.class).orElse(1))),
-                                tuple("displayName", jsn(displayName))
-                              );
-                            } catch (Exception e) {
-                              LOG.error(databaseInvariant, "Something went wrong while formatting the entity", e);
-                              return null;
-                            }
-                          });
+            URI relatedEntityUri =
+              relationUrlFor.apply(targetCollection, UUID.fromString(uuid), null);
+            return jsnO(
+              tuple("id", jsn(uuid)),
+              tuple("path", jsn(relatedEntityUri.toString())),
+              tuple("relationType", jsn(label)),
+              tuple("type", jsn(targetEntityType)),
+              tuple("accepted", jsn(getProp(edge, "accepted", Boolean.class).orElse(true))),
+              tuple("relationId",
+                getProp(edge, "tim_id", String.class).map(x -> (JsonNode) jsn(x)).orElse(jsn())),
+              tuple("rev", jsn(getProp(edge, "rev", Integer.class).orElse(1))),
+              tuple("displayName", jsn(displayName))
+            );
+          } catch (Exception e) {
+            LOG.error(databaseInvariant, "Something went wrong while formatting the entity", e);
+            return null;
+          }
+        })
+      )
+      .orElse(EmptyGraph.instance().traversal().V().map(x->jsnO()));
   }
 
   private Optional<String> getDisplayname(GraphTraversalSource traversalSource, Vertex vertex,

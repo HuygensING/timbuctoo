@@ -505,15 +505,14 @@ public class TinkerpopJsonCrudServiceReadTest {
       .withVertex("source", v -> v
         .withOutgoingRelation("isPseudonymOf", "work", relation -> relation
           .withRev(1)
-          .withDeleted(null) //when no deleted prop is present, it should assume that the prop is not deleted
+          .withAccepted("wwrelation", true)
+        )
+        .withOutgoingRelation("isPseudonymOf", "work", relation -> relation
+          .withRev(2) //when no accepted property is present it should assume true
         )
         .withOutgoingRelation("isPseudonymOf", "work", relation -> relation
           .withRev(2)
-          .withDeleted(false)
-        )
-        .withOutgoingRelation("isPseudonymOf", "work", relation -> relation
-          .withRev(2)
-          .withDeleted(true)
+          .withAccepted("wwrelation", false)
         )
         .withVre("ww")
         .withVre("")
