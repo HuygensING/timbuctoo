@@ -17,7 +17,7 @@ import java.util.Map;
 import static nl.knaw.huygens.timbuctoo.search.description.Property.localProperty;
 import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription
   .createLocalSimpleFullTextSearchDescription;
-import static nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription.newSortFieldDescription;
+import static nl.knaw.huygens.timbuctoo.search.description.sort.BuildableSortFieldDescription.newSortFieldDescription;
 
 class DcarLegislationSearchDescription extends AbstractSearchDescription{
   private final PropertyDescriptor displayNameDescriptor;

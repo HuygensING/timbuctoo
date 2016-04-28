@@ -28,8 +28,10 @@ public class SortDescription {
     }
 
     searchResult.order();
-    for (SortTraversal traversal : traversals) {
-      searchResult.by(traversal.traversals, traversal.order);
+    for (SortTraversal sortTraversal : traversals) {
+      for (GraphTraversal<Object, Object> traversal : sortTraversal.traversals) {
+        searchResult.by(traversal, sortTraversal.order);
+      }
     }
 
   }
@@ -51,7 +53,7 @@ public class SortDescription {
 
   private static class SortTraversal {
 
-    private final GraphTraversal<Object, Object> traversals;
+    private final List<GraphTraversal<Object, Object>> traversals;
     private final Order order;
 
     public SortTraversal(SortFieldDescription sortFieldDescription, SortParameter.Direction direction) {
