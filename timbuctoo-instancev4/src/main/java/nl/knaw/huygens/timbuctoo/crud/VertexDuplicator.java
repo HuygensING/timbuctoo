@@ -56,7 +56,7 @@ public class VertexDuplicator {
       if (edge.label().equals("VERSION_OF")) {
         continue;
       }
-      Edge duplicateEdge = duplicate.addEdge(edge.label(), edge.outVertex());
+      Edge duplicateEdge = edge.outVertex().addEdge(edge.label(), duplicate);
       for (Iterator<Property<Object>> properties = edge.properties(); properties.hasNext(); ) {
         Property<Object> property = properties.next();
 
