@@ -232,8 +232,14 @@ public class HuygensIng {
       c -> c
         .withDisplayName(localProperty("dcarperson_label"))
         .withProperty("gender", localProperty("dcarperson_gender", gender))
-        .withProperty("names", localProperty("cwrsperson_names", personNames))
-        .withProperty("links", localProperty("cwrsperson_links", hyperlinks))))
+        .withProperty("names", localProperty("dcarperson_names", personNames))
+        .withProperty("links", localProperty("dcarperson_links", hyperlinks))
+        .withDisplayName(localProperty("dcarkeyword_label"))
+        .withProperty("type", localProperty("dcarkeyword_type", stringArrayToEncodedArrayOf(
+            "subject",
+            "geography"
+          )))
+        .withProperty("value", localProperty("dcarkeyword_value"))))
     .build();
 
 }
