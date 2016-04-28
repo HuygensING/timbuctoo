@@ -95,7 +95,7 @@ public class SearchStoreTest {
     Optional<SearchResult> searchResult = instance.getSearchResult(id);
     assertThat(searchResult, is(present()));
 
-    Thread.sleep(ONE_SECOND_TIMEOUT.toMilliseconds() + 1);
+    Thread.sleep(ONE_SECOND_TIMEOUT.toMilliseconds() + 101);
 
     Optional<SearchResult> searchResultAfterTimeout = instance.getSearchResult(id);
     assertThat(searchResultAfterTimeout, is(not(present())));
