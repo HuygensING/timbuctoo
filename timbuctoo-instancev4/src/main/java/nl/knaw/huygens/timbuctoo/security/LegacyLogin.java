@@ -5,13 +5,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
 
+import java.util.Arrays;
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
 // FIXME Find a better way for deserialization
-@JsonTypeIdResolver(LoginTypeIdResolver.class) // be able to map the login java type and the serialized version
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class Login {
+@JsonTypeIdResolver(LegacyLoginTypeIdResolver.class) // be able to map the login java type and the serialized version
+@JsonIgnoreProperties(ignoreUnknown = true) // ignore the unknown properties
+public class LegacyLogin {
+
   private String userPid;
-  private byte[] password;
+  private String password;
   private byte[] salt;
   @JsonProperty("userName")
   private String username;
@@ -19,16 +22,20 @@ public class Login {
   private String surName;
   private String emailAddress;
   private String organization;
+  @JsonProperty("_id")
   private String id;
+  @JsonProperty("^rev")
   private String rev;
+  @JsonProperty("^created")
   private String created;
+  @JsonProperty("^modified")
   private String modified;
 
-  public Login() {
+  public LegacyLogin() {
 
   }
 
-  public Login(String userPid, String username, byte[] password, byte[] salt) {
+  public LegacyLogin(String userPid, String username, String password, byte[] salt) {
     this.userPid = userPid;
     this.username = username;
     this.password = password;
@@ -43,11 +50,11 @@ public class Login {
     return userPid;
   }
 
-  public byte[] getPassword() {
+  public String getPassword() {
     return password;
   }
 
-  public void setPassword(byte[] authString) {
+  public void setPassword(String authString) {
     this.password = authString;
   }
 
@@ -71,10 +78,6 @@ public class Login {
     return givenName;
   }
 
-  public void setGivenName(String givenName) {
-    this.givenName = givenName;
-  }
-
 
   public String getSurName() {
     return surName;
@@ -91,7 +94,6 @@ public class Login {
   public void setEmailAddress(String emailAddress) {
     this.emailAddress = emailAddress;
   }
-
 
   public String getOrganization() {
     return organization;
@@ -128,6 +130,7 @@ public class Login {
   public String getModified() {
     return modified;
   }
+
 
   public void setModified(String modified) {
     this.modified = modified;
