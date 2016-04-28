@@ -159,7 +159,8 @@ public class TinkerpopJsonCrudService {
               "types", jsnA(jsn(entityTypeName), jsn(abstractName)).toString(),
               "typeId", type.asText(),
               "tim_id", id.toString(),
-              "isLatest", true
+              "isLatest", true,
+              "rev", 1
             );
             setCreated(edge, userId);
 
