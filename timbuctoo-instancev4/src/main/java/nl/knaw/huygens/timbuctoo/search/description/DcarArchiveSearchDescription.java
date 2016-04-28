@@ -90,9 +90,10 @@ class DcarArchiveSearchDescription extends AbstractSearchDescription {
       fdf.createListFacetDescription("dynamic_s_subject", String.class, "dcarkeyword_value", "has_archive_keyword"),
       fdf.createListFacetDescription("dynamic_s_place", String.class, "dcarkeyword_value", "has_archive_place"),
       fdf.createListFacetDescription("dynamic_s_person", PersonNames.class, "person_names", "has_archive_person"),
-      fdf.createListFacetDescription("dynamic_s_refcode", String.class, "dcararchive_refCodeArchive")
+      fdf.createListFacetDescription("dynamic_s_refcode", String.class, "dcararchive_refCodeArchive"),
+      fdf.createDcarArchiveAndArchiverPeriodFacetDescription("dynamic_i_period", "dcararchive_beginDate",
+        "dcararchive_endDate")
     );
-    // TODO add date range facet build from startDate and endDate.
   }
 
   @Override

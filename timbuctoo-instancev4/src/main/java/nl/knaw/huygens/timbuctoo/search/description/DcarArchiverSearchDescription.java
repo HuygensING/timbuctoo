@@ -87,12 +87,13 @@ class DcarArchiverSearchDescription extends AbstractSearchDescription {
 
   private List<FacetDescription> createFacetDescriptions(FacetDescriptionFactory fdf) {
     return Lists.newArrayList(
-      fdf.createMultiValueListFacetDescription("dynamic_s_type", "dcararchiver_value"),
+      fdf.createMultiValueListFacetDescription("dynamic_s_type", "dcararchiver_types"),
       fdf.createListFacetDescription("dynamic_s_place", String.class, "dcarkeyword_value", "has_archiver_place"),
       fdf.createListFacetDescription("dynamic_s_person", PersonNames.class, "person_names", "has_archiver_person"),
-      fdf.createListFacetDescription("dynamic_s_subject", String.class, "dcarkeyword_value", "has_archiver_keyword")
+      fdf.createListFacetDescription("dynamic_s_subject", String.class, "dcarkeyword_value", "has_archiver_keyword"),
+      fdf.createDcarArchiveAndArchiverPeriodFacetDescription("dynamic_i_period", "dcararchiver_beginDate",
+        "dcararchiver_endDate")
     );
-    // TODO add date range facet build from startDate and endDate.
   }
 
   @Override
