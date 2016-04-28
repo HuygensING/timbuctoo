@@ -279,6 +279,19 @@ public class TinkerpopJsonCrudService {
 
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
+
+    if (collection.isRelationCollection()) {
+      return getRelation(id, rev, collection);
+    } else {
+      return getVertex(id, rev, collection);
+    }
+  }
+
+  private JsonNode getRelation(UUID id, Integer rev, Collection collection) throws NotFoundException {
+    return jsnO("message", jsn("Getting a wwrelation is not yet supported"));
+  }
+
+  private JsonNode getVertex(UUID id, Integer rev, Collection collection) throws NotFoundException {
     final Map<String, ReadableProperty> mapping = collection.getReadableProperties();
     final String entityTypeName = collection.getEntityTypeName();
     final GraphTraversalSource traversalSource = graphwrapper.getGraph().traversal();
