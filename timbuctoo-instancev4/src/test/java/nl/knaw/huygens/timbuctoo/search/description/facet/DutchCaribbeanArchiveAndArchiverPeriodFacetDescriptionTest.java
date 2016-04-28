@@ -6,20 +6,24 @@ import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.DateRangeFacetValue
 import nl.knaw.huygens.timbuctoo.util.TestGraphBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
 
+import static nl.knaw.huygens.timbuctoo.search.MockVertexBuilder.vertex;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.fail;
 
 public class DutchCaribbeanArchiveAndArchiverPeriodFacetDescriptionTest {
-
 
   public static final String FACET_NAME = "facetName";
   public static final String BEGIN_YEAR = "beginYear";
@@ -174,6 +178,58 @@ public class DutchCaribbeanArchiveAndArchiverPeriodFacetDescriptionTest {
     shouldContainNothing(makeGraph(
       new YearSpan("not_found", -4000, -3050)
     ), -3060, -3020);
+  }
+
+  @Test
+  public void getValuesReturnsTheBeginPropertyAndEndPropertyOfAVertex() {
+    String beginYear = "1900";
+    String endYear = "2000";
+    Vertex vertex = vertex().withProperty(BEGIN_YEAR, beginYear).withProperty(END_YEAR, endYear).build();
+
+    DutchCaribbeanArchiveAndArchiverPeriodFacetDescription instance =
+      new DutchCaribbeanArchiveAndArchiverPeriodFacetDescription(FACET_NAME, BEGIN_YEAR, END_YEAR);
+
+    List<String> values = instance.getValues(vertex);
+
+    assertThat(values, containsInAnyOrder(beginYear, endYear));
+  }
+
+  @Test
+  public void getValuesReturnsTheBeginDateIfTheEndDateIsNull() {
+    String beginYear = "1900";
+    Vertex vertex = vertex().withProperty(BEGIN_YEAR, beginYear).build();
+
+    DutchCaribbeanArchiveAndArchiverPeriodFacetDescription instance =
+      new DutchCaribbeanArchiveAndArchiverPeriodFacetDescription(FACET_NAME, BEGIN_YEAR, END_YEAR);
+
+    List<String> values = instance.getValues(vertex);
+
+    assertThat(values, contains(beginYear));
+  }
+
+  @Test
+  public void getValuesReturnsTheEndDateIfTheBeginDateIsNull() {
+    String endYear = "1900";
+    Vertex vertex = vertex().withProperty(END_YEAR, endYear).build();
+
+    DutchCaribbeanArchiveAndArchiverPeriodFacetDescription instance =
+      new DutchCaribbeanArchiveAndArchiverPeriodFacetDescription(FACET_NAME, BEGIN_YEAR, END_YEAR);
+
+    List<String> values = instance.getValues(vertex);
+
+    assertThat(values, contains(endYear));
+  }
+
+  @Test
+  public void getValuesReturnsAnEmptyListIfTheBeginDateAndTheEndDateAreNull() {
+    Vertex vertex = vertex().build();
+
+    DutchCaribbeanArchiveAndArchiverPeriodFacetDescription instance =
+      new DutchCaribbeanArchiveAndArchiverPeriodFacetDescription(FACET_NAME, BEGIN_YEAR, END_YEAR);
+
+    List<String> values = instance.getValues(vertex);
+
+    assertThat(values, is(empty()));
   }
 
   private class YearSpan {

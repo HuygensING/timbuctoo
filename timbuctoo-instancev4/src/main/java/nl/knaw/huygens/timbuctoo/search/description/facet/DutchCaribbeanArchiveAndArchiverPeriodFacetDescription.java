@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.search.description.facet;
 
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.FacetDescription;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.DateRangeFacetValue;
@@ -56,16 +57,16 @@ public class DutchCaribbeanArchiveAndArchiverPeriodFacetDescription implements F
        * match when: Qs < Ve && Qe > Vs
        */
       graphTraversal //FIXME: how to deal with items that have a beginYear, but no endYear
-        .has(beginYear)
-        .has(endYear)
-        .filter(filterYear(year -> {
-          //System.out.println(year  + " <= " + end + ": " + (year <= end));
-          return year <= end;
-        }, beginYear))
-        .filter(filterYear(year -> {
-          //System.out.println(year  + " >= " + end + ": " + (year >= end));
-          return year >= begin;
-        }, endYear));
+                     .has(beginYear)
+                     .has(endYear)
+                     .filter(filterYear(year -> {
+                       //System.out.println(year  + " <= " + end + ": " + (year <= end));
+                       return year <= end;
+                     }, beginYear))
+                     .filter(filterYear(year -> {
+                       //System.out.println(year  + " >= " + end + ": " + (year >= end));
+                       return year >= begin;
+                     }, endYear));
     });
   }
 
@@ -86,6 +87,15 @@ public class DutchCaribbeanArchiveAndArchiverPeriodFacetDescription implements F
 
   @Override
   public List<String> getValues(Vertex vertex) {
-    return null;
+    List<String> values = Lists.newArrayList();
+
+    if (vertex.keys().contains(beginYear)) {
+      values.add(vertex.value(beginYear));
+    }
+    if (vertex.keys().contains(endYear)) {
+      values.add(vertex.value(endYear));
+    }
+
+    return values;
   }
 }
