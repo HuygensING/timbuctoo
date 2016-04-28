@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.search.description;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.facet.FacetDescriptionFactory;
@@ -11,7 +10,6 @@ import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorF
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 import nl.knaw.huygens.timbuctoo.search.description.sort.SortDescription;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -85,9 +83,10 @@ class DcarArchiverSearchDescription extends AbstractSearchDescription {
       fdf.createMultiValueListFacetDescription("dynamic_s_type", "dcararchiver_value"),
       fdf.createListFacetDescription("dynamic_s_place", String.class, "dcarkeyword_value", "has_archiver_place"),
       fdf.createListFacetDescription("dynamic_s_person", PersonNames.class, "person_names", "has_archiver_person"),
-      fdf.createListFacetDescription("dynamic_s_subject", String.class, "dcarkeyword_value", "has_archiver_keyword")
+      fdf.createListFacetDescription("dynamic_s_subject", String.class, "dcarkeyword_value", "has_archiver_keyword"),
+      fdf.createDcarArchiveAndArchiverPeriodFacetDescription("dynamic_i_period", "dcararchiver_beginDate",
+        "dcararchiver_endDate")
     );
-    // TODO add date range facet build from startDate and endDate.
   }
 
   @Override
