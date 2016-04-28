@@ -2,13 +2,13 @@ package nl.knaw.huygens.timbuctoo.search.description;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.facet.FacetDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
+import nl.knaw.huygens.timbuctoo.search.description.sort.DutchCaribbeanArchiverAndArchivePeriodSortFieldDescription;
 import nl.knaw.huygens.timbuctoo.search.description.sort.SortDescription;
 
 import java.util.ArrayList;
@@ -16,9 +16,8 @@ import java.util.List;
 import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.search.description.Property.localProperty;
-import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription
-  .createLocalSimpleFullTextSearchDescription;
-import static nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription.newSortFieldDescription;
+import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription.createLocalSimpleFullTextSearchDescription;
+import static nl.knaw.huygens.timbuctoo.search.description.sort.BuildableSortFieldDescription.newSortFieldDescription;
 
 class DcarArchiveSearchDescription extends AbstractSearchDescription {
   private final PropertyDescriptor displayNameDescriptor;
@@ -45,16 +44,21 @@ class DcarArchiveSearchDescription extends AbstractSearchDescription {
 
   private SortDescription createSortDescription() {
     PropertyParserFactory propertyParserFactory = new PropertyParserFactory();
-    newSortFieldDescription()
-      .withName("dynamic_sort_title")
-      .withDefaultValue("")
-      .withProperty(localProperty()
-        .withName("titleEng")
-        .withParser(propertyParserFactory.getParser(String.class))
+    return new SortDescription(Lists.newArrayList(
+      newSortFieldDescription()
+        .withName("dynamic_sort_title")
+        .withDefaultValue("")
+        .withProperty(localProperty()
+          .withName("titleEng")
+          .withParser(propertyParserFactory.getParser(String.class))
+        )
+        .build(),
+      new DutchCaribbeanArchiverAndArchivePeriodSortFieldDescription(
+        "dynamic_k_period",
+        "dcararchive_beginDate",
+        "dcararchive_endDate"
       )
-      .build();
-    // TODO add date range sortfield build from startDate and endDate.
-    return new SortDescription(Lists.newArrayList());
+    ));
   }
 
   private ArrayList<FullTextSearchDescription> createFullTextSearchDescriptions() {
@@ -86,9 +90,10 @@ class DcarArchiveSearchDescription extends AbstractSearchDescription {
       fdf.createListFacetDescription("dynamic_s_subject", String.class, "dcarkeyword_value", "has_archive_keyword"),
       fdf.createListFacetDescription("dynamic_s_place", String.class, "dcarkeyword_value", "has_archive_place"),
       fdf.createListFacetDescription("dynamic_s_person", PersonNames.class, "person_names", "has_archive_person"),
-      fdf.createListFacetDescription("dynamic_s_refcode", String.class, "dcararchive_refCodeArchive")
+      fdf.createListFacetDescription("dynamic_s_refcode", String.class, "dcararchive_refCodeArchive"),
+      fdf.createDcarArchiveAndArchiverPeriodFacetDescription("dynamic_i_period", "dcararchive_beginDate",
+        "dcararchive_endDate")
     );
-    // TODO add date range facet build from startDate and endDate.
   }
 
   @Override

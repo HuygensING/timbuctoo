@@ -9,11 +9,11 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static nl.knaw.huygens.timbuctoo.search.description.Property.localProperty;
-import static nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription.newSortFieldDescription;
+import static nl.knaw.huygens.timbuctoo.search.description.sort.BuildableSortFieldDescription.newSortFieldDescription;
 import static nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.SortParameter.Direction.asc;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
+import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.mockito.Mockito.mock;

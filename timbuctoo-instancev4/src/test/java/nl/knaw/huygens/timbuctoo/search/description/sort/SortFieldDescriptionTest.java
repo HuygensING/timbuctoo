@@ -7,10 +7,10 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static nl.knaw.huygens.timbuctoo.search.description.Property.localProperty;
-import static nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription.newSortFieldDescription;
+import static nl.knaw.huygens.timbuctoo.search.description.sort.BuildableSortFieldDescription.newSortFieldDescription;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
+import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
@@ -33,7 +33,7 @@ public class SortFieldDescriptionTest {
       .withProperty(localProperty().withName(PROPERTY))
       .build();
 
-    GraphTraversal<?, ?> orderTraversal = instance.getTraversal();
+    GraphTraversal<?, ?> orderTraversal = instance.getTraversal().get(0);
 
     List<Vertex> vertices = traversal.order().by(orderTraversal, Order.incr).toList();
     assertThat(vertices, contains(
@@ -57,7 +57,7 @@ public class SortFieldDescriptionTest {
       .withProperty(localProperty().withName(PROPERTY))
       .build();
 
-    GraphTraversal<?, ?> orderTraversal = instance.getTraversal();
+    GraphTraversal<?, ?> orderTraversal = instance.getTraversal().get(0);
 
     List<Vertex> vertices = traversal.order().by(orderTraversal, Order.incr).toList();
     assertThat(vertices, contains(
@@ -83,7 +83,7 @@ public class SortFieldDescriptionTest {
       .withBackupProperty(localProperty().withName(PROPERTY_2))
       .build();
 
-    GraphTraversal<?, ?> orderTraversal = instance.getTraversal();
+    GraphTraversal<?, ?> orderTraversal = instance.getTraversal().get(0);
 
     List<Vertex> vertices = traversal.order().by(orderTraversal, Order.incr).toList();
     assertThat(vertices, contains(
