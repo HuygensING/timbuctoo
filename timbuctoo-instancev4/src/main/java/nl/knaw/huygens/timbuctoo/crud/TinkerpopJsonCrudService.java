@@ -168,16 +168,16 @@ public class TinkerpopJsonCrudService {
             graph.tx().commit();
             return id;
           } catch (IllegalArgumentException e) {
-            throw new RuntimeException("The relation could not be created");
+            throw new RuntimeException("The relation could not be created", e);
           }
         } catch (IllegalArgumentException | NoSuchElementException e) {
-          throw new IOException("^typeId must contain a UUID pointing to an existing relationType");
+          throw new IOException("^typeId must contain a UUID pointing to an existing relationType", e);
         }
       } catch (IllegalArgumentException | NoSuchElementException e) {
-        throw new IOException("^targetId must contain a UUID pointing to an existing entity");
+        throw new IOException("^targetId must contain a UUID pointing to an existing entity", e);
       }
     } catch (IllegalArgumentException | NoSuchElementException e) {
-      throw new IOException("^sourceId must contain a UUID pointing to an existing entity");
+      throw new IOException("^sourceId must contain a UUID pointing to an existing entity", e);
     }
   }
 
@@ -655,7 +655,9 @@ public class TinkerpopJsonCrudService {
     }
   }
 
-  private void replaceRelation(Collection collection, UUID id, ObjectNode data, String userId) throws IOException {
+  private void replaceRelation(Collection collection, UUID id, ObjectNode data, String userId)
+    throws IOException, NotFoundException {
+
     final String acceptedPropName = collection.getEntityTypeName() + "_accepted";
 
     JsonNode accepted = data.get("accepted");
@@ -674,11 +676,16 @@ public class TinkerpopJsonCrudService {
     }
 
     Graph graph = graphwrapper.getGraph();
-    Edge origEdge = graph.traversal().E()
-                     .has("tim_id", id.toString())
-                     .has("isLatest", true)
-                     .has("rev", rev.intValue())
-                     .next();
+    Edge origEdge;
+    try {
+      origEdge = graph.traversal().E()
+        .has("tim_id", id.toString())
+        .has("isLatest", true)
+        .has("rev", rev.intValue())
+        .next();
+    } catch (NoSuchElementException e) {
+      throw new NotFoundException();
+    }
 
     Edge edge = duplicateEdge(origEdge);
     edge.property(acceptedPropName, accepted.booleanValue());
