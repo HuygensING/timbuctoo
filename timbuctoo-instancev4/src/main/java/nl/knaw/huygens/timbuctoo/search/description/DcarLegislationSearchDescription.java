@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.search.description;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.facet.FacetDescriptionFactory;
@@ -9,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescr
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 import nl.knaw.huygens.timbuctoo.search.description.sort.SortDescription;
+import nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +21,7 @@ import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSear
   .createLocalSimpleFullTextSearchDescription;
 import static nl.knaw.huygens.timbuctoo.search.description.sort.BuildableSortFieldDescription.newSortFieldDescription;
 
-class DcarLegislationSearchDescription extends AbstractSearchDescription{
+class DcarLegislationSearchDescription extends AbstractSearchDescription {
   private final PropertyDescriptor displayNameDescriptor;
   private final PropertyDescriptor idDescriptor;
   private final List<FacetDescription> facetDescriptions;
@@ -30,11 +32,11 @@ class DcarLegislationSearchDescription extends AbstractSearchDescription{
   private final SortDescription sortDescription;
 
   public DcarLegislationSearchDescription(PropertyDescriptorFactory propertyDescriptorFactory,
-                                       FacetDescriptionFactory facetDescriptionFactory) {
+                                          FacetDescriptionFactory facetDescriptionFactory) {
     displayNameDescriptor = propertyDescriptorFactory.getLocal("dcarlegislation_titleEng", String.class);
     idDescriptor = propertyDescriptorFactory.getLocal(SearchDescription.ID_DB_PROP, String.class);
     facetDescriptions = createFacetDescriptions(facetDescriptionFactory);
-    sortableFields = Lists.newArrayList("dynamic_sort_title", "dynamic_k_period");
+    sortableFields = Lists.newArrayList("dynamic_sort_title", "dynamic_k_date");
     fullTextSearchFields =
       Lists.newArrayList("dynamic_t_title", "dynamic_t_text", "dynamic_t_titleNLD", "dynamic_t_contents");
 
@@ -45,16 +47,24 @@ class DcarLegislationSearchDescription extends AbstractSearchDescription{
 
   private SortDescription createSortDescription() {
     PropertyParserFactory propertyParserFactory = new PropertyParserFactory();
-    newSortFieldDescription()
-      .withName("dynamic_sort_title")
-      .withDefaultValue("")
-      .withProperty(localProperty()
-        .withName("titleEng")
-        .withParser(propertyParserFactory.getParser(String.class))
-      )
-      .build();
-    // TODO add date range sortfield build from date1.
-    return new SortDescription(Lists.newArrayList());
+    List<SortFieldDescription> sortFieldDescriptions = Lists.newArrayList(
+      newSortFieldDescription()
+        .withName("dynamic_sort_title")
+        .withDefaultValue("")
+        .withProperty(localProperty()
+          .withName("dcarlegislation_titleEng")
+          .withParser(propertyParserFactory.getParser(String.class)))
+        .build(),
+      newSortFieldDescription()
+        .withName("dynamic_k_date")
+        .withDefaultValue(0)
+        .withProperty(localProperty()
+          .withName("dcarlegislation_date1")
+          .withParser(propertyParserFactory.getParser(Datable.class)))
+        .build()
+    );
+
+    return new SortDescription(sortFieldDescriptions);
   }
 
   private ArrayList<FullTextSearchDescription> createFullTextSearchDescriptions() {
@@ -80,9 +90,9 @@ class DcarLegislationSearchDescription extends AbstractSearchDescription{
     return Lists.newArrayList(
       fdf.createListFacetDescription("dynamic_s_place", String.class, "dcarkeyword_value", "has_legislation_place"),
       fdf.createListFacetDescription("dynamic_s_person", PersonNames.class, "person_names", "has_legislation_person"),
-      fdf.createListFacetDescription("dynamic_s_subject", String.class, "dcarkeyword_value", "has_legislation_keyword")
+      fdf.createListFacetDescription("dynamic_s_subject", String.class, "dcarkeyword_value", "has_legislation_keyword"),
+      fdf.createDatableRangeFacetDescription("dynamic_i_date", "dcarlegislation_date1")
     );
-    // TODO add date range facet build from date1.
   }
 
   @Override
