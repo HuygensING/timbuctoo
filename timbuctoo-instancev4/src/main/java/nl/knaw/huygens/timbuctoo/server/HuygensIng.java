@@ -38,7 +38,7 @@ public class HuygensIng {
       .build()
   );
 
-  private static final String[] WW_DOCUMENT_TYPES = new String[]{
+  private static final String[] DOCUMENT_TYPES = new String[]{
     "UNKNOWN",
     "ANTHOLOGY",
     "ARTICLE",
@@ -130,7 +130,7 @@ public class HuygensIng {
         .withProperty("title", localProperty("wwdocument_title"))
         .withProperty("englishTitle", localProperty("wwdocument_englishTitle"))
         .withProperty("documentType", localProperty("wwdocument_documentType", stringToEncodedStringOf(
-          WW_DOCUMENT_TYPES
+                DOCUMENT_TYPES
         )))
         .withProperty("date", localProperty("wwdocument_date", datable))
         .withProperty("reference", localProperty("wwdocument_reference"))
@@ -174,7 +174,7 @@ public class HuygensIng {
         .withProperty("title", localProperty("cwnodocument_title"))
         .withProperty("englishTitle", localProperty("cwnodocument_englishTitle"))
         .withProperty("documentType", localProperty("cwnodocument_documentType", stringToEncodedStringOf(
-          WW_DOCUMENT_TYPES
+                DOCUMENT_TYPES
         )))
         .withProperty("date", localProperty("cwnodocument_date", datable))
         .withProperty("notes", localProperty("cwnodocument_notes"))
@@ -216,7 +216,7 @@ public class HuygensIng {
 
         .withProperty("title", localProperty("cwrsdocument_title"))
         .withProperty("documentType", localProperty("cwrsdocument_documentType", stringToEncodedStringOf(
-          WW_DOCUMENT_TYPES
+                DOCUMENT_TYPES
         )))
         .withProperty("documentResourceType",
           localProperty("cwrsdocument_documentResourceType", stringToEncodedStringOf(
@@ -241,8 +241,52 @@ public class HuygensIng {
           "subject",
           "geography")))
         .withProperty("value", localProperty("dcarkeyword_value"))
-      )
-    )
+      ))
+    .withVre("Base", "", vre -> vre
+    .withCollection("persons", c -> c
+      .withDisplayName(localProperty("person_names", personNames))
+      .withProperty("names", localProperty("person_names", personNames))
+      .withProperty("types", localProperty("person_types", stringArrayToEncodedArrayOf(
+              "ARCHETYPE",
+              "AUTHOR",
+              "PSEUDONYM",
+              "READER"
+      )))
+      .withProperty("gender", localProperty("person_gender", gender))
+      .withProperty("birthDate", localProperty("person_birthDate", datable))
+      .withProperty("deathDate", localProperty("person_deathDate", datable))
+      .withProperty("links", localProperty("person_links", hyperlinks)))
+    .withCollection("documents", c -> c
+      .withDisplayName(localProperty("document_title"))
+      .withProperty("title", localProperty("document_title"))
+      .withProperty("documentType", localProperty("document_documentType", stringToEncodedStringOf(
+              DOCUMENT_TYPES
+      )))
+      .withProperty("date", localProperty("document_date", datable))
+      .withProperty("reference", localProperty("document_reference"))
+      .withProperty("links", localProperty("document_links", hyperlinks)))
+    .withCollection("collectives", c -> c
+      .withDisplayName(localProperty("collective_name"))
+      .withProperty("name", localProperty("collective_name"))
+      .withProperty("type", localProperty("collective_type", stringToUnencodedStringOf(
+        "UNKNOWN",
+        "ACADEMY",
+        "ASSOCIATION",
+        "LIBRARY",
+        "PUBLISHER",
+        "SHOP"
+      )))
+      .withProperty("links", localProperty("collective_links", hyperlinks)))
+    .withCollection("keywords", c -> c
+      .withDisplayName(localProperty("keyword_value"))
+      .withProperty("value", localProperty("keyword_value")))
+    .withCollection("languages", c -> c
+      .withDisplayName(localProperty("language_name"))
+      .withProperty("name", localProperty("language_name")))
+    .withCollection("locations", c -> c
+      .withDisplayName(localProperty("location_names", defaultLocationNameConverter))
+      .withProperty("locationName", localProperty("location_names")))
+    .withCollection("relations", CollectionBuilder::isRelationCollection))
     .build();
 
 }
