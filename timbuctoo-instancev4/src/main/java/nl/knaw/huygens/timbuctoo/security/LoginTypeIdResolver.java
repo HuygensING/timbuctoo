@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.jsontype.impl.TypeIdResolverBase;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
-public class LoginTypeIdResolver  extends TypeIdResolverBase {
+class LoginTypeIdResolver  extends TypeIdResolverBase {
 
 
   public static final String TYPENAME = "login";
