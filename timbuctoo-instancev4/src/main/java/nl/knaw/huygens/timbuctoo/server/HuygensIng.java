@@ -261,6 +261,23 @@ public class HuygensIng {
         .withProperty("subCode", localProperty("dcararchive_subCode"))
         .withProperty("titleEng", localProperty("dcararchive_titleEng"))
         .withProperty("titleNld", localProperty("dcararchive_titleNld")))
+    .withCollection("dcararchiver",
+      c -> c
+        .withDisplayName(localProperty("dcararchiver_nameNld"))
+        .withProperty("beginDate", localProperty("dcararchiver_beginDate", datable))
+        .withProperty("endDate", localProperty("dcararchiver_endDate", datable))
+        .withProperty("history", localProperty("dcararchiver_history"))
+        .withProperty("madeBy", localProperty("dcararchiver_madeBy"))
+        .withProperty("nameEng", localProperty("dcararchiver_nameEng"))
+        .withProperty("nameNld", localProperty("dcararchiver_nameNld"))
+        .withProperty("notes", localProperty("dcararchiver_notes"))
+        .withProperty("origFilename", localProperty("dcararchiver_origFilename"))
+        .withProperty("reminders", localProperty("dcararchiver_reminders"))
+        .withProperty("types", localProperty("dcararchiver_types", stringArrayToEncodedArrayOf(
+              "corporate_body",
+              "person",
+              "family"
+      ))))
     )
     .withVre("Base", "", vre -> vre
     .withCollection("persons", c -> c
