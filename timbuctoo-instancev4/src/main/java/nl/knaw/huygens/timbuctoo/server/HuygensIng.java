@@ -240,8 +240,28 @@ public class HuygensIng {
         .withProperty("type", localProperty("dcarkeyword_type", stringArrayToEncodedArrayOf(
           "subject",
           "geography")))
-        .withProperty("value", localProperty("dcarkeyword_value"))
-      ))
+        .withProperty("value", localProperty("dcarkeyword_value")))
+    .withCollection("dcararchives",
+      c -> c
+        .withDisplayName(localProperty("document_title"))
+        .withProperty("beginDate", localProperty("dcararchive_beginDate"))
+        .withProperty("countries", localProperty("dcararchive_countries"))
+        .withProperty("endDate", localProperty("dcararchive_endDate"))
+        .withProperty("extent", localProperty("dcararchive_extent"))
+        .withProperty("itemNo", localProperty("dcararchive_itemNo"))
+        .withProperty("madeBy", localProperty("dcararchive_madeBy"))
+        .withProperty("notes", localProperty("dcararchive_notes"))
+        .withProperty("origFilename", localProperty("dcararchive_origFilename"))
+        .withProperty("periodDescription", localProperty("dcararchive_periodDescription"))
+        .withProperty("refCode", localProperty("dcararchive_refCode"))
+        .withProperty("refCodeArchive", localProperty("dcararchive_refCodeArchive"))
+        .withProperty("reminders", localProperty("dcararchive_reminders"))
+        .withProperty("scope", localProperty("dcararchive_scope"))
+        .withProperty("series", localProperty("dcararchive_series"))
+        .withProperty("subCode", localProperty("dcararchive_subCode"))
+        .withProperty("titleEng", localProperty("dcararchive_titleEng"))
+        .withProperty("titleNld", localProperty("dcararchive_titleNld")))
+    )
     .withVre("Base", "", vre -> vre
     .withCollection("persons", c -> c
       .withDisplayName(localProperty("person_names", personNames))
