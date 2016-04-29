@@ -261,7 +261,7 @@ public class HuygensIng {
         .withProperty("subCode", localProperty("dcararchive_subCode"))
         .withProperty("titleEng", localProperty("dcararchive_titleEng"))
         .withProperty("titleNld", localProperty("dcararchive_titleNld")))
-    .withCollection("dcararchiver",
+    .withCollection("dcararchivers",
       c -> c
         .withDisplayName(localProperty("dcararchiver_nameNld"))
         .withProperty("beginDate", localProperty("dcararchiver_beginDate", datable))
