@@ -278,7 +278,22 @@ public class HuygensIng {
               "person",
               "family"
       ))))
-    )
+    .withCollection("dcarlegislations",
+      c -> c
+        .withDisplayName(localProperty("dcarlegislation_titleNld"))
+        .withProperty("contents", localProperty("dcarlegislation_contents"))
+        .withProperty("date1", localProperty("dcarlegislation_date1", datable))
+        .withProperty("date2", localProperty("dcarlegislation_date2", datable))
+        .withProperty("madeBy", localProperty("dcarlegislation_madeBy"))
+        .withProperty("origFilename", localProperty("dcarlegislation_origFilename"))
+        .withProperty("originalArchivalSource", localProperty("dcarlegislation_originalArchivalSource"))
+        .withProperty("otherPublications", localProperty("dcarlegislation_otherPublications"))
+        .withProperty("pages", localProperty("dcarlegislation_pages"))
+        .withProperty("reference", localProperty("dcarlegislation_reference"))
+        .withProperty("remarks", localProperty("dcarlegislation_remarks"))
+        .withProperty("seeAlso", localProperty("dcarlegislation_seeAlso"))
+        .withProperty("titleEng", localProperty("dcarlegislation_titleEng"))
+        .withProperty("titleNld", localProperty("dcarlegislation_titleNld"))))
     .withVre("Base", "", vre -> vre
     .withCollection("persons", c -> c
       .withDisplayName(localProperty("person_names", personNames))
