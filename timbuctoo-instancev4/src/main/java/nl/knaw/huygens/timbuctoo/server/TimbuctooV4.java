@@ -50,6 +50,7 @@ import nl.knaw.huygens.timbuctoo.server.healthchecks.FileHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.LabelsAddedToVertexDatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.SortIndexesDatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.management.ObjectName;
@@ -67,6 +68,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
   public static final String ENCRYPTION_ALGORITHM = "SHA-256";
   public static final String HANDLE_QUEUE = "pids";
+  private static final Logger LOG = LoggerFactory.getLogger(TimbuctooV4.class);
   private ActiveMQBundle activeMqBundle;
 
   public static void main(String[] args) throws Exception {
@@ -104,6 +106,13 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final AuthenticationHandler authHandler = configuration.getFederatedAuthentication().makeHandler(environment);
     final Path loginsPath = Paths.get(configuration.getLoginsFilePath());
     final Path usersPath = Paths.get(configuration.getUsersFilePath());
+    final LoginFileMigration loginFileMigration = new LoginFileMigration();
+
+    // Convert login file
+    if (!loginFileMigration.isConverted(loginsPath)) {
+      LOG.info("Migrating logins file to use byte[] for password property");
+      loginFileMigration.convert(loginsPath);
+    }
 
     JsonBasedUserStore userStore = new JsonBasedUserStore(usersPath);
     final LoggedInUserStore loggedInUserStore = new LoggedInUserStore(

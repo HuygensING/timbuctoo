@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -36,7 +37,6 @@ public class JsonBasedAuthenticator {
       Optional<Login> first = logins.stream().filter(login -> login.getUsername().equals(username)).findFirst();
 
       if (first.isPresent()) {
-
         Login login = first.get();
 
         return isCorrectPassword(password, login) ? Optional.of(login.getUserPid()) : Optional.empty();
@@ -54,17 +54,17 @@ public class JsonBasedAuthenticator {
   }
 
   private boolean isCorrectPassword(String password, Login login) throws NoSuchAlgorithmException {
-    String encryptedPassword = encryptPassword(password, login.getSalt());
+    byte[] encryptedPassword = encryptPassword(password, login.getSalt());
 
-    return encryptedPassword.equals(login.getPassword());
+    return new String(encryptedPassword).equals(new String(login.getPassword(), Charset.forName("UTF-8")));
   }
 
   // inspired by https://www.owasp.org/index.php/Hashing_Java
-  private String encryptPassword(String password, byte[] salt) throws NoSuchAlgorithmException {
+  private byte[] encryptPassword(String password, byte[] salt) throws NoSuchAlgorithmException {
     MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
     messageDigest.reset();
     messageDigest.update(salt);
     byte[] encryptedAuth = messageDigest.digest(password.getBytes());
-    return new String(encryptedAuth);
+    return encryptedAuth;
   }
 }
