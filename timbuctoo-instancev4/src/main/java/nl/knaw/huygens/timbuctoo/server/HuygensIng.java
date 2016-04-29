@@ -243,10 +243,10 @@ public class HuygensIng {
         .withProperty("value", localProperty("dcarkeyword_value")))
     .withCollection("dcararchives",
       c -> c
-        .withDisplayName(localProperty("document_title"))
-        .withProperty("beginDate", localProperty("dcararchive_beginDate"))
+        .withDisplayName(localProperty("dcararchive_titleNld"))
+        .withProperty("beginDate", localProperty("dcararchive_beginDate", datable))
         .withProperty("countries", localProperty("dcararchive_countries"))
-        .withProperty("endDate", localProperty("dcararchive_endDate"))
+        .withProperty("endDate", localProperty("dcararchive_endDate", datable))
         .withProperty("extent", localProperty("dcararchive_extent"))
         .withProperty("itemNo", localProperty("dcararchive_itemNo"))
         .withProperty("madeBy", localProperty("dcararchive_madeBy"))
