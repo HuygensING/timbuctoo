@@ -1,10 +1,9 @@
 package nl.knaw.huygens.timbuctoo.search.description.propertyparser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.huygens.timbuctoo.model.PersonName;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
-import org.neo4j.helpers.Strings;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +40,7 @@ class PersonNamesDefaultNamePropertyParser implements PropertyParser {
         PersonNames personNames = readPersonNames(value);
 
         String defaultName = personNames.defaultName().getSortName();
-        if (Strings.isBlank(defaultName)) {
+        if (StringUtils.isBlank(defaultName)) {
           return null;
         }
         return defaultName;
