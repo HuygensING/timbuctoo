@@ -18,9 +18,17 @@ public class Vre {
     this.vreName = vreName;
   }
 
-  public Collection getCollection(String entityTypeName) {
+  public Collection getCollectionForTypeName(String entityTypeName) {
     return collections.get(entityTypeName);
   }
+
+  public Optional<Collection> getCollectionForCollectionName(String collectionName) {
+    return this.collections.values().stream()
+      .filter(x-> Objects.equals(x.getCollectionName(), collectionName))
+      .findAny();
+  }
+
+
 
   public Set<String> getEntityTypes() {
     return collections.keySet();
