@@ -227,7 +227,7 @@ public class HuygensIng {
         .withProperty("description", localProperty("cwrsdocument_description"))
         .withProperty("links", localProperty("cwrsdocument_links", hyperlinks))
         .withProperty("tempLanguage", localProperty("cwrsdocument_tempLanguage"))))
-    .withVre("dcar", "dcar", vre -> vre
+    .withVre("DutchCaribbean", "dcar", vre -> vre
     .withCollection("dcarpersons",
       c -> c
         .withDisplayName(localProperty("dcarperson_label"))
@@ -293,7 +293,8 @@ public class HuygensIng {
         .withProperty("remarks", localProperty("dcarlegislation_remarks"))
         .withProperty("seeAlso", localProperty("dcarlegislation_seeAlso"))
         .withProperty("titleEng", localProperty("dcarlegislation_titleEng"))
-        .withProperty("titleNld", localProperty("dcarlegislation_titleNld"))))
+        .withProperty("titleNld", localProperty("dcarlegislation_titleNld")))
+    .withCollection("dcarelations", CollectionBuilder::isRelationCollection))
     .withVre("Base", "", vre -> vre
     .withCollection("persons", c -> c
       .withDisplayName(localProperty("person_names", personNames))
@@ -351,14 +352,15 @@ public class HuygensIng {
       .withProperty("notes", localProperty("ckccperson_notes"))
       .withProperty("urn", localProperty("ckccperson_urn"))
       .withProperty("links", localProperty("ckccperson_links", hyperlinks)))
-    .withCollection("collectives", c -> c
-      .withDisplayName(localProperty("collective_name"))
-      .withProperty("name", localProperty("collective_name"))
-      .withProperty("urn", localProperty("collective_urn"))
+    .withCollection("ckcccollectives", c -> c
+      .withDisplayName(localProperty("ckcccollective_name"))
+      .withProperty("name", localProperty("ckcccollective_name"))
+      .withProperty("urn", localProperty("ckcccollective_urn"))
       .withProperty("links", localProperty("ckcccollective_links", hyperlinks))
-      .withProperty("type", localProperty("collective_type", stringToUnencodedStringOf(
+      .withProperty("type", localProperty("ckcccollective_type", stringToUnencodedStringOf(
         "UNKNOWN"
-      )))))
+      ))))
+    .withCollection("ckccrelations", CollectionBuilder::isRelationCollection))
     .build();
 
 }
