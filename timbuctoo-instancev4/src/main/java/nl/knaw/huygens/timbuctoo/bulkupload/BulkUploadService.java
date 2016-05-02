@@ -1,91 +1,114 @@
 package nl.knaw.huygens.timbuctoo.bulkupload;
 
-import nl.knaw.huygens.timbuctoo.bulkupload.parsedworkbook.CollectionSheet;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsedworkbook.ParsedWorkbook;
-import nl.knaw.huygens.timbuctoo.bulkupload.parsedworkbook.PropertyColumns;
-import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
+import nl.knaw.huygens.timbuctoo.bulkupload.parsedworkbook.RelationDescription;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
+import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
+import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
+import org.apache.tinkerpop.gremlin.process.traversal.Order;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
 
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
 
 public class BulkUploadService {
 
   private final Vre vre;
   private final GraphWrapper graphwrapper;
+  private final Authorizer authorizer;
 
-  public BulkUploadService(Vre vre, GraphWrapper graphwrapper) {
+  public BulkUploadService(Vre vre, GraphWrapper graphwrapper/*, Authorizer authorizer*/) {
     this.vre = vre;
     this.graphwrapper = graphwrapper;
+    this.authorizer = null;//authorizer;
   }
 
-  public Optional<Workbook> saveToDb(Workbook wb) {
-    ValidationResult validationResult = saveToDb(ParsedWorkbook.from(wb));
-    if (!validationResult.isValid()) {
-      setValidationMessages(validationResult, wb);
-      return Optional.of(wb);
-    } else {
-      return Optional.empty();
-    }
+  //FIXME: add authorizer on admin
+  //FIXME: allow linking to existing vertices (e.g. geboorteplaats in emmigrantunits)
 
+  public boolean saveToDb(Workbook wb/*, String userId*/)
+    throws AuthorizationUnavailableException, AuthorizationException {
+    //
+    //for (Collection collection : vre.getCollections().values()) {
+    //  if (!authorizer.authorizationFor(collection, userId).isAllowedToWrite()) {
+    //    throw new AuthorizationException(
+    //      "You cannot use bulkupload because you are not allowed to edit " + collection.getCollectionName()
+    //    );
+    //  }
+    //}
+
+    ParsedWorkbook workbook = ParsedWorkbook.from(wb);
+
+    final Map<String, RelationDescription> descriptions = graphwrapper.getGraph().traversal()
+      .V()
+      .has("relationtype_regularName")
+      .toList()
+      .stream()
+      .map(RelationDescription::new)
+      .collect(
+        HashMap::new,
+        (map, desc) -> {
+          map.put(desc.getRegularName(), desc);
+          map.put(desc.getInverseName(), desc);
+        },
+        HashMap::putAll
+      );
+
+    dropAllVreVertices();
+    if (workbook.saveToDb(graphwrapper, vre, descriptions)) {
+      return true;
+    }
+    return false;
   }
 
-  //package local, for testing
-  ValidationResult saveToDb(ParsedWorkbook wb) {
-    ValidationResult validationResult = validate(wb);
-
-    if (validationResult.isValid()) {
-      //saveToDb();
+  private void dropAllVreVertices() {
+    final Set<String> keys = vre.getCollections().keySet();
+    final String[] entityTypeNames = keys.toArray(new String[keys.size()]);
+    P<String> labels = LabelP.of(entityTypeNames[0]);
+    for (int i = 1; i < entityTypeNames.length; i++) {
+      labels = labels.or(LabelP.of(entityTypeNames[i]));
     }
-    return validationResult;
+    try (Transaction tx = graphwrapper.getGraph().tx()) {
+      graphwrapper.getGraph().traversal().V().order().by(__.outE().count(), Order.incr)
+
+        .has(T.label, labels).drop().toList();
+      tx.commit();
+    }
   }
 
 
   public Workbook getEmptyTemplate(String... propsToLeaveOut) {
     ParsedWorkbook workbook = new ParsedWorkbook();
-    //each property can generate the two rows needed for the excel
-    //furthermore all registered relations are generated
-    vre.getCollections().forEach((collName, coll) -> {
-      if (coll.isRelationCollection()) {
-        return;
-      }
-      CollectionSheet sheet = workbook.withSheet(collName);
-      List<Vertex> vertices = graphwrapper.getCurrentEntitiesFor(coll.getEntityTypeName()).toList();
-      GraphTraversal<Vertex, Vertex> collectionTraversal = null;
-      if (vertices.size() > 0) {
-        collectionTraversal = graphwrapper.getGraph().traversal().V(vertices);
-      }
-
-      for (Map.Entry<String, LocalProperty> entry : coll.getWriteableProperties().entrySet()) {
-        LocalProperty prop = entry.getValue();
-        PropertyColumns propertyColumns = sheet.withProperty(entry.getKey(), prop);
-        if (collectionTraversal != null) {
-          propertyColumns.addData(collectionTraversal);
-        }
-      }
-    });
+    ////each property can generate the two rows needed for the excel
+    ////furthermore all registered relations are generated
+    //vre.getCollections().forEach((collName, coll) -> {
+    //  if (coll.isRelationCollection()) {
+    //    return;
+    //  }
+    //  CollectionRange sheet = CollectionRange.from(collName);
+    //  List<Vertex> vertices = graphwrapper.getCurrentEntitiesFor(coll.getEntityTypeName()).toList();
+    //  GraphTraversal<Vertex, Vertex> collectionTraversal = null;
+    //  if (vertices.size() > 0) {
+    //    collectionTraversal = graphwrapper.getGraph().traversal().V(vertices);
+    //  }
+    //
+    //  for (Map.Entry<String, LocalProperty> entry : coll.getWriteableProperties().entrySet()) {
+    //    LocalProperty prop = entry.getValue();
+    //    PropertyColumns propertyColumns = sheet.withProperty(entry.getKey());
+    //    if (collectionTraversal != null) {
+    //      //propertyColumns.addData(collectionTraversal);//FIXME make it work
+    //    }
+    //  }
+    //});
     return workbook.asWorkBook();
-  }
-
-  private ValidationResult validate(ParsedWorkbook wb) {
-    //A workbook is valid if all sheets have the name of a collection and all sheets:
-    // - have only columns that are present in the collection description as writeable properties
-    // - have only data that can be converted
-    // - first row contains (a multi)cell(s) with the property name
-    // - second row contains subproperty names if needed (for a personName for example)
-    // - the identity column contains only unique values
-
-    //Next to the data columns a column is allowed that contains a sheet-local unique value for each row
-    //A series of columns may be labeled "relation" and contain a value of the identity column of a different sheet
-    return new ValidationResult();
-  }
-
-  private void setValidationMessages(ValidationResult validationResult, Workbook wb) {
   }
 
 }

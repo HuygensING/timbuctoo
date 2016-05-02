@@ -8,6 +8,19 @@
 <body>
 <h1>Huygens ING Data Repository</h1>
 
+Download template for:<br>
+<form method="GET" action="/v2.1/bulk-upload">
+  <label>Vre: <input name="vre" type="text"></label><br>
+  <input type="submit" value="download"><br>
+</form>
+
+Upload a changed version<br>
+<form method="POST" action="/v2.1/bulk-upload" enctype="multipart/form-data">
+  <label>Vre: <input name="vre" type="text"></label><br>
+  <input type="file" name="file"><br/>
+  <input type="submit" value="upload" name="submit"><br>
+</form>
+
 <p><em>Powered by Timbuctoo</em></p>
 
 </body>

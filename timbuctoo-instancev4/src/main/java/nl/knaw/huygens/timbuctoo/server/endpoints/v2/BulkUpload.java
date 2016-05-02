@@ -2,6 +2,8 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 
 import nl.knaw.huygens.timbuctoo.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
+import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -13,18 +15,18 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Optional;
 
-@Path("/v2.1/{vre}/bulk-upload")
+@Path("/v2.1/bulk-upload")
 public class BulkUpload {
 
   private final Vres mappings;
@@ -38,28 +40,36 @@ public class BulkUpload {
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-  public Response uploadExcelFile(
-    @PathParam("vre") String vre,
+  public byte[] uploadExcelFile(
+    @FormDataParam("vre") String vre,
     @FormDataParam("data") FormDataContentDisposition contentDisposition,
     @FormDataParam("file") InputStream fileInputStream) {
     try {
       BulkUploadService uploadService = new BulkUploadService(mappings.getVre(vre), wrapper);
 
-      Optional<Workbook> result = uploadService.saveToDb(WorkbookFactory.create(fileInputStream));
+      final Workbook wb = WorkbookFactory.create(fileInputStream);
 
-      if (result.isPresent()) {
-        return Response.status(400).entity(result).build();
+      final Response.ResponseBuilder response;
+
+      if (uploadService.saveToDb(wb)) {
+        response = Response.ok();
       } else {
-        return Response.ok()/*.entity(null)*/.build();
+        response = Response.status(400);
       }
-    } catch (InvalidFormatException | IOException e) {
-      return Response.status(500).entity(e).build();
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      wb.write(out);
+      return out.toByteArray();
+    } catch (AuthorizationUnavailableException | InvalidFormatException | IOException e) {
+      //return Response.status(500).entity(e).build();
+    } catch (AuthorizationException e) {
+      //return Response.status(403).entity(e).build();
     }
+    throw new RuntimeException("asdasa");
   }
 
   @GET
   @Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-  public StreamingOutput uploadExcelFile(@PathParam("vre") String vre) {
+  public StreamingOutput getExcelFile(@QueryParam("vre") String vre) {
 
     BulkUploadService uploadService = new BulkUploadService(mappings.getVre(vre), wrapper);
     return new StreamingOutput() {
