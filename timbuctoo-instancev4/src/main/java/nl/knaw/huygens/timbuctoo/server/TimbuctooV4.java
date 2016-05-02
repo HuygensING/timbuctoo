@@ -16,6 +16,7 @@ import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.timbuctoo.crud.DenormalizedSortFieldUpdater;
+import nl.knaw.huygens.timbuctoo.experimental.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
@@ -35,7 +36,7 @@ import nl.knaw.huygens.timbuctoo.server.databasemigration.WwPersonSortIndexesDat
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
 import nl.knaw.huygens.timbuctoo.server.endpoints.admin.DatabaseValidationServlet;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.BulkUpload;
+import nl.knaw.huygens.timbuctoo.experimental.server.endpoints.v2.BulkUpload;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Graph;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Metadata;
@@ -164,7 +165,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new SingleEntity(crudService, loggedInUserStore));
     register(environment, new Gremlin(graphManager));
     register(environment, new Graph(graphManager));
-    register(environment, new BulkUpload(vres, graphManager));
+    register(environment, new BulkUpload(new BulkUploadService(vres, graphManager)));
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
     // admin endpoints
