@@ -226,7 +226,8 @@ public class HuygensIng {
         .withProperty("date", localProperty("cwrsdocument_date", datable))
         .withProperty("description", localProperty("cwrsdocument_description"))
         .withProperty("links", localProperty("cwrsdocument_links", hyperlinks))
-        .withProperty("tempLanguage", localProperty("cwrsdocument_tempLanguage"))))
+        .withProperty("tempLanguage", localProperty("cwrsdocument_tempLanguage")))
+      .withCollection("cwrsrelations", CollectionBuilder::isRelationCollection))
     .withVre("DutchCaribbean", "dcar", vre -> vre
     .withCollection("dcarpersons",
       c -> c
@@ -294,7 +295,7 @@ public class HuygensIng {
         .withProperty("seeAlso", localProperty("dcarlegislation_seeAlso"))
         .withProperty("titleEng", localProperty("dcarlegislation_titleEng"))
         .withProperty("titleNld", localProperty("dcarlegislation_titleNld")))
-    .withCollection("dcarelations", CollectionBuilder::isRelationCollection))
+    .withCollection("dcarrelations", CollectionBuilder::isRelationCollection))
     .withVre("Base", "", vre -> vre
     .withCollection("persons", c -> c
       .withDisplayName(localProperty("person_names", personNames))
@@ -339,6 +340,9 @@ public class HuygensIng {
     .withCollection("locations", c -> c
       .withDisplayName(localProperty("location_names", defaultLocationNameConverter))
       .withProperty("locationName", localProperty("location_names")))
+    .withCollection("archives")
+    .withCollection("archivers")
+    .withCollection("legislations")
     .withCollection("relations", CollectionBuilder::isRelationCollection))
     .withVre("ckcc", "", vre -> vre
     .withCollection("ckccpersons", c -> c
