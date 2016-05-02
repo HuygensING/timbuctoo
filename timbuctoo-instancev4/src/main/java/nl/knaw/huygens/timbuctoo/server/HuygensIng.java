@@ -339,6 +339,26 @@ public class HuygensIng {
       .withDisplayName(localProperty("location_names", defaultLocationNameConverter))
       .withProperty("locationName", localProperty("location_names")))
     .withCollection("relations", CollectionBuilder::isRelationCollection))
+    .withVre("ckcc", "", vre -> vre
+    .withCollection("ckccpersons", c -> c
+      .withDisplayName(localProperty("ckccperson_names", personNames))
+      .withProperty("names", localProperty("ckccperson_names", personNames))
+      .withProperty("birthDate", localProperty("ckccperson_birthDate", datable))
+      .withProperty("deathDate", localProperty("ckccperson_deathDate", datable))
+      .withProperty("gender", localProperty("ckccperson_gender", gender))
+      .withProperty("cenId", localProperty("ckccperson_cenId"))
+      .withProperty("floruit", localProperty("ckccperson_floruit"))
+      .withProperty("notes", localProperty("ckccperson_notes"))
+      .withProperty("urn", localProperty("ckccperson_urn"))
+      .withProperty("links", localProperty("ckccperson_links", hyperlinks)))
+    .withCollection("collectives", c -> c
+      .withDisplayName(localProperty("collective_name"))
+      .withProperty("name", localProperty("collective_name"))
+      .withProperty("urn", localProperty("collective_urn"))
+      .withProperty("links", localProperty("ckcccollective_links", hyperlinks))
+      .withProperty("type", localProperty("collective_type", stringToUnencodedStringOf(
+        "UNKNOWN"
+      )))))
     .build();
 
 }
