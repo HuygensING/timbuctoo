@@ -4,6 +4,7 @@ import nl.knaw.huygens.timbuctoo.model.properties.converters.Converters;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.HuygensIng;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -20,6 +21,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class BulkUploadServiceTest {
+
+  private static int PREDEFINED_RELATIONS_COUNT = 5;
 
   private static Vre VRE = new Vres.Builder()
     .withVre("EuropeseMigratie", "em", vre -> vre
@@ -43,7 +46,19 @@ public class BulkUploadServiceTest {
     final BulkUploadService instance = new BulkUploadService(VRE, mockWrapper(graph));
     instance.saveToDb(getWorkbook(filename));
     final List<Vertex> vertices = graph.traversal().V().toList();
-    assertThat(vertices.size(), is(5));
+    assertThat(vertices.size(), is(PREDEFINED_RELATIONS_COUNT + 5));
+  }
+
+  @Test
+  public void loadRealDocument() throws Exception {
+    Graph graph = newGraph().build();
+    final String filename = "steekproef_migrant.xlsx";
+    Vre vre = HuygensIng.mappings.getVre("EuropeseMigratie");
+    final BulkUploadService instance = new BulkUploadService(vre, mockWrapper(graph));
+    final XSSFWorkbook workbook = getWorkbook(filename);
+    instance.saveToDb(workbook);
+    //FileOutputStream out = new FileOutputStream("example_output.xlsx");
+    //workbook.write(out);
   }
 
 
@@ -55,7 +70,7 @@ public class BulkUploadServiceTest {
     final XSSFWorkbook workbook = getWorkbook(filename);
     instance.saveToDb(workbook);
     final List<Vertex> vertices = graph.traversal().V().toList();
-    assertThat(vertices.size(), is(5));
+    assertThat(vertices.size(), is(PREDEFINED_RELATIONS_COUNT + 5));
     final List<Vertex> verticesWithData = graph.traversal().V().has("emcardcatalogs_type").toList();
     assertThat(verticesWithData.size(), is(2)); //three have a failing input
     //uncomment lines below to look at the visual output
@@ -71,26 +86,17 @@ public class BulkUploadServiceTest {
     instance.saveToDb(getWorkbook(filename));
     instance.saveToDb(getWorkbook(filename));
     final List<Vertex> vertices = graph.traversal().V().toList();
-    assertThat(vertices.size(), is(5));
+    assertThat(vertices.size(), is(PREDEFINED_RELATIONS_COUNT + 5));
   }
 
   @Test
   public void loadRelations() throws Exception {
-    Graph graph = newGraph()
-      .withVertex("relationType", v->v
-        .withProperty("relationtype_regularName", "isStoredAt")
-        .withProperty("relationtype_inverseName", "contains")
-        .withProperty("relationtype_sourceTypeName", "document")
-        .withProperty("relationtype_targetTypeName", "collective")
-        .withProperty("tim_id", "id")
-      )
-      .build();
-    final int vertexCountBeforeLoad = graph.traversal().V().toList().size();
+    Graph graph = newGraph().build();
     final String filename = "relations.xlsx";
     final BulkUploadService instance = new BulkUploadService(VRE, mockWrapper(graph));
     instance.saveToDb(getWorkbook(filename));
     final List<Vertex> vertices = graph.traversal().V().toList();
-    assertThat(vertices.size(), is(7 + vertexCountBeforeLoad));
+    assertThat(vertices.size(), is(7 + PREDEFINED_RELATIONS_COUNT));
     final List<Vertex> verticesWithOutgoingRelations = graph.traversal().V().out().toList();
     assertThat(verticesWithOutgoingRelations.size(), is(2));
   }

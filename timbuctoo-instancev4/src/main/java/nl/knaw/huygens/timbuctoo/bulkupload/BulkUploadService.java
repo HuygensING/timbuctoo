@@ -9,15 +9,15 @@ import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
-import org.apache.tinkerpop.gremlin.process.traversal.Order;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 public class BulkUploadService {
 
@@ -46,9 +46,69 @@ public class BulkUploadService {
     //  }
     //}
 
-    ParsedWorkbook workbook = ParsedWorkbook.from(wb);
+    final Graph graph = graphwrapper.getGraph();
+    Map<String, RelationDescription> descriptions = graph.traversal()
+      .V()
+      .has("relationtype_regularName")
+      .toList()
+      .stream()
+      .map(RelationDescription::new)
+      .collect(
+        HashMap::new,
+        (map, desc) -> {
+          map.put(desc.getRegularName(), desc);
+          map.put(desc.getInverseName(), desc);
+        },
+        HashMap::putAll
+      );
 
-    final Map<String, RelationDescription> descriptions = graphwrapper.getGraph().traversal()
+    //FIXME remove when we can load custom relations
+    if (!descriptions.containsKey("isStoredAt")) {
+      graph.addVertex(
+        "relationtype_regularName", "isStoredAt",
+        "relationtype_inverseName", "isStorageOf",
+        "relationtype_sourceTypeName", "document",
+        "relationtype_targetTypeName", "collective",
+        "tim_id", UUID.randomUUID().toString()
+      );
+    }
+    if (!descriptions.containsKey("referencesPerson")) {
+      graph.addVertex(
+        "relationtype_regularName", "isPersonReferencedIn",
+        "relationtype_inverseName", "referencesPerson",
+        "relationtype_sourceTypeName", "person",
+        "relationtype_targetTypeName", "document",
+        "tim_id", UUID.randomUUID().toString()
+      );
+    }
+    if (!descriptions.containsKey("referencesCollective")) {
+      graph.addVertex(
+        "relationtype_regularName", "isCollectiveReferencedIn",
+        "relationtype_inverseName", "referencesCollective",
+        "relationtype_sourceTypeName", "collective",
+        "relationtype_targetTypeName", "document",
+        "tim_id", UUID.randomUUID().toString()
+      );
+    }
+    if (!descriptions.containsKey("hasBirthPlace")) {
+      graph.addVertex(
+        "relationtype_regularName", "hasBirthPlace",
+        "relationtype_inverseName", "isBirthPlaceOf",
+        "relationtype_sourceTypeName", "person",
+        "relationtype_targetTypeName", "location",
+        "tim_id", UUID.randomUUID().toString()
+      );
+    }
+    if (!descriptions.containsKey("hasResidenceLocation")) {
+      graph.addVertex(
+        "relationtype_regularName", "hasResidenceLocation",
+        "relationtype_inverseName", "isResidenceLocationOf",
+        "relationtype_sourceTypeName", "person",
+        "relationtype_targetTypeName", "location",
+        "tim_id", UUID.randomUUID().toString()
+      );
+    }
+    descriptions = graph.traversal()
       .V()
       .has("relationtype_regularName")
       .toList()
@@ -64,6 +124,8 @@ public class BulkUploadService {
       );
 
     dropAllVreVertices();
+
+    ParsedWorkbook workbook = ParsedWorkbook.from(wb);
     //FIXME: allow the excel sheet to specify more relationDescirptions
     if (workbook.saveToDb(graphwrapper, vre, descriptions)) {
       return true;
