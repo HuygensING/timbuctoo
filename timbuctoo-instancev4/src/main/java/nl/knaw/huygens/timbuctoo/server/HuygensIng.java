@@ -398,6 +398,45 @@ public class HuygensIng {
       .withProperty("deathdateQualifier", localProperty("cnwperson_deathdateQualifier"))
       .withProperty("shortDescription", localProperty("cnwperson_shortDescription"))
       ))
+    .withVre("EuropeseMigratie", "em", vre -> vre
+      .withCollection("emcardcatalogs", coll -> coll
+        .withAbstractType("collective")
+        .withProperty("naam", localProperty("emcardcatalog_name"))
+        .withDisplayName(localProperty("emcardcatalog_name", stringToUnencodedStringOf()))
+      )
+      .withCollection("emconsulates", coll -> coll
+        .withAbstractType("collective")
+        .withProperty("naam", localProperty("emconsulate_name"))
+        .withDisplayName(localProperty("emconsulate_name", stringToUnencodedStringOf()))
+      )
+      .withCollection("emcards", coll -> coll
+        .withAbstractType("document")
+        .withProperty("kaartnummer", localProperty("emcard_cardnumber"))
+        .withProperty("jaartal_begin", localProperty("emcard_yearStart"))
+        .withProperty("jaartal_eind", localProperty("emcard_yearEnd"))
+      )
+      .withCollection("emmigrantunits", coll -> coll
+        .withAbstractType("person")
+        .withProperty("persoonsId", localProperty("emmigrantunit_persoonsId"))
+        .withProperty("achternaam", localProperty("emmigrantunit_achternaam"))
+        .withProperty("tussenvoegsel", localProperty("emmigrantunit_tussenvoegsel"))
+        .withProperty("initialen", localProperty("emmigrantunit_initialen"))
+        .withProperty("geboortejaar", localProperty("emmigrantunit_geboortejaar"))
+        .withProperty("schema", localProperty("emmigrantunit_schema"))
+        .withProperty("unit", localProperty("emmigrantunit_unit"))
+        .withProperty("samenstelling", localProperty("emmigrantunit_samenstelling"))
+        .withProperty("geslacht", localProperty("emmigrantunit_geslacht"))
+        .withProperty("godsdienst", localProperty("emmigrantunit_godsdienst"))
+        .withProperty("adresAantal", localProperty("emmigrantunit_adresAantal"))
+        .withProperty("eventsAantal", localProperty("emmigrantunit_eventsAantal"))
+      )
+      .withCollection("emlocations", coll -> coll
+        .withAbstractType("location")
+        .withProperty("naam", localProperty("emlocation_name"))
+        .withDisplayName(localProperty("emlocation_name", stringToUnencodedStringOf()))
+      )
+      .withCollection("emrelations", CollectionBuilder::isRelationCollection)
+    )
     .build();
 
 }
