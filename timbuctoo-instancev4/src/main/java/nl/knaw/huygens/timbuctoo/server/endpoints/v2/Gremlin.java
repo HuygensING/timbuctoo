@@ -15,9 +15,9 @@ import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorF
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.gremlin.RootQuery;
+import org.apache.tinkerpop.gremlin.groovy.DefaultImportCustomizerProvider;
 import org.apache.tinkerpop.gremlin.groovy.jsr223.GremlinGroovyScriptEngine;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.process.traversal.step.util.BulkSet;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -62,12 +62,16 @@ public class Gremlin {
   public Gremlin(GraphWrapper wrapper) {
     this.wrapper = wrapper;
     this.engine = new GremlinGroovyScriptEngine();
+
+    final DefaultImportCustomizerProvider provider = new DefaultImportCustomizerProvider();
+    final Set<String> allImports = provider.getAllImports();
+    allImports.removeIf(path -> path.indexOf("groovy.") > -1);
+    engine.addImports(allImports);
+
     this.bindings = engine.createBindings();
     propertyParserFactory = new PropertyParserFactory();
     propertyDescriptorFactory = new PropertyDescriptorFactory(propertyParserFactory);
   }
-
-  private class StaticWorkaround extends __ {}
 
   @POST
   @Consumes("application/json")
@@ -118,7 +122,6 @@ public class Gremlin {
   private Response handlePlainQuery(String query, int timeLimit) {
     bindings.put("g", wrapper.getGraph().traversal());
     bindings.put("maria", wrapper.getGraph().traversal().V().has("tim_id", "37981a95-e527-40a8-9528-7d32c5c5f360"));
-    bindings.put("__", new StaticWorkaround());
     try {
       final String result = evaluateQuery(query + ".timeLimit(" + timeLimit + ")");
       wrapper.getGraph().tx().commit();
