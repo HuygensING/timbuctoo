@@ -156,6 +156,13 @@
       <artifactId>dropwizard-client</artifactId>
       <version>${dropwizard.version}</version>
     </dependency>
+    <!--serve static assets-->
+    <dependency>
+      <groupId>io.dropwizard</groupId>
+      <artifactId>dropwizard-assets</artifactId>
+      <version>${dropwizard.version}</version>
+    </dependency>
+
 
     <!-- TinkerPop library for support graph databases -->
     <dependency>
