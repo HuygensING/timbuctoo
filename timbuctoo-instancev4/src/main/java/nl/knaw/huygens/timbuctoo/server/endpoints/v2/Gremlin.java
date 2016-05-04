@@ -358,7 +358,11 @@ public class Gremlin {
 
       dumpItem(traversalResult.next(), result);
     }
-    return result.toString();
+    if (result.length() > 0) {
+      return result.toString();
+    } else {
+      return "No results...";
+    }
   }
 
 }
