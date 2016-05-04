@@ -26,6 +26,7 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.InvariantsFix;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.LabelDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.WwDocumentSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.WwPersonSortIndexesDatabaseMigration;
@@ -123,17 +124,18 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       authHandler
     );
 
+    final Vres vres = HuygensIng.mappings;
     // Database migrations
     final List<DatabaseMigration> databaseMigrations = Lists.newArrayList(
       new LabelDatabaseMigration(),
       new WwPersonSortIndexesDatabaseMigration(),
-      new WwDocumentSortIndexesDatabaseMigration()
+      new WwDocumentSortIndexesDatabaseMigration(),
+      new InvariantsFix(vres)
     );
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, databaseMigrations);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
     final HandleAdder handleAdder = new HandleAdder(activeMqBundle, HANDLE_QUEUE, graphManager, persistenceManager);
-    final Vres vres = HuygensIng.mappings;
     final TinkerpopJsonCrudService crudService = new TinkerpopJsonCrudService(
       graphManager,
       vres,
