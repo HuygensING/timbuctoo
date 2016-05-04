@@ -365,6 +365,15 @@ public class HuygensIng {
         "UNKNOWN"
       ))))
     .withCollection("ckccrelations", CollectionBuilder::isRelationCollection))
+    .withVre("cnw", "", vre -> vre
+    .withCollection("cnwpersons", c -> c
+      .withDisplayName(localProperty("cnwperson_names", personNames))
+      .withProperty("names", localProperty("cnwperson_names", personNames))
+      .withProperty("birthDate", localProperty("cnwperson_birthDate", datable))
+      .withProperty("deathDate", localProperty("cnwperson_deathDate", datable))
+      .withProperty("gender", localProperty("cnwperson_gender", gender))
+      .withProperty("floruit", localProperty("cnwperson_floruit"))
+      .withProperty("links", localProperty("cnwperson_links", hyperlinks))))
     .build();
 
 }
