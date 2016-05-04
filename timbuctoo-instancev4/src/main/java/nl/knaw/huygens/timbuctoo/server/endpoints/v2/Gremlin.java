@@ -278,11 +278,18 @@ public class Gremlin {
   }
 
   private void dumpVertex(Vertex vertex, StringBuilder result) {
+    ObjectMapper map = new ObjectMapper();
     result.append(String.format("Vertex [%s]:\n", vertex.id()));
     ArrayList<VertexProperty<Object>> properties = Lists.newArrayList(vertex.properties());
     properties.sort((o1, o2) -> java.text.Collator.getInstance().compare(o1.label(), o2.label()));
     for (VertexProperty<Object> property : properties) {
-      result.append(String.format("  %s: %s\n", property.label(), property.value()));
+      String stringified;
+      try {
+        stringified = map.writeValueAsString(property.value());
+      } catch (JsonProcessingException e) {
+        stringified = String.format("%s", map);
+      }
+      result.append(String.format("  %s: %s\n", property.label(), stringified));
     }
     for (Edge edge : ImmutableList.copyOf(vertex.edges(IN))) {
       result.append(String.format("  <--[%s]-- v[%s]\n", edge.label(), edge.outVertex().id()));
@@ -293,12 +300,19 @@ public class Gremlin {
   }
 
   private void dumpEdge(Edge edge, StringBuilder result) {
+    ObjectMapper map = new ObjectMapper();
     result.append(String.format("v[%s] --[%s]--> v[%s]\n",
             edge.outVertex().id(), edge.label(), edge.inVertex().id()));
     ArrayList<Property<Object>> properties = Lists.newArrayList(edge.properties());
     properties.sort((o1, o2) -> java.text.Collator.getInstance().compare(o1.key(), o2.key()));
     for (Property<Object> property : properties) {
-      result.append(String.format("  %s: %s\n", property.key(), property.value()));
+      String stringified;
+      try {
+        stringified = map.writeValueAsString(property.value());
+      } catch (JsonProcessingException e) {
+        stringified = String.format("%s", map);
+      }
+      result.append(String.format("  %s: %s\n", property.key(), stringified));
     }
   }
 
