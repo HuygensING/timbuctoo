@@ -64,7 +64,7 @@ public class CollectionBuilder {
       if (collectionName.endsWith("s")) {
         entityTypeName = collectionName.substring(0, collectionName.length() - 1);
       } else {
-        throw new RuntimeException("collection " + collectionName + "is not a plural (doesn't end in an 's') and no " +
+        throw new RuntimeException("collection " + collectionName + " is not a plural (doesn't end in an 's') and no " +
           "entitytypename is provided");
       }
     }
@@ -72,7 +72,7 @@ public class CollectionBuilder {
       if (entityTypeName.startsWith(defaultPrefix)) {
         abstractType = entityTypeName.substring(defaultPrefix.length());
       } else {
-        throw new RuntimeException("entityTypeName " + entityTypeName + "does not start with the default prefix (" +
+        throw new RuntimeException("entityTypeName " + entityTypeName + " does not start with the default prefix (" +
           defaultPrefix + ") and no abstracttype is defined");
       }
     }
