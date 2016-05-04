@@ -36,7 +36,7 @@ public class PropertyColumns extends Columns {
     captionCell = sheet.getRow(headerRow).getCell(column);
     if (caption.endsWith("*")) {
       name = caption.substring(0, caption.length() - 1);
-      unique = true;
+      unique = true;//fixme rename unique to identity
     } else {
       name = caption;
     }

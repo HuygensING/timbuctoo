@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Optional;
 
 public class SaveingState implements AutoCloseable {
+  //FIXME typo in savingstate
   private final HashMap<String, HashMap<String, Vertex>> vertexByUniqueId = new HashMap<>();
   private final HashMap<String, HashMap<Integer, Vertex>> vertexByIndex = new HashMap<>();
   private final GraphWrapper wrapper;

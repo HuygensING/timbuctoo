@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+
+//FIXME: rename to collectionrange
 public class CollectionRange {
   private static final String TIMBUCTOO_SUFFIX = "_data";
   public final LinkedHashMap<String, PropertyColumns> properties = new LinkedHashMap<>();

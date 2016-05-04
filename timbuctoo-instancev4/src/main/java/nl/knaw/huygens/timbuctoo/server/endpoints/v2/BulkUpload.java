@@ -59,6 +59,7 @@ public class BulkUpload {
       ByteArrayOutputStream out = new ByteArrayOutputStream();
       wb.write(out);
       return out.toByteArray();
+      //FIXME: make response work if possible
     } catch (AuthorizationUnavailableException | InvalidFormatException | IOException e) {
       //return Response.status(500).entity(e).build();
     } catch (AuthorizationException e) {

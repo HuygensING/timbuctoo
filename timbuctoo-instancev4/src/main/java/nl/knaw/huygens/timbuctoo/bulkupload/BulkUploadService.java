@@ -25,6 +25,7 @@ public class BulkUploadService {
   private final GraphWrapper graphwrapper;
   private final Authorizer authorizer;
 
+  //FIXME move consytruction to TimbuctooV4
   public BulkUploadService(Vre vre, GraphWrapper graphwrapper/*, Authorizer authorizer*/) {
     this.vre = vre;
     this.graphwrapper = graphwrapper;
@@ -63,6 +64,7 @@ public class BulkUploadService {
       );
 
     dropAllVreVertices();
+    //FIXME: allow the excel sheet to specify more relationDescirptions
     if (workbook.saveToDb(graphwrapper, vre, descriptions)) {
       return true;
     }
@@ -77,9 +79,7 @@ public class BulkUploadService {
       labels = labels.or(LabelP.of(entityTypeNames[i]));
     }
     try (Transaction tx = graphwrapper.getGraph().tx()) {
-      graphwrapper.getGraph().traversal().V().order().by(__.outE().count(), Order.incr)
-
-        .has(T.label, labels).drop().toList();
+      graphwrapper.getGraph().traversal().V().has(T.label, labels).drop().toList();
       tx.commit();
     }
   }

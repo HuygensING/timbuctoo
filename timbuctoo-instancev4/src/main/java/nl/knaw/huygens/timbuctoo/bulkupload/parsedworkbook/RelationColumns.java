@@ -23,7 +23,7 @@ public class RelationColumns extends Columns {
   public RelationColumns(int minRow, int maxRow, int headerRow, Sheet sheet, String name, String targetType,
                          int column) {
     captionCell = sheet.getRow(headerRow).getCell(column);
-    this.name = name;
+    this.name = name; //fixme name -> relationName
     this.targetType = targetType;
     for (int r = minRow; r <= maxRow; r++) {
       Cell propVal = sheet.getRow(r).getCell(column);
