@@ -120,7 +120,9 @@ public class Gremlin {
     bindings.put("maria", wrapper.getGraph().traversal().V().has("tim_id", "37981a95-e527-40a8-9528-7d32c5c5f360"));
     bindings.put("__", new StaticWorkaround());
     try {
-      return Response.ok(evaluateQuery(query + ".timeLimit(" + timeLimit + ")")).build();
+      final String result = evaluateQuery(query + ".timeLimit(" + timeLimit + ")");
+      wrapper.getGraph().tx().commit();
+      return Response.ok(result).build();
     } catch (ScriptException e) {
       LOG.error(e.getMessage(), e);
       return Response.status(500).entity(e.getMessage()).build();
