@@ -1,0 +1,36 @@
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.0.0-beta1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.terminal/0.10.4/js/jquery.terminal.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/jquery.terminal/0.10.4/css/jquery.terminal.min.css" rel="stylesheet"/>
+</head>
+<body>
+  <div id="term_demo"></div>
+  <script>
+  jQuery(function($, undefined) {
+    $('#term_demo').terminal(function(command, term) {
+      term.pause();
+      $.ajax({
+        type: "POST",
+        url: "/v2.1/gremlin",
+        data: command,
+        success: function (result) {
+          term.echo(result);
+          term.resume();
+        },
+        error: function (xhr, status, error) {
+          term.echo("Query not executed successfully: " + status);
+          if (error) {
+            term.echo(error);
+          }
+          term.resume();
+        },
+        dataType: "text",
+        contentType: "text/plain",
+      });
+    }, {
+      greetings: 'Type a gremlin query such as: g.V().has("tim_id", "37981a95-e527-40a8-9528-7d32c5c5f360").has("isLatest", true)',
+      height: 600,
+    });
+  });
+  </script>
+</body>

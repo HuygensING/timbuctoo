@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -36,6 +35,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -107,16 +107,9 @@ public class Gremlin {
   }
 
   @GET
-  @Produces("text/plain")
-  public Response get(@QueryParam("query") String query, @QueryParam("timelimit") @DefaultValue("500") int timelimit) {
-    if (Strings.isNullOrEmpty(query)) {
-      String usageMessage = "Usage: ?query=g.V().has(\"tim_id\", \"37981a95-e527-40a8-9528-7d32c5c5f360\")" +
-        ".has(\"isLatest\", true).properties()\n" +
-        "or ?query=maria.out()\n" +
-        "by default the query is cut off after 500 ms. You can enlarge this through the ?timelimit=500 query param.\n";
-      return Response.ok(usageMessage).build();
-    }
-    return handlePlainQuery(query, timelimit);
+  @Produces("text/html")
+  public Response get() {
+    return Response.temporaryRedirect(URI.create("/static/gremlin")).build();
   }
 
   private Response handlePlainQuery(String query, int timeLimit) {
