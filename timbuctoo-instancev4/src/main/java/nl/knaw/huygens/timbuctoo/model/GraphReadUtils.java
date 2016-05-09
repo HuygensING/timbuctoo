@@ -13,10 +13,8 @@ import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.a
 //Most database access should probably be done through the tinkerpopjsoncrudservice
 public class GraphReadUtils {
 
-  public static final String TYPES_PROP = "types";
-
   public static Optional<Try<String[]>> getEntityTypes(Element element) {
-    return getProp(element, TYPES_PROP, String.class)
+    return getProp(element, "types", String.class)
       .map(encodedEntityTypes ->
         Try.of(() -> arrayToEncodedArray.tinkerpopToJava(encodedEntityTypes, String[].class)
       ));

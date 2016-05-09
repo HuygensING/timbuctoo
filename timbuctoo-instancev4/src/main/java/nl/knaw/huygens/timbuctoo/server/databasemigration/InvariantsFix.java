@@ -26,7 +26,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.TYPES_PROP;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypes;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
 
@@ -61,7 +60,7 @@ public class InvariantsFix implements DatabaseMigration {
     String adminVertexType = getAbstractType(vertexTypes);
 
     vertex.edges(Direction.BOTH).forEachRemaining(edge -> {
-      if (edge.keys().contains("tim_id")) { // ignore the VERSION_OF relations
+      if (Objects.equals(edge.label(), "VERSION_OF")) { // ignore the VERSION_OF relations
         String[] edgeTypes = getEntityTypesOrDefault(edge);
 
         for (String edgeType : edgeTypes) {
@@ -75,7 +74,7 @@ public class InvariantsFix implements DatabaseMigration {
               } else {
                 List<String> types = Lists.newArrayList(edgeTypes);
                 types.remove(edgeType);
-                edge.property(TYPES_PROP, types.toArray(new String[types.size()]));
+                edge.property("types", types.toArray(new String[types.size()]));
               }
             }
           });
@@ -142,9 +141,9 @@ public class InvariantsFix implements DatabaseMigration {
     String[] typesArray = getEntityTypesOrDefault(vertex);
     List<String> types = Lists.newArrayList(typesArray);
     types.add(entityTypeName);
-    vertex.property(TYPES_PROP).remove();
+    vertex.property("types").remove();
     try {
-      vertex.property(TYPES_PROP, objectMapper.writeValueAsString(types));
+      vertex.property("types", objectMapper.writeValueAsString(types));
     } catch (JsonProcessingException e) {
       throw new RuntimeException("Cannot write types property", e);
     }
