@@ -571,7 +571,7 @@ public class TinkerpopJsonCrudService {
             LOG.error(databaseInvariant, "Displayname was null");
           } else {
             if (!traversalResult.get().isTextual()) {
-              LOG.error(databaseInvariant, "Displayname was not a string");
+              LOG.error(databaseInvariant, "Displayname was not a string but " + traversalResult.get().toString());
             } else {
               return Optional.of(traversalResult.get().asText());
             }
