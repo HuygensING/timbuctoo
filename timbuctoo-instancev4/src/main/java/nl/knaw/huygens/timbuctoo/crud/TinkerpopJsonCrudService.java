@@ -35,6 +35,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -125,6 +126,8 @@ public class TinkerpopJsonCrudService {
   private UUID createRelation(Collection collection, ObjectNode input, String userId) throws IOException {
     String entityTypeName = collection.getEntityTypeName();
     String abstractName = collection.getAbstractType();
+    // FIXME: string concatenating methods like this should be delegated to a configuration clas
+    final String acceptedPropName = collection.getEntityTypeName() + "_accepted";
 
     JsonNode accepted = input.get("accepted");
     JsonNode source = input.get("^sourceId");
@@ -135,8 +138,6 @@ public class TinkerpopJsonCrudService {
       throw new IOException("Accepted must be a boolean");
     }
 
-    UUID id = UUID.randomUUID();
-
     Graph graph = graphwrapper.getGraph();
     GraphTraversalSource traversal = graph.traversal();
     try {
@@ -146,19 +147,61 @@ public class TinkerpopJsonCrudService {
         try {
           Vertex typeV = getEntity(traversal, UUID.fromString(type.asText("")), null).next();
 
+          //check if the relation already exists
+          final Optional<Edge> existingEdge = stream(sourceV.edges(Direction.BOTH))
+            .filter(e ->
+            (e.inVertex().id().equals(targetV.id()) || e.outVertex().id().equals(targetV.id())) &&
+              getProp(e, "typeId", String.class).map(x -> x.equals(type.asText(""))).orElse(false)
+            )
+            //sort by rev (ascending)
+            .sorted((o1, o2) ->
+              getProp(o1, "rev", Integer.class).orElse(-1)
+                .compareTo(getProp(o2, "rev", Integer.class).orElse(-1))
+            )
+            //get last element, i.e. with the highest rev, i.e. the most recent
+            .reduce((o1, o2) -> o2);
+
+          //FIXME: remove relation when removing entity
+          if (existingEdge.isPresent()) {
+            final Optional<Boolean> isAccepted = getProp(existingEdge.get(), acceptedPropName, Boolean.class);
+            final Optional<String> tim_id = getProp(existingEdge.get(), "tim_id", String.class);
+            final Optional<Integer> rev = getProp(existingEdge.get(), "rev", Integer.class);
+            //if the relation exists and is a valid relation
+            if (isAccepted.isPresent() && tim_id.isPresent() && rev.isPresent()) {
+              try {
+                final UUID tim_uuid = UUID.fromString(tim_id.get());
+                //if not already an active relation
+                if (!isAccepted.get()) {
+                  replaceRelation(collection, tim_uuid, jsnO("^rev", jsn(rev.get()), "accepted", jsn(true)) , userId);
+                }
+                return tim_uuid;
+              } catch (NotFoundException e) {
+                LOG.error(
+                  Logmarkers.databaseInvariant,
+                  "I have a vertex with tim_id=" + tim_id.get() + ", but replaceRelation throws a notfoundexception!"
+                );
+              } catch (IllegalArgumentException e) {
+                LOG.error(Logmarkers.databaseInvariant, "wrongly formatted UUID as tim_id: " + tim_id.get());
+              }
+            }
+          }
+
           Collection sourceType = getCollection(collection.getVre(), sourceV);
           Collection targetType = getCollection(collection.getVre(), targetV);
           verifyTypes(sourceType, typeV, targetType);
 
           String label = getProp(typeV, "relationtype_regularName", String.class)
             .orElseThrow(() -> new IOException("Requested relation has no regular name"));
+
           try {
+            UUID id = UUID.randomUUID();
             Edge edge = sourceV.addEdge(label, targetV,
-              "wwrelation_accepted", accepted.asBoolean(),
+              acceptedPropName, accepted.asBoolean(),
               "types", jsnA(jsn(entityTypeName), jsn(abstractName)).toString(),
               "typeId", type.asText(),
               "tim_id", id.toString(),
-              "isLatest", true
+              "isLatest", true,
+              "rev", 1
             );
             setCreated(edge, userId);
 
@@ -167,16 +210,16 @@ public class TinkerpopJsonCrudService {
             graph.tx().commit();
             return id;
           } catch (IllegalArgumentException e) {
-            throw new RuntimeException("The relation could not be created");
+            throw new RuntimeException("The relation could not be created", e);
           }
         } catch (IllegalArgumentException | NoSuchElementException e) {
-          throw new IOException("^typeId must contain a UUID pointing to an existing relationType");
+          throw new IOException("^typeId must contain a UUID pointing to an existing relationType", e);
         }
       } catch (IllegalArgumentException | NoSuchElementException e) {
-        throw new IOException("^targetId must contain a UUID pointing to an existing entity");
+        throw new IOException("^targetId must contain a UUID pointing to an existing entity", e);
       }
     } catch (IllegalArgumentException | NoSuchElementException e) {
-      throw new IOException("^sourceId must contain a UUID pointing to an existing entity");
+      throw new IOException("^sourceId must contain a UUID pointing to an existing entity", e);
     }
   }
 
@@ -278,6 +321,19 @@ public class TinkerpopJsonCrudService {
 
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
+
+    if (collection.isRelationCollection()) {
+      return getRelation(id, rev, collection);
+    } else {
+      return getVertex(id, rev, collection);
+    }
+  }
+
+  private JsonNode getRelation(UUID id, Integer rev, Collection collection) throws NotFoundException {
+    return jsnO("message", jsn("Getting a wwrelation is not yet supported"));
+  }
+
+  private JsonNode getVertex(UUID id, Integer rev, Collection collection) throws NotFoundException {
     final Map<String, ReadableProperty> mapping = collection.getReadableProperties();
     final String entityTypeName = collection.getEntityTypeName();
     final GraphTraversalSource traversalSource = graphwrapper.getGraph().traversal();
@@ -424,80 +480,78 @@ public class TinkerpopJsonCrudService {
 
     Object[] relationTypes = traversalSource.V().has("relationtype_regularName").id().toList().toArray();
 
-    return traversalSource.V(entity.id())
-                          .union(
-                            __.outE().as("edge")
-                              .label().as("label")
-                              .select("edge"),
-                            __.inE()
-                              .as("edge")
-                              .label().as("edgeLabel")
-                              .V(relationTypes)
-                              .has("relationtype_regularName", __.where(P.eq("edgeLabel")))
-                              .properties("relationtype_inverseName").value()
-                              .as("label")
-                              .select("edge")
-                          )
-                          .where(
-                            //FIXME move to strategy
-                            __.has("isLatest", true)
-                              .not(__.has("deleted", true))
-                              .not(__.hasLabel("VERSION_OF"))
-                              .has("types", new P<>(
-                                (val, def) -> {
-                                  return Try.of(() -> arrayToEncodedArray.tinkerpopToJava(val, String[].class))
-                                            .map(vre::getOwnType)
-                                            .map(ownType -> ownType != null)
-                                            .onFailure(
-                                              e -> LOG.error(databaseInvariant, "Error reading 'types' of edge", e))
-                                            .getOrElse(false);
-                                }, //if the types array is a failure then pretend the relation does not exist
-                                "")
-                              )
-                          )
-                          .otherV().as("vertex")
-                          .select("edge", "vertex", "label")
-                          .map(r -> {
-                            try {
-                              Map<String, Object> val = r.get();
-                              Edge edge = (Edge) val.get("edge");
-                              Vertex vertex = (Vertex) val.get("vertex");
-                              String label = (String) val.get("label");
+    return collection.getVre().getCollections().values().stream()
+      .filter(Collection::isRelationCollection)
+      .findAny()
+      .map(Collection::getEntityTypeName)
+      .map(ownRelationType -> traversalSource.V(entity.id())
+        .union(
+          __.outE()
+            .as("edge")
+            .label().as("label")
+            .select("edge"),
+          __.inE()
+            .as("edge")
+            .label().as("edgeLabel")
+            .V(relationTypes)
+            .has("relationtype_regularName", __.where(P.eq("edgeLabel")))
+            .properties("relationtype_inverseName").value()
+            .as("label")
+            .select("edge")
+        )
+        .where(
+          //FIXME move to strategy
+          __.has("isLatest", true)
+            .not(__.has("deleted", true))
+            .not(__.hasLabel("VERSION_OF"))
+            .has("types", new P<>((val, def) -> val.contains("\"" + ownRelationType + "\""), ""))
+            .not(__.has(ownRelationType + "_accepted", false))
+        )
+        .otherV().as("vertex")
+        .select("edge", "vertex", "label")
+        .map(r -> {
+          try {
+            Map<String, Object> val = r.get();
+            Edge edge = (Edge) val.get("edge");
+            Vertex vertex = (Vertex) val.get("vertex");
+            String label = (String) val.get("label");
 
-                              String targetEntityType = getOwnEntityType(collection, vertex);
-                              if (targetEntityType == null) {
-                                //this means that the edge is of this VRE, but the Vertex it points to is of another VRE
-                                throw new IOException(
-                                  String
-                                    .format("Edge %s that is of this vre points to vertex %s that is not of this vre",
-                                      edge, vertex)
-                                );
-                              }
+            String targetEntityType = getOwnEntityType(collection, vertex);
+            if (targetEntityType == null) {
+              //this means that the edge is of this VRE, but the Vertex it points to is of another VRE
+              throw new IOException(
+                String
+                  .format("Edge %s that is of this vre points to vertex %s that is not of this vre",
+                    edge, vertex)
+              );
+            }
 
-                              String displayName =
-                                getDisplayname(traversalSource, vertex, vre.getCollection(targetEntityType))
-                                  .orElse("<No displayname found>");
-                              String targetCollection = targetEntityType + "s";
-                              String uuid = getProp(vertex, "tim_id", String.class).orElse("");
+            String displayName =
+              getDisplayname(traversalSource, vertex, vre.getCollection(targetEntityType))
+                .orElse("<No displayname found>");
+            String targetCollection = targetEntityType + "s";
+            String uuid = getProp(vertex, "tim_id", String.class).orElse("");
 
-                              URI relatedEntityUri =
-                                relationUrlFor.apply(targetCollection, UUID.fromString(uuid), null);
-                              return jsnO(
-                                tuple("id", jsn(uuid)),
-                                tuple("path", jsn(relatedEntityUri.toString())),
-                                tuple("relationType", jsn(label)),
-                                tuple("type", jsn(targetEntityType)),
-                                tuple("accepted", jsn(getProp(edge, "accepted", Boolean.class).orElse(true))),
-                                tuple("relationId",
-                                  getProp(edge, "tim_id", String.class).map(x -> (JsonNode) jsn(x)).orElse(jsn())),
-                                tuple("rev", jsn(getProp(edge, "rev", Integer.class).orElse(1))),
-                                tuple("displayName", jsn(displayName))
-                              );
-                            } catch (Exception e) {
-                              LOG.error(databaseInvariant, "Something went wrong while formatting the entity", e);
-                              return null;
-                            }
-                          });
+            URI relatedEntityUri =
+              relationUrlFor.apply(targetCollection, UUID.fromString(uuid), null);
+            return jsnO(
+              tuple("id", jsn(uuid)),
+              tuple("path", jsn(relatedEntityUri.toString())),
+              tuple("relationType", jsn(label)),
+              tuple("type", jsn(targetEntityType)),
+              tuple("accepted", jsn(getProp(edge, "accepted", Boolean.class).orElse(true))),
+              tuple("relationId",
+                getProp(edge, "tim_id", String.class).map(x -> (JsonNode) jsn(x)).orElse(jsn())),
+              tuple("rev", jsn(getProp(edge, "rev", Integer.class).orElse(1))),
+              tuple("displayName", jsn(displayName))
+            );
+          } catch (Exception e) {
+            LOG.error(databaseInvariant, "Something went wrong while formatting the entity", e);
+            return null;
+          }
+        })
+      )
+      .orElse(EmptyGraph.instance().traversal().V().map(x->jsnO()));
   }
 
   private Optional<String> getDisplayname(GraphTraversalSource traversalSource, Vertex vertex,
@@ -643,7 +697,10 @@ public class TinkerpopJsonCrudService {
     }
   }
 
-  private void replaceRelation(Collection collection, UUID id, ObjectNode data, String userId) throws IOException {
+  private void replaceRelation(Collection collection, UUID id, ObjectNode data, String userId)
+    throws IOException, NotFoundException {
+
+    // FIXME: string concatenating methods like this should be delegated to a configuration clas
     final String acceptedPropName = collection.getEntityTypeName() + "_accepted";
 
     JsonNode accepted = data.get("accepted");
@@ -656,17 +713,22 @@ public class TinkerpopJsonCrudService {
     }
     for (Iterator<String> fieldNames = data.fieldNames(); fieldNames.hasNext();) {
       String name = fieldNames.next();
-      if (!name.equals("^rev") && !name.equals("accepted")) {
-        throw new IOException("Only 'accepted' and '^rev' are accepted properties");
+      if (!name.startsWith("^") && !name.startsWith("@") && !name.equals("_id") && !name.equals("accepted")) {
+        throw new IOException("Only 'accepted' is a changeable property");
       }
     }
 
     Graph graph = graphwrapper.getGraph();
-    Edge origEdge = graph.traversal().E()
-                     .has("tim_id", id.toString())
-                     .has("isLatest", true)
-                     .has("rev", rev.intValue())
-                     .next();
+    Edge origEdge;
+    try {
+      origEdge = graph.traversal().E()
+        .has("tim_id", id.toString())
+        .has("isLatest", true)
+        .has("rev", rev.intValue())
+        .next();
+    } catch (NoSuchElementException e) {
+      throw new NotFoundException();
+    }
 
     Edge edge = duplicateEdge(origEdge);
     edge.property(acceptedPropName, accepted.booleanValue());
@@ -772,7 +834,6 @@ public class TinkerpopJsonCrudService {
   public ArrayNode autoComplete(String collectionName, Optional<String> tokenParam, Optional<String> type)
     throws InvalidCollectionException {
 
-    LOG.info(collectionName + " " + tokenParam + " " + type);
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
     String entityTypeName = collection.getEntityTypeName();
