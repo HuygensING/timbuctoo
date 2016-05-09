@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -115,15 +116,19 @@ public class Gremlin {
   }
 
   private Response handlePlainQuery(String query, int timeLimit) {
-    bindings.put("g", wrapper.getGraph().traversal());
-    bindings.put("maria", wrapper.getGraph().traversal().V().has("tim_id", "37981a95-e527-40a8-9528-7d32c5c5f360"));
-    try {
-      final String result = evaluateQuery(query + ".timeLimit(" + timeLimit + ")");
-      wrapper.getGraph().tx().commit();
-      return Response.ok(result).build();
-    } catch (ScriptException e) {
-      LOG.error(e.getMessage(), e);
-      return Response.status(500).entity(e.getMessage()).build();
+    if (Strings.isNullOrEmpty(query)) {
+      return Response.ok("").build();
+    } else {
+      bindings.put("g", wrapper.getGraph().traversal());
+      bindings.put("maria", wrapper.getGraph().traversal().V().has("tim_id", "37981a95-e527-40a8-9528-7d32c5c5f360"));
+      try {
+        final String result = evaluateQuery(query + ".timeLimit(" + timeLimit + ")");
+        wrapper.getGraph().tx().commit();
+        return Response.ok(result).build();
+      } catch (ScriptException e) {
+        LOG.error(e.getMessage(), e);
+        return Response.status(500).entity(e.getMessage()).build();
+      }
     }
   }
 
