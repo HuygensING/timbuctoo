@@ -37,7 +37,7 @@ public class InvariantsCheck implements DatabaseCheck {
     String id = vertex.value("tim_id");
 
     vertex.edges(Direction.BOTH).forEachRemaining(edge -> {
-      if (Objects.equals(edge.label(), "VERSION_OF")) { // ignore the VERSION_OF relations
+      if (!Objects.equals(edge.label(), "VERSION_OF")) { // ignore the VERSION_OF relations
         String[] edgeTypes = getEntityTypesOrDefault(edge);
         for (String edgeType : edgeTypes) {
           Optional<Collection> collection = vres.getCollectionForType(edgeType);

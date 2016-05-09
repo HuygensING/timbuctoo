@@ -56,11 +56,10 @@ public class InvariantsFix implements DatabaseMigration {
   @Override
   public void applyToVertex(Vertex vertex) throws IOException {
     String[] vertexTypes = getEntityTypesOrDefault(vertex);
-    String id = vertex.value("tim_id");
     String adminVertexType = getAbstractType(vertexTypes);
 
     vertex.edges(Direction.BOTH).forEachRemaining(edge -> {
-      if (Objects.equals(edge.label(), "VERSION_OF")) { // ignore the VERSION_OF relations
+      if (!Objects.equals(edge.label(), "VERSION_OF")) { // ignore the VERSION_OF relations
         String[] edgeTypes = getEntityTypesOrDefault(edge);
 
         for (String edgeType : edgeTypes) {
@@ -74,7 +73,11 @@ public class InvariantsFix implements DatabaseMigration {
               } else {
                 List<String> types = Lists.newArrayList(edgeTypes);
                 types.remove(edgeType);
-                edge.property("types", types.toArray(new String[types.size()]));
+                try {
+                  edge.property("types", objectMapper.writeValueAsString(types));
+                } catch (JsonProcessingException e) {
+                  throw new RuntimeException("Types could not be set to edge", e);
+                }
               }
             }
           });
