@@ -6,6 +6,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
@@ -69,6 +70,7 @@ public class Gremlin {
     final Set<String> allImports = provider.getAllImports();
     allImports.removeIf(path -> path.indexOf("groovy.") > -1);
     engine.addImports(allImports);
+    engine.addImports(Sets.newHashSet("import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP"));
 
     this.bindings = engine.createBindings();
     propertyParserFactory = new PropertyParserFactory();
