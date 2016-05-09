@@ -126,6 +126,8 @@ public class TinkerpopJsonCrudService {
   private UUID createRelation(Collection collection, ObjectNode input, String userId) throws IOException {
     String entityTypeName = collection.getEntityTypeName();
     String abstractName = collection.getAbstractType();
+    // FIXME: string concatenating methods like this should be delegated to a configuration clas
+    final String acceptedPropName = collection.getEntityTypeName() + "_accepted";
 
     JsonNode accepted = input.get("accepted");
     JsonNode source = input.get("^sourceId");
@@ -136,8 +138,6 @@ public class TinkerpopJsonCrudService {
       throw new IOException("Accepted must be a boolean");
     }
 
-    UUID id = UUID.randomUUID();
-
     Graph graph = graphwrapper.getGraph();
     GraphTraversalSource traversal = graph.traversal();
     try {
@@ -147,16 +147,56 @@ public class TinkerpopJsonCrudService {
         try {
           Vertex typeV = getEntity(traversal, UUID.fromString(type.asText("")), null).next();
 
+          //check if the relation already exists
+          final Optional<Edge> existingEdge = stream(sourceV.edges(Direction.BOTH))
+            .filter(e ->
+            (e.inVertex().id().equals(targetV.id()) || e.outVertex().id().equals(targetV.id())) &&
+              getProp(e, "typeId", String.class).map(x -> x.equals(type.asText(""))).orElse(false)
+            )
+            //sort by rev (ascending)
+            .sorted((o1, o2) ->
+              getProp(o1, "rev", Integer.class).orElse(-1)
+                .compareTo(getProp(o2, "rev", Integer.class).orElse(-1))
+            )
+            //get last element, i.e. with the highest rev, i.e. the most recent
+            .reduce((o1, o2) -> o2);
+
+          //FIXME: remove relation when removing entity
+          if (existingEdge.isPresent()) {
+            final Optional<Boolean> isAccepted = getProp(existingEdge.get(), acceptedPropName, Boolean.class);
+            final Optional<String> tim_id = getProp(existingEdge.get(), "tim_id", String.class);
+            final Optional<Integer> rev = getProp(existingEdge.get(), "rev", Integer.class);
+            //if the relation exists and is a valid relation
+            if (isAccepted.isPresent() && tim_id.isPresent() && rev.isPresent()) {
+              try {
+                final UUID tim_uuid = UUID.fromString(tim_id.get());
+                //if not already an active relation
+                if (!isAccepted.get()) {
+                  replaceRelation(collection, tim_uuid, jsnO("^rev", jsn(rev.get()), "accepted", jsn(true)) , userId);
+                }
+                return tim_uuid;
+              } catch (NotFoundException e) {
+                LOG.error(
+                  Logmarkers.databaseInvariant,
+                  "I have a vertex with tim_id=" + tim_id.get() + ", but replaceRelation throws a notfoundexception!"
+                );
+              } catch (IllegalArgumentException e) {
+                LOG.error(Logmarkers.databaseInvariant, "wrongly formatted UUID as tim_id: " + tim_id.get());
+              }
+            }
+          }
+
           Collection sourceType = getCollection(collection.getVre(), sourceV);
           Collection targetType = getCollection(collection.getVre(), targetV);
           verifyTypes(sourceType, typeV, targetType);
 
           String label = getProp(typeV, "relationtype_regularName", String.class)
             .orElseThrow(() -> new IOException("Requested relation has no regular name"));
+
           try {
+            UUID id = UUID.randomUUID();
             Edge edge = sourceV.addEdge(label, targetV,
-              // FIXME: string concatenating methods like this should be delegated to a configuration clas
-              collection.getEntityTypeName() + "_accepted", accepted.asBoolean(),
+              acceptedPropName, accepted.asBoolean(),
               "types", jsnA(jsn(entityTypeName), jsn(abstractName)).toString(),
               "typeId", type.asText(),
               "tim_id", id.toString(),
@@ -660,6 +700,7 @@ public class TinkerpopJsonCrudService {
   private void replaceRelation(Collection collection, UUID id, ObjectNode data, String userId)
     throws IOException, NotFoundException {
 
+    // FIXME: string concatenating methods like this should be delegated to a configuration clas
     final String acceptedPropName = collection.getEntityTypeName() + "_accepted";
 
     JsonNode accepted = data.get("accepted");
@@ -793,7 +834,6 @@ public class TinkerpopJsonCrudService {
   public ArrayNode autoComplete(String collectionName, Optional<String> tokenParam, Optional<String> type)
     throws InvalidCollectionException {
 
-    LOG.info(collectionName + " " + tokenParam + " " + type);
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
     String entityTypeName = collection.getEntityTypeName();
