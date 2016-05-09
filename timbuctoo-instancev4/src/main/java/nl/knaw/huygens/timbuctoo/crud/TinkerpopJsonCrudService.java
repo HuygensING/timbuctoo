@@ -206,7 +206,7 @@ public class TinkerpopJsonCrudService {
     if (ownType == null) {
       throw new IOException("Element with id() " + sourceV.id() + " is not of the vre of the relation");
     }
-    return vre.getCollection(ownType);
+    return vre.getCollectionForTypeName(ownType);
   }
 
   private UUID createEntity(Collection collection, ObjectNode input, String userId)
@@ -394,9 +394,9 @@ public class TinkerpopJsonCrudService {
                               }
                               String targetCollection = targetType + "s";
                               String uuid = getProp(vertex, "tim_id", String.class).orElse("");
-                              String displayName =
-                                getDisplayname(traversalSource, vertex, collection.getVre().getCollection(targetType))
-                                  .orElse("<No displayname found>");
+                              String displayName = getDisplayname(traversalSource, vertex, collection.getVre()
+                                .getCollectionForTypeName(targetType))
+                                .orElse("<No displayname found>");
 
                               URI relatedEntityUri =
                                 relationUrlFor.apply(targetCollection, UUID.fromString(uuid), null);
@@ -475,7 +475,7 @@ public class TinkerpopJsonCrudService {
                               }
 
                               String displayName =
-                                getDisplayname(traversalSource, vertex, vre.getCollection(targetEntityType))
+                                getDisplayname(traversalSource, vertex, vre.getCollectionForTypeName(targetEntityType))
                                   .orElse("<No displayname found>");
                               String targetCollection = targetEntityType + "s";
                               String uuid = getProp(vertex, "tim_id", String.class).orElse("");
