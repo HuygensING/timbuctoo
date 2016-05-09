@@ -12,6 +12,7 @@ import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProp
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.wwPersonNameOrTempName;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.wwdocumentDisplayNameProperty;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.datable;
+import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.defaultFullPersonNameConverter;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.defaultLocationNameConverter;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.gender;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.hyperlinks;
@@ -150,14 +151,14 @@ public class HuygensIng {
         .withProperty("name", localProperty("wwlanguage_name"))
       )
       .withCollection("wwlocations", c -> c
-        .withDisplayName(localProperty("wwlocation_names", defaultLocationNameConverter))
-        .withProperty("locationName", localProperty("wwlocation_names"))
+        .withDisplayName(localProperty("names", defaultLocationNameConverter))
+        .withProperty("^names", localProperty("names"))
       )
       .withCollection("wwrelations", CollectionBuilder::isRelationCollection)
     )
     .withVre("cwno", "cwno", vre -> vre
       .withCollection("cwnopersons", c -> c
-        .withDisplayName(localProperty("cwnoperson_name"))
+        .withDisplayName(localProperty("cwnoperson_names", defaultFullPersonNameConverter))
         .withProperty("names", localProperty("cwnoperson_names", personNames))
         .withProperty("types", localProperty("cwnoperson_types", stringArrayToEncodedArrayOf(
           "AUTHOR",
@@ -195,7 +196,7 @@ public class HuygensIng {
         .withProperty("tempName", localProperty("cwrscollective_tempName"))
       )
       .withCollection("cwrspersons", c -> c
-        .withDisplayName(localProperty("cwrsperson_name"))
+        .withDisplayName(localProperty("cwrsperson_names", defaultFullPersonNameConverter))
 
         .withProperty("names", localProperty("cwrsperson_names", personNames))
         .withProperty("types", localProperty("cwrsperson_types", stringArrayToEncodedArrayOf(
@@ -227,6 +228,12 @@ public class HuygensIng {
         .withProperty("description", localProperty("cwrsdocument_description"))
         .withProperty("links", localProperty("cwrsdocument_links", hyperlinks))
         .withProperty("tempLanguage", localProperty("cwrsdocument_tempLanguage")))
+      .withCollection("cwrslanguages", c -> c
+        .withDisplayName(localProperty("cwrslanguage_name"))
+        .withProperty("name", localProperty("cwrslanguage_name")))
+      .withCollection("cwrslocations", c -> c
+        .withDisplayName(localProperty("cwrslocation_names", defaultLocationNameConverter))
+        .withProperty("locationName", localProperty("cwrslocation_names")))
       .withCollection("cwrsrelations", CollectionBuilder::isRelationCollection))
     .withVre("DutchCaribbean", "dcar", vre -> vre
     .withCollection("dcarpersons",
@@ -296,9 +303,9 @@ public class HuygensIng {
         .withProperty("titleEng", localProperty("dcarlegislation_titleEng"))
         .withProperty("titleNld", localProperty("dcarlegislation_titleNld")))
     .withCollection("dcarrelations", CollectionBuilder::isRelationCollection))
-    .withVre("Base", "", vre -> vre
+    .withVre("Admin", "", vre -> vre
     .withCollection("persons", c -> c
-      .withDisplayName(localProperty("person_names", personNames))
+      .withDisplayName(localProperty("person_names", defaultFullPersonNameConverter))
       .withProperty("names", localProperty("person_names", personNames))
       .withProperty("types", localProperty("person_types", stringArrayToEncodedArrayOf(
               "ARCHETYPE",
@@ -338,15 +345,15 @@ public class HuygensIng {
       .withDisplayName(localProperty("language_name"))
       .withProperty("name", localProperty("language_name")))
     .withCollection("locations", c -> c
-      .withDisplayName(localProperty("location_names", defaultLocationNameConverter))
-      .withProperty("locationName", localProperty("location_names")))
+      .withDisplayName(localProperty("names", defaultLocationNameConverter))
+      .withProperty("^names", localProperty("names")))
     .withCollection("archives")
     .withCollection("archivers")
     .withCollection("legislations")
     .withCollection("relations", CollectionBuilder::isRelationCollection))
-    .withVre("ckcc", "", vre -> vre
+    .withVre("ckcc", "ckcc", vre -> vre
     .withCollection("ckccpersons", c -> c
-      .withDisplayName(localProperty("ckccperson_names", personNames))
+      .withDisplayName(localProperty("ckccperson_names", defaultFullPersonNameConverter))
       .withProperty("names", localProperty("ckccperson_names", personNames))
       .withProperty("birthDate", localProperty("ckccperson_birthDate", datable))
       .withProperty("deathDate", localProperty("ckccperson_deathDate", datable))
@@ -364,10 +371,16 @@ public class HuygensIng {
       .withProperty("type", localProperty("ckcccollective_type", stringToUnencodedStringOf(
         "UNKNOWN"
       ))))
+    .withCollection("ckcclocations", c -> c
+      .withDisplayName(localProperty("ckcclocation_names", defaultLocationNameConverter))
+      .withProperty("locationName", localProperty("ckcclocation_names")))
     .withCollection("ckccrelations", CollectionBuilder::isRelationCollection))
+    .withVre("Base", "base", c -> c
+      .withCollection("baselocations")
+      .withCollection("baselanguages"))
     .withVre("cnw", "", vre -> vre
     .withCollection("cnwpersons", c -> c
-      .withDisplayName(localProperty("cnwperson_names", personNames))
+      .withDisplayName(localProperty("cnwperson_names", defaultFullPersonNameConverter))
       .withProperty("names", localProperty("cnwperson_names", personNames))
       .withProperty("birthDate", localProperty("cnwperson_birthDate", datable))
       .withProperty("deathDate", localProperty("cnwperson_deathDate", datable))

@@ -27,6 +27,7 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.InvariantsFix;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.LabelDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.WwDocumentSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.WwPersonSortIndexesDatabaseMigration;
@@ -48,6 +49,7 @@ import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseValidator;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.EncryptionAlgorithmHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.FileHealthCheck;
+import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.InvariantsCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.LabelsAddedToVertexDatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.SortIndexesDatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
@@ -123,17 +125,18 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       authHandler
     );
 
+    final Vres vres = HuygensIng.mappings;
     // Database migrations
     final List<DatabaseMigration> databaseMigrations = Lists.newArrayList(
       new LabelDatabaseMigration(),
       new WwPersonSortIndexesDatabaseMigration(),
-      new WwDocumentSortIndexesDatabaseMigration()
+      new WwDocumentSortIndexesDatabaseMigration(),
+      new InvariantsFix(vres)
     );
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, databaseMigrations);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
     final HandleAdder handleAdder = new HandleAdder(activeMqBundle, HANDLE_QUEUE, graphManager, persistenceManager);
-    final Vres vres = HuygensIng.mappings;
     final TinkerpopJsonCrudService crudService = new TinkerpopJsonCrudService(
       graphManager,
       vres,
@@ -147,10 +150,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       new JsonBasedAuthorizer(configuration.getAuthorizationsPath()));
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager, HuygensIng.keywordTypes);
 
-
     // lifecycle managers
     environment.lifecycle().manage(graphManager);
-
 
     // register REST endpoints
     register(environment, new RootEndpoint());
@@ -167,7 +168,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Metadata(jsonMetadata));
     // admin endpoints
     // database validator
-    DatabaseValidator databaseValidator = createDatabaseValidator(graphManager);
+    DatabaseValidator databaseValidator = createDatabaseValidator(graphManager, vres);
     environment.admin()
                .addServlet("databasevalidation", new DatabaseValidationServlet(databaseValidator))
                .addMapping("/databasevalidation");
@@ -203,14 +204,14 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     setupObjectMapping(environment);
   }
 
-  public DatabaseValidator createDatabaseValidator(TinkerpopGraphManager graphManager) {
+  public DatabaseValidator createDatabaseValidator(TinkerpopGraphManager graphManager, Vres vres) {
     List<DatabaseCheck> databaseChecks = Lists.newArrayList(
-            new LabelsAddedToVertexDatabaseCheck(),
-            new SortIndexesDatabaseCheck()
+      new LabelsAddedToVertexDatabaseCheck(),
+      new SortIndexesDatabaseCheck(),
+      new InvariantsCheck(vres)
     );
     return new DatabaseValidator(graphManager, 1, Clock.systemUTC(), databaseChecks);
   }
-
 
   private void setupObjectMapping(Environment environment) {
     // object mapping

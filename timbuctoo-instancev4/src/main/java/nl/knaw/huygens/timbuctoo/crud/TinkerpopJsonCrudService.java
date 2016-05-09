@@ -59,6 +59,7 @@ import static nl.knaw.huygens.timbuctoo.crud.EdgeManipulator.duplicateEdge;
 import static nl.knaw.huygens.timbuctoo.crud.VertexDuplicator.duplicateVertex;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypes;
+import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
@@ -476,6 +477,7 @@ public class TinkerpopJsonCrudService {
   private GraphTraversal<Vertex, ObjectNode> getRealRelations(Vertex entity, GraphTraversalSource traversalSource,
                                                               Collection collection) {
     final Vre vre = collection.getVre();
+    final Vre admin = mappings.getVre("Admin");
 
     Object[] relationTypes = traversalSource.V().has("relationtype_regularName").id().toList().toArray();
 
@@ -503,7 +505,9 @@ public class TinkerpopJsonCrudService {
           __.has("isLatest", true)
             .not(__.has("deleted", true))
             .not(__.hasLabel("VERSION_OF"))
-            .has("types", new P<>((val, def) -> val.contains("\"" + ownRelationType + "\""), ""))
+            //The old timbuctoo showed relations from all VRE's. Changing that behaviour caused breakage in the
+            //frontend and exposed errors in the database that
+            //.has("types", new P<>((val, def) -> val.contains("\"" + ownRelationType + "\""), ""))
             .not(__.has(ownRelationType + "_accepted", false))
         )
         .otherV().as("vertex")
@@ -516,23 +520,21 @@ public class TinkerpopJsonCrudService {
             String label = (String) val.get("label");
 
             String targetEntityType = getOwnEntityType(collection, vertex);
+            Collection targetCollection = vre.getCollection(targetEntityType);
             if (targetEntityType == null) {
               //this means that the edge is of this VRE, but the Vertex it points to is of another VRE
-              throw new IOException(
-                String
-                  .format("Edge %s that is of this vre points to vertex %s that is not of this vre",
-                    edge, vertex)
-              );
+              //In that case we use the admin vre
+              targetEntityType = admin.getOwnType(getEntityTypesOrDefault(vertex));
+              targetCollection = admin.getCollection(targetEntityType);
             }
 
             String displayName =
-              getDisplayname(traversalSource, vertex, vre.getCollection(targetEntityType))
+              getDisplayname(traversalSource, vertex, targetCollection)
                 .orElse("<No displayname found>");
-            String targetCollection = targetEntityType + "s";
             String uuid = getProp(vertex, "tim_id", String.class).orElse("");
 
             URI relatedEntityUri =
-              relationUrlFor.apply(targetCollection, UUID.fromString(uuid), null);
+              relationUrlFor.apply(targetCollection.getCollectionName(), UUID.fromString(uuid), null);
             return jsnO(
               tuple("id", jsn(uuid)),
               tuple("path", jsn(relatedEntityUri.toString())),
@@ -569,7 +571,7 @@ public class TinkerpopJsonCrudService {
             LOG.error(databaseInvariant, "Displayname was null");
           } else {
             if (!traversalResult.get().isTextual()) {
-              LOG.error(databaseInvariant, "Displayname was not a string");
+              LOG.error(databaseInvariant, "Displayname was not a string but " + traversalResult.get().toString());
             } else {
               return Optional.of(traversalResult.get().asText());
             }
@@ -699,7 +701,7 @@ public class TinkerpopJsonCrudService {
   private void replaceRelation(Collection collection, UUID id, ObjectNode data, String userId)
     throws IOException, NotFoundException {
 
-    // FIXME: string concatenating methods like this should be delegated to a configuration clas
+    // FIXME: string concatenating methods like this should be delegated to a configuration class
     final String acceptedPropName = collection.getEntityTypeName() + "_accepted";
 
     JsonNode accepted = data.get("accepted");
