@@ -161,7 +161,6 @@ public class TinkerpopJsonCrudService {
             //get last element, i.e. with the highest rev, i.e. the most recent
             .reduce((o1, o2) -> o2);
 
-          //FIXME: remove relation when removing entity
           if (existingEdge.isPresent()) {
             final Optional<Boolean> isAccepted = getProp(existingEdge.get(), acceptedPropName, Boolean.class);
             final Optional<String> tim_id = getProp(existingEdge.get(), "tim_id", String.class);
