@@ -150,8 +150,8 @@ public class HuygensIng {
         .withProperty("name", localProperty("wwlanguage_name"))
       )
       .withCollection("wwlocations", c -> c
-        .withDisplayName(localProperty("wwlocation_names", defaultLocationNameConverter))
-        .withProperty("locationName", localProperty("wwlocation_names"))
+        .withDisplayName(localProperty("names", defaultLocationNameConverter))
+        .withProperty("^names", localProperty("names"))
       )
       .withCollection("wwrelations", CollectionBuilder::isRelationCollection)
     )
@@ -344,8 +344,8 @@ public class HuygensIng {
       .withDisplayName(localProperty("language_name"))
       .withProperty("name", localProperty("language_name")))
     .withCollection("locations", c -> c
-      .withDisplayName(localProperty("location_names", defaultLocationNameConverter))
-      .withProperty("locationName", localProperty("location_names")))
+      .withDisplayName(localProperty("names", defaultLocationNameConverter))
+      .withProperty("^names", localProperty("names")))
     .withCollection("archives")
     .withCollection("archivers")
     .withCollection("legislations")
