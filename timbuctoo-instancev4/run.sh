@@ -58,7 +58,7 @@ if [ "$REBUILD" = 1 ]; then
   if [ -z "$RUN_TESTS" ]; then
     skipTests="-DskipTests"
   fi
-  mvn clean package $skipTests -q
+  mvn package $skipTests -q
   if [ $? != 0 ]; then
     xmllint --xpath //file[error] timbuctoo-instancev4/target/checkstyle-result.xml
     exit 1
@@ -85,6 +85,6 @@ $CMD
 result="$?"
 if [ "$result" = 130 ]; then
 	exit 0 #ctrl-c is also a successful shutdown
-else 
+else
 	exit $result
 fi
