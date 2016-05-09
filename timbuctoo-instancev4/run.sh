@@ -4,15 +4,18 @@ cd $(dirname $0)
 
 COMMAND="server"
 YAML="./example_config.yaml"
-DEBUG_PORT=""
+DEBUG_PORT="5005"
 DEBUG_HALT="n"
 FLIGHT_CONTROL=""
 
 OPTIND=1
-while getopts ":d:pf:c:y:hrt" opt; do
+while getopts ":d:pDf:c:y:hrt" opt; do
     case "$opt" in
   d)
     DEBUG_PORT=$OPTARG
+    ;;
+  D)
+    NO_DEBUG="y"
     ;;
   p)
     DEBUG_HALT="y"
@@ -27,7 +30,7 @@ while getopts ":d:pf:c:y:hrt" opt; do
     YAML=$OPTARG
     ;;
   h)
-    echo -e "$0: run the timbuctoo command with some easier to remember switches\n\n-d    allow debugger to attach\n-p    pause until debugger attaches\n-f    make flight recording\n-c    command to run (defaults to server)\n-y    YAML config to load (defaults to ./example_config.yaml)" >&2
+    echo -e "$0: run the timbuctoo command with some easier to remember switches\n\n-d    specify debug port\n-D    do not expose a debugging port\n-p    pause until debugger attaches\n-f    make flight recording\n-c    command to run (defaults to server)\n-y    YAML config to load (defaults to ./example_config.yaml)" >&2
     exit 0
     ;;
   r)
@@ -66,7 +69,7 @@ if [ "$REBUILD" = 1 ]; then
   cd -
 fi
 
-if [ -n "$DEBUG_PORT" ]; then
+if [ -z "$NO_DEBUG" ]; then
 	JAVA_OPTS="$JAVA_OPTS -agentlib:jdwp=transport=dt_socket,server=y,suspend=${DEBUG_HALT},address=${DEBUG_PORT}"
 fi
 if [ -n "$FLIGHT_CONTROL" ]; then
