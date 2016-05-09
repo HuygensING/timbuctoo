@@ -155,7 +155,8 @@ public class TinkerpopJsonCrudService {
             .orElseThrow(() -> new IOException("Requested relation has no regular name"));
           try {
             Edge edge = sourceV.addEdge(label, targetV,
-              "wwrelation_accepted", accepted.asBoolean(),
+              // FIXME: string concatenating methods like this should be delegated to a configuration clas
+              collection.getEntityTypeName() + "_accepted", accepted.asBoolean(),
               "types", jsnA(jsn(entityTypeName), jsn(abstractName)).toString(),
               "typeId", type.asText(),
               "tim_id", id.toString(),
