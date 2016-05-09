@@ -457,48 +457,6 @@ public class TinkerpopJsonCrudServiceReadTest {
   }
 
   @Test
-  public void omitsRelationsOutsideMyVre() throws Exception {
-    UUID id = UUID.randomUUID();
-    Graph graph = newGraph()
-      .withVertex("source", v -> v
-        .withOutgoingRelation("isPseudonymOf", "work", relation -> relation
-          .withRev(1)
-          .addType("ckcc")
-          .removeType("ww")
-        )
-        .withOutgoingRelation("isPseudonymOf", "work", relation -> relation
-          .withRev(2)
-        )
-        .withVre("ww")
-        .withVre("")
-        .withType("person")
-        .isLatest(true)
-        .withTimId(id.toString())
-      )
-      .withVertex("work", v -> v
-        .withVre("ww")
-        .withVre("")
-        .withType("person")
-        .withTimId("f005ba11-0000-0000-0000-000000000000")
-      )
-      .build();
-
-    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
-    String resultJson = instance.get("wwpersons", id).toString();
-
-    assertThat(resultJson, sameJSONAs(jsnO(
-      "@relationCount", jsn(1),
-      "@relations", jsnO(
-        "isPseudonymOf", jsnA(
-          jsnO(
-            "rev", jsn(2)
-          )
-        )
-      )
-    ).toString()).allowingExtraUnexpectedFields());
-  }
-
-  @Test
   public void omitsDeletedRelations() throws Exception {
     UUID id = UUID.randomUUID();
     Graph graph = newGraph()
