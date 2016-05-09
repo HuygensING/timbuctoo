@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.common.collect.Lists;
 import com.kjetland.dropwizard.activemq.ActiveMQBundle;
 import io.dropwizard.Application;
+import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.forms.MultiPartBundle;
@@ -82,7 +83,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     bootstrap.addBundle(activeMqBundle);
     bootstrap.addBundle(new Java8Bundle());
     bootstrap.addBundle(new MultiPartBundle());
-
+    bootstrap.addBundle(new AssetsBundle("/static", "/static", "index.html"));
     /*
      * Make it possible to use environment variables in the config.
      * see: http://www.dropwizard.io/0.9.1/docs/manual/core.html#environment-variables
