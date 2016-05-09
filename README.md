@@ -1,0 +1,15 @@
+# timbuctoo
+
+Timbuctoo is a graph-database for storing and querying research datasets that are interconnected. 
+You can have multiple views over something that we as humans would consider to be the same object. 
+Such as a person, a country, or even something more abstract such as a time period. 
+Each research asserts its own data about the entity.
+
+## Sneak peek
+
+To get a quick look at timbuctoo go to: https://repository.huygens.knaw.nl
+
+## Building
+
+To build your own version, make sure you have java 8 and maven 3 installed and then execute `mvn package` from the root folder of this repository.
+To run the version that you built you can use the shell script that is created in `target/appassembler/`
