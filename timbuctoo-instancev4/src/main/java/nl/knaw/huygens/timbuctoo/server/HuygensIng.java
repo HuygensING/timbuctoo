@@ -12,6 +12,7 @@ import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProp
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.wwPersonNameOrTempName;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.wwdocumentDisplayNameProperty;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.datable;
+import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.defaultFullPersonNameConverter;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.defaultLocationNameConverter;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.gender;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.hyperlinks;
@@ -157,7 +158,7 @@ public class HuygensIng {
     )
     .withVre("cwno", "cwno", vre -> vre
       .withCollection("cwnopersons", c -> c
-        .withDisplayName(localProperty("cwnoperson_name"))
+        .withDisplayName(localProperty("cwnoperson_names", defaultFullPersonNameConverter))
         .withProperty("names", localProperty("cwnoperson_names", personNames))
         .withProperty("types", localProperty("cwnoperson_types", stringArrayToEncodedArrayOf(
           "AUTHOR",
@@ -195,7 +196,7 @@ public class HuygensIng {
         .withProperty("tempName", localProperty("cwrscollective_tempName"))
       )
       .withCollection("cwrspersons", c -> c
-        .withDisplayName(localProperty("cwrsperson_name"))
+        .withDisplayName(localProperty("cwrsperson_names", defaultFullPersonNameConverter))
 
         .withProperty("names", localProperty("cwrsperson_names", personNames))
         .withProperty("types", localProperty("cwrsperson_types", stringArrayToEncodedArrayOf(
@@ -304,7 +305,7 @@ public class HuygensIng {
     .withCollection("dcarrelations", CollectionBuilder::isRelationCollection))
     .withVre("Admin", "", vre -> vre
     .withCollection("persons", c -> c
-      .withDisplayName(localProperty("person_names", personNames))
+      .withDisplayName(localProperty("person_names", defaultFullPersonNameConverter))
       .withProperty("names", localProperty("person_names", personNames))
       .withProperty("types", localProperty("person_types", stringArrayToEncodedArrayOf(
               "ARCHETYPE",
@@ -352,7 +353,7 @@ public class HuygensIng {
     .withCollection("relations", CollectionBuilder::isRelationCollection))
     .withVre("ckcc", "ckcc", vre -> vre
     .withCollection("ckccpersons", c -> c
-      .withDisplayName(localProperty("ckccperson_names", personNames))
+      .withDisplayName(localProperty("ckccperson_names", defaultFullPersonNameConverter))
       .withProperty("names", localProperty("ckccperson_names", personNames))
       .withProperty("birthDate", localProperty("ckccperson_birthDate", datable))
       .withProperty("deathDate", localProperty("ckccperson_deathDate", datable))
@@ -379,7 +380,7 @@ public class HuygensIng {
       .withCollection("baselanguages"))
     .withVre("cnw", "", vre -> vre
     .withCollection("cnwpersons", c -> c
-      .withDisplayName(localProperty("cnwperson_names", personNames))
+      .withDisplayName(localProperty("cnwperson_names", defaultFullPersonNameConverter))
       .withProperty("names", localProperty("cnwperson_names", personNames))
       .withProperty("birthDate", localProperty("cnwperson_birthDate", datable))
       .withProperty("deathDate", localProperty("cnwperson_deathDate", datable))
