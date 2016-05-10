@@ -508,6 +508,7 @@ public class TinkerpopJsonCrudService {
             //The old timbuctoo showed relations from all VRE's. Changing that behaviour caused breakage in the
             //frontend and exposed errors in the database that
             //.has("types", new P<>((val, def) -> val.contains("\"" + ownRelationType + "\""), ""))
+            // FIXME: string concatenating methods like this should be delegated to a configuration clas
             .not(__.has(ownRelationType + "_accepted", false))
         )
         .otherV().as("vertex")
