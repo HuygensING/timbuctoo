@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.search.description.indexes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.knaw.huygens.timbuctoo.crud.DenormalizedSortFieldUpdater;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -88,7 +89,9 @@ public class WwDocumentIndexDescriptionTest {
   public void crudServiceInvokesIndexDescriptionAddIndexedSortPropertiesForWwDocumentsOnCreate() throws Exception {
     Graph graph = newGraph().build();
 
-    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService()
+      .withChangeListener(new DenormalizedSortFieldUpdater(new IndexDescriptionFactory()))
+      .forGraph(graph);
 
     instance.create("wwdocuments", jsnO(), "");
 
@@ -115,7 +118,9 @@ public class WwDocumentIndexDescriptionTest {
                     .withProperty("rev", 1)
             )
             .build();
-    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
+    TinkerpopJsonCrudService instance = newJsonCrudService()
+      .withChangeListener(new DenormalizedSortFieldUpdater(new IndexDescriptionFactory()))
+      .forGraph(graph);
 
     instance.replace("wwdocuments", UUID.fromString(id), jsnO("^rev", jsn(1)), "");
 

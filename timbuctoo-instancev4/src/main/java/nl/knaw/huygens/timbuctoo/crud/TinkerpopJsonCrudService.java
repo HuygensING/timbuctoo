@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
@@ -14,8 +13,6 @@ import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.search.description.IndexDescription;
-import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
@@ -41,7 +38,6 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Clock;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -81,13 +77,13 @@ public class TinkerpopJsonCrudService {
   private final Clock clock;
   private final JsonNodeFactory nodeFactory;
   private final JsonBasedUserStore userStore;
-  private final IndexDescriptionFactory indexDescriptionFactory;
+  private final ChangeListener listener;
   private Authorizer authorizer;
 
   public TinkerpopJsonCrudService(GraphWrapper graphwrapper, Vres mappings,
                                   HandleAdder handleAdder, JsonBasedUserStore userStore, UrlGenerator handleUrlFor,
                                   UrlGenerator autoCompleteUrlFor, UrlGenerator relationUrlFor, Clock clock,
-                                  IndexDescriptionFactory indexDescriptionFactory, Authorizer authorizer) {
+                                  ChangeListener listener, Authorizer authorizer) {
     this.graphwrapper = graphwrapper;
     this.mappings = mappings;
     this.handleAdder = handleAdder;
@@ -96,7 +92,7 @@ public class TinkerpopJsonCrudService {
     this.relationUrlFor = relationUrlFor;
     this.userStore = userStore;
     this.clock = clock;
-    this.indexDescriptionFactory = indexDescriptionFactory;
+    this.listener = listener;
     this.authorizer = authorizer;
     nodeFactory = JsonNodeFactory.instance;
   }
@@ -294,13 +290,8 @@ public class TinkerpopJsonCrudService {
     ((Neo4jVertex) vertex).addLabel(collection.getAbstractType());
 
     setCreated(vertex, userId);
-
-    List<String> types = Lists.newArrayList(collection.getAbstractType(), collection.getEntityTypeName());
-    List<IndexDescription> indexers = indexDescriptionFactory.getIndexersForTypes(types);
-    for ( IndexDescription indexer : indexers) {
-      indexer.addIndexedSortProperties(vertex);
-    }
-
+    
+    listener.onCreate(vertex);
 
     duplicateVertex(graph, vertex);
     //Make sure this is the last line of the method. We don't want to commit if an exception happens halfway
@@ -807,17 +798,7 @@ public class TinkerpopJsonCrudService {
 
     setModified(entity, userId);
 
-
-    List<String> types = Arrays.asList(getEntityTypes(entity)
-            .orElseGet(() -> Try.success(new String[0])).getOrElse(new String[0]));
-
-    List<IndexDescription> indexers = indexDescriptionFactory
-            .getIndexersForTypes(Lists.newArrayList(collection.getEntityTypeName()));
-
-    for (IndexDescription indexer : indexers) {
-      indexer.addIndexedSortProperties(entity);
-    }
-
+    callUpdateListener(entity);
 
     duplicateVertex(graph, entity);
 
@@ -994,11 +975,25 @@ public class TinkerpopJsonCrudService {
     });
 
     setModified(entity, userId);
+    callUpdateListener(entity);
     duplicateVertex(graph, entity);
+
+
     handleAdder.add(new HandleAdderParameters(id, newRev, handleUrlFor.apply(collectionName, id, newRev)));
 
     //Make sure this is the last line of the method. We don't want to commit half our changes
     //this also means checking each function that we call to see if they don't call commit()
     graph.tx().commit();
+  }
+
+  private void callUpdateListener(Vertex entity) {
+    final Iterator<Edge> prevEdges = entity.edges(Direction.IN, "VERSION_OF");
+    Optional<Vertex> old = Optional.empty();
+    if (prevEdges.hasNext()) {
+      old = Optional.of(prevEdges.next().outVertex());
+    } else {
+      LOG.error(Logmarkers.databaseInvariant, "Vertex {} has no previous version", entity.id());
+    }
+    listener.onUpdate(old, entity);
   }
 }

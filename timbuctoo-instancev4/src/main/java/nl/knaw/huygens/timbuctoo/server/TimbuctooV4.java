@@ -15,6 +15,7 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
+import nl.knaw.huygens.timbuctoo.crud.DenormalizedSortFieldUpdater;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
@@ -146,7 +147,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       (coll, id, rev) -> URI.create(configuration.getBaseUri() + SingleEntity.makeUrl(coll, id, rev).getPath()),
       (coll, id, rev) -> URI.create(SingleEntity.makeUrl(coll, id, rev).getPath().replaceFirst("^/v2.1/", "")),
       Clock.systemDefaultZone(),
-      new IndexDescriptionFactory(),
+      new DenormalizedSortFieldUpdater(new IndexDescriptionFactory()),
       new JsonBasedAuthorizer(configuration.getAuthorizationsPath()));
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager, HuygensIng.keywordTypes);
 

@@ -3,16 +3,17 @@ package nl.knaw.huygens.timbuctoo.crud;
 import nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes;
 import nl.knaw.huygens.timbuctoo.model.vre.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.net.URI;
 import java.time.Clock;
+import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.util.AuthorizerHelper.anyUserIsAllowedToWriteAnyCollectionAuthorizer;
@@ -30,7 +31,13 @@ public class JsonCrudServiceBuilder {
   private Authorizer authorizer;
   private GraphWrapper graphWrapper = null;
   private UrlGenerator handleUrlGenerator;
-  private IndexDescriptionFactory indexDescriptionFactory = new IndexDescriptionFactory();
+  private ChangeListener changeListener = new ChangeListener() {
+    @Override
+    public void onCreate(Vertex vertex) { }
+
+    @Override
+    public void onUpdate(Optional<Vertex> oldVertex, Vertex newVertex) { }
+  };
 
   private JsonCrudServiceBuilder() {
     vres = new Vres.Builder()
@@ -76,7 +83,7 @@ public class JsonCrudServiceBuilder {
 
   public TinkerpopJsonCrudService build() {
     return new TinkerpopJsonCrudService(graphWrapper, vres, handleAdder, userStore, handleUrlGenerator,
-      autoCompleteUrlGenerator, relationUrlGenerator, clock, indexDescriptionFactory, authorizer);
+      autoCompleteUrlGenerator, relationUrlGenerator, clock, changeListener, authorizer);
   }
 
   public TinkerpopJsonCrudService forGraph(Graph graph) {
@@ -133,5 +140,10 @@ public class JsonCrudServiceBuilder {
 
   public GraphWrapper getGraphWrapperMock() {
     return graphWrapper;
+  }
+
+  public JsonCrudServiceBuilder withChangeListener(ChangeListener changeListener) {
+    this.changeListener = changeListener;
+    return this;
   }
 }
