@@ -249,7 +249,7 @@ public class TinkerpopJsonCrudService {
     if (ownType == null) {
       throw new IOException("Element with id() " + sourceV.id() + " is not of the vre of the relation");
     }
-    return vre.getCollection(ownType);
+    return vre.getCollectionForTypeName(ownType);
   }
 
   private UUID createEntity(Collection collection, ObjectNode input, String userId)
@@ -450,9 +450,9 @@ public class TinkerpopJsonCrudService {
                               }
                               String targetCollection = targetType + "s";
                               String uuid = getProp(vertex, "tim_id", String.class).orElse("");
-                              String displayName =
-                                getDisplayname(traversalSource, vertex, collection.getVre().getCollection(targetType))
-                                  .orElse("<No displayname found>");
+                              String displayName = getDisplayname(traversalSource, vertex, collection.getVre()
+                                .getCollectionForTypeName(targetType))
+                                .orElse("<No displayname found>");
 
                               URI relatedEntityUri =
                                 relationUrlFor.apply(targetCollection, UUID.fromString(uuid), null);
@@ -520,12 +520,12 @@ public class TinkerpopJsonCrudService {
             String label = (String) val.get("label");
 
             String targetEntityType = getOwnEntityType(collection, vertex);
-            Collection targetCollection = vre.getCollection(targetEntityType);
+            Collection targetCollection = vre.getCollectionForTypeName(targetEntityType);
             if (targetEntityType == null) {
               //this means that the edge is of this VRE, but the Vertex it points to is of another VRE
               //In that case we use the admin vre
               targetEntityType = admin.getOwnType(getEntityTypesOrDefault(vertex));
-              targetCollection = admin.getCollection(targetEntityType);
+              targetCollection = admin.getCollectionForTypeName(targetEntityType);
             }
 
             String displayName =
