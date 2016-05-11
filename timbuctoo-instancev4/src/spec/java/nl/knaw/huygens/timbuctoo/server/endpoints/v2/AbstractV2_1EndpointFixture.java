@@ -54,7 +54,11 @@ public abstract class AbstractV2_1EndpointFixture {
 
     Response jerseyResult;
     if (httpRequest.body != null) {
-      jerseyResult = request.method(httpRequest.method, Entity.json(httpRequest.body));
+      final String contentType = httpRequest.headers.entries().stream()
+        .filter(x -> x.getKey().equalsIgnoreCase("content-type"))
+        .map(Map.Entry::getValue)
+        .findFirst().orElse("application/json");
+      jerseyResult = request.method(httpRequest.method, Entity.entity(httpRequest.body, contentType));
     } else {
       jerseyResult = request.method(httpRequest.method);
     }
