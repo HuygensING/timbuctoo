@@ -1,13 +1,9 @@
 package nl.knaw.huygens.timbuctoo.server.healthchecks;
 
-import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.TestGraphBuilder;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
-
-import java.time.Clock;
-import java.util.ArrayList;
 
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
@@ -26,14 +22,14 @@ public class DatabaseValidatorTest {
   public void checkRunsAllTheDatabaseChecksForEachVertex() {
     String id1 = "id1";
     String id2 = "id2";
-    GraphWrapper graphWrapper = createGraphWrapper(id1, id2);
+    Graph graph = makeGraph(id1, id2);
     DatabaseCheck databaseCheck1 = mock(DatabaseCheck.class);
     DatabaseCheck databaseCheck2 = mock(DatabaseCheck.class);
-    ArrayList<DatabaseCheck> databaseChecks = Lists.newArrayList(databaseCheck1, databaseCheck2);
-    DatabaseValidator instance =
-      new DatabaseValidator(graphWrapper, 1, Clock.systemUTC(), databaseChecks);
 
-    instance.check();
+    DatabaseValidator instance =
+      new DatabaseValidator(databaseCheck1, databaseCheck2);
+
+    instance.check(graph);
 
     verify(databaseCheck1).check(argThat(likeVertex().withTimId(id1)));
     verify(databaseCheck1).check(argThat(likeVertex().withTimId(id2)));
@@ -43,35 +39,30 @@ public class DatabaseValidatorTest {
 
   @Test
   public void checkReturnsTheValidationResult() {
-    GraphWrapper graphWrapper = createGraphWrapper("id1", "id2");
-    DatabaseValidator instance = new DatabaseValidator(graphWrapper, 1, Clock.systemUTC(), Lists.newArrayList());
+    Graph graph = makeGraph("id1", "id2");
+    DatabaseValidator instance = new DatabaseValidator();
 
-    ValidationResult result = instance.check();
+    ValidationResult result = instance.check(graph);
 
     assertThat(result, is(notNullValue()));
   }
 
   @Test
   public void checkReturnsANonValidValidationResultWhenAtLeastOneOfTheChecksFails() {
-    GraphWrapper graphWrapper = createGraphWrapper("id1", "id2");
-    DatabaseCheck databaseCheck = nonValidDatabaseCheck();
-    DatabaseValidator instance =
-      new DatabaseValidator(graphWrapper, 1, Clock.systemUTC(), Lists.newArrayList(databaseCheck));
+    Graph graph = makeGraph("id1", "id2");
+    DatabaseValidator instance = new DatabaseValidator(nonValidDatabaseCheck());
 
-    ValidationResult validationResult = instance.check();
+    ValidationResult validationResult = instance.check(graph);
 
     assertThat(validationResult.isValid(), is(false));
   }
 
   @Test
   public void checkReturnsAValidValidationResultWhenAllOfTheChecksSucceed() {
-    GraphWrapper graphWrapper = createGraphWrapper("id", "id2");
-    DatabaseCheck databaseCheck = validDatabaseCheck();
+    Graph graph = makeGraph("id", "id2");
+    DatabaseValidator instance = new DatabaseValidator(validDatabaseCheck());
 
-    DatabaseValidator instance =
-      new DatabaseValidator(graphWrapper, 1, Clock.systemUTC(), Lists.newArrayList(databaseCheck));
-
-    ValidationResult result = instance.check();
+    ValidationResult result = instance.check(graph);
 
     assertThat(result.isValid(), is(true));
   }
@@ -100,13 +91,11 @@ public class DatabaseValidatorTest {
     return databaseCheck;
   }
 
-  private GraphWrapper createGraphWrapper(String... ids) {
+  private Graph makeGraph(String... ids) {
     TestGraphBuilder graphBuilder = newGraph();
     for (String id : ids) {
       graphBuilder.withVertex(vertex -> vertex.withTimId(id));
     }
-    GraphWrapper graphWrapper = mock(GraphWrapper.class);
-    given(graphWrapper.getGraph()).willReturn(graphBuilder.build());
-    return graphWrapper;
+    return graphBuilder.build();
   }
 }

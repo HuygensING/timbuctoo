@@ -18,6 +18,7 @@ autoLogoutTimeout:
 searchResultAvailabilityTimeout:
   duration: 8
   timeUnit: HOURS
+executeDatabaseInvariantCheckAt: 2
 
 
 #Public timbuctoo url

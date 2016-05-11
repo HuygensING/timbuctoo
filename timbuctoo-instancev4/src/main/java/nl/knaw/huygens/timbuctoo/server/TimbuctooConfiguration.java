@@ -47,6 +47,9 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @NotNull
   private Path authorizationsPath;
 
+  @JsonProperty
+  private int executeDatabaseInvariantCheckAt = 24;
+
   public HandleManagerFactory getPersistenceManagerFactory() {
     return persistenceManager;
   }
@@ -121,6 +124,10 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
 
   public Path getAuthorizationsPath() {
     return authorizationsPath;
+  }
+
+  public int getExecuteDatabaseInvariantCheckAt() {
+    return executeDatabaseInvariantCheckAt;
   }
 
   // A class to configure timeouts without compromising the Timeout class.

@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server;
 
 import com.codahale.metrics.health.HealthCheck;
+import com.google.common.collect.Lists;
 import io.dropwizard.lifecycle.Managed;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.MigrateDatabase;
@@ -17,13 +18,16 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 import org.neo4j.tinkerpop.api.impl.Neo4jGraphAPIImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.List;
+import java.util.function.Consumer;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 
-public class TinkerpopGraphManager extends HealthCheck implements Managed, GraphWrapper {
+public class TinkerpopGraphManager extends HealthCheck implements Managed, GraphWrapper, GraphWaiter {
   private static final SubgraphStrategy LATEST_ELEMENTS =
           SubgraphStrategy.build().edgeCriterion(has("isLatest", true)).vertexCriterion(has("isLatest", true)).create();
 
@@ -32,10 +36,13 @@ public class TinkerpopGraphManager extends HealthCheck implements Managed, Graph
   private File databasePath;
   private GraphDatabaseService graphDatabase;
   private final List<DatabaseMigration> databaseMigrations;
+  private final List<Consumer<Graph>> graphWaitList;
+  private static final Logger LOG = LoggerFactory.getLogger(TimbuctooV4.class);
 
   public TinkerpopGraphManager(TimbuctooConfiguration configuration, List<DatabaseMigration> databaseMigrations) {
     this.configuration = configuration;
     this.databaseMigrations = databaseMigrations;
+    graphWaitList = Lists.newArrayList();
   }
 
   @Override
@@ -46,9 +53,17 @@ public class TinkerpopGraphManager extends HealthCheck implements Managed, Graph
             .setConfig(GraphDatabaseSettings.allow_store_upgrade, "true")
             .newGraphDatabase();
 
-    this.graph = Neo4jGraph.open(new Neo4jGraphAPIImpl(graphDatabase));
-
-    new MigrateDatabase(this, databaseMigrations).run();
+    synchronized (graphWaitList) {
+      this.graph = Neo4jGraph.open(new Neo4jGraphAPIImpl(graphDatabase));
+      new MigrateDatabase(this, databaseMigrations).run();
+      graphWaitList.forEach(consumer -> {
+        try {
+          consumer.accept(graph);
+        } catch (RuntimeException e) {
+          LOG.error(e.getMessage(), e);
+        }
+      });
+    }
   }
 
   @Override
@@ -78,6 +93,17 @@ public class TinkerpopGraphManager extends HealthCheck implements Managed, Graph
   @Override
   public Graph getGraph() {
     return this.graph;
+  }
+
+  @Override
+  public void onGraph(Consumer<Graph> graphConsumer) {
+    synchronized (graphWaitList) {
+      if (graph == null) {
+        graphWaitList.add(graphConsumer);
+      } else {
+        graphConsumer.accept(graph);
+      }
+    }
   }
 
   @Override

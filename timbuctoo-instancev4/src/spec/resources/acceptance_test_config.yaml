@@ -17,6 +17,7 @@ autoLogoutTimeout:
 searchResultAvailabilityTimeout:
   duration: 8
   timeUnit: HOURS
+executeDatabaseInvariantCheckAt: -1
 
 #Public timbuctoo url
 baseUri: http://localhost:8089 # used to generate next and previous links of a search result
