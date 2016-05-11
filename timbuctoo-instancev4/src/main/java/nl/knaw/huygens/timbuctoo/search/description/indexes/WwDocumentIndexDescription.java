@@ -2,17 +2,24 @@ package nl.knaw.huygens.timbuctoo.search.description.indexes;
 
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.model.Change;
+import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.description.IndexDescription;
+import nl.knaw.huygens.timbuctoo.search.description.PropertyDescriptor;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
+import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
+import nl.knaw.huygens.timbuctoo.search.description.property.WwDocumentDisplayNameDescriptor;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.index.Index;
+import org.neo4j.graphdb.index.IndexManager;
+import org.neo4j.helpers.collection.MapUtil;
 
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.TreeSet;
 
 public class WwDocumentIndexDescription implements IndexDescription {
@@ -68,8 +75,10 @@ public class WwDocumentIndexDescription implements IndexDescription {
   }
 
 
+
   private final List<IndexerSortFieldDescription> sortFieldDescriptions;
 
+  private final PropertyDescriptor displayNameDescriptor;
 
   public WwDocumentIndexDescription() {
     final PropertyParserFactory propertyParserFactory = new PropertyParserFactory();
@@ -79,6 +88,8 @@ public class WwDocumentIndexDescription implements IndexDescription {
             new WwDocumentSortFieldDescription(
                     "creator", "", propertyParserFactory.getParser(PersonNames.class), String.class)
     );
+
+    displayNameDescriptor = new WwDocumentDisplayNameDescriptor();
   }
 
   @Override
@@ -121,7 +132,19 @@ public class WwDocumentIndexDescription implements IndexDescription {
   }
 
   @Override
-  public void addToFulltextIndex(Vertex vertex, Index<Node> index) {
-    throw new UnsupportedOperationException("to be implemented");
+  public void addToFulltextIndex(Vertex vertex, GraphDatabaseService graphDatabase) {
+    final IndexManager indexManager = graphDatabase.index();
+    final Map<String, String> indexConfig = MapUtil.stringMap(IndexManager.PROVIDER, "lucene", "type", "fulltext");
+    Index<Node> index = indexManager.forNodes("wwdocuments", indexConfig);
+
+    if (vertex.property("wwdocument_title").isPresent()) {
+      long id = (long) vertex.id();
+      Node neo4jNode = graphDatabase.getNodeById(id);
+      index.add(neo4jNode, "displayName", displayNameDescriptor.get(vertex));
+      index.add(neo4jNode, "tim_id", vertex.property("tim_id").value());
+    }
   }
+
+
+
 }

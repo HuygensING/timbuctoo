@@ -10,8 +10,7 @@ import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.TempNamePropertyParser;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.index.Index;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 import java.util.List;
 
@@ -121,8 +120,8 @@ class WwPersonIndexDescription implements IndexDescription {
   }
 
   @Override
-  public void addToFulltextIndex(Vertex vertex, Index<Node> index) {
-    throw new UnsupportedOperationException("to be implemented");
+  public void addToFulltextIndex(Vertex vertex, GraphDatabaseService graphDatabase) {
+    System.out.println("TODO");
   }
 
 }

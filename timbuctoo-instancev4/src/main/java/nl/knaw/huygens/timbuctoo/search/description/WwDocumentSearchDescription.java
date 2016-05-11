@@ -12,6 +12,8 @@ import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.facet.FacetDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
+import nl.knaw.huygens.timbuctoo.search.description.property.WwDocumentAuthorDescriptor;
+import nl.knaw.huygens.timbuctoo.search.description.property.WwDocumentDisplayNameDescriptor;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 import nl.knaw.huygens.timbuctoo.search.description.sort.SortDescription;
 import nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription;
@@ -97,6 +99,10 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
 
     sortFieldDescriptions = createSortFieldDescriptions();
 
+  }
+
+  private PropertyDescriptor createDisplayNameDescriptor() {
+    return new WwDocumentDisplayNameDescriptor();
   }
 
   private ArrayList<FullTextSearchDescription> createFullTextSearchDescriptions() {
@@ -235,6 +241,10 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
     return dataDescriptors;
   }
 
+  private PropertyDescriptor createAuthorDescriptor() {
+    return new WwDocumentAuthorDescriptor();
+  }
+
   @Override
   public List<String> getSortableFields() {
     return SORTABLE_FIELDS;
@@ -245,30 +255,6 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
     return FULL_TEXT_SEARCH_FIELDS;
   }
 
-  private PropertyDescriptor createDisplayNameDescriptor() {
-    PropertyDescriptor titleDescriptor = propertyDescriptorFactory.getLocal("wwdocument_title", String.class);
-    PropertyDescriptor dateDescriptor = propertyDescriptorFactory.getLocal("wwdocument_date", Datable.class, "(", ")");
-
-    PropertyDescriptor documentDescriptor = propertyDescriptorFactory.getAppender(titleDescriptor, dateDescriptor, " ");
-
-    return propertyDescriptorFactory.getAppender(createAuthorDescriptor(), documentDescriptor, " - ");
-  }
-
-  private PropertyDescriptor createAuthorDescriptor() {
-    PropertyDescriptor authorNameDescriptor = propertyDescriptorFactory.getDerivedWithSeparator(
-            "isCreatedBy",
-            "wwperson_names",
-            propertyParserFactory.getParser(PersonNames.class),
-            "; ");
-    PropertyDescriptor authorTempNameDescriptor = propertyDescriptorFactory.getDerivedWithSeparator(
-            "isCreatedBy",
-            "wwperson_tempName",
-            propertyParserFactory.getParser(String.class),
-            "; ");
-
-    return propertyDescriptorFactory
-            .getComposite(authorNameDescriptor, authorTempNameDescriptor);
-  }
 
   @Override
   protected List<FacetDescription> getFacetDescriptions() {
