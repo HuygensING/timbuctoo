@@ -25,7 +25,7 @@ public class AutocompleteLuceneIndexDatabaseMigration implements DatabaseMigrati
 
   @Override
   public void generateIndexes(Neo4jGraph neo4jGraph, Transaction transaction) {
-    // TODO?
+    // Index is already present at this stage
   }
 
   @Override

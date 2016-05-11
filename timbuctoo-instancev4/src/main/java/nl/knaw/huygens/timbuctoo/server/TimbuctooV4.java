@@ -58,6 +58,7 @@ import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseValidator;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.EncryptionAlgorithmHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.FileHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ValidationResult;
+import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.FullTextIndexCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.InvariantsCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.LabelsAddedToVertexDatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.SortIndexesDatabaseCheck;
@@ -180,7 +181,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       configuration,
       environment,
       vres,
-      graphManager
+      graphManager, // graphWaiter
+      graphManager // graphManager
     );
 
     // register REST endpoints
@@ -235,7 +237,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
   private BackgroundRunner<ValidationResult> setUpDatabaseValidator(TimbuctooConfiguration configuration,
                                                                     Environment environment, Vres vres,
-                                                                    GraphWaiter graphWaiter) {
+                                                                    GraphWaiter graphWaiter,
+                                                                    TinkerpopGraphManager graphManager) {
 
     final ScheduledExecutorService executor = environment.lifecycle()
                                                          .scheduledExecutorService("databaseCheckExecutor")
@@ -249,7 +252,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       DatabaseValidator databaseValidator = new DatabaseValidator(
         new LabelsAddedToVertexDatabaseCheck(),
         new SortIndexesDatabaseCheck(),
-        new InvariantsCheck(vres)
+        new InvariantsCheck(vres),
+        new FullTextIndexCheck(graphManager)
       );
 
       graphWaiter.onGraph(graph -> {
