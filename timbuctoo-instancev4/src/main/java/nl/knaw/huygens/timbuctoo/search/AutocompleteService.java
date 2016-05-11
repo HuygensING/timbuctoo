@@ -71,7 +71,13 @@ public class AutocompleteService {
     }
 
     final Index<Node> index = graphDatabase.index().forNodes(collectionName);
-    IndexHits<Node> hits = index.query("displayName", query.isPresent() ? query.get() : "*");
+    String parsedQuery = query.isPresent() ? query.get() : "*";
+    IndexHits<Node> hits;
+    if (type.isPresent()) {
+      hits = index.query(String.format("displayName:%s AND type:%s", parsedQuery, type.get()));
+    } else {
+      hits = index.query("displayName", parsedQuery);
+    }
 
     List<ObjectNode> results = StreamSupport.stream(hits.spliterator(), false)
       .map(hit -> {
@@ -83,7 +89,7 @@ public class AutocompleteService {
               "key", jsn(autoCompleteUrlFor.apply(collectionName, UUID.fromString(timId), rev).toString()),
               "value", jsn(displayNameDescriptors.get(collectionName).get(vertex)));
       })
-      .limit(collectionName.equals("wwkeywords") ? 1000 : 50)
+      .limit(collectionName.equals("wwkeywords") ? 1000 : 50) // FIXME: expose param to client again
       .collect(Collectors.toList());
 
     hits.close();
