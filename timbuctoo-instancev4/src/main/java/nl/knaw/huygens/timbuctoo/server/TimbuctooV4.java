@@ -32,6 +32,7 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
+import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.InvariantsFix;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.LabelDatabaseMigration;
@@ -124,7 +125,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       loginFileMigration.convert(loginsPath);
     }
 
-    JsonBasedUserStore userStore = new JsonBasedUserStore(usersPath);
+    UserStore userStore = new JsonBasedUserStore(usersPath);
     final LoggedInUserStore loggedInUserStore = new LoggedInUserStore(
       new JsonBasedAuthenticator(loginsPath, ENCRYPTION_ALGORITHM),
       userStore,

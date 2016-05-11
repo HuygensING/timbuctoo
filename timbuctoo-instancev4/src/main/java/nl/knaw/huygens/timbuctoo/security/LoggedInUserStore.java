@@ -20,11 +20,11 @@ import java.util.UUID;
 public class LoggedInUserStore {
 
   private final Authenticator authenticator;
-  private final JsonBasedUserStore userStore;
+  private final UserStore userStore;
   private final AuthenticationHandler authenticationHandler;
   private final Cache<String, User> users;
 
-  public LoggedInUserStore(Authenticator authenticator, JsonBasedUserStore userStore,
+  public LoggedInUserStore(Authenticator authenticator, UserStore userStore,
                            Timeout inactivityTimeout, AuthenticationHandler authenticationHandler) {
     this.authenticator = authenticator;
     this.userStore = userStore;

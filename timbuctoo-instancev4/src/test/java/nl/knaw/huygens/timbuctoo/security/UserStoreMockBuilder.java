@@ -8,14 +8,14 @@ import static org.mockito.Mockito.when;
 
 public class UserStoreMockBuilder {
 
-  private final JsonBasedUserStore userStore;
+  private final UserStore userStore;
 
   private UserStoreMockBuilder() throws AuthenticationUnavailableException {
     userStore = mock(JsonBasedUserStore.class);
     when(userStore.userFor(anyString())).thenReturn(Optional.empty());
   }
 
-  public JsonBasedUserStore build() {
+  public UserStore build() {
     return userStore;
   }
 

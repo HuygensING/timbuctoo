@@ -5,6 +5,7 @@ import nl.knaw.huygens.contractdiff.diffresults.DiffResult;
 import nl.knaw.huygens.contractdiff.jsondiff.JsonDiffer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
+import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.junit.Rule;
@@ -249,7 +250,7 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .build();
 
-    JsonBasedUserStore userStore = mock(JsonBasedUserStore.class);
+    UserStore userStore = mock(JsonBasedUserStore.class);
     when(userStore.userForId("USER1")).thenReturn(Optional.of(new User("Username for USER1")));
 
     TinkerpopJsonCrudService instance = newJsonCrudService().withUserStore(userStore).forGraph(graph);
@@ -279,7 +280,7 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .build();
 
-    JsonBasedUserStore userStore = mock(JsonBasedUserStore.class);
+    UserStore userStore = mock(JsonBasedUserStore.class);
     when(userStore.userForId("USER1")).thenReturn(Optional.of(new User("Username for USER1")));
 
     TinkerpopJsonCrudService instance = newJsonCrudService().withUserStore(userStore).forGraph(graph);
