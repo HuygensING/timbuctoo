@@ -13,6 +13,8 @@ public class IndexDescriptionFactory {
       return new WwPersonIndexDescription();
     } else if (type.equals("wwdocument")) {
       return new WwDocumentIndexDescription();
+    } else if (type.equals("wwkeyword")) {
+      return new WwKeywordIndexDescription();
     }
     return null;
   }

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
+import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.model.TempName;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyDescriptor;
@@ -21,6 +23,7 @@ import org.neo4j.graphdb.index.IndexHits;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -32,21 +35,25 @@ public class AutocompleteService {
 
   private final TinkerpopGraphManager graphManager;
   private final Map<String, PropertyDescriptor> displayNameDescriptors;
+  private final UrlGenerator autoCompleteUrlFor;
 
-  public AutocompleteService(TinkerpopGraphManager graphManager) {
+  public AutocompleteService(TinkerpopGraphManager graphManager, UrlGenerator autoCompleteUrlFor) {
     final PropertyDescriptorFactory propertyDescriptorFactory =
             new PropertyDescriptorFactory(new PropertyParserFactory());
 
     this.graphManager = graphManager;
+    this.autoCompleteUrlFor = autoCompleteUrlFor;
 
     displayNameDescriptors = Maps.newHashMap();
     displayNameDescriptors.put("wwdocuments", new WwDocumentDisplayNameDescriptor());
     displayNameDescriptors.put("wwpersons", propertyDescriptorFactory.getComposite(
             propertyDescriptorFactory.getLocal("wwperson_names", PersonNames.class),
             propertyDescriptorFactory.getLocal("wwperson_tempName", TempName.class)));
+    displayNameDescriptors.put("wwkeywords", propertyDescriptorFactory.getLocal("wwkeyword_value", String.class));
   }
 
-  public JsonNode search(String collectionName, Optional<String> query, Optional<String> type) {
+  public JsonNode search(String collectionName, Optional<String> query, Optional<String> type)
+          throws InvalidCollectionException {
 
     final GraphDatabaseService graphDatabase =   graphManager.getGraphDatabase();
 
@@ -57,20 +64,26 @@ public class AutocompleteService {
     if (!transaction.isOpen()) {
       transaction.open();
     }
-    Lists.newArrayList();
+
+    if (!graphDatabase.index().existsForNodes(collectionName)) {
+      transaction.close();
+      throw new InvalidCollectionException("Collection does not have autocomplete index: " + collectionName);
+    }
 
     final Index<Node> index = graphDatabase.index().forNodes(collectionName);
     IndexHits<Node> hits = index.query("displayName", query.isPresent() ? query.get() : "*");
 
-
     List<ObjectNode> results = StreamSupport.stream(hits.spliterator(), false)
       .map(hit -> {
         Vertex vertex = graphManager.getGraph().traversal().V(hit.getId()).next();
+        String timId = (String) vertex.property("tim_id").value();
+        int rev = (Integer) vertex.property("rev").value();
+
         return jsnO(
-              "key", jsn((String) vertex.property("tim_id").value()),
+              "key", jsn(autoCompleteUrlFor.apply(collectionName, UUID.fromString(timId), rev).toString()),
               "value", jsn(displayNameDescriptors.get(collectionName).get(vertex)));
       })
-      .limit(50)
+      .limit(collectionName.equals("wwkeywords") ? 1000 : 50)
       .collect(Collectors.toList());
 
     hits.close();

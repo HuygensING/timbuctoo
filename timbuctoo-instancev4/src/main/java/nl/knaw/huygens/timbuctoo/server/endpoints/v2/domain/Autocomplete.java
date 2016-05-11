@@ -26,9 +26,9 @@ public class Autocomplete {
 
   public static URI makeUrl(String collectionName) {
     return UriBuilder.fromResource(Autocomplete.class)
-      .buildFromMap(ImmutableMap.of(
-        "collection", collectionName
-      ));
+            .buildFromMap(ImmutableMap.of(
+                    "collection", collectionName
+            ));
   }
 
   public static URI makeUrl(String collectionName, Optional<String> token, Optional<String> type) {
@@ -36,8 +36,8 @@ public class Autocomplete {
 
     if (type.isPresent()) {
       uri = UriBuilder.fromUri(uri)
-        .path(Autocomplete.class, "getWithPath")
-        .buildFromMap(ImmutableMap.of("type", type.get()));
+              .path(Autocomplete.class, "getWithPath")
+              .buildFromMap(ImmutableMap.of("type", type.get()));
     }
     if (token.isPresent()) {
       uri = UriBuilder.fromUri(uri).queryParam("query", "*" + token.get() + "*").build();
@@ -59,17 +59,12 @@ public class Autocomplete {
   public Response get(@PathParam("collection") String collectionName, @QueryParam("query") Optional<String> query,
                       @QueryParam("type") Optional<String> type) {
 
-    if (collectionName.equals("wwkeywords")) {
-      try {
-        JsonNode result = crudService.autoComplete(collectionName, query, type);
-        return Response.ok(result).build();
-      } catch (InvalidCollectionException e) {
-
-        return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
-      }
-    } else {
+    try {
       JsonNode result = autoCompleteService.search(collectionName, query, type);
       return Response.ok(result).build();
+    } catch (InvalidCollectionException e) {
+
+      return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
     }
   }
 

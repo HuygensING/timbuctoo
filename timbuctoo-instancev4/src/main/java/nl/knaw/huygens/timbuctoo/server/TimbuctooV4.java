@@ -167,6 +167,11 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       changeListeners,
       authorizer);
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager, HuygensIng.keywordTypes);
+    final AutocompleteService autocompleteService = new AutocompleteService(
+      graphManager,
+      (coll, id, rev) -> URI.create(configuration.getBaseUri() + SingleEntity.makeUrl(coll, id, rev).getPath())
+    );
+
 
 
     environment.lifecycle().manage(graphManager);
@@ -183,7 +188,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Authenticate(loggedInUserStore));
     register(environment, new Me(loggedInUserStore));
     register(environment, new Search(configuration, graphManager));
-    register(environment, new Autocomplete(crudService, new AutocompleteService(graphManager)));
+    register(environment, new Autocomplete(crudService, autocompleteService));
     register(environment, new Index(crudService, loggedInUserStore));
     register(environment, new SingleEntity(crudService, loggedInUserStore));
     register(environment, new Gremlin(graphManager));
