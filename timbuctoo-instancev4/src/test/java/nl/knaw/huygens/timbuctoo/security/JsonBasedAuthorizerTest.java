@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.security.UserRoles.UNVERIFIED_USER_ROLE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.core.Is.is;
@@ -31,11 +32,12 @@ public class JsonBasedAuthorizerTest {
   }
 
   @Test
-  public void authorizationForReturnsTheNewlyCreatedAuthorizationIfTheUserHasNoAuthorizationForTheCurrentCollection()
+  public void authorizationForReturnsTheNewAuthorizationIfTheUserHasNoAuthorizationForTheCurrentCollection()
     throws Exception {
     VreAuthorization vreAuthorization = new VreAuthorization();
     when(authorizationCollection.authorizationFor(anyString(), anyString())).thenReturn(Optional.empty());
-    when(authorizationCollection.addAuthorizationFor(anyString(), anyString())).thenReturn(vreAuthorization);
+    when(authorizationCollection.addAuthorizationFor(anyString(), anyString(), anyString()))
+      .thenReturn(vreAuthorization);
 
     String vreId = VRE_ID;
     Collection collection = collectionOfVreWithId(vreId);
@@ -44,7 +46,7 @@ public class JsonBasedAuthorizerTest {
     Authorization authorization = instance.authorizationFor(collection, userId);
 
     assertThat(authorization, is(sameInstance(vreAuthorization)));
-    verify(authorizationCollection).addAuthorizationFor(vreId, userId);
+    verify(authorizationCollection).addAuthorizationFor(vreId, userId, UNVERIFIED_USER_ROLE);
   }
 
   private Collection collectionOfVreWithId(String vreId) {
@@ -64,7 +66,7 @@ public class JsonBasedAuthorizerTest {
     Authorization authorization = instance.authorizationFor(collection, USER_ID);
 
     assertThat(authorization, is(sameInstance(vreAuthorization)));
-    verify(authorizationCollection, never()).addAuthorizationFor(VRE_ID, USER_ID);
+    verify(authorizationCollection, never()).addAuthorizationFor(VRE_ID, USER_ID, UNVERIFIED_USER_ROLE);
   }
 
   @Test(expected = AuthorizationUnavailableException.class)
@@ -82,12 +84,28 @@ public class JsonBasedAuthorizerTest {
     throws Exception {
     when(authorizationCollection.authorizationFor(anyString(), anyString()))
       .thenReturn(Optional.empty());
-    when(authorizationCollection.addAuthorizationFor(anyString(), anyString()))
+    when(authorizationCollection.addAuthorizationFor(anyString(), anyString(), anyString()))
       .thenThrow(new AuthorizationUnavailableException());
     Collection collection = collectionOfVreWithId(VRE_ID);
 
     instance.authorizationFor(collection, USER_ID);
   }
 
+  @Test
+  public void createAuthorizationLetsCreatesANewAuthorizationForTheUserVreAndRole()
+    throws Exception {
+    instance.createAuthorization(VRE_ID, USER_ID, UserRoles.USER_ROLE);
+
+    verify(authorizationCollection).addAuthorizationFor(VRE_ID, USER_ID, UserRoles.USER_ROLE);
+  }
+
+  @Test(expected = AuthorizationCreationException.class)
+  public void createAuthorizationThrowsAnAuthCreateExWhenTheAuthorizationCollectionThrowsAnAuthUnavailableEx()
+    throws Exception {
+    when(authorizationCollection.addAuthorizationFor(anyString(), anyString(), anyString()))
+      .thenThrow(new AuthorizationUnavailableException());
+
+    instance.createAuthorization(VRE_ID, USER_ID, UserRoles.USER_ROLE);
+  }
 
 }
