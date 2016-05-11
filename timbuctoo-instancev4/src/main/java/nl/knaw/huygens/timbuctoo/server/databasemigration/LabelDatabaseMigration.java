@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import javaslang.control.Try;
+import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -24,6 +25,11 @@ public class LabelDatabaseMigration implements DatabaseMigration {
   @Override
   public void generateIndexes(Neo4jGraph graph, Transaction transaction) {
     LOG.info("This task does not create new indexes");
+  }
+
+  @Override
+  public void beforeMigration(TinkerpopGraphManager graphManager) {
+    // before hook not needed
   }
 
   @Override

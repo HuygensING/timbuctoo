@@ -126,4 +126,8 @@ public class TinkerpopGraphManager extends HealthCheck implements Managed, Graph
       return getLatestState().V().has(T.label, labels);
     }
   }
+
+  public GraphDatabaseService getGraphDatabase() {
+    return graphDatabase;
+  }
 }

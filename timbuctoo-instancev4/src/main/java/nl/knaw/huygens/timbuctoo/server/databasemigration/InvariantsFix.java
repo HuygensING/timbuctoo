@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -51,6 +52,11 @@ public class InvariantsFix implements DatabaseMigration {
   @Override
   public void generateIndexes(Neo4jGraph neo4jGraph, Transaction transaction) {
     // no indices to generate
+  }
+
+  @Override
+  public void beforeMigration(TinkerpopGraphManager graphManager) {
+    // before hook not needed
   }
 
   @Override
