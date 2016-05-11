@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
+import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -45,20 +46,30 @@ public class Autocomplete {
   }
 
   private final TinkerpopJsonCrudService crudService;
+  private final AutocompleteService autoCompleteService;
 
-  public Autocomplete(TinkerpopJsonCrudService crudService) {
+
+  public Autocomplete(TinkerpopJsonCrudService crudService, AutocompleteService autocompleteService) {
     this.crudService = crudService;
+    this.autoCompleteService = autocompleteService;
   }
 
   @GET
   @Path("/")
   public Response get(@PathParam("collection") String collectionName, @QueryParam("query") Optional<String> query,
                       @QueryParam("type") Optional<String> type) {
-    try {
-      JsonNode result = crudService.autoComplete(collectionName, query, type);
+
+    if (collectionName.equals("wwkeywords")) {
+      try {
+        JsonNode result = crudService.autoComplete(collectionName, query, type);
+        return Response.ok(result).build();
+      } catch (InvalidCollectionException e) {
+
+        return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
+      }
+    } else {
+      JsonNode result = autoCompleteService.search(collectionName, query, type);
       return Response.ok(result).build();
-    } catch (InvalidCollectionException e) {
-      return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
     }
   }
 

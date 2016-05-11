@@ -26,6 +26,7 @@ import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
@@ -182,7 +183,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Authenticate(loggedInUserStore));
     register(environment, new Me(loggedInUserStore));
     register(environment, new Search(configuration, graphManager));
-    register(environment, new Autocomplete(crudService));
+    register(environment, new Autocomplete(crudService, new AutocompleteService(graphManager)));
     register(environment, new Index(crudService, loggedInUserStore));
     register(environment, new SingleEntity(crudService, loggedInUserStore));
     register(environment, new Gremlin(graphManager));
