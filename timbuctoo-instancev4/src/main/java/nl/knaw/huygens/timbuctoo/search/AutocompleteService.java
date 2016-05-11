@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.search;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
