@@ -61,7 +61,6 @@ public class CollectionRange {
 
       //Loop over all cells. Create a property per column
       //FIXME allow multicolumn properties
-      //FIXME allow full column ranges
       CellReference firstCell = aref.getFirstCell();
       CellReference lastCell = aref.getLastCell();
       int minRow = Math.min(firstCell.getRow(), lastCell.getRow());
