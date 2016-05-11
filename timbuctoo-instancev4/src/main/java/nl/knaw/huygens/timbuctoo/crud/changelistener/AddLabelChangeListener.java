@@ -13,8 +13,6 @@ import java.util.stream.Collectors;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
 
 public class AddLabelChangeListener implements ChangeListener {
-  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(AddLabelChangeListener.class);
-
   @Override
   public void onCreate(Vertex vertex) {
     String[] types = getEntityTypesOrDefault(vertex);
