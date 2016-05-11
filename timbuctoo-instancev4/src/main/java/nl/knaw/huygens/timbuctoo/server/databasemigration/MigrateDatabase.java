@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -68,7 +69,7 @@ public class MigrateDatabase implements Runnable {
     if (!transaction.isOpen()) {
       transaction.open();
     }
-
+    migration.beforeMigration((TinkerpopGraphManager) graphWrapper);
     GraphTraversal<Vertex, Vertex> traversal = graph.traversal().V();
     int amount = 0;
     while (traversal.hasNext()) {

@@ -135,16 +135,14 @@ public class WwDocumentIndexDescription implements IndexDescription {
   public void addToFulltextIndex(Vertex vertex, GraphDatabaseService graphDatabase) {
     final IndexManager indexManager = graphDatabase.index();
     final Map<String, String> indexConfig = MapUtil.stringMap(IndexManager.PROVIDER, "lucene", "type", "fulltext");
-    Index<Node> index = indexManager.forNodes("wwdocuments", indexConfig);
+    final Index<Node> index = indexManager.forNodes("wwdocuments", indexConfig);
+    final String displayName = displayNameDescriptor.get(vertex);
 
-    if (vertex.property("wwdocument_title").isPresent()) {
+    if (displayName != null) {
       long id = (long) vertex.id();
       Node neo4jNode = graphDatabase.getNodeById(id);
-      index.add(neo4jNode, "displayName", displayNameDescriptor.get(vertex));
+      index.add(neo4jNode, "displayName", displayName);
       index.add(neo4jNode, "tim_id", vertex.property("tim_id").value());
     }
   }
-
-
-
 }

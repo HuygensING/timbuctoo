@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexManager;
@@ -20,9 +21,7 @@ import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDef
 
 public class AutocompleteLuceneIndexDatabaseMigration implements DatabaseMigration {
 
-  private Index<Node> keywordIndex;
-  private Index<Node> documentIndex;
-  private Index<Node> personIndex;
+  private GraphDatabaseService graphDatabase;
 
   @Override
   public String getName() {
@@ -36,20 +35,21 @@ public class AutocompleteLuceneIndexDatabaseMigration implements DatabaseMigrati
 
   @Override
   public void beforeMigration(TinkerpopGraphManager graphManager) {
-    final IndexManager indexManager = graphManager.getGraphDatabase().index();
-    final Map<String, String> indexConfig = MapUtil.stringMap(IndexManager.PROVIDER, "lucene", "type", "fulltext");
-    keywordIndex = indexManager.forNodes("wwkeywords", indexConfig);
-    documentIndex = indexManager.forNodes("wwdocuments", indexConfig);
-    personIndex = indexManager.forNodes("wwpersons", indexConfig);
+    graphDatabase = graphManager.getGraphDatabase();
   }
 
   @Override
   public void applyToVertex(Vertex vertex) throws IOException {
-    List<String> types = Arrays.asList(getEntityTypesOrDefault(vertex));
+    Boolean isLatest = vertex.property("isLatest").isPresent() ?
+            (Boolean) vertex.property("isLatest").value() :
+            false;
 
-    List<IndexDescription> indexDescriptions = new IndexDescriptionFactory().getIndexersForTypes(types);
-    for (IndexDescription indexDescription : indexDescriptions) {
-      indexDescription.addToFulltextIndex(vertex, personIndex);
+    if (isLatest) {
+      List<String> types = Arrays.asList(getEntityTypesOrDefault(vertex));
+      List<IndexDescription> indexDescriptions = new IndexDescriptionFactory().getIndexersForTypes(types);
+      for (IndexDescription indexDescription : indexDescriptions) {
+        indexDescription.addToFulltextIndex(vertex, graphDatabase);
+      }
     }
   }
 }
