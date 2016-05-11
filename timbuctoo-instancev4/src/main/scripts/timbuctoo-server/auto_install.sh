@@ -4,7 +4,6 @@ set -o xtrace
 
 # This script checks if the the ci server contains an updated version of the development branch
 # it is specific to our build servers
-TIMBUCTOO_JENKINS_PROJECT='http://ci.huygens.knaw.nl/job/timbuctoo_develop'
 TIMBUCTOO_BIN_URL="${TIMBUCTOO_JENKINS_PROJECT}/lastSuccessfulBuild/artifact/timbuctoo-instancev4/target/rpm/timbuctoo-instancev4/RPMS/x86_64/*.rpm/*zip*/rpm.zip"
 TIMBUCTOO_BUILD_NO_URL="${TIMBUCTOO_JENKINS_PROJECT}/lastSuccessfulBuild/buildNumber/"
 TIMBUCTOO_INSTALLER_DIR="/data/timbuctoo/tmp"
