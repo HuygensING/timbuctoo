@@ -15,10 +15,11 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
-import nl.knaw.huygens.timbuctoo.crud.CompositeChangeListener;
-import nl.knaw.huygens.timbuctoo.crud.DenormalizedSortFieldUpdater;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
+import nl.knaw.huygens.timbuctoo.crud.changelistener.AddLabelChangeListener;
+import nl.knaw.huygens.timbuctoo.crud.changelistener.CompositeChangeListener;
+import nl.knaw.huygens.timbuctoo.crud.changelistener.DenormalizedSortFieldUpdater;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.experimental.server.endpoints.v2.BulkUpload;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
@@ -141,7 +142,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
     final HandleAdder handleAdder = new HandleAdder(activeMqBundle, HANDLE_QUEUE, graphManager, persistenceManager);
     final CompositeChangeListener changeListeners = new CompositeChangeListener(
-      new DenormalizedSortFieldUpdater(new IndexDescriptionFactory())
+      new DenormalizedSortFieldUpdater(new IndexDescriptionFactory()),
+      new AddLabelChangeListener()
     );
     final TinkerpopJsonCrudService crudService = new TinkerpopJsonCrudService(
       graphManager,

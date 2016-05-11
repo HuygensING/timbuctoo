@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
+import nl.knaw.huygens.timbuctoo.crud.changelistener.AddLabelChangeListener;
+import nl.knaw.huygens.timbuctoo.crud.changelistener.CompositeChangeListener;
 import nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes;
 import nl.knaw.huygens.timbuctoo.model.vre.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -9,11 +11,9 @@ import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.net.URI;
 import java.time.Clock;
-import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.util.AuthorizerHelper.anyUserIsAllowedToWriteAnyCollectionAuthorizer;
@@ -31,13 +31,9 @@ public class JsonCrudServiceBuilder {
   private Authorizer authorizer;
   private GraphWrapper graphWrapper = null;
   private UrlGenerator handleUrlGenerator;
-  private ChangeListener changeListener = new ChangeListener() {
-    @Override
-    public void onCreate(Vertex vertex) { }
-
-    @Override
-    public void onUpdate(Optional<Vertex> oldVertex, Vertex newVertex) { }
-  };
+  private ChangeListener changeListener = new CompositeChangeListener(
+          new AddLabelChangeListener()
+  );
 
   private JsonCrudServiceBuilder() {
     vres = new Vres.Builder()
