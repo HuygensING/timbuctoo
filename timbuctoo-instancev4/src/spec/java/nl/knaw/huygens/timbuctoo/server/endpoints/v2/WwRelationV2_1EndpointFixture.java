@@ -60,11 +60,13 @@ public class WwRelationV2_1EndpointFixture extends BaseDomainV2_1EndpointFixture
   }
 
   public String getRelationId() throws JSONException {
-    HttpRequest request = new HttpRequest("GET", "/v2.1/gremlin")
-      .withQueryParam("query", "g.V().has(\"relationtype_regularName\", \"isCreatedBy\")");
+    HttpRequest request = new HttpRequest("POST", "/v2.1/gremlin", "g.V().has(\"relationtype_regularName\", \"isCreatedBy\")")
+      .withHeader("accept", "text/plain")
+      .withHeader("content-type", "text/plain");
+
 
     ActualResult response = executeRequestUsingJaxRs(request);
-    Pattern pattern = Pattern.compile(".*tim_id: ([^\n]*).*", Pattern.DOTALL);
+    Pattern pattern = Pattern.compile(".*tim_id: \"([^\n]*)\".*", Pattern.DOTALL);
 
     Matcher matcher = pattern.matcher(response.getBody());
     matcher.matches();
