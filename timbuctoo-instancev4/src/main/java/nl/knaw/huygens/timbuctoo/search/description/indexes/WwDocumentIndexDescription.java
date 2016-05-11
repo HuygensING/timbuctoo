@@ -8,6 +8,8 @@ import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.index.Index;
 
 import java.util.List;
 import java.util.Set;
@@ -116,5 +118,10 @@ public class WwDocumentIndexDescription implements IndexDescription {
         }
       }
     }
+  }
+
+  @Override
+  public void addToFulltextIndex(Vertex vertex, Index<Node> index) {
+    throw new UnsupportedOperationException("to be implemented");
   }
 }
