@@ -161,7 +161,7 @@ public class CollectionRange {
             final LocalProperty propDescriptor = propertyDescriptors.get(propColumn.getName());
             if (propDescriptor != null) {
               final Optional<String> data = propColumn.applyData(vertex, propDescriptor, row);
-              if (propColumn.isUnique()) {
+              if (propColumn.isIdentityColumn()) {
                 data.ifPresent(val -> state.addIndexedVertex(collection, val, vertex));
               }
             }
@@ -184,7 +184,7 @@ public class CollectionRange {
       final Collection collection = optCollection.get();
       for (PropertyColumns propertyColumns : this.properties.values()) {
         if (propertyColumns.isValid(collection)) {
-          if (propertyColumns.isUnique()) {
+          if (propertyColumns.isIdentityColumn()) {
             if (collectionsWithIdentityColumn.contains(propertyColumns.getName())) {
               propertyColumns.markError("More then one column marked as the identity.");
               valid = false;

@@ -29,13 +29,13 @@ public class PropertyColumns extends Columns {
   private final Cell captionCell;
   private List<Cell> items = new ArrayList<>();
   private String name;
-  private boolean unique;
+  private boolean isIdentityColumn;
 
   public PropertyColumns(int minRow, int maxRow, int headerRow, Sheet sheet, String caption, int column) {
     captionCell = sheet.getRow(headerRow).getCell(column);
     if (caption.endsWith("*")) {
       name = caption.substring(0, caption.length() - 1);
-      unique = true;//fixme rename unique to identity
+      isIdentityColumn = true;
     } else {
       name = caption;
     }
@@ -110,8 +110,8 @@ public class PropertyColumns extends Columns {
     return name;
   }
 
-  public boolean isUnique() {
-    return unique;
+  public boolean isIdentityColumn() {
+    return isIdentityColumn;
   }
 
   public void markError(String msg) {
@@ -120,7 +120,7 @@ public class PropertyColumns extends Columns {
 
   public boolean isValid(Collection collection) {
     if (collection.getWriteableProperties().containsKey(name)) {
-      if (unique) {
+      if (isIdentityColumn) {
         Set<String> cellValues = Sets.newHashSet();
         for (Cell propVal : items) {
           try {
