@@ -4,7 +4,6 @@ import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.crud.ChangeListener;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.slf4j.Logger;
 
 import java.util.Optional;
 import java.util.Set;
