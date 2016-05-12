@@ -129,7 +129,7 @@ public class WwPersonIndexDescriptionTest {
 
 
   @Test
-  public void invokesIndexDescriptionAddIndexedSortPropertiesForWwPersonsOnUpdate() throws Exception {
+  public void crudServiceInvokesIndexDescriptionAddIndexedSortPropertiesForWwPersonsOnUpdate() throws Exception {
     String id = UUID.randomUUID().toString();
     Graph graph = newGraph()
             .withVertex(v -> v
