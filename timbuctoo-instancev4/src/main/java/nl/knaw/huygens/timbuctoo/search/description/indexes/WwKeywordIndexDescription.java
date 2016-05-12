@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.search.description.indexes;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.search.description.IndexDescription;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -13,7 +14,7 @@ import org.neo4j.helpers.collection.MapUtil;
 import java.util.List;
 import java.util.Map;
 
-public class WwKeywordIndexDescription implements IndexDescription {
+public class WwKeywordIndexDescription extends AbstractFulltextIndexDescription {
   @Override
   public List<IndexerSortFieldDescription> getSortFieldDescriptions() {
     return Lists.newArrayList();
@@ -26,21 +27,12 @@ public class WwKeywordIndexDescription implements IndexDescription {
 
   @Override
   public void addToFulltextIndex(Vertex vertex, GraphDatabaseService graphDatabase) {
-    final IndexManager indexManager = graphDatabase.index();
-    final Map<String, String> indexConfig = MapUtil.stringMap(IndexManager.PROVIDER, "lucene", "type", "fulltext");
-    final Index<Node> index = indexManager.forNodes("wwkeywords", indexConfig);
-    final String timId = (String) vertex.property("tim_id").value();
+    final Map<String, String> fields = Maps.newHashMap();
 
-    IndexHits<Node> hits = index.get("tim_id", timId);
-    while (hits.hasNext()) {
-      Node node = hits.next();
-      index.remove(node);
-    }
+    fields.put("displayName", (String) vertex.property("wwkeyword_value").value());
+    fields.put("type", (String) vertex.property("wwkeyword_type").value());
 
-    long id = (long) vertex.id();
-    Node neo4jNode = graphDatabase.getNodeById(id);
-    index.add(neo4jNode, "displayName", vertex.property("wwkeyword_value").value());
-    index.add(neo4jNode, "type", vertex.property("wwkeyword_type").value());
-    index.add(neo4jNode, "tim_id", timId);
+    addToFulltextIndex(vertex, graphDatabase, "wwkeywords", fields);
+
   }
 }

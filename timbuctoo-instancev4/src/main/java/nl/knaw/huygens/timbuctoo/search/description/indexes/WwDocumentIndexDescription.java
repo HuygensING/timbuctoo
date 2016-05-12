@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.search.description.indexes;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
@@ -23,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
-public class WwDocumentIndexDescription implements IndexDescription {
+public class WwDocumentIndexDescription extends AbstractFulltextIndexDescription {
 
   private static class WwDocumentSortFieldDescription implements IndexerSortFieldDescription {
     private static final String PREFIX = "wwdocument";
@@ -134,21 +135,11 @@ public class WwDocumentIndexDescription implements IndexDescription {
 
   @Override
   public void addToFulltextIndex(Vertex vertex, GraphDatabaseService graphDatabase) {
-    final IndexManager indexManager = graphDatabase.index();
-    final Map<String, String> indexConfig = MapUtil.stringMap(IndexManager.PROVIDER, "lucene", "type", "fulltext");
-    final Index<Node> index = indexManager.forNodes("wwdocuments", indexConfig);
+    final Map<String, String> fields = Maps.newHashMap();
     final String displayName = displayNameDescriptor.get(vertex);
-    final String timId = (String) vertex.property("tim_id").value();
 
-    IndexHits<Node> hits = index.get("tim_id", timId);
-    while (hits.hasNext()) {
-      Node node = hits.next();
-      index.remove(node);
-    }
+    fields.put("displayName", displayName == null ? "" : displayName);
 
-    long id = (long) vertex.id();
-    Node neo4jNode = graphDatabase.getNodeById(id);
-    index.add(neo4jNode, "displayName", displayName == null ? "" : displayName);
-    index.add(neo4jNode, "tim_id", timId);
+    addToFulltextIndex(vertex, graphDatabase, "wwdocuments", fields);
   }
 }
