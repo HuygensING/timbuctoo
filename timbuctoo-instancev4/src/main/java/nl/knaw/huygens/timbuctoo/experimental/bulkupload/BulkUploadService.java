@@ -1,9 +1,9 @@
 package nl.knaw.huygens.timbuctoo.experimental.bulkupload;
 
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.parsedworkbook.ParsedWorkbook;
-import nl.knaw.huygens.timbuctoo.experimental.bulkupload.parsedworkbook.RelationDescription;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.relationtypes.RelationTypeDescription;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
@@ -46,12 +46,12 @@ public class BulkUploadService {
 
     ParsedWorkbook workbook = ParsedWorkbook.from(wb);
     Vre vre = vres.getVre(vreName);
-    final Map<String, RelationDescription> descriptions = graphwrapper.getGraph().traversal()
+    final Map<String, RelationTypeDescription> descriptions = graphwrapper.getGraph().traversal()
       .V()
       .has("relationtype_regularName")
       .toList()
       .stream()
-      .map(RelationDescription::new)
+      .map(RelationTypeDescription::new)
       .collect(
         HashMap::new,
         (map, desc) -> {

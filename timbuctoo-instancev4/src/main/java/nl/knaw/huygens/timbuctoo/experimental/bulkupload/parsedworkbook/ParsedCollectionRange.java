@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
+import nl.knaw.huygens.timbuctoo.relationtypes.RelationTypeDescription;
 import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Name;
@@ -174,7 +175,7 @@ public class ParsedCollectionRange {
   }
 
   public boolean isValid(Vre vre, LinkedHashMap<String, ParsedCollectionRange> worksheets,
-                         Map<String, RelationDescription> relationDescriptions) {
+                         Map<String, RelationTypeDescription> relationDescriptions) {
     boolean valid = true;
     final Optional<Collection> optCollection = vre.getCollectionForCollectionName(name);
     final Set<String> collectionsWithIdentityColumn = Sets.newHashSet();

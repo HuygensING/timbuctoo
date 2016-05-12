@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.experimental.bulkupload.parsedworkbook;
 
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
+import nl.knaw.huygens.timbuctoo.relationtypes.RelationTypeDescription;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Name;
@@ -62,7 +63,7 @@ public class ParsedWorkbook {
     return vertex;
   }
 
-  public boolean saveToDb(GraphWrapper graphwrapper, Vre vre, Map<String, RelationDescription> descriptions) {
+  public boolean saveToDb(GraphWrapper graphwrapper, Vre vre, Map<String, RelationTypeDescription> descriptions) {
     boolean success = true;
     for (ParsedCollectionRange parsedCollectionRange : worksheets.values()) {
       if (!parsedCollectionRange.isValid(vre, worksheets, descriptions)) {
@@ -95,9 +96,9 @@ public class ParsedWorkbook {
   }
 
   private boolean makeEdge(SavingState state, Vertex from, Vertex to, String label, Collection collection,
-                           Map<String, RelationDescription> descriptions) {
+                           Map<String, RelationTypeDescription> descriptions) {
     state.allowCommit();
-    final RelationDescription description = descriptions.get(label);
+    final RelationTypeDescription description = descriptions.get(label);
     if (description != null) {
       if (Objects.equals(label, description.getRegularName())) {
         final String entityTypeName = collection.getEntityTypeName();

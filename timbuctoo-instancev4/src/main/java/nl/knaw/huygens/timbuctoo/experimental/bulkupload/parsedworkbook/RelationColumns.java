@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.experimental.bulkupload.parsedworkbook;
 
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
+import nl.knaw.huygens.timbuctoo.relationtypes.RelationTypeDescription;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -31,8 +32,8 @@ public class RelationColumns extends ParsedColumns {
     }
   }
 
-  public boolean isValid(Vre vre, Collection ownCollection, Map<String, RelationDescription> relationDescriptions) {
-    RelationDescription description = relationDescriptions.get(relationTypeName);
+  public boolean isValid(Vre vre, Collection ownCollection, Map<String, RelationTypeDescription> relationDescriptions) {
+    RelationTypeDescription description = relationDescriptions.get(relationTypeName);
     Optional<Collection> otherCollectionOpt = vre.getCollectionForCollectionName(targetType);
     if (description == null) {
       markError("Relationtype " + relationTypeName + " is not a known relation");
