@@ -102,7 +102,7 @@ public class FullTextIndexCheck implements DatabaseCheck {
 
             Vertex foundVertex = found.next();
             final PropertyDescriptor descriptor = displayNameDescriptors.get(type + "s");
-            if (!descriptor.get(vertex).equals(descriptor.get(foundVertex))) {
+            if (descriptor.get(vertex) != null && !descriptor.get(vertex).equals(descriptor.get(foundVertex))) {
               String message = String.format(
                       "Displayname of vertex from index does not match latest vertex with tim_id %s", timId);
               transaction.close();
