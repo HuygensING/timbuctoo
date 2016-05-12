@@ -68,31 +68,33 @@ public class CnwPersonSearchDescription extends AbstractSearchDescription {
         .withName("dynamic_sort_gender")
         .withDefaultValue(null)
         .withProperty(localProperty()
-          .withName("cnwperson_gender_sort"))
+          .withName("cnwperson_gender"))
         .build(),
       newSortFieldDescription()
         .withName("dynamic_k_birthDate")
         .withDefaultValue(0)
         .withProperty(localProperty()
-          .withName("cnwperson_birthDate_sort"))
+          .withName("cnwperson_birthDate"))
         .build(),
       newSortFieldDescription()
         .withName("dynamic_k_deathDate")
         .withDefaultValue(0)
         .withProperty(localProperty()
-          .withName("cnwperson_deathDate_sort"))
+          .withName("cnwperson_deathDate"))
         .build(),
         newSortFieldDescription()
         .withName("dynamic_sort_combineddomain")
         .withDefaultValue("")
         .withProperty(localProperty()
-          .withName("cnwperson_combineddomain"))
+          .withName("cnwperson_combineddomain")
+        .withParser(ppf.getJoinedListParser(";")))
         .build(),
         newSortFieldDescription()
         .withName("dynamic_sort_characteristic")
         .withDefaultValue("")
         .withProperty(localProperty()
-          .withName("cnwperson_characteristic"))
+          .withName("cnwperson_characteristic")
+          .withParser(ppf.getJoinedListParser(";")))
         .build(),
         newSortFieldDescription()
         .withName("dynamic_sort_networkdomain")
@@ -133,9 +135,6 @@ public class CnwPersonSearchDescription extends AbstractSearchDescription {
     dataPropertyDescriptors.put("gender", propertyDescriptorFactory.getLocal("cnwperson_gender", Gender.class));
     dataPropertyDescriptors.put("modified_date", propertyDescriptorFactory.getLocal("modified", Change.class));
     dataPropertyDescriptors.put("name", propertyDescriptorFactory.getLocal("cnwperson_names", PersonNames.class));
-    //    dataPropertyDescriptors.put("name", propertyDescriptorFactory.getComposite(
-    //      propertyDescriptorFactory.getLocal("cnwperson_names", PersonNames.class),
-    //      propertyDescriptorFactory.getLocal("cnwperson_altnames", PersonNames.class)));
     dataPropertyDescriptors
       .put("_id", propertyDescriptorFactory.getLocal("tim_id", String.class));
     return dataPropertyDescriptors;
