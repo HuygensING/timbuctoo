@@ -2,8 +2,8 @@ package nl.knaw.huygens.timbuctoo.search.description.indexes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.huygens.timbuctoo.crud.changelistener.DenormalizedSortFieldUpdater;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
+import nl.knaw.huygens.timbuctoo.crud.changelistener.DenormalizedSortFieldUpdater;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.PersonName;
 import nl.knaw.huygens.timbuctoo.model.PersonNameComponent;
@@ -13,13 +13,18 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Test;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.index.Index;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.crud.JsonCrudServiceBuilder.newJsonCrudService;
+import static nl.knaw.huygens.timbuctoo.search.description.indexes.MockIndexUtil.makeIndexMocks;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
@@ -27,6 +32,8 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public class WwPersonIndexDescriptionTest {
 
@@ -89,6 +96,37 @@ public class WwPersonIndexDescriptionTest {
     assertThat(vertex.property("modified_sort").value(), equalTo(0L));
 
   }
+
+  @Test
+  public void addToFulltextIndexCorrectlyInvokesLegacyIndexerService() {
+    final String timId = "123";
+    Graph graph = newGraph()
+            .withVertex(v -> v
+                    .withVre("ww")
+                    .withType("person")
+                    .withTimId(timId)
+                    .withProperty("wwperson_names", getPersonName("testfore", "testsur2"))
+            )
+            .build();
+
+    WwPersonIndexDescription instance = new WwPersonIndexDescription();
+    Vertex vertex = graph.traversal().V().toList().get(0);
+
+    List<Object> mocks = makeIndexMocks(vertex, timId);
+
+    GraphDatabaseService mockDatabaseService = (GraphDatabaseService) mocks.get(0);
+    Index mockIndex = (Index) mocks.get(1);
+    Node removeNode = (Node) mocks.get(2);
+    Node addNode = (Node) mocks.get(3);
+
+    instance.addToFulltextIndex(vertex, mockDatabaseService);
+
+    verify(mockIndex, times(1)).remove(removeNode);
+    verify(mockIndex, times(1)).add(addNode, "tim_id", timId);
+    verify(mockIndex, times(1)).add(addNode, "displayName", "testfore testsur2");
+  }
+
+
 
   @Test
   public void invokesIndexDescriptionAddIndexedSortPropertiesForWwPersonsOnUpdate() throws Exception {
