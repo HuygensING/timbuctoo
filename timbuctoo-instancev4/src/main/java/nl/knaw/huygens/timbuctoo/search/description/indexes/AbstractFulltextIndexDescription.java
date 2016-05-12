@@ -1,8 +1,6 @@
 package nl.knaw.huygens.timbuctoo.search.description.indexes;
 
-import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.search.description.IndexDescription;
-import nl.knaw.huygens.timbuctoo.search.description.PropertyDescriptor;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -11,7 +9,6 @@ import org.neo4j.graphdb.index.IndexHits;
 import org.neo4j.graphdb.index.IndexManager;
 import org.neo4j.helpers.collection.MapUtil;
 
-import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractFulltextIndexDescription implements IndexDescription {
@@ -21,7 +18,11 @@ public abstract class AbstractFulltextIndexDescription implements IndexDescripti
   private Index<Node> getIndex(GraphDatabaseService graphDatabase, String indexName, Map<String, String> indexConfig) {
     if (index == null) {
       final IndexManager indexManager = graphDatabase.index();
-      index = indexManager.forNodes(indexName, indexConfig);
+      if (indexConfig == null) {
+        index = indexManager.forNodes(indexName);
+      } else {
+        index = indexManager.forNodes(indexName, indexConfig);
+      }
     }
     return index;
   }
@@ -44,7 +45,7 @@ public abstract class AbstractFulltextIndexDescription implements IndexDescripti
   }
 
   protected void removeFromFulltextIndex(Vertex vertex, GraphDatabaseService graphDatabase, String indexName) {
-    final Index<Node> index = getIndex(graphDatabase, indexName, Maps.newHashMap());
+    final Index<Node> index = getIndex(graphDatabase, indexName, null);
     final String timId = (String) vertex.property("tim_id").value();
 
     IndexHits<Node> hits = index.get("tim_id", timId);
