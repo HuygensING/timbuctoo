@@ -16,9 +16,10 @@ import java.util.UUID;
 import static nl.knaw.huygens.timbuctoo.crud.JsonCrudServiceBuilder.newJsonCrudService;
 import static nl.knaw.huygens.timbuctoo.search.description.indexes.MockIndexUtil.makeIndexMocks;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
-import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -59,7 +60,7 @@ public class WwKeywordIndexDescriptionTest {
 
 
   @Test
-  public void crudServiceInvokesIndexDescriptionAddToFulltextIndexForWwPersonsOnCreate() throws Exception {
+  public void crudServiceInvokesIndexDescriptionAddToFulltextIndexForWwKeywordsOnCreate() throws Exception {
     Graph graph = newGraph().build();
 
     List<Object> mocks = makeIndexMocks();
@@ -86,7 +87,7 @@ public class WwKeywordIndexDescriptionTest {
   }
 
   @Test
-  public void crudServiceInvokesIndexDescriptionAddToFulltextIndexForWwPersonsOnUpdate() throws Exception {
+  public void crudServiceInvokesIndexDescriptionAddToFulltextIndexForWwKeywordsOnUpdate() throws Exception {
     String id = UUID.randomUUID().toString();
     Graph graph = newGraph()
             .withVertex(v -> v
@@ -130,5 +131,45 @@ public class WwKeywordIndexDescriptionTest {
     verify(mockIndex, times(1)).add(addNode, "type", "newType");
   }
 
+  @Test
+  public void crudServiceInvokesIndexDescriptionRemoveFromFulltextIndexForWwKeywordsOnDelete() throws Exception {
+    String id = UUID.randomUUID().toString();
+    Graph graph = newGraph()
+            .withVertex(v -> v
+                    .withTimId(id)
+                    .withProperty("types", "[\"keyword\", \"wwkeyword\"]")
+                    .withProperty("isLatest", true)
+                    .withProperty("rev", 1)
+                    .withProperty("wwkeyword_type", "origType")
+                    .withProperty("wwkeyword_value", "origValue")
+                    .withIncomingRelation("VERSION_OF", "orig")
+            )
+            .withVertex("orig", v -> v
+                    .withTimId(id)
+                    .withProperty("types", "[\"keyword\", \"wwkeyword\"]")
+                    .withProperty("isLatest", false)
+                    .withProperty("rev", 1)
+            )
+            .build();
+
+    Vertex origVertex = graph.traversal().V().has("tim_id", id).has("isLatest", true).next();
+    List<Object> mocks = makeIndexMocks(origVertex, id);
+
+    GraphDatabaseService mockDatabaseService = (GraphDatabaseService) mocks.get(0);
+    Index mockIndex = (Index) mocks.get(1);
+    Node removeNode = (Node) mocks.get(2);
+
+
+    TinkerpopJsonCrudService instance = newJsonCrudService()
+            .withChangeListener(new FulltextIndexChangeListener(mockDatabaseService, new IndexDescriptionFactory()))
+            .forGraph(graph);
+
+
+    instance.delete("wwkeywords", UUID.fromString(id), "");
+
+
+    verify(mockIndex, times(1)).remove(removeNode);
+    verify(mockIndex, never()).add(any(), any(), any());
+  }
 
 }

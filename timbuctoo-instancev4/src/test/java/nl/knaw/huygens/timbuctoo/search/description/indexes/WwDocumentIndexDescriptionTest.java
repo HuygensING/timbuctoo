@@ -28,7 +28,9 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -192,6 +194,46 @@ public class WwDocumentIndexDescriptionTest {
     verify(mockIndex, times(1)).remove(removeNode);
     verify(mockIndex, times(1)).add(addNode, "tim_id", id);
     verify(mockIndex, times(1)).add(addNode, "displayName", "newTitle (1234)");
+  }
+
+  @Test
+  public void crudServiceInvokesIndexDescriptionRemoveFromFulltextIndexForWwDocumentsOnDelete() throws Exception {
+    String id = UUID.randomUUID().toString();
+    Graph graph = newGraph()
+            .withVertex(v -> v
+                    .withTimId(id)
+                    .withProperty("types", "[\"document\", \"wwdocument\"]")
+                    .withProperty("isLatest", true)
+                    .withProperty("rev", 1)
+                    .withProperty("wwdocument_title", "origTitle")
+                    .withIncomingRelation("VERSION_OF", "orig")
+            )
+            .withVertex("orig", v -> v
+                    .withTimId(id)
+                    .withProperty("types", "[\"document\", \"wwdocument\"]")
+                    .withProperty("isLatest", false)
+                    .withProperty("rev", 1)
+            )
+            .build();
+
+    Vertex origVertex = graph.traversal().V().has("tim_id", id).has("isLatest", true).next();
+    List<Object> mocks = makeIndexMocks(origVertex, id);
+
+    GraphDatabaseService mockDatabaseService = (GraphDatabaseService) mocks.get(0);
+    Index mockIndex = (Index) mocks.get(1);
+    Node removeNode = (Node) mocks.get(2);
+
+
+    TinkerpopJsonCrudService instance = newJsonCrudService()
+            .withChangeListener(new FulltextIndexChangeListener(mockDatabaseService, new IndexDescriptionFactory()))
+            .forGraph(graph);
+
+
+    instance.delete("wwdocuments", UUID.fromString(id), "");
+
+
+    verify(mockIndex, times(1)).remove(removeNode);
+    verify(mockIndex, never()).add(any(), any(), any());
   }
 
 

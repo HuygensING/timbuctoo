@@ -33,6 +33,8 @@ public class MockIndexUtil {
     when(mockIndexHits.next()).thenReturn(removeNode);
     given(mockIndex.get("tim_id", timId)).willReturn(mockIndexHits);
     given(mockIndexManager.forNodes(anyString(), anyMap())).willReturn(mockIndex);
+    given(mockIndexManager.forNodes(anyString())).willReturn(mockIndex);
+
     given(mockDatabaseService.index()).willReturn(mockIndexManager);
     given(mockDatabaseService.getNodeById((long) vertex.id())).willReturn(addNode);
 
@@ -57,6 +59,7 @@ public class MockIndexUtil {
     when(mockIndexHits.next()).thenReturn(removeNode);
     given(mockIndex.get(anyString(), anyString())).willReturn(mockIndexHits);
     given(mockIndexManager.forNodes(anyString(), anyMap())).willReturn(mockIndex);
+    given(mockIndexManager.forNodes(anyString())).willReturn(mockIndex);
     given(mockDatabaseService.index()).willReturn(mockIndexManager);
     given(mockDatabaseService.getNodeById(anyLong())).willReturn(addNode);
 
