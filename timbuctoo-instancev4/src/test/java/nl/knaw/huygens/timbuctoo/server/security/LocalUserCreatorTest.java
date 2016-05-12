@@ -1,8 +1,16 @@
-package nl.knaw.huygens.timbuctoo.security;
+package nl.knaw.huygens.timbuctoo.server.security;
 
 import com.google.common.collect.Maps;
+import nl.knaw.huygens.timbuctoo.security.AuthorizationCreationException;
+import nl.knaw.huygens.timbuctoo.security.LoginCreationException;
+import nl.knaw.huygens.timbuctoo.security.LoginCreator;
+import nl.knaw.huygens.timbuctoo.security.UserCreationException;
+import nl.knaw.huygens.timbuctoo.security.UserCreator;
+import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCreator;
+import nl.knaw.huygens.timbuctoo.server.security.LocalUserCreator;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.Map;
 
@@ -63,8 +71,8 @@ public class LocalUserCreatorTest {
 
   @Test(expected = UserCreationException.class)
   public void createThrowsAUserCreationExceptionWhenTheLoginCreatorThrowsALoginCreationException() throws Exception {
-    doThrow(new LoginCreationException("")).when(loginCreator)
-                                           .createLogin(anyString(), anyString(), anyString(), anyString(), anyString(),
+    Mockito.doThrow(new LoginCreationException("")).when(loginCreator)
+           .createLogin(anyString(), anyString(), anyString(), anyString(), anyString(),
                                              anyString(),
                                              anyString());
 
@@ -82,8 +90,8 @@ public class LocalUserCreatorTest {
   @Test(expected = UserCreationException.class)
   public void createThrowsAUserCreationExceptionWhenTheAuthorizationCreatorThrowsAnAuthorizationCreationException()
     throws Exception {
-    doThrow(new AuthorizationCreationException("")).when(authorizationCreator)
-                                                   .createAuthorization(anyString(), anyString(), anyString());
+    Mockito.doThrow(new AuthorizationCreationException("")).when(authorizationCreator)
+           .createAuthorization(anyString(), anyString(), anyString());
 
     instance.create(userInfo);
   }
