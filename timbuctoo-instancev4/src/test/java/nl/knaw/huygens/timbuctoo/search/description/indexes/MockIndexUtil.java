@@ -12,6 +12,7 @@ import org.neo4j.graphdb.index.IndexManager;
 import java.util.List;
 
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -34,6 +35,30 @@ public class MockIndexUtil {
     given(mockIndexManager.forNodes(anyString(), anyMap())).willReturn(mockIndex);
     given(mockDatabaseService.index()).willReturn(mockIndexManager);
     given(mockDatabaseService.getNodeById((long) vertex.id())).willReturn(addNode);
+
+    return Lists.newArrayList(
+            mockDatabaseService,
+            mockIndex,
+            removeNode,
+            addNode
+    );
+  }
+
+  public static List<Object> makeIndexMocks() {
+    IndexManager mockIndexManager = mock(IndexManager.class);
+    IndexHits mockIndexHits = mock(IndexHits.class);
+
+    GraphDatabaseService mockDatabaseService = mock(GraphDatabaseService.class);
+    Index mockIndex = mock(Index.class);
+    Node removeNode = mock(Node.class);
+    Node addNode = mock(Node.class);
+
+    when(mockIndexHits.hasNext()).thenReturn(true).thenReturn(false);
+    when(mockIndexHits.next()).thenReturn(removeNode);
+    given(mockIndex.get(anyString(), anyString())).willReturn(mockIndexHits);
+    given(mockIndexManager.forNodes(anyString(), anyMap())).willReturn(mockIndex);
+    given(mockDatabaseService.index()).willReturn(mockIndexManager);
+    given(mockDatabaseService.getNodeById(anyLong())).willReturn(addNode);
 
     return Lists.newArrayList(
             mockDatabaseService,

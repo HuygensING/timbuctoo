@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.DenormalizedSortFieldUpdater;
+import nl.knaw.huygens.timbuctoo.crud.changelistener.FulltextIndexChangeListener;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -27,6 +28,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -119,6 +121,77 @@ public class WwDocumentIndexDescriptionTest {
     verify(mockIndex, times(1)).remove(removeNode);
     verify(mockIndex, times(1)).add(addNode, "tim_id", timId);
     verify(mockIndex, times(1)).add(addNode, "displayName", "Title (1234)");
+  }
+
+  @Test
+  public void crudServiceInvokesIndexDescriptionAddToFulltextIndexForWwDocumentsOnCreate() throws Exception {
+    Graph graph = newGraph().build();
+
+    List<Object> mocks = makeIndexMocks();
+
+    GraphDatabaseService mockDatabaseService = (GraphDatabaseService) mocks.get(0);
+    Index mockIndex = (Index) mocks.get(1);
+    Node addNode = (Node) mocks.get(3);
+
+
+    TinkerpopJsonCrudService instance = newJsonCrudService()
+            .withChangeListener(new FulltextIndexChangeListener(mockDatabaseService, new IndexDescriptionFactory()))
+            .forGraph(graph);
+
+    instance.create("wwdocuments", jsnO(
+            "title", jsn("Title"),
+            "date", jsn("1234")
+    ), "");
+    Vertex vertex = graph.vertices().next();
+
+
+    verify(mockIndex, times(1)).add(addNode, "tim_id", vertex.property("tim_id").value());
+    verify(mockIndex, times(1)).add(addNode, "displayName", "Title (1234)");
+  }
+
+
+  @Test
+  public void crudServiceInvokesIndexDescriptionAddToFulltextIndexForWwDocumentsOnUpdate() throws Exception {
+    String id = UUID.randomUUID().toString();
+    Graph graph = newGraph()
+            .withVertex(v -> v
+                    .withTimId(id)
+                    .withProperty("types", "[\"wwdocument\"]")
+                    .withProperty("isLatest", true)
+                    .withProperty("rev", 1)
+                    .withProperty("wwdocument_title", "origTitle")
+                    .withProperty("wwdocument_date", "2013")
+                    .withIncomingRelation("VERSION_OF", "orig")
+            )
+            .withVertex("orig", v -> v
+                    .withTimId(id)
+                    .withProperty("isLatest", false)
+                    .withProperty("rev", 1)
+            )
+            .build();
+    Vertex origVertex = graph.traversal().V().has("tim_id", id).has("isLatest", true).next();
+    List<Object> mocks = makeIndexMocks(origVertex, id);
+
+    GraphDatabaseService mockDatabaseService = (GraphDatabaseService) mocks.get(0);
+    Index mockIndex = (Index) mocks.get(1);
+    Node removeNode = (Node) mocks.get(2);
+    Node addNode = (Node) mocks.get(3);
+
+
+    TinkerpopJsonCrudService instance = newJsonCrudService()
+            .withChangeListener(new FulltextIndexChangeListener(mockDatabaseService, new IndexDescriptionFactory()))
+            .forGraph(graph);
+
+    instance.replace("wwdocuments", UUID.fromString(id),
+            jsnO(
+                    "^rev", jsn(1),
+                    "title", jsn("newTitle"),
+                    "date", jsn("1234")
+            ), "");
+
+    verify(mockIndex, times(1)).remove(removeNode);
+    verify(mockIndex, times(1)).add(addNode, "tim_id", id);
+    verify(mockIndex, times(1)).add(addNode, "displayName", "newTitle (1234)");
   }
 
 

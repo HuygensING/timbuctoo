@@ -16,6 +16,7 @@ import java.net.URI;
 import java.time.Clock;
 
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
+import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.personNames;
 import static nl.knaw.huygens.timbuctoo.util.AuthorizerHelper.anyUserIsAllowedToWriteAnyCollectionAuthorizer;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.mockito.Mockito.mock;
@@ -38,9 +39,14 @@ public class JsonCrudServiceBuilder {
   private JsonCrudServiceBuilder() {
     vres = new Vres.Builder()
       .withVre("WomenWriters", "ww", vre -> vre
-        .withCollection("wwdocuments")
+        .withCollection("wwdocuments", c -> c
+          .withProperty("title", localProperty("wwdocument_title"))
+          .withProperty("date", localProperty("wwdocument_date"))
+        )
         .withCollection("wwkeywords", c -> c
           .withDisplayName(PropertyTypes.localProperty("displayName"))
+          .withProperty("value", localProperty("wwkeyword_value"))
+          .withProperty("type", localProperty("wwkeyword_type"))
         )
         .withCollection("wwrelations", CollectionBuilder::isRelationCollection)
         .withCollection("wwlanguages", c -> c
@@ -59,6 +65,7 @@ public class JsonCrudServiceBuilder {
         )
         .withCollection("wwpersons", c -> c
           .withProperty("name", localProperty("wwperson_name"))
+          .withProperty("names", localProperty("wwperson_names", personNames))
           .withDisplayName(PropertyTypes.localProperty("displayName"))
         )
       )

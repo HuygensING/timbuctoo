@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.DenormalizedSortFieldUpdater;
+import nl.knaw.huygens.timbuctoo.crud.changelistener.FulltextIndexChangeListener;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.PersonName;
 import nl.knaw.huygens.timbuctoo.model.PersonNameComponent;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 import static nl.knaw.huygens.timbuctoo.crud.JsonCrudServiceBuilder.newJsonCrudService;
 import static nl.knaw.huygens.timbuctoo.search.description.indexes.MockIndexUtil.makeIndexMocks;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -129,6 +131,78 @@ public class WwPersonIndexDescriptionTest {
 
 
   @Test
+  public void crudServiceInvokesIndexDescriptionAddToFulltextIndexForWwPersonsOnCreate() throws Exception {
+    Graph graph = newGraph().build();
+
+    List<Object> mocks = makeIndexMocks();
+
+    GraphDatabaseService mockDatabaseService = (GraphDatabaseService) mocks.get(0);
+    Index mockIndex = (Index) mocks.get(1);
+    Node addNode = (Node) mocks.get(3);
+
+
+    TinkerpopJsonCrudService instance = newJsonCrudService()
+            .withChangeListener(new FulltextIndexChangeListener(mockDatabaseService, new IndexDescriptionFactory()))
+            .forGraph(graph);
+
+    instance.create("wwpersons", jsnO(
+            "names", jsnA(jsnO("components", jsnA(jsnO("type", jsn("FORENAME"), "value", jsn("testing")))))
+    ), "");
+    Vertex vertex = graph.vertices().next();
+
+
+    verify(mockIndex, times(1)).add(addNode, "tim_id", vertex.property("tim_id").value());
+    verify(mockIndex, times(1)).add(addNode, "displayName", "testing");
+  }
+
+
+
+  @Test
+  public void crudServiceInvokesIndexDescriptionAddToFulltextIndexForWwPersonsOnUpdate() throws Exception {
+    String id = UUID.randomUUID().toString();
+    Graph graph = newGraph()
+            .withVertex(v -> v
+                    .withTimId(id)
+                    .withProperty("types", "[\"person\", \"wwperson\"]")
+                    .withProperty("isLatest", true)
+                    .withProperty("rev", 1)
+                    .withProperty("wwperson_names", getPersonName("testfore", "testsur2"))
+                    .withIncomingRelation("VERSION_OF", "orig")
+            )
+            .withVertex("orig", v -> v
+                    .withTimId(id)
+                    .withProperty("isLatest", false)
+                    .withProperty("rev", 1)
+            )
+            .build();
+    Vertex origVertex = graph.traversal().V().has("tim_id", id).has("isLatest", true).next();
+    List<Object> mocks = makeIndexMocks(origVertex, id);
+
+    GraphDatabaseService mockDatabaseService = (GraphDatabaseService) mocks.get(0);
+    Index mockIndex = (Index) mocks.get(1);
+    Node removeNode = (Node) mocks.get(2);
+    Node addNode = (Node) mocks.get(3);
+
+
+    TinkerpopJsonCrudService instance = newJsonCrudService()
+            .withChangeListener(new FulltextIndexChangeListener(mockDatabaseService, new IndexDescriptionFactory()))
+            .forGraph(graph);
+
+    instance.replace("wwpersons", UUID.fromString(id),
+            jsnO(
+                    "^rev", jsn(1),
+                    "names", jsnA(jsnO("components", jsnA(jsnO("type", jsn("FORENAME"), "value", jsn("testing")))))
+            ), "");
+
+    verify(mockIndex, times(1)).remove(removeNode);
+    verify(mockIndex, times(1)).add(addNode, "tim_id", id);
+    verify(mockIndex, times(1)).add(addNode, "displayName", "testing");
+  }
+
+
+
+
+  @Test
   public void crudServiceInvokesIndexDescriptionAddIndexedSortPropertiesForWwPersonsOnUpdate() throws Exception {
     String id = UUID.randomUUID().toString();
     Graph graph = newGraph()
@@ -191,6 +265,7 @@ public class WwPersonIndexDescriptionTest {
 
     return "{\"list\": [" + nameProp + "]}";
   }
+
 
 
   private String getChange(long timeStamp) {

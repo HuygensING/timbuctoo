@@ -42,9 +42,8 @@ public class FulltextIndexChangeListener implements ChangeListener {
 
     if (typesToRemoveFromIndex.size() > 0) {
       handleRemove(oldVertex.get(), Lists.newArrayList(typesToRemoveFromIndex));
-    } else {
-      handleChange(newVertex);
     }
+    handleChange(newVertex);
   }
 
   private void handleChange(Vertex vertex) {
