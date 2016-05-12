@@ -114,8 +114,14 @@ public class CnwPersonSearchDescription extends AbstractSearchDescription {
       facetDescriptionFactory.createDatableRangeFacetDescription("dynamic_i_birthYear", "cnwperson_birthYear"),
       facetDescriptionFactory.createDatableRangeFacetDescription("dynamic_i_deathYear", "cnwperson_deathYear"),
       facetDescriptionFactory.createMultiValueListFacetDescription("dynamic_s_altname", "cnwperson_altname"),
+      facetDescriptionFactory.createJoinedListFacetDescription("dynamic_s_periodical", "cnwperson_periodicals", " "),
+      facetDescriptionFactory.createJoinedListFacetDescription("dynamic_s_membership", "cnwperson_memberships", " "),
       facetDescriptionFactory.createJoinedListFacetDescription("dynamic_s_networkdomain",
-          "cnwperson_networkdomain", " en ")
+          "cnwperson_networkdomain", " en "),
+      facetDescriptionFactory.createJoinedListFacetDescription("dynamic_s_combineddomain",
+          "cnwperson_combineddomains", ";"),
+      facetDescriptionFactory.createJoinedListFacetDescription("dynamic_s_characteristic",
+          "cnwperson_characteristics", ";")
       );
   }
 
