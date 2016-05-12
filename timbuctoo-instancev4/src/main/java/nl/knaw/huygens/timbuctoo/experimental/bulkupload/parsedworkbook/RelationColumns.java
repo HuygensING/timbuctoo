@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 
-public class RelationColumns extends Columns {
+public class RelationColumns extends ParsedColumns {
 
   private final String relationTypeName;
   private final String targetType;
@@ -69,7 +69,7 @@ public class RelationColumns extends Columns {
   }
 
   public void applyData(Vertex rowVertex, int index, BiFunction<String, String, Optional<Vertex>> findTargetVertex,
-                        CollectionRange.EdgeProducer edgeProducer) {
+                        ParsedCollectionRange.EdgeProducer edgeProducer) {
     Cell cell = items.get(index);
     final Optional<String> value;
     try {

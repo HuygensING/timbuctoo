@@ -8,8 +8,8 @@ import org.apache.poi.ss.util.CellReference;
 import java.io.IOException;
 import java.util.Optional;
 
-public class Columns {
-  static Optional<Columns> factory(int headerRow, int minRow, int maxRow, Sheet sheet, int column) {
+public class ParsedColumns {
+  static Optional<ParsedColumns> factory(int headerRow, int minRow, int maxRow, Sheet sheet, int column) {
     Row header = sheet.getRow(headerRow);
     final Cell headerCell = header.getCell(column);
 

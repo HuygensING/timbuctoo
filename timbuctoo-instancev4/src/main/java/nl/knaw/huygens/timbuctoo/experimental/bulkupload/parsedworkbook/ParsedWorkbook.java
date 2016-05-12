@@ -22,7 +22,7 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 
 public class ParsedWorkbook {
 
-  public LinkedHashMap<String, CollectionRange> worksheets = new LinkedHashMap<>();
+  public LinkedHashMap<String, ParsedCollectionRange> worksheets = new LinkedHashMap<>();
 
   public static ParsedWorkbook from(Workbook wb) {
 
@@ -32,7 +32,7 @@ public class ParsedWorkbook {
     final int numberOfNames = wb.getNumberOfNames();
     for (int i = 0; i < numberOfNames; i++) {
       Name range = wb.getNameAt(i);
-      CollectionRange.from(range, wb)
+      ParsedCollectionRange.from(range, wb)
         .ifPresent(sheet -> result.worksheets.put(sheet.getName(), sheet));
     }
     return result;
@@ -64,14 +64,14 @@ public class ParsedWorkbook {
 
   public boolean saveToDb(GraphWrapper graphwrapper, Vre vre, Map<String, RelationDescription> descriptions) {
     boolean success = true;
-    for (CollectionRange collectionRange : worksheets.values()) {
-      if (!collectionRange.isValid(vre, worksheets, descriptions)) {
+    for (ParsedCollectionRange parsedCollectionRange : worksheets.values()) {
+      if (!parsedCollectionRange.isValid(vre, worksheets, descriptions)) {
         success = false;
       }
     }
 
     try (SavingState state = new SavingState(graphwrapper)) {
-      for (CollectionRange sheet : worksheets.values()) {
+      for (ParsedCollectionRange sheet : worksheets.values()) {
         final Optional<Collection> collectionOpt = vre.getCollectionForCollectionName(sheet.getName());
         if (collectionOpt.isPresent()) {
           final Collection collection = collectionOpt.get();
@@ -79,7 +79,7 @@ public class ParsedWorkbook {
         }
       }
       //Second iteration this time for the relations
-      for (CollectionRange sheet : worksheets.values()) {
+      for (ParsedCollectionRange sheet : worksheets.values()) {
         final Optional<Collection> collectionOpt = vre.getCollectionForCollectionName(sheet.getName());
         if (collectionOpt.isPresent()) {
           final Collection collection = collectionOpt.get();

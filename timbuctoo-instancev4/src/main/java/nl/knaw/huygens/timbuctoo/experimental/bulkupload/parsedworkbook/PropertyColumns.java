@@ -24,7 +24,7 @@ import java.util.Set;
 
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 
-public class PropertyColumns extends Columns {
+public class PropertyColumns extends ParsedColumns {
   public final List<LinkedHashMap<String, Object>> cellsPerRow = new ArrayList<>();
   private final Cell captionCell;
   private List<Cell> items = new ArrayList<>();

@@ -24,25 +24,23 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-
-//FIXME: rename to collectionrange
-public class CollectionRange {
+public class ParsedCollectionRange {
   private static final String TIMBUCTOO_SUFFIX = "_data";
   public final LinkedHashMap<String, PropertyColumns> properties = new LinkedHashMap<>();
   public final LinkedHashMap<String, RelationColumns> relations = new LinkedHashMap<>();
   private final String name;
 
-  CollectionRange(String name) {
+  ParsedCollectionRange(String name) {
     this.name = name;
   }
 
-  static Optional<CollectionRange> from(Name range, Workbook wb) {
+  static Optional<ParsedCollectionRange> from(Name range, Workbook wb) {
     final String rangeName = range.getNameName();
 
     //if the range ends with TIMBUCTOO_SUFFIX we assume its meant for us
     if (rangeName.endsWith(TIMBUCTOO_SUFFIX)) {
       final String nameWithoutSuffix = rangeName.substring(0, rangeName.length() - TIMBUCTOO_SUFFIX.length());
-      final CollectionRange collectionRange = new CollectionRange(nameWithoutSuffix);
+      final ParsedCollectionRange parsedCollectionRange = new ParsedCollectionRange(nameWithoutSuffix);
 
 
       AreaReference aref;
@@ -82,25 +80,25 @@ public class CollectionRange {
       }
 
       for (int column = minCol; column <= maxCol; column++) {
-        Columns.factory(minRow, minRow + 1, maxRow, sheet, column).ifPresent(columns -> {
+        ParsedColumns.factory(minRow, minRow + 1, maxRow, sheet, column).ifPresent(columns -> {
           if (columns instanceof PropertyColumns) {
             PropertyColumns pc = (PropertyColumns) columns;
-            if (collectionRange.properties.containsKey(pc.getName())) {
+            if (parsedCollectionRange.properties.containsKey(pc.getName())) {
               pc.markError("This property was already defined earlier");
             } else {
-              collectionRange.properties.put(pc.getName(), pc);
+              parsedCollectionRange.properties.put(pc.getName(), pc);
             }
           } else {
             RelationColumns rc = (RelationColumns) columns;
-            if (collectionRange.relations.containsKey(rc.getRelationTypeName())) {
+            if (parsedCollectionRange.relations.containsKey(rc.getRelationTypeName())) {
               rc.markError("This relation is already defined earlier");
             } else {
-              collectionRange.relations.put(rc.getRelationTypeName(), rc);
+              parsedCollectionRange.relations.put(rc.getRelationTypeName(), rc);
             }
           }
         });
       }
-      return Optional.of(collectionRange);
+      return Optional.of(parsedCollectionRange);
     } else {
       return Optional.empty();
     }
@@ -175,7 +173,7 @@ public class CollectionRange {
     return name;
   }
 
-  public boolean isValid(Vre vre, LinkedHashMap<String, CollectionRange> worksheets,
+  public boolean isValid(Vre vre, LinkedHashMap<String, ParsedCollectionRange> worksheets,
                          Map<String, RelationDescription> relationDescriptions) {
     boolean valid = true;
     final Optional<Collection> optCollection = vre.getCollectionForCollectionName(name);
