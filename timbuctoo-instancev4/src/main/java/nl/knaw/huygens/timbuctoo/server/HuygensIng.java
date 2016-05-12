@@ -450,6 +450,26 @@ public class HuygensIng {
       )
       .withCollection("emrelations", CollectionBuilder::isRelationCollection)
     )
+    .withVre("CharterPortaal", "charter", vre -> vre
+        .withCollection("chartercollectives", c -> c
+            .withDisplayName(localProperty("chartercollective_name"))
+            .withProperty("name", localProperty("chartercollective_name"))
+            .withProperty("type", localProperty("chartercollective_type", stringToUnencodedStringOf(
+              "ARCHIVE"
+            )))
+            .withProperty("links", localProperty("chartercollective_links", hyperlinks))
+          )
+          .withCollection("charterdocuments", c -> c
+            .withDisplayName(localProperty("charterdocument_title"))
+            .withProperty("title", localProperty("charterdocument_title"))
+            .withProperty("englishTitle", localProperty("charterdocument_englishTitle"))
+            .withProperty("documentType", localProperty("charterdocument_documentType", stringToEncodedStringOf(
+                    DOCUMENT_TYPES
+            )))
+            .withProperty("date", localProperty("charterdocument_date", datable))
+          )
+          .withCollection("charterrelations", CollectionBuilder::isRelationCollection)
+      )
     .build();
 
 }
