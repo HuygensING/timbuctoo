@@ -51,6 +51,7 @@ public class JsonCrudServiceBuilder {
         .withCollection("wwrelations", CollectionBuilder::isRelationCollection)
         .withCollection("wwlanguages", c -> c
           .withDisplayName(localProperty("wwlanguage_name"))
+          .withProperty("name", localProperty("wwlanguage_name"))
         )
         .withCollection("wwderivedrelations", c -> c
           .withDerivedRelation("hasPersonLanguage", () -> {

@@ -49,6 +49,7 @@ public class AutocompleteService {
             propertyDescriptorFactory.getLocal("wwperson_names", PersonNames.class),
             propertyDescriptorFactory.getLocal("wwperson_tempName", TempName.class)));
     displayNameDescriptors.put("wwkeywords", propertyDescriptorFactory.getLocal("wwkeyword_value", String.class));
+    displayNameDescriptors.put("wwlanguages", propertyDescriptorFactory.getLocal("wwlanguage_name", String.class));
   }
 
   public JsonNode search(String collectionName, Optional<String> query, Optional<String> type)

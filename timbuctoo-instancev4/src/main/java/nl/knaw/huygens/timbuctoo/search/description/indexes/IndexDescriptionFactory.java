@@ -15,6 +15,8 @@ public class IndexDescriptionFactory {
       return new WwDocumentIndexDescription();
     } else if (type.equals("wwkeyword")) {
       return new WwKeywordIndexDescription();
+    } else if (type.equals("wwlanguage")) {
+      return new WwLanguageIndexDescription();
     }
     return null;
   }
