@@ -39,4 +39,8 @@ public class PropertyParserFactory {
 
     throw new UnparsableTypeException("Type " + type + " is not supported");
   }
+
+  public PropertyParser getJoinedListParser(String seperator) {
+    return new StringListParser(seperator);
+  }
 }

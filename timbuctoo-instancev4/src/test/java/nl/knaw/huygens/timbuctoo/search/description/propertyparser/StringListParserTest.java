@@ -31,4 +31,14 @@ public class StringListParserTest {
     assertThat(value, is(nullValue()));
   }
 
+  @Test
+  public void parseConcatenatesTheValuesOfTheListWithAEn() {
+    String input = "[\"value1\", \"value2\"]";
+    String expectedValue = "value1 en value2";
+    StringListParser instance = new StringListParser(" en ");
+
+    String value = instance.parse(input);
+
+    assertThat(value, is(equalTo(expectedValue)));
+  }
 }

@@ -12,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.facet.FacetDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
+import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 import nl.knaw.huygens.timbuctoo.search.description.sort.SortDescription;
 import nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription;
 
@@ -61,6 +62,7 @@ public class CnwPersonSearchDescription extends AbstractSearchDescription {
   }
 
   protected ArrayList<SortFieldDescription> createSortFieldDescriptions() {
+    PropertyParserFactory ppf = new PropertyParserFactory();
     return Lists.newArrayList(
       newSortFieldDescription()
         .withName("dynamic_sort_gender")
@@ -84,19 +86,20 @@ public class CnwPersonSearchDescription extends AbstractSearchDescription {
         .withName("dynamic_sort_combineddomain")
         .withDefaultValue("")
         .withProperty(localProperty()
-          .withName("cnwperson_combineddomain_sort"))
+          .withName("cnwperson_combineddomain"))
         .build(),
         newSortFieldDescription()
         .withName("dynamic_sort_characteristic")
         .withDefaultValue("")
         .withProperty(localProperty()
-          .withName("cnwperson_characteristic_sort"))
+          .withName("cnwperson_characteristic"))
         .build(),
         newSortFieldDescription()
         .withName("dynamic_sort_networkdomain")
         .withDefaultValue("")
         .withProperty(localProperty()
-          .withName("cnwperson_networkdomain_sort"))
+          .withName("cnwperson_networkdomain")
+        .withParser(ppf.getJoinedListParser(" en ")))
         .build());
   }
 
@@ -107,9 +110,13 @@ public class CnwPersonSearchDescription extends AbstractSearchDescription {
   private List<FacetDescription> createFacetDescriptions(FacetDescriptionFactory facetDescriptionFactory) {
     return Lists.newArrayList(
       facetDescriptionFactory.createListFacetDescription("dynamic_s_gender", Gender.class, "cnwperson_gender"),
+      facetDescriptionFactory.createListFacetDescription("dynamic_s_koppelnaam", String.class, "cnwperson_koppelnaam"),
       facetDescriptionFactory.createDatableRangeFacetDescription("dynamic_i_birthYear", "cnwperson_birthYear"),
       facetDescriptionFactory.createDatableRangeFacetDescription("dynamic_i_deathYear", "cnwperson_deathYear"),
-      facetDescriptionFactory.createMultiValueListFacetDescription("dynamic_s_altname", "cnwperson_altname"));
+      facetDescriptionFactory.createMultiValueListFacetDescription("dynamic_s_altname", "cnwperson_altname"),
+      facetDescriptionFactory.createJoinedListFacetDescription("dynamic_s_networkdomain",
+          "cnwperson_networkdomain", " en ")
+      );
   }
 
   private Map<String, PropertyDescriptor> createDataPropertyDescriptions(

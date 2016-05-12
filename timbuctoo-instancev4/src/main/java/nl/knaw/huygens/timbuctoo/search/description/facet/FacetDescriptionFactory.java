@@ -93,4 +93,8 @@ public class FacetDescriptionFactory {
                                                                              String endYear) {
     return new DutchCaribbeanArchiveAndArchiverPeriodFacetDescription(facetName, startYear, endYear);
   }
+
+  public FacetDescription createJoinedListFacetDescription(String facetName, String propertyName, String separator) {
+    return new ListFacetDescription(facetName, propertyName, parserFactory.getJoinedListParser(separator));
+  }
 }
