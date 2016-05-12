@@ -147,4 +147,9 @@ class WwPersonIndexDescription extends AbstractFulltextIndexDescription {
     addToFulltextIndex(vertex, graphDatabase, "wwpersons", fields);
   }
 
+  @Override
+  public void removeFromFulltextIndex(Vertex vertex, GraphDatabaseService graphDatabase) {
+    removeFromFulltextIndex(vertex, graphDatabase, "wwpersons");
+  }
+
 }

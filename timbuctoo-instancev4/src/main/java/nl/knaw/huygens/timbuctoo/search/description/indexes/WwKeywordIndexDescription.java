@@ -35,4 +35,9 @@ public class WwKeywordIndexDescription extends AbstractFulltextIndexDescription 
     addToFulltextIndex(vertex, graphDatabase, "wwkeywords", fields);
 
   }
+
+  @Override
+  public void removeFromFulltextIndex(Vertex vertex, GraphDatabaseService graphDatabase) {
+    removeFromFulltextIndex(vertex, graphDatabase, "wwkeywords");
+  }
 }

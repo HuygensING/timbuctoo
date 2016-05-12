@@ -14,4 +14,6 @@ public interface IndexDescription {
   void addIndexedSortProperties(Vertex vertex);
 
   void addToFulltextIndex(Vertex vertex, GraphDatabaseService graphDatabase);
+
+  void removeFromFulltextIndex(Vertex vertex, GraphDatabaseService graphDatabase);
 }

@@ -142,4 +142,9 @@ public class WwDocumentIndexDescription extends AbstractFulltextIndexDescription
 
     addToFulltextIndex(vertex, graphDatabase, "wwdocuments", fields);
   }
+
+  @Override
+  public void removeFromFulltextIndex(Vertex vertex, GraphDatabaseService graphDatabase) {
+    removeFromFulltextIndex(vertex, graphDatabase, "wwdocuments");
+  }
 }
