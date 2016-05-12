@@ -16,6 +16,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.index.Index;
+import org.neo4j.graphdb.index.IndexHits;
 import org.neo4j.graphdb.index.IndexManager;
 import org.neo4j.helpers.collection.MapUtil;
 
@@ -141,11 +142,18 @@ class WwPersonIndexDescription implements IndexDescription {
     final Map<String, String> indexConfig = MapUtil.stringMap(IndexManager.PROVIDER, "lucene", "type", "fulltext");
     final Index<Node> index = indexManager.forNodes("wwpersons", indexConfig);
     final String displayName = displayNameDescriptor.get(vertex);
+    final String timId = (String) vertex.property("tim_id").value();
+
+    IndexHits<Node> hits = index.get("tim_id", timId);
+    while (hits.hasNext()) {
+      Node node = hits.next();
+      index.remove(node);
+    }
 
     long id = (long) vertex.id();
     Node neo4jNode = graphDatabase.getNodeById(id);
     index.add(neo4jNode, "displayName", displayName == null ? "" : displayName);
-    index.add(neo4jNode, "tim_id", vertex.property("tim_id").value());
+    index.add(neo4jNode, "tim_id", timId);
   }
 
 }
