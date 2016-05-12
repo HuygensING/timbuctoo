@@ -140,7 +140,7 @@ public class WwDocumentIndexDescriptionTest {
   }
 
   @Test
-  public void crudServiceIndexDescriptionAddIndexedSortPropertiesForWwDocumentsOnUpdate() throws Exception {
+  public void crudServiceInvokesIndexDescriptionAddIndexedSortPropertiesForWwDocumentsOnUpdate() throws Exception {
     String id = UUID.randomUUID().toString();
     Graph graph = newGraph()
             .withVertex(v -> v
