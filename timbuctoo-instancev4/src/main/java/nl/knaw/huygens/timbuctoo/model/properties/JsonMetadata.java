@@ -123,7 +123,7 @@ public class JsonMetadata {
         String timId = getProp(v, "tim_id", String.class).orElse("<unknown>");
         Optional<String> regularName = getProp(v, "relationtype_regularName", String.class);
         Optional<String> inverseName = getProp(v, "relationtype_inverseName", String.class);
-        Optional<String> abstractTargetType = getProp(v, "relationtype_targetTypeName", String.class);
+        Optional<String> abstractTargetType = getProp(v, "relationtype_sourceTypeName", String.class);
         Optional<String> targetType = abstractTargetType
           .flatMap(typeName -> vre.getImplementerOf(typeName).map(Collection::getCollectionName));
 
