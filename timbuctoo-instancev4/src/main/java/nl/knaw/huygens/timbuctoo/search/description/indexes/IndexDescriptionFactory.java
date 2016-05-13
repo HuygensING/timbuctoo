@@ -19,6 +19,8 @@ public class IndexDescriptionFactory {
       return new WwLanguageIndexDescription();
     } else if (type.equals("wwlocation")) {
       return new WwLocationIndexDescription();
+    } else if (type.equals("wwcollective")) {
+      return new WwCollectiveIndexDescription();
     }
     return null;
   }
