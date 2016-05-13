@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.search.description.indexes;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.search.description.IndexDescription;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.neo4j.graphdb.GraphDatabaseService;
 

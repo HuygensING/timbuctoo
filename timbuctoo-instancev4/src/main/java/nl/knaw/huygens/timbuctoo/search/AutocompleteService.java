@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
+import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.model.TempName;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyDescriptor;
@@ -18,6 +19,7 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
+import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.Map;
@@ -31,6 +33,8 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
 public class AutocompleteService {
+
+  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(AutocompleteService.class);
 
   private final TinkerpopGraphManager graphManager;
   private final Map<String, PropertyDescriptor> displayNameDescriptors;
@@ -50,6 +54,7 @@ public class AutocompleteService {
             propertyDescriptorFactory.getLocal("wwperson_tempName", TempName.class)));
     displayNameDescriptors.put("wwkeywords", propertyDescriptorFactory.getLocal("wwkeyword_value", String.class));
     displayNameDescriptors.put("wwlanguages", propertyDescriptorFactory.getLocal("wwlanguage_name", String.class));
+    displayNameDescriptors.put("wwlocations", propertyDescriptorFactory.getLocal("names", LocationNames.class));
   }
 
   public JsonNode search(String collectionName, Optional<String> query, Optional<String> type)
@@ -71,15 +76,12 @@ public class AutocompleteService {
     }
 
     final Index<Node> index = graphDatabase.index().forNodes(collectionName);
-    String parsedQuery = query.isPresent() ? query.get() : "*";
-    IndexHits<Node> hits;
-    if (type.isPresent()) {
-      hits = index.query(String.format("displayName:%s AND type:%s", parsedQuery, type.get()));
-    } else {
-      hits = index.query("displayName", parsedQuery);
-    }
+    final String parsedQuery = parseQuery(query);
+
+    IndexHits<Node> hits = index.query("displayName", parsedQuery);
 
     List<ObjectNode> results = StreamSupport.stream(hits.spliterator(), false)
+      .filter(hit -> !(type.isPresent() && !type.get().equals(hit.getProperty("keyword_type"))))
       .map(hit -> {
         Vertex vertex = graphManager.getGraph().traversal().V(hit.getId()).next();
         String timId = (String) vertex.property("tim_id").value();
@@ -95,5 +97,15 @@ public class AutocompleteService {
     hits.close();
     transaction.close();
     return jsnA(results.stream());
+  }
+
+  private String parseQuery(Optional<String> queryParam) {
+    if (!queryParam.isPresent()) {
+      return "*";
+    }
+
+    return queryParam.get()
+            .replaceAll("^\\*", "")
+            .replaceAll("\\s", " AND ");
   }
 }
