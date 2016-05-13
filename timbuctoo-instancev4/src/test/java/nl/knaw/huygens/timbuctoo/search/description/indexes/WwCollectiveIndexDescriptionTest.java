@@ -23,7 +23,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-public class WwLanguageIndexDescriptionTest {
+public class WwCollectiveIndexDescriptionTest {
 
 
   @Test
@@ -33,13 +33,13 @@ public class WwLanguageIndexDescriptionTest {
     Graph graph = newGraph()
             .withVertex(v -> v
                     .withVre("ww")
-                    .withType("language")
+                    .withType("collective")
                     .withTimId(timId)
-                    .withProperty("wwlanguage_name", testValue)
+                    .withProperty("wwcollective_name", testValue)
             )
             .build();
 
-    WwLanguageIndexDescription instance = new WwLanguageIndexDescription();
+    WwCollectiveIndexDescription instance = new WwCollectiveIndexDescription();
     Vertex vertex = graph.traversal().V().toList().get(0);
 
     List<Object> mocks = makeIndexMocks(vertex, timId);
@@ -58,7 +58,7 @@ public class WwLanguageIndexDescriptionTest {
 
 
   @Test
-  public void crudServiceInvokesIndexDescriptionAddToFulltextIndexForWwLanguagesOnCreate() throws Exception {
+  public void crudServiceInvokesIndexDescriptionAddToFulltextIndexForWwCollectivesOnCreate() throws Exception {
     Graph graph = newGraph().build();
 
     List<Object> mocks = makeIndexMocks();
@@ -72,7 +72,7 @@ public class WwLanguageIndexDescriptionTest {
             .withChangeListener(new FulltextIndexChangeListener(mockDatabaseService, new IndexDescriptionFactory()))
             .forGraph(graph);
 
-    instance.create("wwlanguages", jsnO(
+    instance.create("wwcollectives", jsnO(
             "name", jsn("testValue")
     ), "");
     Vertex vertex = graph.vertices().next();
@@ -83,15 +83,15 @@ public class WwLanguageIndexDescriptionTest {
   }
 
   @Test
-  public void crudServiceInvokesIndexDescriptionAddToFulltextIndexForWwLanguagesOnUpdate() throws Exception {
+  public void crudServiceInvokesIndexDescriptionAddToFulltextIndexForWwCollectivesOnUpdate() throws Exception {
     String id = UUID.randomUUID().toString();
     Graph graph = newGraph()
             .withVertex(v -> v
                     .withTimId(id)
-                    .withProperty("types", "[\"language\", \"wwlanguage\"]")
+                    .withProperty("types", "[\"collective\", \"wwcollective\"]")
                     .withProperty("isLatest", true)
                     .withProperty("rev", 1)
-                    .withProperty("wwlanguage_name", "origValue")
+                    .withProperty("wwcollective_name", "origValue")
                     .withIncomingRelation("VERSION_OF", "orig")
             )
             .withVertex("orig", v -> v
@@ -113,7 +113,7 @@ public class WwLanguageIndexDescriptionTest {
             .withChangeListener(new FulltextIndexChangeListener(mockDatabaseService, new IndexDescriptionFactory()))
             .forGraph(graph);
 
-    instance.replace("wwlanguages", UUID.fromString(id),
+    instance.replace("wwcollectives", UUID.fromString(id),
             jsnO(
                     "^rev", jsn(1),
                     "name", jsn("newValue")
@@ -125,20 +125,20 @@ public class WwLanguageIndexDescriptionTest {
   }
 
   @Test
-  public void crudServiceInvokesIndexDescriptionRemoveFromFulltextIndexForWwLanguagesOnDelete() throws Exception {
+  public void crudServiceInvokesIndexDescriptionRemoveFromFulltextIndexForWwCollectivesOnDelete() throws Exception {
     String id = UUID.randomUUID().toString();
     Graph graph = newGraph()
             .withVertex(v -> v
                     .withTimId(id)
-                    .withProperty("types", "[\"language\", \"wwlanguage\"]")
+                    .withProperty("types", "[\"collective\", \"wwcollective\"]")
                     .withProperty("isLatest", true)
                     .withProperty("rev", 1)
-                    .withProperty("wwlanguage_name", "origValue")
+                    .withProperty("wwcollective_name", "origValue")
                     .withIncomingRelation("VERSION_OF", "orig")
             )
             .withVertex("orig", v -> v
                     .withTimId(id)
-                    .withProperty("types", "[\"language\", \"wwlanguage\"]")
+                    .withProperty("types", "[\"collective\", \"wwcollective\"]")
                     .withProperty("isLatest", false)
                     .withProperty("rev", 1)
             )
@@ -157,7 +157,7 @@ public class WwLanguageIndexDescriptionTest {
             .forGraph(graph);
 
 
-    instance.delete("wwlanguages", UUID.fromString(id), "");
+    instance.delete("wwcollectives", UUID.fromString(id), "");
 
 
     verify(mockIndex, times(1)).remove(removeNode);

@@ -53,6 +53,10 @@ public class JsonCrudServiceBuilder {
           .withDisplayName(localProperty("wwlanguage_name"))
           .withProperty("name", localProperty("wwlanguage_name"))
         )
+        .withCollection("wwcollectives", c -> c
+          .withDisplayName(localProperty("wwcollective_name"))
+          .withProperty("name", localProperty("wwcollective_name"))
+        )
         .withCollection("wwderivedrelations", c -> c
           .withDerivedRelation("hasPersonLanguage", () -> {
             P<String> isWw = new P<>((types, extra) -> types.contains("\"wwrelation\""), "");
