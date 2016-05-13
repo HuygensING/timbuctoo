@@ -45,12 +45,10 @@ public class Autocomplete {
     return uri;
   }
 
-  private final TinkerpopJsonCrudService crudService;
   private final AutocompleteService autoCompleteService;
 
 
-  public Autocomplete(TinkerpopJsonCrudService crudService, AutocompleteService autocompleteService) {
-    this.crudService = crudService;
+  public Autocomplete(AutocompleteService autocompleteService) {
     this.autoCompleteService = autocompleteService;
   }
 
@@ -73,7 +71,7 @@ public class Autocomplete {
   public Response getWithPath(@PathParam("collection") String collectionName,
                               @QueryParam("query") Optional<String> query, @PathParam("type") Optional<String> type) {
     try {
-      JsonNode result = crudService.autoComplete(collectionName, query, type);
+      JsonNode result = autoCompleteService.search(collectionName, query, type);
       return Response.ok(result).build();
     } catch (InvalidCollectionException e) {
       return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();

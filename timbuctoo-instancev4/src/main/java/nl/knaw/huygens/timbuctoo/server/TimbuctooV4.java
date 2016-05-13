@@ -192,7 +192,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Authenticate(loggedInUserStore));
     register(environment, new Me(loggedInUserStore));
     register(environment, new Search(configuration, graphManager));
-    register(environment, new Autocomplete(crudService, autocompleteService));
+    register(environment, new Autocomplete(autocompleteService));
     register(environment, new Index(crudService, loggedInUserStore));
     register(environment, new SingleEntity(crudService, loggedInUserStore));
     register(environment, new Gremlin(graphManager));
