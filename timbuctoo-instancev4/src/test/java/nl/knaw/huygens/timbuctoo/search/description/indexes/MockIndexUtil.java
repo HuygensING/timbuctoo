@@ -42,7 +42,8 @@ public class MockIndexUtil {
             mockDatabaseService,
             mockIndex,
             removeNode,
-            addNode
+            addNode,
+            mockIndexManager
     );
   }
 
@@ -67,7 +68,8 @@ public class MockIndexUtil {
             mockDatabaseService,
             mockIndex,
             removeNode,
-            addNode
+            addNode,
+            mockIndexManager
     );
   }
 }
