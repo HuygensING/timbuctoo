@@ -19,7 +19,6 @@ import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
-import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.Map;
@@ -33,8 +32,6 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
 public class AutocompleteService {
-
-  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(AutocompleteService.class);
 
   private final TinkerpopGraphManager graphManager;
   private final Map<String, PropertyDescriptor> displayNameDescriptors;
@@ -82,6 +79,8 @@ public class AutocompleteService {
     IndexHits<Node> hits = index.query("displayName", parsedQuery);
 
     List<ObjectNode> results = StreamSupport.stream(hits.spliterator(), false)
+      // FIXME: filtering on the result set is safer (no compound lucene query needed),
+      // FIXME: however, it only works when it is sure the result set contains all results (like for keywords)
       .filter(hit -> !(type.isPresent() && !type.get().equals(hit.getProperty("keyword_type"))))
       .map(hit -> {
         Vertex vertex = graphManager.getGraph().traversal().V(hit.getId()).next();
