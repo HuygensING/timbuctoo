@@ -17302,7 +17302,7 @@ var listVres = function listVres() {
 			headers: {
 				"Accept": "application/json"
 			},
-			url: "//acc.repository.huygens.knaw.nl/system/vres"
+			url: _config2["default"].apiUrl.v4 + "/system/vres"
 		}, function (err, resp) {
 			dispatch({ type: "LIST_VRES", list: JSON.parse(resp.body) });
 		}, null, "List VREs");

@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.model.properties;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
@@ -14,9 +15,11 @@ import org.slf4j.Logger;
 
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
@@ -173,6 +176,13 @@ public class JsonMetadata {
     metadata.getVre(vreName)
       .getCollections()
       .forEach((key, coll) -> result.set(coll.getCollectionName(), getForCollection(coll)));
+    return result;
+  }
+
+  public ArrayNode listVres() {
+    List<JsonNode> vres = metadata.getVres().entrySet().stream().map(entry -> jsn(entry.getKey())).collect(toList());
+    ArrayNode result = jsnA(vres.stream());
+
     return result;
   }
 }

@@ -40,6 +40,10 @@ public class Vres {
     return vres.get(vre);
   }
 
+  public Map<String, Vre> getVres() {
+    return vres;
+  }
+
   public static class Builder {
     private final List<VreBuilder> vres = new ArrayList<>();
 

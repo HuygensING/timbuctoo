@@ -45,6 +45,7 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Metadata;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.RelationTypes;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Search;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.VresEndpoint;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Autocomplete;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.SingleEntity;
@@ -160,6 +161,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       new JsonBasedAuthorizer(configuration.getAuthorizationsPath()));
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager, HuygensIng.keywordTypes);
 
+
     environment.lifecycle().manage(graphManager);
     // database validator
     final BackgroundRunner<ValidationResult> databaseValidator = setUpDatabaseValidator(
@@ -182,6 +184,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new BulkUpload(new BulkUploadService(vres, graphManager)));
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
+    register(environment, new VresEndpoint(jsonMetadata));
     environment.admin()
                .addServlet("databasevalidation", new DatabaseValidationServlet(databaseValidator))
                .addMapping("/databasevalidation");
