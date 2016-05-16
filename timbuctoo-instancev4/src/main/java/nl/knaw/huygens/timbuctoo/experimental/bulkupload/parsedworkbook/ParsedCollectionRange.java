@@ -6,8 +6,10 @@ import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.relationtypes.RelationTypeDescription;
 import org.apache.poi.ss.SpreadsheetVersion;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Name;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.AreaReference;
@@ -20,6 +22,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.glassfish.jersey.internal.util.Producer;
 
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -49,10 +52,14 @@ public class ParsedCollectionRange {
         aref = new AreaReference(range.getRefersToFormula(), SpreadsheetVersion.EXCEL2007);
       } catch (IllegalArgumentException e) {
         //non-contiguous range
-        AreaReference[] arefs = AreaReference.generateContiguous(range.getRefersToFormula());
+        CellReference firstcellRef = AreaReference.generateContiguous(range.getRefersToFormula())[0].getFirstCell();
+        Cell firstCell = wb
+          .getSheet(firstcellRef.getSheetName())
+          .getRow(firstcellRef.getRow())
+          .getCell(firstcellRef.getCol(), Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
+
         Helpers.addFailure(
-          arefs[0].getFirstCell(),
-          wb,
+          firstCell,
           "Range is non-contiguous (i.e. there are multiple seperate ranges) this is not yet supported."
         );
         return Optional.empty();
@@ -80,24 +87,29 @@ public class ParsedCollectionRange {
         }
       }
 
-      for (int column = minCol; column <= maxCol; column++) {
-        ParsedColumns.factory(minRow, minRow + 1, maxRow, sheet, column).ifPresent(columns -> {
-          if (columns instanceof PropertyColumns) {
-            PropertyColumns pc = (PropertyColumns) columns;
-            if (parsedCollectionRange.properties.containsKey(pc.getName())) {
-              pc.markError("This property was already defined earlier");
+      for (int column = minCol; column <= maxCol; ) {
+        int start = column;
+        column++;
+
+        Iterator<Row> rowIterator = new RowIterator(sheet, minRow + 1, maxRow);
+        ParsedColumns.factory(sheet.getRow(minRow), rowIterator, start)
+          .ifPresent(columns -> {
+            if (columns instanceof PropertyColumns) {
+              PropertyColumns pc = (PropertyColumns) columns;
+              if (parsedCollectionRange.properties.containsKey(pc.getName())) {
+                pc.markError("This property was already defined earlier");
+              } else {
+                parsedCollectionRange.properties.put(pc.getName(), pc);
+              }
             } else {
-              parsedCollectionRange.properties.put(pc.getName(), pc);
+              RelationColumns rc = (RelationColumns) columns;
+              if (parsedCollectionRange.relations.containsKey(rc.getRelationTypeName())) {
+                rc.markError("This relation is already defined earlier");
+              } else {
+                parsedCollectionRange.relations.put(rc.getRelationTypeName(), rc);
+              }
             }
-          } else {
-            RelationColumns rc = (RelationColumns) columns;
-            if (parsedCollectionRange.relations.containsKey(rc.getRelationTypeName())) {
-              rc.markError("This relation is already defined earlier");
-            } else {
-              parsedCollectionRange.relations.put(rc.getRelationTypeName(), rc);
-            }
-          }
-        });
+          });
       }
       return Optional.of(parsedCollectionRange);
     } else {
@@ -222,5 +234,30 @@ public class ParsedCollectionRange {
 
   public interface EdgeProducer {
     boolean call(Vertex from, Vertex to, String label);
+  }
+
+  public static class RowIterator implements Iterator<Row> {
+
+    private final Sheet sheet;
+    private final int end;
+    private int cur;
+
+    public RowIterator(Sheet sheet, int start, int end) {
+      this.sheet = sheet;
+      this.end = end;
+      cur = start;
+    }
+
+    @Override
+    public boolean hasNext() {
+      return cur < (end + 1);
+    }
+
+    @Override
+    public Row next() {
+      Row result = sheet.getRow(cur);
+      cur += 1;
+      return result;
+    }
   }
 }

@@ -11,21 +11,11 @@ import org.apache.poi.ss.usermodel.RichTextString;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.util.CellReference;
 
 import java.io.IOException;
 import java.util.Optional;
 
 public class Helpers {
-
-  public static void addFailure(CellReference cellReference, Workbook wb, String text) {
-    final Sheet sheet = wb.getSheet(cellReference.getSheetName());
-    Cell cell = sheet.getRow(cellReference.getRow()).getCell(cellReference.getCol());
-    if (cell == null) {
-      cell = sheet.getRow(cellReference.getRow()).createCell(cellReference.getCol());
-    }
-    addFailure(cell, text);
-  }
 
   public static void addFailure(Cell cell, String text) {
     Workbook wb = cell.getSheet().getWorkbook();
@@ -78,7 +68,7 @@ public class Helpers {
 
   public static Optional<String> getValueAsString(Cell cell) throws IOException {
     if (cell == null) {
-      return Optional.empty(); //Apparently getRow().getCell() (might) return null if the cell is blank
+      return Optional.empty(); //getRow().getCell() returns null if the cell does not exist (as opposed to being blank)
     }
     final int cellType = cell.getCellType();
     if (cellType == Cell.CELL_TYPE_FORMULA) {
@@ -105,6 +95,13 @@ public class Helpers {
     }
   }
 
+  public static Optional<String> getValueAsStringAndIgnoreError(Cell cell) {
+    try {
+      return getValueAsString(cell);
+    } catch (IOException e) {
+      return Optional.empty();
+    }
+  }
 
   public static boolean hasData(Cell data) {
     if (data == null) {

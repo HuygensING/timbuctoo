@@ -4,11 +4,12 @@ import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.relationtypes.RelationTypeDescription;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,15 +22,14 @@ public class RelationColumns extends ParsedColumns {
   private final List<Cell> items = new ArrayList<>();
   private final Cell captionCell;
 
-  public RelationColumns(int minRow, int maxRow, int headerRow, Sheet sheet, String relationTypeName, String targetType,
-                         int column) {
-    captionCell = sheet.getRow(headerRow).getCell(column);
+  public RelationColumns(Iterator<Row> rows, Row headerRow, String relationTypeName, String targetType, int column) {
+    captionCell = headerRow.getCell(column);
     this.relationTypeName = relationTypeName;
     this.targetType = targetType;
-    for (int r = minRow; r <= maxRow; r++) {
-      Cell propVal = sheet.getRow(r).getCell(column);
+    rows.forEachRemaining(row -> {
+      Cell propVal = row.getCell(column);
       items.add(propVal);
-    }
+    });
   }
 
   public boolean isValid(Vre vre, Collection ownCollection, Map<String, RelationTypeDescription> relationDescriptions) {

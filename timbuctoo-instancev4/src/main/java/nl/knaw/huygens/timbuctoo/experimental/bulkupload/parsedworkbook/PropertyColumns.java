@@ -7,7 +7,6 @@ import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CreationHelper;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFDataValidationConstraint;
 import org.apache.poi.xssf.usermodel.XSSFDataValidationHelper;
@@ -17,32 +16,34 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static nl.knaw.huygens.timbuctoo.experimental.bulkupload.parsedworkbook.Helpers.getValueAsString;
+import static nl.knaw.huygens.timbuctoo.experimental.bulkupload.parsedworkbook.Helpers.getValueAsStringAndIgnoreError;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 
 public class PropertyColumns extends ParsedColumns {
-  public final List<LinkedHashMap<String, Object>> cellsPerRow = new ArrayList<>();
   private final Cell captionCell;
   private List<Cell> items = new ArrayList<>();
   private String name;
   private boolean isIdentityColumn;
 
-  public PropertyColumns(int minRow, int maxRow, int headerRow, Sheet sheet, String caption, int column) {
-    captionCell = sheet.getRow(headerRow).getCell(column);
+  public PropertyColumns(Iterator<Row> rows, Cell captionCell, int startColumn) {
+    String caption = getValueAsStringAndIgnoreError(captionCell).orElse("");
+    this.captionCell = captionCell;
     if (caption.endsWith("*")) {
       name = caption.substring(0, caption.length() - 1);
       isIdentityColumn = true;
     } else {
       name = caption;
     }
-    for (int r = minRow; r <= maxRow; r++) {
-      Cell propVal = sheet.getRow(r).getCell(column);
+    rows.forEachRemaining(row -> {
+      Cell propVal = row.getCell(startColumn);
       items.add(propVal);
-    }
+    });
   }
 
   public List<String> getColumns() {
@@ -89,7 +90,7 @@ public class PropertyColumns extends ParsedColumns {
   public Optional<String> applyData(Vertex vertex, LocalProperty property, int index) {
     final Cell data = this.items.get(index);
     try {
-      final Optional<String> cellValue = Helpers.getValueAsString(data);
+      final Optional<String> cellValue = getValueAsString(data);
       if (cellValue.isPresent()) {
         property.setJson(vertex, jsn(cellValue.get()));
         Helpers.addSuccess(data);
@@ -124,7 +125,7 @@ public class PropertyColumns extends ParsedColumns {
         Set<String> cellValues = Sets.newHashSet();
         for (Cell propVal : items) {
           try {
-            final Optional<String> valueAsString = Helpers.getValueAsString(propVal);
+            final Optional<String> valueAsString = getValueAsString(propVal);
             if (valueAsString.isPresent()) {
               String val = valueAsString.get();
               if (cellValues.contains(val)) {

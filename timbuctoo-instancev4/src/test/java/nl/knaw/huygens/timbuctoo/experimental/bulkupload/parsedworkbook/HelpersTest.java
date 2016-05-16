@@ -32,11 +32,13 @@ public class HelpersTest {
     final XSSFWorkbook workbook = getWorkbook(filename);
     final XSSFCell cell = workbook.getSheetAt(0).getRow(0).getCell(0);
     Helpers.addFailure(cell, "a");
-    assertThat(cell.getCellComment().getString().toString(), is("Microsoft Office User:\nreeds-bestaande-comment\n\na"));
+    assertThat(
+      cell.getCellComment().getString().toString(),
+      is("Microsoft Office User:\nreeds-bestaande-comment\n\na")
+    );
   }
 
   private XSSFWorkbook getWorkbook(String filename) throws IOException {
     return new XSSFWorkbook(getClass().getResource(filename).getFile());
   }
-
 }
