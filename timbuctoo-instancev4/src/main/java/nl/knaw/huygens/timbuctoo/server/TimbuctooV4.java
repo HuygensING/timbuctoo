@@ -39,7 +39,7 @@ import nl.knaw.huygens.timbuctoo.server.databasemigration.LabelDatabaseMigration
 import nl.knaw.huygens.timbuctoo.server.databasemigration.WwDocumentSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.WwPersonSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
-import nl.knaw.huygens.timbuctoo.server.endpoints.admin.DatabaseValidationServlet;
+import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Graph;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
@@ -192,9 +192,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     // Admin resources
     environment.admin().addTask(new UserCreationTask(new LocalUserCreator(authenticator, userStore, authorizer)));
-    environment.admin()
-               .addServlet("databasevalidation", new DatabaseValidationServlet(databaseValidator))
-               .addMapping("/databasevalidation");
+    environment.admin().addTask(new DatabaseValidationTask(databaseValidator));
 
     // register health checks
     register(environment, "Encryption algorithm", new EncryptionAlgorithmHealthCheck(ENCRYPTION_ALGORITHM));
