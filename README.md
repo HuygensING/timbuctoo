@@ -1,5 +1,7 @@
 # Timbuctoo
 
+[![Join the chat at https://gitter.im/HuygensING/timbuctoo](https://badges.gitter.im/HuygensING/timbuctoo.svg)](https://gitter.im/HuygensING/timbuctoo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Timbuctoo is a graph-repository for storing and querying research datasets that are interconnected. 
 You can have multiple views over something that we as humans would consider to be the same object. 
 Such as a person, a country, or even something more abstract such as a time period. 
