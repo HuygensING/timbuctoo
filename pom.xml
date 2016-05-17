@@ -15,6 +15,5 @@
     <module>timbuctoo-test-services</module>
     <module>timbuctoo-instancev4</module>
     <module>ContractDiff</module>
-    <module>timbuctoo-benchmark</module>
   </modules>
 </project>

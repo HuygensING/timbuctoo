@@ -2,18 +2,29 @@ package nl.knaw.huygens.timbuctoo.search.description.indexes;
 
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
+import nl.knaw.huygens.timbuctoo.model.TempName;
 import nl.knaw.huygens.timbuctoo.search.description.IndexDescription;
+import nl.knaw.huygens.timbuctoo.search.description.PropertyDescriptor;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
+import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.TempNamePropertyParser;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.index.Index;
+import org.neo4j.graphdb.index.IndexHits;
+import org.neo4j.graphdb.index.IndexManager;
+import org.neo4j.helpers.collection.MapUtil;
 
 import java.util.List;
+import java.util.Map;
 
-class WwPersonIndexDescription implements IndexDescription {
+class WwPersonIndexDescription extends AbstractFulltextIndexDescription {
 
 
   private static class WwPersonSortFieldDescription implements IndexerSortFieldDescription {
@@ -68,6 +79,7 @@ class WwPersonIndexDescription implements IndexDescription {
 
   private final List<IndexerSortFieldDescription> sortFieldDescriptions;
 
+  private final PropertyDescriptor displayNameDescriptor;
 
   public WwPersonIndexDescription() {
     final PropertyParserFactory propertyParserFactory = new PropertyParserFactory();
@@ -82,6 +94,13 @@ class WwPersonIndexDescription implements IndexDescription {
             new WwPersonSortFieldDescription(
                     "modified", 0L, propertyParserFactory.getParser(Change.class), Long.class)
     );
+
+    final PropertyDescriptorFactory propertyDescriptorFactory =
+            new PropertyDescriptorFactory(new PropertyParserFactory());
+
+    displayNameDescriptor = propertyDescriptorFactory.getComposite(
+            propertyDescriptorFactory.getLocal("wwperson_names", PersonNames.class),
+            propertyDescriptorFactory.getLocal("wwperson_tempName", TempName.class));
   }
 
 
@@ -116,6 +135,21 @@ class WwPersonIndexDescription implements IndexDescription {
         vertex.property(sortPropertyName, parsed);
       }
     }
+  }
+
+  @Override
+  public void addToFulltextIndex(Vertex vertex, GraphDatabaseService graphDatabase) {
+    final Map<String, String> fields = Maps.newHashMap();
+    final String displayName = displayNameDescriptor.get(vertex);
+
+    fields.put("displayName", displayName == null ? "" : displayName);
+
+    addToFulltextIndex(vertex, graphDatabase, "wwpersons", fields);
+  }
+
+  @Override
+  public void removeFromFulltextIndex(Vertex vertex, GraphDatabaseService graphDatabase) {
+    removeFromFulltextIndex(vertex, graphDatabase, "wwpersons");
   }
 
 }

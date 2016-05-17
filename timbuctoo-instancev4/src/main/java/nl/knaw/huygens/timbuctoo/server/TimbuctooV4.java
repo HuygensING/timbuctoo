@@ -20,12 +20,14 @@ import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.CompositeChangeListener;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.DenormalizedSortFieldUpdater;
+import nl.knaw.huygens.timbuctoo.crud.changelistener.FulltextIndexChangeListener;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.experimental.server.endpoints.v2.BulkUpload;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
@@ -33,6 +35,7 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.server.security.LocalUserCreator;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.AutocompleteLuceneIndexDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.InvariantsFix;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.LabelDatabaseMigration;
@@ -56,6 +59,7 @@ import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseValidator;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.EncryptionAlgorithmHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.FileHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ValidationResult;
+import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.FullTextIndexCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.InvariantsCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.LabelsAddedToVertexDatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.SortIndexesDatabaseCheck;
@@ -141,7 +145,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       new LabelDatabaseMigration(),
       new WwPersonSortIndexesDatabaseMigration(),
       new WwDocumentSortIndexesDatabaseMigration(),
-      new InvariantsFix(vres)
+      new InvariantsFix(vres),
+      new AutocompleteLuceneIndexDatabaseMigration()
     );
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, databaseMigrations);
@@ -149,7 +154,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final HandleAdder handleAdder = new HandleAdder(activeMqBundle, HANDLE_QUEUE, graphManager, persistenceManager);
     final CompositeChangeListener changeListeners = new CompositeChangeListener(
       new DenormalizedSortFieldUpdater(new IndexDescriptionFactory()),
-      new AddLabelChangeListener()
+      new AddLabelChangeListener(),
+      new FulltextIndexChangeListener(graphManager.getGraphDatabase(), new IndexDescriptionFactory())
     );
     JsonBasedAuthorizer authorizer = new JsonBasedAuthorizer(configuration.getAuthorizationsPath());
     final TinkerpopJsonCrudService crudService = new TinkerpopJsonCrudService(
@@ -164,6 +170,11 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       changeListeners,
       authorizer);
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager, HuygensIng.keywordTypes);
+    final AutocompleteService autocompleteService = new AutocompleteService(
+      graphManager,
+      (coll, id, rev) -> URI.create(configuration.getBaseUri() + SingleEntity.makeUrl(coll, id, rev).getPath())
+    );
+
 
 
     environment.lifecycle().manage(graphManager);
@@ -172,7 +183,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       configuration,
       environment,
       vres,
-      graphManager
+      graphManager, // graphWaiter
+      graphManager // graphManager
     );
 
     // register REST endpoints
@@ -180,7 +192,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Authenticate(loggedInUserStore));
     register(environment, new Me(loggedInUserStore));
     register(environment, new Search(configuration, graphManager));
-    register(environment, new Autocomplete(crudService));
+    register(environment, new Autocomplete(autocompleteService));
     register(environment, new Index(crudService, loggedInUserStore));
     register(environment, new SingleEntity(crudService, loggedInUserStore));
     register(environment, new Gremlin(graphManager));
@@ -227,7 +239,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
   private BackgroundRunner<ValidationResult> setUpDatabaseValidator(TimbuctooConfiguration configuration,
                                                                     Environment environment, Vres vres,
-                                                                    GraphWaiter graphWaiter) {
+                                                                    GraphWaiter graphWaiter,
+                                                                    TinkerpopGraphManager graphManager) {
 
     final ScheduledExecutorService executor = environment.lifecycle()
                                                          .scheduledExecutorService("databaseCheckExecutor")
@@ -241,7 +254,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       DatabaseValidator databaseValidator = new DatabaseValidator(
         new LabelsAddedToVertexDatabaseCheck(),
         new SortIndexesDatabaseCheck(),
-        new InvariantsCheck(vres)
+        new InvariantsCheck(vres),
+        new FullTextIndexCheck(graphManager)
       );
 
       graphWaiter.onGraph(graph -> {

@@ -13,6 +13,14 @@ public class IndexDescriptionFactory {
       return new WwPersonIndexDescription();
     } else if (type.equals("wwdocument")) {
       return new WwDocumentIndexDescription();
+    } else if (type.equals("wwkeyword")) {
+      return new WwKeywordIndexDescription();
+    } else if (type.equals("wwlanguage")) {
+      return new WwLanguageIndexDescription();
+    } else if (type.equals("wwlocation")) {
+      return new WwLocationIndexDescription();
+    } else if (type.equals("wwcollective")) {
+      return new WwCollectiveIndexDescription();
     }
     return null;
   }
