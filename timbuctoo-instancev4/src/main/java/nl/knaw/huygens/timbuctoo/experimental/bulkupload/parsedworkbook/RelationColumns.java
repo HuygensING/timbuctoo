@@ -8,9 +8,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
@@ -19,17 +16,14 @@ public class RelationColumns extends ParsedColumns {
 
   private final String relationTypeName;
   private final String targetType;
-  private final List<Cell> items = new ArrayList<>();
   private final Cell captionCell;
+  private final int column;
 
-  public RelationColumns(Iterator<Row> rows, Row headerRow, String relationTypeName, String targetType, int column) {
+  public RelationColumns(Row headerRow, String relationTypeName, String targetType, int column) {
+    this.column = column;
     captionCell = headerRow.getCell(column);
     this.relationTypeName = relationTypeName;
     this.targetType = targetType;
-    rows.forEachRemaining(row -> {
-      Cell propVal = row.getCell(column);
-      items.add(propVal);
-    });
   }
 
   public boolean isValid(Vre vre, Collection ownCollection, Map<String, RelationTypeDescription> relationDescriptions) {
@@ -69,12 +63,11 @@ public class RelationColumns extends ParsedColumns {
     return relationTypeName;
   }
 
-  public void applyData(Vertex rowVertex, int index, BiFunction<String, String, Optional<Vertex>> findTargetVertex,
+  public void applyData(Vertex rowVertex, Row row, BiFunction<String, String, Optional<Vertex>> findTargetVertex,
                         ParsedCollectionRange.EdgeProducer edgeProducer) {
-    Cell cell = items.get(index);
-    final Optional<String> value;
+    Cell cell = row.getCell(column);
     try {
-      value = Helpers.getValueAsString(cell);
+      final Optional<String> value = Helpers.getValueAsString(cell);
       if (value.isPresent()) {
         final Optional<Vertex> relatedVertex = findTargetVertex.apply(targetType, value.get());
         if (relatedVertex.isPresent() && edgeProducer.call(rowVertex, relatedVertex.get(), relationTypeName)) {

@@ -15,7 +15,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -27,11 +26,12 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 
 public class PropertyColumns extends ParsedColumns {
   private final Cell captionCell;
-  private List<Cell> items = new ArrayList<>();
+  private final int startColumn;
   private String name;
   private boolean isIdentityColumn;
 
-  public PropertyColumns(Iterator<Row> rows, Cell captionCell, int startColumn) {
+  public PropertyColumns(Cell captionCell, int startColumn) {
+    this.startColumn = startColumn;
     String caption = getValueAsStringAndIgnoreError(captionCell).orElse("");
     this.captionCell = captionCell;
     if (caption.endsWith("*")) {
@@ -40,10 +40,6 @@ public class PropertyColumns extends ParsedColumns {
     } else {
       name = caption;
     }
-    rows.forEachRemaining(row -> {
-      Cell propVal = row.getCell(startColumn);
-      items.add(propVal);
-    });
   }
 
   public List<String> getColumns() {
@@ -55,11 +51,6 @@ public class PropertyColumns extends ParsedColumns {
     //  x.get()
     //});
   }
-
-  public int getSize() {
-    return items.size();
-  }
-
 
   public List<Optional<XSSFDataValidationConstraint>> getValidValuesPerColumn(XSSFDataValidationHelper dvHelper) {
     return Lists.newArrayList(Optional.empty());
@@ -87,8 +78,8 @@ public class PropertyColumns extends ParsedColumns {
     return offset;
   }
 
-  public Optional<String> applyData(Vertex vertex, LocalProperty property, int index) {
-    final Cell data = this.items.get(index);
+  public Optional<String> applyData(Vertex vertex, LocalProperty property, Row row) {
+    final Cell data = row.getCell(startColumn);
     try {
       final Optional<String> cellValue = getValueAsString(data);
       if (cellValue.isPresent()) {
@@ -100,11 +91,6 @@ public class PropertyColumns extends ParsedColumns {
       Helpers.addFailure(data, e.getMessage());
     }
     return Optional.empty();
-  }
-
-  public boolean hasData(int index) {
-    final Cell data = this.items.get(index);
-    return Helpers.hasData(data);
   }
 
   public String getName() {
@@ -119,11 +105,12 @@ public class PropertyColumns extends ParsedColumns {
     Helpers.addFailure(captionCell, msg);
   }
 
-  public boolean isValid(Collection collection) {
+  public boolean isValid(Collection collection, Iterator<Row> rows) {
     if (collection.getWriteableProperties().containsKey(name)) {
       if (isIdentityColumn) {
         Set<String> cellValues = Sets.newHashSet();
-        for (Cell propVal : items) {
+        while (rows.hasNext()) {
+          Cell propVal = rows.next().getCell(startColumn);
           try {
             final Optional<String> valueAsString = getValueAsString(propVal);
             if (valueAsString.isPresent()) {

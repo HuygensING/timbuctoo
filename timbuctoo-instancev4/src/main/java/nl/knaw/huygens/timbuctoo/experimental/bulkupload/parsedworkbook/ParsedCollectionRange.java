@@ -33,9 +33,11 @@ public class ParsedCollectionRange {
   public final LinkedHashMap<String, PropertyColumns> properties = new LinkedHashMap<>();
   public final LinkedHashMap<String, RelationColumns> relations = new LinkedHashMap<>();
   private final String name;
+  private final RowIterable rowIterable;
 
-  ParsedCollectionRange(String name) {
+  ParsedCollectionRange(String name, RowIterable iterable) {
     this.name = name;
+    this.rowIterable = iterable;
   }
 
   static Optional<ParsedCollectionRange> from(Name range, Workbook wb) {
@@ -44,7 +46,6 @@ public class ParsedCollectionRange {
     //if the range ends with TIMBUCTOO_SUFFIX we assume its meant for us
     if (rangeName.endsWith(TIMBUCTOO_SUFFIX)) {
       final String nameWithoutSuffix = rangeName.substring(0, rangeName.length() - TIMBUCTOO_SUFFIX.length());
-      final ParsedCollectionRange parsedCollectionRange = new ParsedCollectionRange(nameWithoutSuffix);
 
 
       AreaReference aref;
@@ -75,6 +76,9 @@ public class ParsedCollectionRange {
       int maxCol = Math.max(firstCell.getCol(), lastCell.getCol());
 
       Sheet sheet = wb.getSheet(firstCell.getSheetName());
+      final RowIterable iterable = new RowIterable(sheet, minRow + 1, maxRow);
+      final ParsedCollectionRange parsedCollectionRange = new ParsedCollectionRange(nameWithoutSuffix, iterable);
+
 
       if (minRow == -1) {
         minRow = 0;
@@ -91,8 +95,7 @@ public class ParsedCollectionRange {
         int start = column;
         column++;
 
-        Iterator<Row> rowIterator = new RowIterator(sheet, minRow + 1, maxRow);
-        ParsedColumns.factory(sheet.getRow(minRow), rowIterator, start)
+        ParsedColumns.factory(sheet.getRow(minRow), start)
           .ifPresent(columns -> {
             if (columns instanceof PropertyColumns) {
               PropertyColumns pc = (PropertyColumns) columns;
@@ -147,37 +150,42 @@ public class ParsedCollectionRange {
     for (Map.Entry<Integer, Vertex> entry : state.getVerticeList(collection).entrySet()) {
       int index = entry.getKey();
       Vertex rowVertex = entry.getValue();
-      for (RelationColumns relationColumn: relations.values()) {
-        relationColumn.applyData(rowVertex, index, state::getVertexById, edgeProducer);
+      Optional<Row> row = rowIterable.get(index);
+      if (row.isPresent()) {
+        for (RelationColumns relationColumn: relations.values()) {
+          relationColumn.applyData(rowVertex, row.get(), state::getVertexById, edgeProducer);
+        }
+      } else {
+        //FIXME log invariant failure
       }
     }
   }
 
   public void writeProperties(SavingState state, Collection collection, Producer<Vertex> vertexFactory) {
-    Optional<PropertyColumns> property = properties.values().stream().findAny();
-    if (property.isPresent()) {
-      final int size = property.get().getSize();
-      Map<String, LocalProperty> propertyDescriptors = collection.getWriteableProperties();
-      for (int row = 0; row < size; row++) {
-        boolean hasData = false;
-        for (PropertyColumns propColumn : properties.values()) {
-          if (propColumn.hasData(row)) {
+    RowIterable.RowIterator iterator = rowIterable.iterator();
+    Map<String, LocalProperty> propertyDescriptors = collection.getWriteableProperties();
+    Vertex vertex = null;
+    while (iterator.hasNext()) {
+      final Row row = iterator.next();
+      boolean hasData = false;
+      if (vertex == null) {
+        vertex = vertexFactory.call();
+      }
+      for (PropertyColumns propColumn : properties.values()) {
+        final LocalProperty propDescriptor = propertyDescriptors.get(propColumn.getName());
+        if (propDescriptor != null) {
+          final Optional<String> data = propColumn.applyData(vertex, propDescriptor, row);
+          if (data.isPresent()) {
             hasData = true;
-          }
-        }
-        if (hasData) {
-          Vertex vertex = vertexFactory.call();
-          state.newVertex(collection, vertex, row);
-          for (PropertyColumns propColumn : properties.values()) {
-            final LocalProperty propDescriptor = propertyDescriptors.get(propColumn.getName());
-            if (propDescriptor != null) {
-              final Optional<String> data = propColumn.applyData(vertex, propDescriptor, row);
-              if (propColumn.isIdentityColumn()) {
-                data.ifPresent(val -> state.addIndexedVertex(collection, val, vertex));
-              }
+            if (propColumn.isIdentityColumn()) {
+              state.addIndexedVertex(collection, data.get(), vertex);
             }
           }
         }
+      }
+      if (hasData) {
+        state.newVertex(collection, vertex, iterator.getCur());
+        vertex = null;
       }
     }
   }
@@ -194,7 +202,7 @@ public class ParsedCollectionRange {
     if (optCollection.isPresent()) {
       final Collection collection = optCollection.get();
       for (PropertyColumns propertyColumns : this.properties.values()) {
-        if (propertyColumns.isValid(collection)) {
+        if (propertyColumns.isValid(collection, rowIterable.iterator())) {
           if (propertyColumns.isIdentityColumn()) {
             if (collectionsWithIdentityColumn.contains(propertyColumns.getName())) {
               propertyColumns.markError("More then one column marked as the identity.");
@@ -236,28 +244,53 @@ public class ParsedCollectionRange {
     boolean call(Vertex from, Vertex to, String label);
   }
 
-  public static class RowIterator implements Iterator<Row> {
+  public static class RowIterable implements Iterable<Row> {
 
     private final Sheet sheet;
+    private final int start;
     private final int end;
-    private int cur;
 
-    public RowIterator(Sheet sheet, int start, int end) {
+    public RowIterable(Sheet sheet, int start, int end) {
       this.sheet = sheet;
+      this.start = start;
       this.end = end;
-      cur = start;
+    }
+
+    public Optional<Row> get(int index) {
+      return Optional.ofNullable(sheet.getRow(index));
     }
 
     @Override
-    public boolean hasNext() {
-      return cur < (end + 1);
+    public RowIterator iterator() {
+      return new RowIterator();
     }
 
-    @Override
-    public Row next() {
-      Row result = sheet.getRow(cur);
-      cur += 1;
-      return result;
+    public class RowIterator implements Iterator<Row> {
+      private int cur;
+
+      public RowIterator() {
+        cur = start;
+      }
+
+      public int getCur() {
+        return cur;
+      }
+
+      @Override
+      public boolean hasNext() {
+        return cur <= end;
+      }
+
+      @Override
+      public Row next() {
+        Row result = null;
+        while (result == null) {
+          result = sheet.getRow(cur);
+          cur += 1;
+        }
+
+        return result;
+      }
     }
   }
 }

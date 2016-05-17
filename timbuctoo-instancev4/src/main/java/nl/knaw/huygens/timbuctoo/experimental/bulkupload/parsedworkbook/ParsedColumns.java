@@ -4,11 +4,10 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Optional;
 
 public class ParsedColumns {
-  static Optional<ParsedColumns> factory(Row headerRow, Iterator<Row> rows, int column) {
+  static Optional<ParsedColumns> factory(Row headerRow, int column) {
     final Cell captionCell = headerRow.getCell(column, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK);
 
     try {
@@ -24,12 +23,12 @@ public class ParsedColumns {
         final String[] captionParts = caption.split(" ");
         if (captionParts.length == 1) {
           return Optional.of(
-            new PropertyColumns(rows, captionCell, column)
+            new PropertyColumns(captionCell, column)
           );
         } else if (captionParts.length == 2) {
           //FIXME add assertion that start and endcolumn are the same
           return Optional.of(
-            new RelationColumns(rows, headerRow, captionParts[0], captionParts[1], column)
+            new RelationColumns(headerRow, captionParts[0], captionParts[1], column)
           );
         } else {
           Helpers.addFailure(captionCell, "The caption should either contain no spaces (for properties) or a " +
