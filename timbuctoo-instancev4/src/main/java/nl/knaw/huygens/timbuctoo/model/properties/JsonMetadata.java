@@ -10,7 +10,9 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Autocomplete;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
+import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 
 import java.net.URI;
@@ -40,7 +42,7 @@ public class JsonMetadata {
     this.keywordTypes = keywordTypes;
   }
 
-  public ArrayNode getForCollection(Collection collection) {
+  public ArrayNode getForCollection(Collection collection, List<Vertex> relations) {
     ArrayNode result = jsnA();
     collection.getWriteableProperties().forEach((name, prop) -> {
       ObjectNode desc = jsnO(
@@ -69,10 +71,9 @@ public class JsonMetadata {
       .map(Collection::getCollectionName)
       .orElseThrow(() -> new RuntimeException("No collections available"));//FIXME: log don't throw
 
-    graph.getGraph().traversal().V()
-      .has("relationtype_sourceTypeName", abstractType)
-      .forEachRemaining(v -> {
-
+    relations.stream()
+      .filter(v -> getProp(v, "relationtype_sourceTypeName", String.class).orElse("").equals(abstractType))
+      .forEach(v -> {
         String timId = getProp(v, "tim_id", String.class).orElse("<unknown>");
         Optional<String> regularName = getProp(v, "relationtype_regularName", String.class);
         Optional<String> inverseName = getProp(v, "relationtype_inverseName", String.class);
@@ -93,13 +94,14 @@ public class JsonMetadata {
             quickSearchUrl = Autocomplete.makeUrl(targetType.get());
           }
 
+          boolean isSymmetric = getProp(v, "relationtype_symmetric", Boolean.class).orElse(false);
           result.add(jsnO(
             "name", jsn(regularName.get()),
             "type", jsn("relation"),
             "quicksearch", jsn(quickSearchUrl.toString()),
             "relation", jsnO(
               //for search
-              "direction", jsn("OUT"), //fixme when relationtype_symmetric true then direction BOTH
+              "direction", isSymmetric ? jsn("BOTH") : jsn("OUT"),
               "outName", jsn(regularName.get()),
               "inName", jsn(inverseName.get()),
               "targetCollection", jsn(targetType.get()),
@@ -118,11 +120,10 @@ public class JsonMetadata {
           }
         }
       });
-    graph.getGraph().traversal().V()
-      .not(__.has("relationtype_sourceTypeName", abstractType))
-      .has("relationtype_targetTypeName", abstractType)
-      .forEachRemaining(v -> {
-
+    relations.stream()
+      .filter(v -> !getProp(v, "relationtype_sourceTypeName", String.class).orElse("").equals(abstractType))
+      .filter(v -> getProp(v, "relationtype_targetTypeName", String.class).orElse("").equals(abstractType))
+      .forEach(v -> {
         String timId = getProp(v, "tim_id", String.class).orElse("<unknown>");
         Optional<String> regularName = getProp(v, "relationtype_regularName", String.class);
         Optional<String> inverseName = getProp(v, "relationtype_inverseName", String.class);
@@ -172,10 +173,14 @@ public class JsonMetadata {
   }
 
   public ObjectNode getForVre(String vreName) {
+    final List<Vertex> relations = graph.getGraph().traversal().V()
+      .has(T.label, LabelP.of("relationtype"))
+      .toList();
+
     ObjectNode result = jsnO();
     metadata.getVre(vreName)
       .getCollections()
-      .forEach((key, coll) -> result.set(coll.getCollectionName(), getForCollection(coll)));
+      .forEach((key, coll) -> result.set(coll.getCollectionName(), getForCollection(coll, relations)));
     return result;
   }
 
