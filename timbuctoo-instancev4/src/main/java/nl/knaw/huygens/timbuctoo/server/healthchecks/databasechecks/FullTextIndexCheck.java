@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks;
 
 import com.google.common.collect.Maps;
+import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.model.TempName;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyDescriptor;
@@ -44,6 +45,9 @@ public class FullTextIndexCheck implements DatabaseCheck {
             propertyDescriptorFactory.getLocal("wwperson_names", PersonNames.class),
             propertyDescriptorFactory.getLocal("wwperson_tempName", TempName.class)));
     displayNameDescriptors.put("wwkeywords", propertyDescriptorFactory.getLocal("wwkeyword_value", String.class));
+    displayNameDescriptors.put("wwlanguages", propertyDescriptorFactory.getLocal("wwlanguage_name", String.class));
+    displayNameDescriptors.put("wwlocations", propertyDescriptorFactory.getLocal("names", LocationNames.class));
+    displayNameDescriptors.put("wwcollectives", propertyDescriptorFactory.getLocal("wwcollective_name", String.class));
   }
 
   @Override
@@ -96,7 +100,8 @@ public class FullTextIndexCheck implements DatabaseCheck {
 
             Vertex foundVertex = found.next();
             final PropertyDescriptor descriptor = displayNameDescriptors.get(type + "s");
-            if (descriptor.get(vertex) != null && !descriptor.get(vertex).equals(descriptor.get(foundVertex))) {
+            if (descriptor.get(vertex) != null && descriptor.get(foundVertex) != null &&
+                    !descriptor.get(vertex).equals(descriptor.get(foundVertex))) {
               String message = String.format(
                       "Displayname of vertex from index does not match latest vertex with tim_id %s", timId);
               transaction.close();
