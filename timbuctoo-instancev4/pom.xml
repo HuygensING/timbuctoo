@@ -818,6 +818,11 @@
                             ${project.basedir}/src/main/resources/service/localUserImporter.sh
                           </location>
                         </source>
+                        <source>
+                          <location>
+                            ${project.basedir}/src/main/resources/service/localUserImport.readme
+                          </location>
+                        </source>
                       </sources>
                     </mapping>
                     <mapping>
