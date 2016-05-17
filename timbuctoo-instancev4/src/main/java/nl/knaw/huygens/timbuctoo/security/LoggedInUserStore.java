@@ -19,14 +19,14 @@ import java.util.UUID;
  */
 public class LoggedInUserStore {
 
-  private final JsonBasedAuthenticator jsonBasedAuthenticator;
-  private final JsonBasedUserStore userStore;
+  private final Authenticator authenticator;
+  private final UserStore userStore;
   private final AuthenticationHandler authenticationHandler;
   private final Cache<String, User> users;
 
-  public LoggedInUserStore(JsonBasedAuthenticator jsonBasedAuthenticator, JsonBasedUserStore userStore,
+  public LoggedInUserStore(Authenticator authenticator, UserStore userStore,
                            Timeout inactivityTimeout, AuthenticationHandler authenticationHandler) {
-    this.jsonBasedAuthenticator = jsonBasedAuthenticator;
+    this.authenticator = authenticator;
     this.userStore = userStore;
     this.authenticationHandler = authenticationHandler;
     this.users = createCache(inactivityTimeout);
@@ -70,7 +70,7 @@ public class LoggedInUserStore {
     Optional<String> id;
     Optional<String> token = Optional.empty();
 
-    id = jsonBasedAuthenticator.authenticate(username, password);
+    id = authenticator.authenticate(username, password);
 
     if (id.isPresent()) {
       Optional<User> user = userStore.userFor(id.get());

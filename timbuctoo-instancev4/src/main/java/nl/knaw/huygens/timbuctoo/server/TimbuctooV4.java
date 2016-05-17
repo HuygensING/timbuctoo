@@ -31,6 +31,7 @@ import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFact
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
+import nl.knaw.huygens.timbuctoo.server.security.LocalUserCreator;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.InvariantsFix;
@@ -38,7 +39,7 @@ import nl.knaw.huygens.timbuctoo.server.databasemigration.LabelDatabaseMigration
 import nl.knaw.huygens.timbuctoo.server.databasemigration.WwDocumentSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.WwPersonSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
-import nl.knaw.huygens.timbuctoo.server.endpoints.admin.DatabaseValidationServlet;
+import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Graph;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
@@ -59,6 +60,7 @@ import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.InvariantsCh
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.LabelsAddedToVertexDatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.SortIndexesDatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
+import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -125,8 +127,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     }
 
     JsonBasedUserStore userStore = new JsonBasedUserStore(usersPath);
+    JsonBasedAuthenticator authenticator = new JsonBasedAuthenticator(loginsPath, ENCRYPTION_ALGORITHM);
     final LoggedInUserStore loggedInUserStore = new LoggedInUserStore(
-      new JsonBasedAuthenticator(loginsPath, ENCRYPTION_ALGORITHM),
+      authenticator,
       userStore,
       configuration.getAutoLogoutTimeout(),
       authHandler
@@ -148,6 +151,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       new DenormalizedSortFieldUpdater(new IndexDescriptionFactory()),
       new AddLabelChangeListener()
     );
+    JsonBasedAuthorizer authorizer = new JsonBasedAuthorizer(configuration.getAuthorizationsPath());
     final TinkerpopJsonCrudService crudService = new TinkerpopJsonCrudService(
       graphManager,
       vres,
@@ -158,7 +162,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       (coll, id, rev) -> URI.create(SingleEntity.makeUrl(coll, id, rev).getPath().replaceFirst("^/v2.1/", "")),
       Clock.systemDefaultZone(),
       changeListeners,
-      new JsonBasedAuthorizer(configuration.getAuthorizationsPath()));
+      authorizer);
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager, HuygensIng.keywordTypes);
 
 
@@ -185,9 +189,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
     register(environment, new VresEndpoint(jsonMetadata));
-    environment.admin()
-               .addServlet("databasevalidation", new DatabaseValidationServlet(databaseValidator))
-               .addMapping("/databasevalidation");
+
+    // Admin resources
+    environment.admin().addTask(new UserCreationTask(new LocalUserCreator(authenticator, userStore, authorizer)));
+    environment.admin().addTask(new DatabaseValidationTask(databaseValidator));
 
     // register health checks
     register(environment, "Encryption algorithm", new EncryptionAlgorithmHealthCheck(ENCRYPTION_ALGORITHM));
@@ -225,8 +230,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
                                                                     GraphWaiter graphWaiter) {
 
     final ScheduledExecutorService executor = environment.lifecycle()
-      .scheduledExecutorService("databaseCheckExecutor")
-      .build();
+                                                         .scheduledExecutorService("databaseCheckExecutor")
+                                                         .build();
 
     final int executeCheckAt = configuration.getExecuteDatabaseInvariantCheckAt();
     final Clock clock = Clock.systemDefaultZone();

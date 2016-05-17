@@ -1,0 +1,12 @@
+Usage
+Run the localUserImport.sh {local_users_file} {server_url}
+
+Local users file
+It needs to look like:
+--pid;user;password;givenName;surname;email;organization;vreId;role
+pid;user;password;givenName;surname;email;organization;WomenWriters;USER
+
+All the lines starting with -- are ignored.
+
+Server Url
+Is the admin interface of Timbuctoo by default it will be: http://localhost:8081

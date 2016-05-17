@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static nl.knaw.huygens.timbuctoo.security.UserRoles.UNVERIFIED_USER_ROLE;
-
 public class VreAuthorizationCollection {
   private final ObjectMapper objectMapper;
   private final Path authorizationsFolder;
@@ -22,9 +20,10 @@ public class VreAuthorizationCollection {
     this.authorizationsFolder = authorizationsFolder;
   }
 
-  public VreAuthorization addAuthorizationFor(String vreId, String userId) throws AuthorizationUnavailableException {
+  public VreAuthorization addAuthorizationFor(String vreId, String userId, String userRole)
+    throws AuthorizationUnavailableException {
     File file = getFile(vreId);
-    VreAuthorization vreAuthorization = new VreAuthorization(vreId, userId, UNVERIFIED_USER_ROLE);
+    VreAuthorization vreAuthorization = new VreAuthorization(vreId, userId, userRole);
 
     try {
       synchronized (authorizationsFolder) {
@@ -35,9 +34,16 @@ public class VreAuthorizationCollection {
             });
         }
 
-        authorizations.add(vreAuthorization);
+        Optional<VreAuthorization> authOptional =
+          authorizations.stream().filter(auth -> Objects.equals(auth.getUserId(), userId)).findFirst();
+        if (authOptional.isPresent()) {
+          return authOptional.get();
+        }
 
-        objectMapper.writeValue(file, authorizations.toArray(new VreAuthorization[authorizations.size()]));
+        authorizations.add(vreAuthorization);
+        synchronized (authorizationsFolder) {
+          objectMapper.writeValue(file, authorizations.toArray(new VreAuthorization[authorizations.size()]));
+        }
       }
     } catch (IOException e) {
       throw new AuthorizationUnavailableException(e.getMessage());

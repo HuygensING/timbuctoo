@@ -11,16 +11,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.security.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.UNVERIFIED_USER_ROLE;
 import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
-import static org.hamcrest.CoreMatchers.allOf;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.hasProperty;
 
 public class VreAuthorizationCollectionTest {
 
@@ -30,12 +28,14 @@ public class VreAuthorizationCollectionTest {
 
   public static final String USER_ID = "USER000000000001";
   private VreAuthorizationCollection instance;
+  private ObjectMapper objectMapper;
 
   @Before
   public void setup() throws Exception {
     VreAuthorization[] authorizations = {new VreAuthorization(VRE, USER_ID, "USER")};
     File file = VRE_AUTH_PATH.toFile();
-    new ObjectMapper().writeValue(file, authorizations);
+    objectMapper = new ObjectMapper();
+    objectMapper.writeValue(file, authorizations);
 
     instance = new VreAuthorizationCollection(AUTHORIZATIONS_FOLDER);
   }
@@ -74,32 +74,31 @@ public class VreAuthorizationCollectionTest {
     Optional<VreAuthorization> authorization = instance.authorizationFor(VRE, unknownUser);
     assertThat(authorization, is(not(present())));
 
-    instance.addAuthorizationFor(VRE, unknownUser);
+    instance.addAuthorizationFor(VRE, unknownUser, UNVERIFIED_USER_ROLE);
 
     Optional<VreAuthorization> authorization1 = instance.authorizationFor(VRE, unknownUser);
     assertThat(authorization1, is(present()));
   }
 
   @Test
-  public void addAuthorizationCreatesAnAuthorizationForUnVerifiedUser() throws Exception {
-    String unknownUser = "unknownUser";
-
-    VreAuthorization vreAuthorization = instance.addAuthorizationFor(VRE, unknownUser);
-
-    assertThat(vreAuthorization, allOf(
-      hasProperty("userId", equalTo(unknownUser)),
-      hasProperty("vreId", equalTo(VRE)),
-      hasProperty("roles", contains(UNVERIFIED_USER_ROLE))));
-  }
-
-  @Test
   public void addAuthorizationReturnsTheAddedAuthorization() throws Exception {
     String unknownUser = "unknownUser";
 
-    VreAuthorization vreAuthorization = instance.addAuthorizationFor(VRE, unknownUser);
+    VreAuthorization vreAuthorization = instance.addAuthorizationFor(VRE, unknownUser, UNVERIFIED_USER_ROLE);
     Optional<VreAuthorization> authorization = instance.authorizationFor(VRE, unknownUser);
 
     assertThat(vreAuthorization, is(authorization.get()));
+  }
+
+  @Test
+  public void addAuthorizationIgnoresTheSecondAdditionForUserToAVre() throws Exception {
+    String unknownUser = "unknownUser";
+
+    instance.addAuthorizationFor(VRE, unknownUser, UNVERIFIED_USER_ROLE);
+    VreAuthorization authorization2 = instance.addAuthorizationFor(VRE, unknownUser, ADMIN_ROLE);
+
+    assertThat(authorization2.getRoles(), contains(UNVERIFIED_USER_ROLE));
+
   }
 
   @Test
@@ -108,7 +107,7 @@ public class VreAuthorizationCollectionTest {
     Optional<VreAuthorization> authorization = instance.authorizationFor(newVre, USER_ID);
     assertThat(authorization, is(not(present())));
 
-    VreAuthorization createAuthorization = instance.addAuthorizationFor(newVre, USER_ID);
+    VreAuthorization createAuthorization = instance.addAuthorizationFor(newVre, USER_ID, UNVERIFIED_USER_ROLE);
 
     assertThat(createAuthorization, is(not(nullValue())));
     Optional<VreAuthorization> authorization1 = instance.authorizationFor(newVre, USER_ID);

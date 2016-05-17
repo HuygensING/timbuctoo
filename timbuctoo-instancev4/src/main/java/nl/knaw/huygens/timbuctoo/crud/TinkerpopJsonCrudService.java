@@ -17,8 +17,8 @@ import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
-import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
+import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -75,12 +75,12 @@ public class TinkerpopJsonCrudService {
   private final UrlGenerator relationUrlFor;
   private final Clock clock;
   private final JsonNodeFactory nodeFactory;
-  private final JsonBasedUserStore userStore;
+  private final UserStore userStore;
   private final ChangeListener listener;
   private Authorizer authorizer;
 
   public TinkerpopJsonCrudService(GraphWrapper graphwrapper, Vres mappings,
-                                  HandleAdder handleAdder, JsonBasedUserStore userStore, UrlGenerator handleUrlFor,
+                                  HandleAdder handleAdder, UserStore userStore, UrlGenerator handleUrlFor,
                                   UrlGenerator autoCompleteUrlFor, UrlGenerator relationUrlFor, Clock clock,
                                   ChangeListener listener, Authorizer authorizer) {
     this.graphwrapper = graphwrapper;

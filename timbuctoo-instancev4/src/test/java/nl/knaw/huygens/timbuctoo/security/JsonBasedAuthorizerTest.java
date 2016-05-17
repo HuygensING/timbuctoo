@@ -3,14 +3,15 @@ package nl.knaw.huygens.timbuctoo.security;
 import nl.knaw.huygens.timbuctoo.crud.Authorization;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.security.UserRoles.UNVERIFIED_USER_ROLE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -18,23 +19,34 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class JsonBasedAuthorizerTest {
+
+  public static final String VRE_ID = "vreId";
+  public static final String USER_ID = "userId";
+  private VreAuthorizationCollection authorizationCollection;
+  private JsonBasedAuthorizer instance;
+
+  @Before
+  public void setUp() throws Exception {
+    authorizationCollection = mock(VreAuthorizationCollection.class);
+    instance = new JsonBasedAuthorizer(authorizationCollection);
+  }
+
   @Test
-  public void authorizationForReturnsTheNewlyCreatedAuthorizationIfTheUserHasNoAuthorizationForTheCurrentCollection()
+  public void authorizationForReturnsTheNewAuthorizationIfTheUserHasNoAuthorizationForTheCurrentCollection()
     throws Exception {
-    VreAuthorizationCollection authorizationCollection = mock(VreAuthorizationCollection.class);
     VreAuthorization vreAuthorization = new VreAuthorization();
     when(authorizationCollection.authorizationFor(anyString(), anyString())).thenReturn(Optional.empty());
-    when(authorizationCollection.addAuthorizationFor(anyString(), anyString())).thenReturn(vreAuthorization);
-    JsonBasedAuthorizer instance = new JsonBasedAuthorizer(authorizationCollection);
+    when(authorizationCollection.addAuthorizationFor(anyString(), anyString(), anyString()))
+      .thenReturn(vreAuthorization);
 
-    String vreId = "vreId";
+    String vreId = VRE_ID;
     Collection collection = collectionOfVreWithId(vreId);
-    String userId = "userId";
+    String userId = USER_ID;
 
     Authorization authorization = instance.authorizationFor(collection, userId);
 
     assertThat(authorization, is(sameInstance(vreAuthorization)));
-    verify(authorizationCollection).addAuthorizationFor(vreId, userId);
+    verify(authorizationCollection).addAuthorizationFor(vreId, userId, UNVERIFIED_USER_ROLE);
   }
 
   private Collection collectionOfVreWithId(String vreId) {
@@ -47,52 +59,53 @@ public class JsonBasedAuthorizerTest {
 
   @Test
   public void authorizationForReturnsTheFoundAuthorization() throws Exception {
-    VreAuthorizationCollection authorizationCollection = mock(VreAuthorizationCollection.class);
     VreAuthorization vreAuthorization = new VreAuthorization();
     when(authorizationCollection.authorizationFor(anyString(), anyString())).thenReturn(Optional.of(vreAuthorization));
-    JsonBasedAuthorizer instance = new JsonBasedAuthorizer(authorizationCollection);
+    Collection collection = collectionOfVreWithId(VRE_ID);
 
-    String vreId = "vreId";
-    Collection collection = collectionOfVreWithId(vreId);
-    String userId = "userId";
-
-    Authorization authorization = instance.authorizationFor(collection, userId);
+    Authorization authorization = instance.authorizationFor(collection, USER_ID);
 
     assertThat(authorization, is(sameInstance(vreAuthorization)));
-    verify(authorizationCollection, never()).addAuthorizationFor(vreId, userId);
+    verify(authorizationCollection, never()).addAuthorizationFor(VRE_ID, USER_ID, UNVERIFIED_USER_ROLE);
   }
 
   @Test(expected = AuthorizationUnavailableException.class)
   public void authorizationForThrowsAnAuthorizationUnavailableExceptionWhenTheVreAuthorizationsThrowsOneWhileReading()
     throws Exception {
-    VreAuthorizationCollection authorizationCollection = mock(VreAuthorizationCollection.class);
     when(authorizationCollection.authorizationFor(anyString(), anyString()))
       .thenThrow(new AuthorizationUnavailableException());
-    JsonBasedAuthorizer instance = new JsonBasedAuthorizer(authorizationCollection);
+    Collection collection = collectionOfVreWithId(VRE_ID);
 
-    String vreId = "vreId";
-    Collection collection = collectionOfVreWithId(vreId);
-    String userId = "userId";
-
-    Authorization authorization = instance.authorizationFor(collection, userId);
+    instance.authorizationFor(collection, USER_ID);
   }
 
   @Test(expected = AuthorizationUnavailableException.class)
   public void authorizationForThrowsAnAuthorizationUnavailableExceptionWhenTheVreAuthorizationsThrowsOneWhileAdding()
     throws Exception {
-    VreAuthorizationCollection authorizationCollection = mock(VreAuthorizationCollection.class);
     when(authorizationCollection.authorizationFor(anyString(), anyString()))
       .thenReturn(Optional.empty());
-    when(authorizationCollection.addAuthorizationFor(anyString(), anyString()))
+    when(authorizationCollection.addAuthorizationFor(anyString(), anyString(), anyString()))
       .thenThrow(new AuthorizationUnavailableException());
-    JsonBasedAuthorizer instance = new JsonBasedAuthorizer(authorizationCollection);
+    Collection collection = collectionOfVreWithId(VRE_ID);
 
-    String vreId = "vreId";
-    Collection collection = collectionOfVreWithId(vreId);
-    String userId = "userId";
-
-    Authorization authorization = instance.authorizationFor(collection, userId);
+    instance.authorizationFor(collection, USER_ID);
   }
 
-  // TODO: test voor niet uit te lezen bestand
+  @Test
+  public void createAuthorizationLetsCreatesANewAuthorizationForTheUserVreAndRole()
+    throws Exception {
+    instance.createAuthorization(VRE_ID, USER_ID, UserRoles.USER_ROLE);
+
+    verify(authorizationCollection).addAuthorizationFor(VRE_ID, USER_ID, UserRoles.USER_ROLE);
+  }
+
+  @Test(expected = AuthorizationCreationException.class)
+  public void createAuthorizationThrowsAnAuthCreateExWhenTheAuthorizationCollectionThrowsAnAuthUnavailableEx()
+    throws Exception {
+    when(authorizationCollection.addAuthorizationFor(anyString(), anyString(), anyString()))
+      .thenThrow(new AuthorizationUnavailableException());
+
+    instance.createAuthorization(VRE_ID, USER_ID, UserRoles.USER_ROLE);
+  }
+
 }

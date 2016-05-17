@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 
 public class AuthenticatorMockBuilder {
 
-  private final JsonBasedAuthenticator authenticator;
+  private final Authenticator authenticator;
 
   private AuthenticatorMockBuilder() throws LocalLoginUnavailableException {
     authenticator = mock(JsonBasedAuthenticator.class);
@@ -25,7 +25,7 @@ public class AuthenticatorMockBuilder {
     return this;
   }
 
-  public JsonBasedAuthenticator build() {
+  public Authenticator build() {
     return authenticator;
   }
 }

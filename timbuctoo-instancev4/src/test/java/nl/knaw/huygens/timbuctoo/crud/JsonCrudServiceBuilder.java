@@ -6,7 +6,7 @@ import nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes;
 import nl.knaw.huygens.timbuctoo.model.vre.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
-import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
+import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -27,7 +27,7 @@ public class JsonCrudServiceBuilder {
   private HandleAdder handleAdder;
   private UrlGenerator relationUrlGenerator;
   private UrlGenerator autoCompleteUrlGenerator;
-  private JsonBasedUserStore userStore;
+  private UserStore userStore;
   private Authorizer authorizer;
   private GraphWrapper graphWrapper = null;
   private UrlGenerator handleUrlGenerator;
@@ -124,7 +124,7 @@ public class JsonCrudServiceBuilder {
     return this;
   }
 
-  public JsonCrudServiceBuilder withUserStore(JsonBasedUserStore userStore) {
+  public JsonCrudServiceBuilder withUserStore(UserStore userStore) {
     this.userStore = userStore;
     return this;
   }

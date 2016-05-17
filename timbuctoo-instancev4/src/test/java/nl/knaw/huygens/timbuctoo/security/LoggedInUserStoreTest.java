@@ -29,8 +29,8 @@ public class LoggedInUserStoreTest {
 
   @Before
   public void setUp() throws Exception {
-    JsonBasedAuthenticator authenticator = AuthenticatorMockBuilder.authenticator().withPidFor("a", "b", "pid").build();
-    JsonBasedUserStore userStore = userStore().withUserFor("pid").build();
+    Authenticator authenticator = AuthenticatorMockBuilder.authenticator().withPidFor("a", "b", "pid").build();
+    UserStore userStore = userStore().withUserFor("pid").build();
 
     MockAuthenticationHandler authHandler = new MockAuthenticationHandler();
 
@@ -41,11 +41,11 @@ public class LoggedInUserStoreTest {
       x-> { throw new UnauthorizedException(); }
     );
 
-    JsonBasedAuthenticator authenticator1 = AuthenticatorMockBuilder.authenticator()
-                                                                    .withPidFor("a", "b", "pid")
-                                                                    .withPidFor("c", "d", "otherPid")
-                                                                    .build();
-    JsonBasedUserStore userStore1 = userStore().withUserFor("pid").withUserFor("otherPid").build();
+    Authenticator authenticator1 = AuthenticatorMockBuilder.authenticator()
+                                                           .withPidFor("a", "b", "pid")
+                                                           .withPidFor("c", "d", "otherPid")
+                                                           .build();
+    UserStore userStore1 = userStore().withUserFor("pid").withUserFor("otherPid").build();
 
     userStoreWithUserAAndB = new LoggedInUserStore(
       authenticator1,
@@ -167,7 +167,7 @@ public class LoggedInUserStoreTest {
   @Test
   public void throwsLocalLoginUnavailableExceptionWhenTheUserCouldNotBeAuthenticatedLocallyDueToASystemError()
     throws LocalLoginUnavailableException, AuthenticationUnavailableException {
-    JsonBasedAuthenticator authenticator = mock(JsonBasedAuthenticator.class);
+    Authenticator authenticator = mock(JsonBasedAuthenticator.class);
     given(authenticator.authenticate(anyString(), anyString())).willThrow(new LocalLoginUnavailableException(""));
     LoggedInUserStore instance = new LoggedInUserStore(authenticator, null, ONE_SECOND_TIMEOUT, null);
 
@@ -179,9 +179,9 @@ public class LoggedInUserStoreTest {
   @Test
   public void throwsAnAuthenticationUnavailableExceptionWhenTheUserCouldNotBeRetrievedDueToASystemError()
     throws AuthenticationUnavailableException, LocalLoginUnavailableException {
-    JsonBasedUserStore userStore = mock(JsonBasedUserStore.class);
+    UserStore userStore = mock(JsonBasedUserStore.class);
     given(userStore.userFor(anyString())).willThrow(new AuthenticationUnavailableException(""));
-    JsonBasedAuthenticator authenticator = AuthenticatorMockBuilder.authenticator().withPidFor("a", "b", "pid").build();
+    Authenticator authenticator = AuthenticatorMockBuilder.authenticator().withPidFor("a", "b", "pid").build();
     LoggedInUserStore instance = new LoggedInUserStore(authenticator, userStore, ONE_SECOND_TIMEOUT, null);
 
     expectedException.expect(AuthenticationUnavailableException.class);
