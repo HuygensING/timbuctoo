@@ -4,25 +4,20 @@ import nl.knaw.huygens.timbuctoo.experimental.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.openxml4j.opc.OPCPackage;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 
 @Path("/v2.1/bulk-upload")
 public class BulkUpload {
@@ -42,7 +37,7 @@ public class BulkUpload {
     @FormDataParam("file") InputStream fileInputStream) {
     try {
 
-      final Workbook wb = WorkbookFactory.create(fileInputStream);
+      final XSSFWorkbook wb = new XSSFWorkbook(OPCPackage.open(fileInputStream));
 
       final Response.ResponseBuilder response;
 
@@ -63,17 +58,17 @@ public class BulkUpload {
     throw new RuntimeException("asdasa");
   }
 
-  @GET
-  @Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-  public StreamingOutput getExcelFile(@QueryParam("vre") String vre) {
-
-    return new StreamingOutput() {
-      @Override
-      public void write(OutputStream outputStream) throws IOException, WebApplicationException {
-        uploadService.getEmptyTemplate(vre).write(outputStream);
-      }
-    };
-  }
+  //@GET
+  //@Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+  //public StreamingOutput getExcelFile(@QueryParam("vre") String vre) {
+  //
+  //  return new StreamingOutput() {
+  //    @Override
+  //    public void write(OutputStream outputStream) throws IOException, WebApplicationException {
+  //      uploadService.getEmptyTemplate(vre).write(outputStream);
+  //    }
+  //  };
+  //}
 
 
 }

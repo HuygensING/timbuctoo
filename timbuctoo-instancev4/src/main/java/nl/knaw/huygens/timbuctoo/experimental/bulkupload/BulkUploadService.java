@@ -1,14 +1,17 @@
 package nl.knaw.huygens.timbuctoo.experimental.bulkupload;
 
-import nl.knaw.huygens.timbuctoo.experimental.bulkupload.parsedworkbook.ParsedWorkbook;
+import nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.BulkLoader;
+import nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.rangebasedxlsloader.RangebasedXlsLoader;
+import nl.knaw.huygens.timbuctoo.experimental.bulkupload.parsingstatemachine.Importer;
+import nl.knaw.huygens.timbuctoo.experimental.bulkupload.savers.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.relationtypes.RelationTypeDescription;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -33,7 +36,7 @@ public class BulkUploadService {
   //FIXME: add authorizer on admin
   //FIXME: allow linking to existing vertices (e.g. geboorteplaats in emmigrantunits)
 
-  public boolean saveToDb(String vreName, Workbook wb/*, String userId*/)
+  public boolean saveToDb(String vreName, XSSFWorkbook wb/*, String userId*/)
     throws AuthorizationUnavailableException, AuthorizationException {
     //
     //for (Collection collection : vre.getCollections().values()) {
@@ -44,28 +47,25 @@ public class BulkUploadService {
     //  }
     //}
 
-    ParsedWorkbook workbook = ParsedWorkbook.from(wb);
     Vre vre = vres.getVre(vreName);
-    final Map<String, RelationTypeDescription> descriptions = graphwrapper.getGraph().traversal()
-      .V()
-      .has("relationtype_regularName")
+
+    final Map<String, RelationDescription> descriptions = graphwrapper.getGraph().traversal()
+      .V().has(T.label, LabelP.of("relationtype"))
       .toList()
       .stream()
-      .map(RelationTypeDescription::new)
+      .map(RelationDescription::bothWays)
       .collect(
         HashMap::new,
-        (map, desc) -> {
-          map.put(desc.getRegularName(), desc);
-          map.put(desc.getInverseName(), desc);
-        },
+        HashMap::putAll,
         HashMap::putAll
       );
+    //FIXME: allow the excel sheet to specify more relationDescriptions
 
     dropAllVreVertices(vre);
 
-    //FIXME: allow the excel sheet to specify more relationDescirptions
-    if (workbook.saveToDb(graphwrapper, vre, descriptions)) {
-      return true;
+    BulkLoader<Workbook> whatToDo = new RangebasedXlsLoader();
+    try (TinkerpopSaver saver = new TinkerpopSaver(graphwrapper, vre, descriptions, 50_000)) {
+      whatToDo.loadWorkbookAndMarkErrors(wb, new Importer(saver));
     }
     return false;
   }
@@ -82,33 +82,4 @@ public class BulkUploadService {
       tx.commit();
     }
   }
-
-
-  public Workbook getEmptyTemplate(String vreName, String... propsToLeaveOut) {
-    Vre vre = vres.getVre(vreName);
-    ParsedWorkbook workbook = new ParsedWorkbook();
-    ////each property can generate the two rows needed for the excel
-    ////furthermore all registered relations are generated
-    //vre.getCollections().forEach((collName, coll) -> {
-    //  if (coll.isRelationCollection()) {
-    //    return;
-    //  }
-    //  CollectionRange sheet = CollectionRange.from(collName);
-    //  List<Vertex> vertices = graphwrapper.getCurrentEntitiesFor(coll.getEntityTypeName()).toList();
-    //  GraphTraversal<Vertex, Vertex> collectionTraversal = null;
-    //  if (vertices.size() > 0) {
-    //    collectionTraversal = graphwrapper.getGraph().traversal().V(vertices);
-    //  }
-    //
-    //  for (Map.Entry<String, LocalProperty> entry : coll.getWriteableProperties().entrySet()) {
-    //    LocalProperty prop = entry.getValue();
-    //    PropertyColumns propertyColumns = sheet.withProperty(entry.getKey());
-    //    if (collectionTraversal != null) {
-    //      //propertyColumns.addData(collectionTraversal);//FIXME make it work
-    //    }
-    //  }
-    //});
-    return workbook.asWorkBook();
-  }
-
 }

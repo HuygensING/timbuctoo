@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.experimental.bulkupload.parsedworkbook;
+package nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -15,7 +15,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import java.io.IOException;
 import java.util.Optional;
 
-public class Helpers {
+public class CellHelper {
 
   public static void addFailure(Cell cell, String text) {
     Workbook wb = cell.getSheet().getWorkbook();
@@ -94,6 +94,16 @@ public class Helpers {
         throw new RuntimeException("Unknown celltype: " + cellType);
     }
   }
+
+  public static Optional<String> getValueAsStringAndMarkError(Cell cell, String message) {
+    try {
+      return getValueAsString(cell);
+    } catch (IOException e) {
+      addFailure(cell, message);
+      return Optional.empty();
+    }
+  }
+
 
   public static Optional<String> getValueAsStringAndIgnoreError(Cell cell) {
     try {
