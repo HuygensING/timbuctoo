@@ -19,6 +19,7 @@ import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.h
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.personNames;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.stringArrayToEncodedArrayOf;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.stringOfYesNoUnknown;
+import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.stringToEncodedStringOf;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.stringToUnencodedStringOf;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
@@ -253,7 +254,7 @@ public class HuygensIng {
       c -> c
         .withDisplayName(localProperty("dcararchive_titleNld"))
         .withProperty("beginDate", localProperty("dcararchive_beginDate"))
-        .withProperty("countries", localProperty("dcararchive_countries"))
+        .withProperty("countries", localProperty("dcararchive_countries", arrayToEncodedArray))
         .withProperty("endDate", localProperty("dcararchive_endDate"))
         .withProperty("extent", localProperty("dcararchive_extent"))
         .withProperty("itemNo", localProperty("dcararchive_itemNo"))
