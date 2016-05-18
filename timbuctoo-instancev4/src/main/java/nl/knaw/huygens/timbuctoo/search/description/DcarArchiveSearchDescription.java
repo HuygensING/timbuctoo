@@ -73,11 +73,11 @@ class DcarArchiveSearchDescription extends AbstractSearchDescription {
 
     propertyDescriptors.put("_id", pdf.getLocal("tim_id", String.class));
     propertyDescriptors.put("beginDate", pdf.getLocal("dcararchive_beginDate", String.class));
-    propertyDescriptors.put("countries", pdf.getLocal("dcararchive_countries", String.class));
+    propertyDescriptors.put("countries", pdf.getLocal("dcararchive_countries", " "));
     propertyDescriptors.put("endDate", pdf.getLocal("dcararchive_endDate", String.class));
     propertyDescriptors.put("itemNo", pdf.getLocal("dcararchive_itemNo", String.class));
     propertyDescriptors.put("refCode", pdf.getLocal("dcararchive_refCode", String.class));
-    propertyDescriptors.put("refCodeArchive", pdf.getLocal("dcararchive_refArchiveCode", String.class));
+    propertyDescriptors.put("refCodeArchive", pdf.getLocal("dcararchive_refCodeArchive", String.class));
     propertyDescriptors.put("series", pdf.getLocal("dcararchive_series", String.class));
     propertyDescriptors.put("subCode", pdf.getLocal("dcararchive_subCode", String.class));
     propertyDescriptors.put("titleEng", pdf.getLocal("dcararchive_titleEng", String.class));

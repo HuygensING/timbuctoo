@@ -19,6 +19,7 @@ import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.h
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.personNames;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.stringArrayToEncodedArrayOf;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.stringOfYesNoUnknown;
+import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.stringToEncodedStringOf;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.stringToUnencodedStringOf;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
@@ -252,9 +253,9 @@ public class HuygensIng {
     .withCollection("dcararchives",
       c -> c
         .withDisplayName(localProperty("dcararchive_titleNld"))
-        .withProperty("beginDate", localProperty("dcararchive_beginDate", datable))
-        .withProperty("countries", localProperty("dcararchive_countries"))
-        .withProperty("endDate", localProperty("dcararchive_endDate", datable))
+        .withProperty("beginDate", localProperty("dcararchive_beginDate"))
+        .withProperty("countries", localProperty("dcararchive_countries", arrayToEncodedArray))
+        .withProperty("endDate", localProperty("dcararchive_endDate"))
         .withProperty("extent", localProperty("dcararchive_extent"))
         .withProperty("itemNo", localProperty("dcararchive_itemNo"))
         .withProperty("madeBy", localProperty("dcararchive_madeBy"))
@@ -272,8 +273,8 @@ public class HuygensIng {
     .withCollection("dcararchivers",
       c -> c
         .withDisplayName(localProperty("dcararchiver_nameNld"))
-        .withProperty("beginDate", localProperty("dcararchiver_beginDate", datable))
-        .withProperty("endDate", localProperty("dcararchiver_endDate", datable))
+        .withProperty("beginDate", localProperty("dcararchiver_beginDate"))
+        .withProperty("endDate", localProperty("dcararchiver_endDate"))
         .withProperty("history", localProperty("dcararchiver_history"))
         .withProperty("madeBy", localProperty("dcararchiver_madeBy"))
         .withProperty("nameEng", localProperty("dcararchiver_nameEng"))
@@ -290,8 +291,8 @@ public class HuygensIng {
       c -> c
         .withDisplayName(localProperty("dcarlegislation_titleNld"))
         .withProperty("contents", localProperty("dcarlegislation_contents"))
-        .withProperty("date1", localProperty("dcarlegislation_date1", datable))
-        .withProperty("date2", localProperty("dcarlegislation_date2", datable))
+        .withProperty("date1", localProperty("dcarlegislation_date1"))
+        .withProperty("date2", localProperty("dcarlegislation_date2"))
         .withProperty("madeBy", localProperty("dcarlegislation_madeBy"))
         .withProperty("origFilename", localProperty("dcarlegislation_origFilename"))
         .withProperty("originalArchivalSource", localProperty("dcarlegislation_originalArchivalSource"))

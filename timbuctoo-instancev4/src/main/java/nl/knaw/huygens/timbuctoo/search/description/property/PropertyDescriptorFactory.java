@@ -27,6 +27,10 @@ public class PropertyDescriptorFactory {
     return new LocalPropertyDescriptor(propertyName, parserFactory.getParser(typeToConvert), prefix, postfix);
   }
 
+  public PropertyDescriptor getLocal(String propertyName, String separator) {
+    return new LocalPropertyDescriptor(propertyName, parserFactory.getJoinedListParser(separator));
+  }
+
   public PropertyDescriptor getComposite(PropertyDescriptor preferred, PropertyDescriptor backUp) {
     return new CompositePropertyDescriptor(preferred, backUp);
   }
