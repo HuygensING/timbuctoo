@@ -35,7 +35,7 @@ class DcarArchiverSearchDescription extends AbstractSearchDescription {
     idDescriptor = propertyDescriptorFactory.getLocal(SearchDescription.ID_DB_PROP, String.class);
     facetDescriptions = createFacetDescriptions(facetDescriptionFactory);
     fullTextSearchFields =
-      Lists.newArrayList("dynamic_t_history", "dynamic_t_nameEng", "dynamic_t_nameNLD", "dynamic_t_notes");
+      Lists.newArrayList("dynamic_t_history", "dynamic_t_nameEng", "dynamic_t_nameNld", "dynamic_t_notes");
 
     dataPropertyDescriptors = createDataPropertyDescriptors(propertyDescriptorFactory);
     fullTextSearchDescriptions = createFullTextSearchDescriptions();
@@ -69,7 +69,7 @@ class DcarArchiverSearchDescription extends AbstractSearchDescription {
     return Lists.newArrayList(
       createLocalSimpleFullTextSearchDescription("dynamic_t_history", "dcararchiver_history"),
       createLocalSimpleFullTextSearchDescription("dynamic_t_nameEng", "dcararchiver_nameEng"),
-      createLocalSimpleFullTextSearchDescription("dynamic_t_nameNLD", "dcararchiver_nameNld"),
+      createLocalSimpleFullTextSearchDescription("dynamic_t_nameNld", "dcararchiver_nameNld"),
       createLocalSimpleFullTextSearchDescription("dynamic_t_notes", "dcararchiver_notes"));
   }
 

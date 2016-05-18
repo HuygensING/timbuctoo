@@ -296,7 +296,7 @@ public class HuygensIng {
         .withProperty("madeBy", localProperty("dcarlegislation_madeBy"))
         .withProperty("origFilename", localProperty("dcarlegislation_origFilename"))
         .withProperty("originalArchivalSource", localProperty("dcarlegislation_originalArchivalSource"))
-        .withProperty("otherPublications", localProperty("dcarlegislation_otherPublications"))
+        .withProperty("otherPublications", localProperty("dcarlegislation_otherPublications", arrayToEncodedArray))
         .withProperty("pages", localProperty("dcarlegislation_pages"))
         .withProperty("reference", localProperty("dcarlegislation_reference"))
         .withProperty("remarks", localProperty("dcarlegislation_remarks"))

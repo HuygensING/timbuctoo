@@ -38,7 +38,7 @@ class DcarLegislationSearchDescription extends AbstractSearchDescription {
     facetDescriptions = createFacetDescriptions(facetDescriptionFactory);
     sortableFields = Lists.newArrayList("dynamic_sort_title", "dynamic_k_date");
     fullTextSearchFields =
-      Lists.newArrayList("dynamic_t_title", "dynamic_t_text", "dynamic_t_titleNLD", "dynamic_t_contents");
+      Lists.newArrayList("dynamic_t_titleEng", "dynamic_t_text", "dynamic_t_titleNld", "dynamic_t_contents");
 
     dataPropertyDescriptors = createDataPropertyDescriptors(propertyDescriptorFactory);
     fullTextSearchDescriptions = createFullTextSearchDescriptions();
@@ -70,9 +70,9 @@ class DcarLegislationSearchDescription extends AbstractSearchDescription {
   private ArrayList<FullTextSearchDescription> createFullTextSearchDescriptions() {
 
     return Lists.newArrayList(
-      createLocalSimpleFullTextSearchDescription("dynamic_t_title", "dcarlegislation_titleEng"),
+      createLocalSimpleFullTextSearchDescription("dynamic_t_titleEng", "dcarlegislation_titleEng"),
       createLocalSimpleFullTextSearchDescription("dynamic_t_text", "dcarlegislation_reference"),
-      createLocalSimpleFullTextSearchDescription("dynamic_t_titleNLD", "dcarlegislation_titleNld"),
+      createLocalSimpleFullTextSearchDescription("dynamic_t_titleNld", "dcarlegislation_titleNld"),
       createLocalSimpleFullTextSearchDescription("dynamic_t_contents", "dcarlegislation_contents"));
   }
 
