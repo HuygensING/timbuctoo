@@ -463,7 +463,13 @@ public class HuygensIng {
           .withCollection("charterdocuments", c -> c
             .withDisplayName(localProperty("charterdocument_title"))
             .withProperty("title", localProperty("charterdocument_title"))
-            .withProperty("englishTitle", localProperty("charterdocument_englishTitle"))
+            .withProperty("archief", localProperty("charterdocument_archief"))
+            .withProperty("fonds", localProperty("charterdocument_fonds"))
+            .withProperty("fondsName", localProperty("charterdocument_fondsname"))
+            .withProperty("inventarisNummer", localProperty("charterdocument_inventarisnummer"))
+            .withProperty("volgNummer", localProperty("charterdocument_volgnummer"))
+            .withProperty("regestNummer", localProperty("charterdocument_regestnummer"))
+            .withProperty("thumbs", localProperty("charterdocument_thumbs", hyperlinks))
             .withProperty("documentType", localProperty("charterdocument_documentType", stringToEncodedStringOf(
                     DOCUMENT_TYPES
             )))
