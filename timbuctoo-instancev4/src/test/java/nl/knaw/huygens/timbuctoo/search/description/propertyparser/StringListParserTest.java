@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.search.description.propertyparser;
 
-import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -36,6 +35,17 @@ public class StringListParserTest {
     String input = "[\"value1\", \"value2\"]";
     String expectedValue = "value1 en value2";
     StringListParser instance = new StringListParser(" en ");
+
+    String value = instance.parse(input);
+
+    assertThat(value, is(equalTo(expectedValue)));
+  }
+
+  @Test
+  public void parseDoesNotRemoveTheSpacesFromTheStringValuesInTheArray(){
+    String input = "[\"value1\", \"value2 123 eb test\"]";
+    String expectedValue = "value1;value2 123 eb test";
+    StringListParser instance = new StringListParser(";");
 
     String value = instance.parse(input);
 
