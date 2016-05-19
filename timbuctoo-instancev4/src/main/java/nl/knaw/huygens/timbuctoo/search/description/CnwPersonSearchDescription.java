@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.Datable;
-import nl.knaw.huygens.timbuctoo.model.DocumentType;
 import nl.knaw.huygens.timbuctoo.model.Gender;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.model.TempName;
@@ -21,8 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.search.description.Property.localProperty;
-import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription
-  .createLocalSimpleFullTextSearchDescription;
+import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription.createLocalSimpleFullTextSearchDescription;
 import static nl.knaw.huygens.timbuctoo.search.description.sort.BuildableSortFieldDescription.newSortFieldDescription;
 
 public class CnwPersonSearchDescription extends AbstractSearchDescription {
@@ -149,15 +147,15 @@ public class CnwPersonSearchDescription extends AbstractSearchDescription {
     dataPropertyDescriptors.put("modified_date", propertyDescriptorFactory.getLocal("modified", Change.class));
     dataPropertyDescriptors.put("name", propertyDescriptorFactory.getLocal("cnwperson_names", PersonNames.class));
     dataPropertyDescriptors.put("networkDomains",
-      propertyDescriptorFactory.getLocal("cnwperson_networkDomains", String.class));
+      propertyDescriptorFactory.getLocal("cnwperson_networkDomains", List.class));
     dataPropertyDescriptors.put("characteristics",
-      propertyDescriptorFactory.getLocal("cnwperson_characteristics", String.class));
+      propertyDescriptorFactory.getLocal("cnwperson_characteristics", List.class));
     dataPropertyDescriptors.put("combinedDomains",
-      propertyDescriptorFactory.getLocal("cnwperson_combinedDomains", String.class));
+      propertyDescriptorFactory.getLocal("cnwperson_combinedDomains", List.class));
     dataPropertyDescriptors.put("memberships",
-      propertyDescriptorFactory.getLocal("cnwperson_memberships", String.class));
+      propertyDescriptorFactory.getLocal("cnwperson_memberships", List.class));
     dataPropertyDescriptors.put("periodicals",
-      propertyDescriptorFactory.getLocal("cnwperson_periodicals", String.class));
+      propertyDescriptorFactory.getLocal("cnwperson_periodicals", List.class));
 
     dataPropertyDescriptors
       .put("_id", propertyDescriptorFactory.getLocal("tim_id", String.class));
