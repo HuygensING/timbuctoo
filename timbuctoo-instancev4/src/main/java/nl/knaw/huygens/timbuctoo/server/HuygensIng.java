@@ -11,6 +11,7 @@ import java.util.Map;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.wwPersonNameOrTempName;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.wwdocumentDisplayNameProperty;
+import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.altNames;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.datable;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.defaultFullPersonNameConverter;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.defaultLocationNameConverter;
@@ -404,7 +405,7 @@ public class HuygensIng {
       .withProperty("notities", localProperty("cnwperson_notities"))
       .withProperty("opmerkingen", localProperty("cnwperson_opmerkingen"))
       .withProperty("aantekeningen", localProperty("cnwperson_aantekeningen"))
-      .withProperty("altNames", localProperty("cnwperson_altNames"))
+      .withProperty("altNames", localProperty("cnwperson_altNames", altNames))
       .withProperty("relatives", localProperty("cnwperson_relatives"))
       .withProperty("cnwBirthYear", localProperty("cnwperson_cnwBirthYear", datable))
       .withProperty("cnwDeathYear", localProperty("cnwperson_cnwDeathYear", datable))

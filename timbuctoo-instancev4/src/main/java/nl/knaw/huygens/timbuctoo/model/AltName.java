@@ -23,6 +23,9 @@ package nl.knaw.huygens.timbuctoo.model;
  */
 
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 //@JsonIgnoreProperties(ignoreUnknown = true)
 public class AltName {
   private String nametype;
@@ -51,5 +54,15 @@ public class AltName {
 
   public void setDisplayName(String name) {
     this.name = name;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return EqualsBuilder.reflectionEquals(this, obj);
+  }
+
+  @Override
+  public int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this);
   }
 }
