@@ -33,7 +33,7 @@ public class DatabaseValidationTask extends Task {
       validator.start(() -> {
         final Optional<ValidationResult> result = validator.getMostRecentResult();
         writeResult(result, output);
-        return result.get();
+        return result.isPresent() ? result.get() : null;
       });
     } else {
       output.write("No database result");
