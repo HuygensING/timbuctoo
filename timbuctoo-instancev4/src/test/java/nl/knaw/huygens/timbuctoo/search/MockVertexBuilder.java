@@ -7,6 +7,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,7 @@ public class MockVertexBuilder {
     vertex = mock(Vertex.class);
     keys = Sets.newHashSet();
     outGoingRelationMap = Maps.newHashMap();
+    when(vertex.property(anyString())).thenReturn(mock(VertexProperty.class));
   }
 
   public static MockVertexBuilder vertex() {
@@ -46,6 +48,10 @@ public class MockVertexBuilder {
   public MockVertexBuilder withProperty(String key, String value) {
     keys.add(key);
     when(vertex.value(key)).thenReturn(value);
+
+    VertexProperty property = createVertexProperty(value);
+    when(vertex.property(key)).thenReturn(property);
+
     return this;
   }
 
@@ -56,6 +62,14 @@ public class MockVertexBuilder {
       throw new RuntimeException(e);
     }
   }
+
+  private VertexProperty createVertexProperty(String value) {
+    VertexProperty property = mock(VertexProperty.class);
+    when(property.isPresent()).thenReturn(true);
+    when(property.value()).thenReturn(value);
+    return property;
+  }
+
 
   public MockVertexBuilder withId(String id) {
     return withProperty(ID_DB_PROP, id);
