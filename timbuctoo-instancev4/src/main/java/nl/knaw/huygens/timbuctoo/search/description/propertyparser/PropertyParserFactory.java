@@ -36,7 +36,6 @@ public class PropertyParserFactory {
     } else if (List.class.isAssignableFrom(type)) {
       return new StringListParser();
     }
-
     throw new UnparsableTypeException("Type " + type + " is not supported");
   }
 

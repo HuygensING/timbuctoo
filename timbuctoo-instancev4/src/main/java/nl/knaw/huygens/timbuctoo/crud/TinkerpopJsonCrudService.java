@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
@@ -889,5 +890,60 @@ public class TinkerpopJsonCrudService {
       LOG.error(Logmarkers.databaseInvariant, "Vertex {} has no previous version", entity.id());
     }
     listener.onUpdate(old, entity);
+  }
+
+  public List<ObjectNode> fetchCollection(String collectionName, int rows) throws InvalidCollectionException {
+    final Collection collection = mappings.getCollection(collectionName)
+                                          .orElseThrow(() -> new InvalidCollectionException(collectionName));
+    final Map<String, ReadableProperty> mapping = collection.getReadableProperties();
+
+    GraphTraversal<Vertex, Vertex> entities =
+      graphwrapper.getCurrentEntitiesFor(collection.getEntityTypeName()).limit(rows);
+
+
+    return entities.asAdmin().clone().map(entityT -> {
+      final ObjectNode result = JsonNodeFactory.instance.objectNode();
+      final GraphTraversal[] propertyGetters = mapping
+        .entrySet().stream()
+        .map(prop -> prop.getValue().traversal().sideEffect(x -> {
+          x.get()
+            .onSuccess(node -> result.set(prop.getKey(), node))
+            .onFailure(e -> {
+              if (e.getCause() instanceof IOException) {
+                LOG.error(
+                  databaseInvariant,
+                  "Property '" + prop.getKey() + "' is not encoded correctly",
+                  e.getCause()
+                );
+              } else {
+                LOG.error("Something went wrong while reading the property '" + prop.getKey() + "'.", e.getMessage());
+              }
+            });
+        }))
+        .toArray(GraphTraversal[]::new);
+
+      graphwrapper.getGraph().traversal().V(entityT.get().id()).union(propertyGetters).forEachRemaining(x -> {
+        // side effects
+      });
+      Vertex entity = entityT.asAdmin().clone().get();
+      result.set(
+        "^rev", nodeFactory.numberNode(
+          getProp(entity, "rev", Integer.class)
+            .orElse(0)
+        )
+      );
+      getModification(entity, "modified").ifPresent(val -> result.set("^modified", val));
+      getModification(entity, "created").ifPresent(val -> result.set("^created", val));
+
+      result.set("@variationRefs", getVariationRefs(entity, UUID.fromString(entity.value("tim_id")),
+        collection.getCollectionName()));
+
+      result.set("^deleted", nodeFactory.booleanNode(getProp(entity, "deleted", Boolean.class).orElse(false)));
+
+      getProp(entity, "pid", String.class)
+        .ifPresent(pid -> result.set("^pid", nodeFactory.textNode(pid)));
+
+      return result;
+    }).toList();
   }
 }

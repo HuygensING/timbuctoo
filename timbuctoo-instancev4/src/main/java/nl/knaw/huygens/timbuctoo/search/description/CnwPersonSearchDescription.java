@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.Datable;
+import nl.knaw.huygens.timbuctoo.model.DocumentType;
 import nl.knaw.huygens.timbuctoo.model.Gender;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.model.TempName;
@@ -69,7 +70,8 @@ public class CnwPersonSearchDescription extends AbstractSearchDescription {
         .withDefaultValue(null)
         .withProperty(localProperty()
           .withName("cnwperson_gender"))
-        .build(),
+        .build()
+    /*,
       newSortFieldDescription()
         .withName("dynamic_k_birthDate")
         .withDefaultValue(0)
@@ -109,7 +111,9 @@ public class CnwPersonSearchDescription extends AbstractSearchDescription {
         .withProperty(localProperty()
           .withName("cnwperson_name")
           .withParser(ppf.getParser(PersonNames.class)))
-        .build());
+        .build()
+    */
+    );
   }
 
   private ArrayList<FullTextSearchDescription> createFullTextSearchDescriptions() {
@@ -121,7 +125,7 @@ public class CnwPersonSearchDescription extends AbstractSearchDescription {
       facetDescriptionFactory.createListFacetDescription("dynamic_s_gender", Gender.class, "cnwperson_gender"),
       facetDescriptionFactory.createListFacetDescription("dynamic_s_koppelnaam", String.class, "cnwperson_koppelnaam"),
       facetDescriptionFactory.createDatableRangeFacetDescription("dynamic_i_birthyear", "cnwperson_cnwBirthYear"),
-      facetDescriptionFactory.createDatableRangeFacetDescription("dynamic_i_deathYear", "cnwperson_cnwDeathYear"),
+      facetDescriptionFactory.createDatableRangeFacetDescription("dynamic_i_deathyear", "cnwperson_cnwDeathYear"),
       facetDescriptionFactory.createAltNameFacetDescription("dynamic_s_altname", "cnwperson_altNames"),
       facetDescriptionFactory.createMultiValueListFacetDescription("dynamic_s_periodical", "cnwperson_periodicals"),
       facetDescriptionFactory.createMultiValueListFacetDescription("dynamic_s_membership", "cnwperson_memberships"),
@@ -144,6 +148,17 @@ public class CnwPersonSearchDescription extends AbstractSearchDescription {
     dataPropertyDescriptors.put("gender", propertyDescriptorFactory.getLocal("cnwperson_gender", Gender.class));
     dataPropertyDescriptors.put("modified_date", propertyDescriptorFactory.getLocal("modified", Change.class));
     dataPropertyDescriptors.put("name", propertyDescriptorFactory.getLocal("cnwperson_names", PersonNames.class));
+    dataPropertyDescriptors.put("networkDomains",
+      propertyDescriptorFactory.getLocal("cnwperson_networkDomains", String.class));
+    dataPropertyDescriptors.put("characteristics",
+      propertyDescriptorFactory.getLocal("cnwperson_characteristics", String.class));
+    dataPropertyDescriptors.put("combinedDomains",
+      propertyDescriptorFactory.getLocal("cnwperson_combinedDomains", String.class));
+    dataPropertyDescriptors.put("memberships",
+      propertyDescriptorFactory.getLocal("cnwperson_memberships", String.class));
+    dataPropertyDescriptors.put("periodicals",
+      propertyDescriptorFactory.getLocal("cnwperson_periodicals", String.class));
+
     dataPropertyDescriptors
       .put("_id", propertyDescriptorFactory.getLocal("tim_id", String.class));
     return dataPropertyDescriptors;
