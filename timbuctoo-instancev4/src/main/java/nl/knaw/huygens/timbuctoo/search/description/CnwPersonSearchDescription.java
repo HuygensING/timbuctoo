@@ -152,6 +152,7 @@ public class CnwPersonSearchDescription extends AbstractSearchDescription {
     dataPropertyDescriptors.put("gender", propertyDescriptorFactory.getLocal("cnwperson_gender", Gender.class));
     dataPropertyDescriptors.put("modified_date", propertyDescriptorFactory.getLocal("modified", Change.class));
     dataPropertyDescriptors.put("name", propertyDescriptorFactory.getLocal("cnwperson_names", PersonNames.class));
+    dataPropertyDescriptors.put("koppelnaam", propertyDescriptorFactory.getLocal("cnwperson_koppelnaam", String.class));
 
 
     dataPropertyDescriptors
