@@ -60,7 +60,6 @@ public class Neo4jLuceneEntityFetcher extends GremlinEntityFetcher {
 
     // Return when index does not exist
     if (!indexManager.existsForNodes(collectionName)) {
-
       transaction.close();
       return Optional.empty();
     }
@@ -83,6 +82,8 @@ public class Neo4jLuceneEntityFetcher extends GremlinEntityFetcher {
 
       // Return if the neo4j Node ID matches no vertex (extreme edge case)
       if (!vertexT.hasNext()) {
+        LOG.error(Logmarkers.databaseInvariant,
+          "Vertex with tim_id {} is found in index with id {}L but not in graph database", id, vertexId);
         return Optional.empty();
       }
 
