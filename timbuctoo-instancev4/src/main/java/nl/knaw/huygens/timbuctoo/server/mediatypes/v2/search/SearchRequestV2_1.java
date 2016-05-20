@@ -12,6 +12,7 @@ public class SearchRequestV2_1 {
   private String term;
   private List<FullTextSearchParameter> fullTextSearchParameters;
   private String otherSearchId;
+  private boolean fuzzy;
 
   public SearchRequestV2_1() {
     // set default value, so the users do not have to handle a null value.
@@ -59,5 +60,13 @@ public class SearchRequestV2_1 {
 
   public List<FullTextSearchParameter> getFullTextSearchParameters() {
     return fullTextSearchParameters;
+  }
+
+  private boolean isFuzzy() {
+    return fuzzy;
+  }
+
+  private void setFuzzy(boolean fuzzy) {
+    this.fuzzy = fuzzy;
   }
 }
