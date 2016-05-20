@@ -939,6 +939,7 @@ public class TinkerpopJsonCrudService {
         collection.getCollectionName()));
 
       result.set("^deleted", nodeFactory.booleanNode(getProp(entity, "deleted", Boolean.class).orElse(false)));
+      result.set("_id", jsn(entity.value("tim_id")));
 
       getProp(entity, "pid", String.class)
         .ifPresent(pid -> result.set("^pid", nodeFactory.textNode(pid)));
