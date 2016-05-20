@@ -27,7 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.search.description.Property.localProperty;
-import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription.createLocalSimpleFullTextSearchDescription;
+import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription
+  .createLocalSimpleFullTextSearchDescription;
 import static nl.knaw.huygens.timbuctoo.search.description.sort.BuildableSortFieldDescription.newSortFieldDescription;
 
 public class CnwPersonSearchDescription extends AbstractSearchDescription {
@@ -76,19 +77,20 @@ public class CnwPersonSearchDescription extends AbstractSearchDescription {
         .withDefaultValue(null)
         .withProperty(localProperty()
           .withName("cnwperson_gender"))
-        .build()
-    /*,
+        .build(),
       newSortFieldDescription()
         .withName("dynamic_k_birthDate")
         .withDefaultValue(0)
         .withProperty(localProperty()
-          .withName("cnwperson_birthDate"))
+          .withName("cnwperson_birthDate")
+          .withParser(ppf.getParser(Datable.class)))
         .build(),
       newSortFieldDescription()
         .withName("dynamic_k_deathDate")
         .withDefaultValue(0)
         .withProperty(localProperty()
-          .withName("cnwperson_deathDate"))
+          .withName("cnwperson_deathDate")
+          .withParser(ppf.getParser(Datable.class)))
         .build(),
       newSortFieldDescription()
         .withName("dynamic_sort_combineddomain")
@@ -117,9 +119,7 @@ public class CnwPersonSearchDescription extends AbstractSearchDescription {
         .withProperty(localProperty()
           .withName("cnwperson_name")
           .withParser(ppf.getParser(PersonNames.class)))
-        .build()
-    */
-    );
+        .build());
   }
 
   private ArrayList<FullTextSearchDescription> createFullTextSearchDescriptions() {
