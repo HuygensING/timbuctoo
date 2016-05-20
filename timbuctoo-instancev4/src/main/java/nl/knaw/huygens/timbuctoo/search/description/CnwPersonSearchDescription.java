@@ -123,7 +123,7 @@ public class CnwPersonSearchDescription extends AbstractSearchDescription {
   }
 
   private ArrayList<FullTextSearchDescription> createFullTextSearchDescriptions() {
-    return Lists.newArrayList(createLocalSimpleFullTextSearchDescription("dynamic_t_name", "wwperson_names"));
+    return Lists.newArrayList(createLocalSimpleFullTextSearchDescription("dynamic_t_name", "cnwperson_names"));
   }
 
   private List<FacetDescription> createFacetDescriptions(FacetDescriptionFactory facetDescriptionFactory) {
