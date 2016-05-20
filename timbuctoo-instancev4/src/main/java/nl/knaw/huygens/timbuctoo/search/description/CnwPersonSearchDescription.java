@@ -56,9 +56,7 @@ public class CnwPersonSearchDescription extends AbstractSearchDescription {
     );
     fullTextSearchFields = Lists.newArrayList("dynamic_t_name");
 
-    displayNameDescriptor = propertyDescriptorFactory.getComposite(
-      propertyDescriptorFactory.getLocal("cnwperson_names", PersonNames.class),
-      propertyDescriptorFactory.getLocal("cnwperson_tempName", TempName.class));
+    displayNameDescriptor = propertyDescriptorFactory.getLocal("cnwperson_names", PersonNames.class);
     idDescriptor = propertyDescriptorFactory
       .getLocal(SearchDescription.ID_DB_PROP, String.class);
 
