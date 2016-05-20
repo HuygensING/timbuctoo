@@ -61,20 +61,22 @@ public class Neo4jLuceneEntityFetcher extends GremlinEntityFetcher {
       vertexId = indexHits.next().getId();
     }
     transaction.close();
-
-    Vertex foundVertex = null;
     if (vertexId != null) {
-      foundVertex = source.V(vertexId).next();
+      GraphTraversal<Vertex, Vertex> vertexT = source.V(vertexId);
+      if (!vertexT.hasNext()) {
+        return Optional.empty();
+      }
+
+      Vertex foundVertex = vertexT.next();
+
       while (foundVertex.vertices(Direction.OUT, "VERSION_OF").hasNext()) {
         // The neo4j index Node is one version_of behind the actual node
         foundVertex = foundVertex.vertices(Direction.OUT, "VERSION_OF").next();
       }
-
       if (foundVertex.value("isLatest")) {
         return Optional.of(foundVertex);
       }
     }
-
     return Optional.empty();
   }
 }
