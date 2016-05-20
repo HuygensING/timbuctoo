@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.model.Gender;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.model.TempName;
+import nl.knaw.huygens.timbuctoo.search.EntityRef;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.description.facet.FacetDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription;
@@ -14,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorF
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 import nl.knaw.huygens.timbuctoo.search.description.sort.SortDescription;
 import nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -160,6 +162,13 @@ public class CnwPersonSearchDescription extends AbstractSearchDescription {
     dataPropertyDescriptors
       .put("_id", propertyDescriptorFactory.getLocal("tim_id", String.class));
     return dataPropertyDescriptors;
+  }
+
+  @Override
+  public EntityRef createRef(Vertex vertex) {
+    EntityRef entityRef = super.createRef(vertex);
+
+    return entityRef;
   }
 
   @Override
