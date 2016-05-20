@@ -117,7 +117,7 @@ public class CnwPersonSearchDescription extends AbstractSearchDescription {
         .withName("dynamic_sort_name")
         .withDefaultValue("")
         .withProperty(localProperty()
-          .withName("cnwperson_name")
+          .withName("cnwperson_names")
           .withParser(ppf.getParser(PersonNames.class)))
         .build());
   }

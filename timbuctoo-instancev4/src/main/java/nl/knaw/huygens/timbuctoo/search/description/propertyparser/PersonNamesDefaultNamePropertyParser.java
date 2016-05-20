@@ -21,7 +21,7 @@ class PersonNamesDefaultNamePropertyParser implements PropertyParser {
 
         return personNames.defaultName().getShortName();
       } catch (IOException e) {
-        LOG.error("Cannot parse '{}' as Change", value);
+        LOG.error("Cannot parse '{}' as PersonNames", value);
         LOG.error("Exception thrown", e);
       }
     }
