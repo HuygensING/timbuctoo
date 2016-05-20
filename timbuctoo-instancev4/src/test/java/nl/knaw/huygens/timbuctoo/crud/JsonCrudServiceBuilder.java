@@ -8,9 +8,13 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.index.IndexManager;
 
 import java.net.URI;
 import java.time.Clock;
@@ -19,6 +23,8 @@ import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProp
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.personNames;
 import static nl.knaw.huygens.timbuctoo.util.AuthorizerHelper.anyUserIsAllowedToWriteAnyCollectionAuthorizer;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -32,9 +38,11 @@ public class JsonCrudServiceBuilder {
   private Authorizer authorizer;
   private GraphWrapper graphWrapper = null;
   private UrlGenerator handleUrlGenerator;
+  private TinkerpopGraphManager graphManager;
   private ChangeListener changeListener = new CompositeChangeListener(
           new AddLabelChangeListener()
   );
+  private EntityFetcher entityFetcher;
 
   private JsonCrudServiceBuilder() {
     vres = new Vres.Builder()
@@ -83,6 +91,9 @@ public class JsonCrudServiceBuilder {
     autoCompleteUrlGenerator = (collection, id, rev) -> URI.create("http://example.com/autocomplete");
     relationUrlGenerator = (collection, id, rev) -> URI.create("http://example.com/relationUrl");
     authorizer = anyUserIsAllowedToWriteAnyCollectionAuthorizer();
+    graphManager = mock(TinkerpopGraphManager.class);
+
+    entityFetcher = new GremlinEntityFetcher();
   }
 
   public static JsonCrudServiceBuilder newJsonCrudService() {
@@ -91,7 +102,8 @@ public class JsonCrudServiceBuilder {
 
   public TinkerpopJsonCrudService build() {
     return new TinkerpopJsonCrudService(graphWrapper, vres, handleAdder, userStore, handleUrlGenerator,
-      autoCompleteUrlGenerator, relationUrlGenerator, clock, changeListener, authorizer);
+      autoCompleteUrlGenerator, relationUrlGenerator, clock, changeListener, authorizer,
+      entityFetcher);
   }
 
   public TinkerpopJsonCrudService forGraph(Graph graph) {
