@@ -1,10 +1,12 @@
 package nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true) 
 public class SearchRequestV2_1 {
 
   private List<FacetValue> facetValues;
@@ -60,4 +62,5 @@ public class SearchRequestV2_1 {
   public List<FullTextSearchParameter> getFullTextSearchParameters() {
     return fullTextSearchParameters;
   }
+
 }

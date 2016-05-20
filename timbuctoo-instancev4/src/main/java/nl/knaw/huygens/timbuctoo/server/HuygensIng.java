@@ -11,6 +11,7 @@ import java.util.Map;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.wwPersonNameOrTempName;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.wwdocumentDisplayNameProperty;
+import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.altNames;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.datable;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.defaultFullPersonNameConverter;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.defaultLocationNameConverter;
@@ -391,21 +392,21 @@ public class HuygensIng {
       .withProperty("types", localProperty("cnwperson_types"))
       .withProperty("name", localProperty("cnwperson_name"))
       .withProperty("koppelnaam", localProperty("cnwperson_koppelnaam"))
-      .withProperty("networkDomains", localProperty("cnwperson_networkDomains"))
-      .withProperty("domains", localProperty("cnwperson_domains"))
-      .withProperty("subDomains", localProperty("cnwperson_subDomains"))
-      .withProperty("combinedDomains", localProperty("cnwperson_combinedDomains"))
-      .withProperty("characteristics", localProperty("cnwperson_characteristics"))
-      .withProperty("periodicals", localProperty("cnwperson_periodicals"))
-      .withProperty("memberships", localProperty("cnwperson_memberships"))
+      .withProperty("networkDomains", localProperty("cnwperson_networkDomains", arrayToEncodedArray))
+      .withProperty("domains", localProperty("cnwperson_domains", arrayToEncodedArray))
+      .withProperty("subDomains", localProperty("cnwperson_subdomains", arrayToEncodedArray))
+      .withProperty("combinedDomains", localProperty("cnwperson_combinedDomains", arrayToEncodedArray))
+      .withProperty("characteristics", localProperty("cnwperson_characteristics", arrayToEncodedArray))
+      .withProperty("periodicals", localProperty("cnwperson_periodicals", arrayToEncodedArray))
+      .withProperty("memberships", localProperty("cnwperson_memberships", arrayToEncodedArray))
       .withProperty("biodesurl", localProperty("cnwperson_biodesurl"))
       .withProperty("dbnlUrl", localProperty("cnwperson_dbnlUrl"))
-      .withProperty("verwijzingen", localProperty("cnwperson_verwijzingen"))
+      .withProperty("verwijzingen", localProperty("cnwperson_verwijzingen", arrayToEncodedArray))
       .withProperty("notities", localProperty("cnwperson_notities"))
       .withProperty("opmerkingen", localProperty("cnwperson_opmerkingen"))
       .withProperty("aantekeningen", localProperty("cnwperson_aantekeningen"))
-      .withProperty("altNames", localProperty("cnwperson_altNames"))
-      .withProperty("relatives", localProperty("cnwperson_relatives"))
+      .withProperty("altNames", localProperty("cnwperson_altNames", altNames))
+      .withProperty("relatives", localProperty("cnwperson_relatives", arrayToEncodedArray))
       .withProperty("cnwBirthYear", localProperty("cnwperson_cnwBirthYear", datable))
       .withProperty("cnwDeathYear", localProperty("cnwperson_cnwDeathYear", datable))
       .withProperty("birthdateQualifier", localProperty("cnwperson_birthdateQualifier"))

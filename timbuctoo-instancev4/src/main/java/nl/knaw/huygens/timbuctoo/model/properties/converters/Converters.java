@@ -23,6 +23,8 @@ public class Converters {
   public static final DefaultLocationNameConverter defaultLocationNameConverter = new DefaultLocationNameConverter();
   public static final DefaultFullPersonNameConverter defaultFullPersonNameConverter
     = new DefaultFullPersonNameConverter();
+  // CNW AltNames converter
+  public static final AltNamesConverter altNames = new AltNamesConverter();
 
 
   public static StringArrayToEncodedArrayOfLimitedValues stringArrayToEncodedArrayOf(String... values) {
