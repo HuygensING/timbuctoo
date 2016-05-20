@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.search.description;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.Change;
@@ -16,7 +18,10 @@ import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParse
 import nl.knaw.huygens.timbuctoo.search.description.sort.SortDescription;
 import nl.knaw.huygens.timbuctoo.search.description.sort.SortFieldDescription;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +31,7 @@ import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSear
 import static nl.knaw.huygens.timbuctoo.search.description.sort.BuildableSortFieldDescription.newSortFieldDescription;
 
 public class CnwPersonSearchDescription extends AbstractSearchDescription {
+  private static final Logger LOG = LoggerFactory.getLogger(CnwPersonSearchDescription.class);
 
   private final List<String> sortableFields;
   private final List<String> fullTextSearchFields;
@@ -148,16 +154,7 @@ public class CnwPersonSearchDescription extends AbstractSearchDescription {
     dataPropertyDescriptors.put("gender", propertyDescriptorFactory.getLocal("cnwperson_gender", Gender.class));
     dataPropertyDescriptors.put("modified_date", propertyDescriptorFactory.getLocal("modified", Change.class));
     dataPropertyDescriptors.put("name", propertyDescriptorFactory.getLocal("cnwperson_names", PersonNames.class));
-    dataPropertyDescriptors.put("networkDomains",
-      propertyDescriptorFactory.getLocal("cnwperson_networkDomains", List.class));
-    dataPropertyDescriptors.put("characteristics",
-      propertyDescriptorFactory.getLocal("cnwperson_characteristics", List.class));
-    dataPropertyDescriptors.put("combinedDomains",
-      propertyDescriptorFactory.getLocal("cnwperson_combinedDomains", List.class));
-    dataPropertyDescriptors.put("memberships",
-      propertyDescriptorFactory.getLocal("cnwperson_memberships", List.class));
-    dataPropertyDescriptors.put("periodicals",
-      propertyDescriptorFactory.getLocal("cnwperson_periodicals", List.class));
+
 
     dataPropertyDescriptors
       .put("_id", propertyDescriptorFactory.getLocal("tim_id", String.class));
@@ -166,8 +163,30 @@ public class CnwPersonSearchDescription extends AbstractSearchDescription {
 
   @Override
   public EntityRef createRef(Vertex vertex) {
+    final ObjectMapper objectMapper = new ObjectMapper();
     EntityRef entityRef = super.createRef(vertex);
 
+    Map<String, Object> data = entityRef.getData();
+
+    try {
+      final TypeReference<List<String>> listTypeReference = new TypeReference<List<String>>() {
+      };
+      data.put("networkDomains", objectMapper.readValue((String) vertex.value("cnwperson_networkDomains"),
+        listTypeReference));
+      data.put("characteristics", objectMapper.readValue((String) vertex.value("cnwperson_characteristics"),
+        listTypeReference));
+      data.put("combinedDomains", objectMapper.readValue((String) vertex.value("cnwperson_combinedDomains"),
+        listTypeReference));
+      data.put("memberships", objectMapper.readValue((String) vertex.value("cnwperson_memberships"),
+        listTypeReference));
+      data.put("periodicals", objectMapper.readValue((String) vertex.value("cnwperson_periodicals"),
+        listTypeReference));
+
+    } catch (IOException e) {
+      LOG.error("Cannot read value for cnwperson with tim_id: {}", vertex.value("tim_id"), e);
+    }
+
+    entityRef.setData(data);
     return entityRef;
   }
 
