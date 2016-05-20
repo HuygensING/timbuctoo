@@ -42,7 +42,7 @@ public class StringListParserTest {
   }
 
   @Test
-  public void parseDoesNotRemoveTheSpacesFromTheStringValuesInTheArray(){
+  public void parseDoesNotRemoveTheSpacesFromTheStringValuesInTheArray() {
     String input = "[\"value1\", \"value2 123 eb test\"]";
     String expectedValue = "value1;value2 123 eb test";
     StringListParser instance = new StringListParser(";");
