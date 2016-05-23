@@ -33,7 +33,6 @@ import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFact
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
-import nl.knaw.huygens.timbuctoo.server.security.LocalUserCreator;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.AutocompleteLuceneIndexDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
@@ -42,7 +41,6 @@ import nl.knaw.huygens.timbuctoo.server.databasemigration.LabelDatabaseMigration
 import nl.knaw.huygens.timbuctoo.server.databasemigration.WwDocumentSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.WwPersonSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
-import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Graph;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
@@ -64,6 +62,8 @@ import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.InvariantsCh
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.LabelsAddedToVertexDatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.SortIndexesDatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
+import nl.knaw.huygens.timbuctoo.server.security.LocalUserCreator;
+import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -179,7 +179,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     environment.lifecycle().manage(graphManager);
     // database validator
-    final BackgroundRunner<ValidationResult> databaseValidator = setUpDatabaseValidator(
+    final BackgroundRunner<ValidationResult> databaseValidationRunner = setUpDatabaseValidator(
       configuration,
       environment,
       vres,
@@ -204,7 +204,11 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     // Admin resources
     environment.admin().addTask(new UserCreationTask(new LocalUserCreator(authenticator, userStore, authorizer)));
-    environment.admin().addTask(new DatabaseValidationTask(databaseValidator));
+    environment.admin().addTask(new DatabaseValidationTask(
+      databaseValidationRunner,
+      getDatabaseValidator(vres, graphManager),
+      graphManager
+    ));
 
     // register health checks
     register(environment, "Encryption algorithm", new EncryptionAlgorithmHealthCheck(ENCRYPTION_ALGORITHM));
@@ -212,7 +216,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, "Users file", new FileHealthCheck(usersPath));
 
     register(environment, "Neo4j database connection", graphManager);
-    register(environment, "Database", new DatabaseHealthCheck(databaseValidator));
+    register(environment, "Database", new DatabaseHealthCheck(databaseValidationRunner));
 
     //Log all http requests
     register(environment, new LoggingFilter(1024, currentVersion));
@@ -251,12 +255,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     BackgroundRunner<ValidationResult> healthCheckRunner = new BackgroundRunner<>(executeCheckAt, clock, executor);
 
     if (executeCheckAt >= 0) {
-      DatabaseValidator databaseValidator = new DatabaseValidator(
-        new LabelsAddedToVertexDatabaseCheck(),
-        new SortIndexesDatabaseCheck(),
-        new InvariantsCheck(vres),
-        new FullTextIndexCheck(graphManager)
-      );
+      DatabaseValidator databaseValidator = getDatabaseValidator(vres, graphManager);
 
       graphWaiter.onGraph(graph -> {
         healthCheckRunner.start(() -> {
@@ -273,6 +272,15 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       LOG.error("Database invariant check will not run because executeDatabaseInvariantCheckAt is {}.", executeCheckAt);
     }
     return healthCheckRunner;
+  }
+
+  private DatabaseValidator getDatabaseValidator(Vres vres, TinkerpopGraphManager graphManager) {
+    return new DatabaseValidator(
+      new LabelsAddedToVertexDatabaseCheck(),
+      new SortIndexesDatabaseCheck(),
+      new InvariantsCheck(vres),
+      new FullTextIndexCheck(graphManager)
+    );
   }
 
   private void setupObjectMapping(Environment environment) {
