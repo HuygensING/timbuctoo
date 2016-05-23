@@ -8,6 +8,8 @@ import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ElementValidationResult;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ValidationResult;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,23 +42,35 @@ public class InvariantsCheck implements DatabaseCheck {
       if (!Objects.equals(edge.label(), "VERSION_OF")) { // ignore the VERSION_OF relations
         String[] edgeTypes = getEntityTypesOrDefault(edge);
         for (String edgeType : edgeTypes) {
-          Optional<Collection> collection = vres.getCollectionForType(edgeType);
+          Optional<Collection> collectionOptional = vres.getCollectionForType(edgeType);
           String edgeId = edge.value("tim_id");
 
-          if (!collection.isPresent()) {
+          if (!collectionOptional.isPresent()) {
             validationResults.add(
               new ElementValidationResult(false,
                 String.format("Edge with tim_id '%s' has contains unknown variant '%s'", edgeId, edgeType)));
             continue;
           }
 
-          if (collection.get().getVre().getOwnType(vertexTypes) == null) {
+          Collection edgeCollection = collectionOptional.get();
+          // Only check accepted edges / relations, Timbuctoo sees not accepted relations as deleted.
+          if (isAccepted(edge, edgeType) && vreContainsAVariationOfTheVertex(vertexTypes, edgeCollection)) {
             addInvalidVertex(validationResults, id, vertexTypes, edgeType, edgeId);
           }
         }
       }
     });
     return new CompositeValidationResult(validationResults);
+  }
+
+  private boolean isAccepted(Edge edge, String edgeType) {
+    String acceptedProp = String.format("%s_accepted", edgeType);
+    Property<Boolean> property = edge.property(acceptedProp);
+    return property.isPresent() && property.value();
+  }
+
+  private boolean vreContainsAVariationOfTheVertex(String[] vertexTypes, Collection collection) {
+    return collection.getVre().getOwnType(vertexTypes) == null;
   }
 
   private void addInvalidVertex(List<ValidationResult> validationResults, String id, String[] vertexTypes,

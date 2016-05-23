@@ -13,7 +13,9 @@ import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.shaded.jackson.databind.node.JsonNodeFactory;
@@ -72,18 +74,12 @@ public class InvariantsFix implements DatabaseMigration {
           Optional<Collection> collectionOptional = vres.getCollectionForType(edgeType);
 
           collectionOptional.ifPresent(collection -> {
-
-            if (collection.getVre().getOwnType(vertexTypes) == null) {
+            // Only fix accepted edges / relations, Timbuctoo sees not accepted relations as deleted.
+            if (isAccepted(edge, edgeType) && vreContainsAVariationOfTheVertex(vertexTypes, collection)) {
               if (Objects.equals("language", adminVertexType) || Objects.equals("location", adminVertexType)) {
                 duplicateDefaultInformationToMissingVariant(vertex, collection, adminVertexType);
               } else {
-                List<String> types = Lists.newArrayList(edgeTypes);
-                types.remove(edgeType);
-                try {
-                  edge.property("types", objectMapper.writeValueAsString(types));
-                } catch (JsonProcessingException e) {
-                  throw new RuntimeException("Types could not be set to edge", e);
-                }
+                setAcceptedToFalse(edge, edgeType);
               }
             }
           });
@@ -92,6 +88,25 @@ public class InvariantsFix implements DatabaseMigration {
     });
     processedTypes.clear(); // clear processed types, each vertex should be process all the types
 
+  }
+
+  private void setAcceptedToFalse(Edge edge, String edgeType) {
+    String acceptedProp = getAcceptedProp(edgeType);
+    edge.property(acceptedProp, false);
+  }
+
+  private boolean isAccepted(Edge edge, String edgeType) {
+    String acceptedProp = getAcceptedProp(edgeType);
+    Property<Boolean> property = edge.property(acceptedProp);
+    return property.isPresent() && property.value();
+  }
+
+  private String getAcceptedProp(String edgeType) {
+    return String.format("%s_accepted", edgeType);
+  }
+
+  private boolean vreContainsAVariationOfTheVertex(String[] vertexTypes, Collection collection) {
+    return collection.getVre().getOwnType(vertexTypes) == null;
   }
 
   private String getAbstractType(String[] vertexTypes) {
