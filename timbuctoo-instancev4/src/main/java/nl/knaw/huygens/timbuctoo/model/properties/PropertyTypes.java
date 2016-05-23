@@ -16,10 +16,7 @@ public class PropertyTypes {
   }
 
   public static ReadableProperty wwPersonNameOrTempName() {
-    return new PropertyOrDefault(
-      localProperty("wwperson_names", defaultFullPersonNameConverter),
-      localProperty("wwperson_tempName")
-    );
+    return new WwPersonDisplayName();
   }
 
   public static ReadableProperty wwdocumentDisplayNameProperty() {
