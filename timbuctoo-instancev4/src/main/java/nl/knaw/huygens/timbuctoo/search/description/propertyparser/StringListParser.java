@@ -18,7 +18,8 @@ public class StringListParser implements PropertyParser {
     if (value == null) {
       return null;
     }
-    return value.replace("[", "").replace("]", "").replace("\"", "").replace(" ", "").replace(",", separator);
+    return value.replace("[", "").replace("]", "").replace("\" ", "").replace(" \"", "").replace("\"", "")
+                .replace(",", separator);
   }
 
   @Override

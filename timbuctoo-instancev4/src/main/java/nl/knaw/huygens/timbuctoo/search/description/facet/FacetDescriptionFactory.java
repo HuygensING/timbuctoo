@@ -97,4 +97,8 @@ public class FacetDescriptionFactory {
   public FacetDescription createJoinedListFacetDescription(String facetName, String propertyName, String separator) {
     return new ListFacetDescription(facetName, propertyName, parserFactory.getJoinedListParser(separator));
   }
+
+  public FacetDescription createAltNameFacetDescription(String facetName, String propertyName) {
+    return new AltNameFacetDescription(facetName, propertyName);
+  }
 }
