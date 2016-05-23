@@ -54,7 +54,11 @@ public class FullTextSearchDescription {
   @SuppressWarnings("unchecked")
   public void filter(GraphTraversal<Vertex, Vertex> traversal, FullTextSearchParameter fullTextSearchParameter) {
     String term = fullTextSearchParameter.getTerm();
-    traversal.where(__.coalesce(prop1.getTraversal(), prop2.getTraversal())
+    // In the real world, the backup property was never reached due to the .coalesce step being
+    // satisfied that the PersonNames' empty list mapped to a blank string.
+    // A .union step for both however is quite satisfactory because when a user searches, the user wants
+    // to search in all available data.
+    traversal.where(__.union(prop1.getTraversal(), prop2.getTraversal())
                       .is(P.test(CONTAINS_STRING_PREDICATE, term)));
   }
 

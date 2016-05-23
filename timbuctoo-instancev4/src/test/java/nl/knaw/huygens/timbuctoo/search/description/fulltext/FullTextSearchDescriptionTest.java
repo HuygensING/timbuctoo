@@ -144,11 +144,34 @@ public class FullTextSearchDescriptionTest {
     assertThat(traversal.toList(), containsInAnyOrder(
       likeVertex().withTimId("v1"),
       likeVertex().withTimId("v3")));
+  }
+  
+  @Test
+  public void filterFindsTheVertexViaTheBackupPropertyWhenThePropertyDoesNotMatch() {
+    // In the real world, the backup property was never reached due to the .coalesce step being
+    // satisfied that the PersonNames' empty list mapped to a blank string.
+    // A .union step for both however is quite satisfactory because when a user searches, the user wants
+    // to search in all available data.
 
+    // This test fails when using .coalesce
+    GraphTraversal<Vertex, Vertex> traversal = newGraph()
+      .withVertex(vertex -> vertex.withTimId("v3")
+                                  .withProperty(PROPERTY, "") // empty string like in the real world scenario
+                                  .withProperty(BACKUP_PROPERTY, "value1"))
+      .build()
+      .traversal()
+      .V();
+    FullTextSearchParameter fullTextSearchParameter = new FullTextSearchParameter(NAME, "value1");
+    FullTextSearchDescription instance =
+      createLocalFullTextSearchDescriptionWithBackupProperty(NAME, PROPERTY, BACKUP_PROPERTY);
+
+    instance.filter(traversal, fullTextSearchParameter);
+
+    assertThat(traversal.toList(), contains(likeVertex().withTimId("v3")));
   }
 
   @Test
-  public void filterFiltersOnlyOnTheBackupPropertyFieldIfTheVertexDoesNotContainTheProperty() {
+  public void filterAlsoFiltersOnTheBackupPropertyFieldIfTheVertexDoesContainTheProperty() {
     GraphTraversal<Vertex, Vertex> traversal = newGraph()
       .withVertex(vertex -> vertex.withTimId("v1").withProperty(BACKUP_PROPERTY, "value1"))
       .withVertex(vertex -> vertex.withTimId("v2").withProperty(PROPERTY, "value2"))
@@ -164,8 +187,10 @@ public class FullTextSearchDescriptionTest {
 
     instance.filter(traversal, fullTextSearchParameter);
 
-    assertThat(traversal.toList(), contains(likeVertex().withTimId("v1")));
-
+    assertThat(traversal.toList(), containsInAnyOrder(
+      likeVertex().withTimId("v1"),
+      likeVertex().withTimId("v3")
+    ));
   }
 
   @Test
