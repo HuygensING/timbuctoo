@@ -22,6 +22,7 @@ import nl.knaw.huygens.timbuctoo.security.User;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -31,6 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.slf4j.Logger;
@@ -79,11 +81,12 @@ public class TinkerpopJsonCrudService {
   private final UserStore userStore;
   private final ChangeListener listener;
   private Authorizer authorizer;
+  private EntityFetcher entityFetcher;
 
   public TinkerpopJsonCrudService(GraphWrapper graphwrapper, Vres mappings,
                                   HandleAdder handleAdder, UserStore userStore, UrlGenerator handleUrlFor,
                                   UrlGenerator autoCompleteUrlFor, UrlGenerator relationUrlFor, Clock clock,
-                                  ChangeListener listener, Authorizer authorizer) {
+                                  ChangeListener listener, Authorizer authorizer, EntityFetcher entityFetcher) {
     this.graphwrapper = graphwrapper;
     this.mappings = mappings;
     this.handleAdder = handleAdder;
@@ -94,6 +97,7 @@ public class TinkerpopJsonCrudService {
     this.clock = clock;
     this.listener = listener;
     this.authorizer = authorizer;
+    this.entityFetcher = entityFetcher;
     nodeFactory = JsonNodeFactory.instance;
   }
 
@@ -138,11 +142,15 @@ public class TinkerpopJsonCrudService {
     Graph graph = graphwrapper.getGraph();
     GraphTraversalSource traversal = graph.traversal();
     try {
-      Vertex sourceV = getEntity(traversal, UUID.fromString(source.asText("")), null).next();
+      String collectionName = collection.getCollectionName();
+      Vertex sourceV = entityFetcher.getEntity(traversal, UUID.fromString(source.asText("")), null, collectionName)
+                                    .next();
       try {
-        Vertex targetV = getEntity(traversal, UUID.fromString(target.asText("")), null).next();
+        Vertex targetV = entityFetcher.getEntity(traversal, UUID.fromString(target.asText("")), null, collectionName)
+                                      .next();
         try {
-          Vertex typeV = getEntity(traversal, UUID.fromString(type.asText("")), null).next();
+          Vertex typeV = entityFetcher.getEntity(traversal, UUID.fromString(type.asText("")), null, collectionName)
+                                      .next();
 
           //check if the relation already exists
           final Optional<Edge> existingEdge = stream(sourceV.edges(Direction.BOTH))
@@ -334,7 +342,7 @@ public class TinkerpopJsonCrudService {
 
     Vertex entityTs = null;
     try {
-      entityTs = getEntity(traversalSource, id, rev).next();
+      entityTs = entityFetcher.getEntity(traversalSource, id, rev,  collection.getCollectionName()).next();
     } catch (NoSuchElementException e) {
       throw new NotFoundException();
     }
@@ -468,7 +476,7 @@ public class TinkerpopJsonCrudService {
     final Vre vre = collection.getVre();
     final Vre admin = mappings.getVre("Admin");
 
-    Object[] relationTypes = traversalSource.V().has("relationtype_regularName").id().toList().toArray();
+    Object[] relationTypes = traversalSource.V().has(T.label, LabelP.of("relationtype")).id().toList().toArray();
 
     return collection.getVre().getCollections().values().stream()
       .filter(Collection::isRelationCollection)
@@ -636,22 +644,6 @@ public class TinkerpopJsonCrudService {
       });
   }
 
-  private GraphTraversal<Vertex, Vertex> getEntity(GraphTraversalSource source, UUID id, Integer rev) {
-    if (rev == null) {
-      return source
-        .V()
-        .has("tim_id", id.toString())
-        .not(__.has("deleted", true))
-        .has("isLatest", true);
-    }
-    return source
-      .V()
-      .has("tim_id", id.toString())
-      .has("rev", rev)
-      .not(__.has("deleted", true))
-      .has("isLatest", false);
-  }
-
   private void setCreated(Element element, String userId) {
     String value = String.format("{\"timeStamp\":%s,\"userId\":%s}",
       clock.millis(),
@@ -737,7 +729,8 @@ public class TinkerpopJsonCrudService {
     final Graph graph = graphwrapper.getGraph();
     final GraphTraversalSource traversalSource = graph.traversal();
 
-    GraphTraversal<Vertex, Vertex> entityTraversal = getEntity(traversalSource, id, null);
+    GraphTraversal<Vertex, Vertex> entityTraversal = entityFetcher.getEntity(traversalSource, id, null,
+      collection.getCollectionName());
 
     if (!entityTraversal.hasNext()) {
       throw new NotFoundException();
@@ -827,7 +820,7 @@ public class TinkerpopJsonCrudService {
 
     final Graph graph = graphwrapper.getGraph();
     final GraphTraversalSource traversalSource = graph.traversal();
-    GraphTraversal<Vertex, Vertex> entityTraversal = getEntity(traversalSource, id, null);
+    GraphTraversal<Vertex, Vertex> entityTraversal = entityFetcher.getEntity(traversalSource, id, null, collectionName);
 
     if (!entityTraversal.hasNext()) {
       throw new NotFoundException();
