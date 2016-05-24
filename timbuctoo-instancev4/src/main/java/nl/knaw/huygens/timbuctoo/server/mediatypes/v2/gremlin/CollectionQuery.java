@@ -2,9 +2,11 @@ package nl.knaw.huygens.timbuctoo.server.mediatypes.v2.gremlin;
 
 
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
@@ -76,8 +78,7 @@ public class CollectionQuery implements QueryFilter, Resultable {
             .toArray(GraphTraversal[]::new);
 
 
-    return __.where(__.filter(x -> ((String) ((Vertex) x.get())
-                    .property("types").value()).contains("\"" + getDomain() + "\"")))
+    return __.has(T.label, LabelP.of(getDomain()))
                 .and(traversals).map(this::loadResult);
   }
 }

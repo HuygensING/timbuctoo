@@ -82,7 +82,7 @@ public class Gremlin {
   @Consumes("application/json")
   @Produces("application/json")
   public Response postJson2(RootQuery rootQuery) throws IOException {
-    GraphTraversal result = wrapper.getGraph().traversal().V().where(rootQuery.getTraversal());
+    GraphTraversal result = wrapper.getLatestState().V().where(rootQuery.getTraversal());
     LOG.info(result.toString());
     while (result.hasNext()) {
       Object item = result.next();
