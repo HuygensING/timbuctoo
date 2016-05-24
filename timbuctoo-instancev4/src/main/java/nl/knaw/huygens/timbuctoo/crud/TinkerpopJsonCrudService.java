@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
@@ -55,6 +56,7 @@ import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
 import static nl.knaw.huygens.timbuctoo.crud.EdgeManipulator.duplicateEdge;
 import static nl.knaw.huygens.timbuctoo.crud.VertexDuplicator.duplicateVertex;
+import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.configurationFailure;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypes;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
@@ -261,6 +263,9 @@ public class TinkerpopJsonCrudService {
     String collectionName = collection.getCollectionName();
 
     Map<String, LocalProperty> mapping = collection.getWriteableProperties();
+    Optional<Collection> baseCollection = mappings.getCollectionForType(collection.getAbstractType());
+    Map<String, LocalProperty> baseMapping = baseCollection.isPresent() ?
+      baseCollection.get().getWriteableProperties() : Maps.newHashMap();
 
     UUID id = UUID.randomUUID();
 
@@ -278,11 +283,21 @@ public class TinkerpopJsonCrudService {
           try {
             mapping.get(fieldName).setJson(vertex, input.get(fieldName));
           } catch (IOException e) {
+            graph.tx().rollback();
             throw new IOException(fieldName + " could not be saved. " + e.getMessage(), e);
           }
         } else {
           graph.tx().rollback();
           throw new IOException(String.format("Items of %s have no property %s", collectionName, fieldName));
+        }
+
+        if (baseMapping.containsKey(fieldName)) {
+          try {
+            baseMapping.get(fieldName).setJson(vertex, input.get(fieldName));
+          } catch (IOException e) {
+            LOG.error(configurationFailure, "Field could not be parsed by Admin VRE converter {}_{}",
+              baseCollection.get().getCollectionName(), fieldName);
+          }
         }
       }
     }
