@@ -43,6 +43,8 @@ public class SearchDescriptionFactory {
         return Optional.of(new DcarLegislationSearchDescription(propertyDescriptorFactory, facetDescriptionFactory));
       case "cnwperson":
         return Optional.of(new CnwPersonSearchDescription(propertyDescriptorFactory, facetDescriptionFactory));
+      case "charterdocument":
+        return Optional.of(new CharterDocumentSearchDescription(propertyDescriptorFactory, facetDescriptionFactory));
       default:
         return Optional.empty();
     }
