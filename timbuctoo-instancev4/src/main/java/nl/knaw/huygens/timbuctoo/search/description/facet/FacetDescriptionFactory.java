@@ -33,16 +33,18 @@ public class FacetDescriptionFactory {
   }
 
   public FacetDescription createDerivedListFacetDescription(String facetName, String relationName,
-                                                      Class<?> typeToParse, String propertyName, String... relations) {
+                                                            Class<?> typeToParse, String propertyName,
+                                                            String... relations) {
     return new DerivedListFacetDescription(facetName, propertyName, relationName,
-            parserFactory.getParser(typeToParse), relations);
+      parserFactory.getParser(typeToParse), relations);
   }
 
 
   public FacetDescription createDerivedListFacetDescription(String facetName, List<String> relationNames,
-                                                      Class<?> typeToParse, String propertyName, String... relations) {
+                                                            Class<?> typeToParse, String propertyName,
+                                                            String... relations) {
     return new DerivedListFacetDescription(facetName, propertyName, relationNames,
-            parserFactory.getParser(typeToParse), relations);
+      parserFactory.getParser(typeToParse), relations);
   }
 
   /**
@@ -100,5 +102,9 @@ public class FacetDescriptionFactory {
 
   public FacetDescription createAltNameFacetDescription(String facetName, String propertyName) {
     return new AltNameFacetDescription(facetName, propertyName);
+  }
+
+  public FacetDescription createCharterFondsFacetDescription(String facetName) {
+    return new CharterPortaalFondsFacetDescription(facetName);
   }
 }
