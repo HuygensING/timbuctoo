@@ -16520,7 +16520,7 @@ exports["default"] = function (path, query, vreId, done) {
 
 module.exports = exports["default"];
 
-},{"../config":63,"./server":43}],37:[function(require,module,exports){
+},{"../config":66,"./server":43}],37:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16587,7 +16587,7 @@ exports.deleteEntity = deleteEntity;
 exports.fetchEntity = fetchEntity;
 exports.crud = crud;
 
-},{"../config":63,"./server":43}],38:[function(require,module,exports){
+},{"../config":66,"./server":43}],38:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16744,7 +16744,7 @@ exports.selectEntity = selectEntity;
 exports.makeNewEntity = makeNewEntity;
 exports.deleteEntity = deleteEntity;
 
-},{"../config":63,"../util/clone-deep":73,"./crud":37,"./relation-savers":41}],39:[function(require,module,exports){
+},{"../config":66,"../util/clone-deep":76,"./crud":37,"./relation-savers":41}],39:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16825,11 +16825,14 @@ exports["default"] = {
 	},
 	onLoadQuery: function onLoadQuery(name) {
 		return _store2["default"].dispatch((0, _queries.loadQuery)(name));
+	},
+	onDismissMessage: function onDismissMessage(messageIndex) {
+		return _store2["default"].dispatch({ type: "DISMISS_MESSAGE", messageIndex: messageIndex });
 	}
 };
 module.exports = exports["default"];
 
-},{"../store":72,"./entity":38,"./queries":40,"./vre":45}],40:[function(require,module,exports){
+},{"../store":75,"./entity":38,"./queries":40,"./vre":45}],40:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -16917,19 +16920,17 @@ var submitQuery = function submitQuery() {
 		var q = _parsersGremlin.parsers.parseGremlin(queries.queries[queries.currentQuery]);
 		_server2["default"].fastXhr({
 			method: "POST",
-			headers: { "Accept": "application/json" },
+			headers: { "Accept": "application/json", "Content-type": "application/json" },
 			url: _config2["default"].apiUrl.v4 + "/gremlin",
-			body: q[0]
+			body: JSON.stringify({ or: queries.queries[queries.currentQuery]["or"] })
 		}, function (err, resp) {
 			return dispatch({ type: "SET_QUERY_RESULTS", results: JSON.parse(resp.body) });
 		});
-		_server2["default"].fastXhr({
-			method: "POST",
-			url: _config2["default"].apiUrl.v4 + "/gremlin",
-			body: q[1]
-		}, function (err, resp) {
-			return dispatch({ type: "SET_QUERY_RESULT_COUNT", count: resp.body });
-		});
+		/*	server.fastXhr({
+  		method: "POST",
+  		url: `${config.apiUrl.v4}/gremlin`,
+  		body: q[1]
+  	}, (err, resp) => dispatch({type: "SET_QUERY_RESULT_COUNT", count: resp.body}));*/
 	};
 };
 
@@ -16973,7 +16974,7 @@ exports.nameQuery = nameQuery;
 exports.loadSavedQueries = loadSavedQueries;
 exports.loadQuery = loadQuery;
 
-},{"../config":63,"../parsers/gremlin":65,"./server":43}],41:[function(require,module,exports){
+},{"../config":66,"../parsers/gremlin":68,"./server":43}],41:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17150,7 +17151,7 @@ exports["default"] = {
 };
 module.exports = exports["default"];
 
-},{"../store":72,"xhr":34}],44:[function(require,module,exports){
+},{"../store":75,"xhr":34}],44:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -17318,15 +17319,19 @@ var setVre = function setVre(vreId) {
 			},
 			url: _config2["default"].apiUrl.v4 + "/metadata/" + vreId
 		}, function (err, resp) {
-			dispatch({ type: "SET_VRE", vreId: vreId, collections: JSON.parse(resp.body) });
-		}, null, "Fetch VRE description for " + vreId);
+			if (resp.statusCode === 200) {
+				dispatch({ type: "SET_VRE", vreId: vreId, collections: JSON.parse(resp.body) });
+			}
+		}, function () {
+			return dispatch({ type: "SET_VRE", vreId: vreId, collections: [] });
+		}, "Fetch VRE description for " + vreId);
 	};
 };
 
 exports.listVres = listVres;
 exports.setVre = setVre;
 
-},{"../config":63,"./server":43}],46:[function(require,module,exports){
+},{"../config":66,"./server":43}],46:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18268,6 +18273,11 @@ var _mapField = require("./map-field");
 
 var _mapField2 = _interopRequireDefault(_mapField);
 
+var MODE_LABELS = {
+	edit: "Editing",
+	"new": "Adding new"
+};
+
 var Form = (function (_React$Component) {
 	_inherits(Form, _React$Component);
 
@@ -18282,39 +18292,71 @@ var Form = (function (_React$Component) {
 		value: function render() {
 			var _this = this;
 
-			if (!this.props.entity.data) {
+			var _props = this.props;
+			var entity = _props.entity;
+			var user = _props.user;
+			var vre = _props.vre;
+			var onSave = _props.onSave;
+			var onDelete = _props.onDelete;
+			var onNew = _props.onNew;
+
+			if (!entity.data) {
 				return null;
 			}
 
-			var saveButton = this.props.user && this.props.user.token ? _react2["default"].createElement(
-				"button",
-				{ onClick: this.props.onSave },
-				"Save"
-			) : null;
+			var disabled = !(user && user.token);
 
-			var deleteButton = this.props.user && this.props.user.token && this.props.entity.data._id ? _react2["default"].createElement(
+			var currentMode = entity.domain && entity.data._id ? "edit" : "new";
+
+			var saveButton = _react2["default"].createElement(
 				"button",
-				{ onClick: this.props.onDelete },
+				{ className: "pull-right", disabled: disabled, onClick: onSave },
+				"Save"
+			);
+
+			var deleteButton = entity.data._id ? _react2["default"].createElement(
+				"button",
+				{ className: "pull-right", disabled: disabled, onClick: onDelete },
 				"Delete"
 			) : null;
 
-			var newForm = this.props.user && this.props.user.token ? this.props.vre.collections[this.props.entity.domain].map(function (fieldDef, i) {
+			var addNewButton = vre.vreId && entity.domain && entity.data._id ? _react2["default"].createElement(
+				"button",
+				{ className: "pull-right", disabled: disabled, onClick: function () {
+						return onNew(entity.domain);
+					} },
+				"Add new"
+			) : null;
+
+			var formFields = vre.collections[entity.domain].map(function (fieldDef, i) {
 				return _react2["default"].createElement(
 					"li",
-					{ key: i },
+					{ className: "list-group-item", key: i },
 					(0, _mapField2["default"])(fieldDef, _this.props)
 				);
-			}) : "you are not logged in";
+			});
 
 			return _react2["default"].createElement(
-				"ul",
-				{ id: "form" },
-				newForm,
+				"div",
+				{ className: "panel panel-default edit-form" },
 				_react2["default"].createElement(
-					"li",
-					null,
+					"div",
+					{ className: "panel-heading" },
+					addNewButton,
 					saveButton,
-					deleteButton
+					deleteButton,
+					_react2["default"].createElement(
+						"h3",
+						{ className: "panel-title" },
+						MODE_LABELS[currentMode],
+						": ",
+						entity.domain.replace(/s$/, "")
+					)
+				),
+				_react2["default"].createElement(
+					"ul",
+					{ className: "list-group" },
+					formFields
 				)
 			);
 		}
@@ -18326,6 +18368,7 @@ var Form = (function (_React$Component) {
 Form.propTypes = {
 	entity: _react2["default"].PropTypes.object,
 	onDelete: _react2["default"].PropTypes.func,
+	onNew: _react2["default"].PropTypes.func,
 	onSave: _react2["default"].PropTypes.func,
 	user: _react2["default"].PropTypes.object,
 	vre: _react2["default"].PropTypes.object
@@ -18390,7 +18433,7 @@ var MAP = {
 		return _react2["default"].createElement(_fieldsString2["default"], _extends({}, props, { name: fieldDef.name }));
 	},
 	"text": function text(fieldDef, props) {
-		return _react2["default"].createElement(_fieldsText2["default"], _extends({}, props, { name: fieldDef.name }));
+		return _react2["default"].createElement(_fieldsString2["default"], _extends({}, props, { name: fieldDef.name }));
 	},
 	"links": function links(fieldDef, props) {
 		return _react2["default"].createElement(_fieldsLinks2["default"], _extends({}, props, { name: fieldDef.name }));
@@ -18416,7 +18459,7 @@ var MAP = {
 };
 
 exports["default"] = function (fieldDef, props) {
-	return MAP[fieldDef.type](fieldDef, props);
+	return (MAP[fieldDef.type] || MAP.string)(fieldDef, props);
 };
 
 module.exports = exports["default"];
@@ -18471,15 +18514,164 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
+var _classnames = require("classnames");
+
+var _classnames2 = _interopRequireDefault(_classnames);
+
 var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
-var _hireLogin = require("hire-login");
+var _login = require("./login");
 
-var _hireFormsSelect = require("hire-forms-select");
+var _login2 = _interopRequireDefault(_login);
 
-var _hireFormsSelect2 = _interopRequireDefault(_hireFormsSelect);
+var dropDownIsActive = function dropDownIsActive(currentVre, vre) {
+	return currentVre === vre.vreId || null;
+};
+
+var Header = (function (_React$Component) {
+	_inherits(Header, _React$Component);
+
+	function Header(props) {
+		_classCallCheck(this, Header);
+
+		_get(Object.getPrototypeOf(Header.prototype), "constructor", this).call(this, props);
+
+		this.state = {
+			openMenuVreId: "none"
+		};
+
+		this.documentClickListener = this.handleDocumentClick.bind(this);
+	}
+
+	_createClass(Header, [{
+		key: "componentDidMount",
+		value: function componentDidMount() {
+			document.addEventListener("click", this.documentClickListener, false);
+		}
+	}, {
+		key: "componentWillUnmount",
+		value: function componentWillUnmount() {
+			document.removeEventListener("click", this.documentClickListener, false);
+		}
+	}, {
+		key: "handleDocumentClick",
+		value: function handleDocumentClick(ev) {
+			var openMenuVreId = this.state.openMenuVreId;
+
+			if (this.state.openMenuVreId !== "none" && !document.querySelector(".dropdown." + openMenuVreId).contains(ev.target)) {
+				this.setState({
+					openMenuVreId: "none"
+				});
+			}
+		}
+	}, {
+		key: "onVreMenuClick",
+		value: function onVreMenuClick(currentVre) {
+			this.setState({ openMenuVreId: currentVre });
+			this.props.onSelectVre(currentVre);
+		}
+	}, {
+		key: "onDomainSelect",
+		value: function onDomainSelect(domain) {
+			this.setState({ openMenuVreId: "none" });
+			this.props.onNew(domain);
+		}
+	}, {
+		key: "render",
+		value: function render() {
+			var _this = this;
+
+			var vre = this.props.vre;
+
+			var domains = Object.keys(vre.collections || {});
+			var openMenuVreId = this.state.openMenuVreId;
+
+			return _react2["default"].createElement(
+				"nav",
+				{ className: "navbar navbar-default" },
+				_react2["default"].createElement(
+					"div",
+					{ className: "container-fluid" },
+					_react2["default"].createElement(_login2["default"], this.props),
+					_react2["default"].createElement(
+						"ul",
+						{ className: "nav navbar-nav navbar-left" },
+						vre.list.map(function (currentVre) {
+							return _react2["default"].createElement(
+								"li",
+								{ className: (0, _classnames2["default"])("dropdown", currentVre, {
+										active: dropDownIsActive(currentVre, vre),
+										open: currentVre === openMenuVreId
+									}), key: currentVre },
+								_react2["default"].createElement(
+									"a",
+									{ className: "dropdown-toggle", onClick: _this.onVreMenuClick.bind(_this, currentVre) },
+									currentVre,
+									_react2["default"].createElement("span", { className: "caret" })
+								),
+								_react2["default"].createElement(
+									"ul",
+									{ className: "dropdown-menu" },
+									domains.map(function (domain, i) {
+										return _react2["default"].createElement(
+											"li",
+											{ key: i },
+											_react2["default"].createElement(
+												"a",
+												{ onClick: function () {
+														return _this.onDomainSelect(domain);
+													} },
+												domain
+											)
+										);
+									})
+								)
+							);
+						})
+					)
+				)
+			);
+		}
+	}]);
+
+	return Header;
+})(_react2["default"].Component);
+
+Header.propTypes = {
+	entity: _react2["default"].PropTypes.object,
+	onLoginChange: _react2["default"].PropTypes.func,
+	onNew: _react2["default"].PropTypes.func,
+	onSelectVre: _react2["default"].PropTypes.func,
+	vre: _react2["default"].PropTypes.object
+};
+
+exports["default"] = Header;
+module.exports = exports["default"];
+
+},{"./login":62,"classnames":"classnames","react":"react"}],61:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
 
 var _form = require("./form");
 
@@ -18489,17 +18681,21 @@ var _hireFacetedSearch = require("hire-faceted-search");
 
 var _hireFacetedSearch2 = _interopRequireDefault(_hireFacetedSearch);
 
-var _requestLog = require("./request-log");
-
-var _requestLog2 = _interopRequireDefault(_requestLog);
-
 var _searchFilters = require("./search-filters");
 
 var _searchFilters2 = _interopRequireDefault(_searchFilters);
 
+var _header = require("./header");
+
+var _header2 = _interopRequireDefault(_header);
+
 var _config = require("../../config");
 
 var _config2 = _interopRequireDefault(_config);
+
+var _messages = require("./messages");
+
+var _messages2 = _interopRequireDefault(_messages);
 
 var App = (function (_React$Component) {
 	_inherits(App, _React$Component);
@@ -18516,31 +18712,6 @@ var App = (function (_React$Component) {
 			var _this = this;
 
 			console.log(this.props.vre, this.props.entity);
-
-			var errorMessage = this.props.entity.errorMessage ? _react2["default"].createElement(
-				"div",
-				{ style: { fontWeight: "bold", color: "red" } },
-				this.props.entity.errorMessage
-			) : null;
-
-			var domains = Object.keys(this.props.vre.collections || {});
-
-			var domainSelect = domains.length ? _react2["default"].createElement(_hireFormsSelect2["default"], {
-				onChange: function (domain) {
-					return _this.props.onNew(domain);
-				},
-				options: domains,
-				placeholder: "- select a domain - ",
-				value: this.props.entity.domain || ""
-			}) : null;
-
-			var addNewButton = this.props.vre.vreId && this.props.entity.domain ? _react2["default"].createElement(
-				"button",
-				{ onClick: function () {
-						return _this.props.onNew(_this.props.entity.domain);
-					} },
-				"Add new"
-			) : null;
 
 			var businessPart = this.props.vre.vreId && this.props.entity.domain ? _react2["default"].createElement(
 				"div",
@@ -18568,41 +18739,17 @@ var App = (function (_React$Component) {
 			return _react2["default"].createElement(
 				"div",
 				null,
-				_react2["default"].createElement(_requestLog2["default"], this.props),
 				_react2["default"].createElement(
-					_hireLogin.Login,
-					{
-						appId: this.props.vre.vreId,
-						headers: { VRE_ID: "WomenWriters" },
-						onChange: this.props.onLoginChange,
-						userUrl: _config2["default"].apiUrl["v2.1"] + "/system/users/me" },
-					_react2["default"].createElement(_hireLogin.Basic, { url: _config2["default"].apiUrl["v2.1"] + "/authenticate" })
+					"header",
+					null,
+					_react2["default"].createElement(_header2["default"], this.props)
 				),
-				errorMessage,
 				_react2["default"].createElement(
-					"ul",
-					{ id: "vre-list" },
-					this.props.vre.list.map(function (vreId) {
-						return _react2["default"].createElement(
-							"li",
-							{ key: vreId, onClick: function () {
-									return _this.props.onSelectVre(vreId);
-								} },
-							vreId
-						);
-					}),
-					_react2["default"].createElement(
-						"li",
-						null,
-						domainSelect
-					),
-					_react2["default"].createElement(
-						"li",
-						null,
-						addNewButton
-					)
-				),
-				businessPart
+					"main",
+					null,
+					_react2["default"].createElement(_messages2["default"], _extends({}, this.props, { type: "ERROR_MESSAGE" })),
+					businessPart
+				)
 			);
 		}
 	}]);
@@ -18612,6 +18759,7 @@ var App = (function (_React$Component) {
 
 App.propTypes = {
 	entity: _react2["default"].PropTypes.object,
+	messages: _react2["default"].PropTypes.object,
 	onLoginChange: _react2["default"].PropTypes.func,
 	onNew: _react2["default"].PropTypes.func,
 	onSelect: _react2["default"].PropTypes.func,
@@ -18622,7 +18770,7 @@ App.propTypes = {
 exports["default"] = App;
 module.exports = exports["default"];
 
-},{"../../config":63,"./form":57,"./request-log":61,"./search-filters":62,"hire-faceted-search":3,"hire-forms-select":11,"hire-login":13,"react":"react"}],61:[function(require,module,exports){
+},{"../../config":66,"./form":57,"./header":60,"./messages":64,"./search-filters":65,"hire-faceted-search":3,"react":"react"}],62:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18643,104 +18791,264 @@ var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
-var _reactDom = require("react-dom");
+var _classnames = require("classnames");
 
-var _reactDom2 = _interopRequireDefault(_reactDom);
+var _classnames2 = _interopRequireDefault(_classnames);
 
-var lPad = function lPad(i) {
-	var str = "" + i;
-	if (str.length === 1) {
-		return "0" + str;
-	}
-	return str;
-};
+var _hireLogin = require("hire-login");
 
-var formatTime = function formatTime(time) {
-	return time.getFullYear() + "-" + lPad(time.getMonth()) + "-" + lPad(time.getDate()) + "T" + lPad(time.getHours()) + ":" + lPad(time.getMinutes()) + ":" + lPad(time.getSeconds());
-};
+var _loginDropdown = require("./login-dropdown");
 
-var RequestLog = (function (_React$Component) {
-	_inherits(RequestLog, _React$Component);
+var _loginDropdown2 = _interopRequireDefault(_loginDropdown);
 
-	function RequestLog(props) {
-		_classCallCheck(this, RequestLog);
+var _config = require("../../../config");
 
-		_get(Object.getPrototypeOf(RequestLog.prototype), "constructor", this).call(this, props);
+var _config2 = _interopRequireDefault(_config);
+
+var LoginMenu = (function (_React$Component) {
+	_inherits(LoginMenu, _React$Component);
+
+	function LoginMenu(props) {
+		_classCallCheck(this, LoginMenu);
+
+		_get(Object.getPrototypeOf(LoginMenu.prototype), "constructor", this).call(this, props);
+
 		this.state = {
-			toggle: "open"
+			loginDropdownOpen: false
 		};
+
+		this.documentClickListener = this.handleDocumentClick.bind(this);
 	}
 
-	_createClass(RequestLog, [{
-		key: "componentDidUpdate",
-		value: function componentDidUpdate() {
-			var me = _reactDom2["default"].findDOMNode(this).querySelector("div");
-			var heights = Array.prototype.slice.call(me.childNodes).map(function (el) {
-				return el.getBoundingClientRect().height;
-			});
-			if (heights.length === 0) {
-				return;
-			}
-			me.scrollTop = heights.reduce(function (a, b) {
-				return a + b;
-			});
+	_createClass(LoginMenu, [{
+		key: "componentDidMount",
+		value: function componentDidMount() {
+			document.addEventListener("click", this.documentClickListener, false);
 		}
 	}, {
-		key: "onToggle",
-		value: function onToggle() {
-			if (this.state.toggle === "open") {
-				this.setState({ toggle: "close" });
+		key: "componentWillUnmount",
+		value: function componentWillUnmount() {
+			document.removeEventListener("click", this.documentClickListener, false);
+		}
+	}, {
+		key: "onToggleLogin",
+		value: function onToggleLogin() {
+			if (this.state.loginDropdownOpen) {
+				this.setState({ loginDropdownOpen: false });
 			} else {
-				this.setState({ toggle: "open" });
+				this.setState({ loginDropdownOpen: true });
+			}
+		}
+	}, {
+		key: "handleDocumentClick",
+		value: function handleDocumentClick(ev) {
+			if (this.state.loginDropdownOpen && !document.querySelector(".login-dropdown-list-item").contains(ev.target)) {
+				this.setState({
+					loginDropdownOpen: false
+				});
 			}
 		}
 	}, {
 		key: "render",
 		value: function render() {
+			var user = this.props.user;
+
 			return _react2["default"].createElement(
 				"div",
-				{ className: this.state.toggle, id: "request-log" },
-				_react2["default"].createElement(
-					"button",
-					{ onClick: this.onToggle.bind(this) },
-					this.state.toggle
-				),
+				null,
 				_react2["default"].createElement(
 					"div",
-					null,
-					this.props.messages.log.map(function (msg, i) {
-						return _react2["default"].createElement(
-							"div",
-							{ className: msg.type, key: i },
-							_react2["default"].createElement(
-								"span",
-								{ className: "time" },
-								formatTime(msg.time)
-							),
-							"-",
-							_react2["default"].createElement(
-								"span",
-								{ className: "msg" },
-								msg.message
-							)
-						);
-					})
+					{ className: "navbar-form navbar-right", style: { display: user && user.token ? "inline-block" : "none" } },
+					_react2["default"].createElement(
+						"div",
+						{ className: "form-group" },
+						_react2["default"].createElement(_hireLogin.Login, {
+							appId: this.props.vre.vreId,
+							headers: { VRE_ID: "WomenWriters" },
+							onChange: this.props.onLoginChange,
+							userUrl: _config2["default"].apiUrl["v2.1"] + "/system/users/me" })
+					)
+				),
+				_react2["default"].createElement(
+					"ul",
+					{ className: "nav navbar-nav navbar-right", style: { display: user && user.token ? "none" : "inline-block" } },
+					_react2["default"].createElement(
+						"li",
+						{ className: (0, _classnames2["default"])("login-dropdown-list-item", "dropdown", { open: this.state.loginDropdownOpen }) },
+						_react2["default"].createElement(
+							"a",
+							{ className: "dropdown-toggle", onClick: this.onToggleLogin.bind(this), role: "button" },
+							"Login ",
+							_react2["default"].createElement("span", { className: "caret" })
+						),
+						_react2["default"].createElement(_loginDropdown2["default"], this.props)
+					)
 				)
 			);
 		}
 	}]);
 
-	return RequestLog;
+	return LoginMenu;
 })(_react2["default"].Component);
 
-RequestLog.propTypes = {
-	messages: _react2["default"].PropTypes.object
+LoginMenu.propTypes = {
+	onLoginChange: _react2["default"].PropTypes.func,
+	user: _react2["default"].PropTypes.object,
+	vre: _react2["default"].PropTypes.object
 };
 
-exports["default"] = RequestLog;
+exports["default"] = LoginMenu;
 module.exports = exports["default"];
 
-},{"react":"react","react-dom":"react-dom"}],62:[function(require,module,exports){
+},{"../../../config":66,"./login-dropdown":63,"classnames":"classnames","hire-login":13,"react":"react"}],63:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _hireLogin = require("hire-login");
+
+var _config = require("../../../config");
+
+var _config2 = _interopRequireDefault(_config);
+
+var LoginDropdown = (function (_React$Component) {
+	_inherits(LoginDropdown, _React$Component);
+
+	function LoginDropdown() {
+		_classCallCheck(this, LoginDropdown);
+
+		_get(Object.getPrototypeOf(LoginDropdown.prototype), "constructor", this).apply(this, arguments);
+	}
+
+	_createClass(LoginDropdown, [{
+		key: "render",
+		value: function render() {
+			return _react2["default"].createElement(
+				"ul",
+				{ className: "dropdown-menu" },
+				_react2["default"].createElement(
+					"li",
+					null,
+					_react2["default"].createElement(_hireLogin.Basic, { url: _config2["default"].apiUrl["v2.1"] + "/authenticate" })
+				)
+			);
+		}
+	}]);
+
+	return LoginDropdown;
+})(_react2["default"].Component);
+
+exports["default"] = LoginDropdown;
+module.exports = exports["default"];
+
+},{"../../../config":66,"hire-login":13,"react":"react"}],64:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+var Messages = (function (_React$Component) {
+	_inherits(Messages, _React$Component);
+
+	function Messages() {
+		_classCallCheck(this, Messages);
+
+		_get(Object.getPrototypeOf(Messages.prototype), "constructor", this).apply(this, arguments);
+	}
+
+	_createClass(Messages, [{
+		key: "render",
+		value: function render() {
+			var _props = this.props;
+			var messages = _props.messages;
+			var type = _props.type;
+			var onDismissMessage = _props.onDismissMessage;
+
+			var filteredMessages = messages.log.map(function (msg, idx) {
+				return { message: msg.message, index: idx, type: msg.type, dismissed: msg.dismissed };
+			}).filter(function (msg) {
+				return msg.type === type && !msg.dismissed;
+			});
+
+			return _react2["default"].createElement(
+				"div",
+				null,
+				filteredMessages.map(function (msg, i) {
+					return _react2["default"].createElement(
+						"div",
+						{ className: "alert alert-danger alert-dismissible", key: i },
+						_react2["default"].createElement(
+							"button",
+							{ className: "close", onClick: function () {
+									return onDismissMessage(msg.index);
+								} },
+							_react2["default"].createElement(
+								"span",
+								{ "aria-hidden": "true" },
+								"×"
+							)
+						),
+						_react2["default"].createElement(
+							"strong",
+							null,
+							"Warning!"
+						),
+						" ",
+						_react2["default"].createElement(
+							"span",
+							null,
+							msg.message
+						)
+					);
+				})
+			);
+		}
+	}]);
+
+	return Messages;
+})(_react2["default"].Component);
+
+Messages.propTypes = {
+	messages: _react2["default"].PropTypes.object,
+	onDismissMessage: _react2["default"].PropTypes.func.isRequired,
+	type: _react2["default"].PropTypes.string.isRequired
+};
+
+exports["default"] = Messages;
+module.exports = exports["default"];
+
+},{"react":"react"}],65:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18841,7 +19149,7 @@ TextSearch.propTypes = {
 exports["default"] = TextSearch;
 module.exports = exports["default"];
 
-},{"react":"react"}],63:[function(require,module,exports){
+},{"react":"react"}],66:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -18856,7 +19164,7 @@ exports["default"] = {
 };
 module.exports = exports["default"];
 
-},{}],64:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 "use strict";
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -18894,7 +19202,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	_store2["default"].dispatch((0, _actionsVre.listVres)());
 });
 
-},{"./actions":39,"./actions/vre":45,"./components/edit":60,"./store":72,"react":"react","react-dom":"react-dom"}],65:[function(require,module,exports){
+},{"./actions":39,"./actions/vre":45,"./components/edit":61,"./store":75,"react":"react","react-dom":"react-dom"}],68:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19038,7 +19346,7 @@ var parsers = {
 exports["default"] = parseQuery;
 exports.parsers = parsers;
 
-},{"../util/clone-deep":73,"../util/get-in":74}],66:[function(require,module,exports){
+},{"../util/clone-deep":76,"../util/get-in":77}],69:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19093,7 +19401,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{"../util/set-in":75}],67:[function(require,module,exports){
+},{"../util/set-in":78}],70:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19131,12 +19439,21 @@ exports["default"] = {
 };
 module.exports = exports["default"];
 
-},{"./entity":66,"./messages":68,"./queries":69,"./user":70,"./vre":71}],68:[function(require,module,exports){
+},{"./entity":69,"./messages":71,"./queries":72,"./user":73,"./vre":74}],71:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+var _utilSetIn = require("../util/set-in");
+
+var _utilSetIn2 = _interopRequireDefault(_utilSetIn);
+
 var initialState = {
 	log: []
 };
@@ -19151,6 +19468,10 @@ exports["default"] = function (state, action) {
 		case "ERROR_MESSAGE":
 			state.log.push({ message: action.message, type: action.type, time: new Date() });
 			return state;
+		case "DISMISS_MESSAGE":
+			return _extends({}, state, {
+				log: (0, _utilSetIn2["default"])([action.messageIndex, "dismissed"], true, state.log)
+			});
 	}
 
 	return state;
@@ -19158,7 +19479,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],69:[function(require,module,exports){
+},{"../util/set-in":78}],72:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19329,7 +19650,7 @@ exports["default"] = function (state, action) {
 			return _extends({}, state, { results: null, resultCount: null, resultsPending: true, resultCountPending: true });
 
 		case "SET_QUERY_RESULTS":
-			return _extends({}, state, { results: action.results, resultsPending: false });
+			return _extends({}, state, { results: { or: action.results.or, root: action.results.results }, resultCount: action.results.resultCount, resultCountPending: false });
 
 		case "SET_QUERY_RESULT_COUNT":
 			return _extends({}, state, { resultCount: action.count, resultCountPending: false });
@@ -19344,7 +19665,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{"../util/get-in":74,"../util/set-in":75}],70:[function(require,module,exports){
+},{"../util/get-in":77,"../util/set-in":78}],73:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19366,7 +19687,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],71:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19405,7 +19726,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],72:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19436,7 +19757,7 @@ var data = (0, _redux.combineReducers)(_reducers2["default"]);
 exports["default"] = (0, _redux.createStore)(data, (0, _redux.applyMiddleware)( /*logger, */_reduxThunk2["default"]));
 module.exports = exports["default"];
 
-},{"../reducers":67,"redux":27,"redux-thunk":21}],73:[function(require,module,exports){
+},{"../reducers":70,"redux":27,"redux-thunk":21}],76:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19469,7 +19790,7 @@ function deepClone9(obj) {
 exports["default"] = deepClone9;
 module.exports = exports["default"];
 
-},{}],74:[function(require,module,exports){
+},{}],77:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19490,13 +19811,17 @@ var _getIn = function _getIn(_x, _x2) {
 		    data = _x2;
 		_again = false;
 
-		if (path.length === 0) {
-			return data;
+		if (data) {
+			if (path.length === 0) {
+				return data;
+			} else {
+				_x = path;
+				_x2 = data[path.shift()];
+				_again = true;
+				continue _function;
+			}
 		} else {
-			_x = path;
-			_x2 = data[path.shift()];
-			_again = true;
-			continue _function;
+			return null;
 		}
 	}
 };
@@ -19508,7 +19833,7 @@ var getIn = function getIn(path, data) {
 exports["default"] = getIn;
 module.exports = exports["default"];
 
-},{"./clone-deep":73}],75:[function(require,module,exports){
+},{"./clone-deep":76}],78:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19559,5 +19884,5 @@ var setIn = function setIn(path, value, data) {
 exports["default"] = setIn;
 module.exports = exports["default"];
 
-},{"./clone-deep":73}]},{},[64])(64)
+},{"./clone-deep":76}]},{},[67])(67)
 });
