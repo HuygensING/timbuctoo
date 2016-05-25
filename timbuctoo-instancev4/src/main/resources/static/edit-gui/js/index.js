@@ -16646,9 +16646,13 @@ var makeSkeleton = function makeSkeleton(fieldDefs, domain) {
 // 2) Dispatch RECEIVE_ENTITY for render
 var selectEntity = function selectEntity(domain, entityId) {
 	var errorMessage = arguments.length <= 2 || arguments[2] === undefined ? null : arguments[2];
+	var successMessage = arguments.length <= 3 || arguments[3] === undefined ? null : arguments[3];
 	return function (dispatch) {
 		return _crud.crud.fetchEntity(_config2["default"].apiUrl[_config2["default"].apiVersion] + "/domain/" + domain + "/" + entityId, function (data) {
-			return dispatch({ type: "RECEIVE_ENTITY", domain: domain, data: data, errorMessage: errorMessage });
+			dispatch({ type: "RECEIVE_ENTITY", domain: domain, data: data, errorMessage: errorMessage });
+			if (successMessage !== null) {
+				dispatch({ type: "SUCCESS_MESSAGE", message: successMessage });
+			}
 		}, function () {
 			return dispatch({ type: "RECEIVE_ENTITY_FAILURE", errorMessage: "Failed to fetch " + domain + " with ID " + entityId });
 		});
@@ -16699,7 +16703,7 @@ var saveEntity = function saveEntity() {
 						return _relationSavers2["default"][_config2["default"].apiVersion](JSON.parse(resp.body), relationData, getState().vre.collections[getState().entity.domain], getState().user.token, getState().vre.vreId, function () {
 							return(
 								// 3) Refetch entity for render
-								redispatch(selectEntity(getState().entity.domain, getState().entity.data._id))
+								redispatch(selectEntity(getState().entity.domain, getState().entity.data._id, null, "Succesfully saved " + getState().entity.domain + " with ID " + getState().entity.data._id))
 							);
 						});
 					})
@@ -16722,7 +16726,7 @@ var saveEntity = function saveEntity() {
 								_relationSavers2["default"][_config2["default"].apiVersion](data, relationData, getState().vre.collections[getState().entity.domain], getState().user.token, getState().vre.vreId, function () {
 									return(
 										// 4) Refetch entity for render
-										redispatch(selectEntity(getState().entity.domain, data._id))
+										redispatch(selectEntity(getState().entity.domain, data._id, null, "Succesfully saved " + getState().entity.domain))
 									);
 								})
 							);
@@ -18747,7 +18751,7 @@ var App = (function (_React$Component) {
 				_react2["default"].createElement(
 					"main",
 					null,
-					_react2["default"].createElement(_messages2["default"], _extends({}, this.props, { type: "ERROR_MESSAGE" })),
+					_react2["default"].createElement(_messages2["default"], _extends({}, this.props, { types: ["ERROR_MESSAGE", "SUCCESS_MESSAGE"] })),
 					businessPart
 				)
 			);
@@ -18978,6 +18982,20 @@ var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
+var _classnames = require("classnames");
+
+var _classnames2 = _interopRequireDefault(_classnames);
+
+var LABELS = {
+	"SUCCESS_MESSAGE": "Info",
+	"ERROR_MESSAGE": "Warning!"
+};
+
+var CLASS_NAMES = {
+	"SUCCESS_MESSAGE": "alert-success",
+	"ERROR_MESSAGE": "alert-danger"
+};
+
 var Messages = (function (_React$Component) {
 	_inherits(Messages, _React$Component);
 
@@ -18992,13 +19010,13 @@ var Messages = (function (_React$Component) {
 		value: function render() {
 			var _props = this.props;
 			var messages = _props.messages;
-			var type = _props.type;
+			var types = _props.types;
 			var onDismissMessage = _props.onDismissMessage;
 
 			var filteredMessages = messages.log.map(function (msg, idx) {
 				return { message: msg.message, index: idx, type: msg.type, dismissed: msg.dismissed };
 			}).filter(function (msg) {
-				return msg.type === type && !msg.dismissed;
+				return types.indexOf(msg.type) > -1 && !msg.dismissed;
 			});
 
 			return _react2["default"].createElement(
@@ -19007,7 +19025,7 @@ var Messages = (function (_React$Component) {
 				filteredMessages.map(function (msg, i) {
 					return _react2["default"].createElement(
 						"div",
-						{ className: "alert alert-danger alert-dismissible", key: i },
+						{ className: (0, _classnames2["default"])("alert", "alert-dismissible", CLASS_NAMES[msg.type]), key: i },
 						_react2["default"].createElement(
 							"button",
 							{ className: "close", onClick: function () {
@@ -19022,7 +19040,7 @@ var Messages = (function (_React$Component) {
 						_react2["default"].createElement(
 							"strong",
 							null,
-							"Warning!"
+							LABELS[msg.type]
 						),
 						" ",
 						_react2["default"].createElement(
@@ -19042,13 +19060,13 @@ var Messages = (function (_React$Component) {
 Messages.propTypes = {
 	messages: _react2["default"].PropTypes.object,
 	onDismissMessage: _react2["default"].PropTypes.func.isRequired,
-	type: _react2["default"].PropTypes.string.isRequired
+	types: _react2["default"].PropTypes.array.isRequired
 };
 
 exports["default"] = Messages;
 module.exports = exports["default"];
 
-},{"react":"react"}],65:[function(require,module,exports){
+},{"classnames":"classnames","react":"react"}],65:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -19463,6 +19481,9 @@ exports["default"] = function (state, action) {
 
 	switch (action.type) {
 		case "REQUEST_MESSAGE":
+			state.log.push({ message: action.message, type: action.type, time: new Date() });
+			return state;
+		case "SUCCESS_MESSAGE":
 			state.log.push({ message: action.message, type: action.type, time: new Date() });
 			return state;
 		case "ERROR_MESSAGE":
