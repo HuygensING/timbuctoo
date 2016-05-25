@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class JsonBasedAuthenticator implements Authenticator, LoginCreator {
+  private static final Charset UTF8 = Charset.forName("UTF-8");
   public static final Logger LOG = LoggerFactory.getLogger(JsonBasedAuthenticator.class);
   private final ObjectMapper objectMapper;
   private final Path loginsFile;
@@ -57,7 +58,7 @@ public class JsonBasedAuthenticator implements Authenticator, LoginCreator {
   private boolean isCorrectPassword(String password, Login login) throws NoSuchAlgorithmException {
     byte[] encryptedPassword = encryptPassword(password, login.getSalt());
 
-    return new String(encryptedPassword).equals(new String(login.getPassword(), Charset.forName("UTF-8")));
+    return new String(encryptedPassword, UTF8).equals(new String(login.getPassword(), UTF8));
   }
 
   // inspired by https://www.owasp.org/index.php/Hashing_Java
