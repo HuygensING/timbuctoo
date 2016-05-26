@@ -900,13 +900,14 @@ public class TinkerpopJsonCrudService {
     listener.onUpdate(old, entity);
   }
 
-  public List<ObjectNode> fetchCollection(String collectionName, int rows) throws InvalidCollectionException {
+  public List<ObjectNode> fetchCollection(String collectionName, int rows, int start)
+    throws InvalidCollectionException {
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
     final Map<String, ReadableProperty> mapping = collection.getReadableProperties();
 
     GraphTraversal<Vertex, Vertex> entities =
-      graphwrapper.getCurrentEntitiesFor(collection.getEntityTypeName()).limit(rows);
+      graphwrapper.getCurrentEntitiesFor(collection.getEntityTypeName()).range(start, start + rows);
 
 
     return entities.asAdmin().clone().map(entityT -> {
