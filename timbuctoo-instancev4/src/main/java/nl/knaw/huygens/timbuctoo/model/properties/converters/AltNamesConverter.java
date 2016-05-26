@@ -33,4 +33,9 @@ class AltNamesConverter implements Converter {
       throw new IOException("must be a json value serialised as String");
     }
   }
+
+  @Override
+  public String getTypeIdentifier() {
+    return "altnames";
+  }
 }

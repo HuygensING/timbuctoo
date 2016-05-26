@@ -40,4 +40,9 @@ public class ArrayToEncodedArrayConverter implements Converter {
       throw new IOException("should be an string encoded Array");
     }
   }
+
+  @Override
+  public String getTypeIdentifier() {
+    return "list-of-strings";
+  }
 }
