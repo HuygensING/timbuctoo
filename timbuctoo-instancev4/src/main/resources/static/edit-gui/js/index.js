@@ -10032,11 +10032,11 @@ var fetchEntity = function fetchEntity(location, next, fail) {
 	}, fail, "Fetch entity");
 };
 
-var fetchEntityList = function fetchEntityList(domain, next) {
+var fetchEntityList = function fetchEntityList(domain, start, rows, next) {
 	return _server2["default"].performXhr({
 		method: "GET",
 		headers: { "Accept": "application/json" },
-		url: _config2["default"].apiUrl[_config2["default"].apiVersion] + "/domain/" + domain + "?rows=50"
+		url: _config2["default"].apiUrl[_config2["default"].apiVersion] + "/domain/" + domain + "?rows=" + rows + "&start=" + start
 	}, function (err, resp) {
 		var data = JSON.parse(resp.body);
 		next(data);
@@ -10215,8 +10215,29 @@ var saveEntity = function saveEntity() {
 };
 
 var fetchEntityList = function fetchEntityList(domain) {
-	return function (dispatch) {
-		_crud.crud.fetchEntityList(domain, function (data) {
+	return function (dispatch, getState) {
+		dispatch({ type: "SET_PAGINATION_START", start: 0 });
+		_crud.crud.fetchEntityList(domain, 0, getState().pagination.rows, function (data) {
+			return dispatch({ type: "RECEIVE_ENTITY_LIST", data: data });
+		});
+	};
+};
+
+var paginateLeft = function paginateLeft() {
+	return function (dispatch, getState) {
+		var newStart = getState().pagination.start - getState().pagination.rows;
+		dispatch({ type: "SET_PAGINATION_START", start: newStart < 0 ? 0 : newStart });
+		_crud.crud.fetchEntityList(getState().entity.domain, newStart < 0 ? 0 : newStart, getState().pagination.rows, function (data) {
+			return dispatch({ type: "RECEIVE_ENTITY_LIST", data: data });
+		});
+	};
+};
+
+var paginateRight = function paginateRight() {
+	return function (dispatch, getState) {
+		var newStart = getState().pagination.start + getState().pagination.rows;
+		dispatch({ type: "SET_PAGINATION_START", start: newStart });
+		_crud.crud.fetchEntityList(getState().entity.domain, newStart, getState().pagination.rows, function (data) {
 			return dispatch({ type: "RECEIVE_ENTITY_LIST", data: data });
 		});
 	};
@@ -10227,8 +10248,10 @@ exports.selectEntity = selectEntity;
 exports.makeNewEntity = makeNewEntity;
 exports.deleteEntity = deleteEntity;
 exports.fetchEntityList = fetchEntityList;
+exports.paginateRight = paginateRight;
+exports.paginateLeft = paginateLeft;
 
-},{"../config":65,"../util/clone-deep":75,"./crud":36,"./relation-savers":40}],38:[function(require,module,exports){
+},{"../config":65,"../util/clone-deep":76,"./crud":36,"./relation-savers":40}],38:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10282,6 +10305,12 @@ exports["default"] = {
 	onSelectDomain: function onSelectDomain(domain) {
 		return _store2["default"].dispatch((0, _entity.fetchEntityList)(domain));
 	},
+	onPaginateLeft: function onPaginateLeft() {
+		return _store2["default"].dispatch((0, _entity.paginateLeft)());
+	},
+	onPaginateRight: function onPaginateRight() {
+		return _store2["default"].dispatch((0, _entity.paginateRight)());
+	},
 
 	onSelectQuery: function onSelectQuery(domain, queryIndex) {
 		var position = arguments.length <= 2 || arguments[2] === undefined ? null : arguments[2];
@@ -10320,7 +10349,7 @@ exports["default"] = {
 };
 module.exports = exports["default"];
 
-},{"../store":74,"./entity":37,"./queries":39,"./vre":44}],39:[function(require,module,exports){
+},{"../store":75,"./entity":37,"./queries":39,"./vre":44}],39:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10639,7 +10668,7 @@ exports["default"] = {
 };
 module.exports = exports["default"];
 
-},{"../store":74,"xhr":33}],43:[function(require,module,exports){
+},{"../store":75,"xhr":33}],43:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10854,7 +10883,31 @@ var EntityList = (function (_React$Component) {
 		value: function render() {
 			var _this = this;
 
-			var entity = this.props.entity;
+			var _props = this.props;
+			var entity = _props.entity;
+			var pagination = _props.pagination;
+			var onPaginateLeft = _props.onPaginateLeft;
+			var onPaginateRight = _props.onPaginateRight;
+
+			var leftButton = pagination.start > 0 ? _react2["default"].createElement(
+				"button",
+				{ onClick: onPaginateLeft },
+				_react2["default"].createElement("span", { className: "glyphicon glyphicon-chevron-left" })
+			) : _react2["default"].createElement(
+				"button",
+				{ disabled: true },
+				_react2["default"].createElement("span", { className: "glyphicon glyphicon-chevron-left" })
+			);
+
+			var rightButton = entity.list.length < pagination.rows ? _react2["default"].createElement(
+				"button",
+				{ disabled: true },
+				_react2["default"].createElement("span", { className: "glyphicon glyphicon-chevron-right" })
+			) : _react2["default"].createElement(
+				"button",
+				{ onClick: onPaginateRight },
+				_react2["default"].createElement("span", { className: "glyphicon glyphicon-chevron-right" })
+			);
 
 			return _react2["default"].createElement(
 				"div",
@@ -10870,18 +10923,37 @@ var EntityList = (function (_React$Component) {
 					)
 				),
 				_react2["default"].createElement(
+					"div",
+					{ className: "panel-body" },
+					leftButton,
+					_react2["default"].createElement(
+						"span",
+						{ style: { margin: "20px" } },
+						pagination.start + 1,
+						" - ",
+						pagination.start + pagination.rows
+					),
+					rightButton
+				),
+				_react2["default"].createElement(
 					"ul",
 					{ className: "list-group" },
 					entity.list.map(function (entry, i) {
 						return _react2["default"].createElement(
 							"li",
-							{ className: "list-group-item", key: i, onClick: function () {
-									return _this.props.onSelect({ domain: entity.domain, id: entry._id });
-								} },
+							{ className: "list-group-item", key: i },
+							_react2["default"].createElement(
+								"span",
+								{ style: { marginRight: "20px" } },
+								i + pagination.start + 1,
+								"."
+							),
 							_react2["default"].createElement(
 								"a",
-								null,
-								entry._id
+								{ onClick: function () {
+										return _this.props.onSelect({ domain: entity.domain, id: entry._id });
+									} },
+								entry.displayName
 							)
 						);
 					})
@@ -10895,7 +10967,10 @@ var EntityList = (function (_React$Component) {
 
 EntityList.propTypes = {
 	entity: _react2["default"].PropTypes.object,
-	onSelect: _react2["default"].PropTypes.func
+	onPaginateLeft: _react2["default"].PropTypes.func,
+	onPaginateRight: _react2["default"].PropTypes.func,
+	onSelect: _react2["default"].PropTypes.func,
+	pagination: _react2["default"].PropTypes.object
 };
 
 exports["default"] = EntityList;
@@ -12661,7 +12736,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	_store2["default"].dispatch((0, _actionsVre.listVres)());
 });
 
-},{"./actions":38,"./actions/vre":44,"./components/edit":61,"./store":74,"react":"react","react-dom":"react-dom"}],67:[function(require,module,exports){
+},{"./actions":38,"./actions/vre":44,"./components/edit":61,"./store":75,"react":"react","react-dom":"react-dom"}],67:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12805,7 +12880,7 @@ var parsers = {
 exports["default"] = parseQuery;
 exports.parsers = parsers;
 
-},{"../util/clone-deep":75,"../util/get-in":76}],68:[function(require,module,exports){
+},{"../util/clone-deep":76,"../util/get-in":77}],68:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12866,7 +12941,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{"../util/set-in":77}],69:[function(require,module,exports){
+},{"../util/set-in":78}],69:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12895,16 +12970,21 @@ var _queries = require("./queries");
 
 var _queries2 = _interopRequireDefault(_queries);
 
+var _pagination = require("./pagination");
+
+var _pagination2 = _interopRequireDefault(_pagination);
+
 exports["default"] = {
 	vre: _vre2["default"],
 	entity: _entity2["default"],
 	user: _user2["default"],
 	messages: _messages2["default"],
-	queries: _queries2["default"]
+	queries: _queries2["default"],
+	pagination: _pagination2["default"]
 };
 module.exports = exports["default"];
 
-},{"./entity":68,"./messages":70,"./queries":71,"./user":72,"./vre":73}],70:[function(require,module,exports){
+},{"./entity":68,"./messages":70,"./pagination":71,"./queries":72,"./user":73,"./vre":74}],70:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12947,7 +13027,34 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{"../util/set-in":77}],71:[function(require,module,exports){
+},{"../util/set-in":78}],71:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var initialState = {
+	start: 0,
+	rows: 50
+};
+
+exports["default"] = function (state, action) {
+	if (state === undefined) state = initialState;
+
+	switch (action.type) {
+		case "SET_PAGINATION_START":
+			return _extends({}, state, { start: action.start });
+		default:
+			return state;
+	}
+};
+
+module.exports = exports["default"];
+
+},{}],72:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13133,7 +13240,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{"../util/get-in":76,"../util/set-in":77}],72:[function(require,module,exports){
+},{"../util/get-in":77,"../util/set-in":78}],73:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13155,7 +13262,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],73:[function(require,module,exports){
+},{}],74:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13194,7 +13301,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],74:[function(require,module,exports){
+},{}],75:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13225,7 +13332,7 @@ var data = (0, _redux.combineReducers)(_reducers2["default"]);
 exports["default"] = (0, _redux.createStore)(data, (0, _redux.applyMiddleware)( /*logger, */_reduxThunk2["default"]));
 module.exports = exports["default"];
 
-},{"../reducers":69,"redux":26,"redux-thunk":20}],75:[function(require,module,exports){
+},{"../reducers":69,"redux":26,"redux-thunk":20}],76:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13258,7 +13365,7 @@ function deepClone9(obj) {
 exports["default"] = deepClone9;
 module.exports = exports["default"];
 
-},{}],76:[function(require,module,exports){
+},{}],77:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13301,7 +13408,7 @@ var getIn = function getIn(path, data) {
 exports["default"] = getIn;
 module.exports = exports["default"];
 
-},{"./clone-deep":75}],77:[function(require,module,exports){
+},{"./clone-deep":76}],78:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13352,5 +13459,5 @@ var setIn = function setIn(path, value, data) {
 exports["default"] = setIn;
 module.exports = exports["default"];
 
-},{"./clone-deep":75}]},{},[66])(66)
+},{"./clone-deep":76}]},{},[66])(66)
 });
