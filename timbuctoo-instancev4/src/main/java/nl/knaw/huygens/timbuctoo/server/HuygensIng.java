@@ -377,9 +377,6 @@ public class HuygensIng {
       .withDisplayName(localProperty("ckcclocation_names", defaultLocationNameConverter))
       .withProperty("locationName", localProperty("ckcclocation_names")))
     .withCollection("ckccrelations", CollectionBuilder::isRelationCollection))
-    .withVre("Base", "base", c -> c
-      .withCollection("baselocations")
-      .withCollection("baselanguages"))
     .withVre("cnw", "", vre -> vre
     .withCollection("cnwpersons", c -> c
       .withDisplayName(localProperty("cnwperson_names", defaultFullPersonNameConverter))
