@@ -64,6 +64,12 @@
       <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
     </developer>
     <developer>
+      <id>MK</id>
+      <name>Meindert Kroese</name>
+      <organization>Huygens ING</organization>
+      <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
+    </developer>
+    <developer>
       <id>MM</id>
       <name>Martijn Maas</name>
       <organization>Huygens ING</organization>
