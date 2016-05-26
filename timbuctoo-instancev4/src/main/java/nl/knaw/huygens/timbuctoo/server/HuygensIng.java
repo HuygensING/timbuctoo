@@ -349,9 +349,15 @@ public class HuygensIng {
     .withCollection("locations", c -> c
       .withDisplayName(localProperty("names", defaultLocationNameConverter))
       .withProperty("^names", localProperty("names")))
-    .withCollection("archives")
-    .withCollection("archivers")
-    .withCollection("legislations")
+    .withCollection("archives", c -> c
+      .withDisplayName(localProperty("tim_id"))
+    )
+    .withCollection("archivers", c -> c
+      .withDisplayName(localProperty("tim_id"))
+    )
+    .withCollection("legislations", c -> c
+      .withDisplayName(localProperty("tim_id"))
+    )
     .withCollection("relations", CollectionBuilder::isRelationCollection))
     .withVre("ckcc", "ckcc", vre -> vre
     .withCollection("ckccpersons", c -> c
@@ -377,9 +383,9 @@ public class HuygensIng {
       .withDisplayName(localProperty("ckcclocation_names", defaultLocationNameConverter))
       .withProperty("locationName", localProperty("ckcclocation_names")))
     .withCollection("ckccrelations", CollectionBuilder::isRelationCollection))
-    .withVre("Base", "base", c -> c
-      .withCollection("baselocations")
-      .withCollection("baselanguages"))
+    .withVre("Base", "base", v -> v
+      .withCollection("baselocations", c -> c.withDisplayName(localProperty("tim_id")))
+      .withCollection("baselanguages", c -> c.withDisplayName(localProperty("tim_id"))))
     .withVre("cnw", "", vre -> vre
     .withCollection("cnwpersons", c -> c
       .withDisplayName(localProperty("cnwperson_names", defaultFullPersonNameConverter))
