@@ -174,7 +174,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager, HuygensIng.keywordTypes);
     final AutocompleteService autocompleteService = new AutocompleteService(
       graphManager,
-      (coll, id, rev) -> URI.create(configuration.getBaseUri() + SingleEntity.makeUrl(coll, id, rev).getPath())
+      (coll, id, rev) -> URI.create(configuration.getBaseUri() + SingleEntity.makeUrl(coll, id, rev).getPath()),
+      vres
     );
 
 
