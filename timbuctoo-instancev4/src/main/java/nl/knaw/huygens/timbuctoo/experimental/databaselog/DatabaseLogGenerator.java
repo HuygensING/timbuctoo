@@ -47,6 +47,6 @@ public class DatabaseLogGenerator {
                     return 0;
                   }
                 })
-                .forEachRemaining(vertex -> logEntryFactory.createForVertex(vertex).appendToLog(databaseLog, vertex));
+                .forEachRemaining(vertex -> logEntryFactory.createForVertex(vertex).appendToLog(databaseLog));
   }
 }
