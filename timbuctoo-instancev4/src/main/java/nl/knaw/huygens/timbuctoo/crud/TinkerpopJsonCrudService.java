@@ -800,6 +800,7 @@ public class TinkerpopJsonCrudService {
     }
 
     setModified(entity, userId);
+    entity.property("pid").remove();
 
     callUpdateListener(entity);
 
@@ -878,6 +879,7 @@ public class TinkerpopJsonCrudService {
     });
 
     setModified(entity, userId);
+    entity.property("pid").remove();
     callUpdateListener(entity);
     duplicateVertex(graph, entity);
 
