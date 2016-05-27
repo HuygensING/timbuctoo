@@ -414,8 +414,7 @@ public class TinkerpopJsonCrudService {
 
     result.set("^deleted", nodeFactory.booleanNode(getProp(entity, "deleted", Boolean.class).orElse(false)));
 
-    getProp(entity, "pid", String.class)
-      .ifPresent(pid -> result.set("^pid", nodeFactory.textNode(pid)));
+    result.set("^pid",nodeFactory.textNode(getProp(entity, "pid", String.class).orElse(null)));
 
     return result;
   }
