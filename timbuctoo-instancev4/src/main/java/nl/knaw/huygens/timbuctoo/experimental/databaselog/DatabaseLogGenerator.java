@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.experimental.databaselog;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.knaw.huygens.timbuctoo.experimental.databaselog.entry.LogEntryFactory;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.slf4j.Logger;
@@ -15,12 +16,12 @@ public class DatabaseLogGenerator {
 
   public static final Logger LOG = LoggerFactory.getLogger(DatabaseLogGenerator.class);
   private final GraphWrapper graphWrapper;
-  private final VertexLogEntry vertexLogEntry;
+  private final LogEntryFactory logEntryFactory;
   private final ObjectMapper objectMapper;
 
-  DatabaseLogGenerator(GraphWrapper graphWrapper, VertexLogEntry vertexLogEntry) {
+  DatabaseLogGenerator(GraphWrapper graphWrapper, LogEntryFactory logEntryFactory) {
     this.graphWrapper = graphWrapper;
-    this.vertexLogEntry = vertexLogEntry;
+    this.logEntryFactory = logEntryFactory;
     objectMapper = new ObjectMapper();
   }
 
@@ -46,6 +47,6 @@ public class DatabaseLogGenerator {
                     return 0;
                   }
                 })
-                .forEachRemaining(vertex -> vertexLogEntry.appendToLog(databaseLog, vertex));
+                .forEachRemaining(vertex -> logEntryFactory.createForVertex(vertex).appendToLog(databaseLog, vertex));
   }
 }

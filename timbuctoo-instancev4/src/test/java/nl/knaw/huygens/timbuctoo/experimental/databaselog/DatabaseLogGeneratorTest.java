@@ -1,13 +1,16 @@
 package nl.knaw.huygens.timbuctoo.experimental.databaselog;
 
+import nl.knaw.huygens.timbuctoo.experimental.databaselog.entry.LogEntryFactory;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.mockito.InOrder;
 
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.inOrder;
@@ -28,7 +31,9 @@ public class DatabaseLogGeneratorTest {
                                    .withVertex(v -> v.withTimId(second).withProperty("modified", change2String))
                                    .wrap();
     VertexLogEntry vertexLogEntry = mock(VertexLogEntry.class);
-    DatabaseLogGenerator instance = new DatabaseLogGenerator(graph, vertexLogEntry);
+    LogEntryFactory logEntryFactory = mock(LogEntryFactory.class);
+    given(logEntryFactory.createForVertex(any(Vertex.class))).willReturn(vertexLogEntry);
+    DatabaseLogGenerator instance = new DatabaseLogGenerator(graph, logEntryFactory);
 
     instance.generate();
 
