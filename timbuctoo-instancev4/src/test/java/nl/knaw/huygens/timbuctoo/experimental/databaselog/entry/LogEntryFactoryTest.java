@@ -11,12 +11,22 @@ import static org.hamcrest.Matchers.is;
 
 public class LogEntryFactoryTest {
   @Test
-  public void createForVertexCreatesACreateVertexLogEntryIfTheVertexHasNoIncomingVersionOfEdges() {
+  public void createForVertexCreatesACreateVertexLogEntry() {
     Vertex vertex = vertex().build();
     LogEntryFactory instance = new LogEntryFactory();
 
     VertexLogEntry entry = instance.createForVertex(vertex);
 
     assertThat(entry, is(instanceOf(CreateVertexLogEntry.class)));
+  }
+
+  @Test
+  public void createForVertexCreatesAnUpdateVertexLogEntryIfTheVertexHasIncomingVersionOfEdges() {
+    Vertex vertex = vertex().withIncomingRelation("VERSION_OF", vertex().build()).build();
+    LogEntryFactory instance = new LogEntryFactory();
+
+    VertexLogEntry entry = instance.createForVertex(vertex);
+
+    assertThat(entry, is(instanceOf(UpdateVertexLogEntry.class)));
   }
 }
