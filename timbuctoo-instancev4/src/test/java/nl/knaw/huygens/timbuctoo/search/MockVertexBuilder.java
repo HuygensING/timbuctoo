@@ -19,6 +19,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.anyVararg;
 import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -28,6 +29,7 @@ public class MockVertexBuilder {
   private final ObjectMapper objectMapper;
   private final Set<String> keys;
   private final Map<String, List<Vertex>> outGoingRelationMap;
+  private final List<VertexProperty> properties;
 
   private MockVertexBuilder() {
     objectMapper = new ObjectMapper();
@@ -35,6 +37,7 @@ public class MockVertexBuilder {
     keys = Sets.newHashSet();
     outGoingRelationMap = Maps.newHashMap();
     when(vertex.property(anyString())).thenReturn(mock(VertexProperty.class));
+    properties = Lists.newArrayList();
   }
 
   public static MockVertexBuilder vertex() {
@@ -51,6 +54,8 @@ public class MockVertexBuilder {
 
     VertexProperty property = createVertexProperty(value);
     when(vertex.property(key)).thenReturn(property);
+    when(property.key()).thenReturn(key);
+    properties.add(property);
 
     return this;
   }
@@ -77,6 +82,7 @@ public class MockVertexBuilder {
 
   public Vertex build() {
     when(vertex.keys()).thenReturn(keys);
+    doReturn(properties.iterator()).when(vertex).properties();
 
     when(vertex.vertices(any(Direction.class), anyString())).thenReturn(Lists.<Vertex>newArrayList().iterator());
 

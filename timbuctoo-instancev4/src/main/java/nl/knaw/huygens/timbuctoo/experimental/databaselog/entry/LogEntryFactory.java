@@ -6,6 +6,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 public class LogEntryFactory {
 
   public VertexLogEntry createForVertex(Vertex vertex) {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return new CreateVertexLogEntry(vertex);
   }
 }
