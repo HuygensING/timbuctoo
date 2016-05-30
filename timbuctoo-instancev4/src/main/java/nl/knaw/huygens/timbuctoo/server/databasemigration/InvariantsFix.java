@@ -18,7 +18,6 @@ import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.shaded.jackson.databind.node.JsonNodeFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -174,12 +173,11 @@ public class InvariantsFix implements DatabaseMigration {
   }
 
   private void setModified(Element element, Change change) {
-    String value = String.format("{\"timeStamp\":%s, \"userId\":%s, \"vreId\":\"%s\"}",
-      change.getTimeStamp(),
-      JsonNodeFactory.instance.textNode(change.getUserId()),
-      JsonNodeFactory.instance.textNode(change.getVreId())
-    );
-    element.property("modified", value);
+    try {
+      element.property("modified", objectMapper.writeValueAsString(change));
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException("Cannot write modified property", e);
+    }
   }
 
   private Map<String, Object> getPropertiesToSet(Vertex vertex, String vertexAbstractType, String entityTypeName) {
