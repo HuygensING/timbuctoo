@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.entry.LogEntryFactory;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +37,7 @@ public class DatabaseLogGenerator {
 
     graphWrapper.getGraph().traversal()
                 .V().has("modified")
+                .not(__.has(T.label, LabelP.of("searchresult"))) // ignore search results
                 .dedup()
                 .order()
                 .by("modified", (Comparator<String>) (o1, o2) -> {
