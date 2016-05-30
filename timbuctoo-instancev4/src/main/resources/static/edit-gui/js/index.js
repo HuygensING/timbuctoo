@@ -10146,7 +10146,8 @@ var makeNewEntity = function makeNewEntity(domain) {
 var deleteEntity = function deleteEntity() {
 	return function (dispatch, getState) {
 		_crud.crud.deleteEntity(getState().entity.domain, getState().entity.data._id, getState().user.token, getState().vre.vreId, function () {
-			return dispatch(makeNewEntity(getState().entity.domain));
+			dispatch({ type: "SUCCESS_MESSAGE", message: "Sucessfully deleted " + getState().entity.domain + " with ID " + getState().entity.data._id });
+			dispatch(makeNewEntity(getState().entity.domain));
 		}, function () {
 			return dispatch(selectEntity(getState().entity.domain, getState().entity.data._id, "Failed to delete " + getState().entity.domain + " with ID " + getState().entity.data._id));
 		});
