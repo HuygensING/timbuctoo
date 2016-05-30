@@ -19,6 +19,10 @@ public class DatabaseLogGenerator {
   private final LogEntryFactory logEntryFactory;
   private final ObjectMapper objectMapper;
 
+  public DatabaseLogGenerator(GraphWrapper graphWrapper) {
+    this(graphWrapper, new LogEntryFactory());
+  }
+
   DatabaseLogGenerator(GraphWrapper graphWrapper, LogEntryFactory logEntryFactory) {
     this.graphWrapper = graphWrapper;
     this.logEntryFactory = logEntryFactory;
@@ -29,7 +33,7 @@ public class DatabaseLogGenerator {
     DatabaseLog databaseLog = new DatabaseLog();
 
     graphWrapper.getGraph().traversal()
-                .V().has("tim_id")
+                .V().has("modified")
                 .dedup()
                 .order()
                 .by("modified", (Comparator<String>) (o1, o2) -> {
@@ -44,6 +48,8 @@ public class DatabaseLogGenerator {
                         change2.getTimeStamp());
                   } catch (IOException e) {
                     LOG.error("Cannot convert change", e);
+                    LOG.error("Change 1 '{}'", o1);
+                    LOG.error("Change 2 '{}'", o2);
                     return 0;
                   }
                 })
