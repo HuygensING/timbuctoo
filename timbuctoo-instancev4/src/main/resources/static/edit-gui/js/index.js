@@ -9945,6 +9945,10 @@ var _config = require("../config");
 
 var _config2 = _interopRequireDefault(_config);
 
+var _autocomplete = require("./autocomplete");
+
+var _autocomplete2 = _interopRequireDefault(_autocomplete);
+
 // Skeleton base data per field definition
 var initialData = {
 	names: [],
@@ -9982,7 +9986,7 @@ var makeSkeleton = function makeSkeleton(fieldDefs, domain) {
 var fetchEntityList = function fetchEntityList(domain) {
 	return function (dispatch, getState) {
 		dispatch({ type: "SET_PAGINATION_START", start: 0 });
-		_crud.crud.fetchEntityList(domain, 0, getState().pagination.rows, function (data) {
+		_crud.crud.fetchEntityList(domain, 0, getState().quickSearch.rows, function (data) {
 			return dispatch({ type: "RECEIVE_ENTITY_LIST", data: data });
 		});
 	};
@@ -9990,9 +9994,9 @@ var fetchEntityList = function fetchEntityList(domain) {
 
 var paginateLeft = function paginateLeft() {
 	return function (dispatch, getState) {
-		var newStart = getState().pagination.start - getState().pagination.rows;
+		var newStart = getState().quickSearch.start - getState().quickSearch.rows;
 		dispatch({ type: "SET_PAGINATION_START", start: newStart < 0 ? 0 : newStart });
-		_crud.crud.fetchEntityList(getState().entity.domain, newStart < 0 ? 0 : newStart, getState().pagination.rows, function (data) {
+		_crud.crud.fetchEntityList(getState().entity.domain, newStart < 0 ? 0 : newStart, getState().quickSearch.rows, function (data) {
 			return dispatch({ type: "RECEIVE_ENTITY_LIST", data: data });
 		});
 	};
@@ -10000,11 +10004,35 @@ var paginateLeft = function paginateLeft() {
 
 var paginateRight = function paginateRight() {
 	return function (dispatch, getState) {
-		var newStart = getState().pagination.start + getState().pagination.rows;
+		var newStart = getState().quickSearch.start + getState().quickSearch.rows;
 		dispatch({ type: "SET_PAGINATION_START", start: newStart });
-		_crud.crud.fetchEntityList(getState().entity.domain, newStart, getState().pagination.rows, function (data) {
+		_crud.crud.fetchEntityList(getState().entity.domain, newStart, getState().quickSearch.rows, function (data) {
 			return dispatch({ type: "RECEIVE_ENTITY_LIST", data: data });
 		});
+	};
+};
+
+var sendQuickSearch = function sendQuickSearch() {
+	return function (dispatch, getState) {
+		var _getState = getState();
+
+		var quickSearch = _getState.quickSearch;
+		var entity = _getState.entity;
+		var vre = _getState.vre;
+
+		if (quickSearch.query.length) {
+			var callback = function callback(data) {
+				return dispatch({ type: "RECEIVE_ENTITY_LIST", data: data.map(function (d) {
+						return {
+							_id: d.key.replace(/.*\//, ""),
+							"@displayName": d.value
+						};
+					}) });
+			};
+			(0, _autocomplete2["default"])("domain/" + entity.domain + "/autocomplete", quickSearch.query, vre.vreId, callback);
+		} else {
+			dispatch(fetchEntityList(entity.domain));
+		}
 	};
 };
 
@@ -10124,8 +10152,9 @@ exports.deleteEntity = deleteEntity;
 exports.fetchEntityList = fetchEntityList;
 exports.paginateRight = paginateRight;
 exports.paginateLeft = paginateLeft;
+exports.sendQuickSearch = sendQuickSearch;
 
-},{"../config":67,"../util/clone-deep":78,"./crud":35,"./relation-savers":39}],37:[function(require,module,exports){
+},{"../config":67,"../util/clone-deep":78,"./autocomplete":34,"./crud":35,"./relation-savers":39}],37:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10184,6 +10213,12 @@ exports["default"] = {
 	},
 	onPaginateRight: function onPaginateRight() {
 		return _store2["default"].dispatch((0, _entity.paginateRight)());
+	},
+	onQuickSearchQueryChange: function onQuickSearchQueryChange(value) {
+		return _store2["default"].dispatch({ type: "SET_QUICKSEARCH_QUERY", value: value });
+	},
+	onQuickSearch: function onQuickSearch() {
+		return _store2["default"].dispatch((0, _entity.sendQuickSearch)());
 	},
 
 	onSelectQuery: function onSelectQuery(domain, queryIndex) {
@@ -10743,6 +10778,10 @@ var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
+var _hireFormsInput = require("hire-forms-input");
+
+var _hireFormsInput2 = _interopRequireDefault(_hireFormsInput);
+
 var EntityList = (function (_React$Component) {
 	_inherits(EntityList, _React$Component);
 
@@ -10759,11 +10798,13 @@ var EntityList = (function (_React$Component) {
 
 			var _props = this.props;
 			var entity = _props.entity;
-			var pagination = _props.pagination;
+			var quickSearch = _props.quickSearch;
 			var onPaginateLeft = _props.onPaginateLeft;
 			var onPaginateRight = _props.onPaginateRight;
+			var onQuickSearchQueryChange = _props.onQuickSearchQueryChange;
+			var onQuickSearch = _props.onQuickSearch;
 
-			var leftButton = pagination.start > 0 ? _react2["default"].createElement(
+			var leftButton = quickSearch.start > 0 ? _react2["default"].createElement(
 				"button",
 				{ onClick: onPaginateLeft },
 				_react2["default"].createElement("span", { className: "glyphicon glyphicon-chevron-left" })
@@ -10773,7 +10814,7 @@ var EntityList = (function (_React$Component) {
 				_react2["default"].createElement("span", { className: "glyphicon glyphicon-chevron-left" })
 			);
 
-			var rightButton = entity.list.length < pagination.rows ? _react2["default"].createElement(
+			var rightButton = quickSearch.list.length < quickSearch.rows ? _react2["default"].createElement(
 				"button",
 				{ disabled: true },
 				_react2["default"].createElement("span", { className: "glyphicon glyphicon-chevron-right" })
@@ -10785,7 +10826,7 @@ var EntityList = (function (_React$Component) {
 
 			return _react2["default"].createElement(
 				"div",
-				{ className: "panel panel-default" },
+				{ className: "panel panel-default entity-list" },
 				_react2["default"].createElement(
 					"div",
 					{ className: "panel-heading" },
@@ -10803,23 +10844,36 @@ var EntityList = (function (_React$Component) {
 					_react2["default"].createElement(
 						"span",
 						{ style: { margin: "20px" } },
-						pagination.start + 1,
+						quickSearch.start + 1,
 						" - ",
-						pagination.start + pagination.rows
+						quickSearch.start + quickSearch.rows
 					),
-					rightButton
+					rightButton,
+					_react2["default"].createElement(_hireFormsInput2["default"], { onChange: onQuickSearchQueryChange, placeholder: "Quick search...", value: quickSearch.query }),
+					_react2["default"].createElement(
+						"button",
+						{ onClick: onQuickSearch },
+						_react2["default"].createElement("span", { className: "glyphicon glyphicon-search" })
+					),
+					_react2["default"].createElement(
+						"button",
+						{ onClick: function () {
+								onQuickSearchQueryChange("");onQuickSearch();
+							} },
+						_react2["default"].createElement("span", { className: "glyphicon glyphicon-remove" })
+					)
 				),
 				_react2["default"].createElement(
 					"ul",
 					{ className: "list-group" },
-					entity.list.map(function (entry, i) {
+					quickSearch.list.map(function (entry, i) {
 						return _react2["default"].createElement(
 							"li",
 							{ className: "list-group-item", key: i },
 							_react2["default"].createElement(
 								"span",
 								{ style: { marginRight: "20px" } },
-								i + pagination.start + 1,
+								i + quickSearch.start + 1,
 								"."
 							),
 							_react2["default"].createElement(
@@ -10843,14 +10897,16 @@ EntityList.propTypes = {
 	entity: _react2["default"].PropTypes.object,
 	onPaginateLeft: _react2["default"].PropTypes.func,
 	onPaginateRight: _react2["default"].PropTypes.func,
+	onQuickSearch: _react2["default"].PropTypes.func,
+	onQuickSearchQueryChange: _react2["default"].PropTypes.func,
 	onSelect: _react2["default"].PropTypes.func,
-	pagination: _react2["default"].PropTypes.object
+	quickSearch: _react2["default"].PropTypes.object
 };
 
 exports["default"] = EntityList;
 module.exports = exports["default"];
 
-},{"react":"react"}],45:[function(require,module,exports){
+},{"hire-forms-input":5,"react":"react"}],45:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10904,8 +10960,6 @@ var AltNames = (function (_React$Component) {
 	}, {
 		key: "render",
 		value: function render() {
-			console.log("ALTNAMES", this.props.entity.data[this.props.name]);
-
 			return _react2["default"].createElement(
 				"div",
 				null,
@@ -13023,7 +13077,6 @@ var _utilSetIn2 = _interopRequireDefault(_utilSetIn);
 
 var initialState = {
 	data: null,
-	list: [],
 	domain: null,
 	errorMessage: null
 };
@@ -13037,11 +13090,6 @@ exports["default"] = function (state, action) {
 				data: action.data,
 				domain: action.domain,
 				errorMessage: action.errorMessage || null
-			});
-
-		case "RECEIVE_ENTITY_LIST":
-			return _extends({}, state, {
-				list: action.data
 			});
 
 		case "SET_ENTITY_FIELD_VALUE":
@@ -13096,9 +13144,9 @@ var _queries = require("./queries");
 
 var _queries2 = _interopRequireDefault(_queries);
 
-var _pagination = require("./pagination");
+var _quickSearch = require("./quick-search");
 
-var _pagination2 = _interopRequireDefault(_pagination);
+var _quickSearch2 = _interopRequireDefault(_quickSearch);
 
 exports["default"] = {
 	vre: _vre2["default"],
@@ -13106,11 +13154,11 @@ exports["default"] = {
 	user: _user2["default"],
 	messages: _messages2["default"],
 	queries: _queries2["default"],
-	pagination: _pagination2["default"]
+	quickSearch: _quickSearch2["default"]
 };
 module.exports = exports["default"];
 
-},{"./entity":70,"./messages":72,"./pagination":73,"./queries":74,"./user":75,"./vre":76}],72:[function(require,module,exports){
+},{"./entity":70,"./messages":72,"./queries":73,"./quick-search":74,"./user":75,"./vre":76}],72:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13154,33 +13202,6 @@ exports["default"] = function (state, action) {
 module.exports = exports["default"];
 
 },{"../util/set-in":80}],73:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var initialState = {
-	start: 0,
-	rows: 50
-};
-
-exports["default"] = function (state, action) {
-	if (state === undefined) state = initialState;
-
-	switch (action.type) {
-		case "SET_PAGINATION_START":
-			return _extends({}, state, { start: action.start });
-		default:
-			return state;
-	}
-};
-
-module.exports = exports["default"];
-
-},{}],74:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13366,7 +13387,46 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{"../util/get-in":79,"../util/set-in":80}],75:[function(require,module,exports){
+},{"../util/get-in":79,"../util/set-in":80}],74:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var initialState = {
+	start: 0,
+	list: [],
+	rows: 50,
+	query: ""
+};
+
+exports["default"] = function (state, action) {
+	if (state === undefined) state = initialState;
+
+	switch (action.type) {
+		case "SET_PAGINATION_START":
+			return _extends({}, state, { start: action.start });
+		case "RECEIVE_ENTITY_LIST":
+			return _extends({}, state, {
+				list: action.data
+			});
+		case "SET_QUICKSEARCH_QUERY":
+			{
+				return _extends({}, state, {
+					query: action.value
+				});
+			}
+		default:
+			return state;
+	}
+};
+
+module.exports = exports["default"];
+
+},{}],75:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
