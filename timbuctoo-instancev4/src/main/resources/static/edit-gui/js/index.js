@@ -10207,7 +10207,9 @@ var saveEntity = function saveEntity() {
 						return _relationSavers2["default"][_config2["default"].apiVersion](JSON.parse(resp.body), relationData, getState().vre.collections[getState().entity.domain], getState().user.token, getState().vre.vreId, function () {
 							return(
 								// 3) Refetch entity for render
-								redispatch(selectEntity(getState().entity.domain, getState().entity.data._id, null, "Succesfully saved " + getState().entity.domain + " with ID " + getState().entity.data._id))
+								redispatch(selectEntity(getState().entity.domain, getState().entity.data._id, null, "Succesfully saved " + getState().entity.domain + " with ID " + getState().entity.data._id, function () {
+									return dispatch(fetchEntityList(getState().entity.domain));
+								}))
 							);
 						});
 					})
