@@ -10113,13 +10113,43 @@ var makeSkeleton = function makeSkeleton(fieldDefs, domain) {
 	}, {});
 };
 
+var fetchEntityList = function fetchEntityList(domain) {
+	return function (dispatch, getState) {
+		dispatch({ type: "SET_PAGINATION_START", start: 0 });
+		_crud.crud.fetchEntityList(domain, 0, getState().pagination.rows, function (data) {
+			return dispatch({ type: "RECEIVE_ENTITY_LIST", data: data });
+		});
+	};
+};
+
+var paginateLeft = function paginateLeft() {
+	return function (dispatch, getState) {
+		var newStart = getState().pagination.start - getState().pagination.rows;
+		dispatch({ type: "SET_PAGINATION_START", start: newStart < 0 ? 0 : newStart });
+		_crud.crud.fetchEntityList(getState().entity.domain, newStart < 0 ? 0 : newStart, getState().pagination.rows, function (data) {
+			return dispatch({ type: "RECEIVE_ENTITY_LIST", data: data });
+		});
+	};
+};
+
+var paginateRight = function paginateRight() {
+	return function (dispatch, getState) {
+		var newStart = getState().pagination.start + getState().pagination.rows;
+		dispatch({ type: "SET_PAGINATION_START", start: newStart });
+		_crud.crud.fetchEntityList(getState().entity.domain, newStart, getState().pagination.rows, function (data) {
+			return dispatch({ type: "RECEIVE_ENTITY_LIST", data: data });
+		});
+	};
+};
+
 // 1) Fetch entity
 // 2) Dispatch RECEIVE_ENTITY for render
 var selectEntity = function selectEntity(domain, entityId) {
 	var errorMessage = arguments.length <= 2 || arguments[2] === undefined ? null : arguments[2];
 	var successMessage = arguments.length <= 3 || arguments[3] === undefined ? null : arguments[3];
+	var next = arguments.length <= 4 || arguments[4] === undefined ? function () {} : arguments[4];
 	return function (dispatch) {
-		return _crud.crud.fetchEntity(_config2["default"].apiUrl[_config2["default"].apiVersion] + "/domain/" + domain + "/" + entityId, function (data) {
+		_crud.crud.fetchEntity(_config2["default"].apiUrl[_config2["default"].apiVersion] + "/domain/" + domain + "/" + entityId, function (data) {
 			dispatch({ type: "RECEIVE_ENTITY", domain: domain, data: data, errorMessage: errorMessage });
 			if (successMessage !== null) {
 				dispatch({ type: "SUCCESS_MESSAGE", message: successMessage });
@@ -10127,6 +10157,7 @@ var selectEntity = function selectEntity(domain, entityId) {
 		}, function () {
 			return dispatch({ type: "RECEIVE_ENTITY_FAILURE", errorMessage: "Failed to fetch " + domain + " with ID " + entityId });
 		});
+		next();
 	};
 };
 
@@ -10148,6 +10179,7 @@ var deleteEntity = function deleteEntity() {
 		_crud.crud.deleteEntity(getState().entity.domain, getState().entity.data._id, getState().user.token, getState().vre.vreId, function () {
 			dispatch({ type: "SUCCESS_MESSAGE", message: "Sucessfully deleted " + getState().entity.domain + " with ID " + getState().entity.data._id });
 			dispatch(makeNewEntity(getState().entity.domain));
+			dispatch(fetchEntityList(getState().entity.domain));
 		}, function () {
 			return dispatch(selectEntity(getState().entity.domain, getState().entity.data._id, "Failed to delete " + getState().entity.domain + " with ID " + getState().entity.data._id));
 		});
@@ -10198,7 +10230,9 @@ var saveEntity = function saveEntity() {
 								_relationSavers2["default"][_config2["default"].apiVersion](data, relationData, getState().vre.collections[getState().entity.domain], getState().user.token, getState().vre.vreId, function () {
 									return(
 										// 4) Refetch entity for render
-										redispatch(selectEntity(getState().entity.domain, data._id, null, "Succesfully saved " + getState().entity.domain))
+										redispatch(selectEntity(getState().entity.domain, data._id, null, "Succesfully saved " + getState().entity.domain, function () {
+											return dispatch(fetchEntityList(getState().entity.domain));
+										}))
 									);
 								})
 							);
@@ -10212,35 +10246,6 @@ var saveEntity = function saveEntity() {
 				);
 			});
 		}
-	};
-};
-
-var fetchEntityList = function fetchEntityList(domain) {
-	return function (dispatch, getState) {
-		dispatch({ type: "SET_PAGINATION_START", start: 0 });
-		_crud.crud.fetchEntityList(domain, 0, getState().pagination.rows, function (data) {
-			return dispatch({ type: "RECEIVE_ENTITY_LIST", data: data });
-		});
-	};
-};
-
-var paginateLeft = function paginateLeft() {
-	return function (dispatch, getState) {
-		var newStart = getState().pagination.start - getState().pagination.rows;
-		dispatch({ type: "SET_PAGINATION_START", start: newStart < 0 ? 0 : newStart });
-		_crud.crud.fetchEntityList(getState().entity.domain, newStart < 0 ? 0 : newStart, getState().pagination.rows, function (data) {
-			return dispatch({ type: "RECEIVE_ENTITY_LIST", data: data });
-		});
-	};
-};
-
-var paginateRight = function paginateRight() {
-	return function (dispatch, getState) {
-		var newStart = getState().pagination.start + getState().pagination.rows;
-		dispatch({ type: "SET_PAGINATION_START", start: newStart });
-		_crud.crud.fetchEntityList(getState().entity.domain, newStart, getState().pagination.rows, function (data) {
-			return dispatch({ type: "RECEIVE_ENTITY_LIST", data: data });
-		});
 	};
 };
 
