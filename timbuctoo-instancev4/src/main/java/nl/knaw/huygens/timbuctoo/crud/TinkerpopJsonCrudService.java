@@ -934,7 +934,7 @@ public class TinkerpopJsonCrudService {
 
       propertyGetters.add(collection.getDisplayName().traversal().sideEffect( x -> {
         x.get()
-          .onSuccess(node -> result.set("displayName", node))
+          .onSuccess(node -> result.set("@displayName", node))
           .onFailure(e -> LOG.error(databaseInvariant, "Failed to make displayname for {}", collectionName, e));
       }));
 

@@ -10827,7 +10827,7 @@ var EntityList = (function (_React$Component) {
 								{ onClick: function () {
 										return _this.props.onSelect({ domain: entity.domain, id: entry._id });
 									} },
-								entry.displayName
+								entry["@displayName"]
 							)
 						);
 					})
@@ -10904,6 +10904,8 @@ var AltNames = (function (_React$Component) {
 	}, {
 		key: "render",
 		value: function render() {
+			console.log("ALTNAMES", this.props.entity.data[this.props.name]);
+
 			return _react2["default"].createElement(
 				"div",
 				null,
