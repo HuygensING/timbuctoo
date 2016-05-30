@@ -30,7 +30,8 @@ public class DatabaseLog {
 
     try {
       Change modified = objectMapper.readValue(modifiedString, Change.class);
-      writeAndFlush(String.format("%d - Vertex created%n", modified.getTimeStamp()));
+      writeAndFlush(
+        String.format("%d - Vertex with tim_id '%s' created%n", modified.getTimeStamp(), vertex.value("tim_id")));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -41,7 +42,8 @@ public class DatabaseLog {
 
     try {
       Change modified = objectMapper.readValue(modifiedString, Change.class);
-      writeAndFlush(String.format("%d - Vertex updated%n", modified.getTimeStamp()));
+      writeAndFlush(
+        String.format("%d - Vertex with tim_id '%s' updated%n", modified.getTimeStamp(), vertex.value("tim_id")));
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
