@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.util.AuthorizerHelper;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
+import nl.knaw.huygens.timbuctoo.util.VertexMatcher;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -23,6 +24,7 @@ import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -34,11 +36,15 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
+import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -121,10 +127,10 @@ public class TinkerpopJsonCrudServiceReplaceTest {
 
     // Types should also be added as a Neo4j label
     assertThat(graph.traversal().V()
-            .has("tim_id", id)
-            .has("isLatest", true)
-            .has(T.label,
-            LabelP.of("wwperson")).toList().size(), is(1));
+                    .has("tim_id", id)
+                    .has("isLatest", true)
+                    .has(T.label,
+                      LabelP.of("wwperson")).toList().size(), is(1));
   }
 
 
@@ -375,6 +381,44 @@ public class TinkerpopJsonCrudServiceReplaceTest {
       )
     );
   }
+
+  @Test
+  public void sendsAPidlessVertexToTheChangeListener() throws Exception {
+    String uuid = UUID.randomUUID().toString();
+    int oldRev = 1;
+    String oldPid = "oldPid";
+    Graph graph = newGraph()
+      .withVertex("v1", v -> v
+        .withTimId(uuid)
+        .withVre("ww")
+        .withType("person")
+        .withProperty("isLatest", true)
+        .withProperty("rev", oldRev)
+        .withProperty("pid", oldPid)
+      )
+      .withVertex("v2", v -> v
+        .withTimId(uuid)
+        .withVre("ww")
+        .withType("person")
+        .withProperty("isLatest", true)
+        .withProperty("rev", oldRev)
+        .withProperty("pid", oldPid)
+        .withOutgoingRelation("VERSION_OF", "v1")
+      )
+      .build();
+    HandleAdder handleAdder = mock(HandleAdder.class);
+    UrlGenerator urlGen = (collectionName, id, rev) -> URI.create("http://example.com/" + id + "?r=" + rev);
+    ChangeListener changeListener = mock(ChangeListener.class);
+    TinkerpopJsonCrudService instance = newJsonCrudService()
+      .withHandleAdder(urlGen, handleAdder)
+      .withChangeListener(changeListener)
+      .forGraph(graph);
+
+    instance.replace("wwpersons", UUID.fromString(uuid), JsonBuilder.jsnO("^rev", jsn(oldRev)), "");
+
+    verify(changeListener).onUpdate(any(), argThat(likeVertex().withoutProperty("pid")));
+  }
+
 
   @Test
   public void ignoresAtTypeAnd_id() throws Exception {

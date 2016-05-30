@@ -25,8 +25,11 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
+import static org.mockito.Matchers.isNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
@@ -859,6 +862,26 @@ public class TinkerpopJsonCrudServiceReadTest {
         )
       )
     ).toString()).allowingExtraUnexpectedFields());
+  }
+
+  @Test
+  public void addsAPidPropertyWithTheValueNullWhenTheVertexDoesNotContainTheProperty() throws Exception {
+    UUID id = UUID.randomUUID();
+    Graph graph = newGraph().withVertex(v -> v.withTimId(id.toString()))
+                            .withVertex(v -> v
+                              .withVre("ww")
+                              .withVre("")
+                              .withType("person")
+                              .isLatest(true)
+                              .withTimId(id.toString())
+                            ).build();
+    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
+
+    JsonNode result = instance.get("wwpersons", id);
+
+    JsonNode pidProperty = result.get("^pid");
+    assertThat(pidProperty, is(notNullValue()));
+    assertThat(pidProperty.textValue(), is(nullValue()));
   }
 
 }
