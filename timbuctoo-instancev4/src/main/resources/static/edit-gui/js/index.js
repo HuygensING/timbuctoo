@@ -10021,6 +10021,7 @@ var sendQuickSearch = function sendQuickSearch() {
 		var vre = _getState.vre;
 
 		if (quickSearch.query.length) {
+			dispatch({ type: "SET_PAGINATION_START", start: 0 });
 			var callback = function callback(data) {
 				return dispatch({ type: "RECEIVE_ENTITY_LIST", data: data.map(function (d) {
 						return {
@@ -10206,7 +10207,7 @@ exports["default"] = {
 		return _store2["default"].dispatch({ type: "DISMISS_MESSAGE", messageIndex: messageIndex });
 	},
 	onSelectDomain: function onSelectDomain(domain) {
-		return _store2["default"].dispatch((0, _entity.fetchEntityList)(domain));
+		_store2["default"].dispatch((0, _entity.fetchEntityList)(domain));_store2["default"].dispatch({ type: "SET_QUICKSEARCH_QUERY", value: "" });
 	},
 	onPaginateLeft: function onPaginateLeft() {
 		return _store2["default"].dispatch((0, _entity.paginateLeft)());
@@ -10778,10 +10779,6 @@ var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
-var _hireFormsInput = require("hire-forms-input");
-
-var _hireFormsInput2 = _interopRequireDefault(_hireFormsInput);
-
 var EntityList = (function (_React$Component) {
 	_inherits(EntityList, _React$Component);
 
@@ -10849,7 +10846,14 @@ var EntityList = (function (_React$Component) {
 						quickSearch.start + quickSearch.rows
 					),
 					rightButton,
-					_react2["default"].createElement(_hireFormsInput2["default"], { onChange: onQuickSearchQueryChange, placeholder: "Quick search...", value: quickSearch.query }),
+					_react2["default"].createElement("input", { onChange: function (ev) {
+							return onQuickSearchQueryChange(ev.target.value);
+						},
+						onKeyPress: function (ev) {
+							return ev.key === "Enter" ? onQuickSearch() : false;
+						},
+						placeholder: "Quick search...",
+						value: quickSearch.query }),
 					_react2["default"].createElement(
 						"button",
 						{ onClick: onQuickSearch },
@@ -10906,7 +10910,7 @@ EntityList.propTypes = {
 exports["default"] = EntityList;
 module.exports = exports["default"];
 
-},{"hire-forms-input":5,"react":"react"}],45:[function(require,module,exports){
+},{"react":"react"}],45:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
