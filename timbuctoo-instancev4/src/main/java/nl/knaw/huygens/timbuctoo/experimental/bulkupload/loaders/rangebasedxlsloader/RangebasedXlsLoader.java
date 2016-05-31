@@ -34,6 +34,7 @@ public class RangebasedXlsLoader implements BulkLoader<Workbook> {
         handleResult(range, importer.startCollection(range.getNameWithoutSuffix()));
         for (int r = range.getMinRow(); r <= range.getMaxRow(); r++) {
           Row row = range.getSheet().getRow(r);
+          boolean entityStarted = false;
           for (int c = range.getMinCol(); c <= range.getMaxCol(); c++) {
             String value = getValueAsStringAndMarkError(row.getCell(c), "An error cannot be imported").orElse("");
             switch (getValueTypeFor(value, r, range.getMinRow())) {
@@ -51,14 +52,11 @@ public class RangebasedXlsLoader implements BulkLoader<Workbook> {
                 ));
                 break;
               case VALUE:
-                if (c == range.getMinCol()) {
+                if (!entityStarted) {
+                  entityStarted  = true;
                   importer.startEntity();
                 }
                 importer.setValue(c, value);
-                if (c == range.getMaxCol()) {
-                  importer.finishEntity()
-                    .forEach((idx, res) -> handleResult(row, idx, res));
-                }
                 break;
               case NONE:
                 handleResult(row, c, Result.ignored());
@@ -66,6 +64,10 @@ public class RangebasedXlsLoader implements BulkLoader<Workbook> {
               default:
                 throw new RuntimeException("Not all enum cases have been handled");
             }
+          }
+          if (entityStarted) {
+            importer.finishEntity()
+              .forEach((idx, res) -> handleResult(row, idx, res));
           }
         }
         handleResult(range, importer.finishCollection());
