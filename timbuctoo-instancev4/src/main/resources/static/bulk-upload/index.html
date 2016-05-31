@@ -1,0 +1,34 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Huygens ING Data Repository</title>
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+</head>
+
+<body>
+<div class="container">
+  <div class="row">
+    <h1>Excel upload</h1>
+    Upload a changed version<br>
+    <form class="form-horizontal" method="POST" action="/v2.1/bulk-upload" enctype="multipart/form-data">
+      <div class="form-group">
+        <label class="col-sm-2">Vre</label><input name="vre" type="text">
+      </div>
+      <div class="form-group">
+        <label class="col-sm-2">Excel file</label><input type="file" name="file">
+      </div>
+      <div class="form-group">
+        <input type="submit" value="upload" name="submit" class="col-sm-offset-2 btn btn-primary">
+      </div>
+    </form>
+  </div>
+  <hr>
+  <footer>Powered by Timbuctoo</footer>
+</div>
+</body>
+</html>
