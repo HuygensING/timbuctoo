@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -14,7 +13,6 @@ import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -35,13 +33,11 @@ public class InvariantsFix implements DatabaseMigration {
   public static final Logger LOG = LoggerFactory.getLogger(InvariantsFix.class);
   private final Vres vres;
   private final Set<String> processedTypes;
-  private final Change change;
   private final ObjectMapper objectMapper;
 
   public InvariantsFix(Vres vres) {
     this.vres = vres;
     processedTypes = Sets.newHashSet();
-    change = Change.newInternalInstance();
     objectMapper = new ObjectMapper();
   }
 
@@ -131,7 +127,7 @@ public class InvariantsFix implements DatabaseMigration {
 
         Map<String, Object> propertiesToSet = getPropertiesToSet(vertex, vertexAbstractType, entityTypeName);
         propertiesToSet.entrySet().forEach(entry -> vertex.property(entry.getKey(), entry.getValue()));
-        setModified(vertex, change);
+
         vertex.property("pid").remove();
         int rev = vertex.<Integer>value("rev") + 1;
         vertex.property("rev", rev);
@@ -169,14 +165,6 @@ public class InvariantsFix implements DatabaseMigration {
       vertex.property("types", objectMapper.writeValueAsString(types));
     } catch (JsonProcessingException e) {
       throw new RuntimeException("Cannot write types property", e);
-    }
-  }
-
-  private void setModified(Element element, Change change) {
-    try {
-      element.property("modified", objectMapper.writeValueAsString(change));
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException("Cannot write modified property", e);
     }
   }
 
