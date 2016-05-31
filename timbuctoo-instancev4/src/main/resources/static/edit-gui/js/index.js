@@ -10823,72 +10823,76 @@ var EntityList = (function (_React$Component) {
 
 			return _react2["default"].createElement(
 				"div",
-				{ className: "panel panel-default entity-list" },
+				{ className: "col-sm-6" },
 				_react2["default"].createElement(
 					"div",
-					{ className: "panel-heading" },
+					{ className: "panel panel-default entity-list" },
 					_react2["default"].createElement(
-						"h3",
-						{ className: "panel-title" },
-						"List of: ",
-						entity.domain
-					)
-				),
-				_react2["default"].createElement(
-					"div",
-					{ className: "panel-body" },
-					leftButton,
-					_react2["default"].createElement(
-						"span",
-						{ style: { margin: "20px" } },
-						quickSearch.start + 1,
-						" - ",
-						quickSearch.start + quickSearch.rows
-					),
-					rightButton,
-					_react2["default"].createElement("input", { onChange: function (ev) {
-							return onQuickSearchQueryChange(ev.target.value);
-						},
-						onKeyPress: function (ev) {
-							return ev.key === "Enter" ? onQuickSearch() : false;
-						},
-						placeholder: "Quick search...",
-						value: quickSearch.query }),
-					_react2["default"].createElement(
-						"button",
-						{ onClick: onQuickSearch },
-						_react2["default"].createElement("span", { className: "glyphicon glyphicon-search" })
+						"div",
+						{ className: "panel-heading" },
+						_react2["default"].createElement(
+							"h3",
+							{ className: "panel-title" },
+							"List of: ",
+							entity.domain
+						)
 					),
 					_react2["default"].createElement(
-						"button",
-						{ onClick: function () {
-								onQuickSearchQueryChange("");onQuickSearch();
-							} },
-						_react2["default"].createElement("span", { className: "glyphicon glyphicon-remove" })
+						"div",
+						{ className: "panel-body" },
+						leftButton,
+						_react2["default"].createElement(
+							"span",
+							{ style: { margin: "10px" } },
+							quickSearch.start + 1,
+							" - ",
+							quickSearch.start + quickSearch.rows
+						),
+						rightButton,
+						_react2["default"].createElement("input", { onChange: function (ev) {
+								return onQuickSearchQueryChange(ev.target.value);
+							},
+							onKeyPress: function (ev) {
+								return ev.key === "Enter" ? onQuickSearch() : false;
+							},
+							placeholder: "Quick search...",
+							value: quickSearch.query }),
+						_react2["default"].createElement(
+							"button",
+							{ onClick: onQuickSearch },
+							_react2["default"].createElement("span", { className: "glyphicon glyphicon-search" })
+						),
+						_react2["default"].createElement(
+							"button",
+							{ onClick: function () {
+									onQuickSearchQueryChange("");onQuickSearch();
+								} },
+							_react2["default"].createElement("span", { className: "glyphicon glyphicon-remove" })
+						)
+					),
+					_react2["default"].createElement(
+						"ul",
+						{ className: "list-group" },
+						quickSearch.list.map(function (entry, i) {
+							return _react2["default"].createElement(
+								"li",
+								{ className: "list-group-item", key: i },
+								_react2["default"].createElement(
+									"span",
+									{ style: { marginRight: "20px" } },
+									i + quickSearch.start + 1,
+									"."
+								),
+								_react2["default"].createElement(
+									"a",
+									{ onClick: function () {
+											return _this.props.onSelect({ domain: entity.domain, id: entry._id });
+										} },
+									entry["@displayName"]
+								)
+							);
+						})
 					)
-				),
-				_react2["default"].createElement(
-					"ul",
-					{ className: "list-group" },
-					quickSearch.list.map(function (entry, i) {
-						return _react2["default"].createElement(
-							"li",
-							{ className: "list-group-item", key: i },
-							_react2["default"].createElement(
-								"span",
-								{ style: { marginRight: "20px" } },
-								i + quickSearch.start + 1,
-								"."
-							),
-							_react2["default"].createElement(
-								"a",
-								{ onClick: function () {
-										return _this.props.onSelect({ domain: entity.domain, id: entry._id });
-									} },
-								entry["@displayName"]
-							)
-						);
-					})
 				)
 			);
 		}
@@ -12157,25 +12161,29 @@ var Form = (function (_React$Component) {
 
 			return _react2["default"].createElement(
 				"div",
-				{ className: "panel panel-default edit-form" },
+				{ className: "col-sm-6" },
 				_react2["default"].createElement(
 					"div",
-					{ className: "panel-heading" },
-					addNewButton,
-					saveButton,
-					deleteButton,
+					{ className: "panel panel-default edit-form" },
 					_react2["default"].createElement(
-						"h3",
-						{ className: "panel-title" },
-						MODE_LABELS[currentMode],
-						": ",
-						entity.domain.replace(/s$/, "")
+						"div",
+						{ className: "panel-heading" },
+						addNewButton,
+						saveButton,
+						deleteButton,
+						_react2["default"].createElement(
+							"h3",
+							{ className: "panel-title" },
+							MODE_LABELS[currentMode],
+							": ",
+							entity.domain.replace(/s$/, "")
+						)
+					),
+					_react2["default"].createElement(
+						"ul",
+						{ className: "list-group" },
+						formFields
 					)
-				),
-				_react2["default"].createElement(
-					"ul",
-					{ className: "list-group" },
-					formFields
 				)
 			);
 		}
@@ -12424,42 +12432,50 @@ var Header = (function (_React$Component) {
 				_react2["default"].createElement(
 					"div",
 					{ className: "container-fluid" },
-					_react2["default"].createElement(_login2["default"], this.props),
 					_react2["default"].createElement(
-						"ul",
-						{ className: "nav navbar-nav navbar-left" },
-						vre.list.map(function (currentVre) {
-							return _react2["default"].createElement(
-								"li",
-								{ className: (0, _classnames2["default"])("dropdown", currentVre, {
-										active: dropDownIsActive(currentVre, vre),
-										open: currentVre === openMenuVreId
-									}), key: currentVre },
-								_react2["default"].createElement(
-									"a",
-									{ className: "dropdown-toggle", onClick: _this.onVreMenuClick.bind(_this, currentVre) },
-									currentVre,
-									_react2["default"].createElement("span", { className: "caret" })
-								),
-								_react2["default"].createElement(
-									"ul",
-									{ className: "dropdown-menu" },
-									domains.map(function (domain, i) {
-										return _react2["default"].createElement(
-											"li",
-											{ key: i },
-											_react2["default"].createElement(
-												"a",
-												{ onClick: function () {
-														return _this.onDomainSelect(domain);
-													} },
-												domain
-											)
-										);
-									})
-								)
-							);
-						})
+						"div",
+						{ className: "col-sm-10" },
+						_react2["default"].createElement(
+							"ul",
+							{ className: "nav navbar-nav navbar-left" },
+							vre.list.map(function (currentVre) {
+								return _react2["default"].createElement(
+									"li",
+									{ className: (0, _classnames2["default"])("dropdown", currentVre, {
+											active: dropDownIsActive(currentVre, vre),
+											open: currentVre === openMenuVreId
+										}), key: currentVre },
+									_react2["default"].createElement(
+										"a",
+										{ className: "dropdown-toggle", onClick: _this.onVreMenuClick.bind(_this, currentVre) },
+										currentVre,
+										_react2["default"].createElement("span", { className: "caret" })
+									),
+									_react2["default"].createElement(
+										"ul",
+										{ className: "dropdown-menu" },
+										domains.map(function (domain, i) {
+											return _react2["default"].createElement(
+												"li",
+												{ key: i },
+												_react2["default"].createElement(
+													"a",
+													{ onClick: function () {
+															return _this.onDomainSelect(domain);
+														} },
+													domain
+												)
+											);
+										})
+									)
+								);
+							})
+						)
+					),
+					_react2["default"].createElement(
+						"div",
+						{ className: "col-sm-2" },
+						_react2["default"].createElement(_login2["default"], this.props)
 					)
 				)
 			);
@@ -12536,7 +12552,7 @@ var App = (function (_React$Component) {
 
 			var businessPart = this.props.vre.vreId && this.props.entity.domain ? _react2["default"].createElement(
 				"div",
-				null,
+				{ className: "container-fluid" },
 				_react2["default"].createElement(_form2["default"], this.props),
 				_react2["default"].createElement(_entityList2["default"], this.props)
 			) : null;
