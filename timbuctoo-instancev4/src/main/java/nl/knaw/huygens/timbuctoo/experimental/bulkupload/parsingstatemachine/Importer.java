@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.experimental.bulkupload.parsingstatemachine;
 
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.savers.Saver;
+import nl.knaw.huygens.timbuctoo.experimental.bulkupload.savers.VertexCreatedTwiceException;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -18,7 +19,7 @@ public class Importer {
   private Collection currentCollection;
   private String[] currentProperties;
   private Optional<String> curUniqueIdentifier = Optional.empty();
-  private boolean hasIdentifierColumn = false;
+  private Optional<ImportPropertyDescription> identifierColumn;
 
   private ImportState currentState = ImportState.NOTHING;
 
@@ -36,7 +37,7 @@ public class Importer {
       currentCollection = collectionOpt.get();
       currentState = ImportState.GETTING_DECLARATION;
       properties = new ImportPropertyDescriptions(currentCollection);
-      hasIdentifierColumn = false;
+      identifierColumn = Optional.empty();
       return Result.success();
     } else {
       currentState = ImportState.SKIPPING;
@@ -72,11 +73,12 @@ public class Importer {
     if (currentState != ImportState.GETTING_DECLARATION) {
       return Result.failure("I was not expecting a uniqueness declaration here");
     }
-    if (hasIdentifierColumn) {
+    if (identifierColumn.isPresent()) {
       return Result.failure("Only one identifier column per collection is possible");
     } else {
-      hasIdentifierColumn = true;
-      properties.getOrCreate(id).setUnique(isUnique);
+      final ImportPropertyDescription identityProp = properties.getOrCreate(id);
+      identifierColumn = Optional.of(identityProp);
+      identityProp.setUnique(isUnique);
     }
     return Result.success();
   }
@@ -147,19 +149,22 @@ public class Importer {
       }
     }
 
-    //FIXME: fail if the vertex has already had his properties set
-    Vertex vertex = saver.setVertexProperties(currentCollection, curUniqueIdentifier, propertyValues);
-
-    for (Map.Entry<ImportPropertyDescription, String> entry : relations.entrySet()) {
-      final ImportPropertyDescription prop = entry.getKey();
-      final String value = entry.getValue();
-      final Optional<String> result = saver.makeRelation(vertex, prop.getRelationName(), currentCollection,
-                                                         prop.getTargetCollection(), value);
-      if (result.isPresent()) {
-        results.put(prop.getId(), Result.failure(result.get()));
-      } else {
-        results.put(prop.getId(), Result.success());
+    try {
+      Vertex vertex = saver.setVertexProperties(currentCollection, curUniqueIdentifier, propertyValues);
+      for (Map.Entry<ImportPropertyDescription, String> entry : relations.entrySet()) {
+        final ImportPropertyDescription prop = entry.getKey();
+        final String value = entry.getValue();
+        final Optional<String> result = saver.makeRelation(vertex, prop.getRelationName(), currentCollection,
+                                                           prop.getTargetCollection(), value);
+        if (result.isPresent()) {
+          results.put(prop.getId(), Result.failure(result.get()));
+        } else {
+          results.put(prop.getId(), Result.success());
+        }
       }
+    } catch (VertexCreatedTwiceException e) {
+      results = new HashMap<>();
+      results.put(identifierColumn.get().getId(), Result.failure("A property with this identifier already exists"));
     }
 
     return results;

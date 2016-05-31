@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.experimental.bulkupload.savers;
 
+import nl.knaw.huygens.timbuctoo.experimental.bulkupload.RelationDescription;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
-import nl.knaw.huygens.timbuctoo.experimental.bulkupload.RelationDescription;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -52,7 +52,7 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
 
   @Override
   public Vertex setVertexProperties(Collection collection, Optional<String> identityOpt,
-                                    HashMap<String, Object> currentProperties) {
+                                    HashMap<String, Object> currentProperties) throws VertexCreatedTwiceException {
     allowCommit();
     Vertex result;
     if (identityOpt.isPresent()) {
@@ -61,6 +61,9 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
       result = wrapper.getGraph().addVertex();
     }
 
+    if (result.property("rev").isPresent()) {
+      throw new VertexCreatedTwiceException();
+    }
     final String typeName = collection.getEntityTypeName();
     //FIXME re-use code from crudservice create
     result.property("rev", 1);

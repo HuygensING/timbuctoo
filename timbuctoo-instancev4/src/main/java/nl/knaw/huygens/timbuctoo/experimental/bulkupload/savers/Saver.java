@@ -9,7 +9,7 @@ import java.util.Optional;
 
 public interface Saver {
   Vertex setVertexProperties(Collection collection, Optional<String> uniqueValueOpt,
-                             HashMap<String, Object> currentProperties);
+                             HashMap<String, Object> currentProperties) throws VertexCreatedTwiceException;
 
   Vre getVre();
 
