@@ -17,6 +17,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
+
 @Path("/v2.1/authenticate")
 @Produces(MediaType.APPLICATION_JSON)
 public class Authenticate {
@@ -55,6 +58,7 @@ public class Authenticate {
     return Response
       .status(Response.Status.UNAUTHORIZED)
       .header(HttpHeaders.WWW_AUTHENTICATE, "Basic realm=\"timbuctoo\"")
+      .entity(jsnO("message", jsn("unauthorized")))
       .build();
   }
 }
