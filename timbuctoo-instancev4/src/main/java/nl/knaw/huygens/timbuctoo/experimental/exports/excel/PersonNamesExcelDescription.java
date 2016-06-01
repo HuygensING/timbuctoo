@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.experimental.exports.excel;
 
 import nl.knaw.huygens.timbuctoo.experimental.exports.ExcelDescription;
+import nl.knaw.huygens.timbuctoo.model.PersonName;
+import nl.knaw.huygens.timbuctoo.model.PersonNameComponent;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 
 import java.util.Iterator;
@@ -43,7 +45,15 @@ public class PersonNamesExcelDescription implements ExcelDescription {
     // |          |        | SURNAME   | Deer    |
     // -------------------------------------------
 
-    // FIXME:
-    return new String[0][];
+    String[][] result = new String[getRows()][getCols()];
+    for (int i = 0; i < value.list.size(); i++) {
+      PersonName personName = value.list.get(i);
+      for (int componentIndex = 0; componentIndex < personName.getComponents().size(); componentIndex++) {
+        PersonNameComponent component = personName.getComponents().get(componentIndex);
+        result[i][componentIndex * 2] = component.getType().getName();
+        result[i][componentIndex * 2 + 1] = component.getValue();
+      }
+    }
+    return result;
   }
 }
