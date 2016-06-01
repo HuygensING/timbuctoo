@@ -131,7 +131,10 @@ public class Search {
     Optional<SearchResult> searchResult = searchStore.getSearchResult(id.get());
     SXSSFWorkbook workbook = new SXSSFWorkbook();
     if (searchResult.isPresent()) {
-      workbook = excelExportService.export(searchResult.get().getSearchResult().iterator(), 1, Optional.empty());
+      final SearchResult result = searchResult.get();
+      workbook = excelExportService
+        .toExcel(result.getSearchResult(),result.getSearchDescription().getType());
+
     } else {
       workbook.createSheet("result").createRow(0).createCell(0).setCellValue("Search with id " + id + " not found.");
     }

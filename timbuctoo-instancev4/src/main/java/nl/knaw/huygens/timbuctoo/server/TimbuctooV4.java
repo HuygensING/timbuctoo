@@ -178,7 +178,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       (coll, id, rev) -> URI.create(configuration.getBaseUri() + SingleEntity.makeUrl(coll, id, rev).getPath()),
       vres
     );
-    final ExcelExportService excelExportService = new ExcelExportService(vres);
+    final ExcelExportService excelExportService = new ExcelExportService(vres, graphManager);
 
 
     environment.lifecycle().manage(graphManager);

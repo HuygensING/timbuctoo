@@ -43,8 +43,8 @@ public class HyperlinksExcelDescription implements ExcelDescription {
     List<String[]> result = Lists.newArrayList();
 
     for (JsonNode node : value) {
-      result.add(new String[] {"label", node.get("nametype").asText()});
-      result.add(new String[] {"url", node.get("displayName").asText()});
+      result.add(new String[] {"label", node.get("label").asText()});
+      result.add(new String[] {"url", node.get("url").asText()});
     }
 
     return result.toArray(new String[result.size()][]);

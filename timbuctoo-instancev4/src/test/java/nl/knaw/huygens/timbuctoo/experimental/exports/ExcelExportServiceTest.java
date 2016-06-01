@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.experimental.exports;
 
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.HuygensIng;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
@@ -9,17 +10,25 @@ import org.junit.Test;
 
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class ExcelExportServiceTest {
 
 
   @Test
   public void exportOutputsAStreamingWorkbook() {
-    ExcelExportService instance = new ExcelExportService(HuygensIng.mappings);
 
-    Workbook result = instance.export(Lists.<Vertex>newArrayList().iterator(), 0, Optional.empty());
+    GraphWrapper graphWrapper = mock(GraphWrapper.class);
+    when(graphWrapper.getGraph()).thenReturn(newGraph().build());
+
+
+    ExcelExportService instance = new ExcelExportService(HuygensIng.mappings, graphWrapper);
+
+    Workbook result = instance.toExcel(Lists.<Vertex>newArrayList(), "wwperson");
 
     assertThat(result, instanceOf(SXSSFWorkbook.class));
   }

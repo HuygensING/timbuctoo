@@ -22,8 +22,8 @@ public class PersonNamesExcelDescription implements ExcelDescription {
   public int getRows() {
     // Max. amount of components
     Iterator<Integer> sortedSizes = value.list.stream().map(personName -> personName.getComponents().size())
-                                           .sorted((sizeA, sizeB) -> sizeA < sizeB ? -1 : 1).iterator();
-    return sortedSizes.hasNext() ? sortedSizes.next() : 1;
+                                           .sorted((sizeA, sizeB) -> sizeA > sizeB ? -1 : 1).iterator();
+    return sortedSizes.hasNext() ? sortedSizes.next() : 0;
   }
 
   @Override
@@ -48,10 +48,10 @@ public class PersonNamesExcelDescription implements ExcelDescription {
     String[][] result = new String[getRows()][getCols()];
     for (int i = 0; i < value.list.size(); i++) {
       PersonName personName = value.list.get(i);
+
       for (int componentIndex = 0; componentIndex < personName.getComponents().size(); componentIndex++) {
-        PersonNameComponent component = personName.getComponents().get(componentIndex);
-        result[i][componentIndex * 2] = component.getType().getName();
-        result[i][componentIndex * 2 + 1] = component.getValue();
+        result[componentIndex][i * 2] = personName.getComponents().get(componentIndex).getType().getName();
+        result[componentIndex][i * 2 + 1] = personName.getComponents().get(componentIndex).getValue();
       }
     }
     return result;
