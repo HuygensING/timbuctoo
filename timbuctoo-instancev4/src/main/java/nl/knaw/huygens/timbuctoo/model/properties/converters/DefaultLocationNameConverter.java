@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.model.properties.converters;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.TextNode;
+import nl.knaw.huygens.timbuctoo.experimental.exports.ExcelDescription;
 import nl.knaw.huygens.timbuctoo.model.LocationNames;
 
 import java.io.IOException;
@@ -23,5 +24,12 @@ public class DefaultLocationNameConverter implements Converter {
     } else {
       throw new IOException("should be a string");
     }
+  }
+
+  @Override
+  public ExcelDescription tinkerPopToExcel(Object value) throws IOException {
+    JsonNode json = tinkerpopToJson(value);
+    // TODO: convert
+    return new ExcelDescription();
   }
 }

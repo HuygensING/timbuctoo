@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.model.properties.converters;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import nl.knaw.huygens.timbuctoo.experimental.exports.ExcelDescription;
 
 import java.io.IOException;
 
@@ -44,5 +45,12 @@ public class ArrayToEncodedArrayConverter implements Converter {
   @Override
   public String getTypeIdentifier() {
     return "list-of-strings";
+  }
+
+  @Override
+  public ExcelDescription tinkerPopToExcel(Object value) throws IOException {
+    JsonNode json = tinkerpopToJson(value);
+    // TODO: convert
+    return new ExcelDescription();
   }
 }

@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.model.properties.converters;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import nl.knaw.huygens.timbuctoo.experimental.exports.ExcelDescription;
 import nl.knaw.huygens.timbuctoo.model.AltNames;
 
 import java.io.IOException;
@@ -37,5 +38,12 @@ class AltNamesConverter implements Converter {
   @Override
   public String getTypeIdentifier() {
     return "altnames";
+  }
+
+  @Override
+  public ExcelDescription tinkerPopToExcel(Object value) throws IOException {
+    JsonNode json = tinkerpopToJson(value);
+    // TODO: convert
+    return new ExcelDescription();
   }
 }

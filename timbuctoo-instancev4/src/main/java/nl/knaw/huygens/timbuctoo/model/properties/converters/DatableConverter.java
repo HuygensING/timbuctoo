@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.model.properties.converters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.knaw.huygens.timbuctoo.experimental.exports.ExcelDescription;
 
 import java.io.IOException;
 
@@ -32,4 +33,10 @@ public class DatableConverter implements Converter {
     return "datable";
   }
 
+  @Override
+  public ExcelDescription tinkerPopToExcel(Object value) throws IOException {
+    JsonNode json = tinkerpopToJson(value);
+    // TODO: convert
+    return new ExcelDescription();
+  }
 }

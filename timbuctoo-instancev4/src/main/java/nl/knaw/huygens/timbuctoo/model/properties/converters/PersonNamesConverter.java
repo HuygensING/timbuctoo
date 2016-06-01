@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.experimental.exports.ExcelDescription;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.model.properties.HasParts;
 
@@ -51,6 +52,13 @@ public class PersonNamesConverter implements Converter, HasParts {
   @Override
   public Collection<String> getParts() {
     return Lists.newArrayList("FORENAME", "SURNAME", "NAME_LINK", "ROLE_NAME", "GEN_NAME");
+  }
+
+  @Override
+  public ExcelDescription tinkerPopToExcel(Object value) throws IOException {
+    JsonNode json = tinkerpopToJson(value);
+    // TODO: convert
+    return new ExcelDescription();
   }
 
 }
