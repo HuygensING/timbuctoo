@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.TextNode;
 import nl.knaw.huygens.timbuctoo.experimental.exports.ExcelDescription;
+import nl.knaw.huygens.timbuctoo.experimental.exports.excel.StringExcelDescription;
 import nl.knaw.huygens.timbuctoo.model.LocationNames;
 
 import java.io.IOException;
@@ -27,9 +28,8 @@ public class DefaultLocationNameConverter implements Converter {
   }
 
   @Override
-  public ExcelDescription tinkerPopToExcel(Object value) throws IOException {
-    JsonNode json = tinkerpopToJson(value);
-    // TODO: convert
-    return new ExcelDescription();
+  public ExcelDescription tinkerPopToExcel(Object value, String guiTypeId) throws IOException {
+    // FIXME: create an excel description for the full LocationNames class
+    return new StringExcelDescription(tinkerpopToJson(value).asText(), guiTypeId);
   }
 }

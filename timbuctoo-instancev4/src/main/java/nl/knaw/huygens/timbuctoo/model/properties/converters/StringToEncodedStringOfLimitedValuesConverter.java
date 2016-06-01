@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.experimental.exports.ExcelDescription;
+import nl.knaw.huygens.timbuctoo.experimental.exports.excel.StringExcelDescription;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -58,9 +59,7 @@ public class StringToEncodedStringOfLimitedValuesConverter implements Converter,
   }
 
   @Override
-  public ExcelDescription tinkerPopToExcel(Object value) throws IOException {
-    JsonNode json = tinkerpopToJson(value);
-    // TODO: convert
-    return new ExcelDescription();
+  public ExcelDescription tinkerPopToExcel(Object value, String guiTypeId) throws IOException {
+    return new StringExcelDescription(tinkerpopToJson(value).asText(), guiTypeId);
   }
 }

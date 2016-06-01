@@ -56,7 +56,8 @@ public class LocalProperty extends ReadableProperty {
 
   public GraphTraversal<?, Try<ExcelDescription>> getExcelDescription() {
     Supplier<GraphTraversal<?, Try<ExcelDescription>>> supplier =
-      () -> __.<Object, String>values(propName).map(prop -> Try.of(() -> converter.tinkerPopToExcel(prop.get())));
+      () -> __.<Object, String>values(propName).map(prop -> Try.of(() ->
+        converter.tinkerPopToExcel(prop.get(), getGuiTypeId())));
     return supplier.get();
   }
 }
