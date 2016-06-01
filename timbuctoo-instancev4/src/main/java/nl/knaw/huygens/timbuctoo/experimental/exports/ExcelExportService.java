@@ -5,6 +5,11 @@ import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.streaming.SXSSFCell;
+import org.apache.poi.xssf.streaming.SXSSFRow;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -54,6 +59,8 @@ public class ExcelExportService {
    */
   public SXSSFWorkbook toExcel(List<Vertex> vertices, String type) {
     SXSSFWorkbook workbook = new SXSSFWorkbook();
+    SXSSFSheet sheet = workbook.createSheet(type);
+
     // Assumption: list of vertices contains one type
     // ensure uniqueness via Set<UUID> loadedTimIds after traversing?
 
@@ -90,7 +97,26 @@ public class ExcelExportService {
       // more side effects
     });
 
-    System.out.println(propertyColDescriptions);
+
+    SXSSFRow propertyNameRow = sheet.createRow(0);
+    SXSSFRow propertyTypeRow = sheet.createRow(1);
+    int currentStartCol = 0;
+    for (Map.Entry<String, PropertyColDescription> entry : propertyColDescriptions.entrySet()) {
+      SXSSFCell propertyNameCell = propertyNameRow.createCell(currentStartCol);
+      SXSSFCell propertyTypeCell = propertyTypeRow.createCell(currentStartCol);
+      propertyNameCell.setCellValue(entry.getKey());
+      PropertyColDescription pcdValue = entry.getValue();
+
+      propertyTypeCell.setCellValue(pcdValue.propertyType);
+      if (pcdValue.amountOfCols > 1) {
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, currentStartCol, currentStartCol + pcdValue.amountOfCols - 1));
+        sheet.addMergedRegion(new CellRangeAddress(1, 1, currentStartCol, currentStartCol + pcdValue.amountOfCols - 1));
+      }
+      currentStartCol += pcdValue.amountOfCols;
+    }
+
+
+
 
     // 3) traverse vertices again to load data into the sheet
 
