@@ -15,14 +15,14 @@ import static org.hamcrest.core.Is.is;
 
 public class CharterCollectiveSearchDescriptionTest {
 
-  private WwCollectiveSearchDescription instance;
+  private CharterCollectiveSearchDescription instance;
 
   @Before
   public void setUp() throws Exception {
     PropertyParserFactory propertyParserFactory = new PropertyParserFactory();
     FacetDescriptionFactory facetDescriptionFactory = new FacetDescriptionFactory(propertyParserFactory);
     PropertyDescriptorFactory propertyDescriptorFactory = new PropertyDescriptorFactory(propertyParserFactory);
-    instance = new WwCollectiveSearchDescription(propertyDescriptorFactory, facetDescriptionFactory);
+    instance = new CharterCollectiveSearchDescription(propertyDescriptorFactory, facetDescriptionFactory);
   }
 
   @Test
