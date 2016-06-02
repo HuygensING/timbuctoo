@@ -43,7 +43,8 @@ public class CharterDocumentSearchDescription extends AbstractSearchDescription 
       );
     fullTextSearchFields = Lists.newArrayList();
 
-    displayNameDescriptor = propertyDescriptorFactory.getLocal("charterdocument_title", String.class); 
+    displayNameDescriptor = propertyDescriptorFactory.getLocal("charterdocument_inventaristekst",
+        new PropertyParserFactory().getJoinedListParser(" ")); 
     idDescriptor = propertyDescriptorFactory
       .getLocal(SearchDescription.ID_DB_PROP, String.class);
 
