@@ -70,7 +70,8 @@ public class ExcelExportService {
 
     Map<String, PropertyColDescription> propertyColDescriptions = Maps.newHashMap();
 
-    entities.asAdmin().clone().map(entityT -> {
+    List<Tuple<String, Map<String, ExcelDescription>>> dataCellDescriptions = entities.map(entityT -> {
+      Map<String, ExcelDescription> excelDescriptions = Maps.newHashMap();
       List<GraphTraversal> propertyGetters = mapping
         .entrySet().stream()
         .map(prop -> prop.getValue().getExcelDescription().sideEffect(x -> {
@@ -90,17 +91,17 @@ public class ExcelExportService {
           if (lastPropColDesc == null || currentPropColDesc.amountOfCols > lastPropColDesc.amountOfCols) {
             propertyColDescriptions.put(prop.getKey(), currentPropColDesc);
           }
-
+          excelDescriptions.put(prop.getKey(), excelDescription);
         })).collect(Collectors.toList());
 
       graphWrapper.getGraph().traversal().V(entityT.get().id())
         .union(propertyGetters.toArray(new GraphTraversal[propertyGetters.size()])).forEachRemaining(x -> {
           // side effects
         });
-      return null;
-    }).forEachRemaining(x -> {
-      // more side effects
-    });
+
+
+      return new Tuple<>((String) entityT.get().value("tim_id"), excelDescriptions);
+    }).toList();
 
     // set column headers and determine column offset per property name
     SXSSFRow propertyNameRow = sheet.createRow(0);
@@ -151,29 +152,10 @@ public class ExcelExportService {
 
     // 3) traverse vertices again to prepare data for the sheet
 
-    long startTimePrepare = System.currentTimeMillis();
     final AtomicInteger currentRow = new AtomicInteger(3);
-    entities.map(entityT -> {
-
-      // Map the cells per property for this entity
-      Map<String, ExcelDescription> excelDescriptions = Maps.newHashMap();
-      List<GraphTraversal> propertyGetters = mapping
-        .entrySet().stream()
-        .map(prop -> prop.getValue().getExcelDescription().sideEffect(x -> {
-
-          // Put the excel description into the map for this entity
-          excelDescriptions.put(prop.getKey(), x.get().get());
-
-        })).collect(Collectors.toList());
-
-
-      graphWrapper.getGraph().traversal().V(entityT.get().id())
-        .union(propertyGetters.toArray(new GraphTraversal[propertyGetters.size()])).forEachRemaining(x -> {
-          // side effects
-        });
-
-
-      final String timId = entityT.get().value("tim_id");
+    dataCellDescriptions.forEach(dataCellDescription -> {
+      final String timId = dataCellDescription.getLeft();
+      final Map<String, ExcelDescription> excelDescriptions = dataCellDescription.getRight();
 
       // Determine the amount of rows needed for this entity
       int reservedRows = 0;
@@ -210,13 +192,7 @@ public class ExcelExportService {
 
       // Increment the current row by the number of reserved rows for this entity
       currentRow.getAndAdd(reservedRows);
-
-      return null;
-    }).forEachRemaining(x -> {
-      // side effects
     });
-    System.out.println("LOAD DATA TIME: " + (System.currentTimeMillis() - startTimePrepare) / 1000);
-
 
 
     // TODO: extract method for sheet per type.
