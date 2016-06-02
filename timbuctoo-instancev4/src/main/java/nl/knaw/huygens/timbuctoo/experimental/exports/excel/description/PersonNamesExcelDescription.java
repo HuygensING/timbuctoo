@@ -1,13 +1,10 @@
-package nl.knaw.huygens.timbuctoo.experimental.exports.excel;
+package nl.knaw.huygens.timbuctoo.experimental.exports.excel.description;
 
-import nl.knaw.huygens.timbuctoo.experimental.exports.ExcelDescription;
+import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ExcelDescription;
 import nl.knaw.huygens.timbuctoo.model.PersonName;
-import nl.knaw.huygens.timbuctoo.model.PersonNameComponent;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 
 import java.util.Iterator;
-
-import static java.util.stream.Collectors.toList;
 
 public class PersonNamesExcelDescription implements ExcelDescription {
   public static final int VALUE_WIDTH = 2;

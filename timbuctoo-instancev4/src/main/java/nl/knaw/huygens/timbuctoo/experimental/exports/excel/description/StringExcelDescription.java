@@ -1,6 +1,6 @@
-package nl.knaw.huygens.timbuctoo.experimental.exports.excel;
+package nl.knaw.huygens.timbuctoo.experimental.exports.excel.description;
 
-import nl.knaw.huygens.timbuctoo.experimental.exports.ExcelDescription;
+import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ExcelDescription;
 
 
 public class StringExcelDescription implements ExcelDescription {

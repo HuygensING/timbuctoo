@@ -3,8 +3,8 @@ package nl.knaw.huygens.timbuctoo.model.properties.converters;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import nl.knaw.huygens.timbuctoo.experimental.exports.ExcelDescription;
-import nl.knaw.huygens.timbuctoo.experimental.exports.excel.ListOfStringsExcelDescription;
+import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ExcelDescription;
+import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ListOfStringsExcelDescription;
 
 import java.io.IOException;
 

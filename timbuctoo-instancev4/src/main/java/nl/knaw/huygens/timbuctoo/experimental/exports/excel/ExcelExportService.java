@@ -1,29 +1,23 @@
-package nl.knaw.huygens.timbuctoo.experimental.exports;
+package nl.knaw.huygens.timbuctoo.experimental.exports.excel;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ExcelDescription;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
-import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.xssf.streaming.SXSSFCell;
 import org.apache.poi.xssf.streaming.SXSSFRow;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ExcelExportService {
 
@@ -197,21 +191,6 @@ public class ExcelExportService {
 
     // TODO: extract method for sheet per type.
     // TODO: relate sheets through edges.
-
-    return workbook;
-  }
-
-
-  /**
-   * Exports an entire VRE as excel workbook
-   * @param vreId the VRE to export
-   * @return the export as workbook
-   */
-  public SXSSFWorkbook toExcel(String vreId) {
-    SXSSFWorkbook workbook = new SXSSFWorkbook();
-    // for all collections invoke export with depth=-1
-    // ensure uniqueness via Set<UUID> loadedTimIds
-
 
     return workbook;
   }

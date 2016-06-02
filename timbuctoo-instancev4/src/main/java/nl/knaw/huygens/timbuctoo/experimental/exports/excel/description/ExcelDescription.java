@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.experimental.exports;
+package nl.knaw.huygens.timbuctoo.experimental.exports.excel.description;
 
 public interface ExcelDescription {
 
