@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.search.description.facet;
 
 import com.google.common.collect.Lists;
+
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -14,6 +15,8 @@ import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static nl.knaw.huygens.timbuctoo.search.description.facet.CharterPortaalFondsFacetDescription.FONDS;
+import static nl.knaw.huygens.timbuctoo.search.description.facet.CharterPortaalFondsFacetDescription.FONDS_NAAM;
 
 public class CharterPortaalFondsFacetDescriptionTest {
 
@@ -22,8 +25,8 @@ public class CharterPortaalFondsFacetDescriptionTest {
 
   @Test
   public void getValuesConcatenatesTheValuesOfFondAndFondsNaam() {
-    Vertex vertex = vertex().withProperty("charter_fonds", "fonds")
-                            .withProperty("charter_fondsNaam", "fondsNaam")
+    Vertex vertex = vertex().withProperty(FONDS, "fonds")
+                            .withProperty(FONDS_NAAM, "fondsNaam")
                             .build();
 
     CharterPortaalFondsFacetDescription instance = new CharterPortaalFondsFacetDescription(FACET_NAME);
@@ -37,10 +40,10 @@ public class CharterPortaalFondsFacetDescriptionTest {
   public void filterChecksIfTheVertexContainsTheRightFondsAndFondsNaam() {
     // fonds is unique, but two fondsen could have the same name.
     Graph graph = newGraph().withVertex(v -> v.withTimId("id1")
-                                              .withProperty("charter_fonds", "fonds")
-                                              .withProperty("charter_fondsNaam", "fondsNaam"))
-                            .withVertex(v -> v.withProperty("charter_fonds", "fonds1")
-                                              .withProperty("charter_fondsNaam", "fondsNaam"))
+                                              .withProperty(FONDS, "fonds")
+                                              .withProperty(FONDS_NAAM, "fondsNaam"))
+                            .withVertex(v -> v.withProperty(FONDS, "fonds1")
+                                              .withProperty(FONDS_NAAM, "fondsNaam"))
                             .build();
     CharterPortaalFondsFacetDescription instance = new CharterPortaalFondsFacetDescription(FACET_NAME);
     GraphTraversal<Vertex, Vertex> traversal = graph.traversal().V();

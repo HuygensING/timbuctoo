@@ -21,8 +21,8 @@ import static java.util.stream.Collectors.toList;
 
 class CharterPortaalFondsFacetDescription extends AbstractFacetDescription {
   public static final Logger LOG = LoggerFactory.getLogger(CharterPortaalFondsFacetDescription.class);
-  public static final String FONDS_NAAM = "charter_fondsNaam";
-  public static final String FONDS = "charter_fonds";
+  public static final String FONDS_NAAM = "charterdocument_fondsNaam";
+  public static final String FONDS = "charterdocument_fonds";
 
   public CharterPortaalFondsFacetDescription(String facetName) {
     super(facetName, null, new ListFacetGetter(new StringListParser()), null);

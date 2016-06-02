@@ -72,7 +72,7 @@ public class CharterDocumentSearchDescription extends AbstractSearchDescription 
   private List<FacetDescription> createFacetDescriptions(FacetDescriptionFactory facetDescriptionFactory) {
     return Lists.newArrayList(
       facetDescriptionFactory.createListFacetDescription("dynamic_s_archief", String.class, "charterdocument_archief"),
-      facetDescriptionFactory.createListFacetDescription("dynamic_s_fonds", String.class, "charterdocument_fondsFacet"),
+      facetDescriptionFactory.createCharterFondsFacetDescription("dynamic_s_fonds"),
       facetDescriptionFactory.createListFacetDescription("dynamic_s_editions", String.class,
           "charterdocument_descriptionOfEditions"),
       facetDescriptionFactory.createDatableRangeFacetDescription("dynamic_i_date", "charterdocument_date")
