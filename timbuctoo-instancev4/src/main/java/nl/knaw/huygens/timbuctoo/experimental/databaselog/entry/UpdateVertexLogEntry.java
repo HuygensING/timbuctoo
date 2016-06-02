@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.experimental.databaselog.entry;
 
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.DatabaseLog;
+import nl.knaw.huygens.timbuctoo.experimental.databaselog.EdgeLogEntryAdder;
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.VertexLogEntry;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -30,6 +31,7 @@ public class UpdateVertexLogEntry implements VertexLogEntry {
     removeDeletedProperties(dbLog, newKeys, oldKeys);
   }
 
+
   private void removeDeletedProperties(DatabaseLog dbLog, Set<String> newKeys, Set<String> oldKeys) {
     Set<String> deletedProperties = Sets.difference(oldKeys, newKeys);
     deletedProperties.forEach(property -> dbLog.deleteProperty(property));
@@ -49,5 +51,14 @@ public class UpdateVertexLogEntry implements VertexLogEntry {
   private void addNewProperties(DatabaseLog dbLog, Set<String> newKeys, Set<String> oldKeys) {
     Set<String> newProperties = Sets.difference(newKeys, oldKeys);
     newProperties.forEach(key -> dbLog.newProperty(vertex.property(key)));
+  }
+
+  @Override
+  public void addEdgeLogEntriesTo(EdgeLogEntryAdder edgeLogEntryAdder) {
+    /*
+     * Do not add EdgeLogEntries. The CreateVertexLogEntry will add all the EdgeLogEntries tot he EdgeLogEntryAdder.
+     * The EdgeLogEntryAdder will determine when the EdgeLogEntries should be added to the DatabaseLog.
+     */
+
   }
 }

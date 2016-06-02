@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,15 +21,18 @@ public class DatabaseLogGenerator {
   public static final Logger LOG = LoggerFactory.getLogger(DatabaseLogGenerator.class);
   private final GraphWrapper graphWrapper;
   private final LogEntryFactory logEntryFactory;
+  private final EdgeLogEntryAdder edgeLogEntryAdder;
   private final ObjectMapper objectMapper;
 
   public DatabaseLogGenerator(GraphWrapper graphWrapper) {
-    this(graphWrapper, new LogEntryFactory());
+    this(graphWrapper, new LogEntryFactory(), new EdgeLogEntryAdder());
   }
 
-  DatabaseLogGenerator(GraphWrapper graphWrapper, LogEntryFactory logEntryFactory) {
+  DatabaseLogGenerator(GraphWrapper graphWrapper, LogEntryFactory logEntryFactory,
+                       EdgeLogEntryAdder edgeLogEntryAdder) {
     this.graphWrapper = graphWrapper;
     this.logEntryFactory = logEntryFactory;
+    this.edgeLogEntryAdder = edgeLogEntryAdder;
     objectMapper = new ObjectMapper();
   }
 
@@ -42,14 +46,9 @@ public class DatabaseLogGenerator {
                 .order()
                 .by("modified", (Comparator<String>) (o1, o2) -> {
                   try {
-                    Change change1 =
-                      objectMapper.readValue(o1, Change.class);
-                    Change change2 =
-                      objectMapper.readValue(o2, Change.class);
-
-                    return Long
-                      .compare(change1.getTimeStamp(),
-                        change2.getTimeStamp());
+                    long timeStamp1 = getTimestampFromChangeString(o1);
+                    long timeStamp2 = getTimestampFromChangeString(o2);
+                    return Long.compare(timeStamp1, timeStamp2);
                   } catch (IOException e) {
                     LOG.error("Cannot convert change", e);
                     LOG.error("Change 1 '{}'", o1);
@@ -57,6 +56,30 @@ public class DatabaseLogGenerator {
                     return 0;
                   }
                 })
-                .forEachRemaining(vertex -> logEntryFactory.createForVertex(vertex).appendToLog(databaseLog));
+                .forEachRemaining(vertex -> {
+                  appendEdgeChangedBeforeVertexToLog(databaseLog, vertex);
+                  appendVertexToLog(databaseLog, vertex);
+                });
+    edgeLogEntryAdder.appendRemaining(databaseLog);
+  }
+
+  private void appendEdgeChangedBeforeVertexToLog(DatabaseLog databaseLog, Vertex vertex) {
+    try {
+      String modifiedString = vertex.value("modified");
+      long modifiedTimestamp = getTimestampFromChangeString(modifiedString);
+      edgeLogEntryAdder.appendEdgesToLog(databaseLog, modifiedTimestamp);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private void appendVertexToLog(DatabaseLog databaseLog, Vertex vertex) {
+    VertexLogEntry vertexLogEntry = logEntryFactory.createForVertex(vertex);
+    vertexLogEntry.appendToLog(databaseLog);
+    vertexLogEntry.addEdgeLogEntriesTo(edgeLogEntryAdder);
+  }
+
+  private long getTimestampFromChangeString(String changeString) throws IOException {
+    return objectMapper.readValue(changeString, Change.class).getTimeStamp();
   }
 }

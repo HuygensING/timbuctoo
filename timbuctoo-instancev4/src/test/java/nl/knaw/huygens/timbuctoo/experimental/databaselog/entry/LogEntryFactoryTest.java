@@ -29,4 +29,5 @@ public class LogEntryFactoryTest {
 
     assertThat(entry, is(instanceOf(UpdateVertexLogEntry.class)));
   }
+
 }
