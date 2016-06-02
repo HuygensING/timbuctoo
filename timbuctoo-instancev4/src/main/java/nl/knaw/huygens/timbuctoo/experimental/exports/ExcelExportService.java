@@ -148,7 +148,7 @@ public class ExcelExportService {
       currentStartCol += pcdValue.amountOfCols;
     }
 
-    // 3) traverse vertices again to load data into the sheet
+    // 3) traverse vertices again to prepare data for the sheet
     Iterator<Map<String, ExcelDescription>> propertyValues = entities.asAdmin().clone().map(entityT -> {
 
       // Map the cells per property for this entity
@@ -168,6 +168,7 @@ public class ExcelExportService {
       return cellDescriptions;
     }).toStream().iterator();
 
+    // 4) Load the data into the sheet
     int currentRow = 3;
     while (propertyValues.hasNext()) {
       Map<String, ExcelDescription> excelDescriptions = propertyValues.next();
