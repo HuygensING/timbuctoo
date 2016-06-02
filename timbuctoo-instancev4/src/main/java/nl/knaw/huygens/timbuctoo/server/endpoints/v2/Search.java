@@ -28,6 +28,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -127,13 +128,15 @@ public class Search {
   @GET
   @Path("{id}/xls")
   @Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-  public Response get(@PathParam("id") UUIDParam id, @QueryParam("depth") @DefaultValue("1") int depth) {
+  public Response get(@PathParam("id") UUIDParam id, @QueryParam("depth") @DefaultValue("1") int depth,
+                      @QueryParam("types") List<String> relationNames) {
+
     Optional<SearchResult> searchResult = searchStore.getSearchResult(id.get());
     SXSSFWorkbook workbook = new SXSSFWorkbook();
     if (searchResult.isPresent()) {
       final SearchResult result = searchResult.get();
       workbook = excelExportService
-        .searchResultToExcel(result.getSearchResult(),result.getSearchDescription().getType(), depth);
+        .searchResultToExcel(result.getSearchResult(),result.getSearchDescription().getType(), depth, relationNames);
 
     } else {
       workbook.createSheet("result").createRow(0).createCell(0).setCellValue("Search with id " + id + " not found.");

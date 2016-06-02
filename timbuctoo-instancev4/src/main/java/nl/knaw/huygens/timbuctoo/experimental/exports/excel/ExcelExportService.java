@@ -34,7 +34,9 @@ public class ExcelExportService {
    * @param vertices the vertices to export
    * @return the export as workbook
    */
-  public SXSSFWorkbook searchResultToExcel(List<Vertex> vertices, String rootType, int depth) {
+  public SXSSFWorkbook searchResultToExcel(List<Vertex> vertices, String rootType, int depth,
+                                           List<String> relationNames) {
+
     SXSSFWorkbook workbook = new SXSSFWorkbook();
 
     Collection rootCollection = mappings.getCollectionForType(rootType).get();
@@ -46,7 +48,10 @@ public class ExcelExportService {
     GraphTraversal<Vertex, Vertex> current = graphWrapper.getGraph().traversal().V(vertices);
     for (int i = 0; i < depth - 1; i++) {
 
-      List<Vertex> currentList = current.bothE().otherV().asAdmin().clone().toList();
+      List<Vertex> currentList = relationNames == null ?
+        current.bothE().otherV().asAdmin().clone().toList() :
+        current.bothE(relationNames.toArray(new String[relationNames.size()])).otherV().asAdmin().clone().toList();
+
       current = current.bothE().otherV();
       currentList.forEach(entity -> {
         final List<Collection> filteredTypes = Arrays.asList(getEntityTypesOrDefault(entity))

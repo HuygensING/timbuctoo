@@ -27,7 +27,7 @@ public class ExcelExportServiceTest {
 
     ExcelExportService instance = new ExcelExportService(HuygensIng.mappings, graphWrapper);
 
-    Workbook result = instance.searchResultToExcel(Lists.<Vertex>newArrayList(), "wwperson", 1);
+    Workbook result = instance.searchResultToExcel(Lists.<Vertex>newArrayList(), "wwperson", 1, null);
 
     assertThat(result, instanceOf(SXSSFWorkbook.class));
   }
