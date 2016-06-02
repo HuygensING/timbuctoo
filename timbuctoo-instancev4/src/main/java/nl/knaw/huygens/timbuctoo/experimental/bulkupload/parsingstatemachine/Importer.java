@@ -49,6 +49,39 @@ public class Importer {
     }
   }
 
+  public Result registerPropertyType(int id, String type) {
+    if (idsToSkip.contains(id) || currentState == ImportState.SKIPPING) {
+      return Result.ignored();
+    }
+    if (currentState != ImportState.GETTING_DECLARATION) {
+      return Result.failure("I was not expecting a property declaration here");
+    }
+
+    final ImportPropertyDescription propertyDescription = properties.getOrCreate(id);
+
+    if (propertyDescription.getPropertyName() == null) {
+      return Result.failure("You should specify the name before specifying the type");
+    } else if ("relation".equals(type)) {
+      if (!saver.relationExists(propertyDescription.getPropertyName())) {
+        idsToSkip.add(id);
+        return Result.failure("Relation does not exist: " + propertyDescription.getPropertyName());
+      } else {
+        propertyDescription.setType(type);
+        return Result.success();
+      }
+    } else if (type == null || "".equals(type)) {
+      if (!currentCollection.getWriteableProperties().containsKey(propertyDescription.getPropertyName())) {
+        idsToSkip.add(id);
+        return Result.failure("Collection " + currentCollection.getCollectionName() + " has no property configured " +
+                                "with name " + propertyDescription.getPropertyName());
+      } else {
+        return Result.success();
+      }
+    } else {
+      return Result.failure("Unknown type");
+    }
+  }
+
   public Result registerPropertyName(int id, String name) {
     if (idsToSkip.contains(id) || currentState == ImportState.SKIPPING) {
       return Result.ignored();
@@ -56,14 +89,8 @@ public class Importer {
     if (currentState != ImportState.GETTING_DECLARATION) {
       return Result.failure("I was not expecting a property declaration here");
     }
-    if (currentCollection.getWriteableProperties().containsKey(name)) {
-      properties.getOrCreate(id).setPropertyName(name);
-      return Result.success();
-    } else {
-      idsToSkip.add(id);
-      return Result.failure("Collection " + currentCollection.getCollectionName() + " has no property configured " +
-                              "with name " + name);
-    }
+    properties.getOrCreate(id).setPropertyName(name);
+    return Result.success();
   }
 
   public Result registerUnique(int id, boolean isUnique) {
@@ -83,25 +110,18 @@ public class Importer {
     return Result.success();
   }
 
-  public Result registerRelationName(int id, String relationName) {
-    if (idsToSkip.contains(id) || currentState == ImportState.SKIPPING) {
-      return Result.ignored();
-    }
-    if (currentState != ImportState.GETTING_DECLARATION) {
-      return Result.failure("I was not expecting a relation name here");
-    }
-    properties.getOrCreate(id).setRelationName(relationName);
-    return Result.success();
-  }
-
-  public Result registerTargetCollection(int id, String targetCollection) {
+  public Result registerMetadata(int id, String metadata) {
     if (idsToSkip.contains(id) || currentState == ImportState.SKIPPING) {
       return Result.ignored();
     }
     if (currentState != ImportState.GETTING_DECLARATION) {
       return Result.failure("I was not expecting a target collection name here");
     }
-    properties.getOrCreate(id).setTargetCollection(targetCollection);
+    final ImportPropertyDescription propertyDescription = properties.getOrCreate(id);
+    if (propertyDescription.getType() == null) {
+      return Result.failure("You should specify the type before specifying the type subproperties");
+    }
+    propertyDescription.setMetadata(metadata);
     return Result.success();
   }
 
@@ -118,6 +138,9 @@ public class Importer {
   public Result setValue(int id, String value) {
     if (currentState != ImportState.GETTING_VALUES) {
       return Result.failure("I was not expecting a value property here");
+    }
+    if (idsToSkip.contains(id) || currentState == ImportState.SKIPPING) {
+      return Result.ignored();
     }
     Optional<ImportPropertyDescription> propOpt = properties.get(id);
     if (propOpt.isPresent()) {
@@ -140,7 +163,7 @@ public class Importer {
       String value = currentProperties[i];
       if (value != null) {
         ImportPropertyDescription desc = properties.getByOrder(i);
-        if (desc.isProperty()) {
+        if ("basic".equals(desc.getType())) {
           propertyValues.put(desc.getPropertyName(), value); //FIXME transform value and put error in results
           results.put(desc.getId(), Result.success());
         } else {
@@ -154,8 +177,8 @@ public class Importer {
       for (Map.Entry<ImportPropertyDescription, String> entry : relations.entrySet()) {
         final ImportPropertyDescription prop = entry.getKey();
         final String value = entry.getValue();
-        final Optional<String> result = saver.makeRelation(vertex, prop.getRelationName(), currentCollection,
-                                                           prop.getTargetCollection(), value);
+        final Optional<String> result = saver.makeRelation(vertex, prop.getPropertyName(), currentCollection,
+                                                           prop.getMetadata()[0], value);
         if (result.isPresent()) {
           results.put(prop.getId(), Result.failure(result.get()));
         } else {
@@ -184,6 +207,10 @@ public class Importer {
 
   private Result toResult(Optional<String> failure) {
     return failure.map(Result::failure).orElse(Result.success());
+  }
+
+  public int getPropertyCount() {
+    return properties.getPropertyCount();
   }
 
   private enum ImportState {

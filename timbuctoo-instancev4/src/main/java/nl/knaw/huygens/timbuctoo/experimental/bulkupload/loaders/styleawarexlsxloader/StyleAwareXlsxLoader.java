@@ -1,80 +1,54 @@
 package nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.styleawarexlsxloader;
 
+import nl.knaw.huygens.timbuctoo.experimental.bulkupload.InvalidExcelFileException;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.BulkLoader;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.parsingstatemachine.Importer;
+import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
+import org.apache.poi.xssf.model.SharedStringsTable;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 
-/*
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
+import java.io.IOException;
+import java.io.InputStream;
 
-this class:
+public class StyleAwareXlsxLoader implements BulkLoader<InputStream, String> {
 
- - iterates over the workbook and sends the value to the current responder
- - does workbook specific parsing (determining if what valuetype is in a cell)
- - when a responder returns a new responder it will link it to the correct columns
- - it writes the errors to the sheet
-*/
+  @Override
+  public String loadData(InputStream source, Importer importer) throws InvalidExcelFileException {
+    try {
+      XSSFWorkbook workbook = new XSSFWorkbook(source);/* {
+        public void parseSheet(Map<String, XSSFSheet> shIdMap, CTSheet ctSheet) {
+          //don't parse sheets
+        }
+      }*/
+      XSSFReader xssfReader = new XSSFReader(workbook.getPackage());
+      ResultHandler handler = new ResultHandler();
 
-public class StyleAwareXlsxLoader implements BulkLoader<XSSFReader> {
+      SAXParserFactory saxFactory = SAXParserFactory.newInstance();
+      saxFactory.setNamespaceAware(true);
+      final SharedStringsTable sharedStringsTable = xssfReader.getSharedStringsTable();
+      final RowCellHandler rowCellHandler = new RowCellHandler(importer, handler);
+      final StylesMapper stylesMapper = new StylesMapper(workbook.getStylesSource());
 
-  public void loadWorkbookAndMarkErrors(XSSFReader wb, Importer importer) {
-    //HashMap<Integer, State> registeredActions = new HashMap<>();
-    //final HashMap<Long, String> nameForId = new HashMap<>();
-    //
-    //final CTCellStyles cellStyles = wb.getStylesSource()
-    //  .getCTStylesheet()
-    //  .getCellStyles();
-    //
-    //for (CTCellStyle style : cellStyles.getCellStyleList()) {
-    //  nameForId.put(style.getXfId(), style.getName());
-    //}
-    //
-    //for (Sheet sheet : wb) {
-    //  for (Row row : sheet) {
-    //    for (Cell cell : row) {
-    //      applyAction((XSSFCell) cell, nameForId, rootState, registeredActions);
-    //    }
-    //  }
-    //}
+      XSSFReader.SheetIterator worksheets = (XSSFReader.SheetIterator) xssfReader.getSheetsData();
+      while (worksheets.hasNext()) {
+        final InputStream sheet = worksheets.next();
+
+        XMLReader sheetParser = saxFactory.newSAXParser().getXMLReader();
+        sheetParser.setContentHandler(new SheetXmlParser(stylesMapper, sharedStringsTable, rowCellHandler));
+
+        rowCellHandler.start(worksheets.getSheetName());
+        sheetParser.parse(new InputSource(sheet));
+        rowCellHandler.finish();
+      }
+      return handler.endImport(importer.finishImport());
+    } catch (SAXException | IOException | OpenXML4JException | ParserConfigurationException e) {
+      throw new InvalidExcelFileException(e);
+    }
   }
-  //
-  //private void applyAction(XSSFCell cell, HashMap<Long, String> styleLookup, Importer importer,
-  //                         HashMap<Integer, State> registeredActions) {
-  //  final int columnIndex = cell.getColumnIndex();
-  //  final State currentState;
-  //
-  //  if (registeredActions.containsKey(columnIndex)) {
-  //    currentState = registeredActions.get(columnIndex);
-  //  } else {
-  //    currentState = importer;
-  //  }
-  //
-  //  final Optional<State> nextState = currentState.respondToContents(
-  //    CellHelper.getValueAsStringAndMarkError(cell, "Errors cannot be imported").orElse(""),
-  //    getValueTypeFor(cell, styleLookup),
-  //    () -> CellHelper.addSuccess(cell),
-  //    error -> CellHelper.addFailure(cell, error)
-  //  );
-  //  if (nextState.isPresent()) {
-  //    //FIXME: multicolumn cells
-  //    registeredActions.put(cell.getColumnIndex(), nextState.get());
-  //  }
-  //}
-  //
-  //private ValueType getValueTypeFor(XSSFCell cell, HashMap<Long, String> styleLookup) {
-  //  final long xfId = cell.getCellStyle().getCoreXf().getXfId();
-  //  final String styleName = styleLookup.get(xfId);
-  //  switch (styleName) {
-  //    case "timbuctooCollectionName":
-  //      return ValueType.COLLECTIONHEADER;
-  //    case "timbuctooIdentityColumn":
-  //      return ValueType.IDENTITY_PROPERTYNAME;
-  //    case "timbuctooPropertyName":
-  //      return ValueType.PROPERTYNAME;
-  //    case "timbuctooValue":
-  //      return ValueType.VALUE;
-  //    default:
-  //      return ValueType.NONE;
-  //  }
-  //}
-
 }

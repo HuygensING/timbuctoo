@@ -3,10 +3,10 @@ package nl.knaw.huygens.timbuctoo.experimental.bulkupload.parsingstatemachine;
 public class ImportPropertyDescription {
   private String propertyName;
   private boolean unique;
-  private String relationName;
-  private String targetCollection;
+  private String[] metadata = new String[0];
   private final Integer id;
   private final int order;
+  private String type = "basic";
 
   ImportPropertyDescription(Integer id, int order) {
     this.id = id;
@@ -29,24 +29,12 @@ public class ImportPropertyDescription {
     return unique;
   }
 
-  public void setRelationName(String relationName) {
-    this.relationName = relationName;
+  public void setMetadata(String... metadata) {
+    this.metadata = metadata;
   }
 
-  public String getRelationName() {
-    return relationName;
-  }
-
-  public void setTargetCollection(String targetCollection) {
-    this.targetCollection = targetCollection;
-  }
-
-  public String getTargetCollection() {
-    return targetCollection;
-  }
-
-  public boolean isProperty() {
-    return relationName == null && targetCollection == null;
+  public String[] getMetadata() {
+    return metadata;
   }
 
   public Integer getId() {
@@ -55,5 +43,13 @@ public class ImportPropertyDescription {
 
   public int getOrder() {
     return order;
+  }
+
+  public String getType() {
+    return type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
   }
 }

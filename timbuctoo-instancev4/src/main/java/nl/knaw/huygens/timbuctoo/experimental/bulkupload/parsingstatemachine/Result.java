@@ -34,6 +34,13 @@ public class Result {
     }
   }
 
+  public void handle(Consumer<String> onFailure) {
+    if (!ignored && failure != null) {
+      onFailure.accept(failure);
+    }
+  }
+
+
   public Result and(Result extraResult) {
     if (failure != null) {
       if (extraResult.failure != null) {

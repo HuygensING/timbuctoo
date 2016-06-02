@@ -157,6 +157,11 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
     return Optional.empty();
   }
 
+  @Override
+  public boolean relationExists(String name) {
+    return descriptions.containsKey(name);
+  }
+
   private class VertexByUniqueId {
     private HashMap<String, HashMap<String, Vertex>> data = new HashMap<>();
 

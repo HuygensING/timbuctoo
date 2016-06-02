@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -15,7 +14,7 @@
   <div class="row">
     <h1>Excel upload</h1>
     Upload a changed version<br>
-    <form class="form-horizontal" method="POST" action="/v2.1/bulk-upload" enctype="multipart/form-data">
+    <form class="form-horizontal" method="POST" action="/v2.1/bulk-upload" enctype="multipart/form-data" target="results">
       <div class="form-group">
         <label class="col-sm-2">Vre</label><input name="vre" type="text">
       </div>
@@ -27,8 +26,9 @@
       </div>
     </form>
   </div>
-  <hr>
-  <footer>Powered by Timbuctoo</footer>
+</div>
+<div class="well well-sm">
+  <iframe name="results" frameborder="0" style="width:100%" onload="this.height = this.contentWindow.document.body.scrollHeight"></iframe>
 </div>
 </body>
 </html>

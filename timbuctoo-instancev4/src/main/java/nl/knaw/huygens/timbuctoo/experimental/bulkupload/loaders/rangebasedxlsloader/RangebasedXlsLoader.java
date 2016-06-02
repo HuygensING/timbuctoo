@@ -21,13 +21,13 @@ this class:
  - it writes the errors to the sheet
 */
 
-public class RangebasedXlsLoader implements BulkLoader<Workbook> {
+public class RangebasedXlsLoader implements BulkLoader<Workbook, Workbook> {
 
   private int failures = 0;
   private int successes = 0;
   private int ignoreds;
 
-  public void loadWorkbookAndMarkErrors(Workbook wb, Importer importer) {
+  public Workbook loadData(Workbook wb, Importer importer) {
     for (int i = 0; i < wb.getNumberOfNames(); i++) {
       Range range = new Range(wb, wb.getNameAt(i));
       if (range.isValid()) {
@@ -47,9 +47,14 @@ public class RangebasedXlsLoader implements BulkLoader<Workbook> {
                 ));
                 break;
               case RELATIONSPECIFICATION:
-                handleResult(row, c, importer.registerTargetCollection(c, value.split(" ")[1]).and(
-                  importer.registerRelationName(c, value.split(" ")[0])
-                ));
+                handleResult(row, c,
+                  importer.registerPropertyName(c, value.split(" ")[0])
+                    .and(
+                      importer.registerPropertyType(c, "relation")
+                    ).and(
+                      importer.registerMetadata(c, value.split(" ")[1])
+                    )
+                );
                 break;
               case VALUE:
                 if (!entityStarted) {
@@ -74,6 +79,8 @@ public class RangebasedXlsLoader implements BulkLoader<Workbook> {
       }
     }
     handleResult(wb, importer.finishImport());
+
+    return wb;
   }
 
 

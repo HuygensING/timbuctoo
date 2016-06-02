@@ -23,4 +23,6 @@ public interface Saver {
   Optional<String> checkLeftoverCollectionsThatWereExpected();
 
   Optional<String> checkRelationtypesThatWereExpected();
+
+  boolean relationExists(String name);
 }

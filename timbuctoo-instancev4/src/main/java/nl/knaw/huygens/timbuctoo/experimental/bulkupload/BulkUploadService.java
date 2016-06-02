@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.experimental.bulkupload;
 
-import nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.BulkLoader;
-import nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.rangebasedxlsloader.RangebasedXlsLoader;
+import nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.styleawarexlsxloader.StyleAwareXlsxLoader;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.parsingstatemachine.Importer;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.savers.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
@@ -10,13 +9,12 @@ import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -36,8 +34,8 @@ public class BulkUploadService {
   //FIXME: add authorizer on admin
   //FIXME: allow linking to existing vertices (e.g. geboorteplaats in emmigrantunits)
 
-  public boolean saveToDb(String vreName, XSSFWorkbook wb/*, String userId*/)
-    throws AuthorizationUnavailableException, AuthorizationException {
+  public String saveToDb(String vreName, InputStream wb/*, String userId*/)
+    throws AuthorizationUnavailableException, AuthorizationException, InvalidExcelFileException {
     //
     //for (Collection collection : vre.getCollections().values()) {
     //  if (!authorizer.authorizationFor(collection, userId).isAllowedToWrite()) {
@@ -63,11 +61,10 @@ public class BulkUploadService {
 
     dropAllVreVertices(vre);
 
-    BulkLoader<Workbook> whatToDo = new RangebasedXlsLoader();
     try (TinkerpopSaver saver = new TinkerpopSaver(graphwrapper, vre, descriptions, 50_000)) {
-      whatToDo.loadWorkbookAndMarkErrors(wb, new Importer(saver));
+      StyleAwareXlsxLoader loader = new StyleAwareXlsxLoader();
+      return loader.loadData(wb, new Importer(saver));
     }
-    return false;
   }
 
   private void dropAllVreVertices(Vre vre) {
