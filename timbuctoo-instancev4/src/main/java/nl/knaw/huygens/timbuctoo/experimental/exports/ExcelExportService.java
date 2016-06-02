@@ -2,9 +2,11 @@ package nl.knaw.huygens.timbuctoo.experimental.exports;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFCell;
@@ -17,6 +19,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,14 +39,6 @@ public class ExcelExportService {
       this.amountOfCols = amountOfCols;
       this.propertyType = propertyType;
       this.valueWidth = valueWidth;
-    }
-
-    @Override
-    public String toString() {
-      return "PropertyColDescription{" +
-        "amountOfCols=" + amountOfCols +
-        ", propertyType='" + propertyType + '\'' +
-        '}';
     }
   }
 
@@ -109,7 +105,11 @@ public class ExcelExportService {
     SXSSFRow propertyNameRow = sheet.createRow(0);
     SXSSFRow propertyTypeRow = sheet.createRow(1);
     SXSSFRow propertyMetadataRow = sheet.createRow(2);
-    int currentStartCol = 0;
+
+    propertyNameRow.createCell(0).setCellValue("tim_id");
+    propertyTypeRow.createCell(0).setCellValue("uuid");
+
+    int currentStartCol = 1;
     for (Map.Entry<String, PropertyColDescription> entry : propertyColDescriptions.entrySet()) {
 
       // Get the property-col-description value
@@ -149,13 +149,15 @@ public class ExcelExportService {
     }
 
     // 3) traverse vertices again to prepare data for the sheet
-    Iterator<Map<String, ExcelDescription>> propertyValues = entities.asAdmin().clone().map(entityT -> {
+    Iterator<Tuple<String, Map<String, ExcelDescription>>> propertyValues = entities.asAdmin().clone().map(entityT -> {
 
       // Map the cells per property for this entity
       Map<String, ExcelDescription> cellDescriptions = Maps.newHashMap();
       List<GraphTraversal> propertyGetters = mapping
         .entrySet().stream()
         .map(prop -> prop.getValue().getExcelDescription().sideEffect(x -> {
+
+          // Put the excel description into the map for this entity
           cellDescriptions.put(prop.getKey(), x.get().get());
 
         })).collect(Collectors.toList());
@@ -165,39 +167,54 @@ public class ExcelExportService {
         .union(propertyGetters.toArray(new GraphTraversal[propertyGetters.size()])).forEachRemaining(x -> {
           // side effects
         });
-      return cellDescriptions;
+      return new Tuple<>((String) entityT.get().value("tim_id"), cellDescriptions);
     }).toStream().iterator();
 
     // 4) Load the data into the sheet
     int currentRow = 3;
+
     while (propertyValues.hasNext()) {
-      Map<String, ExcelDescription> excelDescriptions = propertyValues.next();
-      int reservedRows = 0;
-      List<SXSSFRow> sheetRows = Lists.newArrayList();
+      final Tuple<String, Map<String, ExcelDescription>> entityDescription = propertyValues.next();
+      final Map<String, ExcelDescription> excelDescriptions = entityDescription.getRight();
+      final String timId = entityDescription.getLeft();
 
       // Determine the amount of rows needed for this entity
+      int reservedRows = 0;
       for (Map.Entry<String, ExcelDescription> entry : excelDescriptions.entrySet()) {
         reservedRows = entry.getValue().getRows() > reservedRows ? entry.getValue().getRows() : reservedRows;
       }
 
-      // Add rows to the sheet for this entity
+      // Add reserved rows to the sheet for this entity
+      List<SXSSFRow> sheetRows = Lists.newArrayList();
       for (int row = currentRow; row < currentRow + reservedRows; row++) {
         sheetRows.add(sheet.createRow(row));
       }
 
       // Fill the cells for this entity
       for (Map.Entry<String, ExcelDescription> entry : excelDescriptions.entrySet()) {
+
         // The left offset column for this property
         int offsetCol = propertyColDescriptions.get(entry.getKey()).offset;
 
-        for (int row = 0; row < entry.getValue().getRows(); row++) {
-          for (int col = 0; col < entry.getValue().getCols(); col++) {
-            sheetRows.get(row).createCell(col + offsetCol).setCellValue(entry.getValue().getCells()[row][col]);
+        // Loop through the cell data and fill the sheet with the cells
+        ExcelDescription excelDescription = entry.getValue();
+        for (int row = 0; row < excelDescription.getRows(); row++) {
+          for (int col = 0; col < excelDescription.getCols(); col++) {
+            sheetRows.get(row).createCell(col + offsetCol).setCellValue(excelDescription.getCells()[row][col]);
           }
         }
       }
+
+      // Set the identity cell and in case of multiple rows, merge it.
+      sheetRows.get(0).createCell(0).setCellValue(timId);
+      if (reservedRows > 1) {
+        sheet.addMergedRegion(new CellRangeAddress(currentRow, currentRow + reservedRows - 1, 0, 0));
+      }
+
+      // Increment the current row by the number of reserved rows for this entity
       currentRow += reservedRows;
     }
+
 
 
 
