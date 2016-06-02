@@ -127,13 +127,13 @@ public class Search {
   @GET
   @Path("{id}/xls")
   @Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-  public Response get(@PathParam("id") UUIDParam id) {
+  public Response get(@PathParam("id") UUIDParam id, @QueryParam("depth") @DefaultValue("1") int depth) {
     Optional<SearchResult> searchResult = searchStore.getSearchResult(id.get());
     SXSSFWorkbook workbook = new SXSSFWorkbook();
     if (searchResult.isPresent()) {
       final SearchResult result = searchResult.get();
       workbook = excelExportService
-        .toExcel(result.getSearchResult(),result.getSearchDescription().getType());
+        .searchResultToExcel(result.getSearchResult(),result.getSearchDescription().getType(), depth);
 
     } else {
       workbook.createSheet("result").createRow(0).createCell(0).setCellValue("Search with id " + id + " not found.");

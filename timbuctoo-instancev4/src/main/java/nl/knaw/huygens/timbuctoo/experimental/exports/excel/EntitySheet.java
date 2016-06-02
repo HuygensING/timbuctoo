@@ -6,12 +6,14 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ExcelDescription;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
+import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFRow;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -30,14 +32,14 @@ public class EntitySheet {
 
   private Set<String> loadedIds = Sets.newHashSet();
 
-  public EntitySheet(SXSSFSheet sheet, GraphWrapper graphWrapper, Vres vres) {
-    this.type = sheet.getSheetName();
-    this.sheet = sheet;
+  public EntitySheet(Collection collection, SXSSFWorkbook workbook, GraphWrapper graphWrapper, Vres vres) {
+    this.sheet = workbook.createSheet(collection.getCollectionName());
+    this.type = collection.getEntityTypeName();
     this.graphWrapper = graphWrapper;
     this.mappings = vres;
   }
 
-  public void renderToSheet(List<Vertex> vertices) {
+  public void renderToSheet(Set<Vertex> vertices) {
     // 1) read the mappings to get the properties to export
     Map<String, LocalProperty> mapping = mappings.getCollectionForType(type).get().getWriteableProperties();
     GraphTraversal<Vertex, Vertex> entities = graphWrapper.getGraph().traversal().V(vertices);
