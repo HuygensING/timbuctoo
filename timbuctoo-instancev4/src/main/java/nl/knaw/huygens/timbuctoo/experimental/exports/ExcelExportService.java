@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -149,16 +150,19 @@ public class ExcelExportService {
     }
 
     // 3) traverse vertices again to prepare data for the sheet
-    Iterator<Tuple<String, Map<String, ExcelDescription>>> propertyValues = entities.asAdmin().clone().map(entityT -> {
+
+    long startTimePrepare = System.currentTimeMillis();
+    final AtomicInteger currentRow = new AtomicInteger(3);
+    entities.map(entityT -> {
 
       // Map the cells per property for this entity
-      Map<String, ExcelDescription> cellDescriptions = Maps.newHashMap();
+      Map<String, ExcelDescription> excelDescriptions = Maps.newHashMap();
       List<GraphTraversal> propertyGetters = mapping
         .entrySet().stream()
         .map(prop -> prop.getValue().getExcelDescription().sideEffect(x -> {
 
           // Put the excel description into the map for this entity
-          cellDescriptions.put(prop.getKey(), x.get().get());
+          excelDescriptions.put(prop.getKey(), x.get().get());
 
         })).collect(Collectors.toList());
 
@@ -167,16 +171,9 @@ public class ExcelExportService {
         .union(propertyGetters.toArray(new GraphTraversal[propertyGetters.size()])).forEachRemaining(x -> {
           // side effects
         });
-      return new Tuple<>((String) entityT.get().value("tim_id"), cellDescriptions);
-    }).toStream().iterator();
 
-    // 4) Load the data into the sheet
-    int currentRow = 3;
 
-    while (propertyValues.hasNext()) {
-      final Tuple<String, Map<String, ExcelDescription>> entityDescription = propertyValues.next();
-      final Map<String, ExcelDescription> excelDescriptions = entityDescription.getRight();
-      final String timId = entityDescription.getLeft();
+      final String timId = entityT.get().value("tim_id");
 
       // Determine the amount of rows needed for this entity
       int reservedRows = 0;
@@ -186,7 +183,7 @@ public class ExcelExportService {
 
       // Add reserved rows to the sheet for this entity
       List<SXSSFRow> sheetRows = Lists.newArrayList();
-      for (int row = currentRow; row < currentRow + reservedRows; row++) {
+      for (int row = currentRow.get(); row < currentRow.get() + reservedRows; row++) {
         sheetRows.add(sheet.createRow(row));
       }
 
@@ -208,13 +205,17 @@ public class ExcelExportService {
       // Set the identity cell and in case of multiple rows, merge it.
       sheetRows.get(0).createCell(0).setCellValue(timId);
       if (reservedRows > 1) {
-        sheet.addMergedRegion(new CellRangeAddress(currentRow, currentRow + reservedRows - 1, 0, 0));
+        sheet.addMergedRegion(new CellRangeAddress(currentRow.get(), currentRow.get() + reservedRows - 1, 0, 0));
       }
 
       // Increment the current row by the number of reserved rows for this entity
-      currentRow += reservedRows;
-    }
+      currentRow.getAndAdd(reservedRows);
 
+      return null;
+    }).forEachRemaining(x -> {
+      // side effects
+    });
+    System.out.println("LOAD DATA TIME: " + (System.currentTimeMillis() - startTimePrepare) / 1000);
 
 
 
