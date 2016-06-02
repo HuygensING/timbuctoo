@@ -27,14 +27,13 @@ public class ExcelExportService {
   private static class PropertyColDescription {
     final int amountOfCols;
     final String propertyType;
+    final int valueWidth;
+    int offset;
 
-    PropertyColDescription(int amountOfCols, String propertyType) {
+    PropertyColDescription(int amountOfCols, String propertyType, int valueWidth) {
       this.amountOfCols = amountOfCols;
       this.propertyType = propertyType;
-    }
-
-    private static int getAmountOfCols(PropertyColDescription propertyColDescription) {
-      return propertyColDescription.amountOfCols;
+      this.valueWidth = valueWidth;
     }
 
     @Override
@@ -54,6 +53,7 @@ public class ExcelExportService {
 
   /**
    * Exports a list of vertices as excel workbook
+   * TODO: this operation should move to class representing a workbook having instances of sheets
    * @param vertices the vertices to export
    * @return the export as workbook
    */
@@ -76,12 +76,19 @@ public class ExcelExportService {
       List<GraphTraversal> propertyGetters = mapping
         .entrySet().stream()
         .map(prop -> prop.getValue().getExcelDescription().sideEffect(x -> {
+
+          // Determine the property value which leads to the greatest amount cols for this property name
           ExcelDescription excelDescription = x.get().get();
+
+          // The property-col description for the current cell
           final PropertyColDescription currentPropColDesc = new PropertyColDescription(excelDescription.getCols(),
-            excelDescription.getType());
+            excelDescription.getType(), excelDescription.getValueWidth());
+
+          // The latest proprety-col description for this property name
           final PropertyColDescription lastPropColDesc = propertyColDescriptions.containsKey(prop.getKey()) ?
             propertyColDescriptions.get(prop.getKey()) : null;
 
+          // Add to / replace in the map of property-col descriptions is the amount of cols of current is greater
           if (lastPropColDesc == null || currentPropColDesc.amountOfCols > lastPropColDesc.amountOfCols) {
             propertyColDescriptions.put(prop.getKey(), currentPropColDesc);
           }
@@ -97,23 +104,47 @@ public class ExcelExportService {
       // more side effects
     });
 
-
+    // set column headers and determine column offset per property name
     SXSSFRow propertyNameRow = sheet.createRow(0);
     SXSSFRow propertyTypeRow = sheet.createRow(1);
+    SXSSFRow propertyMetadataRow = sheet.createRow(2);
     int currentStartCol = 0;
     for (Map.Entry<String, PropertyColDescription> entry : propertyColDescriptions.entrySet()) {
-      SXSSFCell propertyNameCell = propertyNameRow.createCell(currentStartCol);
-      SXSSFCell propertyTypeCell = propertyTypeRow.createCell(currentStartCol);
-      propertyNameCell.setCellValue(entry.getKey());
+
+      // Get the property-col-description value
       PropertyColDescription pcdValue = entry.getValue();
 
-      propertyTypeCell.setCellValue(pcdValue.propertyType);
+      // Set the propertyName cell
+      propertyNameRow.createCell(currentStartCol).setCellValue(entry.getKey());
+
+      // Set the propertyType cell
+      propertyTypeRow.createCell(currentStartCol).setCellValue(pcdValue.propertyType);
+
+
       if (pcdValue.amountOfCols > 1) {
+
+        // Merge headers that belong to the same property Name
         sheet.addMergedRegion(new CellRangeAddress(0, 0, currentStartCol, currentStartCol + pcdValue.amountOfCols - 1));
         sheet.addMergedRegion(new CellRangeAddress(1, 1, currentStartCol, currentStartCol + pcdValue.amountOfCols - 1));
+
+        // Set the property metadata cells
+        for (int col = currentStartCol, i = 1;
+             col < currentStartCol + pcdValue.amountOfCols;
+             col += pcdValue.valueWidth, i++) {
+
+          propertyMetadataRow.createCell(col).setCellValue(i);
+          // Merge cells that belong to the same value
+          sheet.addMergedRegion(new CellRangeAddress(2, 2, col, col + pcdValue.valueWidth - 1));
+        }
       }
+
+      // Determine the offset of the property col description
+      pcdValue.offset = currentStartCol;
+
+      // Increment current start col with the amount of cols
       currentStartCol += pcdValue.amountOfCols;
     }
+
 
 
 

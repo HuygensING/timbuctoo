@@ -9,6 +9,7 @@ import java.util.List;
 
 public class HyperlinksExcelDescription implements ExcelDescription {
 
+  public static final int VALUE_WIDTH = 2;
   private final ArrayNode value;
   private final String type;
 
@@ -19,18 +20,12 @@ public class HyperlinksExcelDescription implements ExcelDescription {
 
   @Override
   public int getRows() {
-    // ----------------------
-    // | label | any string |
-    // | url   | any uri    |
-    // | label | ...        |
-    // | url   | ...        |
-    // ----------------------
-    return value.size() * 2;
+    return 2;
   }
 
   @Override
   public int getCols() {
-    return 2;
+    return value.size() * VALUE_WIDTH;
   }
 
   @Override
@@ -40,13 +35,31 @@ public class HyperlinksExcelDescription implements ExcelDescription {
 
   @Override
   public String[][] getCells() {
-    List<String[]> result = Lists.newArrayList();
+
+
+    // -------------------------------------------
+    // |       1            |       2            |
+    // -------------------------------------------
+    // | label | any string | label | any string |
+    // | url   | any url    | url   | any url    |
+    // -------------------------------------------
+
+    List<String> labelRow = Lists.newArrayList();
+    List<String> urlRow = Lists.newArrayList();
 
     for (JsonNode node : value) {
-      result.add(new String[] {"label", node.get("label").asText()});
-      result.add(new String[] {"url", node.get("url").asText()});
+      labelRow.addAll(Lists.newArrayList("label", node.get("label").asText()));
+      urlRow.addAll(Lists.newArrayList("url", node.get("url").asText()));
     }
 
-    return result.toArray(new String[result.size()][]);
+    return new String[][]{
+      labelRow.toArray(new String[getCols()]),
+      urlRow.toArray(new String[getCols()])
+    };
+  }
+
+  @Override
+  public int getValueWidth() {
+    return VALUE_WIDTH;
   }
 }

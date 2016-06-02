@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.experimental.exports.ExcelDescription;
 public class StringExcelDescription implements ExcelDescription {
 
 
+  public static final int VALUE_WIDTH = 1;
   private final String value;
   private String type;
 
@@ -21,7 +22,7 @@ public class StringExcelDescription implements ExcelDescription {
 
   @Override
   public int getCols() {
-    return 1;
+    return VALUE_WIDTH;
   }
 
   @Override
@@ -34,5 +35,10 @@ public class StringExcelDescription implements ExcelDescription {
     return new String[][] {
       { value }
     };
+  }
+
+  @Override
+  public int getValueWidth() {
+    return VALUE_WIDTH;
   }
 }

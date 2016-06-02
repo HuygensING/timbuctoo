@@ -9,6 +9,7 @@ import java.util.List;
 
 
 public class ListOfStringsExcelDescription implements ExcelDescription {
+  private static final int VALUE_WIDTH = 1;
   private final ArrayNode value;
   private String type;
 
@@ -19,12 +20,12 @@ public class ListOfStringsExcelDescription implements ExcelDescription {
 
   @Override
   public int getRows() {
-    return value.size();
+    return 1;
   }
 
   @Override
   public int getCols() {
-    return 1;
+    return value.size();
   }
 
   @Override
@@ -34,11 +35,18 @@ public class ListOfStringsExcelDescription implements ExcelDescription {
 
   @Override
   public String[][] getCells() {
-    List<String[]> result = Lists.newArrayList();
+    List<String> result = Lists.newArrayList();
     for (JsonNode node : value) {
-      result.add(new String[] {node.asText()});
+      result.add(node.asText());
     }
 
-    return result.toArray(new String[value.size()][]);
+    return new String[][] {
+      result.toArray(new String[value.size()])
+    };
+  }
+
+  @Override
+  public int getValueWidth() {
+    return VALUE_WIDTH;
   }
 }

@@ -10,6 +10,7 @@ import java.util.Iterator;
 import static java.util.stream.Collectors.toList;
 
 public class PersonNamesExcelDescription implements ExcelDescription {
+  public static final int VALUE_WIDTH = 2;
   private final String type;
   private final PersonNames value;
 
@@ -29,7 +30,7 @@ public class PersonNamesExcelDescription implements ExcelDescription {
   @Override
   public int getCols() {
     // Amount of names
-    return value.list.size() * 2;
+    return value.list.size() * VALUE_WIDTH;
   }
 
   @Override
@@ -50,10 +51,15 @@ public class PersonNamesExcelDescription implements ExcelDescription {
       PersonName personName = value.list.get(i);
 
       for (int componentIndex = 0; componentIndex < personName.getComponents().size(); componentIndex++) {
-        result[componentIndex][i * 2] = personName.getComponents().get(componentIndex).getType().getName();
-        result[componentIndex][i * 2 + 1] = personName.getComponents().get(componentIndex).getValue();
+        result[componentIndex][i * VALUE_WIDTH] = personName.getComponents().get(componentIndex).getType().getName();
+        result[componentIndex][i * VALUE_WIDTH + 1] = personName.getComponents().get(componentIndex).getValue();
       }
     }
     return result;
+  }
+
+  @Override
+  public int getValueWidth() {
+    return VALUE_WIDTH;
   }
 }

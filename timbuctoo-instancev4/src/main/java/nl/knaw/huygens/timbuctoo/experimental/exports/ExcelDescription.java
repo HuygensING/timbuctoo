@@ -9,4 +9,6 @@ public interface ExcelDescription {
   String getType();
 
   String[][] getCells();
+
+  int getValueWidth();
 }

@@ -8,29 +8,24 @@ import nl.knaw.huygens.timbuctoo.experimental.exports.ExcelDescription;
 import java.util.List;
 
 public class AltNamesExcelDescription implements ExcelDescription {
-  private final ArrayNode jsonValue;
+  public static final int VALUE_WIDTH = 2;
+  private final ArrayNode value;
   private final String type;
 
   public AltNamesExcelDescription(JsonNode json, String typeId) {
 
-    this.jsonValue = (ArrayNode) json;
+    this.value = (ArrayNode) json;
     this.type = typeId;
   }
 
   @Override
   public int getRows() {
-    // ----------------------------
-    // | nametype    | any string |
-    // | displayName | Namepart   |
-    // | nametype    | ...        |
-    // | displayName | ...        |
-    // ----------------------------
-    return jsonValue.size() * 2;
+    return 2;
   }
 
   @Override
   public int getCols() {
-    return 2;
+    return value.size() * VALUE_WIDTH;
   }
 
   @Override
@@ -40,13 +35,30 @@ public class AltNamesExcelDescription implements ExcelDescription {
 
   @Override
   public String[][] getCells() {
-    List<String[]> result = Lists.newArrayList();
 
-    for (JsonNode node : jsonValue) {
-      result.add(new String[] {"nametype", node.get("nametype").asText()});
-      result.add(new String[] {"displayName", node.get("displayName").asText()});
+    // -------------------------------------------------------
+    // |             1            |             2            |
+    // -------------------------------------------------------
+    // | nametype    | any string | nametype    | any string |
+    // | displayName | Namepart   | displayName | Namepart   |
+    // -------------------------------------------------------
+
+    List<String> typeRow = Lists.newArrayList();
+    List<String> displayNameRow = Lists.newArrayList();
+
+    for (JsonNode node : value) {
+      typeRow.addAll(Lists.newArrayList("nametype", node.get("nametype").asText()));
+      displayNameRow.addAll(Lists.newArrayList("displayName", node.get("displayName").asText()));
     }
 
-    return result.toArray(new String[result.size()][]);
+    return new String[][]{
+      typeRow.toArray(new String[getCols()]),
+      displayNameRow.toArray(new String[getCols()])
+    };
+  }
+
+  @Override
+  public int getValueWidth() {
+    return VALUE_WIDTH;
   }
 }
