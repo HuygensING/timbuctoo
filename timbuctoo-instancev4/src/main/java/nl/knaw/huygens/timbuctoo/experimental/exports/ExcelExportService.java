@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ExcelExportService {
 
@@ -134,7 +135,9 @@ public class ExcelExportService {
 
           propertyMetadataRow.createCell(col).setCellValue(i);
           // Merge cells that belong to the same value
-          sheet.addMergedRegion(new CellRangeAddress(2, 2, col, col + pcdValue.valueWidth - 1));
+          if (pcdValue.valueWidth > 1) {
+            sheet.addMergedRegion(new CellRangeAddress(2, 2, col, col + pcdValue.valueWidth - 1));
+          }
         }
       }
 
@@ -145,11 +148,55 @@ public class ExcelExportService {
       currentStartCol += pcdValue.amountOfCols;
     }
 
-
-
-
-
     // 3) traverse vertices again to load data into the sheet
+    Iterator<Map<String, ExcelDescription>> propertyValues = entities.asAdmin().clone().map(entityT -> {
+
+      // Map the cells per property for this entity
+      Map<String, ExcelDescription> cellDescriptions = Maps.newHashMap();
+      List<GraphTraversal> propertyGetters = mapping
+        .entrySet().stream()
+        .map(prop -> prop.getValue().getExcelDescription().sideEffect(x -> {
+          cellDescriptions.put(prop.getKey(), x.get().get());
+
+        })).collect(Collectors.toList());
+
+
+      graphWrapper.getGraph().traversal().V(entityT.get().id())
+        .union(propertyGetters.toArray(new GraphTraversal[propertyGetters.size()])).forEachRemaining(x -> {
+          // side effects
+        });
+      return cellDescriptions;
+    }).toStream().iterator();
+
+    int currentRow = 3;
+    while (propertyValues.hasNext()) {
+      Map<String, ExcelDescription> excelDescriptions = propertyValues.next();
+      int reservedRows = 0;
+      List<SXSSFRow> sheetRows = Lists.newArrayList();
+
+      // Determine the amount of rows needed for this entity
+      for (Map.Entry<String, ExcelDescription> entry : excelDescriptions.entrySet()) {
+        reservedRows = entry.getValue().getRows() > reservedRows ? entry.getValue().getRows() : reservedRows;
+      }
+
+      // Add rows to the sheet for this entity
+      for (int row = currentRow; row < currentRow + reservedRows; row++) {
+        sheetRows.add(sheet.createRow(row));
+      }
+
+      // Fill the cells for this entity
+      for (Map.Entry<String, ExcelDescription> entry : excelDescriptions.entrySet()) {
+        // The left offset column for this property
+        int offsetCol = propertyColDescriptions.get(entry.getKey()).offset;
+
+        for (int row = 0; row < entry.getValue().getRows(); row++) {
+          for (int col = 0; col < entry.getValue().getCols(); col++) {
+            sheetRows.get(row).createCell(col + offsetCol).setCellValue(entry.getValue().getCells()[row][col]);
+          }
+        }
+      }
+      currentRow += reservedRows;
+    }
 
 
 
