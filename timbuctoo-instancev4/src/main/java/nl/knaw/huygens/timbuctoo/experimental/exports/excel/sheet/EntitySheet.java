@@ -34,7 +34,8 @@ public class EntitySheet {
 
   private Set<String> loadedIds = Sets.newHashSet();
 
-  public EntitySheet(Collection collection, SXSSFWorkbook workbook, GraphWrapper graphWrapper, Vres vres)
+  public EntitySheet(Collection collection, SXSSFWorkbook workbook, GraphWrapper graphWrapper, Vres vres,
+                     String[] relationTypes)
     throws IOException {
     final Vre vre = collection.getVre();
 
@@ -46,11 +47,11 @@ public class EntitySheet {
     Collection relationCollection = vre.getRelationCollection()
        .orElseThrow(() -> new IOException("relation collection not found for VRE " + vre.getVreName()));
 
-    edgePropertyGetter = new EdgePropertyGetter(vre.getVreName(), relationCollection, mappings);
+    edgePropertyGetter = new EdgePropertyGetter(vre.getVreName(), relationCollection, mappings, relationTypes);
   }
 
   // Renders the vertices of this collection to the excel sheet
-  public void renderToSheet(Set<Vertex> vertices) {
+  public void renderToWorkbook(Set<Vertex> vertices) {
 
     // 3) Prepare the data cell information, initializing the propertyColDescriptions
     Tuple<PropertyColumnMetadata, List<PropertyData>> sheetData =  prepareSheetData(vertices);

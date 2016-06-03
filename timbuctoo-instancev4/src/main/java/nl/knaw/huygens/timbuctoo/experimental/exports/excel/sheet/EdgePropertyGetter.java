@@ -13,6 +13,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,11 +23,17 @@ class EdgePropertyGetter {
   private final Collection relationCollection;
   private final String vreId;
   private final Vres mappings;
+  private final String[] edgeLabels;
 
-  EdgePropertyGetter(String vreId, Collection relationCollection, Vres mappings) {
+  EdgePropertyGetter(String vreId, Collection relationCollection, Vres mappings, String[] edgeLabels) {
     this.vreId = vreId;
     this.relationCollection = relationCollection;
     this.mappings = mappings;
+    this.edgeLabels = edgeLabels;
+  }
+
+  EdgePropertyGetter(String vreId, Collection relationCollection, Vres mappings) {
+    this(vreId, relationCollection, mappings, null);
   }
 
   GraphTraversal<Vertex, Vertex> getEdgeExcelDataTraversal(PropertyColumnMetadata propertyColumnMetadata,
@@ -34,7 +41,11 @@ class EdgePropertyGetter {
     return __.<Vertex>sideEffect(x -> {
       // Map of edges per type (to arrange the cols correctly)
       Map<String, List<Edge>> edgeMap = Maps.newHashMap();
-      x.get().edges(Direction.OUT).forEachRemaining(edge -> {
+      Iterator<Edge> edgeIterator = edgeLabels == null ?
+        x.get().edges(Direction.OUT) :
+        x.get().edges(Direction.OUT, edgeLabels);
+
+      edgeIterator.forEachRemaining(edge -> {
 
         // FIXME: string concatenating methods like this should be delegated to a configuration class
         Optional<Boolean> isAccepted =

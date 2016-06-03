@@ -47,11 +47,15 @@ public class ExcelExportService {
     verticesPerType.put(rootCollection, Sets.newHashSet(vertices));
 
     GraphTraversal<Vertex, Vertex> current = graphWrapper.getGraph().traversal().V(vertices);
+
+    String[] relationTypes = relationNames == null ?
+      null : relationNames.toArray(new String[relationNames.size()]);
+
     for (int i = 0; i < depth - 1; i++) {
 
-      current = relationNames == null ?
+      current = relationTypes == null ?
         current.bothE().otherV() :
-        current.bothE(relationNames.toArray(new String[relationNames.size()])).otherV();
+        current.bothE(relationTypes).otherV();
 
       current.asAdmin().clone().forEachRemaining(entity -> {
 
@@ -72,9 +76,9 @@ public class ExcelExportService {
 
 
     for (Map.Entry<Collection, Set<Vertex>> entry : verticesPerType.entrySet()) {
-      new EntitySheet(entry.getKey(), workbook, graphWrapper, mappings).renderToSheet(entry.getValue());
+      new EntitySheet(entry.getKey(), workbook, graphWrapper, mappings, relationTypes)
+        .renderToWorkbook(entry.getValue());
     }
-    // TODO: relate sheets through edges.
 
     return workbook;
   }
