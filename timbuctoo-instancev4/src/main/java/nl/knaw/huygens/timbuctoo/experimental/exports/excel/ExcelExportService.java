@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.experimental.exports.excel;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import nl.knaw.huygens.timbuctoo.experimental.exports.excel.sheet.EntitySheet;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;

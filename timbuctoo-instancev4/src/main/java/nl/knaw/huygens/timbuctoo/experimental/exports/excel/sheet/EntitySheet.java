@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.experimental.exports.excel;
+package nl.knaw.huygens.timbuctoo.experimental.exports.excel.sheet;
 
 
 import com.google.common.collect.Lists;
