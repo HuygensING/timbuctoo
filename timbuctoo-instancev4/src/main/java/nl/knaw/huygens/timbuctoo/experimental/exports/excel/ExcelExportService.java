@@ -12,9 +12,11 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
+import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getCollectionByVreId;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
 
 public class ExcelExportService {
@@ -59,15 +61,15 @@ public class ExcelExportService {
           .filter(collection -> collection.getVre().getVreName().equals(detectedVre))
           .collect(toList());
 
-        final Collection collection = filteredTypes.size() > 0 ? filteredTypes.get(0) : null;
+        final Optional<Collection> collection = getCollectionByVreId(entity, mappings, detectedVre);
 
-        if (collection != null) {
+        if (collection.isPresent()) {
           Set<Vertex> vertexSet;
-          if (verticesPerType.containsKey(collection)) {
-            vertexSet = verticesPerType.get(collection);
+          if (verticesPerType.containsKey(collection.get())) {
+            vertexSet = verticesPerType.get(collection.get());
           } else {
             vertexSet = Sets.newHashSet();
-            verticesPerType.put(collection, vertexSet);
+            verticesPerType.put(collection.get(), vertexSet);
           }
           vertexSet.add(entity);
         }

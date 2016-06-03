@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.experimental.exports.excel.description;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ExcelDescription;
 
 import java.util.List;
 
@@ -61,5 +60,16 @@ public class HyperlinksExcelDescription implements ExcelDescription {
   @Override
   public int getValueWidth() {
     return VALUE_WIDTH;
+  }
+
+  @Override
+  public List<String> getValueDescriptions() {
+    List<String> result = Lists.newArrayList();
+
+    for (int i = 0; i < value.size(); i++) {
+      result.add(Integer.toString(i + 1));
+    }
+
+    return result;
   }
 }

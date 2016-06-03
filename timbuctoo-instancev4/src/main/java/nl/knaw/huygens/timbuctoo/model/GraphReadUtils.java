@@ -2,12 +2,17 @@ package nl.knaw.huygens.timbuctoo.model;
 
 import javaslang.Value;
 import javaslang.control.Try;
+import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 
+import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
 
 //Most database access should probably be done through the tinkerpopjsoncrudservice
@@ -36,5 +41,17 @@ public class GraphReadUtils {
       return Optional.empty();
     }
   }
+
+  public static Optional<Collection> getCollectionByVreId(Element element, Vres mappings, String vreId) {
+
+    final List<Collection> filteredTypes = Arrays.asList(getEntityTypesOrDefault(element))
+      .stream()
+      .map(type -> mappings.getCollectionForType(type).get())
+      .filter(collection -> collection.getVre().getVreName().equals(vreId))
+      .collect(toList());
+
+    return Optional.ofNullable(filteredTypes.size() > 0 ? filteredTypes.get(0) : null);
+  }
+
 
 }

@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.experimental.exports.excel.description;
 
-import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ExcelDescription;
+import com.google.common.collect.Lists;
+
+import java.util.List;
 
 
 public class StringExcelDescription implements ExcelDescription {
@@ -40,5 +42,11 @@ public class StringExcelDescription implements ExcelDescription {
   @Override
   public int getValueWidth() {
     return VALUE_WIDTH;
+  }
+
+  @Override
+  public List<String> getValueDescriptions() {
+
+    return Lists.newArrayList("");
   }
 }

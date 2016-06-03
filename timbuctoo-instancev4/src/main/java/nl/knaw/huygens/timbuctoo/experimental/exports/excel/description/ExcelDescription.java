@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.experimental.exports.excel.description;
 
+import java.util.List;
+
 public interface ExcelDescription {
 
   int getRows();
@@ -11,4 +13,6 @@ public interface ExcelDescription {
   String[][] getCells();
 
   int getValueWidth();
+
+  List<String> getValueDescriptions();
 }
