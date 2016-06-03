@@ -59,28 +59,31 @@ public class EntitySheet {
 
   }
 
+  // Renders the vertices of this collection to the excel sheet
   public void renderToSheet(Set<Vertex> vertices) {
     // 1) read the mappings to get the properties to export
     Map<String, LocalProperty> mapping = mappings.getCollectionForType(type).get().getWriteableProperties();
-    GraphTraversal<Vertex, Vertex> entities = graphWrapper.getGraph().traversal().V(vertices);
+
+    // 2) Initialize the map for information on:
+    // - header row metadate
+    // - amount of cols per property
     Map<String, PropertyColDescription> propertyColDescriptions = Maps.newHashMap();
 
-    // 2) Load the data cell information
+    // 3) Prepare the data cell information, initializing the propertyColDescriptions
     List<Tuple<String, Map<String, ExcelDescription>>> dataCellDescriptions =
-      getDataCells(mapping, entities, propertyColDescriptions);
+      getDataCells(mapping, graphWrapper.getGraph().traversal().V(vertices), propertyColDescriptions);
 
-    // 3) Set dimensions of the sheet and fill the header rows
-    loadHeadersAndDimensions(propertyColDescriptions);
+    // 4) Set dimensions of the sheet and fill the header rows with the propertyColDescriptions
+    renderHeaders(propertyColDescriptions);
 
-
-    // 4) Load the cell data into the sheet
-    loadSheetData(propertyColDescriptions, dataCellDescriptions);
+    // 5) Load the cell data into the sheet
+    renderSheetData(propertyColDescriptions, dataCellDescriptions);
   }
 
 
   // Load the cell data into the sheet
-  private void loadSheetData(Map<String, PropertyColDescription> propertyColDescriptions,
-                             List<Tuple<String, Map<String, ExcelDescription>>> dataCellDescriptions) {
+  private void renderSheetData(Map<String, PropertyColDescription> propertyColDescriptions,
+                               List<Tuple<String, Map<String, ExcelDescription>>> dataCellDescriptions) {
 
     // Thread-safe row counter
     final AtomicInteger currentRow = new AtomicInteger(3);
@@ -112,8 +115,8 @@ public class EntitySheet {
       // Fill the cells for this entity
       for (Map.Entry<String, ExcelDescription> entry : excelDescriptions.entrySet()) {
 
-        // The left offset column for this property
-        int offsetCol = propertyColDescriptions.get(entry.getKey()).offset;
+        // The left colOffset column for this property
+        int offsetCol = propertyColDescriptions.get(entry.getKey()).colOffset;
 
         // Loop through the cell data and fill the sheet with the cells
         ExcelDescription excelDescription = entry.getValue();
@@ -137,8 +140,9 @@ public class EntitySheet {
     });
   }
 
-  private void loadHeadersAndDimensions(Map<String, PropertyColDescription> propertyColDescriptions) {
-    // set column headers and determine column offset per property name
+  // - renders column headers
+  // - determine column offset per property
+  private void renderHeaders(Map<String, PropertyColDescription> propertyColDescriptions) {
     SXSSFRow propertyNameRow = sheet.createRow(0);
     SXSSFRow propertyTypeRow = sheet.createRow(1);
     SXSSFRow propertyMetadataRow = sheet.createRow(2);
@@ -181,8 +185,8 @@ public class EntitySheet {
         propertyMetadataRow.createCell(currentStartCol).setCellValue(pcdValue.valueDescriptions.get(0));
       }
 
-      // Determine the offset of the property col description
-      pcdValue.offset = currentStartCol;
+      // Determine the column offset of the property col description
+      pcdValue.colOffset = currentStartCol;
 
       // Increment current start col with the amount of cols
       currentStartCol += pcdValue.amountOfCols;
@@ -190,6 +194,9 @@ public class EntitySheet {
   }
 
 
+  // Adds / updates a property column description:
+  // - Adds if there was no column for this property yet
+  // - Replaces if this property takes up more columns than the last property of this name
   private void addPropertyColDescription(ExcelDescription excelDescription,
                                          Map<String, PropertyColDescription> propertyColDescriptions,
                                          Map.Entry<String, ?> prop) {
@@ -208,7 +215,7 @@ public class EntitySheet {
     }
   }
 
-
+  // Returns list of tuples of <tim_id, <propertyName, cell value description>>
   private List<Tuple<String, Map<String, ExcelDescription>>> getDataCells(Map<String, LocalProperty> mapping,
                                                                             GraphTraversal<Vertex, Vertex> entities,
                                                                             Map<String, PropertyColDescription>
@@ -278,13 +285,18 @@ public class EntitySheet {
     }).toList();
   }
 
-
+  // Data holder class for for column information
   private static class PropertyColDescription {
+    // The max amount of cols properties of this name take
     final int amountOfCols;
+    // The property type
     final String propertyType;
+    // The amount of columns each value in this property takes
     final int valueWidth;
+    // The metadata on the property values
     final List<String> valueDescriptions;
-    int offset;
+    // The location of the columns for this property in the final excel sheet
+    int colOffset;
 
     PropertyColDescription(int amountOfCols, String propertyType, int valueWidth, List<String> valueDescriptions) {
       this.amountOfCols = amountOfCols;
