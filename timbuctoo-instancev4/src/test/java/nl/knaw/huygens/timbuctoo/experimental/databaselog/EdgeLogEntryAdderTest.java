@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.experimental.databaselog;
 
+import nl.knaw.huygens.timbuctoo.experimental.databaselog.entry.LogEntryFactory;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.junit.Before;
@@ -22,7 +23,7 @@ public class EdgeLogEntryAdderTest {
 
   @Before
   public void setUp() throws Exception {
-    instance = new EdgeLogEntryAdder();
+    instance = new EdgeLogEntryAdder(new LogEntryFactory());
     databaseLog = mock(DatabaseLog.class);
   }
 

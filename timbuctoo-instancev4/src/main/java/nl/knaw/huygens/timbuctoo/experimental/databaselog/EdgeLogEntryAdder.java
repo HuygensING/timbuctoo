@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.experimental.databaselog;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.knaw.huygens.timbuctoo.experimental.databaselog.entry.LogEntryFactory;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
@@ -17,8 +18,10 @@ public class EdgeLogEntryAdder {
   public static final Logger LOG = LoggerFactory.getLogger(EdgeLogEntryAdder.class);
   private final ObjectMapper objectMapper;
   private final TreeSet<EdgeLogEntry> edgeLogEntries;
+  private final LogEntryFactory logEntryFactory;
 
-  public EdgeLogEntryAdder() {
+  public EdgeLogEntryAdder(LogEntryFactory logEntryFactory) {
+    this.logEntryFactory = logEntryFactory;
     edgeLogEntries = new TreeSet<>();
     objectMapper = new ObjectMapper();
   }
@@ -48,11 +51,7 @@ public class EdgeLogEntryAdder {
     String modifiedString = modifiedProp.value();
     try {
       Change modified = objectMapper.readValue(modifiedString, Change.class);
-      if (rev.value() > 1) {
-        edgeLogEntries.add(new UpdateEdgeLogEntry(edge, modified.getTimeStamp(), id));
-      } else {
-        edgeLogEntries.add(new CreateEdgeLogEntry(edge, modified.getTimeStamp(), id));
-      }
+      edgeLogEntries.add(logEntryFactory.createForEdge(edge, modified.getTimeStamp(), id));
     } catch (IOException e) {
       LOG.error("String '{}' of Edge with id '{}' cannot be converted to Change", modifiedString, id);
       LOG.error("Exception thrown", e);
@@ -68,32 +67,4 @@ public class EdgeLogEntryAdder {
     edgeLogEntries.clear();
   }
 
-  private static class CreateEdgeLogEntry extends EdgeLogEntry {
-    private final Edge edge;
-
-    public CreateEdgeLogEntry(Edge edge, Long timestamp, String id) {
-      super(timestamp, id);
-      this.edge = edge;
-    }
-
-    @Override
-    public void appendToLog(DatabaseLog dbLog) {
-      dbLog.newEdge(edge);
-    }
-  }
-
-  private static class UpdateEdgeLogEntry extends EdgeLogEntry {
-    private final Edge edge;
-
-    public UpdateEdgeLogEntry(Edge edge, Long timestamp, String id) {
-      super(timestamp, id);
-      this.edge = edge;
-    }
-
-    @Override
-    public void appendToLog(DatabaseLog dbLog) {
-      dbLog.updateEdge(edge);
-    }
-
-  }
 }

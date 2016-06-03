@@ -5,7 +5,6 @@ import nl.knaw.huygens.timbuctoo.model.Change;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -93,7 +92,7 @@ public class DatabaseLog {
     }
   }
 
-  public void updateProperty(VertexProperty property) {
+  public void updateProperty(Property property) {
     try {
       writeAndFlush(String.format("Property '%s' set to '%s'.%n", property.key(), property.value()));
     } catch (IOException e) {

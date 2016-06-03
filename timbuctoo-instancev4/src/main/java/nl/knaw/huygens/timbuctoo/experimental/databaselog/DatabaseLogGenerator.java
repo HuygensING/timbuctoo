@@ -25,7 +25,11 @@ public class DatabaseLogGenerator {
   private final ObjectMapper objectMapper;
 
   public DatabaseLogGenerator(GraphWrapper graphWrapper) {
-    this(graphWrapper, new LogEntryFactory(), new EdgeLogEntryAdder());
+    this(graphWrapper, new LogEntryFactory());
+  }
+
+  private DatabaseLogGenerator(GraphWrapper graphWrapper, LogEntryFactory logEntryFactory) {
+    this(graphWrapper, logEntryFactory, new EdgeLogEntryAdder(logEntryFactory));
   }
 
   DatabaseLogGenerator(GraphWrapper graphWrapper, LogEntryFactory logEntryFactory,
