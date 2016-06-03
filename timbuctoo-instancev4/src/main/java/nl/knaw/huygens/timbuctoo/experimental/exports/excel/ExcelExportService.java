@@ -62,14 +62,14 @@ public class ExcelExportService {
         final Collection collection = filteredTypes.size() > 0 ? filteredTypes.get(0) : null;
 
         if (collection != null) {
-          Set<Vertex> vertexList;
+          Set<Vertex> vertexSet;
           if (verticesPerType.containsKey(collection)) {
-            vertexList = verticesPerType.get(collection);
+            vertexSet = verticesPerType.get(collection);
           } else {
-            vertexList = Sets.newHashSet();
-            verticesPerType.put(collection, vertexList);
+            vertexSet = Sets.newHashSet();
+            verticesPerType.put(collection, vertexSet);
           }
-          vertexList.add(entity);
+          vertexSet.add(entity);
         }
       });
     }
