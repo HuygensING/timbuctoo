@@ -136,12 +136,8 @@ public class Search {
     SXSSFWorkbook workbook = new SXSSFWorkbook();
     if (searchResult.isPresent()) {
       final SearchResult result = searchResult.get();
-      try {
-        workbook = excelExportService
-          .searchResultToExcel(result.getSearchResult(), result.getSearchDescription().getType(), depth, relationNames);
-      } catch (IOException e) {
-        workbook.createSheet("result").createRow(0).createCell(0).setCellValue(e.getMessage());
-      }
+      workbook = excelExportService
+        .searchResultToExcel(result.getSearchResult(), result.getSearchDescription().getType(), depth, relationNames);
     } else {
       workbook.createSheet("result").createRow(0).createCell(0).setCellValue("Search with id " + id + " not found.");
     }

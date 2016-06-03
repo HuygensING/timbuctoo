@@ -20,14 +20,14 @@ import java.util.Optional;
 
 class EdgePropertyGetter {
 
-  private final Collection relationCollection;
+  private final String relationAcceptedPropertyName;
   private final String vreId;
   private final Vres mappings;
   private final String[] edgeLabels;
 
-  EdgePropertyGetter(String vreId, Collection relationCollection, Vres mappings, String[] edgeLabels) {
+  EdgePropertyGetter(String vreId, String relationAcceptedPropertyName, Vres mappings, String[] edgeLabels) {
     this.vreId = vreId;
-    this.relationCollection = relationCollection;
+    this.relationAcceptedPropertyName = relationAcceptedPropertyName;
     this.mappings = mappings;
     this.edgeLabels = edgeLabels;
   }
@@ -43,10 +43,9 @@ class EdgePropertyGetter {
 
       edgeIterator.forEachRemaining(edge -> {
 
-        // FIXME: string concatenating methods like this should be delegated to a configuration class
         Optional<Boolean> isAccepted =
           GraphReadUtils
-            .getProp(edge, relationCollection.getEntityTypeName() + "_accepted", Boolean.class);
+            .getProp(edge, relationAcceptedPropertyName, Boolean.class);
 
         // Only add the accepted relations
         if (isAccepted.isPresent() && isAccepted.get()) {

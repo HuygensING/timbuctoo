@@ -16,7 +16,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,19 +34,15 @@ public class EntitySheet {
   private Set<String> loadedIds = Sets.newHashSet();
 
   public EntitySheet(Collection collection, SXSSFWorkbook workbook, GraphWrapper graphWrapper, Vres vres,
-                     String[] relationTypes)
-    throws IOException {
-    final Vre vre = collection.getVre();
+                     String[] relationTypes, String relationAcceptedProperty) {
 
+    final Vre vre = collection.getVre();
     this.sheet = workbook.createSheet(collection.getCollectionName());
     this.type = collection.getEntityTypeName();
     this.graphWrapper = graphWrapper;
     this.mappings = vres;
 
-    Collection relationCollection = vre.getRelationCollection()
-       .orElseThrow(() -> new IOException("relation collection not found for VRE " + vre.getVreName()));
-
-    edgePropertyGetter = new EdgePropertyGetter(vre.getVreName(), relationCollection, mappings, relationTypes);
+    edgePropertyGetter = new EdgePropertyGetter(vre.getVreName(), relationAcceptedProperty, mappings, relationTypes);
   }
 
   // Renders the vertices of this collection to the excel sheet

@@ -21,7 +21,7 @@ public class ExcelExportServiceTest {
 
 
   @Test
-  public void exportOutputsAStreamingWorkbook() throws IOException {
+  public void searchResultToExcelOutputsAStreamingWorkbook() {
 
     GraphWrapper graphWrapper = mock(GraphWrapper.class);
     when(graphWrapper.getGraph()).thenReturn(newGraph().build());
@@ -33,5 +33,6 @@ public class ExcelExportServiceTest {
 
     assertThat(result, instanceOf(SXSSFWorkbook.class));
   }
+
 
 }
