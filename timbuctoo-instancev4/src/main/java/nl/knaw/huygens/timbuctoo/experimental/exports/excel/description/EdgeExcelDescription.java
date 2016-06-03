@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getCollectionByVreId;
+import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 
 public class EdgeExcelDescription implements ExcelDescription {
   private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(EdgeExcelDescription.class);
@@ -27,7 +28,10 @@ public class EdgeExcelDescription implements ExcelDescription {
     this.targetCollection = getCollectionByVreId(edges.get(0).inVertex(), mappings, vreId);
 
     if (!targetCollection.isPresent()) {
-      LOG.error(Logmarkers.databaseInvariant, "Edge {} points to entity of incorrect collection", this.edges.get(0));
+      LOG.error(Logmarkers.databaseInvariant, "Edge {} should point to entity of other VRE={} outVertex={} inVertex={}",
+        this.edges.get(0), vreId,
+        getProp(edges.get(0).outVertex(), "tim_id", String.class).orElse("missing tim_id"),
+        getProp(edges.get(0).inVertex(), "tim_id", String.class).orElse("missing tim_id"));
     }
 
   }

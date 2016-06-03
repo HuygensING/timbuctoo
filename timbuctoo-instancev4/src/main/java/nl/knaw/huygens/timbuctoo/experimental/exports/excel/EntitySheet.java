@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.EdgeExce
 import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ExcelDescription;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
@@ -21,11 +22,15 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 
 public class EntitySheet {
 
@@ -34,15 +39,23 @@ public class EntitySheet {
   private final Vres mappings;
   private final String type;
   private final String vreId;
+  private final Collection relationCollection;
 
   private Set<String> loadedIds = Sets.newHashSet();
 
-  public EntitySheet(Collection collection, SXSSFWorkbook workbook, GraphWrapper graphWrapper, Vres vres) {
+  public EntitySheet(Collection collection, SXSSFWorkbook workbook, GraphWrapper graphWrapper, Vres vres)
+    throws IOException {
+    final Vre vre = collection.getVre();
+
     this.sheet = workbook.createSheet(collection.getCollectionName());
     this.type = collection.getEntityTypeName();
     this.graphWrapper = graphWrapper;
     this.mappings = vres;
-    this.vreId = collection.getVre().getVreName();
+    this.vreId = vre.getVreName();
+
+
+    relationCollection = vre.getRelationCollection()
+       .orElseThrow(() -> new IOException("relation collection not found for VRE " + vre.getVreName()));
 
   }
 
@@ -64,18 +77,24 @@ public class EntitySheet {
     loadSheetData(propertyColDescriptions, dataCellDescriptions);
   }
 
+
+  // Load the cell data into the sheet
   private void loadSheetData(Map<String, PropertyColDescription> propertyColDescriptions,
                              List<Tuple<String, Map<String, ExcelDescription>>> dataCellDescriptions) {
 
+    // Thread-safe row counter
     final AtomicInteger currentRow = new AtomicInteger(3);
     dataCellDescriptions.forEach(dataCellDescription -> {
 
+      // The identifier
       final String timId = dataCellDescription.getLeft();
 
+      // Double entry check
       if (loadedIds.contains(timId)) {
         return;
       }
 
+      // The excel descriptions per property
       final Map<String, ExcelDescription> excelDescriptions = dataCellDescription.getRight();
 
       // Determine the amount of rows needed for this entity
@@ -219,14 +238,22 @@ public class EntitySheet {
         // Map of edges per type (to arrange the cols correctly)
         Map<String, List<Edge>> edgeMap = Maps.newHashMap();
         x.get().edges(Direction.OUT).forEachRemaining(edge -> {
-          // Initialize new set if this edge type is not yet in the map and retrieve the set of edges
-          // for this edge type
-          List<Edge> edges = edgeMap.containsKey(edge.label()) ? edgeMap.get(edge.label()) : Lists.newArrayList();
-          if (!edgeMap.containsKey(edge.label())) {
-            edgeMap.put(edge.label(), edges);
+
+          // FIXME: string concatenating methods like this should be delegated to a configuration class
+          Optional<Boolean> isAccepted =
+            getProp(edge, relationCollection.getEntityTypeName() + "_accepted", Boolean.class);
+
+          // Only add the accepted relations
+          if (isAccepted.isPresent() && isAccepted.get()) {
+            // Initialize new set if this edge type is not yet in the map and retrieve the set of edges
+            // for this edge type
+            List<Edge> edges = edgeMap.containsKey(edge.label()) ? edgeMap.get(edge.label()) : Lists.newArrayList();
+            if (!edgeMap.containsKey(edge.label())) {
+              edgeMap.put(edge.label(), edges);
+            }
+            // Add this edge to the current set
+            edges.add(edge);
           }
-          // Add this edge to the current set
-          edges.add(edge);
         });
 
         // Add propertyColDescription and excelDescription like above
@@ -240,12 +267,13 @@ public class EntitySheet {
         }
       }));
 
-
+      // Force side effects on this entity traverser to happen
       graphWrapper.getGraph().traversal().V(entityT.get().id())
         .union(propertyGetters.toArray(new GraphTraversal[propertyGetters.size()])).forEachRemaining(x -> {
           // side effects
         });
 
+      // Return the data cell descriptions with their tim_id
       return new Tuple<>((String) entityT.get().value("tim_id"), excelDescriptions);
     }).toList();
   }

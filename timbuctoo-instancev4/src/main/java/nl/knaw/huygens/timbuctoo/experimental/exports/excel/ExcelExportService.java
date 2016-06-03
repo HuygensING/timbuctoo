@@ -9,15 +9,13 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.Arrays;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getCollectionByVreId;
-import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
 
 public class ExcelExportService {
 
@@ -37,7 +35,7 @@ public class ExcelExportService {
    * @return the export as workbook
    */
   public SXSSFWorkbook searchResultToExcel(List<Vertex> vertices, String rootType, int depth,
-                                           List<String> relationNames) {
+                                           List<String> relationNames) throws IOException {
 
     SXSSFWorkbook workbook = new SXSSFWorkbook();
 
@@ -55,11 +53,6 @@ public class ExcelExportService {
         current.bothE(relationNames.toArray(new String[relationNames.size()])).otherV();
 
       current.asAdmin().clone().forEachRemaining(entity -> {
-        final List<Collection> filteredTypes = Arrays.asList(getEntityTypesOrDefault(entity))
-          .stream()
-          .map(type -> mappings.getCollectionForType(type).get())
-          .filter(collection -> collection.getVre().getVreName().equals(detectedVre))
-          .collect(toList());
 
         final Optional<Collection> collection = getCollectionByVreId(entity, mappings, detectedVre);
 

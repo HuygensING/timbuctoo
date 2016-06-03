@@ -9,6 +9,8 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
+import java.io.IOException;
+
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
@@ -19,7 +21,7 @@ public class ExcelExportServiceTest {
 
 
   @Test
-  public void exportOutputsAStreamingWorkbook() {
+  public void exportOutputsAStreamingWorkbook() throws IOException {
 
     GraphWrapper graphWrapper = mock(GraphWrapper.class);
     when(graphWrapper.getGraph()).thenReturn(newGraph().build());

@@ -27,6 +27,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
+import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -135,9 +136,12 @@ public class Search {
     SXSSFWorkbook workbook = new SXSSFWorkbook();
     if (searchResult.isPresent()) {
       final SearchResult result = searchResult.get();
-      workbook = excelExportService
-        .searchResultToExcel(result.getSearchResult(),result.getSearchDescription().getType(), depth, relationNames);
-
+      try {
+        workbook = excelExportService
+          .searchResultToExcel(result.getSearchResult(), result.getSearchDescription().getType(), depth, relationNames);
+      } catch (IOException e) {
+        workbook.createSheet("result").createRow(0).createCell(0).setCellValue(e.getMessage());
+      }
     } else {
       workbook.createSheet("result").createRow(0).createCell(0).setCellValue("Search with id " + id + " not found.");
     }
