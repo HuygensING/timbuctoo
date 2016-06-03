@@ -48,12 +48,11 @@ public class ExcelExportService {
     GraphTraversal<Vertex, Vertex> current = graphWrapper.getGraph().traversal().V(vertices);
     for (int i = 0; i < depth - 1; i++) {
 
-      List<Vertex> currentList = relationNames == null ?
-        current.bothE().otherV().asAdmin().clone().toList() :
-        current.bothE(relationNames.toArray(new String[relationNames.size()])).otherV().asAdmin().clone().toList();
+      current = relationNames == null ?
+        current.bothE().otherV() :
+        current.bothE(relationNames.toArray(new String[relationNames.size()])).otherV();
 
-      current = current.bothE().otherV();
-      currentList.forEach(entity -> {
+      current.asAdmin().clone().forEachRemaining(entity -> {
         final List<Collection> filteredTypes = Arrays.asList(getEntityTypesOrDefault(entity))
           .stream()
           .map(type -> mappings.getCollectionForType(type).get())
