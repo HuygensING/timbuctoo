@@ -32,10 +32,6 @@ class EdgePropertyGetter {
     this.edgeLabels = edgeLabels;
   }
 
-  EdgePropertyGetter(String vreId, Collection relationCollection, Vres mappings) {
-    this(vreId, relationCollection, mappings, null);
-  }
-
   GraphTraversal<Vertex, Vertex> getEdgeExcelDataTraversal(PropertyColumnMetadata propertyColumnMetadata,
                                                            PropertyData propertyData) {
     return __.<Vertex>sideEffect(x -> {
