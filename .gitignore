@@ -18,3 +18,6 @@ reports
 
 # list of database migrations already executed on this system
 **/executed-migrations.json
+
+# timbuctoo's database changes log
+**/dblog
