@@ -12,7 +12,7 @@ import org.mockito.InOrder;
 import static nl.knaw.huygens.timbuctoo.search.MockVertexBuilder.vertex;
 import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
-import static nl.knaw.huygens.timbuctoo.util.VertexPropertyMatcher.likeVertexProperty;
+import static nl.knaw.huygens.timbuctoo.util.PropertyMatcher.likeProperty;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.inE;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.inOrder;
@@ -47,9 +47,9 @@ public class CreateVertexLogEntryTest {
 
     instance.appendToLog(dbLog);
 
-    verify(dbLog).newProperty(argThat(likeVertexProperty().withKey(key1)));
-    verify(dbLog).newProperty(argThat(likeVertexProperty().withKey(key2)));
-    verify(dbLog).newProperty(argThat(likeVertexProperty().withKey(key3)));
+    verify(dbLog).newProperty(argThat(likeProperty().withKey(key1)));
+    verify(dbLog).newProperty(argThat(likeProperty().withKey(key2)));
+    verify(dbLog).newProperty(argThat(likeProperty().withKey(key3)));
   }
 
   @Test
@@ -66,7 +66,7 @@ public class CreateVertexLogEntryTest {
 
     InOrder inOrder = inOrder(dbLog);
     inOrder.verify(dbLog).newVertex(vertex);
-    inOrder.verify(dbLog).newProperty(argThat(likeVertexProperty().withKey(key1)));
+    inOrder.verify(dbLog).newProperty(argThat(likeProperty().withKey(key1)));
   }
 
 

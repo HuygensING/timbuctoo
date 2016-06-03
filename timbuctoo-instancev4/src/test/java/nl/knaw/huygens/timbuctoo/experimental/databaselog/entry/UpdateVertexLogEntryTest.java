@@ -5,7 +5,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import static nl.knaw.huygens.timbuctoo.search.MockVertexBuilder.vertex;
-import static nl.knaw.huygens.timbuctoo.util.VertexPropertyMatcher.likeVertexProperty;
+import static nl.knaw.huygens.timbuctoo.util.PropertyMatcher.likeProperty;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -40,8 +40,8 @@ public class UpdateVertexLogEntryTest {
     instance.appendToLog(dbLog);
 
     verify(dbLog).updateVertex(vertex);
-    verify(dbLog).newProperty(argThat(likeVertexProperty().withKey(newProp)));
-    verify(dbLog).newProperty(argThat(likeVertexProperty().withKey(newProp2)));
+    verify(dbLog).newProperty(argThat(likeProperty().withKey(newProp)));
+    verify(dbLog).newProperty(argThat(likeProperty().withKey(newProp2)));
     verifyNoMoreInteractions(dbLog);
   }
 
@@ -62,7 +62,7 @@ public class UpdateVertexLogEntryTest {
     instance.appendToLog(dbLog);
 
     verify(dbLog).updateVertex(vertex);
-    verify(dbLog).updateProperty(argThat(likeVertexProperty().withKey(updatedProp)));
+    verify(dbLog).updateProperty(argThat(likeProperty().withKey(updatedProp)));
     verifyNoMoreInteractions(dbLog);
   }
 
