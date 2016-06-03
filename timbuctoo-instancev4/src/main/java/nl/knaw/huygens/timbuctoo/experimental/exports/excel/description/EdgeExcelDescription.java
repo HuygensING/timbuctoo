@@ -33,7 +33,6 @@ public class EdgeExcelDescription implements ExcelDescription {
         getProp(edges.get(0).outVertex(), "tim_id", String.class).orElse("missing tim_id"),
         getProp(edges.get(0).inVertex(), "tim_id", String.class).orElse("missing tim_id"));
     }
-
   }
 
   @Override
@@ -69,7 +68,7 @@ public class EdgeExcelDescription implements ExcelDescription {
     final String value = targetCollection.isPresent() ? targetCollection.get().getCollectionName() : "?";
     List<String> result = Lists.newArrayList();
 
-    for (Edge edge : edges) {
+    for (Edge ignored : edges) {
       result.add(value);
     }
 
