@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.model.properties.converters;
 
 import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ExcelDescription;
-import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ListOfStringsExcelDescription;
 import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.StringExcelDescription;
 import org.junit.Test;
 
