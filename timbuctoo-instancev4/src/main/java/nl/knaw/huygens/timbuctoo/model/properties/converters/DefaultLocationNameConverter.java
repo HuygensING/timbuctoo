@@ -28,8 +28,8 @@ public class DefaultLocationNameConverter implements Converter {
   }
 
   @Override
-  public ExcelDescription tinkerPopToExcel(Object value, String guiTypeId) throws IOException {
+  public ExcelDescription tinkerPopToExcel(Object value, String typeId) throws IOException {
     // FIXME: create an excel description for the full LocationNames class
-    return new StringExcelDescription(tinkerpopToJson(value).asText(), guiTypeId);
+    return new StringExcelDescription(tinkerpopToJson(value).asText(), typeId);
   }
 }

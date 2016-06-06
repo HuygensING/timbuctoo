@@ -14,5 +14,5 @@ public interface Converter {
     return null; //null indicates that the type is not available for inclusion in the metadata
   }
 
-  ExcelDescription tinkerPopToExcel(Object value, String guiTypeId) throws IOException;
+  ExcelDescription tinkerPopToExcel(Object value, String typeId) throws IOException;
 }

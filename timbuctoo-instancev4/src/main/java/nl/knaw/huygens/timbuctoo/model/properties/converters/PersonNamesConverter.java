@@ -56,8 +56,8 @@ public class PersonNamesConverter implements Converter, HasParts {
   }
 
   @Override
-  public ExcelDescription tinkerPopToExcel(Object value, String guiTypeId) throws IOException {
-    return new PersonNamesExcelDescription(tinkerpopToJava(value), guiTypeId);
+  public ExcelDescription tinkerPopToExcel(Object value, String typeId) throws IOException {
+    return new PersonNamesExcelDescription(tinkerpopToJava(value), typeId);
   }
 
 }

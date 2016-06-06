@@ -1,9 +1,12 @@
 package nl.knaw.huygens.timbuctoo.model.properties.converters;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.AltNamesExcelDescription;
+import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ExcelDescription;
 import nl.knaw.huygens.timbuctoo.model.AltName;
 import nl.knaw.huygens.timbuctoo.model.AltNames;
 import org.junit.Before;
@@ -13,6 +16,8 @@ import java.io.IOException;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
 public class AltNamesConverterTest {
@@ -66,5 +71,19 @@ public class AltNamesConverterTest {
     String dbValue = "";
 
     instance.tinkerpopToJson(dbValue);
+  }
+
+  @Test
+  public void tinkerpopToExcelReturnsAValidExcelDescriptionInstance() throws IOException {
+    AltNames altNames = new AltNames();
+    altNames.list = Lists.newArrayList(ALT_NAME_1, ALT_NAME_2);
+    String dbValue = objectMapper.writeValueAsString(altNames);
+
+    AltNamesConverter instance = new AltNamesConverter();
+
+    ExcelDescription excelDescription = instance.tinkerPopToExcel(dbValue, "testType");
+
+    assertThat(excelDescription, instanceOf(AltNamesExcelDescription.class));
+    assertThat(excelDescription.getType(), equalTo("testType"));
   }
 }

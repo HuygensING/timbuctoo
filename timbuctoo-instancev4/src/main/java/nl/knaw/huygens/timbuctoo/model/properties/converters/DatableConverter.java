@@ -35,7 +35,7 @@ public class DatableConverter implements Converter {
   }
 
   @Override
-  public ExcelDescription tinkerPopToExcel(Object value, String guiTypeId) throws IOException {
-    return new StringExcelDescription(tinkerpopToJson(value).asText(), guiTypeId);
+  public ExcelDescription tinkerPopToExcel(Object value, String typeId) throws IOException {
+    return new StringExcelDescription(tinkerpopToJson(value).asText(), typeId);
   }
 }
