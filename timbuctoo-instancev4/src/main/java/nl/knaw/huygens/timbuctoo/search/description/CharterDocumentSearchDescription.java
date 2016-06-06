@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.Datable;
+import nl.knaw.huygens.timbuctoo.model.DocumentType;
 import nl.knaw.huygens.timbuctoo.model.Gender;
 import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
@@ -34,10 +35,13 @@ public class CharterDocumentSearchDescription extends AbstractSearchDescription 
   private final List<FacetDescription> facetDescriptions;
   private final Map<String, PropertyDescriptor> dataPropertyDescriptors;
   private final List<FullTextSearchDescription> fullTextSearchDescriptions;
+  private final PropertyParserFactory propertyParserFactory;
+
   private List<SortFieldDescription> sortFieldDescriptions;
 
   public CharterDocumentSearchDescription(PropertyDescriptorFactory propertyDescriptorFactory,
                                    FacetDescriptionFactory facetDescriptionFactory) {
+    propertyParserFactory = new PropertyParserFactory();
     sortableFields = Lists.newArrayList(
       "dynamic_k_date"
       );
@@ -84,6 +88,34 @@ public class CharterDocumentSearchDescription extends AbstractSearchDescription 
     PropertyDescriptorFactory propertyDescriptorFactory) {
     Map<String, PropertyDescriptor> dataPropertyDescriptors = Maps.newHashMap();
     dataPropertyDescriptors.put("date", propertyDescriptorFactory.getLocal("charterdocument_date", Datable.class));
+    dataPropertyDescriptors.put("_id", propertyDescriptorFactory.getLocal(ID_DB_PROP, String.class));
+    dataPropertyDescriptors.put("title", propertyDescriptorFactory.getLocal("charterdocument_title", String.class));
+    dataPropertyDescriptors.put("archief", propertyDescriptorFactory.getLocal("charterdocument_archief", String.class));
+    dataPropertyDescriptors.put("fonds", propertyDescriptorFactory.getLocal("charterdocument_fonds", String.class));
+    dataPropertyDescriptors.put("fondsNaam", propertyDescriptorFactory
+        .getLocal("charterdocument_fondsNaam", String.class));
+    dataPropertyDescriptors.put("inventarisNummer", propertyDescriptorFactory
+        .getLocal("charterdocument_inventarisNummer", String.class));
+    dataPropertyDescriptors.put("inventarisTekst", propertyDescriptorFactory
+        .getLocal("charterdocument_inventarisTekst", String.class));
+    dataPropertyDescriptors.put("volgNummer", propertyDescriptorFactory
+        .getLocal("charterdocument_volgNummer", String.class));
+    dataPropertyDescriptors.put("regestNummer", propertyDescriptorFactory
+        .getLocal("charterdocument_regestNummer", String.class));
+    dataPropertyDescriptors.put("tekstRegest", propertyDescriptorFactory
+        .getLocal("charterdocument_tekstRegest", String.class));
+    dataPropertyDescriptors.put("additioneleInformatie", propertyDescriptorFactory
+        .getLocal("charterdocument_additioneleInformatie", String.class));
+    dataPropertyDescriptors.put("transcription", propertyDescriptorFactory
+        .getLocal("charterdocument_transcription", String.class));
+    dataPropertyDescriptors.put("translation", propertyDescriptorFactory
+        .getLocal("charterdocument_translation", String.class));
+    dataPropertyDescriptors.put("descriptionOfEditions", propertyDescriptorFactory
+        .getLocal("charterdocument_descriptionOfEditions", String.class));
+    dataPropertyDescriptors.put("documentType", propertyDescriptorFactory
+            .getLocal("charterdocument_documentType", DocumentType.class));
+    dataPropertyDescriptors.put("modified_date", propertyDescriptorFactory
+            .getLocal("modified", propertyParserFactory.getParser(Change.class)));
     return dataPropertyDescriptors;
   }
 
