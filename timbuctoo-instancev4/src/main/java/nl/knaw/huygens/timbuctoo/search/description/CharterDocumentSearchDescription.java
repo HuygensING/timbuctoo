@@ -104,14 +104,16 @@ public class CharterDocumentSearchDescription extends AbstractSearchDescription 
         .getLocal("charterdocument_regestNummer", String.class));
     dataPropertyDescriptors.put("tekstRegest", propertyDescriptorFactory
         .getLocal("charterdocument_tekstRegest", String.class));
-    dataPropertyDescriptors.put("additioneleInformatie", propertyDescriptorFactory
-        .getLocal("charterdocument_additioneleInformatie", String.class));
-    dataPropertyDescriptors.put("transcription", propertyDescriptorFactory
-        .getLocal("charterdocument_transcription", String.class));
-    dataPropertyDescriptors.put("translation", propertyDescriptorFactory
-        .getLocal("charterdocument_translation", String.class));
     dataPropertyDescriptors.put("descriptionOfEditions", propertyDescriptorFactory
         .getLocal("charterdocument_descriptionOfEditions", String.class));
+    dataPropertyDescriptors.put("overige", propertyDescriptorFactory
+        .getLocal("charterdocument_overige", String.class));
+    dataPropertyDescriptors.put("resourceType", propertyDescriptorFactory
+        .getLocal("charterdocument_resourceType", String.class));
+    dataPropertyDescriptors.put("thumbs", propertyDescriptorFactory
+        .getLocal("charterdocument_thumbs", String.class));
+    dataPropertyDescriptors.put("links", propertyDescriptorFactory
+        .getLocal("charterdocument_links", String.class));
     dataPropertyDescriptors.put("documentType", propertyDescriptorFactory
             .getLocal("charterdocument_documentType", DocumentType.class));
     dataPropertyDescriptors.put("modified_date", propertyDescriptorFactory
