@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.experimental.databaselog;
 
-public abstract class EdgeLogEntry implements Comparable<EdgeLogEntry> {
+public abstract class EdgeLogEntry implements Comparable<EdgeLogEntry>, LogEntry{
   private final Long timestamp;
   private final String id;
 
@@ -18,6 +18,4 @@ public abstract class EdgeLogEntry implements Comparable<EdgeLogEntry> {
     int timeStampCompare = Long.compare(getTimestamp(), other.getTimestamp());
     return timeStampCompare == 0 ? id.compareTo(other.id) : timeStampCompare;
   }
-
-  public abstract void appendToLog(DatabaseLog dbLog);
 }

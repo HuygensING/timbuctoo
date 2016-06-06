@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.experimental.databaselog;
 
-public interface VertexLogEntry {
-  void appendToLog(DatabaseLog dbLog);
+public interface VertexLogEntry extends LogEntry {
 
   void addEdgeLogEntriesTo(EdgeLogEntryAdder edgeLogEntryAdder);
 }
