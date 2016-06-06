@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 
@@ -76,8 +77,8 @@ public class ExcelExportService {
 
       // ...optionally filtered by relation type
       current = relationTypes == null ?
-        current.bothE().has(relationPropTypeName, true).otherV() :
-        current.bothE(relationTypes).has(relationPropTypeName, true).otherV();
+        current.bothE().and(__.has(relationPropTypeName, true), __.has("isLatest", true)).otherV() :
+        current.bothE(relationTypes).and(__.has(relationPropTypeName, true), __.has("isLatest", true)).otherV();
 
       // load all the vertices in verticesPerType map
       current.asAdmin().clone().forEachRemaining(entity -> {

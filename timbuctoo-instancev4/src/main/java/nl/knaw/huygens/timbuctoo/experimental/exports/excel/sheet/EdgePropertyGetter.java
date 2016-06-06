@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
+
 class EdgePropertyGetter {
 
   private final String relationAcceptedPropertyName;
@@ -43,12 +45,11 @@ class EdgePropertyGetter {
 
       edgeIterator.forEachRemaining(edge -> {
 
-        Optional<Boolean> isAccepted =
-          GraphReadUtils
-            .getProp(edge, relationAcceptedPropertyName, Boolean.class);
+        Optional<Boolean> isLatest = getProp(edge, "isLatest", Boolean.class);
+        Optional<Boolean> isAccepted = getProp(edge, relationAcceptedPropertyName, Boolean.class);
 
         // Only add the accepted relations
-        if (isAccepted.isPresent() && isAccepted.get()) {
+        if (isAccepted.isPresent() && isAccepted.get() && isLatest.isPresent() && isLatest.get()) {
           // Initialize new set if this edge type is not yet in the map and retrieve the set of edges
           // for this edge type
           List<Edge> edges = edgeMap.containsKey(edge.label()) ? edgeMap.get(edge.label()) : Lists.newArrayList();
