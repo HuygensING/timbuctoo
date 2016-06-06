@@ -5,6 +5,8 @@ import nl.knaw.huygens.timbuctoo.experimental.databaselog.EdgeLogEntryAdder;
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.VertexLogEntry;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Objects;
+
 public class UpdateVertexLogEntry implements VertexLogEntry {
   private final Vertex vertex;
   private final Vertex previous;
@@ -19,6 +21,10 @@ public class UpdateVertexLogEntry implements VertexLogEntry {
 
   @Override
   public void appendToLog(DatabaseLog dbLog) {
+    if (Objects.equals(vertex.value("rev"), previous.value("rev"))) {
+      return;
+    }
+
     dbLog.updateVertex(vertex);
     propertyUpdater.updateProperties(dbLog);
   }

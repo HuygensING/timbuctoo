@@ -10,6 +10,7 @@ import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 public class UpdateEdgeLogEntryTest {
 
@@ -18,8 +19,8 @@ public class UpdateEdgeLogEntryTest {
 
   @Test
   public void appendToLogLogsTheEdgeIsUpdated() {
-    Edge edge = edge().build();
-    Edge prevEdge = edge().build();
+    Edge edge = edge().withProperty("rev", 1).build();
+    Edge prevEdge = edge().withProperty("rev", 2).build();
     DatabaseLog databaseLog = mock(DatabaseLog.class);
     UpdateEdgeLogEntry instance = new UpdateEdgeLogEntry(edge, TIMESTAMP, ID, prevEdge);
 
@@ -29,15 +30,28 @@ public class UpdateEdgeLogEntryTest {
   }
 
   @Test
+  public void appendToLogAddsNothingToTheLogWhenThePreviousVersionHasTheSameRevision() {
+    Edge oldVersion = edge().withId(ID).withProperty("rev", 2).build();
+    Edge edge = edge().withId(ID).withProperty("rev", 2).build();
+    UpdateEdgeLogEntry instance = new UpdateEdgeLogEntry(edge, TIMESTAMP, ID, oldVersion);
+    DatabaseLog dbLog = mock(DatabaseLog.class);
+
+    instance.appendToLog(dbLog);
+
+    verifyZeroInteractions(dbLog);
+  }
+
+  @Test
   public void appendToLogAddsANewPropertyLineForEachPropertyThatDoesNotExistInThePreviousVersion() {
-    Edge prevEdge = edge().withId(ID).withProperty("oldProp", "oldValue").build();
+    Edge prevEdge = edge().withId(ID).withProperty("oldProp", "oldValue").withProperty("rev", 1).build();
     String newProp = "newProp";
     String newProp2 = "newProp2";
     Edge edge = edge().withId(ID)
-                            .withProperty(newProp, "value")
-                            .withProperty(newProp2, "value")
-                            .withProperty("oldProp", "oldValue")
-                            .build();
+                      .withProperty(newProp, "value")
+                      .withProperty(newProp2, "value")
+                      .withProperty("oldProp", "oldValue")
+                      .withProperty("rev", 2)
+                      .build();
     DatabaseLog dbLog = mock(DatabaseLog.class);
     UpdateEdgeLogEntry instance = new UpdateEdgeLogEntry(edge, TIMESTAMP, ID, prevEdge);
 
@@ -46,6 +60,7 @@ public class UpdateEdgeLogEntryTest {
     verify(dbLog).updateEdge(edge);
     verify(dbLog).newProperty(argThat(likeProperty().withKey(newProp)));
     verify(dbLog).newProperty(argThat(likeProperty().withKey(newProp2)));
+    verify(dbLog).updateProperty(argThat(likeProperty().withKey("rev")));
     verifyNoMoreInteractions(dbLog);
   }
 
@@ -53,13 +68,15 @@ public class UpdateEdgeLogEntryTest {
   public void appendToLogAddsAnUpdatePropertyLineForEachPropertyThatHasADifferentValueInTheUpdatedVersion() {
     String updatedProp = "updatedProp";
     Edge prevEdge = edge().withId(ID)
-                                .withProperty(updatedProp, "oldValue")
-                                .withProperty("oldProp", "oldValue")
-                                .build();
+                          .withProperty(updatedProp, "oldValue")
+                          .withProperty("oldProp", "oldValue")
+                          .withProperty("rev", 1)
+                          .build();
     Edge edge = edge().withId(ID)
-                            .withProperty(updatedProp, "newValue")
-                            .withProperty("oldProp", "oldValue")
-                            .build();
+                      .withProperty(updatedProp, "newValue")
+                      .withProperty("oldProp", "oldValue")
+                      .withProperty("rev", 2)
+                      .build();
     DatabaseLog dbLog = mock(DatabaseLog.class);
     UpdateEdgeLogEntry instance = new UpdateEdgeLogEntry(edge, TIMESTAMP, ID, prevEdge);
 
@@ -67,6 +84,7 @@ public class UpdateEdgeLogEntryTest {
 
     verify(dbLog).updateEdge(edge);
     verify(dbLog).updateProperty(argThat(likeProperty().withKey(updatedProp)));
+    verify(dbLog).updateProperty(argThat(likeProperty().withKey("rev")));
     verifyNoMoreInteractions(dbLog);
   }
 
@@ -74,12 +92,14 @@ public class UpdateEdgeLogEntryTest {
   public void appendToLogAddsAnDeletePropertyLineForEachPropertyThatDoesNotExistInTheNewVersion() {
     String deletedProp = "deletedProp";
     Edge prevEdge = edge().withId(ID)
-                            .withProperty(deletedProp, "oldValue")
-                            .withProperty("oldProp", "oldValue")
-                            .build();
+                          .withProperty(deletedProp, "oldValue")
+                          .withProperty("oldProp", "oldValue")
+                          .withProperty("rev", 1)
+                          .build();
     Edge edge = edge().withId(ID)
-                        .withProperty("oldProp", "oldValue")
-                        .build();
+                      .withProperty("oldProp", "oldValue")
+                      .withProperty("rev", 2)
+                      .build();
     DatabaseLog dbLog = mock(DatabaseLog.class);
     UpdateEdgeLogEntry instance = new UpdateEdgeLogEntry(edge, TIMESTAMP, ID, prevEdge);
 
@@ -87,6 +107,7 @@ public class UpdateEdgeLogEntryTest {
 
     verify(dbLog).updateEdge(edge);
     verify(dbLog).deleteProperty(deletedProp);
+    verify(dbLog).updateProperty(argThat(likeProperty().withKey("rev")));
     verifyNoMoreInteractions(dbLog);
   }
 
