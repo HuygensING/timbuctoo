@@ -21,6 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static nl.knaw.huygens.timbuctoo.search.description.Property.localProperty;
 import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription.createLocalFullTextSearchDescriptionWithBackupProperty;
 import static nl.knaw.huygens.timbuctoo.search.description.fulltext.FullTextSearchDescription.createLocalSimpleFullTextSearchDescription;
@@ -38,7 +41,9 @@ public class CharterDocumentSearchDescription extends AbstractSearchDescription 
   private final PropertyParserFactory propertyParserFactory;
 
   private List<SortFieldDescription> sortFieldDescriptions;
-
+  
+  private static final Logger LOG = LoggerFactory.getLogger(CharterDocumentSearchDescription.class);
+  
   public CharterDocumentSearchDescription(PropertyDescriptorFactory propertyDescriptorFactory,
                                    FacetDescriptionFactory facetDescriptionFactory) {
     propertyParserFactory = new PropertyParserFactory();
@@ -96,14 +101,15 @@ public class CharterDocumentSearchDescription extends AbstractSearchDescription 
         .getLocal("charterdocument_fondsNaam", String.class));
     dataPropertyDescriptors.put("inventarisNummer", propertyDescriptorFactory
         .getLocal("charterdocument_inventarisNummer", String.class));
-    dataPropertyDescriptors.put("inventarisTekst", propertyDescriptorFactory
-        .getLocal("charterdocument_inventarisTekst", String.class));
+    dataPropertyDescriptors.put("inventaristekst", propertyDescriptorFactory
+        .getLocal("charterdocument_inventaristekst", new PropertyParserFactory().getJoinedListParser(" ")));
     dataPropertyDescriptors.put("volgNummer", propertyDescriptorFactory
         .getLocal("charterdocument_volgNummer", String.class));
     dataPropertyDescriptors.put("regestNummer", propertyDescriptorFactory
         .getLocal("charterdocument_regestNummer", String.class));
+    //
     dataPropertyDescriptors.put("tekstRegest", propertyDescriptorFactory
-        .getLocal("charterdocument_tekstRegest", String.class));
+        .getLocal("charterdocument_tekstRegest", new PropertyParserFactory().getJoinedListParser("; ")));
     dataPropertyDescriptors.put("descriptionOfEditions", propertyDescriptorFactory
         .getLocal("charterdocument_descriptionOfEditions", String.class));
     dataPropertyDescriptors.put("overige", propertyDescriptorFactory
@@ -115,9 +121,9 @@ public class CharterDocumentSearchDescription extends AbstractSearchDescription 
     dataPropertyDescriptors.put("links", propertyDescriptorFactory
         .getLocal("charterdocument_links", String.class));
     dataPropertyDescriptors.put("documentType", propertyDescriptorFactory
-            .getLocal("charterdocument_documentType", DocumentType.class));
+        .getLocal("charterdocument_documentType", DocumentType.class));
     dataPropertyDescriptors.put("modified_date", propertyDescriptorFactory
-            .getLocal("modified", propertyParserFactory.getParser(Change.class)));
+        .getLocal("modified", propertyParserFactory.getParser(Change.class)));
     return dataPropertyDescriptors;
   }
 
