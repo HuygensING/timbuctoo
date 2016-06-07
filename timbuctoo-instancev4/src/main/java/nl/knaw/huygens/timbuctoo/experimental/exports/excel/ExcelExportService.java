@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.experimental.exports.excel;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.experimental.exports.excel.sheet.EntitySheet;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
@@ -68,9 +69,7 @@ public class ExcelExportService {
 
     // Get the relationCollection for the traversal's _accepted prop.
     // FIXME: string concatenating methods like this should be delegated to a configuration class
-    Collection relationCollection = vre.getRelationCollection().orElse(null);
-    String relationPropTypeName = relationCollection == null ? "accepted" :
-      relationCollection.getEntityTypeName() + "_accepted";
+    String relationPropTypeName = getRelationAcceptedPropName(vre);
 
     // Until depth is reached traverse edges in both directions
     for (int i = 0; i < depth - 1; i++) {
@@ -79,39 +78,74 @@ public class ExcelExportService {
       current = relationTypes == null ?
         current.bothE().and(__.has(relationPropTypeName, true), __.has("isLatest", true)).otherV() :
         current.bothE(relationTypes).and(__.has(relationPropTypeName, true), __.has("isLatest", true)).otherV();
+      mapVertices(detectedVre, current, verticesPerType);
+    }
+    renderEntitySheets(workbook, verticesPerType, relationPropTypeName, relationTypes);
 
-      // load all the vertices in verticesPerType map
-      current.asAdmin().clone().forEachRemaining(entity -> {
 
-        // Is this entity present in the current VRE ?
-        final Optional<Collection> collection = getCollectionByVreId(entity, mappings, detectedVre);
+    return workbook;
+  }
 
-        // If so, add it to the map of entities to render into a sheet
-        if (collection.isPresent()) {
-          final String typeName = collection.get().getEntityTypeName();
-          Set<Vertex> vertexSet = verticesPerType.containsKey(typeName) ?
-            verticesPerType.get(typeName) : Sets.newHashSet();
+  private String getRelationAcceptedPropName(Vre vre) {
+    Collection relationCollection = vre.getRelationCollection().orElse(null);
+    return relationCollection == null ? "accepted" :
+      relationCollection.getEntityTypeName() + "_accepted";
+  }
 
-          if (!verticesPerType.containsKey(typeName)) {
-            verticesPerType.put(typeName, vertexSet);
-          }
-          vertexSet.add(entity);
-        } else {
-          // If not, this is an invariant entity
-          LOG.error(databaseInvariant, "Expected entity to be in VRE={} with tim_id={}",
-            detectedVre,
-            getProp(entity, "tim_id", String.class).orElse("missing tim_id"));
-        }
-      });
+
+  public SXSSFWorkbook exportVre(String vreId) throws NotFoundException {
+    SXSSFWorkbook workbook = new SXSSFWorkbook();
+    Vre vre = mappings.getVre(vreId);
+    if (vre == null) {
+      throw new NotFoundException();
     }
 
+    Set<String> collectionNames = vre.getCollections().keySet();
+    GraphTraversal<Vertex, Vertex> vertexT =
+      graphWrapper.getCurrentEntitiesFor(collectionNames.toArray(new String[collectionNames.size()]));
+
+    // Map to hold all the vertices in which come out of the relation traversals per entity type
+    Map<String, Set<Vertex>> verticesPerType = Maps.newHashMap();
+
+    mapVertices(vreId, vertexT, verticesPerType);
+    renderEntitySheets(workbook, verticesPerType, getRelationAcceptedPropName(vre), null);
+    return workbook;
+  }
+
+  private void mapVertices(String vreId, GraphTraversal<Vertex, Vertex> vertexT, Map<String, Set<Vertex>> vertexMap) {
+    // load all the vertices in verticesPerType map
+    vertexT.asAdmin().clone().forEachRemaining(entity -> {
+
+      // Is this entity present in the current VRE ?
+      final Optional<Collection> collection = getCollectionByVreId(entity, mappings, vreId);
+
+      // If so, add it to the map of entities to render into a sheet
+      if (collection.isPresent()) {
+        final String typeName = collection.get().getEntityTypeName();
+        Set<Vertex> vertexSet = vertexMap.containsKey(typeName) ?
+          vertexMap.get(typeName) : Sets.newHashSet();
+
+        if (!vertexMap.containsKey(typeName)) {
+          vertexMap.put(typeName, vertexSet);
+        }
+        vertexSet.add(entity);
+      } else {
+        // If not, this is an invariant entity
+        LOG.error(databaseInvariant, "Expected entity to be in VRE={} with tim_id={}",
+          vreId,
+          getProp(entity, "tim_id", String.class).orElse("missing tim_id"));
+      }
+    });
+  }
+
+  private void renderEntitySheets(SXSSFWorkbook workbook, Map<String, Set<Vertex>> verticesPerType,
+                                  String relationPropTypeName, String[] relationTypes) {
     // Render an excel sheet per entity type into the workbook
     for (Map.Entry<String, Set<Vertex>> entry : verticesPerType.entrySet()) {
       Optional<Collection> collection = mappings.getCollectionForType(entry.getKey());
       new EntitySheet(collection.get(), workbook, graphWrapper, mappings, relationTypes, relationPropTypeName)
         .renderToWorkbook(entry.getValue());
     }
-
-    return workbook;
   }
+
 }

@@ -204,7 +204,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new BulkUpload(new BulkUploadService(vres, graphManager)));
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
-    register(environment, new VresEndpoint(jsonMetadata));
+    register(environment, new VresEndpoint(jsonMetadata, excelExportService));
 
     // Admin resources
     environment.admin().addTask(new UserCreationTask(new LocalUserCreator(authenticator, userStore, authorizer)));

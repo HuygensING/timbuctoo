@@ -15,7 +15,9 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.slf4j.Logger;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,7 +25,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
+
 public class EntitySheet {
+  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(EntitySheet.class);
 
   private final SXSSFSheet sheet;
   private final GraphWrapper graphWrapper;
@@ -121,15 +126,17 @@ public class EntitySheet {
   private Consumer<Traverser<Try<ExcelDescription>>> getExcelDataTraverser(
     PropertyColumnMetadata propertyColumnMetadata, PropertyData propertyData, Map.Entry<String, LocalProperty> prop) {
     return x -> {
+      x.get().onSuccess(excelDescription -> {
+        // Add new / update column metadata for this property
+        propertyColumnMetadata.addColumnInformation(excelDescription, prop.getKey());
 
-      // Get the class instance that describes the cells containing this property's values
-      ExcelDescription excelDescription = x.get().get();
+        // Add data for this property
+        propertyData.putProperty(prop.getKey(), excelDescription);
+      });
 
-      // Add new / update column metadata for this property
-      propertyColumnMetadata.addColumnInformation(excelDescription, prop.getKey());
-
-      // Add data for this property
-      propertyData.putProperty(prop.getKey(), excelDescription);
+      x.get().onFailure(e -> {
+        LOG.error("Something went wrong while reading the property '{}' of '{}'", prop.getKey(), type, e);
+      });
     };
   }
 
