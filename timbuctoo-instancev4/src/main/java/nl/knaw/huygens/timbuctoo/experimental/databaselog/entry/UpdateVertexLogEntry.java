@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.experimental.databaselog.VertexLogEntry;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Objects;
+import java.util.Set;
 
 public class UpdateVertexLogEntry implements VertexLogEntry {
   private final Vertex vertex;
@@ -14,9 +15,13 @@ public class UpdateVertexLogEntry implements VertexLogEntry {
 
 
   public UpdateVertexLogEntry(Vertex vertex, Vertex previousVersion) {
+    this(vertex, previousVersion, PropertyHelper.SYSTEM_PROPERTIES);
+  }
+
+  UpdateVertexLogEntry(Vertex vertex, Vertex previousVersion, Set<String> propertiesToIgnore) {
     this.vertex = vertex;
     this.previous = previousVersion;
-    this.propertyUpdater = new PropertyUpdater(vertex, previousVersion);
+    this.propertyUpdater = new PropertyUpdater(vertex, previousVersion, propertiesToIgnore);
   }
 
   @Override

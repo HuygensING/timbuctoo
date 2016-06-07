@@ -7,6 +7,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 class PropertyUpdater {
   private final Element element;
@@ -14,11 +15,15 @@ class PropertyUpdater {
   private final Set<String> newKeys;
   private final Set<String> oldKeys;
 
-  public PropertyUpdater(Element element, Element prevElement) {
+  public PropertyUpdater(Element element, Element prevElement, Set<String> propertiesToIgnore) {
     this.element = element;
     this.prevElement = prevElement;
-    this.newKeys = element.keys();
-    this.oldKeys = prevElement.keys();
+    this.newKeys = getKeys(element, propertiesToIgnore);
+    this.oldKeys = getKeys(prevElement, propertiesToIgnore);
+  }
+
+  private Set<String> getKeys(Element element, Set<String> propertiesToIgnore) {
+    return element.keys().stream().filter(key -> !propertiesToIgnore.contains(key)).collect(Collectors.toSet());
   }
 
   private void addNewProperties(DatabaseLog dbLog) {

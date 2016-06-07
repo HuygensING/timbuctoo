@@ -1,8 +1,11 @@
 package nl.knaw.huygens.timbuctoo.experimental.databaselog.entry;
 
+import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.DatabaseLog;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+
+import java.util.Set;
 
 import static nl.knaw.huygens.timbuctoo.search.MockVertexBuilder.vertex;
 import static nl.knaw.huygens.timbuctoo.util.PropertyMatcher.likeProperty;
@@ -103,6 +106,32 @@ public class UpdateVertexLogEntryTest {
 
     verify(dbLog).updateVertex(vertex);
     verify(dbLog).deleteProperty(deletedProp);
+    verify(dbLog).updateProperty(argThat(likeProperty().withKey("rev")));
+    verifyNoMoreInteractions(dbLog);
+  }
+
+  @Test
+  public void appendToLogIgnoresThePropertiesToIgnore() {
+    String deletedPropToIgnore = "deletedPropToIgnore";
+    String updatedPropToIgnore = "updatedPropToIgnore";
+    String newPropToIgnore = "newPropToIgnore";
+    Set<String> propertiesToIgnore = Sets.newHashSet(deletedPropToIgnore, updatedPropToIgnore, newPropToIgnore);
+    Vertex oldVersion = vertex().withId("id")
+                                .withProperty(deletedPropToIgnore, "oldValue")
+                                .withProperty(updatedPropToIgnore, "oldValue")
+                                .withProperty("rev", 1)
+                                .build();
+    Vertex vertex = vertex().withId("id")
+                            .withProperty(updatedPropToIgnore, "oldValue")
+                            .withProperty(newPropToIgnore, "value")
+                            .withProperty("rev", 2)
+                            .build();
+    DatabaseLog dbLog = mock(DatabaseLog.class);
+    UpdateVertexLogEntry instance = new UpdateVertexLogEntry(vertex, oldVersion, propertiesToIgnore);
+
+    instance.appendToLog(dbLog);
+
+    verify(dbLog).updateVertex(vertex);
     verify(dbLog).updateProperty(argThat(likeProperty().withKey("rev")));
     verifyNoMoreInteractions(dbLog);
   }
