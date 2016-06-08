@@ -4,8 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.EdgeExcelDescription;
 import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ExcelDescription;
-import nl.knaw.huygens.timbuctoo.model.GraphReadUtils;
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -61,7 +59,7 @@ class EdgePropertyGetter {
         }
       });
 
-      // Add propertyColDescription and excelDescription like above
+      // Add column metadata and data from edges in map in holder objects (PropertyColumnMetadata, PropertyData)
       for (Map.Entry<String, List<Edge>> entry : edgeMap.entrySet()) {
         // Make one ExcelDescription for all the edges of this type
         ExcelDescription edgeDescription =

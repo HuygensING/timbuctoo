@@ -8,6 +8,7 @@ import org.apache.poi.xssf.streaming.SXSSFSheet;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 class PropertyColumnMetadata {
   Map<String, PropertyColDescription> propertyColDescriptions = Maps.newHashMap();
@@ -63,13 +64,15 @@ class PropertyColumnMetadata {
     propertyTypeRow.createCell(0).setCellValue("uuid");
 
     int currentStartCol = 1;
-    for (Map.Entry<String, PropertyColDescription> entry : propertyColDescriptions.entrySet()) {
+    List<String> sortedPropertyNames = propertyColDescriptions.keySet().stream().sorted().collect(Collectors.toList());
+
+    for (String propertyName : sortedPropertyNames) {
 
       // Get the property-col-description value
-      PropertyColDescription pcdValue = entry.getValue();
+      PropertyColDescription pcdValue = propertyColDescriptions.get(propertyName);
 
       // Set the propertyName cell
-      propertyNameRow.createCell(currentStartCol).setCellValue(entry.getKey());
+      propertyNameRow.createCell(currentStartCol).setCellValue(propertyName);
 
       // Set the propertyType cell
       propertyTypeRow.createCell(currentStartCol).setCellValue(pcdValue.propertyType);

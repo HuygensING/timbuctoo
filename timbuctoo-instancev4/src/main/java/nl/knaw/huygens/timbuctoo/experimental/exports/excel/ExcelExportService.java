@@ -68,11 +68,10 @@ public class ExcelExportService {
     GraphTraversal<Vertex, Vertex> current = graphWrapper.getGraph().traversal().V(vertices);
 
     // Get the relationCollection for the traversal's _accepted prop.
-    // FIXME: string concatenating methods like this should be delegated to a configuration class
     String relationPropTypeName = getRelationAcceptedPropName(vre);
 
     // Until depth is reached traverse edges in both directions
-    for (int i = 0; i < depth - 1; i++) {
+    for (int i = 1; i < depth; i++) {
 
       // ...optionally filtered by relation type
       current = relationTypes == null ?
@@ -88,6 +87,7 @@ public class ExcelExportService {
 
   private String getRelationAcceptedPropName(Vre vre) {
     Collection relationCollection = vre.getRelationCollection().orElse(null);
+    // FIXME: string concatenating methods like this should be delegated to a configuration class
     return relationCollection == null ? "accepted" :
       relationCollection.getEntityTypeName() + "_accepted";
   }

@@ -24,6 +24,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
@@ -133,18 +134,18 @@ public class Search {
                       @QueryParam("types") List<String> relationNames) {
 
     Optional<SearchResult> searchResult = searchStore.getSearchResult(id.get());
-    SXSSFWorkbook workbook = new SXSSFWorkbook();
     if (searchResult.isPresent()) {
       final SearchResult result = searchResult.get();
-      workbook = excelExportService
+      SXSSFWorkbook workbook = excelExportService
         .searchResultToExcel(result.getSearchResult(), result.getSearchDescription().getType(), depth, relationNames);
-    } else {
-      workbook.createSheet("result").createRow(0).createCell(0).setCellValue("Search with id " + id + " not found.");
-    }
 
-    return Response.ok((StreamingOutput) workbook::write)
-                   .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"result.xlsx\"")
-                   .build();
+      return Response.ok((StreamingOutput) workbook::write)
+                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"result.xlsx\"")
+                     .build();
+    }
+    return Response
+      .status(Response.Status.NOT_FOUND)
+      .build();
   }
 
   private Optional<SearchDescription> getDescription(String entityName) {

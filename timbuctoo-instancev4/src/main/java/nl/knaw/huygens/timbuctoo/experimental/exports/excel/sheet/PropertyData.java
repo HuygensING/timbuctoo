@@ -29,7 +29,7 @@ class PropertyData {
   int renderToSheet(SXSSFSheet sheet, PropertyColumnMetadata propertyColumnMetadata, int currentRow) {
 
     // Determine the amount of rows needed for this entity
-    int reservedRows = 0;
+    int reservedRows = 1;
     for (Map.Entry<String, ExcelDescription> entry : excelDescriptions.entrySet()) {
       reservedRows = entry.getValue().getRows() > reservedRows ? entry.getValue().getRows() : reservedRows;
     }

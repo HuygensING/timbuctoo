@@ -17,15 +17,12 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-
-import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
 
 public class EntitySheet {
   private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(EntitySheet.class);
@@ -125,8 +122,8 @@ public class EntitySheet {
   // Excel processor for property data and metadata
   private Consumer<Traverser<Try<ExcelDescription>>> getExcelDataTraverser(
     PropertyColumnMetadata propertyColumnMetadata, PropertyData propertyData, Map.Entry<String, LocalProperty> prop) {
-    return x -> {
-      x.get().onSuccess(excelDescription -> {
+    return tryOfExcelDescription -> {
+      tryOfExcelDescription.get().onSuccess(excelDescription -> {
         // Add new / update column metadata for this property
         propertyColumnMetadata.addColumnInformation(excelDescription, prop.getKey());
 
@@ -134,7 +131,7 @@ public class EntitySheet {
         propertyData.putProperty(prop.getKey(), excelDescription);
       });
 
-      x.get().onFailure(e -> {
+      tryOfExcelDescription.get().onFailure(e -> {
         LOG.error("Something went wrong while reading the property '{}' of '{}'", prop.getKey(), type, e);
       });
     };
