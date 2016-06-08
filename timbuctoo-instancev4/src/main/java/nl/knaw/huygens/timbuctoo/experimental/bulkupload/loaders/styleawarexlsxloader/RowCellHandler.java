@@ -25,14 +25,6 @@ public class RowCellHandler {
 
   public void cell(short column, String value, StylesMapper.StyleTypes style) {
     switch (style) {
-      case PROPERTY_TYPE:
-        handler.handle(column, value, importer.registerPropertyType(column, value));
-        break;
-      case IDENTITY_COLUMN:
-        handler.handle(column, value, importer.registerPropertyName(column, value).and(
-          importer.registerUnique(column, true)
-        ));
-        break;
       case PROPERTY_NAME:
         handler.handle(column, value, importer.registerPropertyName(column, value));
         break;
@@ -43,9 +35,6 @@ public class RowCellHandler {
           importer.startEntity();
         }
         handler.handle(column, value, importer.setValue(column, value));
-        break;
-      case PROPERTY_METADATA:
-        handler.handle(column, value, importer.registerMetadata(column, value));
         break;
       case NONE:
         break;
@@ -64,7 +53,8 @@ public class RowCellHandler {
   }
 
   public void finish() {
-    handler.endSheet(importer.finishCollection());
+    importer.finishCollection();
+    handler.endSheet();
   }
 
 }

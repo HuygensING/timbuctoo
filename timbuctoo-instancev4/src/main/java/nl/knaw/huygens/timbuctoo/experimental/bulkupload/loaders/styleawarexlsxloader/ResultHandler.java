@@ -120,25 +120,13 @@ public class ResultHandler {
     results.append("</tr>");
   }
 
-  public void endSheet(Result result) {
+  public void endSheet() {
     results.append("</table>");
-    result.handle(
-      msg -> {
-        curFailures++;
-        results.append("<div class='alert alert-danger'>").append(msg).append("</div>");
-      }
-    );
     results.append("</div>");
     failures.add(curFailures);
   }
 
-  public String endImport(Result result) {
-    result.handle(
-      msg -> {
-        curFailures++;
-        results.append("<div class='alert alert-danger'>").append(msg).append("</div>");
-      }
-    );
+  public String endImport() {
     results.append("</div>\n<div class=\"panel panel-default\" style='position:fixed; top: 20px'>" +
                      "<div class='panel-body' id='navbar'><ul class=\"nav nav-pills nav-stacked\">\n");
     for (int i = 0; i < sheets.size(); i++) {

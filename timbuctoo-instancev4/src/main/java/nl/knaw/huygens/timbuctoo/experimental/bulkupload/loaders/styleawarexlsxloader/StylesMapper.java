@@ -12,19 +12,13 @@ public class StylesMapper {
 
   public enum StyleTypes {
     VALUE,
-    PROPERTY_TYPE,
-    IDENTITY_COLUMN,
     PROPERTY_NAME,
-    PROPERTY_METADATA,
     NONE
   }
 
   private Map<String, StyleTypes> nameToStyleType = ImmutableMap.of(
     "timbuctoo_value", StyleTypes.VALUE,
-    "timbuctoo_propertytype", StyleTypes.PROPERTY_TYPE,
-    "timbuctoo_propertyname", StyleTypes.PROPERTY_NAME,
-    "timbuctoo_propertymetadata", StyleTypes.PROPERTY_METADATA,
-    "timbuctoo_identitycolumn", StyleTypes.IDENTITY_COLUMN
+    "timbuctoo_propertyname", StyleTypes.PROPERTY_NAME
   );
   private Map<String, StyleTypes> idToStyleType = new HashMap<>();
 

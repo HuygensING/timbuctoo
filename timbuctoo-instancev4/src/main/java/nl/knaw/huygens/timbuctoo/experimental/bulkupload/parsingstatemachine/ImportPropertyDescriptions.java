@@ -1,20 +1,15 @@
 package nl.knaw.huygens.timbuctoo.experimental.bulkupload.parsingstatemachine;
 
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
 public class ImportPropertyDescriptions {
-  private final Collection currentCollection;
   private HashMap<Integer, ImportPropertyDescription> propertyDescs = new HashMap<>();
   private List<ImportPropertyDescription> ordered = new ArrayList<>();
 
-  public ImportPropertyDescriptions(Collection currentCollection) {
-
-    this.currentCollection = currentCollection;
+  public ImportPropertyDescriptions() {
   }
 
   public Optional<ImportPropertyDescription> get(int id) {

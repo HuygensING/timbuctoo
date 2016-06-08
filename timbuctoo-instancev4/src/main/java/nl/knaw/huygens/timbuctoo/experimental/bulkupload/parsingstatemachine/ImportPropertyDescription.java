@@ -21,22 +21,6 @@ public class ImportPropertyDescription {
     return propertyName;
   }
 
-  public void setUnique(boolean unique) {
-    this.unique = unique;
-  }
-
-  public boolean isUnique() {
-    return unique;
-  }
-
-  public void setMetadata(String... metadata) {
-    this.metadata = metadata;
-  }
-
-  public String[] getMetadata() {
-    return metadata;
-  }
-
   public Integer getId() {
     return id;
   }
@@ -45,11 +29,4 @@ public class ImportPropertyDescription {
     return order;
   }
 
-  public String getType() {
-    return type;
-  }
-
-  public void setType(String type) {
-    this.type = type;
-  }
 }

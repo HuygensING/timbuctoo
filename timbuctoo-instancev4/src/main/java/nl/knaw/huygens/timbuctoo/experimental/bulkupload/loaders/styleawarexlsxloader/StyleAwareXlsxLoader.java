@@ -46,7 +46,7 @@ public class StyleAwareXlsxLoader implements BulkLoader<InputStream, String> {
         sheetParser.parse(new InputSource(sheet));
         rowCellHandler.finish();
       }
-      return handler.endImport(importer.finishImport());
+      return handler.endImport();
     } catch (SAXException | IOException | OpenXML4JException | ParserConfigurationException e) {
       throw new InvalidExcelFileException(e);
     }

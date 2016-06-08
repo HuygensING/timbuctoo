@@ -3,30 +3,22 @@ package nl.knaw.huygens.timbuctoo.experimental.bulkupload;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.styleawarexlsxloader.StyleAwareXlsxLoader;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.parsingstatemachine.Importer;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.savers.TinkerpopSaver;
-import nl.knaw.huygens.timbuctoo.model.vre.Vre;
-import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.structure.T;
+import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 public class BulkUploadService {
 
-  private final Vres vres;
-  private final GraphWrapper graphwrapper;
+  private final TinkerpopGraphManager graphwrapper;
   private final Authorizer authorizer;
 
-  public BulkUploadService(Vres vres, GraphWrapper graphwrapper/*, Authorizer authorizer*/) {
-    this.vres = vres;
+  public BulkUploadService(TinkerpopGraphManager graphwrapper/*, Authorizer authorizer*/) {
     this.graphwrapper = graphwrapper;
     this.authorizer = null;//authorizer;
   }
@@ -45,38 +37,29 @@ public class BulkUploadService {
     //  }
     //}
 
-    Vre vre = vres.getVre(vreName);
+    Vertex vre = initVre(vreName);
 
-    final Map<String, RelationDescription> descriptions = graphwrapper.getGraph().traversal()
-      .V().has(T.label, LabelP.of("relationtype"))
-      .toList()
-      .stream()
-      .map(RelationDescription::bothWays)
-      .collect(
-        HashMap::new,
-        HashMap::putAll,
-        HashMap::putAll
-      );
-    //FIXME: allow the excel sheet to specify more relationDescriptions
-
-    dropAllVreVertices(vre);
-
-    try (TinkerpopSaver saver = new TinkerpopSaver(graphwrapper, vre, descriptions, 50_000)) {
+    try (TinkerpopSaver saver = new TinkerpopSaver(graphwrapper, vre, 50_000)) {
       StyleAwareXlsxLoader loader = new StyleAwareXlsxLoader();
       return loader.loadData(wb, new Importer(saver));
     }
   }
 
-  private void dropAllVreVertices(Vre vre) {
-    final Set<String> keys = vre.getCollections().keySet();
-    final String[] entityTypeNames = keys.toArray(new String[keys.size()]);
-    P<String> labels = LabelP.of(entityTypeNames[0]);
-    for (int i = 1; i < entityTypeNames.length; i++) {
-      labels = labels.or(LabelP.of(entityTypeNames[i]));
-    }
+  private Vertex initVre(String vreName) {
     try (Transaction tx = graphwrapper.getGraph().tx()) {
-      graphwrapper.getGraph().traversal().V().has(T.label, labels).drop().toList();
+      graphwrapper.getVreRootNode().vertices(Direction.OUT, vreName).forEachRemaining(vre -> {
+        vre.vertices(Direction.BOTH, "hasCollection").forEachRemaining(coll -> {
+          coll.vertices(Direction.BOTH, "hasEntity").forEachRemaining(vertex -> {
+            vertex.remove();
+          });
+          coll.remove();
+        });
+        vre.remove();
+      });
       tx.commit();
     }
+    Vertex vre = graphwrapper.getGraph().addVertex("name", vreName); //FIXME, make namespaced (username/VRE)
+    graphwrapper.getVreRootNode().addEdge(vreName, vre);
+    return vre;
   }
 }
