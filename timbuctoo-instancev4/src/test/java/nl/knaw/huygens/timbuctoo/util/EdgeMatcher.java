@@ -55,4 +55,14 @@ public class EdgeMatcher extends CompositeMatcher<Edge> {
     });
     return this;
   }
+
+  public EdgeMatcher withProperty(final String name, final Object value) {
+    this.addMatcher(new PropertyEqualityMatcher<Edge, Object>(name, value) {
+      @Override
+      protected Object getItemValue(Edge item) {
+        return item.value(name);
+      }
+    });
+    return this;
+  }
 }

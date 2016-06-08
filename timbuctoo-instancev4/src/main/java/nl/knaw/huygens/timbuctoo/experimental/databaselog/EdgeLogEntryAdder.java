@@ -1,14 +1,9 @@
 package nl.knaw.huygens.timbuctoo.experimental.databaselog;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.huygens.timbuctoo.experimental.databaselog.entry.LogEntryFactory;
-import nl.knaw.huygens.timbuctoo.model.Change;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Property;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.TreeSet;
 
@@ -16,14 +11,10 @@ import static java.util.stream.Collectors.toList;
 
 public class EdgeLogEntryAdder {
   public static final Logger LOG = LoggerFactory.getLogger(EdgeLogEntryAdder.class);
-  private final ObjectMapper objectMapper;
   private final TreeSet<EdgeLogEntry> edgeLogEntries;
-  private final LogEntryFactory logEntryFactory;
 
-  public EdgeLogEntryAdder(LogEntryFactory logEntryFactory) {
-    this.logEntryFactory = logEntryFactory;
-    edgeLogEntries = new TreeSet<>();
-    objectMapper = new ObjectMapper();
+  public EdgeLogEntryAdder() {
+    edgeLogEntries = new TreeSet<>(new EdgeLogEntryComparator());
   }
 
   public void appendEdgesToLog(DatabaseLog databaseLog, Long vertexTimeStamp) {
@@ -34,37 +25,22 @@ public class EdgeLogEntryAdder {
     edgeLogEntries.removeAll(edgesToAppend);
   }
 
-  public void entryFor(Edge edge) {
-    Property<String> modifiedProp = edge.property("modified");
-    String id = edge.value("tim_id");
-    if (!modifiedProp.isPresent()) {
-      logErrorForEdgeWithoutProp(id, "modified");
-      return;
-    }
-
-    Property<Integer> rev = edge.property("rev");
-    if (!rev.isPresent()) {
-      logErrorForEdgeWithoutProp(id, "rev");
-      return;
-    }
-
-    String modifiedString = modifiedProp.value();
-    try {
-      Change modified = objectMapper.readValue(modifiedString, Change.class);
-      edgeLogEntries.add(logEntryFactory.createForEdge(edge, modified.getTimeStamp(), id));
-    } catch (IOException e) {
-      LOG.error("String '{}' of Edge with id '{}' cannot be converted to Change", modifiedString, id);
-      LOG.error("Exception thrown", e);
-    }
+  public void entryFor(EdgeLogEntry edgeLogEntry) {
+    this.edgeLogEntries.add(edgeLogEntry);
   }
 
-  private void logErrorForEdgeWithoutProp(String id, String propName) {
-    LOG.error("Edge with id '{}' has no property '{}'. This edge will be ignored.", id, propName);
-  }
 
   public void appendRemaining(DatabaseLog databaseLog) {
     edgeLogEntries.forEach(edgeLogEntry -> edgeLogEntry.appendToLog(databaseLog));
     edgeLogEntries.clear();
   }
 
+  private static class EdgeLogEntryComparator implements Comparator<EdgeLogEntry> {
+    @Override
+    public int compare(EdgeLogEntry edgeLogEntry1, EdgeLogEntry edgeLogEntry2) {
+      int timestampCompare = Long.compare(edgeLogEntry1.getTimestamp(), edgeLogEntry2.getTimestamp());
+
+      return timestampCompare == 0 ? edgeLogEntry1.getId().compareTo(edgeLogEntry2.getId()) : timestampCompare;
+    }
+  }
 }

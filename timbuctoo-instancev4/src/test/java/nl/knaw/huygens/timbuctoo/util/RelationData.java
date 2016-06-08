@@ -1,8 +1,11 @@
 package nl.knaw.huygens.timbuctoo.util;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.model.Change;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 
 import java.util.ArrayList;
@@ -23,6 +26,8 @@ public class RelationData {
   private UUID typeId = null;
   private String otherKey = null;
   private List<String> typesToRemove = new ArrayList<>();
+  private Change modfied;
+  private Change created;
 
   public RelationData(String otherKey) {
     this.setOtherKey(otherKey);
@@ -64,16 +69,16 @@ public class RelationData {
     this.otherKey = otherKey;
   }
 
-  public void setProperties(Edge vertex, List<String> vertexVres) {
+  public void setProperties(Edge edge, List<String> vertexVres) {
     if (rev != null) {
-      vertex.property("rev", rev);
+      edge.property("rev", rev);
     } else {
-      vertex.property("rev", 1);
+      edge.property("rev", 1);
     }
     if (timId != null) {
-      vertex.property("tim_id", timId.toString());
+      edge.property("tim_id", timId.toString());
     } else {
-      vertex.property("tim_id", UUID.randomUUID().toString());
+      edge.property("tim_id", UUID.randomUUID().toString());
     }
     //types contains the explicitly configured vres
     ArrayNode types = JsonNodeFactory.instance.arrayNode();
@@ -89,29 +94,51 @@ public class RelationData {
         }
       }
     }
-    vertex.property("types", types.toString());
+    edge.property("types", types.toString());
     if (accepted != null) {
       accepted.forEach((key, val) -> {
-        vertex.property(key + "_accepted", val);
+        edge.property(key + "_accepted", val);
       });
     }
     if (deleted != null) {
-      vertex.property("deleted", deleted);
+      edge.property("deleted", deleted);
     }
     if (typeId != null) {
-      vertex.property("typeId", typeId);
+      edge.property("typeId", typeId);
     } else {
-      vertex.property("typeId", UUID.randomUUID().toString());
+      edge.property("typeId", UUID.randomUUID().toString());
     }
     if (isLatest != null) {
-      vertex.property("isLatest", isLatest);
+      edge.property("isLatest", isLatest);
     } else {
-      vertex.property("isLatest", true);
+      edge.property("isLatest", true);
+    }
+    if (created != null) {
+      edge.property("created", changeAsString(created));
+    }
+    if (modfied != null) {
+      edge.property("modified", changeAsString(modfied));
+    }
+  }
+
+  private String changeAsString(Change change) {
+    try {
+      return new ObjectMapper().writeValueAsString(change);
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
     }
   }
 
   public void setTypesToRemove(List<String> typesToRemove) {
     this.typesToRemove = typesToRemove;
+  }
+
+  private void setModfied(Change modfied) {
+    this.modfied = modfied;
+  }
+
+  private void setCreated(Change created) {
+    this.created = created;
   }
 
   public static class RelationDataBuilder {
@@ -124,6 +151,8 @@ public class RelationData {
     private Boolean deleted;
     private UUID typeId;
     private Boolean isLatest;
+    private Change created;
+    private Change modified;
 
     private RelationDataBuilder(String otherKey) {
       this.otherKey = otherKey;
@@ -173,6 +202,16 @@ public class RelationData {
       return this;
     }
 
+    public RelationDataBuilder withCreated(Change created) {
+      this.created = created;
+      return this;
+    }
+
+    public RelationDataBuilder withModified(Change modified) {
+      this.modified = modified;
+      return this;
+    }
+
     RelationData build() {
       RelationData relationData = new RelationData(otherKey);
       relationData.setRev(rev);
@@ -185,6 +224,8 @@ public class RelationData {
       relationData.setTypeId(typeId);
       relationData.setIsLatest(isLatest);
       relationData.setTypesToRemove(typesToRemove);
+      relationData.setCreated(created);
+      relationData.setModfied(modified);
       return relationData;
     }
 

@@ -29,7 +29,7 @@ public class DatabaseLogGenerator {
   }
 
   private DatabaseLogGenerator(GraphWrapper graphWrapper, LogEntryFactory logEntryFactory) {
-    this(graphWrapper, logEntryFactory, new EdgeLogEntryAdder(logEntryFactory));
+    this(graphWrapper, logEntryFactory, new EdgeLogEntryAdder());
   }
 
   DatabaseLogGenerator(GraphWrapper graphWrapper, LogEntryFactory logEntryFactory,

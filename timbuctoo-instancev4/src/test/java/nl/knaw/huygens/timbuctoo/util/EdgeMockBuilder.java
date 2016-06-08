@@ -7,6 +7,7 @@ import com.google.common.collect.Maps;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.io.graphml.GraphMLWriter;
 
 import java.util.List;
 import java.util.Map;
@@ -92,6 +93,7 @@ public class EdgeMockBuilder {
     when(edge.value(key)).thenReturn(value);
     allProps.add(property);
   }
+
 
 
 }

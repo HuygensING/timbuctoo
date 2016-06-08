@@ -1,25 +1,23 @@
 package nl.knaw.huygens.timbuctoo.experimental.databaselog.entry;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.EdgeLogEntry;
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.VertexLogEntry;
+import nl.knaw.huygens.timbuctoo.model.Change;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.io.IOException;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 public class LogEntryFactory {
 
-  private final ObjectMapper objectMapper;
+  private final EdgeRetriever edgeRetriever;
 
   public LogEntryFactory() {
-    objectMapper = new ObjectMapper();
+    edgeRetriever = new EdgeRetriever();
   }
 
   public VertexLogEntry createForVertex(Vertex vertex) {
@@ -27,101 +25,47 @@ public class LogEntryFactory {
     if (previous.hasNext()) {
       return new UpdateVertexLogEntry(vertex, previous.next());
     }
-    return new CreateVertexLogEntry(vertex);
+    return new CreateVertexLogEntry(vertex, this);
   }
 
-  public EdgeLogEntry createForEdge(Edge edge, long modifiedTimeStamp, String id) {
-    Integer rev = edge.<Integer>value("rev");
-    if (rev > 1) {
-      Edge prevEdge = getPreviousVersion(edge, rev);
+  private Edge getPreviousVersion(Edge edge) {
+    return edgeRetriever.getPreviousVersion(edge);
+  }
 
-      return new UpdateEdgeLogEntry(edge, modifiedTimeStamp, id, prevEdge);
+  public EdgeLogEntry createForEdge(Edge edge) throws IllegalArgumentException {
+    String id = edge.value("tim_id");
+    Property<String> modifiedProp = edge.property("modified");
+    if (!modifiedProp.isPresent()) {
+      throw new IllegalArgumentException(messageForEdgeWithoutProp(id, "modified"));
     }
-    return new CreateEdgeLogEntry(edge, modifiedTimeStamp, id);
-  }
+    String modifiedString = modifiedProp.value();
 
-  private Edge getPreviousVersion(Edge edge, Integer rev) {
-    Edge prevEdge = new NoOpEdge(rev - 1);
-    for (Iterator<Edge> it = edge.outVertex().edges(Direction.OUT, edge.label()); it.hasNext(); ) {
-      Edge next = it.next();
-      if (next.<Integer>value("rev") == (rev - 1)) {
-        prevEdge = next;
-        break;
+    Property<Integer> revProp = edge.property("rev");
+    if (!revProp.isPresent()) {
+      throw new IllegalArgumentException(messageForEdgeWithoutProp(id, "rev"));
+    }
+    Integer rev = revProp.value();
+
+    try {
+      Change modified = new ObjectMapper().readValue(modifiedString, Change.class);
+      long modifiedTimeStamp = modified.getTimeStamp();
+
+      if (rev > 1) {
+        Edge prevEdge = getPreviousVersion(edge);
+
+        return new UpdateEdgeLogEntry(edge, modifiedTimeStamp, id, prevEdge);
       }
-    }
-    return prevEdge;
-  }
-
-  private static class NoOpEdge implements Edge {
-    private final Integer rev;
-
-    public NoOpEdge(Integer rev) {
-      this.rev = rev;
-    }
-
-    @Override
-    public Iterator<Vertex> vertices(Direction direction) {
-      return Lists.<Vertex>newArrayList().iterator();
-    }
-
-    @Override
-    public <V> Iterator<Property<V>> properties(String... propertyKeys) {
-      if (Lists.newArrayList(propertyKeys).contains("rev")) {
-        return Lists.<Property<V>>newArrayList(new Property<V>() {
-
-          @Override
-          public String key() {
-            return "rev";
-          }
-
-          @Override
-          public V value() throws NoSuchElementException {
-            return (V) rev;
-          }
-
-          @Override
-          public boolean isPresent() {
-            return true;
-          }
-
-          @Override
-          public Element element() {
-            return null;
-          }
-
-          @Override
-          public void remove() {
-
-          }
-        }).iterator();
-      }
-
-      return Lists.<Property<V>>newArrayList().iterator();
-    }
-
-    @Override
-    public Object id() {
-      return "";
-    }
-
-    @Override
-    public String label() {
-      return "";
-    }
-
-    @Override
-    public Graph graph() {
-      return null;
-    }
-
-    @Override
-    public <V> Property<V> property(String key, V value) {
-      return null;
-    }
-
-    @Override
-    public void remove() {
-
+      return new CreateEdgeLogEntry(edge, modifiedTimeStamp, id);
+    } catch (IOException e) {
+      throw new IllegalArgumentException(
+        String.format("String '%s' of Edge with id '%s' cannot be converted to Change. Edge will be ignored.",
+          modifiedString, id),
+        e);
     }
   }
+
+  private String messageForEdgeWithoutProp(String id, String propName) {
+    return String.format("Edge with id '%s' has no property '%s'. This edge will be ignored.", id, propName);
+  }
+
 }

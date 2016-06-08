@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.experimental.databaselog.entry;
 
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.EdgeLogEntry;
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.VertexLogEntry;
+import nl.knaw.huygens.timbuctoo.model.Change;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -39,12 +40,21 @@ public class LogEntryFactoryTest {
 
   @Test
   public void createForEdgeCreatesACreateEdgeLogEntry() {
-    Edge edge = edge().withProperty("rev", 1).build();
+    Edge edge = edge().withId("id")
+                      .withProperty("rev", 1)
+                      .withProperty("modified", changeWithTimestamp(1000L))
+                      .build();
     LogEntryFactory instance = new LogEntryFactory();
 
-    EdgeLogEntry entry = instance.createForEdge(edge, 1000L, "id");
+    EdgeLogEntry entry = instance.createForEdge(edge);
 
     assertThat(entry, is(instanceOf(CreateEdgeLogEntry.class)));
+  }
+
+  private Change changeWithTimestamp(long timestamp) {
+    Change change = new Change();
+    change.setTimeStamp(timestamp);
+    return change;
   }
 
   @Test
@@ -52,15 +62,18 @@ public class LogEntryFactoryTest {
     UUID edgeId = UUID.randomUUID();
     Graph graph = newGraph().withVertex("v1", v -> v.withTimId("id1"))
                             .withVertex("v2",
-                              v -> v.withOutgoingRelation("edge", "v1", e -> e.withRev(1).withTim_id(edgeId))
-                                    .withOutgoingRelation("edge", "v1", e -> e.withRev(2).withTim_id(edgeId)))
+                              v -> v.withOutgoingRelation("edge", "v1", e -> e.withTim_id(edgeId)
+                                                                              .withRev(1)
+                                                                              .withModified(changeWithTimestamp(1000L)))
+                                    .withOutgoingRelation("edge", "v1", e -> e.withTim_id(edgeId)
+                                                                              .withRev(2)
+                                                                              .withModified(changeWithTimestamp(1000L)))
+                            )
                             .build();
-
     Edge edge = graph.traversal().E().has("tim_id", edgeId.toString()).has("rev", 2).next();
-
     LogEntryFactory instance = new LogEntryFactory();
 
-    EdgeLogEntry entry = instance.createForEdge(edge, 1000L, edgeId.toString());
+    EdgeLogEntry entry = instance.createForEdge(edge);
 
     assertThat(entry, is(instanceOf(UpdateEdgeLogEntry.class)));
   }

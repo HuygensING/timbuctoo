@@ -1,20 +1,15 @@
 package nl.knaw.huygens.timbuctoo.experimental.databaselog;
 
-import nl.knaw.huygens.timbuctoo.experimental.databaselog.entry.LogEntryFactory;
-import nl.knaw.huygens.timbuctoo.model.Change;
-import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
 
-import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
-import static nl.knaw.huygens.timbuctoo.util.EdgeMockBuilder.edge;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
-import static org.mockito.internal.verification.VerificationModeFactory.times;
+import static org.mockito.Mockito.when;
 
 public class EdgeLogEntryAdderTest {
 
@@ -23,65 +18,59 @@ public class EdgeLogEntryAdderTest {
 
   @Before
   public void setUp() throws Exception {
-    instance = new EdgeLogEntryAdder(new LogEntryFactory());
+    instance = new EdgeLogEntryAdder();
     databaseLog = mock(DatabaseLog.class);
   }
 
   @Test
   public void appendEdgesToLogAppendsOnlyTheEdgesThatHaveAModifiedTimestampSmallerThanTheInsertedModifiedTimestamp() {
-    addEdgeWithModifiedTimestampAndIdAndRev(instance, 100000L, "id1", 1);
-    addEdgeWithModifiedTimestampAndIdAndRev(instance, 100000L, "id2", 1);
-    addEdgeWithModifiedTimestampAndIdAndRev(instance, 150000L, "id3", 1);
-    addEdgeWithModifiedTimestampAndIdAndRev(instance, 200000L, "id4", 1);
-    addEdgeWithModifiedTimestampAndIdAndRev(instance, 300000L, "id5", 1);
+    final EdgeLogEntry edgeLogEntry = addEdgeLogEntryWithTimestamp(instance, 100000L, "id");
+    final EdgeLogEntry edgeLogEntry1 = addEdgeLogEntryWithTimestamp(instance, 100000L, "id1");
+    final EdgeLogEntry edgeLogEntry2 = addEdgeLogEntryWithTimestamp(instance, 150000L, "id2");
+    final EdgeLogEntry edgeLogEntry3 = addEdgeLogEntryWithTimestamp(instance, 200000L, "id3");
+    final EdgeLogEntry edgeLogEntry4 = addEdgeLogEntryWithTimestamp(instance, 300000L, "id4");
 
     instance.appendEdgesToLog(databaseLog, 200000L);
 
-    verify(databaseLog, times(3)).newEdge(any(Edge.class));
+    verify(edgeLogEntry).appendToLog(databaseLog);
+    verify(edgeLogEntry1).appendToLog(databaseLog);
+    verify(edgeLogEntry2).appendToLog(databaseLog);
+    verify(edgeLogEntry3, never()).appendToLog(databaseLog);
+    verify(edgeLogEntry4, never()).appendToLog(databaseLog);
   }
 
   @Test
   public void addendEdgesToLogAppendsTheEdgesOnceToTheDatabaseLog() {
-    addEdgeWithModifiedTimestampAndIdAndRev(instance, 100000L, "id1", 1);
+    EdgeLogEntry edgeLogEntry = addEdgeLogEntryWithTimestamp(instance, 100000L, "id");
     instance.appendEdgesToLog(databaseLog, 200000L); // first invocation
 
     instance.appendEdgesToLog(databaseLog, 200000L); // second invocation
 
-    verify(databaseLog, times(1)).newEdge(any(Edge.class));
+    verify(edgeLogEntry, timeout(1)).appendToLog(databaseLog);
   }
 
   @Test
   public void appendEdgesAppendsTheEdgesInOrder() {
-    addEdgeWithModifiedTimestampAndIdAndRev(instance, 120000L, "id2", 1);
-    addEdgeWithModifiedTimestampAndIdAndRev(instance, 100000L, "id1", 1);
-    addEdgeWithModifiedTimestampAndIdAndRev(instance, 150000L, "id3", 1);
+    EdgeLogEntry edgeLogEntry = addEdgeLogEntryWithTimestamp(instance, 120000L, "id");
+    EdgeLogEntry edgeLogEntry1 = addEdgeLogEntryWithTimestamp(instance, 100000L, "id1");
+    EdgeLogEntry edgeLogEntry2 = addEdgeLogEntryWithTimestamp(instance, 150000L, "id2");
 
     instance.appendEdgesToLog(databaseLog, 200000L);
 
-    InOrder inOrder = inOrder(databaseLog);
-    inOrder.verify(databaseLog).newEdge(argThat(likeEdge().withModifiedTimestamp(100000L)));
-    inOrder.verify(databaseLog).newEdge(argThat(likeEdge().withModifiedTimestamp(120000L)));
-    inOrder.verify(databaseLog).newEdge(argThat(likeEdge().withModifiedTimestamp(150000L)));
+    InOrder inOrder = inOrder(edgeLogEntry, edgeLogEntry1, edgeLogEntry2);
+    inOrder.verify(edgeLogEntry1).appendToLog(databaseLog);
+    inOrder.verify(edgeLogEntry).appendToLog(databaseLog);
+    inOrder.verify(edgeLogEntry2).appendToLog(databaseLog);
   }
 
-  @Test
-  public void appendWillAppendAnUpdateEdgeLogMessageIfTheEdgeIsNotTheFirstRevision() {
-    addEdgeWithModifiedTimestampAndIdAndRev(instance, 120000L, "id2", 2);
+  private EdgeLogEntry addEdgeLogEntryWithTimestamp(EdgeLogEntryAdder instance, long timeStamp, final String id) {
+    EdgeLogEntry edgeLogEntry = mock(EdgeLogEntry.class);
+    when(edgeLogEntry.getTimestamp()).thenReturn(timeStamp);
+    when(edgeLogEntry.getId()).thenReturn(id);
 
-    instance.appendEdgesToLog(databaseLog, 200000L);
+    instance.entryFor(edgeLogEntry);
 
-    verify(databaseLog).updateEdge(any(Edge.class));
-  }
-
-  private void addEdgeWithModifiedTimestampAndIdAndRev(EdgeLogEntryAdder instance, long timeStamp, String id, int rev) {
-    Edge edge = edge().withProperty("modified", changeWithTimestamp(timeStamp))
-                      .withProperty("tim_id", id)
-                      .withProperty("rev", rev).build();
-    instance.entryFor(edge);
-  }
-
-  private Change changeWithTimestamp(long timeStamp) {
-    return new Change(timeStamp, "", "");
+    return edgeLogEntry;
   }
 
 }

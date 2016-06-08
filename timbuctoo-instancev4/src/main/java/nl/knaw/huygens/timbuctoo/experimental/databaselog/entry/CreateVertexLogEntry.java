@@ -6,6 +6,8 @@ import nl.knaw.huygens.timbuctoo.experimental.databaselog.VertexLogEntry;
 import nl.knaw.huygens.timbuctoo.util.StreamIterator;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
 import java.util.Objects;
@@ -13,17 +15,22 @@ import java.util.Set;
 
 
 public class CreateVertexLogEntry implements VertexLogEntry {
+  public static final Logger LOG = LoggerFactory.getLogger(CreateVertexLogEntry.class);
   private final Vertex vertex;
   private final Set<String> propertiesToIgnore;
+  private final LogEntryFactory logEntryFactory;
 
-  public CreateVertexLogEntry(Vertex vertex) {
-    this(vertex, PropertyHelper.SYSTEM_PROPERTIES);
+  public CreateVertexLogEntry(Vertex vertex, LogEntryFactory logEntryFactory) {
+    this(vertex, PropertyHelper.SYSTEM_PROPERTIES, logEntryFactory);
   }
 
-  CreateVertexLogEntry(Vertex vertex, Set<String> propertiesToIgnore) {
+
+  CreateVertexLogEntry(Vertex vertex, Set<String> propertiesToIgnore, LogEntryFactory logEntryFactory) {
     this.vertex = vertex;
     this.propertiesToIgnore = propertiesToIgnore;
+    this.logEntryFactory = logEntryFactory;
   }
+
 
   @Override
   public void appendToLog(DatabaseLog dbLog) {
@@ -40,10 +47,16 @@ public class CreateVertexLogEntry implements VertexLogEntry {
     // Only add OUT edges, to make sure no duplicates are added.
     latest.edges(Direction.OUT).forEachRemaining(edge -> {
       if (!Objects.equals(edge.label(), "VERSION_OF")) {
-        edgeLogEntryAdder.entryFor(edge);
+        try {
+          edgeLogEntryAdder.entryFor(logEntryFactory.createForEdge(edge));
+        } catch (IllegalArgumentException e) {
+          LOG.error(e.getMessage());
+          LOG.error("exception thrown", e);
+        }
       }
     });
   }
+
 
   private Vertex getLatestVersion(Vertex vertex) {
     Iterator<Vertex> nextVersions = vertex.vertices(Direction.OUT, "VERSION_OF");
