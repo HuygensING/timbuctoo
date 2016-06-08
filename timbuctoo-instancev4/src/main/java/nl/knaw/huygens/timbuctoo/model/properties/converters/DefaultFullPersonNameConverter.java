@@ -2,6 +2,8 @@ package nl.knaw.huygens.timbuctoo.model.properties.converters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ExcelDescription;
+import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.PersonNamesExcelDescription;
 
 import java.io.IOException;
 
@@ -22,5 +24,10 @@ public class DefaultFullPersonNameConverter implements Converter {
   @Override
   public TextNode tinkerpopToJson(Object value) throws IOException {
     return jsn(converter.tinkerpopToJava(value).defaultName().getFullName());
+  }
+
+  @Override
+  public ExcelDescription tinkerPopToExcel(Object value, String typeId) throws IOException {
+    return new PersonNamesExcelDescription(converter.tinkerpopToJava(value), typeId);
   }
 }

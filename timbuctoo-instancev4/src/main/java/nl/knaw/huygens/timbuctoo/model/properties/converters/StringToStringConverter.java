@@ -2,6 +2,8 @@ package nl.knaw.huygens.timbuctoo.model.properties.converters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ExcelDescription;
+import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.StringExcelDescription;
 
 import java.io.IOException;
 
@@ -29,4 +31,8 @@ public class StringToStringConverter implements Converter {
     return "text";
   }
 
+  @Override
+  public ExcelDescription tinkerPopToExcel(Object value, String typeId) throws IOException {
+    return new StringExcelDescription(tinkerpopToJson(value).asText(), typeId);
+  }
 }

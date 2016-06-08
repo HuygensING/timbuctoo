@@ -23,6 +23,7 @@ import nl.knaw.huygens.timbuctoo.crud.changelistener.CompositeChangeListener;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.DenormalizedSortFieldUpdater;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.FulltextIndexChangeListener;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.BulkUploadService;
+import nl.knaw.huygens.timbuctoo.experimental.exports.excel.ExcelExportService;
 import nl.knaw.huygens.timbuctoo.experimental.server.endpoints.v2.BulkUpload;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
@@ -177,7 +178,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       (coll, id, rev) -> URI.create(configuration.getBaseUri() + SingleEntity.makeUrl(coll, id, rev).getPath()),
       vres
     );
-
+    final ExcelExportService excelExportService = new ExcelExportService(vres, graphManager);
 
 
     environment.lifecycle().manage(graphManager);
@@ -194,7 +195,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new RootEndpoint());
     register(environment, new Authenticate(loggedInUserStore));
     register(environment, new Me(loggedInUserStore));
-    register(environment, new Search(configuration, graphManager));
+    register(environment, new Search(configuration, graphManager, excelExportService));
     register(environment, new Autocomplete(autocompleteService));
     register(environment, new Index(crudService, loggedInUserStore));
     register(environment, new SingleEntity(crudService, loggedInUserStore));
@@ -203,7 +204,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new BulkUpload(new BulkUploadService(vres, graphManager)));
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
-    register(environment, new VresEndpoint(jsonMetadata));
+    register(environment, new VresEndpoint(jsonMetadata, excelExportService));
 
     // Admin resources
     environment.admin().addTask(new UserCreationTask(new LocalUserCreator(authenticator, userStore, authorizer)));
