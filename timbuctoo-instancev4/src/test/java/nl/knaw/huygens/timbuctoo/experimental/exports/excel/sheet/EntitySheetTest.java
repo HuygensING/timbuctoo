@@ -25,16 +25,16 @@ import static org.mockito.Mockito.mock;
 public class EntitySheetTest {
 
 
-  public static final int PROPERTY_NAME_ROW = 0;
-  public static final int PROPERTY_TYPE_ROW = 1;
-  public static final int PROPERTY_VALUE_DESCRIPTION_ROW = 2;
-  public static final int TIM_ID_COL = 0;
-  public static final int RELATION_COL = 1;
-  public static final int NAMES_1_KEY_COL = 2;
-  public static final int NAMES_1_VALUE_COL = 3;
-  public static final int NAMES_2_KEY_COL = 4;
-  public static final int NAMES_2_VALUE_COL = 5;
-  public static final int TEMP_NAME_COL = 6;
+  private static final int PROPERTY_NAME_ROW = 0;
+  private static final int PROPERTY_TYPE_ROW = 1;
+  private static final int PROPERTY_VALUE_DESCRIPTION_ROW = 2;
+  private static final int TIM_ID_COL = 0;
+  private static final int RELATION_COL = 1;
+  private static final int NAMES_1_KEY_COL = 2;
+  private static final int NAMES_1_VALUE_COL = 3;
+  private static final int NAMES_2_KEY_COL = 4;
+  private static final int NAMES_2_VALUE_COL = 5;
+  private static final int TEMP_NAME_COL = 6;
   private static final int NAMES_COL = 2;
   private final Vres mappings = HuygensIng.mappings;
   private final Collection collection = mappings.getCollection("wwpersons").get();
