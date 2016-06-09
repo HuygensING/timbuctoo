@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.styleawarexlsxloader;
+package nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders;
 
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.parsingstatemachine.Result;
 

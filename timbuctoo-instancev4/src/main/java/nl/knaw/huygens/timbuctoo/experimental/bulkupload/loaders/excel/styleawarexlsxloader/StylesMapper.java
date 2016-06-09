@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.styleawarexlsxloader;
+package nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.excel.styleawarexlsxloader;
 
 import com.google.common.collect.ImmutableMap;
 import org.apache.poi.xssf.model.StylesTable;

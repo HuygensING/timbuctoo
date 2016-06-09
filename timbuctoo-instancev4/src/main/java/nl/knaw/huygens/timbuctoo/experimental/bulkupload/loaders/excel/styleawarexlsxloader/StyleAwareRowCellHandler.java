@@ -1,29 +1,35 @@
-package nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.styleawarexlsxloader;
+package nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.excel.styleawarexlsxloader;
 
+import nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.ResultHandler;
+import nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.excel.RowCellHandler;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.parsingstatemachine.Importer;
 
 import java.util.HashMap;
 
-public class RowCellHandler {
+public class StyleAwareRowCellHandler implements RowCellHandler {
   private final Importer importer;
   private final ResultHandler handler;
   private boolean entityStarted;
+  private StylesMapper stylesMapper;
 
-  public RowCellHandler(Importer importer, ResultHandler handler) {
+  public StyleAwareRowCellHandler(Importer importer, ResultHandler handler, StylesMapper stylesMapper) {
+    this.stylesMapper = stylesMapper;
     this.importer = importer;
     this.handler = handler;
   }
 
-  public void start(String name) {
+  @Override public void start(String name) {
     entityStarted = false;
     handler.startSheet(name, importer.startCollection(name));
   }
 
-  public void startRow(int rowNum) {
+  @Override public void startRow(int rowNum) {
     handler.startRow();
   }
 
-  public void cell(short column, String value, StylesMapper.StyleTypes style) {
+  @Override public void cell(short column, String value, String cellStyleStr) {
+    StylesMapper.StyleTypes style = stylesMapper.getStyleFor(cellStyleStr);
+
     switch (style) {
       case PROPERTY_NAME:
         handler.handle(column, value, importer.registerPropertyName(column, value));
@@ -43,7 +49,7 @@ public class RowCellHandler {
     }
   }
 
-  public void endRow(int rowNum) {
+  @Override public void endRow(int rowNum) {
     if (entityStarted) {
       entityStarted = false;
       handler.endRow(importer.finishEntity());
@@ -52,7 +58,7 @@ public class RowCellHandler {
     }
   }
 
-  public void finish() {
+  @Override public void finish() {
     importer.finishCollection();
     handler.endSheet();
   }

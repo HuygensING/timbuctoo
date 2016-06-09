@@ -2,7 +2,7 @@
 Based on org.apache.poi.xssf.eventusermodel.XssFSheetHandler
 ==================================================================== */
 
-package nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.styleawarexlsxloader;
+package nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.excel;
 
 import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.util.POILogFactory;
@@ -24,6 +24,7 @@ import static org.apache.poi.xssf.usermodel.XSSFRelation.NS_SPREADSHEETML;
 public class SheetXmlParser extends DefaultHandler {
   private static final POILogger logger = POILogFactory.getLogger(XSSFSheetXMLHandler.class);
   private String debug;
+  private String cellStyleStr;
 
 
   /**
@@ -39,9 +40,6 @@ public class SheetXmlParser extends DefaultHandler {
     SST_STRING,
     NUMBER
   }
-
-  private final StylesMapper stylesMapper;
-  private StylesMapper.StyleTypes styleType = StylesMapper.StyleTypes.NONE;
 
   /**
    * Read only access to the shared strings table, for looking
@@ -72,8 +70,7 @@ public class SheetXmlParser extends DefaultHandler {
   // Gathers characters as they are seen.
   private StringBuffer value = new StringBuffer();
 
-  public SheetXmlParser(StylesMapper stylesMapper, SharedStringsTable strings, RowCellHandler contentsHandler) {
-    this.stylesMapper = stylesMapper;
+  public SheetXmlParser(SharedStringsTable strings, RowCellHandler contentsHandler) {
     this.sharedStringsTable = strings;
     this.output = contentsHandler;
     this.nextDataType = XssfDataType.NUMBER;
@@ -129,9 +126,7 @@ public class SheetXmlParser extends DefaultHandler {
       debug = attributes.getValue("r");
       column = new CellReference(debug).getCol();
 
-      String cellStyleStr = attributes.getValue("s");
-      this.styleType = stylesMapper.getStyleFor(cellStyleStr);
-
+      cellStyleStr = attributes.getValue("s");
       String cellType = attributes.getValue("t");
       this.nextDataType = XssfDataType.NUMBER;
       if ("b".equals(cellType)) {
@@ -202,7 +197,7 @@ public class SheetXmlParser extends DefaultHandler {
           thisStr = "(TODO: Unexpected type: " + nextDataType + ")";
           break;
       }
-      output.cell(column, thisStr, styleType);
+      output.cell(column, thisStr, cellStyleStr);
 
     } else if ("is".equals(localName)) {
       isIsOpen = false;

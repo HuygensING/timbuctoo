@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.experimental.bulkupload;
 
-import nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.styleawarexlsxloader.StyleAwareXlsxLoader;
+import nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.excel.styleawarexlsxloader.StyleAwareXlsxLoader;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.parsingstatemachine.Importer;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.savers.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
