@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.experimental.bulkupload;
 
-import nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.excel.styleawarexlsxloader.StyleAwareXlsxLoader;
+import nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.excel.XlsxLoader;
+import nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.excel.allsheetloader.AllSheetLoader;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.parsingstatemachine.Importer;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.savers.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
@@ -40,7 +41,7 @@ public class BulkUploadService {
     Vertex vre = initVre(vreName);
 
     try (TinkerpopSaver saver = new TinkerpopSaver(graphwrapper, vre, 50_000)) {
-      StyleAwareXlsxLoader loader = new StyleAwareXlsxLoader();
+      XlsxLoader loader = new AllSheetLoader();
       return loader.loadData(wb, new Importer(saver));
     }
   }
