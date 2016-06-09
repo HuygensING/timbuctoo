@@ -60,11 +60,11 @@ public class EntitySheetTest {
     SXSSFSheet sheet = workbook.getSheet("wwpersons");
     assertThat(Lists.newArrayList(sheet.rowIterator()), contains(
       // header row 1
-      likeRow().withId("tim_id"),
+      likeRow().withNumber(0).withId("tim_id"),
       // header row 2
-      likeRow().withId("uuid"),
+      likeRow().withNumber(1).withId("uuid"),
       // empty header row 3
-      likeRow()));
+      likeRow().withNumber(2)));
   }
 
   @Test
@@ -104,11 +104,21 @@ public class EntitySheetTest {
 
     assertThat(Lists.newArrayList(sheet.rowIterator()), containsInAnyOrder(
       // header row 1
-      likeRow().withId("tim_id").withRelation("isRelatedTo").withTempName("tempName").withNames("names", "", "", ""),
+      likeRow().withNumber(0)
+               .withId("tim_id")
+               .withRelation("isRelatedTo")
+               .withTempName("tempName")
+               .withNames("names", "", "", ""),
       // header row 2
-      likeRow().withId("uuid").withRelation("relation").withTempName("text").withNames("names", "", "", ""),
+      likeRow().withNumber(1)
+               .withId("uuid")
+               .withRelation("relation")
+               .withTempName("text")
+               .withNames("names", "", "", ""),
       // header row 3
-      likeRow().withRelation("wwpersons").withNames("1", "", "2", ""),
+      likeRow().withNumber(2)
+               .withRelation("wwpersons")
+               .withNames("1", "", "2", ""),
       likeRow().withId("123").withTempName("temp name").withNames("forename", "foreName 1", "forename", "foreName 2"),
       likeRow().withId("234").withTempName("tmp 2").withRelation("123")));
   }
@@ -121,6 +131,17 @@ public class EntitySheetTest {
 
     private EntityRowMatcher() {
 
+    }
+
+    public EntityRowMatcher withNumber(int number) {
+      this.addMatcher(new PropertyEqualityMatcher<Row, Integer>("number", number) {
+
+        @Override
+        protected Integer getItemValue(Row item) {
+          return item.getRowNum();
+        }
+      });
+      return this;
     }
 
     public EntityRowMatcher withId(String id) {
