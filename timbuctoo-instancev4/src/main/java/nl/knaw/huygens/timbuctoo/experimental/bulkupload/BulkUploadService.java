@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -47,8 +48,9 @@ public class BulkUploadService {
   }
 
   private Vertex initVre(String vreName) {
+    //FIXME namespace vrename per user
     try (Transaction tx = graphwrapper.getGraph().tx()) {
-      graphwrapper.getVreRootNode().vertices(Direction.OUT, vreName).forEachRemaining(vre -> {
+      graphwrapper.getGraph().traversal().V().hasLabel("VRE").has("name", vreName).forEachRemaining(vre -> {
         vre.vertices(Direction.BOTH, "hasCollection").forEachRemaining(coll -> {
           coll.vertices(Direction.BOTH, "hasEntity").forEachRemaining(vertex -> {
             vertex.remove();
@@ -59,8 +61,6 @@ public class BulkUploadService {
       });
       tx.commit();
     }
-    Vertex vre = graphwrapper.getGraph().addVertex("name", vreName); //FIXME, make namespaced (username/VRE)
-    graphwrapper.getVreRootNode().addEdge(vreName, vre);
-    return vre;
+    return graphwrapper.getGraph().addVertex(T.label, "VRE", "name", vreName);
   }
 }

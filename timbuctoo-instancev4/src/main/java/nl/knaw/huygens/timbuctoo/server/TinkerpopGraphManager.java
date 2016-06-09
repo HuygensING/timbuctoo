@@ -67,24 +67,6 @@ public class TinkerpopGraphManager extends HealthCheck implements Managed, Graph
     }
   }
 
-  public Vertex getVreRootNode() {
-    if (vreRootNode != null) {
-      return vreRootNode;
-    } else {
-      if (graph == null) {
-        return null;
-      } else {
-        final GraphTraversal<Vertex, Vertex> vreRootNodes = graph.traversal().V().has("isVreRootNode", true);
-        if (vreRootNodes.hasNext()) {
-          vreRootNode = vreRootNodes.next();
-        } else {
-          vreRootNode = graph.addVertex("isVreRootNode", true);
-        }
-        return vreRootNode;
-      }
-    }
-  }
-
   @Override
   public void stop() throws Exception {
     graph.close();
