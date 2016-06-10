@@ -2,8 +2,8 @@ package nl.knaw.huygens.timbuctoo.search.description.facet;
 
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
+import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
 import nl.knaw.huygens.timbuctoo.search.description.facet.helpers.ListFacetGetter;
-import nl.knaw.huygens.timbuctoo.search.description.propertyparser.StringListParser;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -24,8 +24,8 @@ class CharterPortaalFondsFacetDescription extends AbstractFacetDescription {
   public static final String FONDS_NAAM = "charterdocument_fondsNaam";
   public static final String FONDS = "charterdocument_fonds";
 
-  public CharterPortaalFondsFacetDescription(String facetName) {
-    super(facetName, null, new ListFacetGetter(new StringListParser()), null);
+  public CharterPortaalFondsFacetDescription(String facetName, PropertyParser propertyParser) {
+    super(facetName, null, new ListFacetGetter(propertyParser), null);
   }
 
   @Override

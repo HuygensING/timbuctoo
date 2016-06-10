@@ -105,6 +105,6 @@ public class FacetDescriptionFactory {
   }
 
   public FacetDescription createCharterFondsFacetDescription(String facetName) {
-    return new CharterPortaalFondsFacetDescription(facetName);
+    return new CharterPortaalFondsFacetDescription(facetName, parserFactory.getParser(String.class));
   }
 }

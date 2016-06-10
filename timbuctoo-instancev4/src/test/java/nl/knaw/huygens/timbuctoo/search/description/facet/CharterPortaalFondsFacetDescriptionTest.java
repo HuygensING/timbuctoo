@@ -2,11 +2,13 @@ package nl.knaw.huygens.timbuctoo.search.description.facet;
 
 import com.google.common.collect.Lists;
 
+import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.ListFacetValue;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.List;
 
@@ -29,7 +31,8 @@ public class CharterPortaalFondsFacetDescriptionTest {
                             .withProperty(FONDS_NAAM, "fondsNaam")
                             .build();
 
-    CharterPortaalFondsFacetDescription instance = new CharterPortaalFondsFacetDescription(FACET_NAME);
+    CharterPortaalFondsFacetDescription instance = new CharterPortaalFondsFacetDescription(FACET_NAME,
+        Mockito.mock(PropertyParser.class));
 
     List<String> values = instance.getValues(vertex);
 
@@ -45,7 +48,8 @@ public class CharterPortaalFondsFacetDescriptionTest {
                             .withVertex(v -> v.withProperty(FONDS, "fonds1")
                                               .withProperty(FONDS_NAAM, "fondsNaam"))
                             .build();
-    CharterPortaalFondsFacetDescription instance = new CharterPortaalFondsFacetDescription(FACET_NAME);
+    CharterPortaalFondsFacetDescription instance = new CharterPortaalFondsFacetDescription(FACET_NAME,
+        Mockito.mock(PropertyParser.class));
     GraphTraversal<Vertex, Vertex> traversal = graph.traversal().V();
     instance.filter(traversal,
       Lists.newArrayList(new ListFacetValue("facetName", Lists.newArrayList("fondsNaam (fonds)"))));
