@@ -9,6 +9,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * A class to make log entries for all the changed properties between two versions of a Vertex or an Edge.
+ * This class is created, because both UpdateEdgeLogEntry and UpdateVertexLogEntry had the same functionality
+ * regarding updating the properties.
+ */
 class PropertyUpdater {
   private final Element element;
   private final Element prevElement;

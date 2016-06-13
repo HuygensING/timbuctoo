@@ -9,6 +9,9 @@ import java.util.TreeSet;
 
 import static java.util.stream.Collectors.toList;
 
+/**
+ * A class that is needed to add EdgeLogEntries to the log on the right time.
+ */
 public class EdgeLogEntryAdder {
   public static final Logger LOG = LoggerFactory.getLogger(EdgeLogEntryAdder.class);
   private final TreeSet<EdgeLogEntry> edgeLogEntries;
@@ -17,9 +20,13 @@ public class EdgeLogEntryAdder {
     edgeLogEntries = new TreeSet<>(new EdgeLogEntryComparator());
   }
 
-  public void appendEdgesToLog(DatabaseLog databaseLog, Long vertexTimeStamp) {
+  /**
+   * Only add the Edges with timestamp before the vertexTimestamp. This is to make sure all the vertices exist and
+   * the log is chronologically.
+   */
+  public void appendEdgesToLog(DatabaseLog databaseLog, Long vertexTimestamp) {
     List<EdgeLogEntry> edgesToAppend = edgeLogEntries.stream()
-                                                     .filter(entry -> entry.getTimestamp() < vertexTimeStamp)
+                                                     .filter(entry -> entry.getTimestamp() < vertexTimestamp)
                                                      .collect(toList());
     edgesToAppend.forEach(entry -> entry.appendToLog(databaseLog));
     edgeLogEntries.removeAll(edgesToAppend);

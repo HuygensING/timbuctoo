@@ -15,6 +15,16 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Comparator;
 
+/**
+ * Now (2016-06-13 and before) the Timbuctoo database contains multiple versions of vertices (each entity) an edges
+ * (each relation). We want to simplify the database model and the code that uses the database directly. We want to
+ * do this, by moving the history to a Log.
+ * <p/>
+ * This class iterates through all the vertices and makes sure an entry is created for each of them.
+ * The EdgeLogEntryAdder adds all the edges after the needed vertices are added to the log.
+ * The DatabaseLog writes the LogEntries. At this moment to a file, but this could be any output format.
+ * The LogEntryFactory creates LogEntries who add themselves to the DatabaseLog.
+ */
 public class DatabaseLogGenerator {
 
 
@@ -61,6 +71,8 @@ public class DatabaseLogGenerator {
                   }
                 })
                 .forEachRemaining(vertex -> {
+                  // Because both vertices most exist, the edges can only be added after the last vertex with a
+                  // certain timestamp. This is before the the vertex with a timestamp after the edge timestamp.
                   appendEdgeChangedBeforeVertexToLog(databaseLog, vertex);
                   appendVertexToLog(databaseLog, vertex);
                 });

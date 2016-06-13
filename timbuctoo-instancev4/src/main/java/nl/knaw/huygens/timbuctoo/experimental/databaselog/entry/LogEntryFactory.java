@@ -12,6 +12,10 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.io.IOException;
 import java.util.Iterator;
 
+/**
+ * A class to create instances of EdgeLogEntry and VertexLogEntry, but hides the details if the LogEntry is a Create
+ * or Update.
+ */
 public class LogEntryFactory {
 
   private final EdgeRetriever edgeRetriever;

@@ -16,6 +16,10 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * This is a helper class for the LogEntryFactory to find a previous version of an Edge. When no previous version is
+ * found the version will be estimated, with the information available from the current Edge.
+ */
 class EdgeRetriever {
 
   public static final Logger LOG = LoggerFactory.getLogger(EdgeRetriever.class);
@@ -25,13 +29,12 @@ class EdgeRetriever {
     String id = edge.value("tim_id");
 
     Optional<Edge> prev = Optional.empty();
-    for (Iterator<Edge> edges = edge.outVertex().edges(Direction.OUT, edge.label()); edges.hasNext();) {
+    for (Iterator<Edge> edges = edge.outVertex().edges(Direction.OUT, edge.label()); edges.hasNext(); ) {
       Edge next = edges.next();
       if (next.<Integer>value("rev") == (rev - 1)) {
         prev = Optional.of(next);
       }
     }
-    // Optional<Edge> prev = edge.graph().traversal().E().has("tim_id", id).has("rev", rev - 1).tryNext();
 
     return prev.isPresent() ? prev.get() : estimatePreviousVersion(edge);
   }
@@ -147,7 +150,7 @@ class EdgeRetriever {
       }
 
       @Override
-      @SuppressWarnings("unchecked") // accepted properties must always be an Integer
+      @SuppressWarnings("unchecked") // rev properties must always be an Integer
       public V value() throws NoSuchElementException {
         Integer value = ((Integer) prop.value()) - 1;
         return (V) value;
