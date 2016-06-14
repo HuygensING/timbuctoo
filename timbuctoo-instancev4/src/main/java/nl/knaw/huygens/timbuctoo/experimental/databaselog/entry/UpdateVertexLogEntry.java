@@ -9,7 +9,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.util.Objects;
 import java.util.Set;
 
-public class UpdateVertexLogEntry implements VertexLogEntry {
+class UpdateVertexLogEntry implements VertexLogEntry {
   private final Vertex vertex;
   private final Vertex previous;
   private final PropertyUpdater propertyUpdater;

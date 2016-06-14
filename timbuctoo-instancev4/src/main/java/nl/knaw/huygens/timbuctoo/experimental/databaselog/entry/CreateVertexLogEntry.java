@@ -15,7 +15,7 @@ import java.util.Objects;
 import java.util.Set;
 
 
-public class CreateVertexLogEntry implements VertexLogEntry {
+class CreateVertexLogEntry implements VertexLogEntry {
   public static final Logger LOG = LoggerFactory.getLogger(CreateVertexLogEntry.class);
   private final Vertex vertex;
   private final Set<String> propertiesToIgnore;
