@@ -16,18 +16,34 @@ import java.io.IOException;
 import java.util.Comparator;
 
 /**
- * Now (2016-06-13 and before) the Timbuctoo database contains multiple versions of vertices (each entity) an edges
- * (each relation). We want to simplify the database model and the code that uses the database directly. We want to
- * do this, by moving the history to a Log.
- * <p/>
- * This class iterates through all the vertices and makes sure an entry is created for each of them.
- * The EdgeLogEntryAdder adds all the edges after the needed vertices are added to the log.
- * The DatabaseLog writes the LogEntries. At this moment to a file, but this could be any output format.
- * The LogEntryFactory creates LogEntries who add themselves to the DatabaseLog.
+ * <p>
+ * Currently (as of 2016-06-13) the Timbuctoo database contains all versions of all entities and all versions of all
+ * relations as one interlinked graph. The old versions are filtered out while querying. We want to simplify the
+ * database model and the code that uses the database directly, without loosing information. Therefore we're moving the
+ * history to a separate log.
+ * </p>
+ * <p>
+ * This class creates that log from the current format.
+ * </p>
+ * <p>
+ * It sorts all vertices (i.e. versions of entities) as one big chronological list and then iterates over it, creating
+ * the log entries and calling their addToLog method. //FIXME an object that is immediately removed?
+ * </p>
+ * <p>
+ * A complicating factor is that many vertices and edges share the exact same modified time. So we don't know the exact
+ * order in which they were added. For vertices we do not to care about the exact order, however an edge between two
+ * vertices can only be added once those vertices exist (obviously).
+ * </p>
+ * <p>
+ * Our solution is: for a given modified-time we first add {@link LogEntry}s for all vertices and then for all edges.
+ * </p>
+ * <p>
+ * After creating the {@link LogEntry} objects it calls the {@link DatabaseLog} to write the {@link LogEntry}s. At this
+ * moment they are written as text to a file, we will later replace this with a {@link DatabaseLog} implementation that
+ * creates log vertices in the database.
+ * </p>
  */
 public class DatabaseLogGenerator {
-
-
   public static final Logger LOG = LoggerFactory.getLogger(DatabaseLogGenerator.class);
   private final GraphWrapper graphWrapper;
   private final LogEntryFactory logEntryFactory;
