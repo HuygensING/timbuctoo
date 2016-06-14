@@ -51,4 +51,15 @@ public class StringListParserTest {
 
     assertThat(value, is(equalTo(expectedValue)));
   }
+
+  @Test
+  public void parseDoesNotRemoveCommasFromStringValuesInTheArray() {
+    String input = "[\"value1\", \"value2 123, test\"]";
+    String expectedValue = "value1 value2 123, test";
+    StringListParser instance = new StringListParser(" ");
+
+    String value = instance.parse(input);
+
+    assertThat(value, is(equalTo(expectedValue)));
+  }
 }

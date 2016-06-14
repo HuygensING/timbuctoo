@@ -12,7 +12,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
-public class DefaultLocationNamePropertyParserTest extends AbstractPropertyParserTest{
+public class DefaultLocationNamePropertyParserTest extends AbstractPropertyParserTest {
 
   private DefaultLocationNamePropertyParser instance;
 
