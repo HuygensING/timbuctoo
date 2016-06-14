@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.experimental.databaselog.entry;
 
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.DatabaseLog;
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.EdgeLogEntryAdder;
+import nl.knaw.huygens.timbuctoo.experimental.databaselog.LogEntry;
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.VertexLogEntry;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -15,7 +16,7 @@ public class UpdateVertexLogEntry implements VertexLogEntry {
 
 
   public UpdateVertexLogEntry(Vertex vertex, Vertex previousVersion) {
-    this(vertex, previousVersion, PropertyHelper.SYSTEM_PROPERTIES);
+    this(vertex, previousVersion, LogEntry.SYSTEM_PROPERTIES);
   }
 
   UpdateVertexLogEntry(Vertex vertex, Vertex previousVersion, Set<String> propertiesToIgnore) {

@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.experimental.databaselog.entry;
 
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.DatabaseLog;
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.EdgeLogEntryAdder;
+import nl.knaw.huygens.timbuctoo.experimental.databaselog.LogEntry;
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.VertexLogEntry;
 import nl.knaw.huygens.timbuctoo.util.StreamIterator;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -21,7 +22,7 @@ public class CreateVertexLogEntry implements VertexLogEntry {
   private final LogEntryFactory logEntryFactory;
 
   public CreateVertexLogEntry(Vertex vertex, LogEntryFactory logEntryFactory) {
-    this(vertex, PropertyHelper.SYSTEM_PROPERTIES, logEntryFactory);
+    this(vertex, LogEntry.SYSTEM_PROPERTIES, logEntryFactory);
   }
 
 
