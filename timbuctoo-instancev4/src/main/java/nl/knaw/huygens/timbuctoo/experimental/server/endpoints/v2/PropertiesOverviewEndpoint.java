@@ -1,13 +1,15 @@
 package nl.knaw.huygens.timbuctoo.experimental.server.endpoints.v2;
 
+import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.ws.rs.GET;
@@ -24,10 +26,12 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 public class PropertiesOverviewEndpoint {
 
   private final TinkerpopGraphManager graphManager;
+  private Vres vres;
 
   private static final String[] DONT_USE = {"relationtype" , "searchresult"};
 
-  public PropertiesOverviewEndpoint(TinkerpopGraphManager graphManager) {
+  public PropertiesOverviewEndpoint(Vres vres, TinkerpopGraphManager graphManager) {
+    this.vres = vres;
     this.graphManager = graphManager;
   }
 
@@ -49,15 +53,20 @@ public class PropertiesOverviewEndpoint {
             }
           }
         }
-        if (useKey) { 
-          result.add(key + ";" + isFunctional(parts));
+        if (useKey) {
+          boolean functional = isFunctional(parts);
+          String collection = "";
+          if (functional) {
+            collection = vres.getCollectionForType(parts[0]).get().getCollectionName();
+          }
+          result.add(key + ";" + functional + ";" + collection);
         }
       }
     }
     ArrayList<String> resultList = new ArrayList<String>();
     resultList.addAll(result);
     Collections.sort(resultList);
-    resultList.add(0, "PROPERTY NAME;IS FUNCTIONAL?");
+    resultList.add(0, "PROPERTY NAME;IS FUNCTIONAL?;FOUND COLLECTION");
     return Response.ok(resultList).build();
   }
 

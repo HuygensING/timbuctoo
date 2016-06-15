@@ -204,7 +204,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
     register(environment, new VresEndpoint(jsonMetadata));
-    register(environment, new PropertiesOverviewEndpoint(graphManager));
+    register(environment, new PropertiesOverviewEndpoint(vres, graphManager));
 
     // Admin resources
     environment.admin().addTask(new UserCreationTask(new LocalUserCreator(authenticator, userStore, authorizer)));
