@@ -25,7 +25,7 @@ public class PropertiesOverviewEndpoint {
 
   private final TinkerpopGraphManager graphManager;
 
-  //  private static final String[] NOT_FUNCTIONAL = {"relationtype" , "searchresult"};
+  private static final String[] DONT_USE = {"relationtype" , "searchresult"};
 
   public PropertiesOverviewEndpoint(TinkerpopGraphManager graphManager) {
     this.graphManager = graphManager;
@@ -40,7 +40,18 @@ public class PropertiesOverviewEndpoint {
       while (allProps.hasNext()) {
         VertexProperty<Object> prop = allProps.next();
         String key = prop.key();
-        result.add(key + ";" + isFunctional(key));
+        String[] parts = key.split("_");
+        boolean useKey = true;
+        if (parts.length > 1) {
+          for (String nf : DONT_USE) {
+            if (nf.equals(parts[0])) {
+              useKey = false;
+            }
+          }
+        }
+        if (useKey) { 
+          result.add(key + ";" + isFunctional(key));
+        }
       }
     }
     ArrayList<String> resultList = new ArrayList<String>();
@@ -61,11 +72,6 @@ public class PropertiesOverviewEndpoint {
     if (parts[parts.length - 1].equals("sort")) {
       return false;
     }
-    //    for (String nf : NOT_FUNCTIONAL) {
-    //      if (nf.equals(parts[0])) {
-    //        return false;
-    //      }
-    //    }
     return true ;
   }
 
