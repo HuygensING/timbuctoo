@@ -50,7 +50,7 @@ public class PropertiesOverviewEndpoint {
           }
         }
         if (useKey) { 
-          result.add(key + ";" + isFunctional(key));
+          result.add(key + ";" + isFunctional(parts));
         }
       }
     }
@@ -61,11 +61,10 @@ public class PropertiesOverviewEndpoint {
     return Response.ok(resultList).build();
   }
 
-  private boolean isFunctional(String key) {
-    if (key.equals("tim_id")) {
+  private boolean isFunctional(String[] parts) {
+    if (parts.length > 1 && parts[0].equals("tim") && parts[1].equals("id")) {
       return false;
     }
-    String[] parts = key.split("_");
     if (parts.length == 1) {
       return false;
     }
