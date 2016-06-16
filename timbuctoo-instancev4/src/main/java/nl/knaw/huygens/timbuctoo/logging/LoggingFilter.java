@@ -115,7 +115,6 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
 
   @Override
   public void filter(final ContainerRequestContext context) throws IOException {
-    clearMdc();
     final UUID id = UUID.randomUUID();
     MDC.put(MDC_ID, id.toString());
     MDC.put(MDC_PRE_LOG, "true");
@@ -170,11 +169,11 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
 
       String durationLog = getDuration((Stopwatch) requestContext.getProperty(STOPWATCH_PROPERTY));
       LOGGER.info(log + size + durationLog);
+      clearMdc();
     }
   }
 
   private void clearMdc() {
-    final String id = MDC.get(MDC_ID);
     MDC.remove(MDC_ID);
     MDC.remove(MDC_OUTPUT_BYTECOUNT);
     MDC.remove(MDC_DURATION_MILLISECONDS);
@@ -190,7 +189,6 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
     MDC.remove(MDC_RESPONSE_HEADERS);
     MDC.remove(MDC_RELEASE_HASH);
     MDC.remove(MDC_REQUEST_ENTITY);
-    LOGGER.info("MDC cleared for " + id);
   }
 
   private String getDuration(Stopwatch stopWatch) {
@@ -225,5 +223,6 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
     }
 
     LOGGER.info(context.getProperty(LOG_TEXT_PROPERTY) + size + durationLog);
+    clearMdc();
   }
 }
