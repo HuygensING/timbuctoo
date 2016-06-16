@@ -15,7 +15,6 @@ import java.util.function.Consumer;
 
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
-import static org.hamcrest.Matchers.is;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
@@ -29,14 +28,12 @@ public class DatabaseLogGeneratorTest {
   private ObjectMapper objectMapper;
   private LogEntryFactory logEntryFactory;
   private VertexLogEntry vertexLogEntry;
-  private EdgeLogEntryAdder edgeLogEntryAdder;
 
   @Before
   public void setUp() throws Exception {
     objectMapper = new ObjectMapper();
     logEntryFactory = mock(LogEntryFactory.class);
     vertexLogEntry = mock(VertexLogEntry.class);
-    edgeLogEntryAdder = mock(EdgeLogEntryAdder.class);
     given(logEntryFactory.createForVertex(any(Vertex.class))).willReturn(vertexLogEntry);
   }
 
@@ -45,9 +42,9 @@ public class DatabaseLogGeneratorTest {
     String first = "first";
     String second = "second";
     String third = "third";
-    GraphWrapper graphWrapper = newGraph().withVertex(vertexWithIdAndModifiedTimeStamp(first, 1464346423))
-                                          .withVertex(vertexWithIdAndModifiedTimeStamp(third, 1464346425))
-                                          .withVertex(vertexWithIdAndModifiedTimeStamp(second, 1464346424))
+    GraphWrapper graphWrapper = newGraph().withVertex(vertexWithIdAndModifiedTimeStamp(first, 1464346423L))
+                                          .withVertex(vertexWithIdAndModifiedTimeStamp(third, 1464346425L))
+                                          .withVertex(vertexWithIdAndModifiedTimeStamp(second, 1464346424L))
                                           .wrap();
     DatabaseLogGenerator instance = createInstance(graphWrapper);
 
@@ -62,9 +59,9 @@ public class DatabaseLogGeneratorTest {
 
   @Test
   public void generateAppendsAVertexEntryForEachVertexToTheLog() throws Exception {
-    GraphWrapper graphWrapper = newGraph().withVertex(vertexWithIdAndModifiedTimeStamp("id1", 1464346423))
-                                          .withVertex(vertexWithIdAndModifiedTimeStamp("id2", 1464346425))
-                                          .withVertex(vertexWithIdAndModifiedTimeStamp("id3", 1464346424))
+    GraphWrapper graphWrapper = newGraph().withVertex(vertexWithIdAndModifiedTimeStamp("id1", 1464346423L))
+                                          .withVertex(vertexWithIdAndModifiedTimeStamp("id2", 1464346425L))
+                                          .withVertex(vertexWithIdAndModifiedTimeStamp("id3", 1464346424L))
                                           .wrap();
     DatabaseLogGenerator instance = createInstance(graphWrapper);
 
@@ -73,31 +70,8 @@ public class DatabaseLogGeneratorTest {
     verify(vertexLogEntry, times(3)).appendToLog(any(DatabaseLog.class));
   }
 
-  @Test
-  public void generateLetsTheEdgeLogEntryAdderAddTheEdgeLogEntriesThatAreModifiedBeforeTheVertexIsAdded() {
-    GraphWrapper graphWrapper = newGraph().withVertex(vertexWithIdAndModifiedTimeStamp("id1", 1464346423)).wrap();
-    DatabaseLogGenerator instance = createInstance(graphWrapper);
-
-    instance.generate();
-
-    InOrder inOrder = inOrder(edgeLogEntryAdder, logEntryFactory);
-    inOrder.verify(edgeLogEntryAdder).appendEdgesToLog(any(DatabaseLog.class), argThat(is(1464346423L)));
-    inOrder.verify(logEntryFactory).createForVertex(argThat(likeVertex().withTimId("id1")));
-  }
-
-  @Test
-  public void generateLetsTheLogEntryFactoryAddEdgeLogEntriesToTheEdgeLogEntryCreator() {
-    GraphWrapper graphWrapper = newGraph().withVertex(vertexWithIdAndModifiedTimeStamp("id1", 1464346423)).wrap();
-    DatabaseLogGenerator instance = createInstance(graphWrapper);
-
-    instance.generate();
-
-    verify(vertexLogEntry).addEdgeLogEntriesTo(edgeLogEntryAdder);
-  }
-
-
   private DatabaseLogGenerator createInstance(GraphWrapper graphWrapper) {
-    return new DatabaseLogGenerator(graphWrapper, logEntryFactory, edgeLogEntryAdder);
+    return new DatabaseLogGenerator(graphWrapper, logEntryFactory);
   }
 
   private Consumer<VertexBuilder> vertexWithIdAndModifiedTimeStamp(String id, long timeStamp) {

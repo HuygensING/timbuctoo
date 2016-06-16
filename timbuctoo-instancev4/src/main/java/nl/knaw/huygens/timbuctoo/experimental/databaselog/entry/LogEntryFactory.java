@@ -29,7 +29,7 @@ public class LogEntryFactory {
     if (previous.hasNext()) {
       return new UpdateVertexLogEntry(vertex, previous.next());
     }
-    return new CreateVertexLogEntry(vertex, this);
+    return new CreateVertexLogEntry(vertex);
   }
 
   private Edge getPreviousVersion(Edge edge) {

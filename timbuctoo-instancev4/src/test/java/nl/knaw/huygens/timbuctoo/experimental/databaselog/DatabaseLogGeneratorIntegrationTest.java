@@ -50,7 +50,7 @@ public class DatabaseLogGeneratorIntegrationTest {
                               .withIncomingRelation("VERSION_OF", "v3")
       ).wrap();
     DatabaseLogGenerator logGenerator =
-      new DatabaseLogGenerator(graphWrapper, new LogEntryFactory(), new EdgeLogEntryAdder(), log);
+      new DatabaseLogGenerator(graphWrapper, new LogEntryFactory(), log);
 
     logGenerator.generate();
 
