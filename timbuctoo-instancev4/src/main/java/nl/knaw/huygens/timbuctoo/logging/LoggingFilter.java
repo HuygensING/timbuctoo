@@ -171,7 +171,8 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
       String id = MDC.get(MDC_ID);
       LOGGER.info(log + size + durationLog);
       try {
-        clearMdc();
+        LOGGER.info("clearing MDC for " + id);
+        clearMdc(id);
         LOGGER.info("MDC cleared for " + id);
       } catch (Exception e) {
         LOGGER.error("Exception while clearing mdc " + id, e);
@@ -179,7 +180,8 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
     }
   }
 
-  private void clearMdc() {
+  private void clearMdc(String id) {
+    LOGGER.info("entering MDC clear method " + id);
     MDC.remove(MDC_ID);
     MDC.remove(MDC_OUTPUT_BYTECOUNT);
     MDC.remove(MDC_DURATION_MILLISECONDS);
@@ -195,6 +197,7 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
     MDC.remove(MDC_RESPONSE_HEADERS);
     MDC.remove(MDC_RELEASE_HASH);
     MDC.remove(MDC_REQUEST_ENTITY);
+    LOGGER.info("leaving MDC clear method " + id);
   }
 
   private String getDuration(Stopwatch stopWatch) {
