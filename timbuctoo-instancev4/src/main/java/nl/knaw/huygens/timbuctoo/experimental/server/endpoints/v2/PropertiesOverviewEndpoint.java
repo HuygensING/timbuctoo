@@ -15,7 +15,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
@@ -54,17 +53,19 @@ public class PropertiesOverviewEndpoint {
         if (useKey) {
           boolean functional = isFunctional(parts);
           String collection = "";
+          String propertyName = "";
           if (functional) {
             collection = vres.getCollectionForType(parts[0]).get().getCollectionName();
+            propertyName = parts[1];
           }
-          result.add(key + ";" + functional + ";" + collection);
+          result.add(key + ";" + functional + ";" + collection + ";" + propertyName);
         }
       }
     }
     ArrayList<String> resultList = new ArrayList<String>();
     resultList.addAll(result);
     Collections.sort(resultList);
-    resultList.add(0, "PROPERTY NAME;IS FUNCTIONAL?;FOUND COLLECTION");
+    resultList.add(0, "PROPERTY NAME;IS FUNCTIONAL?;FOUND COLLECTION;PROPERTY NAME");
     return Response.ok(resultList).build();
   }
 
