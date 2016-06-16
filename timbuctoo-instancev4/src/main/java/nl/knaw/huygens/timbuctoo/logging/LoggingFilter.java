@@ -166,10 +166,10 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
       String size = " (0 bytes)";
 
       String durationLog = getDuration((Stopwatch) requestContext.getProperty(STOPWATCH_PROPERTY));
-
+      String id = MDC.get(MDC_ID);
       LOGGER.info(log + size + durationLog);
       clearMdc();
-      LOGGER.info("MDC cleared");
+      LOGGER.info("MDC cleared for " + id);
     }
   }
 
