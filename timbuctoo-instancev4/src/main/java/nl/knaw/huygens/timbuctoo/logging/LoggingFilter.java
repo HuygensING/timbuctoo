@@ -3,6 +3,8 @@ package nl.knaw.huygens.timbuctoo.logging;
 import com.google.common.base.Stopwatch;
 import com.google.common.io.CountingOutputStream;
 import org.glassfish.jersey.message.MessageUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import javax.annotation.Priority;
@@ -26,13 +28,13 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 @PreMatching
 @Priority(Integer.MIN_VALUE)
 public final class LoggingFilter implements ContainerRequestFilter, ContainerResponseFilter, WriterInterceptor {
 
-  private static final Logger LOGGER = Logger.getLogger(LoggingFilter.class.getName());
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(LoggingFilter.class);
   private static final String WRAPPED_STREAM_PROPERTY = LoggingFilter.class.getName() + "wrappedStream";
   private static final String LOG_TEXT_PROPERTY = LoggingFilter.class.getName() + "logText";
   private static final String STOPWATCH_PROPERTY = LoggingFilter.class.getName() + "stopwatch";
@@ -168,8 +170,12 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
       String durationLog = getDuration((Stopwatch) requestContext.getProperty(STOPWATCH_PROPERTY));
       String id = MDC.get(MDC_ID);
       LOGGER.info(log + size + durationLog);
-      clearMdc();
-      LOGGER.info("MDC cleared for " + id);
+      try {
+        clearMdc();
+        LOGGER.info("MDC cleared for " + id);
+      } catch (Exception e) {
+        LOGGER.error("Exception while clearing mdc " + id, e);
+      }
     }
   }
 
