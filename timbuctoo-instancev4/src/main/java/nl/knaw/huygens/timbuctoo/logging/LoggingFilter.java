@@ -169,6 +169,7 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
 
       LOGGER.info(log + size + durationLog);
       clearMdc();
+      LOGGER.info("MDC cleared");
     }
   }
 
