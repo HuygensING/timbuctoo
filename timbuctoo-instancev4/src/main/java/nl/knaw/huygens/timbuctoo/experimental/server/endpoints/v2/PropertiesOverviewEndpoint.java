@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.experimental.server.endpoints.v2;
 
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 
@@ -9,7 +8,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.ws.rs.GET;
