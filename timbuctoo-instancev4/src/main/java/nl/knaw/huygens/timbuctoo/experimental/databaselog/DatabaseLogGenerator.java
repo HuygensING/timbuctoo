@@ -20,7 +20,7 @@ import java.util.Comparator;
  * Currently (as of 2016-06-13) the Timbuctoo database contains all versions of all entities and all versions of all
  * relations as one interlinked graph. The old versions are filtered out while querying. We want to simplify the
  * database model and the code that uses the database directly, without loosing information. Therefore we're moving the
- * history to a separate log.
+ * history to a separate databaseLog.
  * </p>
  * <p>
  * This class creates that log from the current format.
@@ -48,6 +48,7 @@ public class DatabaseLogGenerator {
   private final GraphWrapper graphWrapper;
   private final LogEntryFactory logEntryFactory;
   private final EdgeLogEntryAdder edgeLogEntryAdder;
+  private final DatabaseLog databaseLog;
   private final ObjectMapper objectMapper;
 
   public DatabaseLogGenerator(GraphWrapper graphWrapper) {
@@ -60,15 +61,20 @@ public class DatabaseLogGenerator {
 
   DatabaseLogGenerator(GraphWrapper graphWrapper, LogEntryFactory logEntryFactory,
                        EdgeLogEntryAdder edgeLogEntryAdder) {
+    this(graphWrapper, logEntryFactory, edgeLogEntryAdder, new DatabaseLog());
+
+  }
+
+  DatabaseLogGenerator(GraphWrapper graphWrapper, LogEntryFactory logEntryFactory,
+                              EdgeLogEntryAdder edgeLogEntryAdder, DatabaseLog databaseLog) {
     this.graphWrapper = graphWrapper;
     this.logEntryFactory = logEntryFactory;
     this.edgeLogEntryAdder = edgeLogEntryAdder;
-    objectMapper = new ObjectMapper();
+    this.databaseLog = databaseLog;
+    this.objectMapper = new ObjectMapper();
   }
 
   public void generate() {
-    DatabaseLog databaseLog = new DatabaseLog();
-
     graphWrapper.getGraph().traversal()
                 .V().has("modified")
                 .not(__.has(T.label, LabelP.of("searchresult"))) // ignore search results
