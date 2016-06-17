@@ -24,7 +24,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
-public class DatabaseLogGeneratorTest {
+public class DatabaseLogTest {
 
   private ObjectMapper objectMapper;
   private LogEntryFactory logEntryFactory;
@@ -58,7 +58,7 @@ public class DatabaseLogGeneratorTest {
                         .withProperty("rev", 1)
       )
       .wrap();
-    DatabaseLogGenerator instance = createInstance(graphWrapper);
+    DatabaseLog instance = createInstance(graphWrapper);
 
     instance.generate();
 
@@ -85,11 +85,11 @@ public class DatabaseLogGeneratorTest {
                         .withProperty("rev", 1)
       )
       .wrap();
-    DatabaseLogGenerator instance = createInstance(graphWrapper);
+    DatabaseLog instance = createInstance(graphWrapper);
 
     instance.generate();
 
-    verify(vertexLogEntry, times(3)).appendToLog(any(DatabaseLog.class));
+    verify(vertexLogEntry, times(3)).appendToLog(any(LogOutput.class));
   }
 
   @Test
@@ -108,7 +108,7 @@ public class DatabaseLogGeneratorTest {
                         .withProperty("rev", 2)
       )
       .wrap();
-    DatabaseLogGenerator instance = createInstance(graphWrapper);
+    DatabaseLog instance = createInstance(graphWrapper);
 
     instance.generate();
 
@@ -141,7 +141,7 @@ public class DatabaseLogGeneratorTest {
                               )
       )
       .wrap();
-    DatabaseLogGenerator instance = createInstance(graphWrapper);
+    DatabaseLog instance = createInstance(graphWrapper);
 
     instance.generate();
 
@@ -150,8 +150,8 @@ public class DatabaseLogGeneratorTest {
                                                                       .withProperty("rev", 2)));
   }
 
-  private DatabaseLogGenerator createInstance(GraphWrapper graphWrapper) {
-    return new DatabaseLogGenerator(graphWrapper, logEntryFactory);
+  private DatabaseLog createInstance(GraphWrapper graphWrapper) {
+    return new DatabaseLog(graphWrapper, logEntryFactory);
   }
 
   private String getChangeStringWithTimestamp(long timeStamp) {

@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.experimental.databaselog.entry;
 
 import com.google.common.collect.Sets;
-import nl.knaw.huygens.timbuctoo.experimental.databaselog.DatabaseLog;
+import nl.knaw.huygens.timbuctoo.experimental.databaselog.LogOutput;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -19,7 +19,7 @@ public class CreateVertexLogEntryTest {
   @Test
   public void appendToLogAddsNewVertexLineForAVertexWithoutPreviousVersions() {
     Vertex vertex = vertex().build();
-    DatabaseLog dbLog = mock(DatabaseLog.class);
+    LogOutput dbLog = mock(LogOutput.class);
     CreateVertexLogEntry   instance = new CreateVertexLogEntry(vertex);
 
     instance.appendToLog(dbLog);
@@ -37,7 +37,7 @@ public class CreateVertexLogEntryTest {
       .withProperty(key2, "value")
       .withProperty(key3, "value")
       .build();
-    DatabaseLog dbLog = mock(DatabaseLog.class);
+    LogOutput dbLog = mock(LogOutput.class);
     CreateVertexLogEntry instance = new CreateVertexLogEntry(vertex);
 
     instance.appendToLog(dbLog);
@@ -54,7 +54,7 @@ public class CreateVertexLogEntryTest {
     Vertex vertex = vertex()
       .withProperty(key1, "value")
       .build();
-    DatabaseLog dbLog = mock(DatabaseLog.class);
+    LogOutput dbLog = mock(LogOutput.class);
     CreateVertexLogEntry vertexLogEntry = new CreateVertexLogEntry(vertex);
 
     vertexLogEntry.appendToLog(dbLog);
@@ -66,14 +66,14 @@ public class CreateVertexLogEntryTest {
 
   @Test
   public void appendToLogIgnoresThePropertiesToIgnore() {
-    DatabaseLog databaseLog = mock(DatabaseLog.class);
+    LogOutput logOutput = mock(LogOutput.class);
     String propToIgnore = "propToIgnore";
     Vertex vertex = vertex().withProperty(propToIgnore, "value").build();
     CreateVertexLogEntry instance = new CreateVertexLogEntry(vertex, Sets.newHashSet(propToIgnore));
 
-    instance.appendToLog(databaseLog);
+    instance.appendToLog(logOutput);
 
-    verify(databaseLog, never()).newProperty(argThat(likeProperty().withKey(propToIgnore)));
+    verify(logOutput, never()).newProperty(argThat(likeProperty().withKey(propToIgnore)));
   }
 
 }

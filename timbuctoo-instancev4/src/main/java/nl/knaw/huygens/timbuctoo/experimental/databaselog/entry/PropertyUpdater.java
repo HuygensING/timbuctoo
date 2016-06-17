@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.experimental.databaselog.entry;
 
 import com.google.common.collect.Sets;
-import nl.knaw.huygens.timbuctoo.experimental.databaselog.DatabaseLog;
+import nl.knaw.huygens.timbuctoo.experimental.databaselog.LogOutput;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
 
@@ -31,12 +31,12 @@ class PropertyUpdater {
     return element.keys().stream().filter(key -> !propertiesToIgnore.contains(key)).collect(Collectors.toSet());
   }
 
-  private void addNewProperties(DatabaseLog dbLog) {
+  private void addNewProperties(LogOutput dbLog) {
     Set<String> newProperties = Sets.difference(newKeys, oldKeys);
     newProperties.forEach(key -> dbLog.newProperty(element.property(key)));
   }
 
-  private void updateExistingProperties(DatabaseLog dbLog) {
+  private void updateExistingProperties(LogOutput dbLog) {
     Set<String> existing = Sets.intersection(newKeys, oldKeys);
     existing.forEach(key -> {
       Property<Object> latestProperty = element.property(key);
@@ -46,12 +46,12 @@ class PropertyUpdater {
     });
   }
 
-  private void removeDeletedProperties(DatabaseLog dbLog) {
+  private void removeDeletedProperties(LogOutput dbLog) {
     Set<String> deletedProperties = Sets.difference(oldKeys, newKeys);
     deletedProperties.forEach(dbLog::deleteProperty);
   }
 
-  public void updateProperties(DatabaseLog dbLog) {
+  public void updateProperties(LogOutput dbLog) {
     addNewProperties(dbLog);
     updateExistingProperties(dbLog);
     removeDeletedProperties(dbLog);

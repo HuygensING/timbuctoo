@@ -17,10 +17,10 @@ import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 
-public class DatabaseLogGeneratorIntegrationTest {
+public class DatabaseLogIntegrationTest {
   @Test
   public void generateFirstAddsTheVerticesAndThenAddsTheEdgesForATimeStamp() {
-    DatabaseLog log = mock(DatabaseLog.class);
+    LogOutput log = mock(LogOutput.class);
     UUID rel1Uuid = UUID.fromString("ff65089c-2ded-4af0-95e7-0476979f96b8");
     UUID rel2Uuid = UUID.fromString("a628b090-ec7f-4608-9356-61728355ad5a");
     GraphWrapper graphWrapper = newGraph()
@@ -49,8 +49,8 @@ public class DatabaseLogGeneratorIntegrationTest {
                               )
                               .withIncomingRelation("VERSION_OF", "v3")
       ).wrap();
-    DatabaseLogGenerator logGenerator =
-      new DatabaseLogGenerator(graphWrapper, new LogEntryFactory(), log);
+    DatabaseLog logGenerator =
+      new DatabaseLog(graphWrapper, new LogEntryFactory(), log);
 
     logGenerator.generate();
 

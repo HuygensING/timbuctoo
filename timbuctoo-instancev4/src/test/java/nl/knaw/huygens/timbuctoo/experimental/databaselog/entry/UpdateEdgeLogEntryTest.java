@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.experimental.databaselog.entry;
 
 import com.google.common.collect.Sets;
-import nl.knaw.huygens.timbuctoo.experimental.databaselog.DatabaseLog;
+import nl.knaw.huygens.timbuctoo.experimental.databaselog.LogOutput;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.junit.Test;
 
@@ -23,12 +23,12 @@ public class UpdateEdgeLogEntryTest {
   public void appendToLogLogsTheEdgeIsUpdated() {
     Edge edge = edge().withProperty("rev", 1).build();
     Edge prevEdge = edge().withProperty("rev", 2).build();
-    DatabaseLog databaseLog = mock(DatabaseLog.class);
+    LogOutput logOutput = mock(LogOutput.class);
     UpdateEdgeLogEntry instance = new UpdateEdgeLogEntry(edge, prevEdge);
 
-    instance.appendToLog(databaseLog);
+    instance.appendToLog(logOutput);
 
-    verify(databaseLog).updateEdge(edge);
+    verify(logOutput).updateEdge(edge);
   }
 
   @Test
@@ -42,7 +42,7 @@ public class UpdateEdgeLogEntryTest {
                       .withProperty("oldProp", "oldValue")
                       .withProperty("rev", 2)
                       .build();
-    DatabaseLog dbLog = mock(DatabaseLog.class);
+    LogOutput dbLog = mock(LogOutput.class);
     UpdateEdgeLogEntry instance = new UpdateEdgeLogEntry(edge, prevEdge);
 
     instance.appendToLog(dbLog);
@@ -67,7 +67,7 @@ public class UpdateEdgeLogEntryTest {
                       .withProperty("oldProp", "oldValue")
                       .withProperty("rev", 2)
                       .build();
-    DatabaseLog dbLog = mock(DatabaseLog.class);
+    LogOutput dbLog = mock(LogOutput.class);
     UpdateEdgeLogEntry instance = new UpdateEdgeLogEntry(edge, prevEdge);
 
     instance.appendToLog(dbLog);
@@ -90,7 +90,7 @@ public class UpdateEdgeLogEntryTest {
                       .withProperty("oldProp", "oldValue")
                       .withProperty("rev", 2)
                       .build();
-    DatabaseLog dbLog = mock(DatabaseLog.class);
+    LogOutput dbLog = mock(LogOutput.class);
     UpdateEdgeLogEntry instance = new UpdateEdgeLogEntry(edge, prevEdge);
 
     instance.appendToLog(dbLog);
@@ -117,7 +117,7 @@ public class UpdateEdgeLogEntryTest {
                       .withProperty(newPropToIgnore, "value")
                       .withProperty("rev", 2)
                       .build();
-    DatabaseLog dbLog = mock(DatabaseLog.class);
+    LogOutput dbLog = mock(LogOutput.class);
     UpdateEdgeLogEntry instance = new UpdateEdgeLogEntry(edge, prevEdge, propertiesToIgnore);
 
     instance.appendToLog(dbLog);

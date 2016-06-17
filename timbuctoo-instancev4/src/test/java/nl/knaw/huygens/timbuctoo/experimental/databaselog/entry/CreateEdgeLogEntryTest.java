@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.experimental.databaselog.entry;
 
 import com.google.common.collect.Sets;
-import nl.knaw.huygens.timbuctoo.experimental.databaselog.DatabaseLog;
+import nl.knaw.huygens.timbuctoo.experimental.databaselog.LogOutput;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.junit.Test;
 
@@ -18,7 +18,7 @@ public class CreateEdgeLogEntryTest {
   public void appendToLogLogsANewEdgesHasBeenCreated() {
     Edge edge = edge().build();
     CreateEdgeLogEntry instance = new CreateEdgeLogEntry(edge);
-    DatabaseLog dbLog = mock(DatabaseLog.class);
+    LogOutput dbLog = mock(LogOutput.class);
 
     instance.appendToLog(dbLog);
 
@@ -32,7 +32,7 @@ public class CreateEdgeLogEntryTest {
                       .withProperty("prop3", "value")
                       .build();
     CreateEdgeLogEntry instance = new CreateEdgeLogEntry(edge);
-    DatabaseLog dbLog = mock(DatabaseLog.class);
+    LogOutput dbLog = mock(LogOutput.class);
 
     instance.appendToLog(dbLog);
 
@@ -43,14 +43,14 @@ public class CreateEdgeLogEntryTest {
 
   @Test
   public void appendToLogIgnoresThePropertiesToIgnore() {
-    DatabaseLog databaseLog = mock(DatabaseLog.class);
+    LogOutput logOutput = mock(LogOutput.class);
     String propToIgnore = "propToIgnore";
     Edge edge = edge().withProperty(propToIgnore, "value").build();
     CreateEdgeLogEntry instance = new CreateEdgeLogEntry(edge, Sets.newHashSet(propToIgnore));
 
-    instance.appendToLog(databaseLog);
+    instance.appendToLog(logOutput);
 
-    verify(databaseLog, never()).newProperty(argThat(likeProperty().withKey(propToIgnore)));
+    verify(logOutput, never()).newProperty(argThat(likeProperty().withKey(propToIgnore)));
   }
 
 }

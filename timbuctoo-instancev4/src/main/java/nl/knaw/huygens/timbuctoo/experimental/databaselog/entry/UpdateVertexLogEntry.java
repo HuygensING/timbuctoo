@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.experimental.databaselog.entry;
 
-import nl.knaw.huygens.timbuctoo.experimental.databaselog.DatabaseLog;
+import nl.knaw.huygens.timbuctoo.experimental.databaselog.LogOutput;
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.LogEntry;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -23,7 +23,7 @@ class UpdateVertexLogEntry implements LogEntry {
   }
 
   @Override
-  public void appendToLog(DatabaseLog dbLog) {
+  public void appendToLog(LogOutput dbLog) {
     dbLog.updateVertex(vertex);
     propertyUpdater.updateProperties(dbLog);
   }

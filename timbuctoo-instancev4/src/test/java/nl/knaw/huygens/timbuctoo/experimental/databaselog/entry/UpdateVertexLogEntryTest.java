@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.experimental.databaselog.entry;
 
 import com.google.common.collect.Sets;
-import nl.knaw.huygens.timbuctoo.experimental.databaselog.DatabaseLog;
+import nl.knaw.huygens.timbuctoo.experimental.databaselog.LogOutput;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -20,7 +20,7 @@ public class UpdateVertexLogEntryTest {
     Vertex oldVersion = vertex().withId("id").withProperty("rev", 1).build();
     Vertex vertex = vertex().withId("id").withProperty("rev", 2).build();
     UpdateVertexLogEntry instance = new UpdateVertexLogEntry(vertex, oldVersion);
-    DatabaseLog dbLog = mock(DatabaseLog.class);
+    LogOutput dbLog = mock(LogOutput.class);
 
     instance.appendToLog(dbLog);
 
@@ -38,7 +38,7 @@ public class UpdateVertexLogEntryTest {
                             .withProperty("oldProp", "oldValue")
                             .withProperty("rev", 2)
                             .build();
-    DatabaseLog dbLog = mock(DatabaseLog.class);
+    LogOutput dbLog = mock(LogOutput.class);
     UpdateVertexLogEntry instance = new UpdateVertexLogEntry(vertex, oldVersion);
 
     instance.appendToLog(dbLog);
@@ -63,7 +63,7 @@ public class UpdateVertexLogEntryTest {
                             .withProperty("oldProp", "oldValue")
                             .withProperty("rev", 2)
                             .build();
-    DatabaseLog dbLog = mock(DatabaseLog.class);
+    LogOutput dbLog = mock(LogOutput.class);
     UpdateVertexLogEntry instance = new UpdateVertexLogEntry(vertex, oldVersion);
 
     instance.appendToLog(dbLog);
@@ -86,7 +86,7 @@ public class UpdateVertexLogEntryTest {
                             .withProperty("oldProp", "oldValue")
                             .withProperty("rev", 2)
                             .build();
-    DatabaseLog dbLog = mock(DatabaseLog.class);
+    LogOutput dbLog = mock(LogOutput.class);
     UpdateVertexLogEntry instance = new UpdateVertexLogEntry(vertex, oldVersion);
 
     instance.appendToLog(dbLog);
@@ -113,7 +113,7 @@ public class UpdateVertexLogEntryTest {
                             .withProperty(newPropToIgnore, "value")
                             .withProperty("rev", 2)
                             .build();
-    DatabaseLog dbLog = mock(DatabaseLog.class);
+    LogOutput dbLog = mock(LogOutput.class);
     UpdateVertexLogEntry instance = new UpdateVertexLogEntry(vertex, oldVersion, propertiesToIgnore);
 
     instance.appendToLog(dbLog);

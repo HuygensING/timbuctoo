@@ -9,5 +9,5 @@ public interface LogEntry {
     "wwperson_birthDate_sort", "wwperson_deathDate_sort", "wwperson_names_sort", "wwdocument_title",
     "wwdocument_creator_sort", "variations");
 
-  void appendToLog(DatabaseLog dbLog);
+  void appendToLog(LogOutput dbLog);
 }
