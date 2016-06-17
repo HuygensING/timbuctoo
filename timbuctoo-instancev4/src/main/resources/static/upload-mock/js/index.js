@@ -1669,7 +1669,9 @@ var CollectionIndex = (function (_React$Component) {
 				});
 			}).reduce(function (a, b) {
 				return a.concat(b);
-			}, []).length;
+			}, []).filter(function (x, idx, self) {
+				return self.indexOf(x) === idx;
+			}).length;
 
 			return confirmedColCount + mappings.collections[sheet.collection].ignoredColumns.length === sheet.variables.length;
 		}
