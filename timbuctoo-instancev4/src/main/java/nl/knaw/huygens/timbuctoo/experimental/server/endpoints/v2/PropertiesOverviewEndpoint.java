@@ -25,9 +25,6 @@ public class PropertiesOverviewEndpoint {
   private final TinkerpopGraphManager graphManager;
   private Vres vres;
 
-  private static final String[] DONT_USE = {"relationtype" , "searchresult"};
-
-
   public PropertiesOverviewEndpoint(Vres vres, TinkerpopGraphManager graphManager) {
     this.vres = vres;
     this.graphManager = graphManager;
@@ -48,26 +45,18 @@ public class PropertiesOverviewEndpoint {
     ArrayList<String> resultList = new ArrayList<String>();
     for (String key : result) {
       String[] parts = key.split("_");
-      boolean useKey = true;
-      if (parts.length > 1) {
-        for (String nf : DONT_USE) {
-          if (nf.equals(parts[0])) {
-            useKey = false;
-          }
-        }
+      boolean functional = isFunctional(parts);
+      String collection = "";
+      String propertyName = "";
+      String detectedVre = "";
+      if (vres.getCollectionForType(parts[0]).isPresent()) {
+        collection = vres.getCollectionForType(parts[0]).get().getCollectionName();
+        propertyName = parts[1];
+        detectedVre = vres.getCollectionForType(parts[0]).get().getVre().getVreName();
+      } else {
+        collection = "no collection";
       }
-      if (useKey) {
-        boolean functional = isFunctional(parts);
-        String collection = "";
-        String propertyName = "";
-        String detectedVre = "";
-        if (functional && vres.getCollectionForType(parts[0]).isPresent()) {
-          collection = vres.getCollectionForType(parts[0]).get().getCollectionName();
-          propertyName = parts[1];
-          detectedVre = vres.getCollectionForType(parts[0]).get().getVre().getVreName();
-        }
-        resultList.add(key + ";" + functional + ";" + detectedVre + ";" + collection + ";" + propertyName);
-      }
+      resultList.add(key + ";" + functional + ";" + detectedVre + ";" + collection + ";" + propertyName);
     }
     Collections.sort(resultList);
     resultList.add(0, "PROPERTY NAME;IS FUNCTIONAL?;DETECTED VRE;FOUND COLLECTION;PROPERTY NAME");
