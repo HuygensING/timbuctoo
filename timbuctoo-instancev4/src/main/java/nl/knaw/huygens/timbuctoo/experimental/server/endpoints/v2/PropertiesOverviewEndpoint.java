@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.experimental.server.endpoints.v2;
 
+import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 
@@ -49,17 +50,24 @@ public class PropertiesOverviewEndpoint {
       String collection = "";
       String propertyName = "";
       String detectedVre = "";
+      LocalProperty localProperty = null;
+      String propertyType = "missing property configuration";
       if (vres.getCollectionForType(parts[0]).isPresent()) {
         collection = vres.getCollectionForType(parts[0]).get().getCollectionName();
         propertyName = parts[1];
         detectedVre = vres.getCollectionForType(parts[0]).get().getVre().getVreName();
+        localProperty = vres.getCollectionForType(parts[0]).get().getWriteableProperties().get(propertyName);
+        if (localProperty != null && localProperty.getGuiTypeId() != null) {
+          propertyType = localProperty.getGuiTypeId();
+        }
       } else {
         collection = "no collection";
       }
-      resultList.add(key + ";" + functional + ";" + detectedVre + ";" + collection + ";" + propertyName);
+      resultList.add(key + ";" + functional + ";" + detectedVre + ";" + collection + ";" + propertyName + ";" +
+          propertyType);
     }
     Collections.sort(resultList);
-    resultList.add(0, "PROPERTY NAME;IS FUNCTIONAL?;DETECTED VRE;FOUND COLLECTION;PROPERTY NAME");
+    resultList.add(0, "PROPERTY NAME;IS FUNCTIONAL?;DETECTED VRE;FOUND COLLECTION;PROPERTY NAME;PROPERTY TYPE");
     return Response.ok(resultList).build();
   }
 
