@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.experimental.databaselog.entry;
 
-import nl.knaw.huygens.timbuctoo.experimental.databaselog.EdgeLogEntry;
-import nl.knaw.huygens.timbuctoo.experimental.databaselog.VertexLogEntry;
+import nl.knaw.huygens.timbuctoo.experimental.databaselog.LogEntry;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -23,7 +22,7 @@ public class LogEntryFactoryTest {
     Vertex vertex = vertex().build();
     LogEntryFactory instance = new LogEntryFactory();
 
-    VertexLogEntry entry = instance.createForVertex(vertex);
+    LogEntry entry = instance.createForVertex(vertex);
 
     assertThat(entry, is(instanceOf(CreateVertexLogEntry.class)));
   }
@@ -33,7 +32,7 @@ public class LogEntryFactoryTest {
     Vertex vertex = vertex().withIncomingRelation("VERSION_OF", vertex().build()).build();
     LogEntryFactory instance = new LogEntryFactory();
 
-    VertexLogEntry entry = instance.createForVertex(vertex);
+    LogEntry entry = instance.createForVertex(vertex);
 
     assertThat(entry, is(instanceOf(UpdateVertexLogEntry.class)));
   }
@@ -46,7 +45,7 @@ public class LogEntryFactoryTest {
                       .build();
     LogEntryFactory instance = new LogEntryFactory();
 
-    EdgeLogEntry entry = instance.createForEdge(edge);
+    LogEntry entry = instance.createForEdge(edge);
 
     assertThat(entry, is(instanceOf(CreateEdgeLogEntry.class)));
   }
@@ -73,7 +72,7 @@ public class LogEntryFactoryTest {
     Edge edge = graph.traversal().E().has("tim_id", edgeId.toString()).has("rev", 2).next();
     LogEntryFactory instance = new LogEntryFactory();
 
-    EdgeLogEntry entry = instance.createForEdge(edge);
+    LogEntry entry = instance.createForEdge(edge);
 
     assertThat(entry, is(instanceOf(UpdateEdgeLogEntry.class)));
   }

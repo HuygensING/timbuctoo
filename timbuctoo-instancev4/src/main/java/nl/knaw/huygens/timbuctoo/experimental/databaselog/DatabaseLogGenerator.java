@@ -63,8 +63,7 @@ public class DatabaseLogGenerator {
     this(graphWrapper, logEntryFactory, new DatabaseLog());
   }
 
-  DatabaseLogGenerator(GraphWrapper graphWrapper, LogEntryFactory logEntryFactory,
-                       DatabaseLog databaseLog) {
+  DatabaseLogGenerator(GraphWrapper graphWrapper, LogEntryFactory logEntryFactory, DatabaseLog databaseLog) {
     this.graphWrapper = graphWrapper;
     this.logEntryFactory = logEntryFactory;
     this.databaseLog = databaseLog;

@@ -28,15 +28,15 @@ public class DatabaseLogGeneratorTest {
 
   private ObjectMapper objectMapper;
   private LogEntryFactory logEntryFactory;
-  private VertexLogEntry vertexLogEntry;
+  private LogEntry vertexLogEntry;
 
   @Before
   public void setUp() throws Exception {
     objectMapper = new ObjectMapper();
     logEntryFactory = mock(LogEntryFactory.class);
-    vertexLogEntry = mock(VertexLogEntry.class);
+    vertexLogEntry = mock(LogEntry.class);
     given(logEntryFactory.createForVertex(any(Vertex.class))).willReturn(vertexLogEntry);
-    given(logEntryFactory.createForEdge(any(Edge.class))).willReturn(mock(EdgeLogEntry.class));
+    given(logEntryFactory.createForEdge(any(Edge.class))).willReturn(mock(LogEntry.class));
   }
 
   @Test

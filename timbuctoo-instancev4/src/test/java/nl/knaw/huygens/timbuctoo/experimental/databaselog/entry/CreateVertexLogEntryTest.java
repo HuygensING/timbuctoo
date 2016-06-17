@@ -2,39 +2,25 @@ package nl.knaw.huygens.timbuctoo.experimental.databaselog.entry;
 
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.DatabaseLog;
-import nl.knaw.huygens.timbuctoo.experimental.databaselog.EdgeLogEntry;
-import nl.knaw.huygens.timbuctoo.experimental.databaselog.VertexLogEntry;
-import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
 
 import static nl.knaw.huygens.timbuctoo.search.MockVertexBuilder.vertex;
 import static nl.knaw.huygens.timbuctoo.util.PropertyMatcher.likeProperty;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class CreateVertexLogEntryTest {
-
-  private LogEntryFactory logEntryFactory;
-
-  @Before
-  public void setUp() throws Exception {
-    logEntryFactory = mock(LogEntryFactory.class);
-    when(logEntryFactory.createForEdge(any(Edge.class))).thenReturn(mock(EdgeLogEntry.class));
-  }
 
   @Test
   public void appendToLogAddsNewVertexLineForAVertexWithoutPreviousVersions() {
     Vertex vertex = vertex().build();
     DatabaseLog dbLog = mock(DatabaseLog.class);
-    VertexLogEntry instance = new CreateVertexLogEntry(vertex);
+    CreateVertexLogEntry   instance = new CreateVertexLogEntry(vertex);
 
     instance.appendToLog(dbLog);
 

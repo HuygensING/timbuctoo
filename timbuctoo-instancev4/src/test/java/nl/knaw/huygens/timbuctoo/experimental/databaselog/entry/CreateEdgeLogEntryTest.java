@@ -17,7 +17,7 @@ public class CreateEdgeLogEntryTest {
   @Test
   public void appendToLogLogsANewEdgesHasBeenCreated() {
     Edge edge = edge().build();
-    CreateEdgeLogEntry instance = new CreateEdgeLogEntry(edge, 1000L, "id");
+    CreateEdgeLogEntry instance = new CreateEdgeLogEntry(edge);
     DatabaseLog dbLog = mock(DatabaseLog.class);
 
     instance.appendToLog(dbLog);
@@ -31,7 +31,7 @@ public class CreateEdgeLogEntryTest {
                       .withProperty("prop2", "value")
                       .withProperty("prop3", "value")
                       .build();
-    CreateEdgeLogEntry instance = new CreateEdgeLogEntry(edge, 1000L, "id");
+    CreateEdgeLogEntry instance = new CreateEdgeLogEntry(edge);
     DatabaseLog dbLog = mock(DatabaseLog.class);
 
     instance.appendToLog(dbLog);
@@ -46,7 +46,7 @@ public class CreateEdgeLogEntryTest {
     DatabaseLog databaseLog = mock(DatabaseLog.class);
     String propToIgnore = "propToIgnore";
     Edge edge = edge().withProperty(propToIgnore, "value").build();
-    CreateEdgeLogEntry instance = new CreateEdgeLogEntry(edge, 1000L, "id", Sets.newHashSet(propToIgnore));
+    CreateEdgeLogEntry instance = new CreateEdgeLogEntry(edge, Sets.newHashSet(propToIgnore));
 
     instance.appendToLog(databaseLog);
 

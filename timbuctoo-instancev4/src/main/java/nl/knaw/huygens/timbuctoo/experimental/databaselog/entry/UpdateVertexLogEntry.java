@@ -2,12 +2,11 @@ package nl.knaw.huygens.timbuctoo.experimental.databaselog.entry;
 
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.DatabaseLog;
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.LogEntry;
-import nl.knaw.huygens.timbuctoo.experimental.databaselog.VertexLogEntry;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Set;
 
-class UpdateVertexLogEntry implements VertexLogEntry {
+class UpdateVertexLogEntry implements LogEntry {
   private final Vertex vertex;
   private final Vertex previous;
   private final PropertyUpdater propertyUpdater;

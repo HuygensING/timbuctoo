@@ -24,7 +24,7 @@ public class UpdateEdgeLogEntryTest {
     Edge edge = edge().withProperty("rev", 1).build();
     Edge prevEdge = edge().withProperty("rev", 2).build();
     DatabaseLog databaseLog = mock(DatabaseLog.class);
-    UpdateEdgeLogEntry instance = new UpdateEdgeLogEntry(edge, TIMESTAMP, ID, prevEdge);
+    UpdateEdgeLogEntry instance = new UpdateEdgeLogEntry(edge, prevEdge);
 
     instance.appendToLog(databaseLog);
 
@@ -43,7 +43,7 @@ public class UpdateEdgeLogEntryTest {
                       .withProperty("rev", 2)
                       .build();
     DatabaseLog dbLog = mock(DatabaseLog.class);
-    UpdateEdgeLogEntry instance = new UpdateEdgeLogEntry(edge, TIMESTAMP, ID, prevEdge);
+    UpdateEdgeLogEntry instance = new UpdateEdgeLogEntry(edge, prevEdge);
 
     instance.appendToLog(dbLog);
 
@@ -68,7 +68,7 @@ public class UpdateEdgeLogEntryTest {
                       .withProperty("rev", 2)
                       .build();
     DatabaseLog dbLog = mock(DatabaseLog.class);
-    UpdateEdgeLogEntry instance = new UpdateEdgeLogEntry(edge, TIMESTAMP, ID, prevEdge);
+    UpdateEdgeLogEntry instance = new UpdateEdgeLogEntry(edge, prevEdge);
 
     instance.appendToLog(dbLog);
 
@@ -91,7 +91,7 @@ public class UpdateEdgeLogEntryTest {
                       .withProperty("rev", 2)
                       .build();
     DatabaseLog dbLog = mock(DatabaseLog.class);
-    UpdateEdgeLogEntry instance = new UpdateEdgeLogEntry(edge, TIMESTAMP, ID, prevEdge);
+    UpdateEdgeLogEntry instance = new UpdateEdgeLogEntry(edge, prevEdge);
 
     instance.appendToLog(dbLog);
 
@@ -118,7 +118,7 @@ public class UpdateEdgeLogEntryTest {
                       .withProperty("rev", 2)
                       .build();
     DatabaseLog dbLog = mock(DatabaseLog.class);
-    UpdateEdgeLogEntry instance = new UpdateEdgeLogEntry(edge, TIMESTAMP, ID, prevEdge, propertiesToIgnore);
+    UpdateEdgeLogEntry instance = new UpdateEdgeLogEntry(edge, prevEdge, propertiesToIgnore);
 
     instance.appendToLog(dbLog);
 

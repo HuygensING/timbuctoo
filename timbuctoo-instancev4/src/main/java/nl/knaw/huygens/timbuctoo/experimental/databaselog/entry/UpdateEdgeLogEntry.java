@@ -1,24 +1,22 @@
 package nl.knaw.huygens.timbuctoo.experimental.databaselog.entry;
 
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.DatabaseLog;
-import nl.knaw.huygens.timbuctoo.experimental.databaselog.EdgeLogEntry;
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.LogEntry;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 
 import java.util.Set;
 
-class UpdateEdgeLogEntry extends EdgeLogEntry {
+class UpdateEdgeLogEntry implements LogEntry {
   private final Edge edge;
   private final Edge prevEdge;
   private final PropertyUpdater propertyUpdater;
 
-  public UpdateEdgeLogEntry(Edge edge, Long timestamp, String id, Edge prevEdge) {
-    this(edge, timestamp, id, prevEdge, LogEntry.SYSTEM_PROPERTIES);
+  public UpdateEdgeLogEntry(Edge edge, Edge prevEdge) {
+    this(edge, prevEdge, LogEntry.SYSTEM_PROPERTIES);
 
   }
 
-  UpdateEdgeLogEntry(Edge edge, long timestamp, String id, Edge prevEdge, Set<String> propertiesToIgnore) {
-    super(timestamp, id);
+  UpdateEdgeLogEntry(Edge edge, Edge prevEdge, Set<String> propertiesToIgnore) {
     this.edge = edge;
     this.prevEdge = prevEdge;
     this.propertyUpdater = new PropertyUpdater(edge, prevEdge, propertiesToIgnore);
