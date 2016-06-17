@@ -53,38 +53,40 @@ public class PropertiesOverviewEndpoint {
       while (allProps.hasNext()) {
         VertexProperty<Object> prop = allProps.next();
         String key = prop.key();
-        String[] parts = key.split("_");
-        boolean useKey = true;
-        if (parts.length > 1) {
-          for (String nf : DONT_USE) {
-            if (nf.equals(parts[0])) {
-              useKey = false;
-            }
-          }
-        }
-        if (useKey) {
-          boolean functional = isFunctional(parts);
-          String collection = "";
-          String propertyName = "";
-          String detectedVre = "";
-          if (functional && vres.getCollectionForType(parts[0]).isPresent()) {
-            collection = vres.getCollectionForType(parts[0]).get().getCollectionName();
-            propertyName = parts[1];
-            for (String vreShort : vreNames.keySet()) {
-              if (collection.startsWith(vreShort)) {
-                detectedVre = vreNames.get(vreShort);
-              }
-            }
-            if (detectedVre.isEmpty()) {
-              detectedVre = "Admin";
-            }
-          }
-          result.add(key + ";" + functional + ";" + detectedVre + ";" + collection + ";" + propertyName);
-        }
+        result.add(key);
       }
     }
     ArrayList<String> resultList = new ArrayList<String>();
-    resultList.addAll(result);
+    for (String key : result) {
+      String[] parts = key.split("_");
+      boolean useKey = true;
+      if (parts.length > 1) {
+        for (String nf : DONT_USE) {
+          if (nf.equals(parts[0])) {
+            useKey = false;
+          }
+        }
+      }
+      if (useKey) {
+        boolean functional = isFunctional(parts);
+        String collection = "";
+        String propertyName = "";
+        String detectedVre = "";
+        if (functional && vres.getCollectionForType(parts[0]).isPresent()) {
+          collection = vres.getCollectionForType(parts[0]).get().getCollectionName();
+          propertyName = parts[1];
+          for (String vreShort : vreNames.keySet()) {
+            if (collection.startsWith(vreShort)) {
+              detectedVre = vreNames.get(vreShort);
+            }
+          }
+          if (detectedVre.isEmpty()) {
+            detectedVre = "Admin";
+          }
+        }
+        resultList.add(key + ";" + functional + ";" + detectedVre + ";" + collection + ";" + propertyName);
+      }
+    }
     Collections.sort(resultList);
     resultList.add(0, "PROPERTY NAME;IS FUNCTIONAL?;DETECTED VRE;FOUND COLLECTION;PROPERTY NAME");
     return Response.ok(resultList).build();
