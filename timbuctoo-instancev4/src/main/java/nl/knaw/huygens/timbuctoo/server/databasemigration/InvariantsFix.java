@@ -170,9 +170,9 @@ public class InvariantsFix implements DatabaseMigration {
 
   private Map<String, Object> getPropertiesToSet(Vertex vertex, String vertexAbstractType, String entityTypeName) {
     Map<String, Object> propertyValues = Maps.newHashMap();
-
+    String adminPrefix = String.format("%s_", vertexAbstractType);
     vertex.properties().forEachRemaining(prop -> {
-      if (prop.key().startsWith(vertexAbstractType)) {
+      if (prop.key().startsWith(adminPrefix)) {
         propertyValues.put(prop.key().replace(vertexAbstractType, entityTypeName), prop.value());
       }
     });
