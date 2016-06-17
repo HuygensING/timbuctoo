@@ -67,7 +67,7 @@ public class PropertiesOverviewEndpoint {
           String collection = "";
           String propertyName = "";
           String detectedVre = "";
-          if (functional) {
+          if (functional && vres.getCollectionForType(parts[0]).isPresent()) {
             collection = vres.getCollectionForType(parts[0]).get().getCollectionName();
             propertyName = parts[1];
             for (String vreShort : vreNames.keySet()) {
