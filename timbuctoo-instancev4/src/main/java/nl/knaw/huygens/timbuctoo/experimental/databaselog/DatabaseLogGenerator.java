@@ -128,14 +128,6 @@ public class DatabaseLogGenerator {
     vertices.clear();
     edges.forEach(edge -> logEntryFactory.createForEdge(edge).appendToLog(databaseLog));
     edges.clear();
-
-    // .forEachRemaining(vertex -> {
-    //   // Because both vertices most exist, the edges can only be added after the last vertex with a
-    //   // certain timestamp. This is before the the vertex with a timestamp after the edge timestamp.
-    //   appendEdgeChangedBeforeVertexToLog(databaseLog, vertex);
-    //   appendVertexToLog(databaseLog, vertex);
-    // });
-    // edgeLogEntryAdder.appendRemaining(databaseLog);
   }
 
   private long getTimestampFromChangeString(String changeString) throws IOException {
