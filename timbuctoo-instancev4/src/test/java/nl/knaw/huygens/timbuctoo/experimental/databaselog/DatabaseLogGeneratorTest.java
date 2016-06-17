@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.experimental.databaselog;
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.entry.LogEntryFactory;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import nl.knaw.huygens.timbuctoo.util.VertexBuilder;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
@@ -11,8 +11,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
 
-import java.util.function.Consumer;
+import java.util.UUID;
 
+import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.mockito.BDDMockito.given;
@@ -35,6 +36,7 @@ public class DatabaseLogGeneratorTest {
     logEntryFactory = mock(LogEntryFactory.class);
     vertexLogEntry = mock(VertexLogEntry.class);
     given(logEntryFactory.createForVertex(any(Vertex.class))).willReturn(vertexLogEntry);
+    given(logEntryFactory.createForEdge(any(Edge.class))).willReturn(mock(EdgeLogEntry.class));
   }
 
   @Test
@@ -42,10 +44,20 @@ public class DatabaseLogGeneratorTest {
     String first = "first";
     String second = "second";
     String third = "third";
-    GraphWrapper graphWrapper = newGraph().withVertex(vertexWithIdAndModifiedTimeStamp(first, 1464346423L))
-                                          .withVertex(vertexWithIdAndModifiedTimeStamp(third, 1464346425L))
-                                          .withVertex(vertexWithIdAndModifiedTimeStamp(second, 1464346424L))
-                                          .wrap();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v.withTimId(first)
+                        .withProperty("modified", getChangeStringWithTimestamp(1464346423L))
+                        .withProperty("rev", 1)
+      )
+      .withVertex(v -> v.withTimId(third).withProperty("modified",
+        getChangeStringWithTimestamp(1464346425L))
+                        .withProperty("rev", 1)
+      )
+      .withVertex(v -> v.withTimId(second).withProperty("modified",
+        getChangeStringWithTimestamp(1464346424L))
+                        .withProperty("rev", 1)
+      )
+      .wrap();
     DatabaseLogGenerator instance = createInstance(graphWrapper);
 
     instance.generate();
@@ -59,10 +71,20 @@ public class DatabaseLogGeneratorTest {
 
   @Test
   public void generateAppendsAVertexEntryForEachVertexToTheLog() throws Exception {
-    GraphWrapper graphWrapper = newGraph().withVertex(vertexWithIdAndModifiedTimeStamp("id1", 1464346423L))
-                                          .withVertex(vertexWithIdAndModifiedTimeStamp("id2", 1464346425L))
-                                          .withVertex(vertexWithIdAndModifiedTimeStamp("id3", 1464346424L))
-                                          .wrap();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v.withTimId("id1")
+                        .withProperty("modified", getChangeStringWithTimestamp(1464346423L))
+                        .withProperty("rev", 1)
+      )
+      .withVertex(v -> v.withTimId("id2")
+                        .withProperty("modified", getChangeStringWithTimestamp(1464346425L))
+                        .withProperty("rev", 1)
+      )
+      .withVertex(v -> v.withTimId("id3")
+                        .withProperty("modified", getChangeStringWithTimestamp(1464346424L))
+                        .withProperty("rev", 1)
+      )
+      .wrap();
     DatabaseLogGenerator instance = createInstance(graphWrapper);
 
     instance.generate();
@@ -70,14 +92,71 @@ public class DatabaseLogGeneratorTest {
     verify(vertexLogEntry, times(3)).appendToLog(any(DatabaseLog.class));
   }
 
+  @Test
+  public void generateAppendsEachVersionOfAVertexOnlyOnce() {
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v.withTimId("id1")
+                        .withProperty("modified", getChangeStringWithTimestamp(1464346423L))
+                        .withProperty("rev", 1)
+      )
+      .withVertex(v -> v.withTimId("id1")
+                        .withProperty("modified", getChangeStringWithTimestamp(1464346425L))
+                        .withProperty("rev", 2)
+      )
+      .withVertex(v -> v.withTimId("id1")
+                        .withProperty("modified", getChangeStringWithTimestamp(1464346424L))
+                        .withProperty("rev", 2)
+      )
+      .wrap();
+    DatabaseLogGenerator instance = createInstance(graphWrapper);
+
+    instance.generate();
+
+    verify(logEntryFactory).createForVertex(argThat(likeVertex().withTimId("id1").withProperty("rev", 1)));
+    verify(logEntryFactory, times(1)).createForVertex(argThat(likeVertex().withTimId("id1").withProperty("rev", 2)));
+  }
+
+  @Test
+  public void generateAppendsEachVersionOfAnEdgeOnlyOnce() {
+    UUID relId = UUID.fromString("ff65089c-2ded-4af0-95e7-0476979f96b8");
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex("v1", v -> v.withTimId("id1")
+                              .withProperty("modified", getChangeStringWithTimestamp(1464346423L))
+                              .withProperty("rev", 3)
+      )
+      .withVertex("v2", v -> v.withTimId("id2")
+                              .withProperty("modified", getChangeStringWithTimestamp(1464346425L))
+                              .withProperty("rev", 3)
+                              .withOutgoingRelation("relatedTo", "v1",
+                                r -> r.withTim_id(relId).withRev(1)
+                                      .withModified(changeWithTimestamp(1464346426L))
+                              )
+                              .withOutgoingRelation("relatedTo", "v1",
+                                r -> r.withTim_id(relId).withRev(2)
+                                      .withModified(changeWithTimestamp(1464346428L))
+                              )
+                              .withOutgoingRelation("relatedTo", "v1",
+                                r -> r.withTim_id(relId).withRev(2)
+                                      .withModified(changeWithTimestamp(1464346428L))
+                              )
+      )
+      .wrap();
+    DatabaseLogGenerator instance = createInstance(graphWrapper);
+
+    instance.generate();
+
+    verify(logEntryFactory).createForEdge(argThat(likeEdge().withId(relId.toString()).withProperty("rev", 1)));
+    verify(logEntryFactory, times(1)).createForEdge(argThat(likeEdge().withId(relId.toString())
+                                                                      .withProperty("rev", 2)));
+  }
+
   private DatabaseLogGenerator createInstance(GraphWrapper graphWrapper) {
     return new DatabaseLogGenerator(graphWrapper, logEntryFactory);
   }
 
-  private Consumer<VertexBuilder> vertexWithIdAndModifiedTimeStamp(String id, long timeStamp) {
+  private String getChangeStringWithTimestamp(long timeStamp) {
     try {
-      String modifiedString = objectMapper.writeValueAsString(changeWithTimestamp(timeStamp));
-      return v -> v.withTimId(id).withProperty("modified", modifiedString);
+      return objectMapper.writeValueAsString(changeWithTimestamp(timeStamp));
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
     }

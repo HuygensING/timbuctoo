@@ -4,10 +4,10 @@ import nl.knaw.huygens.hamcrest.CompositeMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.hamcrest.PropertyMatcher;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.containsString;
 
 public class VertexMatcher extends CompositeMatcher<Vertex> {
@@ -43,6 +43,20 @@ public class VertexMatcher extends CompositeMatcher<Vertex> {
   public VertexMatcher withoutProperty(String propName) {
     this.addMatcher(new WithoutPropertyMatcher(propName));
 
+    return this;
+  }
+
+  public VertexMatcher withProperty(String propertyName, Object value) {
+    this.addMatcher(new PropertyEqualityMatcher<Vertex, Object>(propertyName, value) {
+      @Override
+      protected Object getItemValue(Vertex item) {
+        VertexProperty<Object> property = item.property(propertyName);
+        if (property.isPresent()) {
+          return property.value();
+        }
+        return null;
+      }
+    });
     return this;
   }
 

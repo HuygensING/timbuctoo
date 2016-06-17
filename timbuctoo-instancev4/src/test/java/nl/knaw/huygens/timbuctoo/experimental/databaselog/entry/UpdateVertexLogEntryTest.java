@@ -13,7 +13,6 @@ import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 
 public class UpdateVertexLogEntryTest {
   @Test
@@ -26,18 +25,6 @@ public class UpdateVertexLogEntryTest {
     instance.appendToLog(dbLog);
 
     verify(dbLog).updateVertex(vertex);
-  }
-
-  @Test
-  public void appendToLogAddsNothingToTheLogWhenThePreviousVersionHasTheSameRevision() {
-    Vertex oldVersion = vertex().withId("id").withProperty("rev", 2).build();
-    Vertex vertex = vertex().withId("id").withProperty("rev", 2).build();
-    UpdateVertexLogEntry instance = new UpdateVertexLogEntry(vertex, oldVersion);
-    DatabaseLog dbLog = mock(DatabaseLog.class);
-
-    instance.appendToLog(dbLog);
-
-    verifyZeroInteractions(dbLog);
   }
 
   @Test

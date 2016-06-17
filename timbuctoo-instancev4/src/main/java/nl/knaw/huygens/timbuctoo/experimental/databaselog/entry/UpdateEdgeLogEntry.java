@@ -5,7 +5,6 @@ import nl.knaw.huygens.timbuctoo.experimental.databaselog.EdgeLogEntry;
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.LogEntry;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 
-import java.util.Objects;
 import java.util.Set;
 
 class UpdateEdgeLogEntry extends EdgeLogEntry {
@@ -27,10 +26,6 @@ class UpdateEdgeLogEntry extends EdgeLogEntry {
 
   @Override
   public void appendToLog(DatabaseLog dbLog) {
-    if (Objects.equals(edge.value("rev"), prevEdge.value("rev"))) {
-      return;
-    }
-
     dbLog.updateEdge(edge);
     propertyUpdater.updateProperties(dbLog);
   }

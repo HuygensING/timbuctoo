@@ -79,9 +79,9 @@ public class DatabaseLogGenerator {
       .getGraph()
       .traversal()
       .V().has("modified")
-      // ignore search results
-      .not(__.has(T.label, LabelP.of("searchresult")))
+      .not(__.has(T.label, LabelP.of("searchresult"))) // ignore search results
       .union(__.identity(), __.outE().has("modified"))
+      .dedup().by(__.valueMap("rev", "tim_id")) // add each version once
       .order()
       .by("modified", (Comparator<String>) (o1, o2) -> {
         try {
@@ -140,5 +140,17 @@ public class DatabaseLogGenerator {
 
   private long getTimestampFromChangeString(String changeString) throws IOException {
     return objectMapper.readValue(changeString, Change.class).getTimeStamp();
+  }
+
+  private static class IdRevComparator implements Comparator<Element> {
+    @Override
+    public int compare(Element o1, Element o2) {
+      String id1 = o1.<String>property("tim_id").orElse("");
+      Integer rev1 = o1.<Integer>property("rev").orElse(0);
+      String id2 = o2.<String>property("tim_id").orElse("");
+      Integer rev2 = o2.<Integer>property("rev").orElse(0);
+
+      return id1.equals(id2) ? rev1.compareTo(rev2) : id1.compareTo(id2);
+    }
   }
 }

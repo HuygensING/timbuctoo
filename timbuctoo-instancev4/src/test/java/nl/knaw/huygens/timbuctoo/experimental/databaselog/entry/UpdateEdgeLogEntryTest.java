@@ -13,7 +13,6 @@ import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
 
 public class UpdateEdgeLogEntryTest {
 
@@ -30,18 +29,6 @@ public class UpdateEdgeLogEntryTest {
     instance.appendToLog(databaseLog);
 
     verify(databaseLog).updateEdge(edge);
-  }
-
-  @Test
-  public void appendToLogAddsNothingToTheLogWhenThePreviousVersionHasTheSameRevision() {
-    Edge oldVersion = edge().withId(ID).withProperty("rev", 2).build();
-    Edge edge = edge().withId(ID).withProperty("rev", 2).build();
-    UpdateEdgeLogEntry instance = new UpdateEdgeLogEntry(edge, TIMESTAMP, ID, oldVersion);
-    DatabaseLog dbLog = mock(DatabaseLog.class);
-
-    instance.appendToLog(dbLog);
-
-    verifyZeroInteractions(dbLog);
   }
 
   @Test
