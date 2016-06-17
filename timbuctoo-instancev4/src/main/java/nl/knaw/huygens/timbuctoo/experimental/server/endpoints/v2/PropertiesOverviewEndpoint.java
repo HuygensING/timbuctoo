@@ -5,7 +5,6 @@ import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -27,21 +26,11 @@ public class PropertiesOverviewEndpoint {
   private Vres vres;
 
   private static final String[] DONT_USE = {"relationtype" , "searchresult"};
-  private final HashMap<String, String> vreNames = new HashMap<>();
 
 
   public PropertiesOverviewEndpoint(Vres vres, TinkerpopGraphManager graphManager) {
     this.vres = vres;
     this.graphManager = graphManager;
-    vreNames.put("ww","WomenWriters");
-    vreNames.put("charter","CharterPortaal");
-    vreNames.put("em","EuropeseMigratie");
-    vreNames.put("ckcc","ckcc");
-    vreNames.put("dcar","DutchCaribbean");
-    vreNames.put("cwrs","cwrs");
-    vreNames.put("cwno","cwno");
-    vreNames.put("cnw","cnw");
-    vreNames.put("base","Base");
   }
 
   @GET
@@ -75,14 +64,7 @@ public class PropertiesOverviewEndpoint {
         if (functional && vres.getCollectionForType(parts[0]).isPresent()) {
           collection = vres.getCollectionForType(parts[0]).get().getCollectionName();
           propertyName = parts[1];
-          for (String vreShort : vreNames.keySet()) {
-            if (collection.startsWith(vreShort)) {
-              detectedVre = vreNames.get(vreShort);
-            }
-          }
-          if (detectedVre.isEmpty()) {
-            detectedVre = "Admin";
-          }
+          detectedVre = vres.getCollectionForType(parts[0]).get().getVre().getVreName();
         }
         resultList.add(key + ";" + functional + ";" + detectedVre + ";" + collection + ";" + propertyName);
       }
