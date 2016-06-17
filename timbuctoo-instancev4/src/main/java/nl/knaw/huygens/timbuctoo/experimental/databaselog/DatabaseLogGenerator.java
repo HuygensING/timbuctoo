@@ -24,7 +24,7 @@ import java.util.List;
  * <p>
  * Currently (as of 2016-06-13) the Timbuctoo database contains all versions of all entities and all versions of all
  * relations as one interlinked graph. The old versions are filtered out while querying. We want to simplify the
- * database model and the code that uses the database directly, without loosing information. Therefore we're moving the
+ * database model and the code that uses the database directly, without losing information. Therefore we're moving the
  * history to a separate databaseLog.
  * </p>
  * <p>
