@@ -153,7 +153,8 @@ public class HuygensIng {
         .withProperty("name", localProperty("wwlanguage_name"))
       )
       .withCollection("wwlocations", c -> c
-        .withDisplayName(localProperty("names", defaultLocationNameConverter))
+        .withDisplayName(localProperty("wwlocation_name"))
+        .withProperty("name", localProperty("wwlocation_name"))
       )
       .withCollection("wwrelations", CollectionBuilder::isRelationCollection)
     )
@@ -233,8 +234,8 @@ public class HuygensIng {
         .withDisplayName(localProperty("cwrslanguage_name"))
         .withProperty("name", localProperty("cwrslanguage_name")))
       .withCollection("cwrslocations", c -> c
-        .withDisplayName(localProperty("cwrslocation_names", defaultLocationNameConverter))
-        .withProperty("locationName", localProperty("cwrslocation_names")))
+        .withDisplayName(localProperty("cwrslocation_name"))
+        .withProperty("name", localProperty("cwrslocation_name")))
       .withCollection("cwrsrelations", CollectionBuilder::isRelationCollection))
     .withVre("DutchCaribbean", "dcar", vre -> vre
     .withCollection("dcarpersons",
@@ -349,7 +350,9 @@ public class HuygensIng {
       .withDisplayName(localProperty("language_name"))
       .withProperty("name", localProperty("language_name")))
     .withCollection("locations", c -> c
-      .withDisplayName(localProperty("names", defaultLocationNameConverter)))
+      .withDisplayName(localProperty("location_name"))
+      .withProperty("name", localProperty("location_name"))
+    )
     .withCollection("archives", c -> c
       .withDisplayName(localProperty("tim_id"))
     )
@@ -381,8 +384,8 @@ public class HuygensIng {
         "UNKNOWN"
       ))))
     .withCollection("ckcclocations", c -> c
-      .withDisplayName(localProperty("ckcclocation_names", defaultLocationNameConverter))
-      .withProperty("locationName", localProperty("ckcclocation_names")))
+      .withDisplayName(localProperty("ckcclocation_name"))
+      .withProperty("name", localProperty("ckcclocation_name")))
     .withCollection("ckccrelations", CollectionBuilder::isRelationCollection))
     .withVre("Base", "base", v -> v
       .withCollection("baselocations", c -> c.withDisplayName(localProperty("tim_id")))
