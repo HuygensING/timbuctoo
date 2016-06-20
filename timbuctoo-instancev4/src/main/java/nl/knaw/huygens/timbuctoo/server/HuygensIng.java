@@ -171,7 +171,9 @@ public class HuygensIng {
         .withProperty("deathDate", localProperty("cwnoperson_deathDate", datable))
         .withProperty("notes", localProperty("cwnoperson_notes"))
         .withProperty("links", localProperty("cwnoperson_links", hyperlinks))
-        .withProperty("nationalities", localProperty("cwnoperson_nationalities")))
+        .withProperty("nationalities", localProperty("cwnoperson_nationalities"))
+        .withProperty("tempNewwId", localProperty("cwnoperson_tempNewwId"))
+        .withProperty("tempNames", localProperty("cwnoperson_tempNames", arrayToEncodedArray)))
       .withCollection("cwnodocuments", c -> c
         .withDisplayName(localProperty("cwnodocument_title"))
         .withProperty("title", localProperty("cwnodocument_title"))
@@ -181,7 +183,12 @@ public class HuygensIng {
         )))
         .withProperty("date", localProperty("cwnodocument_date", datable))
         .withProperty("notes", localProperty("cwnodocument_notes"))
-        .withProperty("links", localProperty("cwnodocument_links", hyperlinks)))
+        .withProperty("links", localProperty("cwnodocument_links", hyperlinks))
+        .withProperty("resourceType", localProperty("cwnodocument_resourceType", stringToUnencodedStringOf(
+            "TEXT"
+          )))
+        .withProperty("templanguages", localProperty("cwnodocument_templanguages", arrayToEncodedArray))
+        .withProperty("tempNewwId", localProperty("cwnodocument_tempNewwId")))
       .withCollection("cwnorelations", CollectionBuilder::isRelationCollection))
     .withVre("cwrs", "cwrs", vre -> vre
       .withCollection("cwrscollectives", c -> c
