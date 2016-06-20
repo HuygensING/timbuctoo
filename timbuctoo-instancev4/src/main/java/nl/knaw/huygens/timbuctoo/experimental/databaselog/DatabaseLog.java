@@ -59,7 +59,7 @@ public class DatabaseLog {
   }
 
   DatabaseLog(GraphWrapper graphWrapper, LogEntryFactory logEntryFactory) {
-    this(graphWrapper, logEntryFactory, new LogOutput());
+    this(graphWrapper, logEntryFactory, new FileLogOutput());
   }
 
   DatabaseLog(GraphWrapper graphWrapper, LogEntryFactory logEntryFactory, LogOutput logOutput) {

@@ -20,7 +20,7 @@ import static org.mockito.Mockito.mock;
 public class DatabaseLogIntegrationTest {
   @Test
   public void generateFirstAddsTheVerticesAndThenAddsTheEdgesForATimeStamp() {
-    LogOutput log = mock(LogOutput.class);
+    LogOutput logOutput = mock(LogOutput.class);
     UUID rel1Uuid = UUID.fromString("ff65089c-2ded-4af0-95e7-0476979f96b8");
     UUID rel2Uuid = UUID.fromString("a628b090-ec7f-4608-9356-61728355ad5a");
     GraphWrapper graphWrapper = newGraph()
@@ -50,17 +50,17 @@ public class DatabaseLogIntegrationTest {
                               .withIncomingRelation("VERSION_OF", "v3")
       ).wrap();
     DatabaseLog logGenerator =
-      new DatabaseLog(graphWrapper, new LogEntryFactory(), log);
+      new DatabaseLog(graphWrapper, new LogEntryFactory(), logOutput);
 
     logGenerator.generate();
 
-    InOrder inOrder = inOrder(log);
-    inOrder.verify(log).newVertex(argThat(likeVertex().withTimId("id1")));
-    inOrder.verify(log).newVertex(argThat(likeVertex().withTimId("id2")));
-    inOrder.verify(log).newVertex(argThat(likeVertex().withTimId("id3")));
-    inOrder.verify(log).newEdge(argThat(likeEdge().withId(rel1Uuid.toString())));
-    inOrder.verify(log).newEdge(argThat(likeEdge().withId(rel2Uuid.toString())));
-    inOrder.verify(log).updateVertex(argThat(likeVertex().withTimId("id3")));
+    InOrder inOrder = inOrder(logOutput);
+    inOrder.verify(logOutput).newVertex(argThat(likeVertex().withTimId("id1")));
+    inOrder.verify(logOutput).newVertex(argThat(likeVertex().withTimId("id2")));
+    inOrder.verify(logOutput).newVertex(argThat(likeVertex().withTimId("id3")));
+    inOrder.verify(logOutput).newEdge(argThat(likeEdge().withId(rel1Uuid.toString())));
+    inOrder.verify(logOutput).newEdge(argThat(likeEdge().withId(rel2Uuid.toString())));
+    inOrder.verify(logOutput).updateVertex(argThat(likeVertex().withTimId("id3")));
   }
 
   private String changeStringWithTimestamp(long timeStamp) {
