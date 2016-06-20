@@ -1432,6 +1432,8 @@ var _fieldsSelectField = require("./fields/select-field");
 
 var _fieldsSelectField2 = _interopRequireDefault(_fieldsSelectField);
 
+var _utilPersist = require("../util/persist");
+
 var ArchetypeMappings = (function (_React$Component) {
 	_inherits(ArchetypeMappings, _React$Component);
 
@@ -1454,49 +1456,68 @@ var ArchetypeMappings = (function (_React$Component) {
 
 			return _react2["default"].createElement(
 				"div",
-				{ className: "panel panel-default col-md-6 col-md-offset-3" },
+				{ className: "row centered-form center-block" },
 				_react2["default"].createElement(
-					"div",
-					{ className: "panel-body" },
-					"You have uploaded test.xlsx. We found 2 tabs.",
-					_react2["default"].createElement("br", null),
-					"Connect the tabs to the timbuctoo archetypes"
+					"a",
+					{ onClick: function () {
+							(0, _utilPersist.disablePersist)();location.reload();
+						}, style: { position: "absolute", top: 0, right: 0, zIndex: 10 } },
+					"clear state"
 				),
 				_react2["default"].createElement(
-					"ul",
-					{ className: "list-group" },
-					importData.sheets.map(function (sheet, i) {
-						return _react2["default"].createElement(
-							"li",
-							{ className: "list-group-item", key: i },
-							_react2["default"].createElement(
-								"label",
-								null,
-								i + 1,
-								" ",
-								sheet.collection
-							),
-							_react2["default"].createElement(_fieldsSelectField2["default"], {
-								onChange: function (value) {
-									return onMapCollectionArchetype(sheet.collection, value);
-								},
-								onClear: function () {
-									return onMapCollectionArchetype(sheet.collection, null);
-								},
-								options: Object.keys(archetype).filter(function (domain) {
-									return domain !== "relations";
-								}),
-								placeholder: "Archetype for " + sheet.collection,
-								value: mappings.collections[sheet.collection].archetypeName })
-						);
-					}),
+					"div",
+					{ className: "container col-md-12", style: { textAlign: "left" } },
 					_react2["default"].createElement(
-						"li",
-						{ className: "list-group-item" },
+						"main",
+						null,
 						_react2["default"].createElement(
-							"button",
-							{ className: "btn btn-lg btn-success", disabled: !collectionsAreMapped, onClick: onConfirmCollectionArchetypeMappings },
-							"Ok"
+							"div",
+							{ className: "panel panel-default col-md-6 col-md-offset-3" },
+							_react2["default"].createElement(
+								"div",
+								{ className: "panel-body" },
+								"You have uploaded test.xlsx. We found 2 tabs.",
+								_react2["default"].createElement("br", null),
+								"Connect the tabs to the timbuctoo archetypes"
+							),
+							_react2["default"].createElement(
+								"ul",
+								{ className: "list-group" },
+								importData.sheets.map(function (sheet, i) {
+									return _react2["default"].createElement(
+										"li",
+										{ className: "list-group-item", key: i },
+										_react2["default"].createElement(
+											"label",
+											null,
+											i + 1,
+											" ",
+											sheet.collection
+										),
+										_react2["default"].createElement(_fieldsSelectField2["default"], {
+											onChange: function (value) {
+												return onMapCollectionArchetype(sheet.collection, value);
+											},
+											onClear: function () {
+												return onMapCollectionArchetype(sheet.collection, null);
+											},
+											options: Object.keys(archetype).filter(function (domain) {
+												return domain !== "relations";
+											}),
+											placeholder: "Archetype for " + sheet.collection,
+											value: mappings.collections[sheet.collection].archetypeName })
+									);
+								}),
+								_react2["default"].createElement(
+									"li",
+									{ className: "list-group-item" },
+									_react2["default"].createElement(
+										"button",
+										{ className: "btn btn-lg btn-success", disabled: !collectionsAreMapped, onClick: onConfirmCollectionArchetypeMappings },
+										"Ok"
+									)
+								)
+							)
 						)
 					)
 				)
@@ -1519,7 +1540,7 @@ ArchetypeMappings.propTypes = {
 exports["default"] = ArchetypeMappings;
 module.exports = exports["default"];
 
-},{"./fields/select-field":31,"react":"react"}],27:[function(require,module,exports){
+},{"../util/persist":53,"./fields/select-field":31,"react":"react"}],27:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1926,6 +1947,8 @@ var _collectionForm = require("./collection-form");
 
 var _collectionForm2 = _interopRequireDefault(_collectionForm);
 
+var _utilPersist = require("../util/persist");
+
 var DatasheetMappings = (function (_React$Component) {
 	_inherits(DatasheetMappings, _React$Component);
 
@@ -1938,20 +1961,30 @@ var DatasheetMappings = (function (_React$Component) {
 	_createClass(DatasheetMappings, [{
 		key: "render",
 		value: function render() {
-
 			return _react2["default"].createElement(
 				"div",
-				null,
+				{ className: "row", style: { textAlign: "left" } },
 				_react2["default"].createElement(
-					"nav",
-					{ className: "col-sm-2" },
-					_react2["default"].createElement(_collectionIndex2["default"], this.props)
+					"a",
+					{ onClick: function () {
+							(0, _utilPersist.disablePersist)();location.reload();
+						}, style: { position: "absolute", top: 0, right: 0, zIndex: 10 } },
+					"clear state"
 				),
 				_react2["default"].createElement(
-					"main",
-					{ className: "col-sm-10" },
-					_react2["default"].createElement(_collectionForm2["default"], this.props),
-					_react2["default"].createElement(_collectionTable2["default"], this.props)
+					"div",
+					{ className: "container col-md-12" },
+					_react2["default"].createElement(
+						"nav",
+						{ className: "col-sm-2" },
+						_react2["default"].createElement(_collectionIndex2["default"], this.props)
+					),
+					_react2["default"].createElement(
+						"main",
+						{ className: "col-sm-10" },
+						_react2["default"].createElement(_collectionForm2["default"], this.props),
+						_react2["default"].createElement(_collectionTable2["default"], this.props)
+					)
 				)
 			);
 		}
@@ -1963,7 +1996,7 @@ var DatasheetMappings = (function (_React$Component) {
 exports["default"] = DatasheetMappings;
 module.exports = exports["default"];
 
-},{"./collection-form":27,"./collection-index":28,"./collection-table":29,"react":"react"}],31:[function(require,module,exports){
+},{"../util/persist":53,"./collection-form":27,"./collection-index":28,"./collection-table":29,"react":"react"}],31:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2141,8 +2174,6 @@ var _datasheetMappings = require("./datasheet-mappings");
 
 var _datasheetMappings2 = _interopRequireDefault(_datasheetMappings);
 
-var _utilPersist = require("../util/persist");
-
 var App = (function (_React$Component) {
 	_inherits(App, _React$Component);
 
@@ -2169,32 +2200,7 @@ var App = (function (_React$Component) {
 
 			var uploadSplashScreen = !datasheetMappings && !archetypeMappings ? _react2["default"].createElement(_uploadSplashScreen2["default"], this.props) : null;
 
-			return _react2["default"].createElement(
-				"div",
-				null,
-				_react2["default"].createElement(
-					"a",
-					{ onClick: function () {
-							(0, _utilPersist.disablePersist)();location.reload();
-						}, style: { position: "absolute", top: 0, right: 0, zIndex: 10 } },
-					"clear state"
-				),
-				_react2["default"].createElement(
-					"div",
-					{ className: "row centered-form center-block" },
-					_react2["default"].createElement(
-						"div",
-						{ className: "container col-md-12" },
-						_react2["default"].createElement(
-							"main",
-							null,
-							datasheetMappings,
-							archetypeMappings,
-							uploadSplashScreen
-						)
-					)
-				)
-			);
+			return datasheetMappings || archetypeMappings || uploadSplashScreen;
 		}
 	}]);
 
@@ -2209,7 +2215,7 @@ App.propTypes = {
 exports["default"] = App;
 module.exports = exports["default"];
 
-},{"../util/persist":53,"./archetype-mappings":26,"./datasheet-mappings":30,"./upload-splash-screen":42,"react":"react"}],33:[function(require,module,exports){
+},{"./archetype-mappings":26,"./datasheet-mappings":30,"./upload-splash-screen":42,"react":"react"}],33:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3297,33 +3303,51 @@ var UploadSplashScreen = (function (_React$Component) {
 
 			return _react2["default"].createElement(
 				"div",
-				{ id: "splash" },
+				{ className: "site-wrapper-inner  fullsize_background" },
 				_react2["default"].createElement(
-					"h1",
-					null,
-					"TIMBUCTOO"
-				),
-				_react2["default"].createElement(
-					"p",
-					null,
-					"Get your data stored and connected to the world.",
-					_react2["default"].createElement("br", null),
-					"Start uploading your data."
-				),
-				_react2["default"].createElement(
-					"button",
-					{ className: "btn btn-lg btn-default", onClick: onUpload },
-					_react2["default"].createElement("span", { className: "glyphicon glyphicon-cloud-upload pull-left" }),
-					"  Upload"
-				),
-				_react2["default"].createElement(
-					"p",
-					null,
-					"Need to get started? Here's an example ",
+					"div",
+					{ className: "cover-container white" },
 					_react2["default"].createElement(
-						"a",
-						null,
-						"speadsheet.xlsx"
+						"div",
+						{ className: "inner cover" },
+						_react2["default"].createElement(
+							"h1",
+							{ className: "cover-heading underMargin" },
+							_react2["default"].createElement("img", { alt: "timbuctoo", className: "logo", src: "images/logo_timbuctoo.svg" }),
+							_react2["default"].createElement("br", null),
+							"TIMBUCTOO"
+						),
+						_react2["default"].createElement(
+							"p",
+							{ className: "lead underMargin" },
+							"Get your data stored and connected to the world.",
+							_react2["default"].createElement("br", null),
+							"Start uploading your data."
+						),
+						_react2["default"].createElement(
+							"p",
+							{ className: "lead" },
+							_react2["default"].createElement(
+								"a",
+								{ className: "btn btn-lg btn-default underMargin", onClick: onUpload },
+								_react2["default"].createElement("span", { className: "glyphicon glyphicon-cloud-upload" }),
+								" Upload"
+							)
+						),
+						_react2["default"].createElement(
+							"p",
+							{ className: "lead" },
+							"Need to get started? Here’s an example ",
+							_react2["default"].createElement(
+								"a",
+								{ href: "#" },
+								_react2["default"].createElement(
+									"em",
+									null,
+									"spreadsheet.xlsx"
+								)
+							)
+						)
 					)
 				)
 			);
