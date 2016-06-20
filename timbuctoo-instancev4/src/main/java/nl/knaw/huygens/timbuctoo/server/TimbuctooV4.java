@@ -40,6 +40,7 @@ import nl.knaw.huygens.timbuctoo.server.databasemigration.AutocompleteLuceneInde
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.InvariantsFix;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.LabelDatabaseMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.LocationNamesToLocationNameDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.WwDocumentSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.WwPersonSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
@@ -148,7 +149,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       new WwPersonSortIndexesDatabaseMigration(),
       new WwDocumentSortIndexesDatabaseMigration(),
       new InvariantsFix(vres),
-      new AutocompleteLuceneIndexDatabaseMigration()
+      new AutocompleteLuceneIndexDatabaseMigration(),
+      new LocationNamesToLocationNameDatabaseMigration()
     );
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, databaseMigrations);

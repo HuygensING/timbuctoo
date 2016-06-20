@@ -349,7 +349,9 @@ public class HuygensIng {
       .withDisplayName(localProperty("language_name"))
       .withProperty("name", localProperty("language_name")))
     .withCollection("locations", c -> c
-      .withDisplayName(localProperty("names", defaultLocationNameConverter)))
+      .withDisplayName(localProperty("location_name"))
+      .withProperty("name", localProperty("location_name"))
+    )
     .withCollection("archives", c -> c
       .withDisplayName(localProperty("tim_id"))
     )
