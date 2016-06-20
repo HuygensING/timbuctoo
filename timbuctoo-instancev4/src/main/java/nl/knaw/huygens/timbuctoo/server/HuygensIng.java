@@ -247,7 +247,7 @@ public class HuygensIng {
     .withCollection("dcarkeywords",
       c -> c
         .withDisplayName(localProperty("dcarkeyword_label"))
-        .withProperty("type", localProperty("dcarkeyword_type", stringArrayToEncodedArrayOf(
+        .withProperty("type", localProperty("dcarkeyword_type", stringToUnencodedStringOf(
           "subject",
           "geography")))
         .withProperty("value", localProperty("dcarkeyword_value")))
