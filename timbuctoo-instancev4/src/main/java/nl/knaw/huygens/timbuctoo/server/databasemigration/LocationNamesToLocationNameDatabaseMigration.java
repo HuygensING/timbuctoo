@@ -31,13 +31,15 @@ public class LocationNamesToLocationNameDatabaseMigration implements DatabaseMig
 
   @Override
   public void applyToVertex(Vertex vertex) throws IOException {
-    List<String> entityTypesOrDefault = Lists.newArrayList(getEntityTypesOrDefault(vertex));
-    if (entityTypesOrDefault.contains("location")) {
+    List<String> entityTypes = Lists.newArrayList(getEntityTypesOrDefault(vertex));
+    if (entityTypes.contains("location")) {
       LocationNames locationNames = new ObjectMapper().readValue((String) vertex.property("names").value(),
         LocationNames.class);
 
       String name = locationNames.getDefaultName();
-      vertex.property("location_name", name == null ? "" : name);
+      for (String entityType : entityTypes) {
+        vertex.property(String.format("%s_name", entityType), name == null ? "" : name);
+      }
     }
   }
 }
