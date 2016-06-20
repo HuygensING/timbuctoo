@@ -154,7 +154,6 @@ public class HuygensIng {
       )
       .withCollection("wwlocations", c -> c
         .withDisplayName(localProperty("names", defaultLocationNameConverter))
-        .withProperty("^names", localProperty("names"))
       )
       .withCollection("wwrelations", CollectionBuilder::isRelationCollection)
     )
@@ -313,11 +312,13 @@ public class HuygensIng {
               "ARCHETYPE",
               "AUTHOR",
               "PSEUDONYM",
-              "READER"
+              "READER",
+              ""
       )))
       .withProperty("gender", localProperty("person_gender", gender))
       .withProperty("birthDate", localProperty("person_birthDate", datable))
       .withProperty("deathDate", localProperty("person_deathDate", datable))
+      .withProperty("floruit", localProperty("person_floruit"))
       .withProperty("links", localProperty("person_links", hyperlinks)))
     .withCollection("documents", c -> c
       .withDisplayName(localProperty("document_title"))
@@ -342,13 +343,13 @@ public class HuygensIng {
       .withProperty("links", localProperty("collective_links", hyperlinks)))
     .withCollection("keywords", c -> c
       .withDisplayName(localProperty("keyword_value"))
+      .withProperty("type", localProperty("keyword_type"))
       .withProperty("value", localProperty("keyword_value")))
     .withCollection("languages", c -> c
       .withDisplayName(localProperty("language_name"))
       .withProperty("name", localProperty("language_name")))
     .withCollection("locations", c -> c
-      .withDisplayName(localProperty("names", defaultLocationNameConverter))
-      .withProperty("^names", localProperty("names")))
+      .withDisplayName(localProperty("names", defaultLocationNameConverter)))
     .withCollection("archives", c -> c
       .withDisplayName(localProperty("tim_id"))
     )
