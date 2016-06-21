@@ -171,7 +171,7 @@ public class HuygensIng {
         .withProperty("deathDate", localProperty("cwnoperson_deathDate", datable))
         .withProperty("notes", localProperty("cwnoperson_notes"))
         .withProperty("links", localProperty("cwnoperson_links", hyperlinks))
-        .withProperty("nationalities", localProperty("cwnoperson_nationalities")))
+        .withProperty("nationalities", localProperty("cwnoperson_nationalities", arrayToEncodedArray)))
       .withCollection("cwnodocuments", c -> c
         .withDisplayName(localProperty("cwnodocument_title"))
         .withProperty("title", localProperty("cwnodocument_title"))
