@@ -36,8 +36,10 @@ public class DatabaseFixer {
 
   private void fixVertices(Graph graph) {
     graph.traversal()
-         .V().has("isLatest", true).forEachRemaining(this::addMissingVertexVersions);
-
+         .V()
+         .has("isLatest", true)
+         .has("rev")
+         .forEachRemaining(this::addMissingVertexVersions);
   }
 
   private void addMissingVertexVersions(Vertex vertex) {
@@ -68,7 +70,9 @@ public class DatabaseFixer {
 
   private void fixEdges(Graph graph) {
     graph.traversal()
-         .E().has("isLatest", true)
+         .E()
+         .has("isLatest", true)
+         .has("rev")
          .forEachRemaining(this::addMissingEdgeVersions);
   }
 
